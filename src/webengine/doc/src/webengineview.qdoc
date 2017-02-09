@@ -206,10 +206,11 @@
     \qmlproperty url WebEngineView::icon
     \readonly
 
-    The location of the currently displayed web site icon,
-    also known as favicon or shortcut icon. This read-only URL corresponds to
-    the image used within a mobile browser application to represent a
-    bookmarked page on the device's home screen.
+    An internal URL for accessing the currently displayed web site icon,
+    also known as favicon or shortcut icon. The icon is already downloaded
+    and stored by the Qt WebEngine's favicon manager.
+    This read-only URL corresponds to the image used within a mobile browser
+    application to represent a bookmarked page on the device's home screen.
 
     The following snippet uses the \c{icon} property to build an \c{Image}
     component:
@@ -217,10 +218,17 @@
     \qml
     Image {
         id: appIcon
-        source: webView.icon != "" ? webView.icon : "fallbackFavIcon.png";
+        sourceSize: Qt.size(32, 32)
+        source: webView.icon != "" ? webView.icon : "fallbackFavicon.png";
         // ...
     }
     \endqml
+
+    Specifying the \c{sourceSize} property of the \c{Image} element informs
+    the Qt WebEngine's favicon provider about the requested size. The
+    favicon provider tries to find the best fit among the web page candidate
+    icons. If \c{sourceSize} property is not specified, the provider provides
+    the icon with the largest resolution.
 */
 
 /*!
@@ -334,6 +342,28 @@
 */
 
 /*!
+    \qmlproperty size WebEngineView::contentsSize
+    \since QtWebEngine 1.3
+
+    Size of the page contents.
+*/
+
+/*!
+    \qmlproperty point WebEngineView::scrollPosition
+    \since QtWebEngine 1.3
+
+    Scroll position of the page contents.
+*/
+
+/*!
+    \qmlproperty int WebEngineView::webChannelWorld
+    \since QtWebEngine 1.3
+
+    JavaScript world that the web channel instance used by this view is
+    installed in.
+*/
+
+/*!
     \qmlmethod void WebEngineView::loadHtml(string html, url baseUrl)
     Loads the specified \a html as the content of the web view.
 
@@ -374,7 +404,7 @@
     \since QtWebEngine 1.1
     Finds the specified string, \a subString, in the page.
 
-    To clear the selection, just pass an empty string.
+    To clear the search highlight, just pass an empty string.
 */
 
 /*!
@@ -382,7 +412,7 @@
     \since QtWebEngine 1.1
     Finds the specified string, \a subString, in the page, using the given \a options.
 
-    To clear the selection, just pass an empty string.
+    To clear the search highlight, just pass an empty string.
 
     \code
     findText("Qt", WebEngineView.FindBackward | WebEngineView.FindCaseSensitively);
@@ -394,7 +424,7 @@
     \since QtWebEngine 1.1
     Finds the specified string, \a subString, in the page, using the given \a options.
 
-    To clear the selection, just pass an empty string.
+    To clear the search highlight, just pass an empty string.
 
     The \a resultCallback must take a boolean parameter. It will be called with
     a value of true if the \a subString was found; otherwise the callback value
@@ -770,6 +800,8 @@
            (Added in Qt 5.6)
     \value  WebEngineView.ExitFullScreen
             Exit the fullscreen mode. (Added in Qt 5.6)
+    \value  WebEngineView.SavePage
+            Save the current web page to disk. (Added in Qt 5.7)
 
     \omitvalue WebActionCount
 */
@@ -790,6 +822,165 @@
             Both audio and video capture devices.
 
     \sa featurePermissionRequested(), grantFeaturePermission()
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::PrintedPageSizeId
+    \since QtWebEngine 1.3
+
+    This enum type lists the available page sizes as defined in the Postscript
+    PPD standard.
+
+    The enumeration values are mapped from and must match QPageSize::PageSizeId. They are also
+    duplicated in QPagedPaintDevice and QPrinter.
+
+    The defined sizes are:
+
+    \value WebEngineView.A0 841 x 1189 mm
+    \value WebEngineView.A1 594 x 841 mm
+    \value WebEngineView.A2 420 x 594 mm
+    \value WebEngineView.A3 297 x 420 mm
+    \value WebEngineView.A4 210 x 297 mm, 8.26 x 11.69 inches
+    \value WebEngineView.A5 148 x 210 mm
+    \value WebEngineView.A6 105 x 148 mm
+    \value WebEngineView.A7 74 x 105 mm
+    \value WebEngineView.A8 52 x 74 mm
+    \value WebEngineView.A9 37 x 52 mm
+    \value WebEngineView.B0 1000 x 1414 mm
+    \value WebEngineView.B1 707 x 1000 mm
+    \value WebEngineView.B2 500 x 707 mm
+    \value WebEngineView.B3 353 x 500 mm
+    \value WebEngineView.B4 250 x 353 mm
+    \value WebEngineView.B5 176 x 250 mm, 6.93 x 9.84 inches
+    \value WebEngineView.B6 125 x 176 mm
+    \value WebEngineView.B7 88 x 125 mm
+    \value WebEngineView.B8 62 x 88 mm
+    \value WebEngineView.B9 44 x 62 mm
+    \value WebEngineView.B10 31 x 44 mm
+    \value WebEngineView.C5E 163 x 229 mm
+    \value WebEngineView.Comm10E 105 x 241 mm, U.S. Common 10 Envelope
+    \value WebEngineView.DLE 110 x 220 mm
+    \value WebEngineView.Executive 7.5 x 10 inches, 190.5 x 254 mm
+    \value WebEngineView.Folio 210 x 330 mm
+    \value WebEngineView.Ledger 431.8 x 279.4 mm
+    \value WebEngineView.Legal 8.5 x 14 inches, 215.9 x 355.6 mm
+    \value WebEngineView.Letter 8.5 x 11 inches, 215.9 x 279.4 mm
+    \value WebEngineView.Tabloid 279.4 x 431.8 mm
+    \value WebEngineView.Custom Unknown, or a user defined size.
+    \value WebEngineView.A10
+    \value WebEngineView.A3Extra
+    \value WebEngineView.A4Extra
+    \value WebEngineView.A4Plus
+    \value WebEngineView.A4Small
+    \value WebEngineView.A5Extra
+    \value WebEngineView.B5Extra
+    \value WebEngineView.JisB0
+    \value WebEngineView.JisB1
+    \value WebEngineView.JisB2
+    \value WebEngineView.JisB3
+    \value WebEngineView.JisB4
+    \value WebEngineView.JisB5
+    \value WebEngineView.JisB6
+    \value WebEngineView.JisB7
+    \value WebEngineView.JisB8
+    \value WebEngineView.JisB9
+    \value WebEngineView.JisB10
+    \value WebEngineView.AnsiA = \c Letter
+    \value WebEngineView.AnsiB = \c Ledger
+    \value WebEngineView.AnsiC
+    \value WebEngineView.AnsiD
+    \value WebEngineView.AnsiE
+    \value WebEngineView.LegalExtra
+    \value WebEngineView.LetterExtra
+    \value WebEngineView.LetterPlus
+    \value WebEngineView.LetterSmall
+    \value WebEngineView.TabloidExtra
+    \value WebEngineView.ArchA
+    \value WebEngineView.ArchB
+    \value WebEngineView.ArchC
+    \value WebEngineView.ArchD
+    \value WebEngineView.ArchE
+    \value WebEngineView.Imperial7x9
+    \value WebEngineView.Imperial8x10
+    \value WebEngineView.Imperial9x11
+    \value WebEngineView.Imperial9x12
+    \value WebEngineView.Imperial10x11
+    \value WebEngineView.Imperial10x13
+    \value WebEngineView.Imperial10x14
+    \value WebEngineView.Imperial12x11
+    \value WebEngineView.Imperial15x11
+    \value WebEngineView.ExecutiveStandard
+    \value WebEngineView.Note
+    \value WebEngineView.Quarto
+    \value WebEngineView.Statement
+    \value WebEngineView.SuperA
+    \value WebEngineView.SuperB
+    \value WebEngineView.Postcard
+    \value WebEngineView.DoublePostcard
+    \value WebEngineView.Prc16K
+    \value WebEngineView.Prc32K
+    \value WebEngineView.Prc32KBig
+    \value WebEngineView.FanFoldUS
+    \value WebEngineView.FanFoldGerman
+    \value WebEngineView.FanFoldGermanLegal
+    \value WebEngineView.EnvelopeB4
+    \value WebEngineView.EnvelopeB5
+    \value WebEngineView.EnvelopeB6
+    \value WebEngineView.EnvelopeC0
+    \value WebEngineView.EnvelopeC1
+    \value WebEngineView.EnvelopeC2
+    \value WebEngineView.EnvelopeC3
+    \value WebEngineView.EnvelopeC4
+    \value WebEngineView.EnvelopeC5 = \c C5E
+    \value WebEngineView.EnvelopeC6
+    \value WebEngineView.EnvelopeC65
+    \value WebEngineView.EnvelopeC7
+    \value WebEngineView.EnvelopeDL = \c DLE
+    \value WebEngineView.Envelope9
+    \value WebEngineView.Envelope10 = \c Comm10E
+    \value WebEngineView.Envelope11
+    \value WebEngineView.Envelope12
+    \value WebEngineView.Envelope14
+    \value WebEngineView.EnvelopeMonarch
+    \value WebEngineView.EnvelopePersonal
+    \value WebEngineView.EnvelopeChou3
+    \value WebEngineView.EnvelopeChou4
+    \value WebEngineView.EnvelopeInvite
+    \value WebEngineView.EnvelopeItalian
+    \value WebEngineView.EnvelopeKaku2
+    \value WebEngineView.EnvelopeKaku3
+    \value WebEngineView.EnvelopePrc1
+    \value WebEngineView.EnvelopePrc2
+    \value WebEngineView.EnvelopePrc3
+    \value WebEngineView.EnvelopePrc4
+    \value WebEngineView.EnvelopePrc5
+    \value WebEngineView.EnvelopePrc6
+    \value WebEngineView.EnvelopePrc7
+    \value WebEngineView.EnvelopePrc8
+    \value WebEngineView.EnvelopePrc9
+    \value WebEngineView.EnvelopePrc10
+    \value WebEngineView.EnvelopeYou4
+    \value WebEngineView.LastPageSize = \c EnvelopeYou4
+    \omitvalue NPageSize
+    \omitvalue NPaperSize
+
+    \sa WebEngineView::printToPdf()
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::PrintedPageOrientation
+    \since QtWebEngine 1.3
+
+    Describes the orientation of a PDF document that gets created from the WebEngineView's contents.
+    The enumeration values are mapped from and must match QPageLayout::Orientation.
+
+    \value WebEngineView.Portrait
+    The document will be created using portrait orientation.
+
+    \value WebEngineView.Landscape
+    The document will be created using landscape orientation.
+
+    \sa WebEngineView::printToPdf()
 */
 
 /*!
@@ -856,4 +1047,95 @@
     \endqml
 
     \sa toggleOn
+*/
+
+/*!
+    \qmlproperty bool WebEngineView::audioMuted
+    \brief The state of whether the current page audio is muted.
+    \since QtWebEngine 1.3
+    \sa recentlyAudible
+*/
+
+/*!
+    \qmlsignal WebEngineView::audioMutedChanged(bool muted)
+    \since QtWebEngine 1.3
+
+    This signal is emitted when the page's audio is (un)muted using audioMuted property.
+    \note Not to be confused with a specific HTML5 audio / video element being muted.
+
+    \sa audioMuted, recentlyAudibleChanged
+*/
+
+/*!
+    \qmlproperty bool WebEngineView::recentlyAudible
+    \brief Returns the current page's audible state (audio was recently played, or not).
+    \since QtWebEngine 1.3
+    \readonly
+    \sa audioMuted, recentlyAudibleChanged
+*/
+
+/*!
+    \qmlsignal WebEngineView::recentlyAudibleChanged(bool recentlyAudible)
+    \since QtWebEngine 1.3
+
+    This signal is emitted when the page's audible state is changed, due to audio
+    being played or stopped.
+
+    \note The signal is also emitted when the audioMuted property changes.
+    Also if the audio is paused, this signal is emitted with an approximate \b{two-second
+    delay}, from the moment the audio is paused.
+
+    This signal is also emitted for Flash plugin audio.
+
+    If a web page contains two videos that are started in sequence, this signal
+    gets emitted only once, for the first video to generate sound. After both
+    videos are stopped, the signal is emitted upon the last sound generated.
+    This means that the signal is emitted both when any kind of sound is
+    generated and when everything is completely silent within a web page,
+    regardless of the number of audio streams.
+
+    Spurious signal emissions might also happen. For example, when sound is
+    stopped, this signal gets emitted first with a value of \c true, and then
+    with a value of \c false. Further, when audio starts playing, the signal is
+    emitted twice with a value of \c true.
+
+    \sa recentlyAudible
+*/
+
+/*!
+    \qmlmethod void WebEngineView::printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
+    \since QtWebEngine 1.3
+
+    Prints the WebEngineView's current content to a PDF document and stores it under \a filePath. The document's size will be determined
+    by the value of \a pageSizeId and its orientation will be determined using \a orientation.
+*/
+
+/*!
+    \qmlmethod void WebEngineView::printToPdf(variant resultCallback, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
+    \since QtWebEngine 1.3
+
+    Prints the WebEngineView's current content to a PDF document and returns it in a byte array. The document's size will be determined
+    by the value of \a pageSizeId and its orientation will be determined using \a orientation.
+
+    The \a resultCallback must take a string parameter. This string will contain the document's data upon successful printing and an empty
+    string otherwise.
+*/
+
+/*!
+    \qmlmethod void WebEngineView::replaceMisspelledWord(const QString &replacement)
+    \since QtWebEngine 1.3
+
+    Replace the current misspelled word with \a replacement.
+*/
+
+/*!
+    \qmlsignal void WebEngineView::wasRecentlyAudibleChanged(bool wasRecentlyAudible)
+    \since QtWebEngine 1.3
+
+    This signal is emitted when the page's audible state is changed, due to audio
+    being played or stopped.
+
+    \note The signal is also emitted when calling the setAudioMuted method.
+    Also if the audio is paused, this signal is emitted with an approximate \b{2 second
+    delay}, from the moment the audio is paused.
 */

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -45,6 +48,9 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
+#if defined(ENABLE_BASIC_PRINTING)
+#include "chrome/browser/printing/print_job_manager.h"
+#endif // defined(ENABLE_BASIC_PRINTING)
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/utility_process_host_impl.h"
@@ -52,6 +58,8 @@
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -63,7 +71,7 @@
 #include "ui/gl/gl_switches.h"
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
-#include "content/public/app/startup_helper_win.h"
+#include "content/public/app/sandbox_helper_win.h"
 #endif // OS_WIN
 
 #include "browser_context_adapter.h"
@@ -93,7 +101,8 @@ QT_END_NAMESPACE
 
 namespace {
 
-scoped_refptr<WebEngineContext> sContext;
+scoped_refptr<QtWebEngineCore::WebEngineContext> sContext;
+static bool s_destroyed = false;
 
 void destroyContext()
 {
@@ -102,6 +111,7 @@ void destroyContext()
     // WebEngineContext's pointer is used.
     sContext->destroy();
     sContext = 0;
+    s_destroyed = true;
 }
 
 bool usingANGLE()
@@ -146,7 +156,15 @@ bool usingQtQuick2DRenderer()
     return device == QLatin1String("softwarecontext");
 }
 
+#if defined(ENABLE_PLUGINS)
+void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
+{
+}
+#endif
+
 } // namespace
+
+namespace QtWebEngineCore {
 
 void WebEngineContext::destroyBrowserContext()
 {
@@ -168,18 +186,29 @@ void WebEngineContext::destroy()
     // RenderProcessHostImpl should be destroyed before WebEngineContext since
     // default BrowserContext might be used by the RenderprocessHostImpl's destructor.
     m_browserRunner.reset(0);
+
+    // Drop the false reference.
+    sContext->Release();
 }
 
 WebEngineContext::~WebEngineContext()
 {
+    // WebEngineContext::destroy() must be called before we are deleted
+    Q_ASSERT(!m_globalQObject);
+    Q_ASSERT(!m_devtools);
+    Q_ASSERT(!m_browserRunner);
 }
 
 scoped_refptr<WebEngineContext> WebEngineContext::current()
 {
+    if (s_destroyed)
+        return nullptr;
     if (!sContext.get()) {
         sContext = new WebEngineContext();
         // Make sure that we ramp down Chromium before QApplication destroys its X connection, etc.
         qAddPostRoutine(destroyContext);
+        // Add a false reference so there is no race between unreferencing sContext and a global QApplication.
+        sContext->AddRef();
     }
     return sContext;
 }
@@ -219,6 +248,9 @@ WebEngineContext::WebEngineContext()
     qputenv("force_s3tc_enable", "true");
 #endif
 
+    // Allow us to inject javascript like any webview toolkit.
+    content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
+
 #if defined(Q_OS_WIN)
     // We must initialize the command line with the UTF-16 arguments vector we got from
     // QCoreApplication. CommandLine::Init ignores its arguments on Windows and calls
@@ -242,17 +274,33 @@ WebEngineContext::WebEngineContext()
 #endif
 
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
-    parsedCommandLine->AppendSwitch(switches::kNoSandbox);
-    parsedCommandLine->AppendSwitch(switches::kEnableDelegatedRenderer);
+
+    // Enable sandboxing on OS X and Linux (Desktop / Embedded) by default.
+    bool disable_sandbox = qEnvironmentVariableIsSet("QTWEBENGINE_DISABLE_SANDBOX");
+    if (!disable_sandbox) {
+#if defined(Q_OS_WIN)
+        parsedCommandLine->AppendSwitch(switches::kNoSandbox);
+#elif defined(Q_OS_LINUX)
+        parsedCommandLine->AppendSwitch(switches::kDisableSetuidSandbox);
+#endif
+    } else {
+        parsedCommandLine->AppendSwitch(switches::kNoSandbox);
+        qInfo() << "Sandboxing disabled by user.";
+    }
+
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
+    // These are currently only default on OS X, and we don't support them:
+    parsedCommandLine->AppendSwitch(switches::kDisableZeroCopy);
+    parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferCompositorResources);
 
     if (useEmbeddedSwitches) {
         // Inspired by the Android port's default switches
-        parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
-        parsedCommandLine->AppendSwitch(switches::kEnablePinch);
+        if (!parsedCommandLine->HasSwitch(switches::kDisableOverlayScrollbar))
+            parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
+        if (!parsedCommandLine->HasSwitch(switches::kDisablePinch))
+            parsedCommandLine->AppendSwitch(switches::kEnablePinch);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
-        parsedCommandLine->AppendSwitch(switches::kEnableViewportMeta);
         parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
         parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
         parsedCommandLine->AppendSwitch(switches::kDisableGpuShaderDiskCache);
@@ -266,7 +314,14 @@ WebEngineContext::WebEngineContext()
     const char *glType = 0;
     if (!usingANGLE() && !usingSoftwareDynamicGL() && !usingQtQuick2DRenderer()) {
         if (qt_gl_global_share_context() && qt_gl_global_share_context()->isValid()) {
-            if (!strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext")) {
+            // If the native handle is QEGLNativeContext try to use GL ES/2, if there is no native handle
+            // assume we are using wayland and try GL ES/2, and finally Ozone demands GL ES/2 too.
+            if (qt_gl_global_share_context()->nativeHandle().isNull()
+#ifdef USE_OZONE
+                || true
+#endif
+                || !strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext"))
+            {
                 if (qt_gl_global_share_context()->isOpenGLES()) {
                     glType = gfx::kGLImplementationEGLName;
                 } else {
@@ -331,4 +386,26 @@ WebEngineContext::WebEngineContext()
     // thread to avoid a thread check assertion in its constructor when it
     // first gets referenced on the IO thread.
     MediaCaptureDevicesDispatcher::GetInstance();
+
+#if defined(ENABLE_PLUGINS)
+    // Creating pepper plugins from the page (which calls PluginService::GetPluginInfoArray)
+    // might fail unless the page queried the list of available plugins at least once
+    // (which ends up calling PluginService::GetPlugins). Since the plugins list can only
+    // be created from the FILE thread, and that GetPluginInfoArray is synchronous, it
+    // can't loads plugins synchronously from the IO thread to serve the render process' request
+    // and we need to make sure that it happened beforehand.
+    content::PluginService::GetInstance()->GetPlugins(base::Bind(&dummyGetPluginCallback));
+#endif
+
+#if defined(ENABLE_BASIC_PRINTING)
+    m_printJobManager.reset(new printing::PrintJobManager());
+#endif // defined(ENABLE_BASIC_PRINTING)
 }
+
+#if defined(ENABLE_BASIC_PRINTING)
+printing::PrintJobManager* WebEngineContext::getPrintJobManager()
+{
+    return m_printJobManager.get();
+}
+#endif // defined(ENABLE_BASIC_PRINTING)
+} // namespace

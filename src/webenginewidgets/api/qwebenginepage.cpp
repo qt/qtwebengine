@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -40,6 +43,8 @@
 #include "authentication_dialog_controller.h"
 #include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
+#include "color_chooser_controller.h"
+#include "favicon_manager.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qwebenginefullscreenrequest.h"
@@ -63,6 +68,7 @@
 #include <QApplication>
 #include <QAuthenticator>
 #include <QClipboard>
+#include <QColorDialog>
 #include <QContextMenuEvent>
 #include <QFileDialog>
 #include <QKeyEvent>
@@ -88,8 +94,9 @@ static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::Wind
 {
     switch (disposition) {
     case WebContentsAdapterClient::NewForegroundTabDisposition:
-    case WebContentsAdapterClient::NewBackgroundTabDisposition:
         return QWebEnginePage::WebBrowserTab;
+    case WebContentsAdapterClient::NewBackgroundTabDisposition:
+        return QWebEnginePage::WebBrowserBackgroundTab;
     case WebContentsAdapterClient::NewPopupDisposition:
         return QWebEnginePage::WebDialog;
     case WebContentsAdapterClient::NewWindowDisposition:
@@ -127,11 +134,12 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , settings(new QWebEngineSettings(profile->settings()))
     , view(0)
     , isLoading(false)
-    , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userScriptController(), adapter))
+    , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userResourceController(), adapter))
     , m_isBeingAdopted(false)
     , m_backgroundColor(Qt::white)
     , fullscreenMode(false)
     , webChannel(nullptr)
+    , webChannelWorldId(QWebEngineScript::MainWorld)
 {
     memset(actions, 0, sizeof(actions));
 }
@@ -172,7 +180,11 @@ void QWebEnginePagePrivate::urlChanged(const QUrl &url)
 void QWebEnginePagePrivate::iconChanged(const QUrl &url)
 {
     Q_Q(QWebEnginePage);
-    Q_EMIT q->iconUrlChanged(url);
+    if (iconUrl == url)
+        return;
+    iconUrl = url;
+    Q_EMIT q->iconUrlChanged(iconUrl);
+    Q_EMIT q->iconChanged(adapter->faviconManager()->getIcon());
 }
 
 void QWebEnginePagePrivate::loadProgressChanged(int progress)
@@ -191,6 +203,12 @@ void QWebEnginePagePrivate::selectionChanged()
 {
     Q_Q(QWebEnginePage);
     Q_EMIT q->selectionChanged();
+}
+
+void QWebEnginePagePrivate::recentlyAudibleChanged(bool recentlyAudible)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->recentlyAudibleChanged(recentlyAudible);
 }
 
 QRectF QWebEnginePagePrivate::viewportRect() const
@@ -324,7 +342,8 @@ void QWebEnginePagePrivate::adoptNewWindowImpl(QWebEnginePage *newPage,
 
     // If the constructor of the QWebEnginePage descendant set a web channel,
     // set it on the new adapter.
-    newWebContents->setWebChannel(newPage->d_func()->webChannel);
+    newWebContents->setWebChannel(newPage->d_func()->webChannel
+                                  , newPage->d_func()->webChannelWorldId);
 
     // Page has finished the adoption process.
     newPage->d_func()->m_isBeingAdopted = false;
@@ -366,6 +385,11 @@ void QWebEnginePagePrivate::didFindText(quint64 requestId, int matchCount)
     m_callbacks.invoke(requestId, matchCount > 0);
 }
 
+void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &result)
+{
+    m_callbacks.invoke(requestId, result);
+}
+
 void QWebEnginePagePrivate::passOnFocus(bool reverse)
 {
     if (view)
@@ -390,6 +414,20 @@ void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<Authentication
     }
 
     controller->accept(networkAuth.user(), networkAuth.password());
+}
+
+void QWebEnginePagePrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
+{
+    QColorDialog *dialog = new QColorDialog(controller.data()->initialColor(), view);
+
+    QColorDialog::connect(dialog, SIGNAL(colorSelected(QColor)), controller.data(), SLOT(accept(QColor)));
+    QColorDialog::connect(dialog, SIGNAL(rejected()), controller.data(), SLOT(reject()));
+
+    // Delete when done
+    QColorDialog::connect(dialog, SIGNAL(colorSelected(QColor)), dialog, SLOT(deleteLater()));
+    QColorDialog::connect(dialog, SIGNAL(rejected()), dialog, SLOT(deleteLater()));
+
+    dialog->open();
 }
 
 void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
@@ -487,9 +525,21 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
         adapter = std::move(newWebContents);
         adapter->initialize(this);
         if (webChannel)
-            adapter->setWebChannel(webChannel);
+            adapter->setWebChannel(webChannel, webChannelWorldId);
         scriptCollection.d->rebindToContents(adapter);
     }
+}
+
+void QWebEnginePagePrivate::updateScrollPosition(const QPointF &position)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->scrollPositionChanged(position);
+}
+
+void QWebEnginePagePrivate::updateContentsSize(const QSizeF &size)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->contentsSizeChanged(size);
 }
 
 void QWebEnginePagePrivate::setFullScreenMode(bool fullscreen)
@@ -503,6 +553,11 @@ void QWebEnginePagePrivate::setFullScreenMode(bool fullscreen)
 QSharedPointer<BrowserContextAdapter> QWebEnginePagePrivate::browserContextAdapter()
 {
     return profile->d_ptr->browserContext();
+}
+
+WebContentsAdapter *QWebEnginePagePrivate::webContentsAdapter()
+{
+    return adapter.data();
 }
 
 const QObject *QWebEnginePagePrivate::holdingQObject() const
@@ -561,6 +616,59 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
+    \property QWebEnginePage::scrollPosition
+    \since 5.7
+
+    \brief The scroll position of the page contents.
+*/
+
+/*!
+    \property QWebEnginePage::contentsSize
+    \since 5.7
+
+    The size of the page contents.
+*/
+
+/*!
+    \fn void QWebEnginePage::audioMutedChanged(bool muted)
+    \since 5.7
+
+    This signal is emitted when the page's \a muted state changes.
+    \note Not to be confused with a specific HTML5 audio or video element being muted.
+*/
+
+/*!
+    \fn void QWebEnginePage::recentlyAudibleChanged(bool recentlyAudible);
+    \since 5.7
+
+    This signal is emitted when the page's audible state, \a recentlyAudible, changes, because
+    the audio is played or stopped.
+
+    \note The signal is also emitted when calling the setAudioMuted() method.
+    Also, if the audio is paused, this signal is emitted with an approximate \b{two-second
+    delay}, from the moment the audio is paused.
+*/
+
+/*!
+    \fn void QWebEnginePage::iconUrlChanged(const QUrl &url)
+
+    This signal is emitted when the URL of the icon ("favicon") associated with the
+    page is changed. The new URL is specified by \a url.
+
+    \sa iconUrl(), icon(), iconChanged()
+*/
+
+/*!
+    \fn void QWebEnginePage::iconChanged(const QIcon &icon)
+    \since 5.7
+
+    This signal is emitted when the icon ("favicon") associated with the
+    page is changed. The new icon is specified by \a icon.
+
+    \sa icon(), iconUrl(), iconUrlChanged()
+*/
+
+/*!
     Constructs an empty web engine page in the web engine profile \a profile with the parent
     \a parent.
 
@@ -602,7 +710,7 @@ QWebEngineSettings *QWebEnginePage::settings() const
  * that is exposed in the JavaScript context of this page as \c qt.webChannelTransport.
  *
  * \since 5.5
- * \sa QWebChannel
+ * \sa setWebChannel
  */
 QWebChannel *QWebEnginePage::webChannel() const
 {
@@ -611,22 +719,44 @@ QWebChannel *QWebEnginePage::webChannel() const
 }
 
 /*!
- * Sets the web channel instance to be used by this page to \a channel and connects it to
- * web engine's transport using Chromium IPC messages. The transport is exposed in the JavaScript
- * context of this page as
- * \c qt.webChannelTransport, which should be used when using the \l{Qt WebChannel JavaScript API}.
+ * \overload
  *
- * \note The page does not take ownership of the channel object.
+ * Sets the web channel instance to be used by this page to \a channel and installs
+ * it in the main JavaScript world.
+ *
+ * With this method the web channel can be accessed by web page content. If the content
+ * is not under your control and might be hostile, this could be a security issue and
+ * you should consider installing it in a private JavaScript world.
  *
  * \since 5.5
+ * \sa QWebEngineScript::MainWorld
  */
 
 void QWebEnginePage::setWebChannel(QWebChannel *channel)
 {
+    setWebChannel(channel, QWebEngineScript::MainWorld);
+}
+
+/*!
+ * Sets the web channel instance to be used by this page to \a channel and connects it to
+ * web engine's transport using Chromium IPC messages. The transport is exposed in the JavaScript
+ * world \a worldId as
+ * \c qt.webChannelTransport, which should be used when using the \l{Qt WebChannel JavaScript API}.
+ *
+ * \note The page does not take ownership of the channel object.
+ * \note Only one web channel can be installed per page, setting one even in another JavaScript
+ *       world uninstalls any already installed web channel.
+ *
+ * \since 5.7
+ * \sa QWebEngineScript::ScriptWorldId
+ */
+void QWebEnginePage::setWebChannel(QWebChannel *channel, uint worldId)
+{
     Q_D(QWebEnginePage);
-    if (d->webChannel != channel) {
+    if (d->webChannel != channel || d->webChannelWorldId != worldId) {
         d->webChannel = channel;
-        d->adapter->setWebChannel(channel);
+        d->webChannelWorldId = worldId;
+        d->adapter->setWebChannel(channel, worldId);
     }
 }
 
@@ -655,6 +785,44 @@ void QWebEnginePage::setBackgroundColor(const QColor &color)
         return;
     d->m_backgroundColor = color;
     d->adapter->backgroundColorChanged();
+}
+
+/*!
+    \property QWebEnginePage::audioMuted
+    \brief whether the current page audio is muted.
+    \since 5.7
+
+    The default value is \c false.
+    \sa recentlyAudible
+*/
+bool QWebEnginePage::isAudioMuted() const {
+    const Q_D(QWebEnginePage);
+    return d->adapter->isAudioMuted();
+}
+
+void QWebEnginePage::setAudioMuted(bool muted) {
+    Q_D(QWebEnginePage);
+    bool _isAudioMuted = isAudioMuted();
+    d->adapter->setAudioMuted(muted);
+    if (_isAudioMuted != muted) {
+        Q_EMIT audioMutedChanged(muted);
+    }
+}
+
+
+/*!
+    \property QWebEnginePage::recentlyAudible
+    \brief the current page's \e {audible state}, that is, whether audio was recently played
+    or not.
+    \since 5.7
+
+    The default value is \c false.
+    \sa audioMuted
+*/
+bool QWebEnginePage::recentlyAudible() const
+{
+    const Q_D(QWebEnginePage);
+    return d->adapter->recentlyAudible();
 }
 
 void QWebEnginePage::setView(QWidget *view)
@@ -753,6 +921,9 @@ QAction *QWebEnginePage::action(WebAction action) const
     case OpenLinkInNewTab:
         text = tr("Open Link in New Tab");
         break;
+    case OpenLinkInNewBackgroundTab:
+        text = tr("Open Link in New Background Tab");
+        break;
     case CopyLinkToClipboard:
         text = tr("Copy Link URL");
         break;
@@ -795,6 +966,12 @@ QAction *QWebEnginePage::action(WebAction action) const
     case RequestClose:
         text = tr("Close Page");
         break;
+    case Unselect:
+        text = tr("Unselect");
+        break;
+    case SavePage:
+        text = tr("Save &Page");
+        break;
     case NoWebAction:
     case WebActionCount:
         Q_UNREACHABLE();
@@ -817,6 +994,7 @@ QAction *QWebEnginePage::action(WebAction action) const
 void QWebEnginePage::triggerAction(WebAction action, bool)
 {
     Q_D(QWebEnginePage);
+    const QtWebEngineCore::WebEngineContextMenuData &menuData = *d->contextData.d;
     switch (action) {
     case Back:
         d->adapter->navigateToOffset(-1);
@@ -854,121 +1032,135 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case PasteAndMatchStyle:
         d->adapter->pasteAndMatchStyle();
         break;
+    case Unselect:
+        d->adapter->unselect();
+        break;
     case OpenLinkInThisWindow:
-        if (d->m_menuData.linkUrl.isValid())
-            setUrl(d->m_menuData.linkUrl);
+        if (menuData.linkUrl.isValid())
+            setUrl(menuData.linkUrl);
         break;
     case OpenLinkInNewWindow:
-        if (d->m_menuData.linkUrl.isValid()) {
+        if (menuData.linkUrl.isValid()) {
             QWebEnginePage *newPage = createWindow(WebBrowserWindow);
             if (newPage)
-                newPage->setUrl(d->m_menuData.linkUrl);
+                newPage->setUrl(menuData.linkUrl);
         }
         break;
     case OpenLinkInNewTab:
-        if (d->m_menuData.linkUrl.isValid()) {
+        if (menuData.linkUrl.isValid()) {
             QWebEnginePage *newPage = createWindow(WebBrowserTab);
             if (newPage)
-                newPage->setUrl(d->m_menuData.linkUrl);
+                newPage->setUrl(menuData.linkUrl);
+        }
+        break;
+    case OpenLinkInNewBackgroundTab:
+        if (menuData.linkUrl.isValid()) {
+            QWebEnginePage *newPage = createWindow(WebBrowserBackgroundTab);
+            if (newPage)
+                newPage->setUrl(menuData.linkUrl);
         }
         break;
     case CopyLinkToClipboard:
-        if (d->m_menuData.linkUrl.isValid()) {
-            QString urlString = d->m_menuData.linkUrl.toString(QUrl::FullyEncoded);
-            QString title = d->m_menuData.linkText.toHtmlEscaped();
+        if (menuData.linkUrl.isValid()) {
+            QString urlString = menuData.linkUrl.toString(QUrl::FullyEncoded);
+            QString title = menuData.linkText.toHtmlEscaped();
             QMimeData *data = new QMimeData();
             data->setText(urlString);
             QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\">") + title + QStringLiteral("</a>");
             data->setHtml(html);
-            data->setUrls(QList<QUrl>() << d->m_menuData.linkUrl);
+            data->setUrls(QList<QUrl>() << menuData.linkUrl);
             qApp->clipboard()->setMimeData(data);
         }
         break;
     case DownloadLinkToDisk:
-        if (d->m_menuData.linkUrl.isValid())
-            d->adapter->download(d->m_menuData.linkUrl, d->m_menuData.suggestedFileName);
+        if (menuData.linkUrl.isValid())
+            d->adapter->download(menuData.linkUrl, menuData.suggestedFileName);
         break;
     case CopyImageToClipboard:
-        if (d->m_menuData.hasImageContent &&
-                (d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeImage ||
-                 d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeCanvas))
+        if (menuData.hasImageContent &&
+                (menuData.mediaType == WebEngineContextMenuData::MediaTypeImage ||
+                 menuData.mediaType == WebEngineContextMenuData::MediaTypeCanvas))
         {
-            d->adapter->copyImageAt(d->m_menuData.pos);
+            d->adapter->copyImageAt(menuData.pos);
         }
         break;
     case CopyImageUrlToClipboard:
-        if (d->m_menuData.mediaUrl.isValid() && d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeImage) {
-            QString urlString = d->m_menuData.mediaUrl.toString(QUrl::FullyEncoded);
-            QString title = d->m_menuData.linkText;
+        if (menuData.mediaUrl.isValid() && menuData.mediaType == WebEngineContextMenuData::MediaTypeImage) {
+            QString urlString = menuData.mediaUrl.toString(QUrl::FullyEncoded);
+            QString title = menuData.linkText;
             if (!title.isEmpty())
                 title = QStringLiteral(" alt=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
             QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral("></img>");
             data->setHtml(html);
-            data->setUrls(QList<QUrl>() << d->m_menuData.mediaUrl);
+            data->setUrls(QList<QUrl>() << menuData.mediaUrl);
             qApp->clipboard()->setMimeData(data);
         }
         break;
     case DownloadImageToDisk:
     case DownloadMediaToDisk:
-        if (d->m_menuData.mediaUrl.isValid())
-            d->adapter->download(d->m_menuData.mediaUrl, d->m_menuData.suggestedFileName);
+        if (menuData.mediaUrl.isValid())
+            d->adapter->download(menuData.mediaUrl, menuData.suggestedFileName);
         break;
     case CopyMediaUrlToClipboard:
-        if (d->m_menuData.mediaUrl.isValid() &&
-                (d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
-                 d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
+        if (menuData.mediaUrl.isValid() &&
+                (menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
+                 menuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
         {
-            QString urlString = d->m_menuData.mediaUrl.toString(QUrl::FullyEncoded);
+            QString urlString = menuData.mediaUrl.toString(QUrl::FullyEncoded);
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            if (d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio)
+            if (menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio)
                 data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"></audio>"));
             else
                 data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"></video>"));
-            data->setUrls(QList<QUrl>() << d->m_menuData.mediaUrl);
+            data->setUrls(QList<QUrl>() << menuData.mediaUrl);
             qApp->clipboard()->setMimeData(data);
         }
         break;
     case ToggleMediaControls:
-        if (d->m_menuData.mediaUrl.isValid() && d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaCanToggleControls) {
-            bool enable = !(d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaControls);
-            d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerControls, enable);
+        if (menuData.mediaUrl.isValid() && menuData.mediaFlags & WebEngineContextMenuData::MediaCanToggleControls) {
+            bool enable = !(menuData.mediaFlags & WebEngineContextMenuData::MediaControls);
+            d->adapter->executeMediaPlayerActionAt(menuData.pos, WebContentsAdapter::MediaPlayerControls, enable);
         }
         break;
     case ToggleMediaLoop:
-        if (d->m_menuData.mediaUrl.isValid() &&
-                (d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
-                 d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
+        if (menuData.mediaUrl.isValid() &&
+                (menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
+                 menuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
         {
-            bool enable = !(d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaLoop);
-            d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerLoop, enable);
+            bool enable = !(menuData.mediaFlags & WebEngineContextMenuData::MediaLoop);
+            d->adapter->executeMediaPlayerActionAt(menuData.pos, WebContentsAdapter::MediaPlayerLoop, enable);
         }
         break;
     case ToggleMediaPlayPause:
-        if (d->m_menuData.mediaUrl.isValid() &&
-                (d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
-                 d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
+        if (menuData.mediaUrl.isValid() &&
+                (menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
+                 menuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
         {
-            bool enable = (d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaPaused);
-            d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerPlay, enable);
+            bool enable = (menuData.mediaFlags & WebEngineContextMenuData::MediaPaused);
+            d->adapter->executeMediaPlayerActionAt(menuData.pos, WebContentsAdapter::MediaPlayerPlay, enable);
         }
         break;
     case ToggleMediaMute:
-        if (d->m_menuData.mediaUrl.isValid() && d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio) {
-            bool enable = !(d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
-            d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerMute, enable);
+        if (menuData.mediaUrl.isValid() && menuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio) {
+            // Make sure to negate the value, so that toggling actually works.
+            bool enable = !(menuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
+            d->adapter->executeMediaPlayerActionAt(menuData.pos, WebContentsAdapter::MediaPlayerMute, enable);
         }
         break;
     case InspectElement:
-        d->adapter->inspectElementAt(d->m_menuData.pos);
+        d->adapter->inspectElementAt(menuData.pos);
         break;
     case ExitFullScreen:
         d->adapter->exitFullScreen();
         break;
     case RequestClose:
         d->adapter->requestClose();
+        break;
+    case SavePage:
+        d->adapter->save();
         break;
     case NoWebAction:
         break;
@@ -1013,16 +1205,17 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
     if (!view || !view->d_func()->m_pendingContextMenuEvent)
         return false;
 
-    m_menuData = WebEngineContextMenuData();
+    contextData.reset();
     QContextMenuEvent event(QContextMenuEvent::Mouse, data.pos, view->mapToGlobal(data.pos));
     switch (view->contextMenuPolicy()) {
     case Qt::PreventContextMenu:
         return false;
     case Qt::DefaultContextMenu:
-        m_menuData = data;
+        contextData = data;
         view->contextMenuEvent(&event);
         break;
     case Qt::CustomContextMenu:
+        contextData = data;
         Q_EMIT view->customContextMenuRequested(data.pos);
         break;
     case Qt::ActionsContextMenu:
@@ -1142,6 +1335,13 @@ void QWebEnginePagePrivate::requestGeometryChange(const QRect &geometry)
     Q_EMIT q->geometryChangeRequested(geometry);
 }
 
+void QWebEnginePagePrivate::startDragging(const content::DropData &dropData,
+                                          Qt::DropActions allowedActions, const QPixmap &pixmap,
+                                          const QPoint &offset)
+{
+    adapter->startDragging(view, dropData, allowedActions, pixmap, offset);
+}
+
 bool QWebEnginePagePrivate::isEnabled() const
 {
     const Q_Q(QWebEnginePage);
@@ -1154,9 +1354,13 @@ bool QWebEnginePagePrivate::isEnabled() const
 QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);
+    if (!d->contextData.d)
+        return nullptr;
+
     QMenu *menu = new QMenu(d->view);
     QAction *action = 0;
-    WebEngineContextMenuData contextMenuData(d->m_menuData);
+    const WebEngineContextMenuData &contextMenuData = *d->contextData.d;
+
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
         action = QWebEnginePage::action(OpenLinkInThisWindow);
         action->setText(tr("Follow Link"));
@@ -1179,6 +1383,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         menu->addAction(action);
     } else {
         menu->addAction(QWebEnginePage::action(Copy));
+        menu->addAction(QWebEnginePage::action(Unselect));
     }
 
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
@@ -1200,9 +1405,9 @@ QMenu *QWebEnginePage::createStandardContextMenu()
             menu->addAction(QWebEnginePage::action(CopyMediaUrlToClipboard));
             menu->addAction(QWebEnginePage::action(ToggleMediaPlayPause));
             menu->addAction(QWebEnginePage::action(ToggleMediaLoop));
-            if (d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio)
+            if (contextMenuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio)
                 menu->addAction(QWebEnginePage::action(ToggleMediaMute));
-            if (d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaCanToggleControls)
+            if (contextMenuData.mediaFlags & WebEngineContextMenuData::MediaCanToggleControls)
                 menu->addAction(QWebEnginePage::action(ToggleMediaControls));
             break;
         default:
@@ -1341,10 +1546,39 @@ QUrl QWebEnginePage::requestedUrl() const
     return d->adapter->requestedUrl();
 }
 
+/*!
+    \property QWebEnginePage::iconUrl
+    \brief the URL of the icon associated with the page currently viewed
+
+    By default, this property contains an empty URL.
+
+    \sa iconUrlChanged(), icon(), iconChanged()
+*/
 QUrl QWebEnginePage::iconUrl() const
 {
     Q_D(const QWebEnginePage);
-    return d->adapter->iconUrl();
+    return d->iconUrl;
+}
+
+/*!
+    \property QWebEnginePage::icon
+    \brief the icon associated with the page currently viewed
+    \since 5.7
+
+    By default, this property contains a null icon. If the web page specifies more than one icon,
+    the \c{icon} property encapsulates the available candidate icons in a single,
+    scalable \c{QIcon}.
+
+    \sa iconChanged(), iconUrl(), iconUrlChanged()
+*/
+QIcon QWebEnginePage::icon() const
+{
+    Q_D(const QWebEnginePage);
+
+    if (d->iconUrl.isEmpty())
+        return QIcon();
+
+    return d->adapter->faviconManager()->getIcon();
 }
 
 qreal QWebEnginePage::zoomFactor() const
@@ -1362,13 +1596,26 @@ void QWebEnginePage::setZoomFactor(qreal factor)
 void QWebEnginePage::runJavaScript(const QString &scriptSource)
 {
     Q_D(QWebEnginePage);
-    d->adapter->runJavaScript(scriptSource);
+    d->adapter->runJavaScript(scriptSource, QWebEngineScript::MainWorld);
 }
 
 void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback)
 {
     Q_D(QWebEnginePage);
-    quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource);
+    quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, QWebEngineScript::MainWorld);
+    d->m_callbacks.registerCallback(requestId, resultCallback);
+}
+
+void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->runJavaScript(scriptSource, worldId);
+}
+
+void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, const QWebEngineCallback<const QVariant &> &resultCallback)
+{
+    Q_D(QWebEnginePage);
+    quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, worldId);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 }
 
@@ -1486,6 +1733,64 @@ bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType typ
     Q_UNUSED(type);
     Q_UNUSED(isMainFrame);
     return true;
+}
+
+QPointF QWebEnginePage::scrollPosition() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->lastScrollOffset();
+}
+
+QSizeF QWebEnginePage::contentsSize() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->lastContentsSize();
+}
+
+/*!
+    Renders the current content of the page into a PDF document and saves it in the location specified in \a filePath.
+    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
+
+    If a file already exists at the provided file path, it will be overwritten.
+    \since 5.7
+*/
+void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &pageLayout)
+{
+    Q_D(const QWebEnginePage);
+    d->adapter->printToPDF(pageLayout, filePath);
+}
+
+
+/*!
+    \fn void QWebEnginePage::printToPdf(FunctorOrLambda resultCallback, const QPageLayout &pageLayout)
+    Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
+    as parameter to \a resultCallback.
+    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
+
+    The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array
+    will contain the PDF data, otherwise, the byte array will be empty.
+
+    \since 5.7
+*/
+void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &pageLayout)
+{
+    Q_D(QWebEnginePage);
+    quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
+    d->m_callbacks.registerCallback(requestId, resultCallback);
+}
+
+/*!
+    \since 5.7
+
+    Returns additional data about the current context menu. It is only guaranteed to be valid during the call to the QWebEngineView::contextMenuEvent()
+    handler of the associated QWebEngineView.
+
+    \sa createStandardContextMenu()
+*/
+const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
+{
+    Q_D(const QWebEnginePage);
+    return d->contextData;
 }
 
 QT_END_NAMESPACE

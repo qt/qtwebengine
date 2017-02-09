@@ -1,12 +1,22 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** BSD License Usage
+** Alternatively, you may use this file under the terms of the BSD license
+** as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -104,6 +114,13 @@ void SettingsDialog::loadDefaults()
     sessionCookiesCombo->setCurrentIndex(QWebEngineProfile::defaultProfile()->persistentCookiesPolicy());
     httpUserAgent->setText(QWebEngineProfile::defaultProfile()->httpUserAgent());
     httpAcceptLanguage->setText(defaultAcceptLanguage());
+
+    if (!defaultSettings->testAttribute(QWebEngineSettings::AutoLoadIconsForPage))
+        faviconDownloadMode->setCurrentIndex(0);
+    else if (!defaultSettings->testAttribute(QWebEngineSettings::TouchIconsEnabled))
+        faviconDownloadMode->setCurrentIndex(1);
+    else
+        faviconDownloadMode->setCurrentIndex(2);
 }
 
 void SettingsDialog::loadFromSettings()
@@ -154,6 +171,7 @@ void SettingsDialog::loadFromSettings()
     enableScrollAnimator->setChecked(settings.value(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked()).toBool());
     httpUserAgent->setText(settings.value(QLatin1String("httpUserAgent"), httpUserAgent->text()).toString());
     httpAcceptLanguage->setText(settings.value(QLatin1String("httpAcceptLanguage"), httpAcceptLanguage->text()).toString());
+    faviconDownloadMode->setCurrentIndex(settings.value(QLatin1String("faviconDownloadMode"), faviconDownloadMode->currentIndex()).toInt());
     settings.endGroup();
 
     // Privacy
@@ -213,6 +231,7 @@ void SettingsDialog::saveToSettings()
     settings.setValue(QLatin1String("userStyleSheet"), userStyleSheet->toPlainText());
     settings.setValue(QLatin1String("httpUserAgent"), httpUserAgent->text());
     settings.setValue(QLatin1String("httpAcceptLanguage"), httpAcceptLanguage->text());
+    settings.setValue(QLatin1String("faviconDownloadMode"), faviconDownloadMode->currentIndex());
     settings.endGroup();
 
     //Privacy

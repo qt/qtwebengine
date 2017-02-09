@@ -8,6 +8,7 @@
     'dependencies': [
       '<(chromium_src_dir)/base/base.gyp:base',
       '<(chromium_src_dir)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+      '<(chromium_src_dir)/chrome/tools/convert_dict/convert_dict.gyp:convert_dict_lib',
       '<(chromium_src_dir)/components/components.gyp:devtools_discovery',
       '<(chromium_src_dir)/components/components.gyp:devtools_http_handler',
       '<(chromium_src_dir)/components/components.gyp:error_page_renderer',
@@ -15,6 +16,7 @@
       '<(chromium_src_dir)/components/components.gyp:visitedlink_renderer',
       '<(chromium_src_dir)/components/components.gyp:web_cache_browser',
       '<(chromium_src_dir)/components/components.gyp:web_cache_renderer',
+      '<(chromium_src_dir)/components/components.gyp:cdm_renderer',
       '<(chromium_src_dir)/content/content.gyp:content',
       '<(chromium_src_dir)/content/content.gyp:content_app_browser',
       '<(chromium_src_dir)/content/content.gyp:content_browser',
@@ -67,10 +69,6 @@
       ['qt_os=="embedded_linux"', {
         'configurations': {
           'Debug_Base': {
-            # Reduce the binary size.
-            'variables': {
-              'debug_optimize%': 's',
-            },
             'ldflags': [
               # Only link with needed input sections.
               '-Wl,--gc-sections',
@@ -118,6 +116,23 @@
       }],
       ['OS=="mac"', {
         'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+      }],
+      ['enable_basic_printing==1 or enable_print_preview==1', {
+        'dependencies': [
+          '<(chromium_src_dir)/components/components.gyp:printing_browser',
+          '<(chromium_src_dir)/components/components.gyp:printing_common',
+          '<(chromium_src_dir)/components/components.gyp:printing_renderer',
+        ],
+        'sources': [
+          'printing_message_filter_qt.cpp',
+          'print_view_manager_base_qt.cpp',
+          'print_view_manager_qt.cpp',
+          'printing_message_filter_qt.h',
+          'print_view_manager_base_qt.h',
+          'print_view_manager_qt.h',
+          'renderer/print_web_view_helper_delegate_qt.cpp',
+          'renderer/print_web_view_helper_delegate_qt.h',
+        ]
       }],
       ['icu_use_data_file_flag==1', {
         'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_FILE'],

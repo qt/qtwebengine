@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -49,6 +52,7 @@
 //
 
 #include "qquickwebengineview_p.h"
+#include "qquickwebenginecontextmenudata_p.h"
 #include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
@@ -67,6 +71,7 @@ class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
 class QQuickWebEngineSettings;
+class QQuickWebEngineFaviconProvider;
 
 QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event);
 
@@ -96,13 +101,17 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
+    Q_PROPERTY(const QQuickWebEngineContextMenuData *contextMenuData READ contextMenuData NOTIFY contextMenuDataChanged)
 
     QQuickWebEngineViewport *viewport() const;
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
     QQmlComponent *extraContextMenuEntriesComponent() const;
 
+    const QQuickWebEngineContextMenuData *contextMenuData() const;
+
 Q_SIGNALS:
     void extraContextMenuEntriesComponentChanged();
+    void contextMenuDataChanged();
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -133,6 +142,7 @@ public:
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
     virtual void didUpdateTargetURL(const QUrl&) Q_DECL_OVERRIDE;
     virtual void selectionChanged() Q_DECL_OVERRIDE { }
+    virtual void recentlyAudibleChanged(bool recentlyAudible) Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
     virtual QColor backgroundColor() const Q_DECL_OVERRIDE;
@@ -152,10 +162,12 @@ public:
     virtual void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) Q_DECL_OVERRIDE;
     virtual void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(QtWebEngineCore::FilePickerController *controller) Q_DECL_OVERRIDE;
+    virtual void showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController>) Q_DECL_OVERRIDE;
     virtual void didRunJavaScript(quint64, const QVariant&) Q_DECL_OVERRIDE;
     virtual void didFetchDocumentMarkup(quint64, const QString&) Q_DECL_OVERRIDE { }
     virtual void didFetchDocumentInnerText(quint64, const QString&) Q_DECL_OVERRIDE { }
     virtual void didFindText(quint64, int) Q_DECL_OVERRIDE;
+    virtual void didPrintPage(quint64 requestId, const QByteArray &result) Q_DECL_OVERRIDE;
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) Q_DECL_OVERRIDE;
@@ -173,10 +185,15 @@ public:
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
                                      int exitCode) Q_DECL_OVERRIDE;
     virtual void requestGeometryChange(const QRect &geometry) Q_DECL_OVERRIDE { Q_UNUSED(geometry); }
+    virtual void updateScrollPosition(const QPointF &position) Q_DECL_OVERRIDE;
+    virtual void updateContentsSize(const QSizeF &size) Q_DECL_OVERRIDE;
+    void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
+                       const QPixmap &pixmap, const QPoint &offset) Q_DECL_OVERRIDE;
     virtual bool isEnabled() const Q_DECL_OVERRIDE;
     const QObject *holdingQObject() const Q_DECL_OVERRIDE;
 
     virtual QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextAdapter() Q_DECL_OVERRIDE;
+    QtWebEngineCore::WebContentsAdapter *webContentsAdapter() Q_DECL_OVERRIDE;
 
     void setDevicePixelRatio(qreal);
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
@@ -200,9 +217,10 @@ public:
     QQuickWebEngineTestSupport *m_testSupport;
 #endif
     QQmlComponent *contextMenuExtraItems;
-    QtWebEngineCore::WebEngineContextMenuData contextMenuData;
+    QQuickWebEngineContextMenuData contextMenuData;
     QUrl explicitUrl;
-    QUrl icon;
+    QUrl iconUrl;
+    QQuickWebEngineFaviconProvider *faviconProvider;
     int loadProgress;
     bool m_fullscreenMode;
     bool isLoading;
@@ -211,6 +229,7 @@ public:
     QMap<quint64, QJSValue> m_callbacks;
     QList<QSharedPointer<CertificateErrorController> > m_certificateErrorControllers;
     QQmlWebChannel *m_webChannel;
+    uint m_webChannelWorld;
 
 private:
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;

@@ -6,9 +6,7 @@ GYP_CONFIG += \
     disable_nacl=1 \
     remoting=0 \
     use_ash=0 \
-
-# Chromium builds with debug info in release by default but Qt doesn't
-CONFIG(release, debug|release):!force_debug_info: GYP_CONFIG += fastbuild=1
+    enable_widevine=1
 
 # Libvpx build needs additional search path on Windows.
 GYP_ARGS += "-D qtwe_chromium_obj_dir=\"$$OUT_PWD/$$getConfigDir()/obj/$${getChromiumSrcDir()}\""
@@ -49,6 +47,14 @@ defineTest(usingMSVC32BitCrossCompiler) {
     return(false)
 }
 
+msvc:contains(QT_ARCH, "i386"):!usingMSVC32BitCrossCompiler() {
+    # The 32 bit MSVC linker runs out of memory if we do not remove all debug information.
+    GYP_CONFIG += fastbuild=2
+} else {
+    # Chromium builds with debug info in release by default but Qt doesn't
+    CONFIG(release, debug|release):!force_debug_info: GYP_CONFIG += fastbuild=1
+}
+
 msvc {
     equals(MSVC_VER, 12.0) {
         MSVS_VERSION = 2013
@@ -60,16 +66,8 @@ msvc {
 
     GYP_ARGS += "-G msvs_version=$$MSVS_VERSION"
 
-    # The check below is ugly, but necessary, as it seems to be the only reliable way to detect if the host
-    # architecture is 32 bit. QMAKE_HOST.arch does not work as it returns the architecture that the toolchain
-    # is building for, not the system's actual architecture.
-    PROGRAM_FILES_X86 = $$(ProgramW6432)
-    isEmpty(PROGRAM_FILES_X86): GYP_ARGS += "-D windows_sdk_path=\"C:/Program Files/Windows Kits/8.1\""
+    isBuildingOnWin32(): GYP_ARGS += "-D windows_sdk_path=\"C:/Program Files/Windows Kits/8.1\""
 
-    contains(QT_ARCH, "i386"):!usingMSVC32BitCrossCompiler() {
-        # The 32 bit MSVC linker runs out of memory if we do not remove all debug information.
-        GYP_CONFIG += fastbuild=2
-    }
 } else {
     fatal("Qt WebEngine for Windows can only be built with the Microsoft Visual Studio C++ compiler")
 }

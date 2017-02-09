@@ -63,6 +63,28 @@
     'defines': [
       'TOOLKIT_QT',
     ],
+    'configurations': {
+      'Debug': {
+        'defines': [
+          'QTWEBENGINEPROCESS_NAME="<(qtwe_process_name_debug)"'
+        ],
+      },
+      'Debug_x64': {
+        'defines': [
+          'QTWEBENGINEPROCESS_NAME="<(qtwe_process_name_debug)"'
+        ],
+      },
+      'Release': {
+        'defines': [
+          'QTWEBENGINEPROCESS_NAME="<(qtwe_process_name_release)"'
+        ],
+      },
+      'Release_x64': {
+        'defines': [
+          'QTWEBENGINEPROCESS_NAME="<(qtwe_process_name_release)"'
+        ],
+      },
+    },
   },
   'conditions': [
     [ 'qt_os=="embedded_linux"', {

@@ -1,12 +1,22 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** BSD License Usage
+** Alternatively, you may use this file under the terms of the BSD license
+** as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -46,6 +56,7 @@
 #include "chasewidget.h"
 #include "downloadmanager.h"
 #include "history.h"
+#include "printtopdfdialog.h"
 #include "settings.h"
 #include "tabwidget.h"
 #include "toolbarsearch.h"
@@ -302,8 +313,10 @@ void BrowserMainWindow::setupMenu()
 #if defined(QWEBENGINEPAGE_PRINT)
     fileMenu->addAction(tr("P&rint Preview..."), this, SLOT(slotFilePrintPreview()));
     fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
-    fileMenu->addSeparator();
 #endif
+    fileMenu->addAction(tr("&Print to PDF..."), this, SLOT(slotFilePrintToPDF()));
+    fileMenu->addSeparator();
+
     QAction *action = fileMenu->addAction(tr("Private &Browsing..."), this, SLOT(slotPrivateBrowsing()));
     action->setCheckable(true);
     action->setChecked(BrowserApplication::instance()->privateBrowsing());
@@ -702,6 +715,36 @@ void BrowserMainWindow::slotFilePrint()
         return;
     printRequested(currentTab()->page()->mainFrame());
 #endif
+}
+
+void BrowserMainWindow::slotHandlePdfPrinted(const QByteArray& result)
+{
+    if (!result.size())
+        return;
+
+    QFile file(m_printerOutputFileName);
+
+    m_printerOutputFileName.clear();
+    if (!file.open(QFile::WriteOnly))
+        return;
+
+    file.write(result.data(), result.size());
+    file.close();
+}
+
+void BrowserMainWindow::slotFilePrintToPDF()
+{
+    if (!currentTab() || !m_printerOutputFileName.isEmpty())
+        return;
+
+    QFileInfo info(QStringLiteral("printout.pdf"));
+    PrintToPdfDialog *dialog = new PrintToPdfDialog(info.absoluteFilePath(), this);
+    dialog->setWindowTitle(tr("Print to PDF"));
+    if (dialog->exec() != QDialog::Accepted || dialog->filePath().isEmpty())
+        return;
+
+    m_printerOutputFileName = dialog->filePath();
+    currentTab()->page()->printToPdf(invoke(this, &BrowserMainWindow::slotHandlePdfPrinted), dialog->pageLayout());
 }
 
 #if defined(QWEBENGINEPAGE_PRINT)

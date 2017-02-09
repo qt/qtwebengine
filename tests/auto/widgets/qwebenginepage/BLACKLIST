@@ -1,8 +1,8 @@
 [comboBoxPopupPositionAfterMove]
 linux
 
-[geolocationRequestJS]
-*
-
 [macCopyUnicodeToClipboard]
 osx
+
+[getUserMediaRequest]
+*

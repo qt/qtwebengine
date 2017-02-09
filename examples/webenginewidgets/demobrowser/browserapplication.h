@@ -1,12 +1,22 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** BSD License Usage
+** Alternatively, you may use this file under the terms of the BSD license
+** as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -53,8 +63,6 @@
 QT_BEGIN_NAMESPACE
 class QLocalServer;
 class QNetworkAccessManager;
-class QNetworkProxy;
-class QNetworkReply;
 class QWebEngineProfile;
 QT_END_NAMESPACE
 
@@ -83,14 +91,6 @@ public:
     bool canRestoreSession() const;
     bool privateBrowsing() const { return m_privateBrowsing; }
 
-    void setLastAuthenticator(QAuthenticator *);
-    void setLastProxyAuthenticator(QAuthenticator *);
-
-    // TODO: Remove these functions (QTBUG-47967)
-    static QByteArray authenticationKey(const QUrl &, const QString &);
-    static QByteArray proxyAuthenticationKey(const QNetworkProxy &, const QString &);
-    static QByteArray proxyAuthenticationKey(const QString &, const QString &, const QString &);
-
     static HistoryManager *historyManager();
     static CookieJar *cookieJar();
     static DownloadManager *downloadManager();
@@ -107,8 +107,6 @@ public slots:
     void lastWindowClosed();
     void quitBrowser();
     void setPrivateBrowsing(bool);
-    void authenticationRequired(QNetworkReply *, QAuthenticator *);
-    void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *);
 
 signals:
     void privateBrowsingChanged(bool);

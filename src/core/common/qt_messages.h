@@ -26,15 +26,17 @@ IPC_STRUCT_TRAITS_END()
 // These are messages sent from the browser to the renderer process.
 
 IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentMarkup,
-                    uint64 /* requestId */)
+                    uint64_t /* requestId */)
 
 IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentInnerText,
-                    uint64 /* requestId */)
+                    uint64_t /* requestId */)
 
 IPC_MESSAGE_ROUTED1(RenderViewObserverQt_SetBackgroundColor,
-                    uint32 /* color */)
+                    uint32_t /* color */)
 
-IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Message, std::vector<char> /*binaryJSON*/)
+IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Install, uint /* worldId */)
+IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Uninstall, uint /* worldId */)
+IPC_MESSAGE_ROUTED2(WebChannelIPCTransport_Message, std::vector<char> /*binaryJSON*/, uint /* worldId */)
 
 // User scripts messages
 IPC_MESSAGE_ROUTED1(RenderViewObserverHelper_AddScript,
@@ -43,22 +45,40 @@ IPC_MESSAGE_ROUTED1(RenderViewObserverHelper_RemoveScript,
                     UserScriptData /* script */)
 IPC_MESSAGE_ROUTED0(RenderViewObserverHelper_ClearScripts)
 
-IPC_MESSAGE_CONTROL1(UserScriptController_AddScript, UserScriptData /* scriptContents */)
-IPC_MESSAGE_CONTROL1(UserScriptController_RemoveScript, UserScriptData /* scriptContents */)
-IPC_MESSAGE_CONTROL0(UserScriptController_ClearScripts)
+IPC_MESSAGE_CONTROL1(UserResourceController_AddScript, UserScriptData /* scriptContents */)
+IPC_MESSAGE_CONTROL1(UserResourceController_RemoveScript, UserScriptData /* scriptContents */)
+IPC_MESSAGE_CONTROL0(UserResourceController_ClearScripts)
 
 //-----------------------------------------------------------------------------
 // WebContents messages
 // These are messages sent from the renderer back to the browser process.
 
 IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentMarkup,
-                    uint64 /* requestId */,
+                    uint64_t /* requestId */,
                     base::string16 /* markup */)
 
 IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentInnerText,
-                    uint64 /* requestId */,
+                    uint64_t /* requestId */,
                     base::string16 /* innerText */)
 
 IPC_MESSAGE_ROUTED0(RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout)
 
 IPC_MESSAGE_ROUTED1(WebChannelIPCTransportHost_SendMessage, std::vector<char> /*binaryJSON*/)
+
+//-----------------------------------------------------------------------------
+// Misc messages
+// These are messages sent from the renderer to the browser process.
+
+#if defined(ENABLE_PEPPER_CDMS)
+// Returns whether any internal plugin supporting |mime_type| is registered and
+// enabled. Does not determine whether the plugin can actually be instantiated
+// (e.g. whether it has all its dependencies).
+// When the returned *|is_available| is true, |additional_param_names| and
+// |additional_param_values| contain the name-value pairs, if any, specified
+// for the *first* non-disabled plugin found that is registered for |mime_type|.
+IPC_SYNC_MESSAGE_CONTROL1_3(QtWebEngineHostMsg_IsInternalPluginAvailableForMimeType,
+                            std::string /* mime_type */,
+                            bool /* is_available */,
+                            std::vector<base::string16> /* additional_param_names */,
+                            std::vector<base::string16> /* additional_param_values */)
+#endif

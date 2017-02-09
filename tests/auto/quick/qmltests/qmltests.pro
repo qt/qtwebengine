@@ -15,8 +15,15 @@ OTHER_FILES += \
     $$PWD/data/confirmclose.html \
     $$PWD/data/directoryupload.html \
     $$PWD/data/favicon.html \
-    $$PWD/data/favicon.png \
     $$PWD/data/favicon2.html \
+    $$PWD/data/favicon-candidates-gray.html \
+    $$PWD/data/favicon-misc.html \
+    $$PWD/data/favicon-multi.html \
+    $$PWD/data/favicon-multi-gray.html \
+    $$PWD/data/favicon-single.html \
+    $$PWD/data/favicon-shortcut.html \
+    $$PWD/data/favicon-touch.html \
+    $$PWD/data/favicon-unavailable.html \
     $$PWD/data/forms.html \
     $$PWD/data/geolocation.html \
     $$PWD/data/javascript.html \
@@ -35,7 +42,8 @@ OTHER_FILES += \
     $$PWD/data/titleupdate.js \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_download.qml \
-    $$PWD/data/tst_favIconLoad.qml \
+    $$PWD/data/tst_favicon.qml \
+    $$PWD/data/tst_faviconDownload.qml \
     $$PWD/data/tst_filePicker.qml \
     $$PWD/data/tst_formValidation.qml \
     $$PWD/data/tst_geopermission.qml \
@@ -51,12 +59,24 @@ OTHER_FILES += \
     $$PWD/data/tst_navigationRequested.qml \
     $$PWD/data/tst_properties.qml \
     $$PWD/data/tst_runJavaScript.qml \
+    $$PWD/data/tst_scrollPosition.qml \
     $$PWD/data/tst_titleChanged.qml \
     $$PWD/data/tst_unhandledKeyEventPropagation.qml \
     $$PWD/data/tst_userScripts.qml \
     $$PWD/data/tst_webchannel.qml \
     $$PWD/data/tst_settings.qml \
     $$PWD/data/tst_keyboardModifierMapping.qml \
+    $$PWD/data/icons/favicon.png \
+    $$PWD/data/icons/gray128.png \
+    $$PWD/data/icons/gray16.png \
+    $$PWD/data/icons/gray255.png \
+    $$PWD/data/icons/gray32.png \
+    $$PWD/data/icons/gray64.png \
+    $$PWD/data/icons/grayicons.ico \
+    $$PWD/data/icons/small-favicon.png \
+    $$PWD/data/icons/qt144.png \
+    $$PWD/data/icons/qt32.ico \
+    $$PWD/data/icons/qtmulti.ico \
     $$PWD/mock-delegates/QtWebEngine/UIDelegates/AlertDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/UIDelegates/ConfirmDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/UIDelegates/FilePicker.qml \

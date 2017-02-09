@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -44,7 +47,9 @@
 #include "browser_accessibility_qt.h"
 #include "browser_context_adapter.h"
 #include "browser_context_qt.h"
+#include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
+#include "print_view_manager_qt.h"
 #include "qwebenginecallback_p.h"
 #include "render_view_observer_host_qt.h"
 #include "type_conversion.h"
@@ -54,6 +59,7 @@
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
 
+#include <base/run_loop.h>
 #include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -64,20 +70,26 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/common/content_constants.h"
+#include <content/public/common/drop_data.h>
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
 #include <QDir>
 #include <QGuiApplication>
+#include <QPageLayout>
 #include <QStringList>
 #include <QStyleHints>
+#include <QTimer>
 #include <QVariant>
+#include <QtCore/qmimedata.h>
 #include <QtGui/qaccessible.h>
+#include <QtGui/qdrag.h>
+#include <QtGui/qpixmap.h>
 #include <QtWebChannel/QWebChannel>
 
 namespace QtWebEngineCore {
@@ -165,7 +177,15 @@ static QVariant fromJSValue(const base::Value *result)
 
 static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint64 requestId, const base::Value *result)
 {
-    adapterClient->didRunJavaScript(requestId, fromJSValue(result));
+    if (requestId)
+        adapterClient->didRunJavaScript(requestId, fromJSValue(result));
+}
+
+static void callbackOnPrintingFinished(WebContentsAdapterClient *adapterClient, int requestId, const std::vector<char>& result)
+{
+    if (requestId) {
+        adapterClient->didPrintPage(requestId, QByteArray(result.data(), result.size()));
+    }
 }
 
 static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
@@ -211,7 +231,7 @@ static void serializeNavigationHistory(const content::NavigationController &cont
     }
 }
 
-static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, ScopedVector<content::NavigationEntry> *entries, content::BrowserContext *browserContext)
+static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<scoped_ptr<content::NavigationEntry>> *entries, content::BrowserContext *browserContext)
 {
     int version;
     input >> version;
@@ -252,8 +272,10 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         // If we couldn't unpack the entry successfully, abort everything.
         if (input.status() != QDataStream::Ok) {
             *currentIndex = -1;
-            for (content::NavigationEntry *entry : *entries)
-                delete entry;
+            auto it = entries->begin();
+            auto end = entries->end();
+            for (; it != end; ++it)
+                it->reset();
             entries->clear();
             return;
         }
@@ -277,7 +299,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         entry->SetIsOverridingUserAgent(isOverridingUserAgent);
         entry->SetTimestamp(base::Time::FromInternalValue(timestamp));
         entry->SetHttpStatusCode(httpStatusCode);
-        entries->push_back(entry.release());
+        entries->push_back(std::move(entry));
     }
 }
 
@@ -309,9 +331,14 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     // This has to be the first thing we create, and the last we destroy.
     : engineContext(WebEngineContext::current())
     , webChannel(0)
+    , webChannelWorld(0)
     , adapterClient(0)
     , nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
     , lastFindRequestId(0)
+    , currentDropData(nullptr)
+    , currentDropAction(Qt::IgnoreAction)
+    , inDragUpdateLoop(false)
+    , updateDragCursorMessagePollingTimer(new QTimer)
 {
 }
 
@@ -324,7 +351,7 @@ WebContentsAdapterPrivate::~WebContentsAdapterPrivate()
 QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient)
 {
     int currentIndex;
-    ScopedVector<content::NavigationEntry> entries;
+    std::vector<scoped_ptr<content::NavigationEntry>> entries;
     deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->browserContextAdapter()->browserContext());
 
     if (currentIndex == -1)
@@ -354,6 +381,7 @@ WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
 {
     Q_D(WebContentsAdapter);
     d->webContents.reset(webContents);
+    initUpdateDragCursorMessagePollingTimer();
 }
 
 WebContentsAdapter::~WebContentsAdapter()
@@ -395,6 +423,10 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     // This should only be necessary after having restored the history to a new WebContentsAdapter.
     d->webContents->GetController().LoadIfNecessary();
 
+#if defined(ENABLE_BASIC_PRINTING)
+    PrintViewManagerQt::CreateForWebContents(webContents());
+#endif // defined(ENABLE_BASIC_PRINTING)
+
     // Create an instance of WebEngineVisitedLinksManager to catch the first
     // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
     // force to initialize visited links in VisitedLinkSlave.
@@ -405,7 +437,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
-        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, content::FrameReplicationState(), true);
+        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, content::FrameReplicationState());
 }
 
 void WebContentsAdapter::reattachRWHV()
@@ -487,7 +519,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     urlString.append(encodedData.constData(), encodedData.length());
 
     GURL dataUrlToLoad(urlString);
-    if (dataUrlToLoad.spec().size() > content::GetMaxURLChars()) {
+    if (dataUrlToLoad.spec().size() > content::kMaxURLChars) {
         d->adapterClient->loadFinished(false, baseUrl, false, net::ERR_ABORTED);
         return;
     }
@@ -501,6 +533,12 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     d->webContents->GetController().LoadURLWithParams(params);
     d->webContents->Focus();
     d->webContents->Unselect();
+}
+
+void WebContentsAdapter::save()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->OnSavePage();
 }
 
 QUrl WebContentsAdapter::activeUrl() const
@@ -545,7 +583,7 @@ QString WebContentsAdapter::pageTitle() const
 QString WebContentsAdapter::selectedText() const
 {
     Q_D(const WebContentsAdapter);
-    return toQt(d->webContents->GetRenderViewHost()->GetView()->GetSelectedText());
+    return toQt(d->webContents->GetRenderWidgetHostView()->GetSelectedText());
 }
 
 void WebContentsAdapter::undo()
@@ -594,6 +632,12 @@ void WebContentsAdapter::requestClose()
 {
     Q_D(WebContentsAdapter);
     d->webContents->DispatchBeforeUnload(false);
+}
+
+void WebContentsAdapter::unselect()
+{
+    Q_D(const WebContentsAdapter);
+    d->webContents->Unselect();
 }
 
 void WebContentsAdapter::navigateToIndex(int offset)
@@ -720,21 +764,30 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
 }
 #endif // QT_NO_ACCESSIBILITY
 
-void WebContentsAdapter::runJavaScript(const QString &javaScript)
+void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId)
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript));
+    if (worldId == 0) {
+        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript));
+        return;
+    }
+
+    content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, CallbackDirectory::NoCallbackId);
+    rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), callback, worldId);
 }
 
-quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript)
+quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId)
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, d->nextRequestId);
-    rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), callback);
+    if (worldId == 0)
+        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), callback);
+    else
+        rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), callback, worldId);
     return d->nextRequestId++;
 }
 
@@ -804,7 +857,25 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     scoped_ptr<content::DownloadUrlParameters> params(
             content::DownloadUrlParameters::FromWebContents(webContents(), toGurl(url)));
     params->set_suggested_name(toString16(suggestedFileName));
-    dlm->DownloadUrl(params.Pass());
+    dlm->DownloadUrl(std::move(params));
+}
+
+bool WebContentsAdapter::isAudioMuted() const
+{
+    const Q_D(WebContentsAdapter);
+    return d->webContents->IsAudioMuted();
+}
+
+void WebContentsAdapter::setAudioMuted(bool muted)
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->SetAudioMuted(muted);
+}
+
+bool WebContentsAdapter::recentlyAudible()
+{
+    Q_D(WebContentsAdapter);
+    return d->webContents->WasRecentlyAudible();
 }
 
 void WebContentsAdapter::copyImageAt(const QPoint &location)
@@ -866,6 +937,41 @@ void WebContentsAdapter::wasHidden()
     d->webContents->WasHidden();
 }
 
+void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString &filePath)
+{
+#if defined(ENABLE_BASIC_PRINTING)
+    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDF(pageLayout, filePath);
+#endif // if defined(ENABLE_BASIC_PRINTING)
+}
+
+quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayout)
+{
+#if defined(ENABLE_BASIC_PRINTING)
+    Q_D(WebContentsAdapter);
+    PrintViewManagerQt::PrintToPDFCallback callback = base::Bind(&callbackOnPrintingFinished, d->adapterClient, d->nextRequestId);
+    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDFWithCallback(pageLayout, callback);
+    return d->nextRequestId++;
+#else
+    return 0;
+#endif // if defined(ENABLE_BASIC_PRINTING)
+}
+
+QPointF WebContentsAdapter::lastScrollOffset() const
+{
+    Q_D(const WebContentsAdapter);
+    if (content::RenderWidgetHostView *rwhv = d->webContents->GetRenderWidgetHostView())
+        return toQt(rwhv->GetLastScrollOffset());
+    return QPointF();
+}
+
+QSizeF WebContentsAdapter::lastContentsSize() const
+{
+    Q_D(const WebContentsAdapter);
+    if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt *>(d->webContents->GetRenderWidgetHostView()))
+        return toQt(rwhv->lastContentsSize());
+    return QSizeF();
+}
+
 void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags)
 {
     Q_D(WebContentsAdapter);
@@ -902,7 +1008,7 @@ void WebContentsAdapter::dpiScaleChanged()
     Q_D(WebContentsAdapter);
     content::RenderWidgetHostImpl* impl = NULL;
     if (d->webContents->GetRenderViewHost())
-        impl = content::RenderWidgetHostImpl::From(d->webContents->GetRenderViewHost());
+        impl = content::RenderWidgetHostImpl::From(d->webContents->GetRenderViewHost()->GetWidget());
     if (impl)
         impl->NotifyScreenInfoChanged();
 }
@@ -926,22 +1032,214 @@ QWebChannel *WebContentsAdapter::webChannel() const
     return d->webChannel;
 }
 
-void WebContentsAdapter::setWebChannel(QWebChannel *channel)
+void WebContentsAdapter::setWebChannel(QWebChannel *channel, uint worldId)
 {
     Q_D(WebContentsAdapter);
-    if (d->webChannel == channel)
+    if (d->webChannel == channel && d->webChannelWorld == worldId)
         return;
+
     if (!d->webChannelTransport.get())
-        d->webChannelTransport.reset(new WebChannelIPCTransportHost(d->webContents.get()));
-    else
-        d->webChannel->disconnectFrom(d->webChannelTransport.get());
+        d->webChannelTransport.reset(new WebChannelIPCTransportHost(d->webContents.get(), worldId));
+    else {
+        if (d->webChannel != channel)
+            d->webChannel->disconnectFrom(d->webChannelTransport.get());
+        if (d->webChannelWorld != worldId)
+            d->webChannelTransport->setWorldId(worldId);
+    }
 
     d->webChannel = channel;
+    d->webChannelWorld = worldId;
     if (!channel) {
         d->webChannelTransport.reset();
         return;
     }
     channel->connectTo(d->webChannelTransport.get());
+}
+
+static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
+{
+    QMimeData *mimeData = new QMimeData();
+    if (!dropData.text.is_null())
+        mimeData->setText(toQt(dropData.text.string()));
+    if (!dropData.html.is_null())
+        mimeData->setHtml(toQt(dropData.html.string()));
+    if (dropData.url.is_valid())
+        mimeData->setUrls(QList<QUrl>() << toQt(dropData.url));
+    return mimeData;
+}
+
+void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropData &dropData,
+                                       Qt::DropActions allowedActions, const QPixmap &pixmap,
+                                       const QPoint &offset)
+{
+    Q_D(WebContentsAdapter);
+
+    if (d->currentDropData)
+        return;
+
+    // Clear certain fields of the drop data to not run into DCHECKs
+    // of DropDataToWebDragData in render_view_impl.cc.
+    content::DropData fixedDropData = dropData;
+    fixedDropData.download_metadata.clear();
+    fixedDropData.file_contents.clear();
+    fixedDropData.file_description_filename.clear();
+
+    d->currentDropAction = Qt::IgnoreAction;
+    d->currentDropData = &fixedDropData;
+    QDrag *drag = new QDrag(dragSource);    // will be deleted by Qt's DnD implementation
+    drag->setMimeData(mimeDataFromDropData(fixedDropData));
+    if (!pixmap.isNull()) {
+        drag->setPixmap(pixmap);
+        drag->setHotSpot(offset);
+    }
+
+    {
+        base::MessageLoop::ScopedNestableTaskAllower allow(base::MessageLoop::current());
+        drag->exec(allowedActions);
+    }
+
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->DragSourceSystemDragEnded();
+    d->currentDropData = nullptr;
+}
+
+static blink::WebDragOperationsMask toWeb(const Qt::DropActions action)
+{
+    int result = blink::WebDragOperationNone;
+    if (action & Qt::CopyAction)
+        result |= blink::WebDragOperationCopy;
+    if (action & Qt::LinkAction)
+        result |= blink::WebDragOperationLink;
+    if (action & Qt::MoveAction)
+        result |= blink::WebDragOperationMove;
+    return static_cast<blink::WebDragOperationsMask>(result);
+}
+
+static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeData *mimeData)
+{
+    Q_ASSERT(dropData->filenames.empty());
+    Q_FOREACH (const QUrl &url, mimeData->urls()) {
+        if (url.isLocalFile()) {
+            ui::FileInfo uifi;
+            uifi.path = toFilePath(url.toLocalFile());
+            dropData->filenames.push_back(uifi);
+        }
+    }
+    if (!dropData->filenames.empty())
+        return;
+    if (mimeData->hasHtml())
+        dropData->html = toNullableString16(mimeData->html());
+    else if (mimeData->hasText())
+        dropData->text = toNullableString16(mimeData->text());
+}
+
+void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPoint &screenPos)
+{
+    Q_D(WebContentsAdapter);
+
+    scoped_ptr<content::DropData> ownedDropData;
+    const content::DropData *rvhDropData = d->currentDropData;
+    if (!rvhDropData) {
+        // The drag originated outside the WebEngineView.
+        ownedDropData.reset(new content::DropData);
+        fillDropDataFromMimeData(ownedDropData.get(), e->mimeData());
+        rvhDropData = ownedDropData.get();
+    }
+
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->DragTargetDragEnter(*rvhDropData, toGfx(e->pos()), toGfx(screenPos),
+                             toWeb(e->possibleActions()),
+                             flagsFromModifiers(e->keyboardModifiers()));
+}
+
+Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const QPoint &screenPos)
+{
+    Q_D(WebContentsAdapter);
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->DragTargetDragOver(toGfx(e->pos()), toGfx(screenPos), toWeb(e->possibleActions()),
+                            blink::WebInputEvent::LeftButtonDown);
+
+    base::MessageLoop *currentMessageLoop = base::MessageLoop::current();
+    DCHECK(currentMessageLoop);
+    if (!currentMessageLoop->NestableTasksAllowed()) {
+        // We're already inside a MessageLoop::RunTask call, and scheduled tasks will not be
+        // executed. That means, updateDragAction will never be called, and the RunLoop below will
+        // remain blocked forever.
+        qWarning("WebContentsAdapter::updateDragPosition called from MessageLoop::RunTask.");
+        return Qt::IgnoreAction;
+    }
+
+    // Wait until we get notified via RenderViewHostDelegateView::UpdateDragCursor. This calls
+    // WebContentsAdapter::updateDragAction that will eventually quit the nested loop.
+    base::RunLoop loop;
+    d->inDragUpdateLoop = true;
+    d->dragUpdateLoopQuitClosure = loop.QuitClosure();
+
+    d->updateDragCursorMessagePollingTimer->start();
+    loop.Run();
+    d->updateDragCursorMessagePollingTimer->stop();
+
+    return d->currentDropAction;
+}
+
+void WebContentsAdapter::updateDragAction(Qt::DropAction action)
+{
+    Q_D(WebContentsAdapter);
+    d->currentDropAction = action;
+    finishDragUpdate();
+}
+
+void WebContentsAdapter::finishDragUpdate()
+{
+    Q_D(WebContentsAdapter);
+    if (d->inDragUpdateLoop) {
+        d->dragUpdateLoopQuitClosure.Run();
+        d->inDragUpdateLoop = false;
+    }
+}
+
+void WebContentsAdapter::endDragging(const QPoint &clientPos, const QPoint &screenPos)
+{
+    Q_D(WebContentsAdapter);
+    finishDragUpdate();
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->DragTargetDrop(toGfx(clientPos), toGfx(screenPos), 0);
+}
+
+void WebContentsAdapter::leaveDrag()
+{
+    Q_D(WebContentsAdapter);
+    finishDragUpdate();
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->DragTargetDragLeave();
+}
+
+void WebContentsAdapter::initUpdateDragCursorMessagePollingTimer()
+{
+    Q_D(WebContentsAdapter);
+    // Poll for drag cursor updated message 60 times per second. In practice, the timer is fired
+    // at most twice, after which it is stopped.
+    d->updateDragCursorMessagePollingTimer->setInterval(16);
+    d->updateDragCursorMessagePollingTimer->setSingleShot(false);
+
+    QObject::connect(d->updateDragCursorMessagePollingTimer.data(), &QTimer::timeout, [](){
+        base::MessagePump::Delegate *delegate = base::MessageLoop::current();
+        DCHECK(delegate);
+
+        // Execute Chromium tasks if there are any present. Specifically we are interested to handle
+        // the RenderViewHostImpl::OnUpdateDragCursor message, that gets sent from the render
+        // process.
+        while (delegate->DoWork()) {}
+    });
+}
+
+
+void WebContentsAdapter::replaceMisspelling(const QString &word)
+{
+#if defined(ENABLE_SPELLCHECK)
+    Q_D(WebContentsAdapter);
+    d->webContents->ReplaceMisspelling(toString16(word));
+#endif
 }
 
 WebContentsAdapterClient::RenderProcessTerminationStatus
@@ -974,6 +1272,12 @@ WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
     }
 
     return status;
+}
+
+FaviconManager *WebContentsAdapter::faviconManager()
+{
+    Q_D(WebContentsAdapter);
+    return d->webContentsDelegate->faviconManager();
 }
 
 } // namespace QtWebEngineCore

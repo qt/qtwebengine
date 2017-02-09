@@ -11,6 +11,7 @@ INCLUDEPATH += $$PWD api ../core ../core/api ../webengine/api
 SOURCES = \
         api/qtwebenginewidgetsglobal.cpp \
         api/qwebenginecertificateerror.cpp \
+        api/qwebenginecontextmenudata.cpp \
         api/qwebenginedownloaditem.cpp \
         api/qwebenginefullscreenrequest.cpp \
         api/qwebenginehistory.cpp \
@@ -24,9 +25,10 @@ SOURCES = \
 
 HEADERS = \
         api/qtwebenginewidgetsglobal.h \
+        api/qwebenginecertificateerror.h \
+        api/qwebenginecontextmenudata.h \
         api/qwebenginedownloaditem.h \
         api/qwebenginedownloaditem_p.h \
-        api/qwebenginecertificateerror.h \
         api/qwebenginefullscreenrequest.h \
         api/qwebenginehistory.h \
         api/qwebenginepage.h \
@@ -44,6 +46,10 @@ HEADERS = \
     SOURCES += ui/messagebubblewidget.cpp
     HEADERS += ui/messagebubblewidget_p.h
     DEFINES += QT_UI_DELEGATES
+}
+
+!contains(WEBENGINE_CONFIG, no_spellcheck) {
+    DEFINES += ENABLE_SPELLCHECK
 }
 
 load(qt_module)

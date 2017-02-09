@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2016 The Qt Company Ltd.
     Copyright (C) 2009 Torch Mobile Inc.
     Copyright (C) 2009 Girish Ramakrishnan <girish@forwardbias.in>
 
@@ -23,12 +23,14 @@
 #include "../util.h"
 
 #include <qpainter.h>
+#include <qpagelayout.h>
 #include <qwebengineview.h>
 #include <qwebenginepage.h>
 #include <qwebenginesettings.h>
 #include <qnetworkrequest.h>
 #include <qdiriterator.h>
 #include <qstackedlayout.h>
+#include <qtemporarydir.h>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == expect);

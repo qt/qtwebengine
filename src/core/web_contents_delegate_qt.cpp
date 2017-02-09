@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -41,6 +44,10 @@
 #include "web_contents_delegate_qt.h"
 
 #include "browser_context_adapter.h"
+#include "color_chooser_qt.h"
+#include "color_chooser_controller.h"
+#include "favicon_manager.h"
+#include "favicon_manager_p.h"
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
 #include "network_delegate_qt.h"
@@ -53,7 +60,6 @@
 
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -68,11 +74,12 @@
 #include "ui/events/latency_info.h"
 
 #include <QDesktopServices>
+#include <QTimer>
 
 namespace QtWebEngineCore {
 
 // Maps the LogSeverity defines in base/logging.h to the web engines message levels.
-static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32 messageLevel) {
+static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32_t messageLevel) {
     if (messageLevel < 1)
         return WebContentsAdapterClient::Info;
     else if (messageLevel > 1)
@@ -84,6 +91,7 @@ static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptCo
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
     , m_lastReceivedFindReply(0)
+    , m_faviconManager(new FaviconManager(new FaviconManagerPrivate(webContents, adapterClient)))
 {
     webContents->SetDelegate(this);
     Observe(webContents);
@@ -100,16 +108,19 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     Q_ASSERT(target);
 
     content::NavigationController::LoadURLParams load_url_params(params.url);
+    load_url_params.source_site_instance = params.source_site_instance;
     load_url_params.referrer = params.referrer;
     load_url_params.frame_tree_node_id = params.frame_tree_node_id;
+    load_url_params.redirect_chain = params.redirect_chain;
     load_url_params.transition_type = params.transition;
     load_url_params.extra_headers = params.extra_headers;
     load_url_params.should_replace_current_entry = params.should_replace_current_entry;
     load_url_params.is_renderer_initiated = params.is_renderer_initiated;
     load_url_params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
-
-    if (params.transferred_global_request_id != content::GlobalRequestID())
-        load_url_params.transferred_global_request_id = params.transferred_global_request_id;
+    if (params.uses_post) {
+        load_url_params.load_type = content::NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
+        load_url_params.browser_initiated_post_data = params.browser_initiated_post_data;
+    }
 
     target->GetController().LoadURLWithParams(load_url_params);
     return target;
@@ -121,6 +132,15 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
         m_viewClient->urlChanged(toQt(source->GetVisibleURL()));
     if (changed_flags & content::INVALIDATE_TYPE_TITLE)
         m_viewClient->titleChanged(toQt(source->GetTitle()));
+
+    // NavigationStateChanged gets called with INVALIDATE_TYPE_TAB by AudioStateProvider::Notify,
+    // whenever an audio sound gets played or stopped, this is the only way to actually figure out
+    // if there was a recently played audio sound.
+    // Make sure to only emit the signal when loading isn't in progress, because it causes multiple
+    // false signals to be emitted.
+    if ((changed_flags & content::INVALIDATE_TYPE_TAB) && !(changed_flags & content::INVALIDATE_TYPE_LOAD)) {
+        m_viewClient->recentlyAudibleChanged(source->WasRecentlyAudible());
+    }
 }
 
 bool WebContentsDelegateQt::ShouldPreserveAbortedURLs(content::WebContents *source)
@@ -176,8 +196,10 @@ void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrame
         m_loadingErrorFrameList.append(render_frame_host->GetRoutingID());
 
         // Trigger LoadStarted signal for main frame's error page only.
-        if (!render_frame_host->GetParent())
+        if (!render_frame_host->GetParent()) {
+            m_faviconManager->resetCandidates();
             m_viewClient->loadStarted(toQt(validated_url), true);
+        }
 
         return;
     }
@@ -186,6 +208,7 @@ void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrame
         return;
 
     m_loadingErrorFrameList.clear();
+    m_faviconManager->resetCandidates();
     m_viewClient->loadStarted(toQt(validated_url));
 }
 
@@ -217,6 +240,7 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
     if (render_frame_host->GetParent())
         return;
 
+    m_viewClient->iconChanged(QUrl());
     m_viewClient->loadFinished(false /* success */ , toQt(validated_url), false /* isErrorPage */, error_code, toQt(error_description));
     m_viewClient->loadProgressChanged(0);
 }
@@ -238,33 +262,33 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     if (render_frame_host->GetParent())
         return;
 
-    m_viewClient->loadFinished(true, toQt(validated_url));
-
-    content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
-    if (!entry)
-        return;
-    content::FaviconStatus &favicon = entry->GetFavicon();
-    if (favicon.valid)
-        m_viewClient->iconChanged(toQt(favicon.url));
-    else
+    if (!m_faviconManager->hasCandidate())
         m_viewClient->iconChanged(QUrl());
+
+    m_viewClient->loadProgressChanged(100);
+    m_viewClient->loadFinished(true, toQt(validated_url));
 }
 
-void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL>& candidates)
+void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates)
 {
-    Q_FOREACH (content::FaviconURL candidate, candidates) {
-        if (candidate.icon_type == content::FaviconURL::FAVICON && !candidate.icon_url.is_empty()) {
-            content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
-            if (!entry)
-                continue;
-            content::FaviconStatus &favicon = entry->GetFavicon();
-            favicon.url = candidate.icon_url;
-            favicon.valid = toQt(candidate.icon_url).isValid();
-            break;
-        }
+    QList<FaviconInfo> faviconCandidates;
+    faviconCandidates.reserve(static_cast<int>(candidates.size()));
+    for (const content::FaviconURL &candidate : candidates) {
+        // Store invalid candidates too for later debugging via API
+        faviconCandidates.append(toFaviconInfo(candidate));
     }
+
+    m_faviconManager->update(faviconCandidates);
 }
 
+content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion)
+{
+    Q_UNUSED(suggestion);
+    ColorChooserQt *colorChooser = new ColorChooserQt(source, toQt(color));
+    m_viewClient->showColorDialog(colorChooser->controller());
+
+    return colorChooser;
+}
 content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager(content::WebContents *)
 {
     return JavaScriptDialogManagerQt::GetInstance();
@@ -302,10 +326,14 @@ void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, c
         acceptedMimeTypes.append(toQt(*it));
 
     FilePickerController *controller = new FilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode), web_contents, toQt(params.default_file_name.value()), acceptedMimeTypes);
-    m_viewClient->runFileChooser(controller);
+
+    // Defer the call to not block base::MessageLoop::RunTask with modal dialogs.
+    QTimer::singleShot(0, [this, controller] () {
+        m_viewClient->runFileChooser(controller);
+    });
 }
 
-bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32 level, const base::string16 &message, int32 line_no, const base::string16 &source_id)
+bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)
 {
     Q_UNUSED(source)
     m_viewClient->javaScriptConsoleMessage(mapToJavascriptConsoleMessageLevel(level), toQt(message), static_cast<int>(line_no), toQt(source_id));
@@ -444,6 +472,11 @@ bool WebContentsDelegateQt::CheckMediaAccessPermission(content::WebContents *web
                   << "Unsupported media stream type checked" << type;
         return false;
     }
+}
+
+FaviconManager *WebContentsDelegateQt::faviconManager()
+{
+    return m_faviconManager.data();
 }
 
 } // namespace QtWebEngineCore

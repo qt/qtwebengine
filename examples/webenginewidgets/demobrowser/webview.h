@@ -1,12 +1,22 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** BSD License Usage
+** Alternatively, you may use this file under the terms of the BSD license
+** as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -91,7 +101,6 @@ public:
 
     void loadUrl(const QUrl &url);
     QUrl url() const;
-    QIcon icon() const;
 
     QString lastStatusBarText() const;
     inline int progress() const { return m_progress; }
@@ -102,25 +111,19 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event);
     void wheelEvent(QWheelEvent *event);
 
-signals:
-    void iconChanged();
-
 private slots:
     void setProgress(int progress);
     void loadFinished(bool success);
     void setStatusBarText(const QString &string);
     void openLinkInNewTab();
     void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature);
-    void onIconUrlChanged(const QUrl &url);
-    void iconLoaded();
+    void onIconChanged(const QIcon &icon);
 
 private:
     QString m_statusBarText;
     QUrl m_initialUrl;
     int m_progress;
     WebPage *m_page;
-    QIcon m_icon;
-    QNetworkReply *m_iconReply;
 };
 
 #endif

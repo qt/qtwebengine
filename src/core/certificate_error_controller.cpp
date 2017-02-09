@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -37,15 +40,33 @@
 #include "certificate_error_controller.h"
 #include "certificate_error_controller_p.h"
 
+#include <net/base/net_errors.h>
 #include <net/cert/x509_certificate.h>
 #include <net/ssl/ssl_info.h>
 #include <ui/base/l10n/l10n_util.h>
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "type_conversion.h"
 
 QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
+
+ASSERT_ENUMS_MATCH(CertificateErrorController::SslPinnedKeyNotInCertificateChain, net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateCommonNameInvalid, net::ERR_CERT_BEGIN)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateCommonNameInvalid, net::ERR_CERT_COMMON_NAME_INVALID)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateDateInvalid, net::ERR_CERT_DATE_INVALID)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateAuthorityInvalid, net::ERR_CERT_AUTHORITY_INVALID)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateContainsErrors, net::ERR_CERT_CONTAINS_ERRORS)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateUnableToCheckRevocation, net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateRevoked, net::ERR_CERT_REVOKED)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateInvalid, net::ERR_CERT_INVALID)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakSignatureAlgorithm, net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNonUniqueName, net::ERR_CERT_NON_UNIQUE_NAME)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakKey, net::ERR_CERT_WEAK_KEY)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNameConstraintViolation, net::ERR_CERT_NAME_CONSTRAINT_VIOLATION)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateValidityTooLong, net::ERR_CERT_VALIDITY_TOO_LONG)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateErrorEnd, net::ERR_CERT_END)
 
 void CertificateErrorControllerPrivate::accept(bool accepted)
 {
@@ -125,7 +146,7 @@ QString CertificateErrorController::errorString() const
     // formatted text.
     switch (d->certError) {
     case SslPinnedKeyNotInCertificateChain:
-        return getQStringForMessageId(IDS_ERRORPAGES_SUMMARY_PINNING_FAILURE);
+        return getQStringForMessageId(IDS_CERT_ERROR_SUMMARY_PINNING_FAILURE_DETAILS);
     case CertificateCommonNameInvalid:
         return getQStringForMessageId(IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION);
     case CertificateDateInvalid:
@@ -151,6 +172,8 @@ QString CertificateErrorController::errorString() const
         return getQStringForMessageId(IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
     case CertificateNameConstraintViolation:
         return getQStringForMessageId(IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DESCRIPTION);
+    case CertificateValidityTooLong:
+        return getQStringForMessageId(IDS_CERT_ERROR_VALIDITY_TOO_LONG_DESCRIPTION);
     case CertificateUnableToCheckRevocation: // Deprecated in Chromium.
     default:
         break;

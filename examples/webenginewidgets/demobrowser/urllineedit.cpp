@@ -1,12 +1,22 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** BSD License Usage
+** Alternatively, you may use this file under the terms of the BSD license
+** as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -271,8 +281,8 @@ void UrlLineEdit::setWebView(WebView *webView)
     m_iconLabel->m_webView = webView;
     connect(webView, SIGNAL(urlChanged(QUrl)),
         this, SLOT(webViewUrlChanged(QUrl)));
-    connect(webView, SIGNAL(iconChanged()),
-        this, SLOT(webViewIconChanged()));
+    connect(webView, SIGNAL(iconChanged(QIcon)),
+        this, SLOT(webViewIconChanged(QIcon)));
     connect(webView, SIGNAL(loadProgress(int)),
         this, SLOT(update()));
 }
@@ -283,11 +293,10 @@ void UrlLineEdit::webViewUrlChanged(const QUrl &url)
     m_lineEdit->setCursorPosition(0);
 }
 
-void UrlLineEdit::webViewIconChanged()
+void UrlLineEdit::webViewIconChanged(const QIcon &icon)
 {
     Q_ASSERT(m_webView);
-    QPixmap pixmap = m_webView->icon().pixmap(16, 16);
-    m_iconLabel->setPixmap(pixmap);
+    m_iconLabel->setPixmap(icon.pixmap(16, 16));
 }
 
 QLinearGradient UrlLineEdit::generateGradient(const QColor &color) const

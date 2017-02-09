@@ -3,6 +3,7 @@ TEMPLATE = subdirs
 SUBDIRS += \
     qwebengineaccessibility \
     qwebenginedefaultsurfaceformat \
+    qwebenginefaviconmanager \
     qwebenginepage \
     qwebenginehistory \
     qwebenginehistoryinterface \
@@ -12,7 +13,7 @@ SUBDIRS += \
     qwebenginesettings \
     qwebengineview
 
-qtHaveModule(positioning) {
-    SUBDIRS += positionplugin
-    qwebenginepage.depends = positionplugin
+# QTBUG-53135, osx does not use hunspell
+!contains(WEBENGINE_CONFIG, no_spellcheck):!osx:!cross_compile {
+    SUBDIRS += qwebenginespellcheck
 }

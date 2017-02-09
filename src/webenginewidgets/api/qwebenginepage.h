@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -44,12 +47,14 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
+#include <QtGui/qpagelayout.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE
 class QMenu;
 class QWebChannel;
+class QWebEngineContextMenuData;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
 class QWebEnginePage;
@@ -68,8 +73,13 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
     Q_PROPERTY(QString title READ title)
     Q_PROPERTY(QUrl url READ url WRITE setUrl)
-    Q_PROPERTY(QUrl iconUrl READ iconUrl)
+    Q_PROPERTY(QUrl iconUrl READ iconUrl NOTIFY iconUrlChanged)
+    Q_PROPERTY(QIcon icon READ icon NOTIFY iconChanged)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
+    Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged)
+    Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged)
+    Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged)
+    Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged)
 
 public:
     enum WebAction {
@@ -110,7 +120,9 @@ public:
         InspectElement,
         ExitFullScreen,
         RequestClose,
-
+        Unselect,
+        SavePage,
+        OpenLinkInNewBackgroundTab,
         WebActionCount
     };
 
@@ -123,7 +135,8 @@ public:
     enum WebWindowType {
         WebBrowserWindow,
         WebBrowserTab,
-        WebDialog
+        WebDialog,
+        WebBrowserBackgroundTab
     };
 
     enum PermissionPolicy {
@@ -222,23 +235,44 @@ public:
     QUrl url() const;
     QUrl requestedUrl() const;
     QUrl iconUrl() const;
+    QIcon icon() const;
 
     qreal zoomFactor() const;
     void setZoomFactor(qreal factor);
 
+    QPointF scrollPosition() const;
+    QSizeF contentsSize() const;
+
     void runJavaScript(const QString& scriptSource);
+    void runJavaScript(const QString& scriptSource, quint32 worldId);
 #ifdef Q_QDOC
     void runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback);
+    void runJavaScript(const QString& scriptSource, quint32 worldId, FunctorOrLambda resultCallback);
 #else
     void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback);
+    void runJavaScript(const QString& scriptSource, quint32 worldId, const QWebEngineCallback<const QVariant &> &resultCallback);
 #endif
     QWebEngineScriptCollection &scripts();
     QWebEngineSettings *settings() const;
 
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *);
+    void setWebChannel(QWebChannel *, uint worldId);
     QColor backgroundColor() const;
     void setBackgroundColor(const QColor &color);
+
+    bool isAudioMuted() const;
+    void setAudioMuted(bool muted);
+    bool recentlyAudible() const;
+
+    void printToPdf(const QString &filePath, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
+#ifdef Q_QDOC
+    void printToPdf(FunctorOrLambda resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
+#else
+    void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
+#endif
+
+    const QWebEngineContextMenuData &contextMenuData() const;
 
 Q_SIGNALS:
     void loadStarted();
@@ -262,8 +296,13 @@ Q_SIGNALS:
     // Ex-QWebFrame signals
     void titleChanged(const QString &title);
     void urlChanged(const QUrl &url);
-    // Was iconChanged() in QWebFrame
     void iconUrlChanged(const QUrl &url);
+    void iconChanged(const QIcon &icon);
+
+    void scrollPositionChanged(const QPointF &position);
+    void contentsSizeChanged(const QSizeF &size);
+    void audioMutedChanged(bool muted);
+    void recentlyAudibleChanged(bool recentlyAudible);
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);

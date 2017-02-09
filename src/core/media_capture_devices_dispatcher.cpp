@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -44,6 +47,7 @@
 #include "javascript_dialog_manager_qt.h"
 #include "type_conversion.h"
 #include "web_contents_view_qt.h"
+#include "web_engine_settings.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/desktop_streams_registry.h"
@@ -54,6 +58,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_manager_base.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -83,6 +88,7 @@ base::string16 getContentsUrl(content::WebContents *webContents)
   return base::UTF8ToUTF16(webContents->GetURL().GetOrigin().spec());
 }
 
+// Based on chrome/browser/media/desktop_capture_access_handler.cc:
 scoped_ptr<content::MediaStreamUI> getDevicesForDesktopCapture(content::MediaStreamDevices &devices, content::DesktopMediaID mediaId
                                                                , bool captureAudio, bool /*display_notification*/, base::string16 /*application_title*/)
 {
@@ -98,7 +104,7 @@ scoped_ptr<content::MediaStreamUI> getDevicesForDesktopCapture(content::MediaStr
         media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
   }
 
-  return ui.Pass();
+  return std::move(ui);
 }
 
 WebContentsAdapterClient::MediaRequestFlags mediaRequestFlagsForRequest(const content::MediaStreamRequest &request)
@@ -158,7 +164,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
         (request.video_type && authorizationFlags & WebContentsAdapterClient::MediaVideoCapture);
     if (securityOriginsMatch && (microphoneRequested || webcamRequested)) {
         switch (request.request_type) {
-        case content::MEDIA_OPEN_DEVICE:
+        case content::MEDIA_OPEN_DEVICE_PEPPER_ONLY:
             getDefaultDevices("", "", microphoneRequested, webcamRequested, &devices);
             break;
         case content::MEDIA_DEVICE_ACCESS:
@@ -188,7 +194,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
 
 MediaCaptureDevicesDispatcher *MediaCaptureDevicesDispatcher::GetInstance()
 {
-    return Singleton<MediaCaptureDevicesDispatcher>::get();
+    return base::Singleton<MediaCaptureDevicesDispatcher>::get();
 }
 
 MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
@@ -244,7 +250,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
   scoped_ptr<content::MediaStreamUI> ui;
 
   if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
     return;
   }
 
@@ -273,7 +279,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
 
   // Received invalid device id.
   if (mediaId.type == content::DesktopMediaID::TYPE_NONE) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
     return;
   }
 
@@ -285,7 +291,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
       devices, mediaId, capture_audio, true,
       getContentsUrl(webContents));
 
-  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, ui.Pass());
+  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, std::move(ui));
 }
 
 void MediaCaptureDevicesDispatcher::processScreenCaptureAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request
@@ -293,10 +299,10 @@ void MediaCaptureDevicesDispatcher::processScreenCaptureAccessRequest(content::W
 {
   DCHECK_EQ(request.video_type, content::MEDIA_DESKTOP_VIDEO_CAPTURE);
 
-  // FIXME: expose through the settings once we have them
-  const bool screenCaptureEnabled = !qgetenv("QT_WEBENGINE_USE_EXPERIMENTAL_SCREEN_CAPTURE").isNull();
+  WebContentsAdapterClient *adapterClient = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
+  const bool screenCaptureEnabled = adapterClient->webEngineSettings()->testAttribute(WebEngineSettings::ScreenCaptureEnabled);
 
-  const bool originIsSecure = request.security_origin.SchemeIsSecure();
+  const bool originIsSecure = content::IsOriginSecure(request.security_origin);
 
   if (screenCaptureEnabled && originIsSecure) {
 
@@ -335,7 +341,7 @@ void MediaCaptureDevicesDispatcher::handleScreenCaptureAccessRequest(content::We
     content::MediaResponseCallback callback = queue.front().callback;
     queue.pop_front();
 
-    callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, ui.Pass());
+    callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, std::move(ui));
 }
 
 void MediaCaptureDevicesDispatcher::enqueueMediaAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request

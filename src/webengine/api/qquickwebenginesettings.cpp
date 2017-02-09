@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -235,6 +238,72 @@ bool QQuickWebEngineSettings::fullScreenSupportEnabled() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::screenCaptureEnabled
+    \since QtWebEngine 1.3
+
+    Tells the web engine whether screen capture is supported in this application or not.
+
+    Disabled by default.
+*/
+bool QQuickWebEngineSettings::screenCaptureEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::ScreenCaptureEnabled);
+}
+
+/*!
+    \qmlproperty bool WebEngineSettings::webGLEnabled
+    \since QtWebEngine 1.3
+
+    Enables support for HTML 5 WebGL.
+
+    Enabled by default if available.
+*/
+bool QQuickWebEngineSettings::webGLEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::WebGLEnabled);
+}
+
+/*!
+    \qmlproperty bool WebEngineSettings::accelerated2dCanvasEnabled
+    \since QtWebEngine 1.3
+
+    Specifies whether the HTML 5 2D canvas should be a OpenGL framebuffer.
+    This makes many painting operations faster, but slows down pixel access.
+
+    Enabled by default if available.
+*/
+bool QQuickWebEngineSettings::accelerated2dCanvasEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::Accelerated2dCanvasEnabled);
+}
+
+/*!
+  \qmlproperty bool WebEngineSettings::autoLoadIconsForPage
+  \since QtWebEngine 1.3
+
+  Automatically downloads icons for web pages.
+
+  Enabled by default.
+*/
+bool QQuickWebEngineSettings::autoLoadIconsForPage() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::AutoLoadIconsForPage);
+}
+
+/*!
+  \qmlproperty bool WebEngineSettings::touchIconsEnabled
+  \since QtWebEngine 1.3
+
+  Enables support for touch icons and precomposed touch icons.
+
+  Disabled by default.
+*/
+bool QQuickWebEngineSettings::touchIconsEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::TouchIconsEnabled);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -353,6 +422,46 @@ void QQuickWebEngineSettings::setFullScreenSupportEnabled(bool on)
     d_ptr->setAttribute(WebEngineSettings::FullScreenSupportEnabled, on);
     if (wasOn != on)
         Q_EMIT fullScreenSupportEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setScreenCaptureEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::ScreenCaptureEnabled);
+    d_ptr->setAttribute(WebEngineSettings::ScreenCaptureEnabled, on);
+    if (wasOn != on)
+        Q_EMIT screenCaptureEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setWebGLEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::WebGLEnabled);
+    d_ptr->setAttribute(WebEngineSettings::WebGLEnabled, on);
+    if (wasOn != on)
+        Q_EMIT webGLEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setAccelerated2dCanvasEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::Accelerated2dCanvasEnabled);
+    d_ptr->setAttribute(WebEngineSettings::Accelerated2dCanvasEnabled, on);
+    if (wasOn != on)
+        Q_EMIT accelerated2dCanvasEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setAutoLoadIconsForPage(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AutoLoadIconsForPage);
+    d_ptr->setAttribute(WebEngineSettings::AutoLoadIconsForPage, on);
+    if (wasOn != on)
+        Q_EMIT autoLoadIconsForPageChanged();
+}
+
+void QQuickWebEngineSettings::setTouchIconsEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::TouchIconsEnabled);
+    d_ptr->setAttribute(WebEngineSettings::TouchIconsEnabled, on);
+    if (wasOn != on)
+        Q_EMIT touchIconsEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)

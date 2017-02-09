@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -130,21 +133,24 @@ bool URLRequestCustomJob::IsRedirectResponse(GURL* location, int* http_status_co
     return false;
 }
 
-bool URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize, int *bytesRead)
+int URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    Q_ASSERT(bytesRead);
     Q_ASSERT(m_shared);
     QMutexLocker lock(&m_shared->m_mutex);
+    if (m_shared->m_error)
+        return m_shared->m_error;
     qint64 rv = m_shared->m_device ? m_shared->m_device->read(buf->data(), bufSize) : -1;
-    if (rv >= 0) {
-        *bytesRead = static_cast<int>(rv);
-        return true;
-    } else {
-        NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, ERR_FAILED));
+    if (rv >= 0)
+        return static_cast<int>(rv);
+    else {
+        // QIODevice::read might have called fail on us.
+        if (m_shared->m_error)
+            return m_shared->m_error;
+        return ERR_FAILED;
     }
-    return false;
 }
+
 
 URLRequestCustomJobShared::URLRequestCustomJobShared(URLRequestCustomJob *job)
     : m_mutex(QMutex::Recursive)
@@ -223,6 +229,9 @@ void URLRequestCustomJobShared::setReplyDevice(QIODevice *device)
     if (m_device && !m_device->isReadable())
         m_device->open(QIODevice::ReadOnly);
 
+    qint64 size = m_device ? m_device->size() : -1;
+    if (size > 0)
+        m_job->set_expected_content_size(size);
     if (m_device && m_device->isReadable())
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJobShared::notifyStarted, m_weakFactory.GetWeakPtr()));
     else
@@ -261,7 +270,7 @@ void URLRequestCustomJobShared::notifyCanceled()
     if (!m_job)
         return;
     if (m_started)
-        m_job->NotifyDone(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
+        m_job->NotifyCanceled();
     else
         m_job->NotifyStartError(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
 }
@@ -279,9 +288,11 @@ void URLRequestCustomJobShared::notifyStarted()
 
 void URLRequestCustomJobShared::fail(int error)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     QMutexLocker lock(&m_mutex);
     m_error = error;
+    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO))
+        return;
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (!m_job)
         return;
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJobShared::notifyFailure, m_weakFactory.GetWeakPtr()));
@@ -295,13 +306,9 @@ void URLRequestCustomJobShared::notifyFailure()
         return;
     if (m_device)
         m_device->close();
-    const URLRequestStatus status(URLRequestStatus::FAILED, m_error);
-    const bool started = m_started;
-
-    if (started)
-        m_job->NotifyDone(status);
-    else
-        m_job->NotifyStartError(status);
+    if (!m_started)
+        m_job->NotifyStartError(URLRequestStatus::FromError(m_error));
+    // else we fail on the next read, or the read that might already be in progress
 }
 
 GURL URLRequestCustomJobShared::requestUrl()

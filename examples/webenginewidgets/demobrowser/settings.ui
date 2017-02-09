@@ -27,33 +27,13 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>4</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
        <string>General</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Home:</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1" colspan="2">
-        <widget class="QLineEdit" name="homeLineEdit"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="QPushButton" name="setHomeToCurrentPageButton">
-         <property name="text">
-          <string>Set to current page</string>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="2">
         <spacer name="horizontalSpacer">
          <property name="orientation">
@@ -67,14 +47,74 @@
          </property>
         </spacer>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_4">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Remove history items:</string>
+          <string>Home:</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
+        </widget>
+       </item>
+       <item row="0" column="1" colspan="2">
+        <widget class="QLineEdit" name="homeLineEdit"/>
+       </item>
+       <item row="7" column="1" colspan="2">
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>391</width>
+           <height>262</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Save downloads to:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Open links from applications:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1" colspan="2">
+        <widget class="QCheckBox" name="enableScrollAnimator">
+         <property name="text">
+          <string>Enable Scroll Animator</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1" colspan="2">
+        <widget class="QComboBox" name="openLinksIn">
+         <item>
+          <property name="text">
+           <string>In a tab in the current window</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>In a new window</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="2" column="1" colspan="2">
@@ -111,10 +151,10 @@
          </item>
         </widget>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_7">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Save downloads to:</string>
+          <string>Remove history items:</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -124,52 +164,44 @@
        <item row="3" column="1" colspan="2">
         <widget class="QLineEdit" name="downloadsLocation"/>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_8">
+       <item row="1" column="1">
+        <widget class="QPushButton" name="setHomeToCurrentPageButton">
          <property name="text">
-          <string>Open links from applications:</string>
+          <string>Set to current page</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_17">
+         <property name="text">
+          <string>Favicon download mode:</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="4" column="1" colspan="2">
-        <widget class="QComboBox" name="openLinksIn">
-         <item>
-          <property name="text">
-           <string>In a tab in the current window</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>In a new window</string>
-          </property>
-         </item>
-        </widget>
-       </item>
        <item row="5" column="1" colspan="2">
-        <widget class="QCheckBox" name="enableScrollAnimator">
-         <property name="text">
-          <string>Enable Scroll Animator</string>
+        <widget class="QComboBox" name="faviconDownloadMode">
+         <property name="currentIndex">
+          <number>1</number>
          </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
+         <item>
+          <property name="text">
+           <string>Disable icons</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Enable favicons</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Enable favicons and touch icons</string>
+          </property>
+         </item>
         </widget>
-       </item>
-       <item row="6" column="1" colspan="2">
-        <spacer>
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>391</width>
-           <height>262</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>

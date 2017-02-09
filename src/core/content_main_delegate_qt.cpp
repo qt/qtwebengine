@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -68,6 +71,30 @@ static base::StringPiece PlatformResourceProvider(int key) {
     return base::StringPiece();
 }
 
+// Logging logic is based on chrome/common/logging_chrome.cc:
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+static logging::LoggingDestination DetermineLogMode(const base::CommandLine& command_line)
+{
+#ifdef NDEBUG
+    bool enable_logging = false;
+    const char *kInvertLoggingSwitch = switches::kEnableLogging;
+#else
+    bool enable_logging = true;
+    const char *kInvertLoggingSwitch = switches::kDisableLogging;
+#endif
+
+    if (command_line.HasSwitch(kInvertLoggingSwitch))
+        enable_logging = !enable_logging;
+
+    if (enable_logging)
+        return logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    else
+        return logging::LOG_NONE;
+}
+
 void ContentMainDelegateQt::PreSandboxStartup()
 {
 #if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
@@ -79,18 +106,19 @@ void ContentMainDelegateQt::PreSandboxStartup()
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
     ui::ResourceBundle::InitSharedInstanceWithLocale(WebEngineLibraryInfo::getApplicationLocale(), 0, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
-    // Suppress info, warning and error messages per default.
-    int logLevel = logging::LOG_FATAL;
-
     base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
-    if (parsedCommandLine->HasSwitch(switches::kLoggingLevel)) {
-        std::string logLevelValue = parsedCommandLine->GetSwitchValueASCII(switches::kLoggingLevel);
-        int level = 0;
-        if (base::StringToInt(logLevelValue, &level) && level >= logging::LOG_INFO && level < logging::LOG_NUM_SEVERITIES)
-            logLevel = level;
-    }
+    logging::LoggingSettings settings;
+    settings.logging_dest = DetermineLogMode(*parsedCommandLine);
+    logging::InitLogging(settings);
 
-    logging::SetMinLogLevel(logLevel);
+    if (logging::GetMinLogLevel() >= logging::LOG_INFO) {
+        if (parsedCommandLine->HasSwitch(switches::kLoggingLevel)) {
+            std::string logLevelValue = parsedCommandLine->GetSwitchValueASCII(switches::kLoggingLevel);
+            int level = 0;
+            if (base::StringToInt(logLevelValue, &level) && level >= logging::LOG_INFO && level < logging::LOG_NUM_SEVERITIES)
+                logging::SetMinLogLevel(level);
+        }
+    }
 }
 
 content::ContentBrowserClient *ContentMainDelegateQt::CreateContentBrowserClient()
@@ -116,7 +144,9 @@ bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
     PathService::Override(base::DIR_QT_LIBRARY_DATA, WebEngineLibraryInfo::getPath(base::DIR_QT_LIBRARY_DATA));
 #endif
     PathService::Override(ui::DIR_LOCALES, WebEngineLibraryInfo::getPath(ui::DIR_LOCALES));
-
+#if defined(ENABLE_SPELLCHECK)
+    PathService::Override(base::DIR_APP_DICTIONARIES, WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES));
+#endif
     SetContentClient(new ContentClientQt);
     return false;
 }

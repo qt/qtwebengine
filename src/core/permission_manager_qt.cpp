@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -52,10 +55,16 @@ BrowserContextAdapter::PermissionType toQt(content::PermissionType type)
     switch (type) {
     case content::PermissionType::GEOLOCATION:
         return BrowserContextAdapter::GeolocationPermission;
+    case content::PermissionType::AUDIO_CAPTURE:
+        return BrowserContextAdapter::AudioCapturePermission;
+    case content::PermissionType::VIDEO_CAPTURE:
+        return BrowserContextAdapter::VideoCapturePermission;
     case content::PermissionType::NOTIFICATIONS:
     case content::PermissionType::MIDI_SYSEX:
     case content::PermissionType::PUSH_MESSAGING:
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case content::PermissionType::MIDI:
+    case content::PermissionType::DURABLE_STORAGE:
     case content::PermissionType::NUM:
         break;
     }
@@ -63,7 +72,8 @@ BrowserContextAdapter::PermissionType toQt(content::PermissionType type)
 }
 
 PermissionManagerQt::PermissionManagerQt()
-    : m_subscriberCount(0)
+    : m_requestIdCount(0)
+    , m_subscriberIdCount(0)
 {
 }
 
@@ -84,7 +94,7 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &origin, BrowserCont
         } else
             ++it;
     }
-    Q_FOREACH (const Subscriber &subscriber, m_subscribers) {
+    Q_FOREACH (const RequestOrSubscription &subscriber, m_subscribers) {
         if (subscriber.origin == origin && subscriber.type == type)
             subscriber.callback.Run(status);
     }
@@ -96,54 +106,70 @@ bool PermissionManagerQt::checkPermission(const QUrl &origin, BrowserContextAdap
     return m_permissions.contains(key) && m_permissions[key];
 }
 
-void PermissionManagerQt::RequestPermission(content::PermissionType permission,
+int PermissionManagerQt::RequestPermission(content::PermissionType permission,
                                             content::RenderFrameHost *frameHost,
-                                            int request_id,
                                             const GURL& requesting_origin,
                                             bool user_gesture,
                                             const base::Callback<void(content::PermissionStatus)>& callback)
 {
     Q_UNUSED(user_gesture);
+    int request_id = ++m_requestIdCount;
     BrowserContextAdapter::PermissionType permissionType = toQt(permission);
     if (permissionType == BrowserContextAdapter::UnsupportedPermission) {
         callback.Run(content::PERMISSION_STATUS_DENIED);
-        return;
+        return kNoPendingOperation;
     }
+    // Audio and video-capture should not come this way currently
+    Q_ASSERT(permissionType != BrowserContextAdapter::AudioCapturePermission
+          && permissionType != BrowserContextAdapter::VideoCapturePermission);
 
     content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents();
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
     Q_ASSERT(contentsDelegate);
-    Request request = {
-        request_id,
+    RequestOrSubscription request = {
         permissionType,
         toQt(requesting_origin),
         callback
     };
-    m_requests.append(request);
+    m_requests.insert(request_id, request);
     if (permissionType == BrowserContextAdapter::GeolocationPermission)
         contentsDelegate->requestGeolocationPermission(request.origin);
+    return request_id;
 }
 
-void PermissionManagerQt::CancelPermissionRequest(content::PermissionType permission,
-                                                  content::RenderFrameHost *frameHost,
-                                                  int request_id,
-                                                  const GURL& requesting_origin)
+int PermissionManagerQt::RequestPermissions(const std::vector<content::PermissionType>& permissions,
+                                            content::RenderFrameHost* frameHost,
+                                            const GURL& requesting_origin,
+                                            bool user_gesture,
+                                            const base::Callback<void(const std::vector<content::PermissionStatus>&)>& callback)
 {
+    NOTIMPLEMENTED() << "RequestPermissions has not been implemented in QtWebEngine";
+    Q_UNUSED(user_gesture);
     Q_UNUSED(frameHost);
-    const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
-    if (permissionType == BrowserContextAdapter::UnsupportedPermission)
-        return;
 
-    // Should we add API to cancel permissions in the UI level?
-    const QUrl origin = toQt(requesting_origin);
-    auto it = m_requests.begin();
-    while (it != m_requests.end()) {
-        if (it->id == request_id && it->type == permissionType && it->origin == origin) {
-            m_requests.erase(it);
-            return;
+    std::vector<content::PermissionStatus> result(permissions.size());
+    for (content::PermissionType permission : permissions) {
+        const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
+        if (permissionType == BrowserContextAdapter::UnsupportedPermission)
+            result.push_back(content::PERMISSION_STATUS_DENIED);
+        else {
+            QPair<QUrl, BrowserContextAdapter::PermissionType> key(toQt(requesting_origin), permissionType);
+            // TODO: Request permission from UI
+            if (m_permissions.contains(key) && m_permissions[key])
+                result.push_back(content::PERMISSION_STATUS_GRANTED);
+            else
+                result.push_back(content::PERMISSION_STATUS_DENIED);
         }
     }
-    qWarning() << "PermissionManagerQt::CancelPermissionRequest called on unknown request" << request_id << origin << permissionType;
+
+    callback.Run(result);
+    return kNoPendingOperation;
+}
+
+void PermissionManagerQt::CancelPermissionRequest(int request_id)
+{
+    // Should we add API to cancel permissions in the UI level?
+    m_requests.remove(request_id);
 }
 
 content::PermissionStatus PermissionManagerQt::GetPermissionStatus(
@@ -190,25 +216,20 @@ int PermissionManagerQt::SubscribePermissionStatusChange(
     const GURL& /*embedding_origin*/,
     const base::Callback<void(content::PermissionStatus)>& callback)
 {
-    Subscriber subscriber = {
-        m_subscriberCount++,
+    int subscriber_id = ++m_subscriberIdCount;
+    RequestOrSubscription subscriber = {
         toQt(permission),
         toQt(requesting_origin),
         callback
     };
-    m_subscribers.append(subscriber);
-    return subscriber.id;
+    m_subscribers.insert(subscriber_id, subscriber);
+    return subscriber_id;
 }
 
 void PermissionManagerQt::UnsubscribePermissionStatusChange(int subscription_id)
 {
-    for (int i = 0; i < m_subscribers.count(); i++) {
-        if (m_subscribers[i].id == subscription_id) {
-            m_subscribers.removeAt(i);
-            return;
-        }
-    }
-    qWarning() << "PermissionManagerQt::UnsubscribePermissionStatusChange called on unknown subscription id" << subscription_id;
+    if (!m_subscribers.remove(subscription_id))
+        qWarning() << "PermissionManagerQt::UnsubscribePermissionStatusChange called on unknown subscription id" << subscription_id;
 }
 
 } // namespace QtWebEngineCore

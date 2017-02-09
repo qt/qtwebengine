@@ -17,7 +17,7 @@ defineReplace(mocAction) {
     MOC_COMMAND = $$clean_path($$mocCmdBase())
     MOC_COMMAND = $$replace(MOC_COMMAND, $$re_escape("$(DEFINES)"), $$DEFINES_LIST)
     MOC_COMMAND = $$replace(MOC_COMMAND, $$re_escape("$(INCPATH)"), $$INCPATH)
-    MOC_COMMAND = $$split(MOC_COMMAND, " ")
+    MOC_COMMAND = $$eval($$list($$MOC_COMMAND))
     OUTPUT_FILE = $$MOC_GEN_DIR/$${OUTPUT_NAME}
     contents = "      {" \
                "        'action_name':'$$OUTPUT_NAME'," \

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -36,6 +39,8 @@
 
 #include "qquickwebenginehistory_p.h"
 #include "qquickwebenginehistory_p_p.h"
+
+#include "qquickwebenginefaviconprovider_p_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebengineview_p_p.h"
 #include "web_contents_adapter.h"
@@ -130,8 +135,9 @@ int QQuickWebEngineForwardHistoryListModelPrivate::offsetForIndex(int index) con
 
     \brief A data model that represents the history of a web engine page.
 
-    The WebEngineHistoryListModel type exposes the \e title, \e url, and \e offset roles. The
-    \e title and \e url specify the title and URL of the visited page. The \e offset specifies
+    The WebEngineHistoryListModel type exposes the \e title, \e url, \e icon, and \e offset roles.
+    The \e title, \e url and \e icon specify the title, URL, and favicon of the visited page.
+    The \e offset specifies
     the position of the page in respect to the current page (0). A positive number indicates that
     the page was visited after the current page, whereas a negative number indicates that the page
     was visited before the current page.
@@ -163,6 +169,7 @@ QHash<int, QByteArray> QQuickWebEngineHistoryListModel::roleNames() const
     roles[QQuickWebEngineHistory::UrlRole] = "url";
     roles[QQuickWebEngineHistory::TitleRole] = "title";
     roles[QQuickWebEngineHistory::OffsetRole] = "offset";
+    roles[QQuickWebEngineHistory::IconUrlRole] = "icon";
     return roles;
 }
 
@@ -180,7 +187,7 @@ QVariant QQuickWebEngineHistoryListModel::data(const QModelIndex &index, int rol
     if (!index.isValid())
         return QVariant();
 
-    if (role < QQuickWebEngineHistory::UrlRole || role > QQuickWebEngineHistory::OffsetRole)
+    if (role < QQuickWebEngineHistory::UrlRole || role > QQuickWebEngineHistory::IconUrlRole)
         return QVariant();
 
     if (role == QQuickWebEngineHistory::UrlRole)
@@ -191,6 +198,12 @@ QVariant QQuickWebEngineHistoryListModel::data(const QModelIndex &index, int rol
 
     if (role == QQuickWebEngineHistory::OffsetRole)
         return d->offsetForIndex(index.row());
+
+    if (role == QQuickWebEngineHistory::IconUrlRole) {
+        QUrl iconUrl = QUrl(d->adapter()->getNavigationEntryIconUrl(d->index(index.row())));
+        return QQuickWebEngineFaviconProvider::faviconProviderUrl(iconUrl);
+    }
+
     return QVariant();
 }
 
@@ -250,7 +263,8 @@ QQuickWebEngineHistoryPrivate::~QQuickWebEngineHistoryPrivate()
     format of the list items. The appearance of each item of the list in the delegate can be defined
     separately (it is not web engine specific).
 
-    The model roles \e title and \e url specify the title and URL of the visited page. The \e offset
+    The model roles \e title, \e url, and \e icon specify the title, URL, and favicon of the
+    visited page. The \e offset
     role specifies the position of the page in respect to the current page (0). A positive number
     indicates that the page was visited after the current page, whereas a negative number indicates
     that the page was visited before the current page.

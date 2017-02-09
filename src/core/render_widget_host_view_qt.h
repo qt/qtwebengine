@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -132,22 +135,26 @@ public:
     virtual void MovePluginWindows(const std::vector<content::WebPluginGeometry>&) Q_DECL_OVERRIDE;
     virtual void UpdateCursor(const content::WebCursor&) Q_DECL_OVERRIDE;
     virtual void SetIsLoading(bool) Q_DECL_OVERRIDE;
-    virtual void TextInputTypeChanged(ui::TextInputType type, ui::TextInputMode mode, bool can_compose_inline, int flags) Q_DECL_OVERRIDE;
+    virtual void TextInputStateChanged(const ViewHostMsg_TextInputState_Params&) Q_DECL_OVERRIDE;
     virtual void ImeCancelComposition() Q_DECL_OVERRIDE;
     virtual void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) Q_DECL_OVERRIDE;
     virtual void RenderProcessGone(base::TerminationStatus, int) Q_DECL_OVERRIDE;
     virtual void Destroy() Q_DECL_OVERRIDE;
     virtual void SetTooltipText(const base::string16 &tooltip_text) Q_DECL_OVERRIDE;
     virtual void SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&) Q_DECL_OVERRIDE;
-    virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, content::ReadbackRequestCallback& callback, const SkColorType color_type) Q_DECL_OVERRIDE;
-    virtual void CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback) Q_DECL_OVERRIDE;
+    virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, const content::ReadbackRequestCallback& callback, const SkColorType preferred_color_type) Q_DECL_OVERRIDE;
+    virtual void CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(const gfx::Rect&, bool)>& callback) Q_DECL_OVERRIDE;
+
     virtual bool CanCopyToVideoFrame() const Q_DECL_OVERRIDE;
     virtual bool HasAcceleratedSurface(const gfx::Size&) Q_DECL_OVERRIDE;
-    virtual void OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) Q_DECL_OVERRIDE;
+    virtual void OnSwapCompositorFrame(uint32_t output_surface_id, scoped_ptr<cc::CompositorFrame> frame) Q_DECL_OVERRIDE;
     virtual void GetScreenInfo(blink::WebScreenInfo* results) Q_DECL_OVERRIDE;
     virtual gfx::Rect GetBoundsInRootWindow() Q_DECL_OVERRIDE;
-    virtual gfx::GLSurfaceHandle GetCompositingSurface() Q_DECL_OVERRIDE;
     virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) Q_DECL_OVERRIDE;
+    virtual void ClearCompositorFrame() Q_DECL_OVERRIDE;
+    virtual bool GetScreenColorProfile(std::vector<char>*) Q_DECL_OVERRIDE;
+    virtual void LockCompositingSurface() Q_DECL_OVERRIDE;
+    virtual void UnlockCompositingSurface() Q_DECL_OVERRIDE;
 
     // Overridden from RenderWidgetHostViewBase.
     virtual void SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range) Q_DECL_OVERRIDE;
@@ -202,6 +209,8 @@ public:
 #endif // QT_NO_ACCESSIBILITY
     void didFirstVisuallyNonEmptyLayout();
 
+    gfx::SizeF lastContentsSize() const { return m_lastContentsSize; }
+
 private:
     void sendDelegatedFrameAck();
     void processMotionEvent(const ui::MotionEvent &motionEvent);
@@ -224,7 +233,7 @@ private:
     cc::ReturnedResourceArray m_resourcesToRelease;
     bool m_needsDelegatedFrameAck;
     bool m_didFirstVisuallyNonEmptyLayout;
-    uint32 m_pendingOutputSurfaceId;
+    uint32_t m_pendingOutputSurfaceId;
 
     QMetaObject::Connection m_adapterClientDestroyedConnection;
     WebContentsAdapterClient *m_adapterClient;
@@ -241,6 +250,7 @@ private:
     bool m_initPending;
 
     gfx::Vector2dF m_lastScrollOffset;
+    gfx::SizeF m_lastContentsSize;
 };
 
 } // namespace QtWebEngineCore

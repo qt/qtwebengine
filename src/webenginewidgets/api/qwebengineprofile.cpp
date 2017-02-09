@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -45,10 +48,16 @@
 #include "qwebenginescriptcollection_p.h"
 
 #include "browser_context_adapter.h"
+#include <qtwebenginecoreglobal.h>
 #include "web_engine_visited_links_manager.h"
 #include "web_engine_settings.h"
 
 QT_BEGIN_NAMESPACE
+
+ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::UnknownSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::UnknownSavePageFormat)
+ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::SingleHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::SingleHtmlSaveFormat)
+ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::CompleteHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::CompleteHtmlSaveFormat)
+ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::MimeHtmlSaveFormat)
 
 using QtWebEngineCore::BrowserContextAdapter;
 
@@ -97,6 +106,7 @@ using QtWebEngineCore::BrowserContextAdapter;
     \value MemoryHttpCache Use an in-memory cache. This is the only setting possible if
     \c off-the-record is set or no cache path is available.
     \value DiskHttpCache Use a disk cache. This is the default.
+    \value NoCache Disable both in-memory and disk caching. (Added in Qt 5.7)
 */
 
 /*!
@@ -132,7 +142,7 @@ using QtWebEngineCore::BrowserContextAdapter;
 
 QWebEngineProfilePrivate::QWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter> browserContext)
         : m_settings(new QWebEngineSettings())
-        , m_scriptCollection(new QWebEngineScriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userScriptController())))
+        , m_scriptCollection(new QWebEngineScriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userResourceController())))
         , m_browserContextRef(browserContext)
 {
     m_browserContextRef->addClient(this);
@@ -173,6 +183,7 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->downloadState = QWebEngineDownloadItem::DownloadRequested;
     itemPrivate->downloadPath = info.path;
     itemPrivate->mimeType = info.mimeType;
+    itemPrivate->savePageFormat = static_cast<QWebEngineDownloadItem::SavePageFormat>(info.savePageFormat);
 
     QWebEngineDownloadItem *download = new QWebEngineDownloadItem(itemPrivate, q);
 
@@ -183,6 +194,8 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     QWebEngineDownloadItem::DownloadState state = download->state();
 
     info.path = download->path();
+    info.savePageFormat = static_cast<QtWebEngineCore::BrowserContextAdapterClient::SavePageFormat>(
+                download->savePageFormat());
     info.accepted = state != QWebEngineDownloadItem::DownloadCancelled;
 
     if (state == QWebEngineDownloadItem::DownloadRequested) {
@@ -643,6 +656,17 @@ void QWebEngineProfile::removeAllUrlSchemeHandlers()
 void QWebEngineProfile::destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *obj)
 {
     removeUrlSchemeHandler(obj);
+}
+
+/*!
+    \since 5.7
+
+    Removes the profile's cache entries.
+*/
+void QWebEngineProfile::clearHttpCache()
+{
+    Q_D(QWebEngineProfile);
+    d->browserContext()->clearHttpCache();
 }
 
 QT_END_NAMESPACE

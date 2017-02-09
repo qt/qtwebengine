@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -72,9 +75,13 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool hyperlinkAuditingEnabled READ hyperlinkAuditingEnabled WRITE setHyperlinkAuditingEnabled NOTIFY hyperlinkAuditingEnabledChanged)
     Q_PROPERTY(bool errorPageEnabled READ errorPageEnabled WRITE setErrorPageEnabled NOTIFY errorPageEnabledChanged)
     Q_PROPERTY(bool pluginsEnabled READ pluginsEnabled WRITE setPluginsEnabled NOTIFY pluginsEnabledChanged)
-    // FIXME(QTBUG-40043): Mark fullScreenSupportEnabled with REVISION 1
-    Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged)
+    Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged REVISION 1)
     Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged)
+    Q_PROPERTY(bool screenCaptureEnabled READ screenCaptureEnabled WRITE setScreenCaptureEnabled NOTIFY screenCaptureEnabledChanged REVISION 2)
+    Q_PROPERTY(bool webGLEnabled READ webGLEnabled WRITE setWebGLEnabled NOTIFY webGLEnabledChanged REVISION 2)
+    Q_PROPERTY(bool accelerated2dCanvasEnabled READ accelerated2dCanvasEnabled WRITE setAccelerated2dCanvasEnabled NOTIFY accelerated2dCanvasEnabledChanged REVISION 2)
+    Q_PROPERTY(bool autoLoadIconsForPage READ autoLoadIconsForPage WRITE setAutoLoadIconsForPage NOTIFY autoLoadIconsForPageChanged REVISION 2)
+    Q_PROPERTY(bool touchIconsEnabled READ touchIconsEnabled WRITE setTouchIconsEnabled NOTIFY touchIconsEnabledChanged REVISION 2)
 
 public:
     ~QQuickWebEngineSettings();
@@ -93,6 +100,11 @@ public:
     bool pluginsEnabled() const;
     bool fullScreenSupportEnabled() const;
     QString defaultTextEncoding() const;
+    bool screenCaptureEnabled() const;
+    bool webGLEnabled() const;
+    bool accelerated2dCanvasEnabled() const;
+    bool autoLoadIconsForPage() const;
+    bool touchIconsEnabled() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -108,6 +120,11 @@ public:
     void setPluginsEnabled(bool on);
     void setFullScreenSupportEnabled(bool on);
     void setDefaultTextEncoding(QString encoding);
+    void setScreenCaptureEnabled(bool on);
+    void setWebGLEnabled(bool on);
+    void setAccelerated2dCanvasEnabled(bool on);
+    void setAutoLoadIconsForPage(bool on);
+    void setTouchIconsEnabled(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -122,9 +139,13 @@ signals:
     void hyperlinkAuditingEnabledChanged();
     void errorPageEnabledChanged();
     void pluginsEnabledChanged();
-    // FIXME(QTBUG-40043): Mark fullScreenSupportEnabledChanged with Q_REVISION(1)
-    void fullScreenSupportEnabledChanged();
+    Q_REVISION(1) void fullScreenSupportEnabledChanged();
     void defaultTextEncodingChanged();
+    Q_REVISION(2) void screenCaptureEnabledChanged();
+    Q_REVISION(2) void webGLEnabledChanged();
+    Q_REVISION(2) void accelerated2dCanvasEnabledChanged();
+    Q_REVISION(2) void autoLoadIconsForPageChanged();
+    Q_REVISION(2) void touchIconsEnabledChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);

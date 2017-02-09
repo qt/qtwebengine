@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -57,84 +60,6 @@ namespace content {
 BrowserAccessibilityQt::BrowserAccessibilityQt()
 {
     QAccessible::registerAccessibleInterface(this);
-}
-
-// This function is taken from chromium/content/browser/accessibility/browser_accessibility_win.cc
-// see also http://www.w3.org/TR/html-aapi
-void BrowserAccessibilityQt::OnDataChanged()
-{
-    BrowserAccessibility::OnDataChanged();
-
-    // The calculation of the accessible name of an element has been
-    // standardized in the HTML to Platform Accessibility APIs Implementation
-    // Guide (http://www.w3.org/TR/html-aapi/). In order to return the
-    // appropriate accessible name on Windows, we need to apply some logic
-    // to the fields we get from WebKit.
-    //
-    // TODO(dmazzoni): move most of this logic into WebKit.
-    //
-    // WebKit gives us:
-    //
-    //   name: the default name, e.g. inner text
-    //   title ui element: a reference to a <label> element on the same
-    //       page that labels this node.
-    //   description: accessible labels that override the default name:
-    //       aria-label or aria-labelledby or aria-describedby
-    //   help: the value of the "title" attribute
-    //
-    // On Windows, the logic we apply lets some fields take precedence and
-    // always returns the primary name in "name" and the secondary name,
-    // if any, in "description".
-
-    int title_elem_id = GetIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT);
-    base::string16 name = GetString16Attribute(ui::AX_ATTR_NAME);
-    base::string16 description = GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
-    base::string16 help = GetString16Attribute(ui::AX_ATTR_HELP);
-    base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
-
-    // WebKit annoyingly puts the title in the description if there's no other
-    // description, which just confuses the rest of the logic. Put it back.
-    // Now "help" is always the value of the "title" attribute, if present.
-    base::string16 title_attr;
-    if (GetHtmlAttribute("title", &title_attr) &&
-        description == title_attr &&
-        help.empty()) {
-        help = description;
-        description.clear();
-    }
-
-    // Now implement the main logic: the descripion should become the name if
-    // it's nonempty, and the help should become the description if
-    // there's no description - or the name if there's no name or description.
-    if (!description.empty()) {
-        name = description;
-        description.clear();
-    }
-    if (!help.empty() && description.empty()) {
-        description = help;
-        help.clear();
-    }
-    if (!description.empty() && name.empty() && !title_elem_id) {
-        name = description;
-        description.clear();
-    }
-
-    // If it's a text field, also consider the placeholder.
-    base::string16 placeholder;
-    if (GetRole() == ui::AX_ROLE_TEXT_FIELD &&
-        HasState(ui::AX_STATE_FOCUSABLE) &&
-        GetHtmlAttribute("placeholder", &placeholder)) {
-        if (name.empty() && !title_elem_id) {
-            name = placeholder;
-        } else if (description.empty()) {
-            description = placeholder;
-        }
-    }
-
-    m_name = toQt(name);
-    m_description = toQt(description);
-    m_help = toQt(help);
-    m_value = toQt(value);
 }
 
 bool BrowserAccessibilityQt::isValid() const
@@ -166,7 +91,7 @@ void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
             return static_cast<QAccessibleActionInterface*>(this);
         break;
     case QAccessible::TextInterface:
-        if (IsEditableText())
+        if (HasState(ui::AX_STATE_EDITABLE))
             return static_cast<QAccessibleTextInterface*>(this);
         break;
     case QAccessible::ValueInterface: {
@@ -229,13 +154,11 @@ QString BrowserAccessibilityQt::text(QAccessible::Text t) const
 {
     switch (t) {
     case QAccessible::Name:
-        return name();
+        return toQt(GetStringAttribute(ui::AX_ATTR_NAME));
     case QAccessible::Description:
-        return description();
-    case QAccessible::Help:
-        return help();
+        return toQt(GetStringAttribute(ui::AX_ATTR_DESCRIPTION));
     case QAccessible::Value:
-        return value();
+        return toQt(GetStringAttribute(ui::AX_ATTR_VALUE));
     case QAccessible::Accelerator:
         return toQt(GetStringAttribute(ui::AX_ATTR_SHORTCUT));
     default:
@@ -482,7 +405,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
 QAccessible::State BrowserAccessibilityQt::state() const
 {
     QAccessible::State state = QAccessible::State();
-    int32 s = GetState();
+    int32_t s = GetState();
     if (s & (1 << ui::AX_STATE_BUSY))
         state.busy = true;
     if (s & (1 << ui::AX_STATE_CHECKED))
@@ -501,8 +424,6 @@ QAccessible::State BrowserAccessibilityQt::state() const
         state.hasPopup = true;
     if (s & (1 << ui::AX_STATE_HOVERED))
         state.hotTracked = true;
-    if (s & (1 << ui::AX_STATE_INDETERMINATE))
-    {} // FIXME
     if (s & (1 << ui::AX_STATE_INVISIBLE))
         state.invisible = true;
     if (s & (1 << ui::AX_STATE_LINKED))
@@ -527,7 +448,7 @@ QAccessible::State BrowserAccessibilityQt::state() const
     {} // FIXME
     if (s & (1 << ui::AX_STATE_VISITED))
     {} // FIXME
-    if (IsEditableText())
+    if (HasState(ui::AX_STATE_EDITABLE))
         state.editable = true;
     return state;
 }
@@ -710,7 +631,7 @@ QAccessibleInterface *BrowserAccessibilityQt::cellAt(int row, int column) const
     if (row < 0 || row >= rows || column < 0 || column >= columns)
       return 0;
 
-    const std::vector<int32>& cell_ids = GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
+    const std::vector<int32_t>& cell_ids = GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
     DCHECK_EQ(columns * rows, static_cast<int>(cell_ids.size()));
 
     int cell_id = cell_ids[row * columns + column];

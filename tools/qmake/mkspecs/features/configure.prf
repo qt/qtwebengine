@@ -39,12 +39,18 @@ defineTest(runConfigure) {
         else: log("System libwebp or libwebpdemux not found. Using Chromium's copies.$${EOL}")
         packagesExist(libxml-2.0,libxslt): WEBENGINE_CONFIG += use_system_libxslt
         else: log("System libxml2 or libxslt not found. Using Chromium's copies.$${EOL}")
-        for(package, $$list("libevent jsoncpp opus")) {
+        for(package, $$list("libevent jsoncpp opus protobuf")) {
             packagesExist($$package): WEBENGINE_CONFIG += use_system_$$package
             else: log("System $$package not found. Using Chromium's copy.$${EOL}")
         }
-        packagesExist("\'vpx >= 1.4\'"): WEBENGINE_CONFIG += use_system_vpx
-        else: log("System vpx >= 1.4 not found. Using Chromium's copy.$${EOL}")
+        use?(system_protobuf) {
+            !system("which protoc > /dev/null") {
+                log("Protobuf compiler not found. Using Chromium's copy of protobuf.$${EOL}")
+                WEBENGINE_CONFIG -= use_system_protobuf
+            }
+        }
+        config_libvpx: WEBENGINE_CONFIG += use_system_vpx
+        else: log("Compatible system libvpx not found. Using Chromium's copy.$${EOL}")
         config_srtp: WEBENGINE_CONFIG += use_system_libsrtp
         else: log("System libsrtp not found. Using Chromium's copy.$${EOL}")
         config_snappy: WEBENGINE_CONFIG += use_system_snappy
@@ -56,6 +62,9 @@ defineTest(runConfigure) {
         }
     }
 
+    # Spellcheck support is moved to dev
+    WEBENGINE_CONFIG += no_spellcheck
+
     isEmpty(skipBuildReason): {
         cache(CONFIG, add, $$list(webengine_successfully_configured))
         !isEmpty(WEBENGINE_CONFIG) {
@@ -63,6 +72,7 @@ defineTest(runConfigure) {
             export(WEBENGINE_CONFIG)
         }
     }
+
 }
 
 # This is called from default_post, at which point we've also parsed
@@ -109,6 +119,16 @@ defineTest(finalizeConfigure) {
         log("Geolocation....................... Enabled$${EOL}")
     } else {
         log("Geolocation....................... Not enabled         (Requires Qt Positioning module)$${EOL}")
+    }
+    osx {
+        use?(appstore_compliant_code) {
+            log("AppStore Compliant ............... Enabled$${EOL}")
+        } else {
+            log("AppStore Compliant ............... Not enabled         (Default, enable with WEBENGINE_CONFIG+=use_appstore_compliant_code)$${EOL}")
+        }
+        !isMinOSXSDKVersion(10, 10, 3) {
+            log("Force Touch API usage ............ Not enabled         (Because the OS X SDK version to be used \"$${WEBENGINE_OSX_SDK_PRODUCT_VERSION}\" is lower than the required \"10.10.3\")$${EOL}")
+        }
     }
 }
 

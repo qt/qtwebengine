@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -54,7 +57,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/bind.h"
 #include "cc/output/delegated_frame_data.h"
-#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
@@ -65,6 +67,10 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "content/common/host_shared_bitmap_manager.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_fence.h"
+
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QSGSimpleRectNode>
@@ -392,7 +398,6 @@ cc::ReturnedResource ResourceHolder::returnResource()
     // ack directly from our rendering thread. At this point (in updatePaintNode) we know that
     // a frame that was compositing any of those resources has already been swapped and we thus
     // don't need to use this mechanism.
-    returned.sync_point = 0;
     returned.id = m_resource.id;
     returned.count = m_importCount;
     m_importCount = 0;
@@ -449,96 +454,8 @@ void DelegatedFrameNode::preprocess()
             mailboxesToFetch.append(static_cast<MailboxTexture *>((*it)->texture()));
     }
 
-    if (!mailboxesToFetch.isEmpty()) {
-        QMap<uint32, gfx::TransferableFence> transferredFences;
-        {
-            QMutexLocker lock(&m_mutex);
-            base::MessageLoop *gpuMessageLoop = gpu_message_loop();
-            gpu::SyncPointManager *syncPointManager = sync_point_manager();
-
-            Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
-                m_numPendingSyncPoints++;
-                AddSyncPointCallbackOnGpuThread(gpuMessageLoop, syncPointManager, mailboxTexture->mailboxHolder().sync_point, base::Bind(&DelegatedFrameNode::syncPointRetired, this, &mailboxesToFetch));
-            }
-
-            m_mailboxesFetchedWaitCond.wait(&m_mutex);
-            m_mailboxGLFences.swap(transferredFences);
-        }
-
-#if defined(USE_X11)
-        // Workaround when context is not shared QTBUG-48969
-        // Make slow copy between two contexts.
-        if (!m_contextShared) {
-            QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
-            QOpenGLContext *sharedContext = qt_gl_global_share_context();
-
-            QSurface *surface = currentContext->surface();
-            Q_ASSERT(m_offsurface);
-            sharedContext->makeCurrent(m_offsurface.data());
-            QOpenGLFunctions *funcs = sharedContext->functions();
-
-            GLuint fbo = 0;
-            funcs->glGenFramebuffers(1, &fbo);
-
-            Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
-                gfx::TransferableFence fence = transferredFences.take(mailboxTexture->mailboxHolder().sync_point);
-                waitChromiumSync(&fence);
-                deleteChromiumSync(&fence);
-
-                // Read texture into QImage from shared context.
-                // Switch to shared context.
-                sharedContext->makeCurrent(m_offsurface.data());
-                funcs = sharedContext->functions();
-                QImage img(mailboxTexture->textureSize(), QImage::Format_RGBA8888_Premultiplied);
-                funcs->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-                funcs->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mailboxTexture->m_textureId, 0);
-                GLenum status = funcs->glCheckFramebufferStatus(GL_FRAMEBUFFER);
-                if (status != GL_FRAMEBUFFER_COMPLETE) {
-                    qWarning("fbo error, skipping slow copy...");
-                    continue;
-                }
-                funcs->glReadPixels(0, 0, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(),
-                                    GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
-
-                // Restore current context.
-                // Create texture from QImage in current context.
-                currentContext->makeCurrent(surface);
-                GLuint texture = 0;
-                funcs = currentContext->functions();
-                funcs->glGenTextures(1, &texture);
-                funcs->glBindTexture(GL_TEXTURE_2D, texture);
-                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(), 0,
-                                    GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
-                mailboxTexture->m_textureId = texture;
-                mailboxTexture->m_ownsTexture = true;
-            }
-            // Cleanup allocated resources
-            sharedContext->makeCurrent(m_offsurface.data());
-            funcs = sharedContext->functions();
-            funcs->glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            funcs->glDeleteFramebuffers(1, &fbo);
-            currentContext->makeCurrent(surface);
-        } else
-#endif
-        {
-            // Tell GL to wait until Chromium is done generating resource textures on the GPU thread
-            // for each mailbox. We can safely start referencing those textures onto geometries afterward.
-            Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
-                gfx::TransferableFence fence = transferredFences.take(mailboxTexture->mailboxHolder().sync_point);
-                waitChromiumSync(&fence);
-                deleteChromiumSync(&fence);
-            }
-        }
-        // We transferred all sync point fences from Chromium,
-        // destroy all the ones not referenced by one of our mailboxes without waiting.
-        QMap<uint32, gfx::TransferableFence>::iterator end = transferredFences.end();
-        for (QMap<uint32, gfx::TransferableFence>::iterator it = transferredFences.begin(); it != end; ++it)
-            deleteChromiumSync(&*it);
-    }
+    if (!mailboxesToFetch.isEmpty())
+        fetchAndSyncMailboxes(mailboxesToFetch);
 
     // Then render any intermediate RenderPass in order.
     typedef QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > Pair;
@@ -612,10 +529,10 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
     // parent, with the last one in the list being the root RenderPass, the one
     // that we displayed to the user.
     // All RenderPasses except the last one are rendered to an FBO.
-    cc::RenderPass *rootRenderPass = frameData->render_pass_list.back();
+    cc::RenderPass *rootRenderPass = frameData->render_pass_list.back().get();
 
     for (unsigned i = 0; i < frameData->render_pass_list.size(); ++i) {
-        cc::RenderPass *pass = frameData->render_pass_list.at(i);
+        cc::RenderPass *pass = frameData->render_pass_list.at(i).get();
 
         QSGNode *renderPassParent = 0;
         if (pass != rootRenderPass) {
@@ -652,15 +569,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
             }
 
             switch (quad->material) {
-            case cc::DrawQuad::CHECKERBOARD: {
-                const cc::CheckerboardDrawQuad *cbquad = cc::CheckerboardDrawQuad::MaterialCast(quad);
-                QSGSimpleRectNode *rectangleNode = new QSGSimpleRectNode;
-
-                rectangleNode->setRect(toQt(quad->rect));
-                rectangleNode->setColor(toQt(cbquad->color));
-                currentLayerChain->appendChildNode(rectangleNode);
-                break;
-            } case cc::DrawQuad::RENDER_PASS: {
+            case cc::DrawQuad::RENDER_PASS: {
                 const cc::RenderPassDrawQuad *renderPassQuad = cc::RenderPassDrawQuad::MaterialCast(quad);
                 QSGTexture *layer = findRenderPassLayer(renderPassQuad->render_pass_id, m_sgObjects.renderPassLayers).data();
                 // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes.
@@ -816,36 +725,129 @@ QSGTexture *DelegatedFrameNode::initAndHoldTexture(ResourceHolder *resource, boo
     return m_sgObjects.textureStrongRefs.last().data();
 }
 
-void DelegatedFrameNode::fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch)
+void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxesToFetch)
 {
-    // Fetch texture IDs from the mailboxes while we're on the GPU thread, where the MailboxManager lives.
-    gpu::gles2::MailboxManager *mailboxManager = mailbox_manager();
-    Q_FOREACH (MailboxTexture *mailboxTexture, *mailboxesToFetch)
-        mailboxTexture->fetchTexture(mailboxManager);
+    QList<gfx::TransferableFence> transferredFences;
+    {
+        QMutexLocker lock(&m_mutex);
 
-    // Pick fences that we can ask GL to wait for before trying to sample the mailbox texture IDs.
-    QMap<uint32, gfx::TransferableFence> transferredFences = transferFences();
+        gpu::SyncPointManager *syncPointManager = sync_point_manager();
+        if (!m_syncPointClient)
+            m_syncPointClient = syncPointManager->CreateSyncPointClientWaiter();
+        base::MessageLoop *gpuMessageLoop = gpu_message_loop();
+        Q_ASSERT(m_numPendingSyncPoints == 0);
+        m_numPendingSyncPoints = mailboxesToFetch.count();
+        auto it = mailboxesToFetch.constBegin();
+        auto end = mailboxesToFetch.constEnd();
+        for (; it != end; ++it) {
+            MailboxTexture *mailboxTexture = *it;
+            gpu::SyncToken &syncToken = mailboxTexture->mailboxHolder().sync_token;
+            if (syncToken.HasData()) {
+                scoped_refptr<gpu::SyncPointClientState> release_state =
+                    syncPointManager->GetSyncPointClientState(syncToken.namespace_id(), syncToken.command_buffer_id());
+                if (release_state && !release_state->IsFenceSyncReleased(syncToken.release_count())) {
+                    m_syncPointClient->WaitOutOfOrderNonThreadSafe(
+                                release_state.get(), syncToken.release_count(),
+                                gpuMessageLoop->task_runner(), base::Bind(&DelegatedFrameNode::pullTexture, this, mailboxTexture));
+                    continue;
+                }
+            }
+            gpuMessageLoop->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::pullTexture, this, mailboxTexture));
+        }
 
-    // Chromium provided everything we were waiting for, let Qt start rendering.
-    QMutexLocker lock(&frameNode->m_mutex);
-    Q_ASSERT(frameNode->m_mailboxGLFences.isEmpty());
-    frameNode->m_mailboxGLFences.swap(transferredFences);
-    frameNode->m_mailboxesFetchedWaitCond.wakeOne();
+        m_mailboxesFetchedWaitCond.wait(&m_mutex);
+        m_textureFences.swap(transferredFences);
+    }
+
+    Q_FOREACH (gfx::TransferableFence sync, transferredFences) {
+        // We need to wait on the fences on the Qt current context, and
+        // can therefore not use GLFence routines that uses a different
+        // concept of current context.
+        waitChromiumSync(&sync);
+        deleteChromiumSync(&sync);
+    }
+
+#if defined(USE_X11)
+    // Workaround when context is not shared QTBUG-48969
+    // Make slow copy between two contexts.
+    if (!m_contextShared) {
+        QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
+        QOpenGLContext *sharedContext = qt_gl_global_share_context();
+
+        QSurface *surface = currentContext->surface();
+        Q_ASSERT(m_offsurface);
+        sharedContext->makeCurrent(m_offsurface.data());
+        QOpenGLFunctions *funcs = sharedContext->functions();
+
+        GLuint fbo = 0;
+        funcs->glGenFramebuffers(1, &fbo);
+
+        Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
+            // Read texture into QImage from shared context.
+            // Switch to shared context.
+            sharedContext->makeCurrent(m_offsurface.data());
+            funcs = sharedContext->functions();
+            QImage img(mailboxTexture->textureSize(), QImage::Format_RGBA8888_Premultiplied);
+            funcs->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+            funcs->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mailboxTexture->m_textureId, 0);
+            GLenum status = funcs->glCheckFramebufferStatus(GL_FRAMEBUFFER);
+            if (status != GL_FRAMEBUFFER_COMPLETE) {
+                qWarning("fbo error, skipping slow copy...");
+                continue;
+            }
+            funcs->glReadPixels(0, 0, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(),
+                                GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+
+            // Restore current context.
+            // Create texture from QImage in current context.
+            currentContext->makeCurrent(surface);
+            GLuint texture = 0;
+            funcs = currentContext->functions();
+            funcs->glGenTextures(1, &texture);
+            funcs->glBindTexture(GL_TEXTURE_2D, texture);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(), 0,
+                                GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+            mailboxTexture->m_textureId = texture;
+            mailboxTexture->m_ownsTexture = true;
+        }
+        // Cleanup allocated resources
+        sharedContext->makeCurrent(m_offsurface.data());
+        funcs = sharedContext->functions();
+        funcs->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        funcs->glDeleteFramebuffers(1, &fbo);
+        currentContext->makeCurrent(surface);
+    }
+#endif
 }
 
-void DelegatedFrameNode::syncPointRetired(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch)
+
+void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTexture *texture)
 {
-    // The way that sync points are normally used by the GpuCommandBufferStub is that it asks
-    // the GpuScheduler to resume the work of the associated GL command stream / context once
-    // the sync point has been retired by the dependency's context. In other words, a produced
-    // texture means that the mailbox can be consumed, but the texture itself isn't expected
-    // to be ready until to control is given back to the GpuScheduler through the event loop.
-    // Do the same for our implementation by posting a message to the event loop once the last
-    // of our syncpoints has been retired (the syncpoint callback is called synchronously) and
-    // only at this point we wake the Qt rendering thread.
+    gpu::gles2::MailboxManager *mailboxManager = mailbox_manager();
+    gpu::SyncToken &syncToken = texture->mailboxHolder().sync_token;
+    if (syncToken.HasData())
+        mailboxManager->PullTextureUpdates(syncToken);
+    texture->fetchTexture(mailboxManager);
+    if (!!gfx::GLContext::GetCurrent() && gfx::GLFence::IsSupported()) {
+        // Create a fence on the Chromium GPU-thread and context
+        gfx::GLFence *fence = gfx::GLFence::Create();
+        // But transfer it to something generic since we need to read it using Qt's OpenGL.
+        frameNode->m_textureFences.append(fence->Transfer());
+        delete fence;
+    }
+    if (--frameNode->m_numPendingSyncPoints == 0)
+        base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::fenceAndUnlockQt, frameNode));
+}
+
+void DelegatedFrameNode::fenceAndUnlockQt(DelegatedFrameNode *frameNode)
+{
     QMutexLocker lock(&frameNode->m_mutex);
-    if (!--frameNode->m_numPendingSyncPoints)
-        base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::fetchTexturesAndUnlockQt, frameNode, mailboxesToFetch));
+    // Signal preprocess() the textures are ready
+    frameNode->m_mailboxesFetchedWaitCond.wakeOne();
 }
 
 } // namespace QtWebEngineCore

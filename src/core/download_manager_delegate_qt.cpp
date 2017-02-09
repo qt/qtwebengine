@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -62,9 +65,15 @@ ASSERT_ENUMS_MATCH(content::DownloadItem::COMPLETE, BrowserContextAdapterClient:
 ASSERT_ENUMS_MATCH(content::DownloadItem::CANCELLED, BrowserContextAdapterClient::DownloadCancelled)
 ASSERT_ENUMS_MATCH(content::DownloadItem::INTERRUPTED, BrowserContextAdapterClient::DownloadInterrupted)
 
+ASSERT_ENUMS_MATCH(content::SAVE_PAGE_TYPE_UNKNOWN, BrowserContextAdapterClient::UnknownSavePageFormat)
+ASSERT_ENUMS_MATCH(content::SAVE_PAGE_TYPE_AS_ONLY_HTML, BrowserContextAdapterClient::SingleHtmlSaveFormat)
+ASSERT_ENUMS_MATCH(content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML, BrowserContextAdapterClient::CompleteHtmlSaveFormat)
+ASSERT_ENUMS_MATCH(content::SAVE_PAGE_TYPE_AS_MHTML, BrowserContextAdapterClient::MimeHtmlSaveFormat)
+
 DownloadManagerDelegateQt::DownloadManagerDelegateQt(BrowserContextAdapter *contextAdapter)
     : m_contextAdapter(contextAdapter)
     , m_currentId(0)
+    , m_weakPtrFactory(this)
 {
     Q_ASSERT(m_contextAdapter);
 }
@@ -147,6 +156,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
             item->GetReceivedBytes(),
             mimeTypeString,
             suggestedFilePath,
+            BrowserContextAdapterClient::UnknownSavePageFormat,
             false /* accepted */
         };
 
@@ -188,6 +198,58 @@ void DownloadManagerDelegateQt::GetSaveDir(content::BrowserContext* browser_cont
     *skip_dir_check = true;
 }
 
+void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_contents,
+                        const base::FilePath &suggested_path,
+                        const base::FilePath::StringType &default_extension,
+                        bool can_save_as_complete,
+                        const content::SavePackagePathPickedCallback &callback)
+{
+    Q_UNUSED(default_extension);
+    Q_UNUSED(can_save_as_complete);
+
+    QList<BrowserContextAdapterClient*> clients = m_contextAdapter->clients();
+    if (clients.isEmpty())
+        return;
+
+    const QString suggestedFileName
+            = QFileInfo(toQt(suggested_path.AsUTF8Unsafe())).completeBaseName()
+            + QStringLiteral(".mhtml");
+    const QDir defaultDownloadDirectory
+            = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    const QString suggestedFilePath = defaultDownloadDirectory.absoluteFilePath(suggestedFileName);
+
+    BrowserContextAdapterClient::DownloadItemInfo info = {
+        m_currentId + 1,
+        toQt(web_contents->GetURL()),
+        content::DownloadItem::IN_PROGRESS,
+        0, /* totalBytes */
+        0, /* receivedBytes */
+        QStringLiteral("application/x-mimearchive"),
+        suggestedFilePath,
+        BrowserContextAdapterClient::MimeHtmlSaveFormat,
+        false /* accepted */
+    };
+
+    Q_FOREACH (BrowserContextAdapterClient *client, clients) {
+        client->downloadRequested(info);
+        if (info.accepted)
+            break;
+    }
+
+    if (!info.accepted)
+        return;
+
+    callback.Run(toFilePath(info.path), static_cast<content::SavePageType>(info.savePageFormat),
+                 base::Bind(&DownloadManagerDelegateQt::savePackageDownloadCreated,
+                            m_weakPtrFactory.GetWeakPtr()));
+}
+
+void DownloadManagerDelegateQt::savePackageDownloadCreated(content::DownloadItem *item)
+{
+    OnDownloadUpdated(item);
+    item->AddObserver(this);
+}
+
 void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *download)
 {
     QList<BrowserContextAdapterClient*> clients = m_contextAdapter->clients();
@@ -200,6 +262,7 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *downloa
             download->GetReceivedBytes(),
             toQt(download->GetMimeType()),
             QString(),
+            BrowserContextAdapterClient::UnknownSavePageFormat,
             true /* accepted */
         };
 

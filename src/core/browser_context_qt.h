@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -43,6 +46,14 @@
 #include "net/url_request/url_request_context.h"
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+
+#if defined(ENABLE_SPELLCHECK)
+QT_BEGIN_NAMESPACE
+class QStringList;
+QT_END_NAMESPACE
+class TestingPrefStore;
+class PrefService;
+#endif
 
 namespace QtWebEngineCore {
 
@@ -76,8 +87,17 @@ public:
     net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors);
     virtual scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) Q_DECL_OVERRIDE;
     virtual content::PermissionManager *GetPermissionManager() Q_DECL_OVERRIDE;
+    virtual content::BackgroundSyncController* GetBackgroundSyncController() Q_DECL_OVERRIDE;
 
     BrowserContextAdapter *adapter() { return m_adapter; }
+
+#if defined(ENABLE_SPELLCHECK)
+    void failedToLoadDictionary(const std::string& language) override;
+    void setSpellCheckLanguage(const QString &language);
+    QString spellCheckLanguage() const;
+    void setSpellCheckEnabled(bool enabled);
+    bool isSpellCheckEnabled() const;
+#endif
 
 private:
     friend class ContentBrowserClientQt;
@@ -87,6 +107,10 @@ private:
     scoped_ptr<PermissionManagerQt> permissionManager;
     scoped_ptr<SSLHostStateDelegateQt> sslHostStateDelegate;
     BrowserContextAdapter *m_adapter;
+#if defined(ENABLE_SPELLCHECK)
+    scoped_refptr<TestingPrefStore> m_prefStore;
+    scoped_ptr<PrefService> m_prefService;
+#endif
     friend class BrowserContextAdapter;
 
     DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);

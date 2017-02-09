@@ -15,7 +15,7 @@ CONFIG -= create_prl
 # Copy this logic from qt_module.prf so that the intermediate library can be
 # created to the same rules as the final module linking in core_module.pro.
 !host_build:if(win32|mac):!macx-xcode {
-    contains(QT_CONFIG, simulator_and_device): CONFIG += iphonesimulator_and_iphoneos
+    contains(QT_CONFIG, simulator_and_device): CONFIG += simulator_and_device
     contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }

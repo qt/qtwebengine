@@ -16,8 +16,11 @@ cross_compile {
     mac: include(config/mac_osx.pri)
     win32: include(config/windows.pri)
 }
-
+GYP_CONFIG += qtwe_process_name_debug=$$QTWEBENGINEPROCESS_NAME_DEBUG
+GYP_CONFIG += qtwe_process_name_release=$$QTWEBENGINEPROCESS_NAME_RELEASE
 GYP_CONFIG += disable_glibcxx_debug=1
+!contains(QT_CONFIG, no-pkg-config): GYP_ARGS += "-D pkg-config=\"$$pkgConfigExecutable()\""
+
 !webcore_debug: GYP_CONFIG += remove_webcore_debug_symbols=1
 !v8base_debug: GYP_CONFIG += remove_v8base_debug_symbols=1
 
@@ -33,7 +36,7 @@ force_debug_info {
 # Copy this logic from qt_module.prf so that ninja can run according
 # to the same rules as the final module linking in core_module.pro.
 !host_build:if(win32|mac):!macx-xcode {
-    contains(QT_CONFIG, simulator_and_device): CONFIG += iphonesimulator_and_iphoneos
+    contains(QT_CONFIG, simulator_and_device): CONFIG += simulator_and_device
     contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
@@ -45,11 +48,11 @@ cross_compile {
     # Needed for v8, see chromium/v8/build/toolchain.gypi
     GYP_CONFIG += CXX=\"$$which($$QMAKE_CXX)\"
 }
+else {
+    GYP_CONFIG += sysroot=\"\"
+}
 
 contains(QT_ARCH, "arm") {
-    # Chromium will set a default sysroot on arm unless we give it one.
-    !cross_compile: GYP_CONFIG += sysroot=\"\"
-
     GYP_CONFIG += target_arch=arm
 
     # Extract ARM specific compiler options that we have to pass to gyp,
@@ -90,7 +93,6 @@ contains(QT_ARCH, "arm") {
 }
 
 contains(QT_ARCH, "mips") {
-    !cross_compile: GYP_CONFIG += sysroot=\"\"
     GYP_CONFIG += target_arch=mipsel
 
     MARCH = $$extractCFlag("-march=.*")
@@ -114,6 +116,19 @@ contains(QT_ARCH, "arm64"): GYP_CONFIG += target_arch=arm64
 contains(QT_ARCH, "mips64"): GYP_CONFIG += target_arch=mips64el
 
 contains(WEBENGINE_CONFIG, use_proprietary_codecs): GYP_CONFIG += proprietary_codecs=1 ffmpeg_branding=Chrome
+contains(WEBENGINE_CONFIG, use_appstore_compliant_code): GYP_CONFIG += appstore_compliant_code=1
+
+# Compiling with -Os makes a huge difference in binary size, and the unwind tables is another big part,
+# but the latter are necessary for useful debug binaries.
+contains(WEBENGINE_CONFIG, reduce_binary_size): GYP_CONFIG += release_optimize=s debug_optimize=s release_unwind_tables=0
+
+contains(WEBENGINE_CONFIG, no_spellcheck): {
+    GYP_CONFIG += enable_spellcheck=0
+    osx: GYP_CONFIG += use_browser_spellchecker=0
+} else {
+    GYP_CONFIG += enable_spellcheck=1
+    osx: GYP_CONFIG += use_browser_spellchecker=1
+}
 
 !contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
     GYP_CONFIG += qt_install_data=\"$$[QT_INSTALL_DATA/get]\"

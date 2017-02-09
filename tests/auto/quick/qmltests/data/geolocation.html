@@ -8,6 +8,7 @@ function successHandler(location) {
     message.innerHTML = "Latitude: " + location.coords.latitude +
     "<br>Longitude: " + location.coords.longitude;
 
+    console.error("Success");
 }
 
 function errorHandler(error) {

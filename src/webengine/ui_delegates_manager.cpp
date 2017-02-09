@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -37,14 +40,13 @@
 #include "ui_delegates_manager.h"
 
 #include "api/qquickwebengineview_p.h"
-#include "authentication_dialog_controller.h"
-#include "file_picker_controller.h"
-#include "javascript_dialog_controller.h"
+#include <authentication_dialog_controller.h>
+#include <color_chooser_controller.h>
+#include <file_picker_controller.h>
+#include <javascript_dialog_controller.h>
+#include <web_contents_adapter_client.h>
 
-#include <QAbstractListModel>
-#include <QClipboard>
 #include <QFileInfo>
-#include <QMimeData>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQmlProperty>
@@ -164,7 +166,8 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     if (!prop.isSignalProperty()) \
         qWarning("%s is missing %s signal property.\n", qPrintable(location.toString()), qPrintable(prop.name()));
 
-void UIDelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QString &text, const QString &iconName, bool enabled)
+void UIDelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QString &text, const QString &iconName, bool enabled,
+                                     bool checkable, bool checked)
 {
     Q_ASSERT(menuItemHandler);
     if (!ensureComponentLoaded(MenuItem))
@@ -174,6 +177,8 @@ void UIDelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QSt
     QQmlProperty(it, QStringLiteral("text")).write(text);
     QQmlProperty(it, QStringLiteral("iconName")).write(iconName);
     QQmlProperty(it, QStringLiteral("enabled")).write(enabled);
+    QQmlProperty(it, QStringLiteral("checkable")).write(checkable);
+    QQmlProperty(it, QStringLiteral("checked")).write(checked);
 
     QQmlProperty signal(it, QStringLiteral("onTriggered"));
     CHECK_QML_SIGNAL_PROPERTY(signal, menuItemComponent->url());
@@ -321,6 +326,43 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     QObject::connect(dialogController.data(), &JavaScriptDialogController::dialogCloseRequested, dialog, &QObject::deleteLater);
 
     QMetaObject::invokeMethod(dialog, "open");
+}
+
+void UIDelegatesManager::showColorDialog(QSharedPointer<ColorChooserController> controller)
+{
+    if (!ensureComponentLoaded(ColorDialog)) {
+        // Let the controller know it couldn't be loaded
+        qWarning("Failed to load dialog, rejecting.");
+        controller->reject();
+        return;
+    }
+
+    QQmlContext *context = qmlContext(m_view);
+    QObject *colorDialog = colorDialogComponent->beginCreate(context);
+    if (QQuickItem* item = qobject_cast<QQuickItem*>(colorDialog))
+        item->setParentItem(m_view);
+    colorDialog->setParent(m_view);
+
+    if (controller->initialColor().isValid())
+        colorDialog->setProperty("color", controller->initialColor());
+
+    QQmlProperty selectedColorSignal(colorDialog, QStringLiteral("onSelectedColor"));
+    CHECK_QML_SIGNAL_PROPERTY(selectedColorSignal, colorDialogComponent->url());
+    QQmlProperty rejectedSignal(colorDialog, QStringLiteral("onRejected"));
+    CHECK_QML_SIGNAL_PROPERTY(rejectedSignal, colorDialogComponent->url());
+
+    static int acceptIndex = controller->metaObject()->indexOfSlot("accept(QVariant)");
+    QObject::connect(colorDialog, selectedColorSignal.method(), controller.data(), controller->metaObject()->method(acceptIndex));
+    static int rejectIndex = controller->metaObject()->indexOfSlot("reject()");
+    QObject::connect(colorDialog, rejectedSignal.method(), controller.data(), controller->metaObject()->method(rejectIndex));
+
+     // delete later
+     static int deleteLaterIndex = colorDialog->metaObject()->indexOfSlot("deleteLater()");
+     QObject::connect(colorDialog, selectedColorSignal.method(), colorDialog, colorDialog->metaObject()->method(deleteLaterIndex));
+     QObject::connect(colorDialog, rejectedSignal.method(), colorDialog, colorDialog->metaObject()->method(deleteLaterIndex));
+
+    colorDialogComponent->completeCreate();
+    QMetaObject::invokeMethod(colorDialog, "open");
 }
 
 void UIDelegatesManager::showDialog(QSharedPointer<AuthenticationDialogController> dialogController)

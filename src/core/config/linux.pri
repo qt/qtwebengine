@@ -29,11 +29,22 @@ use?(nss) {
         use_openssl_certs=1
 }
 
+gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): GYP_CONFIG += no_delete_null_pointer_checks=1
+
 contains(QT_CONFIG, system-zlib): use?(system_minizip): GYP_CONFIG += use_system_zlib=1
 contains(QT_CONFIG, system-png): GYP_CONFIG += use_system_libpng=1
 contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1
 contains(QT_CONFIG, system-harfbuzz): GYP_CONFIG += use_system_harfbuzz=1
-!contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0
+contains(QT_CONFIG, pulseaudio) {
+    GYP_CONFIG += use_pulseaudio=1
+} else {
+    GYP_CONFIG += use_pulseaudio=0
+}
+contains(QT_CONFIG, alsa) {
+    GYP_CONFIG += use_alsa=1
+} else {
+    GYP_CONFIG += use_alsa=0
+}
 !contains(QT_CONFIG, glib): GYP_CONFIG += use_glib=0
 use?(system_libevent): GYP_CONFIG += use_system_libevent=1
 use?(system_libwebp):  GYP_CONFIG += use_system_libwebp=1
@@ -45,4 +56,4 @@ use?(system_snappy):   GYP_CONFIG += use_system_snappy=1
 use?(system_vpx):      GYP_CONFIG += use_system_libvpx=1
 use?(system_icu):      GYP_CONFIG += use_system_icu=1 icu_use_data_file_flag=0
 use?(system_ffmpeg):   GYP_CONFIG += use_system_ffmpeg=1
-
+use?(system_protobuf): GYP_CONFIG += use_system_protobuf=1

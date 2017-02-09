@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -40,22 +43,31 @@
 #include <QColor>
 #include <QDateTime>
 #include <QDir>
+#include <QIcon>
 #include <QImage>
 #include <QMatrix4x4>
 #include <QNetworkCookie>
 #include <QRect>
 #include <QString>
 #include <QUrl>
+#include <base/strings/nullable_string16.h>
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/public/common/file_chooser_file_info.h"
+#include "content/public/common/favicon_url.h"
+#include "favicon_manager.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
+
+namespace gfx {
+class ImageSkiaRep;
+}
 
 namespace QtWebEngineCore {
 
@@ -87,6 +99,11 @@ inline base::string16 toString16(const QString &qString)
 #endif
 }
 
+inline base::NullableString16 toNullableString16(const QString &qString)
+{
+    return base::NullableString16(toString16(qString), qString.isNull());
+}
+
 inline QUrl toQt(const GURL &url)
 {
     return QUrl(QString::fromStdString(url.spec()));
@@ -100,6 +117,11 @@ inline GURL toGurl(const QUrl& url)
 inline QPoint toQt(const gfx::Point &point)
 {
     return QPoint(point.x(), point.y());
+}
+
+inline QPointF toQt(const gfx::Vector2dF &point)
+{
+    return QPointF(point.x(), point.y());
 }
 
 inline gfx::Point toGfx(const QPoint& point)
@@ -149,6 +171,8 @@ inline QImage toQImage(const SkBitmap &bitmap, QImage::Format format)
 }
 
 QImage toQImage(const SkBitmap &bitmap);
+QImage toQImage(const gfx::ImageSkiaRep &imageSkiaRep);
+QIcon toQIcon(const std::vector<SkBitmap> &bitmaps);
 
 inline QMatrix4x4 toQt(const SkMatrix44 &m)
 {
@@ -232,6 +256,19 @@ inline std::vector<T> toVector(const QStringList &fileList)
         selectedFiles.push_back(fileListingHelper<T>(file));
     return selectedFiles;
 }
+
+int flagsFromModifiers(Qt::KeyboardModifiers modifiers);
+
+inline QStringList fromVector(const std::vector<base::string16> &vector)
+{
+    QStringList result;
+    for (auto s: vector) {
+      result.append(toQt(s));
+    }
+    return result;
+}
+
+FaviconInfo toFaviconInfo(const content::FaviconURL &);
 
 } // namespace QtWebEngineCore
 

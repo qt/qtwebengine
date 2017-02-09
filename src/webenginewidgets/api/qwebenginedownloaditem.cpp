@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -76,6 +79,7 @@ QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QWebEngineProfilePr
     , downloadFinished(false)
     , downloadId(-1)
     , downloadState(QWebEngineDownloadItem::DownloadCancelled)
+    , savePageFormat(QWebEngineDownloadItem::MimeHtmlSaveFormat)
     , downloadUrl(url)
     , totalBytes(-1)
     , receivedBytes(0)
@@ -200,6 +204,20 @@ quint32 QWebEngineDownloadItem::id() const
 */
 
 /*!
+    \enum QWebEngineDownloadItem::SavePageFormat
+    \since 5.7
+
+    This enum describes the format that is used to save a web page.
+
+    \value UnknownSaveFormat This is not a request for downloading a complete web page.
+    \value SingleHtmlSaveFormat The page is saved as a single HTML page. Resources such as images
+           are not saved.
+    \value CompleteHtmlSaveFormat The page is saved as a complete HTML page, for example a directory
+            containing the single HTML page and the resources.
+    \value MimeHtmlSaveFormat The page is saved as a complete web page in the MIME HTML format.
+*/
+
+/*!
     Returns the download item's current state.
 
     \sa QWebEngineDownloadItem::DownloadState
@@ -298,6 +316,30 @@ bool QWebEngineDownloadItem::isFinished() const
 {
     Q_D(const QWebEngineDownloadItem);
     return d->downloadFinished;
+}
+
+/*!
+    Returns the format the web page will be saved in if this is a download request for a web page.
+    \since 5.7
+
+    \sa setSavePageFormat()
+*/
+QWebEngineDownloadItem::SavePageFormat QWebEngineDownloadItem::savePageFormat() const
+{
+    Q_D(const QWebEngineDownloadItem);
+    return d->savePageFormat;
+}
+
+/*!
+    Sets the \a format the web page will be saved in if this is a download request for a web page.
+    \since 5.7
+
+    \sa savePageFormat()
+*/
+void QWebEngineDownloadItem::setSavePageFormat(QWebEngineDownloadItem::SavePageFormat format)
+{
+    Q_D(QWebEngineDownloadItem);
+    d->savePageFormat = format;
 }
 
 QWebEngineDownloadItem::QWebEngineDownloadItem(QWebEngineDownloadItemPrivate *p, QObject *parent)

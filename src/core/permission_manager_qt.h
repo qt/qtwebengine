@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -57,19 +60,14 @@ public:
     bool checkPermission(const QUrl &origin, PermissionType type);
 
     // content::PermissionManager implementation:
-    void RequestPermission(
+    int RequestPermission(
         content::PermissionType permission,
         content::RenderFrameHost* render_frame_host,
-        int request_id,
         const GURL& requesting_origin,
         bool user_gesture,
         const base::Callback<void(content::PermissionStatus)>& callback) override;
 
-    void CancelPermissionRequest(
-        content::PermissionType permission,
-        content::RenderFrameHost* render_frame_host,
-        int request_id,
-        const GURL& requesting_origin) override;
+    void CancelPermissionRequest(int request_id) override;
 
     content::PermissionStatus GetPermissionStatus(
         content::PermissionType permission,
@@ -80,6 +78,14 @@ public:
         content::PermissionType permission,
         const GURL& requesting_origin,
         const GURL& embedding_origin) override;
+
+    int RequestPermissions(
+        const std::vector<content::PermissionType>& permission,
+        content::RenderFrameHost* render_frame_host,
+        const GURL& requesting_origin,
+        bool user_gesture,
+        const base::Callback<void(
+            const std::vector<content::PermissionStatus>&)>& callback) override;
 
     void RegisterPermissionUsage(
         content::PermissionType permission,
@@ -96,21 +102,15 @@ public:
 
 private:
     QHash<QPair<QUrl, PermissionType>, bool> m_permissions;
-    struct Request {
-        int id;
+    struct RequestOrSubscription {
         PermissionType type;
         QUrl origin;
         base::Callback<void(content::PermissionStatus)> callback;
     };
-    QVector<Request> m_requests;
-    struct Subscriber {
-        int id;
-        PermissionType type;
-        QUrl origin;
-        base::Callback<void(content::PermissionStatus)> callback;
-    };
-    int m_subscriberCount;
-    QVector<Subscriber> m_subscribers;
+    QHash<int, RequestOrSubscription> m_requests;
+    QHash<int, RequestOrSubscription> m_subscribers;
+    int m_requestIdCount;
+    int m_subscriberIdCount;
 
 };
 

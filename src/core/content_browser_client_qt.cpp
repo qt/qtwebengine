@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -38,9 +41,13 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
+#if defined(ENABLE_SPELLCHECK)
+#include "chrome/browser/spellchecker/spellcheck_message_filter.h"
+#endif
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -61,6 +68,7 @@
 #include "access_token_store_qt.h"
 #include "browser_context_adapter.h"
 #include "browser_context_qt.h"
+#include "browser_message_filter_qt.h"
 #include "certificate_error_controller.h"
 #include "certificate_error_controller_p.h"
 #include "desktop_screen_qt.h"
@@ -69,8 +77,11 @@
 #include "location_provider_qt.h"
 #endif
 #include "media_capture_devices_dispatcher.h"
+#if defined(ENABLE_BASIC_PRINTING)
+#include "printing_message_filter_qt.h"
+#endif // defined(ENABLE_BASIC_PRINTING)
 #include "resource_dispatcher_host_delegate_qt.h"
-#include "user_script_controller_host.h"
+#include "user_resource_controller_host.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
@@ -260,7 +271,8 @@ public:
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("cglcontextobj"), qtContext);
         else if (platform == QLatin1String("qnx"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
-        else if (platform == QLatin1String("eglfs") || platform == QLatin1String("wayland"))
+        else if (platform == QLatin1String("eglfs") || platform == QLatin1String("wayland")
+                 || platform == QLatin1String("wayland-egl"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
         else if (platform == QLatin1String("windows")) {
             if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
@@ -280,7 +292,6 @@ public:
 
     // We don't care about the rest, this context shouldn't be used except for its handle.
     virtual bool Initialize(gfx::GLSurface *, gfx::GpuPreference) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
-    virtual void Destroy() Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
     virtual bool MakeCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
     virtual void ReleaseCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
     virtual bool IsCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
@@ -349,8 +360,18 @@ content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const 
 void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost* host)
 {
     // FIXME: Add a settings variable to enable/disable the file scheme.
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), url::kFileScheme);
-    static_cast<BrowserContextQt*>(host->GetBrowserContext())->m_adapter->userScriptController()->renderProcessStartedWithHost(host);
+    const int id = host->GetID();
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(id, url::kFileScheme);
+    static_cast<BrowserContextQt*>(host->GetBrowserContext())->m_adapter->userResourceController()->renderProcessStartedWithHost(host);
+#if defined(ENABLE_PEPPER_CDMS)
+    host->AddFilter(new BrowserMessageFilterQt(id));
+#endif
+#if defined(ENABLE_SPELLCHECK)
+    host->AddFilter(new SpellCheckMessageFilter(id));
+#endif
+#if defined(ENABLE_BASIC_PRINTING)
+    host->AddFilter(new PrintingMessageFilterQt(host->GetID()));
+#endif // defined(ENABLE_BASIC_PRINTING)
 }
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()
@@ -384,7 +405,7 @@ content::AccessTokenStore *ContentBrowserClientQt::CreateAccessTokenStore()
 
 net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* browser_context, content::ProtocolHandlerMap* protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    return static_cast<BrowserContextQt*>(browser_context)->CreateRequestContext(protocol_handlers, request_interceptors.Pass());
+    return static_cast<BrowserContextQt*>(browser_context)->CreateRequestContext(protocol_handlers, std::move(request_interceptors));
 }
 
 content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionContext()
@@ -392,18 +413,19 @@ content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionCo
     return new QuotaPermissionContextQt;
 }
 
-void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int render_frame_id, int cert_error,
-                                                   const net::SSLInfo& ssl_info, const GURL& request_url,
-                                                   content::ResourceType resource_type,
-                                                   bool overridable, bool strict_enforcement,
-                                                   bool expired_previous_decision,
-                                                   const base::Callback<void(bool)>& callback,
-                                                   content::CertificateRequestResultType* result)
+
+void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webContents,
+                                   int cert_error,
+                                   const net::SSLInfo& ssl_info,
+                                   const GURL& request_url,
+                                   content::ResourceType resource_type,
+                                   bool overridable,
+                                   bool strict_enforcement,
+                                   bool expired_previous_decision,
+                                   const base::Callback<void(bool)>& callback,
+                                   content::CertificateRequestResultType* result)
 {
-    content::RenderFrameHost *frameHost = content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-    WebContentsDelegateQt* contentsDelegate = 0;
-    if (content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents())
-        contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
     QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
     contentsDelegate->allowCertificateError(errorController);
@@ -411,6 +433,13 @@ void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int re
     // If we don't give the user a chance to allow it, we can reject it right away.
     if (result && (!overridable || strict_enforcement))
         *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
+}
+
+void ContentBrowserClientQt::SelectClientCertificate(content::WebContents * /*webContents*/,
+                                                     net::SSLCertRequestInfo * /*certRequestInfo*/,
+                                                     scoped_ptr<content::ClientCertificateDelegate> delegate)
+{
+    delegate->ContinueWithCertificate(nullptr);
 }
 
 content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvider()

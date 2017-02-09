@@ -1,39 +1,26 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
+** $QT_BEGIN_LICENSE:GPL-EXCEPT$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** As a special exception, The Qt Company gives you certain additional
-** rights. These rights are described in The Qt Company LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 3 as published by the Free Software
+** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -89,6 +76,7 @@ static QStringList hardcodedTypes = QStringList()
     // Ignore the testSupport types without making a fuss.
     << "QQuickWebEngineTestSupport*"
     << "QQuickWebEngineErrorPage*"
+    << "const QQuickWebEngineContextMenuData*"
     << "QWebEngineCookieStore*"
     ;
 
@@ -214,6 +202,155 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.grantFeaturePermission(QUrl,Feature,bool) --> void"
     << "QQuickWebEngineView.setActiveFocusOnPress(bool) --> void"
     << "QQuickWebEngineView.triggerWebAction(WebAction) --> void"
+    << "QQuickWebEngineView.Unselect --> WebAction"
+    << "QQuickWebEngineView.SavePage --> WebAction"
+    << "QQuickWebEngineView.A4 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B5 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Letter --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Legal --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Executive --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A0 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A1 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A2 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A3 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A5 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A6 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A7 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A8 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A9 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B0 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B1 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B10 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B2 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B3 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B4 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B6 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B7 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B8 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B9 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.C5E --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Comm10E --> PrintedPageSizeId"
+    << "QQuickWebEngineView.DLE --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Folio --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Ledger --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Tabloid --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Custom --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A10 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A3Extra --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A4Extra --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A4Plus --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A4Small --> PrintedPageSizeId"
+    << "QQuickWebEngineView.A5Extra --> PrintedPageSizeId"
+    << "QQuickWebEngineView.B5Extra --> PrintedPageSizeId"
+    << "QQuickWebEngineView.JisB0 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.JisB1 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.JisB2 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.JisB3 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.JisB4 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.JisB5 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.JisB6 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.JisB7 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.JisB8 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.JisB9 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.JisB10 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.AnsiC --> PrintedPageSizeId"
+    << "QQuickWebEngineView.AnsiD --> PrintedPageSizeId"
+    << "QQuickWebEngineView.AnsiE --> PrintedPageSizeId"
+    << "QQuickWebEngineView.LegalExtra --> PrintedPageSizeId"
+    << "QQuickWebEngineView.LetterExtra --> PrintedPageSizeId"
+    << "QQuickWebEngineView.LetterPlus --> PrintedPageSizeId"
+    << "QQuickWebEngineView.LetterSmall --> PrintedPageSizeId"
+    << "QQuickWebEngineView.TabloidExtra --> PrintedPageSizeId"
+    << "QQuickWebEngineView.ArchA --> PrintedPageSizeId"
+    << "QQuickWebEngineView.ArchB --> PrintedPageSizeId"
+    << "QQuickWebEngineView.ArchC --> PrintedPageSizeId"
+    << "QQuickWebEngineView.ArchD --> PrintedPageSizeId"
+    << "QQuickWebEngineView.ArchE --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Imperial7x9 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Imperial8x10 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Imperial9x11 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Imperial9x12 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Imperial10x11 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Imperial10x13 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Imperial10x14 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Imperial12x11 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Imperial15x11 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.ExecutiveStandard --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Note --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Quarto --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Statement --> PrintedPageSizeId"
+    << "QQuickWebEngineView.SuperA --> PrintedPageSizeId"
+    << "QQuickWebEngineView.SuperB --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Postcard --> PrintedPageSizeId"
+    << "QQuickWebEngineView.DoublePostcard --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Prc16K --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Prc32K --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Prc32KBig --> PrintedPageSizeId"
+    << "QQuickWebEngineView.FanFoldUS --> PrintedPageSizeId"
+    << "QQuickWebEngineView.FanFoldGerman --> PrintedPageSizeId"
+    << "QQuickWebEngineView.FanFoldGermanLegal --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeB4 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeB5 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeB6 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeC0 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeC1 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeC2 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeC3 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeC4 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeC6 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeC65 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeC7 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Envelope9 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Envelope11 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Envelope12 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Envelope14 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeMonarch --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopePersonal --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeChou3 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeChou4 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeInvite --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeItalian --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeKaku2 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeKaku3 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopePrc1 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopePrc2 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopePrc3 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopePrc4 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopePrc5 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopePrc6 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopePrc7 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopePrc8 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopePrc9 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopePrc10 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeYou4 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.LastPageSize --> PrintedPageSizeId"
+    << "QQuickWebEngineView.NPageSize --> PrintedPageSizeId"
+    << "QQuickWebEngineView.NPaperSize --> PrintedPageSizeId"
+    << "QQuickWebEngineView.AnsiA --> PrintedPageSizeId"
+    << "QQuickWebEngineView.AnsiB --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeC5 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.EnvelopeDL --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Envelope10 --> PrintedPageSizeId"
+    << "QQuickWebEngineView.Portrait --> PrintedPageOrientation"
+    << "QQuickWebEngineView.Landscape --> PrintedPageOrientation"
+    << "QQuickWebEngineView.contentsSize --> QSizeF"
+    << "QQuickWebEngineView.scrollPosition --> QPointF"
+    << "QQuickWebEngineView.audioMuted --> bool"
+    << "QQuickWebEngineView.recentlyAudible --> bool"
+    << "QQuickWebEngineView.webChannelWorld --> uint"
+    << "QQuickWebEngineView.contentsSizeChanged(QSizeF) --> void"
+    << "QQuickWebEngineView.scrollPositionChanged(QPointF) --> void"
+    << "QQuickWebEngineView.audioMutedChanged(bool) --> void"
+    << "QQuickWebEngineView.recentlyAudibleChanged(bool) --> void"
+    << "QQuickWebEngineView.webChannelWorldChanged(uint) --> void"
+    << "QQuickWebEngineView.runJavaScript(QString,uint,QJSValue) --> void"
+    << "QQuickWebEngineView.runJavaScript(QString,uint) --> void"
+    << "QQuickWebEngineView.printToPdf(QString,PrintedPageSizeId,PrintedPageOrientation) --> void"
+    << "QQuickWebEngineView.printToPdf(QString,PrintedPageSizeId) --> void"
+    << "QQuickWebEngineView.printToPdf(QString) --> void"
+    << "QQuickWebEngineView.printToPdf(QJSValue,PrintedPageSizeId,PrintedPageOrientation) --> void"
+    << "QQuickWebEngineView.printToPdf(QJSValue,PrintedPageSizeId) --> void"
+    << "QQuickWebEngineView.printToPdf(QJSValue) --> void"
     << "QQuickWebEngineCertificateError.SslPinnedKeyNotInCertificateChain --> Error"
     << "QQuickWebEngineCertificateError.CertificateCommonNameInvalid --> Error"
     << "QQuickWebEngineCertificateError.CertificateDateInvalid --> Error"
@@ -227,6 +364,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineCertificateError.CertificateNonUniqueName --> Error"
     << "QQuickWebEngineCertificateError.CertificateWeakKey --> Error"
     << "QQuickWebEngineCertificateError.CertificateNameConstraintViolation --> Error"
+    << "QQuickWebEngineCertificateError.CertificateValidityTooLong --> Error"
     << "QQuickWebEngineCertificateError.url --> QUrl"
     << "QQuickWebEngineCertificateError.error --> Error"
     << "QQuickWebEngineCertificateError.description --> QString"
@@ -252,6 +390,12 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineDownloadItem.pathChanged() --> void"
     << "QQuickWebEngineDownloadItem.accept() --> void"
     << "QQuickWebEngineDownloadItem.cancel() --> void"
+    << "QQuickWebEngineDownloadItem.UnknownSaveFormat --> SavePageFormat"
+    << "QQuickWebEngineDownloadItem.SingleHtmlSaveFormat --> SavePageFormat"
+    << "QQuickWebEngineDownloadItem.CompleteHtmlSaveFormat --> SavePageFormat"
+    << "QQuickWebEngineDownloadItem.MimeHtmlSaveFormat --> SavePageFormat"
+    << "QQuickWebEngineDownloadItem.savePageFormat --> SavePageFormat"
+    << "QQuickWebEngineDownloadItem.savePageFormatChanged() --> void"
     << "QQuickWebEngineHistory.items --> QQuickWebEngineHistoryListModel*"
     << "QQuickWebEngineHistory.backItems --> QQuickWebEngineHistoryListModel*"
     << "QQuickWebEngineHistory.forwardItems --> QQuickWebEngineHistoryListModel*"
@@ -293,6 +437,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.httpAcceptLanguageChanged() --> void"
     << "QQuickWebEngineProfile.downloadRequested(QQuickWebEngineDownloadItem*) --> void"
     << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadItem*) --> void"
+    << "QQuickWebEngineProfile.NoCache --> HttpCacheType"
     << "QQuickWebEngineScript.Deferred --> InjectionPoint"
     << "QQuickWebEngineScript.DocumentReady --> InjectionPoint"
     << "QQuickWebEngineScript.DocumentCreation --> InjectionPoint"
@@ -346,6 +491,16 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.pluginsEnabledChanged() --> void"
     << "QQuickWebEngineSettings.fullScreenSupportEnabledChanged() --> void"
     << "QQuickWebEngineSettings.defaultTextEncodingChanged() --> void"
+    << "QQuickWebEngineSettings.screenCaptureEnabled --> bool"
+    << "QQuickWebEngineSettings.webGLEnabled --> bool"
+    << "QQuickWebEngineSettings.accelerated2dCanvasEnabled --> bool"
+    << "QQuickWebEngineSettings.autoLoadIconsForPage --> bool"
+    << "QQuickWebEngineSettings.touchIconsEnabled --> bool"
+    << "QQuickWebEngineSettings.screenCaptureEnabledChanged() --> void"
+    << "QQuickWebEngineSettings.webGLEnabledChanged() --> void"
+    << "QQuickWebEngineSettings.accelerated2dCanvasEnabledChanged() --> void"
+    << "QQuickWebEngineSettings.autoLoadIconsForPageChanged() --> void"
+    << "QQuickWebEngineSettings.touchIconsEnabledChanged() --> void"
     << "QQuickWebEngineFullScreenRequest.origin --> QUrl"
     << "QQuickWebEngineFullScreenRequest.toggleOn --> bool"
     << "QQuickWebEngineFullScreenRequest.accept() --> void"

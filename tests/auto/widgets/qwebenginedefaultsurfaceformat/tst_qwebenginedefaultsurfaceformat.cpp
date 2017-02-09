@@ -51,6 +51,9 @@ private Q_SLOTS:
 
 void tst_QWebEngineDefaultSurfaceFormat::customDefaultSurfaceFormat()
 {
+#if defined(Q_OS_WIN)
+    QSKIP("Crashes on Windows");
+#endif
     // Setting a new default QSurfaceFormat with a core OpenGL profile before
     // app instantiation should succeed, without abort() being called.
     int argc = 1;

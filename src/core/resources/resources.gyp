@@ -20,6 +20,7 @@
     'dependencies': [
         '<(chromium_src_dir)/content/app/strings/content_strings.gyp:content_strings',
         '<(chromium_src_dir)/content/browser/devtools/devtools_resources.gyp:devtools_resources',
+        '<(chromium_src_dir)/components/components_strings.gyp:components_strings',
         '<(chromium_src_dir)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '<(qtwebengine_root)/src/core/chrome_qt.gyp:chrome_resources',
     ],
@@ -29,7 +30,6 @@
         'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/blink/devtools_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
@@ -66,6 +66,18 @@
             ],
             'pak_outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/repack/qtwebengine_resources_200p.pak'
+            ]
+        },
+        'includes': [ 'repack_resources.gypi' ],
+      },
+      {
+        'action_name': 'repack_resources_devtools',
+        'variables': {
+            'pak_inputs': [
+              '<(SHARED_INTERMEDIATE_DIR)/blink/devtools_resources.pak',
+            ],
+            'pak_outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/repack/qtwebengine_devtools_resources.pak'
             ]
         },
         'includes': [ 'repack_resources.gypi' ],

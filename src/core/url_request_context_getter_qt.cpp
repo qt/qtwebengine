@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -45,6 +48,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
+#include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
@@ -98,7 +102,7 @@ URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserConte
     , m_browserContext(browserContext)
     , m_baseJobFactory(0)
     , m_cookieDelegate(new CookieMonsterDelegateQt())
-    , m_requestInterceptors(request_interceptors.Pass())
+    , m_requestInterceptors(std::move(request_interceptors))
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
 
@@ -229,7 +233,7 @@ void URLRequestContextGetterQt::generateStorage()
         m_dhcpProxyScriptFetcherFactory.reset(new net::DhcpProxyScriptFetcherFactory);
 
     m_storage->set_proxy_service(net::CreateProxyServiceUsingV8ProxyResolver(
-                                     proxyConfigService,
+                                     scoped_ptr<net::ProxyConfigService>(proxyConfigService),
                                      new net::ProxyScriptFetcherImpl(m_urlRequestContext.get()),
                                      m_dhcpProxyScriptFetcherFactory->Create(m_urlRequestContext.get()),
                                      host_resolver.get(),
@@ -237,13 +241,13 @@ void URLRequestContextGetterQt::generateStorage()
                                      m_networkDelegate.get()));
 
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
-    m_storage->set_transport_security_state(new net::TransportSecurityState());
+    m_storage->set_transport_security_state(scoped_ptr<net::TransportSecurityState>(new net::TransportSecurityState()));
 
     m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
     m_storage->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
 
      // Give |m_storage| ownership at the end in case it's |mapped_host_resolver|.
-    m_storage->set_host_resolver(host_resolver.Pass());
+    m_storage->set_host_resolver(std::move(host_resolver));
 }
 
 void URLRequestContextGetterQt::updateCookieStore()
@@ -347,8 +351,8 @@ void URLRequestContextGetterQt::generateUserAgent()
     QMutexLocker lock(&m_mutex);
     m_updateUserAgent = true;
 
-    m_storage->set_http_user_agent_settings(
-        new net::StaticHttpUserAgentSettings(m_httpAcceptLanguage.toStdString(), m_httpUserAgent.toStdString()));
+    m_storage->set_http_user_agent_settings(scoped_ptr<net::HttpUserAgentSettings>(
+        new net::StaticHttpUserAgentSettings(m_httpAcceptLanguage.toStdString(), m_httpUserAgent.toStdString())));
 }
 
 void URLRequestContextGetterQt::updateHttpCache()
@@ -465,22 +469,39 @@ void URLRequestContextGetterQt::generateHttpCache()
                 BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
             );
         break;
+    case BrowserContextAdapter::NoCache:
+        // It's safe to not create BackendFactory.
+        break;
     }
 
     net::HttpCache *cache = 0;
-    net::HttpNetworkSession *network_session = 0;
     net::HttpNetworkSession::Params network_session_params = generateNetworkSessionParams();
 
-    if (m_urlRequestContext->http_transaction_factory())
-        network_session = m_urlRequestContext->http_transaction_factory()->GetSession();
-
-    if (!network_session || !doNetworkSessionParamsMatch(network_session_params, network_session->params())) {
+    if (!m_httpNetworkSession || !doNetworkSessionParamsMatch(network_session_params, m_httpNetworkSession->params())) {
         cancelAllUrlRequests();
-        cache = new net::HttpCache(network_session_params, main_backend);
-    } else
-        cache = new net::HttpCache(network_session, main_backend);
+        m_httpNetworkSession.reset(new net::HttpNetworkSession(network_session_params));
+    }
 
-    m_storage->set_http_transaction_factory(cache);
+    cache = new net::HttpCache(m_httpNetworkSession.get(), scoped_ptr<net::HttpCache::DefaultBackend>(main_backend), false);
+
+    m_storage->set_http_transaction_factory(scoped_ptr<net::HttpCache>(cache));
+}
+
+void URLRequestContextGetterQt::clearHttpCache()
+{
+    if (m_urlRequestContext)
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::clearCurrentCacheBackend, this));
+}
+
+static void doomCallback(int error_code) { Q_UNUSED(error_code); }
+
+void URLRequestContextGetterQt::clearCurrentCacheBackend()
+{
+    if (m_urlRequestContext->http_transaction_factory() && m_urlRequestContext->http_transaction_factory()->GetCache()) {
+        disk_cache::Backend *backend = m_urlRequestContext->http_transaction_factory()->GetCache()->GetCurrentBackend();
+        if (backend)
+            backend->DoomAllEntries(base::Bind(&doomCallback));
+    }
 }
 
 void URLRequestContextGetterQt::generateJobFactory()
@@ -498,34 +519,34 @@ void URLRequestContextGetterQt::generateJobFactory()
         // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
-        jobFactory->SetProtocolHandler(it->first, it->second.release());
+        jobFactory->SetProtocolHandler(it->first, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
         m_protocolHandlers.clear();
     }
 
-    jobFactory->SetProtocolHandler(url::kDataScheme, new net::DataProtocolHandler());
-    jobFactory->SetProtocolHandler(url::kFileScheme, new net::FileProtocolHandler(
+    jobFactory->SetProtocolHandler(url::kDataScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::DataProtocolHandler()));
+    jobFactory->SetProtocolHandler(url::kFileScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FileProtocolHandler(
         content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
-    jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
+    jobFactory->SetProtocolHandler(kQrcSchemeQt, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new QrcProtocolHandlerQt()));
     jobFactory->SetProtocolHandler(url::kFtpScheme,
-        new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
+        scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver()))));
 
     m_installedCustomSchemes = m_customUrlSchemes;
     Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
-        jobFactory->SetProtocolHandler(scheme.toStdString(), new CustomProtocolHandler(m_browserContext));
+        jobFactory->SetProtocolHandler(scheme.toStdString(), scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContext)));
     }
 
     m_baseJobFactory = jobFactory.get();
 
     // Set up interceptors in the reverse order.
-    scoped_ptr<net::URLRequestJobFactory> topJobFactory = jobFactory.Pass();
+    scoped_ptr<net::URLRequestJobFactory> topJobFactory = std::move(jobFactory);
 
     for (content::URLRequestInterceptorScopedVector::reverse_iterator i = m_requestInterceptors.rbegin(); i != m_requestInterceptors.rend(); ++i)
-        topJobFactory.reset(new net::URLRequestInterceptingJobFactory(topJobFactory.Pass(), make_scoped_ptr(*i)));
+        topJobFactory.reset(new net::URLRequestInterceptingJobFactory(std::move(topJobFactory), make_scoped_ptr(*i)));
 
     m_requestInterceptors.weak_clear();
 
-    m_jobFactory = topJobFactory.Pass();
+    m_jobFactory = std::move(topJobFactory);
 
     m_urlRequestContext->set_job_factory(m_jobFactory.get());
 }
@@ -549,7 +570,7 @@ void URLRequestContextGetterQt::regenerateJobFactory()
 
     m_installedCustomSchemes = m_customUrlSchemes;
     Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
-        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), new CustomProtocolHandler(m_browserContext));
+        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContext)));
     }
 }
 

@@ -14,7 +14,6 @@ include(core_common.pri)
 DEFINES += QT_NO_KEYWORDS \
            QT_USE_QSTRINGBUILDER \
            Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS \
-           QTWEBENGINEPROCESS_NAME=\\\"$$QTWEBENGINEPROCESS_NAME\\\" \
            QTWEBENGINECORE_VERSION_STR=\\\"$$MODULE_VERSION\\\" \
            BUILDING_CHROMIUM
 
@@ -40,10 +39,13 @@ SOURCES = \
         browser_accessibility_qt.cpp \
         browser_context_adapter.cpp \
         browser_context_qt.cpp \
+        browser_message_filter_qt.cpp \
         certificate_error_controller.cpp \
         chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
         clipboard_qt.cpp \
+        color_chooser_qt.cpp \
+        color_chooser_controller.cpp \
         common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
@@ -56,6 +58,7 @@ SOURCES = \
         desktop_screen_qt.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
+        favicon_manager.cpp \
         file_picker_controller.cpp \
         gl_context_qt.cpp \
         gl_surface_qt.cpp \
@@ -76,10 +79,11 @@ SOURCES = \
         renderer/pepper/pepper_flash_clipboard_message_filter_qt.cpp \
         renderer/pepper/pepper_flash_renderer_host_qt.cpp \
         renderer/pepper/pepper_host_factory_qt.cpp \
+        renderer/pepper/pepper_isolated_file_system_message_filter.cpp \
         renderer/pepper/pepper_renderer_host_factory_qt.cpp \
         renderer/render_frame_observer_qt.cpp \
         renderer/render_view_observer_qt.cpp \
-        renderer/user_script_controller.cpp \
+        renderer/user_resource_controller.cpp \
         renderer/web_channel_ipc_transport.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
@@ -92,8 +96,8 @@ SOURCES = \
         url_request_custom_job.cpp \
         url_request_custom_job_delegate.cpp \
         url_request_qrc_job_qt.cpp \
+        user_resource_controller_host.cpp \
         user_script.cpp \
-        user_script_controller_host.cpp \
         web_channel_ipc_transport_host.cpp \
         web_contents_adapter.cpp \
         web_contents_delegate_qt.cpp \
@@ -115,10 +119,14 @@ HEADERS = \
         browser_context_adapter.h \
         browser_context_adapter_client.h \
         browser_context_qt.h \
+        browser_message_filter_qt.h \
         certificate_error_controller_p.h \
         certificate_error_controller.h \
         chromium_overrides.h \
         clipboard_qt.h \
+        color_chooser_qt.h \
+        color_chooser_controller_p.h \
+        color_chooser_controller.h \
         common/qt_messages.h \
         common/user_script_data.h \
         content_client_qt.h \
@@ -131,6 +139,8 @@ HEADERS = \
         dev_tools_http_handler_delegate_qt.h \
         download_manager_delegate_qt.h \
         chromium_gpu_helper.h \
+        favicon_manager_p.h \
+        favicon_manager.h \
         file_picker_controller.h \
         gl_context_qt.h \
         gl_surface_qt.h \
@@ -152,10 +162,11 @@ HEADERS = \
         renderer/pepper/pepper_flash_clipboard_message_filter_qt.h \
         renderer/pepper/pepper_flash_renderer_host_qt.h \
         renderer/pepper/pepper_host_factory_qt.h \
+        renderer/pepper/pepper_isolated_file_system_message_filter.h \
         renderer/pepper/pepper_renderer_host_factory_qt.h \
         renderer/render_frame_observer_qt.h \
         renderer/render_view_observer_qt.h \
-        renderer/user_script_controller.h \
+        renderer/user_resource_controller.h \
         renderer/web_channel_ipc_transport.h \
         resource_context_qt.h \
         resource_dispatcher_host_delegate_qt.h \
@@ -167,8 +178,8 @@ HEADERS = \
         url_request_custom_job.h \
         url_request_custom_job_delegate.h \
         url_request_qrc_job_qt.h \
+        user_resource_controller_host.h \
         user_script.h \
-        user_script_controller_host.h \
         web_channel_ipc_transport_host.h \
         web_contents_adapter.h \
         web_contents_adapter_client.h \

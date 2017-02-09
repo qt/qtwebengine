@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -48,6 +51,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QStackedLayout>
+#include <QPageLayout>
 
 QT_BEGIN_NAMESPACE
 
@@ -82,6 +86,7 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
         QObject::connect(page, &QWebEnginePage::titleChanged, view, &QWebEngineView::titleChanged);
         QObject::connect(page, &QWebEnginePage::urlChanged, view, &QWebEngineView::urlChanged);
         QObject::connect(page, &QWebEnginePage::iconUrlChanged, view, &QWebEngineView::iconUrlChanged);
+        QObject::connect(page, &QWebEnginePage::iconChanged, view, &QWebEngineView::iconChanged);
         QObject::connect(page, &QWebEnginePage::loadStarted, view, &QWebEngineView::loadStarted);
         QObject::connect(page, &QWebEnginePage::loadProgress, view, &QWebEngineView::loadProgress);
         QObject::connect(page, &QWebEnginePage::loadFinished, view, &QWebEngineView::loadFinished);
@@ -102,6 +107,7 @@ static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *obje
 QWebEngineViewPrivate::QWebEngineViewPrivate()
     : page(0)
     , m_pendingContextMenuEvent(false)
+    , m_dragEntered(false)
 {
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::installFactory(&webAccessibleFactory);
@@ -117,12 +123,23 @@ QWebEngineViewPrivate::QWebEngineViewPrivate()
     with which the process terminated.
 */
 
+/*!
+    \fn void QWebEngineView::iconChanged(const QIcon &icon)
+    \since 5.7
+
+    This signal is emitted when the icon ("favicon") associated with the
+    view is changed. The new icon is specified by \a icon.
+
+    \sa icon(), iconUrl(), iconUrlChanged()
+*/
+
 QWebEngineView::QWebEngineView(QWidget *parent)
     : QWidget(parent)
     , d_ptr(new QWebEngineViewPrivate)
 {
     Q_D(QWebEngineView);
     d->q_ptr = this;
+    setAcceptDrops(true);
 
     // This causes the child RenderWidgetHostViewQtDelegateWidgets to fill this widget.
     setLayout(new QStackedLayout);
@@ -193,6 +210,20 @@ QUrl QWebEngineView::iconUrl() const
     return page()->iconUrl();
 }
 
+/*!
+    \property QWebEngineView::icon
+    \brief the icon associated with the page currently viewed
+    \since 5.7
+
+    By default, this property contains a null icon.
+
+    \sa iconChanged(), iconUrl(), iconUrlChanged()
+*/
+QIcon QWebEngineView::icon() const
+{
+    return page()->icon();
+}
+
 bool QWebEngineView::hasSelection() const
 {
     return page()->hasSelection();
@@ -259,7 +290,6 @@ QWebEngineView *QWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
     return 0;
 }
 
-
 qreal QWebEngineView::zoomFactor() const
 {
     return page()->zoomFactor();
@@ -312,6 +342,63 @@ void QWebEngineView::hideEvent(QHideEvent *event)
 {
     QWidget::hideEvent(event);
     page()->d_ptr->wasHidden();
+}
+
+/*!
+    \reimp
+*/
+void QWebEngineView::dragEnterEvent(QDragEnterEvent *e)
+{
+    Q_D(QWebEngineView);
+    e->accept();
+    if (d->m_dragEntered)
+        d->page->d_ptr->adapter->leaveDrag();
+    d->page->d_ptr->adapter->enterDrag(e, mapToGlobal(e->pos()));
+    d->m_dragEntered = true;
+}
+
+/*!
+    \reimp
+*/
+void QWebEngineView::dragLeaveEvent(QDragLeaveEvent *e)
+{
+    Q_D(QWebEngineView);
+    if (!d->m_dragEntered)
+        return;
+    e->accept();
+    d->page->d_ptr->adapter->leaveDrag();
+    d->m_dragEntered = false;
+}
+
+/*!
+    \reimp
+*/
+void QWebEngineView::dragMoveEvent(QDragMoveEvent *e)
+{
+    Q_D(QWebEngineView);
+    if (!d->m_dragEntered)
+        return;
+    QtWebEngineCore::WebContentsAdapter *adapter = d->page->d_ptr->adapter.data();
+    Qt::DropAction dropAction = adapter->updateDragPosition(e, mapToGlobal(e->pos()));
+    if (Qt::IgnoreAction == dropAction) {
+        e->ignore();
+    } else {
+        e->setDropAction(dropAction);
+        e->accept();
+    }
+}
+
+/*!
+    \reimp
+*/
+void QWebEngineView::dropEvent(QDropEvent *e)
+{
+    Q_D(QWebEngineView);
+    if (!d->m_dragEntered)
+        return;
+    e->accept();
+    d->page->d_ptr->adapter->endDragging(e->pos(), mapToGlobal(e->pos()));
+    d->m_dragEntered = false;
 }
 
 #ifndef QT_NO_ACCESSIBILITY

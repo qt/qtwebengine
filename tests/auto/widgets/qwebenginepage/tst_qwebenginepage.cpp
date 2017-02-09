@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2016 The Qt Company Ltd.
     Copyright (C) 2009 Girish Ramakrishnan <girish@forwardbias.in>
     Copyright (C) 2010 Holger Hans Peter Freyther
 
@@ -20,6 +20,7 @@
 */
 
 #include "../util.h"
+#include <QByteArray>
 #include <QClipboard>
 #include <QDir>
 #include <QGraphicsWidget>
@@ -216,7 +217,6 @@ private Q_SLOTS:
     void hitTestContent();
     void baseUrl_data();
     void baseUrl();
-    void renderHints();
     void scrollPosition();
     void scrollToAnchor();
     void scrollbarsOff();
@@ -240,6 +240,8 @@ private Q_SLOTS:
     void toPlainTextLoadFinishedRace();
     void setZoomFactor();
     void mouseButtonTranslation();
+
+    void printToPdf();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -421,9 +423,14 @@ void tst_QWebEnginePage::geolocationRequestJS()
         W_QSKIP("Geolocation is not supported.", SkipSingle);
     }
 
-    evaluateJavaScriptSync(newPage, "var errorCode = 0; function error(err) { errorCode = err.code; } function success(pos) { } navigator.geolocation.getCurrentPosition(success, error)");
+    evaluateJavaScriptSync(newPage, "var errorCode = 0; var done = false; function error(err) { errorCode = err.code; done = true; } function success(pos) { done = true; } navigator.geolocation.getCurrentPosition(success, error)");
 
-    QTRY_COMPARE(evaluateJavaScriptSync(newPage, "errorCode").toInt(), errorCode);
+    QTRY_VERIFY(evaluateJavaScriptSync(newPage, "done").toBool());
+    int result = evaluateJavaScriptSync(newPage, "errorCode").toInt();
+    if (result == 2)
+        QEXPECT_FAIL("", "No location service available.", Continue);
+    QCOMPARE(result, errorCode);
+
     delete view;
 }
 
@@ -2886,6 +2893,9 @@ void tst_QWebEnginePage::testJSPrompt()
 {
     JSPromptPage page;
     bool res;
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    page.setHtml(QStringLiteral("<html><body></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
 
     // OK + QString()
     res = evaluateJavaScriptSync(&page,
@@ -3398,7 +3408,7 @@ void tst_QWebEnginePage::loadSignalsOrder()
     QFETCH(QUrl, url);
     QWebEnginePage page;
     SpyForLoadSignalsOrder loadSpy(&page);
-    waitForSignal(&loadSpy, SIGNAL(started()));
+    waitForSignal(&loadSpy, SIGNAL(started()), 500);
     page.load(url);
     QTRY_VERIFY(loadSpy.isFinished());
 }
@@ -4209,167 +4219,30 @@ void tst_QWebEnginePage::baseUrl()
     QCOMPARE(baseUrlSync(m_page), baseUrl);
 }
 
-class DummyPaintEngine: public QPaintEngine {
-public:
-
-    DummyPaintEngine()
-        : QPaintEngine(QPaintEngine::AllFeatures)
-        , renderHints(0)
-    {
-    }
-
-    bool begin(QPaintDevice*)
-    {
-        setActive(true);
-        return true;
-    }
-
-    bool end()
-    {
-        setActive(false);
-        return false;
-    }
-
-    void updateState(const QPaintEngineState& state)
-    {
-        renderHints = state.renderHints();
-    }
-
-    void drawPath(const QPainterPath&) { }
-    void drawPixmap(const QRectF&, const QPixmap&, const QRectF&) { }
-
-    QPaintEngine::Type type() const
-    {
-        return static_cast<QPaintEngine::Type>(QPaintEngine::User + 2);
-    }
-
-    QPainter::RenderHints renderHints;
-};
-
-class DummyPaintDevice: public QPaintDevice {
-public:
-    DummyPaintDevice()
-        : QPaintDevice()
-        , m_engine(new DummyPaintEngine)
-    {
-    }
-
-    ~DummyPaintDevice()
-    {
-        delete m_engine;
-    }
-
-    QPaintEngine* paintEngine() const
-    {
-        return m_engine;
-    }
-
-    QPainter::RenderHints renderHints() const
-    {
-        return m_engine->renderHints;
-    }
-
-protected:
-    int metric(PaintDeviceMetric metric) const;
-
-private:
-    DummyPaintEngine* m_engine;
-    friend class DummyPaintEngine;
-};
-
-
-int DummyPaintDevice::metric(PaintDeviceMetric metric) const
-{
-    switch (metric) {
-    case PdmWidth:
-        return 400;
-        break;
-
-    case PdmHeight:
-        return 200;
-        break;
-
-    case PdmNumColors:
-        return INT_MAX;
-        break;
-
-    case PdmDepth:
-        return 32;
-        break;
-
-    default:
-        break;
-    }
-    return 0;
-}
-
-void tst_QWebEnginePage::renderHints()
-{
-#if !defined(QWEBENGINEPAGE_RENDER)
-    QSKIP("QWEBENGINEPAGE_RENDER");
-#else
-    QString html("<html><body><p>Hello, world!</p></body></html>");
-
-    QWebEnginePage page;
-    page.setHtml(html);
-    page.setViewportSize(page.contentsSize());
-
-    // We will call frame->render and trap the paint engine state changes
-    // to ensure that GraphicsContext does not clobber the render hints.
-    DummyPaintDevice buffer;
-    QPainter painter(&buffer);
-
-    painter.setRenderHint(QPainter::TextAntialiasing, false);
-    page.render(&painter);
-    QVERIFY(!(buffer.renderHints() & QPainter::TextAntialiasing));
-    QVERIFY(!(buffer.renderHints() & QPainter::SmoothPixmapTransform));
-    QVERIFY(!(buffer.renderHints() & QPainter::HighQualityAntialiasing));
-
-    painter.setRenderHint(QPainter::TextAntialiasing, true);
-    page.render(&painter);
-    QVERIFY(buffer.renderHints() & QPainter::TextAntialiasing);
-    QVERIFY(!(buffer.renderHints() & QPainter::SmoothPixmapTransform));
-    QVERIFY(!(buffer.renderHints() & QPainter::HighQualityAntialiasing));
-
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
-    page.render(&painter);
-    QVERIFY(buffer.renderHints() & QPainter::TextAntialiasing);
-    QVERIFY(buffer.renderHints() & QPainter::SmoothPixmapTransform);
-    QVERIFY(!(buffer.renderHints() & QPainter::HighQualityAntialiasing));
-
-    painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
-    page.render(&painter);
-    QVERIFY(buffer.renderHints() & QPainter::TextAntialiasing);
-    QVERIFY(buffer.renderHints() & QPainter::SmoothPixmapTransform);
-    QVERIFY(buffer.renderHints() & QPainter::HighQualityAntialiasing);
-#endif
-}
-
 void tst_QWebEnginePage::scrollPosition()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
     // enlarged image in a small viewport, to provoke the scrollbars to appear
     QString html("<html><body><img src='qrc:/image.png' height=500 width=500/></body></html>");
 
-    QWebEnginePage page;
-    page.setViewportSize(QSize(200, 200));
+    QWebEngineView view;
+    view.setFixedSize(200,200);
+    view.show();
 
-    page.setHtml(html);
-    page.setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
-    page.setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
+    QTest::qWaitForWindowExposed(&view);
+
+    QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
+    view.setHtml(html);
+    QTRY_COMPARE(loadSpy.count(), 1);
 
     // try to set the scroll offset programmatically
-    page.setScrollPosition(QPoint(23, 29));
-    QCOMPARE(page.scrollPosition().x(), 23);
-    QCOMPARE(page.scrollPosition().y(), 29);
+    view.page()->runJavaScript("window.scrollTo(23, 29);");
+    QTRY_COMPARE(view.page()->scrollPosition().x(), qreal(23));
+    QCOMPARE(view.page()->scrollPosition().y(), qreal(29));
 
-    int x = page.evaluateJavaScript("window.scrollX").toInt();
-    int y = page.evaluateJavaScript("window.scrollY").toInt();
+    int x = evaluateJavaScriptSync(view.page(), "window.scrollX").toInt();
+    int y = evaluateJavaScriptSync(view.page(), "window.scrollY").toInt();
     QCOMPARE(x, 23);
     QCOMPARE(y, 29);
-#endif
 }
 
 void tst_QWebEnginePage::scrollToAnchor()
@@ -5051,6 +4924,37 @@ void tst_QWebEnginePage::setZoomFactor()
     QVERIFY(qFuzzyCompare(page->zoomFactor(), 2.5));
 
     delete page;
+}
+
+void tst_QWebEnginePage::printToPdf()
+{
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
+    QVERIFY(tempDir.isValid());
+    QWebEnginePage page;
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    page.load(QUrl("qrc:///resources/basic_printing_page.html"));
+    QTRY_VERIFY(spy.count() == 1);
+
+    QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
+    QString path = tempDir.path() + "/print_1_success.pdf";
+    page.printToPdf(path, layout);
+    QTRY_VERIFY(QFile::exists(path));
+
+#if !defined(Q_OS_WIN)
+    path = tempDir.path() + "/print_//2_failed.pdf";
+#else
+    path = tempDir.path() + "/print_|2_failed.pdf";
+#endif
+    page.printToPdf(path, QPageLayout());
+    QTRY_VERIFY(!QFile::exists(path));
+
+    CallbackSpy<QByteArray> successfulSpy;
+    page.printToPdf(successfulSpy.ref(), layout);
+    QVERIFY(successfulSpy.waitForResult().length() > 0);
+
+    CallbackSpy<QByteArray> failedInvalidLayoutSpy;
+    page.printToPdf(failedInvalidLayoutSpy.ref(), QPageLayout());
+    QCOMPARE(failedInvalidLayoutSpy.waitForResult().length(), 0);
 }
 
 void tst_QWebEnginePage::mouseButtonTranslation()

@@ -1,12 +1,22 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** BSD License Usage
+** Alternatively, you may use this file under the terms of the BSD license
+** as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -64,6 +74,7 @@ signals:
     void closeTab(int index);
     void closeOtherTabs(int index);
     void reloadTab(int index);
+    void muteTab(int index, bool mute);
     void reloadAllTabs();
     void tabMoveRequested(int fromIndex, int toIndex);
 
@@ -80,6 +91,8 @@ private slots:
     void closeTab();
     void closeOtherTabs();
     void reloadTab();
+    void muteTab();
+    void unmuteTab();
     void contextMenuRequested(const QPoint &position);
 
 private:
@@ -206,6 +219,7 @@ public slots:
     void reloadAllTabs();
     void nextTab();
     void previousTab();
+    void setAudioMutedForTab(int index, bool mute);
 
 private slots:
     void currentChanged(int index);
@@ -213,7 +227,7 @@ private slots:
     void aboutToShowRecentTriggeredAction(QAction *action);
     void downloadRequested(QWebEngineDownloadItem *download);
     void webViewLoadStarted();
-    void webViewIconChanged();
+    void webViewIconChanged(const QIcon &icon);
     void webViewTitleChanged(const QString &title);
     void webViewUrlChanged(const QUrl &url);
     void lineEditReturnPressed();
@@ -221,6 +235,7 @@ private slots:
     void moveTab(int fromIndex, int toIndex);
     void fullScreenRequested(QWebEngineFullScreenRequest request);
     void handleTabBarDoubleClicked(int index);
+    void webPageMutedOrAudibleChanged();
 
 private:
     void setupPage(QWebEnginePage* page);

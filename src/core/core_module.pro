@@ -52,7 +52,8 @@ for(LOC, LOCALE_LIST) {
 }
 resources.files = $$REPACK_DIR/qtwebengine_resources.pak \
     $$REPACK_DIR/qtwebengine_resources_100p.pak \
-    $$REPACK_DIR/qtwebengine_resources_200p.pak
+    $$REPACK_DIR/qtwebengine_resources_200p.pak \
+    $$REPACK_DIR/qtwebengine_devtools_resources.pak
 
 icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
 
@@ -88,29 +89,10 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         #
 
         !use?(system_icu) {
-            icudt2build.input = icu.files
-            icudt2build.output = $$[QT_INSTALL_DATA/get]/resources/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
-            icudt2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
-            icudt2build.name = COPY ${QMAKE_FILE_IN}
-            icudt2build.CONFIG = no_link no_clean target_predeps
-            QMAKE_EXTRA_COMPILERS += icudt2build
+            COPIES += icu
         }
 
-        resources2build.input = resources.files
-        resources2build.output = $$[QT_INSTALL_DATA/get]/resources/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
-        resources2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
-        resources2build.name = COPY ${QMAKE_FILE_IN}
-        resources2build.CONFIG = no_link no_clean target_predeps
-
-        QMAKE_EXTRA_COMPILERS += resources2build
-
-        locales2build.input = locales.files
-        locales2build.output = $$[QT_INSTALL_DATA/get]/translations/qtwebengine_locales/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
-        locales2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
-        locales2build.name = COPY ${QMAKE_FILE_IN}
-        locales2build.CONFIG = no_link no_clean target_predeps
-
-        QMAKE_EXTRA_COMPILERS += locales2build
+        COPIES += resources locales
     }
 }
 

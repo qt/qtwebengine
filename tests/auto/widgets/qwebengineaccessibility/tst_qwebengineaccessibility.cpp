@@ -112,9 +112,9 @@ void tst_QWebEngineView::hierarchy()
     QCOMPARE(text->parent(), grouping);
     QCOMPARE(grouping->indexOfChild(text), 0);
     QCOMPARE(text->childCount(), 0);
-    QCOMPARE(text->text(QAccessible::Name), QString());
+    QCOMPARE(text->text(QAccessible::Name), QStringLiteral("Hello world"));
     QCOMPARE(text->text(QAccessible::Description), QString());
-    QCOMPARE(text->text(QAccessible::Value), QStringLiteral("Hello world"));
+    QCOMPARE(text->text(QAccessible::Value), QString());
 
     QAccessibleInterface *input = grouping->child(1);
     QCOMPARE(input->role(), QAccessible::EditableText);
@@ -182,9 +182,9 @@ void tst_QWebEngineView::text()
     QAccessibleInterface *grouping2 = document->child(1);
     QAccessibleInterface *label1 = grouping2->child(0);
     QCOMPARE(label1->role(), QAccessible::StaticText);
-    QCOMPARE(label1->text(QAccessible::Name), QString());
+    QCOMPARE(label1->text(QAccessible::Name), QStringLiteral("Enter your name here:"));
     QCOMPARE(label1->text(QAccessible::Description), QString());
-    QCOMPARE(label1->text(QAccessible::Value), QStringLiteral("Enter your name here:"));
+    QCOMPARE(label1->text(QAccessible::Value), QString());
     QAccessibleInterface *grouping3 = document->child(2);
     QAccessibleInterface *input2 = grouping3->child(0);
     QCOMPARE(input2->role(), QAccessible::EditableText);
@@ -194,9 +194,9 @@ void tst_QWebEngineView::text()
     QAccessibleInterface *grouping4 = document->child(3);
     QAccessibleInterface *label2 = grouping4->child(0);
     QCOMPARE(label2->role(), QAccessible::StaticText);
-    QCOMPARE(label2->text(QAccessible::Name), QString());
+    QCOMPARE(label2->text(QAccessible::Name), QStringLiteral("Provide both first and last name."));
     QCOMPARE(label2->text(QAccessible::Description), QString());
-    QCOMPARE(label2->text(QAccessible::Value), QStringLiteral("Provide both first and last name."));
+    QCOMPARE(label2->text(QAccessible::Value), QString());
 
     // Good day! [edit]
     QAccessibleInterface *grouping5 = document->child(4);

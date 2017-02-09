@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -36,14 +39,18 @@
 
 #include "web_contents_view_qt.h"
 
-#include "browser_context_qt.h"
+#include "browser_context_adapter.h"
 #include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
+#include "web_contents_adapter.h"
 #include "web_engine_context.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/common/context_menu_params.h"
+#include <ui/gfx/image/image_skia.h>
+
+#include <QtGui/qpixmap.h>
 
 namespace QtWebEngineCore {
 
@@ -88,8 +95,8 @@ void WebContentsViewQt::RenderViewCreated(content::RenderViewHost* host)
 {
     // The render process is done creating the RenderView and it's ready to be routed
     // messages at this point.
-    if (m_client && host) {
-        content::RenderWidgetHostView* rwhv = host->GetView();
+    if (m_client) {
+        content::RenderWidgetHostView* rwhv = m_webContents->GetRenderWidgetHostView();
         if (rwhv)
             rwhv->SetBackgroundColor(toSk(m_client->backgroundColor()));
     }
@@ -148,7 +155,7 @@ ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaControls, blink::WebContextMen
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanPrint, blink::WebContextMenuData::MediaCanPrint)
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanRotate, blink::WebContextMenuData::MediaCanRotate)
 
-static WebEngineContextMenuData fromParams(const content::ContextMenuParams &params)
+static inline WebEngineContextMenuData fromParams(const content::ContextMenuParams &params)
 {
     WebEngineContextMenuData ret;
     ret.pos = QPoint(params.x, params.y);
@@ -160,24 +167,75 @@ static WebEngineContextMenuData fromParams(const content::ContextMenuParams &par
     ret.hasImageContent = params.has_image_contents;
     ret.mediaFlags = params.media_flags;
     ret.suggestedFileName = toQt(params.suggested_filename.data());
+    ret.isEditable = params.is_editable;
+#if defined(ENABLE_SPELLCHECK)
+    ret.misspelledWord = toQt(params.misspelled_word);
+    ret.spellCheckerSuggestions = fromVector(params.dictionary_suggestions);
+#endif
     return ret;
 }
 
 void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params)
 {
     WebEngineContextMenuData contextMenuData(fromParams(params));
+#if defined(ENABLE_SPELLCHECK)
+    // Do not use params.spellcheck_enabled, since it is never
+    // correctly initialized for chrome asynchronous spellchecking.
+    // Even fixing the initialization in ContextMenuClientImpl::showContextMenu
+    // will not work. By default SpellCheck::spellcheck_enabled_
+    // must be initialized to true due to the way how the initialization sequence
+    // in SpellCheck works ie. typing the first word triggers the creation
+    // of the SpellcheckService. Use user preference store instead.
+    contextMenuData.isSpellCheckerEnabled = m_client->browserContextAdapter()->isSpellCheckEnabled();
+#endif
     m_client->contextMenuRequested(contextMenuData);
 }
 
-void WebContentsViewQt::StartDragging(const content::DropData& drop_data, blink::WebDragOperationsMask allowed_ops, const gfx::ImageSkia& image, const gfx::Vector2d& image_offset, const content::DragEventSourceInfo& event_info)
+Qt::DropActions toQtDropActions(blink::WebDragOperationsMask ops)
 {
-    Q_UNUSED(&drop_data);
-    Q_UNUSED(allowed_ops);
-    Q_UNUSED(&image);
-    Q_UNUSED(&image_offset);
-    Q_UNUSED(&event_info);
-    // Tell the renderer to cancel the drag, see StartDragging's declaration in render_view_host_delegate_view.h for info.
-    m_webContents->SystemDragEnded();
+    Qt::DropActions result;
+    if (ops & blink::WebDragOperationCopy)
+        result |= Qt::CopyAction;
+    if (ops & blink::WebDragOperationLink)
+        result |= Qt::LinkAction;
+    if (ops & blink::WebDragOperationMove || ops & blink::WebDragOperationDelete)
+        result |= Qt::MoveAction;
+    return result;
+}
+
+Qt::DropAction toQt(blink::WebDragOperation op)
+{
+    if (op == blink::WebDragOperationCopy)
+        return Qt::CopyAction;
+    if (op == blink::WebDragOperationLink)
+        return Qt::LinkAction;
+    if (op == blink::WebDragOperationMove || op == blink::WebDragOperationDelete)
+        return Qt::MoveAction;
+    return Qt::IgnoreAction;
+}
+
+void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
+                                      blink::WebDragOperationsMask allowed_ops,
+                                      const gfx::ImageSkia &image,
+                                      const gfx::Vector2d &image_offset,
+                                      const content::DragEventSourceInfo &event_info)
+{
+    Q_UNUSED(event_info);
+
+    QPixmap pixmap;
+    QPoint hotspot;
+    pixmap = QPixmap::fromImage(toQImage(image.GetRepresentation(m_client->dpiScale())));
+    if (!pixmap.isNull()) {
+        hotspot.setX(image_offset.x());
+        hotspot.setY(image_offset.y());
+    }
+
+    m_client->startDragging(drop_data, toQtDropActions(allowed_ops), pixmap, hotspot);
+}
+
+void WebContentsViewQt::UpdateDragCursor(blink::WebDragOperation dragOperation)
+{
+    m_client->webContentsAdapter()->updateDragAction(toQt(dragOperation));
 }
 
 void WebContentsViewQt::TakeFocus(bool reverse)

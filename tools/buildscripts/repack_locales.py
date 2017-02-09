@@ -1,44 +1,31 @@
 #!/usr/bin/env python
 #############################################################################
-#
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
-# Copyright (C) 2015 The Qt Company Ltd.
-# Contact: http://www.qt.io/licensing/
-#
-# This file is part of the QtWebEngine module of the Qt Toolkit.
-#
-# $QT_BEGIN_LICENSE:LGPL$
-# Commercial License Usage
-# Licensees holding valid commercial Qt licenses may use this file in
-# accordance with the commercial license agreement provided with the
-# Software or, alternatively, in accordance with the terms contained in
-# a written agreement between you and The Qt Company. For licensing terms
-# and conditions see http://www.qt.io/terms-conditions. For further
-# information use the contact form at http://www.qt.io/contact-us.
-#
-# GNU Lesser General Public License Usage
-# Alternatively, this file may be used under the terms of the GNU Lesser
-# General Public License version 2.1 as published by the Free Software
-# Foundation and appearing in the file LICENSE.LGPL included in the
-# packaging of this file. Please review the following information to
-# ensure the GNU Lesser General Public License version 2.1 requirements
-# will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-#
-# As a special exception, The Qt Company gives you certain additional
-# rights. These rights are described in The Qt Company LGPL Exception
-# version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-#
-# GNU General Public License Usage
-# Alternatively, this file may be used under the terms of the GNU
-# General Public License version 3.0 as published by the Free Software
-# Foundation and appearing in the file LICENSE.GPL included in the
-# packaging of this file. Please review the following information to
-# ensure the GNU General Public License version 3.0 requirements will be
-# met: http://www.gnu.org/copyleft/gpl.html.
-#
-#
-# $QT_END_LICENSE$
-#
+##
+## Copyright (c) 2012 The Chromium Authors. All rights reserved.
+## Copyright (C) 2016 The Qt Company Ltd.
+## Contact: https://www.qt.io/licensing/
+##
+## This file is part of the QtWebEngine module of the Qt Toolkit.
+##
+## $QT_BEGIN_LICENSE:GPL-EXCEPT$
+## Commercial License Usage
+## Licensees holding valid commercial Qt licenses may use this file in
+## accordance with the commercial license agreement provided with the
+## Software or, alternatively, in accordance with the terms contained in
+## a written agreement between you and The Qt Company. For licensing terms
+## and conditions see https://www.qt.io/terms-conditions. For further
+## information use the contact form at https://www.qt.io/contact-us.
+##
+## GNU General Public License Usage
+## Alternatively, this file may be used under the terms of the GNU
+## General Public License version 3 as published by the Free Software
+## Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+## included in the packaging of this file. Please review the following
+## information to ensure the GNU General Public License requirements will
+## be met: https://www.gnu.org/licenses/gpl-3.0.html.
+##
+## $QT_END_LICENSE$
+##
 #############################################################################
 
 # This is esentially a trimmed down version of chrome's repack_locales script
@@ -58,6 +45,9 @@ chrome_src = utils.getChromiumSrcDir()
 
 sys.path.append(os.path.join(chrome_src, 'tools', 'grit'))
 from grit.format import data_pack
+
+# The gyp "branding" variable.
+BRANDING = 'chromium'
 
 # Some build paths defined by gyp.
 SHARE_INT_DIR = None
@@ -83,6 +73,19 @@ def calc_output(locale):
 def calc_inputs(locale):
   """Determine the files that need processing for the given locale."""
   inputs = []
+
+  #e.g. '<(SHARED_INTERMEDIATE_DIR)/components/strings/
+  # components_strings_da.pak',
+  inputs.append(os.path.join(SHARE_INT_DIR, 'components', 'strings',
+                'components_strings_%s.pak' % locale))
+
+  #e.g. '<(SHARED_INTERMEDIATE_DIR)/components/strings/
+  # components_chromium_strings_da.pak'
+  #     or
+  #     '<(SHARED_INTERMEDIATE_DIR)/components/strings/
+  # components_google_chrome_strings_da.pak',
+  inputs.append(os.path.join(SHARE_INT_DIR, 'components', 'strings',
+                'components_%s_strings_%s.pak' % (BRANDING, locale)))
 
   if OS != 'ios':
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak'

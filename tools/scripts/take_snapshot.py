@@ -1,44 +1,31 @@
 #!/usr/bin/env python
 
 #############################################################################
-#
-# Copyright (C) 2015 The Qt Company Ltd.
-# Contact: http://www.qt.io/licensing/
-#
-# This file is part of the QtWebEngine module of the Qt Toolkit.
-#
-# $QT_BEGIN_LICENSE:LGPL$
-# Commercial License Usage
-# Licensees holding valid commercial Qt licenses may use this file in
-# accordance with the commercial license agreement provided with the
-# Software or, alternatively, in accordance with the terms contained in
-# a written agreement between you and The Qt Company. For licensing terms
-# and conditions see http://www.qt.io/terms-conditions. For further
-# information use the contact form at http://www.qt.io/contact-us.
-#
-# GNU Lesser General Public License Usage
-# Alternatively, this file may be used under the terms of the GNU Lesser
-# General Public License version 2.1 as published by the Free Software
-# Foundation and appearing in the file LICENSE.LGPL included in the
-# packaging of this file. Please review the following information to
-# ensure the GNU Lesser General Public License version 2.1 requirements
-# will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-#
-# As a special exception, The Qt Company gives you certain additional
-# rights. These rights are described in The Qt Company LGPL Exception
-# version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-#
-# GNU General Public License Usage
-# Alternatively, this file may be used under the terms of the GNU
-# General Public License version 3.0 as published by the Free Software
-# Foundation and appearing in the file LICENSE.GPL included in the
-# packaging of this file. Please review the following information to
-# ensure the GNU General Public License version 3.0 requirements will be
-# met: http://www.gnu.org/copyleft/gpl.html.
-#
-#
-# $QT_END_LICENSE$
-#
+##
+## Copyright (C) 2016 The Qt Company Ltd.
+## Contact: https://www.qt.io/licensing/
+##
+## This file is part of the QtWebEngine module of the Qt Toolkit.
+##
+## $QT_BEGIN_LICENSE:GPL-EXCEPT$
+## Commercial License Usage
+## Licensees holding valid commercial Qt licenses may use this file in
+## accordance with the commercial license agreement provided with the
+## Software or, alternatively, in accordance with the terms contained in
+## a written agreement between you and The Qt Company. For licensing terms
+## and conditions see https://www.qt.io/terms-conditions. For further
+## information use the contact form at https://www.qt.io/contact-us.
+##
+## GNU General Public License Usage
+## Alternatively, this file may be used under the terms of the GNU
+## General Public License version 3 as published by the Free Software
+## Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+## included in the packaging of this file. Please review the following
+## information to ensure the GNU General Public License requirements will
+## be met: https://www.gnu.org/licenses/gpl-3.0.html.
+##
+## $QT_END_LICENSE$
+##
 #############################################################################
 
 import glob
@@ -91,11 +78,14 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('base/android/java')
         or file_path.startswith('breakpad')
         or file_path.startswith('build/android/')
+        or file_path.startswith('buildtools/clang_format/script')
         or (file_path.startswith('chrome/') and
             not file_path.startswith('chrome/VERSION') and
+            not file_path.startswith('chrome/browser/chrome_notification_types.h') and
             not '/app/theme/' in file_path and
             not '/app/resources/' in file_path and
-            not '/browser/resources/' in file_path and
+            not '/browser/printing/' in file_path and
+            not ('/browser/resources/' in file_path and not '/chromeos/' in file_path) and
             not '/renderer/resources/' in file_path and
             not 'repack_locales' in file_path and
             not 'third_party/chromevox' in file_path and
@@ -103,6 +93,9 @@ def isInChromiumBlacklist(file_path):
             not 'media/desktop_streams_registry.' in file_path and
             not 'common/chrome_switches.' in file_path and
             not 'common/localized_error.' in file_path and
+            not 'common/spellcheck_' in file_path and
+            not '/spellchecker/' in file_path and
+            not '/tools/convert_dict/' in file_path and
             not file_path.endswith('cf_resources.rc') and
             not file_path.endswith('version.py') and
             not file_path.endswith('.grd') and
@@ -113,18 +106,29 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('chromeos')
         or file_path.startswith('cloud_print')
         or (file_path.startswith('components') and
+            not file_path.startswith('components/cdm') and
             not file_path.startswith('components/device_event_log') and
             not file_path.startswith('components/devtools_') and
             not file_path.startswith('components/error_page') and
+            not file_path.startswith('components/keyed_service') and
             not file_path.startswith('components/mime_util') and
+            not file_path.startswith('components/precache') and
+            not file_path.startswith('components/pref_registry') and
             not file_path.startswith('components/printing') and
             not file_path.startswith('components/resources') and
             not file_path.startswith('components/scheduler') and
+            not file_path.startswith('components/security_interstitials') and
+            not file_path.startswith('components/startup_metric_utils') and
             not file_path.startswith('components/strings') and
             not file_path.startswith('components/tracing') and
+            not file_path.startswith('components/url_formatter') and
+            not file_path.startswith('components/user_prefs') and
+            not file_path.startswith('components/version_') and
             not file_path.startswith('components/visitedlink') and
             not file_path.startswith('components/web_cache') and
             not file_path.startswith('components/webcrypto') and
+            not file_path.startswith('components/webusb') and
+            not file_path.endswith('.grd') and
             not file_path.endswith('.grdp') and
             not 'components_strings' in file_path)
         or file_path.startswith('content/public/android/java')
@@ -133,7 +137,9 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('courgette')
         or (file_path.startswith('extensions') and
             not 'browser/extension_function_registry.h' in file_path and
-            not 'browser/extension_function_histogram_value.h' in file_path)
+            not 'browser/extension_function_histogram_value.h' in file_path and
+            not 'browser/notification_types.cc' in file_path and
+            not 'browser/notification_types.h' in file_path)
         or file_path.startswith('google_update')
         or file_path.startswith('ios')
         or file_path.startswith('media/base/android/java')
@@ -157,11 +163,12 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/bison')
         or (file_path.startswith('third_party/cacheinvalidation') and
             not file_path.endswith('isolate'))
+        or file_path.startswith('third_party/boringssl/src/fuzz')
+        or file_path.startswith('third_party/catapult')
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')
         or file_path.startswith('third_party/colorama')
-        or file_path.startswith('third_party/cros_system_api')
         or file_path.startswith('third_party/cygwin')
         or file_path.startswith('third_party/cython')
         or file_path.startswith('third_party/deqp')
@@ -173,14 +180,13 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/google_appengine_cloudstorage')
         or file_path.startswith('third_party/google_toolbox_for_mac')
         or file_path.startswith('third_party/hunspell_dictionaries')
-        or file_path.startswith('third_party/hunspell')
+        or (file_path.startswith('third_party/icu') and file_path.endswith('icudtl_dat.S'))
         or file_path.startswith('third_party/instrumented_libraries')
         or file_path.startswith('third_party/jsr-305/src')
         or file_path.startswith('third_party/junit')
         or file_path.startswith('third_party/libphonenumber')
         or file_path.startswith('third_party/libaddressinput')
         or file_path.startswith('third_party/libc++')
-        or file_path.startswith('third_party/libc++abi')
         or file_path.startswith('third_party/liblouis')
         or file_path.startswith('third_party/lighttpd')
         or file_path.startswith('third_party/markdown')
@@ -188,15 +194,18 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/nacl_sdk_binaries')
         or (file_path.startswith('third_party/polymer') and
             not file_path.startswith('third_party/polymer/v1_0/components-chromium/'))
+        or file_path.startswith('third_party/openh264/src/res')
         or file_path.startswith('third_party/pdfsqueeze')
         or file_path.startswith('third_party/pefile')
         or file_path.startswith('third_party/perl')
         or file_path.startswith('third_party/pdfium')
         or file_path.startswith('third_party/psyco_win32')
         or file_path.startswith('third_party/scons-2.0.1')
+        or file_path.startswith('third_party/sfntly/src/cpp/data/fonts')
         or file_path.startswith('third_party/trace-viewer')
         or file_path.startswith('third_party/undoview')
         or file_path.startswith('third_party/webgl')
+        or file_path.startswith('tools/memory_inspector')
         or (file_path.startswith('tools') and
            not file_path.startswith('tools/clang') and
            not file_path.startswith('tools/compile_test') and
@@ -208,7 +217,10 @@ def isInChromiumBlacklist(file_path):
            not file_path.startswith('tools/json_comment_eater') and
            not file_path.startswith('tools/json_schema_compiler') and
            not file_path.startswith('tools/idl_parser') and
-           not file_path.startswith('tools/protoc_wrapper'))
+           not file_path.startswith('tools/memory') and
+           not file_path.startswith('tools/msan') and
+           not file_path.startswith('tools/protoc_wrapper') and
+           not file_path.startswith('tools/ubsan'))
         or file_path.startswith('ui/android/java')
         or file_path.startswith('ui/app_list')
         or file_path.startswith('ui/base/ime/chromeos')
@@ -267,7 +279,7 @@ def listFilesInCurrentRepository():
     for submodule in submodules:
         submodule_files = submodule.listFiles()
         for submodule_file in submodule_files:
-            files.append(os.path.join(submodule.path, submodule_file))
+            files.append(os.path.join(submodule.pathRelativeToTopMostSupermodule(), submodule_file))
     return files
 
 def exportNinja():

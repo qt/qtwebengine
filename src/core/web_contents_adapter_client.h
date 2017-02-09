@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -50,10 +53,15 @@ QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 
+namespace content {
+struct DropData;
+}
+
 namespace QtWebEngineCore {
 
 class AuthenticationDialogController;
 class BrowserContextAdapter;
+class ColorChooserController;
 class FilePickerController;
 class JavaScriptDialogController;
 class RenderWidgetHostViewQt;
@@ -71,6 +79,8 @@ public:
         : mediaType(MediaTypeNone)
         , hasImageContent(false)
         , mediaFlags(0)
+        , isEditable(false)
+        , isSpellCheckerEnabled(false)
     {
     }
 
@@ -116,11 +126,12 @@ public:
     bool hasImageContent;
     uint mediaFlags;
     QString suggestedFileName;
+    bool isEditable;
+    bool isSpellCheckerEnabled;
+    QString misspelledWord;
+    QStringList spellCheckerSuggestions;
 // Some likely candidates for future additions as we add support for the related actions:
 //    bool isImageBlocked;
-//    bool isEditable;
-//    bool isSpellCheckingEnabled;
-//    QStringList spellCheckingSuggestions;
 //    <enum tbd> mediaType;
 //    ...
 };
@@ -197,6 +208,7 @@ public:
     virtual void loadProgressChanged(int progress) = 0;
     virtual void didUpdateTargetURL(const QUrl&) = 0;
     virtual void selectionChanged() = 0;
+    virtual void recentlyAudibleChanged(bool recentlyAudible) = 0;
     virtual QRectF viewportRect() const = 0;
     virtual qreal dpiScale() const = 0;
     virtual QColor backgroundColor() const = 0;
@@ -210,16 +222,18 @@ public:
     virtual bool isBeingAdopted() = 0;
     virtual void close() = 0;
     virtual void windowCloseRejected() = 0;
-    virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
+    virtual bool contextMenuRequested(const WebEngineContextMenuData &) = 0;
     virtual void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) = 0;
     virtual void requestFullScreenMode(const QUrl &origin, bool fullscreen) = 0;
     virtual bool isFullScreenMode() const = 0;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;
     virtual void runFileChooser(FilePickerController *controller) = 0;
+    virtual void showColorDialog(QSharedPointer<ColorChooserController>) = 0;
     virtual void didRunJavaScript(quint64 requestId, const QVariant& result) = 0;
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) = 0;
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) = 0;
     virtual void didFindText(quint64 requestId, int matchCount) = 0;
+    virtual void didPrintPage(quint64 requestId, const QByteArray &result) = 0;
     virtual void passOnFocus(bool reverse) = 0;
     // returns the last QObject (QWidget/QQuickItem) based object in the accessibility
     // hierarchy before going into the BrowserAccessibility tree
@@ -239,10 +253,15 @@ public:
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;
     virtual void requestGeometryChange(const QRect &geometry) = 0;
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
+    virtual void updateScrollPosition(const QPointF &position) = 0;
+    virtual void updateContentsSize(const QSizeF &size) = 0;
+    virtual void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
+                               const QPixmap &pixmap, const QPoint &offset) = 0;
     virtual bool isEnabled() const = 0;
     virtual const QObject *holdingQObject() const = 0;
 
     virtual QSharedPointer<BrowserContextAdapter> browserContextAdapter() = 0;
+    virtual WebContentsAdapter* webContentsAdapter() = 0;
 
 };
 

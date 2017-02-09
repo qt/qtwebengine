@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
@@ -11,24 +11,27 @@
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 3 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
 ** packaging of this file. Please review the following information to
 ** ensure the GNU Lesser General Public License version 3 requirements
-** will be met: https://www.gnu.org/licenses/lgpl.html.
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 2.0 or later as published by the Free
-** Software Foundation and appearing in the file LICENSE.GPL included in
-** the packaging of this file. Please review the following information to
-** ensure the GNU General Public License version 2.0 requirements will be
-** met: http://www.gnu.org/licenses/gpl-2.0.html.
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -42,6 +45,10 @@
 #include "common/qt_messages.h"
 
 #include "content/public/renderer/render_view.h"
+#include "gin/arguments.h"
+#include "gin/handle.h"
+#include "gin/object_template_builder.h"
+#include "gin/wrappable.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -50,34 +57,23 @@
 
 namespace QtWebEngineCore {
 
-static const char kWebChannelTransportExtensionName[] = "v8/WebChannelTransport";
-
-static const char kWebChannelTransportApi[] =
-        "if (typeof(qt) === 'undefined')" \
-        "  qt = {};" \
-        "if (typeof(qt.webChannelTransport) === 'undefined')" \
-        "  qt.webChannelTransport = {};" \
-        "qt.webChannelTransport.send = function(message) {" \
-        "  native function NativeQtSendMessage();" \
-        "  NativeQtSendMessage(message);" \
-        "};";
-
-class WebChannelTransportExtension : public v8::Extension {
+class WebChannelTransport : public gin::Wrappable<WebChannelTransport> {
 public:
-    static content::RenderView *GetRenderView();
+    static gin::WrapperInfo kWrapperInfo;
+    static void Install(blink::WebFrame *frame, uint worldId);
+    static void Uninstall(blink::WebFrame *frame, uint worldId);
+private:
+    content::RenderView *GetRenderView(v8::Isolate *isolate);
+    WebChannelTransport() { }
+    virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate *isolate) override;
 
-    WebChannelTransportExtension() : v8::Extension(kWebChannelTransportExtensionName, kWebChannelTransportApi)
+    void NativeQtSendMessage(gin::Arguments *args)
     {
-    }
-
-    virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(v8::Isolate* isolate, v8::Handle<v8::String> name) Q_DECL_OVERRIDE;
-
-    static void NativeQtSendMessage(const v8::FunctionCallbackInfo<v8::Value>& args)
-    {
-        content::RenderView *renderView = GetRenderView();
-        if (!renderView || args.Length() != 1)
+        content::RenderView *renderView = GetRenderView(args->isolate());
+        if (!renderView || args->Length() != 1)
             return;
-        v8::Handle<v8::Value> val = args[0];
+        v8::Handle<v8::Value> val;
+        args->GetNext(&val);
         if (!val->IsString() && !val->IsStringObject())
             return;
         v8::String::Utf8Value utf8(val->ToString());
@@ -91,11 +87,59 @@ public:
         const char *rawData = doc.rawData(&size);
         renderView->Send(new WebChannelIPCTransportHost_SendMessage(renderView->GetRoutingID(), std::vector<char>(rawData, rawData + size)));
     }
+
+    DISALLOW_COPY_AND_ASSIGN(WebChannelTransport);
 };
 
-content::RenderView *WebChannelTransportExtension::GetRenderView()
+gin::WrapperInfo WebChannelTransport::kWrapperInfo = { gin::kEmbedderNativeGin };
+
+void WebChannelTransport::Install(blink::WebFrame *frame, uint worldId)
 {
-    blink::WebLocalFrame *webframe = blink::WebLocalFrame::frameForCurrentContext();
+    v8::Isolate *isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::Context> context;
+    if (worldId == 0)
+        context = frame->mainWorldScriptContext();
+    else
+        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId, 0);
+    v8::Context::Scope contextScope(context);
+
+    gin::Handle<WebChannelTransport> transport = gin::CreateHandle(isolate, new WebChannelTransport);
+    v8::Handle<v8::Object> global = context->Global();
+    v8::Handle<v8::Object> qt = global->Get(gin::StringToV8(isolate, "qt"))->ToObject();
+    if (qt.IsEmpty()) {
+        qt = v8::Object::New(isolate);
+        global->Set(gin::StringToV8(isolate, "qt"), qt);
+    }
+    qt->Set(gin::StringToV8(isolate, "webChannelTransport"), transport.ToV8());
+}
+
+void WebChannelTransport::Uninstall(blink::WebFrame *frame, uint worldId)
+{
+    v8::Isolate *isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::Context> context;
+    if (worldId == 0)
+        context = frame->mainWorldScriptContext();
+    else
+        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId, 0);
+    v8::Context::Scope contextScope(context);
+
+    v8::Handle<v8::Object> global(context->Global());
+    v8::Handle<v8::Object> qt = global->Get(gin::StringToV8(isolate, "qt"))->ToObject();
+    if (qt.IsEmpty())
+        return;
+    qt->Delete(gin::StringToV8(isolate, "webChannelTransport"));
+}
+
+gin::ObjectTemplateBuilder WebChannelTransport::GetObjectTemplateBuilder(v8::Isolate *isolate)
+{
+    return gin::Wrappable<WebChannelTransport>::GetObjectTemplateBuilder(isolate).SetMethod("send", &WebChannelTransport::NativeQtSendMessage);
+}
+
+content::RenderView *WebChannelTransport::GetRenderView(v8::Isolate *isolate)
+{
+    blink::WebLocalFrame *webframe = blink::WebLocalFrame::frameForContext(isolate->GetCurrentContext());
     DCHECK(webframe) << "There should be an active frame since we just got a native function called.";
     if (!webframe)
         return 0;
@@ -107,20 +151,33 @@ content::RenderView *WebChannelTransportExtension::GetRenderView()
     return content::RenderView::FromWebView(webview);
 }
 
-v8::Handle<v8::FunctionTemplate> WebChannelTransportExtension::GetNativeFunctionTemplate(v8::Isolate *isolate, v8::Handle<v8::String> name)
-{
-    if (name->Equals(v8::String::NewFromUtf8(isolate, "NativeQtSendMessage")))
-        return v8::FunctionTemplate::New(isolate, NativeQtSendMessage);
-
-    return v8::Handle<v8::FunctionTemplate>();
-}
-
 WebChannelIPCTransport::WebChannelIPCTransport(content::RenderView *renderView)
     : content::RenderViewObserver(renderView)
+    , m_installed(false)
+    , m_installedWorldId(0)
 {
 }
 
-void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &binaryJSON)
+void WebChannelIPCTransport::installWebChannel(uint worldId)
+{
+    blink::WebView *webView = render_view()->GetWebView();
+    if (!webView)
+        return;
+    WebChannelTransport::Install(webView->mainFrame(), worldId);
+    m_installed = true;
+    m_installedWorldId = worldId;
+}
+
+void WebChannelIPCTransport::uninstallWebChannel(uint worldId)
+{
+    blink::WebView *webView = render_view()->GetWebView();
+    if (!webView)
+        return;
+    WebChannelTransport::Uninstall(webView->mainFrame(), worldId);
+    m_installed = false;
+}
+
+void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &binaryJSON, uint worldId)
 {
     blink::WebView *webView = render_view()->GetWebView();
     if (!webView)
@@ -133,17 +190,21 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     v8::Isolate *isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
     blink::WebFrame *frame = webView->mainFrame();
-    v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+    v8::Handle<v8::Context> context;
+    if (worldId == 0)
+        context = frame->mainWorldScriptContext();
+    else
+        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId, 0);
     v8::Context::Scope contextScope(context);
 
     v8::Handle<v8::Object> global(context->Global());
-    v8::Handle<v8::Value> qtObjectValue(global->Get(v8::String::NewFromUtf8(isolate, "qt")));
+    v8::Handle<v8::Value> qtObjectValue(global->Get(gin::StringToV8(isolate, "qt")));
     if (!qtObjectValue->IsObject())
         return;
-    v8::Handle<v8::Value> webChannelObjectValue(qtObjectValue->ToObject()->Get(v8::String::NewFromUtf8(isolate, "webChannelTransport")));
+    v8::Handle<v8::Value> webChannelObjectValue(qtObjectValue->ToObject()->Get(gin::StringToV8(isolate, "webChannelTransport")));
     if (!webChannelObjectValue->IsObject())
         return;
-    v8::Handle<v8::Value> onmessageCallbackValue(webChannelObjectValue->ToObject()->Get(v8::String::NewFromUtf8(isolate, "onmessage")));
+    v8::Handle<v8::Value> onmessageCallbackValue(webChannelObjectValue->ToObject()->Get(gin::StringToV8(isolate, "onmessage")));
     if (!onmessageCallbackValue->IsFunction()) {
         qWarning("onmessage is not a callable property of qt.webChannelTransport. Some things might not work as expected.");
         return;
@@ -161,15 +222,19 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     frame->callFunctionEvenIfScriptDisabled(callback, webChannelObjectValue->ToObject(), argc, argv);
 }
 
-v8::Extension *WebChannelIPCTransport::getV8Extension()
+void WebChannelIPCTransport::DidCreateDocumentElement(blink::WebLocalFrame* frame)
 {
-    return new WebChannelTransportExtension;
+    blink::WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
+    if (m_installed && frame == main_frame)
+        WebChannelTransport::Install(frame, m_installedWorldId);
 }
 
 bool WebChannelIPCTransport::OnMessageReceived(const IPC::Message &message)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(WebChannelIPCTransport, message)
+        IPC_MESSAGE_HANDLER(WebChannelIPCTransport_Install, installWebChannel)
+        IPC_MESSAGE_HANDLER(WebChannelIPCTransport_Uninstall, uninstallWebChannel)
         IPC_MESSAGE_HANDLER(WebChannelIPCTransport_Message, dispatchWebChannelMessage)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()

@@ -1,12 +1,22 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** BSD License Usage
+** Alternatively, you may use this file under the terms of the BSD license
+** as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -45,6 +55,7 @@
 #include "downloadmanager.h"
 #include "fullscreennotification.h"
 #include "history.h"
+#include "savepagedialog.h"
 #include "urllineedit.h"
 #include "webview.h"
 
@@ -124,6 +135,15 @@ void TabBar::contextMenuRequested(const QPoint &position)
 
         action = menu.addAction(tr("Reload Tab"),
                 this, SLOT(reloadTab()), QKeySequence::Refresh);
+        action->setData(index);
+
+        // Audio mute / unmute.
+        action = menu.addAction(tr("Mute tab"),
+                this, SLOT(muteTab()));
+        action->setData(index);
+
+        action = menu.addAction(tr("Unmute tab"),
+                this, SLOT(unmuteTab()));
         action->setData(index);
     } else {
         menu.addSeparator();
@@ -218,6 +238,22 @@ void TabBar::reloadTab()
     }
 }
 
+void TabBar::muteTab()
+{
+    if (QAction *action = qobject_cast<QAction*>(sender())) {
+        int index = action->data().toInt();
+        emit muteTab(index, true);
+    }
+}
+
+void TabBar::unmuteTab()
+{
+    if (QAction *action = qobject_cast<QAction*>(sender())) {
+        int index = action->data().toInt();
+        emit muteTab(index, false);
+    }
+}
+
 TabWidget::TabWidget(QWidget *parent)
     : QTabWidget(parent)
     , m_recentlyClosedTabsAction(0)
@@ -243,6 +279,7 @@ TabWidget::TabWidget(QWidget *parent)
     connect(m_tabBar, SIGNAL(reloadAllTabs()), this, SLOT(reloadAllTabs()));
     connect(m_tabBar, SIGNAL(tabMoved(int,int)), this, SLOT(moveTab(int,int)));
     connect(m_tabBar, SIGNAL(tabBarDoubleClicked(int)), this, SLOT(handleTabBarDoubleClicked(int)));
+    connect(m_tabBar, SIGNAL(muteTab(int,bool)), this, SLOT(setAudioMutedForTab(int,bool)));
     setTabBar(m_tabBar);
     setDocumentMode(true);
 
@@ -306,6 +343,18 @@ void TabWidget::moveTab(int fromIndex, int toIndex)
     QWidget *lineEdit = m_lineEdits->widget(fromIndex);
     m_lineEdits->removeWidget(lineEdit);
     m_lineEdits->insertWidget(toIndex, lineEdit);
+}
+
+void TabWidget::setAudioMutedForTab(int index, bool mute)
+{
+    if (index < 0)
+        index = currentIndex();
+    if (index < 0 || index >= count())
+        return;
+
+    QWidget *widget = this->widget(index);
+    if (WebView *tab = qobject_cast<WebView*>(widget))
+        tab->page()->setAudioMuted(mute);
 }
 
 void TabWidget::addWebAction(QAction *action, QWebEnginePage::WebAction webAction)
@@ -551,10 +600,14 @@ WebView *TabWidget::newTab(bool makeCurrent)
     urlLineEdit->setWebView(webView);
     connect(webView, SIGNAL(loadStarted()),
             this, SLOT(webViewLoadStarted()));
-    connect(webView, SIGNAL(iconChanged()),
-            this, SLOT(webViewIconChanged()));
+    connect(webView, SIGNAL(iconChanged(QIcon)),
+            this, SLOT(webViewIconChanged(QIcon)));
     connect(webView, SIGNAL(titleChanged(QString)),
             this, SLOT(webViewTitleChanged(QString)));
+    connect(webView->page(), SIGNAL(audioMutedChanged(bool)),
+            this, SLOT(webPageMutedOrAudibleChanged()));
+    connect(webView->page(), SIGNAL(recentlyAudibleChanged(bool)),
+            this, SLOT(webPageMutedOrAudibleChanged()));
     connect(webView, SIGNAL(urlChanged(QUrl)),
             this, SLOT(webViewUrlChanged(QUrl)));
 
@@ -686,14 +739,12 @@ void TabWidget::webViewLoadStarted()
     }
 }
 
-void TabWidget::webViewIconChanged()
+void TabWidget::webViewIconChanged(const QIcon &icon)
 {
     WebView *webView = qobject_cast<WebView*>(sender());
     int index = webViewIndex(webView);
-    if (-1 != index) {
-        QIcon icon = webView->icon();
+    if (-1 != index)
         setTabIcon(index, icon);
-    }
 }
 
 void TabWidget::webViewTitleChanged(const QString &title)
@@ -706,6 +757,23 @@ void TabWidget::webViewTitleChanged(const QString &title)
     if (currentIndex() == index)
         emit setCurrentTitle(title);
     BrowserApplication::historyManager()->updateHistoryItem(webView->url(), title);
+}
+
+void TabWidget::webPageMutedOrAudibleChanged() {
+    QWebEnginePage* webPage = qobject_cast<QWebEnginePage*>(sender());
+    WebView *webView = qobject_cast<WebView*>(webPage->view());
+
+    int index = webViewIndex(webView);
+    if (-1 != index) {
+        QString title = webView->title();
+
+        bool muted = webPage->isAudioMuted();
+        bool audible = webPage->recentlyAudible();
+        if (muted) title += tr(" (muted)");
+        else if (audible) title += tr(" (audible)");
+
+        setTabText(index, title);
+    }
 }
 
 void TabWidget::webViewUrlChanged(const QUrl &url)
@@ -855,6 +923,14 @@ bool TabWidget::restoreState(const QByteArray &state)
 
 void TabWidget::downloadRequested(QWebEngineDownloadItem *download)
 {
+    if (download->savePageFormat() != QWebEngineDownloadItem::UnknownSaveFormat) {
+        SavePageDialog dlg(this, download->savePageFormat(), download->path());
+        if (dlg.exec() != SavePageDialog::Accepted)
+            return;
+        download->setSavePageFormat(dlg.pageFormat());
+        download->setPath(dlg.filePath());
+    }
+
     BrowserApplication::downloadManager()->download(download);
     download->accept();
 }
