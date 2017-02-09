@@ -176,8 +176,10 @@ GN_CONTENTS += "  ldflags += ["
 for (flag, QMAKE_LFLAGS): GN_CONTENTS += "    \"$$filter_flag_values($$flag)\","
 for (flag, GN_FLAGS): GN_CONTENTS += "    \"$$flag\","
 !isEmpty(QMAKE_RPATHDIR) {
-    macos: GN_CONTENTS += "    \"-Wl,-rpath,$${QMAKE_RPATHDIR}\","
-    else:unix: GN_CONTENTS += "    \"-Wl,-rpath=$${QMAKE_RPATHDIR}\","
+    for (rpath, QMAKE_RPATHDIR) {
+        macos: GN_CONTENTS += "    \"-Wl,-rpath,$${rpath}\","
+        else:unix: GN_CONTENTS += "    \"-Wl,-rpath=$${rpath}\","
+    }
 }
 !isEmpty(QMAKE_RPATHLINKDIR): GN_CONTENTS += "    \"-Wl,-rpath-link=$${QMAKE_RPATHLINKDIR}\","
 GN_CONTENTS += "  ]"
