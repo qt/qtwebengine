@@ -18,6 +18,11 @@ use?(gn) {
     use?(icecc) {
         gn_args += use_debug_fission=false
     }
+
+    cross_compile:!host_build {
+        TOOLCHAIN_SYSROOT = $$[QT_SYSROOT]
+        !isEmpty(TOOLCHAIN_SYSROOT): gn_args += target_sysroot=\"$${TOOLCHAIN_SYSROOT}\"
+    }
 }
 
 GYP_CONFIG += \

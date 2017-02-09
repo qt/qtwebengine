@@ -35,7 +35,7 @@ defineTest(runConfigure) {
     }
     isQtMinimum(5, 9) {
         qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
-        linux: !cross_compile: WEBENGINE_CONFIG += use_gn
+        linux: WEBENGINE_CONFIG += use_gn
         macos: WEBENGINE_CONFIG += use_gn
         win32: WEBENGINE_CONFIG += use_gn
     }
@@ -57,7 +57,6 @@ defineTest(runConfigure) {
              packagesExist("\'glib-2.0 >= 2.32.0\'"): WEBENGINE_CONFIG += use_glib
              else: skipBuild("System glib is too old (min. version 2.32).$${EOL}")
         }
-        !contains(WEBENGINE_CONFIG, embedded_build): REQUIRED_PACKAGES += libpci
 
         for(package, $$list($$REQUIRED_PACKAGES)) {
             !packagesExist($$package):skipBuild("Unmet dependency: $$package")

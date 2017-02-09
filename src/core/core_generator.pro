@@ -40,7 +40,7 @@ RCC_DIR = $$OUT_PWD/$$getConfigDir()/.rcc
 
 # Assume that we want mobile touch and low-end hardware behaviors
 # whenever we are cross compiling.
-cross_compile: DEFINES += QTWEBENGINE_EMBEDDED_SWITCHES
+contains(WEBENGINE_CONFIG, embedded_build): DEFINES += QTWEBENGINE_EMBEDDED_SWITCHES
 
 qtConfig(egl): CONFIG += egl
 
