@@ -41,6 +41,9 @@ use?(gn) {
         gn_args += enable_webrtc=false
     }
 
+    # Compiling with -Os makes a huge difference in binary size
+    contains(WEBENGINE_CONFIG, reduce_binary_size): gn_args += optimize_for_size=true
+
 } else {
     # Trigger Qt-specific build conditions.
     GYP_CONFIG += use_qt=1
