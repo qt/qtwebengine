@@ -7,7 +7,6 @@ use?(gn) {
         is_desktop_linux=false \
         use_gold=false \
         use_ozone=true \
-        is_clang=false \
         use_sysroot=false \
         enable_session_service=false \
         enable_notifications=false \

@@ -2,7 +2,6 @@ include(linux.pri)
 
 use?(gn) {
     gn_args += \
-        is_clang=false \
         use_sysroot=false \
         enable_session_service=false \
         enable_notifications=false \

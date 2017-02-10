@@ -22,6 +22,19 @@ use?(gn) {
     }
     gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): gn_args += no_delete_null_pointer_checks=true
 
+    clang {
+        clang_full_path = $$which($${QMAKE_CXX})
+        # Remove the "/bin/clang++" part.
+        clang_prefix = $$section(clang_full_path, /, 0, -3)
+        gn_args += \
+            is_clang=true \
+            clang_use_chrome_plugins=false \
+            clang_base_path=\"$${clang_prefix}\"
+    } else {
+        gn_args += \
+            is_clang=false
+    }
+
     host_build {
         gn_args += custom_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:host\"
         # Don't bother trying to use system libraries in this case
