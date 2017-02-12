@@ -182,10 +182,14 @@ void RenderWidgetHostViewQtDelegateWidget::initAsPopup(const QRect& screenRect)
     setAttribute(Qt::WA_ShowWithoutActivating);
     setFocusPolicy(Qt::NoFocus);
 
+#ifdef Q_OS_MACOS
     // macOS doesn't like Qt::ToolTip when QWebEngineView is inside a modal dialog, specifically by
     // not forwarding click events to the popup. So we use Qt::Tool which behaves the same way, but
     // works on macOS too.
     setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+#else
+    setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+#endif
 
     setGeometry(screenRect);
     show();
