@@ -238,6 +238,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_needsDelegatedFrameAck(false)
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
+    , m_currentInputType(ui::TEXT_INPUT_TYPE_NONE)
     , m_imeInProgress(false)
     , m_receivedEmptyImeText(false)
     , m_anchorPositionWithinSelection(0)
