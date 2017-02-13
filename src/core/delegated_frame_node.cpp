@@ -216,6 +216,13 @@ public:
     void setupRenderPassNode(QSGTexture *layer, const QRect &rect, QSGNode *) Q_DECL_OVERRIDE
     {
         QSGInternalImageNode *imageNode = static_cast<QSGInternalImageNode*>(*m_nodeIterator++);
+        // In case of a missing render pass, set the target rects to be empty and return early.
+        // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes
+        if (!layer) {
+            imageNode->setTargetRect(QRect());
+            imageNode->setInnerTargetRect(QRect());
+            return;
+        }
         imageNode->setTargetRect(rect);
         imageNode->setInnerTargetRect(rect);
         imageNode->setTexture(layer);
@@ -305,13 +312,21 @@ public:
     {
         // Only QSGInternalImageNode currently supports QSGLayer textures.
         QSGInternalImageNode *imageNode = m_apiDelegate->createImageNode();
+        layerChain->appendChildNode(imageNode);
+        m_sceneGraphNodes->append(imageNode);
+
+        // In case of a missing render pass, set the target rects to be empty and return early.
+        // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes
+        if (!layer) {
+            imageNode->setTargetRect(QRect());
+            imageNode->setInnerTargetRect(QRect());
+            return;
+        }
+
         imageNode->setTargetRect(rect);
         imageNode->setInnerTargetRect(rect);
         imageNode->setTexture(layer);
         imageNode->update();
-
-        layerChain->appendChildNode(imageNode);
-        m_sceneGraphNodes->append(imageNode);
     }
 
     void setupTextureContentNode(QSGTexture *texture, const QRect &rect,
@@ -850,7 +865,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // equivalent to the render passes in the current frame data. If they are, we are going
     // to reuse the old nodes. Otherwise, we will delete the old nodes and build a new tree.
     cc::DelegatedFrameData *previousFrameData = m_chromiumCompositorData->previousFrameData.get();
-    const bool buildNewTree = !areRenderPassStructuresEqual(frameData, previousFrameData);
+    const bool buildNewTree = !areRenderPassStructuresEqual(frameData, previousFrameData) || m_sceneGraphNodes.empty();
 
     m_chromiumCompositorData->previousFrameData = nullptr;
     SGObjects previousSGObjects;
@@ -931,9 +946,6 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
                 QSGTexture *layer = findRenderPassLayer(renderPassQuad->render_pass_id,
                                                         m_sgObjects.renderPassLayers).data();
 
-                // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes.
-                if (!layer)
-                    continue;
                 nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), currentLayerChain);
                 break;
             } case cc::DrawQuad::TEXTURE_CONTENT: {

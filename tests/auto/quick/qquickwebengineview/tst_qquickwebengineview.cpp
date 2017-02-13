@@ -279,10 +279,6 @@ void tst_QQuickWebEngineView::showWebEngineView()
 
 void tst_QQuickWebEngineView::removeFromCanvas()
 {
-#ifdef Q_OS_LINUX
-    QSKIP("QTBUG-58472 - crashes on some linux CI");
-#else
-
     showWebEngineView();
 
     // This should not crash.
@@ -293,7 +289,6 @@ void tst_QQuickWebEngineView::removeFromCanvas()
     webEngineView()->setParentItem(parent);
     webEngineView()->setVisible(true);
     QTest::qWait(200);
-#endif
 }
 
 void tst_QQuickWebEngineView::multipleWebEngineViewWindows()
