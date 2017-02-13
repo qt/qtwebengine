@@ -40,6 +40,8 @@ use?(gn) {
     } else {
         gn_args += enable_webrtc=false
     }
+    !webcore_debug: gn_args += remove_webcore_debug_symbols=true
+    !v8base_debug: gn_args += remove_v8base_debug_symbols=true
 
     # Compiling with -Os makes a huge difference in binary size
     contains(WEBENGINE_CONFIG, reduce_binary_size): gn_args += optimize_for_size=true
