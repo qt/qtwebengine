@@ -378,29 +378,40 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
     parentWidget.show();
     QTest::qWaitForWindowExposed(&webView);
 
-    QSignalSpy loadSpy(&webView, SIGNAL(loadFinished(bool)));
-    webView.setHtml("<input type='text'/>");
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QSignalSpy loadFinishedSpy(&webView, SIGNAL(loadFinished(bool)));
+    webView.load(QUrl("qrc:///resources/keyboardEvents.html"));
+    QVERIFY(loadFinishedSpy.wait());
 
-    evaluateJavaScriptSync(webView.page(), "document.body.firstChild.focus()");
+    evaluateJavaScriptSync(webView.page(), "document.getElementById('first_div').focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("first_div"));
 
-    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_A, 'a', Qt::NoModifier);
-    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_A, 'a', Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_Right, QString(), Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_Right, QString(), Qt::NoModifier);
+    // Right arrow key is unhandled thus focus is not changed
+    QTRY_COMPARE(parentWidget.releaseEvents.size(), 1);
+    QCOMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("first_div"));
+
+    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_Tab, QString(), Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_Tab, QString(), Qt::NoModifier);
+    // Tab key is handled thus focus is changed
+    QTRY_COMPARE(parentWidget.releaseEvents.size(), 2);
+    QCOMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("second_div"));
+
     QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
     QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
-    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
-    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
-
-    // All this happens asychronously, wait for the last release event to know when we're done.
+    // Left arrow key is unhandled thus focus is not changed
     QTRY_COMPARE(parentWidget.releaseEvents.size(), 3);
+    QCOMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("second_div"));
 
-    // The page will consume the 'a' and the first left key presses, the second left won't be
-    // used since the cursor will already be at the left end of the text input.
+    // The page will consume the Tab key to change focus between elements while the arrow
+    // keys won't be used.
+    QCOMPARE(parentWidget.pressEvents.size(), 2);
+    QCOMPARE(parentWidget.pressEvents[0].key(), (int)Qt::Key_Right);
+    QCOMPARE(parentWidget.pressEvents[1].key(), (int)Qt::Key_Left);
+
     // Key releases will all come back unconsumed.
-    QCOMPARE(parentWidget.pressEvents.size(), 1);
-    QCOMPARE(parentWidget.pressEvents[0].key(), (int)Qt::Key_Left);
-    QCOMPARE(parentWidget.releaseEvents[0].key(), (int)Qt::Key_A);
-    QCOMPARE(parentWidget.releaseEvents[1].key(), (int)Qt::Key_Left);
+    QCOMPARE(parentWidget.releaseEvents[0].key(), (int)Qt::Key_Right);
+    QCOMPARE(parentWidget.releaseEvents[1].key(), (int)Qt::Key_Tab);
     QCOMPARE(parentWidget.releaseEvents[2].key(), (int)Qt::Key_Left);
 }
 
