@@ -44,6 +44,7 @@
 #include "content_browser_client_qt.h"
 #include "type_conversion.h"
 
+#include <base/files/file_util.h>
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 
@@ -90,11 +91,28 @@ bool WebEngineVisitedLinksManager::containsUrl(const QUrl &url) const
     return m_visitedLinkMaster->IsVisited(toGurl(url));
 }
 
+static void ensureDirectoryExists(const base::FilePath &path)
+{
+    if (base::PathExists(path))
+        return;
+
+    base::File::Error error;
+    if (base::CreateDirectoryAndGetError(path, &error))
+        return;
+
+    std::string errorstr = base::File::ErrorToString(error);
+    qWarning("Cannot create directory %s. Error: %s.",
+             path.AsUTF8Unsafe().c_str(),
+             errorstr.c_str());
+}
+
 WebEngineVisitedLinksManager::WebEngineVisitedLinksManager(BrowserContextAdapter *adapter)
     : m_delegate(new VisitedLinkDelegateQt)
 {
     Q_ASSERT(adapter && adapter->browserContext());
     BrowserContextQt *browserContext = adapter->browserContext();
+    if (adapter->persistVisitedLinks())
+        ensureDirectoryExists(browserContext->GetPath());
     m_visitedLinkMaster.reset(new visitedlink::VisitedLinkMaster(browserContext, m_delegate.data(), adapter->persistVisitedLinks()));
     m_visitedLinkMaster->Init();
 }
