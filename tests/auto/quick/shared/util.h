@@ -120,4 +120,26 @@ inline bool waitForViewportReady(QQuickWebEngineView *webEngineView, int timeout
 #endif
 }
 
+inline QString bodyInnerText(QQuickWebEngineView *webEngineView)
+{
+    qRegisterMetaType<QQuickWebEngineView::JavaScriptConsoleMessageLevel>("JavaScriptConsoleMessageLevel");
+    QSignalSpy consoleMessageSpy(webEngineView, &QQuickWebEngineView::javaScriptConsoleMessage);
+
+    webEngineView->runJavaScript(
+                "if (document.body == null)"
+                "   console.log('');"
+                "else"
+                "   console.log(document.body.innerText);"
+    );
+
+    if (!consoleMessageSpy.wait())
+        return QString();
+
+    QList<QVariant> arguments = consoleMessageSpy.takeFirst();
+    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
+        return QString();
+
+    return arguments.at(1).toString();
+}
+
 #endif /* UTIL_H */

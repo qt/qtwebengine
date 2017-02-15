@@ -865,37 +865,41 @@ void tst_QWebEngineView::focusOnNavigation()
 
 void tst_QWebEngineView::changeLocale()
 {
-    QSKIP("Error pages no longer have useful titles in Chromium 55");
+    QStringList errorLines;
     QUrl url("http://non.existent/");
 
     QLocale::setDefault(QLocale("de"));
     QWebEngineView viewDE;
-    viewDE.setUrl(url);
+    QSignalSpy loadFinishedSpyDE(&viewDE, SIGNAL(loadFinished(bool)));
+    viewDE.load(url);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 12000);
 
-    QSignalSpy spyTitleChangedDE(&viewDE, &QWebEngineView::titleChanged);
-    QVERIFY(spyTitleChangedDE.wait());
-    QSignalSpy spyFinishedDE(&viewDE, &QWebEngineView::loadFinished);
-    QVERIFY(spyFinishedDE.wait());
-    QCOMPARE(viewDE.title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
+    QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
+    errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QCOMPARE(errorLines.first(), QStringLiteral("Diese Website ist nicht erreichbar"));
 
     QLocale::setDefault(QLocale("en"));
     QWebEngineView viewEN;
-    viewEN.setUrl(url);
+    QSignalSpy loadFinishedSpyEN(&viewEN, SIGNAL(loadFinished(bool)));
+    viewEN.load(url);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyEN.count(), 1, 12000);
 
-    QSignalSpy spyTitleChangedEN(&viewEN, &QWebEngineView::titleChanged);
-    QVERIFY(spyTitleChangedEN.wait());
-    QSignalSpy spyFinishedEN(&viewEN, &QWebEngineView::loadFinished);
-    QVERIFY(spyFinishedEN.wait());
-    QCOMPARE(viewEN.title(), QStringLiteral("%1 is not available").arg(url.toString()));
+    QTRY_VERIFY(!toPlainTextSync(viewEN.page()).isEmpty());
+    errorLines = toPlainTextSync(viewEN.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QCOMPARE(errorLines.first(), QStringLiteral("This site can\u2019t be reached"));
 
-    viewDE.setUrl(QUrl("about:blank"));
-    QVERIFY(spyFinishedDE.wait());
+    // Reset error page
+    viewDE.load(QUrl("about:blank"));
+    QVERIFY(loadFinishedSpyDE.wait());
+    loadFinishedSpyDE.clear();
 
-    viewDE.setUrl(url);
+    // Check whether an existing QWebEngineView keeps the language settings after changing the default locale
+    viewDE.load(url);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 12000);
 
-    QVERIFY(spyTitleChangedDE.wait());
-    QVERIFY(spyFinishedDE.wait());
-    QCOMPARE(viewDE.title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
+    QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
+    errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QCOMPARE(errorLines.first(), QStringLiteral("Diese Website ist nicht erreichbar"));
 }
 
 void tst_QWebEngineView::inputMethodsTextFormat_data()
