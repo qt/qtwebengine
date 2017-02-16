@@ -86,8 +86,8 @@
 #include <QPageLayout>
 #include <QStringList>
 #include <QStyleHints>
-#include <QTimer>
 #include <QVariant>
+#include <QtCore/qelapsedtimer.h>
 #include <QtCore/qmimedata.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/qdrag.h>
@@ -337,8 +337,6 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     , nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
     , lastFindRequestId(0)
     , currentDropAction(blink::WebDragOperationNone)
-    , inDragUpdateLoop(false)
-    , updateDragCursorMessagePollingTimer(new QTimer)
 {
 }
 
@@ -381,7 +379,6 @@ WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
 {
     Q_D(WebContentsAdapter);
     d->webContents.reset(webContents);
-    initUpdateDragCursorMessagePollingTimer();
 }
 
 WebContentsAdapter::~WebContentsAdapter()
@@ -1232,50 +1229,42 @@ Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const Q
     d->lastDragScreenPos = toGfx(screenPos);
     rvh->DragTargetDragOver(d->lastDragClientPos, d->lastDragScreenPos, toWeb(e->possibleActions()),
                             toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
-
-    base::MessageLoop *currentMessageLoop = base::MessageLoop::current();
-    DCHECK(currentMessageLoop);
-    if (!currentMessageLoop->NestableTasksAllowed()) {
-        // We're already inside a MessageLoop::RunTask call, and scheduled tasks will not be
-        // executed. That means, updateDragAction will never be called, and the RunLoop below will
-        // remain blocked forever.
-        qWarning("WebContentsAdapter::updateDragPosition called from MessageLoop::RunTask.");
-        return Qt::IgnoreAction;
-    }
-
-    // Wait until we get notified via RenderViewHostDelegateView::UpdateDragCursor. This calls
-    // WebContentsAdapter::updateDragAction that will eventually quit the nested loop.
-    base::RunLoop loop;
-    d->inDragUpdateLoop = true;
-    d->dragUpdateLoopQuitClosure = loop.QuitClosure();
-
-    d->updateDragCursorMessagePollingTimer->start();
-    loop.Run();
-    d->updateDragCursorMessagePollingTimer->stop();
-
+    waitForUpdateDragActionCalled();
     return toQt(d->currentDropAction);
+}
+
+void WebContentsAdapter::waitForUpdateDragActionCalled()
+{
+    Q_D(WebContentsAdapter);
+    const qint64 timeout = 3000;
+    QElapsedTimer t;
+    t.start();
+    base::MessagePump::Delegate *delegate = base::MessageLoop::current();
+    DCHECK(delegate);
+    d->updateDragActionCalled = false;
+    for (;;) {
+        while (delegate->DoWork() && !d->updateDragActionCalled) {}
+        if (d->updateDragActionCalled)
+            break;
+        if (t.hasExpired(timeout)) {
+            qWarning("WebContentsAdapter::updateDragAction was not called within %d ms.",
+                     static_cast<int>(timeout));
+            return;
+        }
+        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+    }
 }
 
 void WebContentsAdapter::updateDragAction(int action)
 {
     Q_D(WebContentsAdapter);
+    d->updateDragActionCalled = true;
     d->currentDropAction = static_cast<blink::WebDragOperation>(action);
-    finishDragUpdate();
-}
-
-void WebContentsAdapter::finishDragUpdate()
-{
-    Q_D(WebContentsAdapter);
-    if (d->inDragUpdateLoop) {
-        d->dragUpdateLoopQuitClosure.Run();
-        d->inDragUpdateLoop = false;
-    }
 }
 
 void WebContentsAdapter::endDragging(const QPoint &clientPos, const QPoint &screenPos)
 {
     Q_D(WebContentsAdapter);
-    finishDragUpdate();
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     rvh->FilterDropData(d->currentDropData.get());
     d->lastDragClientPos = toGfx(clientPos);
@@ -1287,31 +1276,10 @@ void WebContentsAdapter::endDragging(const QPoint &clientPos, const QPoint &scre
 void WebContentsAdapter::leaveDrag()
 {
     Q_D(WebContentsAdapter);
-    finishDragUpdate();
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     rvh->DragTargetDragLeave();
     d->currentDropData.reset();
 }
-
-void WebContentsAdapter::initUpdateDragCursorMessagePollingTimer()
-{
-    Q_D(WebContentsAdapter);
-    // Poll for drag cursor updated message 60 times per second. In practice, the timer is fired
-    // at most twice, after which it is stopped.
-    d->updateDragCursorMessagePollingTimer->setInterval(16);
-    d->updateDragCursorMessagePollingTimer->setSingleShot(false);
-
-    QObject::connect(d->updateDragCursorMessagePollingTimer.data(), &QTimer::timeout, [](){
-        base::MessagePump::Delegate *delegate = base::MessageLoop::current();
-        DCHECK(delegate);
-
-        // Execute Chromium tasks if there are any present. Specifically we are interested to handle
-        // the RenderViewHostImpl::OnUpdateDragCursor message, that gets sent from the render
-        // process.
-        while (delegate->DoWork()) {}
-    });
-}
-
 
 void WebContentsAdapter::replaceMisspelling(const QString &word)
 {
