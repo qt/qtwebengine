@@ -3,3 +3,6 @@ windows
 
 [inputEventForwardingDisabledWhenActiveFocusOnPressDisabled]
 *
+
+[changeLocale]
+windows
