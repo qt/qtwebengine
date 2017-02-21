@@ -23,7 +23,8 @@ msvc {
 SOURCES += \
     jsbridge.cpp \
     qpdfbookmarkmodel.cpp \
-    qpdfdocument.cpp
+    qpdfdocument.cpp \
+    qpdfpagenavigation.cpp
 
 HEADERS += \
     qpdfbookmarkmodel.h \
@@ -31,4 +32,5 @@ HEADERS += \
     qpdfdocument_p.h \
     qpdfdocumentrenderoptions.h \
     qpdfnamespace.h \
+    qpdfpagenavigation.h \
     qtpdfglobal.h

@@ -1,4 +1,7 @@
 TEMPLATE = subdirs
 
-SUBDIRS = qpdfbookmarkmodel
+SUBDIRS = \
+    qpdfbookmarkmodel \
+    qpdfpagenavigation
+
 qtHaveModule(printsupport): SUBDIRS += qpdfdocument
