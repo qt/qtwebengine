@@ -65,6 +65,7 @@ private slots:
     void showingPageRange(int start, int end);
     void zoomChanged(qreal factor);
     void zoomEdited();
+    void bookmarkSelected(const QModelIndex &index);
 
     // action handlers
     void on_actionOpen_triggered();

@@ -42,6 +42,7 @@
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QPdfBookmarkModel>
 #include <QPdfDocument>
 #include <QScroller>
 #include <QtMath>
@@ -74,6 +75,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_pageEdit, SIGNAL(returnPressed()), this, SLOT(on_actionGo_triggered()));
 
     QScroller::grabGesture(ui->scrollArea);
+
+    QPdfBookmarkModel *bookmarkModel = new QPdfBookmarkModel(this);
+    bookmarkModel->setDocument(m_document);
+
+    ui->bookmarkView->setModel(bookmarkModel);
+    connect(ui->bookmarkView, SIGNAL(activated(QModelIndex)), this, SLOT(bookmarkSelected(QModelIndex)));
+
+    ui->tabWidget->setTabEnabled(1, false); // disable 'Pages' tab for now
 
     m_pageWidget->setDocument(m_document);
 }
@@ -118,6 +127,15 @@ void MainWindow::zoomEdited()
     qreal factor = m_zoomEdit->text().remove(QChar('%')).toDouble(&ok);
     if (ok)
         m_pageWidget->setZoom(factor / 100.);
+}
+
+void MainWindow::bookmarkSelected(const QModelIndex &index)
+{
+    if (!index.isValid())
+        return;
+
+    const int page = index.data(QPdfBookmarkModel::PageNumberRole).toInt();
+    ui->scrollArea->ensureVisible(0, m_pageWidget->yForPage(page));
 }
 
 void MainWindow::on_actionOpen_triggered()
