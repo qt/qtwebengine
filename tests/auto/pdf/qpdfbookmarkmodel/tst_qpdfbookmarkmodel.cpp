@@ -58,6 +58,7 @@ private slots:
     void unloadDocument();
     void testTreeStructure();
     void testListStructure();
+    void testPageNumberRole();
 };
 
 void tst_QPdfBookmarkModel::emptyModel()
@@ -257,6 +258,30 @@ void tst_QPdfBookmarkModel::testListStructure()
     const QModelIndex index4 = model.index(8, 0);
     QCOMPARE(index4, QModelIndex());
 }
+
+void tst_QPdfBookmarkModel::testPageNumberRole()
+{
+    QPdfDocument document;
+    QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.bookmarks_pages.pdf")), QPdfDocument::NoError);
+
+    QPdfBookmarkModel model;
+    model.setDocument(&document);
+
+    QCOMPARE(model.rowCount(), 3);
+
+    const QModelIndex index1 = model.index(0, 0);
+    QCOMPARE(index1.data(QPdfBookmarkModel::PageNumberRole).toInt(), 0);
+
+    const QModelIndex index2 = model.index(1, 0);
+    QCOMPARE(index2.data(QPdfBookmarkModel::PageNumberRole).toInt(), 1);
+
+    const QModelIndex index2_1 = model.index(0, 0, index2);
+    QCOMPARE(index2_1.data(QPdfBookmarkModel::PageNumberRole).toInt(), 1);
+
+    const QModelIndex index3 = model.index(2, 0);
+    QCOMPARE(index3.data(QPdfBookmarkModel::PageNumberRole).toInt(), 2);
+}
+
 QTEST_MAIN(tst_QPdfBookmarkModel)
 
 #include "tst_qpdfbookmarkmodel.moc"

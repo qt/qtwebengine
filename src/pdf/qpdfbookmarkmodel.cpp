@@ -54,6 +54,7 @@ public:
     explicit BookmarkNode(BookmarkNode *parentNode = nullptr)
         : m_parentNode(parentNode)
         , m_level(0)
+        , m_pageNumber(0)
     {
     }
 
@@ -116,12 +117,23 @@ public:
         m_level = level;
     }
 
+    int pageNumber() const
+    {
+        return m_pageNumber;
+    }
+
+    void setPageNumber(int pageNumber)
+    {
+        m_pageNumber = pageNumber;
+    }
+
 private:
     QVector<BookmarkNode*> m_childNodes;
     BookmarkNode *m_parentNode;
 
     QString m_title;
     int m_level;
+    int m_pageNumber;
 };
 
 
@@ -180,9 +192,12 @@ public:
             QVector<ushort> titleBuffer(titleLength);
             FPDFBookmark_GetTitle(bookmark, titleBuffer.data(), titleBuffer.length());
 
-            childBookmarkNode->setTitle(QString::fromUtf16(titleBuffer.data()));
+            const FPDF_DEST dest = FPDFBookmark_GetDest(document, bookmark);
+            const int pageNumber = FPDFDest_GetPageIndex(document, dest);
 
+            childBookmarkNode->setTitle(QString::fromUtf16(titleBuffer.data()));
             childBookmarkNode->setLevel(level);
+            childBookmarkNode->setPageNumber(pageNumber);
 
             // recurse down
             appendChildNode(childBookmarkNode, bookmark, level + 1, document);
@@ -271,6 +286,8 @@ QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
         return node->title();
     case LevelRole:
         return node->level();
+    case PageNumberRole:
+        return node->pageNumber();
     default:
         return QVariant();
     }

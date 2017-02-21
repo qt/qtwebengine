@@ -64,7 +64,8 @@ public:
     enum Role
     {
         TitleRole = Qt::DisplayRole,
-        LevelRole = Qt::UserRole
+        LevelRole = Qt::UserRole,
+        PageNumberRole
     };
     Q_ENUM(Role)
 
