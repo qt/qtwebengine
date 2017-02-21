@@ -802,6 +802,8 @@ QWebEnginePage::QWebEnginePage(QWebEngineProfile *profile, QObject* parent)
 QWebEnginePage::~QWebEnginePage()
 {
     Q_D(QWebEnginePage);
+    if (d->adapter)
+        d->adapter->stopFinding();
     QWebEngineViewPrivate::bind(d->view, 0);
 }
 
