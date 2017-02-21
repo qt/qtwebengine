@@ -41,6 +41,11 @@ TestWebEngineView {
         target: webEngineView
         signalName: "titleChanged"
     }
+    SignalSpy {
+        id: terminationSpy
+        target: webEngineView
+        signalName: "renderProcessTerminated"
+    }
 
     TestCase {
         name: "WebEngineViewSingleFileUpload"
@@ -51,11 +56,16 @@ TestWebEngineView {
             FilePickerParams.selectFiles = false
             FilePickerParams.selectedFilesUrl = []
             titleSpy.clear()
+            terminationSpy.clear()
         }
 
-        // FIXME: Almost every second url loading progress does get stuck at about 90 percent, so the loadFinished signal won't arrive.
-        // This cleanup function is a workaround for this problem.
         function cleanup() {
+            // Test that the render process doesn't crash, and make sure if it does it does so now.
+            wait(1000)
+            verify(terminationSpy.count == 0, "Render process didn't self terminate")
+
+            // FIXME: Almost every second url loading progress does get stuck at about 90 percent, so the loadFinished signal won't arrive.
+            // This cleanup function is a workaround for this problem.
             webEngineView.url = Qt.resolvedUrl("about:blank")
             webEngineView.waitForLoadSucceeded()
         }
