@@ -275,6 +275,17 @@ int QPdfBookmarkModel::columnCount(const QModelIndex &parent) const
     return 1;
 }
 
+QHash<int, QByteArray> QPdfBookmarkModel::roleNames() const
+{
+    QHash<int, QByteArray> names;
+
+    names[TitleRole] = "title";
+    names[LevelRole] = "level";
+    names[PageNumberRole] = "pageNumber";
+
+    return names;
+}
+
 QVariant QPdfBookmarkModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
