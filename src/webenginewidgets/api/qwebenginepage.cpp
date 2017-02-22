@@ -1615,6 +1615,8 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     if (d->isFullScreenMode())
         menu->addAction(QWebEnginePage::action(ExitFullScreen));
 
+    menu->setAttribute(Qt::WA_DeleteOnClose, true);
+
     return menu;
 }
 
