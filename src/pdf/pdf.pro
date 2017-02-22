@@ -24,7 +24,8 @@ SOURCES += \
     jsbridge.cpp \
     qpdfbookmarkmodel.cpp \
     qpdfdocument.cpp \
-    qpdfpagenavigation.cpp
+    qpdfpagenavigation.cpp \
+    qpdfpagerenderer.cpp
 
 HEADERS += \
     qpdfbookmarkmodel.h \
@@ -33,4 +34,5 @@ HEADERS += \
     qpdfdocumentrenderoptions.h \
     qpdfnamespace.h \
     qpdfpagenavigation.h \
+    qpdfpagerenderer.h \
     qtpdfglobal.h

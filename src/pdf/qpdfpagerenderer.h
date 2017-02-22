@@ -34,57 +34,58 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFDOCUMENTRENDEROPTIONS_H
-#define QPDFDOCUMENTRENDEROPTIONS_H
+#ifndef QPDFPAGERENDERER_H
+#define QPDFPAGERENDERER_H
 
-#include "qpdfnamespace.h"
+#include "qtpdfglobal.h"
 
-#include <QtCore/QObject>
+#include <QObject>
+#include <QPdfDocumentRenderOptions>
+#include <QSize>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfDocumentRenderOptions
+class QPdfDocument;
+class QPdfPageRendererPrivate;
+
+class Q_PDF_EXPORT QPdfPageRenderer : public QObject
 {
+    Q_OBJECT
+
+    Q_PROPERTY(QPdfDocument* document READ document WRITE setDocument NOTIFY documentChanged)
+    Q_PROPERTY(RenderMode renderMode READ renderMode WRITE setRenderMode NOTIFY renderModeChanged)
+
 public:
-    Q_DECL_CONSTEXPR QPdfDocumentRenderOptions() Q_DECL_NOTHROW : data(0) {}
+    enum RenderMode
+    {
+        MultiThreadedRenderMode,
+        SingleThreadedRenderMode
+    };
+    Q_ENUM(RenderMode)
 
-    Q_DECL_CONSTEXPR QPdf::Rotation rotation() const Q_DECL_NOTHROW { return static_cast<QPdf::Rotation>(bits.rotation); }
-    Q_DECL_RELAXED_CONSTEXPR void setRotation(QPdf::Rotation _rotation) Q_DECL_NOTHROW { bits.rotation = _rotation; }
+    explicit QPdfPageRenderer(QObject *parent = nullptr);
+    ~QPdfPageRenderer();
 
-    Q_DECL_CONSTEXPR QPdf::RenderFlags renderFlags() const Q_DECL_NOTHROW { return static_cast<QPdf::RenderFlags>(bits.renderFlags); }
-    Q_DECL_RELAXED_CONSTEXPR void setRenderFlags(QPdf::RenderFlags _renderFlags) Q_DECL_NOTHROW { bits.renderFlags = _renderFlags; }
+    RenderMode renderMode() const;
+    void setRenderMode(RenderMode mode);
+
+    QPdfDocument* document() const;
+    void setDocument(QPdfDocument *document);
+
+    quint64 requestPage(int pageNumber, QSize imageSize,
+                        QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
+
+Q_SIGNALS:
+    void documentChanged(QPdfDocument *document);
+    void renderModeChanged(RenderMode renderMode);
+
+    void pageRendered(int pageNumber, QSize imageSize, const QImage &image,
+                      QPdfDocumentRenderOptions options, quint64 requestId);
 
 private:
-    friend Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW;
-
-
-    struct Bits {
-        quint32 renderFlags : 8;
-        quint32 rotation    : 3;
-        quint32 reserved    : 21;
-        quint32 reserved2   : 32;
-    };
-
-    union {
-        Bits bits;
-        quint64 data;
-    };
+    Q_DECLARE_PRIVATE(QPdfPageRenderer)
 };
-
-Q_DECLARE_TYPEINFO(QPdfDocumentRenderOptions, Q_PRIMITIVE_TYPE);
-
-Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW
-{
-    return lhs.data == rhs.data;
-}
-
-Q_DECL_CONSTEXPR inline bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW
-{
-    return !operator==(lhs, rhs);
-}
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QPdfDocumentRenderOptions)
-
-#endif // QPDFDOCUMENTRENDEROPTIONS_H
+#endif
