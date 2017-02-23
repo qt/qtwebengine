@@ -42,8 +42,11 @@
 
 #include "qtwebenginecoreglobal.h"
 
+#include "build/build_config.h"
+
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
+#include "printing/features/features.h"
 
 #include <QSharedPointer>
 
@@ -56,11 +59,11 @@ class BrowserMainRunner;
 class ContentMainRunner;
 }
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 namespace printing {
 class PrintJobManager;
 }
-#endif // defined(ENABLE_BASIC_PRINTING)
+#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 QT_FORWARD_DECLARE_CLASS(QObject)
 
@@ -77,9 +80,9 @@ public:
 
     QSharedPointer<QtWebEngineCore::BrowserContextAdapter> defaultBrowserContext();
     QObject *globalQObject();
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     printing::PrintJobManager* getPrintJobManager();
-#endif // defined(ENABLE_BASIC_PRINTING)
+#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
     void destroyBrowserContext();
     void destroy();
 
@@ -95,9 +98,9 @@ private:
     QObject* m_globalQObject;
     QSharedPointer<QtWebEngineCore::BrowserContextAdapter> m_defaultBrowserContext;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;
-#endif // defined(ENABLE_BASIC_PRINTING)
+#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 };
 
 } // namespace

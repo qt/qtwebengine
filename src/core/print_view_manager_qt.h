@@ -51,6 +51,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "printing/features/features.h"
 #include "printing/printed_pages_source.h"
 
 struct PrintHostMsg_RequestPrintPreview_Params;
@@ -82,7 +83,7 @@ public:
     ~PrintViewManagerQt() override;
     typedef base::Callback<void(const std::vector<char> &result)> PrintToPDFCallback;
     typedef base::Callback<void(bool success)> PrintToPDFFileCallback;
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     // Method to print a page to a Pdf document with page size \a pageSize in location \a filePath.
     void PrintToPDFFileWithCallback(const QPageLayout &pageLayout,
                                     bool printInColor,
@@ -107,16 +108,17 @@ protected:
     void RenderProcessGone(base::TerminationStatus status) override;
 
     // content::WebContentsObserver implementation.
-    bool OnMessageReceived(const IPC::Message& message) override;
+    bool OnMessageReceived(const IPC::Message& message,
+                           content::RenderFrameHost* render_frame_host) override;
 
     // IPC handlers
     void OnDidShowPrintDialog();
     void OnRequestPrintPreview(const PrintHostMsg_RequestPrintPreview_Params&);
     void OnMetafileReadyForPrinting(const PrintHostMsg_DidPreviewDocument_Params& params);
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     bool PrintToPDFInternal(const QPageLayout &, bool printInColor);
-#endif //
+#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
     base::FilePath m_pdfOutputPath;
     PrintToPDFCallback m_pdfPrintCallback;

@@ -43,10 +43,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/common/stub_client_native_pixmap_factory.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -204,7 +204,8 @@ ui::OverlayManagerOzone* OzonePlatformQt::GetOverlayManager()
 
 std::unique_ptr<ui::NativeDisplayDelegate> OzonePlatformQt::CreateNativeDisplayDelegate()
 {
-    return base::WrapUnique(new NativeDisplayDelegateOzone());
+    NOTREACHED();
+    return nullptr;
 }
 
 void OzonePlatformQt::InitializeUI()

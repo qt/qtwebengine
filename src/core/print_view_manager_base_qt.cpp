@@ -55,6 +55,7 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -71,12 +72,25 @@ PrintViewManagerBaseQt::PrintViewManagerBaseQt(content::WebContents *contents)
     , m_didPrintingSucceed(false)
     , m_printerQueriesQueue(WebEngineContext::current()->getPrintJobManager()->queue())
 {
+    // FIXME: Check if this needs to be executed async:
+    PrintViewManagerBaseQt::UpdatePrintingEnabled();
 }
 
 PrintViewManagerBaseQt::~PrintViewManagerBaseQt()
 {
     ReleasePrinterQuery();
     DisconnectFromCurrentPrintJob();
+}
+
+void PrintViewManagerBaseQt::UpdatePrintingEnabled()
+{
+    bool enabled = false;
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+    enabled = true;
+#endif
+    web_contents()->ForEachFrame(
+            base::Bind(&PrintViewManagerBaseQt::SendPrintingEnabled,
+                    base::Unretained(this), enabled));
 }
 
 void PrintViewManagerBaseQt::NavigationStopped()
@@ -192,7 +206,7 @@ void PrintViewManagerBaseQt::DidStartLoading()
 {
 }
 
-bool PrintViewManagerBaseQt::OnMessageReceived(const IPC::Message& message)
+bool PrintViewManagerBaseQt::OnMessageReceived(const IPC::Message& message, content::RenderFrameHost* render_frame_host)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PrintViewManagerBaseQt, message)
@@ -201,7 +215,7 @@ bool PrintViewManagerBaseQt::OnMessageReceived(const IPC::Message& message)
                           OnShowInvalidPrinterSettingsError);
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
-    return handled || PrintManager::OnMessageReceived(message);
+    return handled || PrintManager::OnMessageReceived(message, render_frame_host);
 }
 
 void PrintViewManagerBaseQt::Observe(int type,
@@ -508,6 +522,11 @@ void PrintViewManagerBaseQt::StopWorker(int documentCookie) {
                             base::Bind(&printing::PrinterQuery::StopWorker,
                                        printer_query));
   }
+}
+
+void PrintViewManagerBaseQt::SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh)
+{
+    rfh->Send(new PrintMsg_SetPrintingEnabled(rfh->GetRoutingID(), enabled));
 }
 
 } // namespace QtWebEngineCore

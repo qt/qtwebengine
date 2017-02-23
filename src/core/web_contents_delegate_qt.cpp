@@ -169,7 +169,7 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content
 void WebContentsDelegateQt::CloseContents(content::WebContents *source)
 {
     m_viewClient->close();
-    GetJavaScriptDialogManager(source)->CancelActiveAndPendingDialogs(source);
+    GetJavaScriptDialogManager(source)->CancelDialogs(source, /* whatever?: */false, false);
 }
 
 void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, double progress)
@@ -335,7 +335,7 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost *frameHost, 
     });
 }
 
-bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)
+bool WebContentsDelegateQt::DidAddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)
 {
     Q_UNUSED(source)
     m_viewClient->javaScriptConsoleMessage(mapToJavascriptConsoleMessageLevel(level), toQt(message), static_cast<int>(line_no), toQt(source_id));

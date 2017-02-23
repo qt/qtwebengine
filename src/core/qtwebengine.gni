@@ -24,7 +24,6 @@ deps = [
   "//net:net_browser_services",
   "//skia",
   "//third_party/WebKit/public:blink",
-  "//third_party/widevine/cdm:version_h",
   "//ui/accessibility",
   "//third_party/mesa:mesa_headers",
   ":qtwebengine_sources",

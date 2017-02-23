@@ -95,7 +95,9 @@ void GLContextHelper::destroy()
 
 bool GLContextHelper::initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface)
 {
-    return context->Initialize(surface, gl::PreferDiscreteGpu);
+    gl::GLContextAttribs attribs;
+    attribs.gpu_preference = gl::PreferDiscreteGpu;
+    return context->Initialize(surface, attribs);
 }
 
 bool GLContextHelper::initializeContext(gl::GLContext* context, gl::GLSurface* surface)
@@ -151,13 +153,15 @@ namespace gl {
 
 namespace init {
 
-scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group, GLSurface* compatible_surface, GpuPreference gpu_preference)
+scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
+                                         GLSurface* compatible_surface,
+                                         const GLContextAttribs& attribs)
 {
 #if defined(OS_WIN)
     scoped_refptr<GLContext> context;
     if (GetGLImplementation() == kGLImplementationDesktopGL) {
         context = new GLContextWGL(share_group);
-        if (!context->Initialize(compatible_surface, gpu_preference))
+        if (!context->Initialize(compatible_surface, attribs))
             return nullptr;
         return context;
     } else {

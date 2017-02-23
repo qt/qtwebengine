@@ -47,6 +47,8 @@
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/font_list.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 
 #include <QGuiApplication>
 #include <QScreen>
@@ -158,6 +160,12 @@ void GetFontsInFamily_SlowBlocking(const std::string &, std::vector<ppapi::proxy
 } // namespace content
 
 #endif // defined(USE_AURA) || defined(USE_OZONE)
+
+std::unique_ptr<ui::OSExchangeData::Provider>
+ui::OSExchangeDataProviderFactory::CreateProvider() {
+    return nullptr;
+}
+
 
 #if defined(USE_OPENSSL_CERTS)
 namespace net {

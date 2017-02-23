@@ -165,8 +165,8 @@ void ProxyConfigServiceQt::OnProxyConfigChanged(const net::ProxyConfig &config, 
         availability = GetLatestProxyConfig(&actual_config);
         if (availability == CONFIG_PENDING)
             return;
-        FOR_EACH_OBSERVER(net::ProxyConfigService::Observer, m_observers,
-                          OnProxyConfigChanged(actual_config, availability));
+        for (net::ProxyConfigService::Observer &observer: m_observers)
+            observer.OnProxyConfigChanged(actual_config, availability);
     }
 }
 

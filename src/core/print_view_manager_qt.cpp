@@ -53,6 +53,7 @@
 #include "components/printing/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/web_preferences.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/print_job_constants.h"
@@ -137,6 +138,7 @@ static base::DictionaryValue *createPrintSettings()
     printSettings->SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);
     printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds, true);
     printSettings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
+    printSettings->SetInteger(printing::kSettingScaleFactor, 100);
     printSettings->SetString(printing::kSettingDeviceName, "");
     printSettings->SetInteger(printing::kPreviewUIID, 12345678);
 
@@ -178,7 +180,7 @@ PrintViewManagerQt::~PrintViewManagerQt()
 {
 }
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayout,
                                                     bool printInColor, const QString &filePath,
                                                     const PrintToPDFFileCallback& callback)
@@ -238,10 +240,11 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout, bool 
         , web_contents()->GetRenderViewHost()->GetWebkitPreferences().should_print_backgrounds);
     m_printSettings->SetInteger(printing::kSettingColor,
                                 printInColor ? printing::COLOR : printing::GRAYSCALE);
-    return Send(new PrintMsg_InitiatePrintPreview(routing_id(), false));
+    return Send(new PrintMsg_InitiatePrintPreview(
+                    web_contents()->GetMainFrame()->GetRoutingID(), false));
 }
 
-#endif // defined(ENABLE_BASIC_PRINTING)
+#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 // PrintedPagesSource implementation.
 base::string16 PrintViewManagerQt::RenderSourceName()
@@ -256,7 +259,7 @@ PrintViewManagerQt::PrintViewManagerQt(content::WebContents *contents)
 }
 
 // content::WebContentsObserver implementation.
-bool PrintViewManagerQt::OnMessageReceived(const IPC::Message& message)
+bool PrintViewManagerQt::OnMessageReceived(const IPC::Message& message, content::RenderFrameHost* render_frame_host)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PrintViewManagerQt, message)
@@ -267,7 +270,7 @@ bool PrintViewManagerQt::OnMessageReceived(const IPC::Message& message)
                                  OnMetafileReadyForPrinting);
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
-    return handled || PrintManager::OnMessageReceived(message);
+    return handled || PrintManager::OnMessageReceived(message, render_frame_host);
 }
 
 void PrintViewManagerQt::resetPdfState()
@@ -283,7 +286,8 @@ void PrintViewManagerQt::resetPdfState()
 void PrintViewManagerQt::OnRequestPrintPreview(
     const PrintHostMsg_RequestPrintPreview_Params& params)
 {
-    Send(new PrintMsg_PrintPreview(routing_id(), *m_printSettings));
+    Send(new PrintMsg_PrintPreview(
+             web_contents()->GetMainFrame()->GetRoutingID(), *m_printSettings));
 }
 
 void PrintViewManagerQt::OnMetafileReadyForPrinting(

@@ -109,7 +109,7 @@ public:
     virtual void ExitFullscreenModeForTab(content::WebContents*) Q_DECL_OVERRIDE;
     virtual bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const Q_DECL_OVERRIDE;
     virtual void RunFileChooser(content::RenderFrameHost* render_frame_host, const content::FileChooserParams& params) Q_DECL_OVERRIDE;
-    virtual bool AddMessageToConsole(content::WebContents* source, int32_t level, const base::string16& message, int32_t line_no, const base::string16& source_id) Q_DECL_OVERRIDE;
+    virtual bool DidAddMessageToConsole(content::WebContents* source, int32_t level, const base::string16& message, int32_t line_no, const base::string16& source_id) Q_DECL_OVERRIDE;
     virtual void FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update) Q_DECL_OVERRIDE;
     virtual void RequestMediaAccessPermission(content::WebContents* web_contents, const content::MediaStreamRequest& request, const content::MediaResponseCallback& callback) Q_DECL_OVERRIDE;
     virtual void MoveContents(content::WebContents *source, const gfx::Rect &pos) Q_DECL_OVERRIDE;

@@ -85,9 +85,10 @@
 #include "device/geolocation/location_provider.h"
 #endif
 #include "media_capture_devices_dispatcher.h"
-#if defined(ENABLE_BASIC_PRINTING)
+#include "printing/features/features.h"
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "printing_message_filter_qt.h"
-#endif // defined(ENABLE_BASIC_PRINTING)
+#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "qrc_protocol_handler_qt.h"
 #include "renderer_host/resource_dispatcher_host_delegate_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
@@ -331,7 +332,7 @@ public:
     virtual bool WasAllocatedUsingRobustnessExtension() { return false; }
 
     // We don't care about the rest, this context shouldn't be used except for its handle.
-    virtual bool Initialize(gl::GLSurface *, gl::GpuPreference) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
+    virtual bool Initialize(gl::GLSurface *, const gl::GLContextAttribs &) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
     virtual bool MakeCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
     virtual void ReleaseCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
     virtual bool IsCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
@@ -415,9 +416,9 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 #if defined(Q_OS_MACOS) && defined(ENABLE_SPELLCHECK) && defined(USE_BROWSER_SPELLCHECKER)
   host->AddFilter(new SpellCheckMessageFilterPlatform(id));
 #endif
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     host->AddFilter(new PrintingMessageFilterQt(host->GetID()));
-#endif // defined(ENABLE_BASIC_PRINTING)
+#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 }
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()

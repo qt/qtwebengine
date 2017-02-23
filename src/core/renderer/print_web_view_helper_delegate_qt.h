@@ -43,6 +43,10 @@
 
 #include "components/printing/renderer/print_web_view_helper.h"
 
+namespace content {
+class RenderView;
+}
+
 namespace QtWebEngineCore {
 
 class PrintWebViewHelperDelegateQt : public printing::PrintWebViewHelper::Delegate
@@ -50,8 +54,7 @@ class PrintWebViewHelperDelegateQt : public printing::PrintWebViewHelper::Delega
 public:
     ~PrintWebViewHelperDelegateQt() override;
 
-    bool CancelPrerender(content::RenderView* render_view,
-                         int routing_id) override;
+    bool CancelPrerender(content::RenderFrame* render_frame) override;
 
     blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override;
 

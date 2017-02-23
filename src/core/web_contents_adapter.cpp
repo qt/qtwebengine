@@ -81,6 +81,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
+#include "printing/features/features.h"
 
 #include <QDir>
 #include <QGuiApplication>
@@ -184,7 +185,7 @@ static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint6
         adapterClient->didRunJavaScript(requestId, fromJSValue(result));
 }
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 static void callbackOnPrintingFinished(WebContentsAdapterClient *adapterClient,
                                        int requestId,
                                        const std::vector<char>& result)
@@ -259,7 +260,6 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
     int count;
     input >> count >> *currentIndex;
 
-    int pageId = 0;
     entries->reserve(count);
     // Logic taken from SerializedNavigationEntry::ReadFromPickle and ToNavigationEntries.
     for (int i = 0; i < count; ++i) {
@@ -306,7 +306,6 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
 
         entry->SetTitle(toString16(title));
         entry->SetPageState(content::PageState::CreateFromEncodedData(std::string(pageState.data(), pageState.size())));
-        entry->SetPageID(pageId++);
         entry->SetHasPostData(hasPostData);
         entry->SetOriginalRequestURL(toGurl(originalRequestUrl));
         entry->SetIsOverridingUserAgent(isOverridingUserAgent);
@@ -432,9 +431,9 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     // This should only be necessary after having restored the history to a new WebContentsAdapter.
     d->webContents->GetController().LoadIfNecessary();
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     PrintViewManagerQt::CreateForWebContents(webContents());
-#endif // defined(ENABLE_BASIC_PRINTING)
+#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
     // Create an instance of WebEngineVisitedLinksManager to catch the first
     // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
@@ -1009,7 +1008,7 @@ void WebContentsAdapter::wasHidden()
 
 void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString &filePath)
 {
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     Q_D(WebContentsAdapter);
     PrintViewManagerQt::PrintToPDFFileCallback callback = base::Bind(&callbackOnPdfSavingFinished,
                                                                 d->adapterClient,
@@ -1018,13 +1017,13 @@ void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString
                                                                                    true,
                                                                                    filePath,
                                                                                    callback);
-#endif // if defined(ENABLE_BASIC_PRINTING)
+#endif // if BUILDFLAG(ENABLE_BASIC_PRINTING)
 }
 
 quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayout,
                                                      const bool colorMode)
 {
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     Q_D(WebContentsAdapter);
     PrintViewManagerQt::PrintToPDFCallback callback = base::Bind(&callbackOnPrintingFinished,
                                                                  d->adapterClient,
@@ -1034,8 +1033,10 @@ quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayo
                                                                                callback);
     return d->nextRequestId++;
 #else
+    Q_UNUSED(pageLayout);
+    Q_UNUSED(colorMode);
     return 0;
-#endif // if defined(ENABLE_BASIC_PRINTING)
+#endif // if BUILDFLAG(ENABLE_BASIC_PRINTING)
 }
 
 QPointF WebContentsAdapter::lastScrollOffset() const
@@ -1202,10 +1203,10 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
         if (d->webContents) {
             content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
             if (rvh) {
-                rvh->DragSourceEndedAt(d->lastDragClientPos.x(), d->lastDragClientPos.y(),
-                                       d->lastDragScreenPos.x(), d->lastDragScreenPos.y(),
-                                       d->currentDropAction);
-                rvh->DragSourceSystemDragEnded();
+                rvh->GetWidget()->DragSourceEndedAt(gfx::Point(d->lastDragClientPos.x(), d->lastDragClientPos.y()),
+                                                    gfx::Point(d->lastDragScreenPos.x(), d->lastDragScreenPos.y()),
+                                                    d->currentDropAction);
+                rvh->GetWidget()->DragSourceSystemDragEnded();
             }
         }
         d->currentDropData.reset();
@@ -1241,10 +1242,10 @@ void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPoint &screenPos)
     }
 
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-    rvh->FilterDropData(d->currentDropData.get());
-    rvh->DragTargetDragEnter(*d->currentDropData, toGfx(e->pos()), toGfx(screenPos),
-                             toWeb(e->possibleActions()),
-                             flagsFromModifiers(e->keyboardModifiers()));
+    rvh->GetWidget()->FilterDropData(d->currentDropData.get());
+    rvh->GetWidget()->DragTargetDragEnter(*d->currentDropData, toGfx(e->pos()), toGfx(screenPos),
+                                          toWeb(e->possibleActions()),
+                                          flagsFromModifiers(e->keyboardModifiers()));
 }
 
 Qt::DropAction toQt(blink::WebDragOperation op)
@@ -1290,8 +1291,8 @@ Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const Q
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     d->lastDragClientPos = toGfx(e->pos());
     d->lastDragScreenPos = toGfx(screenPos);
-    rvh->DragTargetDragOver(d->lastDragClientPos, d->lastDragScreenPos, toWeb(e->possibleActions()),
-                            toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
+    rvh->GetWidget()->DragTargetDragOver(d->lastDragClientPos, d->lastDragScreenPos, toWeb(e->possibleActions()),
+                                         toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
     waitForUpdateDragActionCalled();
     return toQt(d->currentDropAction);
 }
@@ -1329,10 +1330,10 @@ void WebContentsAdapter::endDragging(const QPoint &clientPos, const QPoint &scre
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-    rvh->FilterDropData(d->currentDropData.get());
+    rvh->GetWidget()->FilterDropData(d->currentDropData.get());
     d->lastDragClientPos = toGfx(clientPos);
     d->lastDragScreenPos = toGfx(screenPos);
-    rvh->DragTargetDrop(*d->currentDropData, d->lastDragClientPos, d->lastDragScreenPos, 0);
+    rvh->GetWidget()->DragTargetDrop(*d->currentDropData, d->lastDragClientPos, d->lastDragScreenPos, 0);
     d->currentDropData.reset();
 }
 
@@ -1340,7 +1341,7 @@ void WebContentsAdapter::leaveDrag()
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-    rvh->DragTargetDragLeave();
+    rvh->GetWidget()->DragTargetDragLeave();
     d->currentDropData.reset();
 }
 

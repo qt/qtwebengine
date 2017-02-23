@@ -177,7 +177,6 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
             break;
         case content::MEDIA_DEVICE_ACCESS:
         case content::MEDIA_GENERATE_STREAM:
-        case content::MEDIA_ENUMERATE_DEVICES:
             getDefaultDevices(request.requested_audio_device_id, request.requested_video_device_id,
                         microphoneRequested, webcamRequested, &devices);
             break;

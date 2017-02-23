@@ -553,7 +553,7 @@ void URLRequestContextGetterQt::generateJobFactory()
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
     jobFactory->SetProtocolHandler(kQrcSchemeQt, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new QrcProtocolHandlerQt()));
     jobFactory->SetProtocolHandler(url::kFtpScheme,
-        std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver()))));
+            net::FtpProtocolHandler::Create(m_urlRequestContext->host_resolver()));
 
     m_installedCustomSchemes = m_customUrlSchemes;
     Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
