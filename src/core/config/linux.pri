@@ -62,6 +62,7 @@ use?(gn) {
         packagesExist(libffi): gn_args += use_system_libffi=true
         else: gn_args += use_system_libffi=false
         !packagesExist(libpci): gn_args += use_libpci=false
+        !packagesExist(xscrnsaver): gn_args += use_xscrnsaver=false
 
         use?(system_libevent): gn_args += use_system_libevent=true
         use?(system_libwebp):  gn_args += use_system_libwebp=true
