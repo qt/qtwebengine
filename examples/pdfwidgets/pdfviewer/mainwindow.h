@@ -47,11 +47,12 @@ namespace Ui {
 class MainWindow;
 }
 
-class QLineEdit;
 class QPdfDocument;
+class QPdfView;
 QT_END_NAMESPACE
 
-class SequentialPageWidget;
+class PageSelector;
+class ZoomSelector;
 
 class MainWindow : public QMainWindow
 {
@@ -65,9 +66,6 @@ public slots:
     void open(const QUrl &docLocation);
 
 private slots:
-    void showingPageRange(int start, int end);
-    void zoomChanged(qreal factor);
-    void zoomEdited();
     void bookmarkSelected(const QModelIndex &index);
 
     // action handlers
@@ -77,15 +75,14 @@ private slots:
     void on_actionAbout_Qt_triggered();
     void on_actionZoom_In_triggered();
     void on_actionZoom_Out_triggered();
-    void on_actionGo_triggered();
     void on_actionPrevious_Page_triggered();
     void on_actionNext_Page_triggered();
+    void on_actionContinuous_triggered();
 
 private:
     Ui::MainWindow *ui;
-    SequentialPageWidget *m_pageWidget;
-    QLineEdit *m_zoomEdit;
-    QLineEdit *m_pageEdit;
+    ZoomSelector *m_zoomSelector;
+    PageSelector *m_pageSelector;
 
     QPdfDocument *m_document;
 };

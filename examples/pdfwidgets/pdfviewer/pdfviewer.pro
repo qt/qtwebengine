@@ -1,21 +1,23 @@
-QT       += core gui widgets pdf
-TARGET = pdfviewer
 TEMPLATE = app
+TARGET = pdfviewer
+QT += core gui widgets pdfwidgets
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    sequentialpagewidget.cpp \
-    pagerenderer.cpp
+SOURCES += \
+    main.cpp \
+    mainwindow.cpp \
+    pageselector.cpp \
+    zoomselector.cpp
 
-HEADERS  += mainwindow.h \
-    sequentialpagewidget.h \
-    pagerenderer.h
+HEADERS += \
+    mainwindow.h \
+    pageselector.h \
+    zoomselector.h
 
-FORMS    += mainwindow.ui
+FORMS += \
+    mainwindow.ui
 
 RESOURCES += \
     resources.qrc
 
 target.path = $$[QT_INSTALL_EXAMPLES]/pdf/pdfviewer
 INSTALLS += target
-

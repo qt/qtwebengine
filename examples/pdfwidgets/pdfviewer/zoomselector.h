@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Klaralvdalens Datakonsult AB (KDAB).
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -34,66 +34,30 @@
 **
 ****************************************************************************/
 
-#ifndef SEQUENTIALPAGEWIDGET_H
-#define SEQUENTIALPAGEWIDGET_H
+#ifndef ZOOMSELECTOR_H
+#define ZOOMSELECTOR_H
 
-#include <QWidget>
+#include <QComboBox>
+#include <QPdfView>
 
-QT_BEGIN_NAMESPACE
-class QPdfDocument;
-QT_END_NAMESPACE
-
-class PageRenderer;
-
-class SequentialPageWidget : public QWidget
+class ZoomSelector : public QComboBox
 {
     Q_OBJECT
+
 public:
-    explicit SequentialPageWidget(QWidget *parent = 0);
-    ~SequentialPageWidget();
-
-    void paintEvent(QPaintEvent * event);
-    qreal zoom() { return m_zoom; }
-    qreal yForPage(int page);
-    int topPageShowing() { return m_topPageShowing; }
-    int bottomPageShowing() { return m_bottomPageShowing; }
-
-    void setDocument(QPdfDocument *document);
+    explicit ZoomSelector(QWidget *parent = nullptr);
 
 public slots:
-    void setZoom(qreal factor);
-    void invalidate();
+    void setZoomFactor(qreal zoomFactor);
+
+    void reset();
 
 signals:
-    void showingPageRange(int start, int end);
-    void zoomChanged(qreal factor);
+    void zoomModeChanged(QPdfView::ZoomMode zoomMode);
+    void zoomFactorChanged(qreal zoomFactor);
 
 private slots:
-    void documentStatusChanged();
-    void pageLoaded(int page, qreal zoom, QImage image);
-
-private:
-    int pageCount();
-    QSizeF pageSize(int page);
-    void render(int page);
-
-private:
-    QHash<int, QImage> m_pageCache;
-    QVector<int> m_cachedPagesLRU;
-    int m_pageCacheLimit;
-    QVector<QSizeF> m_pageSizes;
-    PageRenderer *m_pageRenderer;
-    QBrush m_background;
-    QPixmap m_placeholderIcon;
-    QBrush m_placeholderBackground;
-    int m_pageSpacing;
-    int m_topPageShowing;
-    int m_bottomPageShowing;
-    QSize m_totalSize;
-    qreal m_zoom;
-    qreal m_screenResolution; // pixels per point
-
-    QPdfDocument *m_document;
+    void onCurrentTextChanged(const QString &text);
 };
 
-#endif // SEQUENTIALPAGEWIDGET_H
+#endif // ZOOMSELECTOR_H

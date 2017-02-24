@@ -113,26 +113,13 @@
            </attribute>
           </widget>
          </widget>
-         <widget class="QScrollArea" name="scrollArea">
+         <widget class="QPdfView" name="pdfView" native="true">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>10</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="widgetResizable">
-           <bool>true</bool>
-          </property>
-          <widget class="QWidget" name="scrollAreaWidgetContents">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>401</width>
-             <height>515</height>
-            </rect>
-           </property>
-          </widget>
          </widget>
         </widget>
        </item>
@@ -172,6 +159,8 @@
     <addaction name="actionZoom_Out"/>
     <addaction name="actionPrevious_Page"/>
     <addaction name="actionNext_Page"/>
+    <addaction name="separator"/>
+    <addaction name="actionContinuous"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -195,7 +184,6 @@
    <addaction name="actionZoom_Out"/>
    <addaction name="actionZoom_In"/>
    <addaction name="separator"/>
-   <addaction name="actionGo"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
@@ -252,14 +240,6 @@
     <string>Ctrl+-</string>
    </property>
   </action>
-  <action name="actionGo">
-   <property name="text">
-    <string>Go</string>
-   </property>
-   <property name="toolTip">
-    <string>Go to Page</string>
-   </property>
-  </action>
   <action name="actionPrevious_Page">
    <property name="text">
     <string>Previous Page</string>
@@ -276,8 +256,24 @@
     <string>PgDown</string>
    </property>
   </action>
+  <action name="actionContinuous">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Continuous</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QPdfView</class>
+   <extends>QWidget</extends>
+   <header location="global">qpdfview.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>

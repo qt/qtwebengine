@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Klaralvdalens Datakonsult AB (KDAB).
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -34,72 +34,39 @@
 **
 ****************************************************************************/
 
-#include "pagerenderer.h"
+#ifndef PAGESELECTOR_H
+#define PAGESELECTOR_H
 
-#include <QElapsedTimer>
-#include <QLoggingCategory>
-#include <QPainter>
-#include <QPdfDocument>
-#include <QUrl>
+#include <QWidget>
 
-Q_DECLARE_LOGGING_CATEGORY(lcExample)
+QT_BEGIN_NAMESPACE
+class QLabel;
+class QLineEdit;
+class QPdfDocument;
+class QPdfPageNavigation;
+class QToolButton;
+QT_END_NAMESPACE
 
-PageRenderer::PageRenderer(QObject *parent)
-    : QThread(parent)
-    , m_document(nullptr)
-    , m_page(0)
-    , m_zoom(1.)
-    , m_minRenderTime(1000000000.)
-    , m_maxRenderTime(0.)
-    , m_totalRenderTime(0.)
-    , m_totalPagesRendered(0)
+class PageSelector : public QWidget
 {
-}
+    Q_OBJECT
 
-void PageRenderer::setDocument(QPdfDocument *document)
-{
-    m_document = document;
-}
+public:
+    explicit PageSelector(QWidget *parent = nullptr);
 
-void PageRenderer::requestPage(int page, qreal zoom, Priority priority)
-{
-    // TODO maybe queue up the requests
-    m_page = page;
-    m_zoom = zoom;
-    start(priority);
-}
+    void setPageNavigation(QPdfPageNavigation *pageNavigation);
 
-void PageRenderer::run()
-{
-    renderPage(m_page, m_zoom);
-}
+private slots:
+    void onCurrentPageChanged(int page);
+    void pageNumberEdited();
 
-void PageRenderer::renderPage(int page, qreal zoom)
-{
-    if (!m_document || m_document->status() != QPdfDocument::Ready)
-        return;
+private:
+    QPdfPageNavigation *m_pageNavigation;
 
-    const QSizeF size = m_document->pageSize(page) * m_zoom;
+    QLineEdit *m_pageNumberEdit;
+    QLabel *m_pageCountLabel;
+    QToolButton *m_previousPageButton;
+    QToolButton *m_nextPageButton;
+};
 
-    QElapsedTimer timer;
-    timer.start();
-
-    const QImage &img = m_document->render(page, size.toSize());
-
-    const qreal secs = timer.nsecsElapsed() / 1000000000.0;
-    if (secs < m_minRenderTime)
-        m_minRenderTime = secs;
-
-    if (secs > m_maxRenderTime)
-        m_maxRenderTime = secs;
-
-    m_totalRenderTime += secs;
-    ++m_totalPagesRendered;
-
-    emit pageReady(page, zoom, img);
-
-    qCDebug(lcExample) << "page" << page << "zoom" << m_zoom << "size" << size << "in" << secs <<
-                          "secs; min" << m_minRenderTime <<
-                          "avg" << m_totalRenderTime / m_totalPagesRendered <<
-                          "max" << m_maxRenderTime;
-}
+#endif // PAGESELECTOR_H
