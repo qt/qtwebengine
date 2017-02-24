@@ -32,6 +32,7 @@
 #include <QScopedPointer>
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
+#include <QQuickWebEngineProfile>
 #include <private/qquickwebengineview_p.h>
 
 #define INSPECTOR_SERVER_PORT "23654"
@@ -62,6 +63,7 @@ tst_InspectorServer::tst_InspectorServer()
 {
     qputenv("QTWEBENGINE_REMOTE_DEBUGGING", INSPECTOR_SERVER_PORT);
     QtWebEngine::initialize();
+    QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
     prepareWebViewComponent();
 }
 

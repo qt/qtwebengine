@@ -28,6 +28,7 @@
 
 #include <QtCore/QScopedPointer>
 #include <QtQuickTest/quicktest.h>
+#include <QtWebEngine/QQuickWebEngineProfile>
 #include "qt_webengine_quicktest.h"
 
 int main(int argc, char **argv)
@@ -42,6 +43,7 @@ int main(int argc, char **argv)
     if (!QCoreApplication::instance())
         app.reset(new Application(argc, argv));
     QtWebEngine::initialize();
+    QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
 
     QTEST_ADD_GPU_BLACKLIST_SUPPORT_DEFS
     QTEST_SET_MAIN_SOURCE_PATH

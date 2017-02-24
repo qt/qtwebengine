@@ -93,6 +93,7 @@ private:
 tst_QQuickWebEngineView::tst_QQuickWebEngineView()
 {
     QtWebEngine::initialize();
+    QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
 
     m_testSourceDirPath = QString::fromLocal8Bit(TESTS_SOURCE_DIR);
     if (!m_testSourceDirPath.endsWith(QLatin1Char('/')))

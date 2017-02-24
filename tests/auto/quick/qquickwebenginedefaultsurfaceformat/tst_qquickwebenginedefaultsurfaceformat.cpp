@@ -44,6 +44,7 @@
 #include <QtTest/QtTest>
 #include <QTimer>
 #include <private/qquickwebengineview_p.h>
+#include <QQuickWebEngineProfile>
 
 class tst_QQuickWebEngineDefaultSurfaceFormat : public QObject
 {
@@ -68,6 +69,7 @@ private:
 
 void tst_QQuickWebEngineDefaultSurfaceFormat::initEngineAndViewComponent() {
     m_engine = new QQmlEngine(this);
+    QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
     m_component.reset(new QQmlComponent(m_engine, this));
     m_component->setData(QByteArrayLiteral("import QtQuick 2.0\n"
                                            "import QtWebEngine 1.2\n"
