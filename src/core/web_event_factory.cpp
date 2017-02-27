@@ -1205,6 +1205,8 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
 
     webKitEvent.x = webKitEvent.windowX = ev->pos().x() / dpiScale;
     webKitEvent.y = webKitEvent.windowY = ev->pos().y() / dpiScale;
+    webKitEvent.movementX = ev->pos().x() - ev->oldPos().x();
+    webKitEvent.movementY = ev->pos().y() - ev->oldPos().y();
 
     webKitEvent.type = webEventTypeForEvent(ev);
     return webKitEvent;

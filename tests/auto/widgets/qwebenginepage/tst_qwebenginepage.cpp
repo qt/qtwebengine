@@ -205,6 +205,7 @@ private Q_SLOTS:
     void toPlainTextLoadFinishedRace();
     void setZoomFactor();
     void mouseButtonTranslation();
+    void mouseMovementProperties();
 
     void printToPdf();
     void viewSource();
@@ -4752,6 +4753,37 @@ void tst_QWebEnginePage::mouseButtonTranslation()
 
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "lastEvent.button").toInt(), 2);
     QCOMPARE(evaluateJavaScriptSync(view.page(), "lastEvent.buttons").toInt(), 3);
+}
+
+void tst_QWebEnginePage::mouseMovementProperties()
+{
+    QWebEngineView view;
+    ConsolePage page;
+    view.setPage(&page);
+    view.show();
+    QTest::qWaitForWindowExposed(&view);
+
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.setHtml(QStringLiteral(
+                        "<html><head><script>\
+                            function onMouseMove(event) { console.log(event.movementX + \", \" + event.movementY); }; \
+                        </script></head>\
+                        <body>\
+                            <div style=\"height:600px;\" onmousemove=\"onMouseMove(event)\">\
+                        </div>\
+                        </body></html>"));
+    loadFinishedSpy.wait();
+
+    QTest::mouseMove(&view, QPoint(20, 20));
+    QTRY_COMPARE(page.messages.count(), 1);
+
+    QTest::mouseMove(&view, QPoint(30, 30));
+    QTRY_COMPARE(page.messages.count(), 2);
+    QTRY_COMPARE(page.messages[1], QString("10, 10"));
+
+    QTest::mouseMove(&view, QPoint(20, 20));
+    QTRY_COMPARE(page.messages.count(), 3);
+    QTRY_COMPARE(page.messages[2], QString("-10, -10"));
 }
 
 QPoint tst_QWebEnginePage::elementCenter(QWebEnginePage *page, const QString &id)
