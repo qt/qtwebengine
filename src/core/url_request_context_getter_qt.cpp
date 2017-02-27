@@ -268,6 +268,7 @@ void URLRequestContextGetterQt::updateCookieStore()
 
     if (m_contextInitialized && !m_updateAllStorage && !m_updateCookieStore) {
         m_updateCookieStore = true;
+        m_updateHttpCache = true;
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                          base::Bind(&URLRequestContextGetterQt::generateCookieStore, this));
     }
@@ -337,6 +338,12 @@ void URLRequestContextGetterQt::generateCookieStore()
     const std::vector<std::string> cookieableSchemes(kCookieableSchemes, kCookieableSchemes + arraysize(kCookieableSchemes));
     cookieMonster->SetCookieableSchemes(cookieableSchemes);
     m_cookieDelegate->setCookieMonster(cookieMonster);
+
+    if (!m_updateAllStorage) {
+        Q_ASSERT(m_updateHttpCache);
+        // HttpCache needs to be regenerated when we generate a new channel id service
+        generateHttpCache();
+    }
 }
 
 void URLRequestContextGetterQt::updateUserAgent()
