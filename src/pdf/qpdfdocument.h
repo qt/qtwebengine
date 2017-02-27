@@ -113,7 +113,7 @@ Q_SIGNALS:
     void passwordChanged();
     void passwordRequired();
     void statusChanged(QPdfDocument::Status status);
-    void pageCountChanged();
+    void pageCountChanged(int pageCount);
 
 private:
     friend class QPdfBookmarkModelPrivate;

@@ -75,6 +75,7 @@ public:
 
     QPdfDocument::Status status;
     QPdfDocument::DocumentError lastError;
+    int pageCount;
 
     void clear();
 

@@ -102,9 +102,13 @@ void tst_QPdfDocument::pageCount()
     TemporaryPdf tempPdf;
 
     QPdfDocument doc;
+    QSignalSpy pageCountChangedSpy(&doc, SIGNAL(pageCountChanged(int)));
+
     QCOMPARE(doc.pageCount(), 0);
     QCOMPARE(doc.load(tempPdf.fileName()), QPdfDocument::NoError);
     QCOMPARE(doc.pageCount(), 2);
+    QCOMPARE(pageCountChangedSpy.count(), 1);
+    QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
 
     QCOMPARE(doc.pageSize(0).toSize(), tempPdf.pageLayout.fullRectPoints().size());
 }
@@ -114,12 +118,15 @@ void tst_QPdfDocument::loadFromIODevice()
     TemporaryPdf tempPdf;
     QPdfDocument doc;
     QSignalSpy statusChangedSpy(&doc, SIGNAL(statusChanged(QPdfDocument::Status)));
+    QSignalSpy pageCountChangedSpy(&doc, SIGNAL(pageCountChanged(int)));
     doc.load(&tempPdf);
     QCOMPARE(statusChangedSpy.count(), 2);
     QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
     QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
     QCOMPARE(doc.error(), QPdfDocument::NoError);
     QCOMPARE(doc.pageCount(), 2);
+    QCOMPARE(pageCountChangedSpy.count(), 1);
+    QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
 }
 
 void tst_QPdfDocument::loadAsync()
@@ -133,6 +140,7 @@ void tst_QPdfDocument::loadAsync()
 
     QPdfDocument doc;
     QSignalSpy statusChangedSpy(&doc, SIGNAL(statusChanged(QPdfDocument::Status)));
+    QSignalSpy pageCountChangedSpy(&doc, SIGNAL(pageCountChanged(int)));
 
     doc.load(reply.data());
 
@@ -140,6 +148,8 @@ void tst_QPdfDocument::loadAsync()
     QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
     QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
     QCOMPARE(doc.pageCount(), 2);
+    QCOMPARE(pageCountChangedSpy.count(), 1);
+    QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
 }
 
 void tst_QPdfDocument::password()
@@ -166,19 +176,26 @@ void tst_QPdfDocument::close()
     QPdfDocument doc;
 
     QSignalSpy statusChangedSpy(&doc, SIGNAL(statusChanged(QPdfDocument::Status)));
+    QSignalSpy pageCountChangedSpy(&doc, SIGNAL(pageCountChanged(int)));
 
     doc.load(&tempPdf);
 
     QCOMPARE(statusChangedSpy.count(), 2);
     QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
     QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
+    QCOMPARE(pageCountChangedSpy.count(), 1);
+    QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
+
     statusChangedSpy.clear();
+    pageCountChangedSpy.clear();
 
     doc.close();
     QCOMPARE(statusChangedSpy.count(), 2);
     QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Unloading);
     QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Null);
     QCOMPARE(doc.pageCount(), 0);
+    QCOMPARE(pageCountChangedSpy.count(), 1);
+    QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
 }
 
 void tst_QPdfDocument::loadAfterClose()
@@ -187,18 +204,25 @@ void tst_QPdfDocument::loadAfterClose()
     QPdfDocument doc;
 
     QSignalSpy statusChangedSpy(&doc, SIGNAL(statusChanged(QPdfDocument::Status)));
+    QSignalSpy pageCountChangedSpy(&doc, SIGNAL(pageCountChanged(int)));
 
     doc.load(&tempPdf);
     QCOMPARE(statusChangedSpy.count(), 2);
     QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
     QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
+    QCOMPARE(pageCountChangedSpy.count(), 1);
+    QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
     statusChangedSpy.clear();
+    pageCountChangedSpy.clear();
 
     doc.close();
     QCOMPARE(statusChangedSpy.count(), 2);
     QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Unloading);
     QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Null);
+    QCOMPARE(pageCountChangedSpy.count(), 1);
+    QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
     statusChangedSpy.clear();
+    pageCountChangedSpy.clear();
 
     doc.load(&tempPdf);
     QCOMPARE(statusChangedSpy.count(), 2);
@@ -206,6 +230,8 @@ void tst_QPdfDocument::loadAfterClose()
     QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
     QCOMPARE(doc.error(), QPdfDocument::NoError);
     QCOMPARE(doc.pageCount(), 2);
+    QCOMPARE(pageCountChangedSpy.count(), 1);
+    QCOMPARE(pageCountChangedSpy[0][0].toInt(), doc.pageCount());
 }
 
 void tst_QPdfDocument::closeOnDestroy()
@@ -219,12 +245,15 @@ void tst_QPdfDocument::closeOnDestroy()
         doc->load(&tempPdf);
 
         QSignalSpy statusChangedSpy(doc, SIGNAL(statusChanged(QPdfDocument::Status)));
+        QSignalSpy pageCountChangedSpy(doc, SIGNAL(pageCountChanged(int)));
 
         delete doc;
 
         QCOMPARE(statusChangedSpy.count(), 2);
         QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Unloading);
         QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Null);
+        QCOMPARE(pageCountChangedSpy.count(), 1);
+        QCOMPARE(pageCountChangedSpy[0][0].toInt(), 0);
     }
 
     // deleting a closed document should not emit any signal
@@ -234,10 +263,12 @@ void tst_QPdfDocument::closeOnDestroy()
         doc->close();
 
         QSignalSpy statusChangedSpy(doc, SIGNAL(statusChanged(QPdfDocument::Status)));
+        QSignalSpy pageCountChangedSpy(doc, SIGNAL(pageCountChanged(int)));
 
         delete doc;
 
         QCOMPARE(statusChangedSpy.count(), 0);
+        QCOMPARE(pageCountChangedSpy.count(), 0);
     }
 }
 

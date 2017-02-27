@@ -59,6 +59,7 @@ QPdfDocumentPrivate::QPdfDocumentPrivate()
     , loadComplete(false)
     , status(QPdfDocument::Null)
     , lastError(QPdfDocument::NoError)
+    , pageCount(0)
 {
     asyncBuffer.setData(QByteArray());
     asyncBuffer.open(QIODevice::ReadWrite);
@@ -104,6 +105,11 @@ void QPdfDocumentPrivate::clear()
         FPDFAvail_Destroy(avail);
     avail = nullptr;
     lock.unlock();
+
+    if (pageCount != 0) {
+        pageCount = 0;
+        emit q->pageCountChanged(pageCount);
+    }
 
     loadComplete = false;
 
@@ -266,7 +272,8 @@ void QPdfDocumentPrivate::checkComplete()
 
     QPdfMutexLocker lock;
 
-    for (int i = 0, count = FPDF_GetPageCount(doc); i < count; ++i) {
+    const int newPageCount = FPDF_GetPageCount(doc);
+    for (int i = 0; i < newPageCount; ++i) {
         int result = PDF_DATA_NOTAVAIL;
         while (result == PDF_DATA_NOTAVAIL) {
             result = FPDFAvail_IsPageAvail(avail, i, this);
@@ -278,8 +285,14 @@ void QPdfDocumentPrivate::checkComplete()
 
     lock.unlock();
 
-    if (loadComplete)
+    if (loadComplete) {
+        if (newPageCount != pageCount) {
+            pageCount = newPageCount;
+            emit q->pageCountChanged(pageCount);
+        }
+
         setStatus(QPdfDocument::Ready);
+    }
 }
 
 void QPdfDocumentPrivate::setStatus(QPdfDocument::Status documentStatus)
@@ -518,12 +531,7 @@ void QPdfDocument::close()
 
 int QPdfDocument::pageCount() const
 {
-    if (!d->doc)
-        return 0;
-
-    const QPdfMutexLocker lock;
-
-    return FPDF_GetPageCount(d->doc);
+    return d->pageCount;
 }
 
 QSizeF QPdfDocument::pageSize(int page) const
