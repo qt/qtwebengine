@@ -112,6 +112,7 @@ bool QQuickWebEngineSettings::javascriptCanOpenWindows() const
     \qmlproperty bool WebEngineSettings::javascriptCanAccessClipboard
 
     Allows JavaScript programs to read from or write to the clipboard.
+    Writing to the clipboard is always allowed if it is specifically requested by the user.
 
     Disabled by default.
 */
