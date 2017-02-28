@@ -10,6 +10,9 @@
         "options": {
             "alsa": "boolean",
             "embedded": "boolean",
+            "ffmpeg": { "type": "enum", "name": "system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
+            "opus": { "type": "enum", "name": "system-opus", "values": { "system": "yes", "qt": "no" } },
+            "webp": { "type": "enum", "name": "system-webp", "values": { "system": "yes", "qt": "no" } },
             "pepper-plugins": "boolean",
             "printing-and-pdf": "boolean",
             "proprietary-codecs": "boolean",
@@ -31,6 +34,24 @@
             "label": "PulseAudio >= 0.9.10",
             "sources": [
                 { "type": "pkgConfig", "args": "libpulse >= 0.9.10 libpulse-mainloop-glib" }
+            ]
+        },
+        "ffmpeg": {
+            "label": "libavcodec libavformat libavutil",
+            "sources": [
+                { "type": "pkgConfig", "args": "libavcodec libavformat libavutil" }
+            ]
+        },
+        "opus": {
+            "label": "opus",
+            "sources": [
+                { "type": "pkgConfig", "args": "opus" }
+            ]
+        },
+        "webp": {
+            "label": "libwebp and libwebpdemux",
+            "sources": [
+                { "type": "pkgConfig", "args": "libwebp libwebpdemux" }
             ]
         }
     },
@@ -99,6 +120,24 @@
             "purpose": "Enables WebRTC support",
             "output": [ "privateFeature" ]
         },
+        "system-webp": {
+            "label": "libwebp and libwebpdemux",
+            "autoDetect": "config.unix",
+            "condition": "libs.webp",
+            "output": [ "privateFeature" ]
+        },
+        "system-opus": {
+            "label": "Opus",
+            "autoDetect": "config.unix",
+            "condition": "libs.opus",
+            "output": [ "privateFeature" ]
+        },
+        "system-ffmpeg": {
+            "label": "ffmpeg",
+            "autoDetect": false,
+            "condition": "libs.ffmpeg && features.system-opus && features.system-webp",
+            "output": [ "privateFeature" ]
+        },
         "system-ninja": {
             "label": "Using system ninja",
             "condition": "tests.ninja",
@@ -132,6 +171,15 @@
                     "type": "feature",
                     "args": "pulseaudio",
                     "condition": "config.unix"
+                },
+                {
+                   "section": "System libraries",
+                   "condition": "config.unix",
+                   "entries": [
+                        "system-webp",
+                        "system-opus",
+                        "system-ffmpeg"
+                    ]
                 }
             ]
         }

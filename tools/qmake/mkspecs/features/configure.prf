@@ -30,6 +30,12 @@ defineTest(runConfigure) {
         qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
         qtConfig(webrtc): WEBENGINE_CONFIG += use_webrtc
         qtConfig(embedded): WEBENGINE_CONFIG += embedded_build
+        qtConfig(system-webp): WEBENGINE_CONFIG += use_system_libwebp
+        else: WEBENGINE_CONFIG += use_bundled_libwebp
+        qtConfig(system-opus): WEBENGINE_CONFIG += use_system_opus
+        else: WEBENGINE_CONFIG += use_bundled_opus
+        qtConfig(system-ffmpeg): WEBENGINE_CONFIG += use_system_ffmpeg
+        else: WEBENGINE_CONFIG += use_bundled_ffmpeg
     } else {
         cross_compile: WEBENGINE_CONFIG += embedded_build
     }
@@ -63,11 +69,15 @@ defineTest(runConfigure) {
         }
         packagesExist(minizip, zlib): WEBENGINE_CONFIG += use_system_minizip use_system_zlib
         else: log("System zlib or minizip not found. Using Chromium's copies.$${EOL}")
-        packagesExist(libwebp,libwebpdemux): WEBENGINE_CONFIG += use_system_libwebp use_system_libwebpdemux
-        else: log("System libwebp or libwebpdemux not found. Using Chromium's copies.$${EOL}")
+        !isQtMinimum(5, 8) {
+            packagesExist(libwebp,libwebpdemux): WEBENGINE_CONFIG += use_system_libwebp use_system_libwebpdemux
+            else: log("System libwebp or libwebpdemux not found. Using Chromium's copies.$${EOL}")
+            packagesExist(opus): WEBENGINE_CONFIG += use_system_opus
+            else: log("System opus not found. Using Chromium's copy.$${EOL}")
+        }
         packagesExist(libxml-2.0,libxslt): WEBENGINE_CONFIG += use_system_libxslt use_system_libxml2
         else: log("System libxml2 or libxslt not found. Using Chromium's copies.$${EOL}")
-        for(package, $$list("libevent jsoncpp opus protobuf")) {
+        for(package, $$list("libevent jsoncpp protobuf")) {
             packagesExist($$package): WEBENGINE_CONFIG += use_system_$$package
             else {
                 log("System $$package not found. Using Chromium's copy.$${EOL}")
@@ -124,21 +134,23 @@ defineTest(runConfigure) {
             log("  ICU ................................ Using internal copy (Default, force system ICU with WEBENGINE_CONFIG+=use_system_icu)$${EOL}")
             WEBENGINE_CONFIG += use_bundled_icu
         }
-        use?(system_ffmpeg) {
-            packagesExist("libavcodec libavformat libavutil") {
-                packagesExist("libwebp, libwebpdemux, opus, \'vpx >= 1.4\'"){
-                    log("  FFMPEG ............................. Using system version$${EOL}")
+        !isQtMinimum(5, 8) {
+            use?(system_ffmpeg) {
+                packagesExist("libavcodec libavformat libavutil") {
+                    packagesExist("libwebp, libwebpdemux, opus, \'vpx >= 1.4\'"){
+                        log("  FFMPEG ............................. Using system version$${EOL}")
+                    } else {
+                        log("  FFMPEG ............................. Conflicting FFMPEG dependencies$${EOL}")
+                        skipBuild("Unmet dependencies: opus, vpx, libwebp, libwebpdemux")
+                    }
                 } else {
-                    log("  FFMPEG ............................. Conflicting FFMPEG dependencies$${EOL}")
-                    skipBuild("Unmet dependencies: opus, vpx, libwebp, libwebpdemux")
+                    log("  FFMPEG ............................. System FFMPEG not found$${EOL}")
+                    skipBuild("Unmet dependencies: libavcodec, libavformat, libavutil")
                 }
             } else {
-                log("  FFMPEG ............................. System FFMPEG not found$${EOL}")
-                skipBuild("Unmet dependencies: libavcodec, libavformat, libavutil")
+                log("  FFMPEG ............................. Using internal copy (Default, force system FFMPEG with WEBENGINE_CONFIG+=use_system_ffmpeg)$${EOL}")
+                WEBENGINE_CONFIG += use_bundled_ffmpeg
             }
-        } else {
-            log("  FFMPEG ............................. Using internal copy (Default, force system FFMPEG with WEBENGINE_CONFIG+=use_system_ffmpeg)$${EOL}")
-            WEBENGINE_CONFIG += use_bundled_ffmpeg
         }
         for(config, WEBENGINE_CONFIG) {
             match = $$find(config, "^use_system_")
