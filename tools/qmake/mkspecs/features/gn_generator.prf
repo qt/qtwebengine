@@ -56,7 +56,7 @@ GN_CONTENTS += "    sources =  moc_source_h_files" \
                "    outputs = [ \"$target_gen_dir/.moc/moc_{{source_name_part}}.cpp\" ]"
 GN_CONTENTS += "    inputs = [ \"$$system_path($$_PRO_FILE_)\" ]" \
                "    args = ["
-for(token, MOC_COMMAND): GN_CONTENTS += "      \"$$replace(token,\',)\","
+for(token, MOC_COMMAND): GN_CONTENTS += "      \"$$replace(token,\",\\\")\","
 GN_CONTENTS += "      \"{{source}}\"," \
                "      \"-o\"," \
                "      rebase_path(\"$target_gen_dir/.moc/moc_{{source_name_part}}.cpp\")"\
@@ -70,7 +70,7 @@ GN_CONTENTS += "    sources =  moc_source_cpp_files" \
                "    outputs = [ \"$target_gen_dir/.moc/{{source_name_part}}.moc\" ]"
 GN_CONTENTS += "    inputs = [ \"$$system_path($$_PRO_FILE_)\" ]" \
                "    args = ["
-for(token, MOC_COMMAND): GN_CONTENTS += "      \"$$replace(token,\',)\","
+for(token, MOC_COMMAND): GN_CONTENTS += "      \"$$replace(token,\",\\\")\","
 GN_CONTENTS += "      \"{{source}}\"," \
                "      \"-o\"," \
                "      rebase_path(\"$target_gen_dir/.moc/{{source_name_part}}.moc\")"\
@@ -90,7 +90,7 @@ GN_CONTENTS += "  ]" \
                "  outputs = [ \"$target_gen_dir/.rcc/qrc_{{source_name_part}}.cpp\" ]"
 GN_CONTENTS += "  inputs = [ \"$$system_path($$_PRO_FILE_)\" ]" \
                "  args = [" \
-               "    \"$$replace(CLEAN_QMAKE_RCC,\',)\","
+               "    \"$$replace(CLEAN_QMAKE_RCC,\",\\\")\","
 for(resource_flag, $$QMAKE_RESOURCE_FLAGS): GN_CONTENTS += "    \"$$resource_flag\""
 GN_CONTENTS += "    \"-name\"," \
                "    \"{{source_name_part}}\"," \
@@ -110,15 +110,15 @@ GN_CONTENTS += "$${TARGET_TYPE}(\"$$TARGET\") {"
 for (imp, GN_IMPORTS): GN_CONTENTS += "  import(\"$$imp\")"
 }
 
-!isEmpty(QMAKE_FRAMEWORKPATH) {
-    GN_CONTENTS += "  mac_framework_dirs = ["
-    for(path, QMAKE_FRAMEWORKPATH): GN_CONTENTS += "    \"$$path\","
-    GN_CONTENTS += "  ]"
-}
-
 !isEmpty(QMAKE_CFLAGS) {
     GN_CONTENTS += "  cflags = ["
     for(flag, QMAKE_CFLAGS): GN_CONTENTS += "    \"$$filter_flag_values($$flag)\","
+    GN_CONTENTS += "  ]"
+}
+
+!isEmpty(QMAKE_FRAMEWORKPATH) {
+    GN_CONTENTS += "  cflags += ["
+    for(path, QMAKE_FRAMEWORKPATH): GN_CONTENTS += "    \"-F$$path\","
     GN_CONTENTS += "  ]"
 }
 
@@ -140,7 +140,12 @@ GN_CONTENTS += "  if (!defined(defines)) {"\
 GN_CONTENTS += "  defines += ["
 # Remove single quotes around function macro defines, so that GN doesn't escape them, thus breaking
 # the macro.
-for (define, DEFINES): GN_CONTENTS += "    \"$$replace(define,\',)\","
+# Also add a layer of escaping for double quotes.
+for (define, DEFINES): {
+  define = $$replace(define,\",\\\")
+  define = $$replace(define,\',)
+  GN_CONTENTS += "    \"$$define\","
+}
 !isEmpty(QMAKE_LIBDIR_EGL):
     GN_CONTENTS += "    \"QT_LIBDIR_EGL=\\\"$${QMAKE_DIR_SEP}$$relative_path($$QMAKE_LIBDIR_EGL, $$[QT_SYSROOT])\\\"\","
 !isEmpty(QMAKE_LIBDIR_OPENGL_ES2)
@@ -171,8 +176,10 @@ GN_CONTENTS += "  ldflags += ["
 for (flag, QMAKE_LFLAGS): GN_CONTENTS += "    \"$$filter_flag_values($$flag)\","
 for (flag, GN_FLAGS): GN_CONTENTS += "    \"$$flag\","
 !isEmpty(QMAKE_RPATHDIR) {
-    macos: GN_CONTENTS += "    \"-Wl,-rpath,$${QMAKE_RPATHDIR}\","
-    else:unix: GN_CONTENTS += "    \"-Wl,-rpath=$${QMAKE_RPATHDIR}\","
+    for (rpath, QMAKE_RPATHDIR) {
+        macos: GN_CONTENTS += "    \"-Wl,-rpath,$${rpath}\","
+        else:unix: GN_CONTENTS += "    \"-Wl,-rpath=$${rpath}\","
+    }
 }
 !isEmpty(QMAKE_RPATHLINKDIR): GN_CONTENTS += "    \"-Wl,-rpath-link=$${QMAKE_RPATHLINKDIR}\","
 GN_CONTENTS += "  ]"
@@ -219,7 +226,7 @@ GN_CONTENTS += "}"
     for (inc, GN_INCLUDES): GN_CONTENTS += $$cat($$inc,lines)
 }
 
-!build_pass: write_file($$GN_FILE, GN_CONTENTS)
+build_pass|!debug_and_release: write_file($$GN_FILE, GN_CONTENTS)
 
 # The generated Makefile shouldn't build anything by itself, just re-run qmake if necessary
 TEMPLATE = aux

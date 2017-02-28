@@ -27,6 +27,11 @@ use?(gn){
     OBJECTS =
 }
 
+#ninja compiles with std::__debug
+use?(gn): linux: CONFIG(debug, debug|release) {
+    DEFINES += _GLIBCXX_DEBUG
+}
+
 # Fixme: -Werror=unused-parameter in core
 QMAKE_CXXFLAGS_WARN_ON =
 

@@ -7,7 +7,10 @@ webengine_plugin.subdir = webengine/plugin
 webengine_plugin.target = sub-webengine-plugin
 webengine_plugin.depends = webengine
 
-SUBDIRS += core \
+core.depends = buildtools
+
+SUBDIRS += buildtools \
+           core \
            process \
            webengine \
            webengine_plugin \
