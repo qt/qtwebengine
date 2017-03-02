@@ -35,6 +35,11 @@ use?(gn) {
             is_clang=false
     }
 
+    cross_compile:!host_build {
+        TOOLCHAIN_SYSROOT = $$[QT_SYSROOT]
+        !isEmpty(TOOLCHAIN_SYSROOT): gn_args += target_sysroot=\"$${TOOLCHAIN_SYSROOT}\"
+    }
+
     host_build {
         gn_args += custom_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:host\"
         # Don't bother trying to use system libraries in this case
