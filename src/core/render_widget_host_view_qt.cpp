@@ -823,14 +823,22 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
     case Qt::ImFont:
         return QVariant();
     case Qt::ImCursorRectangle:
+        // QIBusPlatformInputContext might query ImCursorRectangle before the
+        // RenderWidgetHostView is created. Without an available view GetSelectionRange()
+        // returns nullptr.
+        if (!GetTextInputManager()->GetSelectionRegion())
+            return QVariant();
         return toQt(GetTextInputManager()->GetSelectionRegion()->caret_rect);
     case Qt::ImCursorPosition:
+        Q_ASSERT(GetTextInputManager()->GetSelectionRegion());
         return toQt(GetTextInputManager()->GetSelectionRegion()->focus.edge_top_rounded().x());
     case Qt::ImAnchorPosition:
+        Q_ASSERT(GetTextInputManager()->GetSelectionRegion());
         return toQt(GetTextInputManager()->GetSelectionRegion()->anchor.edge_top_rounded().x());
     case Qt::ImSurroundingText:
         return m_surroundingText;
     case Qt::ImCurrentSelection: {
+        Q_ASSERT(GetTextInputManager()->GetTextSelection());
         base::string16 text;
         GetTextInputManager()->GetTextSelection()->GetSelectedText(&text);
         return toQt(text);
