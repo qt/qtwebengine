@@ -32,8 +32,8 @@ OTHER_FILES += \
     $$PWD/data/prompt.html \
     $$PWD/data/multifileupload.html \
     $$PWD/data/redirect.html \
+    $$PWD/data/script-with-metadata.js \
     $$PWD/data/singlefileupload.html \
-    $$PWD/data/small-favicon.png \
     $$PWD/data/test1.html \
     $$PWD/data/test2.html \
     $$PWD/data/test3.html \
@@ -41,6 +41,7 @@ OTHER_FILES += \
     $$PWD/data/keyboardModifierMapping.html \
     $$PWD/data/keyboardEvents.html \
     $$PWD/data/titleupdate.js \
+    $$PWD/data/tst_activeFocusOnPress.qml \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_download.qml \
     $$PWD/data/tst_favicon.qml \
@@ -72,6 +73,7 @@ OTHER_FILES += \
     $$PWD/data/tst_settings.qml \
     $$PWD/data/tst_keyboardModifierMapping.qml \
     $$PWD/data/tst_keyboardEvents.qml \
+    $$PWD/data/webchannel-test.html \
     $$PWD/data/icons/favicon.png \
     $$PWD/data/icons/gray128.png \
     $$PWD/data/icons/gray16.png \

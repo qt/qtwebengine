@@ -196,7 +196,7 @@ ASSERT_ENUMS_MATCH(QWebEngineScript::DocumentCreation, UserScript::DocumentEleme
  * Returns the point in the loading process at which the script will be executed.
  * The default value is QWebEngineScript::Deferred.
  *
- * \sa setInjectionPoint
+ * \sa setInjectionPoint()
  */
 QWebEngineScript::InjectionPoint QWebEngineScript::injectionPoint() const
 {
@@ -205,7 +205,7 @@ QWebEngineScript::InjectionPoint QWebEngineScript::injectionPoint() const
 /*!
  * Sets the point at which to execute the script to be \a p.
  *
- * \sa QWebEngineScript::InjectionPoint
+ * \sa InjectionPoint
  */
 void QWebEngineScript::setInjectionPoint(QWebEngineScript::InjectionPoint p)
 {

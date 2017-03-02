@@ -120,9 +120,34 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    PathService::Override(base::DIR_QT_LIBRARY_DATA,
-                          toFilePath(QLibraryInfo::location(QLibraryInfo::DataPath) %
-                                     QLatin1String("/resources")));
+    bool icuDataDirFound = false;
+    QString icuDataDir = QLibraryInfo::location(QLibraryInfo::DataPath)
+            % QLatin1String("/resources");
+
+    // Try to look up the path to the ICU data directory via an environment variable
+    // (e.g. for the case when the tool is ran during build phase, and regular installed
+    // ICU data file is not available).
+    QString icuPossibleEnvDataDir = QString::fromLatin1(qgetenv("QT_WEBENGINE_ICU_DATA_DIR"));
+    if (!icuPossibleEnvDataDir.isEmpty() && QFileInfo::exists(icuPossibleEnvDataDir)) {
+        icuDataDir = icuPossibleEnvDataDir;
+        icuDataDirFound = true;
+    }
+    // Try to find the ICU data directory in the installed Qt location.
+    else if (QFileInfo::exists(icuDataDir)) {
+        icuDataDirFound = true;
+    }
+
+    if (icuDataDirFound) {
+        PathService::Override(base::DIR_QT_LIBRARY_DATA, toFilePath(icuDataDir));
+    } else {
+        QTextStream out(stdout);
+        out << "Couldn't find ICU data directory. Please check that the following path exists: "
+            << icuDataDir
+            << "\nAlternatively provide the directory path via the QT_WEBENGINE_ICU_DAT_DIR "
+               "environment variable.\n" << endl;
+        return 1;
+    }
+
 
     base::AtExitManager exit_manager;
     base::i18n::InitializeICU();

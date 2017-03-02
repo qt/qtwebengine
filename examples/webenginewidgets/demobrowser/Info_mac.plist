@@ -41,5 +41,7 @@
         </array>
         <key>NOTE</key>
         <string>DemoBrowser by The Qt Company Ltd.</string>
+        <key>NSSupportsAutomaticGraphicsSwitching</key>
+        <string>YES</string>
 </dict>
 </plist>

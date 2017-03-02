@@ -45,7 +45,7 @@
 #include <QStringList>
 
 namespace content {
-    class WebContents;
+    class RenderFrameHost;
 }
 
 namespace QtWebEngineCore {
@@ -60,7 +60,7 @@ public:
         Save
     };
 
-    FilePickerController(FileChooserMode mode, content::WebContents *contents, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject * = 0);
+    FilePickerController(FileChooserMode mode, content::RenderFrameHost *contents, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject * = 0);
     QStringList acceptedMimeTypes() const;
     QString defaultFileName() const;
     FileChooserMode mode() const;
@@ -71,10 +71,10 @@ public Q_SLOTS:
     void rejected();
 
 private:
-    void filesSelectedInChooser(const QStringList &filesList, content::WebContents *contents);
+    void filesSelectedInChooser(const QStringList &filesList, content::RenderFrameHost *contents);
     QString m_defaultFileName;
     QStringList m_acceptedMimeTypes;
-    content::WebContents *m_contents;
+    content::RenderFrameHost *m_frameHost;
     FileChooserMode m_mode;
 
 };

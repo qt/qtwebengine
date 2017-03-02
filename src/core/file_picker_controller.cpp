@@ -49,18 +49,18 @@
 
 namespace QtWebEngineCore {
 
-FilePickerController::FilePickerController(FileChooserMode mode, content::WebContents *contents, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject *parent)
+FilePickerController::FilePickerController(FileChooserMode mode, content::RenderFrameHost *frameHost, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject *parent)
     : QObject(parent)
     , m_defaultFileName(defaultFileName)
     , m_acceptedMimeTypes(acceptedMimeTypes)
-    , m_contents(contents)
+    , m_frameHost(frameHost)
     , m_mode(mode)
 {
 }
 
 void FilePickerController::accepted(const QStringList &files)
 {
-    FilePickerController::filesSelectedInChooser(files, m_contents);
+    FilePickerController::filesSelectedInChooser(files, m_frameHost);
 }
 
 void FilePickerController::accepted(const QVariant &files)
@@ -76,12 +76,12 @@ void FilePickerController::accepted(const QVariant &files)
         qWarning("An unhandled type '%s' was provided in FilePickerController::accepted(QVariant)", files.typeName());
     }
 
-    FilePickerController::filesSelectedInChooser(stringList, m_contents);
+    FilePickerController::filesSelectedInChooser(stringList, m_frameHost);
 }
 
 void FilePickerController::rejected()
 {
-    FilePickerController::filesSelectedInChooser(QStringList(), m_contents);
+    FilePickerController::filesSelectedInChooser(QStringList(), m_frameHost);
 }
 
 static QStringList listRecursively(const QDir &dir)
@@ -103,15 +103,14 @@ ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, content::FileChooserParam
 ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, content::FileChooserParams::UploadFolder)
 ASSERT_ENUMS_MATCH(FilePickerController::Save, content::FileChooserParams::Save)
 
-void FilePickerController::filesSelectedInChooser(const QStringList &filesList, content::WebContents *contents)
+void FilePickerController::filesSelectedInChooser(const QStringList &filesList, content::RenderFrameHost *frameHost)
 {
-    content::RenderViewHost *rvh = contents->GetRenderViewHost();
-    Q_ASSERT(rvh);
+    Q_ASSERT(frameHost);
     QStringList files(filesList);
     if (this->m_mode == UploadFolder && !filesList.isEmpty()
             && QFileInfo(filesList.first()).isDir()) // Enumerate the directory
         files = listRecursively(QDir(filesList.first()));
-    rvh->GetMainFrame()->FilesSelectedInChooser(toVector<content::FileChooserFileInfo>(files), static_cast<content::FileChooserParams::Mode>(this->m_mode));
+    frameHost->FilesSelectedInChooser(toVector<content::FileChooserFileInfo>(files), static_cast<content::FileChooserParams::Mode>(this->m_mode));
 }
 
 QStringList FilePickerController::acceptedMimeTypes() const

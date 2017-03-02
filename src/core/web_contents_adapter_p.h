@@ -61,7 +61,6 @@
 #include <QScopedPointer>
 #include <QSharedPointer>
 
-QT_FORWARD_DECLARE_CLASS(QTimer)
 QT_FORWARD_DECLARE_CLASS(QWebChannel)
 
 class WebEngineContext;
@@ -96,11 +95,9 @@ public:
     int lastFindRequestId;
     std::unique_ptr<content::DropData> currentDropData;
     blink::WebDragOperation currentDropAction;
-    bool inDragUpdateLoop;
+    bool updateDragActionCalled;
     gfx::Point lastDragClientPos;
     gfx::Point lastDragScreenPos;
-    base::Closure dragUpdateLoopQuitClosure;
-    QScopedPointer<QTimer> updateDragCursorMessagePollingTimer;
 };
 
 } // namespace QtWebEngineCore
