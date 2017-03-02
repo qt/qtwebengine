@@ -48,8 +48,6 @@ use?(gn) {
     } else {
         gn_args += custom_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:target\"
         cross_compile {
-            # FIXME: Try enabling snapshot again
-            gn_args += v8_use_snapshot=false
             gn_args += host_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:host\"
             gn_args += v8_snapshot_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:v8_snapshot\"
             GN_HOST_CPU = $$gnArch($$QMAKE_HOST.arch)
