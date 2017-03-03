@@ -10,7 +10,7 @@ gn_args += \
     enable_session_service=false \
     ninja_use_custom_environment_files=false \
     is_multi_dll_chrome=false \
-    win_link_timing=true
+    win_linker_timing=true
 
 GYP_CONFIG += \
     disable_nacl=1 \

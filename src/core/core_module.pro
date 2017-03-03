@@ -37,9 +37,10 @@ use?(gn){
     linux: LIBS_PRIVATE += -Wl,--start-group $$NINJA_ARCHIVES -Wl,--end-group
     else: LIBS_PRIVATE += $$NINJA_ARCHIVES
     LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
-    # We need to use ObjC runtime to have categories selectors working.
-    macos: QMAKE_LFLAGS += -Wl,-ObjC
-#    QMAKE_LFLAGS += $$NINJA_LFLAGS
+    # GN's LFLAGS doesn't always work across all the Linux configurations we support.
+    # The Windows and macOS ones from GN does provide a few useful flags however
+    linux: QMAKE_LFLAGS += -Wl,--gc-sections -Wl,-O1 -Wl,-z,now -Wl,-z,defs
+    else: QMAKE_LFLAGS += $$NINJA_LFLAGS
     POST_TARGETDEPS += $$NINJA_TARGETDEPS
 }
 
