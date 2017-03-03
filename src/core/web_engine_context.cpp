@@ -133,6 +133,8 @@ bool usingANGLE()
 
 bool usingSoftwareDynamicGL()
 {
+    if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
+        return true;
 #if defined(Q_OS_WIN)
     HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
     wchar_t path[MAX_PATH];
