@@ -1113,10 +1113,6 @@ void QQuickWebEngineViewPrivate::didPrintPageToPdf(const QString &filePath, bool
 
 void QQuickWebEngineViewPrivate::showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText)
 {
-#ifdef ENABLE_QML_TESTSUPPORT_API
-    if (m_testSupport)
-        Q_EMIT m_testSupport->validationMessageShown(mainText, subText);
-#endif
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineFormValidationMessageRequest *request;
     request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::Show,
