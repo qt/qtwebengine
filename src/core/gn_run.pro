@@ -52,7 +52,9 @@ build_pass|!debug_and_release {
     else: default_target.target = first
     default_target.depends = runninja
     QMAKE_EXTRA_TARGETS += default_target
-} else {
+}
+
+!build_pass:debug_and_release {
     # Special GNU make target for the meta Makefile that ensures that our debug and release Makefiles won't both run ninja in parallel.
     notParallel.target = .NOTPARALLEL
     QMAKE_EXTRA_TARGETS += notParallel

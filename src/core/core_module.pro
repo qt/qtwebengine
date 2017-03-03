@@ -128,7 +128,7 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
     }
 }
 
-!win32:!build_pass:debug_and_release {
+!build_pass:debug_and_release {
     # Special GNU make target that ensures linking isn't done for both debug and release builds
     # at the same time.
     notParallel.target = .NOTPARALLEL
