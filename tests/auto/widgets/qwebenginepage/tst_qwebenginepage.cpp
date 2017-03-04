@@ -32,6 +32,7 @@
 #include <QOpenGLWidget>
 #include <QPaintEngine>
 #include <QPushButton>
+#include <QRegExp>
 #include <QScreen>
 #include <QStateMachine>
 #include <QtGui/QClipboard>
