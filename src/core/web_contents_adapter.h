@@ -169,10 +169,8 @@ public:
     void enterDrag(QDragEnterEvent *e, const QPoint &screenPos);
     Qt::DropAction updateDragPosition(QDragMoveEvent *e, const QPoint &screenPos);
     void updateDragAction(int action);
-    void finishDragUpdate();
     void endDragging(const QPoint &clientPos, const QPoint &screenPos);
     void leaveDrag();
-    void initUpdateDragCursorMessagePollingTimer();
     void printToPDF(const QPageLayout&, const QString&);
     quint64 printToPDFCallbackResult(const QPageLayout &, const bool colorMode = true);
 
@@ -188,8 +186,9 @@ public:
 private:
     Q_DISABLE_COPY(WebContentsAdapter)
     Q_DECLARE_PRIVATE(WebContentsAdapter)
-    QScopedPointer<WebContentsAdapterPrivate> d_ptr;
+    void waitForUpdateDragActionCalled();
 
+    QScopedPointer<WebContentsAdapterPrivate> d_ptr;
 };
 
 } // namespace QtWebEngineCore

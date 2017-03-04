@@ -881,6 +881,8 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
 QQuickWebEngineView::~QQuickWebEngineView()
 {
     Q_D(QQuickWebEngineView);
+    if (d->adapter)
+        d->adapter->stopFinding();
     if (d->faviconProvider)
         d->faviconProvider->detach(this);
 }

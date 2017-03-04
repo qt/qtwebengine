@@ -131,6 +131,13 @@
         \li Text fields might be painted with a different style on Mountain Lion (\macos 10.8).
     \endlist
 
+    \section1 macOS Airplay Support on MacBooks with Dual GPUs
+
+    To make Qt WebEngine work correctly when streaming to an AppleTV from a MacBook that supports
+    GPU switching, it is important to add the \c NSSupportsAutomaticGraphicsSwitching option to the
+    application Info.plist file, with the value set to \c YES. Otherwise rendering issues might
+    occur when creating new web engine view instances after Airplay is switched on or off.
+
     \section1 Default QSurfaceFormat OpenGL Profile Support
 
     If a new default QSurfaceFormat with a modified OpenGL profile has to be set, it should be set
