@@ -73,13 +73,13 @@ class QWebEngineSettings;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QString selectedText READ selectedText CONSTANT)
-    Q_PROPERTY(bool hasSelection READ hasSelection CONSTANT)
+    Q_PROPERTY(QString selectedText READ selectedText)
+    Q_PROPERTY(bool hasSelection READ hasSelection)
 
     // Ex-QWebFrame properties
-    Q_PROPERTY(QUrl requestedUrl READ requestedUrl CONSTANT)
+    Q_PROPERTY(QUrl requestedUrl READ requestedUrl)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
-    Q_PROPERTY(QString title READ title CONSTANT)
+    Q_PROPERTY(QString title READ title)
     Q_PROPERTY(QUrl url READ url WRITE setUrl)
     Q_PROPERTY(QUrl iconUrl READ iconUrl NOTIFY iconUrlChanged)
     Q_PROPERTY(QIcon icon READ icon NOTIFY iconChanged)
