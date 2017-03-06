@@ -44,6 +44,8 @@ use?(gn) {
         gn_args += enable_webrtc=false
     }
 
+    use?(proprietary_codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
+
     CONFIG(release, debug|release) {
         force_debug_info: gn_args += symbol_level=1
         else: gn_args += symbol_level=0
