@@ -64,16 +64,6 @@
 
 namespace QtWebEngineCore {
 
-PrintViewManagerBaseQt::~PrintViewManagerBaseQt()
-{
-}
-
-// PrintedPagesSource implementation.
-base::string16 PrintViewManagerBaseQt::RenderSourceName()
-{
-     return toString16(QLatin1String(""));
-}
-
 PrintViewManagerBaseQt::PrintViewManagerBaseQt(content::WebContents *contents)
     : printing::PrintManager(contents)
     , m_isInsideInnerMessageLoop(false)
@@ -81,84 +71,20 @@ PrintViewManagerBaseQt::PrintViewManagerBaseQt(content::WebContents *contents)
     , m_didPrintingSucceed(false)
     , m_printerQueriesQueue(WebEngineContext::current()->getPrintJobManager()->queue())
 {
-
 }
 
-void PrintViewManagerBaseQt::OnNotifyPrintJobEvent(
-    const printing::JobEventDetails& event_details) {
-  switch (event_details.type()) {
-    case printing::JobEventDetails::FAILED: {
-      TerminatePrintJob(true);
-
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-          content::Source<content::WebContents>(web_contents()),
-          content::NotificationService::NoDetails());
-      break;
-    }
-    case printing::JobEventDetails::USER_INIT_DONE:
-    case printing::JobEventDetails::DEFAULT_INIT_DONE:
-    case printing::JobEventDetails::USER_INIT_CANCELED: {
-      NOTREACHED();
-      break;
-    }
-    case printing::JobEventDetails::ALL_PAGES_REQUESTED: {
-      break;
-    }
-    case printing::JobEventDetails::NEW_DOC:
-    case printing::JobEventDetails::NEW_PAGE:
-    case printing::JobEventDetails::PAGE_DONE:
-    case printing::JobEventDetails::DOC_DONE: {
-      // Don't care about the actual printing process.
-      break;
-    }
-    case printing::JobEventDetails::JOB_DONE: {
-      // Printing is done, we don't need it anymore.
-      // print_job_->is_job_pending() may still be true, depending on the order
-      // of object registration.
-      m_didPrintingSucceed = true;
-      ReleasePrintJob();
-
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-          content::Source<content::WebContents>(web_contents()),
-          content::NotificationService::NoDetails());
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
-  }
+PrintViewManagerBaseQt::~PrintViewManagerBaseQt()
+{
+    ReleasePrinterQuery();
+    DisconnectFromCurrentPrintJob();
 }
 
-
-// content::WebContentsObserver implementation.
-// Cancels the print job.
 void PrintViewManagerBaseQt::NavigationStopped()
 {
+    // Cancel the current job, wait for the worker to finish.
+    TerminatePrintJob(true);
 }
 
-// content::WebContentsObserver implementation.
-void PrintViewManagerBaseQt::DidStartLoading()
-{
-}
-
-// content::NotificationObserver implementation.
-void PrintViewManagerBaseQt::Observe(
-        int type,
-        const content::NotificationSource& source,
-        const content::NotificationDetails& details) {
-    switch (type) {
-    case chrome::NOTIFICATION_PRINT_JOB_EVENT:
-        OnNotifyPrintJobEvent(*content::Details<printing::JobEventDetails>(details).ptr());
-        break;
-    default:
-        NOTREACHED();
-        break;
-
-    }
-}
     // Terminates or cancels the print job if one was pending.
 void PrintViewManagerBaseQt::RenderProcessGone(base::TerminationStatus status)
 {
@@ -177,54 +103,10 @@ void PrintViewManagerBaseQt::RenderProcessGone(base::TerminationStatus status)
     }
 }
 
-void PrintViewManagerBaseQt::ReleasePrinterQuery() {
-  if (!cookie_)
-    return;
-
-  int cookie = cookie_;
-  cookie_ = 0;
-
-  printing::PrintJobManager* printJobManager =
-      WebEngineContext::current()->getPrintJobManager();
-  // May be NULL in tests.
-  if (!printJobManager)
-    return;
-
-  scoped_refptr<printing::PrinterQuery> printerQuery;
-  printerQuery = m_printerQueriesQueue->PopPrinterQuery(cookie);
-  if (!printerQuery.get())
-    return;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&printing::PrinterQuery::StopWorker, printerQuery.get()));
-}
-
-
-// content::WebContentsObserver implementation.
-bool PrintViewManagerBaseQt::OnMessageReceived(const IPC::Message& message)
+base::string16 PrintViewManagerBaseQt::RenderSourceName()
 {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(PrintViewManagerBaseQt, message)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError,
-                          OnShowInvalidPrinterSettingsError);
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled || PrintManager::OnMessageReceived(message);
+     return toString16(QLatin1String(""));
 }
-
-void PrintViewManagerBaseQt::StopWorker(int documentCookie) {
-  if (documentCookie <= 0)
-    return;
-  scoped_refptr<printing::PrinterQuery> printer_query =
-      m_printerQueriesQueue->PopPrinterQuery(documentCookie);
-  if (printer_query.get()) {
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                            base::Bind(&printing::PrinterQuery::StopWorker,
-                                       printer_query));
-  }
-}
-
 
 // IPC handlers
 void PrintViewManagerBaseQt::OnDidPrintPage(
@@ -306,121 +188,70 @@ void PrintViewManagerBaseQt::OnShowInvalidPrinterSettingsError()
 {
 }
 
-bool PrintViewManagerBaseQt::CreateNewPrintJob(printing::PrintJobWorkerOwner* job) {
-  DCHECK(!m_isInsideInnerMessageLoop);
-
-  // Disconnect the current print_job_.
-  DisconnectFromCurrentPrintJob();
-
-  // We can't print if there is no renderer.
-  if (!web_contents()->GetRenderViewHost() ||
-      !web_contents()->GetRenderViewHost()->IsRenderViewLive()) {
-    return false;
-  }
-
-  // Ask the renderer to generate the print preview, create the print preview
-  // view and switch to it, initialize the printer and show the print dialog.
-  DCHECK(!m_printJob.get());
-  DCHECK(job);
-  if (!job)
-    return false;
-
-  m_printJob = new printing::PrintJob();
-  m_printJob->Initialize(job, this, number_pages_);
-  m_registrar.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
-                 content::Source<printing::PrintJob>(m_printJob.get()));
-  m_didPrintingSucceed = false;
-  return true;
-}
-
-void PrintViewManagerBaseQt::DisconnectFromCurrentPrintJob() {
-  // Make sure all the necessary rendered page are done. Don't bother with the
-  // return value.
-  bool result = RenderAllMissingPagesNow();
-
-  // Verify that assertion.
-  if (m_printJob.get() &&
-      m_printJob->document() &&
-      !m_printJob->document()->IsComplete()) {
-    DCHECK(!result);
-    // That failed.
-    TerminatePrintJob(true);
-  } else {
-    // DO NOT wait for the job to finish.
-    ReleasePrintJob();
-  }
-#if !defined(OS_MACOSX)
-  m_isExpectingFirstPage = true;
-#endif
-}
-
-void PrintViewManagerBaseQt::PrintingDone(bool success) {
-  if (!m_printJob.get())
-    return;
-  Send(new PrintMsg_PrintingDone(routing_id(), success));
-}
-
-void PrintViewManagerBaseQt::TerminatePrintJob(bool cancel) {
-  if (!m_printJob.get())
-    return;
-
-  if (cancel) {
-    // We don't need the metafile data anymore because the printing is canceled.
-    m_printJob->Cancel();
-    m_isInsideInnerMessageLoop = false;
-  } else {
-    DCHECK(!m_isInsideInnerMessageLoop);
-    DCHECK(!m_printJob->document() || m_printJob->document()->IsComplete());
-
-    // WebContents is either dying or navigating elsewhere. We need to render
-    // all the pages in an hurry if a print job is still pending. This does the
-    // trick since it runs a blocking message loop:
-    m_printJob->Stop();
-  }
-  ReleasePrintJob();
-}
-
-bool PrintViewManagerBaseQt::OpportunisticallyCreatePrintJob(int cookie)
+void PrintViewManagerBaseQt::DidStartLoading()
 {
-    if (m_printJob.get())
-      return true;
-
-    if (!cookie) {
-      // Out of sync. It may happens since we are completely asynchronous. Old
-      // spurious message can happen if one of the processes is overloaded.
-      return false;
-    }
-
-    // The job was initiated by a script. Time to get the corresponding worker
-    // thread.
-    scoped_refptr<printing::PrinterQuery> queued_query = m_printerQueriesQueue->PopPrinterQuery(cookie);
-    if (!queued_query.get()) {
-      NOTREACHED();
-      return false;
-    }
-
-    if (!CreateNewPrintJob(queued_query.get())) {
-      // Don't kill anything.
-      return false;
-    }
-
-    // Settings are already loaded. Go ahead. This will set
-    // print_job_->is_job_pending() to true.
-    m_printJob->StartPrinting();
-    return true;
 }
 
-void PrintViewManagerBaseQt::ReleasePrintJob() {
-  if (!m_printJob.get())
-    return;
+bool PrintViewManagerBaseQt::OnMessageReceived(const IPC::Message& message)
+{
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(PrintViewManagerBaseQt, message)
+      IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
+      IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError,
+                          OnShowInvalidPrinterSettingsError);
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled || PrintManager::OnMessageReceived(message);
+}
 
-  PrintingDone(m_didPrintingSucceed);
+void PrintViewManagerBaseQt::Observe(int type,
+        const content::NotificationSource& /*source*/,
+        const content::NotificationDetails& details)
+{
+    DCHECK_EQ(chrome::NOTIFICATION_PRINT_JOB_EVENT, type);
+    OnNotifyPrintJobEvent(*content::Details<printing::JobEventDetails>(details).ptr());
+}
 
-  m_registrar.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
-                    content::Source<printing::PrintJob>(m_printJob.get()));
-  m_printJob->DisconnectSource();
-  // Don't close the worker thread.
-  m_printJob = NULL;
+void PrintViewManagerBaseQt::OnNotifyPrintJobEvent(const printing::JobEventDetails& event_details)
+{
+    switch (event_details.type()) {
+    case printing::JobEventDetails::FAILED:
+        TerminatePrintJob(true);
+
+        content::NotificationService::current()->Notify(
+                chrome::NOTIFICATION_PRINT_JOB_RELEASED,
+                content::Source<content::WebContents>(web_contents()),
+                content::NotificationService::NoDetails());
+        break;
+    case printing::JobEventDetails::USER_INIT_DONE:
+    case printing::JobEventDetails::DEFAULT_INIT_DONE:
+    case printing::JobEventDetails::USER_INIT_CANCELED:
+        NOTREACHED();
+        break;
+    case printing::JobEventDetails::ALL_PAGES_REQUESTED:
+        break;
+    case printing::JobEventDetails::NEW_DOC:
+    case printing::JobEventDetails::NEW_PAGE:
+    case printing::JobEventDetails::PAGE_DONE:
+    case printing::JobEventDetails::DOC_DONE:
+        // Don't care about the actual printing process.
+        break;
+    case printing::JobEventDetails::JOB_DONE:
+        // Printing is done, we don't need it anymore.
+        // print_job_->is_job_pending() may still be true, depending on the order
+        // of object registration.
+        m_didPrintingSucceed = true;
+        ReleasePrintJob();
+
+        content::NotificationService::current()->Notify(
+                chrome::NOTIFICATION_PRINT_JOB_RELEASED,
+                content::Source<content::WebContents>(web_contents()),
+                content::NotificationService::NoDetails());
+        break;
+    default:
+        NOTREACHED();
+        break;
+    }
 }
 
 // Requests the RenderView to render all the missing pages for the print job.
@@ -463,6 +294,118 @@ bool PrintViewManagerBaseQt::RenderAllMissingPagesNow()
     return true;
 }
 
+// Quits the current message loop if these conditions hold true: a document is
+// loaded and is complete and waiting_for_pages_to_be_rendered_ is true. This
+// function is called in DidPrintPage() or on ALL_PAGES_REQUESTED
+// notification. The inner message loop is created was created by
+// RenderAllMissingPagesNow().
+void PrintViewManagerBaseQt::ShouldQuitFromInnerMessageLoop()
+{
+    // Look at the reason.
+    DCHECK(m_printJob->document());
+    if (m_printJob->document() &&
+        m_printJob->document()->IsComplete() &&
+        m_isInsideInnerMessageLoop) {
+      // We are in a message loop created by RenderAllMissingPagesNow. Quit from
+      // it.
+      base::MessageLoop::current()->QuitWhenIdle();
+      m_isInsideInnerMessageLoop = false;
+    }
+}
+
+bool PrintViewManagerBaseQt::CreateNewPrintJob(printing::PrintJobWorkerOwner* job)
+{
+    DCHECK(!m_isInsideInnerMessageLoop);
+
+    // Disconnect the current print_job_.
+    DisconnectFromCurrentPrintJob();
+
+    // We can't print if there is no renderer.
+    if (!web_contents()->GetRenderViewHost() ||
+        !web_contents()->GetRenderViewHost()->IsRenderViewLive()) {
+        return false;
+    }
+
+    // Ask the renderer to generate the print preview, create the print preview
+    // view and switch to it, initialize the printer and show the print dialog.
+    DCHECK(!m_printJob.get());
+    DCHECK(job);
+    if (!job)
+        return false;
+
+    m_printJob = new printing::PrintJob();
+    m_printJob->Initialize(job, this, number_pages_);
+    m_registrar.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
+                    content::Source<printing::PrintJob>(m_printJob.get()));
+    m_didPrintingSucceed = false;
+    return true;
+}
+
+void PrintViewManagerBaseQt::DisconnectFromCurrentPrintJob()
+{
+    // Make sure all the necessary rendered page are done. Don't bother with the
+    // return value.
+    bool result = RenderAllMissingPagesNow();
+
+    // Verify that assertion.
+    if (m_printJob.get() &&
+        m_printJob->document() &&
+        !m_printJob->document()->IsComplete()) {
+        DCHECK(!result);
+        // That failed.
+        TerminatePrintJob(true);
+    } else {
+        // DO NOT wait for the job to finish.
+        ReleasePrintJob();
+    }
+#if !defined(OS_MACOSX)
+    m_isExpectingFirstPage = true;
+#endif
+}
+
+void PrintViewManagerBaseQt::PrintingDone(bool success)
+{
+    if (!m_printJob.get())
+        return;
+    Send(new PrintMsg_PrintingDone(routing_id(), success));
+}
+
+void PrintViewManagerBaseQt::TerminatePrintJob(bool cancel)
+{
+    if (!m_printJob.get())
+        return;
+
+    if (cancel) {
+        // We don't need the metafile data anymore because the printing is canceled.
+        m_printJob->Cancel();
+        m_isInsideInnerMessageLoop = false;
+    } else {
+        DCHECK(!m_isInsideInnerMessageLoop);
+        DCHECK(!m_printJob->document() || m_printJob->document()->IsComplete());
+
+        // WebContents is either dying or navigating elsewhere. We need to render
+        // all the pages in an hurry if a print job is still pending. This does the
+        // trick since it runs a blocking message loop:
+        m_printJob->Stop();
+    }
+    ReleasePrintJob();
+}
+
+void PrintViewManagerBaseQt::ReleasePrintJob()
+{
+    if (!m_printJob.get())
+        return;
+
+    PrintingDone(m_didPrintingSucceed);
+
+    m_registrar.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
+                       content::Source<printing::PrintJob>(m_printJob.get()));
+    m_printJob->DisconnectSource();
+    // Don't close the worker thread.
+    m_printJob = NULL;
+}
+
+
 bool PrintViewManagerBaseQt::RunInnerMessageLoop() {
   // This value may actually be too low:
   //
@@ -502,23 +445,69 @@ bool PrintViewManagerBaseQt::RunInnerMessageLoop() {
   return success;
 }
 
-// Quits the current message loop if these conditions hold true: a document is
-// loaded and is complete and waiting_for_pages_to_be_rendered_ is true. This
-// function is called in DidPrintPage() or on ALL_PAGES_REQUESTED
-// notification. The inner message loop is created was created by
-// RenderAllMissingPagesNow().
-void PrintViewManagerBaseQt::ShouldQuitFromInnerMessageLoop()
+bool PrintViewManagerBaseQt::OpportunisticallyCreatePrintJob(int cookie)
 {
-    // Look at the reason.
-    DCHECK(m_printJob->document());
-    if (m_printJob->document() &&
-        m_printJob->document()->IsComplete() &&
-        m_isInsideInnerMessageLoop) {
-      // We are in a message loop created by RenderAllMissingPagesNow. Quit from
-      // it.
-      base::MessageLoop::current()->QuitWhenIdle();
-      m_isInsideInnerMessageLoop = false;
+    if (m_printJob.get())
+      return true;
+
+    if (!cookie) {
+      // Out of sync. It may happens since we are completely asynchronous. Old
+      // spurious message can happen if one of the processes is overloaded.
+      return false;
     }
+
+    // The job was initiated by a script. Time to get the corresponding worker
+    // thread.
+    scoped_refptr<printing::PrinterQuery> queued_query = m_printerQueriesQueue->PopPrinterQuery(cookie);
+    if (!queued_query.get()) {
+      NOTREACHED();
+      return false;
+    }
+
+    if (!CreateNewPrintJob(queued_query.get())) {
+      // Don't kill anything.
+      return false;
+    }
+
+    // Settings are already loaded. Go ahead. This will set
+    // print_job_->is_job_pending() to true.
+    m_printJob->StartPrinting();
+    return true;
+}
+
+void PrintViewManagerBaseQt::ReleasePrinterQuery()
+{
+    if (!cookie_)
+        return;
+
+    int cookie = cookie_;
+    cookie_ = 0;
+
+    printing::PrintJobManager* printJobManager = WebEngineContext::current()->getPrintJobManager();
+    // May be NULL in tests.
+    if (!printJobManager)
+        return;
+
+    scoped_refptr<printing::PrinterQuery> printerQuery;
+    printerQuery = m_printerQueriesQueue->PopPrinterQuery(cookie);
+    if (!printerQuery.get())
+        return;
+    content::BrowserThread::PostTask(
+            content::BrowserThread::IO, FROM_HERE,
+            base::Bind(&printing::PrinterQuery::StopWorker, printerQuery.get()));
+}
+
+// Originally from print_preview_message_handler.cc:
+void PrintViewManagerBaseQt::StopWorker(int documentCookie) {
+  if (documentCookie <= 0)
+    return;
+  scoped_refptr<printing::PrinterQuery> printer_query =
+      m_printerQueriesQueue->PopPrinterQuery(documentCookie);
+  if (printer_query.get()) {
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                            base::Bind(&printing::PrinterQuery::StopWorker,
+                                       printer_query));
+  }
 }
 
 } // namespace QtWebEngineCore
