@@ -97,6 +97,7 @@ msvc {
     gn_args += visual_studio_path=$$shell_quote($$VS_PATH)
     gn_args += windows_sdk_path=$$shell_quote($$SDK_PATH)
 
+    contains(QT_ARCH, "i386"): gn_args += target_cpu=\"x86\"
     isBuildingOnWin32(): GYP_ARGS += "-D windows_sdk_path=\"C:/Program Files/Windows Kits/10\""
 
 } else {
