@@ -85,10 +85,10 @@ use?(gn) {
         #use?(system_libsrtp):  gn_args += use_system_libsrtp=true
         use?(system_libxslt):  gn_args += use_system_libxml=true use_system_libxslt=true
         #use?(system_jsoncpp):  gn_args += use_system_jsoncpp=true
-        #use?(system_opus):     gn_args += use_system_opus=true
+        use?(system_opus):     gn_args += use_system_opus=true
         use?(system_snappy):   gn_args += use_system_snappy=true
-        #use?(system_vpx):      gn_args += use_system_libvpx=true
-        #use?(system_icu):      gn_args += use_system_icu=true icu_use_data_file=false
+        use?(system_vpx):      gn_args += use_system_libvpx=true
+        use?(system_icu):      gn_args += use_system_icu=true icu_use_data_file=false
         #use?(system_ffmpeg):   gn_args += use_system_ffmpeg=true
         #use?(system_protobuf): gn_args += use_system_protobuf=true
     }
