@@ -41,6 +41,8 @@
 
 #include "type_conversion.h"
 
+#include "base/pending_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/base/io_buffer.h"
 
@@ -67,7 +69,7 @@ URLRequestQrcJobQt::~URLRequestQrcJobQt()
 
 void URLRequestQrcJobQt::Start()
 {
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&URLRequestQrcJobQt::startGetHead, m_weakFactory.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&URLRequestQrcJobQt::startGetHead,  m_weakFactory.GetWeakPtr()));
 }
 
 void URLRequestQrcJobQt::Kill()

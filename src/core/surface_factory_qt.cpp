@@ -71,7 +71,7 @@ base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
     return library;
 }
 
-bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library, SetGLGetProcAddressProcCallback set_gl_get_proc_address)
+bool SurfaceFactoryQt::LoadEGLGLES2Bindings()
 {
     base::FilePath libEGLPath = QtWebEngineCore::toFilePath(QT_LIBDIR_EGL);
     libEGLPath = libEGLPath.Append("libEGL.so.1");

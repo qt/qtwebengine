@@ -101,7 +101,7 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
 content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params)
 {
     content::WebContents *target = source;
-    if (params.disposition != CURRENT_TAB) {
+    if (params.disposition != WindowOpenDisposition::CURRENT_TAB) {
         QSharedPointer<WebContentsAdapter> targetAdapter = createWindow(0, params.disposition, gfx::Rect(), params.user_gesture);
         if (targetAdapter)
             target = targetAdapter->webContents();
@@ -327,7 +327,7 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost *frameHost, 
         acceptedMimeTypes.append(toQt(*it));
 
     m_filePickerController.reset(new FilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode),
-                                                          web_contents(), toQt(params.default_file_name.value()), acceptedMimeTypes));
+                                                          frameHost, toQt(params.default_file_name.value()), acceptedMimeTypes));
 
     // Defer the call to not block base::MessageLoop::RunTask with modal dialogs.
     QTimer::singleShot(0, [this] () {

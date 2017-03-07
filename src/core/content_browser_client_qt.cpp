@@ -51,7 +51,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/geolocation_delegate.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/quota_permission_context.h"
@@ -63,6 +62,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
+#include "device/geolocation/geolocation_delegate.h"
+#include "device/geolocation/geolocation_provider.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_context.h"
@@ -80,6 +81,8 @@
 #include "dev_tools_http_handler_delegate_qt.h"
 #ifdef QT_USE_POSITIONING
 #include "location_provider_qt.h"
+#else
+#include "device/geolocation/location_provider.h"
 #endif
 #include "media_capture_devices_dispatcher.h"
 #if defined(ENABLE_BASIC_PRINTING)
@@ -230,7 +233,29 @@ std::unique_ptr<base::MessagePump> messagePumpFactory()
     return base::WrapUnique(new MessagePumpForUIQt);
 }
 
-} // namespace
+// A provider of services needed by Geolocation.
+class GeolocationDelegateQt : public device::GeolocationDelegate {
+public:
+    GeolocationDelegateQt() {}
+    scoped_refptr<device::AccessTokenStore> CreateAccessTokenStore() final
+    {
+        return scoped_refptr<device::AccessTokenStore>(new AccessTokenStoreQt);
+    }
+
+    std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() final
+    {
+#ifdef QT_USE_POSITIONING
+        return base::WrapUnique(new LocationProviderQt);
+#else
+        return nullptr;
+#endif
+    }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(GeolocationDelegateQt);
+};
+
+}  // anonymous namespace
 
 class BrowserMainPartsQt : public content::BrowserMainParts
 {
@@ -246,6 +271,7 @@ public:
 
     void PreMainMessageLoopRun() Q_DECL_OVERRIDE
     {
+        device::GeolocationProvider::SetGeolocationDelegate(new GeolocationDelegateQt());
     }
 
     void PostMainMessageLoopRun()
@@ -418,48 +444,10 @@ void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, c
         static_cast<WebContentsDelegateQt*>(webContents->GetDelegate())->overrideWebPreferences(webContents, web_prefs);
 }
 
-namespace {
-
-// A provider of services needed by Geolocation.
-class GeolocationDelegateQt : public content::GeolocationDelegate {
-public:
-    GeolocationDelegateQt() {}
-    content::AccessTokenStore* CreateAccessTokenStore() final
-    {
-        return new AccessTokenStoreQt;
-    }
-
-    content::LocationProvider* OverrideSystemLocationProvider() final
-    {
-#ifdef QT_USE_POSITIONING
-        if (!m_location_provider)
-            m_location_provider = base::WrapUnique(new LocationProviderQt);
-        return m_location_provider.get();
-#else
-        return nullptr;
-#endif
-    }
-
-private:
-#ifdef QT_USE_POSITIONING
-    std::unique_ptr<LocationProviderQt> m_location_provider;
-#endif
-
-    DISALLOW_COPY_AND_ASSIGN(GeolocationDelegateQt);
-};
-
-}  // anonymous namespace
-
-content::GeolocationDelegate *ContentBrowserClientQt::CreateGeolocationDelegate()
-{
-    return new GeolocationDelegateQt;
-}
-
 content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionContext()
 {
     return new QuotaPermissionContextQt;
 }
-
 
 void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webContents,
                                    int cert_error,
@@ -469,17 +457,12 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
                                    bool overridable,
                                    bool strict_enforcement,
                                    bool expired_previous_decision,
-                                   const base::Callback<void(bool)>& callback,
-                                   content::CertificateRequestResultType* result)
+                                   const base::Callback<void(content::CertificateRequestResultType)>& callback)
 {
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
     QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
     contentsDelegate->allowCertificateError(errorController);
-
-    // If we don't give the user a chance to allow it, we can reject it right away.
-    if (result && (!overridable || strict_enforcement))
-        *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
 }
 
 void ContentBrowserClientQt::SelectClientCertificate(content::WebContents * /*webContents*/,

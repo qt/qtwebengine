@@ -1036,25 +1036,25 @@ static inline double currentTimeForEvent(const QInputEvent* event)
 static WebMouseEvent::Button mouseButtonForEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
-        return WebMouseEvent::ButtonLeft;
+        return WebMouseEvent::Button::Left;
     else if (event->button() == Qt::RightButton)
-        return WebMouseEvent::ButtonRight;
+        return WebMouseEvent::Button::Right;
     else if (event->button() == Qt::MidButton)
-        return WebMouseEvent::ButtonMiddle;
+        return WebMouseEvent::Button::Middle;
 
     if (event->type() != QEvent::MouseMove)
-        return WebMouseEvent::ButtonNone;
+        return WebMouseEvent::Button::NoButton;
 
     // This is technically wrong, mouse move should always have ButtonNone,
     // but it is consistent with aura and selection code depends on it:
     if (event->buttons() & Qt::LeftButton)
-        return WebMouseEvent::ButtonLeft;
+        return WebMouseEvent::Button::Left;
     else if (event->buttons() & Qt::RightButton)
-        return WebMouseEvent::ButtonRight;
+        return WebMouseEvent::Button::Right;
     else if (event->buttons() & Qt::MidButton)
-        return WebMouseEvent::ButtonMiddle;
+        return WebMouseEvent::Button::Middle;
 
-    return WebMouseEvent::ButtonNone;
+    return WebMouseEvent::Button::NoButton;
 }
 
 template <typename T>
@@ -1247,7 +1247,6 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
 
     webKitEvent.nativeKeyCode = ev->nativeVirtualKey();
     webKitEvent.windowsKeyCode = windowsKeyCodeForKeyEvent(ev->key(), ev->modifiers() & Qt::KeypadModifier);
-    webKitEvent.setKeyIdentifierFromWindowsKeyCode();
     webKitEvent.domKey = getDomKeyFromQKeyEvent(ev);
 
     ui::DomCode domCode = ui::DomCode::NONE;

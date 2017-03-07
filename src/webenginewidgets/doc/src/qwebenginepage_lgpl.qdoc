@@ -538,7 +538,7 @@
     This signal is emitted whenever the page requests the web browser window to be closed,
     for example through the JavaScript \c{window.close()} call.
 
-    \sa QWebEnginePage::RequestClose
+    \sa RequestClose
 */
 
 /*!
@@ -729,7 +729,7 @@
 /*!
     \fn void QWebEnginePage::featurePermissionRequested(const QUrl &securityOrigin, Feature feature)
 
-    This is signal is emitted when the web site identified by \a securityOrigin requests to make use of
+    This signal is emitted when the web site identified by \a securityOrigin requests to make use of
     the resource or device identified by \a feature.
 
     \sa featurePermissionRequestCanceled(), setFeaturePermission()
@@ -738,7 +738,7 @@
 /*!
     \fn void QWebEnginePage::featurePermissionRequestCanceled(const QUrl &securityOrigin, Feature feature)
 
-    This is signal is emitted when the web site identified by \a securityOrigin cancels a previously issued
+    This signal is emitted when the web site identified by \a securityOrigin cancels a previously issued
     request to make use of \a feature.
 
     \sa featurePermissionRequested(), setFeaturePermission()

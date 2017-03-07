@@ -39,6 +39,7 @@
 
 #include "user_resource_controller.h"
 
+#include "base/pending_task.h"
 #include "base/strings/pattern.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -166,16 +167,16 @@ UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(conte
 void UserResourceController::RenderViewObserverHelper::DidFinishDocumentLoad(blink::WebLocalFrame *frame)
 {
     m_pendingFrames.insert(frame);
-    base::MessageLoop::current()->PostDelayedTask(FROM_HERE, base::Bind(&UserResourceController::RenderViewObserverHelper::runScripts,
-                                                                        base::Unretained(this), UserScriptData::AfterLoad, frame),
-                                                  base::TimeDelta::FromMilliseconds(afterLoadTimeout));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::Bind(&UserResourceController::RenderViewObserverHelper::runScripts,
+                                                                               base::Unretained(this), UserScriptData::AfterLoad, frame),
+                                                         base::TimeDelta::FromMilliseconds(afterLoadTimeout));
 }
 
 void UserResourceController::RenderViewObserverHelper::DidFinishLoad(blink::WebLocalFrame *frame)
 {
     // DidFinishDocumentLoad always comes before this, so frame has already been marked as pending.
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&UserResourceController::RenderViewObserverHelper::runScripts,
-                                                                 base::Unretained(this), UserScriptData::AfterLoad, frame));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&UserResourceController::RenderViewObserverHelper::runScripts,
+                                                                        base::Unretained(this), UserScriptData::AfterLoad, frame));
 }
 
 void UserResourceController::RenderViewObserverHelper::DidStartProvisionalLoad(blink::WebLocalFrame *frame)

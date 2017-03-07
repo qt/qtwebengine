@@ -56,10 +56,6 @@ class BrowserMainRunner;
 class ContentMainRunner;
 }
 
-namespace devtools_http_handler {
-class DevToolsHttpHandler;
-}
-
 #if defined(ENABLE_BASIC_PRINTING)
 namespace printing {
 class PrintJobManager;
@@ -72,6 +68,7 @@ namespace QtWebEngineCore {
 
 class BrowserContextAdapter;
 class ContentMainDelegateQt;
+class DevToolsServerQt;
 class SurfaceFactoryQt;
 
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
@@ -97,7 +94,7 @@ private:
     std::unique_ptr<content::BrowserMainRunner> m_browserRunner;
     QObject* m_globalQObject;
     QSharedPointer<QtWebEngineCore::BrowserContextAdapter> m_defaultBrowserContext;
-    std::unique_ptr<devtools_http_handler::DevToolsHttpHandler> m_devtools;
+    std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
 #if defined(ENABLE_BASIC_PRINTING)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;
 #endif // defined(ENABLE_BASIC_PRINTING)

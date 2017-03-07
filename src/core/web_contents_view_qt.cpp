@@ -232,4 +232,11 @@ void WebContentsViewQt::TakeFocus(bool reverse)
     m_client->passOnFocus(reverse);
 }
 
+void WebContentsViewQt::GetScreenInfo(content::ScreenInfo* results) const
+{
+    if (auto rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView()))
+        rwhv->GetScreenInfo(results);
+}
+
+
 } // namespace QtWebEngineCore

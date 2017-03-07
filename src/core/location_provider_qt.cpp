@@ -51,9 +51,9 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/geolocation_provider.h"
+#include "device/geolocation/geolocation_provider.h"
+#include "device/geolocation/geolocation_provider_impl.h"
 
 namespace QtWebEngineCore {
 
@@ -161,8 +161,8 @@ void QtPositioningHelper::updatePosition(const QGeoPositionInfo &pos)
     if (!pos.isValid())
         return;
     Q_ASSERT(m_positionInfoSource->error() == QGeoPositionInfoSource::NoError);
-    content::Geoposition newPos;
-    newPos.error_code = content::Geoposition::ERROR_CODE_NONE;
+    device::Geoposition newPos;
+    newPos.error_code = device::Geoposition::ERROR_CODE_NONE;
     newPos.error_message.clear();
 
     newPos.timestamp = toTime(pos.timestamp());
@@ -195,15 +195,15 @@ void QtPositioningHelper::updatePosition(const QGeoPositionInfo &pos)
 void QtPositioningHelper::error(QGeoPositionInfoSource::Error positioningError)
 {
     Q_ASSERT(positioningError != QGeoPositionInfoSource::NoError);
-    content::Geoposition newPos;
+    device::Geoposition newPos;
     switch (positioningError) {
     case QGeoPositionInfoSource::AccessError:
-        newPos.error_code = content::Geoposition::ERROR_CODE_PERMISSION_DENIED;
+        newPos.error_code = device::Geoposition::ERROR_CODE_PERMISSION_DENIED;
         break;
     case QGeoPositionInfoSource::ClosedError:
     case QGeoPositionInfoSource::UnknownSourceError: // position unavailable is as good as it gets in Geoposition
     default:
-        newPos.error_code = content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+        newPos.error_code = device::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
         break;
     }
     if (m_locationProvider)
@@ -212,18 +212,18 @@ void QtPositioningHelper::error(QGeoPositionInfoSource::Error positioningError)
 
 void QtPositioningHelper::timeout()
 {
-    content::Geoposition newPos;
+    device::Geoposition newPos;
     // content::Geoposition::ERROR_CODE_TIMEOUT is not handled properly in the renderer process, and the timeout
     // argument used in JS never comes all the way to the browser process.
     // Let's just treat it like any other error where the position is unavailable.
-    newPos.error_code = content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+    newPos.error_code = device::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
     if (m_locationProvider)
         postToLocationProvider(base::Bind(&LocationProviderQt::updatePosition, m_locationProviderFactory.GetWeakPtr(), newPos));
 }
 
 inline void QtPositioningHelper::postToLocationProvider(const base::Closure &task)
 {
-    static_cast<content::GeolocationProviderImpl*>(content::GeolocationProvider::GetInstance())->message_loop()->PostTask(FROM_HERE, task);
+    static_cast<device::GeolocationProviderImpl*>(device::GeolocationProvider::GetInstance())->task_runner()->PostTask(FROM_HERE, task);
 }
 
 LocationProviderQt::LocationProviderQt()
@@ -258,21 +258,21 @@ void LocationProviderQt::StopProvider()
         QMetaObject::invokeMethod(m_positioningHelper, "stop", Qt::QueuedConnection);
 }
 
-void LocationProviderQt::RequestRefresh()
+void LocationProviderQt::OnPermissionGranted()
 {
     if (m_positioningHelper)
         QMetaObject::invokeMethod(m_positioningHelper, "refresh", Qt::QueuedConnection);
 }
 
-void LocationProviderQt::OnPermissionGranted()
+void LocationProviderQt::SetUpdateCallback(const LocationProviderUpdateCallback& callback)
 {
-    RequestRefresh();
+    m_callback = callback;
 }
 
-void LocationProviderQt::updatePosition(const content::Geoposition &position)
+void LocationProviderQt::updatePosition(const device::Geoposition &position)
 {
     m_lastKnownPosition = position;
-    NotifyCallback(position);
+    m_callback.Run(this, position);
 }
 
 } // namespace QtWebEngineCore

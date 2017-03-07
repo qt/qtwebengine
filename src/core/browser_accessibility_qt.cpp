@@ -173,9 +173,9 @@ void BrowserAccessibilityQt::setText(QAccessible::Text t, const QString &text)
 
 QRect BrowserAccessibilityQt::rect() const
 {
-    if (!manager()) // needed implicitly by GetGlobalBoundsRect()
+    if (!manager()) // needed implicitly by GetScreenBoundsRect()
         return QRect();
-    gfx::Rect bounds = GetGlobalBoundsRect();
+    gfx::Rect bounds = GetScreenBoundsRect();
     return QRect(bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
@@ -573,7 +573,7 @@ void BrowserAccessibilityQt::scrollToSubstring(int startIndex, int endIndex)
 {
     int count = characterCount();
     if (startIndex < endIndex && endIndex < count)
-        manager()->ScrollToMakeVisible(*this, GetLocalBoundsForRange(startIndex, endIndex - startIndex));
+        manager()->ScrollToMakeVisible(*this, GetPageBoundsForRange(startIndex, endIndex - startIndex));
 }
 
 QVariant BrowserAccessibilityQt::currentValue() const

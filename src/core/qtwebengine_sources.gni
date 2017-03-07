@@ -1,3 +1,32 @@
+import("//build/config/features.gni")
+
+source_set("qtwebengine_spellcheck_sources") {
+  sources = [
+    "//chrome/browser/spellchecker/spellcheck_custom_dictionary.cc",
+    "//chrome/browser/spellchecker/spellcheck_custom_dictionary.h",
+    "//chrome/browser/spellchecker/spellcheck_factory.cc",
+    "//chrome/browser/spellchecker/spellcheck_factory.h",
+    "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc",
+    "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h",
+    "//chrome/browser/spellchecker/spellcheck_message_filter.cc",
+    "//chrome/browser/spellchecker/spellcheck_message_filter.h",
+    "//chrome/browser/spellchecker/spellcheck_service.cc",
+    "//chrome/browser/spellchecker/spellcheck_service.h",
+  ]
+  deps = [
+    "//components/spellcheck/browser",
+    "//components/spellcheck/renderer",
+    "//third_party/WebKit/public:blink",
+    "//third_party/hunspell",
+  ]
+  if (is_mac && use_browser_spellchecker) {
+    sources += [
+        "//chrome/browser/spellchecker/spellcheck_message_filter_platform.h",
+        "//chrome/browser/spellchecker/spellcheck_message_filter_platform_mac.cc",
+    ]
+  }
+}
+
 source_set("qtwebengine_sources") {
   include_dirs = [
     "//skia/config",
@@ -5,9 +34,9 @@ source_set("qtwebengine_sources") {
   ]
   deps = []
   sources = [
-    "//chrome/browser/media/desktop_media_list.h",
-    "//chrome/browser/media/desktop_streams_registry.cc",
-    "//chrome/browser/media/desktop_streams_registry.h",
+    "//chrome/browser/media/webrtc/desktop_media_list.h",
+    "//chrome/browser/media/webrtc/desktop_streams_registry.cc",
+    "//chrome/browser/media/webrtc/desktop_streams_registry.h",
     "//chrome/common/chrome_switches.cc",
     "//chrome/common/chrome_switches.h",
     "//components/prefs/testing_pref_store.cc",
@@ -17,6 +46,17 @@ source_set("qtwebengine_sources") {
     "//extensions/common/url_pattern.cc",
     "//extensions/common/url_pattern.h",
   ]
+
+  if (enable_spellcheck) {
+    sources += [
+      "//chrome/common/pref_names.cc",
+      "//chrome/common/pref_names.h",
+    ]
+    deps += [
+      ":qtwebengine_spellcheck_sources",
+      "//chrome/tools/convert_dict",
+    ]
+  }
 
   if (enable_plugins) {
       sources += [
@@ -32,73 +72,6 @@ source_set("qtwebengine_sources") {
         # Need to depend on //content/ppapi_plugin, which is private, thus depending on parent.
         "//content",
       ]
-  }
-
-  if (enable_spellcheck) {
-      sources += [
-        "//chrome/browser/spellchecker/feedback.cc",
-        "//chrome/browser/spellchecker/feedback.h",
-        "//chrome/browser/spellchecker/feedback_sender.cc",
-        "//chrome/browser/spellchecker/feedback_sender.h",
-        "//chrome/browser/spellchecker/misspelling.cc",
-        "//chrome/browser/spellchecker/misspelling.h",
-        "//chrome/browser/spellchecker/spellcheck_action.cc",
-        "//chrome/browser/spellchecker/spellcheck_action.h",
-        "//chrome/browser/spellchecker/spellcheck_custom_dictionary.cc",
-        "//chrome/browser/spellchecker/spellcheck_custom_dictionary.h",
-        "//chrome/browser/spellchecker/spellcheck_factory.cc",
-        "//chrome/browser/spellchecker/spellcheck_factory.h",
-        "//chrome/browser/spellchecker/spellcheck_host_metrics.cc",
-        "//chrome/browser/spellchecker/spellcheck_host_metrics.h",
-        "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc",
-        "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h",
-        "//chrome/browser/spellchecker/spellcheck_message_filter.cc",
-        "//chrome/browser/spellchecker/spellcheck_message_filter.h",
-        "//chrome/browser/spellchecker/spellcheck_platform_mac.mm",
-        "//chrome/browser/spellchecker/spellcheck_service.cc",
-        "//chrome/browser/spellchecker/spellcheck_service.h",
-        "//chrome/browser/spellchecker/spelling_service_client.cc",
-        "//chrome/browser/spellchecker/spelling_service_client.h",
-        "//chrome/browser/spellchecker/word_trimmer.cc",
-        "//chrome/browser/spellchecker/word_trimmer.h",
-        "//chrome/common/common_message_generator.cc",
-        "//chrome/common/pref_names.cc",
-        "//chrome/common/pref_names.h",
-        "//chrome/common/spellcheck_bdict_language.h",
-        "//chrome/common/spellcheck_common.cc",
-        "//chrome/common/spellcheck_common.h",
-        "//chrome/common/spellcheck_marker.h",
-        "//chrome/common/spellcheck_messages.h",
-        "//chrome/common/spellcheck_result.h",
-        "//chrome/renderer/spellchecker/custom_dictionary_engine.cc",
-        "//chrome/renderer/spellchecker/custom_dictionary_engine.h",
-        "//chrome/renderer/spellchecker/hunspell_engine.cc",
-        "//chrome/renderer/spellchecker/hunspell_engine.h",
-        "//chrome/renderer/spellchecker/spellcheck.cc",
-        "//chrome/renderer/spellchecker/spellcheck.h",
-        "//chrome/renderer/spellchecker/spellcheck_language.cc",
-        "//chrome/renderer/spellchecker/spellcheck_language.h",
-        "//chrome/renderer/spellchecker/spellcheck_provider.cc",
-        "//chrome/renderer/spellchecker/spellcheck_provider.h",
-        "//chrome/renderer/spellchecker/spellcheck_worditerator.cc",
-        "//chrome/renderer/spellchecker/spellcheck_worditerator.h",
-        "//chrome/renderer/spellchecker/spelling_engine.h",
-      ]
-      include_dirs += [
-        "//third_party/WebKit"
-      ]
-      deps += [
-        "//third_party/icu",
-        "//third_party/hunspell",
-        "//chrome/tools/convert_dict"
-      ]
-
-      if (is_mac && use_browser_spellchecker) {
-        sources += [
-          "//chrome/browser/spellchecker/spellcheck_message_filter_platform.h",
-          "//chrome/browser/spellchecker/spellcheck_message_filter_platform_mac.cc",
-        ]
-      }
   }
 
   if (enable_basic_printing || enable_print_preview) {

@@ -59,6 +59,7 @@ BrowserContextAdapter::PermissionType toQt(content::PermissionType type)
         return BrowserContextAdapter::AudioCapturePermission;
     case content::PermissionType::VIDEO_CAPTURE:
         return BrowserContextAdapter::VideoCapturePermission;
+    case content::PermissionType::FLASH:
     case content::PermissionType::NOTIFICATIONS:
     case content::PermissionType::MIDI_SYSEX:
     case content::PermissionType::PUSH_MESSAGING:
@@ -110,6 +111,7 @@ bool PermissionManagerQt::checkPermission(const QUrl &origin, BrowserContextAdap
 int PermissionManagerQt::RequestPermission(content::PermissionType permission,
                                             content::RenderFrameHost *frameHost,
                                             const GURL& requesting_origin,
+                                            bool /*user_gesture*/,
                                             const base::Callback<void(blink::mojom::PermissionStatus)>& callback)
 {
     int request_id = ++m_requestIdCount;
@@ -139,6 +141,7 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
 int PermissionManagerQt::RequestPermissions(const std::vector<content::PermissionType>& permissions,
                                             content::RenderFrameHost* frameHost,
                                             const GURL& requesting_origin,
+                                            bool /*user_gesture*/,
                                             const base::Callback<void(const std::vector<blink::mojom::PermissionStatus>&)>& callback)
 {
     NOTIMPLEMENTED() << "RequestPermissions has not been implemented in QtWebEngine";

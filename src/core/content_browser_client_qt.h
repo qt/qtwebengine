@@ -87,7 +87,6 @@ public:
     virtual void ResourceDispatcherHostCreated() Q_DECL_OVERRIDE;
     virtual gl::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
     virtual content::MediaObserver* GetMediaObserver() Q_DECL_OVERRIDE;
-    virtual content::GeolocationDelegate* CreateGeolocationDelegate() Q_DECL_OVERRIDE;
     virtual content::QuotaPermissionContext *CreateQuotaPermissionContext() Q_DECL_OVERRIDE;
     virtual void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) Q_DECL_OVERRIDE;
     virtual void AllowCertificateError(content::WebContents* web_contents,
@@ -98,8 +97,7 @@ public:
                                        bool overridable,
                                        bool strict_enforcement,
                                        bool expired_previous_decision,
-                                       const base::Callback<void(bool)>& callback,
-                                       content::CertificateRequestResultType* result) Q_DECL_OVERRIDE;
+                                       const base::Callback<void(content::CertificateRequestResultType)>& callback) Q_DECL_OVERRIDE;
     virtual void SelectClientCertificate(content::WebContents* web_contents,
                                          net::SSLCertRequestInfo* cert_request_info,
                                          std::unique_ptr<content::ClientCertificateDelegate> delegate) Q_DECL_OVERRIDE;

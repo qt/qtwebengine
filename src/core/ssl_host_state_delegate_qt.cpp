@@ -34,6 +34,8 @@
 **
 ****************************************************************************/
 
+#include "base/callback.h"
+
 #include "ssl_host_state_delegate_qt.h"
 
 #include "type_conversion.h"
@@ -86,9 +88,21 @@ void SSLHostStateDelegateQt::AllowCert(const std::string &host, const net::X509C
 }
 
 // Clear all allow preferences.
-void SSLHostStateDelegateQt::Clear()
+void SSLHostStateDelegateQt::Clear(const base::Callback<bool(const std::string&)>& host_filter)
 {
-    m_certPolicyforHost.clear();
+    if (host_filter.is_null()) {
+        m_certPolicyforHost.clear();
+        return;
+    }
+
+    for (auto it = m_certPolicyforHost.begin(); it != m_certPolicyforHost.end();) {
+        auto next_it = std::next(it);
+
+        if (host_filter.Run(it->first))
+            m_certPolicyforHost.erase(it);
+
+        it = next_it;
+    }
 }
 
 // Queries whether |cert| is allowed for |host| and |error|. Returns true in
@@ -102,12 +116,12 @@ content::SSLHostStateDelegate::CertJudgment SSLHostStateDelegateQt::QueryPolicy(
 }
 
 // Records that a host has run insecure content.
-void SSLHostStateDelegateQt::HostRanInsecureContent(const std::string &host, int pid)
+void SSLHostStateDelegateQt::HostRanInsecureContent(const std::string &host, int pid, InsecureContentType content_type)
 {
 }
 
 // Returns whether the specified host ran insecure content.
-bool SSLHostStateDelegateQt::DidHostRunInsecureContent(const std::string &host, int pid) const
+bool SSLHostStateDelegateQt::DidHostRunInsecureContent(const std::string &host, int pid, InsecureContentType content_type) const
 {
     return false;
 }

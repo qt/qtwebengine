@@ -87,6 +87,7 @@ private Q_SLOTS:
     void stopSettingFocusWhenDisabled_data();
     void focusOnNavigation_data();
     void focusOnNavigation();
+    void focusInternalRenderWidgetHostViewQuickItem();
 
     void changeLocale();
     void inputMethodsTextFormat_data();
@@ -378,29 +379,40 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
     parentWidget.show();
     QTest::qWaitForWindowExposed(&webView);
 
-    QSignalSpy loadSpy(&webView, SIGNAL(loadFinished(bool)));
-    webView.setHtml("<input type='text'/>");
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QSignalSpy loadFinishedSpy(&webView, SIGNAL(loadFinished(bool)));
+    webView.load(QUrl("qrc:///resources/keyboardEvents.html"));
+    QVERIFY(loadFinishedSpy.wait());
 
-    evaluateJavaScriptSync(webView.page(), "document.body.firstChild.focus()");
+    evaluateJavaScriptSync(webView.page(), "document.getElementById('first_div').focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("first_div"));
 
-    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_A, 'a', Qt::NoModifier);
-    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_A, 'a', Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_Right, QString(), Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_Right, QString(), Qt::NoModifier);
+    // Right arrow key is unhandled thus focus is not changed
+    QTRY_COMPARE(parentWidget.releaseEvents.size(), 1);
+    QCOMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("first_div"));
+
+    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_Tab, QString(), Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_Tab, QString(), Qt::NoModifier);
+    // Tab key is handled thus focus is changed
+    QTRY_COMPARE(parentWidget.releaseEvents.size(), 2);
+    QCOMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("second_div"));
+
     QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
     QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
-    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
-    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
-
-    // All this happens asychronously, wait for the last release event to know when we're done.
+    // Left arrow key is unhandled thus focus is not changed
     QTRY_COMPARE(parentWidget.releaseEvents.size(), 3);
+    QCOMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("second_div"));
 
-    // The page will consume the 'a' and the first left key presses, the second left won't be
-    // used since the cursor will already be at the left end of the text input.
+    // The page will consume the Tab key to change focus between elements while the arrow
+    // keys won't be used.
+    QCOMPARE(parentWidget.pressEvents.size(), 2);
+    QCOMPARE(parentWidget.pressEvents[0].key(), (int)Qt::Key_Right);
+    QCOMPARE(parentWidget.pressEvents[1].key(), (int)Qt::Key_Left);
+
     // Key releases will all come back unconsumed.
-    QCOMPARE(parentWidget.pressEvents.size(), 1);
-    QCOMPARE(parentWidget.pressEvents[0].key(), (int)Qt::Key_Left);
-    QCOMPARE(parentWidget.releaseEvents[0].key(), (int)Qt::Key_A);
-    QCOMPARE(parentWidget.releaseEvents[1].key(), (int)Qt::Key_Left);
+    QCOMPARE(parentWidget.releaseEvents[0].key(), (int)Qt::Key_Right);
+    QCOMPARE(parentWidget.releaseEvents[1].key(), (int)Qt::Key_Tab);
     QCOMPARE(parentWidget.releaseEvents[2].key(), (int)Qt::Key_Left);
 }
 
@@ -847,43 +859,97 @@ void tst_QWebEngineView::focusOnNavigation()
     webView->setFocus();
     QTRY_COMPARE(webView->hasFocus(), true);
 
+
     // Clean up.
 #undef loadAndTriggerFocusAndCompare
 #undef triggerJavascriptFocus
 }
 
+void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
+{
+    // Create a container widget, that will hold a line edit that has initial focus, and a web
+    // engine view.
+    QScopedPointer<QWidget> containerWidget(new QWidget);
+    QLineEdit *label = new QLineEdit;
+    label->setText(QString::fromLatin1("Text"));
+    label->setFocus();
+
+    // Create the web view, and set its focusOnNavigation property to false, so it doesn't
+    // get initial focus.
+    QWebEngineView *webView = new QWebEngineView;
+    QWebEngineSettings *settings = webView->page()->settings();
+    settings->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
+    webView->resize(300, 300);
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(label);
+    layout->addWidget(webView);
+
+    containerWidget->setLayout(layout);
+    containerWidget->show();
+    QTest::qWaitForWindowExposed(containerWidget.data());
+
+    // Load the content, and check that focus is not set.
+    QSignalSpy loadSpy(webView, SIGNAL(loadFinished(bool)));
+    webView->setHtml("<html><head><title>Title</title></head><body>Hello"
+                    "<input id=\"input\" type=\"text\"></body></html>");
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(webView->hasFocus(), false);
+
+    // Manually trigger focus.
+    webView->setFocus();
+
+    // Check that focus is set in QWebEngineView and all internal classes.
+    QTRY_COMPARE(webView->hasFocus(), true);
+
+    QQuickWidget *renderWidgetHostViewQtDelegateWidget =
+            qobject_cast<QQuickWidget *>(webView->focusProxy());
+    QVERIFY(renderWidgetHostViewQtDelegateWidget);
+    QTRY_COMPARE(renderWidgetHostViewQtDelegateWidget->hasFocus(), true);
+
+    QQuickItem *renderWidgetHostViewQuickItem =
+            renderWidgetHostViewQtDelegateWidget->rootObject();
+    QVERIFY(renderWidgetHostViewQuickItem);
+    QTRY_COMPARE(renderWidgetHostViewQuickItem->hasFocus(), true);
+}
+
 void tst_QWebEngineView::changeLocale()
 {
+    QStringList errorLines;
     QUrl url("http://non.existent/");
 
     QLocale::setDefault(QLocale("de"));
     QWebEngineView viewDE;
-    viewDE.setUrl(url);
+    QSignalSpy loadFinishedSpyDE(&viewDE, SIGNAL(loadFinished(bool)));
+    viewDE.load(url);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 12000);
 
-    QSignalSpy spyTitleChangedDE(&viewDE, &QWebEngineView::titleChanged);
-    QVERIFY(spyTitleChangedDE.wait());
-    QSignalSpy spyFinishedDE(&viewDE, &QWebEngineView::loadFinished);
-    QVERIFY(spyFinishedDE.wait());
-    QCOMPARE(viewDE.title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
+    QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
+    errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QCOMPARE(errorLines.first(), QStringLiteral("Diese Website ist nicht erreichbar"));
 
     QLocale::setDefault(QLocale("en"));
     QWebEngineView viewEN;
-    viewEN.setUrl(url);
+    QSignalSpy loadFinishedSpyEN(&viewEN, SIGNAL(loadFinished(bool)));
+    viewEN.load(url);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyEN.count(), 1, 12000);
 
-    QSignalSpy spyTitleChangedEN(&viewEN, &QWebEngineView::titleChanged);
-    QVERIFY(spyTitleChangedEN.wait());
-    QSignalSpy spyFinishedEN(&viewEN, &QWebEngineView::loadFinished);
-    QVERIFY(spyFinishedEN.wait());
-    QCOMPARE(viewEN.title(), QStringLiteral("%1 is not available").arg(url.toString()));
+    QTRY_VERIFY(!toPlainTextSync(viewEN.page()).isEmpty());
+    errorLines = toPlainTextSync(viewEN.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QCOMPARE(errorLines.first(), QStringLiteral("This site can\u2019t be reached"));
 
-    viewDE.setUrl(QUrl("about:blank"));
-    QVERIFY(spyFinishedDE.wait());
+    // Reset error page
+    viewDE.load(QUrl("about:blank"));
+    QVERIFY(loadFinishedSpyDE.wait());
+    loadFinishedSpyDE.clear();
 
-    viewDE.setUrl(url);
+    // Check whether an existing QWebEngineView keeps the language settings after changing the default locale
+    viewDE.load(url);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 12000);
 
-    QVERIFY(spyTitleChangedDE.wait());
-    QVERIFY(spyFinishedDE.wait());
-    QCOMPARE(viewDE.title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
+    QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
+    errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QCOMPARE(errorLines.first(), QStringLiteral("Diese Website ist nicht erreichbar"));
 }
 
 void tst_QWebEngineView::inputMethodsTextFormat_data()

@@ -83,7 +83,7 @@ scoped_refptr<base::TaskRunner> PepperIsolatedFileSystemMessageFilter::OverrideT
 {
     // In order to reach ExtensionSystem, we need to get ProfileManager first.
     // ProfileManager lives in UI thread, so we need to do this in UI thread.
-    return content::BrowserThread::GetMessageLoopProxyForThread(content::BrowserThread::UI);
+    return content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI);
 }
 
 int32_t PepperIsolatedFileSystemMessageFilter::OnResourceMessageReceived(const IPC::Message& msg, ppapi::host::HostMessageContext *context)

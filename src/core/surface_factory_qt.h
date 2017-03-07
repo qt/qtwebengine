@@ -51,7 +51,7 @@ namespace QtWebEngineCore {
 class SurfaceFactoryQt
     : public ui::SurfaceFactoryOzone
 {
-    virtual bool LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library, SetGLGetProcAddressProcCallback set_gl_get_proc_address) Q_DECL_OVERRIDE;
+    virtual bool LoadEGLGLES2Bindings() Q_DECL_OVERRIDE;
     virtual intptr_t GetNativeDisplay() Q_DECL_OVERRIDE;
 };
 

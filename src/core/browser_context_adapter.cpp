@@ -101,6 +101,7 @@ BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
 
 BrowserContextAdapter::~BrowserContextAdapter()
 {
+    m_browserContext->ShutdownStoragePartitions();
     if (m_downloadManagerDelegate)
         content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE, m_downloadManagerDelegate.take());
     BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(m_browserContext.data());

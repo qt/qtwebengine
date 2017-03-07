@@ -40,51 +40,45 @@
 #ifndef DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H
 #define DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H
 
-#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
 #include <QString>
-#include <QtCore/qcompilerdetection.h> // needed for Q_DECL_OVERRIDE
 
 namespace content {
-class BrowserContext;
-}
-
-namespace devtools_http_handler {
-class DevToolsHttpHandler;
+class DevToolsSocketFactory;
 }
 
 namespace QtWebEngineCore {
 
-std::unique_ptr<devtools_http_handler::DevToolsHttpHandler> createDevToolsHttpHandler();
-
-class DevToolsHttpHandlerDelegateQt : public devtools_http_handler::DevToolsHttpHandlerDelegate {
+class DevToolsServerQt {
 public:
-    DevToolsHttpHandlerDelegateQt();
+    DevToolsServerQt();
+    ~DevToolsServerQt();
 
     bool isValid() const { return m_valid; }
     QString bindAddress() const { return m_bindAddress; }
     int port() const { return m_port; }
 
-    // devtools_http_handler::DevToolsHttpHandlerDelegate Overrides
-    void Initialized(const net::IPEndPoint *ip_address) Q_DECL_OVERRIDE;
-    std::string GetDiscoveryPageHTML() Q_DECL_OVERRIDE;
-    std::string GetFrontendResource(const std::string&)  Q_DECL_OVERRIDE;
-    std::string GetPageThumbnailData(const GURL &url) Q_DECL_OVERRIDE;
-
-    content::DevToolsExternalAgentProxyDelegate* HandleWebSocketConnection(const std::string&) Q_DECL_OVERRIDE;
+    void start();
+    void stop();
+    bool isStarted() const { return m_isStarted; }
 
 private:
+    void parseAddressAndPort();
+    std::unique_ptr<content::DevToolsSocketFactory> CreateSocketFactory();
+
     QString m_bindAddress;
     int m_port;
     bool m_valid;
+    bool m_isStarted;
 };
+
 
 class DevToolsManagerDelegateQt : public content::DevToolsManagerDelegate {
 public:
-    void Inspect(content::BrowserContext *browser_context, content::DevToolsAgentHost *agent_host) Q_DECL_OVERRIDE { }
-    void DevToolsAgentStateChanged(content::DevToolsAgentHost *agent_host, bool attached) Q_DECL_OVERRIDE { }
-    base::DictionaryValue *HandleCommand(content::DevToolsAgentHost *agent_host, base::DictionaryValue *command) Q_DECL_OVERRIDE;
+    std::string GetDiscoveryPageHTML() override;
+    std::string GetFrontendResource(const std::string& path) override;
+    void Initialized(const net::IPEndPoint *ip_address) override;
 };
 
 } // namespace QtWebEngineCore

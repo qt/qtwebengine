@@ -44,8 +44,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #if defined(ENABLE_SPELLCHECK)
-#include "chrome/renderer/spellchecker/spellcheck.h"
-#include "chrome/renderer/spellchecker/spellcheck_provider.h"
+#include "components/spellcheck/renderer/spellcheck.h"
+#include "components/spellcheck/renderer/spellcheck_provider.h"
 #endif
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "components/error_page/common/error_page_params.h"
@@ -75,6 +75,7 @@
 #include "renderer/render_frame_observer_qt.h"
 #include "renderer/render_view_observer_qt.h"
 #include "renderer/user_resource_controller.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 #include "components/grit/components_resources.h"
 
@@ -98,7 +99,8 @@ void ContentRendererClientQt::RenderThreadStarted()
     content::RenderThread *renderThread = content::RenderThread::Get();
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheImpl.reset(new web_cache::WebCacheImpl());
-    renderThread->AddObserver(m_visitedLinkSlave.data());
+    renderThread->GetInterfaceRegistry()->AddInterface(
+        m_visitedLinkSlave->GetBindCallback());
     renderThread->AddObserver(UserResourceController::instance());
 
 #if defined(ENABLE_SPELLCHECK)

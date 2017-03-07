@@ -43,6 +43,7 @@
 #include "render_widget_host_view_qt_delegate.h"
 
 #include "base/memory/weak_ptr.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -99,6 +100,7 @@ class RenderWidgetHostViewQt
     , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
+    , public cc::BeginFrameObserverBase
 #ifndef QT_NO_ACCESSIBILITY
     , public QAccessible::ActivationObserver
 #endif // QT_NO_ACCESSIBILITY
@@ -144,7 +146,6 @@ public:
     virtual void RenderProcessGone(base::TerminationStatus, int) Q_DECL_OVERRIDE;
     virtual void Destroy() Q_DECL_OVERRIDE;
     virtual void SetTooltipText(const base::string16 &tooltip_text) Q_DECL_OVERRIDE;
-    virtual void SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&) Q_DECL_OVERRIDE;
     virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, const content::ReadbackRequestCallback& callback, const SkColorType preferred_color_type) Q_DECL_OVERRIDE;
     virtual void CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(const gfx::Rect&, bool)>& callback) Q_DECL_OVERRIDE;
 
@@ -152,12 +153,13 @@ public:
     virtual bool HasAcceleratedSurface(const gfx::Size&) Q_DECL_OVERRIDE;
     virtual void OnSwapCompositorFrame(uint32_t output_surface_id, cc::CompositorFrame frame)  Q_DECL_OVERRIDE;
 
-    virtual void GetScreenInfo(blink::WebScreenInfo* results) Q_DECL_OVERRIDE;
+    void GetScreenInfo(content::ScreenInfo* results);
     virtual gfx::Rect GetBoundsInRootWindow() Q_DECL_OVERRIDE;
     virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) Q_DECL_OVERRIDE;
     virtual void ClearCompositorFrame() Q_DECL_OVERRIDE;
     virtual void LockCompositingSurface() Q_DECL_OVERRIDE;
     virtual void UnlockCompositingSurface() Q_DECL_OVERRIDE;
+    virtual void SetNeedsBeginFrames(bool needs_begin_frames) Q_DECL_OVERRIDE;
 
     // Overridden from RenderWidgetHostViewBase.
     virtual void SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range) Q_DECL_OVERRIDE;
@@ -173,7 +175,11 @@ public:
     virtual void windowBoundsChanged() Q_DECL_OVERRIDE;
     virtual void windowChanged() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
-    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) Q_DECL_OVERRIDE;
+
+    // cc::BeginFrameObserverBase implementation.
+    bool OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) override;
+    void OnBeginFrameSourcePausedChanged(bool paused) override;
 
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
@@ -210,6 +216,7 @@ private:
     void clearPreviousTouchMotionState();
     QList<QTouchEvent::TouchPoint> mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints);
     float dpiScale() const;
+    void updateNeedsBeginFramesInternal();
 
     bool IsPopup() const;
 
@@ -235,12 +242,13 @@ private:
     ui::TextInputType m_currentInputType;
     bool m_imeInProgress;
     bool m_receivedEmptyImeText;
-    QRect m_cursorRect;
-    size_t m_anchorPositionWithinSelection;
-    size_t m_cursorPositionWithinSelection;
     QPoint m_lockedMousePosition;
 
     bool m_initPending;
+
+    std::unique_ptr<cc::SyntheticBeginFrameSource> m_beginFrameSource;
+    bool m_needsBeginFrames;
+    bool m_addedFrameObserver;
 
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;

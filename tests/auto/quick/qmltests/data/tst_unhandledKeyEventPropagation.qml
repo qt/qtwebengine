@@ -57,24 +57,40 @@ Item {
         }
 
         function test_keyboardModifierMapping() {
-            webEngineView.loadHtml("<input type='text'/>")
-            webEngineView.waitForLoadSucceeded()
-            webEngineView.runJavaScript("document.body.firstChild.focus()")
+            webEngineView.url = Qt.resolvedUrl("keyboardEvents.html");
+            verify(webEngineView.waitForLoadSucceeded());
 
-            keyPress(Qt.Key_A)
-            keyRelease(Qt.Key_A)
-            keyPress(Qt.Key_Left)
-            keyRelease(Qt.Key_Left)
-            keyPress(Qt.Key_Left)
-            keyRelease(Qt.Key_Left)
+            webEngineView.runJavaScript("document.getElementById('first_div').focus()");
+            webEngineView.verifyElementHasFocus("first_div");
 
-            tryCompare(parentItem.pressEvents, "length", 1)
-            compare(parentItem.pressEvents[0], Qt.Key_Left)
+            keyPress(Qt.Key_Right);
+            keyRelease(Qt.Key_Right);
+            // Right arrow key is unhandled thus focus is not changed
+            tryCompare(parentItem.releaseEvents, "length", 1);
+            webEngineView.verifyElementHasFocus("first_div");
 
-            tryCompare(parentItem.releaseEvents, "length", 3)
-            compare(parentItem.releaseEvents[0], Qt.Key_A)
-            compare(parentItem.releaseEvents[1], Qt.Key_Left)
-            compare(parentItem.releaseEvents[2], Qt.Key_Left)
+            keyPress(Qt.Key_Tab);
+            keyRelease(Qt.Key_Tab);
+            // Tab key is handled thus focus is changed
+            tryCompare(parentItem.releaseEvents, "length", 2);
+            webEngineView.verifyElementHasFocus("second_div");
+
+            keyPress(Qt.Key_Left);
+            keyRelease(Qt.Key_Left);
+            // Left arrow key is unhandled thus focus is not changed
+            tryCompare(parentItem.releaseEvents, "length", 3);
+            webEngineView.verifyElementHasFocus("second_div");
+
+            // The page will consume the Tab key to change focus between elements while the arrow
+            // keys won't be used.
+            compare(parentItem.pressEvents.length, 2);
+            compare(parentItem.pressEvents[0], Qt.Key_Right);
+            compare(parentItem.pressEvents[1], Qt.Key_Left);
+
+            // Key releases will all come back unconsumed.
+            compare(parentItem.releaseEvents[0], Qt.Key_Right);
+            compare(parentItem.releaseEvents[1], Qt.Key_Tab);
+            compare(parentItem.releaseEvents[2], Qt.Key_Left);
         }
     }
 }

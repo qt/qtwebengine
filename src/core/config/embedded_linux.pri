@@ -2,6 +2,23 @@ GYP_ARGS += "-D qt_os=\"embedded_linux\" -I config/embedded_linux.gypi"
 
 include(linux.pri)
 
+use?(gn) {
+    gn_args += \
+        is_desktop_linux=false \
+        use_gold=false \
+        use_ozone=true \
+        use_sysroot=false \
+        enable_session_service=false \
+        enable_notifications=false \
+        ozone_auto_platforms=false \
+        ozone_platform_headless=true \
+        toolkit_views=false
+
+    use?(icecc) {
+        gn_args += use_debug_fission=false
+    }
+}
+
 GYP_CONFIG += \
     clang=0 \
     desktop_linux=0 \

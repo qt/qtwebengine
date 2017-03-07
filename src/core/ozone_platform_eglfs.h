@@ -59,7 +59,6 @@ class OzonePlatformEglfs : public OzonePlatform {
 
   virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override;
   virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() override;
-  virtual GpuPlatformSupport* GetGpuPlatformSupport() override;
   virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() override;
   virtual std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
@@ -78,7 +77,6 @@ class OzonePlatformEglfs : public OzonePlatform {
   std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;
 
-  std::unique_ptr<GpuPlatformSupport> gpu_platform_support_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;

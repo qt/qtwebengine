@@ -62,11 +62,11 @@ public:
 
     // content::SSLHostStateDelegate implementation:
     virtual void AllowCert(const std::string &, const net::X509Certificate &cert, net::CertStatus error) override;
-    virtual void Clear() override;
+    virtual void Clear(const base::Callback<bool(const std::string&)>& host_filter) override;
     virtual CertJudgment QueryPolicy(const std::string &host, const net::X509Certificate &cert,
                                      net::CertStatus error,bool *expired_previous_decision) override;
-    virtual void HostRanInsecureContent(const std::string &host, int pid) override;
-    virtual bool DidHostRunInsecureContent(const std::string &host, int pid) const override;
+    virtual void HostRanInsecureContent(const std::string& host, int child_id, InsecureContentType content_type) override;
+    virtual bool DidHostRunInsecureContent(const std::string& host, int child_id, InsecureContentType content_type) const override;
     virtual void RevokeUserAllowExceptions(const std::string &host) override;
     virtual bool HasAllowException(const std::string &host) const override;
 

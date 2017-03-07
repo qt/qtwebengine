@@ -173,8 +173,8 @@ void URLRequestContextGetterQt::updateStorageSettings()
         m_proxyConfigService =
                 new ProxyConfigServiceQt(
                     net::ProxyService::CreateSystemProxyConfigService(
-                        content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-                        content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
+                        content::BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+                        content::BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)
                 ));
         if (m_contextInitialized)
             content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
@@ -268,6 +268,7 @@ void URLRequestContextGetterQt::updateCookieStore()
 
     if (m_contextInitialized && !m_updateAllStorage && !m_updateCookieStore) {
         m_updateCookieStore = true;
+        m_updateHttpCache = true;
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                          base::Bind(&URLRequestContextGetterQt::generateCookieStore, this));
     }
@@ -337,6 +338,12 @@ void URLRequestContextGetterQt::generateCookieStore()
     const std::vector<std::string> cookieableSchemes(kCookieableSchemes, kCookieableSchemes + arraysize(kCookieableSchemes));
     cookieMonster->SetCookieableSchemes(cookieableSchemes);
     m_cookieDelegate->setCookieMonster(cookieMonster);
+
+    if (!m_updateAllStorage) {
+        Q_ASSERT(m_updateHttpCache);
+        // HttpCache needs to be regenerated when we generate a new channel id service
+        generateHttpCache();
+    }
 }
 
 void URLRequestContextGetterQt::updateUserAgent()
@@ -470,7 +477,7 @@ void URLRequestContextGetterQt::generateHttpCache()
                 net::CACHE_BACKEND_DEFAULT,
                 base::FilePath(),
                 m_httpCacheMaxSize,
-                BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
+                BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)
             );
         break;
     case BrowserContextAdapter::DiskHttpCache:
@@ -480,7 +487,7 @@ void URLRequestContextGetterQt::generateHttpCache()
                 net::CACHE_BACKEND_DEFAULT,
                 toFilePath(m_httpCachePath),
                 m_httpCacheMaxSize,
-                BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
+                BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)
             );
         break;
     case BrowserContextAdapter::NoCache:
@@ -593,7 +600,7 @@ void URLRequestContextGetterQt::regenerateJobFactory()
 
 scoped_refptr<base::SingleThreadTaskRunner> URLRequestContextGetterQt::GetNetworkTaskRunner() const
 {
-    return content::BrowserThread::GetMessageLoopProxyForThread(content::BrowserThread::IO);
+    return content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO);
 }
 
 } // namespace QtWebEngineCore

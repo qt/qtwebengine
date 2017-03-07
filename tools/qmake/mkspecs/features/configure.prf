@@ -35,23 +35,28 @@ defineTest(runConfigure) {
     }
     isQtMinimum(5, 9) {
         qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
-        linux: !cross_compile: use_gold_linker: WEBENGINE_CONFIG += use_gn
+        linux: WEBENGINE_CONFIG += use_gn
         macos: WEBENGINE_CONFIG += use_gn
+        win32: WEBENGINE_CONFIG += use_gn
     }
+    !use?(gn): skipBuild("Chromium 55 and new can only be built with GN")
 
     linux {
         QT_FOR_CONFIG += gui-private
         !config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
 
         REQUIRED_PACKAGES = dbus-1 fontconfig
-        !contains(WEBENGINE_CONFIG, embedded_build): qtConfig(xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xscrnsaver xtst
+        !contains(WEBENGINE_CONFIG, embedded_build): qtConfig(xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xtst
         qtConfig(pulseaudio): REQUIRED_PACKAGES += libpulse
         qtConfig(system-png): REQUIRED_PACKAGES += libpng
         qtConfig(system-harfbuzz) {
              packagesExist("\'harfbuzz >= 1.2.0\'"): WEBENGINE_CONFIG += use_system_harfbuzz
              else: log("System harfbuzz is too old (min. version 1.2). Using Chromium's copy.$${EOL}")
         }
-        !contains(WEBENGINE_CONFIG, embedded_build): REQUIRED_PACKAGES += libpci
+        qtConfig(glib) {
+             packagesExist("\'glib-2.0 >= 2.32.0\'"): WEBENGINE_CONFIG += use_glib
+             else: skipBuild("System glib is too old (min. version 2.32).$${EOL}")
+        }
 
         for(package, $$list($$REQUIRED_PACKAGES)) {
             !packagesExist($$package):skipBuild("Unmet dependency: $$package")

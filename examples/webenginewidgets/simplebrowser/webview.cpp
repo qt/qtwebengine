@@ -151,7 +151,6 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
         menu->insertAction(before, page()->action(QWebEnginePage::OpenLinkInNewWindow));
         menu->insertAction(before, page()->action(QWebEnginePage::OpenLinkInNewTab));
     }
-    connect(menu, &QMenu::aboutToHide, menu, &QObject::deleteLater);
     menu->popup(event->globalPos());
 }
 

@@ -52,7 +52,7 @@ struct Mailbox;
 class SyncPointManager;
 namespace gles2 {
 class MailboxManager;
-class Texture;
+class TextureBase;
 }
 }
 
@@ -65,8 +65,8 @@ base::MessageLoop *gpu_message_loop();
 gpu::SyncPointManager *sync_point_manager();
 gpu::gles2::MailboxManager *mailbox_manager();
 
-gpu::gles2::Texture* ConsumeTexture(gpu::gles2::MailboxManager *mailboxManager, unsigned target, const gpu::Mailbox& mailbox);
-unsigned int service_id(gpu::gles2::Texture *tex);
+gpu::gles2::TextureBase* ConsumeTexture(gpu::gles2::MailboxManager *mailboxManager, unsigned target, const gpu::Mailbox& mailbox);
+unsigned int service_id(gpu::gles2::TextureBase *tex);
 
 #ifdef Q_OS_QNX
 typedef void* EGLDisplay;

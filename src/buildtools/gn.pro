@@ -1,6 +1,8 @@
 TEMPLATE = aux
 CONFIG += release
 
+option(host_build)
+
 defineReplace(buildGn) {
     gn_args = $$1
     out = $$gnPath()

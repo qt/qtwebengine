@@ -117,6 +117,8 @@ public:
 
     virtual void TakeFocus(bool reverse) Q_DECL_OVERRIDE;
 
+    virtual void GetScreenInfo(content::ScreenInfo* results) const Q_DECL_OVERRIDE;
+
 #if defined(OS_MACOSX)
     virtual void SetAllowOtherViews(bool allow) Q_DECL_OVERRIDE { m_allowOtherViews = allow; }
     virtual bool GetAllowOtherViews() const Q_DECL_OVERRIDE { return m_allowOtherViews; }

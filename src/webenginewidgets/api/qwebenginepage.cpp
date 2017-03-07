@@ -821,6 +821,8 @@ QWebEnginePage::QWebEnginePage(QWebEngineProfile *profile, QObject* parent)
 QWebEnginePage::~QWebEnginePage()
 {
     Q_D(QWebEnginePage);
+    if (d->adapter)
+        d->adapter->stopFinding();
     QWebEngineViewPrivate::bind(d->view, 0);
 }
 
@@ -842,7 +844,7 @@ QWebEngineSettings *QWebEnginePage::settings() const
  * that is exposed in the JavaScript context of this page as \c qt.webChannelTransport.
  *
  * \since 5.5
- * \sa setWebChannel
+ * \sa setWebChannel()
  */
 QWebChannel *QWebEnginePage::webChannel() const
 {
@@ -1455,7 +1457,7 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
             controller->textProvided(promptResult);
         break;
     case UnloadDialog:
-        accepted = (QMessageBox::information(view, QCoreApplication::translate("QWebEnginePage", "Are you sure you want to leave this page?"), controller->message(), QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes);
+        accepted = (QMessageBox::question(view, QCoreApplication::translate("QWebEnginePage", "Are you sure you want to leave this page?"), QCoreApplication::translate("QWebEnginePage", "Changes that you made may not be saved."), QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Ok);
         break;
     case InternalAuthorizationDialog:
         accepted = (QMessageBox::question(view, controller->title(), controller->message(), QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes);
@@ -1631,6 +1633,8 @@ QMenu *QWebEnginePage::createStandardContextMenu()
 
     if (d->isFullScreenMode())
         menu->addAction(QWebEnginePage::action(ExitFullScreen));
+
+    menu->setAttribute(Qt::WA_DeleteOnClose, true);
 
     return menu;
 }

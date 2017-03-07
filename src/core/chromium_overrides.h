@@ -40,7 +40,7 @@
 #ifndef CHROMIUM_OVERRIDES_H
 #define CHROMIUM_OVERRIDES_H
 
-#include "third_party/WebKit/public/platform/WebScreenInfo.h"
+#include "content/public/common/screen_info.h"
 #include <QtGlobal>
 
 QT_BEGIN_NAMESPACE
@@ -48,7 +48,7 @@ class QWindow;
 QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
-void GetScreenInfoFromNativeWindow(QWindow* window, blink::WebScreenInfo* results);
+void GetScreenInfoFromNativeWindow(QWindow* window, content::ScreenInfo* results);
 }
 
 #endif

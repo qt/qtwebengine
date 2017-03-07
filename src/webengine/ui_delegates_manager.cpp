@@ -330,7 +330,10 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
         item->setParentItem(m_view);
     dialog->setParent(m_view);
     QQmlProperty textProp(dialog, QStringLiteral("text"));
-    textProp.write(dialogController->message());
+    if (dialogController->type() == WebContentsAdapterClient::UnloadDialog)
+        textProp.write(tr("Changes that you made may not be saved."));
+    else
+        textProp.write(dialogController->message());
 
     QQmlProperty titleProp(dialog, QStringLiteral("title"));
     titleProp.write(title);

@@ -217,7 +217,7 @@ bool CookieMonsterDelegateQt::canSetCookie(const QUrl &firstPartyUrl, const QByt
     return true;
 }
 
-void CookieMonsterDelegateQt::OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, ChangeCause cause)
+void CookieMonsterDelegateQt::OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, net::CookieStore::ChangeCause cause)
 {
     if (!m_client)
         return;

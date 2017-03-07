@@ -30,7 +30,8 @@ use?(gn) {
         clang_use_chrome_plugins=false \
         mac_deployment_target=\"$${QMAKE_MACOSX_DEPLOYMENT_TARGET}\" \
         mac_sdk_min=\"$${QMAKE_MAC_SDK_VERSION}\" \
-        toolkit_views=false
+        toolkit_views=false \
+        use_external_popup_menu=false
 
     use?(spellchecker) {
         use?(native_spellchecker): gn_args += use_browser_spellchecker=true

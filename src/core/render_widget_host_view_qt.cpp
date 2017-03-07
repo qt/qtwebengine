@@ -52,10 +52,10 @@
 #include "web_event_factory.h"
 
 #include "base/command_line.h"
-#include "cc/output/compositor_frame_ack.h"
+#include "cc/output/direct_renderer.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
-#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
@@ -238,11 +238,13 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_needsDelegatedFrameAck(false)
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
+    , m_currentInputType(ui::TEXT_INPUT_TYPE_NONE)
     , m_imeInProgress(false)
     , m_receivedEmptyImeText(false)
-    , m_anchorPositionWithinSelection(0)
-    , m_cursorPositionWithinSelection(0)
     , m_initPending(false)
+    , m_beginFrameSource(nullptr)
+    , m_needsBeginFrames(false)
+    , m_addedFrameObserver(false)
 {
     m_host->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
@@ -250,6 +252,9 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     if (QAccessible::isActive())
         content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
 #endif // QT_NO_ACCESSIBILITY
+    auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
+    m_beginFrameSource.reset(new cc::DelayBasedBeginFrameSource(
+            base::MakeUnique<cc::DelayBasedTimeSource>(task_runner)));
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
@@ -609,22 +614,6 @@ void RenderWidgetHostViewQt::SetTooltipText(const base::string16 &tooltip_text)
     m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
-void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params &params)
-{
-    if (selection_range_.IsValid()) {
-        if (params.is_anchor_first) {
-            m_anchorPositionWithinSelection = selection_range_.GetMin() - selection_text_offset_;
-            m_cursorPositionWithinSelection = selection_range_.GetMax() - selection_text_offset_;
-        } else {
-            m_anchorPositionWithinSelection = selection_range_.GetMax() - selection_text_offset_;
-            m_cursorPositionWithinSelection = selection_range_.GetMin() - selection_text_offset_;
-        }
-    }
-
-    gfx::Rect caretRect = gfx::UnionRects(params.anchor_rect, params.focus_rect);
-    m_cursorRect = QRect(caretRect.x(), caretRect.y(), caretRect.width(), caretRect.height());
-}
-
 void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, const content::ReadbackRequestCallback& callback, const SkColorType color_type)
 {
     NOTIMPLEMENTED();
@@ -694,7 +683,7 @@ void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, c
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
 }
 
-void RenderWidgetHostViewQt::GetScreenInfo(blink::WebScreenInfo* results)
+void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo* results)
 {
     QWindow* window = m_delegate->window();
     if (!window)
@@ -702,7 +691,7 @@ void RenderWidgetHostViewQt::GetScreenInfo(blink::WebScreenInfo* results)
     GetScreenInfoFromNativeWindow(window, results);
 
     // Support experimental.viewport.devicePixelRatio
-    results->deviceScaleFactor *= dpiScale();
+    results->device_scale_factor *= dpiScale();
 }
 
 gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
@@ -827,23 +816,34 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     return true;
 }
 
-QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) const
+QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
 {
     switch (query) {
     case Qt::ImEnabled:
         return QVariant(m_currentInputType != ui::TEXT_INPUT_TYPE_NONE);
-    case Qt::ImCursorRectangle:
-        return m_cursorRect;
     case Qt::ImFont:
         return QVariant();
+    case Qt::ImCursorRectangle:
+        // QIBusPlatformInputContext might query ImCursorRectangle before the
+        // RenderWidgetHostView is created. Without an available view GetSelectionRange()
+        // returns nullptr.
+        if (!GetTextInputManager()->GetSelectionRegion())
+            return QVariant();
+        return toQt(GetTextInputManager()->GetSelectionRegion()->caret_rect);
     case Qt::ImCursorPosition:
-        return static_cast<uint>(m_cursorPositionWithinSelection);
+        Q_ASSERT(GetTextInputManager()->GetSelectionRegion());
+        return toQt(GetTextInputManager()->GetSelectionRegion()->focus.edge_top_rounded().x());
     case Qt::ImAnchorPosition:
-        return static_cast<uint>(m_anchorPositionWithinSelection);
+        Q_ASSERT(GetTextInputManager()->GetSelectionRegion());
+        return toQt(GetTextInputManager()->GetSelectionRegion()->anchor.edge_top_rounded().x());
     case Qt::ImSurroundingText:
         return m_surroundingText;
-    case Qt::ImCurrentSelection:
-        return toQt(GetSelectedText());
+    case Qt::ImCurrentSelection: {
+        Q_ASSERT(GetTextInputManager()->GetTextSelection());
+        base::string16 text;
+        GetTextInputManager()->GetTextSelection()->GetSelectedText(&text);
+        return toQt(text);
+    }
     case Qt::ImMaximumTextLength:
         return QVariant(); // No limit.
     case Qt::ImHints:
@@ -861,11 +861,12 @@ void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWit
 
 void RenderWidgetHostViewQt::sendDelegatedFrameAck()
 {
-    cc::CompositorFrameAck ack;
-    m_resourcesToRelease.swap(ack.resources);
-    content::RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+    m_beginFrameSource->DidFinishFrame(this, 0);
+    cc::ReturnedResourceArray resources;
+    m_resourcesToRelease.swap(resources);
+    content::RenderWidgetHostImpl::SendReclaimCompositorResources(
         m_host->GetRoutingID(), m_pendingOutputSurfaceId,
-        m_host->GetProcess()->GetID(), ack);
+        m_host->GetProcess()->GetID(), true, resources);
 }
 
 void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)
@@ -919,7 +920,7 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
 
     blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
     if ((webEvent.type == blink::WebInputEvent::MouseDown || webEvent.type == blink::WebInputEvent::MouseUp)
-            && webEvent.button == blink::WebMouseEvent::ButtonNone) {
+            && webEvent.button == blink::WebMouseEvent::Button::NoButton) {
         // Blink can only handle the 3 main mouse-buttons and may assert when processing mouse-down for no button.
         return;
     }
@@ -979,9 +980,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
                                           gfx::Range::InvalidRange(),
                                           gfx::Range::InvalidRange().start(),
                                           gfx::Range::InvalidRange().end());
-                m_host->ImeConfirmComposition(base::string16(),
-                                              gfx::Range::InvalidRange(),
-                                              false);
+                m_host->ImeFinishComposingText(false);
                 m_imeInProgress = false;
             }
             return;
@@ -1098,7 +1097,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
     if (!commitString.isEmpty() || replacementLength > 0) {
         setCompositionString(commitString);
-        m_host->ImeConfirmComposition(base::string16(), gfx::Range::InvalidRange(), false);
+        m_host->ImeFinishComposingText(false);
 
         // We might get a commit string and a pre-edit string in a single event, which means
         // we need to confirm the　last composition, and start a new composition.
@@ -1266,6 +1265,41 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         m_host->Blur();
         ev->accept();
     }
+}
+
+void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
+{
+    m_needsBeginFrames = needs_begin_frames;
+    updateNeedsBeginFramesInternal();
+}
+
+void RenderWidgetHostViewQt::updateNeedsBeginFramesInternal()
+{
+    if (!m_beginFrameSource)
+        return;
+
+    if (m_addedFrameObserver == m_needsBeginFrames)
+        return;
+
+    if (m_needsBeginFrames)
+        m_beginFrameSource->AddObserver(this);
+    else
+        m_beginFrameSource->RemoveObserver(this);
+    m_addedFrameObserver = m_needsBeginFrames;
+}
+
+bool RenderWidgetHostViewQt::OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args)
+{
+    m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
+    m_host->Send(new ViewMsg_BeginFrame(m_host->GetRoutingID(), args));
+    return true;
+}
+
+void RenderWidgetHostViewQt::OnBeginFrameSourcePausedChanged(bool paused)
+{
+    // Ignored for now.  If the begin frame source is paused, the renderer
+    // doesn't need to be informed about it and will just not receive more
+    // begin frames.
 }
 
 } // namespace QtWebEngineCore

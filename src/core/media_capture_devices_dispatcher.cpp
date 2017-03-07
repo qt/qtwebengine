@@ -50,7 +50,7 @@
 #include "web_engine_settings.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/media/desktop_streams_registry.h"
+#include "chrome/browser/media/webrtc/desktop_streams_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_capture_devices.h"

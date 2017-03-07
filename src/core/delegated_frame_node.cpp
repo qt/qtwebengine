@@ -54,8 +54,9 @@
 #include "type_conversion.h"
 #include "yuv_video_node.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
@@ -65,6 +66,8 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
+#include "cc/resources/returned_resource.h"
+#include "cc/resources/transferable_resource.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "ui/gl/gl_context.h"
@@ -622,7 +625,7 @@ void MailboxTexture::setTarget(GLenum target)
 
 void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
 {
-    gpu::gles2::Texture *tex = ConsumeTexture(mailboxManager, m_target, m_mailboxHolder.mailbox);
+    gpu::gles2::TextureBase *tex = ConsumeTexture(mailboxManager, m_target, m_mailboxHolder.mailbox);
 
     // The texture might already have been deleted (e.g. when navigating away from a page).
     if (tex) {
@@ -1125,7 +1128,7 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
                     continue;
                 }
             }
-            gpuMessageLoop->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::pullTexture, this, mailboxTexture));
+            gpuMessageLoop->task_runner()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::pullTexture, this, mailboxTexture));
         }
 
         m_mailboxesFetchedWaitCond.wait(&m_mutex);
@@ -1217,7 +1220,7 @@ void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTextu
         delete fence;
     }
     if (--frameNode->m_numPendingSyncPoints == 0)
-        base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::fenceAndUnlockQt, frameNode));
+        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::fenceAndUnlockQt, frameNode));
 #else
     Q_UNUSED(frameNode)
     Q_UNUSED(texture)
