@@ -341,6 +341,9 @@
     \a securityOrigin calls the \c confirm() function with the message \a msg. Returns \c true
     if the user confirms the message; otherwise returns \c false.
 
+    It is also called when the \c onbeforeunload handler is requesting a confirmation before
+    leaving a page.
+
     The default implementation executes the query using QMessageBox::information with QMessageBox::Ok and QMessageBox::Cancel buttons.
 */
 

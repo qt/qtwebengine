@@ -1457,7 +1457,7 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
             controller->textProvided(promptResult);
         break;
     case UnloadDialog:
-        accepted = (QMessageBox::question(view, QCoreApplication::translate("QWebEnginePage", "Are you sure you want to leave this page?"), QCoreApplication::translate("QWebEnginePage", "Changes that you made may not be saved."), QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Ok);
+        accepted = q->javaScriptConfirm(controller->securityOrigin(), QCoreApplication::translate("QWebEnginePage", "Are you sure you want to leave this page? Changes that you made may not be saved."));
         break;
     case InternalAuthorizationDialog:
         accepted = (QMessageBox::question(view, controller->title(), controller->message(), QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes);
