@@ -882,7 +882,7 @@ QByteArray TabWidget::saveState() const
         if (WebView *tab = qobject_cast<WebView*>(widget(i))) {
             tabs.append(tab->url().toString());
         } else {
-            tabs.append(QString::null);
+            tabs.append(QString());
         }
     }
     stream << tabs;
