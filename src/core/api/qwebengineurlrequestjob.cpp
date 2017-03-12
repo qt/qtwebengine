@@ -114,6 +114,13 @@ QByteArray QWebEngineUrlRequestJob::requestMethod() const
 
 /*!
     Replies to the request with \a device and the MIME type \a contentType.
+
+    The device should remain available at least as long as the job exists.
+    When calling this method with a newly constructed device, one solution is to
+    make the device delete itself when closed, like this:
+    \code
+    connect(device, &QIODevice::aboutToClose, device, &QObject::deleteLater);
+    \endcode
  */
 void QWebEngineUrlRequestJob::reply(const QByteArray &contentType, QIODevice *device)
 {

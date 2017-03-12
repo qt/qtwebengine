@@ -162,20 +162,25 @@ public:
 
 class ReplyingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
 {
-    QBuffer m_buffer;
-    QByteArray m_bufferData;
 public:
     ReplyingUrlSchemeHandler(QObject *parent = nullptr)
         : QWebEngineUrlSchemeHandler(parent)
     {
-        m_buffer.setBuffer(&m_bufferData);
+    }
+    ~ReplyingUrlSchemeHandler()
+    {
     }
 
     void requestStarted(QWebEngineUrlRequestJob *job)
     {
-        m_bufferData = job->requestUrl().toString().toUtf8();
-        job->reply("text/plain;charset=utf-8", &m_buffer);
+        QBuffer *buffer = new QBuffer;
+        buffer->setData(job->requestUrl().toString().toUtf8());
+        connect(buffer, &QIODevice::aboutToClose, buffer, &QObject::deleteLater);
+        m_buffers.append(buffer);
+        job->reply("text/plain;charset=utf-8", buffer);
     }
+
+    QList<QPointer<QBuffer>> m_buffers;
 };
 
 static bool loadSync(QWebEngineView *view, const QUrl &url, int timeout = 5000)
@@ -234,6 +239,11 @@ void tst_QWebEngineProfile::urlSchemeHandlers()
     url = QUrl(QStringLiteral("aviancarrier:inspector.mortensen@politistyrke.dk"));
     QVERIFY(loadSync(&view, url));
     QCOMPARE(toPlainTextSync(view.page()), url.toString());
+
+    // Check that all buffers got deleted
+    QCOMPARE(gopherHandler.m_buffers.count(), 2);
+    for (int i = 0; i < gopherHandler.m_buffers.count(); ++i)
+        QVERIFY(gopherHandler.m_buffers.at(i).isNull());
 }
 
 class FailingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
