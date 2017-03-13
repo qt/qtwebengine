@@ -243,6 +243,7 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
         s_defaultAttributes.insert(PrintElementBackgrounds, true);
         s_defaultAttributes.insert(AllowRunningInsecureContent, allowRunningInsecureContent);
         s_defaultAttributes.insert(AllowGeolocationOnInsecureOrigins, false);
+        s_defaultAttributes.insert(AllowWindowActivationFromJavaScript, false);
     }
     if (offTheRecord)
         m_attributes.insert(LocalStorageEnabled, false);

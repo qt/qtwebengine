@@ -564,6 +564,9 @@ void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, boo
 void QQuickWebEngineViewPrivate::focusContainer()
 {
     Q_Q(QQuickWebEngineView);
+    QQuickWindow *window = q->window();
+    if (window)
+        window->requestActivate();
     q->forceActiveFocus();
 }
 

@@ -379,8 +379,10 @@ void QWebEnginePagePrivate::didPrintPageToPdf(const QString &filePath, bool succ
 
 void QWebEnginePagePrivate::focusContainer()
 {
-    if (view)
+    if (view) {
+        view->activateWindow();
         view->setFocus();
+    }
 }
 
 void QWebEnginePagePrivate::unhandledKeyEvent(QKeyEvent *event)

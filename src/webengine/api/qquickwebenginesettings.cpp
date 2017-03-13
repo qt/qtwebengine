@@ -363,6 +363,16 @@ bool QQuickWebEngineSettings::allowGeolocationOnInsecureOrigins() const
 }
 
 /*!
+  \qmlproperty bool WebEngineSettings::allowWindowActivationFromJavaScript
+  \since QtWebEngine 1.6
+  Allows the window.focus() method in JavaScript. Disallowed by default.
+*/
+bool QQuickWebEngineSettings::allowWindowActivationFromJavaScript() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::AllowWindowActivationFromJavaScript);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -562,6 +572,14 @@ void QQuickWebEngineSettings::setAllowGeolocationOnInsecureOrigins(bool on)
     d_ptr->setAttribute(WebEngineSettings::AllowGeolocationOnInsecureOrigins, on);
     if (wasOn != on)
         Q_EMIT allowGeolocationOnInsecureOriginsChanged();
+}
+
+void QQuickWebEngineSettings::setAllowWindowActivationFromJavaScript(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AllowWindowActivationFromJavaScript);
+    d_ptr->setAttribute(WebEngineSettings::AllowWindowActivationFromJavaScript, on);
+    if (wasOn != on)
+        Q_EMIT allowWindowActivationFromJavaScriptChanged();
 }
 
 void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)

@@ -136,6 +136,7 @@ public:
     void DidNavigateAnyFrame(content::RenderFrameHost *render_frame_host, const content::LoadCommittedDetails &details, const content::FrameNavigateParams &params) override;
     void WasShown() override;
     void DidFirstVisuallyNonEmptyPaint() override;
+    void ActivateContents(content::WebContents* contents) override;
 
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;

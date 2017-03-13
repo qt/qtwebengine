@@ -403,6 +403,13 @@ void WebContentsDelegateQt::DidFirstVisuallyNonEmptyPaint()
     }
 }
 
+void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)
+{
+    WebEngineSettings *settings = m_viewClient->webEngineSettings();
+    if (settings->testAttribute(settings->Attribute::AllowWindowActivationFromJavaScript))
+        contents->Focus();
+}
+
 void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target)
 {
     Q_UNUSED(user_gesture);

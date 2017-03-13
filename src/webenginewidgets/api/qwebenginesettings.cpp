@@ -97,6 +97,8 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::AllowRunningInsecureContent;
     case QWebEngineSettings::AllowGeolocationOnInsecureOrigins:
         return WebEngineSettings::AllowGeolocationOnInsecureOrigins;
+    case QWebEngineSettings::AllowWindowActivationFromJavaScript:
+        return WebEngineSettings::AllowWindowActivationFromJavaScript;
 
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;

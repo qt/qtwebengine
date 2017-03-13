@@ -89,7 +89,8 @@ public:
         FocusOnNavigationEnabled,
         PrintElementBackgrounds,
         AllowRunningInsecureContent,
-        AllowGeolocationOnInsecureOrigins
+        AllowGeolocationOnInsecureOrigins,
+        AllowWindowActivationFromJavaScript
     };
 
     enum FontSize {

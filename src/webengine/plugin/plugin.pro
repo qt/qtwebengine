@@ -1,7 +1,7 @@
 CXX_MODULE = qml
 TARGET = qtwebengineplugin
 TARGETPATH = QtWebEngine
-IMPORT_VERSION = 1.5
+IMPORT_VERSION = 1.6
 
 QT += webengine qml quick
 QT_PRIVATE += webengine-private
