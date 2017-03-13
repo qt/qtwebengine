@@ -282,6 +282,11 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::Favic
     m_faviconManager->update(faviconCandidates);
 }
 
+void WebContentsDelegateQt::WebContentsCreated(content::WebContents* /*source_contents*/, int /*opener_render_process_id*/, int /*opener_render_frame_id*/, const std::string& /*frame_name*/, const GURL& target_url, content::WebContents* new_contents)
+{
+    this->m_initialTargetUrl = toQt(target_url);
+}
+
 content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion)
 {
     Q_UNUSED(suggestion);
@@ -422,7 +427,7 @@ QWeakPointer<WebContentsAdapter> WebContentsDelegateQt::createWindow(content::We
 {
     QSharedPointer<WebContentsAdapter> newAdapter = QSharedPointer<WebContentsAdapter>::create(new_contents);
 
-    m_viewClient->adoptNewWindow(newAdapter, static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition), user_gesture, toQt(initial_pos));
+    m_viewClient->adoptNewWindow(newAdapter, static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition), user_gesture, toQt(initial_pos), m_initialTargetUrl);
 
     // If the client didn't reference the adapter, it will be deleted now, and the weak pointer zeroed.
     return newAdapter;

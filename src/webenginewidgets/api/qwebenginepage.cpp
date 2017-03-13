@@ -401,10 +401,11 @@ void QWebEnginePagePrivate::unhandledKeyEvent(QKeyEvent *event)
         QGuiApplication::sendEvent(view->parentWidget(), event);
 }
 
-void QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry)
+void QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry, const QUrl &targetUrl)
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(userGesture);
+    Q_UNUSED(targetUrl);
 
     QWebEnginePage *newPage = q->createWindow(toWindowType(disposition));
     if (!newPage)

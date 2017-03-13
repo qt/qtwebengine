@@ -586,7 +586,7 @@ void QQuickWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
         q->window()->sendEvent(q->parentItem(), event);
 }
 
-void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &)
+void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &, const QUrl &targetUrl)
 {
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineNewViewRequest request;
@@ -594,8 +594,7 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapte
     // to start loading it and possibly return it to its parent page window.open().
     request.m_adapter = newWebContents;
     request.m_isUserInitiated = userGesture;
-    if (newWebContents)
-        request.m_requestedUrl = newWebContents->requestedUrl();
+    request.m_requestedUrl = targetUrl;
 
     switch (disposition) {
     case WebContentsAdapterClient::NewForegroundTabDisposition:
