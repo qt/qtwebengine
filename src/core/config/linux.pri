@@ -79,6 +79,24 @@ use?(gn) {
         else: contains(QMAKE_CFLAGS, "-mthumb"): gn_args += arm_use_thumb=true
     }
 
+    contains(QT_ARCH, "mips") {
+        MARCH = $$extractCFlag("-march=.*")
+        !isEmpty(MARCH) {
+            equals(MARCH, "mips32r6"): gn_args += mips_arch_variant=\"r6\"
+            else: equals(MARCH, "mips32r2"): gn_args += mips_arch_variant=\"r2\"
+            else: equals(MARCH, "mips32"): gn_args += mips_arch_variant=\"r1\"
+        } else {
+            contains(QMAKE_CFLAGS, "mips32r6"): gn_args += mips_arch_variant=\"r6\"
+            else: contains(QMAKE_CFLAGS, "mips32r2"): gn_args += mips_arch_variant=\"r2\"
+            else: contains(QMAKE_CFLAGS, "mips32"): gn_args += mips_arch_variant=\"r1\"
+        }
+
+        contains(QMAKE_CFLAGS, "-mmsa"): gn_args += mips_use_msa=true
+
+        contains(QMAKE_CFLAGS, "-mdsp2"): gn_args += mips_dsp_rev=2
+        else: contains(QMAKE_CFLAGS, "-mdsp"): gn_args += mips_dsp_rev=1
+    }
+
     host_build {
         gn_args += custom_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:host\"
         # Don't bother trying to use system libraries in this case
