@@ -134,6 +134,7 @@ public:
         ViewSource,
         WebActionCount
     };
+    Q_ENUM(WebAction)
 
     enum FindFlag {
         FindBackward = 1,
@@ -147,12 +148,14 @@ public:
         WebDialog,
         WebBrowserBackgroundTab
     };
+    Q_ENUM(WebWindowType)
 
     enum PermissionPolicy {
         PermissionUnknown,
         PermissionGrantedByUser,
         PermissionDeniedByUser
     };
+    Q_ENUM(PermissionPolicy)
 
     // must match WebContentsAdapterClient::NavigationType
     enum NavigationType {
@@ -163,6 +166,7 @@ public:
         NavigationTypeReload,
         NavigationTypeOther
     };
+    Q_ENUM(NavigationType)
 
     enum Feature {
 #ifndef Q_QDOC
@@ -174,6 +178,7 @@ public:
         MediaAudioVideoCapture,
         MouseLock
     };
+    Q_ENUM(Feature)
 
     // Ex-QWebFrame enum
 
@@ -181,6 +186,7 @@ public:
         FileSelectOpen,
         FileSelectOpenMultiple,
     };
+    Q_ENUM(FileSelectionMode)
 
     // must match WebContentsAdapterClient::JavaScriptConsoleMessageLevel
     enum JavaScriptConsoleMessageLevel {
@@ -188,6 +194,7 @@ public:
         WarningMessageLevel,
         ErrorMessageLevel
     };
+    Q_ENUM(JavaScriptConsoleMessageLevel)
 
     // must match WebContentsAdapterClient::RenderProcessTerminationStatus
     enum RenderProcessTerminationStatus {
@@ -196,6 +203,7 @@ public:
         CrashedTerminationStatus,
         KilledTerminationStatus
     };
+    Q_ENUM(RenderProcessTerminationStatus)
 
     explicit QWebEnginePage(QObject *parent = Q_NULLPTR);
     QWebEnginePage(QWebEngineProfile *profile, QObject *parent = Q_NULLPTR);
