@@ -40,6 +40,43 @@ use?(gn) {
         !isEmpty(TOOLCHAIN_SYSROOT): gn_args += target_sysroot=\"$${TOOLCHAIN_SYSROOT}\"
     }
 
+    contains(QT_ARCH, "arm") {
+        # Extract ARM specific compiler options that we have to pass to gn,
+        # but let gn figure out a default if an option is not present.
+        MTUNE = $$extractCFlag("-mtune=.*")
+        !isEmpty(MTUNE): gn_args += arm_tune=\"$$MTUNE\"
+
+        MFLOAT = $$extractCFlag("-mfloat-abi=.*")
+        !isEmpty(MFLOAT): gn_args += arm_float_abi=\"$$MFLOAT\"
+
+        MARCH = $$extractCFlag("-march=.*")
+
+        MARMV = $$replace(MARCH, "armv",)
+        !isEmpty(MARMV) {
+            MARMV = $$split(MARMV,)
+            MARMV = $$member(MARMV, 0)
+            lessThan(MARMV, 6): error("$$MARCH architecture is not supported")
+            gn_args += arm_version=$$MARMV
+        }
+
+        !lessThan(MARMV, 8) {
+            gn_args += arm_use_neon=true
+        } else {
+            MFPU = $$extractCFlag("-mfpu=.*")
+            !isEmpty(MFPU):contains(MFPU, ".*neon.*") {
+                gn_args += arm_use_neon=true
+            } else {
+                gn_args += arm_use_neon=false
+                # If the toolchain does not explicitly specify to use NEON instructions
+                # we use arm_neon_optional for ARMv7
+                equals(MARMV, 7): gn_args += arm_optionally_use_neon=true
+            }
+        }
+
+        if(isEmpty(MARMV)|lessThan(MARMV, 7)):contains(QMAKE_CFLAGS, "-marm"): gn_args += arm_use_thumb=false
+        else: contains(QMAKE_CFLAGS, "-mthumb"): gn_args += arm_use_thumb=true
+    }
+
     host_build {
         gn_args += custom_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:host\"
         # Don't bother trying to use system libraries in this case
