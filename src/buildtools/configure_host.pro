@@ -4,8 +4,7 @@ TEMPLATE = aux
 # Pick up the host toolchain
 option(host_build)
 
-GN_TARGET_CPU = $$gnArch($$QT_ARCH)
-GN_CPU = $$gnArch($$QMAKE_HOST.arch)
+GN_HOST_CPU = $$gnArch($$QMAKE_HOST.arch)
 GN_OS = $$gnOS()
 
 clang: GN_CLANG = true
@@ -24,7 +23,7 @@ GN_CONTENTS = \
 "  nm = \"$$which(nm)\" " \
 "  toolchain_args = { " \
 "    current_os = \"$$GN_OS\" " \
-"    current_cpu = \"$$GN_CPU\" " \
+"    current_cpu = \"$$GN_HOST_CPU\" " \
 "  } " \
 "}" \
 "gcc_toolchain(\"v8_snapshot\") {" \
@@ -34,13 +33,8 @@ GN_CONTENTS = \
 "  ar = \"$$which(ar)\" " \
 "  nm = \"$$which(nm)\" " \
 "  toolchain_args = { " \
-"    current_os = \"$$GN_OS\" " \
-"    current_cpu = \"$$GN_CPU\" " \
-"    v8_current_cpu = \"$$GN_TARGET_CPU\" " \
-"  } " \
-"}"
-
-
+"    current_os = \"$$GN_OS\" "
+# The v8_snapshot toolchain is finished by configure_target.pro
 
 GN_FILE = $$OUT_PWD/../toolchain/BUILD.gn
 !build_pass {
