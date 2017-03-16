@@ -85,6 +85,8 @@ msvc:contains(QT_ARCH, "i386"):!usingMSVC32BitCrossCompiler() {
 msvc {
     equals(MSVC_VER, 14.0) {
         MSVS_VERSION = 2015
+    } else:equals(MSVC_VER, 15.0) {
+        MSVS_VERSION = 2017
     } else {
         fatal("Visual Studio compiler version \"$$MSVC_VER\" is not supported by Qt WebEngine")
     }
