@@ -418,31 +418,32 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
 
 void tst_QWebEngineView::horizontalScrollbarTest()
 {
-#if !defined(QWEBENGINEPAGE_SCROLL)
-    QSKIP("QWEBENGINEPAGE_SCROLL");
-#else
-    QWebEngineView webView;
-    webView.resize(600, 600);
-    webView.show();
-    QTest::qWaitForWindowExposed(&webView);
+    QString html("<html><body>"
+                 "<div style='width: 1000px; height: 1000px; background-color: green' />"
+                 "</body></html>");
 
-    QUrl url("qrc:///resources/scrolltest_page.html");
-    webView.page()->load(url);
-    webView.page()->setFocus();
+    QWebEngineView view;
+    view.setFixedSize(600, 600);
+    view.show();
 
-    QSignalSpy spyFinished(webView, &QWebEngineView::loadFinished);
-    QVERIFY(spyFinished.wait());
+    QTest::qWaitForWindowExposed(&view);
 
-    QVERIFY(webView.page()->scrollPosition() == QPoint(0, 0));
+    QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
+    view.setHtml(html);
+    QTRY_COMPARE(loadSpy.count(), 1);
 
-    // Note: The test below assumes that the layout direction is Qt::LeftToRight.
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, QPoint(550, 595));
-    QVERIFY(webView.page()->scrollPosition().x() > 0);
+    QVERIFY(view.page()->scrollPosition() == QPoint(0, 0));
+    QSignalSpy scrollSpy(view.page(), SIGNAL(scrollPositionChanged(QPointF)));
 
     // Note: The test below assumes that the layout direction is Qt::LeftToRight.
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, QPoint(20, 595));
-    QVERIFY(webView.page()->scrollPosition() == QPoint(0, 0));
-#endif
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, QPoint(550, 595));
+    scrollSpy.wait();
+    QVERIFY(view.page()->scrollPosition().x() > 0);
+
+    // Note: The test below assumes that the layout direction is Qt::LeftToRight.
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, QPoint(20, 595));
+    scrollSpy.wait();
+    QVERIFY(view.page()->scrollPosition() == QPoint(0, 0));
 }
 
 
