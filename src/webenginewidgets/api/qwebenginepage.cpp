@@ -60,6 +60,7 @@
 #include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_adapter.h"
 #include "web_engine_settings.h"
+#include "qwebenginescript.h"
 
 #ifdef QT_UI_DELEGATES
 #include "ui/messagebubblewidget_p.h"
@@ -1132,6 +1133,42 @@ QAction *QWebEnginePage::action(WebAction action) const
     case ViewSource:
         text = tr("&View Page Source");
         break;
+    case ToggleBold:
+        text = tr("&Bold");
+        break;
+    case ToggleItalic:
+        text = tr("&Italic");
+        break;
+    case ToggleUnderline:
+        text = tr("&Underline");
+        break;
+    case ToggleStrikethrough:
+        text = tr("&Strikethrough");
+        break;
+    case AlignLeft:
+        text = tr("Align &Left");
+        break;
+    case AlignCenter:
+        text = tr("Align &Center");
+        break;
+    case AlignRight:
+        text = tr("Align &Right");
+        break;
+    case AlignJustified:
+        text = tr("Align &Justified");
+        break;
+    case Indent:
+        text = tr("&Indent");
+        break;
+    case Outdent:
+        text = tr("&Outdent");
+        break;
+    case InsertOrderedList:
+        text = tr("Insert &Ordered List");
+        break;
+    case InsertUnorderedList:
+        text = tr("Insert &Unordered List");
+        break;
     case NoWebAction:
     case WebActionCount:
         Q_UNREACHABLE();
@@ -1332,6 +1369,42 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         // method is called indirectly via the QTimer::singleShot() function which schedules the
         // the viewSource() call after the QMenu's destruction.
         QTimer::singleShot(0, this, [d](){ d->adapter->viewSource(); });
+        break;
+    case ToggleBold:
+        runJavaScript("document.execCommand('bold');", QWebEngineScript::ApplicationWorld);
+        break;
+    case ToggleItalic:
+        runJavaScript("document.execCommand('italic');", QWebEngineScript::ApplicationWorld);
+        break;
+    case ToggleUnderline:
+        runJavaScript("document.execCommand('underline');", QWebEngineScript::ApplicationWorld);
+        break;
+    case ToggleStrikethrough:
+        runJavaScript("document.execCommand('strikethrough');", QWebEngineScript::ApplicationWorld);
+        break;
+    case AlignLeft:
+        runJavaScript("document.execCommand('justifyLeft');", QWebEngineScript::ApplicationWorld);
+        break;
+    case AlignCenter:
+        runJavaScript("document.execCommand('justifyCenter');", QWebEngineScript::ApplicationWorld);
+        break;
+    case AlignRight:
+        runJavaScript("document.execCommand('justifyRight');", QWebEngineScript::ApplicationWorld);
+        break;
+    case AlignJustified:
+        runJavaScript("document.execCommand('justifyFull');", QWebEngineScript::ApplicationWorld);
+        break;
+    case Indent:
+        runJavaScript("document.execCommand('indent');", QWebEngineScript::ApplicationWorld);
+        break;
+    case Outdent:
+        runJavaScript("document.execCommand('outdent');", QWebEngineScript::ApplicationWorld);
+        break;
+    case InsertOrderedList:
+        runJavaScript("document.execCommand('insertOrderedList');", QWebEngineScript::ApplicationWorld);
+        break;
+    case InsertUnorderedList:
+        runJavaScript("document.execCommand('insertUnorderedList');", QWebEngineScript::ApplicationWorld);
         break;
     case NoWebAction:
         break;

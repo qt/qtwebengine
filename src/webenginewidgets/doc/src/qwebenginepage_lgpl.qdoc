@@ -158,6 +158,46 @@
            the web page on disk. (Added in Qt 5.7)
     \value ViewSource Show the source of the current page in a new tab. (Added in Qt 5.8)
 
+    \value ToggleBold
+           Toggles boldness for the selection or at the cursor position.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value ToggleItalic
+           Toggles italics for the selection or at the cursor position.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value ToggleUnderline
+           Toggles underlining of the selection or at the cursor position.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value ToggleStrikethrough
+           Toggles striking through the selection or at the cursor position.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
+
+    \value AlignLeft
+           Aligns the lines containing the selection or the cursor to the left.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value AlignCenter
+           Aligns the lines containing the selection or the cursor at the center.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value AlignRight
+           Aligns the lines containing the selection or the cursor to the right.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value AlignJustified
+           Stretches the lines containing the selection or the cursor so that each
+           line has equal width.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value Indent
+           Indents the lines containing the selection or the cursor.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value Outdent
+           Outdents the lines containing the selection or the cursor.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
+
+    \value InsertOrderedList
+           Inserts an ordered list at the current cursor position, deleting the current selection.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value InsertUnorderedList
+           Inserts an unordered list at the current cursor position,
+           deleting the current selection.
+           Requires \c contenteditable="true". (Added in Qt 5.10)
     \omitvalue WebActionCount
 
 */

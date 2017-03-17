@@ -132,6 +132,22 @@ public:
         SavePage,
         OpenLinkInNewBackgroundTab,
         ViewSource,
+
+        ToggleBold,
+        ToggleItalic,
+        ToggleUnderline,
+        ToggleStrikethrough,
+
+        AlignLeft,
+        AlignCenter,
+        AlignRight,
+        AlignJustified,
+        Indent,
+        Outdent,
+
+        InsertOrderedList,
+        InsertUnorderedList,
+
         WebActionCount
     };
     Q_ENUM(WebAction)

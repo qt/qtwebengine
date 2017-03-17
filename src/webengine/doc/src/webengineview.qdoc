@@ -793,6 +793,46 @@
     \value  WebEngineView.ViewSource
             Show the source of the current page in a new tab. (Added in Qt 5.8)
 
+    \value  WebEngineView.ToggleBold
+            Toggles boldness for the selection or at the cursor position.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value  WebEngineView.ToggleItalic
+            Toggles italics for the selection or at the cursor position.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value  WebEngineView.ToggleUnderline
+            Toggles underlining of the selection or at the cursor position.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value  WebEngineView.ToggleStrikethrough
+            Toggles striking through the selection or at the cursor position.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
+
+    \value  WebEngineView.AlignLeft
+            Aligns the lines containing the selection or the cursor to the left.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value  WebEngineView.AlignCenter
+            Aligns the lines containing the selection or the cursor at the center.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value  WebEngineView.AlignRight
+            Aligns the lines containing the selection or the cursor to the right.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value  WebEngineView.AlignJustified
+            Stretches the lines containing the selection or the cursor so that each
+            line has equal width.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value  WebEngineView.Indent
+            Indents the lines containing the selection or the cursor.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value  WebEngineView.Outdent
+            Outdents the lines containing the selection or the cursor.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
+
+    \value  WebEngineView.InsertOrderedList
+            Inserts an ordered list at the current cursor position, deleting the current selection.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
+    \value  WebEngineView.InsertUnorderedList
+            Inserts an unordered list at the current cursor position,
+            deleting the current selection.
+            Requires \c contenteditable="true". (Added in Qt 5.10)
     \omitvalue WebActionCount
 */
 

@@ -1709,6 +1709,42 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
     case ViewSource:
         d->adapter->viewSource();
         break;
+    case ToggleBold:
+        runJavaScript("document.execCommand('bold');", QQuickWebEngineScript::ApplicationWorld);
+        break;
+    case ToggleItalic:
+        runJavaScript("document.execCommand('italic');", QQuickWebEngineScript::ApplicationWorld);
+        break;
+    case ToggleUnderline:
+        runJavaScript("document.execCommand('underline');", QQuickWebEngineScript::ApplicationWorld);
+        break;
+    case ToggleStrikethrough:
+        runJavaScript("document.execCommand('strikethrough');", QQuickWebEngineScript::ApplicationWorld);
+        break;
+    case AlignLeft:
+        runJavaScript("document.execCommand('justifyLeft');", QQuickWebEngineScript::ApplicationWorld);
+        break;
+    case AlignCenter:
+        runJavaScript("document.execCommand('justifyCenter');", QQuickWebEngineScript::ApplicationWorld);
+        break;
+    case AlignRight:
+        runJavaScript("document.execCommand('justifyRight');", QQuickWebEngineScript::ApplicationWorld);
+        break;
+    case AlignJustified:
+        runJavaScript("document.execCommand('justifyFull');", QQuickWebEngineScript::ApplicationWorld);
+        break;
+    case Indent:
+        runJavaScript("document.execCommand('indent');", QQuickWebEngineScript::ApplicationWorld);
+        break;
+    case Outdent:
+        runJavaScript("document.execCommand('outdent');", QQuickWebEngineScript::ApplicationWorld);
+        break;
+    case InsertOrderedList:
+        runJavaScript("document.execCommand('insertOrderedList');", QQuickWebEngineScript::ApplicationWorld);
+        break;
+    case InsertUnorderedList:
+        runJavaScript("document.execCommand('insertUnorderedList');", QQuickWebEngineScript::ApplicationWorld);
+        break;
     default:
         Q_UNREACHABLE();
     }
