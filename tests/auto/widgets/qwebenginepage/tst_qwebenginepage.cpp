@@ -184,7 +184,6 @@ private Q_SLOTS:
     void baseUrl_data();
     void baseUrl();
     void scrollPosition();
-    void scrollToAnchor();
     void scrollbarsOff();
     void evaluateWillCauseRepaint();
     void setContent_data();
@@ -3513,42 +3512,6 @@ void tst_QWebEnginePage::scrollPosition()
     QCOMPARE(x, 23);
     QCOMPARE(y, 29);
 }
-
-void tst_QWebEnginePage::scrollToAnchor()
-{
-#if !defined(QWEBENGINEELEMENT)
-    QSKIP("QWEBENGINEELEMENT");
-#else
-    QWebEnginePage page;
-    page.setViewportSize(QSize(480, 800));
-
-    QString html("<html><body><p style=\"margin-bottom: 1500px;\">Hello.</p>"
-                 "<p><a id=\"foo\">This</a> is an anchor</p>"
-                 "<p style=\"margin-bottom: 1500px;\"><a id=\"bar\">This</a> is another anchor</p>"
-                 "</body></html>");
-    page.setHtml(html);
-    page.setScrollPosition(QPoint(0, 0));
-    QCOMPARE(page.scrollPosition().x(), 0);
-    QCOMPARE(page.scrollPosition().y(), 0);
-
-    QWebEngineElement fooAnchor = page.findFirstElement("a[id=foo]");
-
-    page.scrollToAnchor("foo");
-    QCOMPARE(page.scrollPosition().y(), fooAnchor.geometry().top());
-
-    page.scrollToAnchor("bar");
-    page.scrollToAnchor("foo");
-    QCOMPARE(page.scrollPosition().y(), fooAnchor.geometry().top());
-
-    page.scrollToAnchor("top");
-    QCOMPARE(page.scrollPosition().y(), 0);
-
-    page.scrollToAnchor("bar");
-    page.scrollToAnchor("notexist");
-    QVERIFY(page.scrollPosition().y() != 0);
-#endif
-}
-
 
 void tst_QWebEnginePage::scrollbarsOff()
 {
