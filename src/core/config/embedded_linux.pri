@@ -12,6 +12,8 @@ use?(gn) {
         enable_notifications=false \
         ozone_auto_platforms=false \
         ozone_platform_headless=true \
+        ozone_platform_external=true \
+        ozone_platform=\"eglfs\" \
         toolkit_views=false
 
     use?(icecc) {

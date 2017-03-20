@@ -641,13 +641,13 @@ CreateOffscreenGLSurface(const gfx::Size& size)
             if (surface->Initialize())
                 return surface;
         }
-
+        LOG(WARNING) << "Failed to create offscreen GL surface";
         break;
     }
     default:
         break;
     }
-    LOG(ERROR) << "Requested OpenGL platform is not supported.";
+    LOG(ERROR) << "Requested OpenGL implementation is not supported. Implementation: " << GetGLImplementation();
     Q_UNREACHABLE();
     return NULL;
 }
