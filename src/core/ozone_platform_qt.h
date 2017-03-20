@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,57 +37,19 @@
 **
 ****************************************************************************/
 
-#ifndef UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_EGLFS_H_
-#define UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_EGLFS_H_
+#ifndef UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_QT_H_
+#define UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_QT_H_
 
 #if defined(USE_OZONE)
 
 #include "ui/ozone/public/ozone_platform.h"
 
-#include "surface_factory_qt.h"
-
 namespace ui {
 
-class DeviceManager;
-class EventFactoryEvdev;
-class CursorFactoryOzone;
-
-class OzonePlatformEglfs : public OzonePlatform {
- public:
-  OzonePlatformEglfs();
-  virtual ~OzonePlatformEglfs();
-
-  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override;
-  virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() override;
-  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() override;
-  virtual std::unique_ptr<PlatformWindow> CreatePlatformWindow(
-      PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds) override;
-  virtual std::unique_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
-  virtual ui::InputController* GetInputController() override;
-  virtual std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
-  virtual ui::OverlayManagerOzone* GetOverlayManager() override;
-
- private:
-  virtual void InitializeUI() override;
-  virtual void InitializeGPU() override;
-  std::unique_ptr<DeviceManager> device_manager_;
-
-  std::unique_ptr<QtWebEngineCore::SurfaceFactoryQt> surface_factory_ozone_;
-  std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
-  std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;
-
-  std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
-  std::unique_ptr<InputController> input_controller_;
-  std::unique_ptr<OverlayManagerOzone> overlay_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(OzonePlatformEglfs);
-};
-
 // Constructor hook for use in ozone_platform_list.cc
-OzonePlatform* CreateOzonePlatformEglfs();
+OzonePlatform* CreateOzonePlatformQt();
 
 }  // namespace ui
 
 #endif // defined(USE_OZONE)
-#endif // UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_EGLFS_H_
+#endif // UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_QT_H_
