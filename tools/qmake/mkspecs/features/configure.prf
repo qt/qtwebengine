@@ -71,7 +71,14 @@ defineTest(runConfigure) {
             packagesExist(opus): WEBENGINE_CONFIG += use_system_opus
             else: log("System opus not found. Using Chromium's copy.$${EOL}")
         }
-        packagesExist(libxml-2.0,libxslt): WEBENGINE_CONFIG += use_system_libxslt use_system_libxml2
+        packagesExist(libxml-2.0,libxslt) {
+            PKGCONFIG_LIBS_STATIC = $$system($$PKG_CONFIG --libs --static $$PKGCONFIG_LIB)
+            contains(PKGCONFIG_LIBS_STATIC, icuuc) {
+                WEBENGINE_CONFIG += use_system_libxslt use_system_libxml2
+            } else {
+                log("System libxml2 or libxslt not configured with ICU. Using Chromium's copies.$${EOL}")
+            }
+        }
         else: log("System libxml2 or libxslt not found. Using Chromium's copies.$${EOL}")
         for(package, $$list("libevent jsoncpp protobuf")) {
             packagesExist($$package): WEBENGINE_CONFIG += use_system_$$package
