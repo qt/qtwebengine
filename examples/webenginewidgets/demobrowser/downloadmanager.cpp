@@ -263,7 +263,7 @@ void DownloadWidget::finished()
             interrupted = true;
             break;
         case QWebEngineDownloadItem::DownloadInterrupted:
-            message = QStringLiteral("Download interrupted");
+            message = QStringLiteral("Download interrupted: %1").arg(m_download->interruptReasonString());
             interrupted = true;
             break;
         }
