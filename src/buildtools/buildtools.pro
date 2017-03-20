@@ -3,11 +3,9 @@ TEMPLATE = subdirs
 ninja.file = ninja.pro
 SUBDIRS += ninja
 
-use?(gn) {
-    gn.file = gn.pro
-    gn.depends = ninja
-    SUBDIRS += gn
-}
+gn.file = gn.pro
+gn.depends = ninja
+SUBDIRS += gn
 
 linux {
     # configure_host.pro and configure_target.pro are phony pro files that
@@ -16,9 +14,7 @@ linux {
     configure_host.file = configure_host.pro
     configure_target.file = configure_target.pro
     configure_target.depends = configure_host
+    gn.depends += configure_target
 
-    use?(gn) {
-        gn.depends += configure_target
-    }
     SUBDIRS += configure_host configure_target
 }

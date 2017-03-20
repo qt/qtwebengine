@@ -41,11 +41,7 @@ defineTest(runConfigure) {
     }
     isQtMinimum(5, 9) {
         qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
-        linux: WEBENGINE_CONFIG += use_gn
-        macos: WEBENGINE_CONFIG += use_gn
-        win32: WEBENGINE_CONFIG += use_gn
     }
-    !use?(gn): skipBuild("Chromium 55 and new can only be built with GN")
 
     linux {
         QT_FOR_CONFIG += gui-private
@@ -110,6 +106,8 @@ defineTest(runConfigure) {
         !contains(WEBENGINE_CONFIG, embedded_build) {
             packagesExist(nss): WEBENGINE_CONFIG += use_nss
             else: log("System NSS not found, BoringSSL will be used.$${EOL}")
+        } else {
+            WEBENGINE_CONFIG *= reduce_binary_size
         }
     }
 

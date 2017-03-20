@@ -1,10 +1,6 @@
 
-use?(gn) {
-    include(core_gn_config.pri)
-    qtConfig(debug_and_release): CONFIG += debug_and_release
-} else {
-    include(core_gyp_config.pri)
-}
+include(core_gn_config.pri)
+qtConfig(debug_and_release): CONFIG += debug_and_release
 
 TEMPLATE = lib
 
@@ -13,15 +9,11 @@ include(core_common.pri)
 macos {
     # This fixes namespace builds on macOS. Specifically namespace ambiguity issues between Qt and
     # Chromium forward declarations of NSString.
-    contains(WEBENGINE_CONFIG, use_gn) {
-      # The single quotes are present so that qmake iteration does not interpret the space as
-      # delimiting a new value, they are removed before writing to the GN file, and  the final shell
-      # quoting is done by GN itself.
-      forward_declaration_macro = "'Q_FORWARD_DECLARE_OBJC_CLASS(name)=class name;'"
-    } else {
-      # For GYP, quoting should be done by qmake itself.
-      forward_declaration_macro = $$shell_quote(\"Q_FORWARD_DECLARE_OBJC_CLASS(name)=class name;\")
-    }
+
+    # The single quotes are present so that qmake iteration does not interpret the space as
+    # delimiting a new value, they are removed before writing to the GN file, and  the final shell
+    # quoting is done by GN itself.
+    forward_declaration_macro = "'Q_FORWARD_DECLARE_OBJC_CLASS(name)=class name;'"
 } else {
     forward_declaration_macro = "Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS"
 }
