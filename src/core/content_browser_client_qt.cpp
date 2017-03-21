@@ -59,11 +59,16 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "device/geolocation/geolocation_delegate.h"
 #include "device/geolocation/geolocation_provider.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#include "third_party/WebKit/public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_context.h"
@@ -526,4 +531,60 @@ content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDele
     return new DevToolsManagerDelegateQt;
 }
 
+// This is a really complicated way of doing absolutely nothing, but Mojo demands it:
+class ServiceDriver
+        : public blink::mojom::SensitiveInputVisibilityService
+        , public content::WebContentsUserData<ServiceDriver>
+{
+public:
+    static void CreateForRenderFrameHost(content::RenderFrameHost *renderFrameHost)
+    {
+        content::WebContents* web_contents = content::WebContents::FromRenderFrameHost(renderFrameHost);
+        if (!web_contents)
+            return;
+        CreateForWebContents(web_contents);
+
+    }
+    static ServiceDriver* FromRenderFrameHost(content::RenderFrameHost *renderFrameHost)
+    {
+        content::WebContents* web_contents = content::WebContents::FromRenderFrameHost(renderFrameHost);
+        if (!web_contents)
+            return nullptr;
+        return FromWebContents(web_contents);
+    }
+    static void BindSensitiveInputVisibilityService(content::RenderFrameHost* render_frame_host,
+                                                    blink::mojom::SensitiveInputVisibilityServiceRequest request)
+    {
+        CreateForRenderFrameHost(render_frame_host);
+        ServiceDriver *driver = FromRenderFrameHost(render_frame_host);
+
+        if (driver)
+            driver->BindSensitiveInputVisibilityServiceInternal(std::move(request));
+    }
+    void BindSensitiveInputVisibilityServiceInternal(blink::mojom::SensitiveInputVisibilityServiceRequest request)
+    {
+        m_sensitiveInputVisibilityBindings.AddBinding(this, std::move(request));
+    }
+
+    // blink::mojom::SensitiveInputVisibility:
+    void PasswordFieldVisibleInInsecureContext() override
+    { }
+    void AllPasswordFieldsInInsecureContextInvisible() override
+    { }
+
+private:
+    explicit ServiceDriver(content::WebContents* /*web_contents*/) { }
+    friend class content::WebContentsUserData<ServiceDriver>;
+    mojo::BindingSet<blink::mojom::SensitiveInputVisibilityService> m_sensitiveInputVisibilityBindings;
+
+};
+
+void ContentBrowserClientQt::RegisterRenderFrameMojoInterfaces(service_manager::InterfaceRegistry* registry,
+                                                               content::RenderFrameHost* render_frame_host)
+{
+    registry->AddInterface(base::Bind(&ServiceDriver::BindSensitiveInputVisibilityService, render_frame_host));
+}
+
 } // namespace QtWebEngineCore
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(QtWebEngineCore::ServiceDriver);
