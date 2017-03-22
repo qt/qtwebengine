@@ -53,11 +53,11 @@
 #include "network_delegate_qt.h"
 #include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
+#include "visited_links_manager_qt.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_adapter_p.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
-#include "web_engine_visited_links_manager.h"
 
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"

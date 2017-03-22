@@ -68,7 +68,6 @@
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
 #include "web_engine_settings.h"
-#include "web_engine_visited_links_manager.h"
 
 #include <QClipboard>
 #include <QGuiApplication>

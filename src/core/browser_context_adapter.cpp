@@ -47,8 +47,8 @@
 #include "download_manager_delegate_qt.h"
 #include "permission_manager_qt.h"
 #include "type_conversion.h"
+#include "visited_links_manager_qt.h"
 #include "web_engine_context.h"
-#include "web_engine_visited_links_manager.h"
 #include "url_request_context_getter_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 
@@ -134,7 +134,7 @@ BrowserContextQt *BrowserContextAdapter::browserContext()
     return m_browserContext.data();
 }
 
-WebEngineVisitedLinksManager *BrowserContextAdapter::visitedLinksManager()
+VisitedLinksManagerQt *BrowserContextAdapter::visitedLinksManager()
 {
     if (!m_visitedLinksManager)
         resetVisitedLinksManager();
@@ -526,7 +526,7 @@ bool BrowserContextAdapter::isSpellCheckEnabled() const
 
 void BrowserContextAdapter::resetVisitedLinksManager()
 {
-    m_visitedLinksManager.reset(new WebEngineVisitedLinksManager(this));
+    m_visitedLinksManager.reset(new VisitedLinksManagerQt(this));
 }
 
 } // namespace QtWebEngineCore

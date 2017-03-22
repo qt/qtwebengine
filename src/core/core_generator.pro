@@ -101,6 +101,7 @@ SOURCES = \
         url_request_custom_job_delegate.cpp \
         url_request_qrc_job_qt.cpp \
         user_script.cpp \
+        visited_links_manager_qt.cpp \
         web_contents_adapter.cpp \
         web_contents_delegate_qt.cpp \
         web_contents_view_qt.cpp \
@@ -108,7 +109,6 @@ SOURCES = \
         web_engine_error.cpp \
         web_engine_library_info.cpp \
         web_engine_settings.cpp \
-        web_engine_visited_links_manager.cpp \
         web_event_factory.cpp
 
 HEADERS = \
@@ -176,6 +176,7 @@ HEADERS = \
         url_request_custom_job_delegate.h \
         url_request_qrc_job_qt.h \
         user_script.h \
+        visited_links_manager_qt.h \
         web_contents_adapter.h \
         web_contents_adapter_client.h \
         web_contents_adapter_p.h \
@@ -185,7 +186,6 @@ HEADERS = \
         web_engine_error.h \
         web_engine_library_info.h \
         web_engine_settings.h \
-        web_engine_visited_links_manager.h \
         web_event_factory.h
 
 

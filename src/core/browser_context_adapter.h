@@ -61,7 +61,7 @@ class BrowserContextAdapterClient;
 class BrowserContextQt;
 class DownloadManagerDelegateQt;
 class UserResourceControllerHost;
-class WebEngineVisitedLinksManager;
+class VisitedLinksManagerQt;
 
 class QWEBENGINE_EXPORT BrowserContextAdapter : public QEnableSharedFromThis<BrowserContextAdapter>
 {
@@ -73,7 +73,7 @@ public:
     static QSharedPointer<BrowserContextAdapter> defaultContext();
     static QObject* globalQObjectRoot();
 
-    WebEngineVisitedLinksManager *visitedLinksManager();
+    VisitedLinksManagerQt *visitedLinksManager();
     DownloadManagerDelegateQt *downloadManagerDelegate();
 
     QWebEngineCookieStore *cookieStore();
@@ -180,7 +180,7 @@ private:
     QString m_name;
     bool m_offTheRecord;
     QScopedPointer<BrowserContextQt> m_browserContext;
-    QScopedPointer<WebEngineVisitedLinksManager> m_visitedLinksManager;
+    QScopedPointer<VisitedLinksManagerQt> m_visitedLinksManager;
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
     QScopedPointer<UserResourceControllerHost> m_userResourceController;
     QScopedPointer<QWebEngineCookieStore> m_cookieStore;

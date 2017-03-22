@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_ENGINE_VISITED_LINKS_MANAGER_H
-#define WEB_ENGINE_VISITED_LINKS_MANAGER_H
+#ifndef VISITED_LINKS_MANAGER_QT_H
+#define VISITED_LINKS_MANAGER_QT_H
 
 #include "qtwebenginecoreglobal.h"
 #include <QList>
@@ -59,11 +59,11 @@ namespace QtWebEngineCore {
 class BrowserContextAdapter;
 class VisitedLinkDelegateQt;
 
-class QWEBENGINE_EXPORT WebEngineVisitedLinksManager {
+class QWEBENGINE_EXPORT VisitedLinksManagerQt {
 
 public:
-    virtual~WebEngineVisitedLinksManager();
-    WebEngineVisitedLinksManager(BrowserContextAdapter*);
+    virtual~VisitedLinksManagerQt();
+    VisitedLinksManagerQt(BrowserContextAdapter*);
 
     void deleteAllVisitedLinkData();
     void deleteVisitedLinkDataForUrls(const QList<QUrl> &);

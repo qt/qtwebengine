@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "web_engine_visited_links_manager.h"
+#include "visited_links_manager_qt.h"
 
 #include "browser_context_adapter.h"
 #include "browser_context_qt.h"
@@ -75,18 +75,18 @@ public:
     void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) { enumerator->OnComplete(true); }
 };
 
-void WebEngineVisitedLinksManager::deleteAllVisitedLinkData()
+void VisitedLinksManagerQt::deleteAllVisitedLinkData()
 {
     m_visitedLinkMaster->DeleteAllURLs();
 }
 
-void WebEngineVisitedLinksManager::deleteVisitedLinkDataForUrls(const QList<QUrl> &urlsToDelete)
+void VisitedLinksManagerQt::deleteVisitedLinkDataForUrls(const QList<QUrl> &urlsToDelete)
 {
     BasicUrlIterator iterator(urlsToDelete);
     m_visitedLinkMaster->DeleteURLs(&iterator);
 }
 
-bool WebEngineVisitedLinksManager::containsUrl(const QUrl &url) const
+bool VisitedLinksManagerQt::containsUrl(const QUrl &url) const
 {
     return m_visitedLinkMaster->IsVisited(toGurl(url));
 }
@@ -106,7 +106,7 @@ static void ensureDirectoryExists(const base::FilePath &path)
              errorstr.c_str());
 }
 
-WebEngineVisitedLinksManager::WebEngineVisitedLinksManager(BrowserContextAdapter *adapter)
+VisitedLinksManagerQt::VisitedLinksManagerQt(BrowserContextAdapter *adapter)
     : m_delegate(new VisitedLinkDelegateQt)
 {
     Q_ASSERT(adapter && adapter->browserContext());
@@ -117,11 +117,11 @@ WebEngineVisitedLinksManager::WebEngineVisitedLinksManager(BrowserContextAdapter
     m_visitedLinkMaster->Init();
 }
 
-WebEngineVisitedLinksManager::~WebEngineVisitedLinksManager()
+VisitedLinksManagerQt::~VisitedLinksManagerQt()
 {
 }
 
-void WebEngineVisitedLinksManager::addUrl(const GURL &urlToAdd)
+void VisitedLinksManagerQt::addUrl(const GURL &urlToAdd)
 {
     Q_ASSERT(m_visitedLinkMaster);
     m_visitedLinkMaster->AddURL(urlToAdd);
