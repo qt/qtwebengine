@@ -54,12 +54,14 @@
 #include <private/qinputmethod_p.h>
 #include <private/qtwebengineglobal_p.h>
 
+#include <QEvent>
 #include <QObject>
 #include <QUrl>
 
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineLoadRequest;
+class QWindow;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineErrorPage : public QObject {
     Q_OBJECT
@@ -92,15 +94,31 @@ private:
     bool m_visible;
 };
 
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestEvent : public QObject {
+    Q_OBJECT
+
+public:
+    QQuickWebEngineTestEvent();
+
+public Q_SLOTS:
+    bool mouseMultiClick(QObject *item, qreal x, qreal y, int clickCount);
+
+private:
+    QWindow *eventWindow(QObject *item = 0);
+    void mouseEvent(QEvent::Type type, QWindow *window, QObject *item, const QPointF &_pos);
+};
+
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestSupport : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineErrorPage *errorPage READ errorPage CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineTestInputContext *testInputContext READ testInputContext CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineTestEvent *testEvent READ testEvent CONSTANT FINAL)
 
 public:
     QQuickWebEngineTestSupport();
     QQuickWebEngineErrorPage *errorPage() const;
     QQuickWebEngineTestInputContext *testInputContext() const;
+    QQuickWebEngineTestEvent *testEvent() const;
 
 Q_SIGNALS:
     void windowCloseRejected();
@@ -109,6 +127,7 @@ Q_SIGNALS:
 private:
     QScopedPointer<QQuickWebEngineErrorPage> m_errorPage;
     QScopedPointer<QQuickWebEngineTestInputContext> m_testInputContext;
+    QScopedPointer<QQuickWebEngineTestEvent> m_testEvent;
 };
 
 QT_END_NAMESPACE

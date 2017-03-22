@@ -92,6 +92,30 @@ static QRect elementGeometry(QWebEnginePage *page, const QString &id)
     return QRect(coords[0].toInt(), coords[1].toInt(), coords[2].toInt(), coords[3].toInt());
 }
 
+QT_BEGIN_NAMESPACE
+namespace QTest {
+    int Q_TESTLIB_EXPORT defaultMouseDelay();
+
+    static void mouseEvent(QEvent::Type type, QWidget *widget, const QPoint &pos)
+    {
+        QTest::qWait(QTest::defaultMouseDelay());
+        lastMouseTimestamp += QTest::defaultMouseDelay();
+        QMouseEvent me(type, pos, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+        me.setTimestamp(++lastMouseTimestamp);
+        QSpontaneKeyEvent::setSpontaneous(&me);
+        qApp->sendEvent(widget, &me);
+    }
+
+    static void mouseMultiClick(QWidget *widget, const QPoint pos, int clickCount)
+    {
+        for (int i = 0; i < clickCount; ++i) {
+            mouseEvent(QMouseEvent::MouseButtonPress, widget, pos);
+            mouseEvent(QMouseEvent::MouseButtonRelease, widget, pos);
+        }
+        lastMouseTimestamp += mouseDoubleClickInterval;
+    }
+}
+QT_END_NAMESPACE
 
 class tst_QWebEngineView : public QObject
 {
@@ -133,6 +157,7 @@ private Q_SLOTS:
     void inputMethodsTextFormat();
     void keyboardEvents();
     void keyboardFocusAfterPopup();
+    void mouseClick();
     void postData();
     void inputFieldOverridesShortcuts();
 
@@ -1220,6 +1245,76 @@ void tst_QWebEngineView::keyboardFocusAfterPopup()
     QTest::keyClick(qApp->focusWindow(), Qt::Key_X);
     qApp->processEvents();
     QTRY_COMPARE(evaluateJavaScriptSync(webView->page(), "document.getElementById('input1').value").toString(), QStringLiteral("x"));
+}
+
+void tst_QWebEngineView::mouseClick()
+{
+    QWebEngineView view;
+    view.show();
+    view.resize(200, 200);
+    QTest::qWaitForWindowExposed(&view);
+
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
+    QPoint textInputCenter;
+
+    // Single Click
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
+    selectionChangedSpy.clear();
+
+    view.setHtml("<html><body>"
+                 "<form><input id='input' width='150' type='text' value='The Qt Company' /></form>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    QVERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
+    textInputCenter = elementCenter(view.page(), "input");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
+    QCOMPARE(selectionChangedSpy.count(), 0);
+    QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString().isEmpty());
+
+    // Double click
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+    selectionChangedSpy.clear();
+
+    view.setHtml("<html><body onload='document.getElementById(\"input\").focus()'>"
+                 "<form><input id='input' width='150' type='text' value='The Qt Company' /></form>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    textInputCenter = elementCenter(view.page(), "input");
+    QTest::mouseMultiClick(view.focusProxy(), textInputCenter, 2);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QStringLiteral("Company"));
+
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 2);
+    QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString().isEmpty());
+
+    // Triple click
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+    selectionChangedSpy.clear();
+
+    view.setHtml("<html><body onload='document.getElementById(\"input\").focus()'>"
+                 "<form><input id='input' width='150' type='text' value='The Qt Company' /></form>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    textInputCenter = elementCenter(view.page(), "input");
+    QTest::mouseMultiClick(view.focusProxy(), textInputCenter, 3);
+    QVERIFY(selectionChangedSpy.wait());
+    QTRY_COMPARE(selectionChangedSpy.count(), 2);
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QStringLiteral("The Qt Company"));
+
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 3);
+    QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString().isEmpty());
 }
 
 void tst_QWebEngineView::postData()

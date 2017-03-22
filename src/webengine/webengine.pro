@@ -56,6 +56,8 @@ HEADERS = \
         ui_delegates_manager.h
 
 isQMLTestSupportApiEnabled() {
+    QT += testlib
+
     SOURCES += api/qquickwebenginetestsupport.cpp
     HEADERS += api/qquickwebenginetestsupport_p.h
 
