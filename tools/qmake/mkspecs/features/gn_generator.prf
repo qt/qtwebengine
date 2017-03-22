@@ -126,6 +126,8 @@ for (imp, GN_IMPORTS): GN_CONTENTS += "  import(\"$$imp\")"
 gcc|clang {
     QMAKE_CXXFLAGS += "-Wno-unused-parameter"
     QMAKE_CXXFLAGS += "-Wno-unused-variable"
+} else:msvc {
+    QMAKE_CXXFLAGS += /wd4100 /wd4101
 }
 
 !isEmpty(QMAKE_CXXFLAGS) {
