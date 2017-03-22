@@ -110,6 +110,10 @@ defineTest(runConfigure) {
         }
     }
 
+    win32 {
+        !config_winversion: skipBuild("Needs VS 2015 Update 3 with Cumulative Servicing Release or higher")
+    }
+
     isEmpty(skipBuildReason): {
         cache(CONFIG, add, $$list(webengine_successfully_configured))
         !isEmpty(WEBENGINE_CONFIG) {
