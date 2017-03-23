@@ -35,7 +35,6 @@ build_pass|!debug_and_release {
     gn_binary = gn
 
     runninja.target = run_ninja
-    rungn.target = run_gn
 
     gn_args = $$gnArgs()
 
@@ -52,11 +51,9 @@ build_pass|!debug_and_release {
     gn_args = $$shell_quote($$gn_args)
     gn_src_root = $$shell_quote($$shell_path($$QTWEBENGINE_ROOT/$$getChromiumSrcDir()))
     gn_build_root = $$shell_quote($$shell_path($$OUT_PWD/$$getConfigDir()))
-    rungn.commands = $$runGn($$gn_binary gen $$gn_build_root --args=$$gn_args --root=$$gn_src_root)
-    QMAKE_EXTRA_TARGETS += rungn
+    $$runGn($$gn_binary gen $$gn_build_root --args=$$gn_args --root=$$gn_src_root)
 
     runninja.commands = $$NINJA \$\(NINJAFLAGS\) -C $$gn_build_root QtWebEngineCore
-    runninja.depends += rungn
     QMAKE_EXTRA_TARGETS += runninja
 
     build_pass:build_all: default_target.target = all
