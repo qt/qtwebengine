@@ -84,9 +84,18 @@ protected:
     {
         m_client->forwardEvent(event);
     }
+    void inputMethodEvent(QInputMethodEvent *event) override
+    {
+        m_client->forwardEvent(event);
+    }
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override
     {
         return m_client->updatePaintNode(oldNode);
+    }
+
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const override
+    {
+        return m_client->inputMethodQuery(query);
     }
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
