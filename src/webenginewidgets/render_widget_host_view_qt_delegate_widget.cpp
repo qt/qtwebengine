@@ -163,6 +163,9 @@ void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient*
 
     QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(container);
     if (pagePrivate->view) {
+        if (parentWidget())
+            disconnect(parentWidget(), &QObject::destroyed,
+                this, &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
         pagePrivate->view->layout()->addWidget(this);
         pagePrivate->view->setFocusProxy(this);
         show();

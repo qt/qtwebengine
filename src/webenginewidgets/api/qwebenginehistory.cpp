@@ -226,9 +226,7 @@ QWebEngineHistoryItem QWebEngineHistory::backItem() const
 
 QWebEngineHistoryItem QWebEngineHistory::currentItem() const
 {
-    Q_D(const QWebEngineHistory);
-    d->updateItems();
-    return d->items[currentItemIndex()];
+    return itemAt(currentItemIndex());
 }
 
 QWebEngineHistoryItem QWebEngineHistory::forwardItem() const
