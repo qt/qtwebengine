@@ -143,4 +143,22 @@
     On \macos, if the default QSurfaceFormat is set after the application instance, the application
     will exit with qFatal(), and print a message that the default QSurfaceFormat should be set
     before the application instance.
+
+    \section1 Sandboxing Support
+
+    Qt WebEngine provides out-of-the-box sandboxing support for Chromium render processes on Linux
+    and \macos. Sandboxing is currently not supported on Windows due to a limitation in how
+    the sandbox is set up and how it interacts with the host process provided by the Qt WebEngine
+    libraries.
+
+    On \macos, there are no special requirements for enabling sandbox support.
+
+    On Linux, the kernel has to support the anonymous namespaces feature (kernel version >= 3.8)
+    and seccomp-bpf feature (kernel version >= 3.5). Setuid sandboxes are not supported and are thus
+    disabled.
+
+    To explicitly disable sandboxing, the \c QTWEBENGINE_DISABLE_SANDBOX environment variable can be
+    set to 1 or alternatively the \c{--no-sandbox} command line argument can be passed to the user
+    application executable.
+
 */
