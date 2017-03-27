@@ -294,7 +294,7 @@ void ClipboardQt::ReadAvailableTypes(ui::ClipboardType type, std::vector<base::s
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
     if (!mimeData)
         return;
-    if (mimeData->hasImage())
+    if (mimeData->hasImage() && !mimeData->formats().contains(QStringLiteral("image/png")))
         types->push_back(toString16(QStringLiteral("image/png")));
     Q_FOREACH (const QString &mimeType, mimeData->formats())
         types->push_back(toString16(mimeType));
