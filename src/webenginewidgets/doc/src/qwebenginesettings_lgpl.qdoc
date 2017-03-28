@@ -96,8 +96,9 @@
             Allows JavaScript programs to open popup windows without user
             interaction. Enabled by default.
     \value  JavascriptCanAccessClipboard
-            Allows JavaScript programs to read from and write to the clipboard. Disabled by
-            default.
+            Allows JavaScript programs to read from and write to the clipboard.
+            Writing to the clipboard is always allowed if it is specifically requested by the user.
+            Disabled by default.
     \value  LinksIncludedInFocusChain
             Includes hyperlinks in the keyboard focus chain. Enabled by default.
     \value  LocalStorageEnabled

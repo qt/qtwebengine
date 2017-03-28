@@ -422,7 +422,7 @@ void RenderWidgetHostViewQt::SetBackgroundColor(SkColor color)
 bool RenderWidgetHostViewQt::LockMouse()
 {
     mouse_locked_ = true;
-    m_lockedMousePosition = QCursor::pos();
+    m_previousMousePosition = QCursor::pos();
     m_delegate->lockMouse();
     qApp->setOverrideCursor(Qt::BlankCursor);
     return true;
@@ -938,11 +938,13 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
         m_clickHelper.lastPressPosition = QPointF(event->pos()).toPoint();
     }
 
-    if (IsMouseLocked()) {
-        webEvent.movementX = -(m_lockedMousePosition.x() - event->globalX());
-        webEvent.movementY = -(m_lockedMousePosition.y() - event->globalY());
-        QCursor::setPos(m_lockedMousePosition);
-    }
+    webEvent.movementX = event->globalX() - m_previousMousePosition.x();
+    webEvent.movementY = event->globalY() - m_previousMousePosition.y();
+
+    if (IsMouseLocked())
+        QCursor::setPos(m_previousMousePosition);
+    else
+        m_previousMousePosition = event->globalPos();
 
     if (m_imeInProgress && event->type() == QMouseEvent::MouseButtonPress) {
         m_imeInProgress = false;

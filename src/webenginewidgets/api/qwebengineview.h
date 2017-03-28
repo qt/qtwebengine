@@ -57,12 +57,12 @@ class QWebEngineViewPrivate;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineView : public QWidget {
     Q_OBJECT
-    Q_PROPERTY(QString title READ title CONSTANT)
+    Q_PROPERTY(QString title READ title)
     Q_PROPERTY(QUrl url READ url WRITE setUrl)
     Q_PROPERTY(QUrl iconUrl READ iconUrl NOTIFY iconUrlChanged)
     Q_PROPERTY(QIcon icon READ icon NOTIFY iconChanged)
-    Q_PROPERTY(QString selectedText READ selectedText CONSTANT)
-    Q_PROPERTY(bool hasSelection READ hasSelection CONSTANT)
+    Q_PROPERTY(QString selectedText READ selectedText)
+    Q_PROPERTY(bool hasSelection READ hasSelection)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
 
 public:

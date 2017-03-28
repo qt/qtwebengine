@@ -26,6 +26,7 @@
 /*!
     \qmltype WebEngineView
     \instantiates QQuickWebEngineView
+    \inherits Item
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.0
     \brief A WebEngineView renders web content within a QML application.

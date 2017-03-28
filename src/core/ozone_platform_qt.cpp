@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,41 +37,44 @@
 **
 ****************************************************************************/
 
-#include "ozone_platform_eglfs.h"
+#include "ozone_platform_qt.h"
 
 #if defined(USE_OZONE)
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "ui/events/ozone/device/device_manager.h"
-#include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/ozone/common/native_display_delegate_ozone.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/common/stub_client_native_pixmap_factory.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
+#include "ui/ozone/public/input_controller.h"
+#include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
+
+#include "surface_factory_qt.h"
 
 namespace ui {
 
 namespace {
-class EglfsWindow : public PlatformWindow, public PlatformEventDispatcher {
+
+class PlatformWindowQt : public PlatformWindow, public PlatformEventDispatcher
+{
 public:
-    EglfsWindow(PlatformWindowDelegate* delegate,
-                EventFactoryEvdev* event_factory,
-                const gfx::Rect& bounds)
+    PlatformWindowQt(PlatformWindowDelegate* delegate,
+                     const gfx::Rect& bounds)
         : delegate_(delegate)
-        , event_factory_(event_factory)
         , bounds_(bounds)
     {
         ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
     }
 
-    ~EglfsWindow() override
+    ~PlatformWindowQt() override
     {
         ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
     }
@@ -99,94 +102,133 @@ public:
 
 private:
     PlatformWindowDelegate* delegate_;
-    EventFactoryEvdev* event_factory_;
     gfx::Rect bounds_;
 
-    DISALLOW_COPY_AND_ASSIGN(EglfsWindow);
+    DISALLOW_COPY_AND_ASSIGN(PlatformWindowQt);
 };
 
-gfx::Rect EglfsWindow::GetBounds() {
+gfx::Rect PlatformWindowQt::GetBounds()
+{
     return bounds_;
 }
 
-void EglfsWindow::SetBounds(const gfx::Rect& bounds) {
+void PlatformWindowQt::SetBounds(const gfx::Rect& bounds)
+{
+    if (bounds == bounds_)
+        return;
     bounds_ = bounds;
     delegate_->OnBoundsChanged(bounds);
 }
 
-bool EglfsWindow::CanDispatchEvent(const ui::PlatformEvent& ne) {
+bool PlatformWindowQt::CanDispatchEvent(const ui::PlatformEvent& /*ne*/)
+{
     return true;
 }
 
-uint32_t EglfsWindow::DispatchEvent(const ui::PlatformEvent& native_event) {
+uint32_t PlatformWindowQt::DispatchEvent(const ui::PlatformEvent& native_event)
+{
     DispatchEventFromNativeUiEvent(
                 native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
                                          base::Unretained(delegate_)));
 
     return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
-} // namespace
 
-OzonePlatformEglfs::OzonePlatformEglfs() {}
+class OzonePlatformQt : public OzonePlatform {
+public:
+    OzonePlatformQt();
+    ~OzonePlatformQt() override;
 
-OzonePlatformEglfs::~OzonePlatformEglfs() {}
+    ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override;
+    ui::CursorFactoryOzone* GetCursorFactoryOzone() override;
+    GpuPlatformSupportHost* GetGpuPlatformSupportHost() override;
+    std::unique_ptr<PlatformWindow> CreatePlatformWindow(PlatformWindowDelegate* delegate, const gfx::Rect& bounds) override;
+    std::unique_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
+    ui::InputController* GetInputController() override;
+    std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
+    ui::OverlayManagerOzone* GetOverlayManager() override;
 
-ui::SurfaceFactoryOzone* OzonePlatformEglfs::GetSurfaceFactoryOzone() {
-  return surface_factory_ozone_.get();
-}
+private:
+    void InitializeUI() override;
+    void InitializeGPU() override;
 
-ui::CursorFactoryOzone* OzonePlatformEglfs::GetCursorFactoryOzone() {
-  return cursor_factory_ozone_.get();
-}
+    std::unique_ptr<QtWebEngineCore::SurfaceFactoryQt> surface_factory_ozone_;
+    std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
 
-GpuPlatformSupportHost* OzonePlatformEglfs::GetGpuPlatformSupportHost() {
-  return gpu_platform_support_host_.get();
-}
+    std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+    std::unique_ptr<InputController> input_controller_;
+    std::unique_ptr<OverlayManagerOzone> overlay_manager_;
 
-std::unique_ptr<PlatformWindow> OzonePlatformEglfs::CreatePlatformWindow(
-      PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds)
+    DISALLOW_COPY_AND_ASSIGN(OzonePlatformQt);
+};
+
+
+OzonePlatformQt::OzonePlatformQt() {}
+
+OzonePlatformQt::~OzonePlatformQt() {}
+
+ui::SurfaceFactoryOzone* OzonePlatformQt::GetSurfaceFactoryOzone()
 {
-    return base::WrapUnique(
-        new EglfsWindow(delegate,
-                          event_factory_ozone_.get(),
-                          bounds));
+    return surface_factory_ozone_.get();
 }
 
-ui::InputController* OzonePlatformEglfs::GetInputController() {
+ui::CursorFactoryOzone* OzonePlatformQt::GetCursorFactoryOzone()
+{
+    return cursor_factory_ozone_.get();
+}
+
+GpuPlatformSupportHost* OzonePlatformQt::GetGpuPlatformSupportHost()
+{
+    return gpu_platform_support_host_.get();
+}
+
+std::unique_ptr<PlatformWindow> OzonePlatformQt::CreatePlatformWindow(PlatformWindowDelegate* delegate, const gfx::Rect& bounds)
+{
+    return base::WrapUnique(new PlatformWindowQt(delegate, bounds));
+}
+
+ui::InputController* OzonePlatformQt::GetInputController()
+{
     return input_controller_.get();
 }
 
-std::unique_ptr<ui::SystemInputInjector> OzonePlatformEglfs::CreateSystemInputInjector() {
+std::unique_ptr<ui::SystemInputInjector> OzonePlatformQt::CreateSystemInputInjector()
+{
     return nullptr;  // no input injection support.
 }
 
-ui::OverlayManagerOzone* OzonePlatformEglfs::GetOverlayManager() {
+ui::OverlayManagerOzone* OzonePlatformQt::GetOverlayManager()
+{
     return overlay_manager_.get();
 }
 
-std::unique_ptr<ui::NativeDisplayDelegate> OzonePlatformEglfs::CreateNativeDisplayDelegate()
+std::unique_ptr<ui::NativeDisplayDelegate> OzonePlatformQt::CreateNativeDisplayDelegate()
 {
-    return base::WrapUnique(new NativeDisplayDelegateOzone());
+    NOTREACHED();
+    return nullptr;
 }
 
-OzonePlatform* CreateOzonePlatformEglfs() { return new OzonePlatformEglfs; }
-
-ClientNativePixmapFactory* CreateClientNativePixmapFactoryEglfs() {
-  return CreateStubClientNativePixmapFactory();
+void OzonePlatformQt::InitializeUI()
+{
+    overlay_manager_.reset(new StubOverlayManager());
+    cursor_factory_ozone_.reset(new CursorFactoryOzone());
+    gpu_platform_support_host_.reset(ui::CreateStubGpuPlatformSupportHost());
+    input_controller_ = CreateStubInputController();
 }
 
-void OzonePlatformEglfs::InitializeUI() {
-  overlay_manager_.reset(new StubOverlayManager());
-  device_manager_ = CreateDeviceManager();
-  cursor_factory_ozone_.reset(new CursorFactoryOzone());
-  event_factory_ozone_.reset(new EventFactoryEvdev(NULL, device_manager_.get(), NULL));
-  gpu_platform_support_host_.reset(ui::CreateStubGpuPlatformSupportHost());
-  input_controller_ = CreateStubInputController();
+void OzonePlatformQt::InitializeGPU()
+{
+    surface_factory_ozone_.reset(new QtWebEngineCore::SurfaceFactoryQt());
 }
 
-void OzonePlatformEglfs::InitializeGPU() {
-  surface_factory_ozone_.reset(new QtWebEngineCore::SurfaceFactoryQt());
+} // namespace
+
+
+OzonePlatform* CreateOzonePlatformQt() { return new OzonePlatformQt; }
+
+ClientNativePixmapFactory* CreateClientNativePixmapFactoryQt()
+{
+    return CreateStubClientNativePixmapFactory();
 }
 
 }  // namespace ui

@@ -185,7 +185,8 @@ public:
     virtual ~DelegatedNodeTreeHandler(){}
 
     virtual void setupRenderPassNode(QSGTexture *, const QRect &, QSGNode *) = 0;
-    virtual void setupTextureContentNode(QSGTexture *, const QRect &, QSGTexture::Filtering,
+    virtual void setupTextureContentNode(QSGTexture *, const QRect &, const QRectF &,
+                                         QSGTexture::Filtering,
                                          QSGTextureNode::TextureCoordinatesTransformMode,
                                          QSGNode *) = 0;
     virtual void setupTiledContentNode(QSGTexture *, const QRect &, const QRectF &,
@@ -232,7 +233,7 @@ public:
         imageNode->update();
     }
 
-    void setupTextureContentNode(QSGTexture *texture, const QRect &rect,
+    void setupTextureContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
                                  QSGTexture::Filtering filtering,
                                  QSGTextureNode::TextureCoordinatesTransformMode texCoordTransForm,
                                  QSGNode *) Q_DECL_OVERRIDE
@@ -244,6 +245,8 @@ public:
             textureNode->setTextureCoordinatesTransform(texCoordTransForm);
         if (textureNode->rect() != rect)
             textureNode->setRect(rect);
+        if (textureNode->sourceRect() != sourceRect)
+            textureNode->setSourceRect(sourceRect);
         if (textureNode->filtering() != filtering)
             textureNode->setFiltering(filtering);
     }
@@ -332,7 +335,7 @@ public:
         imageNode->update();
     }
 
-    void setupTextureContentNode(QSGTexture *texture, const QRect &rect,
+    void setupTextureContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
                                  QSGTexture::Filtering filtering,
                                  QSGTextureNode::TextureCoordinatesTransformMode texCoordTransForm,
                                  QSGNode *layerChain) Q_DECL_OVERRIDE
@@ -340,6 +343,7 @@ public:
         QSGTextureNode *textureNode = m_apiDelegate->createTextureNode();
         textureNode->setTextureCoordinatesTransform(texCoordTransForm);
         textureNode->setRect(rect);
+        textureNode->setSourceRect(sourceRect);
         textureNode->setTexture(texture);
         textureNode->setFiltering(filtering);
 
@@ -941,7 +945,6 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
                 currentLayerState = quad->shared_quad_state;
                 currentLayerChain = buildLayerChain(renderPassChain, currentLayerState);
             }
-
             switch (quad->material) {
             case cc::DrawQuad::RENDER_PASS: {
                 const cc::RenderPassDrawQuad *renderPassQuad
@@ -955,12 +958,19 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
                 const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
                 ResourceHolder *resource = findAndHoldResource(tquad->resource_id(),
                                                                resourceCandidates);
+                QSGTexture *texture = initAndHoldTexture(resource,
+                                                         quad->ShouldDrawWithBlending(),
+                                                         apiDelegate);
+                QSizeF textureSize;
+                if (texture)
+                    textureSize = texture->textureSize();
+                gfx::RectF uv_rect = gfx::ScaleRect(
+                    gfx::BoundingRect(tquad->uv_top_left, tquad->uv_bottom_right),
+                    textureSize.width(), textureSize.height());
 
                 nodeHandler->setupTextureContentNode(
-                                              initAndHoldTexture(resource,
-                                                                 quad->ShouldDrawWithBlending(),
-                                                                 apiDelegate),
-                                              toQt(quad->rect),
+                                              texture,
+                                              toQt(quad->rect), toQt(uv_rect),
                                               resource->transferableResource().filter == GL_LINEAR
                                                                ? QSGTexture::Linear
                                                                : QSGTexture::Nearest,

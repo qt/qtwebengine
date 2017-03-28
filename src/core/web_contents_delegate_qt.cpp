@@ -53,11 +53,11 @@
 #include "network_delegate_qt.h"
 #include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
+#include "visited_links_manager_qt.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_adapter_p.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
-#include "web_engine_visited_links_manager.h"
 
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -169,7 +169,7 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content
 void WebContentsDelegateQt::CloseContents(content::WebContents *source)
 {
     m_viewClient->close();
-    GetJavaScriptDialogManager(source)->CancelActiveAndPendingDialogs(source);
+    GetJavaScriptDialogManager(source)->CancelDialogs(source, /* whatever?: */false, false);
 }
 
 void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, double progress)
@@ -335,7 +335,7 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost *frameHost, 
     });
 }
 
-bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)
+bool WebContentsDelegateQt::DidAddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)
 {
     Q_UNUSED(source)
     m_viewClient->javaScriptConsoleMessage(mapToJavascriptConsoleMessageLevel(level), toQt(message), static_cast<int>(line_no), toQt(source_id));

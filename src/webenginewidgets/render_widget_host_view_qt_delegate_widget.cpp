@@ -84,9 +84,18 @@ protected:
     {
         m_client->forwardEvent(event);
     }
+    void inputMethodEvent(QInputMethodEvent *event) override
+    {
+        m_client->forwardEvent(event);
+    }
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override
     {
         return m_client->updatePaintNode(oldNode);
+    }
+
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const override
+    {
+        return m_client->inputMethodQuery(query);
     }
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
@@ -163,6 +172,9 @@ void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient*
 
     QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(container);
     if (pagePrivate->view) {
+        if (parentWidget())
+            disconnect(parentWidget(), &QObject::destroyed,
+                this, &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
         pagePrivate->view->layout()->addWidget(this);
         pagePrivate->view->setFocusProxy(this);
         show();

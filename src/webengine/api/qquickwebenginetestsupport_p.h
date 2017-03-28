@@ -82,7 +82,6 @@ public:
     QQuickWebEngineErrorPage *errorPage() const;
 
 Q_SIGNALS:
-    void validationMessageShown(const QString &mainText, const QString &subText);
     void windowCloseRejected();
     void loadVisuallyCommitted();
 

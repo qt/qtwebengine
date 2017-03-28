@@ -7,8 +7,6 @@ GN_OS = $$gnOS()
 clang: GN_CLANG = true
 else: GN_CLANG = false
 
-# We always use the gcc_toolchain, because clang_toolchain is just
-# a broken wrapper around it for Google's custom clang binaries.
 GN_CONTENTS = \
 "gcc_toolchain(\"target\") {" \
 "  cc = \"$$which($$QMAKE_CC)\" " \

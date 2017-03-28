@@ -49,7 +49,7 @@
 
 #include "browser_context_adapter.h"
 #include <qtwebenginecoreglobal.h>
-#include "web_engine_visited_links_manager.h"
+#include "visited_links_manager_qt.h"
 #include "web_engine_settings.h"
 
 QT_BEGIN_NAMESPACE

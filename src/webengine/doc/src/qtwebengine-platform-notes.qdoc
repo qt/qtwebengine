@@ -116,11 +116,7 @@
 
     By default, Qt WebEngine uses private \macos API, which might cause an application to be
     rejected when submitted to the Mac App Store. To configure Qt WebEngine not to use these API
-    calls, Qt WebEngine has to be recompiled:
-
-    \code
-    qmake WEBENGINE_CONFIG+=use_appstore_compliant_code
-    \endcode
+    calls, Qt has to be reconfigured with the \c -appstore-compliant switch.
 
     However, this will cause some behavioral changes, such as:
 

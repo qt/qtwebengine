@@ -72,12 +72,14 @@ public:
         DiskHttpCache,
         NoCache
     };
+    Q_ENUM(HttpCacheType)
 
     enum PersistentCookiesPolicy {
         NoPersistentCookies,
         AllowPersistentCookies,
         ForcePersistentCookies
     };
+    Q_ENUM(PersistentCookiesPolicy)
 
     QString storageName() const;
     bool isOffTheRecord() const;

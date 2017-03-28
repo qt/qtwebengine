@@ -90,9 +90,6 @@ class PrintingMessageFilterQt : public content::BrowserMessageFilter {
   // to base::Bind.
   struct GetPrintSettingsForRenderViewParams;
 
-  // Checks if printing is enabled.
-  void OnIsPrintingEnabled(bool* is_enabled);
-
   // Get the default print setting.
   void OnGetDefaultPrintSettings(IPC::Message* reply_msg);
   void OnGetDefaultPrintSettingsReply(scoped_refptr<printing::PrinterQuery> printer_query,

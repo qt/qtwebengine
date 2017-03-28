@@ -62,7 +62,7 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/user_prefs/user_prefs.h"
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/common/pref_names.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif
@@ -205,7 +205,7 @@ net::URLRequestContextGetter *BrowserContextQt::CreateRequestContextForStoragePa
     return nullptr;
 }
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 void BrowserContextQt::failedToLoadDictionary(const std::string &language)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

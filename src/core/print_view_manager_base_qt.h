@@ -72,6 +72,9 @@ class PrintViewManagerBaseQt
 public:
     ~PrintViewManagerBaseQt() override;
 
+    // Whether printing is enabled or not.
+    void UpdatePrintingEnabled();
+
     // PrintedPagesSource implementation.
     base::string16 RenderSourceName() override;
 
@@ -86,7 +89,8 @@ protected:
     void RenderProcessGone(base::TerminationStatus status) override;
 
     // content::WebContentsObserver implementation.
-    bool OnMessageReceived(const IPC::Message& message) override;
+    bool OnMessageReceived(const IPC::Message& message,
+                           content::RenderFrameHost* render_frame_host) override;
 
     // IPC Message handlers.
     void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
@@ -133,6 +137,9 @@ protected:
     void ReleasePrinterQuery();
 
 private:
+    // Helper method for UpdatePrintingEnabled().
+    void SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh);
+
     content::NotificationRegistrar m_registrar;
     scoped_refptr<printing::PrintJob> m_printJob;
     // Closure for quitting nested message loop.
@@ -144,6 +151,7 @@ private:
     scoped_refptr<printing::PrintQueriesQueue> m_printerQueriesQueue;
     // content::WebContentsObserver implementation.
     void DidStartLoading() override;
+
     DISALLOW_COPY_AND_ASSIGN(PrintViewManagerBaseQt);
 };
 

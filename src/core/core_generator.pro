@@ -1,10 +1,6 @@
 
-use?(gn) {
-    include(core_gn_config.pri)
-    qtConfig(debug_and_release): CONFIG += debug_and_release
-} else {
-    include(core_gyp_config.pri)
-}
+include(core_gn_config.pri)
+qtConfig(debug_and_release): CONFIG += debug_and_release
 
 TEMPLATE = lib
 
@@ -13,15 +9,11 @@ include(core_common.pri)
 macos {
     # This fixes namespace builds on macOS. Specifically namespace ambiguity issues between Qt and
     # Chromium forward declarations of NSString.
-    contains(WEBENGINE_CONFIG, use_gn) {
-      # The single quotes are present so that qmake iteration does not interpret the space as
-      # delimiting a new value, they are removed before writing to the GN file, and  the final shell
-      # quoting is done by GN itself.
-      forward_declaration_macro = "'Q_FORWARD_DECLARE_OBJC_CLASS(name)=class name;'"
-    } else {
-      # For GYP, quoting should be done by qmake itself.
-      forward_declaration_macro = $$shell_quote(\"Q_FORWARD_DECLARE_OBJC_CLASS(name)=class name;\")
-    }
+
+    # The single quotes are present so that qmake iteration does not interpret the space as
+    # delimiting a new value, they are removed before writing to the GN file, and  the final shell
+    # quoting is done by GN itself.
+    forward_declaration_macro = "'Q_FORWARD_DECLARE_OBJC_CLASS(name)=class name;'"
 } else {
     forward_declaration_macro = "Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS"
 }
@@ -84,7 +76,7 @@ SOURCES = \
         media_capture_devices_dispatcher.cpp \
         native_web_keyboard_event_qt.cpp \
         network_delegate_qt.cpp \
-        ozone_platform_eglfs.cpp \
+        ozone_platform_qt.cpp \
         permission_manager_qt.cpp \
         process_main.cpp \
         proxy_config_service_qt.cpp \
@@ -109,6 +101,7 @@ SOURCES = \
         url_request_custom_job_delegate.cpp \
         url_request_qrc_job_qt.cpp \
         user_script.cpp \
+        visited_links_manager_qt.cpp \
         web_contents_adapter.cpp \
         web_contents_delegate_qt.cpp \
         web_contents_view_qt.cpp \
@@ -116,7 +109,6 @@ SOURCES = \
         web_engine_error.cpp \
         web_engine_library_info.cpp \
         web_engine_settings.cpp \
-        web_engine_visited_links_manager.cpp \
         web_event_factory.cpp
 
 HEADERS = \
@@ -159,7 +151,7 @@ HEADERS = \
         javascript_dialog_manager_qt.h \
         media_capture_devices_dispatcher.h \
         network_delegate_qt.h \
-        ozone_platform_eglfs.h \
+        ozone_platform_qt.h \
         permission_manager_qt.h \
         process_main.h \
         proxy_config_service_qt.h \
@@ -184,6 +176,7 @@ HEADERS = \
         url_request_custom_job_delegate.h \
         url_request_qrc_job_qt.h \
         user_script.h \
+        visited_links_manager_qt.h \
         web_contents_adapter.h \
         web_contents_adapter_client.h \
         web_contents_adapter_p.h \
@@ -193,7 +186,6 @@ HEADERS = \
         web_engine_error.h \
         web_engine_library_info.h \
         web_engine_settings.h \
-        web_engine_visited_links_manager.h \
         web_event_factory.h
 
 

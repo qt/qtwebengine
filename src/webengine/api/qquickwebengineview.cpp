@@ -68,7 +68,6 @@
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
 #include "web_engine_settings.h"
-#include "web_engine_visited_links_manager.h"
 
 #include <QClipboard>
 #include <QGuiApplication>
@@ -1113,10 +1112,6 @@ void QQuickWebEngineViewPrivate::didPrintPageToPdf(const QString &filePath, bool
 
 void QQuickWebEngineViewPrivate::showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText)
 {
-#ifdef ENABLE_QML_TESTSUPPORT_API
-    if (m_testSupport)
-        Q_EMIT m_testSupport->validationMessageShown(mainText, subText);
-#endif
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineFormValidationMessageRequest *request;
     request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::Show,

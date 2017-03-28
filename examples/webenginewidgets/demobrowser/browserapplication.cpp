@@ -577,7 +577,7 @@ void BrowserApplication::setPrivateBrowsing(bool privateBrowsing)
     } else {
         Q_FOREACH (BrowserMainWindow* window, mainWindows()) {
             window->tabWidget()->setProfile(QWebEngineProfile::defaultProfile());
-            window->m_lastSearch = QString::null;
+            window->m_lastSearch = QString();
             window->tabWidget()->clear();
         }
     }

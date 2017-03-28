@@ -163,7 +163,7 @@ void tst_QWebEngineAccessibility::text()
 
     // Good morning! [edit]
     QAccessibleInterface *grouping1 = document->child(0);
-    QAccessibleInterface *input1 = grouping1->child(0);
+    QAccessibleInterface *input1 = grouping1;
     QCOMPARE(input1->role(), QAccessible::EditableText);
     QCOMPARE(input1->text(QAccessible::Name), QString());
     QCOMPARE(input1->text(QAccessible::Description), QString());
@@ -188,7 +188,7 @@ void tst_QWebEngineAccessibility::text()
     QCOMPARE(label1->text(QAccessible::Description), QString());
     QCOMPARE(label1->text(QAccessible::Value), QString());
     QAccessibleInterface *grouping3 = document->child(2);
-    QAccessibleInterface *input2 = grouping3->child(0);
+    QAccessibleInterface *input2 = grouping3;
     QCOMPARE(input2->role(), QAccessible::EditableText);
     QCOMPARE(input2->text(QAccessible::Name), QStringLiteral("Enter your name here:"));
     QCOMPARE(input2->text(QAccessible::Description), QStringLiteral("Provide both first and last name."));
@@ -202,7 +202,7 @@ void tst_QWebEngineAccessibility::text()
 
     // Good day! [edit]
     QAccessibleInterface *grouping5 = document->child(4);
-    QAccessibleInterface *input3 = grouping5->child(0);
+    QAccessibleInterface *input3 = grouping5;
     QCOMPARE(input3->role(), QAccessible::EditableText);
     QCOMPARE(input3->text(QAccessible::Name), QStringLiteral("day"));
     QCOMPARE(input3->text(QAccessible::Description), QString());

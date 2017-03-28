@@ -40,6 +40,7 @@
 #include "renderer/content_renderer_client_qt.h"
 
 #include "common/qt_messages.h"
+#include "printing/features/features.h"
 
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -50,9 +51,9 @@
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
-#if defined (ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "components/printing/renderer/print_web_view_helper.h"
-#endif // if defined(ENABLE_BASIC_PRINTING)
+#endif // if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/renderer/render_frame.h"
@@ -67,15 +68,15 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "content/public/common/web_preferences.h"
 
-#include "renderer/web_channel_ipc_transport.h"
-#if defined (ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "renderer/print_web_view_helper_delegate_qt.h"
-#endif // if defined(ENABLE_BASIC_PRINTING)
+#endif // if BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 #include "renderer/render_frame_observer_qt.h"
 #include "renderer/render_view_observer_qt.h"
 #include "renderer/user_resource_controller.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "renderer/web_channel_ipc_transport.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 #include "components/grit/components_resources.h"
 
@@ -123,16 +124,16 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
     new SpellCheckProvider(render_view, m_spellCheck.data());
 #endif
 
-#if defined(ENABLE_BASIC_PRINTING)
-    new printing::PrintWebViewHelper(
-                render_view,
-                base::WrapUnique(new PrintWebViewHelperDelegateQt()));
-#endif // defined(ENABLE_BASIC_PRINTING)
 }
 
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)
 {
     new QtWebEngineCore::RenderFrameObserverQt(render_frame);
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+    new printing::PrintWebViewHelper(
+                render_frame,
+                base::WrapUnique(new PrintWebViewHelperDelegateQt()));
+#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 }
 
 void ContentRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame* render_frame)

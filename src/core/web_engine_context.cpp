@@ -48,7 +48,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "chrome/browser/printing/print_job_manager.h"
 #endif // defined(ENABLE_BASIC_PRINTING)
 #include "content/browser/devtools/devtools_http_handler.h"
@@ -133,6 +133,8 @@ bool usingANGLE()
 
 bool usingSoftwareDynamicGL()
 {
+    if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
+        return true;
 #if defined(Q_OS_WIN)
     HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
     wchar_t path[MAX_PATH];
@@ -425,12 +427,12 @@ WebEngineContext::WebEngineContext()
     content::PluginService::GetInstance()->GetPlugins(base::Bind(&dummyGetPluginCallback));
 #endif
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
     m_printJobManager.reset(new printing::PrintJobManager());
 #endif // defined(ENABLE_BASIC_PRINTING)
 }
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
 printing::PrintJobManager* WebEngineContext::getPrintJobManager()
 {
     return m_printJobManager.get();

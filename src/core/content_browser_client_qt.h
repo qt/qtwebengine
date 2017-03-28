@@ -58,6 +58,7 @@ class BrowserPpapiHost;
 #endif
 
 class DevToolsManagerDelegate;
+class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHostDelegateView;
 class ResourceContext;
@@ -68,6 +69,10 @@ struct MainFunctionParams;
 
 namespace gl {
 class GLShareGroup;
+}
+
+namespace service_manager {
+class InterfaceRegistry;
 }
 
 namespace QtWebEngineCore {
@@ -107,6 +112,8 @@ public:
     std::string GetAcceptLangs(content::BrowserContext* context) Q_DECL_OVERRIDE;
     virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id) Q_DECL_OVERRIDE;
     virtual void GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes) Q_DECL_OVERRIDE;
+
+    void RegisterRenderFrameMojoInterfaces(service_manager::InterfaceRegistry* registry, content::RenderFrameHost* render_frame_host) override;
 
 #if defined(Q_OS_LINUX)
     virtual void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::FileDescriptorInfo* mappings) Q_DECL_OVERRIDE;

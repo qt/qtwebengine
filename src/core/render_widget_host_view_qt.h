@@ -242,7 +242,7 @@ private:
     ui::TextInputType m_currentInputType;
     bool m_imeInProgress;
     bool m_receivedEmptyImeText;
-    QPoint m_lockedMousePosition;
+    QPoint m_previousMousePosition;
 
     bool m_initPending;
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,47 +37,19 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_ENGINE_VISITED_LINKS_MANAGER_H
-#define WEB_ENGINE_VISITED_LINKS_MANAGER_H
+#ifndef UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_QT_H_
+#define UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_QT_H_
 
-#include "qtwebenginecoreglobal.h"
-#include <QList>
-#include <QScopedPointer>
+#if defined(USE_OZONE)
 
-QT_BEGIN_NAMESPACE
-class QUrl;
-QT_END_NAMESPACE
+#include "ui/ozone/public/ozone_platform.h"
 
-namespace visitedlink {
-class VisitedLinkMaster;
-}
+namespace ui {
 
-class GURL;
+// Constructor hook for use in ozone_platform_list.cc
+OzonePlatform* CreateOzonePlatformQt();
 
-namespace QtWebEngineCore {
+}  // namespace ui
 
-class BrowserContextAdapter;
-class VisitedLinkDelegateQt;
-
-class QWEBENGINE_EXPORT WebEngineVisitedLinksManager {
-
-public:
-    virtual~WebEngineVisitedLinksManager();
-    WebEngineVisitedLinksManager(BrowserContextAdapter*);
-
-    void deleteAllVisitedLinkData();
-    void deleteVisitedLinkDataForUrls(const QList<QUrl> &);
-
-    bool containsUrl(const QUrl &) const;
-
-private:
-    void addUrl(const GURL &);
-    friend class WebContentsDelegateQt;
-
-    QScopedPointer<visitedlink::VisitedLinkMaster> m_visitedLinkMaster;
-    QScopedPointer<VisitedLinkDelegateQt> m_delegate;
-};
-
-} // namespace QtWebEngineCore
-
-#endif // WEB_ENGINE_VISITED_LINKS_MANAGER_H
+#endif // defined(USE_OZONE)
+#endif // UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_QT_H_

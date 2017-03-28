@@ -52,6 +52,15 @@ TestWebEngineView {
     TestCase {
         name: "WebViewFindText"
 
+        function getBodyInnerHTML() {
+            var bodyInnerHTML;
+            runJavaScript("document.body.innerHTML", function(result) {
+                bodyInnerHTML = result;
+            });
+            tryVerify(function() { return bodyInnerHTML != undefined; });
+            return bodyInnerHTML;
+        }
+
         function test_findText() {
             var findFlags = WebEngineView.FindCaseSensitively
             webEngineView.url = Qt.resolvedUrl("test1.html")
@@ -120,6 +129,28 @@ TestWebEngineView {
 
             webEngineView.url = Qt.resolvedUrl("test1.html")
             verify(webEngineView.waitForLoadSucceeded())
+
+            webEngineView.clear()
+            webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)
+            tryCompare(webEngineView, "matchCount", 1)
+            verify(!findFailed)
+        }
+
+        function test_findTextInModifiedDOMAfterNotFound() {
+            var findFlags = 0
+            webEngineView.loadHtml(
+                        "<html><body>" +
+                        "bla" +
+                        "</body></html>");
+            verify(webEngineView.waitForLoadSucceeded())
+
+            webEngineView.clear()
+            webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)
+            tryCompare(webEngineView, "matchCount", 0)
+            verify(findFailed)
+
+            runJavaScript("document.body.innerHTML = 'blahellobla'");
+            tryVerify(function() { return getBodyInnerHTML() == "blahellobla"; });
 
             webEngineView.clear()
             webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)

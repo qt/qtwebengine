@@ -386,8 +386,9 @@ bool GLSurfaceQtEGL::InitializeOneOff()
     g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions, "EGL_KHR_surfaceless_context");
     if (g_egl_surfaceless_context_supported) {
         scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(gfx::Size(1, 1));
+        gl::GLContextAttribs attribs;
         scoped_refptr<GLContext> context = init::CreateGLContext(
-            NULL, surface.get(), PreferIntegratedGpu);
+            NULL, surface.get(), attribs);
 
         if (!context->MakeCurrent(surface.get()))
             g_egl_surfaceless_context_supported = false;
@@ -410,6 +411,16 @@ EGLDisplay GLSurfaceEGL::GetHardwareDisplay()
 }
 
 bool GLSurfaceEGL::IsCreateContextRobustnessSupported()
+{
+    return false;
+}
+
+bool GLSurfaceEGL::IsCreateContextBindGeneratesResourceSupported()
+{
+    return false;
+}
+
+bool GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported()
 {
     return false;
 }
@@ -641,13 +652,13 @@ CreateOffscreenGLSurface(const gfx::Size& size)
             if (surface->Initialize())
                 return surface;
         }
-
+        LOG(WARNING) << "Failed to create offscreen GL surface";
         break;
     }
     default:
         break;
     }
-    LOG(ERROR) << "Requested OpenGL platform is not supported.";
+    LOG(ERROR) << "Requested OpenGL implementation is not supported. Implementation: " << GetGLImplementation();
     Q_UNREACHABLE();
     return NULL;
 }
@@ -677,7 +688,7 @@ std::string DriverEGL::GetPlatformExtensions()
 namespace gpu {
 class GpuCommandBufferStub;
 class GpuChannelManager;
-scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(GpuChannelManager*, GpuCommandBufferStub*,
+scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(base::WeakPtr<ImageTransportSurfaceDelegate>,
                                                                         SurfaceHandle, gl::GLSurface::Format)
 {
     QT_NOT_USED

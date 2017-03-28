@@ -1,34 +1,28 @@
 option(host_build)
 
 # Look for linking information produced by gyp for our target according to core_generated.gyp
-use?(gn): linking_pri = $$OUT_PWD/../../core/$$getConfigDir()/convert_dict.pri
-else: linking_pri = $$OUT_PWD/../../core/$$getConfigDir()/convert_dict_linking.pri
+linking_pri = $$OUT_PWD/../../core/$$getConfigDir()/convert_dict.pri
 
 !include($$linking_pri) {
-    error("Could not find the linking information that gyp/gn should have generated.")
+    error("Could not find the linking information that gn should have generated.")
 }
 
-use?(gn){
-    isEmpty(NINJA_OBJECTS): error("Missing object files from QtWebEngineCore linking pri.")
-    isEmpty(NINJA_LFLAGS): error("Missing linker flags from QtWebEngineCore linking pri")
-    isEmpty(NINJA_ARCHIVES): error("Missing archive files from QtWebEngineCore linking pri")
-    isEmpty(NINJA_LIBS): error("Missing library files from QtWebEngineCore linking pri")
-    OBJECTS = $$eval($$list($$NINJA_OBJECTS))
-    linux {
-        LIBS_PRIVATE = -Wl,--start-group $$NINJA_ARCHIVES -Wl,--end-group
-    } else {
-        LIBS_PRIVATE = $$NINJA_ARCHIVES
-    }
-    LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
-    QMAKE_LFLAGS += $$NINJA_LFLAGS
-    POST_TARGETDEPS += $$NINJA_TARGETDEPS
+isEmpty(NINJA_OBJECTS): error("Missing object files from QtWebEngineCore linking pri.")
+isEmpty(NINJA_LFLAGS): error("Missing linker flags from QtWebEngineCore linking pri")
+isEmpty(NINJA_ARCHIVES): error("Missing archive files from QtWebEngineCore linking pri")
+isEmpty(NINJA_LIBS): error("Missing library files from QtWebEngineCore linking pri")
+OBJECTS = $$eval($$list($$NINJA_OBJECTS))
+linux {
+    LIBS_PRIVATE = -Wl,--start-group $$NINJA_ARCHIVES -Wl,--end-group
 } else {
-    # skip dummy main.cpp file
-    OBJECTS =
+    LIBS_PRIVATE = $$NINJA_ARCHIVES
 }
+LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
+QMAKE_LFLAGS += $$NINJA_LFLAGS
+POST_TARGETDEPS += $$NINJA_TARGETDEPS
 
 #ninja compiles with std::__debug
-use?(gn): linux: CONFIG(debug, debug|release) {
+linux: CONFIG(debug, debug|release) {
     DEFINES += _GLIBCXX_DEBUG
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,57 +37,47 @@
 **
 ****************************************************************************/
 
-#ifndef UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_EGLFS_H_
-#define UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_EGLFS_H_
+#ifndef VISITED_LINKS_MANAGER_QT_H
+#define VISITED_LINKS_MANAGER_QT_H
 
-#if defined(USE_OZONE)
+#include "qtwebenginecoreglobal.h"
+#include <QList>
+#include <QScopedPointer>
 
-#include "ui/ozone/public/ozone_platform.h"
+QT_BEGIN_NAMESPACE
+class QUrl;
+QT_END_NAMESPACE
 
-#include "surface_factory_qt.h"
+namespace visitedlink {
+class VisitedLinkMaster;
+}
 
-namespace ui {
+class GURL;
 
-class DeviceManager;
-class EventFactoryEvdev;
-class CursorFactoryOzone;
+namespace QtWebEngineCore {
 
-class OzonePlatformEglfs : public OzonePlatform {
- public:
-  OzonePlatformEglfs();
-  virtual ~OzonePlatformEglfs();
+class BrowserContextAdapter;
+class VisitedLinkDelegateQt;
 
-  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override;
-  virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() override;
-  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() override;
-  virtual std::unique_ptr<PlatformWindow> CreatePlatformWindow(
-      PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds) override;
-  virtual std::unique_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
-  virtual ui::InputController* GetInputController() override;
-  virtual std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
-  virtual ui::OverlayManagerOzone* GetOverlayManager() override;
+class QWEBENGINE_EXPORT VisitedLinksManagerQt {
 
- private:
-  virtual void InitializeUI() override;
-  virtual void InitializeGPU() override;
-  std::unique_ptr<DeviceManager> device_manager_;
+public:
+    virtual~VisitedLinksManagerQt();
+    VisitedLinksManagerQt(BrowserContextAdapter*);
 
-  std::unique_ptr<QtWebEngineCore::SurfaceFactoryQt> surface_factory_ozone_;
-  std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
-  std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;
+    void deleteAllVisitedLinkData();
+    void deleteVisitedLinkDataForUrls(const QList<QUrl> &);
 
-  std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
-  std::unique_ptr<InputController> input_controller_;
-  std::unique_ptr<OverlayManagerOzone> overlay_manager_;
+    bool containsUrl(const QUrl &) const;
 
-  DISALLOW_COPY_AND_ASSIGN(OzonePlatformEglfs);
+private:
+    void addUrl(const GURL &);
+    friend class WebContentsDelegateQt;
+
+    QScopedPointer<visitedlink::VisitedLinkMaster> m_visitedLinkMaster;
+    QScopedPointer<VisitedLinkDelegateQt> m_delegate;
 };
 
-// Constructor hook for use in ozone_platform_list.cc
-OzonePlatform* CreateOzonePlatformEglfs();
+} // namespace QtWebEngineCore
 
-}  // namespace ui
-
-#endif // defined(USE_OZONE)
-#endif // UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_EGLFS_H_
+#endif // WEB_ENGINE_VISITED_LINKS_MANAGER_H

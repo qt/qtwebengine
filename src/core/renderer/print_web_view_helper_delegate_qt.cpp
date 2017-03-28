@@ -48,8 +48,7 @@ PrintWebViewHelperDelegateQt::~PrintWebViewHelperDelegateQt()
 
 }
 
-bool PrintWebViewHelperDelegateQt::CancelPrerender(content::RenderView* render_view,
-                                                   int routing_id)
+bool PrintWebViewHelperDelegateQt::CancelPrerender(content::RenderFrame *)
 {
     return true;
 }
