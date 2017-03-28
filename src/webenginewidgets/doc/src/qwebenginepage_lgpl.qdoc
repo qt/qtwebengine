@@ -325,6 +325,9 @@
     engine process them by overloading this function. This is necessary when an HTML document is
     used as part of the user interface, and not to display external data, for example, when
     displaying a list of results.
+
+    The \l{QWebEngineUrlRequestInterceptor} class offers further options for intercepting and
+    manipulating requests.
 */
 
 /*!
