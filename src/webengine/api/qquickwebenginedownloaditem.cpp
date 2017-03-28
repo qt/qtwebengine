@@ -404,7 +404,7 @@ QQuickWebEngineDownloadItem::DownloadType QQuickWebEngineDownloadItem::type() co
            the responding server may not be the intended server).
     \value WebEngineDownloadItem.UserCanceled The user canceled the download.
 
-    \sa interruptReasonString()
+    \sa interruptReasonString
 */
 
 QQuickWebEngineDownloadItem::DownloadInterruptReason QQuickWebEngineDownloadItem::interruptReason() const
@@ -414,12 +414,12 @@ QQuickWebEngineDownloadItem::DownloadInterruptReason QQuickWebEngineDownloadItem
 }
 
 /*!
+    \qmlproperty string WebEngineDownloadItem::interruptReasonString
     Returns a human-readable description of the reason for interrupting the download.
     \since QtWebEngine 1.6
 
-    \sa interruptReason()
+    \sa interruptReason
 */
-
 QString QQuickWebEngineDownloadItem::interruptReasonString() const
 {
     return BrowserContextAdapterClient::downloadInterruptReasonToString(
