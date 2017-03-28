@@ -118,7 +118,7 @@ contains(WEBENGINE_CONFIG, use_appstore_compliant_code): GYP_CONFIG += appstore_
 
 # Compiling with -Os makes a huge difference in binary size, and the unwind tables is another big part,
 # but the latter are necessary for useful debug binaries.
-contains(WEBENGINE_CONFIG, reduce_binary_size): GYP_CONFIG += release_optimize=s debug_optimize=s release_unwind_tables=0
+contains(WEBENGINE_CONFIG, reduce_binary_size): GYP_CONFIG += release_optimize=s debug_optimize=s win_release_Optimization=1 release_unwind_tables=0
 
 !contains(WEBENGINE_CONFIG, use_spellchecker): {
     GYP_CONFIG += enable_spellcheck=0
