@@ -19,6 +19,33 @@ isDeveloperBuild() {
         use_incremental_linking=false
 }
 
+defineTest(usingMSVC32BitCrossCompiler) {
+    CL_DIR =
+    for(dir, QMAKE_PATH_ENV) {
+        exists($$dir/cl.exe) {
+            CL_DIR = $$dir
+            break()
+        }
+    }
+    isEmpty(CL_DIR): {
+        warning(Cannot determine location of cl.exe.)
+        return(false)
+    }
+    CL_DIR = $$system_path($$CL_DIR)
+    CL_DIR = $$split(CL_DIR, \\)
+    CL_PLATFORM = $$last(CL_DIR)
+    equals(CL_PLATFORM, amd64_x86): return(true)
+    return(false)
+}
+
+msvc:contains(QT_ARCH, "i386"):!usingMSVC32BitCrossCompiler() {
+    # The 32 bit MSVC linker runs out of memory if we do not remove all debug information.
+    gn_args += symbol_level=0
+} else {
+    # Chromium builds with debug info in release by default but Qt doesn't
+    CONFIG(release, debug|release):!force_debug_info: gn_args += symbol_level=1
+}
+
 msvc {
     equals(MSVC_VER, 14.0) {
         MSVS_VERSION = 2015
