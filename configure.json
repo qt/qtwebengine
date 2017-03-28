@@ -8,6 +8,7 @@
         "options": {
             "alsa": "boolean",
             "embedded": "boolean",
+            "webengine-icu": { "type": "enum", "name": "system-icu", "values": { "system": "yes", "qt": "no" } },
             "ffmpeg": { "type": "enum", "name": "system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
             "opus": { "type": "enum", "name": "system-opus", "values": { "system": "yes", "qt": "no" } },
             "webp": { "type": "enum", "name": "system-webp", "values": { "system": "yes", "qt": "no" } },
@@ -32,6 +33,12 @@
             "label": "PulseAudio >= 0.9.10",
             "sources": [
                 { "type": "pkgConfig", "args": "libpulse >= 0.9.10 libpulse-mainloop-glib" }
+            ]
+        },
+        "icu": {
+            "label": "icu >= 53",
+            "sources": [
+                { "type": "pkgConfig", "args": "icu-uc >= 53 icu-i18n >= 53" }
             ]
         },
         "ffmpeg": {
@@ -148,6 +155,12 @@
             "condition": "libs.ffmpeg && features.system-opus && features.system-webp",
             "output": [ "privateFeature" ]
         },
+        "system-icu": {
+            "label": "ICU",
+            "autoDetect": false,
+            "condition": "libs.icu",
+            "output": [ "privateFeature" ]
+        },
         "system-ninja": {
             "label": "Using system ninja",
             "condition": "tests.ninja",
@@ -194,6 +207,7 @@
                    "section": "System libraries",
                    "condition": "config.unix",
                    "entries": [
+                        "system-icu",
                         "system-webp",
                         "system-opus",
                         "system-ffmpeg"

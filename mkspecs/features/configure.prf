@@ -36,6 +36,8 @@ defineTest(runConfigure) {
         else: WEBENGINE_CONFIG += use_bundled_opus
         qtConfig(system-ffmpeg): WEBENGINE_CONFIG += use_system_ffmpeg
         else: WEBENGINE_CONFIG += use_bundled_ffmpeg
+        qtConfig(system-icu): WEBENGINE_CONFIG += use_system_icu
+        else: WEBENGINE_CONFIG += use_bundled_icu
     } else {
         cross_compile: WEBENGINE_CONFIG += embedded_build reduce_binary_size
     }
@@ -136,18 +138,18 @@ defineTest(runConfigure) {
 
     unix:!darwin {
         log("System library dependencies:$${EOL}")
-        use?(system_icu) {
-            packagesExist("icu-uc icu-i18n") {
-                log("  ICU ................................ Using system version$${EOL}")
-            } else {
-                log("  ICU ................................ System ICU not found$${EOL}")
-                skipBuild("Unmet dependencies: icu-uc, icu-i18n")
-            }
-        } else {
-            log("  ICU ................................ Using internal copy (Default, force system ICU with WEBENGINE_CONFIG+=use_system_icu)$${EOL}")
-            WEBENGINE_CONFIG += use_bundled_icu
-        }
         !isQtMinimum(5, 8) {
+            use?(system_icu) {
+                packagesExist("\'icu-uc >= 53\', \'icu-i18n >= 53\'") {
+                    log("  ICU ................................ Using system version$${EOL}")
+                } else {
+                    log("  ICU ................................ System ICU not found$${EOL}")
+                    skipBuild("Unmet dependencies: icu-uc, icu-i18n")
+                }
+            } else {
+                log("  ICU ................................ Using internal copy (Default, force system ICU with WEBENGINE_CONFIG+=use_system_icu)$${EOL}")
+                WEBENGINE_CONFIG += use_bundled_icu
+            }
             use?(system_ffmpeg) {
                 packagesExist("libavcodec libavformat libavutil") {
                     packagesExist("libwebp, libwebpdemux, opus, \'vpx >= 1.4\'"){
