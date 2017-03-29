@@ -332,8 +332,8 @@ void BrowserApplication::loadSettings()
         proxy.setPort(settings.value(QLatin1String("port"), 1080).toInt());
         proxy.setUser(settings.value(QLatin1String("userName")).toString());
         proxy.setPassword(settings.value(QLatin1String("password")).toString());
+        QNetworkProxy::setApplicationProxy(proxy);
     }
-    QNetworkProxy::setApplicationProxy(proxy);
     settings.endGroup();
 }
 
