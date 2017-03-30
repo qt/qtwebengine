@@ -101,6 +101,17 @@ static const int MaxTooltipLength = 1024;
 #if defined(ENABLE_PRINTING) && defined(ENABLE_PDF)
 static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
 {
+    if (!data.size()) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+        qWarning("Failure to print on printer %ls: Print result data is empty.",
+                 qUtf16Printable(printer.printerName()));
+#else
+        qWarning("Failure to print on printer %s: Print result data is empty.",
+                 qPrintable(printer.printerName()));
+#endif
+        return false;
+    }
+
     QRect printerPageRect = printer.pageRect();
     PdfiumDocumentWrapperQt pdfiumWrapper(data.constData(), data.size(), printerPageRect.size());
 
