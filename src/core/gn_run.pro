@@ -17,7 +17,7 @@ qtConfig(debug_and_release): CONFIG += debug_and_release build_all
 qtConfig(system-ninja) {
     QT_TOOL.ninja.binary = ninja
 } else {
-    QT_TOOL.ninja.binary = $$ninjaPath()
+    QT_TOOL.ninja.binary = $$shell_quote($$shell_path($$ninjaPath()))
 }
 
 win32 {
@@ -55,7 +55,7 @@ build_pass|!debug_and_release {
     rungn.commands = $$runGn($$gn_binary gen $$gn_build_root --args=$$gn_args --root=$$gn_src_root)
     QMAKE_EXTRA_TARGETS += rungn
 
-    runninja.commands = $$NINJA \$\(NINJAFLAGS\) -C $$shell_quote($$OUT_PWD/$$getConfigDir()) QtWebEngineCore
+    runninja.commands = $$NINJA \$\(NINJAFLAGS\) -C $$gn_build_root QtWebEngineCore
     runninja.depends += rungn
     QMAKE_EXTRA_TARGETS += runninja
 
