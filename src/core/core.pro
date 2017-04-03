@@ -41,7 +41,7 @@ core_api.depends = gn_run
 
 # A fake project for qt creator
 core_project.file = core_project.pro
-core_project.depends = core_headers
+core_project.depends = gn_run
 
 SUBDIRS += \
             core_headers \
