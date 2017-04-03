@@ -44,7 +44,7 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #endif
@@ -104,7 +104,7 @@ void ContentRendererClientQt::RenderThreadStarted()
         m_visitedLinkSlave->GetBindCallback());
     renderThread->AddObserver(UserResourceController::instance());
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     m_spellCheck.reset(new SpellCheck());
     renderThread->AddObserver(m_spellCheck.data());
 #endif
@@ -120,7 +120,7 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
     new RenderViewObserverQt(render_view, m_webCacheImpl.data());
     new WebChannelIPCTransport(render_view);
     UserResourceController::instance()->renderViewCreated(render_view);
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     new SpellCheckProvider(render_view, m_spellCheck.data());
 #endif
 

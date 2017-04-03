@@ -40,6 +40,7 @@
 #define CONTENT_RENDERER_CLIENT_QT_H
 
 #include "content/public/renderer/content_renderer_client.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 
 #include <QtGlobal>
 #include <QScopedPointer>
@@ -52,7 +53,7 @@ namespace web_cache {
 class WebCacheImpl;
 }
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheck;
 #endif
 
@@ -80,7 +81,7 @@ public:
 private:
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
     QScopedPointer<web_cache::WebCacheImpl> m_webCacheImpl;
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     QScopedPointer<SpellCheck> m_spellCheck;
 #endif
 };

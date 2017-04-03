@@ -1347,7 +1347,7 @@ void WebContentsAdapter::leaveDrag()
 
 void WebContentsAdapter::replaceMisspelling(const QString &word)
 {
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     Q_D(WebContentsAdapter);
     d->webContents->ReplaceMisspelling(toString16(word));
 #endif

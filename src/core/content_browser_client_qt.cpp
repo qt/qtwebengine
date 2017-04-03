@@ -42,9 +42,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
-#if defined(ENABLE_SPELLCHECK)
+#include "components/spellcheck/spellcheck_build_features.h"
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
-#if defined(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
 #endif
 #endif
@@ -414,11 +415,11 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 #if defined(ENABLE_PEPPER_CDMS)
     host->AddFilter(new BrowserMessageFilterQt(id));
 #endif
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     // SpellCheckMessageFilter is required for both Hunspell and Native configurations.
     host->AddFilter(new SpellCheckMessageFilter(id));
 #endif
-#if defined(Q_OS_MACOS) && defined(ENABLE_SPELLCHECK) && defined(USE_BROWSER_SPELLCHECKER)
+#if defined(Q_OS_MACOS) && BUILDFLAG(ENABLE_SPELLCHECK) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   host->AddFilter(new SpellCheckMessageFilterPlatform(id));
 #endif
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)

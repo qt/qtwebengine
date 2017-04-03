@@ -43,6 +43,7 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/common/content_paths.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -206,7 +207,7 @@ QString localesPath()
 #endif
 }
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 QString dictionariesPath()
 {
     static QString potentialDictionariesPath;
@@ -333,7 +334,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         return toFilePath(icuDataPath());
     case ui::DIR_LOCALES:
         return toFilePath(localesPath());
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     case base::DIR_APP_DICTIONARIES:
         return toFilePath(dictionariesPath());
 #endif
