@@ -40,10 +40,8 @@ defineTest(usingMSVC32BitCrossCompiler) {
 
 msvc:contains(QT_ARCH, "i386"):!usingMSVC32BitCrossCompiler() {
     # The 32 bit MSVC linker runs out of memory if we do not remove all debug information.
-    gn_args += symbol_level=0
-} else {
-    # Chromium builds with debug info in release by default but Qt doesn't
-    CONFIG(release, debug|release):!force_debug_info: gn_args += symbol_level=1
+    force_debug_info: gn_args -= symbol_level=1
+    gn_args *= symbol_level=0
 }
 
 msvc {
@@ -62,7 +60,8 @@ msvc {
     gn_args += visual_studio_path=$$shell_quote($$VS_PATH)
     gn_args += windows_sdk_path=$$shell_quote($$SDK_PATH)
 
-    contains(QT_ARCH, "i386"): gn_args += target_cpu=\"x86\"
+    GN_TARGET_CPU = $$gnArch($$QT_ARCH)
+    gn_args += target_cpu=\"$$GN_TARGET_CPU\"
 
 } else {
     fatal("Qt WebEngine for Windows can only be built with the Microsoft Visual Studio C++ compiler")
