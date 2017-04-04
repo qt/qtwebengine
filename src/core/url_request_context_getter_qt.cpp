@@ -537,11 +537,14 @@ void URLRequestContextGetterQt::generateJobFactory()
     std::unique_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
 
     {
-        // Chromium has transferred a few protocol handlers to us, only pick blob: and chrome: and ignore the rest.
+        // Chromium has transferred a few protocol handlers to us, only pick blob:, chrome: and filesystem:.
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
         jobFactory->SetProtocolHandler(it->first, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
         it = m_protocolHandlers.find(content::kChromeUIScheme);
+        Q_ASSERT(it != m_protocolHandlers.end());
+        jobFactory->SetProtocolHandler(it->first, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
+        it = m_protocolHandlers.find(url::kFileSystemScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
         jobFactory->SetProtocolHandler(it->first, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
         m_protocolHandlers.clear();
