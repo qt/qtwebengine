@@ -12,6 +12,8 @@ SOURCES = main.cpp
 win32 {
     SOURCES += \
         support_win.cpp
+
+    msvc: QMAKE_LFLAGS += /MANIFESTINPUT:$$PWD/process.exe.manifest
 }
 
 load(qt_app)
