@@ -222,7 +222,7 @@ bool ContentRendererClientQt::IsLinkVisited(unsigned long long linkHash)
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
 static const char kExternalClearKeyPepperType[] = "application/x-ppapi-clearkey-cdm";
 
 static bool IsPepperCdmAvailable(const std::string& pepper_type,
@@ -400,17 +400,17 @@ static void AddPepperBasedWidevine(std::vector<std::unique_ptr<media::KeySystemP
         media::EmeFeatureSupport::NOT_SUPPORTED));    // Distinctive identifier.
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
-#endif  // defined(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
 
 void ContentRendererClientQt::AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>> *key_systems)
 {
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
     AddExternalClearKey(key_systems);
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
     AddPepperBasedWidevine(key_systems);
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
-#endif  // defined(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
 }
 
 } // namespace

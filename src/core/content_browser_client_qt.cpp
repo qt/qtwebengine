@@ -412,7 +412,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     const int id = host->GetID();
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(id, url::kFileScheme);
     static_cast<BrowserContextQt*>(host->GetBrowserContext())->m_adapter->userResourceController()->renderProcessStartedWithHost(host);
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
     host->AddFilter(new BrowserMessageFilterQt(id));
 #endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)

@@ -58,7 +58,7 @@ BrowserMessageFilterQt::BrowserMessageFilterQt(int /*render_process_id*/)
 bool BrowserMessageFilterQt::OnMessageReceived(const IPC::Message& message)
 {
     IPC_BEGIN_MESSAGE_MAP(BrowserMessageFilterQt, message)
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
         IPC_MESSAGE_HANDLER(
             QtWebEngineHostMsg_IsInternalPluginAvailableForMimeType,
             OnIsInternalPluginAvailableForMimeType)
@@ -68,7 +68,7 @@ bool BrowserMessageFilterQt::OnMessageReceived(const IPC::Message& message)
     return true;
 }
 
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
 void BrowserMessageFilterQt::OnIsInternalPluginAvailableForMimeType(
     const std::string& mime_type, bool* is_available,
     std::vector<base::string16>* additional_param_names,
@@ -93,6 +93,6 @@ void BrowserMessageFilterQt::OnIsInternalPluginAvailableForMimeType(
     *is_available = false;
 }
 
-#endif // defined(ENABLE_PEPPER_CDMS)
+#endif // BUILDFLAG(ENABLE_PEPPER_CDMS)
 
 } // namespace QtWebEngineCore
