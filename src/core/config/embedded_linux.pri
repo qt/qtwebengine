@@ -6,7 +6,6 @@ gn_args += \
     use_ozone=true \
     use_sysroot=false \
     enable_session_service=false \
-    enable_notifications=false \
     ozone_auto_platforms=false \
     ozone_platform_headless=true \
     ozone_platform_external=true \

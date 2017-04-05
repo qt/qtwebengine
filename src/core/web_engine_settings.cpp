@@ -299,7 +299,7 @@ void WebEngineSettings::doApply()
 void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *prefs)
 {
     // Override for now
-    prefs->touch_enabled = isTouchScreenAvailable();
+    prefs->device_supports_touch = isTouchScreenAvailable();
     if (prefs->viewport_enabled) {
         // We should enable viewport and viewport-meta together, but since 5.7 we
         // no longer have a command-line flag for viewport-meta.

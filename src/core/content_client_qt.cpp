@@ -50,6 +50,8 @@
 #include "ui/base/layout.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#include "qrc_protocol_handler_qt.h"
 #include "type_conversion.h"
 
 #include <QCoreApplication>
@@ -69,7 +71,7 @@ static QString getLocalAppDataDir()
 }
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 
 // The plugin logic is based on chrome/common/chrome_content_client.cc:
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
@@ -284,7 +286,7 @@ void ContentClientQt::AddPepperPlugins(std::vector<content::PepperPluginInfo>* p
 }
 
 }
-#endif
+#endif // BUILDFLAG(ENABLE_PLUGINS)
 
 #include <QCoreApplication>
 
@@ -314,6 +316,11 @@ std::string ContentClientQt::GetProduct() const
 {
     QString productName(qApp->applicationName() % '/' % qApp->applicationVersion());
     return productName.toStdString();
+}
+
+void ContentClientQt::AddAdditionalSchemes(Schemes* schemes)
+{
+    schemes->secure_schemes.push_back(kQrcSchemeQt);
 }
 
 } // namespace QtWebEngineCore

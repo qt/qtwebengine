@@ -104,9 +104,9 @@ enum ImStateFlags {
 static inline ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
   ui::LatencyInfo latency_info;
   // The latency number should only be added if the timestamp is valid.
-  if (event.timeStampSeconds) {
+  if (event.timeStampSeconds()) {
     const int64_t time_micros = static_cast<int64_t>(
-        event.timeStampSeconds * base::Time::kMicrosecondsPerSecond);
+        event.timeStampSeconds() * base::Time::kMicrosecondsPerSecond);
     latency_info.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
         0,
@@ -681,12 +681,9 @@ void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, c
     Q_ASSERT(!m_needsDelegatedFrameAck);
     m_needsDelegatedFrameAck = true;
     m_pendingOutputSurfaceId = output_surface_id;
-    Q_ASSERT(frame.delegated_frame_data);
-    Q_ASSERT(!m_chromiumCompositorData->frameData || m_chromiumCompositorData->frameData->resource_list.empty());
-    if (m_chromiumCompositorData->frameData.get())
-        m_chromiumCompositorData->previousFrameData = std::move(m_chromiumCompositorData->frameData);
-    m_chromiumCompositorData->frameData = std::move(frame.delegated_frame_data);
+    m_chromiumCompositorData->previousFrameData = std::move(m_chromiumCompositorData->frameData);
     m_chromiumCompositorData->frameDevicePixelRatio = frame.metadata.device_scale_factor;
+    m_chromiumCompositorData->frameData = std::move(frame);
 
     // Support experimental.viewport.devicePixelRatio, see GetScreenInfo implementation below.
     float dpiScale = this->dpiScale();
@@ -1003,7 +1000,8 @@ void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWit
 
 void RenderWidgetHostViewQt::sendDelegatedFrameAck()
 {
-    m_beginFrameSource->DidFinishFrame(this, 0);
+    const cc::BeginFrameAck ack;
+    m_beginFrameSource->DidFinishFrame(this, ack);
     cc::ReturnedResourceArray resources;
     m_resourcesToRelease.swap(resources);
     content::RenderWidgetHostImpl::SendReclaimCompositorResources(
@@ -1061,7 +1059,7 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
         return;
 
     blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
-    if ((webEvent.type == blink::WebInputEvent::MouseDown || webEvent.type == blink::WebInputEvent::MouseUp)
+    if ((webEvent.type() == blink::WebInputEvent::MouseDown || webEvent.type() == blink::WebInputEvent::MouseUp)
             && webEvent.button == blink::WebMouseEvent::Button::NoButton) {
         // Blink can only handle the 3 main mouse-buttons and may assert when processing mouse-down for no button.
         return;
@@ -1132,7 +1130,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
     }
 
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(ev);
-    bool keyDownTextInsertion = webEvent.type == blink::WebInputEvent::RawKeyDown && webEvent.text[0];
+    bool keyDownTextInsertion = webEvent.type() == blink::WebInputEvent::RawKeyDown && webEvent.text[0];
     webEvent.skip_in_browser = keyDownTextInsertion;
     m_host->ForwardKeyboardEvent(webEvent);
 
@@ -1140,7 +1138,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         // Blink won't consume the RawKeyDown, but rather the Char event in this case.
         // Make sure to skip the former on the way back. The same os_event will be set on both of them.
         webEvent.skip_in_browser = true;
-        webEvent.type = blink::WebInputEvent::Char;
+        webEvent.setType(blink::WebInputEvent::Char);
         m_host->ForwardKeyboardEvent(webEvent);
     }
 }

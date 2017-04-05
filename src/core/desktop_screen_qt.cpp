@@ -70,10 +70,11 @@ int DesktopScreenQt::GetNumDisplays() const
     return 0;
 }
 
-std::vector<display::Display> DesktopScreenQt::GetAllDisplays() const
+std::vector<display::Display>& DesktopScreenQt::GetAllDisplays() const
 {
     Q_UNREACHABLE();
-    return std::vector<display::Display>();
+    static std::vector<display::Display> empty;
+    return empty;
 }
 
 display::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeView window) const

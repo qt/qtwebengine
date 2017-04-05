@@ -42,6 +42,7 @@
 
 #include "base/strings/string_piece.h"
 #include "content/public/common/content_client.h"
+#include "ppapi/features/features.h"
 #include "ui/base/layout.h"
 
 namespace QtWebEngineCore {
@@ -50,9 +51,10 @@ class ContentClientQt : public content::ContentClient {
 public:
     static std::string getUserAgent();
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
     void AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins) override;
 #endif
+    void AddAdditionalSchemes(Schemes* schemes) override;
 
     base::StringPiece GetDataResource(int, ui::ScaleFactor) const override;
     base::RefCountedMemory* GetDataResourceBytes(int resource_id) const  override;

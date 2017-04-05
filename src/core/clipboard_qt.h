@@ -82,6 +82,8 @@ public:
     void ReadBookmark(base::string16* title, std::string* url) const override;
     void ReadData(const FormatType& format, std::string* result) const override;
 
+    virtual void OnPreShutdown() Q_DECL_OVERRIDE { }
+
 protected:
     void WriteObjects(ui::ClipboardType type, const ObjectMap& objects) override;
     void WriteText(const char* text_data, size_t text_len) override;

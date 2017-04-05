@@ -140,7 +140,7 @@ void UserResourceControllerHost::addUserScript(const UserScript &script, WebCont
                 m_perContentsScripts.insert(contents, currentScripts);
             }
         }
-        contents->Send(new RenderViewObserverHelper_AddScript(contents->GetRoutingID(), script.data()));
+        contents->Send(new RenderViewObserverHelper_AddScript(contents->GetRenderViewHost()->GetRoutingID(), script.data()));
     }
 }
 
@@ -174,7 +174,7 @@ bool UserResourceControllerHost::removeUserScript(const UserScript &script, WebC
         QList<UserScript>::iterator it = std::find(list.begin(), list.end(), script);
         if (it == list.end())
             return false;
-        contents->Send(new RenderViewObserverHelper_RemoveScript(contents->GetRoutingID(), (*it).data()));
+        contents->Send(new RenderViewObserverHelper_RemoveScript(contents->GetRenderViewHost()->GetRoutingID(), (*it).data()));
         list.erase(it);
     }
     return true;
@@ -189,7 +189,7 @@ void UserResourceControllerHost::clearAllScripts(WebContentsAdapter *adapter)
     } else {
         content::WebContents *contents = adapter->webContents();
         m_perContentsScripts.remove(contents);
-        contents->Send(new RenderViewObserverHelper_ClearScripts(contents->GetRoutingID()));
+        contents->Send(new RenderViewObserverHelper_ClearScripts(contents->GetRenderViewHost()->GetRoutingID()));
     }
 }
 

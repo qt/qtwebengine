@@ -4,7 +4,6 @@ gn_args += \
     is_clang=false \
     use_sysroot=false \
     use_kerberos=true \
-    enable_notifications=false \
     enable_session_service=false \
     ninja_use_custom_environment_files=false \
     is_multi_dll_chrome=false \

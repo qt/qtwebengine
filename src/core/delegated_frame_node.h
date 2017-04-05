@@ -40,6 +40,7 @@
 #ifndef DELEGATED_FRAME_NODE_H
 #define DELEGATED_FRAME_NODE_H
 
+#include "cc/output/compositor_frame.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/transferable_resource.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -58,10 +59,6 @@ QT_BEGIN_NAMESPACE
 class QSGLayer;
 QT_END_NAMESPACE
 
-namespace cc {
-class DelegatedFrameData;
-}
-
 namespace QtWebEngineCore {
 
 class MailboxTexture;
@@ -73,8 +70,8 @@ class ChromiumCompositorData : public QSharedData {
 public:
     ChromiumCompositorData() : frameDevicePixelRatio(1) { }
     QHash<unsigned, QSharedPointer<ResourceHolder> > resourceHolders;
-    std::unique_ptr<cc::DelegatedFrameData> frameData;
-    std::unique_ptr<cc::DelegatedFrameData> previousFrameData;
+    cc::CompositorFrame frameData;
+    cc::CompositorFrame previousFrameData;
     qreal frameDevicePixelRatio;
 };
 
@@ -97,7 +94,7 @@ private:
 
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
     struct SGObjects {
-        QVector<QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > > renderPassLayers;
+        QVector<QPair<int, QSharedPointer<QSGLayer> > > renderPassLayers;
         QVector<QSharedPointer<QSGRootNode> > renderPassRootNodes;
         QVector<QSharedPointer<QSGTexture> > textureStrongRefs;
     } m_sgObjects;

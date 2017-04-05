@@ -50,7 +50,6 @@
 #include "browser_context_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
-#include "pdfium_document_wrapper_qt.h"
 #include "print_view_manager_qt.h"
 #include "qwebenginecallback_p.h"
 #include "renderer_host/web_channel_ipc_transport_host.h"
@@ -106,37 +105,37 @@ static QVariant fromJSValue(const base::Value *result)
 {
     QVariant ret;
     switch (result->GetType()) {
-    case base::Value::TYPE_NULL:
+    case base::Value::Type::NONE:
         break;
-    case base::Value::TYPE_BOOLEAN:
+    case base::Value::Type::BOOLEAN:
     {
         bool out;
         if (result->GetAsBoolean(&out))
             ret.setValue(out);
         break;
     }
-    case base::Value::TYPE_INTEGER:
+    case base::Value::Type::INTEGER:
     {
         int out;
         if (result->GetAsInteger(&out))
             ret.setValue(out);
         break;
     }
-    case base::Value::TYPE_DOUBLE:
+    case base::Value::Type::DOUBLE:
     {
         double out;
         if (result->GetAsDouble(&out))
             ret.setValue(out);
         break;
     }
-    case base::Value::TYPE_STRING:
+    case base::Value::Type::STRING:
     {
         base::string16 out;
         if (result->GetAsString(&out))
             ret.setValue(toQt(out));
         break;
     }
-    case base::Value::TYPE_LIST:
+    case base::Value::Type::LIST:
     {
         const base::ListValue *out;
         if (result->GetAsList(&out)) {
@@ -151,7 +150,7 @@ static QVariant fromJSValue(const base::Value *result)
         }
         break;
     }
-    case base::Value::TYPE_DICTIONARY:
+    case base::Value::Type::DICTIONARY:
     {
         const base::DictionaryValue *out;
         if (result->GetAsDictionary(&out)) {
@@ -165,7 +164,7 @@ static QVariant fromJSValue(const base::Value *result)
         }
         break;
     }
-    case base::Value::TYPE_BINARY:
+    case base::Value::Type::BINARY:
     {
         const base::BinaryValue *out = static_cast<const base::BinaryValue*>(result);
         QByteArray data(out->GetBuffer(), out->GetSize());
@@ -483,14 +482,14 @@ void WebContentsAdapter::stop()
 void WebContentsAdapter::reload()
 {
     Q_D(WebContentsAdapter);
-    d->webContents->GetController().Reload(/*checkRepost = */false);
+    d->webContents->GetController().Reload(content::ReloadType::NORMAL, /*checkRepost = */false);
     focusIfNecessary();
 }
 
 void WebContentsAdapter::reloadAndBypassCache()
 {
     Q_D(WebContentsAdapter);
-    d->webContents->GetController().ReloadBypassingCache(/*checkRepost = */false);
+    d->webContents->GetController().Reload(content::ReloadType::BYPASSING_CACHE, /*checkRepost = */false);
     focusIfNecessary();
 }
 

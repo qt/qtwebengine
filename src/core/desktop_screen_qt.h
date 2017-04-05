@@ -51,7 +51,7 @@ public:
     bool IsWindowUnderCursor(gfx::NativeWindow) override;
     gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
     int GetNumDisplays() const override;
-    std::vector<display::Display> GetAllDisplays() const override;
+    std::vector<display::Display>& GetAllDisplays() const override;
     display::Display GetDisplayNearestWindow(gfx::NativeView window) const override;
     display::Display GetDisplayNearestPoint(const gfx::Point& point) const override;
     display::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;

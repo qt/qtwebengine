@@ -63,7 +63,6 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "content/public/common/web_preferences.h"
@@ -85,7 +84,6 @@
 namespace QtWebEngineCore {
 
 static const char kHttpErrorDomain[] = "http";
-static const char kQrcSchemeQt[] = "qrc";
 
 ContentRendererClientQt::ContentRendererClientQt()
 {
@@ -108,10 +106,6 @@ void ContentRendererClientQt::RenderThreadStarted()
     m_spellCheck.reset(new SpellCheck());
     renderThread->AddObserver(m_spellCheck.data());
 #endif
-
-    blink::WebString qrcScheme(base::ASCIIToUTF16(kQrcSchemeQt));
-    // mark qrc as a secure scheme (avoids deprecation warnings)
-    blink::WebSecurityPolicy::registerURLSchemeAsSecure(qrcScheme);
 }
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)

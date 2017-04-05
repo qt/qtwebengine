@@ -102,7 +102,7 @@ public:
 
     static bool InitializeOneOff();
 
-    bool Initialize() override;
+    bool Initialize(GLSurfaceFormat format) override;
     void Destroy() override;
     void* GetHandle() override;
     bool Resize(const gfx::Size& size, float scale_factor, bool has_alpha) override;
@@ -124,7 +124,7 @@ public:
     explicit GLSurfacelessQtEGL(const gfx::Size& size);
 
  public:
-    bool Initialize() override;
+    bool Initialize(GLSurfaceFormat format) override;
     void Destroy() override;
     bool IsSurfaceless() const override;
     bool Resize(const gfx::Size& size, float scale_factor, bool has_alpha) override;
@@ -152,7 +152,7 @@ public:
 
     static bool InitializeOneOff();
 
-    bool Initialize() override;
+    bool Initialize(GLSurfaceFormat format) override;
     void Destroy() override;
     void* GetHandle() override;
 
@@ -246,7 +246,7 @@ bool GLSurfaceQtGLX::InitializeOneOff()
     return true;
 }
 
-bool GLSurfaceQtGLX::Initialize()
+bool GLSurfaceQtGLX::Initialize(GLSurfaceFormat format)
 {
     Q_ASSERT(!m_surfaceBuffer);
 
@@ -296,7 +296,7 @@ public:
 
     static bool InitializeOneOff();
 
-    bool Initialize() override;
+    bool Initialize(GLSurfaceFormat format) override;
     void Destroy() override;
     void *GetHandle() override;
     void *GetDisplay() override;
@@ -326,11 +326,11 @@ bool GLSurfaceQtWGL::InitializeOneOff()
     return GLSurfaceWGL::InitializeOneOff();
 }
 
-bool GLSurfaceQtWGL::Initialize()
+bool GLSurfaceQtWGL::Initialize(GLSurfaceFormat format)
 {
     m_surfaceBuffer = new PbufferGLSurfaceWGL(m_size);
 
-    return m_surfaceBuffer->Initialize(gl::GLSurface::SURFACE_DEFAULT);
+    return m_surfaceBuffer->Initialize(format);
 }
 
 void GLSurfaceQtWGL::Destroy()
@@ -425,6 +425,10 @@ bool GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported()
     return false;
 }
 
+void GLSurfaceEGL::ShutdownOneOff()
+{
+}
+
 const char* GLSurfaceEGL::GetEGLExtensions()
 {
     return g_extensions;
@@ -455,8 +459,9 @@ GLSurfaceQtEGL::GLSurfaceQtEGL(const gfx::Size& size)
 {
 }
 
-bool GLSurfaceQtEGL::Initialize()
+bool GLSurfaceQtEGL::Initialize(GLSurfaceFormat format)
 {
+    Q_UNUSED(format);
     Q_ASSERT(!m_surfaceBuffer);
 
     EGLDisplay display = g_display;
@@ -526,7 +531,7 @@ bool GLSurfaceQtEGL::Resize(const gfx::Size& size, float scale_factor, bool has_
 
     m_size = size;
 
-    if (!Initialize()) {
+    if (!Initialize(GetFormat())) {
         LOG(ERROR) << "Failed to resize pbuffer.";
         return false;
     }
@@ -557,7 +562,7 @@ GLSurfacelessQtEGL::GLSurfacelessQtEGL(const gfx::Size& size)
 {
 }
 
-bool GLSurfacelessQtEGL::Initialize()
+bool GLSurfacelessQtEGL::Initialize(GLSurfaceFormat /*format*/)
 {
     return true;
 }
@@ -619,7 +624,7 @@ bool InitializeGLOneOffPlatform()
 }
 
 scoped_refptr<GLSurface>
-CreateOffscreenGLSurface(const gfx::Size& size)
+CreateOffscreenGLSurfaceWithFormat(const gfx::Size& size, GLSurfaceFormat format)
 {
     scoped_refptr<GLSurface> surface;
     switch (GetGLImplementation()) {
@@ -627,13 +632,13 @@ CreateOffscreenGLSurface(const gfx::Size& size)
     case kGLImplementationDesktopGL: {
 #if defined(OS_WIN)
         surface = new GLSurfaceQtWGL(size);
-        if (surface->Initialize())
+        if (surface->Initialize(format))
             return surface;
         break;
 #elif defined(USE_X11)
         if (!g_initializedEGL) {
             surface = new GLSurfaceQtGLX(size);
-            if (surface->Initialize())
+            if (surface->Initialize(format))
                 return surface;
         }
         // no break
@@ -641,7 +646,7 @@ CreateOffscreenGLSurface(const gfx::Size& size)
     }
     case kGLImplementationEGLGLES2: {
         surface = new GLSurfaceQtEGL(size);
-        if (surface->Initialize())
+        if (surface->Initialize(format))
             return surface;
 
         // Surfaceless context will be used ONLY if pseudo surfaceless context
@@ -649,7 +654,7 @@ CreateOffscreenGLSurface(const gfx::Size& size)
         // have problems. (e.g. QTBUG-57290)
         if (g_egl_surfaceless_context_supported) {
             surface = new GLSurfacelessQtEGL(size);
-            if (surface->Initialize())
+            if (surface->Initialize(format))
                 return surface;
         }
         LOG(WARNING) << "Failed to create offscreen GL surface";
@@ -689,7 +694,7 @@ namespace gpu {
 class GpuCommandBufferStub;
 class GpuChannelManager;
 scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(base::WeakPtr<ImageTransportSurfaceDelegate>,
-                                                                        SurfaceHandle, gl::GLSurface::Format)
+                                                                        SurfaceHandle, gl::GLSurfaceFormat)
 {
     QT_NOT_USED
     return scoped_refptr<gl::GLSurface>();

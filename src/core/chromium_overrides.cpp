@@ -49,6 +49,7 @@
 #include "content/common/font_list.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
+#include "ppapi/features/features.h"
 
 #include <QGuiApplication>
 #include <QScreen>
@@ -141,7 +142,7 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking()
     return std::move(font_list);
 }
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 // content/browser/renderer_host/pepper/pepper_truetype_font_list.h
 void GetFontFamilies_SlowBlocking(std::vector<std::string> *font_families)
 {
@@ -155,7 +156,7 @@ void GetFontsInFamily_SlowBlocking(const std::string &, std::vector<ppapi::proxy
 {
     QT_NOT_USED
 }
-#endif //defined(ENABLE_PLUGINS)
+#endif // BUILDFLAG(ENABLE_PLUGINS)
 
 } // namespace content
 
@@ -170,7 +171,7 @@ ui::OSExchangeDataProviderFactory::CreateProvider() {
 #if defined(USE_OPENSSL_CERTS)
 namespace net {
 
-scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(X509Certificate* certificate)
+scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(const X509Certificate* certificate)
 {
     return OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(certificate);
 }

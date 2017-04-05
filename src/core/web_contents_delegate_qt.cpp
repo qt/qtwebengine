@@ -191,7 +191,7 @@ void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_
     m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
 }
 
-void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host, const GURL& validated_url, bool is_error_page, bool is_iframe_srcdoc)
+void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host, const GURL& validated_url, bool is_error_page)
 {
     if (is_error_page) {
         m_loadingErrorFrameList.append(render_frame_host->GetRoutingID());

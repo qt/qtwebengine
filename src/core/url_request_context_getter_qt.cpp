@@ -570,10 +570,11 @@ void URLRequestContextGetterQt::generateJobFactory()
     // Set up interceptors in the reverse order.
     std::unique_ptr<net::URLRequestJobFactory> topJobFactory = std::move(jobFactory);
 
-    for (content::URLRequestInterceptorScopedVector::reverse_iterator i = m_requestInterceptors.rbegin(); i != m_requestInterceptors.rend(); ++i)
-        topJobFactory.reset(new net::URLRequestInterceptingJobFactory(std::move(topJobFactory), std::unique_ptr<net::URLRequestInterceptor>(*i)));
+    for (content::URLRequestInterceptorScopedVector::reverse_iterator i = m_requestInterceptors.rbegin(); i != m_requestInterceptors.rend(); ++i) {
+        topJobFactory.reset(new net::URLRequestInterceptingJobFactory(std::move(topJobFactory), std::move(*i)));
+    }
 
-    m_requestInterceptors.weak_clear();
+    m_requestInterceptors.clear();
 
     m_jobFactory = std::move(topJobFactory);
 

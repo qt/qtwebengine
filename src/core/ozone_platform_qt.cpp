@@ -143,7 +143,7 @@ public:
     ui::CursorFactoryOzone* GetCursorFactoryOzone() override;
     GpuPlatformSupportHost* GetGpuPlatformSupportHost() override;
     std::unique_ptr<PlatformWindow> CreatePlatformWindow(PlatformWindowDelegate* delegate, const gfx::Rect& bounds) override;
-    std::unique_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
+    std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
     ui::InputController* GetInputController() override;
     std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
     ui::OverlayManagerOzone* GetOverlayManager() override;
@@ -202,7 +202,7 @@ ui::OverlayManagerOzone* OzonePlatformQt::GetOverlayManager()
     return overlay_manager_.get();
 }
 
-std::unique_ptr<ui::NativeDisplayDelegate> OzonePlatformQt::CreateNativeDisplayDelegate()
+std::unique_ptr<display::NativeDisplayDelegate> OzonePlatformQt::CreateNativeDisplayDelegate()
 {
     NOTREACHED();
     return nullptr;

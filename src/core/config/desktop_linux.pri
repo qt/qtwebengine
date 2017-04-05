@@ -3,7 +3,6 @@ include(linux.pri)
 gn_args += \
     use_sysroot=false \
     enable_session_service=false \
-    enable_notifications=false \
     toolkit_views=false
 
 use?(icecc) {

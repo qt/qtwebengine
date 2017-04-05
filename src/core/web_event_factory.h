@@ -41,8 +41,9 @@
 #define WEB_EVENT_FACTORY_H
 
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/WebKit/public/platform/WebMouseEvent.h"
+#include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
 
 #include <QtGlobal>
 

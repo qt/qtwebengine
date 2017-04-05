@@ -41,6 +41,7 @@
 
 #include "api/qwebengineview.h"
 
+#include <qglobal.h>
 #include <QBitmap>
 #include <QHBoxLayout>
 #include <QIcon>

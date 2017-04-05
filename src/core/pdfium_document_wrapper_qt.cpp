@@ -36,7 +36,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#if defined (ENABLE_PDF)
+#include "pdf/features.h"
+#if BUILDFLAG(ENABLE_PDF)
+#define ENABLE_PDF
+#endif
+
+#if defined(ENABLE_PDF)
 #include "pdfium_document_wrapper_qt.h"
 
 #include <QtCore/qhash.h>

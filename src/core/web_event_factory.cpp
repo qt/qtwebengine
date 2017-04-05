@@ -1182,16 +1182,17 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent;
-    webKitEvent.timeStampSeconds = currentTimeForEvent(ev);
+    webKitEvent.setTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.setModifiers(modifiersForEvent(ev));
+    webKitEvent.setType(webEventTypeForEvent(ev));
+
     webKitEvent.button = mouseButtonForEvent(ev);
-    webKitEvent.modifiers = modifiersForEvent(ev);
 
     webKitEvent.x = webKitEvent.windowX = ev->x() / dpiScale;
     webKitEvent.y = webKitEvent.windowY = ev->y() / dpiScale;
     webKitEvent.globalX = ev->globalX();
     webKitEvent.globalY = ev->globalY();
 
-    webKitEvent.type = webEventTypeForEvent(ev);
     webKitEvent.clickCount = 0;
 
     return webKitEvent;
@@ -1200,23 +1201,23 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent;
-    webKitEvent.timeStampSeconds = currentTimeForEvent(ev);
-    webKitEvent.modifiers = modifiersForEvent(ev);
+    webKitEvent.setTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.setModifiers(modifiersForEvent(ev));
+    webKitEvent.setType(webEventTypeForEvent(ev));
 
     webKitEvent.x = webKitEvent.windowX = ev->pos().x() / dpiScale;
     webKitEvent.y = webKitEvent.windowY = ev->pos().y() / dpiScale;
     webKitEvent.movementX = ev->pos().x() - ev->oldPos().x();
     webKitEvent.movementY = ev->pos().y() - ev->oldPos().y();
 
-    webKitEvent.type = webEventTypeForEvent(ev);
     return webKitEvent;
 }
 
 WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, double dpiScale)
 {
     WebGestureEvent webKitEvent;
-    webKitEvent.timeStampSeconds = currentTimeForEvent(ev);
-    webKitEvent.modifiers = modifiersForEvent(ev);
+    webKitEvent.setTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.setModifiers(modifiersForEvent(ev));
 
     webKitEvent.x = static_cast<int>(ev->localPos().x() / dpiScale);
     webKitEvent.y = static_cast<int>(ev->localPos().y() / dpiScale);
@@ -1229,11 +1230,11 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, doub
     Qt::NativeGestureType gestureType = ev->gestureType();
     switch (gestureType) {
     case Qt::ZoomNativeGesture:
-        webKitEvent.type = WebInputEvent::GesturePinchUpdate;
+        webKitEvent.setType(WebInputEvent::GesturePinchUpdate);
         webKitEvent.data.pinchUpdate.scale = static_cast<float>(ev->value() + 1.0);
         break;
     case Qt::SmartZoomNativeGesture:
-        webKitEvent.type = WebInputEvent::GestureDoubleTap;
+        webKitEvent.setType(WebInputEvent::GestureDoubleTap);
         webKitEvent.data.tap.tapCount = 1;
         break;
     case Qt::BeginNativeGesture:
@@ -1242,7 +1243,7 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, doub
     case Qt::PanNativeGesture:
     case Qt::SwipeNativeGesture:
         // Not implemented by Chromium for now.
-        webKitEvent.type = blink::WebInputEvent::Undefined;
+        webKitEvent.setType(blink::WebInputEvent::Undefined);
         break;
     }
 
@@ -1252,13 +1253,13 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, doub
 blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, double dpiScale)
 {
     WebMouseWheelEvent webEvent;
-    webEvent.type = webEventTypeForEvent(ev);
     webEvent.deltaX = 0;
     webEvent.deltaY = 0;
     webEvent.wheelTicksX = 0;
     webEvent.wheelTicksY = 0;
-    webEvent.modifiers = modifiersForEvent(ev);
-    webEvent.timeStampSeconds = currentTimeForEvent(ev);
+    webEvent.setType(webEventTypeForEvent(ev));
+    webEvent.setModifiers(modifiersForEvent(ev));
+    webEvent.setTimeStampSeconds(currentTimeForEvent(ev));
 
     webEvent.wheelTicksX = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
     webEvent.wheelTicksY = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
@@ -1280,9 +1281,9 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
 content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *ev)
 {
     content::NativeWebKeyboardEvent webKitEvent(reinterpret_cast<gfx::NativeEvent>(ev));
-    webKitEvent.timeStampSeconds = currentTimeForEvent(ev);
-    webKitEvent.modifiers = modifiersForEvent(ev);
-    webKitEvent.type = webEventTypeForEvent(ev);
+    webKitEvent.setTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.setModifiers(modifiersForEvent(ev));
+    webKitEvent.setType(webEventTypeForEvent(ev));
 
     webKitEvent.nativeKeyCode = ev->nativeVirtualKey();
     webKitEvent.windowsKeyCode = windowsKeyCodeForKeyEvent(ev->key(), ev->modifiers() & Qt::KeypadModifier);

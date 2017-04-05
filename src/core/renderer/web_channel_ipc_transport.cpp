@@ -102,7 +102,7 @@ void WebChannelTransport::Install(blink::WebFrame *frame, uint worldId)
     if (worldId == 0)
         context = frame->mainWorldScriptContext();
     else
-        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId, 0);
+        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId);
     v8::Context::Scope contextScope(context);
 
     gin::Handle<WebChannelTransport> transport = gin::CreateHandle(isolate, new WebChannelTransport);
@@ -123,7 +123,7 @@ void WebChannelTransport::Uninstall(blink::WebFrame *frame, uint worldId)
     if (worldId == 0)
         context = frame->mainWorldScriptContext();
     else
-        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId, 0);
+        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId);
     v8::Context::Scope contextScope(context);
 
     v8::Handle<v8::Object> global(context->Global());
@@ -206,7 +206,7 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     if (worldId == 0)
         context = frame->mainWorldScriptContext();
     else
-        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId, 0);
+        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId);
     v8::Context::Scope contextScope(context);
 
     v8::Handle<v8::Object> global(context->Global());

@@ -66,9 +66,9 @@ using blink::WebKeyboardEvent;
 
 namespace content {
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent()
-    : os_event(0),
-      skip_in_browser(false)
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type, int, base::TimeTicks)
+    : os_event(0)
+    , skip_in_browser(false)
 {
 }
 

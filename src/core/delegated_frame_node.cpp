@@ -57,7 +57,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/output/delegated_frame_data.h"
+#include "cc/output/compositor_frame.h"
+#include "cc/output/compositor_frame_metadata.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -435,9 +436,9 @@ private:
 };
 
 
-static inline QSharedPointer<QSGLayer> findRenderPassLayer(const cc::RenderPassId &id, const QVector<QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > > &list)
+static inline QSharedPointer<QSGLayer> findRenderPassLayer(const int &id, const QVector<QPair<int, QSharedPointer<QSGLayer> > > &list)
 {
-    typedef QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > Pair;
+    typedef QPair<int, QSharedPointer<QSGLayer> > Pair;
     Q_FOREACH (const Pair &pair, list)
         if (pair.first == id)
             return pair.second;
@@ -753,7 +754,7 @@ void DelegatedFrameNode::preprocess()
         fetchAndSyncMailboxes(mailboxesToFetch);
 
     // Then render any intermediate RenderPass in order.
-    typedef QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > Pair;
+    typedef QPair<int, QSharedPointer<QSGLayer> > Pair;
     Q_FOREACH (const Pair &pair, m_sgObjects.renderPassLayers) {
         // The layer is non-live, request a one-time update here.
         pair.second->scheduleUpdate();
@@ -791,8 +792,8 @@ static bool areSharedQuadStatesEqual(const cc::SharedQuadState *layerState,
 // Compares if the frame data that we got from the Chromium Compositor is
 // *structurally* equivalent to the one of the previous frame.
 // If it is, we will just reuse and update the old nodes where necessary.
-static bool areRenderPassStructuresEqual(cc::DelegatedFrameData *frameData,
-                                         cc::DelegatedFrameData *previousFrameData)
+static bool areRenderPassStructuresEqual(cc::CompositorFrame *frameData,
+                                         cc::CompositorFrame *previousFrameData)
 {
     if (!previousFrameData)
         return false;
@@ -840,8 +841,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
                                 RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     m_chromiumCompositorData = chromiumCompositorData;
-    cc::DelegatedFrameData* frameData = m_chromiumCompositorData->frameData.get();
-    if (!frameData)
+    cc::CompositorFrame* frameData = &m_chromiumCompositorData->frameData;
+    if (frameData->render_pass_list.empty())
         return;
 
     // DelegatedFrameNode is a transform node only for the purpose of
@@ -875,14 +876,14 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // equivalent to the render passes in the current frame data. If they are, we are going
     // to reuse the old nodes. Otherwise, we will delete the old nodes and build a new tree.
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
-    cc::DelegatedFrameData *previousFrameData = m_chromiumCompositorData->previousFrameData.get();
+    cc::CompositorFrame *previousFrameData = &m_chromiumCompositorData->previousFrameData;
     const bool buildNewTree = !areRenderPassStructuresEqual(frameData, previousFrameData) || m_sceneGraphNodes.empty();
 #else
     // No updates possible with old scenegraph nodes
     const bool buildNewTree = true;
 #endif
 
-    m_chromiumCompositorData->previousFrameData = nullptr;
+    m_chromiumCompositorData->previousFrameData = cc::CompositorFrame();
     SGObjects previousSGObjects;
     QVector<QSharedPointer<QSGTexture> > textureStrongRefs;
     if (buildNewTree) {
@@ -926,7 +927,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
                 }
                 QSharedPointer<QSGRootNode> rootNode(new QSGRootNode);
                 rpLayer->setItem(rootNode.data());
-                m_sgObjects.renderPassLayers.append(QPair<cc::RenderPassId,
+                m_sgObjects.renderPassLayers.append(QPair<int,
                                                     QSharedPointer<QSGLayer> >(pass->id, rpLayer));
                 m_sgObjects.renderPassRootNodes.append(rootNode);
                 renderPassParent = rootNode.data();

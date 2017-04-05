@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "base/command_line.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/data_pack.h"

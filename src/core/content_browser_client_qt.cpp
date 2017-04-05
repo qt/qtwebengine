@@ -107,7 +107,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "renderer_host/pepper/pepper_host_factory_qt.h"
@@ -522,7 +522,7 @@ void ContentBrowserClientQt::GetAdditionalMappedFilesForChildProcess(const base:
 }
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host)
 {
     browser_host->GetPpapiHost()->AddHostFactoryFilter(

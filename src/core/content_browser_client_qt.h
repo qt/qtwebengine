@@ -42,6 +42,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/content_browser_client.h"
+#include "ppapi/features/features.h"
 
 #include <QtGlobal>
 
@@ -53,7 +54,7 @@ namespace content {
 class BrowserContext;
 class BrowserMainParts;
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 class BrowserPpapiHost;
 #endif
 
@@ -119,7 +120,7 @@ public:
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::FileDescriptorInfo* mappings) override;
 #endif
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
     void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
 #endif
 

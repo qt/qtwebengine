@@ -67,6 +67,7 @@
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "ppapi/features/features.h"
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -173,7 +174,7 @@ bool usingQtQuick2DRenderer()
     return device != QLatin1String("default");
 }
 #endif //QT_NO_OPENGL
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
 void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 {
 }
@@ -430,7 +431,7 @@ WebEngineContext::WebEngineContext()
 
     base::ThreadRestrictions::SetIOAllowed(true);
 
-#if defined(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS)
     // Creating pepper plugins from the page (which calls PluginService::GetPluginInfoArray)
     // might fail unless the page queried the list of available plugins at least once
     // (which ends up calling PluginService::GetPlugins). Since the plugins list can only
