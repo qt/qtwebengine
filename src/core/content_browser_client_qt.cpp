@@ -447,8 +447,11 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
 
 void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, content::WebPreferences *web_prefs)
 {
-    if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents())
-        static_cast<WebContentsDelegateQt*>(webContents->GetDelegate())->overrideWebPreferences(webContents, web_prefs);
+    if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents()) {
+        WebContentsDelegateQt* delegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+        if (delegate)
+            delegate->overrideWebPreferences(webContents, web_prefs);
+    }
 }
 
 content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionContext()

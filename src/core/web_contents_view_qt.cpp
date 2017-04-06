@@ -118,8 +118,10 @@ gfx::NativeView WebContentsViewQt::GetNativeView() const
 
 void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
 {
-    const QRectF r(m_client->viewportRect());
-    *out = gfx::Rect(r.x(), r.y(), r.width(), r.height());
+    if (m_client) {
+        const QRectF r(m_client->viewportRect());
+        *out = gfx::Rect(r.x(), r.y(), r.width(), r.height());
+    }
 }
 
 void WebContentsViewQt::Focus()
