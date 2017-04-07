@@ -7,6 +7,9 @@ GN_OS = $$gnOS()
 clang: GN_CLANG = true
 else: GN_CLANG = false
 
+use_gold_linker: GN_USE_GOLD=true
+else: GN_USE_GOLD=false
+
 GN_CONTENTS = \
 "gcc_toolchain(\"target\") {" \
 "  cc = \"$$which($$QMAKE_CC)\" " \
@@ -18,6 +21,7 @@ GN_CONTENTS = \
 "    current_os = \"$$GN_OS\" " \
 "    current_cpu = \"$$GN_CPU\" " \
 "    is_clang = $$GN_CLANG " \
+"    use_gold = $$GN_USE_GOLD " \
 "  } " \
 "}"
 
