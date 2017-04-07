@@ -65,7 +65,7 @@ void RenderViewObserverQt::onFetchDocumentMarkup(quint64 requestId)
     if (render_view()->GetWebView()->mainFrame()->isWebLocalFrame())
         markup = blink::WebFrameContentDumper::dumpAsMarkup(
                     static_cast<blink::WebLocalFrame*>(render_view()->GetWebView()->mainFrame()));
-    Send(new RenderViewObserverHostQt_DidFetchDocumentMarkup(routing_id(), requestId, markup));
+    Send(new RenderViewObserverHostQt_DidFetchDocumentMarkup(routing_id(), requestId, markup.utf16()));
 }
 
 void RenderViewObserverQt::onFetchDocumentInnerText(quint64 requestId)
@@ -75,7 +75,7 @@ void RenderViewObserverQt::onFetchDocumentInnerText(quint64 requestId)
         text = blink::WebFrameContentDumper::dumpWebViewAsText(
                     render_view()->GetWebView(),
                     std::numeric_limits<std::size_t>::max());
-    Send(new RenderViewObserverHostQt_DidFetchDocumentInnerText(routing_id(), requestId, text));
+    Send(new RenderViewObserverHostQt_DidFetchDocumentInnerText(routing_id(), requestId, text.utf16()));
 }
 
 void RenderViewObserverQt::onSetBackgroundColor(quint32 color)

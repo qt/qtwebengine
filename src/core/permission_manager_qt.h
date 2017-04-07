@@ -87,11 +87,6 @@ public:
         const base::Callback<void(
             const std::vector<blink::mojom::PermissionStatus>&)>& callback) override;
 
-    void RegisterPermissionUsage(
-        content::PermissionType permission,
-        const GURL& requesting_origin,
-        const GURL& embedding_origin) override;
-
     int SubscribePermissionStatusChange(
         content::PermissionType permission,
         const GURL& requesting_origin,

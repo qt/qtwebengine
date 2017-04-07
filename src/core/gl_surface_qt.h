@@ -59,12 +59,14 @@ public:
     bool IsOffscreen() override;
     gfx::SwapResult SwapBuffers() override;
     gfx::Size GetSize() override;
+    GLSurfaceFormat GetFormat() override;
 
 protected:
     GLSurfaceQt();
     virtual ~GLSurfaceQt();
 
     gfx::Size m_size;
+    GLSurfaceFormat m_format;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(GLSurfaceQt);

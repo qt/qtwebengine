@@ -591,7 +591,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
     d->webContents->GetController().LoadURLWithParams(params);
     focusIfNecessary();
-    d->webContents->Unselect();
+    d->webContents->CollapseSelection();
 }
 
 void WebContentsAdapter::save(const QString &filePath, int savePageFormat)
@@ -699,7 +699,7 @@ void WebContentsAdapter::requestClose()
 void WebContentsAdapter::unselect()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->Unselect();
+    d->webContents->CollapseSelection();
 }
 
 void WebContentsAdapter::navigateToIndex(int offset)
@@ -899,7 +899,7 @@ void WebContentsAdapter::stopFinding()
     d->webContentsDelegate->setLastSearchedString(QString());
     // Clear any previous selection,
     // but keep the renderer blue rectangle selection just like Chromium does.
-    d->webContents->Unselect();
+    d->webContents->CollapseSelection();
     d->webContents->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }
 
@@ -1176,7 +1176,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     d->currentDropData.reset(new content::DropData(dropData));
     d->currentDropData->download_metadata.clear();
     d->currentDropData->file_contents.clear();
-    d->currentDropData->file_description_filename.clear();
+    d->currentDropData->file_contents_content_disposition.clear();
 
     d->currentDropAction = blink::WebDragOperationNone;
     QDrag *drag = new QDrag(dragSource);    // will be deleted by Qt's DnD implementation
@@ -1342,7 +1342,7 @@ void WebContentsAdapter::leaveDrag()
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-    rvh->GetWidget()->DragTargetDragLeave();
+    rvh->GetWidget()->DragTargetDragLeave(d->lastDragClientPos, d->lastDragScreenPos);
     d->currentDropData.reset();
 }
 

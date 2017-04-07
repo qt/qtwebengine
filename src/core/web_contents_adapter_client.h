@@ -274,7 +274,7 @@ public:
         IgnoreActionDisposition = 9,
     };
 
-    // Must match the values in javascript_message_type.h.
+    // Must match the values in javascript_dialog_type.h.
     enum JavascriptDialogType {
         AlertDialog,
         ConfirmDialog,

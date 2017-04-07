@@ -92,7 +92,6 @@ public:
     virtual bool OnCanAccessFile(const net::URLRequest& request, const base::FilePath& path) const override;
     virtual bool OnCanEnablePrivacyMode(const GURL&, const GURL&) const override;
     virtual bool OnAreExperimentalCookieFeaturesEnabled() const override;
-    virtual bool OnAreStrictSecureCookiesEnabled() const override;
     virtual bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const override;
 };
 

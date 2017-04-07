@@ -169,7 +169,7 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content
 void WebContentsDelegateQt::CloseContents(content::WebContents *source)
 {
     m_viewClient->close();
-    GetJavaScriptDialogManager(source)->CancelDialogs(source, /* whatever?: */false, false);
+    GetJavaScriptDialogManager(source)->CancelDialogs(source, /* whatever?: */false);
 }
 
 void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, double progress)

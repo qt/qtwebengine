@@ -295,8 +295,7 @@ void URLRequestContextGetterQt::generateCookieStore()
 
     m_storage->set_channel_id_service(
             base::WrapUnique(new net::ChannelIDService(
-                    new net::DefaultChannelIDStore(channel_id_db.get()),
-                    base::WorkerPool::GetTaskRunner(true))));
+                    new net::DefaultChannelIDStore(channel_id_db.get()))));
 
     // Unset it first to get a chance to destroy and flush the old cookie store before opening a new on possibly the same file.
     m_storage->set_cookie_store(0);

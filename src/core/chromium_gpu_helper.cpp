@@ -65,13 +65,13 @@ base::MessageLoop *gpu_message_loop()
 
 gpu::SyncPointManager *sync_point_manager()
 {
-    gpu::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
+    gpu::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->gpu_channel_manager();
     return gpuChannelManager->sync_point_manager();
 }
 
 gpu::gles2::MailboxManager *mailbox_manager()
 {
-    gpu::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
+    gpu::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->gpu_channel_manager();
     return gpuChannelManager->mailbox_manager();
 }
 

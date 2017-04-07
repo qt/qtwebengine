@@ -52,7 +52,7 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #endif // defined(ENABLE_BASIC_PRINTING)
 #include "content/browser/devtools/devtools_http_handler.h"
-#include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/utility_process_host_impl.h"
 #include "content/gpu/in_process_gpu_thread.h"
@@ -406,7 +406,7 @@ WebEngineContext::WebEngineContext()
 
     content::UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
     content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
-    content::GpuProcessHost::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
+    content::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
     contentMainParams.setup_signal_handlers = false;

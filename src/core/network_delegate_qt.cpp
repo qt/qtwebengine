@@ -311,11 +311,6 @@ bool NetworkDelegateQt::OnAreExperimentalCookieFeaturesEnabled() const
     return false;
 }
 
-bool NetworkDelegateQt::OnAreStrictSecureCookiesEnabled() const
-{
-    return false;
-}
-
 bool NetworkDelegateQt::OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const
 {
     return false;

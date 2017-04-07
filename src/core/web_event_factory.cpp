@@ -903,11 +903,11 @@ static ui::DomKey getDomKeyFromQKeyEvent(QKeyEvent *ev)
 
     // Audio Keys
     case Qt::Key_BassDown:
-        return ui::DomKey::AUDIO_BASS_DOWN;
+        return ui::DomKey::AUDIO_BASS_BOOST_DOWN;
     case Qt::Key_BassBoost:
         return ui::DomKey::AUDIO_BASS_BOOST_TOGGLE;
     case Qt::Key_BassUp:
-        return ui::DomKey::AUDIO_BASS_UP;
+        return ui::DomKey::AUDIO_BASS_BOOST_UP;
     case Qt::Key_TrebleDown:
         return ui::DomKey::AUDIO_TREBLE_DOWN;
     case Qt::Key_TrebleUp:

@@ -48,14 +48,17 @@
 
 namespace QtWebEngineCore {
 
-Q_STATIC_ASSERT_X(static_cast<int>(content::JAVASCRIPT_MESSAGE_TYPE_PROMPT) == static_cast<int>(WebContentsAdapterClient::PromptDialog), "These enums should be in sync.");
+ASSERT_ENUMS_MATCH(content::JAVASCRIPT_DIALOG_TYPE_ALERT, WebContentsAdapterClient::AlertDialog)
+ASSERT_ENUMS_MATCH(content::JAVASCRIPT_DIALOG_TYPE_CONFIRM, WebContentsAdapterClient::ConfirmDialog)
+ASSERT_ENUMS_MATCH(content::JAVASCRIPT_DIALOG_TYPE_PROMPT, WebContentsAdapterClient::PromptDialog)
+
 
 JavaScriptDialogManagerQt *JavaScriptDialogManagerQt::GetInstance()
 {
     return base::Singleton<JavaScriptDialogManagerQt>::get();
 }
 
-void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webContents, const GURL &originUrl, content::JavaScriptMessageType javascriptMessageType, const base::string16 &messageText, const base::string16 &defaultPromptText, const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage)
+void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webContents, const GURL &originUrl, content::JavaScriptDialogType dialog_type, const base::string16 &messageText, const base::string16 &defaultPromptText, const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage)
 {
     WebContentsAdapterClient *client = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
     if (!client) {
@@ -64,7 +67,7 @@ void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webCon
         return;
     }
 
-    WebContentsAdapterClient::JavascriptDialogType dialogType = static_cast<WebContentsAdapterClient::JavascriptDialogType>(javascriptMessageType);
+    WebContentsAdapterClient::JavascriptDialogType dialogType = static_cast<WebContentsAdapterClient::JavascriptDialogType>(dialog_type);
     runDialogForContents(webContents, dialogType, toQt(messageText).toHtmlEscaped(), toQt(defaultPromptText).toHtmlEscaped(), toQt(originUrl.GetOrigin()), callback);
 }
 

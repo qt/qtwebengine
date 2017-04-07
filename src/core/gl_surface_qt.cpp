@@ -260,6 +260,7 @@ bool GLSurfaceQtGLX::Initialize(GLSurfaceFormat format)
     };
 
     m_surfaceBuffer = glXCreatePbuffer(display, static_cast<GLXFBConfig>(g_config), pbuffer_attributes);
+    m_format = format;
 
     if (!m_surfaceBuffer) {
         Destroy();
@@ -329,6 +330,7 @@ bool GLSurfaceQtWGL::InitializeOneOff()
 bool GLSurfaceQtWGL::Initialize(GLSurfaceFormat format)
 {
     m_surfaceBuffer = new PbufferGLSurfaceWGL(m_size);
+    m_format = format;
 
     return m_surfaceBuffer->Initialize(format);
 }
@@ -463,6 +465,7 @@ bool GLSurfaceQtEGL::Initialize(GLSurfaceFormat format)
 {
     Q_UNUSED(format);
     Q_ASSERT(!m_surfaceBuffer);
+    m_format = format;
 
     EGLDisplay display = g_display;
     if (!display) {
@@ -517,6 +520,12 @@ gfx::Size GLSurfaceQt::GetSize()
 }
 
 
+GLSurfaceFormat GLSurfaceQt::GetFormat()
+{
+    return m_format;
+}
+
+
 bool GLSurfaceQtEGL::Resize(const gfx::Size& size, float scale_factor, bool has_alpha)
 {
     if (size == m_size)
@@ -562,8 +571,9 @@ GLSurfacelessQtEGL::GLSurfacelessQtEGL(const gfx::Size& size)
 {
 }
 
-bool GLSurfacelessQtEGL::Initialize(GLSurfaceFormat /*format*/)
+bool GLSurfacelessQtEGL::Initialize(GLSurfaceFormat format)
 {
+    m_format = format;
     return true;
 }
 

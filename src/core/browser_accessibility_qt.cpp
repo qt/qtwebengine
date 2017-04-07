@@ -491,7 +491,7 @@ QStringList BrowserAccessibilityQt::keyBindingsForAction(const QString &actionNa
 
 void BrowserAccessibilityQt::addSelection(int startOffset, int endOffset)
 {
-    manager()->SetTextSelection(*this, startOffset, endOffset);
+    manager()->SetSelection(AXPlatformRange(CreatePositionAt(startOffset), CreatePositionAt(endOffset)));
 }
 
 QString BrowserAccessibilityQt::attributes(int offset, int *startOffset, int *endOffset) const
@@ -549,19 +549,19 @@ QString BrowserAccessibilityQt::text(int startOffset, int endOffset) const
 
 void BrowserAccessibilityQt::removeSelection(int selectionIndex)
 {
-    manager()->SetTextSelection(*this, 0, 0);
+    manager()->SetSelection(AXPlatformRange(CreatePositionAt(0), CreatePositionAt(0)));
 }
 
 void BrowserAccessibilityQt::setCursorPosition(int position)
 {
-    manager()->SetTextSelection(*this, position, position);
+    manager()->SetSelection(AXPlatformRange(CreatePositionAt(position), CreatePositionAt(position)));
 }
 
 void BrowserAccessibilityQt::setSelection(int selectionIndex, int startOffset, int endOffset)
 {
     if (selectionIndex != 0)
         return;
-    manager()->SetTextSelection(*this, startOffset, endOffset);
+    manager()->SetSelection(AXPlatformRange(CreatePositionAt(startOffset), CreatePositionAt(endOffset)));
 }
 
 int BrowserAccessibilityQt::characterCount() const

@@ -148,10 +148,6 @@ public:
     void RenderProcessGone(base::TerminationStatus, int) override;
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
-    void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, const content::ReadbackRequestCallback& callback, const SkColorType preferred_color_type) override;
-    void CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
-
-    bool CanCopyToVideoFrame() const override;
     bool HasAcceleratedSurface(const gfx::Size&) override;
     void OnSwapCompositorFrame(uint32_t output_surface_id, cc::CompositorFrame frame)  override;
 
@@ -159,8 +155,6 @@ public:
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) override;
     void ClearCompositorFrame() override;
-    void LockCompositingSurface() override;
-    void UnlockCompositingSurface() override;
     void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
     // Overridden from ui::GestureProviderClient.

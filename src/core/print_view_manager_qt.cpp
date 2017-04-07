@@ -138,6 +138,7 @@ static base::DictionaryValue *createPrintSettings()
     printSettings->SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);
     printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds, true);
     printSettings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
+    printSettings->SetBoolean(printing::kSettingRasterizePdf, false);
     printSettings->SetInteger(printing::kSettingScaleFactor, 100);
     printSettings->SetString(printing::kSettingDeviceName, "");
     printSettings->SetInteger(printing::kPreviewUIID, 12345678);

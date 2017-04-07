@@ -7,15 +7,12 @@ gn_args += \
     enable_session_service=false \
     ninja_use_custom_environment_files=false \
     is_multi_dll_chrome=false \
+    use_incremental_linking=false \
     win_linker_timing=true
 
 isDeveloperBuild() {
     gn_args += \
-        is_win_fastlink=true \
-        use_incremental_linking=true
-} else {
-    gn_args += \
-        use_incremental_linking=false
+        is_win_fastlink=true
 }
 
 defineTest(usingMSVC32BitCrossCompiler) {

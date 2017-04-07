@@ -639,37 +639,9 @@ void RenderWidgetHostViewQt::SetTooltipText(const base::string16 &tooltip_text)
     m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
-void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, const content::ReadbackRequestCallback& callback, const SkColorType color_type)
-{
-    NOTIMPLEMENTED();
-    Q_UNUSED(src_subrect);
-    Q_UNUSED(dst_size);
-    Q_UNUSED(color_type);
-    callback.Run(SkBitmap(), content::READBACK_FAILED);
-}
-
-void RenderWidgetHostViewQt::CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(const gfx::Rect&, bool)>& callback)
-{
-    NOTIMPLEMENTED();
-    callback.Run(gfx::Rect(), false);
-}
-
-bool RenderWidgetHostViewQt::CanCopyToVideoFrame() const
-{
-    return false;
-}
-
 bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
 {
     return false;
-}
-
-void RenderWidgetHostViewQt::LockCompositingSurface()
-{
-}
-
-void RenderWidgetHostViewQt::UnlockCompositingSurface()
-{
 }
 
 void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, cc::CompositorFrame frame)
@@ -825,7 +797,7 @@ void RenderWidgetHostViewQt::selectionChanged()
     if (!selection)
         return;
 
-    if (!selection->range.IsValid())
+    if (!selection->range().IsValid())
         return;
 
     // Avoid duplicate empty selectionChanged() signals
@@ -839,11 +811,11 @@ void RenderWidgetHostViewQt::selectionChanged()
     int newCursorPositionWithinSelection = 0;
 
     if (text_input_manager_->GetSelectionRegion()->anchor.type() == gfx::SelectionBound::RIGHT) {
-        newAnchorPositionWithinSelection = selection->range.GetMax() - selection->offset;
-        newCursorPositionWithinSelection = selection->range.GetMin() - selection->offset;
+        newAnchorPositionWithinSelection = selection->range().GetMax() - selection->offset();
+        newCursorPositionWithinSelection = selection->range().GetMin() - selection->offset();
     } else {
-        newAnchorPositionWithinSelection = selection->range.GetMin() - selection->offset;
-        newCursorPositionWithinSelection = selection->range.GetMax() - selection->offset;
+        newAnchorPositionWithinSelection = selection->range().GetMin() - selection->offset();
+        newCursorPositionWithinSelection = selection->range().GetMax() - selection->offset();
     }
 
     if (m_anchorPositionWithinSelection == newAnchorPositionWithinSelection && m_cursorPositionWithinSelection == newCursorPositionWithinSelection)

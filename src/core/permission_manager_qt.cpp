@@ -202,14 +202,6 @@ void PermissionManagerQt::ResetPermission(
     m_permissions.remove(key);
 }
 
-void PermissionManagerQt::RegisterPermissionUsage(
-    content::PermissionType /*permission*/,
-    const GURL& /*requesting_origin*/,
-    const GURL& /*embedding_origin*/)
-{
-    // We do not currently track which permissions are used.
-}
-
 int PermissionManagerQt::SubscribePermissionStatusChange(
     content::PermissionType permission,
     const GURL& requesting_origin,

@@ -11,6 +11,7 @@ include_dirs = [
 
 deps = [
   "//base",
+  "//chrome/common:features",
   "//components/error_page/common",
   "//components/keyed_service/content",
   "//components/visitedlink/browser",
@@ -22,6 +23,7 @@ deps = [
   "//content/public/common",
   "//content/public/renderer",
   "//net:net_browser_services",
+  "//net:net_with_v8",
   "//skia",
   "//third_party/WebKit/public:blink",
   "//ui/accessibility",
