@@ -355,7 +355,6 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
 
     if (isErrorPage) {
         Q_ASSERT(settings->testAttribute(QWebEngineSettings::ErrorPageEnabled));
-        Q_ASSERT(success);
         Q_EMIT q->loadFinished(false);
         return;
     }

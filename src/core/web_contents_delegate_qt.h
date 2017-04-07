@@ -125,19 +125,18 @@ public:
 
     // WebContentsObserver overrides
     void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) override;
-    void DidStartProvisionalLoadForFrame(content::RenderFrameHost *render_frame_host, const GURL &validated_url, bool is_error_page) override;
-    void DidCommitProvisionalLoadForFrame(content::RenderFrameHost *render_frame_host, const GURL &url, ui::PageTransition transition_type) override;
-    void DidFailProvisionalLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url,
-                                        int error_code, const base::string16 &error_description, bool was_ignored_by_handler) override;
+    void DidStartNavigation(content::NavigationHandle *navigation_handle) override;
+    void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
     void DidFailLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url,
                              int error_code, const base::string16 &error_description, bool was_ignored_by_handler) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
     void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) override;
-    void DidNavigateAnyFrame(content::RenderFrameHost *render_frame_host, const content::LoadCommittedDetails &details, const content::FrameNavigateParams &params) override;
     void WasShown() override;
     void DidFirstVisuallyNonEmptyPaint() override;
     void ActivateContents(content::WebContents* contents) override;
 
+
+    void didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription);
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;
     void requestGeolocationPermission(const QUrl &requestingOrigin);

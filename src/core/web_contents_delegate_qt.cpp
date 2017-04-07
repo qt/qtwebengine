@@ -63,6 +63,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -172,7 +173,7 @@ void WebContentsDelegateQt::CloseContents(content::WebContents *source)
     GetJavaScriptDialogManager(source)->CancelDialogs(source, /* whatever?: */false);
 }
 
-void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, double progress)
+void WebContentsDelegateQt::LoadProgressChanged(content::WebContents */*source*/, double progress)
 {
     if (!m_loadingErrorFrameList.isEmpty())
         return;
@@ -191,59 +192,82 @@ void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_
     m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
 }
 
-void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host, const GURL& validated_url, bool is_error_page)
+void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *navigation_handle)
 {
-    if (is_error_page) {
-        m_loadingErrorFrameList.append(render_frame_host->GetRoutingID());
-
-        // Trigger LoadStarted signal for main frame's error page only.
-        if (!render_frame_host->GetParent()) {
-            m_faviconManager->resetCandidates();
-            m_viewClient->loadStarted(toQt(validated_url), true);
-        }
-
+    if (!navigation_handle->IsInMainFrame())
         return;
-    }
 
-    if (render_frame_host->GetParent())
-        return;
+    // Error-pages are not reported as separate started navigations.
+    Q_ASSERT(!navigation_handle->IsErrorPage());
 
     m_loadingErrorFrameList.clear();
     m_faviconManager->resetCandidates();
-    m_viewClient->loadStarted(toQt(validated_url));
+    m_viewClient->loadStarted(toQt(navigation_handle->GetURL()));
 }
 
-void WebContentsDelegateQt::DidCommitProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host, const GURL& url, ui::PageTransition transition_type)
+void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navigation_handle)
 {
-    // Make sure that we don't set the findNext WebFindOptions on a new frame.
-    m_lastSearchedString = QString();
+    if (!navigation_handle->IsInMainFrame())
+        return;
 
-    // This is currently used for canGoBack/Forward values, which is flattened across frames. For other purposes we might have to pass is_main_frame.
-    m_viewClient->loadCommitted();
+    if (navigation_handle->HasCommitted() && !navigation_handle->IsErrorPage()) {
+        // VisistedLinksMaster asserts !IsOffTheRecord().
+        if (navigation_handle->ShouldUpdateHistory() && m_viewClient->browserContextAdapter()->trackVisitedLinks())
+            m_viewClient->browserContextAdapter()->visitedLinksManager()->addUrl(navigation_handle->GetURL());
+
+        // Make sure that we don't set the findNext WebFindOptions on a new frame.
+        m_lastSearchedString = QString();
+
+        // This is currently used for canGoBack/Forward values, which is flattened across frames. For other purposes we might have to pass is_main_frame.
+        m_viewClient->loadCommitted();
+    }
+    // Success is reported by DidFinishLoad, but DidFailLoad is now dead code and needs to be handled below
+    if (navigation_handle->GetNetErrorCode() == net::OK)
+        return;
+
+    // WebContentsObserver::DidFailLoad is not called any longer so we have to report the failure here.
+    const net::Error error_code = navigation_handle->GetNetErrorCode();
+    const std::string error_description = net::ErrorToString(error_code);
+    didFailLoad(toQt(navigation_handle->GetURL()), error_code, toQt(error_description));
+
+    // The load will succede as an error-page load later, and we reported the original error above
+    if (navigation_handle->IsErrorPage()) {
+        // Now report we are starting to load an error-page.
+        m_loadingErrorFrameList.append(navigation_handle->GetRenderFrameHost()->GetRoutingID());
+        m_faviconManager->resetCandidates();
+        m_viewClient->loadStarted(toQt(GURL(content::kUnreachableWebDataURL)), true);
+
+        // If it is already committed we will not see another DidFinishNavigation call or a DidFinishLoad call.
+        if (navigation_handle->HasCommitted()) {
+            m_lastSearchedString = QString();
+            m_viewClient->loadCommitted();
+        }
+    }
 }
 
-void WebContentsDelegateQt::DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description, bool was_ignored_by_handler)
+void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription)
 {
-    DidFailLoad(render_frame_host, validated_url, error_code, error_description, was_ignored_by_handler);
+    m_viewClient->iconChanged(QUrl());
+    m_viewClient->loadFinished(false /* success */ , url, false /* isErrorPage */, errorCode, errorDescription);
+    m_viewClient->loadProgressChanged(0);
 }
 
 void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description, bool was_ignored_by_handler)
 {
     Q_UNUSED(was_ignored_by_handler);
-    if (validated_url.spec() == content::kUnreachableWebDataURL) {
-        m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
-        qCritical("Loading error-page failed. This shouldn't happen.");
-        if (!render_frame_host->GetParent())
-            m_viewClient->loadFinished(false /* success */, toQt(validated_url), true /* isErrorPage */);
-        return;
-    }
-
     if (render_frame_host->GetParent())
         return;
 
-    m_viewClient->iconChanged(QUrl());
-    m_viewClient->loadFinished(false /* success */ , toQt(validated_url), false /* isErrorPage */, error_code, toQt(error_description));
-    m_viewClient->loadProgressChanged(0);
+    if (validated_url.spec() == content::kUnreachableWebDataURL) {
+        // error-pages should only ever fail due to abort:
+        Q_ASSERT(error_code == -3 /* ERR_ABORTED */);
+        m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
+        m_viewClient->iconChanged(QUrl());
+        m_viewClient->loadFinished(false /* success */, toQt(validated_url), true /* isErrorPage */);
+        return;
+    }
+
+    didFailLoad(toQt(validated_url), error_code, toQt(error_description));
 }
 
 void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url)
@@ -373,14 +397,6 @@ void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const 
 {
     Q_UNUSED(source)
     m_viewClient->didUpdateTargetURL(toQt(url));
-}
-
-void WebContentsDelegateQt::DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host, const content::LoadCommittedDetails& details, const content::FrameNavigateParams& params)
-{
-    // VisistedLinksMaster asserts !IsOffTheRecord().
-    if (!params.should_update_history || !m_viewClient->browserContextAdapter()->trackVisitedLinks())
-        return;
-    m_viewClient->browserContextAdapter()->visitedLinksManager()->addUrl(params.url);
 }
 
 void WebContentsDelegateQt::WasShown()
