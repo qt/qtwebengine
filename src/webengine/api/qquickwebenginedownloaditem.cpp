@@ -368,7 +368,7 @@ QQuickWebEngineDownloadItem::DownloadType QQuickWebEngineDownloadItem::type() co
 /*!
     \qmlproperty enumeration WebEngineDownloadItem::interruptReason
     \readonly
-    \since QtWebEngine 1.6
+    \since QtWebEngine 1.5
 
     Returns the reason why the download was interrupted:
 
@@ -416,7 +416,7 @@ QQuickWebEngineDownloadItem::DownloadInterruptReason QQuickWebEngineDownloadItem
 /*!
     \qmlproperty string WebEngineDownloadItem::interruptReasonString
     Returns a human-readable description of the reason for interrupting the download.
-    \since QtWebEngine 1.6
+    \since QtWebEngine 1.5
 
     \sa interruptReason
 */

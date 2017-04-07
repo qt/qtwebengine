@@ -74,7 +74,7 @@ QQuickWebEngineView::NewViewDestination QQuickWebEngineNewViewRequest::destinati
 /*!
     \qmlproperty QUrl WebEngineNewViewRequest::requestedUrl
     The URL that is requested by the page.
-    \since QtWebEngine 1.6
+    \since QtWebEngine 1.5
  */
 QUrl QQuickWebEngineNewViewRequest::requestedUrl() const
 {
