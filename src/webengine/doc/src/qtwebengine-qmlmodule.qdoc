@@ -24,7 +24,7 @@
 */
 
 /*!
-    \qmlmodule QtWebEngine 1.4
+    \qmlmodule QtWebEngine 1.5
     \title Qt WebEngine QML Types
     \brief Provides QML types for rendering web content within a QML application
     \ingroup qtwebengine-modules
@@ -34,7 +34,7 @@
     your .qml file:
 
     \badcode
-    import QtWebEngine 1.4
+    import QtWebEngine 1.5
     \endcode
 
     To link against the module, add the following QT variable to your qmake .pro
