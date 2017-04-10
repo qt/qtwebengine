@@ -917,6 +917,9 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::InputMethod:
         handleInputMethodEvent(static_cast<QInputMethodEvent*>(event));
         break;
+    case QEvent::InputMethodQuery:
+        handleInputMethodQueryEvent(static_cast<QInputMethodQueryEvent*>(event));
+        break;
     default:
         return false;
     }
@@ -1256,6 +1259,19 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             }
         }
     }
+}
+
+void RenderWidgetHostViewQt::handleInputMethodQueryEvent(QInputMethodQueryEvent *ev)
+{
+    Qt::InputMethodQueries queries = ev->queries();
+    for (uint i = 0; i < 32; ++i) {
+        Qt::InputMethodQuery query = (Qt::InputMethodQuery)(int)(queries & (1<<i));
+        if (query) {
+            QVariant v = inputMethodQuery(query);
+            ev->setValue(query, v);
+        }
+    }
+    ev->accept();
 }
 
 #ifndef QT_NO_ACCESSIBILITY

@@ -192,6 +192,7 @@ public:
     void handleHoverEvent(QHoverEvent*);
     void handleFocusEvent(QFocusEvent*);
     void handleInputMethodEvent(QInputMethodEvent*);
+    void handleInputMethodQueryEvent(QInputMethodQueryEvent*);
 
 #if defined(OS_MACOSX)
     virtual void SetActive(bool active) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }

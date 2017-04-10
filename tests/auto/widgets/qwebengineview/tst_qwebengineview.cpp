@@ -102,6 +102,8 @@ private Q_SLOTS:
     void hiddenText();
     void emptyInputMethodEvent();
     void imeComposition();
+    void imeCompositionQueryEvent_data();
+    void imeCompositionQueryEvent();
     void newlineInTextarea();
 };
 
@@ -1933,6 +1935,84 @@ void tst_QWebEngineView::newlineInTextarea()
     qApp->processEvents();
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("\n\nthird line"));
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("\n\nthird line"));
+}
+
+void tst_QWebEngineView::imeCompositionQueryEvent_data()
+{
+    QTest::addColumn<QString>("receiverObjectName");
+    QTest::newRow("focusObject") << QString("focusObject");
+    QTest::newRow("focusProxy") << QString("focusProxy");
+    QTest::newRow("focusWidget") << QString("focusWidget");
+}
+
+void tst_QWebEngineView::imeCompositionQueryEvent()
+{
+    QWebEngineView view;
+    view.show();
+
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml("<html><body>"
+                 "  <input type='text' id='input1' />"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
+
+    QObject *input = nullptr;
+
+    QFETCH(QString, receiverObjectName);
+    if (receiverObjectName == "focusObject")
+        input = qApp->focusObject();
+    else if (receiverObjectName == "focusProxy")
+        input = view.focusProxy();
+    else if (receiverObjectName == "focusWidget")
+        input = view.focusWidget();
+
+    QVERIFY(input);
+
+    QInputMethodQueryEvent srrndTextQuery(Qt::ImSurroundingText);
+    QInputMethodQueryEvent cursorPosQuery(Qt::ImCursorPosition);
+    QInputMethodQueryEvent anchorPosQuery(Qt::ImAnchorPosition);
+
+    // Set composition
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("composition", attributes);
+        QApplication::sendEvent(input, &event);
+        qApp->processEvents();
+    }
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("composition"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
+
+    QApplication::sendEvent(input, &srrndTextQuery);
+    QApplication::sendEvent(input, &cursorPosQuery);
+    QApplication::sendEvent(input, &anchorPosQuery);
+    qApp->processEvents();
+
+    QTRY_COMPARE(srrndTextQuery.value(Qt::ImSurroundingText).toString(), QString(""));
+    QTRY_COMPARE(cursorPosQuery.value(Qt::ImCursorPosition).toInt(), 11);
+    QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 11);
+
+    // Send commit
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("composition");
+        QApplication::sendEvent(input, &event);
+        qApp->processEvents();
+    }
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("composition"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("composition"));
+
+    QApplication::sendEvent(input, &srrndTextQuery);
+    QApplication::sendEvent(input, &cursorPosQuery);
+    QApplication::sendEvent(input, &anchorPosQuery);
+    qApp->processEvents();
+
+    QTRY_COMPARE(srrndTextQuery.value(Qt::ImSurroundingText).toString(), QString("composition"));
+    QTRY_COMPARE(cursorPosQuery.value(Qt::ImCursorPosition).toInt(), 11);
+    QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 11);
 }
 
 QTEST_MAIN(tst_QWebEngineView)
