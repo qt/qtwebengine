@@ -98,8 +98,6 @@ private:
     const bool m_toggleOn;
 };
 
-#define LATEST_WEBENGINEVIEW_REVISION 5
-
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged FINAL)

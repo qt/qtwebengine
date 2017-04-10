@@ -129,9 +129,6 @@ public:
                                                                          msgUncreatableType("FileDialogRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineFormValidationMessageRequest>(uri, 1, 4, "FormValidationMessageRequest",
                                                                          msgUncreatableType("FormValidationMessageRequest"));
-
-        // For now (1.x import), the latest revision matches the minor version of the import.
-        qmlRegisterRevision<QQuickWebEngineView, LATEST_WEBENGINEVIEW_REVISION>(uri, 1, LATEST_WEBENGINEVIEW_REVISION);
     }
 
 private:
