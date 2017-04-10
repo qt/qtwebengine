@@ -42,6 +42,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QStyle>
+#include <QtWidgets/qaction.h>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == expect);
@@ -95,6 +96,7 @@ private Q_SLOTS:
     void keyboardEvents();
     void keyboardFocusAfterPopup();
     void postData();
+    void inputFieldOverridesShortcuts();
 
     void softwareInputPanel();
     void inputMethods();
@@ -1300,6 +1302,62 @@ void tst_QWebEngineView::postData()
 
     timeoutGuard.stop();
     server.close();
+}
+
+void tst_QWebEngineView::inputFieldOverridesShortcuts()
+{
+    bool actionTriggered = false;
+    QAction *action = new QAction;
+    action->setShortcut(Qt::Key_X);
+    connect(action, &QAction::triggered, [&actionTriggered] () { actionTriggered = true; });
+
+    QWebEngineView view;
+    view.addAction(action);
+
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml(QString("<html><body onload=\"input1=document.getElementById('input1')\">"
+                         "<input id=\"dummy\" type=\"text\">"
+                         "<input id=\"input1\" type=\"text\" value=\"x\">"
+                         "</body></html>"));
+    QVERIFY(loadFinishedSpy.wait());
+
+    view.show();
+    QTest::qWaitForWindowActive(&view);
+
+    auto inputFieldValue = [&view] () -> QString {
+        return evaluateJavaScriptSync(view.page(),
+                                      "input1.value").toString();
+    };
+
+    // The input form is not focused. The action is triggered on pressing X.
+    QTest::keyClick(view.windowHandle(), Qt::Key_X);
+    QTRY_VERIFY(actionTriggered);
+    QCOMPARE(inputFieldValue(), QString("x"));
+
+    // The input form is focused. The action is not triggered, and the form's text changed.
+    evaluateJavaScriptSync(view.page(), "input1.focus();");
+    actionTriggered = false;
+    QTest::keyClick(view.windowHandle(), Qt::Key_Y);
+    QTRY_COMPARE(inputFieldValue(), QString("yx"));
+    QVERIFY(!actionTriggered);
+
+    // The input form is focused. Make sure we don't override all short cuts.
+    // A Ctrl-1 action is no default Qt key binding and should be triggerable.
+    action->setShortcut(Qt::CTRL + Qt::Key_1);
+    QTest::keyClick(view.windowHandle(), Qt::Key_1, Qt::ControlModifier);
+    QTRY_VERIFY(actionTriggered);
+    QCOMPARE(inputFieldValue(), QString("yx"));
+
+    // Remove focus from the input field. A QKeySequence::Copy action still must not be triggered.
+    evaluateJavaScriptSync(view.page(), "input1.blur();");
+    action->setShortcut(QKeySequence::Copy);
+    actionTriggered = false;
+    QTest::keyClick(view.windowHandle(), Qt::Key_C, Qt::ControlModifier);
+    // Add some text in the input field to ensure that the key event went through.
+    evaluateJavaScriptSync(view.page(), "input1.focus();");
+    QTest::keyClick(view.windowHandle(), Qt::Key_U);
+    QTRY_COMPARE(inputFieldValue(), QString("yux"));
+    QVERIFY(!actionTriggered);
 }
 
 class TestInputContext : public QPlatformInputContext
