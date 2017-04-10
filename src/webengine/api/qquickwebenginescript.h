@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -85,12 +85,12 @@ public:
     ScriptWorldId worldId() const;
     bool runOnSubframes() const;
 
-    void setName(const QString &name);
-    void setSourceUrl(const QUrl &url);
-    void setSourceCode(const QString &code);
-    void setInjectionPoint(InjectionPoint injectionPoint);
-    void setWorldId(ScriptWorldId scriptWorldId);
-    void setRunOnSubframes(bool on);
+    Q_INVOKABLE void setName(const QString &name);
+    Q_INVOKABLE void setSourceUrl(const QUrl &url);
+    Q_INVOKABLE void setSourceCode(const QString &code);
+    Q_INVOKABLE void setInjectionPoint(InjectionPoint injectionPoint);
+    Q_INVOKABLE void setWorldId(ScriptWorldId scriptWorldId);
+    Q_INVOKABLE void setRunOnSubframes(bool on);
 
 Q_SIGNALS:
     void nameChanged(const QString &name);
