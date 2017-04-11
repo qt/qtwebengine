@@ -247,6 +247,9 @@ bool RenderWidgetHostViewQtDelegateQuick::event(QEvent *event)
         }
     }
 
+    if (event->type() == QEvent::NativeGesture)
+        return m_client->forwardEvent(event);
+
     return QQuickItem::event(event);
 }
 

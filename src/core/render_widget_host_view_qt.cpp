@@ -905,6 +905,9 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::TouchCancel:
         handleTouchEvent(static_cast<QTouchEvent*>(event));
         break;
+    case QEvent::NativeGesture:
+        handleGestureEvent(static_cast<QNativeGestureEvent *>(event));
+        break;
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
@@ -1295,8 +1298,24 @@ void RenderWidgetHostViewQt::clearPreviousTouchMotionState()
     m_touchMotionStarted = false;
 }
 
+void RenderWidgetHostViewQt::handleGestureEvent(QNativeGestureEvent *ev)
+{
+    const Qt::NativeGestureType type = ev->gestureType();
+    // These are the only supported gestures by Chromium so far.
+    if (type == Qt::ZoomNativeGesture || type == Qt::SmartZoomNativeGesture) {
+        m_host->ForwardGestureEvent(WebEventFactory::toWebGestureEvent(
+                                        ev,
+                                        static_cast<double>(dpiScale())));
+    }
+}
+
 void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 {
+    // On macOS instead of handling touch events, we use the OS provided QNativeGestureEvents.
+#ifdef Q_OS_MACOS
+    return;
+#endif
+
     // Chromium expects the touch event timestamps to be comparable to base::TimeTicks::Now().
     // Most importantly we also have to preserve the relative time distance between events.
     // Calculate a delta between event timestamps and Now() on the first received event, and

@@ -42,6 +42,7 @@
 
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 
 #include <QtGlobal>
 
@@ -50,6 +51,7 @@ class QHoverEvent;
 class QKeyEvent;
 class QMouseEvent;
 class QWheelEvent;
+class QNativeGestureEvent;
 QT_END_NAMESPACE
 
 class WebEventFactory {
@@ -57,6 +59,7 @@ class WebEventFactory {
 public:
     static blink::WebMouseEvent toWebMouseEvent(QMouseEvent*, double dpiScale);
     static blink::WebMouseEvent toWebMouseEvent(QHoverEvent*, double dpiScale);
+    static blink::WebGestureEvent toWebGestureEvent(QNativeGestureEvent *, double dpiScale);
     static blink::WebMouseWheelEvent toWebWheelEvent(QWheelEvent*, double dpiScale);
     static content::NativeWebKeyboardEvent toWebKeyboardEvent(QKeyEvent*);
 };

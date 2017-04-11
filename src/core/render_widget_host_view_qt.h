@@ -189,6 +189,7 @@ public:
     void handleKeyEvent(QKeyEvent*);
     void handleWheelEvent(QWheelEvent*);
     void handleTouchEvent(QTouchEvent*);
+    void handleGestureEvent(QNativeGestureEvent *);
     void handleHoverEvent(QHoverEvent*);
     void handleFocusEvent(QFocusEvent*);
     void handleInputMethodEvent(QInputMethodEvent*);
