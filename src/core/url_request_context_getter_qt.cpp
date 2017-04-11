@@ -46,6 +46,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
@@ -147,6 +148,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 
         m_networkDelegate.reset(new NetworkDelegateQt(this));
         m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
+        m_urlRequestContext->set_enable_brotli(base::FeatureList::IsEnabled(features::kBrotliEncoding));
 
         QMutexLocker lock(&m_mutex);
         generateAllStorage();
