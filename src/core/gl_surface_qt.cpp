@@ -441,6 +441,11 @@ bool GLSurfaceEGL::HasEGLExtension(const char* name)
     return ExtensionsContain(GetEGLExtensions(), name);
 }
 
+bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType /*native_display*/)
+{
+    return GLSurfaceQtEGL::InitializeOneOff();
+}
+
 GLSurfaceQt::GLSurfaceQt(const gfx::Size& size)
     : m_size(size)
 {
@@ -463,7 +468,6 @@ GLSurfaceQtEGL::GLSurfaceQtEGL(const gfx::Size& size)
 
 bool GLSurfaceQtEGL::Initialize(GLSurfaceFormat format)
 {
-    Q_UNUSED(format);
     Q_ASSERT(!m_surfaceBuffer);
     m_format = format;
 

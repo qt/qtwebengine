@@ -1129,27 +1129,15 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         QMutexLocker lock(&m_mutex);
 
         gpu::SyncPointManager *syncPointManager = sync_point_manager();
-        if (!m_syncPointClient)
-            m_syncPointClient = syncPointManager->CreateSyncPointClientWaiter();
         base::MessageLoop *gpuMessageLoop = gpu_message_loop();
         Q_ASSERT(m_numPendingSyncPoints == 0);
         m_numPendingSyncPoints = mailboxesToFetch.count();
-        auto it = mailboxesToFetch.constBegin();
-        auto end = mailboxesToFetch.constEnd();
-        for (; it != end; ++it) {
-            MailboxTexture *mailboxTexture = *it;
+        for (MailboxTexture *mailboxTexture : qAsConst(mailboxesToFetch)) {
             gpu::SyncToken &syncToken = mailboxTexture->mailboxHolder().sync_token;
-            if (syncToken.HasData()) {
-                scoped_refptr<gpu::SyncPointClientState> release_state =
-                    syncPointManager->GetSyncPointClientState(syncToken.namespace_id(), syncToken.command_buffer_id());
-                if (release_state && !release_state->IsFenceSyncReleased(syncToken.release_count())) {
-                    m_syncPointClient->WaitOutOfOrderNonThreadSafe(
-                                release_state.get(), syncToken.release_count(),
-                                gpuMessageLoop->task_runner(), base::Bind(&DelegatedFrameNode::pullTexture, this, mailboxTexture));
-                    continue;
-                }
-            }
-            gpuMessageLoop->task_runner()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::pullTexture, this, mailboxTexture));
+            const auto task = base::Bind(&DelegatedFrameNode::pullTexture, this, mailboxTexture);
+            if (syncPointManager->WaitOutOfOrderNonThreadSafe(syncToken, gpuMessageLoop->task_runner(), task))
+                continue;
+            gpuMessageLoop->task_runner()->PostTask(FROM_HERE, task);
         }
 
         m_mailboxesFetchedWaitCond.wait(&m_mutex);

@@ -41,6 +41,7 @@
 #define GL_GL_CONTEXT_QT_H_
 
 #include <QObject>
+#include "ui/gl/gl_context.h"
 
 namespace gl {
 class GLContext;
@@ -54,7 +55,7 @@ class GLContextHelper : public QObject {
 public:
     static void initialize();
     static void destroy();
-    static bool initializeContext(gl::GLContext* context, gl::GLSurface* surface);
+    static bool initializeContext(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs);
 
     static void* getEGLConfig();
     static void* getXConfig();
@@ -63,7 +64,7 @@ public:
     static void* getNativeDisplay();
 
 private:
-    Q_INVOKABLE bool initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface);
+    Q_INVOKABLE bool initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs);
 
     static GLContextHelper* contextHelper;
 };

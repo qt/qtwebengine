@@ -44,7 +44,12 @@
 
 #include "base/files/file_path.h"
 #include "base/native_library.h"
+#include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_initializer.h"
+#include "ui/gl/init/gl_factory.h"
+#include "ui/ozone/common/gl_ozone_egl.h"
 
 #include <QGuiApplication>
 
@@ -61,6 +66,27 @@
 
 namespace QtWebEngineCore {
 
+class GLOzoneQt : public ui::GLOzoneEGL {
+public:
+    scoped_refptr<gl::GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget /*window*/) override
+    {
+        return nullptr;
+    }
+    scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(const gfx::Size& /*size*/) override
+    {
+        return nullptr;
+    }
+
+protected:
+    // Returns native platform display handle. This is used to obtain the EGL
+    // display connection for the native display.
+    intptr_t GetNativeDisplay() override;
+
+    // Sets up GL bindings for the native surface.
+    bool LoadGLES2Bindings() override;
+
+};
+
 base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
     base::NativeLibraryLoadError error;
     base::NativeLibrary library = base::LoadNativeLibrary(filename, &error);
@@ -71,7 +97,7 @@ base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
     return library;
 }
 
-bool SurfaceFactoryQt::LoadEGLGLES2Bindings()
+bool GLOzoneQt::LoadGLES2Bindings()
 {
     base::FilePath libEGLPath = QtWebEngineCore::toFilePath(QT_LIBDIR_EGL);
     libEGLPath = libEGLPath.Append("libEGL.so.1");
@@ -99,7 +125,7 @@ bool SurfaceFactoryQt::LoadEGLGLES2Bindings()
     return true;
 }
 
-intptr_t SurfaceFactoryQt::GetNativeDisplay()
+intptr_t GLOzoneQt::GetNativeDisplay()
 {
     static void *display = GLContextHelper::getNativeDisplay();
 
@@ -107,6 +133,18 @@ intptr_t SurfaceFactoryQt::GetNativeDisplay()
         return reinterpret_cast<intptr_t>(display);
 
     return reinterpret_cast<intptr_t>(EGL_DEFAULT_DISPLAY);
+}
+
+std::vector<gl::GLImplementation> SurfaceFactoryQt::GetAllowedGLImplementations()
+{
+    std::vector<gl::GLImplementation> impls;
+    impls.push_back(gl::kGLImplementationEGLGLES2);
+    return impls;
+}
+
+ui::GLOzone* SurfaceFactoryQt::GetGLOzone(gl::GLImplementation implementation)
+{
+    return new GLOzoneQt();
 }
 
 } // namespace QtWebEngineCore

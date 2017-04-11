@@ -1,4 +1,5 @@
 import("//build/config/features.gni")
+import("//build/config/ui.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//pdf/features.gni")
 import("//ppapi/features/features.gni")
@@ -106,6 +107,5 @@ source_set("qtwebengine_sources") {
          "//components/printing/renderer",
       ]
   }
-
 }
 

@@ -93,21 +93,20 @@ void GLContextHelper::destroy()
     contextHelper = 0;
 }
 
-bool GLContextHelper::initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface)
+bool GLContextHelper::initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs)
 {
-    gl::GLContextAttribs attribs;
-    attribs.gpu_preference = gl::PreferDiscreteGpu;
     return context->Initialize(surface, attribs);
 }
 
-bool GLContextHelper::initializeContext(gl::GLContext* context, gl::GLSurface* surface)
+bool GLContextHelper::initializeContext(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs)
 {
     bool ret = false;
     Qt::ConnectionType connType = (QThread::currentThread() == qApp->thread()) ? Qt::DirectConnection : Qt::BlockingQueuedConnection;
     QMetaObject::invokeMethod(contextHelper, "initializeContextOnBrowserThread", connType,
             Q_RETURN_ARG(bool, ret),
             Q_ARG(gl::GLContext*, context),
-            Q_ARG(gl::GLSurface*, surface));
+            Q_ARG(gl::GLSurface*, surface),
+            Q_ARG(gl::GLContextAttribs, attribs));
     return ret;
 }
 
@@ -171,7 +170,7 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
     scoped_refptr<GLContext> context = new GLContextEGL(share_group);
 #endif
 
-    if (!GLContextHelper::initializeContext(context.get(), compatible_surface))
+    if (!GLContextHelper::initializeContext(context.get(), compatible_surface, attribs))
         return NULL;
 
     return context;

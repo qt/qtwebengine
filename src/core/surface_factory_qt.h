@@ -46,11 +46,10 @@
 
 namespace QtWebEngineCore {
 
-class SurfaceFactoryQt
-    : public ui::SurfaceFactoryOzone
+class SurfaceFactoryQt : public ui::SurfaceFactoryOzone
 {
-    bool LoadEGLGLES2Bindings() override;
-    intptr_t GetNativeDisplay() override;
+    std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
+    ui::GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
 };
 
 } // namespace QtWebEngineCore

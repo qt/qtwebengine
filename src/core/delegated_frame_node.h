@@ -103,7 +103,6 @@ private:
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;
     QList<gl::TransferableFence> m_textureFences;
-    std::unique_ptr<gpu::SyncPointClient> m_syncPointClient;
 #if defined(USE_X11)
     bool m_contextShared;
     QScopedPointer<QOffscreenSurface> m_offsurface;
