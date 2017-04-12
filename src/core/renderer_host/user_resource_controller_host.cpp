@@ -98,7 +98,7 @@ void UserResourceControllerHost::WebContentsObserverHelper::WebContentsDestroyed
 class UserResourceControllerHost::RenderProcessObserverHelper : public content::RenderProcessHostObserver {
 public:
     RenderProcessObserverHelper(UserResourceControllerHost *);
-    virtual void RenderProcessHostDestroyed(content::RenderProcessHost *) Q_DECL_OVERRIDE;
+    void RenderProcessHostDestroyed(content::RenderProcessHost *) override;
 private:
     UserResourceControllerHost *m_controllerHost;
 };

@@ -159,7 +159,7 @@ public:
     {
     }
 
-    virtual void Run(Delegate *delegate) Q_DECL_OVERRIDE
+    void Run(Delegate *delegate) override
     {
         Q_ASSERT(delegate == m_delegate);
         // This is used only when MessagePumpForUIQt is used outside of the GUI thread.
@@ -169,18 +169,18 @@ public:
         m_explicitLoop = 0;
     }
 
-    virtual void Quit() Q_DECL_OVERRIDE
+    void Quit() override
     {
         Q_ASSERT(m_explicitLoop);
         m_explicitLoop->quit();
     }
 
-    virtual void ScheduleWork() Q_DECL_OVERRIDE
+    void ScheduleWork() override
     {
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
 
-    virtual void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) Q_DECL_OVERRIDE
+    void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) override
     {
         if (delayed_work_time.is_null()) {
             killTimer(m_timerId);
@@ -194,13 +194,13 @@ public:
     }
 
 protected:
-    virtual void customEvent(QEvent *ev) Q_DECL_OVERRIDE
+    void customEvent(QEvent *ev) override
     {
         if (handleScheduledWork())
             QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
 
-    virtual void timerEvent(QTimerEvent *ev) Q_DECL_OVERRIDE
+    void timerEvent(QTimerEvent *ev) override
     {
         Q_ASSERT(m_timerId == ev->timerId());
         killTimer(m_timerId);
@@ -271,24 +271,24 @@ public:
         : content::BrowserMainParts()
     { }
 
-    void PreMainMessageLoopStart() Q_DECL_OVERRIDE
+    void PreMainMessageLoopStart() override
     {
         base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
     }
 
-    void PreMainMessageLoopRun() Q_DECL_OVERRIDE
+    void PreMainMessageLoopRun() override
     {
         device::GeolocationProvider::SetGeolocationDelegate(new GeolocationDelegateQt());
     }
 
-    void PostMainMessageLoopRun()
+    void PostMainMessageLoopRun() override
     {
         // The BrowserContext's destructor uses the MessageLoop so it should be deleted
         // right before the RenderProcessHostImpl's destructor destroys it.
         WebEngineContext::current()->destroyBrowserContext();
     }
 
-    int PreCreateThreads() Q_DECL_OVERRIDE
+    int PreCreateThreads() override
     {
         base::ThreadRestrictions::SetIOAllowed(true);
         // Like ChromeBrowserMainExtraPartsViews::PreCreateThreads does.
@@ -333,17 +333,17 @@ public:
         }
     }
 
-    virtual void* GetHandle() Q_DECL_OVERRIDE { return m_handle; }
+    void* GetHandle() override { return m_handle; }
     // Qt currently never creates contexts using robustness attributes.
-    virtual bool WasAllocatedUsingRobustnessExtension() { return false; }
+    bool WasAllocatedUsingRobustnessExtension() override { return false; }
 
     // We don't care about the rest, this context shouldn't be used except for its handle.
-    virtual bool Initialize(gl::GLSurface *, const gl::GLContextAttribs &) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
-    virtual bool MakeCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
-    virtual void ReleaseCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
-    virtual bool IsCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
-    virtual void OnSetSwapInterval(int) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
-    virtual scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() Q_DECL_OVERRIDE
+    bool Initialize(gl::GLSurface *, const gl::GLContextAttribs &) override { Q_UNREACHABLE(); return false; }
+    bool MakeCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); return false; }
+    void ReleaseCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); }
+    bool IsCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); return false; }
+    void OnSetSwapInterval(int) override { Q_UNREACHABLE(); }
+    scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() override
     {
         return nullptr;
     }
@@ -354,8 +354,8 @@ private:
 
 class ShareGroupQtQuick : public gl::GLShareGroup {
 public:
-    virtual gl::GLContext* GetContext() Q_DECL_OVERRIDE { return m_shareContextQtQuick.get(); }
-    virtual void AboutToAddFirstContext() Q_DECL_OVERRIDE;
+    gl::GLContext* GetContext() override { return m_shareContextQtQuick.get(); }
+    void AboutToAddFirstContext() override;
 
 private:
     scoped_refptr<QtShareGLContext> m_shareContextQtQuick;
@@ -375,7 +375,7 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
 
 class QuotaPermissionContextQt : public content::QuotaPermissionContext {
 public:
-    virtual void RequestQuotaPermission(const content::StorageQuotaParams &params, int render_process_id, const PermissionCallback &callback) Q_DECL_OVERRIDE
+    void RequestQuotaPermission(const content::StorageQuotaParams &params, int render_process_id, const PermissionCallback &callback) override
     {
         Q_UNUSED(params);
         Q_UNUSED(render_process_id);

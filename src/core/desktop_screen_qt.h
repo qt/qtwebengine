@@ -42,24 +42,22 @@
 
 #include "ui/display/screen.h"
 
-#include <QtGlobal>
-
 namespace QtWebEngineCore {
 
 class DesktopScreenQt : public display::Screen {
 public:
     // Overridden from gfx::Screen:
-    virtual gfx::Point GetCursorScreenPoint() Q_DECL_OVERRIDE;
-    virtual bool IsWindowUnderCursor(gfx::NativeWindow) Q_DECL_OVERRIDE;
-    virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) Q_DECL_OVERRIDE;
-    virtual int GetNumDisplays() const Q_DECL_OVERRIDE;
-    virtual std::vector<display::Display> GetAllDisplays() const Q_DECL_OVERRIDE;
-    virtual display::Display GetDisplayNearestWindow(gfx::NativeView window) const Q_DECL_OVERRIDE;
-    virtual display::Display GetDisplayNearestPoint(const gfx::Point& point) const Q_DECL_OVERRIDE;
-    virtual display::Display GetDisplayMatching(const gfx::Rect& match_rect) const Q_DECL_OVERRIDE;
-    virtual display::Display GetPrimaryDisplay() const Q_DECL_OVERRIDE;
-    virtual void AddObserver(display::DisplayObserver* observer) Q_DECL_OVERRIDE;
-    virtual void RemoveObserver(display::DisplayObserver* observer) Q_DECL_OVERRIDE;
+    gfx::Point GetCursorScreenPoint() override;
+    bool IsWindowUnderCursor(gfx::NativeWindow) override;
+    gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
+    int GetNumDisplays() const override;
+    std::vector<display::Display> GetAllDisplays() const override;
+    display::Display GetDisplayNearestWindow(gfx::NativeView window) const override;
+    display::Display GetDisplayNearestPoint(const gfx::Point& point) const override;
+    display::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
+    display::Display GetPrimaryDisplay() const override;
+    void AddObserver(display::DisplayObserver* observer) override;
+    void RemoveObserver(display::DisplayObserver* observer) override;
 };
 
 } // namespace QtWebEngineCore

@@ -43,7 +43,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 #include <QFile>
 
 namespace QtWebEngineCore {
@@ -53,10 +52,10 @@ class URLRequestQrcJobQt : public net::URLRequestJob {
 
 public:
     URLRequestQrcJobQt(net::URLRequest *request, net::NetworkDelegate *networkDelegate);
-    virtual void Start() Q_DECL_OVERRIDE;
-    virtual void Kill() Q_DECL_OVERRIDE;
-    virtual int ReadRawData(net::IOBuffer* buf, int buf_size)  Q_DECL_OVERRIDE;;
-    virtual bool GetMimeType(std::string *mimeType) const Q_DECL_OVERRIDE;
+    void Start() override;
+    void Kill() override;
+    int ReadRawData(net::IOBuffer* buf, int buf_size)  override;;
+    bool GetMimeType(std::string *mimeType) const override;
 
 protected:
     virtual ~URLRequestQrcJobQt();

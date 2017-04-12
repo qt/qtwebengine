@@ -44,7 +44,6 @@
 
 #include "web_contents_adapter_client.h"
 
-#include "qglobal.h"
 #include <QMap>
 #include <QSharedPointer>
 
@@ -61,14 +60,13 @@ public:
     // For use with the Singleton helper class from chromium
     static JavaScriptDialogManagerQt *GetInstance();
 
-    virtual void RunJavaScriptDialog(content::WebContents *, const GURL &, content::JavaScriptMessageType javascriptMessageType,
-                                     const base::string16 &messageText, const base::string16 &defaultPromptText,
-                                     const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage) Q_DECL_OVERRIDE;
+    void RunJavaScriptDialog(content::WebContents *, const GURL &, content::JavaScriptMessageType javascriptMessageType,
+                             const base::string16 &messageText, const base::string16 &defaultPromptText,
+                             const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage) override;
 
-    virtual void RunBeforeUnloadDialog(content::WebContents *, bool isReload,
-                                       const content::JavaScriptDialogManager::DialogClosedCallback &callback) Q_DECL_OVERRIDE;
-    virtual bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride) Q_DECL_OVERRIDE;
-    virtual void CancelDialogs(content::WebContents *contents, bool /*suppress_callbacks*/, bool /*reset_state*/) Q_DECL_OVERRIDE
+    void RunBeforeUnloadDialog(content::WebContents *, bool isReload, const content::JavaScriptDialogManager::DialogClosedCallback &callback) override;
+    bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride) override;
+    void CancelDialogs(content::WebContents *contents, bool /*suppress_callbacks*/, bool /*reset_state*/) override
     {
         takeDialogForContents(contents);
     }

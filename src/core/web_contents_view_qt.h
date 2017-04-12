@@ -71,62 +71,60 @@ public:
     void initialize(WebContentsAdapterClient* client);
     WebContentsAdapterClient *client() { return m_client; }
 
-    virtual content::RenderWidgetHostViewBase *CreateViewForWidget(content::RenderWidgetHost* render_widget_host, bool is_guest_view_hack) Q_DECL_OVERRIDE;
+    content::RenderWidgetHostViewBase *CreateViewForWidget(content::RenderWidgetHost* render_widget_host, bool is_guest_view_hack) override;
 
-    virtual void CreateView(const gfx::Size& initial_size, gfx::NativeView context) Q_DECL_OVERRIDE;
+    void CreateView(const gfx::Size& initial_size, gfx::NativeView context) override;
 
-    virtual content::RenderWidgetHostViewBase* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host) Q_DECL_OVERRIDE;
+    content::RenderWidgetHostViewBase* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host) override;
 
-    virtual void SetPageTitle(const base::string16& title) Q_DECL_OVERRIDE { }
+    void SetPageTitle(const base::string16& title) override { }
 
-    virtual void RenderViewCreated(content::RenderViewHost* host) Q_DECL_OVERRIDE;
+    void RenderViewCreated(content::RenderViewHost* host) override;
 
-    virtual void RenderViewSwappedIn(content::RenderViewHost* host) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    void RenderViewSwappedIn(content::RenderViewHost* host) override { QT_NOT_YET_IMPLEMENTED }
 
-    virtual void SetOverscrollControllerEnabled(bool enabled) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    void SetOverscrollControllerEnabled(bool enabled) override { QT_NOT_YET_IMPLEMENTED }
 
-    virtual gfx::NativeView GetNativeView() const Q_DECL_OVERRIDE;
+    gfx::NativeView GetNativeView() const override;
 
-    virtual gfx::NativeView GetContentNativeView() const Q_DECL_OVERRIDE { QT_NOT_USED return 0; }
+    gfx::NativeView GetContentNativeView() const override { QT_NOT_USED return 0; }
 
-    virtual gfx::NativeWindow GetTopLevelNativeWindow() const Q_DECL_OVERRIDE { QT_NOT_USED return 0; }
+    gfx::NativeWindow GetTopLevelNativeWindow() const override { QT_NOT_USED return 0; }
 
-    virtual void GetContainerBounds(gfx::Rect* out) const Q_DECL_OVERRIDE;
+    void GetContainerBounds(gfx::Rect* out) const override;
 
-    virtual void SizeContents(const gfx::Size& size) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    void SizeContents(const gfx::Size& size) override { QT_NOT_YET_IMPLEMENTED }
 
-    virtual void Focus() Q_DECL_OVERRIDE;
+    void Focus() override;
 
-    virtual void SetInitialFocus() Q_DECL_OVERRIDE;
+    void SetInitialFocus() override;
 
-    virtual void StoreFocus() Q_DECL_OVERRIDE { QT_NOT_USED }
+    void StoreFocus() override { QT_NOT_USED }
 
-    virtual void RestoreFocus() Q_DECL_OVERRIDE { QT_NOT_USED }
+    void RestoreFocus() override { QT_NOT_USED }
 
-    virtual content::DropData* GetDropData() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED return 0; }
+    content::DropData* GetDropData() const override { QT_NOT_YET_IMPLEMENTED return 0; }
 
-    virtual gfx::Rect GetViewBounds() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED return gfx::Rect(); }
+    gfx::Rect GetViewBounds() const override { QT_NOT_YET_IMPLEMENTED return gfx::Rect(); }
 
     void StartDragging(const content::DropData& drop_data, blink::WebDragOperationsMask allowed_ops,
                        const gfx::ImageSkia& image, const gfx::Vector2d& image_offset,
                        const content::DragEventSourceInfo& event_info,
-                       content::RenderWidgetHostImpl* source_rwh) Q_DECL_OVERRIDE;
+                       content::RenderWidgetHostImpl* source_rwh) override;
 
-    void UpdateDragCursor(blink::WebDragOperation dragOperation) Q_DECL_OVERRIDE;
+    void UpdateDragCursor(blink::WebDragOperation dragOperation) override;
 
-    virtual void ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params) Q_DECL_OVERRIDE;
+    void ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params) override;
 
-    virtual void TakeFocus(bool reverse) Q_DECL_OVERRIDE;
+    void TakeFocus(bool reverse) override;
 
-    virtual void GetScreenInfo(content::ScreenInfo* results) const Q_DECL_OVERRIDE;
+    void GetScreenInfo(content::ScreenInfo* results) const override;
 
 #if defined(OS_MACOSX)
-    virtual void SetAllowOtherViews(bool allow) Q_DECL_OVERRIDE { m_allowOtherViews = allow; }
-    virtual bool GetAllowOtherViews() const Q_DECL_OVERRIDE { return m_allowOtherViews; }
-    virtual void CloseTabAfterEventTracking() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-    virtual bool IsEventTracking() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
-    virtual void SetOverlayView(WebContentsView* overlay, const gfx::Point& offset) { QT_NOT_YET_IMPLEMENTED }
-    virtual void RemoveOverlayView() { QT_NOT_YET_IMPLEMENTED }
+    void SetAllowOtherViews(bool allow) override { m_allowOtherViews = allow; }
+    bool GetAllowOtherViews() const override { return m_allowOtherViews; }
+    void CloseTabAfterEventTracking() override { QT_NOT_YET_IMPLEMENTED }
+    bool IsEventTracking() const override { QT_NOT_YET_IMPLEMENTED; return false; }
 #endif // defined(OS_MACOSX)
 
 private:

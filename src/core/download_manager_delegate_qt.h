@@ -43,7 +43,7 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include <base/memory/weak_ptr.h>
 
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#include <QtGlobal>
 
 namespace base {
 class FilePath;
@@ -67,28 +67,28 @@ class DownloadManagerDelegateQt
 public:
     DownloadManagerDelegateQt(BrowserContextAdapter *contextAdapter);
     ~DownloadManagerDelegateQt();
-    void GetNextId(const content::DownloadIdCallback& callback) Q_DECL_OVERRIDE;
+    void GetNextId(const content::DownloadIdCallback& callback) override;
 
     bool DetermineDownloadTarget(content::DownloadItem* item,
-                                 const content::DownloadTargetCallback& callback) Q_DECL_OVERRIDE;
+                                 const content::DownloadTargetCallback& callback) override;
 
     void GetSaveDir(content::BrowserContext* browser_context,
                     base::FilePath* website_save_dir,
                     base::FilePath* download_save_dir,
-                    bool* skip_dir_check) Q_DECL_OVERRIDE;
+                    bool* skip_dir_check) override;
     void ChooseSavePath(content::WebContents *web_contents,
                         const base::FilePath &suggested_path,
                         const base::FilePath::StringType &default_extension,
                         bool can_save_as_complete,
-                        const content::SavePackagePathPickedCallback &callback) Q_DECL_OVERRIDE;
+                        const content::SavePackagePathPickedCallback &callback) override;
 
     void cancelDownload(quint32 downloadId);
 
     void setDownloadType(int downloadType) { m_downloadType = downloadType; }
 
     // Inherited from content::DownloadItem::Observer
-    void OnDownloadUpdated(content::DownloadItem *download) Q_DECL_OVERRIDE;
-    void OnDownloadDestroyed(content::DownloadItem *download) Q_DECL_OVERRIDE;
+    void OnDownloadUpdated(content::DownloadItem *download) override;
+    void OnDownloadDestroyed(content::DownloadItem *download) override;
 
 private:
     void cancelDownload(const content::DownloadTargetCallback& callback);

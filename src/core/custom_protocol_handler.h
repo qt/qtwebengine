@@ -65,7 +65,7 @@ class QWEBENGINE_EXPORT CustomProtocolHandler : public net::URLRequestJobFactory
 public:
     CustomProtocolHandler(QWeakPointer<const BrowserContextAdapter> adapter);
 
-    virtual net::URLRequestJob *MaybeCreateJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate) const Q_DECL_OVERRIDE;
+    net::URLRequestJob *MaybeCreateJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate) const override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CustomProtocolHandler);

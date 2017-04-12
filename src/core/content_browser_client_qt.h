@@ -43,7 +43,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/content_browser_client.h"
 
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#include <QtGlobal>
 
 namespace net {
 class URLRequestContextGetter;
@@ -87,14 +87,14 @@ public:
     ContentBrowserClientQt();
     ~ContentBrowserClientQt();
     static ContentBrowserClientQt* Get();
-    virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
-    virtual void RenderProcessWillLaunch(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
-    virtual void ResourceDispatcherHostCreated() Q_DECL_OVERRIDE;
-    virtual gl::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
-    virtual content::MediaObserver* GetMediaObserver() Q_DECL_OVERRIDE;
-    virtual content::QuotaPermissionContext *CreateQuotaPermissionContext() Q_DECL_OVERRIDE;
-    virtual void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) Q_DECL_OVERRIDE;
-    virtual void AllowCertificateError(content::WebContents* web_contents,
+    content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) override;
+    void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
+    void ResourceDispatcherHostCreated() override;
+    gl::GLShareGroup* GetInProcessGpuShareGroup() override;
+    content::MediaObserver* GetMediaObserver() override;
+    content::QuotaPermissionContext *CreateQuotaPermissionContext() override;
+    void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) override;
+    void AllowCertificateError(content::WebContents* web_contents,
                                        int cert_error,
                                        const net::SSLInfo& ssl_info,
                                        const GURL& request_url,
@@ -102,25 +102,25 @@ public:
                                        bool overridable,
                                        bool strict_enforcement,
                                        bool expired_previous_decision,
-                                       const base::Callback<void(content::CertificateRequestResultType)>& callback) Q_DECL_OVERRIDE;
-    virtual void SelectClientCertificate(content::WebContents* web_contents,
+                                       const base::Callback<void(content::CertificateRequestResultType)>& callback) override;
+    void SelectClientCertificate(content::WebContents* web_contents,
                                          net::SSLCertRequestInfo* cert_request_info,
-                                         std::unique_ptr<content::ClientCertificateDelegate> delegate) Q_DECL_OVERRIDE;
-    content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() Q_DECL_OVERRIDE;
+                                         std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
+    content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() override;
 
-    virtual std::string GetApplicationLocale() Q_DECL_OVERRIDE;
-    std::string GetAcceptLangs(content::BrowserContext* context) Q_DECL_OVERRIDE;
-    virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id) Q_DECL_OVERRIDE;
-    virtual void GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes) Q_DECL_OVERRIDE;
+    std::string GetApplicationLocale() override;
+    std::string GetAcceptLangs(content::BrowserContext* context) override;
+    void AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id) override;
+    void GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes) override;
 
     void RegisterRenderFrameMojoInterfaces(service_manager::InterfaceRegistry* registry, content::RenderFrameHost* render_frame_host) override;
 
 #if defined(Q_OS_LINUX)
-    virtual void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::FileDescriptorInfo* mappings) Q_DECL_OVERRIDE;
+    void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::FileDescriptorInfo* mappings) override;
 #endif
 
 #if defined(ENABLE_PLUGINS)
-    virtual void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) Q_DECL_OVERRIDE;
+    void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
 #endif
 
 private:

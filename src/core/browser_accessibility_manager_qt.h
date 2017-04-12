@@ -53,7 +53,7 @@ namespace content {
 class BrowserAccessibilityFactoryQt : public BrowserAccessibilityFactory
 {
 public:
-    BrowserAccessibility* Create() Q_DECL_OVERRIDE;
+    BrowserAccessibility* Create() override;
 };
 
 class BrowserAccessibilityManagerQt : public BrowserAccessibilityManager
@@ -66,7 +66,7 @@ public:
 
     void NotifyAccessibilityEvent(BrowserAccessibilityEvent::Source source,
                                   ui::AXEvent event_type,
-                                  BrowserAccessibility* node) Q_DECL_OVERRIDE;
+                                  BrowserAccessibility* node) override;
 
     QAccessibleInterface *rootParentAccessible();
 

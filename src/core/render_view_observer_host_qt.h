@@ -60,7 +60,7 @@ public:
     void fetchDocumentInnerText(quint64 requestId);
 
 private:
-    bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+    bool OnMessageReceived(const IPC::Message& message) override;
     void onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup);
     void onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText);
 

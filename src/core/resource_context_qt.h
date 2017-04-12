@@ -42,8 +42,6 @@
 
 #include "content/public/browser/resource_context.h"
 
-#include "qglobal.h"
-
 namespace net {
 class URLRequestContextGetter;
 }
@@ -60,9 +58,9 @@ public:
         : context(ctx)
     {}
 
-    virtual net::HostResolver* GetHostResolver() Q_DECL_OVERRIDE;
+    net::HostResolver *GetHostResolver() override;
+    net::URLRequestContext *GetRequestContext() override;
 
-    virtual net::URLRequestContext* GetRequestContext() Q_DECL_OVERRIDE;
 private:
     BrowserContextQt *context;
 

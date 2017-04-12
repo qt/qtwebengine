@@ -191,41 +191,41 @@ public:
         Q_ASSERT((action != ACTION_DOWN && action != ACTION_UP) || index == 0);
     }
 
-    virtual uint32_t GetUniqueEventId() const Q_DECL_OVERRIDE { return eventId; }
-    virtual Action GetAction() const Q_DECL_OVERRIDE { return action; }
-    virtual int GetActionIndex() const Q_DECL_OVERRIDE { return index; }
-    virtual size_t GetPointerCount() const Q_DECL_OVERRIDE { return touchPoints.size(); }
-    virtual int GetPointerId(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).id(); }
-    virtual float GetX(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pos().x() / dpiScale; }
-    virtual float GetY(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pos().y() / dpiScale; }
-    virtual float GetRawX(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).screenPos().x(); }
-    virtual float GetRawY(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).screenPos().y(); }
-    virtual float GetTouchMajor(size_t pointer_index) const Q_DECL_OVERRIDE
+    uint32_t GetUniqueEventId() const override { return eventId; }
+    Action GetAction() const override { return action; }
+    int GetActionIndex() const override { return index; }
+    size_t GetPointerCount() const override { return touchPoints.size(); }
+    int GetPointerId(size_t pointer_index) const override { return touchPoints.at(pointer_index).id(); }
+    float GetX(size_t pointer_index) const override { return touchPoints.at(pointer_index).pos().x() / dpiScale; }
+    float GetY(size_t pointer_index) const override { return touchPoints.at(pointer_index).pos().y() / dpiScale; }
+    float GetRawX(size_t pointer_index) const override { return touchPoints.at(pointer_index).screenPos().x(); }
+    float GetRawY(size_t pointer_index) const override { return touchPoints.at(pointer_index).screenPos().y(); }
+    float GetTouchMajor(size_t pointer_index) const override
     {
         QRectF touchRect = touchPoints.at(pointer_index).rect();
         return std::max(touchRect.height(), touchRect.width());
     }
-    virtual float GetTouchMinor(size_t pointer_index) const Q_DECL_OVERRIDE
+    float GetTouchMinor(size_t pointer_index) const override
     {
         QRectF touchRect = touchPoints.at(pointer_index).rect();
         return std::min(touchRect.height(), touchRect.width());
     }
-    virtual float GetOrientation(size_t pointer_index) const Q_DECL_OVERRIDE
+    float GetOrientation(size_t pointer_index) const override
     {
         return 0;
     }
-    virtual int GetFlags() const Q_DECL_OVERRIDE { return flags; }
-    virtual float GetPressure(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pressure(); }
-    virtual float GetTilt(size_t pointer_index) const Q_DECL_OVERRIDE { return 0; }
-    virtual base::TimeTicks GetEventTime() const Q_DECL_OVERRIDE { return eventTime; }
+    int GetFlags() const override { return flags; }
+    float GetPressure(size_t pointer_index) const override { return touchPoints.at(pointer_index).pressure(); }
+    float GetTilt(size_t pointer_index) const override { return 0; }
+    base::TimeTicks GetEventTime() const override { return eventTime; }
 
-    virtual size_t GetHistorySize() const Q_DECL_OVERRIDE { return 0; }
-    virtual base::TimeTicks GetHistoricalEventTime(size_t historical_index) const Q_DECL_OVERRIDE { return base::TimeTicks(); }
-    virtual float GetHistoricalTouchMajor(size_t pointer_index, size_t historical_index) const Q_DECL_OVERRIDE { return 0; }
-    virtual float GetHistoricalX(size_t pointer_index, size_t historical_index) const Q_DECL_OVERRIDE { return 0; }
-    virtual float GetHistoricalY(size_t pointer_index, size_t historical_index) const Q_DECL_OVERRIDE { return 0; }
-    virtual ToolType GetToolType(size_t pointer_index) const Q_DECL_OVERRIDE { return ui::MotionEvent::TOOL_TYPE_UNKNOWN; }
-    virtual int GetButtonState() const Q_DECL_OVERRIDE { return 0; }
+    size_t GetHistorySize() const override { return 0; }
+    base::TimeTicks GetHistoricalEventTime(size_t historical_index) const override { return base::TimeTicks(); }
+    float GetHistoricalTouchMajor(size_t pointer_index, size_t historical_index) const override { return 0; }
+    float GetHistoricalX(size_t pointer_index, size_t historical_index) const override { return 0; }
+    float GetHistoricalY(size_t pointer_index, size_t historical_index) const override { return 0; }
+    ToolType GetToolType(size_t pointer_index) const override { return ui::MotionEvent::TOOL_TYPE_UNKNOWN; }
+    int GetButtonState() const override { return 0; }
 
 private:
     QList<QTouchEvent::TouchPoint> touchPoints;

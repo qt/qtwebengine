@@ -59,16 +59,16 @@ public:
     virtual ~WebChannelIPCTransportHost();
 
     // WebContentsObserver
-    virtual void RenderViewHostChanged(content::RenderViewHost* old_host, content::RenderViewHost* new_host) Q_DECL_OVERRIDE;
+    void RenderViewHostChanged(content::RenderViewHost* old_host, content::RenderViewHost* new_host) override;
 
     // QWebChannelAbstractTransport
-    void sendMessage(const QJsonObject &message) Q_DECL_OVERRIDE;
+    void sendMessage(const QJsonObject &message) override;
 
     void setWorldId(uint worldId);
     uint worldId() const { return m_worldId; }
 
 private:
-    bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+    bool OnMessageReceived(const IPC::Message& message) override;
     void onWebChannelMessage(const std::vector<char> &message);
     uint m_worldId;
 };

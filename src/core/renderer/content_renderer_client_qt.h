@@ -42,7 +42,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 
-#include <QtGlobal>
 #include <QScopedPointer>
 
 namespace visitedlink {
@@ -63,20 +62,20 @@ class ContentRendererClientQt : public content::ContentRendererClient {
 public:
     ContentRendererClientQt();
     ~ContentRendererClientQt();
-    virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
-    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
-    virtual void RenderFrameCreated(content::RenderFrame* render_frame) Q_DECL_OVERRIDE;
-    virtual bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) Q_DECL_OVERRIDE;
-    virtual bool HasErrorPage(int httpStatusCode, std::string *errorDomain) Q_DECL_OVERRIDE;
-    virtual void GetNavigationErrorStrings(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest
-            , const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) Q_DECL_OVERRIDE;
+    void RenderThreadStarted() override;
+    void RenderViewCreated(content::RenderView *render_view) override;
+    void RenderFrameCreated(content::RenderFrame* render_frame) override;
+    bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) override;
+    bool HasErrorPage(int httpStatusCode, std::string *errorDomain) override;
+    void GetNavigationErrorStrings(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
+                                   const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) override;
 
-    virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
-    virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;
-    virtual void AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) Q_DECL_OVERRIDE;
+    unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) override;
+    bool IsLinkVisited(unsigned long long linkHash) override;
+    void AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) override;
 
-    virtual void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) Q_DECL_OVERRIDE;
-    virtual void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) Q_DECL_OVERRIDE;
+    void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
+    void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
 
 private:
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;

@@ -43,8 +43,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "ppapi/features/features.h"
 
-#include <QtGlobal>
-
 namespace QtWebEngineCore {
 
 class BrowserMessageFilterQt : public content::BrowserMessageFilter
@@ -53,7 +51,7 @@ public:
     BrowserMessageFilterQt(int render_process_id);
 
 private:
-    bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+    bool OnMessageReceived(const IPC::Message& message) override;
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)
     // Returns whether any internal plugin supporting |mime_type| is registered
     // and enabled. Does not determine whether the plugin can actually be

@@ -92,7 +92,7 @@ public:
     bool HandleExternalProtocol(const GURL& url,
                                 content::ResourceRequestInfo* info) override;
 
-    virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request) Q_DECL_OVERRIDE;
+    content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request) override;
 };
 
 } // namespace QtWebEngineCore

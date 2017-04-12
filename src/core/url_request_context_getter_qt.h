@@ -73,8 +73,8 @@ class URLRequestContextGetterQt : public net::URLRequestContextGetter {
 public:
     URLRequestContextGetterQt(QSharedPointer<BrowserContextAdapter> browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors);
 
-    virtual net::URLRequestContext *GetURLRequestContext() Q_DECL_OVERRIDE;
-    virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const Q_DECL_OVERRIDE;
+    net::URLRequestContext *GetURLRequestContext() override;
+    scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const override;
 
     // Called on the UI thread:
     void updateStorageSettings();
