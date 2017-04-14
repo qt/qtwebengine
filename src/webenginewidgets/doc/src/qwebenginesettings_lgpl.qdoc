@@ -148,7 +148,7 @@
             Gives focus to the view associated with the page, whenever a navigation operation occurs
             (load, stop, reload, reload and bypass cache, forward, backward, set content, and so
             on).
-            Enabled by default. (Added in Qt 5.8)
+            Disabled by default. (Added in Qt 5.8)
     \value  PrintElementBackgrounds
             Turns on printing of CSS backgrounds when printing a web page.
             Enabled by default. (Added in Qt 5.8)

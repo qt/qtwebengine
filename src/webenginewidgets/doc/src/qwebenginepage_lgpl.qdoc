@@ -89,8 +89,8 @@
     \c MainWorld.
 
     The \l {QWebEngineSettings::FocusOnNavigationEnabled} {FocusOnNavigationEnabled} setting can be
-    used to stop the view associated with the page from automatically receiving focus when a
-    navigation operation occurs (like loading or reloading a page or navigating through history).
+    used to make the view associated with the page automatically receive focus when a navigation
+    operation occurs (like loading or reloading a page or navigating through history).
 */
 
 /*!

@@ -251,6 +251,7 @@ void tst_QWebEnginePage::init()
     m_view = new QWebEngineView();
     m_page = m_view->page();
     m_page->settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    m_view->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
 }
 
 void tst_QWebEnginePage::cleanup()

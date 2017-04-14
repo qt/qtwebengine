@@ -86,7 +86,7 @@
     focus on press. This can be useful in a hybrid UI.
 
     The \l {WebEngineSettings::focusOnNavigationEnabled} {focusOnNavigationEnabled} setting can be
-    used to stop the view from automatically receiving focus when a navigation operation occurs
+    used to make the view automatically receive focus when a navigation operation occurs
     (like loading or reloading a page or navigating through history).
 
     The \l linkHovered() signal is emitted when a mouse pointer passes over a link and thus

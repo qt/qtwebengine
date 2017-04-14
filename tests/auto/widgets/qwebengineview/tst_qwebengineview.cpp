@@ -1067,6 +1067,7 @@ void tst_QWebEngineView::inputMethodsTextFormat_data()
 void tst_QWebEngineView::inputMethodsTextFormat()
 {
     QWebEngineView view;
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
 
     view.setHtml("<html><body>"
@@ -1205,6 +1206,7 @@ void tst_QWebEngineView::keyboardFocusAfterPopup()
     urlLine->setFocus();
 
     QWebEngineView *webView = new QWebEngineView(containerWidget.data());
+    webView->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     QSignalSpy loadFinishedSpy(webView, SIGNAL(loadFinished(bool)));
 
     connect(urlLine, &QLineEdit::editingFinished, [=] {
@@ -2222,6 +2224,8 @@ void tst_QWebEngineView::imeCompositionQueryEvent_data()
 void tst_QWebEngineView::imeCompositionQueryEvent()
 {
     QWebEngineView view;
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+
     view.show();
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));

@@ -264,7 +264,7 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(Accelerated2dCanvasEnabled, accelerated2dCanvas);
         s_defaultAttributes.insert(AutoLoadIconsForPage, true);
         s_defaultAttributes.insert(TouchIconsEnabled, false);
-        s_defaultAttributes.insert(FocusOnNavigationEnabled, true);
+        s_defaultAttributes.insert(FocusOnNavigationEnabled, false);
         s_defaultAttributes.insert(PrintElementBackgrounds, true);
         s_defaultAttributes.insert(AllowRunningInsecureContent, allowRunningInsecureContent);
         s_defaultAttributes.insert(AllowGeolocationOnInsecureOrigins, false);
