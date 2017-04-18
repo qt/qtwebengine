@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -41,15 +41,31 @@ TestWebEngineView {
         loadProgressArray.push(webEngineView.loadProgress)
     }
 
+    SignalSpy {
+        id: spyProgress
+        target: webEngineView
+        signalName: "loadProgressChanged"
+    }
+
     TestCase {
         name: "WebEngineViewLoadProgress"
 
         function test_loadProgress() {
             compare(webEngineView.loadProgress, 0)
+            compare(spyProgress.count, 0)
             loadProgressArray = []
 
             webEngineView.url = Qt.resolvedUrl("test1.html")
+            // Wait for the first loadProgressChanged signal, which have to be non-negative
+            spyProgress.wait()
+            verify(loadProgressArray[0] >= 0)
+            verify(webEngineView.loadProgress >= 0)
+
+            // Wait for the last loadProgressChanged signal, which have to be 100%
             verify(webEngineView.waitForLoadSucceeded())
+            spyProgress.wait()
+            compare(loadProgressArray[loadProgressArray.length - 1], 100)
+            compare(webEngineView.loadProgress, 100)
 
             // Test whether the chromium emits progress numbers in ascending order
             var loadProgressMin = 0
@@ -58,9 +74,6 @@ TestWebEngineView {
                 verify(loadProgressMin <= loadProgress)
                 loadProgressMin = loadProgress
             }
-
-            // The progress must be 100% at the end
-            compare(loadProgressArray[loadProgressArray.length - 1], 100)
         }
     }
 }
