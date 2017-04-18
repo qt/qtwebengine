@@ -9,6 +9,8 @@ SUBDIRS += \
     simplebrowser \
     videoplayer
 
+qtHaveModule(positioning): SUBDIRS += maps
+
 contains(WEBENGINE_CONFIG, use_spellchecker):!cross_compile {
     !contains(WEBENGINE_CONFIG, use_native_spellchecker) {
         SUBDIRS += spellchecker
