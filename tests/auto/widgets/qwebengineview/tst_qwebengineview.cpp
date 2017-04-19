@@ -55,6 +55,43 @@ do { \
     QCOMPARE((__expr), __expected); \
 } while (0)
 
+static QPoint elementCenter(QWebEnginePage *page, const QString &id)
+{
+    const QString jsCode(
+            "(function(){"
+            "   var elem = document.getElementById('" + id + "');"
+            "   var rect = elem.getBoundingClientRect();"
+            "   return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
+            "})()");
+    QVariantList rectList = evaluateJavaScriptSync(page, jsCode).toList();
+
+    if (rectList.count() != 2) {
+        qWarning("elementCenter failed.");
+        return QPoint();
+    }
+
+    return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
+}
+
+static QRect elementGeometry(QWebEnginePage *page, const QString &id)
+{
+    const QString jsCode(
+                "(function() {"
+                "   var elem = document.getElementById('" + id + "');"
+                "   var rect = elem.getBoundingClientRect();"
+                "   return [rect.left, rect.top, rect.right, rect.bottom];"
+                "})()");
+    QVariantList coords = evaluateJavaScriptSync(page, jsCode).toList();
+
+    if (coords.count() != 4) {
+        qWarning("elementGeometry faield.");
+        return QRect();
+    }
+
+    return QRect(coords[0].toInt(), coords[1].toInt(), coords[2].toInt(), coords[3].toInt());
+}
+
+
 class tst_QWebEngineView : public QObject
 {
     Q_OBJECT
@@ -263,113 +300,111 @@ void tst_QWebEngineView::crashTests()
 
 void tst_QWebEngineView::microFocusCoordinates()
 {
-#if !defined(QWEBENGINEPAGE_INPUTMETHODQUERY)
-    QSKIP("QWEBENGINEPAGE_INPUTMETHODQUERY");
-#else
-    QWebEnginePage* page = new QWebEnginePage;
-    QWebEngineView* webView = new QWebEngineView;
-    webView->setPage( page );
-
-    page->setHtml("<html><body>" \
-        "<input type='text' id='input1' style='font--family: serif' value='' maxlength='20'/><br>" \
-        "<canvas id='canvas1' width='500' height='500'></canvas>" \
-        "<input type='password'/><br>" \
-        "<canvas id='canvas2' width='500' height='500'></canvas>" \
-        "</body></html>");
-
-#if defined(QWEBENGINEFRAME)
-    page->mainFrame()->setFocus();
-#endif
-
-    QVariant initialMicroFocus = page->inputMethodQuery(Qt::ImMicroFocus);
-    QVERIFY(initialMicroFocus.isValid());
-
-    page->scroll(0,50);
-
-    QVariant currentMicroFocus = page->inputMethodQuery(Qt::ImMicroFocus);
-    QVERIFY(currentMicroFocus.isValid());
-
-    QCOMPARE(initialMicroFocus.toRect().translated(QPoint(0,-50)), currentMicroFocus.toRect());
-#endif
-}
-
-void tst_QWebEngineView::focusInputTypes()
-{
-#if !defined(QWEBENGINEELEMENT)
-    QSKIP("QWEBENGINEELEMENT");
-#else
     QWebEngineView webView;
     webView.show();
     QTest::qWaitForWindowExposed(&webView);
 
-    QUrl url("qrc:///resources/input_types.html");
-    QWebEngineFrame* const mainFrame = webView.page()->mainFrame();
-    webView.load(url);
-    mainFrame->setFocus();
+    QSignalSpy scrollSpy(webView.page(), SIGNAL(scrollPositionChanged(QPointF)));
+    QSignalSpy loadFinishedSpy(&webView, SIGNAL(loadFinished(bool)));
+    webView.page()->setHtml("<html><body>"
+                            "<input type='text' id='input1' value='' maxlength='20'/><br>"
+                            "<canvas id='canvas1' width='500' height='500'></canvas>"
+                            "<input type='password'/><br>"
+                            "<canvas id='canvas2' width='500' height='500'></canvas>"
+                            "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
 
-    QSignalSpy spyFinished(webView, &QWebEngineView::loadFinished);
-    QVERIFY(spyFinished.wait());
+    evaluateJavaScriptSync(webView.page(), "document.getElementById('input1').focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
 
-    // 'text' type
-    QWebEngineElement inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=text]"));
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    QVERIFY(webView.inputMethodHints() == Qt::ImhNone);
-    QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
+    QTRY_VERIFY(webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus).isValid());
+    QVariant initialMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus);
+
+    evaluateJavaScriptSync(webView.page(), "window.scrollBy(0, 50)");
+    QVERIFY(scrollSpy.wait());
+
+    QTRY_VERIFY(webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus).isValid());
+    QVariant currentMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus);
+
+    QCOMPARE(initialMicroFocus.toRect().translated(QPoint(0,-50)), currentMicroFocus.toRect());
+}
+
+void tst_QWebEngineView::focusInputTypes()
+{
+    QWebEngineView webView;
+    webView.show();
+    QTest::qWaitForWindowExposed(&webView);
+
+    QSignalSpy loadFinishedSpy(&webView, SIGNAL(loadFinished(bool)));
+    webView.load(QUrl("qrc:///resources/input_types.html"));
+    QVERIFY(loadFinishedSpy.wait());
+
+    // 'text' field
+    QPoint textInputCenter = elementCenter(webView.page(), "textInput");
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("textInput"));
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), Qt::ImhPreferLowercase);
+    QVERIFY(webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'password' field
-    inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=password]"));
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhHiddenText);
-    QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
+    QPoint passwordInputCenter = elementCenter(webView.page(), "passwordInput");
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, 0, passwordInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("passwordInput"));
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), (Qt::ImhSensitiveData | Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase | Qt::ImhHiddenText));
+    QVERIFY(webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'tel' field
-    inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=tel]"));
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhDialableCharactersOnly);
-    QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
+    QPoint telInputCenter = elementCenter(webView.page(), "telInput");
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, 0, telInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("telInput"));
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), Qt::ImhDialableCharactersOnly);
+    QVERIFY(webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'number' field
-    inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=number]"));
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhDigitsOnly);
-    QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
+    QPoint numberInputCenter = elementCenter(webView.page(), "numberInput");
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, 0, numberInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("numberInput"));
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), Qt::ImhFormattedNumbersOnly);
+    QVERIFY(webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'email' field
-    inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=email]"));
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhEmailCharactersOnly);
-    QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
+    QPoint emailInputCenter = elementCenter(webView.page(), "emailInput");
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, 0, emailInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("emailInput"));
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), Qt::ImhEmailCharactersOnly);
+    QVERIFY(webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'url' field
-    inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=url]"));
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhUrlCharactersOnly);
-    QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
+    QPoint urlInputCenter = elementCenter(webView.page(), "urlInput");
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, 0, urlInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("urlInput"));
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), (Qt::ImhUrlCharactersOnly | Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase));
+    QVERIFY(webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'password' field
-    inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=password]"));
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhHiddenText);
-    QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, 0, passwordInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("passwordInput"));
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), (Qt::ImhSensitiveData | Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase | Qt::ImhHiddenText));
+    QVERIFY(webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'text' type
-    inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=text]"));
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    QVERIFY(webView.inputMethodHints() == Qt::ImhNone);
-    QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("textInput"));
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), Qt::ImhPreferLowercase);
+    QVERIFY(webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'password' field
-    inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=password]"));
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    VERIFY_INPUTMETHOD_HINTS(webView.inputMethodHints(), Qt::ImhHiddenText);
-    QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, 0, passwordInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("passwordInput"));
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), (Qt::ImhSensitiveData | Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase | Qt::ImhHiddenText));
+    QVERIFY(webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
 
     // 'text area' field
-    inputElement = mainFrame->documentElement().findFirst(QLatin1String("textarea"));
-    QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
-    QVERIFY(webView.inputMethodHints() == Qt::ImhNone);
-    QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
-#endif
+    QPoint textAreaCenter = elementCenter(webView.page(), "textArea");
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, 0, textAreaCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("textArea"));
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), (Qt::ImhMultiLine | Qt::ImhPreferLowercase));
+    QVERIFY(webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
 }
 
 class KeyEventRecordingWidget : public QWidget {
@@ -1392,42 +1427,6 @@ public:
 
     bool m_visible;
 };
-
-static QPoint elementCenter(QWebEnginePage *page, const QString &id)
-{
-    const QString jsCode(
-            "(function(){"
-            "   var elem = document.getElementById('" + id + "');"
-            "   var rect = elem.getBoundingClientRect();"
-            "   return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
-            "})()");
-    QVariantList rectList = evaluateJavaScriptSync(page, jsCode).toList();
-
-    if (rectList.count() != 2) {
-        qWarning("elementCenter failed.");
-        return QPoint();
-    }
-
-    return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
-}
-
-static QRect elementGeometry(QWebEnginePage *page, const QString &id)
-{
-    const QString jsCode(
-                "(function() {"
-                "   var elem = document.getElementById('" + id + "');"
-                "   var rect = elem.getBoundingClientRect();"
-                "   return [rect.left, rect.top, rect.right, rect.bottom];"
-                "})()");
-    QVariantList coords = evaluateJavaScriptSync(page, jsCode).toList();
-
-    if (coords.count() != 4) {
-        qWarning("elementGeometry faield.");
-        return QRect();
-    }
-
-    return QRect(coords[0].toInt(), coords[1].toInt(), coords[2].toInt(), coords[3].toInt());
-}
 
 void tst_QWebEngineView::softwareInputPanel()
 {
