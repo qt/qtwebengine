@@ -72,11 +72,11 @@ defineTest(runConfigure) {
             else: log("System opus not found. Using Chromium's copy.$${EOL}")
         }
         packagesExist(libxml-2.0,libxslt) {
-            PKGCONFIG_LIBS_STATIC = $$system($$PKG_CONFIG --libs --static $$PKGCONFIG_LIB)
-            contains(PKGCONFIG_LIBS_STATIC, icuuc) {
+            PKGCONFIG_LIBS_STATIC = $$system($$PKG_CONFIG --libs --static libxml-2.0)
+            contains(PKGCONFIG_LIBS_STATIC, -licuuc) {
                 WEBENGINE_CONFIG += use_system_libxslt use_system_libxml2
             } else {
-                log("System libxml2 or libxslt not configured with ICU. Using Chromium's copies.$${EOL}")
+                log("System libxml2 is not configured with ICU. Using Chromium's copy.$${EOL}")
             }
         }
         else: log("System libxml2 or libxslt not found. Using Chromium's copies.$${EOL}")
