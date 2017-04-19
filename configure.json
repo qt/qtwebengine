@@ -4,8 +4,6 @@
         "printsupport"
     ],
 
-    "testDir": "tools/qmake/config.tests",
-
     "commandline": {
         "options": {
             "alsa": "boolean",

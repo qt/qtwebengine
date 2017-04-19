@@ -11,7 +11,7 @@ defineTest(runConfigure) {
     # Ignore the cached config tests results in case they were not successful
     CONFIG += recheck
     #Override the config.tests path
-    QMAKE_CONFIG_TESTS_DIR = $$QTWEBENGINE_ROOT/tools/qmake/config.tests
+    QMAKE_CONFIG_TESTS_DIR = $$QTWEBENGINE_ROOT/config.tests
     CONFIG_TESTS = $$files($$QMAKE_CONFIG_TESTS_DIR/*.pro, true)
     log("Running configure tests$${EOL}")
     for(test, CONFIG_TESTS) {
