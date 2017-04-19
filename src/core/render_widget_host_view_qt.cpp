@@ -1149,11 +1149,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             if (format.underlineStyle() != QTextCharFormat::NoUnderline)
                 underlineColor = format.underlineColor();
 
-            QColor backgroundColor(0, 0, 0, 0);
-            if (format.background().style() != Qt::NoBrush)
-                backgroundColor = format.background().color();
-
-            underlines.push_back(blink::WebCompositionUnderline(start, end, toSk(underlineColor), /*thick*/ false, toSk(backgroundColor)));
+            underlines.push_back(blink::WebCompositionUnderline(start, end, toSk(underlineColor), /*thick*/ false, SK_ColorTRANSPARENT));
             break;
         }
         case QInputMethodEvent::Cursor:

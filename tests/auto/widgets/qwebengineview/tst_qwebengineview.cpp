@@ -1012,8 +1012,14 @@ void tst_QWebEngineView::inputMethodsTextFormat()
     QTextCharFormat format;
     format.setUnderlineStyle(static_cast<QTextCharFormat::UnderlineStyle>(underlineStyle));
     format.setUnderlineColor(underlineColor);
+
+    // Setting background color is disabled for Qt WebEngine because some IME manager
+    // sets background color to black and there is no API for setting the foreground color.
+    // This may result black text on black background. However, we still test it to ensure
+    // changing background color doesn't cause any crash.
     if (backgroundColor.isValid())
         format.setBackground(QBrush(backgroundColor));
+
     attrs.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, start, length, format));
 
     QInputMethodEvent im(string, attrs);
