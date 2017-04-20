@@ -167,13 +167,9 @@ BrowserMainWindow::BrowserMainWindow(QWidget *parent, Qt::WindowFlags flags)
             m_navigationBar, SLOT(setVisible(bool)));
     connect(m_tabWidget, SIGNAL(toolBarVisibilityChangeRequested(bool)),
             m_bookmarksToolbar, SLOT(setVisible(bool)));
-#if defined(Q_OS_OSX)
-    connect(m_tabWidget, SIGNAL(lastTabClosed()),
-            this, SLOT(close()));
-#else
+
     connect(m_tabWidget, SIGNAL(lastTabClosed()),
             m_tabWidget, SLOT(newTab()));
-#endif
 
     slotUpdateWindowTitle();
     loadDefaultState();
