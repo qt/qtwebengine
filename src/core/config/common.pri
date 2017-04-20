@@ -47,6 +47,8 @@ qtConfig(webengine-webrtc) {
 
 qtConfig(webengine-proprietary-codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
 
+!precompile_header: gn_args += disable_precompiled_headers=true
+
 CONFIG(release, debug|release) {
     force_debug_info {
         # Level 1 is not enough to generate all Chromium debug symbols on Windows
