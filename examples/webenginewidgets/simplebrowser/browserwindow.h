@@ -73,6 +73,7 @@ protected:
 private slots:
     void handleNewWindowTriggered();
     void handleFileOpenTriggered();
+    void handleFindActionTriggered();
     void handleShowWindowTriggered();
     void handleWebViewLoadProgress(int);
     void handleWebViewTitleChanged(const QString &title);
@@ -82,6 +83,7 @@ private slots:
 
 private:
     QMenu *createFileMenu(TabWidget *tabWidget);
+    QMenu *createEditMenu();
     QMenu *createViewMenu(QToolBar *toolBar);
     QMenu *createWindowMenu(TabWidget *tabWidget);
     QMenu *createHelpMenu();
@@ -96,6 +98,7 @@ private:
     QAction *m_reloadAction;
     QAction *m_stopReloadAction;
     UrlLineEdit *m_urlLineEdit;
+    QString m_lastSearch;
 };
 
 #endif // BROWSERWINDOW_H
