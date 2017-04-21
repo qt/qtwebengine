@@ -13,6 +13,8 @@ isPlatformSupported() {
     log(QtWebEngine will not be built.$${EOL})
 }
 
+QMAKE_DISTCLEAN += .qmake.cache
+
 OTHER_FILES = \
     tools/buildscripts/* \
     tools/scripts/* \

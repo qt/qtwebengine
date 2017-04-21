@@ -29,3 +29,5 @@ GN_FILE = $$OUT_PWD/../toolchain/BUILD.gn
 !build_pass {
     write_file($$GN_FILE, GN_CONTENTS, append)
 }
+
+QMAKE_DISTCLEAN += $$GN_FILE
