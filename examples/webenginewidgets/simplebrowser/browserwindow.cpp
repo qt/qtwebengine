@@ -47,6 +47,7 @@
 #include <QCloseEvent>
 #include <QDesktopWidget>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QProgressBar>
@@ -71,6 +72,7 @@ BrowserWindow::BrowserWindow(QWidget *parent, Qt::WindowFlags flags)
     QToolBar *toolbar = createToolBar();
     addToolBar(toolbar);
     menuBar()->addMenu(createFileMenu(m_tabWidget));
+    menuBar()->addMenu(createEditMenu());
     menuBar()->addMenu(createViewMenu(toolbar));
     menuBar()->addMenu(createWindowMenu(m_tabWidget));
     menuBar()->addMenu(createHelpMenu());
@@ -154,6 +156,32 @@ QMenu *BrowserWindow::createFileMenu(TabWidget *tabWidget)
             closeAction->setText(tr("&Close Window"));
     });
     return fileMenu;
+}
+
+QMenu *BrowserWindow::createEditMenu()
+{
+    QMenu *editMenu = new QMenu(tr("&Edit"));
+    QAction *findAction = editMenu->addAction(tr("&Find"));
+    findAction->setShortcuts(QKeySequence::Find);
+    connect(findAction, &QAction::triggered, this, &BrowserWindow::handleFindActionTriggered);
+
+    QAction *findNextAction = editMenu->addAction(tr("Find &Next"));
+    findNextAction->setShortcut(QKeySequence::FindNext);
+    connect(findNextAction, &QAction::triggered, [this]() {
+        if (!currentTab() || m_lastSearch.isEmpty())
+            return;
+        currentTab()->findText(m_lastSearch);
+    });
+
+    QAction *findPreviousAction = editMenu->addAction(tr("Find &Previous"));
+    findPreviousAction->setShortcut(QKeySequence::FindPrevious);
+    connect(findPreviousAction, &QAction::triggered, [this]() {
+        if (!currentTab() || m_lastSearch.isEmpty())
+            return;
+        currentTab()->findText(m_lastSearch, QWebEnginePage::FindBackward);
+    });
+
+    return editMenu;
 }
 
 QMenu *BrowserWindow::createViewMenu(QToolBar *toolbar)
@@ -382,6 +410,23 @@ void BrowserWindow::handleFileOpenTriggered()
     loadPage(file);
 }
 
+void BrowserWindow::handleFindActionTriggered()
+{
+    if (!currentTab())
+        return;
+    bool ok = false;
+    QString search = QInputDialog::getText(this, tr("Find"),
+                                           tr("Find:"), QLineEdit::Normal,
+                                           m_lastSearch, &ok);
+    if (ok && !search.isEmpty()) {
+        m_lastSearch = search;
+        currentTab()->findText(m_lastSearch, 0, [this](bool found) {
+            if (!found)
+                statusBar()->showMessage(tr("\"%1\" not found.").arg(m_lastSearch));
+        });
+    }
+}
+
 void BrowserWindow::closeEvent(QCloseEvent *event)
 {
     if (m_tabWidget->count() > 1) {
@@ -397,7 +442,6 @@ void BrowserWindow::closeEvent(QCloseEvent *event)
     event->accept();
     deleteLater();
 }
-
 
 void BrowserWindow::loadHomePage()
 {
