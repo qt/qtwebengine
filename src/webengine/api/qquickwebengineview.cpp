@@ -873,8 +873,7 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     Q_D(QQuickWebEngineView);
     d->q_ptr = this;
     this->setActiveFocusOnTab(true);
-    this->setFlags(QQuickItem::ItemIsFocusScope | QQuickItem::ItemAcceptsInputMethod
-                   | QQuickItem::ItemAcceptsDrops);
+    this->setFlags(QQuickItem::ItemIsFocusScope | QQuickItem::ItemAcceptsDrops);
 
 #ifndef QT_NO_ACCESSIBILITY
     QQuickAccessibleAttached *accessible = QQuickAccessibleAttached::qmlAttachedProperties(this);

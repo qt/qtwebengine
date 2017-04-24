@@ -228,14 +228,15 @@ void RenderWidgetHostViewQtDelegateQuick::resize(int width, int height)
 
 void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVisible)
 {
-    if (qApp->inputMethod()->isVisible() == editorVisible)
-        return;
+    setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible);
 
-    if (parentItem() && parentItem()->flags() & QQuickItem::ItemAcceptsInputMethod) {
+    if (parentItem())
+        parentItem()->setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible);
+
+    if (qApp->inputMethod()->isVisible() != editorVisible) {
         qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
         qApp->inputMethod()->setVisible(editorVisible);
     }
-
 }
 
 bool RenderWidgetHostViewQtDelegateQuick::event(QEvent *event)

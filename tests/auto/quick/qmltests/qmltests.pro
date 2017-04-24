@@ -52,6 +52,7 @@ OTHER_FILES += \
     $$PWD/data/tst_focusOnNavigation.qml \
     $$PWD/data/tst_formValidation.qml \
     $$PWD/data/tst_geopermission.qml \
+    $$PWD/data/tst_inputMethod.qml \
     $$PWD/data/tst_javaScriptDialogs.qml \
     $$PWD/data/tst_linkHovered.qml \
     $$PWD/data/tst_loadFail.qml \

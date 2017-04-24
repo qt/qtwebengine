@@ -58,6 +58,8 @@ public:
         qmlRegisterType<QQuickWebEngineTestSupport>(uri, 1, 0, "WebEngineTestSupport");
         qmlRegisterUncreatableType<QQuickWebEngineErrorPage>(uri, 1, 0, "WebEngineErrorPage",
             tr("Cannot create a separate instance of WebEngineErrorPage"));
+        qmlRegisterUncreatableType<QQuickWebEngineTestInputContext>(uri, 1, 0, "TestInputContext",
+            tr("Cannot create a separate instance of WebEngineErrorPage"));
     }
 };
 

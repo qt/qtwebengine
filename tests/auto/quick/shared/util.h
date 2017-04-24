@@ -142,4 +142,26 @@ inline QString bodyInnerText(QQuickWebEngineView *webEngineView)
     return arguments.at(1).toString();
 }
 
+inline QString activeElementId(QQuickWebEngineView *webEngineView)
+{
+    qRegisterMetaType<QQuickWebEngineView::JavaScriptConsoleMessageLevel>("JavaScriptConsoleMessageLevel");
+    QSignalSpy consoleMessageSpy(webEngineView, &QQuickWebEngineView::javaScriptConsoleMessage);
+
+    webEngineView->runJavaScript(
+                "if (document.activeElement == null)"
+                "   console.log('');"
+                "else"
+                "   console.log(document.activeElement.id);"
+    );
+
+    if (!consoleMessageSpy.wait())
+        return QString();
+
+    QList<QVariant> arguments = consoleMessageSpy.takeFirst();
+    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
+        return QString();
+
+    return arguments.at(1).toString();
+}
+
 #endif /* UTIL_H */

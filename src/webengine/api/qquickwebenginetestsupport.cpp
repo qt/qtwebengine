@@ -62,14 +62,59 @@ void QQuickWebEngineErrorPage::loadStarted(const QUrl &provisionalUrl)
     Q_EMIT loadingChanged(&loadRequest);
 }
 
+
+QQuickWebEngineTestInputContext::QQuickWebEngineTestInputContext()
+    : m_visible(false)
+{
+}
+
+QQuickWebEngineTestInputContext::~QQuickWebEngineTestInputContext()
+{
+    release();
+}
+
+void QQuickWebEngineTestInputContext::create()
+{
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = this;
+}
+
+void QQuickWebEngineTestInputContext::release()
+{
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = 0;
+}
+
+void QQuickWebEngineTestInputContext::showInputPanel()
+{
+    m_visible = true;
+}
+
+void QQuickWebEngineTestInputContext::hideInputPanel()
+{
+    m_visible = false;
+}
+
+bool QQuickWebEngineTestInputContext::isInputPanelVisible() const
+{
+    return m_visible;
+}
+
+
 QQuickWebEngineTestSupport::QQuickWebEngineTestSupport()
-    : m_errorPage(new QQuickWebEngineErrorPage())
+    : m_errorPage(new QQuickWebEngineErrorPage)
+    , m_testInputContext(new QQuickWebEngineTestInputContext)
 {
 }
 
 QQuickWebEngineErrorPage *QQuickWebEngineTestSupport::errorPage() const
 {
     return m_errorPage.data();
+}
+
+QQuickWebEngineTestInputContext *QQuickWebEngineTestSupport::testInputContext() const
+{
+    return m_testInputContext.data();
 }
 
 QT_END_NAMESPACE

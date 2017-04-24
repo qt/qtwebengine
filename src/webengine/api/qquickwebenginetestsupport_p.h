@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <private/qinputmethod_p.h>
 #include <private/qtwebengineglobal_p.h>
 
 #include <QObject>
@@ -73,13 +74,33 @@ Q_SIGNALS:
     void loadingChanged(QQuickWebEngineLoadRequest *loadRequest);
 };
 
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestInputContext : public QPlatformInputContext {
+    Q_OBJECT
+
+public:
+    QQuickWebEngineTestInputContext();
+    ~QQuickWebEngineTestInputContext();
+
+    Q_INVOKABLE void create();
+    Q_INVOKABLE void release();
+
+    virtual void showInputPanel();
+    virtual void hideInputPanel();
+    virtual bool isInputPanelVisible() const;
+
+private:
+    bool m_visible;
+};
+
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestSupport : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineErrorPage *errorPage READ errorPage CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineTestInputContext *testInputContext READ testInputContext CONSTANT FINAL)
 
 public:
     QQuickWebEngineTestSupport();
     QQuickWebEngineErrorPage *errorPage() const;
+    QQuickWebEngineTestInputContext *testInputContext() const;
 
 Q_SIGNALS:
     void windowCloseRejected();
@@ -87,6 +108,7 @@ Q_SIGNALS:
 
 private:
     QScopedPointer<QQuickWebEngineErrorPage> m_errorPage;
+    QScopedPointer<QQuickWebEngineTestInputContext> m_testInputContext;
 };
 
 QT_END_NAMESPACE
