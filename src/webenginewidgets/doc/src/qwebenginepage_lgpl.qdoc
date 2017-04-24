@@ -309,7 +309,7 @@
 */
 
 /*!
-    \fn bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
+    \fn bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
     \since 5.5
     This function is called upon receiving a request to navigate to the specified \a url by means of
     the specified navigation type \a type. \a isMainFrame indicates whether the request corresponds
