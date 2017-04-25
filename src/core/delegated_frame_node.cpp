@@ -193,9 +193,9 @@ public:
     virtual void setupTiledContentNode(QSGTexture *, const QRect &, const QRectF &,
                                        QSGTexture::Filtering, QSGNode *) = 0;
     virtual void setupSolidColorNode(const QRect &, const QColor &, QSGNode *) = 0;
-    virtual void setupDebugBorderNode(QSGGeometry *, QSGFlatColorMaterial *, QSGNode *) = 0;
 
 #ifndef QT_NO_OPENGL
+    virtual void setupDebugBorderNode(QSGGeometry *, QSGFlatColorMaterial *, QSGNode *) = 0;
     virtual void setupYUVVideoNode(QSGTexture *, QSGTexture *, QSGTexture *, QSGTexture *,
                            const QRectF &, const QRectF &, const QSizeF &, const QSizeF &,
                            YUVVideoMaterial::ColorSpace, float, float, const QRectF &,
@@ -274,7 +274,7 @@ public:
          if (rectangleNode->color() != color)
              rectangleNode->setColor(color);
     }
-
+#ifndef QT_NO_OPENGL
     void setupDebugBorderNode(QSGGeometry *geometry, QSGFlatColorMaterial *material,
                               QSGNode *) override
     {
@@ -283,7 +283,7 @@ public:
         geometryNode->setGeometry(geometry);
         geometryNode->setMaterial(material);
     }
-#ifndef QT_NO_OPENGL
+
     void setupYUVVideoNode(QSGTexture *, QSGTexture *, QSGTexture *, QSGTexture *,
                            const QRectF &, const QRectF &, const QSizeF &, const QSizeF &,
                            YUVVideoMaterial::ColorSpace, float, float, const QRectF &,
@@ -377,6 +377,7 @@ public:
         m_sceneGraphNodes->append(rectangleNode);
     }
 
+#ifndef QT_NO_OPENGL
     void setupDebugBorderNode(QSGGeometry *geometry, QSGFlatColorMaterial *material,
                               QSGNode *layerChain) override
     {
@@ -390,7 +391,6 @@ public:
         m_sceneGraphNodes->append(geometryNode);
     }
 
-#ifndef QT_NO_OPENGL
     void setupYUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture,
                            QSGTexture *aTexture, const QRectF &yaTexCoordRect,
                            const QRectF &uvTexCoordRect, const QSizeF &yaTexSize,
