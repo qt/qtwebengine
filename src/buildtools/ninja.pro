@@ -8,7 +8,7 @@ defineReplace(buildNinja) {
        mkpath($$dirname(out))
        src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
        ninja_configure =  $$system_quote($$system_path($$absolute_path(ninja/configure.py, $$src_3rd_party_dir)))
-       !system("cd $$system_quote($$system_path($$dirname(out))) && python $$ninja_configure --bootstrap") {
+       !system("cd $$system_quote($$system_path($$dirname(out))) && $$pythonPathForSystem() $$ninja_configure --bootstrap") {
             error("NINJA build error!")
        }
    }

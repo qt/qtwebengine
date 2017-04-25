@@ -58,6 +58,11 @@
     },
 
     "tests" : {
+        "python2": {
+            "label": "Python 2",
+            "type": "detectPython2",
+            "log": "location"
+        },
         "ninja": {
             "label": "system ninja",
             "type": "detectNinja"
@@ -73,6 +78,13 @@
     },
 
     "features": {
+        "python2": {
+            "label": "Python 2",
+            "condition": "tests.python2",
+            "output": [
+                { "type": "varAssign", "name": "QMAKE_PYTHON2", "value": "tests.python2.location" }
+            ]
+        },
         "embedded": {
             "label": "Embedded build",
             "condition": "config.unix",
@@ -156,6 +168,14 @@
             "output": [ "privateFeature" ]
         }
     },
+
+    "report": [
+        {
+            "type": "warning",
+            "condition": "!features.python2",
+            "message": "Python version 2 (2.7.5 or later) is required to build QtWebEngine."
+        }
+    ],
 
     "summary": [
         {

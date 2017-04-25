@@ -51,7 +51,8 @@ build_pass|!debug_and_release {
     gn_args = $$shell_quote($$gn_args)
     gn_src_root = $$shell_quote($$shell_path($$QTWEBENGINE_ROOT/$$getChromiumSrcDir()))
     gn_build_root = $$shell_quote($$shell_path($$OUT_PWD/$$getConfigDir()))
-    $$runGn($$gn_binary gen $$gn_build_root --args=$$gn_args --root=$$gn_src_root)
+    gn_python = "--script-executable=$$pythonPathForSystem()"
+    $$runGn($$gn_binary gen $$gn_build_root $$gn_python --args=$$gn_args --root=$$gn_src_root)
 
     runninja.commands = $$NINJA \$\(NINJAFLAGS\) -C $$gn_build_root QtWebEngineCore
     QMAKE_EXTRA_TARGETS += runninja
