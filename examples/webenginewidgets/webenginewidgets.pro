@@ -5,6 +5,7 @@ SUBDIRS += \
     contentmanipulation \
     cookiebrowser \
     demobrowser \
+    html2pdf \
     markdowneditor \
     simplebrowser \
     videoplayer
