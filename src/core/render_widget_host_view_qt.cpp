@@ -237,6 +237,19 @@ private:
     float dpiScale;
 };
 
+bool isAccessibilityEnabled() {
+    // On Linux accessibility is disabled by default due to performance issues,
+    // and can be re-enabled by setting the QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY environment
+    // variable. For details, see QTBUG-59922.
+#ifdef Q_OS_LINUX
+    static bool accessibility_enabled
+            = qEnvironmentVariableIsSet("QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY");
+#else
+    const bool accessibility_enabled = true;
+#endif
+    return accessibility_enabled;
+}
+
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureProvider(QtGestureProviderConfig(), this)
@@ -260,9 +273,11 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
 {
     m_host->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::installActivationObserver(this);
-    if (QAccessible::isActive())
-        content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
+    if (isAccessibilityEnabled()) {
+        QAccessible::installActivationObserver(this);
+        if (QAccessible::isActive())
+            content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
+    }
 #endif // QT_NO_ACCESSIBILITY
     auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
     m_beginFrameSource.reset(new cc::DelayBasedBeginFrameSource(
