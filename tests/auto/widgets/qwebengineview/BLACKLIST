@@ -1,8 +1,5 @@
 [doNotSendMouseKeyboardEventsWhenDisabled]
 windows
 
-[imeComposition]
-osx
-
 [inputFieldOverridesShortcuts]
 osx

@@ -757,8 +757,12 @@ void RenderWidgetHostViewQt::OnTextSelectionChanged(content::TextInputManager *t
     Q_UNUSED(text_input_manager);
     Q_UNUSED(updated_view);
 
+    const content::TextInputManager::TextSelection *selection = GetTextInputManager()->GetTextSelection(updated_view);
+    if (!selection)
+        return;
+
 #if defined(USE_X11)
-    if (!GetSelectedText().empty()) {
+    if (!GetSelectedText().empty() && selection->user_initiated()) {
         // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
         ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
         clipboard_writer.WriteText(GetSelectedText());
@@ -793,19 +797,24 @@ void RenderWidgetHostViewQt::selectionChanged()
         return;
     }
 
+    if (GetSelectedText().empty()) {
+        m_anchorPositionWithinSelection = m_cursorPosition;
+        m_cursorPositionWithinSelection = m_cursorPosition;
+
+        if (!m_emptyPreviousSelection) {
+            m_emptyPreviousSelection = GetSelectedText().empty();
+            m_adapterClient->selectionChanged();
+        }
+
+        return;
+    }
+
     const content::TextInputManager::TextSelection *selection = text_input_manager_->GetTextSelection();
     if (!selection)
         return;
 
     if (!selection->range().IsValid())
         return;
-
-    // Avoid duplicate empty selectionChanged() signals
-    if (GetSelectedText().empty() && m_emptyPreviousSelection) {
-        m_anchorPositionWithinSelection = m_cursorPosition;
-        m_cursorPositionWithinSelection = m_cursorPosition;
-        return;
-    }
 
     int newAnchorPositionWithinSelection = 0;
     int newCursorPositionWithinSelection = 0;
