@@ -146,7 +146,9 @@ private:
     base::Closure m_quitClosure;
 
     bool m_isInsideInnerMessageLoop;
+#if !defined(OS_MACOSX)
     bool m_isExpectingFirstPage;
+#endif
     bool m_didPrintingSucceed;
     scoped_refptr<printing::PrintQueriesQueue> m_printerQueriesQueue;
     // content::WebContentsObserver implementation.

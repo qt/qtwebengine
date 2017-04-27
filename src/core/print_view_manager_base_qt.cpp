@@ -68,7 +68,9 @@ namespace QtWebEngineCore {
 PrintViewManagerBaseQt::PrintViewManagerBaseQt(content::WebContents *contents)
     : printing::PrintManager(contents)
     , m_isInsideInnerMessageLoop(false)
+#if !defined(OS_MACOSX)
     , m_isExpectingFirstPage(false)
+#endif
     , m_didPrintingSucceed(false)
     , m_printerQueriesQueue(WebEngineContext::current()->getPrintJobManager()->queue())
 {
