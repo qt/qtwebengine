@@ -143,7 +143,7 @@ TestWebEngineView {
             keyPress(Qt.Key_B);
             compareElementValue("combobox", "b");
             // Must wait with the second key press to simulate selection of another element
-            wait(1000);
+            wait(1100); // blink::typeAheadTimeout + 0.1s
             keyPress(Qt.Key_C);
             compareElementValue("combobox", "c");
 

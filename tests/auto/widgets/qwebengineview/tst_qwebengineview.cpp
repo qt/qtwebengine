@@ -1109,7 +1109,7 @@ void tst_QWebEngineView::keyboardEvents()
     QTest::keyPress(view.focusProxy(), Qt::Key_B);
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('combobox').value").toString(), QStringLiteral("b"));
     // Must wait with the second key press to simulate selection of another element
-    QTest::keyPress(view.focusProxy(), Qt::Key_C, Qt::NoModifier, 1000);
+    QTest::keyPress(view.focusProxy(), Qt::Key_C, Qt::NoModifier, 1100 /* blink::typeAheadTimeout + 0.1s */);
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('combobox').value").toString(), QStringLiteral("c"));
 
     // Test the Enter key by loading a page with a hyperlink
