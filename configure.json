@@ -84,9 +84,10 @@
         },
         "embedded": {
             "label": "Embedded build",
+            "purpose": "Enables the embedded build configuration.",
+            "section": "WebEngine",
             "condition": "config.unix",
             "autoDetect": "tests.embedded",
-            "purpose": "Enables the embedded build configuration",
             "output": [ "privateFeature" ]
         },
         "alsa": {
@@ -102,32 +103,37 @@
         },
         "pepper-plugins": {
             "label": "Pepper Plugins",
+            "purpose": "Enables use of Pepper Flash and Widevine plugins.",
+            "section": "WebEngine",
             "autoDetect": "!features.embedded",
-            "purpose": "Enables use of Pepper Flash and Widevine plugins",
             "output": [ "privateFeature" ]
         },
         "printing-and-pdf": {
             "label": "Printing and PDF",
+            "purpose": "Provides printing and output to PDF.",
+            "section": "WebEngine",
             "condition": "module.printsupport && features.printer",
             "autoDetect": "!features.embedded",
-            "purpose": "Enables printing and output to PDF",
             "output": [ "privateFeature" ]
         },
         "proprietary-codecs": {
             "label": "Proprietary Codecs",
+            "purpose": "Enables the use of proprietary codecs such as h.264/h.265 and MP3.",
+            "section": "WebEngine",
             "autoDetect": false,
-            "purpose": "Enables the use of proprietary codecs such as h.264/h.265 and MP3",
             "output": [ "privateFeature" ]
         },
         "spellchecker": {
             "label": "Spellchecker",
-            "purpose": "Enables the use of Chromium's spellchecker",
+            "purpose": "Provides a spellchecker.",
+            "section": "WebEngine",
             "output": [ "privateFeature" ]
         },
         "webrtc": {
             "label": "WebRTC",
+            "purpose": "Provides WebRTC support.",
+            "section": "WebEngine",
             "autoDetect": "!features.embedded",
-            "purpose": "Enables WebRTC support",
             "output": [ "privateFeature" ]
         },
         "system-webp": {
