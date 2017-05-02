@@ -48,15 +48,16 @@
 **
 ****************************************************************************/
 
+import Qt.labs.settings 1.0
+import QtQml 2.2
 import QtQuick 2.2
-import QtWebEngine 1.2
 import QtQuick.Controls 1.0
+import QtQuick.Controls.Private 1.0
 import QtQuick.Controls.Styles 1.0
+import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 import QtQuick.Window 2.1
-import QtQuick.Controls.Private 1.0
-import QtQuick.Dialogs 1.2
-import Qt.labs.settings 1.0
+import QtWebEngine 1.3
 
 ApplicationWindow {
     id: browserWindow
@@ -294,7 +295,7 @@ ApplicationWindow {
                             id: httpDiskCacheEnabled
                             text: "HTTP Disk Cache"
                             checkable: !currentWebView.profile.offTheRecord
-                            checked: (currentWebView.profile.httpCacheType == WebEngineProfile.DiskHttpCache)
+                            checked: (currentWebView.profile.httpCacheType === WebEngineProfile.DiskHttpCache)
                             onToggled: currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache
                         }
                         MenuItem {
@@ -397,8 +398,8 @@ ApplicationWindow {
                         tabs.currentIndex = tabs.count - 1
                         request.openIn(tab.item)
                     } else if (request.destination == WebEngineView.NewViewInBackgroundTab) {
-                        var tab = tabs.createEmptyTab(currentWebView.profile)
-                        request.openIn(tab.item)
+                        var backgroundTab = tabs.createEmptyTab(currentWebView.profile)
+                        request.openIn(backgroundTab.item)
                     } else if (request.destination == WebEngineView.NewViewInDialog) {
                         var dialog = applicationRoot.createDialog(currentWebView.profile)
                         request.openIn(dialog.currentWebView)
