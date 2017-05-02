@@ -62,14 +62,14 @@ public:
                      const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
                      ColorSpace colorspace, float rMul, float rOff);
 
-    virtual QSGMaterialType *type() const Q_DECL_OVERRIDE
+    QSGMaterialType *type() const override
     {
         static QSGMaterialType theType;
         return &theType;
     }
 
-    virtual QSGMaterialShader *createShader() const Q_DECL_OVERRIDE;
-    virtual int compare(const QSGMaterial *other) const Q_DECL_OVERRIDE;
+    QSGMaterialShader *createShader() const override;
+    int compare(const QSGMaterial *other) const override;
 
     QSGTexture *m_yTexture;
     QSGTexture *m_uTexture;
@@ -90,14 +90,14 @@ public:
                       const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
                       ColorSpace colorspace, float rMul, float rOff);
 
-    virtual QSGMaterialType *type() const Q_DECL_OVERRIDE
+    QSGMaterialType *type() const override
     {
         static QSGMaterialType theType;
         return &theType;
     }
 
-    virtual QSGMaterialShader *createShader() const Q_DECL_OVERRIDE;
-    virtual int compare(const QSGMaterial *other) const Q_DECL_OVERRIDE;
+    QSGMaterialShader *createShader() const override;
+    int compare(const QSGMaterial *other) const override;
 
     QSGTexture *m_aTexture;
 };

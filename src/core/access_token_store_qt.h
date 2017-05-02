@@ -43,7 +43,6 @@
 #include "base/memory/ref_counted.h"
 #include "device/geolocation/access_token_store.h"
 
-#include <QtCore/qcompilerdetection.h>
 #include <QtCore/QFile>
 #include <QtCore/QScopedPointer>
 
@@ -58,8 +57,8 @@ public:
     AccessTokenStoreQt();
     ~AccessTokenStoreQt();
 
-    virtual void LoadAccessTokens(const LoadAccessTokensCallback& request) Q_DECL_OVERRIDE;
-    virtual void SaveAccessToken(const GURL& serverUrl, const base::string16& accessToken) Q_DECL_OVERRIDE;
+    void LoadAccessTokens(const LoadAccessTokensCallback& request) override;
+    void SaveAccessToken(const GURL& serverUrl, const base::string16& accessToken) override;
 
 private:
     void performWorkOnUIThread();

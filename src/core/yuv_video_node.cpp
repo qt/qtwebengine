@@ -53,9 +53,9 @@ namespace QtWebEngineCore {
 class YUVVideoMaterialShader : public QSGMaterialShader
 {
 public:
-    virtual void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial) Q_DECL_OVERRIDE;
+    void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial) override;
 
-    virtual char const *const *attributeNames() const Q_DECL_OVERRIDE {
+    char const *const *attributeNames() const override {
         static const char *names[] = {
             "a_position",
             "a_texCoord",
@@ -65,7 +65,7 @@ public:
     }
 
 protected:
-    virtual const char *vertexShader() const Q_DECL_OVERRIDE {
+    const char *vertexShader() const override {
         // Keep in sync with cc::VertexShaderPosTexYUVStretchOffset
         const char *shader =
         "attribute highp vec4 a_position;\n"
@@ -85,7 +85,7 @@ protected:
         return shader;
     }
 
-    virtual const char *fragmentShader() const Q_DECL_OVERRIDE {
+    const char *fragmentShader() const override {
         // Keep in sync with cc::FragmentShaderYUVVideo
         static const char *shader =
         "varying mediump vec2 v_yaTexCoord;\n"
@@ -113,7 +113,7 @@ protected:
         return shader;
     }
 
-    virtual void initialize() Q_DECL_OVERRIDE {
+    void initialize() override {
         m_id_matrix = program()->uniformLocation("matrix");
         m_id_yaTexScale = program()->uniformLocation("yaTexScale");
         m_id_uvTexScale = program()->uniformLocation("uvTexScale");
@@ -146,10 +146,10 @@ protected:
 
 class YUVAVideoMaterialShader : public YUVVideoMaterialShader
 {
-    virtual void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial) Q_DECL_OVERRIDE;
+    void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial) override;
 
 protected:
-    virtual const char *fragmentShader() const Q_DECL_OVERRIDE {
+    const char *fragmentShader() const override {
         // Keep in sync with cc::FragmentShaderYUVAVideo
         static const char *shader =
         "varying mediump vec2 v_yaTexCoord;\n"
@@ -179,7 +179,7 @@ protected:
         return shader;
     }
 
-    virtual void initialize() Q_DECL_OVERRIDE {
+    void initialize() override {
         // YUVVideoMaterialShader has a subset of the uniforms.
         YUVVideoMaterialShader::initialize();
         m_id_aTexture = program()->uniformLocation("a_texture");

@@ -99,6 +99,9 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
     You can install the interceptor on a profile via QWebEngineProfile::setRequestInterceptor()
     or QQuickWebEngineProfile::setRequestInterceptor().
 
+    When using the \l{Qt WebEngine Widgets Module}, \l{QWebEnginePage::acceptNavigationRequest()}
+    offers further options to accept or block requests.
+
     \sa interceptRequest(), QWebEngineUrlRequestInfo
 */
 

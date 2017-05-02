@@ -6,3 +6,7 @@
 
 [macCopyUnicodeToClipboard]
 osx
+
+[mouseMovementProperties]
+osx-10.11
+osx-10.12

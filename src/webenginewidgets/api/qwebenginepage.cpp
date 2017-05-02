@@ -102,6 +102,17 @@ static const int MaxTooltipLength = 1024;
 #if defined(ENABLE_PRINTING) && defined(ENABLE_PDF)
 static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
 {
+    if (!data.size()) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+        qWarning("Failure to print on printer %ls: Print result data is empty.",
+                 qUtf16Printable(printer.printerName()));
+#else
+        qWarning("Failure to print on printer %s: Print result data is empty.",
+                 qPrintable(printer.printerName()));
+#endif
+        return false;
+    }
+
     QRect printerPageRect = printer.pageRect();
     PdfiumDocumentWrapperQt pdfiumWrapper(data.constData(), data.size(), printerPageRect.size());
 
@@ -1530,7 +1541,7 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
             controller->textProvided(promptResult);
         break;
     case UnloadDialog:
-        accepted = (QMessageBox::question(view, QCoreApplication::translate("QWebEnginePage", "Are you sure you want to leave this page?"), QCoreApplication::translate("QWebEnginePage", "Changes that you made may not be saved."), QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Ok);
+        accepted = q->javaScriptConfirm(controller->securityOrigin(), QCoreApplication::translate("QWebEnginePage", "Are you sure you want to leave this page? Changes that you made may not be saved."));
         break;
     case InternalAuthorizationDialog:
         accepted = (QMessageBox::question(view, controller->title(), controller->message(), QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes);

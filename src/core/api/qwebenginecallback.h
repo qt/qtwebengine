@@ -42,7 +42,6 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
@@ -69,7 +68,7 @@ public:
     QWebEngineCallbackPrivate(F callable)
         : m_callable(callable)
     {}
-    virtual void operator()(T value) Q_DECL_OVERRIDE { m_callable(value); }
+    void operator()(T value) override { m_callable(value); }
 private:
     F m_callable;
 };

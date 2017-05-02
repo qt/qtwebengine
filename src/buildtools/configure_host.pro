@@ -11,6 +11,9 @@ GN_OS = $$gnOS()
 clang: GN_CLANG = true
 else: GN_CLANG = false
 
+use_gold_linker: GN_USE_GOLD=true
+else: GN_USE_GOLD=false
+
 GN_V8_HOST_CPU = $$GN_HOST_CPU
 contains(GN_TARGET_CPU, "arm")|contains(GN_TARGET_CPU, "mips")|contains(GN_TARGET_CPU, "x86") {
     # The v8 snapshot need a host that matches bitwidth, so we build makesnapshot to 32-bit variants of host.
@@ -33,6 +36,8 @@ GN_CONTENTS = \
 "  toolchain_args = { " \
 "    current_os = \"$$GN_OS\" " \
 "    current_cpu = \"$$GN_HOST_CPU\" " \
+"    is_clang = $$GN_CLANG " \
+"    use_gold = $$GN_USE_GOLD " \
 "  } " \
 "}" \
 "gcc_toolchain(\"v8_snapshot\") {" \
@@ -45,6 +50,8 @@ GN_CONTENTS = \
 "    current_os = \"$$GN_OS\" " \
 "    current_cpu = \"$$GN_V8_HOST_CPU\" " \
 "    v8_current_cpu = \"$$GN_TARGET_CPU\" " \
+"    is_clang = $$GN_CLANG " \
+"    use_gold = $$GN_USE_GOLD " \
 "  } " \
 " } "
 

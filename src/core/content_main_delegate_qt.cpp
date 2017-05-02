@@ -175,7 +175,7 @@ bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
     SafeOverridePath(base::DIR_QT_LIBRARY_DATA, WebEngineLibraryInfo::getPath(base::DIR_QT_LIBRARY_DATA));
 #endif
     SafeOverridePath(ui::DIR_LOCALES, WebEngineLibraryInfo::getPath(ui::DIR_LOCALES));
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     SafeOverridePath(base::DIR_APP_DICTIONARIES, WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES));
 #endif
     SetContentClient(new ContentClientQt);

@@ -45,8 +45,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_surface.h"
 
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
-
 namespace gl {
 
 class GLSurfaceQt: public GLSurface {
@@ -56,11 +54,11 @@ public:
     static bool HasEGLExtension(const char* name);
 
     // Implement GLSurface.
-    virtual void* GetDisplay() Q_DECL_OVERRIDE;
-    virtual void* GetConfig() Q_DECL_OVERRIDE;
-    virtual bool IsOffscreen() Q_DECL_OVERRIDE;
-    virtual gfx::SwapResult SwapBuffers() Q_DECL_OVERRIDE;
-    virtual gfx::Size GetSize() Q_DECL_OVERRIDE;
+    void *GetDisplay() override;
+    void *GetConfig() override;
+    bool IsOffscreen() override;
+    gfx::SwapResult SwapBuffers() override;
+    gfx::Size GetSize() override;
 
 protected:
     GLSurfaceQt();

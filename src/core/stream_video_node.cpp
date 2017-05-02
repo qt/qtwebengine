@@ -49,7 +49,7 @@ public:
     StreamVideoMaterialShader(TextureTarget target) : m_target(target) { }
     virtual void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial);
 
-    virtual char const *const *attributeNames() const Q_DECL_OVERRIDE {
+    char const *const *attributeNames() const override {
         static const char *names[] = {
             "a_position",
             "a_texCoord",
@@ -59,7 +59,7 @@ public:
     }
 
 protected:
-    virtual const char *vertexShader() const Q_DECL_OVERRIDE {
+    const char *vertexShader() const override {
         // Keep in sync with cc::VertexShaderVideoTransform
         static const char *shader =
         "attribute highp vec4 a_position;\n"
@@ -74,7 +74,7 @@ protected:
         return shader;
     }
 
-    virtual const char *fragmentShader() const Q_DECL_OVERRIDE {
+    const char *fragmentShader() const override {
         // Keep in sync with cc::FragmentShaderRGBATexAlpha
         static const char *shaderExternal  =
         "#extension GL_OES_EGL_image_external : require\n"

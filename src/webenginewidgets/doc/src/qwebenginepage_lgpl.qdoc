@@ -349,7 +349,7 @@
 */
 
 /*!
-    \fn bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
+    \fn bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
     \since 5.5
     This function is called upon receiving a request to navigate to the specified \a url by means of
     the specified navigation type \a type. \a isMainFrame indicates whether the request corresponds
@@ -365,6 +365,9 @@
     engine process them by overloading this function. This is necessary when an HTML document is
     used as part of the user interface, and not to display external data, for example, when
     displaying a list of results.
+
+    The \l{QWebEngineUrlRequestInterceptor} class offers further options for intercepting and
+    manipulating requests.
 */
 
 /*!
@@ -380,6 +383,9 @@
     This function is called whenever a JavaScript program running in a frame affiliated with
     \a securityOrigin calls the \c confirm() function with the message \a msg. Returns \c true
     if the user confirms the message; otherwise returns \c false.
+
+    It is also called when the \c onbeforeunload handler is requesting a confirmation before
+    leaving a page.
 
     The default implementation executes the query using QMessageBox::information with QMessageBox::Ok and QMessageBox::Cancel buttons.
 */

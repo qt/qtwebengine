@@ -1212,6 +1212,43 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
     return webKitEvent;
 }
 
+WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, double dpiScale)
+{
+    WebGestureEvent webKitEvent;
+    webKitEvent.timeStampSeconds = currentTimeForEvent(ev);
+    webKitEvent.modifiers = modifiersForEvent(ev);
+
+    webKitEvent.x = static_cast<int>(ev->localPos().x() / dpiScale);
+    webKitEvent.y = static_cast<int>(ev->localPos().y() / dpiScale);
+
+    webKitEvent.globalX = static_cast<int>(ev->screenPos().x() / dpiScale);
+    webKitEvent.globalY = static_cast<int>(ev->screenPos().y() / dpiScale);
+
+    webKitEvent.sourceDevice = blink::WebGestureDeviceTouchpad;
+
+    Qt::NativeGestureType gestureType = ev->gestureType();
+    switch (gestureType) {
+    case Qt::ZoomNativeGesture:
+        webKitEvent.type = WebInputEvent::GesturePinchUpdate;
+        webKitEvent.data.pinchUpdate.scale = static_cast<float>(ev->value() + 1.0);
+        break;
+    case Qt::SmartZoomNativeGesture:
+        webKitEvent.type = WebInputEvent::GestureDoubleTap;
+        webKitEvent.data.tap.tapCount = 1;
+        break;
+    case Qt::BeginNativeGesture:
+    case Qt::EndNativeGesture:
+    case Qt::RotateNativeGesture:
+    case Qt::PanNativeGesture:
+    case Qt::SwipeNativeGesture:
+        // Not implemented by Chromium for now.
+        webKitEvent.type = blink::WebInputEvent::Undefined;
+        break;
+    }
+
+    return webKitEvent;
+}
+
 blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, double dpiScale)
 {
     WebMouseWheelEvent webEvent;

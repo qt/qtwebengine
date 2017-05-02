@@ -1,2 +1,5 @@
 [doNotSendMouseKeyboardEventsWhenDisabled]
 windows
+
+[imeComposition]
+osx

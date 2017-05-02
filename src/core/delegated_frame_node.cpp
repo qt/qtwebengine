@@ -124,13 +124,14 @@ class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
 public:
     MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QSize textureSize);
     ~MailboxTexture();
-    virtual int textureId() const Q_DECL_OVERRIDE { return m_textureId; }
-    virtual QSize textureSize() const Q_DECL_OVERRIDE { return m_textureSize; }
-    virtual bool hasAlphaChannel() const Q_DECL_OVERRIDE { return m_hasAlpha; }
-    void setHasAlphaChannel(bool hasAlpha) { m_hasAlpha = hasAlpha; }
-    virtual bool hasMipmaps() const Q_DECL_OVERRIDE { return false; }
-    virtual void bind() Q_DECL_OVERRIDE;
+    // QSGTexture:
+    int textureId() const override { return m_textureId; }
+    QSize textureSize() const override { return m_textureSize; }
+    bool hasAlphaChannel() const override { return m_hasAlpha; }
+    bool hasMipmaps() const override { return false; }
+    void bind() override;
 
+    void setHasAlphaChannel(bool hasAlpha) { m_hasAlpha = hasAlpha; }
     gpu::MailboxHolder &mailboxHolder() { return m_mailboxHolder; }
     void fetchTexture(gpu::gles2::MailboxManager *mailboxManager);
     void setTarget(GLenum target);
@@ -192,9 +193,9 @@ public:
     virtual void setupTiledContentNode(QSGTexture *, const QRect &, const QRectF &,
                                        QSGTexture::Filtering, QSGNode *) = 0;
     virtual void setupSolidColorNode(const QRect &, const QColor &, QSGNode *) = 0;
-    virtual void setupDebugBorderNode(QSGGeometry *, QSGFlatColorMaterial *, QSGNode *) = 0;
 
 #ifndef QT_NO_OPENGL
+    virtual void setupDebugBorderNode(QSGGeometry *, QSGFlatColorMaterial *, QSGNode *) = 0;
     virtual void setupYUVVideoNode(QSGTexture *, QSGTexture *, QSGTexture *, QSGTexture *,
                            const QRectF &, const QRectF &, const QSizeF &, const QSizeF &,
                            YUVVideoMaterial::ColorSpace, float, float, const QRectF &,
@@ -217,7 +218,7 @@ public:
     {
     }
 
-    void setupRenderPassNode(QSGTexture *layer, const QRect &rect, QSGNode *) Q_DECL_OVERRIDE
+    void setupRenderPassNode(QSGTexture *layer, const QRect &rect, QSGNode *) override
     {
         QSGInternalImageNode *imageNode = static_cast<QSGInternalImageNode*>(*m_nodeIterator++);
         // In case of a missing render pass, set the target rects to be empty and return early.
@@ -236,7 +237,7 @@ public:
     void setupTextureContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
                                  QSGTexture::Filtering filtering,
                                  QSGTextureNode::TextureCoordinatesTransformMode texCoordTransForm,
-                                 QSGNode *) Q_DECL_OVERRIDE
+                                 QSGNode *) override
     {
         QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
         if (textureNode->texture() != texture)
@@ -251,7 +252,7 @@ public:
             textureNode->setFiltering(filtering);
     }
     void setupTiledContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
-                               QSGTexture::Filtering filtering, QSGNode *) Q_DECL_OVERRIDE
+                               QSGTexture::Filtering filtering, QSGNode *) override
     {
         QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
 
@@ -264,7 +265,7 @@ public:
         if (textureNode->texture() != texture)
             textureNode->setTexture(texture);
     }
-    void setupSolidColorNode(const QRect &rect, const QColor &color, QSGNode *) Q_DECL_OVERRIDE
+    void setupSolidColorNode(const QRect &rect, const QColor &color, QSGNode *) override
     {
          QSGRectangleNode *rectangleNode = static_cast<QSGRectangleNode*>(*m_nodeIterator++);
 
@@ -273,26 +274,26 @@ public:
          if (rectangleNode->color() != color)
              rectangleNode->setColor(color);
     }
-
+#ifndef QT_NO_OPENGL
     void setupDebugBorderNode(QSGGeometry *geometry, QSGFlatColorMaterial *material,
-                              QSGNode *) Q_DECL_OVERRIDE
+                              QSGNode *) override
     {
         QSGGeometryNode *geometryNode = static_cast<QSGGeometryNode*>(*m_nodeIterator++);
 
         geometryNode->setGeometry(geometry);
         geometryNode->setMaterial(material);
     }
-#ifndef QT_NO_OPENGL
+
     void setupYUVVideoNode(QSGTexture *, QSGTexture *, QSGTexture *, QSGTexture *,
                            const QRectF &, const QRectF &, const QSizeF &, const QSizeF &,
                            YUVVideoMaterial::ColorSpace, float, float, const QRectF &,
-                           QSGNode *) Q_DECL_OVERRIDE
+                           QSGNode *) override
     {
         Q_UNREACHABLE();
     }
 #ifdef GL_OES_EGL_image_external
     void setupStreamVideoNode(MailboxTexture *, const QRectF &,
-                              const QMatrix4x4 &, QSGNode *) Q_DECL_OVERRIDE
+                              const QMatrix4x4 &, QSGNode *) override
     {
         Q_UNREACHABLE();
     }
@@ -314,7 +315,7 @@ public:
     }
 
     void setupRenderPassNode(QSGTexture *layer, const QRect &rect,
-                             QSGNode *layerChain) Q_DECL_OVERRIDE
+                             QSGNode *layerChain) override
     {
         // Only QSGInternalImageNode currently supports QSGLayer textures.
         QSGInternalImageNode *imageNode = m_apiDelegate->createImageNode();
@@ -338,7 +339,7 @@ public:
     void setupTextureContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
                                  QSGTexture::Filtering filtering,
                                  QSGTextureNode::TextureCoordinatesTransformMode texCoordTransForm,
-                                 QSGNode *layerChain) Q_DECL_OVERRIDE
+                                 QSGNode *layerChain) override
     {
         QSGTextureNode *textureNode = m_apiDelegate->createTextureNode();
         textureNode->setTextureCoordinatesTransform(texCoordTransForm);
@@ -353,7 +354,7 @@ public:
 
     void setupTiledContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
                                QSGTexture::Filtering filtering,
-                               QSGNode *layerChain) Q_DECL_OVERRIDE
+                               QSGNode *layerChain) override
     {
         QSGTextureNode *textureNode = m_apiDelegate->createTextureNode();
         textureNode->setRect(rect);
@@ -366,7 +367,7 @@ public:
     }
 
     void setupSolidColorNode(const QRect &rect, const QColor &color,
-                             QSGNode *layerChain) Q_DECL_OVERRIDE
+                             QSGNode *layerChain) override
     {
         QSGRectangleNode *rectangleNode = m_apiDelegate->createRectangleNode();
         rectangleNode->setRect(rect);
@@ -376,8 +377,9 @@ public:
         m_sceneGraphNodes->append(rectangleNode);
     }
 
+#ifndef QT_NO_OPENGL
     void setupDebugBorderNode(QSGGeometry *geometry, QSGFlatColorMaterial *material,
-                              QSGNode *layerChain) Q_DECL_OVERRIDE
+                              QSGNode *layerChain) override
     {
         QSGGeometryNode *geometryNode = new QSGGeometryNode;
         geometryNode->setFlags(QSGNode::OwnsGeometry | QSGNode::OwnsMaterial);
@@ -389,13 +391,12 @@ public:
         m_sceneGraphNodes->append(geometryNode);
     }
 
-#ifndef QT_NO_OPENGL
     void setupYUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture,
                            QSGTexture *aTexture, const QRectF &yaTexCoordRect,
                            const QRectF &uvTexCoordRect, const QSizeF &yaTexSize,
                            const QSizeF &uvTexSize, YUVVideoMaterial::ColorSpace colorspace,
                            float rMul, float rOff, const QRectF &rect,
-                           QSGNode *layerChain) Q_DECL_OVERRIDE
+                           QSGNode *layerChain) override
     {
         YUVVideoNode *videoNode = new YUVVideoNode(
                     yTexture,
@@ -416,7 +417,7 @@ public:
     }
 #ifdef GL_OES_EGL_image_external
     void setupStreamVideoNode(MailboxTexture *texture, const QRectF &rect,
-                              const QMatrix4x4 &textureMatrix, QSGNode *layerChain) Q_DECL_OVERRIDE
+                              const QMatrix4x4 &textureMatrix, QSGNode *layerChain) override
     {
         StreamVideoNode *svideoNode = new StreamVideoNode(texture, false, ExternalTarget);
         svideoNode->setRect(rect);

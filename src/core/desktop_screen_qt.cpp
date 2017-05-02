@@ -42,6 +42,8 @@
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 
+#include <QtGlobal>
+
 namespace QtWebEngineCore {
 
 gfx::Point DesktopScreenQt::GetCursorScreenPoint()

@@ -44,7 +44,6 @@
 
 #include "common/user_script_data.h"
 
-#include <QtCore/qcompilerdetection.h>
 #include <QtCore/QHash>
 #include <QtCore/QSet>
 

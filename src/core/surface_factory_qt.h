@@ -44,15 +44,13 @@
 
 #include "ui/ozone/public/surface_factory_ozone.h"
 
-#include <QtGlobal>
-
 namespace QtWebEngineCore {
 
 class SurfaceFactoryQt
     : public ui::SurfaceFactoryOzone
 {
-    virtual bool LoadEGLGLES2Bindings() Q_DECL_OVERRIDE;
-    virtual intptr_t GetNativeDisplay() Q_DECL_OVERRIDE;
+    bool LoadEGLGLES2Bindings() override;
+    intptr_t GetNativeDisplay() override;
 };
 
 } // namespace QtWebEngineCore

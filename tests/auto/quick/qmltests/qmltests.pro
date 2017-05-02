@@ -38,6 +38,7 @@ OTHER_FILES += \
     $$PWD/data/test2.html \
     $$PWD/data/test3.html \
     $$PWD/data/test4.html \
+    $$PWD/data/test-iframe.html \
     $$PWD/data/keyboardModifierMapping.html \
     $$PWD/data/keyboardEvents.html \
     $$PWD/data/titleupdate.js \

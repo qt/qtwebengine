@@ -42,9 +42,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
-#if defined(ENABLE_SPELLCHECK)
+#include "components/spellcheck/spellcheck_build_features.h"
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
-#if defined(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
 #endif
 #endif
@@ -158,7 +159,7 @@ public:
     {
     }
 
-    virtual void Run(Delegate *delegate) Q_DECL_OVERRIDE
+    void Run(Delegate *delegate) override
     {
         Q_ASSERT(delegate == m_delegate);
         // This is used only when MessagePumpForUIQt is used outside of the GUI thread.
@@ -168,18 +169,18 @@ public:
         m_explicitLoop = 0;
     }
 
-    virtual void Quit() Q_DECL_OVERRIDE
+    void Quit() override
     {
         Q_ASSERT(m_explicitLoop);
         m_explicitLoop->quit();
     }
 
-    virtual void ScheduleWork() Q_DECL_OVERRIDE
+    void ScheduleWork() override
     {
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
 
-    virtual void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) Q_DECL_OVERRIDE
+    void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) override
     {
         if (delayed_work_time.is_null()) {
             killTimer(m_timerId);
@@ -193,13 +194,13 @@ public:
     }
 
 protected:
-    virtual void customEvent(QEvent *ev) Q_DECL_OVERRIDE
+    void customEvent(QEvent *ev) override
     {
         if (handleScheduledWork())
             QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
 
-    virtual void timerEvent(QTimerEvent *ev) Q_DECL_OVERRIDE
+    void timerEvent(QTimerEvent *ev) override
     {
         Q_ASSERT(m_timerId == ev->timerId());
         killTimer(m_timerId);
@@ -270,24 +271,24 @@ public:
         : content::BrowserMainParts()
     { }
 
-    void PreMainMessageLoopStart() Q_DECL_OVERRIDE
+    void PreMainMessageLoopStart() override
     {
         base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
     }
 
-    void PreMainMessageLoopRun() Q_DECL_OVERRIDE
+    void PreMainMessageLoopRun() override
     {
         device::GeolocationProvider::SetGeolocationDelegate(new GeolocationDelegateQt());
     }
 
-    void PostMainMessageLoopRun()
+    void PostMainMessageLoopRun() override
     {
         // The BrowserContext's destructor uses the MessageLoop so it should be deleted
         // right before the RenderProcessHostImpl's destructor destroys it.
         WebEngineContext::current()->destroyBrowserContext();
     }
 
-    int PreCreateThreads() Q_DECL_OVERRIDE
+    int PreCreateThreads() override
     {
         base::ThreadRestrictions::SetIOAllowed(true);
         // Like ChromeBrowserMainExtraPartsViews::PreCreateThreads does.
@@ -332,17 +333,17 @@ public:
         }
     }
 
-    virtual void* GetHandle() Q_DECL_OVERRIDE { return m_handle; }
+    void* GetHandle() override { return m_handle; }
     // Qt currently never creates contexts using robustness attributes.
-    virtual bool WasAllocatedUsingRobustnessExtension() { return false; }
+    bool WasAllocatedUsingRobustnessExtension() override { return false; }
 
     // We don't care about the rest, this context shouldn't be used except for its handle.
-    virtual bool Initialize(gl::GLSurface *, const gl::GLContextAttribs &) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
-    virtual bool MakeCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
-    virtual void ReleaseCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
-    virtual bool IsCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
-    virtual void OnSetSwapInterval(int) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
-    virtual scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() Q_DECL_OVERRIDE
+    bool Initialize(gl::GLSurface *, const gl::GLContextAttribs &) override { Q_UNREACHABLE(); return false; }
+    bool MakeCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); return false; }
+    void ReleaseCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); }
+    bool IsCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); return false; }
+    void OnSetSwapInterval(int) override { Q_UNREACHABLE(); }
+    scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() override
     {
         return nullptr;
     }
@@ -353,8 +354,8 @@ private:
 
 class ShareGroupQtQuick : public gl::GLShareGroup {
 public:
-    virtual gl::GLContext* GetContext() Q_DECL_OVERRIDE { return m_shareContextQtQuick.get(); }
-    virtual void AboutToAddFirstContext() Q_DECL_OVERRIDE;
+    gl::GLContext* GetContext() override { return m_shareContextQtQuick.get(); }
+    void AboutToAddFirstContext() override;
 
 private:
     scoped_refptr<QtShareGLContext> m_shareContextQtQuick;
@@ -374,7 +375,7 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
 
 class QuotaPermissionContextQt : public content::QuotaPermissionContext {
 public:
-    virtual void RequestQuotaPermission(const content::StorageQuotaParams &params, int render_process_id, const PermissionCallback &callback) Q_DECL_OVERRIDE
+    void RequestQuotaPermission(const content::StorageQuotaParams &params, int render_process_id, const PermissionCallback &callback) override
     {
         Q_UNUSED(params);
         Q_UNUSED(render_process_id);
@@ -411,14 +412,14 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     const int id = host->GetID();
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(id, url::kFileScheme);
     static_cast<BrowserContextQt*>(host->GetBrowserContext())->m_adapter->userResourceController()->renderProcessStartedWithHost(host);
-#if defined(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_PEPPER_CDMS)
     host->AddFilter(new BrowserMessageFilterQt(id));
 #endif
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     // SpellCheckMessageFilter is required for both Hunspell and Native configurations.
     host->AddFilter(new SpellCheckMessageFilter(id));
 #endif
-#if defined(Q_OS_MACOS) && defined(ENABLE_SPELLCHECK) && defined(USE_BROWSER_SPELLCHECKER)
+#if defined(Q_OS_MACOS) && BUILDFLAG(ENABLE_SPELLCHECK) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   host->AddFilter(new SpellCheckMessageFilterPlatform(id));
 #endif
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -446,8 +447,11 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
 
 void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, content::WebPreferences *web_prefs)
 {
-    if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents())
-        static_cast<WebContentsDelegateQt*>(webContents->GetDelegate())->overrideWebPreferences(webContents, web_prefs);
+    if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents()) {
+        WebContentsDelegateQt* delegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+        if (delegate)
+            delegate->overrideWebPreferences(webContents, web_prefs);
+    }
 }
 
 content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionContext()

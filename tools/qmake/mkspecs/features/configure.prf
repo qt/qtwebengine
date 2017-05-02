@@ -30,6 +30,7 @@ defineTest(runConfigure) {
         qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
         qtConfig(webrtc): WEBENGINE_CONFIG += use_webrtc
         qtConfig(embedded): WEBENGINE_CONFIG += embedded_build
+        qtConfig(optimize_size): WEBENGINE_CONFIG += reduce_binary_size
         qtConfig(system-webp): WEBENGINE_CONFIG += use_system_libwebp
         else: WEBENGINE_CONFIG += use_bundled_libwebp
         qtConfig(system-opus): WEBENGINE_CONFIG += use_system_opus
@@ -37,7 +38,7 @@ defineTest(runConfigure) {
         qtConfig(system-ffmpeg): WEBENGINE_CONFIG += use_system_ffmpeg
         else: WEBENGINE_CONFIG += use_bundled_ffmpeg
     } else {
-        cross_compile: WEBENGINE_CONFIG += embedded_build
+        cross_compile: WEBENGINE_CONFIG += embedded_build reduce_binary_size
     }
     isQtMinimum(5, 9) {
         qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
@@ -70,7 +71,14 @@ defineTest(runConfigure) {
             packagesExist(opus): WEBENGINE_CONFIG += use_system_opus
             else: log("System opus not found. Using Chromium's copy.$${EOL}")
         }
-        packagesExist(libxml-2.0,libxslt): WEBENGINE_CONFIG += use_system_libxslt use_system_libxml2
+        packagesExist(libxml-2.0,libxslt) {
+            PKGCONFIG_LIBS_STATIC = $$system($$PKG_CONFIG --libs --static libxml-2.0)
+            contains(PKGCONFIG_LIBS_STATIC, -licuuc) {
+                WEBENGINE_CONFIG += use_system_libxslt use_system_libxml2
+            } else {
+                log("System libxml2 is not configured with ICU. Using Chromium's copy.$${EOL}")
+            }
+        }
         else: log("System libxml2 or libxslt not found. Using Chromium's copies.$${EOL}")
         for(package, $$list("libevent jsoncpp protobuf")) {
             packagesExist($$package): WEBENGINE_CONFIG += use_system_$$package
@@ -105,8 +113,6 @@ defineTest(runConfigure) {
         !contains(WEBENGINE_CONFIG, embedded_build) {
             packagesExist(nss): WEBENGINE_CONFIG += use_nss
             else: log("System NSS not found, BoringSSL will be used.$${EOL}")
-        } else {
-            WEBENGINE_CONFIG *= reduce_binary_size
         }
     }
 

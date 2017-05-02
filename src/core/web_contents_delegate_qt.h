@@ -49,8 +49,8 @@
 #include "color_chooser_controller.h"
 #include "favicon_manager.h"
 #include "javascript_dialog_manager_qt.h"
+
 #include <QtCore/qvector.h>
-#include <QtCore/qcompilerdetection.h>
 
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 
@@ -97,45 +97,45 @@ public:
     int lastReceivedFindReply() const { return m_lastReceivedFindReply; }
 
     // WebContentsDelegate overrides
-    virtual content::WebContents *OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params) Q_DECL_OVERRIDE;
-    virtual void NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags) Q_DECL_OVERRIDE;
-    virtual void AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked) Q_DECL_OVERRIDE;
-    virtual void CloseContents(content::WebContents *source) Q_DECL_OVERRIDE;
-    virtual void LoadProgressChanged(content::WebContents* source, double progress) Q_DECL_OVERRIDE;
-    virtual void HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) Q_DECL_OVERRIDE;
-    virtual content::ColorChooser *OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion) Q_DECL_OVERRIDE;
-    virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) Q_DECL_OVERRIDE;
-    virtual void EnterFullscreenModeForTab(content::WebContents* web_contents, const GURL& origin) Q_DECL_OVERRIDE;
-    virtual void ExitFullscreenModeForTab(content::WebContents*) Q_DECL_OVERRIDE;
-    virtual bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const Q_DECL_OVERRIDE;
-    virtual void RunFileChooser(content::RenderFrameHost* render_frame_host, const content::FileChooserParams& params) Q_DECL_OVERRIDE;
-    virtual bool DidAddMessageToConsole(content::WebContents* source, int32_t level, const base::string16& message, int32_t line_no, const base::string16& source_id) Q_DECL_OVERRIDE;
-    virtual void FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update) Q_DECL_OVERRIDE;
-    virtual void RequestMediaAccessPermission(content::WebContents* web_contents, const content::MediaStreamRequest& request, const content::MediaResponseCallback& callback) Q_DECL_OVERRIDE;
-    virtual void MoveContents(content::WebContents *source, const gfx::Rect &pos) Q_DECL_OVERRIDE;
-    virtual bool IsPopupOrPanel(const content::WebContents *source) const Q_DECL_OVERRIDE;
-    virtual void UpdateTargetURL(content::WebContents* source, const GURL& url) Q_DECL_OVERRIDE;
-    virtual void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) Q_DECL_OVERRIDE;
-    virtual bool ShouldPreserveAbortedURLs(content::WebContents *source) Q_DECL_OVERRIDE;
-    virtual void ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text) Q_DECL_OVERRIDE;
-    virtual void HideValidationMessage(content::WebContents *web_contents) Q_DECL_OVERRIDE;
-    virtual void MoveValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view) Q_DECL_OVERRIDE;
-    void BeforeUnloadFired(content::WebContents* tab, bool proceed, bool* proceed_to_fire_unload) Q_DECL_OVERRIDE;
-    bool CheckMediaAccessPermission(content::WebContents *web_contents, const GURL& security_origin, content::MediaStreamType type) Q_DECL_OVERRIDE;
+    content::WebContents *OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params) override;
+    void NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags) override;
+    void AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked) override;
+    void CloseContents(content::WebContents *source) override;
+    void LoadProgressChanged(content::WebContents* source, double progress) override;
+    void HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) override;
+    content::ColorChooser *OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion) override;
+    content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) override;
+    void EnterFullscreenModeForTab(content::WebContents* web_contents, const GURL& origin) override;
+    void ExitFullscreenModeForTab(content::WebContents*) override;
+    bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const override;
+    void RunFileChooser(content::RenderFrameHost* render_frame_host, const content::FileChooserParams& params) override;
+    bool DidAddMessageToConsole(content::WebContents* source, int32_t level, const base::string16& message, int32_t line_no, const base::string16& source_id) override;
+    void FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update) override;
+    void RequestMediaAccessPermission(content::WebContents* web_contents, const content::MediaStreamRequest& request, const content::MediaResponseCallback& callback) override;
+    void MoveContents(content::WebContents *source, const gfx::Rect &pos) override;
+    bool IsPopupOrPanel(const content::WebContents *source) const override;
+    void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
+    void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) override;
+    bool ShouldPreserveAbortedURLs(content::WebContents *source) override;
+    void ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text) override;
+    void HideValidationMessage(content::WebContents *web_contents) override;
+    void MoveValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view) override;
+    void BeforeUnloadFired(content::WebContents* tab, bool proceed, bool* proceed_to_fire_unload) override;
+    bool CheckMediaAccessPermission(content::WebContents *web_contents, const GURL& security_origin, content::MediaStreamType type) override;
 
     // WebContentsObserver overrides
-    virtual void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) Q_DECL_OVERRIDE;
-    virtual void DidStartProvisionalLoadForFrame(content::RenderFrameHost *render_frame_host, const GURL &validated_url, bool is_error_page, bool is_iframe_srcdoc) Q_DECL_OVERRIDE;
-    virtual void DidCommitProvisionalLoadForFrame(content::RenderFrameHost *render_frame_host, const GURL &url, ui::PageTransition transition_type) Q_DECL_OVERRIDE;
-    virtual void DidFailProvisionalLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url,
-                                        int error_code, const base::string16 &error_description, bool was_ignored_by_handler) Q_DECL_OVERRIDE;
-    virtual void DidFailLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url,
-                             int error_code, const base::string16 &error_description, bool was_ignored_by_handler) Q_DECL_OVERRIDE;
-    virtual void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) Q_DECL_OVERRIDE;
-    virtual void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) Q_DECL_OVERRIDE;
-    virtual void DidNavigateAnyFrame(content::RenderFrameHost *render_frame_host, const content::LoadCommittedDetails &details, const content::FrameNavigateParams &params) Q_DECL_OVERRIDE;
-    virtual void WasShown() Q_DECL_OVERRIDE;
-    virtual void DidFirstVisuallyNonEmptyPaint() Q_DECL_OVERRIDE;
+    void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) override;
+    void DidStartProvisionalLoadForFrame(content::RenderFrameHost *render_frame_host, const GURL &validated_url, bool is_error_page, bool is_iframe_srcdoc) override;
+    void DidCommitProvisionalLoadForFrame(content::RenderFrameHost *render_frame_host, const GURL &url, ui::PageTransition transition_type) override;
+    void DidFailProvisionalLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url,
+                                        int error_code, const base::string16 &error_description, bool was_ignored_by_handler) override;
+    void DidFailLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url,
+                             int error_code, const base::string16 &error_description, bool was_ignored_by_handler) override;
+    void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
+    void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) override;
+    void DidNavigateAnyFrame(content::RenderFrameHost *render_frame_host, const content::LoadCommittedDetails &details, const content::FrameNavigateParams &params) override;
+    void WasShown() override;
+    void DidFirstVisuallyNonEmptyPaint() override;
 
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;

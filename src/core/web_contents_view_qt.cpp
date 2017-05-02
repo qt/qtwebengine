@@ -46,6 +46,7 @@
 #include "web_contents_adapter.h"
 #include "web_engine_context.h"
 
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/common/context_menu_params.h"
 #include <ui/gfx/image/image_skia.h>
@@ -117,8 +118,10 @@ gfx::NativeView WebContentsViewQt::GetNativeView() const
 
 void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
 {
-    const QRectF r(m_client->viewportRect());
-    *out = gfx::Rect(r.x(), r.y(), r.width(), r.height());
+    if (m_client) {
+        const QRectF r(m_client->viewportRect());
+        *out = gfx::Rect(r.x(), r.y(), r.width(), r.height());
+    }
 }
 
 void WebContentsViewQt::Focus()
@@ -168,7 +171,7 @@ static inline WebEngineContextMenuData fromParams(const content::ContextMenuPara
     ret.setMediaFlags((WebEngineContextMenuData::MediaFlags)params.media_flags);
     ret.setSuggestedFileName(toQt(params.suggested_filename.data()));
     ret.setIsEditable(params.is_editable);
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     ret.setMisspelledWord(toQt(params.misspelled_word));
     ret.setSpellCheckerSuggestions(fromVector(params.dictionary_suggestions));
 #endif
@@ -178,7 +181,7 @@ static inline WebEngineContextMenuData fromParams(const content::ContextMenuPara
 void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params)
 {
     WebEngineContextMenuData contextMenuData(fromParams(params));
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     // Do not use params.spellcheck_enabled, since it is never
     // correctly initialized for chrome asynchronous spellchecking.
     // Even fixing the initialization in ContextMenuClientImpl::showContextMenu

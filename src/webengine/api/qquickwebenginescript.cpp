@@ -403,6 +403,9 @@ void QQuickWebEngineScript::setRunOnSubframes(bool on)
     Q_EMIT runOnSubframesChanged(on);
 }
 
+/*!
+    \internal
+*/
 void QQuickWebEngineScript::timerEvent(QTimerEvent *e)
 {
     Q_D(QQuickWebEngineScript);

@@ -44,7 +44,6 @@
 #include <deque>
 #include <list>
 #include <map>
-#include <QtCore/qcompilerdetection.h>
 
 #include "web_contents_adapter_client.h"
 
@@ -77,16 +76,21 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void getDefaultDevices(const std::string &audioDeviceId, const std::string &videoDeviceId, bool audio, bool video, content::MediaStreamDevices *);
 
   // Overridden from content::MediaObserver:
-  virtual void OnAudioCaptureDevicesChanged() Q_DECL_OVERRIDE { }
-  virtual void OnVideoCaptureDevicesChanged() Q_DECL_OVERRIDE { }
-  virtual void OnMediaRequestStateChanged(int render_process_id, int render_frame_id, int page_request_id, const GURL& security_origin, content::MediaStreamType stream_type, content::MediaRequestState state) Q_DECL_OVERRIDE;
+  void OnAudioCaptureDevicesChanged() override { }
+  void OnVideoCaptureDevicesChanged() override { }
+  void OnMediaRequestStateChanged(int render_process_id,
+                                  int render_frame_id,
+                                  int page_request_id,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType stream_type,
+                                  content::MediaRequestState state) override;
 
-  virtual void OnCreatingAudioStream(int /*render_process_id*/, int /*render_frame_id*/) Q_DECL_OVERRIDE { }
-  virtual void OnSetCapturingLinkSecured(int /*render_process_id*/,
-                                         int /*render_frame_id*/,
-                                         int /*page_request_id*/,
-                                         content::MediaStreamType /*stream_type*/,
-                                         bool /*is_secure*/) Q_DECL_OVERRIDE { }
+  void OnCreatingAudioStream(int /*render_process_id*/, int /*render_frame_id*/) override { }
+  void OnSetCapturingLinkSecured(int /*render_process_id*/,
+                                 int /*render_frame_id*/,
+                                 int /*page_request_id*/,
+                                 content::MediaStreamType /*stream_type*/,
+                                 bool /*is_secure*/) override { }
 
   DesktopStreamsRegistry *getDesktopStreamsRegistry();
 
@@ -108,7 +112,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   virtual ~MediaCaptureDevicesDispatcher();
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type, const content::NotificationSource &source, const content::NotificationDetails &details) Q_DECL_OVERRIDE;
+  void Observe(int type, const content::NotificationSource &source, const content::NotificationDetails &details) override;
 
   // Helpers for ProcessMediaAccessRequest().
   void processDesktopCaptureAccessRequest(content::WebContents *, const content::MediaStreamRequest &, const content::MediaResponseCallback &);

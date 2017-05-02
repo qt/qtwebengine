@@ -42,8 +42,6 @@
 
 #include "net/url_request/url_request_job_factory.h"
 
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
-
 namespace net {
 
 class NetworkDelegate;
@@ -61,7 +59,7 @@ class QrcProtocolHandlerQt : public net::URLRequestJobFactory::ProtocolHandler {
 
 public:
     QrcProtocolHandlerQt();
-    virtual net::URLRequestJob *MaybeCreateJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate) const Q_DECL_OVERRIDE;
+    net::URLRequestJob *MaybeCreateJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate) const override;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(QrcProtocolHandlerQt);

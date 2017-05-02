@@ -43,7 +43,8 @@
 #include "base/values.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
-#include <QtCore/qcompilerdetection.h>
+
+#include <QtCore/qglobal.h>
 
 namespace content {
 class RenderFrame;
@@ -67,8 +68,10 @@ private:
     void dispatchWebChannelMessage(const std::vector<char> &binaryJSON, uint worldId);
     void installWebChannel(uint worldId);
     void uninstallWebChannel(uint worldId);
-    virtual bool OnMessageReceived(const IPC::Message &message) Q_DECL_OVERRIDE;
-    virtual void OnDestruct() Q_DECL_OVERRIDE { }
+
+    // content::RenderViewObserver overrides:
+    bool OnMessageReceived(const IPC::Message &message) override;
+    void OnDestruct() override { }
 
     bool m_installed;
     uint m_installedWorldId;

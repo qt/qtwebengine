@@ -86,7 +86,6 @@ defineTest(isPlatformSupported) {
     skipBuild("Static builds of QtWebEngine aren't supported.")
     return(false)
   }
-  !isPythonVersionSupported(): return(false)
   !isArchSupported(): return(false)
   isSanitizerEnabled():!isSanitizerSupported():!forceSanitizerBuild(): return(false)
   return(true)
@@ -98,25 +97,6 @@ defineTest(isArchSupported) {
     contains(QT_ARCH, "mips")|contains(QT_ARCH, "mips64"): return(true)
 
     skipBuild("QtWebEngine can only be built for x86, x86-64, ARM, Aarch64, MIPSel, and MIPS64 architectures.")
-    return(false)
-}
-
-defineTest(isPythonVersionSupported) {
-    python_error_msg = "Python version 2 (2.7.5 or later) is required to build Qt WebEngine."
-    python_version = $$system('python -c "import sys; print(sys.version_info[0:3])"')
-    python_version ~= s/[()]//g
-    python_version = $$split(python_version, ',')
-    python_major_version = $$first(python_version)
-    greaterThan(python_major_version, 2) {
-        skipBuild("Python version 3 is not supported by Chromium.")
-        skipBuild($$python_error_msg)
-        return(false)
-    }
-    python_minor_version = $$member(python_version, 1)
-    python_patch_version = $$member(python_version, 2)
-    greaterThan(python_major_version, 1): greaterThan(python_minor_version, 6): greaterThan(python_patch_version, 4): return(true)
-    skipBuild("Using Python version $${python_major_version}.$${python_minor_version}.$${python_patch_version}.")
-    skipBuild($$python_error_msg)
     return(false)
 }
 
@@ -221,10 +201,6 @@ defineTest(isSanitizerLinuxClangVersionSupported) {
 }
 
 defineTest(isGCCVersionSupported) {
-  equals(QT_GCC_MAJOR_VERSION, 4):equals(QT_GCC_MINOR_VERSION, 9):lessThan(QT_GCC_PATCH_VERSION, 2) {
-    skipBuild("Gcc 4.9.1 fails to compile QtWebEngine, please use another gcc version.")
-    return(false)
-  }
   # The below will work for gcc 4.7 and up and also match gcc 5
   greaterThan(QT_GCC_MINOR_VERSION, 6):return(true)
   greaterThan(QT_GCC_MAJOR_VERSION, 4):return(true)
@@ -332,39 +308,6 @@ defineReplace(extractCFlag) {
     return ($$member(OPTION, 1))
 }
 
-defineReplace(findMocables) {
-  mocables = $$system("$$system_path(python $$QTWEBENGINE_ROOT/tools/buildscripts/find-mocables $$_PRO_FILE_PWD_ $$1)")
-  mocables = $$replace(mocables, $$re_escape($$system_path($${_PRO_FILE_PWD_}/)), '')
-  return($$mocables)
-}
-
-defineReplace(findIncludedMocFiles) {
-  return($$system("$$system_path(python $$QTWEBENGINE_ROOT/tools/buildscripts/find-included-moc-files $$_PRO_FILE_PWD_ $$1)"))
-}
-
-defineReplace(mocOutput) {
-  out = $$1
-  # The order is important, since the output of the second replace would end up accidentaly transformed by the first one
-  for(ext, $$list($${QMAKE_EXT_CPP})): \
-      out = $$replace(out, ^(.*)($$re_escape($${ext})), $${QMAKE_CPP_MOD_MOC}\\1$${QMAKE_EXT_CPP_MOC})
-  for(ext, $$list($${QMAKE_EXT_H})): \
-      out = $$replace(out, ^(.*)($$re_escape($${ext})), $${QMAKE_H_MOD_MOC}\\1$${first(QMAKE_EXT_CPP)})
-  return($$out)
-}
-
-defineReplace(rccOutput) {
-  out = $$1
-  out = $$replace(out, .qrc, .cpp)
-  out = $$join(out, qrc_, qrc_)
-  return($$out)
-}
-
-defineReplace(rccExternFunc) {
-  out = $$1
-  out = $$replace(out, .qrc, )
-  return($$out)
-}
-
 defineReplace(which) {
   out = $$1
   win32 {
@@ -393,6 +336,25 @@ defineReplace(which) {
 defineTest(use?) {
     contains(WEBENGINE_CONFIG, use_$$lower($$1)): return(true)
     return(false)
+}
+
+# Returns the unquoted path to the python executable.
+defineReplace(pythonPath) {
+    isEmpty(QMAKE_PYTHON2) {
+        # Fallback for building QtWebEngine with Qt < 5.8
+        QMAKE_PYTHON2 = python
+    }
+    return($$QMAKE_PYTHON2)
+}
+
+# Returns the python executable for use with shell / make targets.
+defineReplace(pythonPathForShell) {
+    return($$shell_quote($$shell_path($$pythonPath())))
+}
+
+# Returns the python executable for use with $$system()
+defineReplace(pythonPathForSystem) {
+    return($$system_quote($$system_path($$pythonPath())))
 }
 
 defineReplace(ninjaPath) {

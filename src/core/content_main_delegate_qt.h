@@ -42,8 +42,6 @@
 
 #include "content/public/app/content_main_delegate.h"
 
-#include <QtCore/qcompilerdetection.h>
-
 #include "content_browser_client_qt.h"
 
 namespace QtWebEngineCore {
@@ -54,12 +52,12 @@ public:
 
     // This is where the embedder puts all of its startup code that needs to run
     // before the sandbox is engaged.
-    void PreSandboxStartup() Q_DECL_OVERRIDE;
+    void PreSandboxStartup() override;
 
-    content::ContentBrowserClient* CreateContentBrowserClient() Q_DECL_OVERRIDE;
-    content::ContentRendererClient* CreateContentRendererClient() Q_DECL_OVERRIDE;
+    content::ContentBrowserClient* CreateContentBrowserClient() override;
+    content::ContentRendererClient* CreateContentRendererClient() override;
 
-    bool BasicStartupComplete(int* /*exit_code*/) Q_DECL_OVERRIDE;
+    bool BasicStartupComplete(int* /*exit_code*/) override;
 
 private:
     std::unique_ptr<ContentBrowserClientQt> m_browserClient;

@@ -57,10 +57,10 @@ private:
     void onFetchDocumentInnerText(quint64 requestId);
     void onSetBackgroundColor(quint32 color);
 
-    void OnDestruct() Q_DECL_OVERRIDE { }
+    void OnDestruct() override { }
 
-    virtual bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
-    virtual void Navigate(const GURL& url) Q_DECL_OVERRIDE;
+    bool OnMessageReceived(const IPC::Message& message) override;
+    void Navigate(const GURL& url) override;
 
     web_cache::WebCacheImpl* m_web_cache_impl;
 

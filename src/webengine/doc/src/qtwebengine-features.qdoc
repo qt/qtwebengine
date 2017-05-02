@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -40,6 +40,7 @@
         \li \l{Fullscreen}
         \li \l{HTML5 DRM}
         \li \l{HTML5 Geolocation}
+        \li \l{HTTP/2 Protocol}
         \li \l{Native Dialogs}
         \li \l{Pepper Plugin API}
         \li \l{Print to PDF}
@@ -142,6 +143,15 @@
     the application. For more information, see \l{Qt Positioning}.
 
     Support for this feature was added in Qt 5.5.0.
+
+    \section1 HTTP/2 Protocol
+
+    Qt WebEngine supports the Chromium implementation of the \l{HTTP/2}
+    protocol.
+
+    This feature can be tested by opening an HTTP/2 demo, such as the
+    \l{Akamai HTTP/2 Demo}, in \l{WebEngine Widgets Simple Browser Example}
+    {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}.
 
     \section1 Native Dialogs
 

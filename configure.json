@@ -10,6 +10,7 @@
         "options": {
             "alsa": "boolean",
             "embedded": "boolean",
+            "optimize-for-size": { "type": "boolean", "name": "optimize_size" },
             "ffmpeg": { "type": "enum", "name": "system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
             "opus": { "type": "enum", "name": "system-opus", "values": { "system": "yes", "qt": "no" } },
             "webp": { "type": "enum", "name": "system-webp", "values": { "system": "yes", "qt": "no" } },
@@ -57,6 +58,11 @@
     },
 
     "tests" : {
+        "python2": {
+            "label": "Python 2",
+            "type": "detectPython2",
+            "log": "location"
+        },
         "ninja": {
             "label": "system ninja",
             "type": "detectNinja"
@@ -72,11 +78,23 @@
     },
 
     "features": {
+        "python2": {
+            "label": "Python 2",
+            "condition": "tests.python2",
+            "output": [
+                { "type": "varAssign", "name": "QMAKE_PYTHON2", "value": "tests.python2.location" }
+            ]
+        },
         "embedded": {
             "label": "Embedded build",
             "condition": "config.unix",
             "autoDetect": "tests.embedded",
             "purpose": "Enables the embedded build configuration",
+            "output": [ "privateFeature" ]
+        },
+        "optimize_size": {
+            "label": "Optimize for size",
+            "autoDetect": "tests.embedded",
             "output": [ "privateFeature" ]
         },
         "alsa": {
@@ -151,11 +169,20 @@
         }
     },
 
+    "report": [
+        {
+            "type": "warning",
+            "condition": "!features.python2",
+            "message": "Python version 2 (2.7.5 or later) is required to build QtWebEngine."
+        }
+    ],
+
     "summary": [
         {
             "section": "Qt WebEngine",
             "entries": [
                 "embedded",
+                "optimize_size",
                 "pepper-plugins",
                 "printing-and-pdf",
                 "proprietary-codecs",

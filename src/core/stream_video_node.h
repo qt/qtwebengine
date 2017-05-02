@@ -57,13 +57,13 @@ class StreamVideoMaterial : public QSGMaterial
 public:
     StreamVideoMaterial(QSGTexture *texture, TextureTarget target);
 
-    virtual QSGMaterialType *type() const Q_DECL_OVERRIDE
+    QSGMaterialType *type() const override
     {
         static QSGMaterialType theType;
         return &theType;
     }
 
-    virtual QSGMaterialShader *createShader() const;
+    QSGMaterialShader *createShader() const override;
 
     QSGTexture *m_texture;
     QMatrix4x4 m_texMatrix;

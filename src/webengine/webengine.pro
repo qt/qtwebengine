@@ -71,9 +71,10 @@ use?(pdf) {
 }
 
 !build_pass {
+    python = $$pythonPathForShell()
     chromium_attributions.commands = \
         cd $$shell_quote($$shell_path($$PWD/../3rdparty)) && \
-        python chromium/tools/licenses.py \
+        $$python chromium/tools/licenses.py \
         --file-template ../../tools/about_credits.tmpl \
         --entry-template ../../tools/about_credits_entry.tmpl credits \
         > $$shell_quote($$shell_path($$OUT_PWD/chromium_attributions.qdoc))

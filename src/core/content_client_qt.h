@@ -43,7 +43,6 @@
 #include "base/strings/string_piece.h"
 #include "content/public/common/content_client.h"
 #include "ui/base/layout.h"
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
 namespace QtWebEngineCore {
 
@@ -52,14 +51,14 @@ public:
     static std::string getUserAgent();
 
 #if defined(ENABLE_PLUGINS)
-    virtual void AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins) Q_DECL_OVERRIDE;
+    void AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins) override;
 #endif
 
-    virtual base::StringPiece GetDataResource(int, ui::ScaleFactor) const Q_DECL_OVERRIDE;
-    virtual base::RefCountedMemory* GetDataResourceBytes(int resource_id) const  Q_DECL_OVERRIDE;
-    virtual std::string GetUserAgent() const Q_DECL_OVERRIDE { return getUserAgent(); }
-    virtual base::string16 GetLocalizedString(int message_id) const Q_DECL_OVERRIDE;
-    virtual std::string GetProduct() const Q_DECL_OVERRIDE;
+    base::StringPiece GetDataResource(int, ui::ScaleFactor) const override;
+    base::RefCountedMemory* GetDataResourceBytes(int resource_id) const  override;
+    std::string GetUserAgent() const override { return getUserAgent(); }
+    base::string16 GetLocalizedString(int message_id) const override;
+    std::string GetProduct() const override;
 };
 
 } // namespace QtWebEngineCore

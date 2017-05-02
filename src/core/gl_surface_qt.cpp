@@ -102,10 +102,10 @@ public:
 
     static bool InitializeOneOff();
 
-    virtual bool Initialize() Q_DECL_OVERRIDE;
-    virtual void Destroy() Q_DECL_OVERRIDE;
-    virtual void* GetHandle() Q_DECL_OVERRIDE;
-    virtual bool Resize(const gfx::Size& size, float scale_factor, bool has_alpha) Q_DECL_OVERRIDE;
+    bool Initialize() override;
+    void Destroy() override;
+    void* GetHandle() override;
+    bool Resize(const gfx::Size& size, float scale_factor, bool has_alpha) override;
 
 protected:
     ~GLSurfaceQtEGL();
@@ -124,12 +124,12 @@ public:
     explicit GLSurfacelessQtEGL(const gfx::Size& size);
 
  public:
-    bool Initialize() Q_DECL_OVERRIDE;
-    void Destroy() Q_DECL_OVERRIDE;
-    bool IsSurfaceless() const Q_DECL_OVERRIDE;
-    bool Resize(const gfx::Size& size, float scale_factor, bool has_alpha) Q_DECL_OVERRIDE;
-    EGLSurface GetHandle() Q_DECL_OVERRIDE;
-    void* GetShareHandle() Q_DECL_OVERRIDE;
+    bool Initialize() override;
+    void Destroy() override;
+    bool IsSurfaceless() const override;
+    bool Resize(const gfx::Size& size, float scale_factor, bool has_alpha) override;
+    EGLSurface GetHandle() override;
+    void* GetShareHandle() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(GLSurfacelessQtEGL);
@@ -152,9 +152,9 @@ public:
 
     static bool InitializeOneOff();
 
-    virtual bool Initialize() Q_DECL_OVERRIDE;
-    virtual void Destroy() Q_DECL_OVERRIDE;
-    virtual void* GetHandle() Q_DECL_OVERRIDE;
+    bool Initialize() override;
+    void Destroy() override;
+    void* GetHandle() override;
 
 protected:
     ~GLSurfaceQtGLX();
@@ -296,11 +296,11 @@ public:
 
     static bool InitializeOneOff();
 
-    virtual bool Initialize() Q_DECL_OVERRIDE;
-    virtual void Destroy() Q_DECL_OVERRIDE;
-    virtual void* GetHandle() Q_DECL_OVERRIDE;
-    virtual void* GetDisplay() Q_DECL_OVERRIDE;
-    virtual void* GetConfig() Q_DECL_OVERRIDE;
+    bool Initialize() override;
+    void Destroy() override;
+    void *GetHandle() override;
+    void *GetDisplay() override;
+    void *GetConfig() override;
 
 protected:
     ~GLSurfaceQtWGL();

@@ -59,8 +59,8 @@ class ColorChooserQt : public content::ColorChooser
 public:
     ColorChooserQt(content::WebContents *, const QColor &);
 
-    virtual void SetSelectedColor(SkColor color) Q_DECL_OVERRIDE { }
-    virtual void End() Q_DECL_OVERRIDE {}
+    void SetSelectedColor(SkColor /*color*/) override { }
+    void End() override {}
 
     QSharedPointer<ColorChooserController> controller();
 

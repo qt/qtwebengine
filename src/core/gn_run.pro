@@ -5,22 +5,29 @@ isQtMinimum(5, 8) {
 
 TEMPLATE = aux
 
-defineReplace(runGn) {
-    message("Running: $$1")
-    !system($$1) {
-        error("GN run error!")
-    }
-}
-
 qtConfig(debug_and_release): CONFIG += debug_and_release build_all
 
-build_pass|!debug_and_release {
+qtConfig(system-ninja) {
+    QT_TOOL.ninja.binary = ninja
+} else {
+    QT_TOOL.ninja.binary = $$shell_quote($$shell_path($$ninjaPath()))
+}
 
-    ninja_binary = ninja
+win32 {
+    # Add the gnuwin32/bin subdir of qt5.git to PATH. Needed for calling bison and friends.
+    gnuwin32path.name = PATH
+    gnuwin32path.value = $$shell_path($$clean_path($$QTWEBENGINE_ROOT/../gnuwin32/bin))
+    gnuwin32path.CONFIG += prepend
+    exists($$gnuwin32path.value): QT_TOOL_ENV = gnuwin32path
+}
+
+qtPrepareTool(NINJA, ninja)
+QT_TOOL_ENV =
+
+build_pass|!debug_and_release {
     gn_binary = gn
 
     runninja.target = run_ninja
-    rungn.target = run_gn
 
     gn_args = $$gnArgs()
 
@@ -28,24 +35,24 @@ build_pass|!debug_and_release {
         gn_args += is_debug=false
     }
 
-    gn_args += "qtwebengine_target=\"$$shell_path($$OUT_PWD/$$getConfigDir()):QtWebEngineCore\""
+    gn_args += "qtwebengine_target=\"$$system_path($$OUT_PWD/$$getConfigDir()):QtWebEngineCore\""
 
     !qtConfig(system-gn) {
-        gn_binary = $$shell_quote($$shell_path($$gnPath()))
+        gn_binary = $$system_quote($$system_path($$gnPath()))
     }
 
-    !qtConfig(system-ninja) {
-        ninja_binary = $$shell_quote($$shell_path($$ninjaPath()))
+    gn_args = $$system_quote($$gn_args)
+    gn_src_root = $$system_quote($$system_path($$QTWEBENGINE_ROOT/$$getChromiumSrcDir()))
+    gn_build_root = $$system_quote($$system_path($$OUT_PWD/$$getConfigDir()))
+    gn_python = "--script-executable=$$pythonPathForSystem()"
+    gn_run = $$gn_binary gen $$gn_build_root $$gn_python --args=$$gn_args --root=$$gn_src_root
+
+    message("Running: $$gn_run ")
+    !system($$gn_run) {
+        error("GN run error!")
     }
 
-    gn_args = $$shell_quote($$gn_args)
-    gn_src_root = $$shell_quote($$shell_path($$QTWEBENGINE_ROOT/$$getChromiumSrcDir()))
-    gn_build_root = $$shell_quote($$shell_path($$OUT_PWD/$$getConfigDir()))
-    rungn.commands = $$runGn($$gn_binary gen $$gn_build_root --args=$$gn_args --root=$$gn_src_root)
-    QMAKE_EXTRA_TARGETS += rungn
-
-    runninja.commands = $$ninja_binary \$\(NINJAFLAGS\) -C $$shell_quote($$OUT_PWD/$$getConfigDir()) QtWebEngineCore
-    runninja.depends += rungn
+    runninja.commands = $$NINJA \$\(NINJAFLAGS\) -C $$gn_build_root QtWebEngineCore
     QMAKE_EXTRA_TARGETS += runninja
 
     build_pass:build_all: default_target.target = all

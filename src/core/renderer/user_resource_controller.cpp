@@ -103,12 +103,12 @@ public:
     RenderViewObserverHelper(content::RenderView *);
 private:
     // RenderViewObserver implementation.
-    virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) Q_DECL_OVERRIDE;
-    virtual void DidFinishLoad(blink::WebLocalFrame* frame) Q_DECL_OVERRIDE;
-    virtual void DidStartProvisionalLoad(blink::WebLocalFrame* frame) Q_DECL_OVERRIDE;
-    virtual void FrameDetached(blink::WebFrame* frame) Q_DECL_OVERRIDE;
-    virtual void OnDestruct() Q_DECL_OVERRIDE;
-    virtual bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+    void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
+    void DidFinishLoad(blink::WebLocalFrame* frame) override;
+    void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
+    void FrameDetached(blink::WebFrame* frame) override;
+    void OnDestruct() override;
+    bool OnMessageReceived(const IPC::Message& message) override;
 
     void onUserScriptAdded(const UserScriptData &);
     void onUserScriptRemoved(const UserScriptData &);

@@ -45,7 +45,7 @@
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/url_request_context.h"
 
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#include <QtGlobal>
 
 QT_BEGIN_NAMESPACE
 class QStringList;
@@ -68,29 +68,29 @@ public:
     virtual ~BrowserContextQt();
 
     // BrowserContext implementation:
-    virtual base::FilePath GetPath() const Q_DECL_OVERRIDE;
+    base::FilePath GetPath() const override;
     base::FilePath GetCachePath() const;
-    virtual bool IsOffTheRecord() const Q_DECL_OVERRIDE;
+    bool IsOffTheRecord() const override;
 
-    virtual net::URLRequestContextGetter *CreateMediaRequestContext() Q_DECL_OVERRIDE;
-    virtual net::URLRequestContextGetter *CreateMediaRequestContextForStoragePartition(const base::FilePath& partition_path, bool in_memory) Q_DECL_OVERRIDE;
+    net::URLRequestContextGetter *CreateMediaRequestContext() override;
+    net::URLRequestContextGetter *CreateMediaRequestContextForStoragePartition(const base::FilePath& partition_path, bool in_memory) override;
 
-    virtual content::ResourceContext *GetResourceContext() Q_DECL_OVERRIDE;
-    virtual content::DownloadManagerDelegate *GetDownloadManagerDelegate() Q_DECL_OVERRIDE;
-    virtual content::BrowserPluginGuestManager* GetGuestManager() Q_DECL_OVERRIDE;
-    virtual storage::SpecialStoragePolicy *GetSpecialStoragePolicy() Q_DECL_OVERRIDE;
-    virtual content::PushMessagingService* GetPushMessagingService() Q_DECL_OVERRIDE;
-    virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() Q_DECL_OVERRIDE;
+    content::ResourceContext *GetResourceContext() override;
+    content::DownloadManagerDelegate *GetDownloadManagerDelegate() override;
+    content::BrowserPluginGuestManager* GetGuestManager() override;
+    storage::SpecialStoragePolicy *GetSpecialStoragePolicy() override;
+    content::PushMessagingService* GetPushMessagingService() override;
+    content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
     net::URLRequestContextGetter *CreateRequestContext(
             content::ProtocolHandlerMap *protocol_handlers,
-            content::URLRequestInterceptorScopedVector request_interceptors) Q_DECL_OVERRIDE;
+            content::URLRequestInterceptorScopedVector request_interceptors) override;
     net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
             const base::FilePath& partition_path, bool in_memory,
             content::ProtocolHandlerMap* protocol_handlers,
-            content::URLRequestInterceptorScopedVector request_interceptors) Q_DECL_OVERRIDE;
-    virtual std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) Q_DECL_OVERRIDE;
-    virtual content::PermissionManager *GetPermissionManager() Q_DECL_OVERRIDE;
-    virtual content::BackgroundSyncController* GetBackgroundSyncController() Q_DECL_OVERRIDE;
+            content::URLRequestInterceptorScopedVector request_interceptors) override;
+    std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) override;
+    content::PermissionManager *GetPermissionManager() override;
+    content::BackgroundSyncController* GetBackgroundSyncController() override;
 
     // Profile implementation:
     PrefService* GetPrefs() override;
