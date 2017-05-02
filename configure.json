@@ -8,7 +8,6 @@
         "options": {
             "alsa": "boolean",
             "embedded": "boolean",
-            "optimize-for-size": { "type": "boolean", "name": "optimize_size" },
             "ffmpeg": { "type": "enum", "name": "system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
             "opus": { "type": "enum", "name": "system-opus", "values": { "system": "yes", "qt": "no" } },
             "webp": { "type": "enum", "name": "system-webp", "values": { "system": "yes", "qt": "no" } },
@@ -88,11 +87,6 @@
             "condition": "config.unix",
             "autoDetect": "tests.embedded",
             "purpose": "Enables the embedded build configuration",
-            "output": [ "privateFeature" ]
-        },
-        "optimize_size": {
-            "label": "Optimize for size",
-            "autoDetect": "tests.embedded",
             "output": [ "privateFeature" ]
         },
         "alsa": {
@@ -180,7 +174,6 @@
             "section": "Qt WebEngine",
             "entries": [
                 "embedded",
-                "optimize_size",
                 "pepper-plugins",
                 "printing-and-pdf",
                 "proprietary-codecs",
