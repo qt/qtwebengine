@@ -70,18 +70,18 @@ QtObject {
         onClosing: destroy()
     }
     function createWindow(profile) {
-        var newWindow = browserWindowComponent.createObject(root)
-        newWindow.currentWebView.profile = profile
-        profile.downloadRequested.connect(newWindow.onDownloadRequested)
-        return newWindow
+        var newWindow = browserWindowComponent.createObject(root);
+        newWindow.currentWebView.profile = profile;
+        profile.downloadRequested.connect(newWindow.onDownloadRequested);
+        return newWindow;
     }
     function createDialog(profile) {
-        var newDialog = browserDialogComponent.createObject(root)
-        newDialog.currentWebView.profile = profile
-        return newDialog
+        var newDialog = browserDialogComponent.createObject(root);
+        newDialog.currentWebView.profile = profile;
+        return newDialog;
     }
     function load(url) {
-        var browserWindow = createWindow(defaultProfile)
-        browserWindow.currentWebView.url = url
+        var browserWindow = createWindow(defaultProfile);
+        browserWindow.currentWebView.url = url;
     }
 }

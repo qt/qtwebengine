@@ -51,14 +51,14 @@ Rectangle {
     opacity: 0
 
     function show() {
-        visible = true
-        opacity = 1
-        reset.start()
+        visible = true;
+        opacity = 1;
+        reset.start();
     }
 
     function hide() {
-        reset.stop()
-        opacity = 0
+        reset.stop();
+        opacity = 0;
     }
 
     Behavior on opacity {
@@ -66,7 +66,7 @@ Rectangle {
             duration: 750
             onStopped: {
                 if (opacity == 0)
-                    visible = false
+                    visible = false;
             }
         }
     }

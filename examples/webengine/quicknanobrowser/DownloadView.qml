@@ -64,8 +64,8 @@ Rectangle {
     }
 
     function append(download) {
-        downloadModel.append(download)
-        downloadModel.downloads.push(download)
+        downloadModel.append(download);
+        downloadModel.downloads.push(download);
     }
 
     Component {
@@ -113,14 +113,14 @@ Rectangle {
                     anchors.right: parent.right
                     iconSource: "icons/process-stop.png"
                     onClicked: {
-                        var download = downloadModel.downloads[index]
+                        var download = downloadModel.downloads[index];
 
-                        download.cancel()
+                        download.cancel();
 
                         downloadModel.downloads = downloadModel.downloads.filter(function (el) {
                             return el.id !== download.id;
                         });
-                        downloadModel.remove(index)
+                        downloadModel.remove(index);
                     }
                 }
             }
@@ -167,7 +167,7 @@ Rectangle {
                 text: "OK"
                 anchors.centerIn: parent
                 onClicked: {
-                    downloadView.visible = false
+                    downloadView.visible = false;
                 }
             }
         }
