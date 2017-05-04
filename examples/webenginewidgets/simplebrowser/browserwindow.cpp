@@ -105,6 +105,13 @@ BrowserWindow::BrowserWindow(QWidget *parent, Qt::WindowFlags flags)
 
     m_urlLineEdit->setFavIcon(QIcon(QStringLiteral(":defaulticon.png")));
 
+    QAction *focusUrlLineEditAction = new QAction(this);
+    addAction(focusUrlLineEditAction);
+    focusUrlLineEditAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L));
+    connect(focusUrlLineEditAction, &QAction::triggered, this, [this] () {
+        m_urlLineEdit->setFocus(Qt::ShortcutFocusReason);
+    });
+
     handleWebViewTitleChanged(tr("Qt Simple Browser"));
     m_tabWidget->createTab();
 }
