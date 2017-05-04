@@ -322,6 +322,12 @@ WebEngineContext::WebEngineContext()
     // Enabled on OS X and Linux but currently not working. It worked in 5.7 on OS X.
     parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
 
+#if defined(Q_OS_MACOS)
+    // Accelerated decoding currently does not work on macOS due to issues with OpenGL Rectangle
+    // texture support. See QTBUG-60002.
+    parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+#endif
+
     if (useEmbeddedSwitches) {
         // Inspired by the Android port's default switches
         if (!parsedCommandLine->HasSwitch(switches::kDisableOverlayScrollbar))
