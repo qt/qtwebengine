@@ -369,7 +369,7 @@ void URLRequestContextGetterQt::generateUserAgent()
     Q_ASSERT(m_storage);
 
     QMutexLocker lock(&m_mutex);
-    m_updateUserAgent = true;
+    m_updateUserAgent = false;
 
     m_storage->set_http_user_agent_settings(std::unique_ptr<net::HttpUserAgentSettings>(
         new net::StaticHttpUserAgentSettings(m_httpAcceptLanguage.toStdString(), m_httpUserAgent.toStdString())));
