@@ -131,10 +131,8 @@ void QWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClient::Do
 
     Q_ASSERT(downloadState != QWebEngineDownloadItem::DownloadRequested);
 
-    if (toDownloadInterruptReason(info.downloadInterruptReason) != interruptReason) {
+    if (toDownloadInterruptReason(info.downloadInterruptReason) != interruptReason)
         interruptReason = toDownloadInterruptReason(info.downloadInterruptReason);
-        Q_EMIT q->interruptReasonChanged();
-    }
 
     if (toDownloadState(info.state) != downloadState) {
         downloadState = toDownloadState(info.state);
@@ -232,15 +230,6 @@ quint32 QWebEngineDownloadItem::id() const
     0.
 
     \sa totalBytes(), receivedBytes()
-*/
-
-/*!
-    \fn QWebEngineDownloadItem::interruptReasonChanged()
-    \since 5.9
-
-    This signal is emitted whenever the reason of the download's interruption changes.
-
-    \sa interruptReason(), QWebEngineDownloadItem::DownloadInterruptReason
 */
 
 /*!
