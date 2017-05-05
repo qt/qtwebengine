@@ -11,7 +11,7 @@ defineTest(runConfigure) {
     # Ignore the cached config tests results in case they were not successful
     CONFIG += recheck
     #Override the config.tests path
-    QMAKE_CONFIG_TESTS_DIR = $$QTWEBENGINE_ROOT/tools/qmake/config.tests
+    QMAKE_CONFIG_TESTS_DIR = $$QTWEBENGINE_ROOT/config.tests
     CONFIG_TESTS = $$files($$QMAKE_CONFIG_TESTS_DIR/*.pro, true)
     log("Running configure tests$${EOL}")
     for(test, CONFIG_TESTS) {
@@ -30,7 +30,6 @@ defineTest(runConfigure) {
         qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
         qtConfig(webrtc): WEBENGINE_CONFIG += use_webrtc
         qtConfig(embedded): WEBENGINE_CONFIG += embedded_build
-        qtConfig(optimize_size): WEBENGINE_CONFIG += reduce_binary_size
         qtConfig(system-webp): WEBENGINE_CONFIG += use_system_libwebp
         else: WEBENGINE_CONFIG += use_bundled_libwebp
         qtConfig(system-opus): WEBENGINE_CONFIG += use_system_opus
@@ -42,6 +41,9 @@ defineTest(runConfigure) {
     }
     isQtMinimum(5, 9) {
         qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
+        optimize_size: WEBENGINE_CONFIG += reduce_binary_size
+    } else {
+        qtConfig(embedded): WEBENGINE_CONFIG += reduce_binary_size
     }
 
     linux {

@@ -1,22 +1,12 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWebEngine module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** BSD License Usage
-** Alternatively, you may use this file under the terms of the BSD license
-** as follows:
+** You may use this file under the terms of the BSD license as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -47,41 +37,51 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "fullscreennotification.h"
 
-import QtQuick 2.1
-import QtWebEngine 1.2
+#include <QGraphicsOpacityEffect>
+#include <QPropertyAnimation>
+#include <QSequentialAnimationGroup>
 
-QtObject {
-    id: root
+FullScreenNotification::FullScreenNotification(QWidget *parent)
+    : QLabel(parent)
+    , m_previouslyVisible(false)
+{
+    setText(tr("You are now in full screen mode. Press ESC to quit!"));
+    setStyleSheet(
+        "font-size: 24px;"
+        "color: white;"
+        "background-color: black;"
+        "border-color: white;"
+        "border-width: 2px;"
+        "border-style: solid;"
+        "padding: 100px");
+    setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    property QtObject defaultProfile: WebEngineProfile {
-        storageName: "Default"
-    }
+    auto effect = new QGraphicsOpacityEffect;
+    effect->setOpacity(1);
+    setGraphicsEffect(effect);
 
-    property QtObject otrProfile: WebEngineProfile {
-        offTheRecord: true
-    }
+    auto animations = new QSequentialAnimationGroup(this);
+    animations->addPause(3000);
+    auto opacityAnimation = new QPropertyAnimation(effect, "opacity", animations);
+    opacityAnimation->setDuration(2000);
+    opacityAnimation->setStartValue(1.0);
+    opacityAnimation->setEndValue(0.0);
+    opacityAnimation->setEasingCurve(QEasingCurve::OutQuad);
+    animations->addAnimation(opacityAnimation);
 
-    property Component browserWindowComponent: BrowserWindow {
-        applicationRoot: root
-        onClosing: destroy()
-    }
-    property Component browserDialogComponent: BrowserDialog {
-        onClosing: destroy()
-    }
-    function createWindow(profile) {
-        var newWindow = browserWindowComponent.createObject(root);
-        newWindow.currentWebView.profile = profile;
-        profile.downloadRequested.connect(newWindow.onDownloadRequested);
-        return newWindow;
-    }
-    function createDialog(profile) {
-        var newDialog = browserDialogComponent.createObject(root);
-        newDialog.currentWebView.profile = profile;
-        return newDialog;
-    }
-    function load(url) {
-        var browserWindow = createWindow(defaultProfile);
-        browserWindow.currentWebView.url = url;
-    }
+    connect(this, &FullScreenNotification::shown,
+            [animations](){ animations->start(); });
+
+    connect(animations, &QAbstractAnimation::finished,
+            [this](){ this->hide(); });
+}
+
+void FullScreenNotification::showEvent(QShowEvent *event)
+{
+    QLabel::showEvent(event);
+    if (!m_previouslyVisible && isVisible())
+        emit shown();
+    m_previouslyVisible = isVisible();
 }

@@ -6,7 +6,8 @@ SUBDIRS += \
     cookiebrowser \
     demobrowser \
     markdowneditor \
-    simplebrowser
+    simplebrowser \
+    videoplayer
 
 contains(WEBENGINE_CONFIG, use_spellchecker):!cross_compile {
     !contains(WEBENGINE_CONFIG, use_native_spellchecker) {

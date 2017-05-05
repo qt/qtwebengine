@@ -5,13 +5,6 @@ isQtMinimum(5, 8) {
 
 TEMPLATE = aux
 
-defineReplace(runGn) {
-    message("Running: $$1")
-    !system($$1) {
-        error("GN run error!")
-    }
-}
-
 qtConfig(debug_and_release): CONFIG += debug_and_release build_all
 
 qtConfig(system-ninja) {
@@ -42,16 +35,22 @@ build_pass|!debug_and_release {
         gn_args += is_debug=false
     }
 
-    gn_args += "qtwebengine_target=\"$$shell_path($$OUT_PWD/$$getConfigDir()):QtWebEngineCore\""
+    gn_args += "qtwebengine_target=\"$$system_path($$OUT_PWD/$$getConfigDir()):QtWebEngineCore\""
 
     !qtConfig(system-gn) {
-        gn_binary = $$shell_quote($$shell_path($$gnPath()))
+        gn_binary = $$system_quote($$system_path($$gnPath()))
     }
 
-    gn_args = $$shell_quote($$gn_args)
-    gn_src_root = $$shell_quote($$shell_path($$QTWEBENGINE_ROOT/$$getChromiumSrcDir()))
-    gn_build_root = $$shell_quote($$shell_path($$OUT_PWD/$$getConfigDir()))
-    $$runGn($$gn_binary gen $$gn_build_root --args=$$gn_args --root=$$gn_src_root)
+    gn_args = $$system_quote($$gn_args)
+    gn_src_root = $$system_quote($$system_path($$QTWEBENGINE_ROOT/$$getChromiumSrcDir()))
+    gn_build_root = $$system_quote($$system_path($$OUT_PWD/$$getConfigDir()))
+    gn_python = "--script-executable=$$pythonPathForSystem()"
+    gn_run = $$gn_binary gen $$gn_build_root $$gn_python --args=$$gn_args --root=$$gn_src_root
+
+    message("Running: $$gn_run ")
+    !system($$gn_run) {
+        error("GN run error!")
+    }
 
     runninja.commands = $$NINJA \$\(NINJAFLAGS\) -C $$gn_build_root QtWebEngineCore
     QMAKE_EXTRA_TARGETS += runninja

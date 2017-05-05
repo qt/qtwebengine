@@ -1,22 +1,12 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWebEngine module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** BSD License Usage
-** Alternatively, you may use this file under the terms of the BSD license
-** as follows:
+** You may use this file under the terms of the BSD license as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -47,41 +37,32 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef FULLSCREENWINDOW_H
+#define FULLSCREENWINDOW_H
 
-import QtQuick 2.1
-import QtWebEngine 1.2
+#include <QWidget>
 
-QtObject {
-    id: root
+QT_BEGIN_NAMESPACE
+class QWebEngineView;
+QT_END_NAMESPACE
 
-    property QtObject defaultProfile: WebEngineProfile {
-        storageName: "Default"
-    }
+class FullScreenNotification;
 
-    property QtObject otrProfile: WebEngineProfile {
-        offTheRecord: true
-    }
+class FullScreenWindow : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit FullScreenWindow(QWebEngineView *oldView, QWidget *parent = nullptr);
+    ~FullScreenWindow();
 
-    property Component browserWindowComponent: BrowserWindow {
-        applicationRoot: root
-        onClosing: destroy()
-    }
-    property Component browserDialogComponent: BrowserDialog {
-        onClosing: destroy()
-    }
-    function createWindow(profile) {
-        var newWindow = browserWindowComponent.createObject(root);
-        newWindow.currentWebView.profile = profile;
-        profile.downloadRequested.connect(newWindow.onDownloadRequested);
-        return newWindow;
-    }
-    function createDialog(profile) {
-        var newDialog = browserDialogComponent.createObject(root);
-        newDialog.currentWebView.profile = profile;
-        return newDialog;
-    }
-    function load(url) {
-        var browserWindow = createWindow(defaultProfile);
-        browserWindow.currentWebView.url = url;
-    }
-}
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+
+private:
+    QWebEngineView *m_view;
+    FullScreenNotification *m_notification;
+    QWebEngineView *m_oldView;
+    QRect m_oldGeometry;
+};
+
+#endif // FULLSCREENWINDOW_H

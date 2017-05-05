@@ -1,22 +1,12 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWebEngine module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** BSD License Usage
-** Alternatively, you may use this file under the terms of the BSD license
-** as follows:
+** You may use this file under the terms of the BSD license as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -47,41 +37,52 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "fullscreenwindow.h"
 
-import QtQuick 2.1
-import QtWebEngine 1.2
+#include "fullscreennotification.h"
 
-QtObject {
-    id: root
+#include <QAction>
+#include <QLabel>
+#include <QWebEngineView>
 
-    property QtObject defaultProfile: WebEngineProfile {
-        storageName: "Default"
-    }
+FullScreenWindow::FullScreenWindow(QWebEngineView *oldView, QWidget *parent)
+    : QWidget(parent)
+    , m_view(new QWebEngineView(this))
+    , m_notification(new FullScreenNotification(this))
+    , m_oldView(oldView)
+    , m_oldGeometry(oldView->window()->geometry())
+{
+    m_view->stackUnder(m_notification);
 
-    property QtObject otrProfile: WebEngineProfile {
-        offTheRecord: true
-    }
+    auto exitAction = new QAction(this);
+    exitAction->setShortcut(Qt::Key_Escape);
+    connect(exitAction, &QAction::triggered, [this]() {
+        m_view->triggerPageAction(QWebEnginePage::ExitFullScreen);
+    });
+    addAction(exitAction);
 
-    property Component browserWindowComponent: BrowserWindow {
-        applicationRoot: root
-        onClosing: destroy()
-    }
-    property Component browserDialogComponent: BrowserDialog {
-        onClosing: destroy()
-    }
-    function createWindow(profile) {
-        var newWindow = browserWindowComponent.createObject(root);
-        newWindow.currentWebView.profile = profile;
-        profile.downloadRequested.connect(newWindow.onDownloadRequested);
-        return newWindow;
-    }
-    function createDialog(profile) {
-        var newDialog = browserDialogComponent.createObject(root);
-        newDialog.currentWebView.profile = profile;
-        return newDialog;
-    }
-    function load(url) {
-        var browserWindow = createWindow(defaultProfile);
-        browserWindow.currentWebView.url = url;
-    }
+    m_view->setPage(m_oldView->page());
+    setGeometry(m_oldGeometry);
+    showFullScreen();
+    m_oldView->window()->hide();
+}
+
+FullScreenWindow::~FullScreenWindow()
+{
+    m_oldView->setPage(m_view->page());
+    m_oldView->window()->setGeometry(m_oldGeometry);
+    m_oldView->window()->show();
+    hide();
+}
+
+void FullScreenWindow::resizeEvent(QResizeEvent *event)
+{
+    QRect viewGeometry(QPoint(0, 0), size());
+    m_view->setGeometry(viewGeometry);
+
+    QRect notificationGeometry(QPoint(0, 0), m_notification->sizeHint());
+    notificationGeometry.moveCenter(viewGeometry.center());
+    m_notification->setGeometry(notificationGeometry);
+
+    QWidget::resizeEvent(event);
 }

@@ -91,6 +91,7 @@
 #ifndef QT_NO_OPENGL
 # include <QOpenGLContext>
 #endif
+#include <QQuickWindow>
 #include <QStringList>
 #include <QSurfaceFormat>
 #include <QVector>
@@ -157,6 +158,8 @@ bool usingQtQuick2DRenderer()
         }
     }
 
+    if (device.isEmpty())
+        device = QQuickWindow::sceneGraphBackend();
     if (device.isEmpty())
         device = QString::fromLocal8Bit(qgetenv("QT_QUICK_BACKEND"));
     if (device.isEmpty())
