@@ -39,7 +39,12 @@ defineTest(runConfigure) {
         qtConfig(system-icu): WEBENGINE_CONFIG += use_system_icu
         else: WEBENGINE_CONFIG += use_bundled_icu
     } else {
-        cross_compile: WEBENGINE_CONFIG += embedded_build reduce_binary_size
+        # Feature defaults when building with Qt 5.6 LTS:
+        cross_compile {
+            WEBENGINE_CONFIG += embedded_build reduce_binary_size
+        } else {
+            WEBENGINE_CONFIG += use_spellchecker use_webrtc use_pepper_plugins use_printing use_pdf
+        }
     }
     isQtMinimum(5, 9) {
         qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code

@@ -158,8 +158,10 @@ bool usingQtQuick2DRenderer()
         }
     }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
     if (device.isEmpty())
         device = QQuickWindow::sceneGraphBackend();
+#endif
     if (device.isEmpty())
         device = QString::fromLocal8Bit(qgetenv("QT_QUICK_BACKEND"));
     if (device.isEmpty())

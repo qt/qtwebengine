@@ -69,7 +69,7 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
     QMenu *menu = page()->createStandardContextMenu();
     menu->addSeparator();
 
-    QAction *spellcheckAction = new QAction(tr("Check Spelling"));
+    QAction *spellcheckAction = new QAction(tr("Check Spelling"), nullptr);
     spellcheckAction->setCheckable(true);
     spellcheckAction->setChecked(profile->isSpellCheckEnabled());
     connect(spellcheckAction, &QAction::toggled, this, [profile](bool toogled) {
