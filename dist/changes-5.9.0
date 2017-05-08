@@ -1,0 +1,74 @@
+Qt 5.9 introduces many new features and improvements as well as bugfixes
+over the 5.8.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.9 series is binary compatible with the 5.7.x series.
+The Qt WebEngine 5.8.0 had a mistake that makes builds against it incompatible
+with Qt WebEngine 5.9.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+
+****************************************************************************
+*                             General                                      *
+****************************************************************************
+
+Important Changes
+-----------------
+
+ - [QTBUG-60565] Fixed that Chromium was incorrectly exporting its own new
+   and delete operators in Qt 5.8.0. However, applications that linked and
+   used those versions of new or delete will not be able to load with 5.9,
+   where they no longer exist. This primarily affects shared Linux builds,
+   where exported Qt symbols were tagged with Qt_5.
+
+
+Chromium Snapshot
+-----------------
+
+ - Updated the Chromium version to 56.0.2924.122.
+ - Changed the Chromium build-system to GN.
+
+
+****************************************************************************
+*                                APIs                                      *
+****************************************************************************
+
+General
+-------
+
+ - Took Q_ENUM to use on QtWebEngineWidgets interfaces.
+ - [QTBUG-56677] Made printing to a PDF file emit the signal
+   pdfPrintingFinished() in both QQuickWebEngineView and QWebEnginePage.
+ - Added a setting to again allow insecure origins to request geolocation.
+
+
+DownloadItem
+------------
+
+ - [QTBUG-58155] Fixed that (QWebEngine)DownloadItem::path() incorrectly
+   returned percentage-encoded filenames when the suggested path was based
+   on a URL. Percentage-decoding the path is generally not only incorrect
+   when the path is not based on URL, but also dangerous as it can lead to
+   downloads that escape the download folder.
+ - [QTBUG-56839] Added a downloadInterruptReason property for interrupted
+   downloads to download items.
+
+
+Qt WebEngineWidgets
+-------------------
+
+ - [QTBUG-53314, QTBUG-53372] Added the QWebEngineHttpRequest class for
+   sending HTTP requests over the network using HTTP POST or with custom
+   HTTP headers.
+
+ - [QTBUG-58673] QWebEnginePage: Started calling the javaScriptConfirm
+   method also for unload dialogs (onbeforeunload handlers).
