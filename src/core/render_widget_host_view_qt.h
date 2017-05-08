@@ -174,6 +174,7 @@ public:
     void windowChanged() override;
     bool forwardEvent(QEvent *) override;
     QVariant inputMethodQuery(Qt::InputMethodQuery query) override;
+    void closePopup() override;
 
     // Overridden from content::TextInputManager::Observer
     void OnUpdateTextInputStateCalled(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view, bool did_update_state) override;

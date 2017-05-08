@@ -83,6 +83,7 @@ protected:
     void resizeEvent(QResizeEvent *resizeEvent) override;
     void showEvent(QShowEvent *) override;
     void hideEvent(QHideEvent *) override;
+    void closeEvent(QCloseEvent *event) override;
 
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
 

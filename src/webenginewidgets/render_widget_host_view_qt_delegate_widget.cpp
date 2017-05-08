@@ -218,18 +218,22 @@ void RenderWidgetHostViewQtDelegateWidget::initAsPopup(const QRect& screenRect)
     // to be destroyed.
     setAttribute(Qt::WA_ShowWithoutActivating);
     setFocusPolicy(Qt::NoFocus);
-
-#ifdef Q_OS_MACOS
-    // macOS doesn't like Qt::ToolTip when QWebEngineView is inside a modal dialog, specifically by
-    // not forwarding click events to the popup. So we use Qt::Tool which behaves the same way, but
-    // works on macOS too.
-    setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
-#else
-    setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
-#endif
+    setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
 
     setGeometry(screenRect);
     show();
+}
+
+void RenderWidgetHostViewQtDelegateWidget::closeEvent(QCloseEvent *event)
+{
+    Q_UNUSED(event);
+
+    // If a close event was received from the window manager (e.g. when moving the parent window,
+    // clicking outside the popup area)
+    // make sure to notify the Chromium WebUI popup and its underlying
+    // RenderWidgetHostViewQtDelegate instance to be closed.
+    if (m_isPopup)
+        m_client->closePopup();
 }
 
 QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const

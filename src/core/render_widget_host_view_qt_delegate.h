@@ -78,6 +78,7 @@ public:
     virtual void windowChanged() = 0;
     virtual bool forwardEvent(QEvent *) = 0;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) = 0;
+    virtual void closePopup() = 0;
 };
 
 class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {
