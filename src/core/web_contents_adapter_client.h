@@ -90,6 +90,7 @@ public:
     uint mediaFlags;
     QPoint pos;
     QUrl linkUrl;
+    QUrl unfilteredLinkUrl;
     QUrl mediaUrl;
     QString linkText;
     QString selectedText;
@@ -154,6 +155,14 @@ public:
 
     QUrl linkUrl() const {
         return d->linkUrl;
+    }
+
+    void setUnfilteredLinkUrl(const QUrl &url) {
+        d->unfilteredLinkUrl = url;
+    }
+
+    QUrl unfilteredLinkUrl() const {
+        return d->unfilteredLinkUrl;
     }
 
     void setLinkText(const QString &text) {

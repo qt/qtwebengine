@@ -265,10 +265,12 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Unselect"));
     }
 
-    if (!data.linkText().isEmpty() && data.linkUrl().isValid()) {
+    if (!data.linkText().isEmpty() && !data.unfilteredLinkUrl().isEmpty()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyLinkToClipboard); });
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Link URL"));
+    }
+    if (!data.linkText().isEmpty() && data.linkUrl().isValid()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::DownloadLinkToDisk); });
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Save Link"));
@@ -1609,14 +1611,14 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         }
         break;
     case CopyLinkToClipboard:
-        if (d->m_contextMenuData.linkUrl().isValid()) {
-            QString urlString = d->m_contextMenuData.linkUrl().toString(QUrl::FullyEncoded);
+        if (!d->m_contextMenuData.unfilteredLinkUrl().isEmpty()) {
+            QString urlString = d->m_contextMenuData.unfilteredLinkUrl().toString(QUrl::FullyEncoded);
             QString title = d->m_contextMenuData.linkText().toHtmlEscaped();
             QMimeData *data = new QMimeData();
             data->setText(urlString);
             QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\">") + title + QStringLiteral("</a>");
             data->setHtml(html);
-            data->setUrls(QList<QUrl>() << d->m_contextMenuData.linkUrl());
+            data->setUrls(QList<QUrl>() << d->m_contextMenuData.unfilteredLinkUrl());
             qApp->clipboard()->setMimeData(data);
         }
         break;

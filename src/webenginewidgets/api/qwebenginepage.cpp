@@ -1271,14 +1271,14 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         }
         break;
     case CopyLinkToClipboard:
-        if (menuData.linkUrl().isValid()) {
-            QString urlString = menuData.linkUrl().toString(QUrl::FullyEncoded);
+        if (!menuData.unfilteredLinkUrl().isEmpty()) {
+            QString urlString = menuData.unfilteredLinkUrl().toString(QUrl::FullyEncoded);
             QString title = menuData.linkText().toHtmlEscaped();
             QMimeData *data = new QMimeData();
             data->setText(urlString);
             QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\">") + title + QStringLiteral("</a>");
             data->setHtml(html);
-            data->setUrls(QList<QUrl>() << menuData.linkUrl());
+            data->setUrls(QList<QUrl>() << menuData.unfilteredLinkUrl());
             qApp->clipboard()->setMimeData(data);
         }
         break;
@@ -1683,7 +1683,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         menu->addAction(QWebEnginePage::action(Unselect));
     }
 
-    if (!contextMenuData.linkText().isEmpty() && contextMenuData.linkUrl().isValid()) {
+    if (!contextMenuData.linkText().isEmpty() && !contextMenuData.unfilteredLinkUrl().isEmpty()) {
         menu->addAction(QWebEnginePage::action(CopyLinkToClipboard));
     }
     if (contextMenuData.mediaUrl().isValid()) {

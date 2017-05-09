@@ -159,11 +159,12 @@ QString QQuickWebEngineContextMenuRequest::linkText() const
     \readonly
 
     The URL of the link if the selected web page content is a link.
+    It is not guaranteed to be a valid URL.
 */
 
 QUrl QQuickWebEngineContextMenuRequest::linkUrl() const
 {
-    return m_data->linkUrl();
+    return m_data->unfilteredLinkUrl();
 }
 
 /*!
