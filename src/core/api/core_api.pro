@@ -50,6 +50,10 @@ SOURCES = \
     qwebengineurlrequestjob.cpp \
     qwebengineurlschemehandler.cpp
 
+unix:!isEmpty(QMAKE_LFLAGS_VERSION_SCRIPT):!static {
+    SOURCES += qtbug-60565.cpp
+}
+
 msvc {
     # Create a list of object files that can be used as response file for the linker.
     # This is done to simulate -whole-archive on MSVC.
