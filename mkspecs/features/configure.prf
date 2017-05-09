@@ -119,10 +119,8 @@ defineTest(runConfigure) {
             WEBENGINE_CONFIG += use_bundled_snappy
         }
 
-        !contains(WEBENGINE_CONFIG, embedded_build) {
-            packagesExist(nss): WEBENGINE_CONFIG += use_nss
-            else: log("System NSS not found, BoringSSL will be used.$${EOL}")
-        }
+        packagesExist(nss): WEBENGINE_CONFIG += use_nss
+        else: log("System NSS not found, BoringSSL will be used.$${EOL}")
     }
 
     win32 {
