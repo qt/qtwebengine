@@ -202,11 +202,6 @@ defineTest(runConfigure) {
         }
     }
     osx {
-        use?(appstore_compliant_code) {
-            log("  Mac App Store Compliant ............ Enabled$${EOL}")
-        } else {
-            log("  Mac App Store Compliant ............ Not enabled         (Default, enable with WEBENGINE_CONFIG+=use_appstore_compliant_code)$${EOL}")
-        }
         use?(native_spellchecker) {
             log("Native Spellchecker .............. Enabled$${EOL}")
         } else {

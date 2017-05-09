@@ -114,17 +114,18 @@
 
     \section1 Mac App Store Compatibility
 
-    By default, Qt WebEngine uses private \macos API, which might cause an application to be
-    rejected when submitted to the Mac App Store. To configure Qt WebEngine not to use these API
-    calls, Qt has to be reconfigured with the \c -appstore-compliant switch.
-
-    However, this will cause some behavioral changes, such as:
+    Applications using Qt WebEngine are not compatible with the Mac App Store, because:
 
     \list
-        \li The \macos Kill Ring functionality will no longer work (emacs-like copy pasting).
-        \li Certain Chromium sandboxing cleanup is not done.
-        \li Text areas will be painted with a different style.
-        \li Text fields might be painted with a different style on Mountain Lion (\macos 10.8).
+        \li The Chromium part of the code uses several private API methods, which are prohibited by
+            the App Store.
+        \li Applications submitted to the App Store must be code-signed with the App Sandbox feature
+            enabled. The App Sandbox feature interferes with Chromium's own sandbox
+            initialization, which results in Chromium not being properly initialized. This also
+            ties in with the private API usage. Furthermore, standalone Chromium itself is not
+            officially tested with the App Sandbox enabled, and even if work is done to bypass
+            the App Store's restrictions, that would not guarantee correct behavior of the library.
+
     \endlist
 
     \section1 macOS Airplay Support on MacBooks with Dual GPUs
