@@ -52,7 +52,7 @@ import Qt.labs.settings 1.0
 import QtQml 2.2
 import QtQuick 2.2
 import QtQuick.Controls 1.0
-import QtQuick.Controls.Private 1.0
+import QtQuick.Controls.Private 1.0 as QQCPrivate
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
@@ -75,7 +75,7 @@ ApplicationWindow {
 
     // Create a styleItem to determine the platform.
     // When using style "mac", ToolButtons are not supposed to accept focus.
-    StyleItem { id: styleItem }
+    QQCPrivate.StyleItem { id: styleItem }
     property bool platformIsMac: styleItem.style == "mac"
 
     Settings {
