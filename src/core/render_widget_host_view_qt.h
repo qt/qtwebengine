@@ -263,8 +263,8 @@ private:
     gfx::SizeF m_lastContentsSize;
 
     uint m_imState;
-    uint m_anchorPositionWithinSelection;
-    uint m_cursorPositionWithinSelection;
+    int m_anchorPositionWithinSelection;
+    int m_cursorPositionWithinSelection;
     uint m_cursorPosition;
     bool m_emptyPreviousSelection;
     QString m_surroundingText;

@@ -100,7 +100,8 @@ private Q_SLOTS:
 
     void softwareInputPanel();
     void inputMethods();
-    void textSelection();
+    void textSelectionInInputField();
+    void textSelectionOutOfInputField();
     void hiddenText();
     void emptyInputMethodEvent();
     void imeComposition();
@@ -1584,7 +1585,7 @@ void tst_QWebEngineView::inputMethods()
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine"));
 }
 
-void tst_QWebEngineView::textSelection()
+void tst_QWebEngineView::textSelectionInInputField()
 {
     QWebEngineView view;
     view.show();
@@ -1660,6 +1661,96 @@ void tst_QWebEngineView::textSelection()
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 9);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 0);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString("QtWebEngi"));
+}
+
+void tst_QWebEngineView::textSelectionOutOfInputField()
+{
+    QWebEngineView view;
+    view.show();
+
+    QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml("<html><body>"
+                 "  This is a text"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    QCOMPARE(selectionChangedSpy.count(), 0);
+    QVERIFY(!view.hasSelection());
+    QVERIFY(view.page()->selectedText().isEmpty());
+
+    // Simple click should not update text selection, however it updates selection bounds in Chromium
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, view.geometry().center());
+    QCOMPARE(selectionChangedSpy.count(), 0);
+    QVERIFY(!view.hasSelection());
+    QVERIFY(view.page()->selectedText().isEmpty());
+
+    // Workaround for macOS: press ctrl+a without key text
+    QKeyEvent keyPressCtrlA(QEvent::KeyPress, Qt::Key_A, Qt::ControlModifier);
+    QKeyEvent keyReleaseCtrlA(QEvent::KeyRelease, Qt::Key_A, Qt::ControlModifier);
+
+    // Select text by ctrl+a
+    QApplication::sendEvent(view.focusProxy(), &keyPressCtrlA);
+    QApplication::sendEvent(view.focusProxy(), &keyReleaseCtrlA);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 1);
+    QVERIFY(view.hasSelection());
+    QCOMPARE(view.page()->selectedText(), QString("This is a text"));
+
+    // Deselect text by mouse click
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, view.geometry().center());
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 2);
+    QVERIFY(!view.hasSelection());
+    QVERIFY(view.page()->selectedText().isEmpty());
+
+    selectionChangedSpy.clear();
+    view.setHtml("<html><body>"
+                 "  This is a text"
+                 "  <br>"
+                 "  <input type='text' id='input1' value='QtWebEngine' size='50'/>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    QCOMPARE(selectionChangedSpy.count(), 0);
+    QVERIFY(!view.hasSelection());
+    QVERIFY(view.page()->selectedText().isEmpty());
+
+    // Make sure the input field does not have the focus
+    evaluateJavaScriptSync(view.page(), "document.getElementById('input1').blur()");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
+
+    // Select the whole page by ctrl+a
+    QApplication::sendEvent(view.focusProxy(), &keyPressCtrlA);
+    QApplication::sendEvent(view.focusProxy(), &keyReleaseCtrlA);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 1);
+    QVERIFY(view.hasSelection());
+    QVERIFY(view.page()->selectedText().startsWith(QString("This is a text")));
+
+    // Remove selection by clicking into an input field
+    QPoint textInputCenter = elementCenter(view.page(), "input1");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
+    QCOMPARE(selectionChangedSpy.count(), 2);
+    QVERIFY(!view.hasSelection());
+    QVERIFY(view.page()->selectedText().isEmpty());
+
+    // Select the content of the input field by ctrl+a
+    QApplication::sendEvent(view.focusProxy(), &keyPressCtrlA);
+    QApplication::sendEvent(view.focusProxy(), &keyReleaseCtrlA);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 3);
+    QVERIFY(view.hasSelection());
+    QCOMPARE(view.page()->selectedText(), QString("QtWebEngine"));
+
+    // Deselect input field's text by mouse click
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, view.geometry().center());
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 4);
+    QVERIFY(!view.hasSelection());
+    QVERIFY(view.page()->selectedText().isEmpty());
 }
 
 void tst_QWebEngineView::hiddenText()

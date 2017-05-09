@@ -97,6 +97,7 @@ enum ImStateFlags {
     TextInputStateUpdated = 1 << 0,
     TextSelectionUpdated = 1 << 1,
     TextSelectionBoundsUpdated = 1 << 2,
+    TextSelectionFlags = TextSelectionUpdated | TextSelectionBoundsUpdated,
     AllFlags = TextInputStateUpdated | TextSelectionUpdated | TextSelectionBoundsUpdated
 };
 
@@ -266,8 +267,8 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_needsBeginFrames(false)
     , m_addedFrameObserver(false)
     , m_imState(0)
-    , m_anchorPositionWithinSelection(0)
-    , m_cursorPositionWithinSelection(0)
+    , m_anchorPositionWithinSelection(-1)
+    , m_cursorPositionWithinSelection(-1)
     , m_cursorPosition(0)
     , m_emptyPreviousSelection(true)
 {
@@ -776,8 +777,10 @@ void RenderWidgetHostViewQt::OnSelectionBoundsChanged(content::TextInputManager 
     Q_UNUSED(updated_view);
 
     m_imState |= ImStateFlags::TextSelectionBoundsUpdated;
-    if (m_imState == ImStateFlags::AllFlags)
+    if (m_imState == ImStateFlags::AllFlags
+            || (m_imState == ImStateFlags::TextSelectionFlags && getTextInputType() == ui::TEXT_INPUT_TYPE_NONE)) {
         selectionChanged();
+    }
 }
 
 void RenderWidgetHostViewQt::OnTextSelectionChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view)
@@ -794,14 +797,32 @@ void RenderWidgetHostViewQt::OnTextSelectionChanged(content::TextInputManager *t
 #endif // defined(USE_X11)
 
     m_imState |= ImStateFlags::TextSelectionUpdated;
-    if (m_imState == ImStateFlags::AllFlags)
+    if (m_imState == ImStateFlags::AllFlags
+            || (m_imState == ImStateFlags::TextSelectionFlags && getTextInputType() == ui::TEXT_INPUT_TYPE_NONE)) {
         selectionChanged();
+    }
 }
 
 void RenderWidgetHostViewQt::selectionChanged()
 {
     // Reset input manager state
     m_imState = 0;
+
+    // Handle text selection out of an input field
+    if (getTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
+        if (GetSelectedText().empty() && m_emptyPreviousSelection)
+            return;
+
+        // Reset position values to emit selectionChanged signal when clearing text selection
+        // by clicking into an input field. These values are intended to be used by inputMethodQuery
+        // so they are not expected to be valid when selection is out of an input field.
+        m_anchorPositionWithinSelection = -1;
+        m_cursorPositionWithinSelection = -1;
+
+        m_emptyPreviousSelection = GetSelectedText().empty();
+        m_adapterClient->selectionChanged();
+        return;
+    }
 
     const content::TextInputManager::TextSelection *selection = text_input_manager_->GetTextSelection();
     if (!selection)
@@ -817,8 +838,8 @@ void RenderWidgetHostViewQt::selectionChanged()
         return;
     }
 
-    uint newAnchorPositionWithinSelection = 0;
-    uint newCursorPositionWithinSelection = 0;
+    int newAnchorPositionWithinSelection = 0;
+    int newCursorPositionWithinSelection = 0;
 
     if (text_input_manager_->GetSelectionRegion()->anchor.type() == gfx::SelectionBound::RIGHT) {
         newAnchorPositionWithinSelection = selection->range.GetMax() - selection->offset;
