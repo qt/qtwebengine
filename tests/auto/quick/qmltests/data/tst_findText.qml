@@ -61,6 +61,32 @@ TestWebEngineView {
             return bodyInnerHTML;
         }
 
+        function getListItemText(index) {
+            var listItemText;
+            runJavaScript("document.getElementById('list').getElementsByTagName('li')[" + index + "].innerText;", function(result) {
+                listItemText = result;
+            });
+            tryVerify(function() { return listItemText != undefined; });
+            return listItemText;
+        }
+
+        function appendListItem(text) {
+            var script =
+                    "(function () {" +
+                    "   var list = document.getElementById('list');" +
+                    "   var item = document.createElement('li');" +
+                    "   item.appendChild(document.createTextNode('" + text + "'));" +
+                    "   list.appendChild(item);" +
+                    "   return list.getElementsByTagName('li').length - 1;" +
+                    "})();";
+            var itemIndex;
+
+            runJavaScript(script, function(result) { itemIndex = result; });
+            tryVerify(function() { return itemIndex != undefined; });
+            // Make sure the DOM is up-to-date.
+            tryVerify(function() { return getListItemText(itemIndex).length == text.length; });
+        }
+
         function test_findText() {
             var findFlags = WebEngineView.FindCaseSensitively
             webEngineView.url = Qt.resolvedUrl("test1.html")
@@ -156,6 +182,38 @@ TestWebEngineView {
             webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 1)
             verify(!findFailed)
+        }
+
+        function test_findTextInterruptedByLoad() {
+            var findFlags = 0;
+
+            var listItemText = '';
+            for (var i = 0; i < 100000; ++i)
+                listItemText += "bla ";
+            listItemText = listItemText.trim();
+
+            webEngineView.loadHtml(
+                        "<html><body>" +
+                        "<ol id='list' />" +
+                        "</body></html>");
+            verify(webEngineView.waitForLoadSucceeded());
+
+            // Generating a huge list is a workaround to avoid timeout while loading the test page.
+            for (var i = 0; i < 10; ++i)
+                appendListItem(listItemText);
+            appendListItem("hello");
+
+            webEngineView.clear();
+            webEngineView.findText("hello", findFlags, webEngineView.findTextCallback);
+
+            // This should not crash.
+            webEngineView.url = "https://www.qt.io";
+            if (!webEngineView.waitForLoadSucceeded(12000))
+                skip("Couldn't load page from network, skipping test.");
+
+            // Can't be sure whether the findText succeeded before the new load.
+            // Thus don't check the find result just whether the callback was called.
+            tryVerify(function() { return webEngineView.matchCount != -1; });
         }
     }
 }
