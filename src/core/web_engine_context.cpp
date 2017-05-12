@@ -328,6 +328,8 @@ WebEngineContext::WebEngineContext()
     // Accelerated decoding currently does not work on macOS due to issues with OpenGL Rectangle
     // texture support. See QTBUG-60002.
     parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+    // Same problem with Pepper using OpenGL images.
+    parsedCommandLine->AppendSwitch(switches::kDisablePepper3DImageChromium);
 #endif
 
     if (useEmbeddedSwitches) {
