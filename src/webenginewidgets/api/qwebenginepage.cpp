@@ -1581,7 +1581,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         menu->addSeparator();
     }
 
-    if (!contextMenuData.linkText().isEmpty() && contextMenuData.linkUrl().isValid()) {
+    if (contextMenuData.linkUrl().isValid()) {
         action = QWebEnginePage::action(OpenLinkInThisWindow);
         action->setText(tr("Follow Link"));
         menu->addAction(action);
