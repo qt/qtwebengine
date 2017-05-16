@@ -1229,7 +1229,7 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
         return;
     if (mimeData->hasHtml())
         dropData->html = toNullableString16(mimeData->html());
-    else if (mimeData->hasText())
+    if (mimeData->hasText())
         dropData->text = toNullableString16(mimeData->text());
 }
 
