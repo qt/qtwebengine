@@ -54,7 +54,7 @@ __asm__(".symver __ShimCppNew, _Znw" SIZE_T_MANGLING "@Qt_5");
 void* __ShimCppNew(size_t size)
     SHIM_ALIAS_SYMBOL(ShimCppNew);
 
-__asm__(".symver __ShimDelete, _ZdlPv@Qt_5");
+__asm__(".symver __ShimCppDelete, _ZdlPv@Qt_5");
 void __ShimCppDelete(void* address)
     SHIM_ALIAS_SYMBOL(ShimCppDelete);
 
@@ -74,11 +74,11 @@ __asm__(".symver __ShimCppNewArrayNoThrow, _Zna" SIZE_T_MANGLING "RKSt9nothrow_t
 void __ShimCppNewArrayNoThrow(size_t size, const std::nothrow_t&) noexcept
     SHIM_ALIAS_SYMBOL(ShimCppNewArray);
 
-__asm__(".symver __ShimCppDeleteNoThrow, _ZdaPvRKSt9nothrow_t@Qt_5");
+__asm__(".symver __ShimCppDeleteNoThrow, _ZdlPvRKSt9nothrow_t@Qt_5");
 void __ShimCppDeleteNoThrow(void* address, const std::nothrow_t&) noexcept
     SHIM_ALIAS_SYMBOL(ShimCppDelete);
 
-__asm__(".symver __ShimCppDeleteArrayNoThrow, _ZdaPvRSt9nothrow_t@Qt_5");
+__asm__(".symver __ShimCppDeleteArrayNoThrow, _ZdaPvRKSt9nothrow_t@Qt_5");
 void __ShimCppDeleteArrayNoThrow(void* address, const std::nothrow_t&) noexcept
     SHIM_ALIAS_SYMBOL(ShimCppDeleteArray);
 
