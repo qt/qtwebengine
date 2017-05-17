@@ -62,6 +62,8 @@
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager_base.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #include <QtCore/qcoreapplication.h>
@@ -331,7 +333,35 @@ void MediaCaptureDevicesDispatcher::handleScreenCaptureAccessRequest(content::We
     content::MediaStreamDevices devices;
     std::unique_ptr<content::MediaStreamUI> ui;
     if (userAccepted) {
-      content::DesktopMediaID screenId = content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0);
+        // Source id patterns are different across platforms.
+        // On Linux, the hardcoded value "0" is used.
+        // On Windows, the screens are enumerated consecutively in increasing order from 0.
+        // On macOS the source ids are randomish numbers assigned by the OS.
+        webrtc::DesktopCapturer::SourceId id = 0;
+
+#if defined(ENABLE_WEBRTC)
+        // In order to provide a correct screen id, we query for the available screen ids, and
+        // select the first one as the main display id.
+        // The code is based on the file
+        // src/chrome/browser/extensions/api/desktop_capture/desktop_capture_base.cc.
+        webrtc::DesktopCaptureOptions options =
+            webrtc::DesktopCaptureOptions::CreateDefault();
+        options.set_disable_effects(false);
+        std::unique_ptr<webrtc::DesktopCapturer> screen_capturer(
+            webrtc::DesktopCapturer::CreateScreenCapturer(options));
+
+        if (screen_capturer) {
+          webrtc::DesktopCapturer::SourceList screens;
+          if (screen_capturer->GetSourceList(&screens)) {
+            if (screens.size() > 0) {
+                id = screens[0].id;
+            }
+          }
+        }
+#endif
+
+      content::DesktopMediaID screenId = content::DesktopMediaID(
+                  content::DesktopMediaID::TYPE_SCREEN, id);
       ui = getDevicesForDesktopCapture(&devices, screenId,  false/*capture_audio*/, false/*display_notification*/, getContentsUrl(webContents));
     }
     std::map<content::WebContents*, RequestsQueue>::iterator it =
