@@ -389,8 +389,22 @@ WebEngineContext::WebEngineContext()
                     }
                 }
             } else {
-                if (!qt_gl_global_share_context()->isOpenGLES())
+                if (!qt_gl_global_share_context()->isOpenGLES()) {
+                    // Default to Desktop non-Core profile OpenGL.
                     glType = gl::kGLImplementationDesktopName;
+
+                    // Check if Core profile was requested and is supported.
+                    QSurfaceFormat globalSharedFormat = qt_gl_global_share_context()->format();
+                    if (globalSharedFormat.profile() == QSurfaceFormat::CoreProfile) {
+#ifdef Q_OS_MACOS
+                        glType = gl::kGLImplementationCoreProfileName;
+#else
+                        qWarning("An OpenGL Core Profile was requested, but it is not supported "
+                                 "on the current platform. Falling back to a non-Core profile. "
+                                 "Note that this might cause rendering issues.");
+#endif
+                    }
+                }
             }
         } else {
             qWarning("WebEngineContext used before QtWebEngine::initialize() or OpenGL context creation failed.");

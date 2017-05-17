@@ -110,6 +110,9 @@ QUrl tst_QQuickWebEngineDefaultSurfaceFormat::urlFromTestPath(const char *localF
 
 void tst_QQuickWebEngineDefaultSurfaceFormat::customDefaultSurfaceFormat()
 {
+#if !defined(Q_OS_MACOSX)
+    QSKIP("OpenGL Core Profile is currently only supported on macOS.");
+#endif
     // Setting a new default QSurfaceFormat with a core OpenGL profile, before
     // app instantiation should succeed, without abort() being called.
     int argc = 1;
