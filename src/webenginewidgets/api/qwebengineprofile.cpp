@@ -151,7 +151,7 @@ QWebEngineProfilePrivate::QWebEngineProfilePrivate(QSharedPointer<BrowserContext
         , m_browserContextRef(browserContext)
 {
     m_browserContextRef->addClient(this);
-    m_settings->d_ptr->initDefaults(browserContext->isOffTheRecord());
+    m_settings->d_ptr->initDefaults();
 }
 
 QWebEngineProfilePrivate::~QWebEngineProfilePrivate()

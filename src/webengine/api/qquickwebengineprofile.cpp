@@ -145,7 +145,7 @@ QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(QSharedPointer<Brow
         , m_browserContextRef(browserContext)
 {
     m_browserContextRef->addClient(this);
-    m_settings->d_ptr->initDefaults(browserContext->isOffTheRecord());
+    m_settings->d_ptr->initDefaults();
     // Fullscreen API was implemented before the supported setting, so we must
     // make it default true to avoid change in default API behavior.
     m_settings->d_ptr->setAttribute(QtWebEngineCore::WebEngineSettings::FullScreenSupportEnabled, true);

@@ -204,7 +204,7 @@ QString WebEngineSettings::defaultTextEncoding() const
     return m_defaultEncoding.isEmpty()? parentSettings->defaultTextEncoding() : m_defaultEncoding;
 }
 
-void WebEngineSettings::initDefaults(bool offTheRecord)
+void WebEngineSettings::initDefaults()
 {
     if (s_defaultAttributes.isEmpty()) {
         // Initialize the default settings.
@@ -245,8 +245,6 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
         s_defaultAttributes.insert(AllowGeolocationOnInsecureOrigins, false);
         s_defaultAttributes.insert(AllowWindowActivationFromJavaScript, false);
     }
-    if (offTheRecord)
-        m_attributes.insert(LocalStorageEnabled, false);
 
     if (s_defaultFontFamilies.isEmpty()) {
         // Default fonts

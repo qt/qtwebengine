@@ -128,7 +128,7 @@ public:
     void setDefaultTextEncoding(const QString &encoding);
     QString defaultTextEncoding() const;
 
-    void initDefaults(bool offTheRecord = false);
+    void initDefaults();
     void scheduleApply();
 
     void scheduleApplyRecursively();
