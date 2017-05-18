@@ -3025,7 +3025,13 @@ void tst_QWebEnginePage::progressSignal()
     int previousValue = -1;
     for (QSignalSpy::ConstIterator it = progressSpy.begin(); it < progressSpy.end(); ++it) {
         int current = (*it).first().toInt();
-        QVERIFY(current >= previousValue);
+        // verbose output for faulty condition
+        if (!(current >= previousValue)) {
+            qDebug() << "faulty progress values:";
+            for (QSignalSpy::ConstIterator it2 = progressSpy.begin(); it2 < progressSpy.end(); ++it2)
+                qDebug() << (*it2).first().toInt();
+            QVERIFY(current >= previousValue);
+        }
         previousValue = current;
     }
 
