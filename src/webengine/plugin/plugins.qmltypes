@@ -669,7 +669,19 @@ Module {
                 "Unselect": 29,
                 "SavePage": 30,
                 "ViewSource": 31,
-                "WebActionCount": 32
+                "ToggleBold": 32,
+                "ToggleItalic": 33,
+                "ToggleUnderline": 34,
+                "ToggleStrikethrough": 35,
+                "AlignLeft": 36,
+                "AlignCenter": 37,
+                "AlignRight": 38,
+                "AlignJustified": 39,
+                "Indent": 40,
+                "Outdent": 41,
+                "InsertOrderedList": 42,
+                "InsertUnorderedList": 43,
+                "WebActionCount": 44
             }
         }
         Enum {
