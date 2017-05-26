@@ -703,8 +703,13 @@ void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &sec
         feature = QQuickWebEngineView::MediaAudioVideoCapture;
     else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
         feature = QQuickWebEngineView::MediaAudioCapture;
-    else // WebContentsAdapterClient::MediaVideoCapture
+    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
         feature = QQuickWebEngineView::MediaVideoCapture;
+    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopAudioCapture) &&
+             requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
+        feature = QQuickWebEngineView::DesktopAudioVideoCapture;
+    else // if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
+        feature = QQuickWebEngineView::DesktopVideoCapture;
     Q_EMIT q->featurePermissionRequested(securityOrigin, feature);
 }
 
@@ -1431,7 +1436,8 @@ void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQu
 {
     if (!d_ptr->adapter)
         return;
-    if (!granted && feature >= MediaAudioCapture && feature <= MediaAudioVideoCapture) {
+    if (!granted && ((feature >= MediaAudioCapture && feature <= MediaAudioVideoCapture) ||
+                     (feature >= DesktopVideoCapture && feature <= DesktopAudioVideoCapture))) {
          d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaNone);
          return;
     }
@@ -1448,6 +1454,16 @@ void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQu
         break;
     case Geolocation:
         d_ptr->adapter->runGeolocationRequestCallback(securityOrigin, granted);
+        break;
+    case DesktopVideoCapture:
+        d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaDesktopVideoCapture);
+        break;
+    case DesktopAudioVideoCapture:
+        d_ptr->adapter->grantMediaAccessPermission(
+            securityOrigin,
+            WebContentsAdapterClient::MediaRequestFlags(
+                WebContentsAdapterClient::MediaDesktopAudioCapture |
+                WebContentsAdapterClient::MediaDesktopVideoCapture));
         break;
     default:
         Q_UNREACHABLE();

@@ -560,16 +560,20 @@ void QWebEnginePagePrivate::showColorDialog(QSharedPointer<ColorChooserControlle
 void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
 {
     Q_Q(QWebEnginePage);
-    QWebEnginePage::Feature requestedFeature;
-    if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture) && requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        requestedFeature = QWebEnginePage::MediaAudioVideoCapture;
+    QWebEnginePage::Feature feature;
+    if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture) &&
+        requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
+        feature = QWebEnginePage::MediaAudioVideoCapture;
     else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
-        requestedFeature = QWebEnginePage::MediaAudioCapture;
+        feature = QWebEnginePage::MediaAudioCapture;
     else if (requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        requestedFeature = QWebEnginePage::MediaVideoCapture;
-    else
-        return;
-    Q_EMIT q->featurePermissionRequested(securityOrigin, requestedFeature);
+        feature = QWebEnginePage::MediaVideoCapture;
+    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopAudioCapture) &&
+             requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
+        feature = QWebEnginePage::DesktopAudioVideoCapture;
+    else // if (requestFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture))
+        feature = QWebEnginePage::DesktopVideoCapture;
+    Q_EMIT q->featurePermissionRequested(securityOrigin, feature);
 }
 
 void QWebEnginePagePrivate::runGeolocationPermissionRequest(const QUrl &securityOrigin)
@@ -1728,37 +1732,58 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
     Q_D(QWebEnginePage);
     if (policy == PermissionUnknown)
         return;
-    WebContentsAdapterClient::MediaRequestFlags flags =  WebContentsAdapterClient::MediaNone;
-    switch (feature) {
-    case MediaAudioVideoCapture:
-    case MediaAudioCapture:
-    case MediaVideoCapture:
-        if (policy != PermissionUnknown) {
-            if (policy == PermissionDeniedByUser)
-                flags = WebContentsAdapterClient::MediaNone;
-            else {
-                if (feature == MediaAudioCapture)
-                    flags = WebContentsAdapterClient::MediaAudioCapture;
-                else if (feature == MediaVideoCapture)
-                    flags = WebContentsAdapterClient::MediaVideoCapture;
-                else
-                    flags = WebContentsAdapterClient::MediaRequestFlags(WebContentsAdapterClient::MediaVideoCapture | WebContentsAdapterClient::MediaAudioCapture);
-            }
-            d->adapter->grantMediaAccessPermission(securityOrigin, flags);
-        }
-        d->adapter->grantMediaAccessPermission(securityOrigin, flags);
-        break;
-    case QWebEnginePage::Geolocation:
-        d->adapter->runGeolocationRequestCallback(securityOrigin, (policy == PermissionGrantedByUser) ? true : false);
-        break;
-    case MouseLock:
-        if (policy == PermissionGrantedByUser)
+
+    const WebContentsAdapterClient::MediaRequestFlags audioVideoCaptureFlags(
+        WebContentsAdapterClient::MediaVideoCapture |
+        WebContentsAdapterClient::MediaAudioCapture);
+    const WebContentsAdapterClient::MediaRequestFlags desktopAudioVideoCaptureFlags(
+        WebContentsAdapterClient::MediaDesktopVideoCapture |
+        WebContentsAdapterClient::MediaDesktopAudioCapture);
+
+    if (policy == PermissionGrantedByUser) {
+        switch (feature) {
+        case MediaAudioVideoCapture:
+            d->adapter->grantMediaAccessPermission(securityOrigin, audioVideoCaptureFlags);
+            break;
+        case MediaAudioCapture:
+            d->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaAudioCapture);
+            break;
+        case MediaVideoCapture:
+            d->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaVideoCapture);
+            break;
+        case DesktopAudioVideoCapture:
+            d->adapter->grantMediaAccessPermission(securityOrigin, desktopAudioVideoCaptureFlags);
+            break;
+        case DesktopVideoCapture:
+            d->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaDesktopVideoCapture);
+            break;
+        case Geolocation:
+            d->adapter->runGeolocationRequestCallback(securityOrigin, true);
+            break;
+        case MouseLock:
             d->adapter->grantMouseLockPermission(true);
-        else
+            break;
+        case Notifications:
+            break;
+        }
+    } else { // if (policy == PermissionDeniedByUser)
+        switch (feature) {
+        case MediaAudioVideoCapture:
+        case MediaAudioCapture:
+        case MediaVideoCapture:
+        case DesktopAudioVideoCapture:
+        case DesktopVideoCapture:
+            d->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaNone);
+            break;
+        case Geolocation:
+            d->adapter->runGeolocationRequestCallback(securityOrigin, false);
+            break;
+        case MouseLock:
             d->adapter->grantMouseLockPermission(false);
-        break;
-    case Notifications:
-        break;
+            break;
+        case Notifications:
+            break;
+        }
     }
 }
 

@@ -286,6 +286,11 @@
     \value  MouseLock
             Mouse locking, which locks the mouse pointer to the web view and is typically used in
             games.
+    \value  DesktopVideoCapture
+            Video output capture, that is, the capture of the user's display,
+            for screen sharing purposes for example. (Added in Qt 5.10)
+    \value  DesktopAudioVideoCapture
+            Both audio and video output capture. (Added in Qt 5.10)
 
     \sa featurePermissionRequested(), featurePermissionRequestCanceled(), setFeaturePermission(), PermissionPolicy
 

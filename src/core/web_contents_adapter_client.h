@@ -316,6 +316,8 @@ public:
         MediaNone = 0,
         MediaAudioCapture = 0x01,
         MediaVideoCapture = 0x02,
+        MediaDesktopAudioCapture = 0x04,
+        MediaDesktopVideoCapture = 0x08
     };
     Q_DECLARE_FLAGS(MediaRequestFlags, MediaRequestFlag)
 

@@ -125,7 +125,10 @@ private Q_SLOTS:
     void userAgentNewlineStripping();
     void undoActionHaveCustomText();
     void renderWidgetHostViewNotShowTopLevel();
+    void getUserMediaRequest_data();
     void getUserMediaRequest();
+    void getUserMediaRequestDesktopAudio();
+    void getUserMediaRequestSettingDisabled();
     void savePage();
 
     void crashTests_LazyInitializationOfMainFrame();
@@ -2605,6 +2608,33 @@ public:
         : m_gotRequest(false)
     {
         connect(this, &QWebEnginePage::featurePermissionRequested, this, &GetUserMediaTestPage::onFeaturePermissionRequested);
+
+        // We need to load content from a resource in order for the securityOrigin to be valid.
+        QSignalSpy loadSpy(this, SIGNAL(loadFinished(bool)));
+        load(QUrl("qrc:///resources/content.html"));
+        QTRY_COMPARE(loadSpy.count(), 1);
+    }
+
+    void jsGetUserMedia(const QString & constraints)
+    {
+        runJavaScript(
+            QStringLiteral(
+                "var promiseFulfilled = false;"
+                "var promiseRejected = false;"
+                "navigator.mediaDevices.getUserMedia(%1)"
+                ".then(stream => { promiseFulfilled = true})"
+                ".catch(err => { promiseRejected = true})")
+            .arg(constraints));
+    }
+
+    bool jsPromiseFulfilled()
+    {
+        return evaluateJavaScriptSync(this, QStringLiteral("promiseFulfilled")).toBool();
+    }
+
+    bool jsPromiseRejected()
+    {
+        return evaluateJavaScriptSync(this, QStringLiteral("promiseRejected")).toBool();
     }
 
     void rejectPendingRequest()
@@ -2623,6 +2653,11 @@ public:
         return m_gotRequest && m_requestedFeature == feature;
     }
 
+    bool gotFeatureRequest() const
+    {
+        return m_gotRequest;
+    }
+
 private Q_SLOTS:
     void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature)
     {
@@ -2638,28 +2673,83 @@ private:
 
 };
 
+void tst_QWebEnginePage::getUserMediaRequest_data()
+{
+    QTest::addColumn<QString>("constraints");
+    QTest::addColumn<QWebEnginePage::Feature>("feature");
+
+    QTest::addRow("device audio")
+        << "{audio: true}" << QWebEnginePage::MediaAudioCapture;
+    QTest::addRow("device video")
+        << "{video: true}" << QWebEnginePage::MediaVideoCapture;
+    QTest::addRow("device audio+video")
+        << "{audio: true, video: true}" << QWebEnginePage::MediaAudioVideoCapture;
+    QTest::addRow("desktop video")
+        << "{video: { mandatory: { chromeMediaSource: 'desktop' }}}"
+        << QWebEnginePage::DesktopVideoCapture;
+    QTest::addRow("desktop audio+video")
+        << "{audio: { mandatory: { chromeMediaSource: 'desktop' }}, video: { mandatory: { chromeMediaSource: 'desktop' }}}"
+        << QWebEnginePage::DesktopAudioVideoCapture;
+}
 
 void tst_QWebEnginePage::getUserMediaRequest()
 {
+    QFETCH(QString, constraints);
+    QFETCH(QWebEnginePage::Feature, feature);
+
     GetUserMediaTestPage page;
+    page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
 
-    // We need to load content from a resource in order for the securityOrigin to be valid.
-    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
-    page.load(QUrl("qrc:///resources/content.html"));
-    QTRY_COMPARE(loadSpy.count(), 1);
+    // 1. Rejecting request on C++ side should reject promise on JS side.
+    page.jsGetUserMedia(constraints);
+    QTRY_VERIFY(page.gotFeatureRequest(feature));
+    page.rejectPendingRequest();
+    QTRY_VERIFY(!page.jsPromiseFulfilled() && page.jsPromiseRejected());
 
-    QVERIFY(evaluateJavaScriptSync(&page, QStringLiteral("!!navigator.webkitGetUserMedia")).toBool());
-    evaluateJavaScriptSync(&page, QStringLiteral("navigator.webkitGetUserMedia({audio: true}, function() {}, function(){})"));
-    QTRY_VERIFY(page.gotFeatureRequest(QWebEnginePage::MediaAudioCapture));
-    // Might end up failing due to the lack of physical media devices deeper in the content layer, so the JS callback is not guaranteed to be called,
-    // but at least we go through that code path, potentially uncovering failing assertions.
+    // 2. Accepting request on C++ side should either fulfill or reject the
+    // Promise on JS side. Due to the potential lack of physical media devices
+    // deeper in the content layer we cannot guarantee that the promise will
+    // always be fulfilled, however in this case an error should be returned to
+    // JS instead of leaving the Promise in limbo.
+    page.jsGetUserMedia(constraints);
+    QTRY_VERIFY(page.gotFeatureRequest(feature));
     page.acceptPendingRequest();
+    QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
 
-    page.runJavaScript(QStringLiteral("errorCallbackCalled = false;"));
-    evaluateJavaScriptSync(&page, QStringLiteral("navigator.webkitGetUserMedia({audio: true, video: true}, function() {}, function(){errorCallbackCalled = true;})"));
-    QTRY_VERIFY(page.gotFeatureRequest(QWebEnginePage::MediaAudioVideoCapture));
-    page.rejectPendingRequest(); // Should always end up calling the error callback in JS.
-    QTRY_VERIFY(evaluateJavaScriptSync(&page, QStringLiteral("errorCallbackCalled;")).toBool());
+    // 3. Media feature permissions are not remembered.
+    page.jsGetUserMedia(constraints);
+    QTRY_VERIFY(page.gotFeatureRequest(feature));
+    page.acceptPendingRequest();
+    QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
+}
+
+void tst_QWebEnginePage::getUserMediaRequestDesktopAudio()
+{
+    GetUserMediaTestPage page;
+    page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
+
+    // Audio-only desktop capture is not supported. JS Promise should be
+    // rejected immediately.
+
+    page.jsGetUserMedia(
+        QStringLiteral("{audio: { mandatory: { chromeMediaSource: 'desktop' }}}"));
+    QTRY_VERIFY(!page.jsPromiseFulfilled() && page.jsPromiseRejected());
+
+    page.jsGetUserMedia(
+        QStringLiteral("{audio: { mandatory: { chromeMediaSource: 'desktop' }}, video: true}"));
+    QTRY_VERIFY(!page.jsPromiseFulfilled() && page.jsPromiseRejected());
+}
+
+void tst_QWebEnginePage::getUserMediaRequestSettingDisabled()
+{
+    GetUserMediaTestPage page;
+    page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, false);
+
+    // With the setting disabled, the JS Promise should be rejected without
+    // asking for permission first.
+
+    page.jsGetUserMedia(QStringLiteral("{video: { mandatory: { chromeMediaSource: 'desktop' }}}"));
+    QTRY_VERIFY(!page.jsPromiseFulfilled() && page.jsPromiseRejected());
 }
 
 void tst_QWebEnginePage::savePage()

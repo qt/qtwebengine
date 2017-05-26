@@ -850,6 +850,11 @@
             Video devices, such as cameras.
     \value  WebEngineView.MediaAudioVideoCapture
             Both audio and video capture devices.
+    \value  DesktopVideoCapture
+            Video output capture, that is, the capture of the user's display.
+            (Added in Qt 5.10)
+    \value  DesktopAudioVideoCapture
+            Both audio and video output capture. (Added in Qt 5.10)
 
     \sa featurePermissionRequested(), grantFeaturePermission()
 */

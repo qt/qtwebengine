@@ -116,8 +116,6 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
 
   // Helpers for ProcessMediaAccessRequest().
   void processDesktopCaptureAccessRequest(content::WebContents *, const content::MediaStreamRequest &, const content::MediaResponseCallback &);
-  void processScreenCaptureAccessRequest(content::WebContents *,const content::MediaStreamRequest &, const content::MediaResponseCallback &);
-  void handleScreenCaptureAccessRequest(content::WebContents *, bool userAccepted, const base::string16 &/*unused callback_input*/);
   void enqueueMediaAccessRequest(content::WebContents *, const content::MediaStreamRequest &, const content::MediaResponseCallback &);
   void ProcessQueuedAccessRequest(content::WebContents *);
 

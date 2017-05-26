@@ -576,9 +576,10 @@ Module {
             "QtWebEngine/WebEngineView 1.2",
             "QtWebEngine/WebEngineView 1.3",
             "QtWebEngine/WebEngineView 1.4",
-            "QtWebEngine/WebEngineView 1.5"
+            "QtWebEngine/WebEngineView 1.5",
+            "QtWebEngine/WebEngineView 1.6"
         ]
-        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5]
+        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5, 6]
         Enum {
             name: "NavigationRequestAction"
             values: {
@@ -633,7 +634,9 @@ Module {
                 "MediaAudioCapture": 0,
                 "MediaVideoCapture": 1,
                 "MediaAudioVideoCapture": 2,
-                "Geolocation": 3
+                "Geolocation": 3,
+                "DesktopVideoCapture": 4,
+                "DesktopAudioVideoCapture": 5
             }
         }
         Enum {
@@ -889,6 +892,7 @@ Module {
         Property { name: "audioMuted"; revision: 3; type: "bool" }
         Property { name: "recentlyAudible"; revision: 3; type: "bool"; isReadonly: true }
         Property { name: "webChannelWorld"; revision: 3; type: "uint" }
+        Property { name: "testSupport"; type: "QQuickWebEngineTestSupport"; isPointer: true }
         Signal {
             name: "loadingChanged"
             Parameter { name: "loadRequest"; type: "QQuickWebEngineLoadRequest"; isPointer: true }

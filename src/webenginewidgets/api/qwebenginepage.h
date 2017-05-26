@@ -188,7 +188,9 @@ public:
         MediaAudioCapture = 2,
         MediaVideoCapture,
         MediaAudioVideoCapture,
-        MouseLock
+        MouseLock,
+        DesktopVideoCapture,
+        DesktopAudioVideoCapture
     };
     Q_ENUM(Feature)
 

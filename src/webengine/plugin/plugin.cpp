@@ -85,6 +85,7 @@ public:
         qmlRegisterType<QQuickWebEngineView, 3>(uri, 1, 3, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 4>(uri, 1, 4, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 5>(uri, 1, 5, "WebEngineView");
+        qmlRegisterType<QQuickWebEngineView, 6>(uri, 1, 6, "WebEngineView");
         qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 1>(uri, 1, 2, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 2>(uri, 1, 3, "WebEngineProfile");
