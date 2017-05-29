@@ -186,12 +186,11 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
 BrowserApplication::~BrowserApplication()
 {
     delete s_downloadManager;
-    for (int i = 0; i < m_mainWindows.size(); ++i) {
-        BrowserMainWindow *window = m_mainWindows.at(i);
-        delete window;
-    }
+    s_downloadManager=nullptr;
     delete s_networkAccessManager;
+    s_networkAccessManager=nullptr;
     delete s_bookmarksManager;
+    s_bookmarksManager=nullptr;
 }
 
 void BrowserApplication::lastWindowClosed()
@@ -227,9 +226,13 @@ void BrowserApplication::quitBrowser()
         if (ret == QMessageBox::No)
             return;
     }
-
-    exit(0);
 #endif
+    for (int i = 0; i < m_mainWindows.size(); ++i) {
+        BrowserMainWindow *window = m_mainWindows.at(i);
+        delete window;
+    }
+    m_mainWindows.clear();
+    close();
 }
 
 /*!

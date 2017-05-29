@@ -323,12 +323,7 @@ void BrowserMainWindow::setupMenu()
     action->setChecked(BrowserApplication::instance()->privateBrowsing());
     connect(BrowserApplication::instance(), SIGNAL(privateBrowsingChanged(bool)), action, SLOT(setChecked(bool)));
     fileMenu->addSeparator();
-
-#if defined(Q_OS_OSX)
     fileMenu->addAction(tr("&Quit"), BrowserApplication::instance(), SLOT(quitBrowser()), QKeySequence(Qt::CTRL | Qt::Key_Q));
-#else
-    fileMenu->addAction(tr("&Quit"), this, SLOT(close()), QKeySequence(Qt::CTRL | Qt::Key_Q));
-#endif
 
     // Edit
     QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
