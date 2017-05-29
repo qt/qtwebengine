@@ -341,8 +341,7 @@ void URLRequestContextGetterQt::generateCookieStore()
     cookieMonster->SetCookieableSchemes(cookieableSchemes);
     m_cookieDelegate->setCookieMonster(cookieMonster);
 
-    if (!m_updateAllStorage) {
-        Q_ASSERT(m_updateHttpCache);
+    if (!m_updateAllStorage && m_updateHttpCache) {
         // HttpCache needs to be regenerated when we generate a new channel id service
         generateHttpCache();
     }
@@ -469,6 +468,9 @@ void URLRequestContextGetterQt::generateHttpCache()
 
     QMutexLocker lock(&m_mutex);
     m_updateHttpCache = false;
+
+    if (m_updateCookieStore)
+        generateCookieStore();
 
     net::HttpCache::DefaultBackend* main_backend = 0;
     switch (m_httpCacheType) {
