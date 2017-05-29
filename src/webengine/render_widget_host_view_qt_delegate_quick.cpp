@@ -240,14 +240,8 @@ void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVis
 
 bool RenderWidgetHostViewQtDelegateQuick::event(QEvent *event)
 {
-    if (event->type() == QEvent::ShortcutOverride) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if (m_client->handleShortcutOverrideEvent(keyEvent))
-            return true;
-        if (editorActionForKeyEvent(keyEvent) != QQuickWebEngineView::NoWebAction)
-            event->accept();
-        return true;
-    }
+    if (event->type() == QEvent::ShortcutOverride)
+        return m_client->handleShortcutOverrideEvent(static_cast<QKeyEvent *>(event));
 
     if (event->type() == QEvent::NativeGesture)
         return m_client->forwardEvent(event);

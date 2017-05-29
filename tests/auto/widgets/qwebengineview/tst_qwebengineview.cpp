@@ -1344,7 +1344,6 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
 {
     bool actionTriggered = false;
     QAction *action = new QAction;
-    action->setShortcut(Qt::Key_X);
     connect(action, &QAction::triggered, [&actionTriggered] () { actionTriggered = true; });
 
     QWebEngineView view;
@@ -1352,7 +1351,7 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.setHtml(QString("<html><body onload=\"input1=document.getElementById('input1')\">"
-                         "<input id=\"dummy\" type=\"text\">"
+                         "<button id=\"btn1\" type=\"button\">push it real good</button>"
                          "<input id=\"input1\" type=\"text\" value=\"x\">"
                          "</body></html>"));
     QVERIFY(loadFinishedSpy.wait());
@@ -1365,7 +1364,15 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
                                       "input1.value").toString();
     };
 
+    // The input form is not focused. The action is triggered on pressing Shift+Delete.
+    action->setShortcut(Qt::SHIFT + Qt::Key_Delete);
+    QTest::keyClick(view.windowHandle(), Qt::Key_Delete, Qt::ShiftModifier);
+    QTRY_VERIFY(actionTriggered);
+    QCOMPARE(inputFieldValue(), QString("x"));
+
     // The input form is not focused. The action is triggered on pressing X.
+    action->setShortcut(Qt::Key_X);
+    actionTriggered = false;
     QTest::keyClick(view.windowHandle(), Qt::Key_X);
     QTRY_VERIFY(actionTriggered);
     QCOMPARE(inputFieldValue(), QString("x"));
@@ -1384,16 +1391,12 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     QTRY_VERIFY(actionTriggered);
     QCOMPARE(inputFieldValue(), QString("yx"));
 
-    // Remove focus from the input field. A QKeySequence::Copy action still must not be triggered.
-    evaluateJavaScriptSync(view.page(), "input1.blur();");
+    // Remove focus from the input field. A QKeySequence::Copy action must be triggerable.
+    evaluateJavaScriptSync(view.page(), "document.getElementById('btn1').focus();");
     action->setShortcut(QKeySequence::Copy);
     actionTriggered = false;
     QTest::keyClick(view.windowHandle(), Qt::Key_C, Qt::ControlModifier);
-    // Add some text in the input field to ensure that the key event went through.
-    evaluateJavaScriptSync(view.page(), "input1.focus();");
-    QTest::keyClick(view.windowHandle(), Qt::Key_U);
-    QTRY_COMPARE(inputFieldValue(), QString("yux"));
-    QVERIFY(!actionTriggered);
+    QTRY_VERIFY(actionTriggered);
 }
 
 class TestInputContext : public QPlatformInputContext
