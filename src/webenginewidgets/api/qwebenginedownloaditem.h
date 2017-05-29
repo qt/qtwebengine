@@ -134,7 +134,6 @@ Q_SIGNALS:
     void finished();
     void stateChanged(QWebEngineDownloadItem::DownloadState state);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-    void interruptReasonChanged();
 
 private:
     Q_DISABLE_COPY(QWebEngineDownloadItem)

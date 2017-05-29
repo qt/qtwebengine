@@ -31,13 +31,20 @@ defineTest(runConfigure) {
         qtConfig(webrtc): WEBENGINE_CONFIG += use_webrtc
         qtConfig(embedded): WEBENGINE_CONFIG += embedded_build
         qtConfig(system-webp): WEBENGINE_CONFIG += use_system_libwebp
-        else: WEBENGINE_CONFIG += use_bundled_libwebp
         qtConfig(system-opus): WEBENGINE_CONFIG += use_system_opus
-        else: WEBENGINE_CONFIG += use_bundled_opus
         qtConfig(system-ffmpeg): WEBENGINE_CONFIG += use_system_ffmpeg
-        else: WEBENGINE_CONFIG += use_bundled_ffmpeg
+        qtConfig(system-icu): WEBENGINE_CONFIG += use_system_icu
+        !contains(WEBENGINE_CONFIG, use_system_libwebp): WEBENGINE_CONFIG += use_bundled_libwebp
+        !contains(WEBENGINE_CONFIG, use_system_opus): WEBENGINE_CONFIG += use_bundled_opus
+        !contains(WEBENGINE_CONFIG, use_system_ffmpeg): WEBENGINE_CONFIG += use_bundled_ffmpeg
+        !contains(WEBENGINE_CONFIG, use_system_icu): WEBENGINE_CONFIG += use_bundled_icu
     } else {
-        cross_compile: WEBENGINE_CONFIG += embedded_build reduce_binary_size
+        # Feature defaults when building with Qt 5.6 LTS:
+        cross_compile {
+            WEBENGINE_CONFIG += embedded_build reduce_binary_size
+        } else {
+            WEBENGINE_CONFIG += use_spellchecker use_webrtc use_pepper_plugins use_printing use_pdf
+        }
     }
     isQtMinimum(5, 9) {
         qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
@@ -112,10 +119,8 @@ defineTest(runConfigure) {
             WEBENGINE_CONFIG += use_bundled_snappy
         }
 
-        !contains(WEBENGINE_CONFIG, embedded_build) {
-            packagesExist(nss): WEBENGINE_CONFIG += use_nss
-            else: log("System NSS not found, BoringSSL will be used.$${EOL}")
-        }
+        packagesExist(nss): WEBENGINE_CONFIG += use_nss
+        else: log("System NSS not found, BoringSSL will be used.$${EOL}")
     }
 
     win32 {
@@ -136,18 +141,18 @@ defineTest(runConfigure) {
 
     unix:!darwin {
         log("System library dependencies:$${EOL}")
-        use?(system_icu) {
-            packagesExist("icu-uc icu-i18n") {
-                log("  ICU ................................ Using system version$${EOL}")
-            } else {
-                log("  ICU ................................ System ICU not found$${EOL}")
-                skipBuild("Unmet dependencies: icu-uc, icu-i18n")
-            }
-        } else {
-            log("  ICU ................................ Using internal copy (Default, force system ICU with WEBENGINE_CONFIG+=use_system_icu)$${EOL}")
-            WEBENGINE_CONFIG += use_bundled_icu
-        }
         !isQtMinimum(5, 8) {
+            use?(system_icu) {
+                packagesExist("\'icu-uc >= 53\', \'icu-i18n >= 53\'") {
+                    log("  ICU ................................ Using system version$${EOL}")
+                } else {
+                    log("  ICU ................................ System ICU not found$${EOL}")
+                    skipBuild("Unmet dependencies: icu-uc, icu-i18n")
+                }
+            } else {
+                log("  ICU ................................ Using internal copy (Default, force system ICU with WEBENGINE_CONFIG+=use_system_icu)$${EOL}")
+                WEBENGINE_CONFIG += use_bundled_icu
+            }
             use?(system_ffmpeg) {
                 packagesExist("libavcodec libavformat libavutil") {
                     packagesExist("libwebp, libwebpdemux, opus, \'vpx >= 1.4\'"){
@@ -182,7 +187,7 @@ defineTest(runConfigure) {
     use?(proprietary_codecs) {
         log("  Proprietary codecs (H264, MP3) ..... Enabled$${EOL}")
     } else {
-        log("  Proprietary codecs (H264, MP3) ..... Not enabled         (Default, enable with WEBENGINE_CONFIG+=use_proprietary_codecs)$${EOL}")
+        log("  Proprietary codecs (H264, MP3) ..... Not enabled         (Default, enable with -proprietary-codecs)$${EOL}")
     }
     qtHaveModule(positioning): {
         log("  Geolocation ........................ Enabled$${EOL}")
@@ -197,11 +202,6 @@ defineTest(runConfigure) {
         }
     }
     osx {
-        use?(appstore_compliant_code) {
-            log("  Mac App Store Compliant ............ Enabled$${EOL}")
-        } else {
-            log("  Mac App Store Compliant ............ Not enabled         (Default, enable with WEBENGINE_CONFIG+=use_appstore_compliant_code)$${EOL}")
-        }
         use?(native_spellchecker) {
             log("Native Spellchecker .............. Enabled$${EOL}")
         } else {

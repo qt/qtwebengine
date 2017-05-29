@@ -38,5 +38,3 @@ use?(spellchecker) {
 } else {
     macos: gn_args += use_browser_spellchecker=false
 }
-
-use?(appstore_compliant_code): gn_args += appstore_compliant_code=true
