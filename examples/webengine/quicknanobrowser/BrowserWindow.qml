@@ -48,15 +48,16 @@
 **
 ****************************************************************************/
 
+import Qt.labs.settings 1.0
+import QtQml 2.2
 import QtQuick 2.2
-import QtWebEngine 1.2
 import QtQuick.Controls 1.0
+import QtQuick.Controls.Private 1.0 as QQCPrivate
 import QtQuick.Controls.Styles 1.0
+import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 import QtQuick.Window 2.1
-import QtQuick.Controls.Private 1.0
-import QtQuick.Dialogs 1.2
-import Qt.labs.settings 1.0
+import QtWebEngine 1.3
 
 ApplicationWindow {
     id: browserWindow
@@ -74,24 +75,24 @@ ApplicationWindow {
 
     // Create a styleItem to determine the platform.
     // When using style "mac", ToolButtons are not supposed to accept focus.
-    StyleItem { id: styleItem }
+    QQCPrivate.StyleItem { id: styleItem }
     property bool platformIsMac: styleItem.style == "mac"
 
     Settings {
         id : appSettings
-        property alias autoLoadImages: loadImages.checked;
-        property alias javaScriptEnabled: javaScriptEnabled.checked;
-        property alias errorPageEnabled: errorPageEnabled.checked;
-        property alias pluginsEnabled: pluginsEnabled.checked;
-        property alias fullScreenSupportEnabled: fullScreenSupportEnabled.checked;
-        property alias autoLoadIconsForPage: autoLoadIconsForPage.checked;
-        property alias touchIconsEnabled: touchIconsEnabled.checked;
+        property alias autoLoadImages: loadImages.checked
+        property alias javaScriptEnabled: javaScriptEnabled.checked
+        property alias errorPageEnabled: errorPageEnabled.checked
+        property alias pluginsEnabled: pluginsEnabled.checked
+        property alias fullScreenSupportEnabled: fullScreenSupportEnabled.checked
+        property alias autoLoadIconsForPage: autoLoadIconsForPage.checked
+        property alias touchIconsEnabled: touchIconsEnabled.checked
     }
 
     Action {
         shortcut: "Ctrl+D"
         onTriggered: {
-            downloadView.visible = !downloadView.visible
+            downloadView.visible = !downloadView.visible;
         }
     }
     Action {
@@ -106,14 +107,14 @@ ApplicationWindow {
         shortcut: StandardKey.Refresh
         onTriggered: {
             if (currentWebView)
-                currentWebView.reload()
+                currentWebView.reload();
         }
     }
     Action {
         shortcut: StandardKey.AddTab
         onTriggered: {
-            tabs.createEmptyTab(currentWebView.profile)
-            tabs.currentIndex = tabs.count - 1
+            tabs.createEmptyTab(currentWebView.profile);
+            tabs.currentIndex = tabs.count - 1;
             addressBar.forceActiveFocus();
             addressBar.selectAll();
         }
@@ -128,23 +129,23 @@ ApplicationWindow {
         shortcut: "Escape"
         onTriggered: {
             if (currentWebView.state == "FullScreen") {
-                browserWindow.visibility = browserWindow.previousVisibility
-                fullScreenNotification.hide()
+                browserWindow.visibility = browserWindow.previousVisibility;
+                fullScreenNotification.hide();
                 currentWebView.triggerWebAction(WebEngineView.ExitFullScreen);
             }
         }
     }
     Action {
         shortcut: "Ctrl+0"
-        onTriggered: currentWebView.zoomFactor = 1.0;
+        onTriggered: currentWebView.zoomFactor = 1.0
     }
     Action {
         shortcut: StandardKey.ZoomOut
-        onTriggered: currentWebView.zoomFactor -= 0.1;
+        onTriggered: currentWebView.zoomFactor -= 0.1
     }
     Action {
         shortcut: StandardKey.ZoomIn
-        onTriggered: currentWebView.zoomFactor += 0.1;
+        onTriggered: currentWebView.zoomFactor += 0.1
     }
 
     Action {
@@ -187,7 +188,7 @@ ApplicationWindow {
     toolBar: ToolBar {
         id: navigationBar
             RowLayout {
-                anchors.fill: parent;
+                anchors.fill: parent
                 ToolButton {
                     enabled: currentWebView && (currentWebView.canGoBack || currentWebView.canGoForward)
                     menu:Menu {
@@ -294,7 +295,7 @@ ApplicationWindow {
                             id: httpDiskCacheEnabled
                             text: "HTTP Disk Cache"
                             checkable: !currentWebView.profile.offTheRecord
-                            checked: (currentWebView.profile.httpCacheType == WebEngineProfile.DiskHttpCache)
+                            checked: (currentWebView.profile.httpCacheType === WebEngineProfile.DiskHttpCache)
                             onToggled: currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache
                         }
                         MenuItem {
@@ -336,12 +337,12 @@ ApplicationWindow {
     TabView {
         id: tabs
         function createEmptyTab(profile) {
-            var tab = addTab("", tabComponent)
+            var tab = addTab("", tabComponent);
             // We must do this first to make sure that tab.active gets set so that tab.item gets instantiated immediately.
-            tab.active = true
-            tab.title = Qt.binding(function() { return tab.item.title })
-            tab.item.profile = profile
-            return tab
+            tab.active = true;
+            tab.title = Qt.binding(function() { return tab.item.title });
+            tab.item.profile = profile;
+            return tab;
         }
 
         anchors.fill: parent
@@ -355,10 +356,10 @@ ApplicationWindow {
 
                 onLinkHovered: {
                     if (hoveredUrl == "")
-                        resetStatusText.start()
+                        resetStatusText.start();
                     else {
-                        resetStatusText.stop()
-                        statusText.text = hoveredUrl
+                        resetStatusText.stop();
+                        statusText.text = hoveredUrl;
                     }
                 }
 
@@ -385,69 +386,69 @@ ApplicationWindow {
                 settings.touchIconsEnabled: appSettings.touchIconsEnabled
 
                 onCertificateError: {
-                    error.defer()
-                    sslDialog.enqueue(error)
+                    error.defer();
+                    sslDialog.enqueue(error);
                 }
 
                 onNewViewRequested: {
                     if (!request.userInitiated)
-                        print("Warning: Blocked a popup window.")
+                        print("Warning: Blocked a popup window.");
                     else if (request.destination == WebEngineView.NewViewInTab) {
-                        var tab = tabs.createEmptyTab(currentWebView.profile)
-                        tabs.currentIndex = tabs.count - 1
-                        request.openIn(tab.item)
+                        var tab = tabs.createEmptyTab(currentWebView.profile);
+                        tabs.currentIndex = tabs.count - 1;
+                        request.openIn(tab.item);
                     } else if (request.destination == WebEngineView.NewViewInBackgroundTab) {
-                        var tab = tabs.createEmptyTab(currentWebView.profile)
-                        request.openIn(tab.item)
+                        var backgroundTab = tabs.createEmptyTab(currentWebView.profile);
+                        request.openIn(backgroundTab.item);
                     } else if (request.destination == WebEngineView.NewViewInDialog) {
-                        var dialog = applicationRoot.createDialog(currentWebView.profile)
-                        request.openIn(dialog.currentWebView)
+                        var dialog = applicationRoot.createDialog(currentWebView.profile);
+                        request.openIn(dialog.currentWebView);
                     } else {
-                        var window = applicationRoot.createWindow(currentWebView.profile)
-                        request.openIn(window.currentWebView)
+                        var window = applicationRoot.createWindow(currentWebView.profile);
+                        request.openIn(window.currentWebView);
                     }
                 }
 
                 onFullScreenRequested: {
                     if (request.toggleOn) {
-                        webEngineView.state = "FullScreen"
-                        browserWindow.previousVisibility = browserWindow.visibility
-                        browserWindow.showFullScreen()
-                        fullScreenNotification.show()
+                        webEngineView.state = "FullScreen";
+                        browserWindow.previousVisibility = browserWindow.visibility;
+                        browserWindow.showFullScreen();
+                        fullScreenNotification.show();
                     } else {
-                        webEngineView.state = ""
-                        browserWindow.visibility = browserWindow.previousVisibility
-                        fullScreenNotification.hide()
+                        webEngineView.state = "";
+                        browserWindow.visibility = browserWindow.previousVisibility;
+                        fullScreenNotification.hide();
                     }
-                    request.accept()
+                    request.accept();
                 }
 
                 onRenderProcessTerminated: {
-                    var status = ""
+                    var status = "";
                     switch (terminationStatus) {
                     case WebEngineView.NormalTerminationStatus:
-                        status = "(normal exit)"
+                        status = "(normal exit)";
                         break;
                     case WebEngineView.AbnormalTerminationStatus:
-                        status = "(abnormal exit)"
+                        status = "(abnormal exit)";
                         break;
                     case WebEngineView.CrashedTerminationStatus:
-                        status = "(crashed)"
+                        status = "(crashed)";
                         break;
                     case WebEngineView.KilledTerminationStatus:
-                        status = "(killed)"
+                        status = "(killed)";
                         break;
                     }
 
-                    print("Render process exited with code " + exitCode + " " + status)
-                    reloadTimer.running = true
+                    print("Render process exited with code " + exitCode + " " + status);
+                    reloadTimer.running = true;
                 }
 
                 onWindowCloseRequested: {
                     if (tabs.count == 1)
-                        browserWindow.close()
+                        browserWindow.close();
                     else
-                        tabs.removeTab(tabs.currentIndex)
+                        tabs.removeTab(tabs.currentIndex);
                 }
 
                 Timer {
@@ -473,19 +474,19 @@ ApplicationWindow {
                       "you may not be connected with the host you tried to connect to.\n" +
                       "Do you wish to override the security check and continue?"
         onYes: {
-            certErrors.shift().ignoreCertificateError()
-            presentError()
+            certErrors.shift().ignoreCertificateError();
+            presentError();
         }
         onNo: reject()
         onRejected: reject()
 
         function reject(){
-            certErrors.shift().rejectCertificate()
-            presentError()
+            certErrors.shift().rejectCertificate();
+            presentError();
         }
         function enqueue(error){
-            certErrors.push(error)
-            presentError()
+            certErrors.push(error);
+            presentError();
         }
         function presentError(){
             visible = certErrors.length > 0
@@ -503,9 +504,9 @@ ApplicationWindow {
     }
 
     function onDownloadRequested(download) {
-        downloadView.visible = true
-        downloadView.append(download)
-        download.accept()
+        downloadView.visible = true;
+        downloadView.append(download);
+        download.accept();
     }
 
     Rectangle {

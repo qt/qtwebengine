@@ -131,10 +131,8 @@ void QWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClient::Do
 
     Q_ASSERT(downloadState != QWebEngineDownloadItem::DownloadRequested);
 
-    if (toDownloadInterruptReason(info.downloadInterruptReason) != interruptReason) {
+    if (toDownloadInterruptReason(info.downloadInterruptReason) != interruptReason)
         interruptReason = toDownloadInterruptReason(info.downloadInterruptReason);
-        Q_EMIT q->interruptReasonChanged();
-    }
 
     if (toDownloadState(info.state) != downloadState) {
         downloadState = toDownloadState(info.state);
@@ -224,19 +222,14 @@ quint32 QWebEngineDownloadItem::id() const
 /*!
     \fn QWebEngineDownloadItem::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 
-    This signal is emitted whenever the download's \a bytesReceived or
-    \a bytesTotal changes.
+    This signal is emitted to indicate the progress of the download request.
+
+    The \a bytesReceived parameter indicates the number of bytes received, while
+    \a bytesTotal indicates the total number of bytes expected to be downloaded.
+    If the size of the file to be downloaded is not known, \c bytesTotal will be
+    0.
 
     \sa totalBytes(), receivedBytes()
-*/
-
-/*!
-    \fn QWebEngineDownloadItem::interruptReasonChanged()
-    \since 5.9
-
-    This signal is emitted whenever the reason of the download's interruption changes.
-
-    \sa interruptReason(), QWebEngineDownloadItem::DownloadInterruptReason
 */
 
 /*!

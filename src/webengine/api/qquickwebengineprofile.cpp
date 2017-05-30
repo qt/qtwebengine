@@ -153,6 +153,8 @@ QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(QSharedPointer<Brow
 
 QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 {
+    m_browserContextRef->setRequestInterceptor(nullptr);
+
     m_browserContextRef->removeClient(this);
 
     Q_FOREACH (QQuickWebEngineDownloadItem* download, m_ongoingDownloads) {

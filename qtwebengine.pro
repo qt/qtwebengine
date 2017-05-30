@@ -13,12 +13,14 @@ isPlatformSupported() {
     log(QtWebEngine will not be built.$${EOL})
 }
 
+QMAKE_DISTCLEAN += .qmake.cache
+
 OTHER_FILES = \
     tools/buildscripts/* \
     tools/scripts/* \
-    tools/qmake/config.tests/khr/* \
-    tools/qmake/config.tests/libcap/* \
-    tools/qmake/config.tests/libvpx/* \
-    tools/qmake/config.tests/snappy/* \
-    tools/qmake/config.tests/srtp/* \
-    tools/qmake/mkspecs/features/*
+    config.tests/khr/* \
+    config.tests/libcap/* \
+    config.tests/libvpx/* \
+    config.tests/snappy/* \
+    config.tests/srtp/* \
+    mkspecs/features/*

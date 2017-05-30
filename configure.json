@@ -4,13 +4,11 @@
         "printsupport"
     ],
 
-    "testDir": "tools/qmake/config.tests",
-
     "commandline": {
         "options": {
             "alsa": "boolean",
             "embedded": "boolean",
-            "optimize-for-size": { "type": "boolean", "name": "optimize_size" },
+            "webengine-icu": { "type": "enum", "name": "system-icu", "values": { "system": "yes", "qt": "no" } },
             "ffmpeg": { "type": "enum", "name": "system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
             "opus": { "type": "enum", "name": "system-opus", "values": { "system": "yes", "qt": "no" } },
             "webp": { "type": "enum", "name": "system-webp", "values": { "system": "yes", "qt": "no" } },
@@ -35,6 +33,12 @@
             "label": "PulseAudio >= 0.9.10",
             "sources": [
                 { "type": "pkgConfig", "args": "libpulse >= 0.9.10 libpulse-mainloop-glib" }
+            ]
+        },
+        "icu": {
+            "label": "icu >= 53",
+            "sources": [
+                { "type": "pkgConfig", "args": "icu-uc >= 53 icu-i18n >= 53" }
             ]
         },
         "ffmpeg": {
@@ -87,13 +91,9 @@
         },
         "embedded": {
             "label": "Embedded build",
+            "purpose": "Enables the embedded build configuration.",
+            "section": "WebEngine",
             "condition": "config.unix",
-            "autoDetect": "tests.embedded",
-            "purpose": "Enables the embedded build configuration",
-            "output": [ "privateFeature" ]
-        },
-        "optimize_size": {
-            "label": "Optimize for size",
             "autoDetect": "tests.embedded",
             "output": [ "privateFeature" ]
         },
@@ -110,32 +110,37 @@
         },
         "pepper-plugins": {
             "label": "Pepper Plugins",
+            "purpose": "Enables use of Pepper Flash and Widevine plugins.",
+            "section": "WebEngine",
             "autoDetect": "!features.embedded",
-            "purpose": "Enables use of Pepper Flash and Widevine plugins",
             "output": [ "privateFeature" ]
         },
         "printing-and-pdf": {
             "label": "Printing and PDF",
+            "purpose": "Provides printing and output to PDF.",
+            "section": "WebEngine",
             "condition": "module.printsupport && features.printer",
             "autoDetect": "!features.embedded",
-            "purpose": "Enables printing and output to PDF",
             "output": [ "privateFeature" ]
         },
         "proprietary-codecs": {
             "label": "Proprietary Codecs",
+            "purpose": "Enables the use of proprietary codecs such as h.264/h.265 and MP3.",
+            "section": "WebEngine",
             "autoDetect": false,
-            "purpose": "Enables the use of proprietary codecs such as h.264/h.265 and MP3",
             "output": [ "privateFeature" ]
         },
         "spellchecker": {
             "label": "Spellchecker",
-            "purpose": "Enables the use of Chromium's spellchecker",
+            "purpose": "Provides a spellchecker.",
+            "section": "WebEngine",
             "output": [ "privateFeature" ]
         },
         "webrtc": {
             "label": "WebRTC",
+            "purpose": "Provides WebRTC support.",
+            "section": "WebEngine",
             "autoDetect": "!features.embedded",
-            "purpose": "Enables WebRTC support",
             "output": [ "privateFeature" ]
         },
         "system-webp": {
@@ -154,6 +159,12 @@
             "label": "ffmpeg",
             "autoDetect": false,
             "condition": "libs.ffmpeg && features.system-opus && features.system-webp",
+            "output": [ "privateFeature" ]
+        },
+        "system-icu": {
+            "label": "ICU",
+            "autoDetect": false,
+            "condition": "libs.icu",
             "output": [ "privateFeature" ]
         },
         "system-ninja": {
@@ -182,7 +193,6 @@
             "section": "Qt WebEngine",
             "entries": [
                 "embedded",
-                "optimize_size",
                 "pepper-plugins",
                 "printing-and-pdf",
                 "proprietary-codecs",
@@ -203,6 +213,7 @@
                    "section": "System libraries",
                    "condition": "config.unix",
                    "entries": [
+                        "system-icu",
                         "system-webp",
                         "system-opus",
                         "system-ffmpeg"

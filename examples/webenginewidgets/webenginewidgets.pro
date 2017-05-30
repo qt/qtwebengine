@@ -5,9 +5,13 @@ SUBDIRS += \
     contentmanipulation \
     cookiebrowser \
     demobrowser \
+    html2pdf \
     markdowneditor \
     simplebrowser \
-    stylesheetbrowser
+    stylesheetbrowser \
+    videoplayer
+
+qtHaveModule(positioning): SUBDIRS += maps
 
 contains(WEBENGINE_CONFIG, use_spellchecker):!cross_compile {
     !contains(WEBENGINE_CONFIG, use_native_spellchecker) {

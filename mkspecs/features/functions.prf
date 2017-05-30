@@ -13,18 +13,6 @@ defineTest(isQtMinimum) {
     }
 }
 
-defineTest(isMinMSVCVersion) {
-    actual = $$split(MSVC_VER, .)
-    actual_major = $$member(actual, 0)
-    actual_minor = $$member(actual, 1)
-    requested_major = $$1
-    requested_minor = $$2
-    lessThan(actual_major, $$requested_major): return(false)
-    greaterThan(actual_major, $$requested_major): return(true)
-    lessThan(actual_minor, $$requested_minor): return(false)
-    return(true)
-}
-
 defineTest(isPlatformSupported) {
   QT_FOR_CONFIG += gui-private
   linux {
@@ -36,15 +24,6 @@ defineTest(isPlatformSupported) {
   } else:win32 {
     winrt {
       skipBuild("WinRT is not supported.")
-      return(false)
-    }
-    msvc {
-      !isMinMSVCVersion(14, 0) {
-        skipBuild("Qt WebEngine on Windows requires MSVC 2015 Update 2 or later.")
-        return(false)
-      }
-    } else {
-      skipBuild("Qt WebEngine on Windows requires MSVC 2015 Update 2 or later.")
       return(false)
     }
     isBuildingOnWin32() {

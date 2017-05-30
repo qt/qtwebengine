@@ -161,7 +161,14 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
     pluginPaths << ppapiPluginsPath() + QStringLiteral("/pepflashplayer.dll");
 #endif
 #if defined(Q_OS_OSX)
-    pluginPaths << "/Library/Internet Plug-Ins/PepperFlashPlayer/PepperFlashPlayer.plugin"; // Mac OS X
+    pluginPaths << "/Library/Internet Plug-Ins/PepperFlashPlayer/PepperFlashPlayer.plugin"; // System path
+    QDir potentialDir(QDir::homePath() + "/Library/Application Support/Google/Chrome/PepperFlash");
+    if (potentialDir.exists()) {
+        QFileInfoList versionDirs = potentialDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+        for (int i = 0; i < versionDirs.size(); ++i) {
+            pluginPaths << versionDirs.at(i).absoluteFilePath() + "/PepperFlashPlayer.plugin";
+        }
+    }
     pluginPaths << ppapiPluginsPath() + QStringLiteral("/PepperFlashPlayer.plugin");
 #endif
 #if defined(Q_OS_LINUX)

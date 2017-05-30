@@ -156,6 +156,10 @@ QWebEngineProfilePrivate::QWebEngineProfilePrivate(QSharedPointer<BrowserContext
 
 QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
 {
+    // In the case the user sets this profile as the parent of the interceptor
+    // it can be deleted before the browser-context still referencing it is.
+    m_browserContextRef->setRequestInterceptor(nullptr);
+
     delete m_settings;
     m_settings = 0;
     m_browserContextRef->removeClient(this);

@@ -33,7 +33,7 @@ qhp.QtWebEngine.subprojects.examples.indexTitle = Qt WebEngine Examples
 qhp.QtWebEngine.subprojects.examples.selectors = doc:example
 qhp.QtWebEngine.subprojects.examples.sortPages = true
 
-manifestmeta.highlighted.names += "QtWebEngine/WebEngine Markdown Editor Example" \
+manifestmeta.highlighted.names += "QtWebEngine/WebEngine Widgets Simple Browser Example" \
                 "QtWebEngine/WebEngine Quick Nano Browser"
 
 tagfile                 = ../../../doc/qtwebengine/qtwebengine.tags
@@ -67,7 +67,7 @@ exampledirs +=  . \
                 ../../core/doc/snippets \
                 ../../webenginewidgets/doc/snippets
 
-examples.fileextensions += *.aff *.dic
+examples.fileextensions += *.aff *.dic *.html
 
 imagedirs += images
 

@@ -234,7 +234,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         }
         ui()->addMenuSeparator(menu);
     }
-    if (!data.linkText().isEmpty() && data.linkUrl().isValid()) {
+    if (data.linkUrl().isValid()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::OpenLinkInThisWindow); });
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Follow Link"));

@@ -141,11 +141,4 @@
             directory specified by
             QLibraryInfo::location(QLibraryInfo::TranslationsPath)
     \endlist
-
-    \section2 Deploying Audio and Video Codecs
-
-    To support HTML5 video, you must additionally deploy
-    \c ffmpegsumo.dll (WebM codec plugin) into the \c qtwebengine directory
-    under the application install path or under the path that the
-    \c PluginsPath variable was set to in \c qt.conf.
 */

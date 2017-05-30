@@ -1184,7 +1184,9 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     bool dValid = true;
     QMetaObject::Connection onDestroyed = QObject::connect(dragSource, &QObject::destroyed, [&dValid](){
         dValid = false;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
         QDrag::cancel();
+#endif
     });
 
     drag->setMimeData(mimeDataFromDropData(*d->currentDropData));
