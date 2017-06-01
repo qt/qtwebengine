@@ -47,6 +47,7 @@
 #endif
 
 #define SHIM_ALIAS_SYMBOL(fn) __attribute__((weak, alias(#fn)))
+#define SHIM_HIDDEN __attribute__ ((visibility ("hidden")))
 
 extern "C" {
 
@@ -87,19 +88,19 @@ static void* __shimCppNewArray(size_t size);
 static void __shimCppDelete(void *address);
 static void __shimCppDeleteArray(void *address);
 
-static void* ShimCppNew(size_t size) {
+SHIM_HIDDEN void* ShimCppNew(size_t size) {
     return __shimCppNew(size);
 }
 
-static void* ShimCppNewArray(size_t size) {
+SHIM_HIDDEN void* ShimCppNewArray(size_t size) {
     return __shimCppNewArray(size);
 }
 
-static void ShimCppDelete(void* address) {
+SHIM_HIDDEN void ShimCppDelete(void* address) {
     __shimCppDelete(address);
 }
 
-static void ShimCppDeleteArray(void* address) {
+SHIM_HIDDEN void ShimCppDeleteArray(void* address) {
     __shimCppDeleteArray(address);
 }
 } // extern "C"
