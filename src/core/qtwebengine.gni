@@ -17,6 +17,7 @@ deps = [
   "//components/visitedlink/renderer",
   "//components/web_cache/browser",
   "//components/web_cache/renderer",
+  "//components/spellcheck:build_features",
   "//content/public/app:browser",
   "//content/public/browser",
   "//content/public/common",
