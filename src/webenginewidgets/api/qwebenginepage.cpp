@@ -1896,7 +1896,7 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
         break;
     // Chromium extension, not exposed as part of the public API for now.
     case FilePickerController::UploadFolder:
-        str = QFileDialog::getExistingDirectory(view(), tr("Select folder to upload")) + QLatin1Char('/');
+        str = QFileDialog::getExistingDirectory(view(), tr("Select folder to upload"));
         if (!str.isNull())
             ret << str;
         break;
