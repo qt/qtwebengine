@@ -41,6 +41,7 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QFile>
+#include <QTextStream>
 #include <QWebEnginePage>
 
 #include <functional>
