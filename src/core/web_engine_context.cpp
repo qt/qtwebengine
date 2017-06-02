@@ -393,6 +393,9 @@ WebEngineContext::WebEngineContext()
                 if (!qt_gl_global_share_context()->isOpenGLES())
                     glType = gl::kGLImplementationDesktopName;
             }
+
+            if (qt_gl_global_share_context()->format().profile() == QSurfaceFormat::CompatibilityProfile)
+                parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
         } else {
             qWarning("WebEngineContext used before QtWebEngine::initialize() or OpenGL context creation failed.");
         }
