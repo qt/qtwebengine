@@ -74,7 +74,7 @@
     The second part of the constructor creates a QWebEngineView and connects
     slots to the view's signals:
 
-    \printuntil SLOT(finishLoading
+    \printuntil MainWindow::finishLoading
 
     Furthermore, we create a QLineEdit as the browser's address bar. We then set the vertical
     QSizePolicy to fill the available area in the browser at all times. We add the
@@ -135,10 +135,6 @@
 
     \printuntil }
     \printuntil }
-
-    We append \c undefined after the jQuery call to prevent a possible recursion loop
-    and crash caused by the way the elements returned by the each iterator elements
-    reference each other, which causes problems upon converting them to QVariant.
 
     The \c rotateImages() function rotates the images on the current
     web page. This JavaScript code relies on CSS transforms. It
