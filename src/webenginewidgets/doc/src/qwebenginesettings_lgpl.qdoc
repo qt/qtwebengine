@@ -24,12 +24,9 @@
 
 /*!
     \fn static QWebEngineSettings *QWebEngineSettings::globalSettings()
-    Returns the global settings object.
+    \obsolete
 
-    Any setting changed on the default object is automatically applied to all
-    QWebEnginePage instances where the particular setting is not overridden already.
-
-    \sa defaultSettings()
+    Use defaultSettings() instead.
 */
 
 /*!
@@ -40,15 +37,14 @@
 
     \inmodule QtWebEngineWidgets
 
-    Each QWebEnginePage object has its own QWebEngineSettings object, which configures the
-    settings for that page. If a setting is not configured, then it is looked
-    up in the global settings object, which can be accessed using
-    globalSettings().
-
     QWebEngineSettings allows configuration of browser properties, such as font sizes and
     families, the location of a custom style sheet, and generic attributes, such as JavaScript
     support. Individual attributes are set using the setAttribute() function. The
     \l{QWebEngineSettings::WebAttribute}{WebAttribute} enum further describes each attribute.
+
+    Each QWebEnginePage object has its own QWebEngineSettings object, which configures the
+    settings for that page. If a setting is not configured for a web engine
+    page, it is looked up in the settings of the profile the page belongs to.
 
     \sa QWebEnginePage::settings(), QWebEngineView::settings()
 */
@@ -181,10 +177,8 @@
 
 /*!
     \fn void QWebEngineSettings::resetFontSize(FontSize type)
-    Resets the font size for \a type to the size specified in the global
-    settings object.
-
-    This function has no effect on the global QWebEngineSettings instance.
+    Resets the font size for \a type to the size specified in the profile that
+    the page belongs to.
 */
 
 /*!
@@ -219,10 +213,8 @@
 
 /*!
     \fn void QWebEngineSettings::resetFontFamily(FontFamily which)
-    Resets the actual font family specified by \a which to the one set
-    in the global QWebEngineSettings instance.
-
-    This function has no effect on the global QWebEngineSettings instance.
+    Resets the actual font family specified by \a which to the one specified
+    in the profile that the page belongs to.
 */
 
 /*!
@@ -242,9 +234,5 @@
     \fn void QWebEngineSettings::resetAttribute(WebAttribute attribute)
 
     Resets the setting of \a attribute to the value specified in the
-    global QWebEngineSettings instance.
-
-    This function has no effect on the global QWebEngineSettings instance.
-
-    \sa globalSettings()
+    profile that the page belongs to.
 */
