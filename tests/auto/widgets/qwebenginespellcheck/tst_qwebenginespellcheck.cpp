@@ -148,19 +148,20 @@ void tst_QWebEngineSpellcheck::spellcheck()
     profile->setSpellCheckLanguages(languages);
     profile->setSpellCheckEnabled(true);
     load();
+    QCOMPARE(profile->spellCheckLanguages(), languages);
 
     // make textarea editable
     evaluateJavaScriptSync(m_view->page(), "makeEditable();");
 
     // calcuate position of misspelled word
-    QVariantList list = evaluateJavaScriptSync(m_view->page(), "findWordPosition('I lovee Qt ....','lovee');").toList();
+    QVariantList list = evaluateJavaScriptSync(m_view->page(), "findWordPosition('I lowe Qt ....','lowe');").toList();
     QRect rect(list[0].value<int>(),list[1].value<int>(),list[2].value<int>(),list[3].value<int>());
 
     //type text, spellchecker needs time
     QTest::mouseMove(m_view->focusWidget(), QPoint(20,20));
     QTest::mousePress(m_view->focusWidget(), Qt::LeftButton, 0, QPoint(20,20));
     QTest::mouseRelease(m_view->focusWidget(), Qt::LeftButton, 0, QPoint(20,20));
-    QString text("I lovee Qt ....");
+    QString text("I lowe Qt ....");
     for (int i = 0; i < text.length(); i++) {
         QTest::keyClicks(m_view->focusWidget(), text.at(i));
         QTest::qWait(60);
@@ -180,10 +181,10 @@ void tst_QWebEngineSpellcheck::spellcheck()
     QVERIFY(m_view->data().isContentEditable());
 
     // check misspelled word
-    QVERIFY(m_view->data().misspelledWord() == "lovee");
+    QCOMPARE(m_view->data().misspelledWord(), "lowe");
 
     // check suggestions
-    QVERIFY(m_view->data().spellCheckerSuggestions() == suggestions);
+    QCOMPARE(m_view->data().spellCheckerSuggestions(), suggestions);
 
     // check replace word
     m_view->page()->replaceMisspelledWord("love");
@@ -195,8 +196,8 @@ void tst_QWebEngineSpellcheck::spellcheck_data()
 {
     QTest::addColumn<QStringList>("languages");
     QTest::addColumn<QStringList>("suggestions");
-    QTest::newRow("en-US") << QStringList({"en-US"}) << QStringList({"love", "loves"});
-    QTest::newRow("en-US,de-DE") << QStringList({"en-US","de-DE"}) << QStringList({"love", "liebe", "loves"});
+    QTest::newRow("en-US") << QStringList({"en-US"}) << QStringList({"low", "love"});
+    QTest::newRow("en-US,de-DE") << QStringList({"en-US", "de-DE"}) << QStringList({"low", "löwe", "love"});
 }
 
 QTEST_MAIN(tst_QWebEngineSpellcheck)

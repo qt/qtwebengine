@@ -4090,10 +4090,10 @@ void tst_QWebEnginePage::toPlainTextLoadFinishedRace()
     QVERIFY(s.contains("foobarbaz") == !enableErrorPage);
 
     page->load(QUrl("data:text/plain,lalala"));
-    QTRY_VERIFY(spy.count() == 3);
-    QCOMPARE(toPlainTextSync(page.data()), QString("lalala"));
+    QTRY_COMPARE(spy.count(), 3);
+    QTRY_COMPARE(toPlainTextSync(page.data()), QString("lalala"));
     page.reset();
-    QVERIFY(spy.count() == 3);
+    QCOMPARE(spy.count(), 3);
 }
 
 void tst_QWebEnginePage::setZoomFactor()

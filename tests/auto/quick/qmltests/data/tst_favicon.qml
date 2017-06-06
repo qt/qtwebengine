@@ -152,6 +152,7 @@ TestWebEngineView {
 
             var url = Qt.resolvedUrl("invalid://url")
             webEngineView.url = url
+            verify(webEngineView.waitForLoadFailed())
             verify(webEngineView.testSupport.waitForErrorPageLoadSucceeded())
 
             compare(iconChangedSpy.count, 0)

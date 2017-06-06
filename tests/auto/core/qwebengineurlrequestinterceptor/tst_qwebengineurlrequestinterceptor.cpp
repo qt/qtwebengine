@@ -106,6 +106,7 @@ void tst_QWebEngineUrlRequestInterceptor::interceptRequest()
 {
     QWebEngineView view;
     TestRequestInterceptor interceptor(/* intercept */ true);
+    view.page()->settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
 
     QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     view.page()->profile()->setRequestInterceptor(&interceptor);
@@ -193,21 +194,19 @@ void tst_QWebEngineUrlRequestInterceptor::requestedUrl()
 
     page.setUrl(QUrl("qrc:///resources/__placeholder__"));
     QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(interceptor.observedUrls.at(0), QUrl("qrc:///resources/content.html"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
 
     page.setUrl(QUrl("qrc:/non-existent.html"));
-    QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 2);
+    QTRY_COMPARE(spy.count(), 2);
     QCOMPARE(interceptor.observedUrls.at(2), QUrl("qrc:/non-existent.html"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
 
     page.setUrl(QUrl("http://abcdef.abcdef"));
-    QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 3);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 3, 12000);
     QCOMPARE(interceptor.observedUrls.at(3), QUrl("http://abcdef.abcdef/"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));

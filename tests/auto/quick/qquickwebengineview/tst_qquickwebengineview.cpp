@@ -36,6 +36,7 @@
 #include <QtTest/QtTest>
 #include <QtWebEngine/QQuickWebEngineProfile>
 #include <private/qquickwebengineview_p.h>
+#include <private/qquickwebenginesettings_p.h>
 
 #include <functional>
 
@@ -383,7 +384,8 @@ void tst_QQuickWebEngineView::titleUpdate()
 
     titleSpy.clear();
 
-    // No titleChanged signal for failed load
+    // No titleChanged signal for failed load (with no error-page)
+    webEngineView()->settings()->setErrorPageEnabled(false);
     webEngineView()->setUrl(urlFromTestPath("html/file_that_does_not_exist.html"));
     QVERIFY(waitForLoadFailed(webEngineView()));
     QCOMPARE(titleSpy.size(), 0);
