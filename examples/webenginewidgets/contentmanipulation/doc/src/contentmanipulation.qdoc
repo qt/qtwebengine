@@ -36,7 +36,7 @@
     \e{Content Manipulation} shows how to use JQuery with \l {Qt WebEngine Widgets} to
     create a web browser with special effects and content manipulation.
 
-    In the application, we call QWebEnginePage::runJavaScript() to
+    In the application, we call \l {QWebEnginePage::runJavaScript()} to
     execute jQuery JavaScript code. We implement a QMainWindow with a QWebEngineView
     as a central widget to build up the browser itself.
 
@@ -51,7 +51,7 @@
     \skipto class MainWindow :
     \printuntil /^\}/
 
-    We also declare a QString that contains the jQuery, a QWebEngineView
+    We also declare a QString that contains jQuery, a QWebEngineView
     that displays the web content, and a QLineEdit that acts as the
     address bar.
 
@@ -76,7 +76,7 @@
 
     \printuntil SLOT(finishLoading
 
-    Furthermore, we create a QLineEdit as the browser's address bar. We then set the horizontal
+    Furthermore, we create a QLineEdit as the browser's address bar. We then set the vertical
     QSizePolicy to fill the available area in the browser at all times. We add the
     QLineEdit to a QToolBar together with a set of navigation actions from
     QWebEngineView::pageAction():
