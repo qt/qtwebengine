@@ -182,17 +182,21 @@ QRect BrowserAccessibilityQt::rect() const
 QAccessible::Role BrowserAccessibilityQt::role() const
 {
     switch (GetRole()) {
+    case ui::AX_ROLE_NONE:
     case ui::AX_ROLE_UNKNOWN:
         return QAccessible::NoRole;
 
     // Used by Chromium to distinguish between the root of the tree
     // for this page, and a web area for a frame within this page.
     case ui::AX_ROLE_WEB_AREA:
+    case ui::AX_ROLE_WEB_VIEW:
     case ui::AX_ROLE_ROOT_WEB_AREA: // not sure if we need to make a diff here, but this seems common
         return QAccessible::WebDocument;
 
     // These roles all directly correspond to blink accessibility roles,
     // keep these alphabetical.
+    case ui::AX_ROLE_ABBR:
+        return QAccessible::StaticText;
     case ui::AX_ROLE_ALERT:
     case ui::AX_ROLE_ALERT_DIALOG:
         return QAccessible::AlertMessage;
@@ -202,6 +206,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Document; // returning Application here makes Qt return the top level app object
     case ui::AX_ROLE_ARTICLE:
         return QAccessible::Section;
+    case ui::AX_ROLE_AUDIO:
+        return QAccessible::Sound;
     case ui::AX_ROLE_BANNER:
         return QAccessible::Section;
     case ui::AX_ROLE_BLOCKQUOTE:
@@ -214,6 +220,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::ButtonDropDown;
     case ui::AX_ROLE_CANVAS:
         return QAccessible::Canvas;
+    case ui::AX_ROLE_CAPTION:
+        return QAccessible::Heading;
     case ui::AX_ROLE_CELL:
         return QAccessible::Cell;
     case ui::AX_ROLE_CHECK_BOX:
@@ -232,10 +240,17 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::ComplementaryContent;
     case ui::AX_ROLE_CONTENT_INFO:
         return QAccessible::Section;
+    case ui::AX_ROLE_DATE:
+    case ui::AX_ROLE_DATE_TIME:
+        return QAccessible::Clock;
     case ui::AX_ROLE_DEFINITION:
         return QAccessible::Paragraph;
+    case ui::AX_ROLE_DESCRIPTION_LIST:
+        return QAccessible::List;
     case ui::AX_ROLE_DESCRIPTION_LIST_DETAIL:
         return QAccessible::Paragraph;
+    case ui::AX_ROLE_DETAILS:
+        return QAccessible::Grouping;
     case ui::AX_ROLE_DESCRIPTION_LIST_TERM:
         return QAccessible::ListItem;
     case ui::AX_ROLE_DESKTOP:
@@ -252,6 +267,12 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Document;
     case ui::AX_ROLE_EMBEDDED_OBJECT:
         return QAccessible::Grouping; // FIXME
+    case ui::AX_ROLE_FEED:
+        return QAccessible::Section;
+    case ui::AX_ROLE_FIGCAPTION:
+        return QAccessible::Heading;
+    case ui::AX_ROLE_FIGURE:
+        return QAccessible::Section;
     case ui::AX_ROLE_FOOTER:
         return QAccessible::Footer;
     case ui::AX_ROLE_FORM:
@@ -264,6 +285,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Heading;
     case ui::AX_ROLE_IFRAME:
         return QAccessible::Grouping;
+    case ui::AX_ROLE_IFRAME_PRESENTATIONAL:
+        return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_IGNORED:
         return QAccessible::NoRole;
     case ui::AX_ROLE_IMAGE:
@@ -274,10 +297,14 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Link;
     case ui::AX_ROLE_INLINE_TEXT_BOX:
         return QAccessible::EditableText;
+    case ui::AX_ROLE_INPUT_TIME:
+        return QAccessible::SpinBox;
     case ui::AX_ROLE_LABEL_TEXT:
         return QAccessible::StaticText;
     case ui::AX_ROLE_LEGEND:
         return QAccessible::StaticText;
+    case ui::AX_ROLE_LINE_BREAK:
+        return QAccessible::Separator;
     case ui::AX_ROLE_LINK:
         return QAccessible::Link;
     case ui::AX_ROLE_LIST:
@@ -296,6 +323,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Section;
     case ui::AX_ROLE_MAIN:
         return QAccessible::Grouping;
+    case ui::AX_ROLE_MARK:
+        return QAccessible::StaticText;
     case ui::AX_ROLE_MARQUEE:
         return QAccessible::Section;
     case ui::AX_ROLE_MATH:
@@ -306,12 +335,18 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::MenuBar;
     case ui::AX_ROLE_MENU_ITEM:
         return QAccessible::MenuItem;
+    case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
+        return QAccessible::CheckBox;
+    case ui::AX_ROLE_MENU_ITEM_RADIO:
+        return QAccessible::RadioButton;
     case ui::AX_ROLE_MENU_BUTTON:
         return QAccessible::MenuItem;
     case ui::AX_ROLE_MENU_LIST_OPTION:
         return QAccessible::MenuItem;
     case ui::AX_ROLE_MENU_LIST_POPUP:
         return QAccessible::PopupMenu;
+    case ui::AX_ROLE_METER:
+        return QAccessible::Chart;
     case ui::AX_ROLE_NAVIGATION:
         return QAccessible::Section;
     case ui::AX_ROLE_NOTE:
@@ -340,6 +375,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Row;
     case ui::AX_ROLE_ROW_HEADER:
         return QAccessible::RowHeader;
+    case ui::AX_ROLE_RUBY:
+        return QAccessible::StaticText;
     case ui::AX_ROLE_RULER:
         return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_SCROLL_AREA:
@@ -350,6 +387,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_SEARCH:
         return QAccessible::Section;
+    case ui::AX_ROLE_SEARCH_BOX:
+        return QAccessible::EditableText;
     case ui::AX_ROLE_SLIDER:
         return QAccessible::Slider;
     case ui::AX_ROLE_SLIDER_THUMB:
@@ -366,6 +405,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Indicator;
     case ui::AX_ROLE_SVG_ROOT:
         return QAccessible::Graphic;
+    case ui::AX_ROLE_SWITCH:
+        return QAccessible::Button;
     case ui::AX_ROLE_TABLE:
         return QAccessible::Table;
     case ui::AX_ROLE_TABLE_HEADER_CONTAINER:
@@ -378,8 +419,11 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::PageTabList;
     case ui::AX_ROLE_TAB_PANEL:
         return QAccessible::PageTab;
+    case ui::AX_ROLE_TERM:
+        return QAccessible::StaticText;
     case ui::AX_ROLE_TEXT_FIELD:
         return QAccessible::EditableText;
+    case ui::AX_ROLE_TIME:
     case ui::AX_ROLE_TIMER:
         return QAccessible::Clock;
     case ui::AX_ROLE_TITLE_BAR:
@@ -396,6 +440,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Tree;
     case ui::AX_ROLE_TREE_ITEM:
         return QAccessible::TreeItem;
+    case ui::AX_ROLE_VIDEO:
+        return QAccessible::Animation;
     case ui::AX_ROLE_WINDOW:
         return QAccessible::Window;
     }
