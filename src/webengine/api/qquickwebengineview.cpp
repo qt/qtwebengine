@@ -1185,6 +1185,12 @@ void QQuickWebEngineViewPrivate::renderProcessTerminated(
                                       renderProcessExitStatus(terminationStatus)), exitCode);
 }
 
+void QQuickWebEngineViewPrivate::requestGeometryChange(const QRect &geometry, const QRect &frameGeometry)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->geometryChangeRequested(geometry, frameGeometry);
+}
+
 void QQuickWebEngineViewPrivate::startDragging(const content::DropData &dropData,
                                                Qt::DropActions allowedActions,
                                                const QPixmap &pixmap, const QPoint &offset)

@@ -1616,10 +1616,11 @@ void QWebEnginePagePrivate::renderProcessTerminated(RenderProcessTerminationStat
                                       terminationStatus), exitCode);
 }
 
-void QWebEnginePagePrivate::requestGeometryChange(const QRect &geometry)
+void QWebEnginePagePrivate::requestGeometryChange(const QRect &geometry, const QRect &frameGeometry)
 {
+    Q_UNUSED(geometry);
     Q_Q(QWebEnginePage);
-    Q_EMIT q->geometryChangeRequested(geometry);
+    Q_EMIT q->geometryChangeRequested(frameGeometry);
 }
 
 void QWebEnginePagePrivate::startDragging(const content::DropData &dropData,

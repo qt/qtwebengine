@@ -556,6 +556,7 @@ Q_SIGNALS:
     Q_REVISION(4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
     Q_REVISION(5) void pdfPrintingFinished(const QString &filePath, bool success);
     Q_REVISION(7) void quotaPermissionRequested(const QQuickWebEngineQuotaPermissionRequest &request);
+    Q_REVISION(7) void geometryChangeRequested(const QRect &geometry, const QRect &frameGeometry);
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     void testSupportChanged();

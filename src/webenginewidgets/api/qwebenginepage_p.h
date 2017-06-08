@@ -135,7 +135,7 @@ public:
     void moveValidationMessage(const QRect &anchor) override;
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
                                      int exitCode) override;
-    void requestGeometryChange(const QRect &geometry) override;
+    void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
     void updateScrollPosition(const QPointF &position) override;
     void updateContentsSize(const QSizeF &size) override;
     void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,

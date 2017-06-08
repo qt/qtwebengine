@@ -76,6 +76,7 @@
 
 #include <QDesktopServices>
 #include <QTimer>
+#include <QWindow>
 
 namespace QtWebEngineCore {
 
@@ -420,8 +421,13 @@ void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *w
 
 void WebContentsDelegateQt::MoveContents(content::WebContents *source, const gfx::Rect &pos)
 {
-    Q_UNUSED(source)
-    m_viewClient->requestGeometryChange(toQt(pos));
+    QRect frameGeometry(toQt(pos));
+    QRect geometry;
+    if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(web_contents()->GetRenderWidgetHostView())) {
+        if (rwhv->delegate() && rwhv->delegate()->window())
+            geometry = frameGeometry.marginsRemoved(rwhv->delegate()->window()->frameMargins());
+    }
+    m_viewClient->requestGeometryChange(geometry, frameGeometry);
 }
 
 bool WebContentsDelegateQt::IsPopupOrPanel(const content::WebContents *source) const

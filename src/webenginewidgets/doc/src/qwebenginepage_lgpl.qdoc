@@ -581,6 +581,14 @@
 
     This signal is emitted whenever the document wants to change the position and size of the
     page to \a geom. This can happen for example through JavaScript.
+
+    \note \l{QWindow::}{setGeometry()} expects a size excluding the window
+    decoration, while \a geom includes it. You have to remove the size of the frame margins
+    from \a geom to handle this signal correctly.
+
+    \code
+    window->setGeometry(geom.marginsRemoved(window->frameMargins()));
+    \endcode
 */
 
 /*!

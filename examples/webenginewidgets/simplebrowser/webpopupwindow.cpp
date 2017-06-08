@@ -45,6 +45,7 @@
 #include <QIcon>
 #include <QLineEdit>
 #include <QVBoxLayout>
+#include <QWindow>
 
 WebPopupWindow::WebPopupWindow(QWebEngineProfile *profile)
     : m_urlLineEdit(new QLineEdit(this))
@@ -82,10 +83,8 @@ WebView *WebPopupWindow::view() const
 
 void WebPopupWindow::handleGeometryChangeRequested(const QRect &newGeometry)
 {
-    m_view->setMinimumSize(newGeometry.width(), newGeometry.height());
-    move(newGeometry.topLeft() - m_view->pos());
-    // let the layout do the magic
-    resize(0, 0);
+    if (QWindow *window = windowHandle())
+        setGeometry(newGeometry.marginsRemoved(window->frameMargins()));
     show();
     m_view->setFocus();
 }

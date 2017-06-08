@@ -1355,3 +1355,25 @@
     \qmlmethod void QuotaPermissionRequest::reject()
     Rejects a quota permission request.
 */
+
+/*!
+    \qmlsignal WebEngineView::geometryChangeRequested(rect geometry, rect frameGeometry)
+    \since QtWebEngine 1.7
+
+    This signal is emitted whenever the document wants to change the position and size of the
+    page to \a frameGeometry. This can happen for example through JavaScript.
+
+    While \a frameGeometry includes, \a geometry excludes the size of frame margins.
+
+    \note Geometry related properties of QML Window expect a size excluding the window
+    decoration. You have to use \a geometry to handle this signal correctly.
+
+    \qml
+    onGeometryChangeRequested: {
+        window.x = geometry.x
+        window.y = geometry.y
+        window.width = geometry.width
+        window.height = geometry.height
+    }
+    \endqml
+*/

@@ -894,6 +894,7 @@ QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 void RenderWidgetHostViewQt::notifyResize()
 {
     m_host->WasResized();
+    m_host->SendScreenRects();
 }
 
 void RenderWidgetHostViewQt::notifyShown()
