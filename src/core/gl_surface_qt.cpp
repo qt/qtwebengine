@@ -257,7 +257,7 @@ bool GLSurfaceQtGLX::Initialize()
         GLX_PBUFFER_HEIGHT, m_size.height(),
         GLX_LARGEST_PBUFFER, False,
         GLX_PRESERVED_CONTENTS, False,
-        GLX_NONE
+        0
     };
 
     m_surfaceBuffer = glXCreatePbuffer(display, static_cast<GLXFBConfig>(g_config), pbuffer_attributes);
