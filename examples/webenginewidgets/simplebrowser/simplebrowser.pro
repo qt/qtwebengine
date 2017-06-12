@@ -6,25 +6,29 @@ CONFIG += c++11
 HEADERS += \
     browser.h \
     browserwindow.h \
+    downloadmanagerwidget.h \
+    downloadwidget.h \
     tabwidget.h \
-    urllineedit.h \
-    webview.h \
     webpage.h \
-    webpopupwindow.h
+    webpopupwindow.h \
+    webview.h
 
 SOURCES += \
     browser.cpp \
     browserwindow.cpp \
+    downloadmanagerwidget.cpp \
+    downloadwidget.cpp \
     main.cpp \
     tabwidget.cpp \
-    urllineedit.cpp \
-    webview.cpp \
     webpage.cpp \
-    webpopupwindow.cpp
+    webpopupwindow.cpp \
+    webview.cpp
 
 FORMS += \
     certificateerrordialog.ui \
-    passworddialog.ui
+    passworddialog.ui \
+    downloadmanagerwidget.ui \
+    downloadwidget.ui
 
 RESOURCES += data/simplebrowser.qrc
 

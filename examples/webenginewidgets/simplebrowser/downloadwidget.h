@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2017 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -38,39 +38,37 @@
 **
 ****************************************************************************/
 
-#ifndef WEBVIEW_H
-#define WEBVIEW_H
+#ifndef DOWNLOADWIDGET_H
+#define DOWNLOADWIDGET_H
 
-#include <QIcon>
-#include <QWebEngineView>
+#include "ui_downloadwidget.h"
 
-class WebPage;
+#include <QFrame>
+#include <QTime>
 
-class WebView : public QWebEngineView
+QT_BEGIN_NAMESPACE
+class QWebEngineDownloadItem;
+QT_END_NAMESPACE
+
+// Displays one ongoing or finished download (QWebEngineDownloadItem).
+class DownloadWidget final : public QFrame, public Ui::DownloadWidget
 {
     Q_OBJECT
-
 public:
-    WebView(QWidget *parent = nullptr);
-    void setPage(WebPage *page);
-
-    int loadProgress() const;
-    bool isWebActionEnabled(QWebEnginePage::WebAction webAction) const;
-    QIcon favIcon() const;
-
-protected:
-    void contextMenuEvent(QContextMenuEvent *event) override;
-    QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
+    // Precondition: The QWebEngineDownloadItem has been accepted.
+    explicit DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent = nullptr);
 
 signals:
-    void webActionEnabledChanged(QWebEnginePage::WebAction webAction, bool enabled);
-    void favIconChanged(const QIcon &icon);
+    // This signal is emitted when the user indicates that they want to remove
+    // this download from the downloads list.
+    void removeClicked(DownloadWidget *self);
 
 private:
-    void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);
+    void updateWidget();
+    QString withUnit(qreal bytes);
 
-private:
-    int m_loadProgress;
+    QWebEngineDownloadItem *m_download;
+    QTime m_timeAdded;
 };
 
-#endif
+#endif // DOWNLOADWIDGET_H

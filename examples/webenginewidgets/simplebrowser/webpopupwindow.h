@@ -44,12 +44,12 @@
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
+class QLineEdit;
 class QWebEngineProfile;
 class QWebEngineView;
 QT_END_NAMESPACE
 
 class WebView;
-class UrlLineEdit;
 
 class WebPopupWindow : public QWidget
 {
@@ -57,15 +57,14 @@ class WebPopupWindow : public QWidget
 
 public:
     WebPopupWindow(QWebEngineProfile *profile);
-    QWebEngineView *view() const;
-    void setUrl(const QUrl &url);
+    WebView *view() const;
 
 private slots:
     void handleGeometryChangeRequested(const QRect &newGeometry);
-    void handleIconChanged(const QIcon &icon);
 
 private:
-    UrlLineEdit *m_addressBar;
+    QLineEdit *m_urlLineEdit;
+    QAction *m_favAction;
     WebView *m_view;
 };
 #endif // WEBPOPUPWINDOW_H

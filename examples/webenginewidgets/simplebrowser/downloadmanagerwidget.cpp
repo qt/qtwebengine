@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2017 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -38,39 +38,49 @@
 **
 ****************************************************************************/
 
-#ifndef WEBVIEW_H
-#define WEBVIEW_H
+#include "downloadmanagerwidget.h"
 
-#include <QIcon>
-#include <QWebEngineView>
+#include "browser.h"
+#include "browserwindow.h"
+#include "downloadwidget.h"
 
-class WebPage;
+#include <QFileDialog>
+#include <QWebEngineDownloadItem>
 
-class WebView : public QWebEngineView
+DownloadManagerWidget::DownloadManagerWidget(QWidget *parent)
+    : QWidget(parent)
+    , m_numDownloads(0)
 {
-    Q_OBJECT
+    setupUi(this);
+}
 
-public:
-    WebView(QWidget *parent = nullptr);
-    void setPage(WebPage *page);
+void DownloadManagerWidget::downloadRequested(QWebEngineDownloadItem *download)
+{
+    Q_ASSERT(download && download->state() == QWebEngineDownloadItem::DownloadRequested);
 
-    int loadProgress() const;
-    bool isWebActionEnabled(QWebEnginePage::WebAction webAction) const;
-    QIcon favIcon() const;
+    QString path = QFileDialog::getSaveFileName(this, tr("Save as"), download->path());
+    if (path.isEmpty())
+        return;
 
-protected:
-    void contextMenuEvent(QContextMenuEvent *event) override;
-    QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
+    download->setPath(path);
+    download->accept();
+    add(new DownloadWidget(download));
 
-signals:
-    void webActionEnabledChanged(QWebEnginePage::WebAction webAction, bool enabled);
-    void favIconChanged(const QIcon &icon);
+    show();
+}
 
-private:
-    void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);
+void DownloadManagerWidget::add(DownloadWidget *downloadWidget)
+{
+    connect(downloadWidget, &DownloadWidget::removeClicked, this, &DownloadManagerWidget::remove);
+    m_itemsLayout->insertWidget(0, downloadWidget, 0, Qt::AlignTop);
+    if (m_numDownloads++ == 0)
+        m_zeroItemsLabel->hide();
+}
 
-private:
-    int m_loadProgress;
-};
-
-#endif
+void DownloadManagerWidget::remove(DownloadWidget *downloadWidget)
+{
+    m_itemsLayout->removeWidget(downloadWidget);
+    downloadWidget->deleteLater();
+    if (--m_numDownloads == 0)
+        m_zeroItemsLabel->show();
+}

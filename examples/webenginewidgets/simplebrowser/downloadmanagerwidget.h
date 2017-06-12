@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2017 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -38,33 +38,36 @@
 **
 ****************************************************************************/
 
-#ifndef URLLINEEDIT_H
-#define URLLINEEDIT_H
+#ifndef DOWNLOADMANAGERWIDGET_H
+#define DOWNLOADMANAGERWIDGET_H
 
-#include <QLineEdit>
+#include "ui_downloadmanagerwidget.h"
+
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
-class QToolButton;
+class QWebEngineDownloadItem;
 QT_END_NAMESPACE
 
-class UrlLineEdit : public QLineEdit
+class DownloadWidget;
+
+// Displays a list of downloads.
+class DownloadManagerWidget final : public QWidget, public Ui::DownloadManagerWidget
 {
     Q_OBJECT
-
 public:
-    UrlLineEdit(QWidget *parent = nullptr);
+    explicit DownloadManagerWidget(QWidget *parent = nullptr);
 
-public:
-    QUrl url() const;
-    void setUrl(const QUrl &url);
-    void setFavIcon(const QIcon &icon);
-
-protected:
-    void resizeEvent(QResizeEvent *event) override;
+    // Prompts user with a "Save As" dialog. If the user doesn't cancel it, then
+    // the QWebEngineDownloadItem will be accepted and the DownloadManagerWidget
+    // will be shown on the screen.
+    void downloadRequested(QWebEngineDownloadItem *webItem);
 
 private:
-    QToolButton *m_favButton;
-    QToolButton *m_clearButton;
+    void add(DownloadWidget *downloadWidget);
+    void remove(DownloadWidget *downloadWidget);
+
+    int m_numDownloads;
 };
 
-#endif // URLLINEEDIT_H
+#endif // DOWNLOADMANAGERWIDGET_H

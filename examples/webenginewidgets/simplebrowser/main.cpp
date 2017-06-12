@@ -40,38 +40,35 @@
 
 #include "browser.h"
 #include "browserwindow.h"
+#include "webview.h"
 #include <QApplication>
 #include <QWebEngineSettings>
 
-QString getCommandLineUrlArgument()
+QUrl getCommandLineUrlArgument()
 {
     const QStringList args = QCoreApplication::arguments();
-    if (args.count() > 1) {
-        const QString lastArg = args.last();
-        const bool isValidUrl = QUrl::fromUserInput(lastArg).isValid();
-        if (isValidUrl)
-            return lastArg;
-    }
-    return QString();
+    if (args.count() > 1)
+        return QUrl::fromUserInput(args.last());
+    return QUrl();
 }
 
 int main(int argc, char **argv)
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     QApplication app(argc, argv);
-    app.setWindowIcon(QIcon(QLatin1String(":simplebrowser.svg")));
+    app.setWindowIcon(QIcon(QStringLiteral(":AppLogoColor.png")));
 
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
 
-    BrowserWindow *window = new BrowserWindow();
-    Browser::instance().addWindow(window);
+    QUrl url = getCommandLineUrlArgument();
+    if (!url.isValid())
+        url = QStringLiteral("https://www.qt.io");
 
-    const QString url = getCommandLineUrlArgument();
-    if (!url.isEmpty())
-        window->loadPage(url);
-    else
-        window->loadHomePage();
+    Browser browser;
+    BrowserWindow *window = browser.createWindow();
+    window->currentTab()->setUrl(url);
 
     return app.exec();
 }
