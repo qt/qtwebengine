@@ -103,8 +103,8 @@ host_build {
     gn_args += use_system_libffi=false
 } else {
     gn_args += custom_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:target\"
+    gn_args += host_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:host\"
     cross_compile {
-        gn_args += host_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:host\"
         gn_args += v8_snapshot_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:v8_snapshot\"
         GN_HOST_CPU = $$gnArch($$QMAKE_HOST.arch)
         GN_TARGET_CPU = $$gnArch($$QT_ARCH)
