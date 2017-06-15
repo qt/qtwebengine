@@ -217,7 +217,7 @@ TestWebEngineView {
             }
             webEngineView.loadingChanged.connect(handleLoadFailed);
             webEngineView.url = bogusSite
-            tryCompare(loadRequestArray, "length", 5, 12000);
+            tryCompare(loadRequestArray, "length", 4, 12000);
             webEngineView.loadingChanged.disconnect(handleLoadFailed);
 
             loadRequest = loadRequestArray[0];
@@ -231,14 +231,11 @@ TestWebEngineView {
             loadRequest = loadRequestArray[2];
             compare(loadRequest.status, WebEngineView.LoadStartedStatus);
             compare(loadRequest.activeUrl, aboutBlank);
-            // FIXME: This 4th request probably shouldn't be here as it an error-page of sorts in dataUrl form
-            // Appeared with Chromium 58
+            compare(loadRequest.url, bogusSite)
             loadRequest = loadRequestArray[3];
-            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
-            compare(loadRequest.activeUrl, aboutBlank);
-            loadRequest = loadRequestArray[4];
             compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
             compare(loadRequest.activeUrl, bogusSite);
+            compare(loadRequest.url, bogusSite)
             webEngineView.clear();
         }
 
