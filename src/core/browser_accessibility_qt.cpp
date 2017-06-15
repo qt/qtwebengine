@@ -207,11 +207,11 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ui::AX_ROLE_BLOCKQUOTE:
         return QAccessible::Section;
     case ui::AX_ROLE_BUSY_INDICATOR:
-        return QAccessible::Animation; // FIXME
+        return QAccessible::NoRole; // This is unused and planned to be removed.
     case ui::AX_ROLE_BUTTON:
         return QAccessible::Button;
     case ui::AX_ROLE_BUTTON_DROP_DOWN:
-        return QAccessible::Button;
+        return QAccessible::ButtonDropDown;
     case ui::AX_ROLE_CANVAS:
         return QAccessible::Canvas;
     case ui::AX_ROLE_CELL:
@@ -277,13 +277,13 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ui::AX_ROLE_LABEL_TEXT:
         return QAccessible::StaticText;
     case ui::AX_ROLE_LEGEND:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::StaticText;
     case ui::AX_ROLE_LINK:
         return QAccessible::Link;
     case ui::AX_ROLE_LIST:
         return QAccessible::List;
     case ui::AX_ROLE_LIST_BOX:
-        return QAccessible::List;
+        return QAccessible::ComboBox;
     case ui::AX_ROLE_LIST_BOX_OPTION:
         return QAccessible::ListItem;
     case ui::AX_ROLE_LIST_ITEM:
@@ -293,11 +293,11 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ui::AX_ROLE_LOCATION_BAR:
         return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_LOG:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::Section;
     case ui::AX_ROLE_MAIN:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::Grouping;
     case ui::AX_ROLE_MARQUEE:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::Section;
     case ui::AX_ROLE_MATH:
         return QAccessible::Equation;
     case ui::AX_ROLE_MENU:
@@ -363,7 +363,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ui::AX_ROLE_STATIC_TEXT:
         return QAccessible::StaticText;
     case ui::AX_ROLE_STATUS:
-        return QAccessible::StatusBar;
+        return QAccessible::Indicator;
     case ui::AX_ROLE_SVG_ROOT:
         return QAccessible::Graphic;
     case ui::AX_ROLE_TABLE:
