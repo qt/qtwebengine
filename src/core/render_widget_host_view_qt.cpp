@@ -1283,7 +1283,6 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         // to the same focused object, and cancelling the composition on the next event loop tick.
         if (!m_receivedEmptyImeText && m_imeInProgress && !hasSelection) {
             m_receivedEmptyImeText = true;
-            m_imeInProgress = false;
             QInputMethodEvent *eventCopy = new QInputMethodEvent(*ev);
             QGuiApplication::postEvent(qApp->focusObject(), eventCopy);
         } else {

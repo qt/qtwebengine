@@ -1800,12 +1800,36 @@ void tst_QWebEngineView::emptyInputMethodEvent()
     QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
     QCOMPARE(selectionChangedSpy.count(), 1);
 
-    // Send empty QInputMethodEvent
+    // 1. Empty input method event does not clear text
     QInputMethodEvent emptyEvent;
     QApplication::sendEvent(view.focusProxy(), &emptyEvent);
 
     QString inputValue = evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString();
-    QCOMPARE(inputValue, QString("QtWebEngine"));
+    QCOMPARE(inputValue, QStringLiteral("QtWebEngine"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QStringLiteral("QtWebEngine"));
+
+    // Reset: clear input field
+    evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1').value = ''");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
+    QTRY_VERIFY(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().isEmpty());
+
+    // 2. Cancel IME composition with empty input method event
+    // Start IME composition
+    QList<QInputMethodEvent::Attribute> attributes;
+    QInputMethodEvent eventComposition("a", attributes);
+    QApplication::sendEvent(view.focusProxy(), &eventComposition);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QStringLiteral("a"));
+    QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().isEmpty());
+
+    // Cancel IME composition
+    QApplication::sendEvent(view.focusProxy(), &emptyEvent);
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
+    QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().isEmpty());
+
+    // Try key press after cancelled IME composition
+    QTest::keyClick(view.focusProxy(), Qt::Key_B);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QStringLiteral("b"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QStringLiteral("b"));
 }
 
 void tst_QWebEngineView::imeComposition()
