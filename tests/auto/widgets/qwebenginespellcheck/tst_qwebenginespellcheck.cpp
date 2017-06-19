@@ -181,7 +181,7 @@ void tst_QWebEngineSpellcheck::spellcheck()
     QVERIFY(m_view->data().isContentEditable());
 
     // check misspelled word
-    QCOMPARE(m_view->data().misspelledWord(), "lowe");
+    QCOMPARE(m_view->data().misspelledWord(), QStringLiteral("lowe"));
 
     // check suggestions
     QCOMPARE(m_view->data().spellCheckerSuggestions(), suggestions);
