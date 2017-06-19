@@ -1097,9 +1097,10 @@ void QQuickWebEngineViewPrivate::didFindText(quint64 requestId, int matchCount)
 
 void QQuickWebEngineViewPrivate::didPrintPage(quint64 requestId, const QByteArray &result)
 {
+    Q_Q(QQuickWebEngineView);
     QJSValue callback = m_callbacks.take(requestId);
     QJSValueList args;
-    args.append(QJSValue(result.data()));
+    args.append(qmlEngine(q)->toScriptValue(result));
     callback.call(args);
 }
 
