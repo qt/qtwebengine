@@ -403,6 +403,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     // We keep a reference to browserContextAdapter to keep it alive as long as we use it.
     // This is needed in case the QML WebEngineProfile is garbage collected before the WebEnginePage.
     d->browserContextAdapter = adapterClient->browserContextAdapter();
+    Q_ASSERT(d->browserContextAdapter);
 
     // Create our own if a WebContents wasn't provided at construction.
     if (!d->webContents)

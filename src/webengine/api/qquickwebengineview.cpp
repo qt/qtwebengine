@@ -710,13 +710,11 @@ void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &secur
     adapter->grantMouseLockPermission(false);
 }
 
-#ifndef QT_NO_ACCESSIBILITY
 QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
 {
     Q_Q(QQuickWebEngineView);
     return q;
 }
-#endif // QT_NO_ACCESSIBILITY
 
 QSharedPointer<BrowserContextAdapter> QQuickWebEngineViewPrivate::browserContextAdapter()
 {
