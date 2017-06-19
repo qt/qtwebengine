@@ -48,6 +48,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
+#include "ui/events/event_switches.h"
 
 #include <QFont>
 #include <QTimer>
@@ -95,6 +96,29 @@ static inline bool isTouchScreenAvailable() {
         initialized = true;
     }
     return touchScreenAvailable;
+}
+
+static inline bool isTouchEventsAPIEnabled() {
+    static bool initialized = false;
+    static bool touchEventsAPIEnabled = false;
+    if (!initialized) {
+        base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
+
+        // By default the Touch Events API support (presence of 'ontouchstart' in 'window' object)
+        // will be determined based on the availability of touch screen devices.
+        const std::string touchEventsSwitchValue =
+            parsedCommandLine->HasSwitch(switches::kTouchEvents) ?
+                parsedCommandLine->GetSwitchValueASCII(switches::kTouchEvents) :
+                switches::kTouchEventsAuto;
+
+        if (touchEventsSwitchValue == switches::kTouchEventsEnabled)
+            touchEventsAPIEnabled = true;
+        else if (touchEventsSwitchValue == switches::kTouchEventsAuto)
+            touchEventsAPIEnabled = isTouchScreenAvailable();
+
+        initialized = true;
+    }
+    return touchEventsAPIEnabled;
 }
 
 
@@ -298,7 +322,8 @@ void WebEngineSettings::doApply()
 void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *prefs)
 {
     // Override for now
-    prefs->touch_enabled = isTouchScreenAvailable();
+    prefs->touch_enabled = isTouchEventsAPIEnabled();
+    prefs->device_supports_touch = isTouchScreenAvailable();
     if (prefs->viewport_enabled) {
         // We should enable viewport and viewport-meta together, but since 5.7 we
         // no longer have a command-line flag for viewport-meta.
