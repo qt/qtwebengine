@@ -52,10 +52,8 @@
 #include "ui_printtopdfdialog.h"
 
 #include <QtCore/QDir>
-#ifndef QT_NO_PRINTER
 #include <QtPrintSupport/QPageSetupDialog>
 #include <QtPrintSupport/QPrinter>
-#endif // QT_NO_PRINTER
 #include <QtWidgets/QFileDialog>
 
 PrintToPdfDialog::PrintToPdfDialog(const QString &filePath, QWidget *parent) :
@@ -66,11 +64,8 @@ PrintToPdfDialog::PrintToPdfDialog(const QString &filePath, QWidget *parent) :
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     connect(ui->chooseFilePathButton, &QToolButton::clicked, this, &PrintToPdfDialog::onChooseFilePathButtonClicked);
-#ifndef QT_NO_PRINTER
     connect(ui->choosePageLayoutButton, &QToolButton::clicked, this, &PrintToPdfDialog::onChoosePageLayoutButtonClicked);
-#else
     ui->choosePageLayoutButton->hide();
-#endif // QT_NO_PRINTER
     updatePageLayoutLabel();
     setFilePath(filePath);
 }
@@ -82,7 +77,6 @@ PrintToPdfDialog::~PrintToPdfDialog()
 
 void PrintToPdfDialog::onChoosePageLayoutButtonClicked()
 {
-#ifndef QT_NO_PRINTER
     QPrinter printer;
     printer.setPageLayout(currentPageLayout);
 
@@ -92,7 +86,6 @@ void PrintToPdfDialog::onChoosePageLayoutButtonClicked()
     currentPageLayout.setPageSize(printer.pageLayout().pageSize());
     currentPageLayout.setOrientation(printer.pageLayout().orientation());
     updatePageLayoutLabel();
-#endif // QT_NO_PRINTER
 }
 
 void PrintToPdfDialog::onChooseFilePathButtonClicked()

@@ -80,11 +80,9 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
-#if defined(QT_PRINTSUPPORT_LIB)
-#ifndef QT_NO_PRINTER
+#ifdef ENABLE_PRINTING
 #include <QPrinter>
-#endif //QT_NO_PRINTER
-#endif //QT_PRINTSUPPORT_LIB
+#endif
 #include <QStandardPaths>
 #include <QStyle>
 #include <QTimer>
@@ -2051,8 +2049,6 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
 #endif // if defined(ENABLE_PDF)
 }
 
-#if defined(QT_PRINTSUPPORT_LIB)
-#ifndef QT_NO_PRINTER
 /*!
     \fn void QWebEnginePage::print(QPrinter *printer, FunctorOrLambda resultCallback)
     Renders the current content of the page into a temporary PDF document, then prints it using \a printer.
@@ -2089,8 +2085,6 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
     d->m_callbacks.invokeDirectly(resultCallback, false);
 #endif // if defined(ENABLE_PDF)
 }
-#endif // if defined(QT_NO_PRINTER)
-#endif // if defined(QT_PRINTSUPPORT_LIB)
 
 /*!
     \since 5.7

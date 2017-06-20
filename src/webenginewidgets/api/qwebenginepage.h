@@ -55,11 +55,7 @@
 
 QT_BEGIN_NAMESPACE
 class QMenu;
-#if defined(QT_PRINTSUPPORT_LIB)
-#ifndef QT_NO_PRINTER
 class QPrinter;
-#endif // QT_NO_PRINTER
-#endif // QT_PRINTSUPPORT_LIB
 
 class QWebChannel;
 class QWebEngineContextMenuData;
@@ -294,15 +290,11 @@ public:
     void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
 #endif
 
-#if defined(QT_PRINTSUPPORT_LIB)
-#ifndef QT_NO_PRINTER
 #ifdef Q_QDOC
     void print(QPrinter *printer, FunctorOrLambda resultCallback);
 #else
     void print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback);
 #endif // QDOC
-#endif // QT_NO_PRINTER
-#endif // QT_PRINTSUPPORT_LIB
 
     const QWebEngineContextMenuData &contextMenuData() const;
 
