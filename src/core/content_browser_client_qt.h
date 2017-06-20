@@ -94,6 +94,9 @@ public:
     gl::GLShareGroup* GetInProcessGpuShareGroup() override;
     content::MediaObserver* GetMediaObserver() override;
     content::QuotaPermissionContext *CreateQuotaPermissionContext() override;
+    void GetQuotaSettings(content::BrowserContext *context,
+                        content::StoragePartition *partition,
+                        const storage::OptionalQuotaSettingsCallback &callback) override;
     void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) override;
     void AllowCertificateError(content::WebContents* web_contents,
                                        int cert_error,
