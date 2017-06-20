@@ -16,7 +16,7 @@ defineTest(isQtMinimum) {
 defineTest(isPlatformSupported) {
   QT_FOR_CONFIG += gui-private
   linux {
-    !gcc:!clang {
+    if(!gcc:!clang)|intel_icc {
       skipBuild("Qt WebEngine on Linux requires clang or GCC.")
       return(false)
     }
@@ -24,6 +24,10 @@ defineTest(isPlatformSupported) {
   } else:win32 {
     winrt {
       skipBuild("WinRT is not supported.")
+      return(false)
+    }
+    !msvc|intel_icl {
+      skipBuild("Qt WebEngine on Windows requires MSVC.")
       return(false)
     }
     !isMinWinSDKVersion(10, 10586): {
