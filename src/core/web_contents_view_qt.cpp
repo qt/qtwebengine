@@ -175,6 +175,9 @@ static inline WebEngineContextMenuData fromParams(const content::ContextMenuPara
     ret.setMisspelledWord(toQt(params.misspelled_word));
     ret.setSpellCheckerSuggestions(fromVector(params.dictionary_suggestions));
 #endif
+    ret.setFrameUrl(toQt(params.frame_url));
+    ret.setPageUrl(toQt(params.page_url));
+    ret.setReferrerPolicy((ReferrerPolicy)params.referrer_policy);
     return ret;
 }
 

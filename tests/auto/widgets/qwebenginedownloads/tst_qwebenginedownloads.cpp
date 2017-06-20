@@ -83,7 +83,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDeclared       */ << QByteArrayLiteral("")
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("")
         /* fileDisposition            */ << QByteArrayLiteral("")
-        /* fileHasReferer             */ << false
+        /* fileHasReferer             */ << true
         /* fileAction                 */ << FileIsDownloaded
         /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
 
@@ -96,7 +96,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDeclared       */ << QByteArrayLiteral("text/plain")
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("")
-        /* fileHasReferer             */ << false
+        /* fileHasReferer             */ << true
         /* fileAction                 */ << FileIsDownloaded
         /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
 
@@ -109,7 +109,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDeclared       */ << QByteArrayLiteral("text/plain")
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("")
-        /* fileHasReferer             */ << false
+        /* fileHasReferer             */ << true
         /* fileAction                 */ << FileIsDownloaded
         /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
 
@@ -122,7 +122,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDeclared       */ << QByteArrayLiteral("text/plain")
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("attachment")
-        /* fileHasReferer             */ << false
+        /* fileHasReferer             */ << true
         /* fileAction                 */ << FileIsDownloaded
         /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
@@ -135,7 +135,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDeclared       */ << QByteArrayLiteral("text/plain")
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("attachment")
-        /* fileHasReferer             */ << false
+        /* fileHasReferer             */ << true
         /* fileAction                 */ << FileIsDownloaded
         /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
@@ -174,7 +174,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDeclared       */ << QByteArrayLiteral("text/plain")
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("")
-        /* fileHasReferer             */ << false
+        /* fileHasReferer             */ << false // crbug.com/455987
         /* fileAction                 */ << FileIsDownloaded
         /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
 
@@ -200,7 +200,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDeclared       */ << QByteArrayLiteral("text/plain")
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("attachment")
-        /* fileHasReferer             */ << false
+        /* fileHasReferer             */ << false // crbug.com/455987
         /* fileAction                 */ << FileIsDownloaded
         /* downloadType               */ << QWebEngineDownloadItem::Attachment;
 

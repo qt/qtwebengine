@@ -124,7 +124,9 @@ public:
     quint64 findText(const QString &subString, bool caseSensitively, bool findBackward);
     void stopFinding();
     void updateWebPreferences(const content::WebPreferences &webPreferences);
-    void download(const QUrl &url, const QString &suggestedFileName);
+    void download(const QUrl &url, const QString &suggestedFileName,
+                  const QUrl &referrerUrl = QUrl(),
+                  ReferrerPolicy referrerPolicy = ReferrerPolicy::Default);
     bool isAudioMuted() const;
     void setAudioMuted(bool mute);
     bool recentlyAudible();
