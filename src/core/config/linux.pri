@@ -98,6 +98,8 @@ contains(QT_ARCH, "mips"):!host_build {
 
 host_build {
     gn_args += custom_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:host\"
+    GN_HOST_CPU = $$gnArch($$QT_ARCH)
+    gn_args += host_cpu=\"$$GN_HOST_CPU\"
     # Don't bother trying to use system libraries in this case
     gn_args += use_glib=false
     gn_args += use_system_libffi=false
@@ -106,9 +108,8 @@ host_build {
     gn_args += host_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:host\"
     cross_compile {
         gn_args += v8_snapshot_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:v8_snapshot\"
-        GN_HOST_CPU = $$gnArch($$QMAKE_HOST.arch)
         GN_TARGET_CPU = $$gnArch($$QT_ARCH)
-        gn_args += host_cpu=\"$$GN_HOST_CPU\" target_cpu=\"$$GN_TARGET_CPU\"
+        gn_args += target_cpu=\"$$GN_TARGET_CPU\"
     }
     !contains(QT_CONFIG, no-pkg-config) {
         # Strip '>2 /dev/null' from $$pkgConfigExecutable()
