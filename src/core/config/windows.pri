@@ -57,8 +57,8 @@ msvc {
 
     SDK_PATH = $$(WINDOWSSDKDIR)
     VS_PATH= $$(VSINSTALLDIR)
-    gn_args += visual_studio_path=$$shell_quote($$VS_PATH)
-    gn_args += windows_sdk_path=$$shell_quote($$SDK_PATH)
+    gn_args += visual_studio_path=\"$$clean_path($$VS_PATH)\"
+    gn_args += windows_sdk_path=\"$$clean_path($$SDK_PATH)\"
 
     GN_TARGET_CPU = $$gnArch($$QT_ARCH)
     gn_args += target_cpu=\"$$GN_TARGET_CPU\"
