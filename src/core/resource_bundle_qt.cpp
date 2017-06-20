@@ -75,7 +75,8 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale)
 #if defined(OS_LINUX)
     base::CommandLine *parsed_command_line = base::CommandLine::ForCurrentProcess();
     std::string process_type = parsed_command_line->GetSwitchValueASCII(switches::kProcessType);
-    if (process_type == switches::kRendererProcess) {
+    bool no_sandbox = parsed_command_line->HasSwitch(switches::kNoSandbox);
+    if (process_type == switches::kRendererProcess && !no_sandbox) {
         // The Renderer Process is sandboxed thus only one locale is available in it.
         // The particular one is passed by the --lang command line option.
         if (!parsed_command_line->HasSwitch(switches::kLang) || parsed_command_line->GetSwitchValueASCII(switches::kLang) != locale)
