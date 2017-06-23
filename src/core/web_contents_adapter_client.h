@@ -350,9 +350,7 @@ public:
     virtual void passOnFocus(bool reverse) = 0;
     // returns the last QObject (QWidget/QQuickItem) based object in the accessibility
     // hierarchy before going into the BrowserAccessibility tree
-#ifndef QT_NO_ACCESSIBILITY
     virtual QObject *accessibilityParentObject() = 0;
-#endif // QT_NO_ACCESSIBILITY
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) = 0;
     virtual void authenticationRequired(QSharedPointer<AuthenticationDialogController>) = 0;
     virtual void runGeolocationPermissionRequest(const QUrl &securityOrigin) = 0;

@@ -126,9 +126,7 @@ public:
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
     virtual void runGeolocationPermissionRequest(const QUrl &securityOrigin) Q_DECL_OVERRIDE;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) Q_DECL_OVERRIDE;
-#ifndef QT_NO_ACCESSIBILITY
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
-#endif // QT_NO_ACCESSIBILITY
     virtual QtWebEngineCore::WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &controller) Q_DECL_OVERRIDE;
     virtual void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) Q_DECL_OVERRIDE;
