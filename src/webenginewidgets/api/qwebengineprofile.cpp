@@ -142,7 +142,7 @@ using QtWebEngineCore::BrowserContextAdapter;
   will be deleted immediately after the signal emission.
   This signal cannot be used with a queued connection.
 
-  \sa QWebEngineDownloadItem
+  \sa QWebEngineDownloadItem, QWebEnginePage::download()
 */
 
 QWebEngineProfilePrivate::QWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter> browserContext)

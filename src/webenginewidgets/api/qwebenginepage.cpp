@@ -1810,6 +1810,25 @@ WebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
     return settings->d_func();
 }
 
+/*!
+    \since 5.10
+    Downloads the resource from the location given by \a url to a local file.
+
+    If \a filename is given, it is used as the suggested file name.
+    If it is relative, the file is saved in the standard download location with
+    the given name.
+    If it is a null or empty QString, the default file name is used.
+
+    This will emit QWebEngineProfile::downloadRequested() after the download
+    has started.
+*/
+
+void QWebEnginePage::download(const QUrl& url, const QString& filename)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->download(url, filename);
+}
+
 void QWebEnginePage::load(const QUrl& url)
 {
     Q_D(QWebEnginePage);

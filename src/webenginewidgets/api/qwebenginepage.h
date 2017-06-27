@@ -252,6 +252,7 @@ public:
 
     void load(const QUrl &url);
     void load(const QWebEngineHttpRequest &request);
+    void download(const QUrl &url, const QString &filename = QString());
     void setHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void setContent(const QByteArray &data, const QString &mimeType = QString(), const QUrl &baseUrl = QUrl());
 
