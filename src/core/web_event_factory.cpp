@@ -72,11 +72,11 @@
 
 #include <QCoreApplication>
 #include <QElapsedTimer>
+#include <QGuiApplication>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QStyleHints>
 #include <QWheelEvent>
-
-static const int wheelScrollLines = 3; // FIXME: Still not available in QStyleHints in 5.1
 
 using namespace blink;
 
@@ -1268,6 +1268,11 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
     // a pixel delta based on ticks and scroll per line.
     static const float cDefaultQtScrollStep = 20.f;
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
+    const int wheelScrollLines = QGuiApplication::styleHints()->wheelScrollLines();
+#else
+    const int wheelScrollLines = 3;
+#endif
     webEvent.deltaX = webEvent.wheelTicksX * wheelScrollLines * cDefaultQtScrollStep;
     webEvent.deltaY = webEvent.wheelTicksY * wheelScrollLines * cDefaultQtScrollStep;
 
