@@ -58,10 +58,11 @@
 
     \section1 Triggering Dialogs
 
-    The technical details on how the dialogs are triggered are beyond the scope
-    of this example. The only thing worth mentioning is that we fire up the
-    localhost TCP server when the example starts up. The server is needed to
-    get proxy and HTTP authentication requests.
+    As mentioned, the \l {webengine/customdialogs/index.html}{index.html} file
+    is responsible for triggering the dialogs from the side of HTML and
+    JavaScript. Additionally, the example program starts a localhost TCP server
+    returning the mocked HTTP responses needed to trigger proxy and HTTP
+    authentication dialogs.
 
     \section1 Custom Dialogs
 

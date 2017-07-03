@@ -141,6 +141,12 @@
     \warning This function works only for HTML. For other MIME types (such as XHTML or SVG),
     setContent() should be used instead.
 
+    \note Content larger than 2 MB cannot be displayed, because setHtml()
+    converts the provided HTML to percent-encoding and places \c data: in front
+    of it to create the URL that it navigates to. Thereby, the provided code
+    becomes a URL that exceeds the 2 MB limit set by Chromium. If the content is
+    too large, the loadFinished() signal is triggered with \c success=false.
+
     \sa load(), setContent(), QWebEnginePage::toHtml(), QWebEnginePage::setContent()
 */
 

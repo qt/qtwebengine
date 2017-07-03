@@ -314,7 +314,9 @@ void BrowserApplication::loadSettings()
     settings.endGroup();
     settings.beginGroup(QLatin1String("cookies"));
 
-    QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(settings.value(QLatin1String("persistentCookiesPolicy")).toInt());
+    QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy =
+            QWebEngineProfile::PersistentCookiesPolicy(settings.value(QLatin1String("persistentCookiesPolicy"),
+                                                                      QWebEngineProfile::AllowPersistentCookies).toInt());
     defaultProfile->setPersistentCookiesPolicy(persistentCookiesPolicy);
     QString pdataPath = settings.value(QLatin1String("persistentDataPath")).toString();
     defaultProfile->setPersistentStoragePath(pdataPath);

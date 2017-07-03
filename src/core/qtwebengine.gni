@@ -1,3 +1,4 @@
+import("//media/media_options.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 
 chromium_version = exec_script("//build/util/version.py", [ "-f", rebase_path("//chrome/VERSION"),
@@ -18,10 +19,12 @@ deps = [
   "//components/visitedlink/renderer",
   "//components/web_cache/browser",
   "//components/web_cache/renderer",
+  "//components/spellcheck:build_features",
   "//content/public/app:browser",
   "//content/public/browser",
   "//content/public/common",
   "//content/public/renderer",
+  "//media:media_features",
   "//net:net_browser_services",
   "//net:net_with_v8",
   "//skia",
@@ -34,6 +37,10 @@ deps = [
 
 if (enable_widevine) {
   deps += [ "//components/cdm/renderer"]
+}
+
+if (enable_webrtc) {
+  deps += [ "//third_party/webrtc/base:base" ]
 }
 
 if (is_linux && !is_desktop_linux) {

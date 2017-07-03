@@ -81,11 +81,9 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
-#if defined(QT_PRINTSUPPORT_LIB)
-#ifndef QT_NO_PRINTER
+#ifdef ENABLE_PRINTING
 #include <QPrinter>
-#endif //QT_NO_PRINTER
-#endif //QT_PRINTSUPPORT_LIB
+#endif
 #include <QStandardPaths>
 #include <QStyle>
 #include <QTimer>
@@ -403,10 +401,11 @@ void QWebEnginePagePrivate::unhandledKeyEvent(QKeyEvent *event)
         QGuiApplication::sendEvent(view->parentWidget(), event);
 }
 
-void QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry)
+void QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry, const QUrl &targetUrl)
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(userGesture);
+    Q_UNUSED(targetUrl);
 
     QWebEnginePage *newPage = q->createWindow(toWindowType(disposition));
     if (!newPage)
@@ -585,12 +584,10 @@ void QWebEnginePagePrivate::runMouseLockPermissionRequest(const QUrl &securityOr
     Q_EMIT q->featurePermissionRequested(securityOrigin, QWebEnginePage::MouseLock);
 }
 
-#ifndef QT_NO_ACCESSIBILITY
 QObject *QWebEnginePagePrivate::accessibilityParentObject()
 {
     return view;
 }
-#endif // QT_NO_ACCESSIBILITY
 
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
@@ -1969,7 +1966,7 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
         break;
     // Chromium extension, not exposed as part of the public API for now.
     case FilePickerController::UploadFolder:
-        str = QFileDialog::getExistingDirectory(view(), tr("Select folder to upload")) + QLatin1Char('/');
+        str = QFileDialog::getExistingDirectory(view(), tr("Select folder to upload"));
         if (!str.isNull())
             ret << str;
         break;
@@ -2126,8 +2123,6 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
 #endif // if defined(ENABLE_PDF)
 }
 
-#if defined(QT_PRINTSUPPORT_LIB)
-#ifndef QT_NO_PRINTER
 /*!
     \fn void QWebEnginePage::print(QPrinter *printer, FunctorOrLambda resultCallback)
     Renders the current content of the page into a temporary PDF document, then prints it using \a printer.
@@ -2164,8 +2159,6 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
     d->m_callbacks.invokeDirectly(resultCallback, false);
 #endif // if defined(ENABLE_PDF)
 }
-#endif // if defined(QT_NO_PRINTER)
-#endif // if defined(QT_PRINTSUPPORT_LIB)
 
 /*!
     \since 5.7

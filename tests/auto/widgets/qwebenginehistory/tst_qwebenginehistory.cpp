@@ -37,8 +37,9 @@ public:
 protected :
     void loadPage(int nr)
     {
+        loadFinishedSpy->clear();
         page->load(QUrl("qrc:/resources/page" + QString::number(nr) + ".html"));
-        loadFinishedBarrier->ensureSignalEmitted();
+        QTRY_COMPARE(loadFinishedSpy->count(), 1);
     }
 
 public Q_SLOTS:
@@ -75,7 +76,7 @@ private Q_SLOTS:
 private:
     QWebEnginePage* page;
     QWebEngineHistory* hist;
-    QScopedPointer<SignalBarrier> loadFinishedBarrier;
+    QScopedPointer<QSignalSpy> loadFinishedSpy;
     int histsize;
 };
 
@@ -94,7 +95,7 @@ void tst_QWebEngineHistory::initTestCase()
 void tst_QWebEngineHistory::init()
 {
     page = new QWebEnginePage(this);
-    loadFinishedBarrier.reset(new SignalBarrier(page, SIGNAL(loadFinished(bool))));
+    loadFinishedSpy.reset(new QSignalSpy(page, SIGNAL(loadFinished(bool))));
 
     for (int i = 1;i < 6;i++) {
         loadPage(i);
@@ -105,7 +106,7 @@ void tst_QWebEngineHistory::init()
 
 void tst_QWebEngineHistory::cleanup()
 {
-    loadFinishedBarrier.reset();
+    loadFinishedSpy.reset();
     delete page;
 }
 
@@ -114,7 +115,7 @@ void tst_QWebEngineHistory::cleanup()
   */
 void tst_QWebEngineHistory::title()
 {
-    QCOMPARE(hist->currentItem().title(), QString("page5"));
+    QTRY_COMPARE(hist->currentItem().title(), QString("page5"));
 }
 
 void tst_QWebEngineHistory::lastVisited()
@@ -128,7 +129,7 @@ void tst_QWebEngineHistory::lastVisited()
   */
 void tst_QWebEngineHistory::count()
 {
-    QCOMPARE(hist->count(), histsize);
+    QTRY_COMPARE(hist->count(), histsize);
 }
 
 /**
@@ -136,17 +137,17 @@ void tst_QWebEngineHistory::count()
   */
 void tst_QWebEngineHistory::back()
 {
-    SignalBarrier titleChangedBarrier(page, SIGNAL(titleChanged(const QString&)));
+    QSignalSpy titleChangedSpy(page, SIGNAL(titleChanged(const QString&)));
 
     for (int i = histsize;i > 1;i--) {
-        QCOMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
+        QTRY_COMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
         hist->back();
-        loadFinishedBarrier->ensureSignalEmitted();
-        QVERIFY(titleChangedBarrier.ensureSignalEmitted());
+        QTRY_COMPARE(loadFinishedSpy->count(), histsize-i+1);
+        QTRY_COMPARE(titleChangedSpy.count(), histsize-i+1);
     }
     //try one more time (too many). crash test
     hist->back();
-    QCOMPARE(toPlainTextSync(page), QString("page1"));
+    QTRY_COMPARE(toPlainTextSync(page), QString("page1"));
 }
 
 /**
@@ -155,21 +156,23 @@ void tst_QWebEngineHistory::back()
 void tst_QWebEngineHistory::forward()
 {
     //rewind history :-)
+    int histBackCount = 0;
     while (hist->canGoBack()) {
         hist->back();
-        loadFinishedBarrier->ensureSignalEmitted();
+        histBackCount++;
+        QTRY_COMPARE(loadFinishedSpy->count(), histBackCount+1);
     }
 
-    SignalBarrier titleChangedBarrier(page, SIGNAL(titleChanged(const QString&)));
+    QSignalSpy titleChangedSpy(page, SIGNAL(titleChanged(const QString&)));
     for (int i = 1;i < histsize;i++) {
-        QCOMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
+        QTRY_COMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
         hist->forward();
-        loadFinishedBarrier->ensureSignalEmitted();
-        QVERIFY(titleChangedBarrier.ensureSignalEmitted());
+        QTRY_COMPARE(loadFinishedSpy->count(), i+histBackCount);
+        QTRY_COMPARE(titleChangedSpy.count(), i);
     }
     //try one more time (too many). crash test
     hist->forward();
-    QCOMPARE(toPlainTextSync(page), QString("page") + QString::number(histsize));
+    QTRY_COMPARE(toPlainTextSync(page), QString("page") + QString::number(histsize));
 }
 
 /**
@@ -178,7 +181,7 @@ void tst_QWebEngineHistory::forward()
 void tst_QWebEngineHistory::itemAt()
 {
     for (int i = 1;i < histsize;i++) {
-        QCOMPARE(hist->itemAt(i - 1).title(), QString("page") + QString::number(i));
+        QTRY_COMPARE(hist->itemAt(i - 1).title(), QString("page") + QString::number(i));
         QVERIFY(hist->itemAt(i - 1).isValid());
     }
     //check out of range values
@@ -192,14 +195,19 @@ void tst_QWebEngineHistory::itemAt()
 void tst_QWebEngineHistory::goToItem()
 {
     QWebEngineHistoryItem current = hist->currentItem();
+
     hist->back();
-    loadFinishedBarrier->ensureSignalEmitted();
+    QTRY_COMPARE(loadFinishedSpy->count(), 2);
+
     hist->back();
-    loadFinishedBarrier->ensureSignalEmitted();
+    QTRY_COMPARE(loadFinishedSpy->count(), 3);
+
     QVERIFY(hist->currentItem().title() != current.title());
+
     hist->goToItem(current);
-    loadFinishedBarrier->ensureSignalEmitted();
-    QCOMPARE(hist->currentItem().title(), current.title());
+    QTRY_COMPARE(loadFinishedSpy->count(), 3);
+
+    QTRY_COMPARE(hist->currentItem().title(), current.title());
 }
 
 /**
@@ -209,25 +217,27 @@ void tst_QWebEngineHistory::items()
 {
     QList<QWebEngineHistoryItem> items = hist->items();
     //check count
-    QCOMPARE(histsize, items.count());
+    QTRY_COMPARE(histsize, items.count());
 
     //check order
     for (int i = 1;i <= histsize;i++) {
-        QCOMPARE(items.at(i - 1).title(), QString("page") + QString::number(i));
+        QTRY_COMPARE(items.at(i - 1).title(), QString("page") + QString::number(i));
     }
 }
 
 void tst_QWebEngineHistory::backForwardItems()
 {
     hist->back();
-    loadFinishedBarrier->ensureSignalEmitted();
+    QTRY_COMPARE(loadFinishedSpy->count(), 2);
+
     hist->back();
-    loadFinishedBarrier->ensureSignalEmitted();
-    QCOMPARE(hist->items().size(), 5);
-    QCOMPARE(hist->backItems(100).size(), 2);
-    QCOMPARE(hist->backItems(1).size(), 1);
-    QCOMPARE(hist->forwardItems(100).size(), 2);
-    QCOMPARE(hist->forwardItems(1).size(), 1);
+    QTRY_COMPARE(loadFinishedSpy->count(), 3);
+
+    QTRY_COMPARE(hist->items().size(), 5);
+    QTRY_COMPARE(hist->backItems(100).size(), 2);
+    QTRY_COMPARE(hist->backItems(1).size(), 1);
+    QTRY_COMPARE(hist->forwardItems(100).size(), 2);
+    QTRY_COMPARE(hist->forwardItems(1).size(), 1);
 }
 
 /**
@@ -242,20 +252,20 @@ void tst_QWebEngineHistory::serialize_1()
 
     save << *hist;
     QVERIFY(save.status() == QDataStream::Ok);
-    QCOMPARE(hist->count(), histsize);
+    QTRY_COMPARE(hist->count(), histsize);
 
     //check size of history
     //load next page to find differences
     loadPage(6);
-    QCOMPARE(hist->count(), histsize + 1);
+    QTRY_COMPARE(hist->count(), histsize + 1);
     load >> *hist;
     QVERIFY(load.status() == QDataStream::Ok);
-    QCOMPARE(hist->count(), histsize);
+    QTRY_COMPARE(hist->count(), histsize);
 
     //check order of historyItems
     QList<QWebEngineHistoryItem> items = hist->items();
     for (int i = 1;i <= histsize;i++) {
-        QCOMPARE(items.at(i - 1).title(), QString("page") + QString::number(i));
+        QTRY_COMPARE(items.at(i - 1).title(), QString("page") + QString::number(i));
     }
 }
 
@@ -271,16 +281,16 @@ void tst_QWebEngineHistory::serialize_2()
 
     // Force a "same document" navigation.
     page->load(page->url().toString() + QLatin1String("#dummyAnchor"));
-    loadFinishedBarrier->ensureSignalEmitted();
+    QTRY_COMPARE(loadFinishedSpy->count(), 1);
 
     int initialCurrentIndex = hist->currentItemIndex();
 
     hist->back();
-    loadFinishedBarrier->ensureSignalEmitted();
+    QTRY_COMPARE(loadFinishedSpy->count(), 2);
     hist->back();
-    loadFinishedBarrier->ensureSignalEmitted();
+    QTRY_COMPARE(loadFinishedSpy->count(), 3);
     hist->back();
-    loadFinishedBarrier->ensureSignalEmitted();
+    QTRY_COMPARE(loadFinishedSpy->count(), 4);
     //check if current index was changed (make sure that it is not last item)
     QVERIFY(hist->currentItemIndex() != initialCurrentIndex);
     //save current index
@@ -291,18 +301,18 @@ void tst_QWebEngineHistory::serialize_2()
     load >> *hist;
     QVERIFY(load.status() == QDataStream::Ok);
     // Restoring the history will trigger a load.
-    loadFinishedBarrier->ensureSignalEmitted();
+    QTRY_COMPARE(loadFinishedSpy->count(), 5);
 
     //check current index
-    QCOMPARE(hist->currentItemIndex(), oldCurrentIndex);
+    QTRY_COMPARE(hist->currentItemIndex(), oldCurrentIndex);
 
     hist->forward();
-    loadFinishedBarrier->ensureSignalEmitted();
+    QTRY_COMPARE(loadFinishedSpy->count(), 6);
     hist->forward();
-    loadFinishedBarrier->ensureSignalEmitted();
+    QTRY_COMPARE(loadFinishedSpy->count(), 7);
     hist->forward();
-    loadFinishedBarrier->ensureSignalEmitted();
-    QCOMPARE(hist->currentItemIndex(), initialCurrentIndex);
+    QTRY_COMPARE(loadFinishedSpy->count(), 8);
+    QTRY_COMPARE(hist->currentItemIndex(), initialCurrentIndex);
 }
 
 /**
@@ -334,10 +344,10 @@ void tst_QWebEngineHistory::serialize_3()
     QWebEngineHistoryItem b = hist->currentItem();
 
     //check properties AFTER serialization
-    QCOMPARE(b.title(), title);
-    QCOMPARE(b.lastVisited(), lastVisited);
-    QCOMPARE(b.originalUrl(), originalUrl);
-    QCOMPARE(b.url(), url);
+    QTRY_COMPARE(b.title(), title);
+    QTRY_COMPARE(b.lastVisited(), lastVisited);
+    QTRY_COMPARE(b.originalUrl(), originalUrl);
+    QTRY_COMPARE(b.url(), url);
 
     //Check if all data was read
     QVERIFY(load.atEnd());
@@ -398,27 +408,16 @@ void tst_QWebEngineHistory::saveAndRestore_crash_3()
 
 void tst_QWebEngineHistory::saveAndRestore_crash_4()
 {
-#if !defined(QWEBENGINESETTINGS)
-    QSKIP("QWEBENGINESETTINGS");
-#else
     QByteArray buffer;
     saveHistory(hist, &buffer);
 
     QScopedPointer<QWebEnginePage> page2(new QWebEnginePage(this));
-    // The initial crash was in PageCache.
-    page2->settings()->setMaximumPagesInCache(3);
 
     // Load the history in a new page, waiting for the load to finish.
-    QEventLoop waitForLoadFinished;
-    QObject::connect(page2.data(), SIGNAL(loadFinished(bool)), &waitForLoadFinished, SLOT(quit()), Qt::QueuedConnection);
+    QSignalSpy loadFinishedSpy2(page2.data(), SIGNAL(loadFinished(bool)));
     QDataStream load(&buffer, QIODevice::ReadOnly);
     load >> *page2->history();
-    waitForLoadFinished.exec();
-
-    page2.reset();
-    // Give some time for the PageCache cleanup 0-timer to fire.
-    QTest::qWait(50);
-#endif
+    QTRY_COMPARE(loadFinishedSpy2.count(), 1);
 }
 
 void tst_QWebEngineHistory::popPushState_data()
@@ -469,10 +468,10 @@ void tst_QWebEngineHistory::historyItemFromDeletedPage()
 
     foreach (QWebEngineHistoryItem item, items) {
         QVERIFY(!item.isValid());
-        QCOMPARE(item.originalUrl(), QUrl());
-        QCOMPARE(item.url(), QUrl());
-        QCOMPARE(item.title(), QString());
-        QCOMPARE(item.lastVisited(), QDateTime());
+        QTRY_COMPARE(item.originalUrl(), QUrl());
+        QTRY_COMPARE(item.url(), QUrl());
+        QTRY_COMPARE(item.title(), QString());
+        QTRY_COMPARE(item.lastVisited(), QDateTime());
     }
 }
 

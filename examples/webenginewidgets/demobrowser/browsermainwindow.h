@@ -56,9 +56,7 @@
 #include <QtCore/QUrl>
 
 QT_BEGIN_NAMESPACE
-#ifndef QT_NO_PRINTER
 class QPrinter;
-#endif
 class QWebEnginePage;
 QT_END_NAMESPACE
 
@@ -142,10 +140,8 @@ private slots:
     void slotSwapFocus();
     void slotHandlePdfPrinted(const QByteArray&);
 
-#ifndef QT_NO_PRINTER
     void slotHandlePagePrinted(bool result);
     void printRequested(QWebEnginePage *page);
-#endif
     void geometryChangeRequested(const QRect &geometry);
     void updateToolbarActionText(bool visible);
     void updateBookmarksToolbarActionText(bool visible);
@@ -180,9 +176,7 @@ private:
     QAction *m_restoreLastSession;
     QAction *m_addBookmark;
 
-#ifndef QT_NO_PRINTER
     QPrinter *m_currentPrinter;
-#endif
 
     QIcon m_reloadIcon;
     QIcon m_stopIcon;

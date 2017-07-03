@@ -139,10 +139,15 @@ content::ContentRendererClient *ContentMainDelegateQt::CreateContentRendererClie
 {
 #if defined(OS_LINUX)
     base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
+    std::string process_type = parsedCommandLine->GetSwitchValueASCII(switches::kProcessType);
+    bool no_sandbox = parsedCommandLine->HasSwitch(switches::kNoSandbox);
 
-    if (parsedCommandLine->HasSwitch(switches::kLang)) {
-        const std::string &locale = parsedCommandLine->GetSwitchValueASCII(switches::kLang);
-        ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(locale);
+    // Reload locale if the renderer process is sandboxed
+    if (process_type == switches::kRendererProcess && !no_sandbox) {
+        if (parsedCommandLine->HasSwitch(switches::kLang)) {
+            const std::string &locale = parsedCommandLine->GetSwitchValueASCII(switches::kLang);
+            ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(locale);
+        }
     }
 #endif
 

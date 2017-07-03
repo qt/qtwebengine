@@ -4,8 +4,9 @@ TEMPLATE = aux
 # Pick up the host toolchain
 option(host_build)
 
-GN_HOST_CPU = $$gnArch($$QMAKE_HOST.arch)
-GN_TARGET_CPU = $$gnArch($$WEBENGINE_ARCH)
+GN_HOST_CPU = $$gnArch($$QT_ARCH)
+!isEmpty(QT_TARGET_ARCH): GN_TARGET_CPU = $$gnArch($$QT_TARGET_ARCH)
+else: GN_TARGET_CPU = $$GN_HOST_CPU
 GN_OS = $$gnOS()
 
 clang: GN_CLANG = true
@@ -15,11 +16,11 @@ use_gold_linker: GN_USE_GOLD=true
 else: GN_USE_GOLD=false
 
 GN_V8_HOST_CPU = $$GN_HOST_CPU
-contains(GN_TARGET_CPU, "arm")|contains(GN_TARGET_CPU, "mips")|contains(GN_TARGET_CPU, "x86") {
+contains(GN_TARGET_CPU, "arm")|contains(GN_TARGET_CPU, "mipsel")|contains(GN_TARGET_CPU, "x86") {
     # The v8 snapshot need a host that matches bitwidth, so we build makesnapshot to 32-bit variants of host.
     contains(GN_V8_HOST_CPU, x64): GN_V8_HOST_CPU = "x86"
     else: contains(GN_V8_HOST_CPU, arm64): GN_V8_HOST_CPU = "arm"
-    else: contains(GN_V8_HOST_CPU, mips64): GN_V8_HOST_CPU = "mips"
+    else: contains(GN_V8_HOST_CPU, mips64el): GN_V8_HOST_CPU = "mipsel"
 }
 
 # We always use the gcc_toolchain, because clang_toolchain is just

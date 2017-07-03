@@ -942,10 +942,17 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
     case Qt::ImFont:
         // TODO: Implement this
         return QVariant();
-    case Qt::ImCursorRectangle:
-        if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
-            return QVariant();
-        return toQt(text_input_manager_->GetSelectionRegion()->caret_rect);
+    case Qt::ImCursorRectangle: {
+        if (text_input_manager_) {
+            if (auto *region = text_input_manager_->GetSelectionRegion()) {
+                gfx::Rect caretRect = gfx::RectBetweenSelectionBounds(region->anchor, region->focus);
+                if (caretRect.width() == 0)
+                    caretRect.set_width(1); // IME API on Windows expects a width > 0
+                return toQt(caretRect);
+            }
+        }
+        return QVariant();
+    }
     case Qt::ImCursorPosition:
         return m_cursorPosition;
     case Qt::ImAnchorPosition:
@@ -1253,7 +1260,6 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         // to the same focused object, and cancelling the composition on the next event loop tick.
         if (!m_receivedEmptyImeText && m_imeInProgress && !hasSelection) {
             m_receivedEmptyImeText = true;
-            m_imeInProgress = false;
             QInputMethodEvent *eventCopy = new QInputMethodEvent(*ev);
             QGuiApplication::postEvent(qApp->focusObject(), eventCopy);
         } else {

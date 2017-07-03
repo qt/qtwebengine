@@ -139,7 +139,7 @@
 
     \printto defaultTextFile
 
-    The menu items are connected to the mapping member slots. The
+    The menu items are connected to the corresponding member slots. The
     \uicontrol Save item is activated or deactivated depending on whether
     the user has edited the content.
 
