@@ -499,14 +499,45 @@ void WebContentsDelegateQt::requestGeolocationPermission(const QUrl &requestingO
 
 extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition);
 
-void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame)
+void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture)
 {
-    int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
-    m_viewClient->navigationRequested(pageTransitionToNavigationType(page_transition), url, navigationRequestAction, is_main_frame);
+    WebEngineSettings *settings = m_viewClient->webEngineSettings();
+    bool navigationAllowedByPolicy = false;
+    bool navigationRequestAccepted = true;
+
+    switch (settings->unknownUrlSchemePolicy()) {
+    case WebEngineSettings::DisallowUnknownUrlSchemes:
+        break;
+    case WebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction:
+        navigationAllowedByPolicy = has_user_gesture;
+        break;
+    case WebEngineSettings::AllowAllUnknownUrlSchemes:
+        navigationAllowedByPolicy = true;
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+
+    if (navigationAllowedByPolicy) {
+        int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
+        m_viewClient->navigationRequested(pageTransitionToNavigationType(page_transition), url, navigationRequestAction, is_main_frame);
+        navigationRequestAccepted = navigationRequestAction == WebContentsAdapterClient::AcceptRequest;
 #ifndef QT_NO_DESKTOPSERVICES
-    if (navigationRequestAction == WebContentsAdapterClient::AcceptRequest)
-        QDesktopServices::openUrl(url);
+        if (navigationRequestAccepted)
+            QDesktopServices::openUrl(url);
 #endif
+    }
+
+    if (!navigationAllowedByPolicy || !navigationRequestAccepted) {
+        if (!navigationAllowedByPolicy)
+            didFailLoad(url, 420, QStringLiteral("Launching external protocol forbidden by WebEngineSettings::UnknownUrlSchemePolicy"));
+        else
+            didFailLoad(url, 420, QStringLiteral("Launching external protocol suppressed by WebContentsAdapterClient::navigationRequested"));
+        if (settings->testAttribute(WebEngineSettings::ErrorPageEnabled)) {
+            EmitLoadStarted(toQt(GURL(content::kUnreachableWebDataURL)), true);
+            m_viewClient->webContentsAdapter()->load(toQt(GURL(content::kUnreachableWebDataURL)));
+        }
+    }
 }
 
 void WebContentsDelegateQt::ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text)

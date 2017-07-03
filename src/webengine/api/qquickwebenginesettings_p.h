@@ -88,8 +88,17 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool allowGeolocationOnInsecureOrigins READ allowGeolocationOnInsecureOrigins WRITE setAllowGeolocationOnInsecureOrigins NOTIFY allowGeolocationOnInsecureOriginsChanged REVISION 4 FINAL)
     Q_PROPERTY(bool allowWindowActivationFromJavaScript READ allowWindowActivationFromJavaScript WRITE setAllowWindowActivationFromJavaScript NOTIFY allowWindowActivationFromJavaScriptChanged REVISION 5 FINAL)
     Q_PROPERTY(bool hideScrollbars READ hideScrollbars WRITE setHideScrollbars NOTIFY hideScrollbarsChanged REVISION 5 FINAL)
+    Q_PROPERTY(UnknownUrlSchemePolicy unknownUrlSchemePolicy READ unknownUrlSchemePolicy WRITE setUnknownUrlSchemePolicy NOTIFY unknownUrlSchemePolicyChanged REVISION 5 FINAL)
 
 public:
+    enum UnknownUrlSchemePolicy {
+        DisallowUnknownUrlSchemes = 1,
+        AllowUnknownUrlSchemesFromUserInteraction,
+        AllowAllUnknownUrlSchemes
+    };
+
+    Q_ENUM(UnknownUrlSchemePolicy)
+
     ~QQuickWebEngineSettings();
 
     bool autoLoadImages() const;
@@ -117,6 +126,7 @@ public:
     bool allowGeolocationOnInsecureOrigins() const;
     bool allowWindowActivationFromJavaScript() const;
     bool hideScrollbars() const;
+    UnknownUrlSchemePolicy unknownUrlSchemePolicy() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -143,6 +153,7 @@ public:
     void setAllowGeolocationOnInsecureOrigins(bool on);
     void setAllowWindowActivationFromJavaScript(bool on);
     void setHideScrollbars(bool on);
+    void setUnknownUrlSchemePolicy(UnknownUrlSchemePolicy policy);
 
 signals:
     void autoLoadImagesChanged();
@@ -170,6 +181,7 @@ signals:
     Q_REVISION(4) void allowGeolocationOnInsecureOriginsChanged();
     Q_REVISION(5) void allowWindowActivationFromJavaScriptChanged();
     Q_REVISION(5) void hideScrollbarsChanged();
+    Q_REVISION(5) void unknownUrlSchemePolicyChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);

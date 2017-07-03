@@ -138,7 +138,7 @@ void ResourceDispatcherHostLoginDelegateQt::destroy()
 
 static void LaunchURL(const GURL& url, int render_process_id,
                       const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-                      ui::PageTransition page_transition, bool is_main_frame)
+                      ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture)
 {
     Q_UNUSED(render_process_id);
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -146,16 +146,13 @@ static void LaunchURL(const GURL& url, int render_process_id,
     if (!webContents)
         return;
     WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
-    contentsDelegate->launchExternalURL(toQt(url), page_transition, is_main_frame);
+    contentsDelegate->launchExternalURL(toQt(url), page_transition, is_main_frame, has_user_gesture);
 }
 
 
 bool ResourceDispatcherHostDelegateQt::HandleExternalProtocol(const GURL& url, content::ResourceRequestInfo* info)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    // We don't want to launch external applications unless it is based on a user action
-    if (!info->HasUserGesture())
-        return false;
 
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
@@ -164,7 +161,8 @@ bool ResourceDispatcherHostDelegateQt::HandleExternalProtocol(const GURL& url, c
                    info->GetChildID(),
                    info->GetWebContentsGetterForRequest(),
                    info->GetPageTransition(),
-                   info->IsMainFrame())
+                   info->IsMainFrame(),
+                   info->HasUserGesture())
     );
     return true;
 }

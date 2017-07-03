@@ -101,6 +101,12 @@ public:
         DefaultFixedFontSize
     };
 
+    enum UnknownUrlSchemePolicy {
+        DisallowUnknownUrlSchemes = 1,
+        AllowUnknownUrlSchemesFromUserInteraction,
+        AllowAllUnknownUrlSchemes
+    };
+
 #if QT_DEPRECATED_SINCE(5, 5)
     static QWebEngineSettings *globalSettings();
 #endif
@@ -120,6 +126,10 @@ public:
 
     void setDefaultTextEncoding(const QString &encoding);
     QString defaultTextEncoding() const;
+
+    UnknownUrlSchemePolicy unknownUrlSchemePolicy() const;
+    void setUnknownUrlSchemePolicy(UnknownUrlSchemePolicy policy);
+    void resetUnknownUrlSchemePolicy();
 
 private:
     Q_DISABLE_COPY(QWebEngineSettings)

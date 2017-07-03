@@ -119,10 +119,11 @@ Module {
             "QtWebEngine/WebEngineDownloadItem 1.2",
             "QtWebEngine/WebEngineDownloadItem 1.3",
             "QtWebEngine/WebEngineDownloadItem 1.4",
-            "QtWebEngine/WebEngineDownloadItem 1.5"
+            "QtWebEngine/WebEngineDownloadItem 1.5",
+            "QtWebEngine/WebEngineDownloadItem 1.6"
         ]
         isCreatable: false
-        exportMetaObjectRevisions: [0, 1, 2, 3, 4]
+        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5]
         Enum {
             name: "DownloadState"
             values: {
@@ -195,12 +196,18 @@ Module {
             isReadonly: true
         }
         Property { name: "interruptReasonString"; revision: 4; type: "string"; isReadonly: true }
+        Property { name: "isFinished"; revision: 5; type: "bool"; isReadonly: true }
+        Property { name: "isPaused"; revision: 5; type: "bool"; isReadonly: true }
         Signal { name: "savePageFormatChanged"; revision: 2 }
         Signal { name: "mimeTypeChanged"; revision: 1 }
         Signal { name: "typeChanged"; revision: 3 }
         Signal { name: "interruptReasonChanged"; revision: 4 }
+        Signal { name: "isFinishedChanged"; revision: 5 }
+        Signal { name: "isPausedChanged"; revision: 5 }
         Method { name: "accept" }
         Method { name: "cancel" }
+        Method { name: "pause" }
+        Method { name: "resume" }
     }
     Component {
         name: "QQuickWebEngineFileDialogRequest"
@@ -514,6 +521,14 @@ Module {
         ]
         isCreatable: false
         exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5]
+        Enum {
+            name: "UnknownUrlSchemePolicy"
+            values: {
+                "DisallowUnknownUrlSchemes": 1,
+                "AllowUnknownUrlSchemesFromUserInteraction": 2,
+                "AllowAllUnknownUrlSchemes": 3
+            }
+        }
         Property { name: "autoLoadImages"; type: "bool" }
         Property { name: "javascriptEnabled"; type: "bool" }
         Property { name: "javascriptCanOpenWindows"; type: "bool" }
@@ -538,6 +553,7 @@ Module {
         Property { name: "allowRunningInsecureContent"; revision: 3; type: "bool" }
         Property { name: "allowGeolocationOnInsecureOrigins"; revision: 4; type: "bool" }
         Property { name: "allowWindowActivationFromJavaScript"; revision: 5; type: "bool" }
+        Property { name: "unknownUrlSchemePolicy"; revision: 5; type: "UnknownUrlSchemePolicy" }
         Signal { name: "fullScreenSupportEnabledChanged"; revision: 1 }
         Signal { name: "screenCaptureEnabledChanged"; revision: 2 }
         Signal { name: "webGLEnabledChanged"; revision: 2 }
@@ -549,6 +565,7 @@ Module {
         Signal { name: "allowRunningInsecureContentChanged"; revision: 3 }
         Signal { name: "allowGeolocationOnInsecureOriginsChanged"; revision: 4 }
         Signal { name: "allowWindowActivationFromJavaScriptChanged"; revision: 5 }
+        Signal { name: "unknownUrlSchemePolicyChanged"; revision: 5 }
     }
     Component {
         name: "QQuickWebEngineSingleton"
@@ -892,7 +909,6 @@ Module {
         Property { name: "audioMuted"; revision: 3; type: "bool" }
         Property { name: "recentlyAudible"; revision: 3; type: "bool"; isReadonly: true }
         Property { name: "webChannelWorld"; revision: 3; type: "uint" }
-        Property { name: "testSupport"; type: "QQuickWebEngineTestSupport"; isPointer: true }
         Signal {
             name: "loadingChanged"
             Parameter { name: "loadRequest"; type: "QQuickWebEngineLoadRequest"; isPointer: true }

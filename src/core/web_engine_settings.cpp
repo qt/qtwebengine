@@ -110,6 +110,7 @@ WebEngineSettings::WebEngineSettings(WebEngineSettings *_parentSettings)
     : m_adapter(0)
     , m_batchTimer(new BatchTimer(this))
     , parentSettings(_parentSettings)
+    , m_unknownUrlSchemePolicy(WebEngineSettings::InheritedUnknownUrlSchemePolicy)
 {
     if (parentSettings)
         parentSettings->childSettings.insert(this);
@@ -212,6 +213,22 @@ QString WebEngineSettings::defaultTextEncoding() const
     return m_defaultEncoding.isEmpty()? parentSettings->defaultTextEncoding() : m_defaultEncoding;
 }
 
+void WebEngineSettings::setUnknownUrlSchemePolicy(WebEngineSettings::UnknownUrlSchemePolicy policy)
+{
+    m_unknownUrlSchemePolicy = policy;
+}
+
+WebEngineSettings::UnknownUrlSchemePolicy WebEngineSettings::unknownUrlSchemePolicy() const
+{
+    // value InheritedUnknownUrlSchemePolicy means it is taken from parent, if possible. If there
+    // is no parent, then AllowUnknownUrlSchemesFromUserInteraction (the default behavior) is used.
+    if (m_unknownUrlSchemePolicy != InheritedUnknownUrlSchemePolicy)
+        return m_unknownUrlSchemePolicy;
+    if (parentSettings)
+        return parentSettings->unknownUrlSchemePolicy();
+    return AllowUnknownUrlSchemesFromUserInteraction;
+}
+
 void WebEngineSettings::initDefaults()
 {
     if (s_defaultAttributes.isEmpty()) {
@@ -284,6 +301,7 @@ void WebEngineSettings::initDefaults()
     }
 
     m_defaultEncoding = QStringLiteral("ISO-8859-1");
+    m_unknownUrlSchemePolicy = InheritedUnknownUrlSchemePolicy;
 }
 
 void WebEngineSettings::scheduleApply()

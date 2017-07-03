@@ -19,6 +19,8 @@
 
 #include <QtTest/QtTest>
 
+#include <qwebengineview.h>
+#include <qwebenginepage.h>
 #include <qwebengineprofile.h>
 #include <qwebenginesettings.h>
 
@@ -29,6 +31,7 @@ private Q_SLOTS:
     void resetAttributes();
     void defaultFontFamily_data();
     void defaultFontFamily();
+    void unknownUrlSchemePolicy();
 };
 
 void tst_QWebEngineSettings::resetAttributes()
@@ -83,6 +86,72 @@ void tst_QWebEngineSettings::defaultFontFamily()
 
     QFETCH(int, fontFamily);
     QVERIFY(!settings->fontFamily(static_cast<QWebEngineSettings::FontFamily>(fontFamily)).isEmpty());
+}
+
+
+class AcceptNavigationRequestHandler : public QWebEnginePage
+{
+public:
+    AcceptNavigationRequestHandler(QObject* parent = nullptr)
+        : QWebEnginePage(parent)
+    {
+    }
+    int acceptNavigationRequestCalls = 0;
+    bool acceptNavigationRequest(const QUrl &/*url*/, NavigationType /*type*/, bool /*isMainFrame*/) override
+    {
+        this->acceptNavigationRequestCalls++;
+        return false;
+    }
+};
+
+void tst_QWebEngineSettings::unknownUrlSchemePolicy()
+{
+    QWebEngineView view;
+    AcceptNavigationRequestHandler page;
+    view.setPage(&page);
+    view.resize(400, 40);
+    view.show();
+    QTest::qWaitForWindowExposed(&view);
+    QWebEngineSettings *settings = view.page()->profile()->settings();
+    settings->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+    QSignalSpy loadFinishedSpy(&view, &QWebEngineView::loadFinished);
+
+    QWebEngineSettings::UnknownUrlSchemePolicy policies[6] = {QWebEngineSettings::DisallowUnknownUrlSchemes,
+                                                              QWebEngineSettings::DisallowUnknownUrlSchemes,
+                                                              QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction,
+                                                              QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction,
+                                                              QWebEngineSettings::AllowAllUnknownUrlSchemes,
+                                                              QWebEngineSettings::AllowAllUnknownUrlSchemes};
+    // even iterations are for navigation-requests from javascript,
+    // odd iterations are for navigations-requests from user-interaction
+    for (int i = 0; i < 8; i++) {
+        if (i <= 5)
+            settings->setUnknownUrlSchemePolicy(policies[i]);
+        else
+            settings->resetUnknownUrlSchemePolicy();
+        loadFinishedSpy.clear();
+        page.acceptNavigationRequestCalls = 0;
+        bool shouldAccept;
+
+        if (i % 2 == 0) { // navigation request coming from javascript
+            shouldAccept = (4 <= i && i <= 5); // only case AllowAllUnknownUrlSchemes
+            view.setHtml("<html><script>setTimeout(function(){ window.location.href='nonexistentscheme://somewhere'; }, 10);</script><body>testing...</body></html>");
+        } else { // navigation request coming from user interaction
+            shouldAccept = (2 <= i); // all cases except DisallowUnknownUrlSchemes
+            view.setHtml("<html><body><a id='nonexlink' href='nonexistentscheme://somewhere'>nonexistentscheme://somewhere</a></body></html>");
+            QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 30000);
+            // focus and trigger the link
+            view.page()->runJavaScript("document.getElementById('nonexlink').focus();", [&view](const QVariant &result) {
+                Q_UNUSED(result);
+                QTest::sendKeyEvent(QTest::Press, view.focusProxy(), Qt::Key_Return, QString("\r"), Qt::NoModifier);
+                QTest::sendKeyEvent(QTest::Release, view.focusProxy(), Qt::Key_Return, QString("\r"), Qt::NoModifier);
+            });
+        }
+
+        bool errorPageEnabled = settings->testAttribute(QWebEngineSettings::ErrorPageEnabled);
+        QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 2 + (errorPageEnabled ? 1 : 0), 30000);
+        QCOMPARE(page.acceptNavigationRequestCalls, shouldAccept ? 1 : 0);
+    }
 }
 
 QTEST_MAIN(tst_QWebEngineSettings)

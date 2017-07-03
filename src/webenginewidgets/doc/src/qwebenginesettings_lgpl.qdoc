@@ -168,7 +168,22 @@
     \value  HideScrollbars
             Hides scrollbars.
             Disabled by default. (Added in Qt 5.10)
+*/
 
+/*!
+    \enum QWebEngineSettings::UnknownUrlSchemePolicy
+    \since Qt 5.10
+
+    This enum describes how navigation requests to URLs with unknown schemes are handled.
+
+    \value DisallowUnknownUrlSchemes
+           Disallows all navigation requests to URLs with unknown schemes.
+    \value AllowUnknownUrlSchemesFromUserInteraction
+           Allows navigation requests to URLs with unknown schemes that are issued from
+           user-interaction (like a mouse-click), whereas other navigation requests (for example
+           from JavaScript) are suppressed.
+    \value AllowAllUnknownUrlSchemes
+           Allows all navigation requests to URLs with unknown schemes.
 */
 
 /*!
@@ -221,6 +236,26 @@
     \fn void QWebEngineSettings::resetFontFamily(FontFamily which)
     Resets the actual font family specified by \a which to the one specified
     in the profile that the page belongs to.
+*/
+
+/*!
+    \fn QWebEngineSettings::UnknownUrlSchemePolicy QWebEngineSettings::unknownUrlSchemePolicy() const
+    Returns the currently selected policy for handling navigation requests to URLs with
+    unknown schemes. Default is \l{QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction}.
+    \sa setUnknownUrlSchemePolicy resetUnknownUrlSchemePolicy
+*/
+
+/*!
+    \fn void QWebEngineSettings::setUnknownUrlSchemePolicy(QWebEngineSettings::UnknownUrlSchemePolicy policy)
+    Sets the policy for handling navigation requests to URLs with unknown schemes to \a policy.
+    Default is \l{QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction}.
+    \sa unknownUrlSchemePolicy resetUnknownUrlSchemePolicy
+*/
+
+/*!
+    \fn void QWebEngineSettings::resetUnknownUrlSchemePolicy()
+    Removes the policy for handling navigation requests to URLs with unknown schemes.
+    \sa unknownUrlSchemePolicy setUnknownUrlSchemePolicy
 */
 
 /*!

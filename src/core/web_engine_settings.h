@@ -107,6 +107,14 @@ public:
         DefaultFixedFontSize
     };
 
+    // Must match the values from the public API in qwebenginesettings.h.
+    enum UnknownUrlSchemePolicy {
+        InheritedUnknownUrlSchemePolicy = 0,
+        DisallowUnknownUrlSchemes = 1,
+        AllowUnknownUrlSchemesFromUserInteraction,
+        AllowAllUnknownUrlSchemes
+    };
+
     explicit WebEngineSettings(WebEngineSettings *parentSettings = 0);
     ~WebEngineSettings();
 
@@ -128,6 +136,9 @@ public:
 
     void setDefaultTextEncoding(const QString &encoding);
     QString defaultTextEncoding() const;
+
+    void setUnknownUrlSchemePolicy(UnknownUrlSchemePolicy policy);
+    UnknownUrlSchemePolicy unknownUrlSchemePolicy() const;
 
     void initDefaults();
     void scheduleApply();
@@ -155,6 +166,7 @@ private:
     static QHash<Attribute, bool> s_defaultAttributes;
     static QHash<FontFamily, QString> s_defaultFontFamilies;
     static QHash<FontSize, int> s_defaultFontSizes;
+    UnknownUrlSchemePolicy m_unknownUrlSchemePolicy;
 
     friend class BatchTimer;
     friend class WebContentsAdapter;

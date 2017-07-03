@@ -182,7 +182,6 @@ void QWebEngineSettings::resetFontSize(QWebEngineSettings::FontSize type)
     d->resetFontSize(static_cast<WebEngineSettings::FontSize>(type));
 }
 
-
 void QWebEngineSettings::setDefaultTextEncoding(const QString &encoding)
 {
     Q_D(QWebEngineSettings);
@@ -193,6 +192,30 @@ QString QWebEngineSettings::defaultTextEncoding() const
 {
     Q_D(const QWebEngineSettings);
     return d->defaultTextEncoding();
+}
+
+ASSERT_ENUMS_MATCH(WebEngineSettings::DisallowUnknownUrlSchemes, QWebEngineSettings::DisallowUnknownUrlSchemes)
+ASSERT_ENUMS_MATCH(WebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction, QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction)
+ASSERT_ENUMS_MATCH(WebEngineSettings::AllowAllUnknownUrlSchemes, QWebEngineSettings::AllowAllUnknownUrlSchemes)
+
+QWebEngineSettings::UnknownUrlSchemePolicy QWebEngineSettings::unknownUrlSchemePolicy() const
+{
+    Q_D(const QWebEngineSettings);
+    WebEngineSettings::UnknownUrlSchemePolicy result = d->unknownUrlSchemePolicy();
+    Q_ASSERT(result != WebEngineSettings::InheritedUnknownUrlSchemePolicy);
+    return static_cast<QWebEngineSettings::UnknownUrlSchemePolicy>(result);
+}
+
+void QWebEngineSettings::setUnknownUrlSchemePolicy(QWebEngineSettings::UnknownUrlSchemePolicy policy)
+{
+    Q_D(QWebEngineSettings);
+    d->setUnknownUrlSchemePolicy(static_cast<WebEngineSettings::UnknownUrlSchemePolicy>(policy));
+}
+
+void QWebEngineSettings::resetUnknownUrlSchemePolicy()
+{
+    Q_D(QWebEngineSettings);
+    d->setUnknownUrlSchemePolicy(WebEngineSettings::InheritedUnknownUrlSchemePolicy);
 }
 
 void QWebEngineSettings::setAttribute(QWebEngineSettings::WebAttribute attr, bool on)
