@@ -21,7 +21,8 @@ FORMS += \
     mainwindow.ui
 
 DISTFILES += \
-    3RDPARTY.md
+    resources/3rdparty/MARKDOWN-LICENSE.txt \
+    resources/3rdparty/MARKED-LICENSE.txt
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/webenginewidgets/markdowneditor
