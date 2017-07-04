@@ -98,6 +98,7 @@
             "label": "Python 2",
             "condition": "tests.python2",
             "output": [
+                "privateFeature",
                 { "type": "varAssign", "name": "QMAKE_PYTHON2", "value": "tests.python2.location" }
             ]
         },

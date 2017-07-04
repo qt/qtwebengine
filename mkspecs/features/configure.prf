@@ -36,6 +36,10 @@ defineTest(runConfigure) {
             skipBuild("Required flex could not be found.")
             return(false)
         }
+        !qtConfig(python2) {
+            skipBuild("A suitable version of python2 could not be found.")
+            return(false)
+        }
 
         qtConfig(pepper-plugins): WEBENGINE_CONFIG += use_pepper_plugins
         qtConfig(printing-and-pdf): WEBENGINE_CONFIG += use_printing use_pdf
