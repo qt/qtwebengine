@@ -46,8 +46,13 @@ use?(webrtc) {
 use?(proprietary_codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
 
 CONFIG(release, debug|release) {
-    force_debug_info: gn_args += symbol_level=1
-    else: gn_args += symbol_level=0
+    force_debug_info {
+        # Level 1 is not enough to generate all Chromium debug symbols on Windows
+        msvc: gn_args += symbol_level=2
+        else: gn_args += symbol_level=1
+    } else {
+        gn_args += symbol_level=0
+    }
 }
 
 !webcore_debug: gn_args += remove_webcore_debug_symbols=true
