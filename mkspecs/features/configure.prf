@@ -24,6 +24,19 @@ defineTest(runConfigure) {
         include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
         QT_FOR_CONFIG += webengine-private
 
+        !qtConfig(gperf) {
+            skipBuild("Required gperf could not be found.")
+            return(false)
+        }
+        !qtConfig(bison) {
+            skipBuild("Required bison could not be found.")
+            return(false)
+        }
+        !qtConfig(flex) {
+            skipBuild("Required flex could not be found.")
+            return(false)
+        }
+
         qtConfig(pepper-plugins): WEBENGINE_CONFIG += use_pepper_plugins
         qtConfig(printing-and-pdf): WEBENGINE_CONFIG += use_printing use_pdf
         qtConfig(proprietary-codecs): WEBENGINE_CONFIG += use_proprietary_codecs

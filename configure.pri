@@ -41,6 +41,36 @@ defineTest(qtConfTest_detectPython2) {
     return(true)
 }
 
+defineTest(qtConfTest_detectGperf) {
+    gperf = $$qtConfFindInPath("gperf$$EXE_SUFFIX")
+    isEmpty(gperf) {
+        qtLog("Required gperf could not be found.")
+        return(false)
+    }
+    qtLog("Found gperf from path: $$gperf")
+    return(true)
+}
+
+defineTest(qtConfTest_detectBison) {
+    bison = $$qtConfFindInPath("bison$$EXE_SUFFIX")
+    isEmpty(bison) {
+        qtLog("Required bison could not be found.")
+        return(false)
+    }
+    qtLog("Found bison from path: $$bison")
+    return(true)
+}
+
+defineTest(qtConfTest_detectFlex) {
+    flex = $$qtConfFindInPath("flex$$EXE_SUFFIX")
+    isEmpty(flex) {
+        qtLog("Required flex could not be found.")
+        return(false)
+    }
+    qtLog("Found flex from path: $$flex")
+    return(true)
+}
+
 defineTest(qtConfTest_detectNinja) {
     ninja = $$qtConfFindInPath("ninja$$EXE_SUFFIX")
     !isEmpty(ninja) {

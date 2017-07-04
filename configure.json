@@ -67,6 +67,18 @@
             "type": "detectPython2",
             "log": "location"
         },
+        "gperf": {
+            "label": "gperf",
+            "type": "detectGperf"
+        },
+        "bison": {
+            "label": "bison",
+            "type": "detectBison"
+        },
+        "flex": {
+            "label": "flex",
+            "type": "detectFlex"
+        },
         "ninja": {
             "label": "system ninja",
             "type": "detectNinja"
@@ -88,6 +100,21 @@
             "output": [
                 { "type": "varAssign", "name": "QMAKE_PYTHON2", "value": "tests.python2.location" }
             ]
+        },
+        "gperf": {
+            "label": "gperf",
+            "condition": "tests.gperf",
+            "output": [ "privateFeature" ]
+        },
+        "bison": {
+            "label": "bison",
+            "condition": "tests.bison",
+            "output": [ "privateFeature" ]
+        },
+        "flex": {
+            "label": "flex",
+            "condition": "tests.flex",
+            "output": [ "privateFeature" ]
         },
         "embedded": {
             "label": "Embedded build",
@@ -185,6 +212,21 @@
             "type": "warning",
             "condition": "!features.python2",
             "message": "Python version 2 (2.7.5 or later) is required to build QtWebEngine."
+        },
+        {
+            "type": "warning",
+            "condition": "!features.gperf",
+            "message": "gperf is required to build QtWebEngine."
+        },
+        {
+            "type": "warning",
+            "condition": "!features.bison",
+            "message": "bison is required to build QtWebEngine."
+        },
+        {
+            "type": "warning",
+            "condition": "!features.flex",
+            "message": "flex is required to build QtWebEngine."
         }
     ],
 
