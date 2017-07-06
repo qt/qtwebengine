@@ -43,7 +43,7 @@
     screen mode by using a toolbar button. They can leave fullscreen mode by using a keyboard
     shortcut. Additional toolbar buttons enable moving backwards and forwards in the browser
     history, reloading tab content, and opening a settings menu for enabling the following features:
-    JavaScript, plugins, fullscreen mode, off the record, HTTP disc cache, autoloading images, and
+    JavaScript, plugins, fullscreen mode, off the record, HTTP disk cache, autoloading images, and
     ignoring certificate errors.
 
     \include examples-run.qdocinc

@@ -146,10 +146,6 @@ defineTest(runConfigure) {
             cache(WEBENGINE_CONFIG, add, $$list($$WEBENGINE_CONFIG))
             export(WEBENGINE_CONFIG)
         }
-        # Set a global WEBENGINE_ARCH for the target architecture we can also read from option(host_build)
-        WEBENGINE_ARCH = $$QT_ARCH
-        cache(WEBENGINE_ARCH)
-        export(WEBENGINE_ARCH)
     }
 
     unix:!darwin {

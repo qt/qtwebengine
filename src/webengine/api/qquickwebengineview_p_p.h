@@ -107,7 +107,7 @@ public:
     virtual void loadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void unhandledKeyEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
-    virtual void adoptNewWindow(QSharedPointer<QtWebEngineCore::WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &) Q_DECL_OVERRIDE;
+    virtual void adoptNewWindow(QSharedPointer<QtWebEngineCore::WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &, const QUrl &targetUrl) Q_DECL_OVERRIDE;
     virtual bool isBeingAdopted() Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
     virtual void windowCloseRejected() Q_DECL_OVERRIDE;
@@ -129,9 +129,7 @@ public:
     virtual void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) Q_DECL_OVERRIDE;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) Q_DECL_OVERRIDE;
-#ifndef QT_NO_ACCESSIBILITY
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
-#endif // QT_NO_ACCESSIBILITY
     virtual QtWebEngineCore::WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) Q_DECL_OVERRIDE;
     virtual void runGeolocationPermissionRequest(QUrl const&) Q_DECL_OVERRIDE;

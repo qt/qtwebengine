@@ -124,9 +124,9 @@ QWebEngineSettings *QWebEngineSettings::globalSettings()
 #endif
 
 /*!
-    Returns the default settings for the web engine page.
-
-    \sa globalSettings()
+    Returns the settings for a web engine page that belongs to the default
+    profile. All web pages not specifically created with another profile belong
+    to the default profile.
 */
 QWebEngineSettings *QWebEngineSettings::defaultSettings()
 {

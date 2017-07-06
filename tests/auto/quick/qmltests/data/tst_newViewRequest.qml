@@ -28,7 +28,7 @@
 
 import QtQuick 2.0
 import QtTest 1.0
-import QtWebEngine 1.2
+import QtWebEngine 1.5
 
 TestWebEngineView {
     id: webEngineView
@@ -47,7 +47,8 @@ TestWebEngineView {
     onNewViewRequested: {
         newViewRequest = {
             "destination": request.destination,
-            "userInitiated": request.userInitiated
+            "userInitiated": request.userInitiated,
+            "requestedUrl": request.requestedUrl
         };
 
         dialog = Qt.createQmlObject(
@@ -81,6 +82,8 @@ TestWebEngineView {
         }
 
         function test_jsWindowOpen() {
+            var url = 'data:text/html,%3Chtml%3E%3Cbody%3ETest+Page%3C%2Fbody%3E%3C%2Fhtml%3E';
+
             // Open an empty page in a new tab
             webEngineView.loadHtml(
                 "<html><head><script>" +
@@ -95,28 +98,30 @@ TestWebEngineView {
 
             verify(dialog.webEngineView.waitForLoadSucceeded());
             compare(dialog.webEngineView.url, "");
+            compare(newViewRequest.requestedUrl, 'about:blank');
             newViewRequestedSpy.clear();
             dialog.destroy();
 
-            // Open an empty page in a new dialog
+            // Open a page in a new dialog
             webEngineView.loadHtml(
                 "<html><head><script>" +
-                "   function popup() { window.open('', '_blank', 'width=200,height=100'); }" +
+                "   function popup() { window.open('" + url + "', '_blank', 'width=200,height=100'); }" +
                 "</script></head>" +
                 "<body onload='popup()'></body></html>");
             verify(webEngineView.waitForLoadSucceeded());
             tryCompare(newViewRequestedSpy, "count", 1);
 
             compare(newViewRequest.destination, WebEngineView.NewViewInDialog);
+            compare(newViewRequest.requestedUrl, url);
             verify(!newViewRequest.userInitiated);
             verify(dialog.webEngineView.waitForLoadSucceeded());
             newViewRequestedSpy.clear();
             dialog.destroy();
 
-            // Open an empty page in a new dialog by user
+            // Open a page in a new dialog by user
             webEngineView.loadHtml(
                 "<html><head><script>" +
-                "   function popup() { window.open('', '_blank', 'width=200,height=100'); }" +
+                "   function popup() { window.open('" + url + "', '_blank', 'width=200,height=100'); }" +
                 "</script></head>" +
                 "<body onload=\"document.getElementById('popupButton').focus();\">" +
                 "   <button id='popupButton' onclick='popup()'>Pop Up!</button>" +
@@ -124,6 +129,7 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded());
             verifyElementHasFocus("popupButton");
             keyPress(Qt.Key_Enter);
+            compare(newViewRequest.requestedUrl, url);
             tryCompare(newViewRequestedSpy, "count", 1);
 
             compare(newViewRequest.destination, WebEngineView.NewViewInDialog);

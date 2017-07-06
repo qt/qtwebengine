@@ -63,8 +63,9 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/user_prefs/user_prefs.h"
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-#include "chrome/common/pref_names.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
+#include "chrome/common/pref_names.h"
+#include "components/spellcheck/browser/pref_names.h"
 #endif
 
 namespace QtWebEngineCore {
@@ -80,12 +81,11 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     // Initial spellcheck settings
-    registry->RegisterListPref(prefs::kSpellCheckDictionaries, new base::ListValue());
     registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
-    registry->RegisterStringPref(prefs::kSpellCheckDictionary, std::string());
-    registry->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService, false);
-    registry->RegisterBooleanPref(prefs::kEnableContinuousSpellcheck, false);
-    registry->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect, false);
+    registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries, new base::ListValue());
+    registry->RegisterStringPref(spellcheck::prefs::kSpellCheckDictionary, std::string());
+    registry->RegisterBooleanPref(spellcheck::prefs::kEnableSpellcheck, false);
+    registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
 #endif //ENABLE_SPELLCHECK
     m_prefService = factory.Create(std::move(registry.get()));
     user_prefs::UserPrefs::Set(this, m_prefService.get());
@@ -216,7 +216,7 @@ void BrowserContextQt::failedToLoadDictionary(const std::string &language)
 void BrowserContextQt::setSpellCheckLanguages(const QStringList &languages)
 {
     StringListPrefMember dictionaries_pref;
-    dictionaries_pref.Init(prefs::kSpellCheckDictionaries, m_prefService.get());
+    dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries, m_prefService.get());
     std::vector<std::string> dictionaries;
     dictionaries.reserve(languages.size());
     for (const auto &language : languages)
@@ -227,7 +227,7 @@ void BrowserContextQt::setSpellCheckLanguages(const QStringList &languages)
 QStringList BrowserContextQt::spellCheckLanguages() const
 {
     QStringList spellcheck_dictionaries;
-    for (const auto &value : *m_prefService->GetList(prefs::kSpellCheckDictionaries)) {
+    for (const auto &value : *m_prefService->GetList(spellcheck::prefs::kSpellCheckDictionaries)) {
         std::string dictionary;
         if (value->GetAsString(&dictionary))
             spellcheck_dictionaries.append(QString::fromStdString(dictionary));
@@ -238,12 +238,12 @@ QStringList BrowserContextQt::spellCheckLanguages() const
 
 void BrowserContextQt::setSpellCheckEnabled(bool enabled)
 {
-    m_prefService->SetBoolean(prefs::kEnableContinuousSpellcheck, enabled);
+    m_prefService->SetBoolean(spellcheck::prefs::kEnableSpellcheck, enabled);
 }
 
 bool BrowserContextQt::isSpellCheckEnabled() const
 {
-    return m_prefService->GetBoolean(prefs::kEnableContinuousSpellcheck);
+    return m_prefService->GetBoolean(spellcheck::prefs::kEnableSpellcheck);
 }
 #endif //ENABLE_SPELLCHECK
 } // namespace QtWebEngineCore

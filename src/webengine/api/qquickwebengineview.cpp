@@ -591,7 +591,7 @@ void QQuickWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
         q->window()->sendEvent(q->parentItem(), event);
 }
 
-void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &)
+void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &, const QUrl &targetUrl)
 {
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineNewViewRequest request;
@@ -599,8 +599,7 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapte
     // to start loading it and possibly return it to its parent page window.open().
     request.m_adapter = newWebContents;
     request.m_isUserInitiated = userGesture;
-    if (newWebContents)
-        request.m_requestedUrl = newWebContents->requestedUrl();
+    request.m_requestedUrl = targetUrl;
 
     switch (disposition) {
     case WebContentsAdapterClient::NewForegroundTabDisposition:
@@ -716,13 +715,11 @@ void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &secur
     adapter->grantMouseLockPermission(false);
 }
 
-#ifndef QT_NO_ACCESSIBILITY
 QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
 {
     Q_Q(QQuickWebEngineView);
     return q;
 }
-#endif // QT_NO_ACCESSIBILITY
 
 QSharedPointer<BrowserContextAdapter> QQuickWebEngineViewPrivate::browserContextAdapter()
 {
@@ -1102,9 +1099,10 @@ void QQuickWebEngineViewPrivate::didFindText(quint64 requestId, int matchCount)
 
 void QQuickWebEngineViewPrivate::didPrintPage(quint64 requestId, const QByteArray &result)
 {
+    Q_Q(QQuickWebEngineView);
     QJSValue callback = m_callbacks.take(requestId);
     QJSValueList args;
-    args.append(QJSValue(result.data()));
+    args.append(qmlEngine(q)->toScriptValue(result));
     callback.call(args);
 }
 

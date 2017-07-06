@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -28,7 +28,7 @@
 
 import QtQuick 2.0
 import QtTest 1.0
-import QtWebEngine 1.1
+import QtWebEngine 1.5
 
 TestWebEngineView {
     id: webEngineView
@@ -40,6 +40,7 @@ TestWebEngineView {
     property int receivedBytes: 0
     property bool cancelDownload: false
     property var downloadState: []
+    property var downloadInterruptReason: null
 
     SignalSpy {
         id: downLoadRequestedSpy
@@ -55,7 +56,9 @@ TestWebEngineView {
 
     Connections {
         id: downloadItemConnections
+        ignoreUnknownSignals: true
         onStateChanged: downloadState.push(target.state)
+        onInterruptReasonChanged: downloadInterruptReason = target.interruptReason
     }
 
     WebEngineProfile {
@@ -88,6 +91,7 @@ TestWebEngineView {
             cancelDownload = false
             downloadItemConnections.target = null
             downloadState = []
+            downloadInterruptReason = null
         }
 
         function test_downloadRequest() {
@@ -96,6 +100,7 @@ TestWebEngineView {
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
             compare(downloadState[0], WebEngineDownloadItem.DownloadRequested)
+            verify(!downloadInterruptReason)
         }
 
         function test_totalFileLength() {
@@ -104,6 +109,7 @@ TestWebEngineView {
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
             compare(totalBytes, 325)
+            verify(!downloadInterruptReason)
         }
 
         function test_downloadSucceeded() {
@@ -111,10 +117,12 @@ TestWebEngineView {
             webEngineView.url = Qt.resolvedUrl("download.zip")
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
-            compare(downloadState[1], WebEngineDownloadItem.DownloadInProgress)
+            compare(downloadState[0], WebEngineDownloadItem.DownloadRequested)
+            tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadInProgress)
             downloadFinishedSpy.wait()
             compare(totalBytes, receivedBytes)
             tryCompare(downloadState, "2", WebEngineDownloadItem.DownloadCompleted)
+            verify(!downloadInterruptReason)
         }
 
         function test_downloadCancelled() {
@@ -124,7 +132,8 @@ TestWebEngineView {
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
             compare(downloadFinishedSpy.count, 1)
-            compare(downloadState[1], WebEngineDownloadItem.DownloadCancelled)
+            tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadCancelled)
+            tryCompare(webEngineView, "downloadInterruptReason", WebEngineDownloadItem.UserCanceled)
         }
     }
 }

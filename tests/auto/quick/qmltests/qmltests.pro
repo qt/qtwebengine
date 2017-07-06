@@ -58,7 +58,6 @@ OTHER_FILES += \
     $$PWD/data/tst_loadFail.qml \
     $$PWD/data/tst_loadHtml.qml \
     $$PWD/data/tst_loadProgress.qml \
-    $$PWD/data/tst_loadProgressSignal.qml \
     $$PWD/data/tst_loadRecursionCrash.qml \
     $$PWD/data/tst_loadUrl.qml \
     $$PWD/data/tst_navigationHistory.qml \

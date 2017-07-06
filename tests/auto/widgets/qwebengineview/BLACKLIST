@@ -3,3 +3,6 @@ windows
 
 [imeComposition]
 osx
+
+[inputFieldOverridesShortcuts]
+osx

@@ -109,9 +109,7 @@ BrowserMainWindow::BrowserMainWindow(QWidget *parent, Qt::WindowFlags flags)
     , m_historyForward(0)
     , m_stop(0)
     , m_reload(0)
-#ifndef QT_NO_PRINTER
     , m_currentPrinter(nullptr)
-#endif
 {
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
     setAttribute(Qt::WA_DeleteOnClose, true);
@@ -312,9 +310,7 @@ void BrowserMainWindow::setupMenu()
 #if defined(QWEBENGINEPAGE_PRINT)
     fileMenu->addAction(tr("P&rint Preview..."), this, SLOT(slotFilePrintPreview()));
 #endif
-#ifndef QT_NO_PRINTER
     fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
-#endif
     fileMenu->addAction(tr("&Print to PDF..."), this, SLOT(slotFilePrintToPDF()));
     fileMenu->addSeparator();
 
@@ -702,23 +698,19 @@ void BrowserMainWindow::slotFileOpen()
 
 void BrowserMainWindow::slotFilePrintPreview()
 {
-#ifndef QT_NO_PRINTPREVIEWDIALOG
     if (!currentTab())
         return;
     QPrintPreviewDialog *dialog = new QPrintPreviewDialog(this);
     connect(dialog, SIGNAL(paintRequested(QPrinter*)),
             currentTab(), SLOT(print(QPrinter*)));
     dialog->exec();
-#endif
 }
 
 void BrowserMainWindow::slotFilePrint()
 {
-#ifndef QT_NO_PRINTER
     if (!currentTab())
         return;
     printRequested(currentTab()->page());
-#endif
 }
 
 void BrowserMainWindow::slotHandlePdfPrinted(const QByteArray& result)
@@ -751,7 +743,6 @@ void BrowserMainWindow::slotFilePrintToPDF()
     currentTab()->page()->printToPdf(invoke(this, &BrowserMainWindow::slotHandlePdfPrinted), dialog->pageLayout());
 }
 
-#ifndef QT_NO_PRINTER
 void BrowserMainWindow::slotHandlePagePrinted(bool result)
 {
     Q_UNUSED(result);
@@ -763,7 +754,6 @@ void BrowserMainWindow::slotHandlePagePrinted(bool result)
 
 void BrowserMainWindow::printRequested(QWebEnginePage *page)
 {
-#ifndef QT_NO_PRINTDIALOG
     if (m_currentPrinter)
         return;
     m_currentPrinter = new QPrinter();
@@ -774,9 +764,7 @@ void BrowserMainWindow::printRequested(QWebEnginePage *page)
         return;
     }
     page->print(m_currentPrinter, invoke(this, &BrowserMainWindow::slotHandlePagePrinted));
-#endif
 }
-#endif
 
 void BrowserMainWindow::slotPrivateBrowsing()
 {
