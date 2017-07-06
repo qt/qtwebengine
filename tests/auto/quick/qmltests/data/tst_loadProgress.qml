@@ -71,7 +71,8 @@ TestWebEngineView {
             var loadProgressMin = 0
             for (var i in loadProgressArray) {
                 var loadProgress = loadProgressArray[i]
-                verify(loadProgressMin <= loadProgress)
+                if (loadProgressMin > loadProgress)
+                    fail("Invalid sequence of progress-values: " + loadProgressArray)
                 loadProgressMin = loadProgress
             }
         }
