@@ -45,9 +45,11 @@
 #include <QDialog>
 #include <QListWidgetItem>
 
+QT_BEGIN_NAMESPACE
 namespace Ui {
 class StylesheetDialog;
 }
+QT_END_NAMESPACE
 
 class StylesheetDialog : public QDialog
 {
