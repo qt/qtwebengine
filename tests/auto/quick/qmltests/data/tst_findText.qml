@@ -211,9 +211,9 @@ TestWebEngineView {
             if (!webEngineView.waitForLoadSucceeded(12000))
                 skip("Couldn't load page from network, skipping test.");
 
-            // Can't be sure whether the findText succeeded before the new load.
-            // Thus don't check the find result just whether the callback was called.
-            tryVerify(function() { return webEngineView.matchCount != -1; });
+            // The callback is not supposed to be called, see QTBUG-61506.
+            // Check whether the callback was called (-1 = no, other values = yes).
+            tryVerify(function() { return webEngineView.matchCount == -1; });
         }
     }
 }

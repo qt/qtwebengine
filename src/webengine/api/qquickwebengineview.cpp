@@ -358,6 +358,8 @@ void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const Q
     Q_EMIT q->navigationRequested(&navigationRequest);
 
     navigationRequestAction = navigationRequest.action();
+    if ((navigationRequestAction == WebContentsAdapterClient::AcceptRequest) && adapter)
+        adapter->stopFinding();
 }
 
 void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> dialog)
