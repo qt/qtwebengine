@@ -22,3 +22,6 @@ linux
 
 [WebViewFindText::test_findTextInterruptedByLoad]
 linux
+
+[WebEngineViewLoadProgress::test_loadProgress]
+osx
