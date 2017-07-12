@@ -19,3 +19,6 @@ linux
 
 [WebEngineViewSingleFileUpload::test_acceptSingleFileSelection]
 *
+
+[WebViewFindText::test_findTextInterruptedByLoad]
+linux
