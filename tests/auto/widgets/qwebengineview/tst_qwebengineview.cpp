@@ -447,16 +447,25 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
     QTRY_COMPARE(parentWidget.releaseEvents.size(), 3);
     QCOMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("second_div"));
 
+    // Focus the button and press 'y'.
+    evaluateJavaScriptSync(webView.page(), "document.getElementById('submit_button').focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("submit_button"));
+    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_Y, 'y', Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_Y, 'y', Qt::NoModifier);
+    QTRY_COMPARE(parentWidget.releaseEvents.size(), 4);
+
     // The page will consume the Tab key to change focus between elements while the arrow
     // keys won't be used.
-    QCOMPARE(parentWidget.pressEvents.size(), 2);
+    QCOMPARE(parentWidget.pressEvents.size(), 3);
     QCOMPARE(parentWidget.pressEvents[0].key(), (int)Qt::Key_Right);
     QCOMPARE(parentWidget.pressEvents[1].key(), (int)Qt::Key_Left);
+    QCOMPARE(parentWidget.pressEvents[2].key(), (int)Qt::Key_Y);
 
     // Key releases will all come back unconsumed.
     QCOMPARE(parentWidget.releaseEvents[0].key(), (int)Qt::Key_Right);
     QCOMPARE(parentWidget.releaseEvents[1].key(), (int)Qt::Key_Tab);
     QCOMPARE(parentWidget.releaseEvents[2].key(), (int)Qt::Key_Left);
+    QCOMPARE(parentWidget.releaseEvents[3].key(), (int)Qt::Key_Y);
 }
 
 void tst_QWebEngineView::horizontalScrollbarTest()
