@@ -11,7 +11,8 @@ gn_args += \
     use_experimental_allocator_shim=false \
     use_allocator=\"none\" \
     v8_use_external_startup_data=false \
-    treat_warnings_as_errors=false
+    treat_warnings_as_errors=false \
+    enable_swiftshader=false
 
 use?(printing) {
     gn_args += enable_basic_printing=true enable_print_preview=true

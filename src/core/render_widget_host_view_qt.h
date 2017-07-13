@@ -138,6 +138,7 @@ public:
     void Hide() override;
     bool IsShowing() override;
     gfx::Rect GetViewBounds() const override;
+    SkColor background_color() const override;
     void SetBackgroundColor(SkColor color) override;
     bool LockMouse() override;
     void UnlockMouse() override;
@@ -149,7 +150,8 @@ public:
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
     bool HasAcceleratedSurface(const gfx::Size&) override;
-    void OnSwapCompositorFrame(uint32_t output_surface_id, cc::CompositorFrame frame)  override;
+    void DidCreateNewRendererCompositorFrameSink(cc::mojom::MojoCompositorFrameSinkClient*) override;
+    void SubmitCompositorFrame(const cc::LocalSurfaceId&, cc::CompositorFrame) override;
 
     void GetScreenInfo(content::ScreenInfo* results);
     gfx::Rect GetBoundsInRootWindow() override;
@@ -239,11 +241,11 @@ private:
     cc::ReturnedResourceArray m_resourcesToRelease;
     bool m_needsDelegatedFrameAck;
     LoadVisuallyCommittedState m_loadVisuallyCommittedState;
-    uint32_t m_pendingOutputSurfaceId;
 
     QMetaObject::Connection m_adapterClientDestroyedConnection;
     WebContentsAdapterClient *m_adapterClient;
     MultipleMouseClickHelper m_clickHelper;
+    cc::mojom::MojoCompositorFrameSinkClient *m_rendererCompositorFrameSink;
 
     bool m_imeInProgress;
     bool m_receivedEmptyImeText;
@@ -257,6 +259,8 @@ private:
 
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
+    SkColor m_backgroundColor;
+    cc::LocalSurfaceId m_localSurfaceId;
 
     uint m_imState;
     int m_anchorPositionWithinSelection;

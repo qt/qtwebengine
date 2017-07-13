@@ -70,7 +70,7 @@
 #include "net/base/port_util.h"
 #include "ppapi/features/features.h"
 #include "ui/events/event_switches.h"
-#include "ui/native_theme/native_theme_switches.h"
+#include "ui/native_theme/native_theme_features.h"
 #include "ui/gl/gl_switches.h"
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
@@ -346,9 +346,7 @@ WebEngineContext::WebEngineContext()
 #endif
 
     if (useEmbeddedSwitches) {
-        // Inspired by the Android port's default switches
-        if (!parsedCommandLine->HasSwitch(switches::kDisableOverlayScrollbar))
-            parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
+        parsedCommandLine->AppendSwitchASCII(switches::kEnableFeatures, features::kOverlayScrollbar.name);
         if (!parsedCommandLine->HasSwitch(switches::kDisablePinch))
             parsedCommandLine->AppendSwitch(switches::kEnablePinch);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
@@ -437,6 +435,8 @@ WebEngineContext::WebEngineContext()
     content::UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
     content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
     content::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
+
+    mojo::edk::Init();
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
     contentMainParams.setup_signal_handlers = false;

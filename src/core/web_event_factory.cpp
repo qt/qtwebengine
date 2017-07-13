@@ -1036,25 +1036,25 @@ static inline double currentTimeForEvent(const QInputEvent* event)
 static WebMouseEvent::Button mouseButtonForEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
-        return WebMouseEvent::Button::Left;
+        return WebMouseEvent::Button::kLeft;
     else if (event->button() == Qt::RightButton)
-        return WebMouseEvent::Button::Right;
+        return WebMouseEvent::Button::kRight;
     else if (event->button() == Qt::MidButton)
-        return WebMouseEvent::Button::Middle;
+        return WebMouseEvent::Button::kMiddle;
 
     if (event->type() != QEvent::MouseMove)
-        return WebMouseEvent::Button::NoButton;
+        return WebMouseEvent::Button::kNoButton;
 
     // This is technically wrong, mouse move should always have ButtonNone,
     // but it is consistent with aura and selection code depends on it:
     if (event->buttons() & Qt::LeftButton)
-        return WebMouseEvent::Button::Left;
+        return WebMouseEvent::Button::kLeft;
     else if (event->buttons() & Qt::RightButton)
-        return WebMouseEvent::Button::Right;
+        return WebMouseEvent::Button::kRight;
     else if (event->buttons() & Qt::MidButton)
-        return WebMouseEvent::Button::Middle;
+        return WebMouseEvent::Button::kMiddle;
 
-    return WebMouseEvent::Button::NoButton;
+    return WebMouseEvent::Button::kNoButton;
 }
 
 template <typename T>
@@ -1062,11 +1062,11 @@ static unsigned mouseButtonsModifiersForEvent(const T* event)
 {
     unsigned ret = 0;
     if (event->buttons() & Qt::LeftButton)
-        ret |= WebInputEvent::LeftButtonDown;
+        ret |= WebInputEvent::kLeftButtonDown;
     if (event->buttons() & Qt::RightButton)
-        ret |= WebInputEvent::RightButtonDown;
+        ret |= WebInputEvent::kRightButtonDown;
     if (event->buttons() & Qt::MidButton)
-        ret |= WebInputEvent::MiddleButtonDown;
+        ret |= WebInputEvent::kMiddleButtonDown;
     return ret;
 }
 
@@ -1076,19 +1076,19 @@ static inline WebInputEvent::Modifiers modifierForKeyCode(int key)
 {
     switch (key) {
         case Qt::Key_Shift:
-            return WebInputEvent::ShiftKey;
+            return WebInputEvent::kShiftKey;
         case Qt::Key_Alt:
-            return WebInputEvent::AltKey;
+            return WebInputEvent::kAltKey;
 #if defined(Q_OS_OSX)
         case Qt::Key_Control:
-            return (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) ? WebInputEvent::MetaKey : WebInputEvent::ControlKey;
+            return (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) ? WebInputEvent::kMetaKey : WebInputEvent::kControlKey;
         case Qt::Key_Meta:
-            return (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) ? WebInputEvent::ControlKey : WebInputEvent::MetaKey;
+            return (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) ? WebInputEvent::kControlKey : WebInputEvent::kMetaKey;
 #else
         case Qt::Key_Control:
-            return WebInputEvent::ControlKey;
+            return WebInputEvent::kControlKey;
         case Qt::Key_Meta:
-            return WebInputEvent::MetaKey;
+            return WebInputEvent::kMetaKey;
 #endif
         default:
             return static_cast<WebInputEvent::Modifiers>(0);
@@ -1102,24 +1102,24 @@ static inline WebInputEvent::Modifiers modifiersForEvent(const QInputEvent* even
 #if defined(Q_OS_OSX)
     if (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
         if (modifiers & Qt::ControlModifier)
-            result |= WebInputEvent::MetaKey;
+            result |= WebInputEvent::kMetaKey;
         if (modifiers & Qt::MetaModifier)
-            result |= WebInputEvent::ControlKey;
+            result |= WebInputEvent::kControlKey;
     } else
 #endif
     {
         if (modifiers & Qt::ControlModifier)
-            result |= WebInputEvent::ControlKey;
+            result |= WebInputEvent::kControlKey;
         if (modifiers & Qt::MetaModifier)
-            result |= WebInputEvent::MetaKey;
+            result |= WebInputEvent::kMetaKey;
     }
 
     if (modifiers & Qt::ShiftModifier)
-        result |= WebInputEvent::ShiftKey;
+        result |= WebInputEvent::kShiftKey;
     if (modifiers & Qt::AltModifier)
-        result |= WebInputEvent::AltKey;
+        result |= WebInputEvent::kAltKey;
     if (modifiers & Qt::KeypadModifier)
-        result |= WebInputEvent::IsKeyPad;
+        result |= WebInputEvent::kIsKeyPad;
 
     switch (event->type()) {
     case QEvent::MouseButtonPress:
@@ -1134,7 +1134,7 @@ static inline WebInputEvent::Modifiers modifiersForEvent(const QInputEvent* even
     case QEvent::KeyRelease: {
         const QKeyEvent *keyEvent = static_cast<const QKeyEvent*>(event);
         if (keyEvent->isAutoRepeat())
-            result |= WebInputEvent::IsAutoRepeat;
+            result |= WebInputEvent::kIsAutoRepeat;
         result |= modifierForKeyCode(keyEvent->key());
     }
     default:
@@ -1148,52 +1148,49 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
 {
     switch (event->type()) {
     case QEvent::MouseButtonPress:
-        return WebInputEvent::MouseDown;
+        return WebInputEvent::kMouseDown;
     case QEvent::MouseButtonRelease:
-        return WebInputEvent::MouseUp;
+        return WebInputEvent::kMouseUp;
     case QEvent::Enter:
-        return WebInputEvent::MouseEnter;
+        return WebInputEvent::kMouseEnter;
     case QEvent::Leave:
-        return WebInputEvent::MouseLeave;
+        return WebInputEvent::kMouseLeave;
     case QEvent::MouseMove:
-        return WebInputEvent::MouseMove;
+        return WebInputEvent::kMouseMove;
     case QEvent::Wheel:
-        return WebInputEvent::MouseWheel;
+        return WebInputEvent::kMouseWheel;
     case QEvent::KeyPress:
-        return WebInputEvent::RawKeyDown;
+        return WebInputEvent::kRawKeyDown;
     case QEvent::KeyRelease:
-        return WebInputEvent::KeyUp;
+        return WebInputEvent::kKeyUp;
     case QEvent::HoverMove:
-        return WebInputEvent::MouseMove;
+        return WebInputEvent::kMouseMove;
     case QEvent::TouchBegin:
-        return WebInputEvent::TouchStart;
+        return WebInputEvent::kTouchStart;
     case QEvent::TouchUpdate:
-        return WebInputEvent::TouchMove;
+        return WebInputEvent::kTouchMove;
     case QEvent::TouchEnd:
-        return WebInputEvent::TouchEnd;
+        return WebInputEvent::kTouchEnd;
     case QEvent::TouchCancel:
-        return WebInputEvent::TouchCancel;
+        return WebInputEvent::kTouchCancel;
     default:
         Q_ASSERT(false);
-        return WebInputEvent::MouseMove;
+        return WebInputEvent::kMouseMove;
     }
 }
 
 WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 {
-    WebMouseEvent webKitEvent;
-    webKitEvent.setTimeStampSeconds(currentTimeForEvent(ev));
-    webKitEvent.setModifiers(modifiersForEvent(ev));
-    webKitEvent.setType(webEventTypeForEvent(ev));
+    WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
+                              ev->x() / dpiScale,
+                              ev->y() / dpiScale,
+                              ev->globalX(),
+                              ev->globalY(),
+                              modifiersForEvent(ev),
+                              currentTimeForEvent(ev));
 
     webKitEvent.button = mouseButtonForEvent(ev);
-
-    webKitEvent.x = webKitEvent.windowX = ev->x() / dpiScale;
-    webKitEvent.y = webKitEvent.windowY = ev->y() / dpiScale;
-    webKitEvent.globalX = ev->globalX();
-    webKitEvent.globalY = ev->globalY();
-
-    webKitEvent.clickCount = 0;
+    webKitEvent.click_count = 0;
 
     return webKitEvent;
 }
@@ -1201,14 +1198,13 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent;
-    webKitEvent.setTimeStampSeconds(currentTimeForEvent(ev));
-    webKitEvent.setModifiers(modifiersForEvent(ev));
-    webKitEvent.setType(webEventTypeForEvent(ev));
+    webKitEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.SetModifiers(modifiersForEvent(ev));
+    webKitEvent.SetType(webEventTypeForEvent(ev));
 
-    webKitEvent.x = webKitEvent.windowX = ev->pos().x() / dpiScale;
-    webKitEvent.y = webKitEvent.windowY = ev->pos().y() / dpiScale;
-    webKitEvent.movementX = ev->pos().x() - ev->oldPos().x();
-    webKitEvent.movementY = ev->pos().y() - ev->oldPos().y();
+    webKitEvent.SetPositionInWidget(ev->pos().x() / dpiScale, ev->pos().y() / dpiScale);
+    webKitEvent.movement_x = ev->pos().x() - ev->oldPos().x();
+    webKitEvent.movement_y = ev->pos().y() - ev->oldPos().y();
 
     return webKitEvent;
 }
@@ -1217,26 +1213,26 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
 WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, double dpiScale)
 {
     WebGestureEvent webKitEvent;
-    webKitEvent.setTimeStampSeconds(currentTimeForEvent(ev));
-    webKitEvent.setModifiers(modifiersForEvent(ev));
+    webKitEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.SetModifiers(modifiersForEvent(ev));
 
     webKitEvent.x = static_cast<int>(ev->localPos().x() / dpiScale);
     webKitEvent.y = static_cast<int>(ev->localPos().y() / dpiScale);
 
-    webKitEvent.globalX = static_cast<int>(ev->screenPos().x() / dpiScale);
-    webKitEvent.globalY = static_cast<int>(ev->screenPos().y() / dpiScale);
+    webKitEvent.global_x = static_cast<int>(ev->screenPos().x() / dpiScale);
+    webKitEvent.global_y = static_cast<int>(ev->screenPos().y() / dpiScale);
 
-    webKitEvent.sourceDevice = blink::WebGestureDeviceTouchpad;
+    webKitEvent.source_device = blink::kWebGestureDeviceTouchpad;
 
     Qt::NativeGestureType gestureType = ev->gestureType();
     switch (gestureType) {
     case Qt::ZoomNativeGesture:
-        webKitEvent.setType(WebInputEvent::GesturePinchUpdate);
-        webKitEvent.data.pinchUpdate.scale = static_cast<float>(ev->value() + 1.0);
+        webKitEvent.SetType(WebInputEvent::kGesturePinchUpdate);
+        webKitEvent.data.pinch_update.scale = static_cast<float>(ev->value() + 1.0);
         break;
     case Qt::SmartZoomNativeGesture:
-        webKitEvent.setType(WebInputEvent::GestureDoubleTap);
-        webKitEvent.data.tap.tapCount = 1;
+        webKitEvent.SetType(WebInputEvent::kGestureDoubleTap);
+        webKitEvent.data.tap.tap_count = 1;
         break;
     case Qt::BeginNativeGesture:
     case Qt::EndNativeGesture:
@@ -1244,7 +1240,7 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, doub
     case Qt::PanNativeGesture:
     case Qt::SwipeNativeGesture:
         // Not implemented by Chromium for now.
-        webKitEvent.setType(blink::WebInputEvent::Undefined);
+        webKitEvent.SetType(blink::WebInputEvent::kUndefined);
         break;
     }
 
@@ -1255,16 +1251,16 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, doub
 blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, double dpiScale)
 {
     WebMouseWheelEvent webEvent;
-    webEvent.deltaX = 0;
-    webEvent.deltaY = 0;
-    webEvent.wheelTicksX = 0;
-    webEvent.wheelTicksY = 0;
-    webEvent.setType(webEventTypeForEvent(ev));
-    webEvent.setModifiers(modifiersForEvent(ev));
-    webEvent.setTimeStampSeconds(currentTimeForEvent(ev));
+    webEvent.delta_x = 0;
+    webEvent.delta_y = 0;
+    webEvent.wheel_ticks_x = 0;
+    webEvent.wheel_ticks_y = 0;
+    webEvent.SetType(webEventTypeForEvent(ev));
+    webEvent.SetModifiers(modifiersForEvent(ev));
+    webEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
 
-    webEvent.wheelTicksX = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
-    webEvent.wheelTicksY = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.wheel_ticks_x = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.wheel_ticks_y = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
 
     // We can't use the device specific QWheelEvent::pixelDelta(), so we calculate
     // a pixel delta based on ticks and scroll per line.
@@ -1275,43 +1271,42 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
 #else
     const int wheelScrollLines = 3;
 #endif
-    webEvent.deltaX = webEvent.wheelTicksX * wheelScrollLines * cDefaultQtScrollStep;
-    webEvent.deltaY = webEvent.wheelTicksY * wheelScrollLines * cDefaultQtScrollStep;
+    webEvent.delta_x = webEvent.wheel_ticks_x * wheelScrollLines * cDefaultQtScrollStep;
+    webEvent.delta_y = webEvent.wheel_ticks_y * wheelScrollLines * cDefaultQtScrollStep;
 
-    webEvent.x = webEvent.windowX = ev->x() / dpiScale;
-    webEvent.y = webEvent.windowY = ev->y() / dpiScale;
-    webEvent.globalX = ev->globalX();
-    webEvent.globalY = ev->globalY();
+    webEvent.SetPositionInWidget(ev->x() / dpiScale, ev->y() / dpiScale);
+    webEvent.SetPositionInScreen(ev->globalX(), ev->globalY());
+
     return webEvent;
 }
 
 content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *ev)
 {
     content::NativeWebKeyboardEvent webKitEvent(reinterpret_cast<gfx::NativeEvent>(ev));
-    webKitEvent.setTimeStampSeconds(currentTimeForEvent(ev));
-    webKitEvent.setModifiers(modifiersForEvent(ev));
-    webKitEvent.setType(webEventTypeForEvent(ev));
+    webKitEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.SetModifiers(modifiersForEvent(ev));
+    webKitEvent.SetType(webEventTypeForEvent(ev));
 
-    webKitEvent.nativeKeyCode = ev->nativeVirtualKey();
-    webKitEvent.windowsKeyCode = windowsKeyCodeForKeyEvent(ev->key(), ev->modifiers() & Qt::KeypadModifier);
-    webKitEvent.domKey = getDomKeyFromQKeyEvent(ev);
+    webKitEvent.native_key_code = ev->nativeVirtualKey();
+    webKitEvent.windows_key_code = windowsKeyCodeForKeyEvent(ev->key(), ev->modifiers() & Qt::KeypadModifier);
+    webKitEvent.dom_key = getDomKeyFromQKeyEvent(ev);
 
     ui::DomCode domCode = ui::DomCode::NONE;
     int scanCode = ev->nativeScanCode();
     if (scanCode)
         domCode = ui::KeycodeConverter::NativeKeycodeToDomCode(scanCode);
-    webKitEvent.domCode = static_cast<int>(domCode);
+    webKitEvent.dom_code = static_cast<int>(domCode);
 
     const ushort* text = ev->text().utf16();
     memcpy(&webKitEvent.text, text, std::min(sizeof(webKitEvent.text), size_t(ev->text().length() * 2)));
-    memcpy(&webKitEvent.unmodifiedText, text, std::min(sizeof(webKitEvent.unmodifiedText), size_t(ev->text().length() * 2)));
+    memcpy(&webKitEvent.unmodified_text, text, std::min(sizeof(webKitEvent.unmodified_text), size_t(ev->text().length() * 2)));
 
-    if (webKitEvent.windowsKeyCode == VK_RETURN) {
+    if (webKitEvent.windows_key_code == VK_RETURN) {
         // This is the same behavior as GTK:
         // We need to treat the enter key as a key press of character \r. This
         // is apparently just how webkit handles it and what it expects.
-        webKitEvent.unmodifiedText[0] = '\r';
-        webKitEvent.text[0] = webKitEvent.unmodifiedText[0];
+        webKitEvent.unmodified_text[0] = '\r';
+        webKitEvent.text[0] = webKitEvent.unmodified_text[0];
     }
 
     return webKitEvent;

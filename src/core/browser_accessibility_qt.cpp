@@ -127,7 +127,7 @@ void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
 
 QAccessibleInterface *BrowserAccessibilityQt::parent() const
 {
-    BrowserAccessibility *p = GetParent();
+    BrowserAccessibility *p = PlatformGetParent();
     if (p)
         return static_cast<BrowserAccessibilityQt*>(p);
     return static_cast<BrowserAccessibilityManagerQt*>(manager())->rootParentAccessible();
@@ -830,9 +830,9 @@ bool BrowserAccessibilityQt::isSelected() const
 
 QAccessibleInterface *BrowserAccessibilityQt::table() const
 {
-    BrowserAccessibility* find_table = GetParent();
+    BrowserAccessibility* find_table = PlatformGetParent();
     while (find_table && find_table->GetRole() != ui::AX_ROLE_TABLE)
-        find_table = find_table->GetParent();
+        find_table = find_table->PlatformGetParent();
     if (!find_table)
         return 0;
     return static_cast<BrowserAccessibilityQt*>(find_table);

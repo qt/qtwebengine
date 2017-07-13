@@ -179,6 +179,16 @@ bool GLSurfaceGLX::IsCreateContextRobustnessSupported()
     return false; // ExtensionsContain(g_extensions, "GLX_ARB_create_context_robustness");
 }
 
+bool GLSurfaceGLX::IsEXTSwapControlSupported()
+{
+    return HasGLXExtension("GLX_EXT_swap_control");
+}
+
+bool GLSurfaceGLX::IsMESASwapControlSupported()
+{
+    return HasGLXExtension("GLX_MESA_swap_control");
+}
+
 bool GLSurfaceGLX::IsCreateContextProfileSupported()
 {
     return false; // ExtensionsContain(g_extensions, "GLX_ARB_create_context_profile");

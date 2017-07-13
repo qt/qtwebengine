@@ -83,21 +83,6 @@ private:
     WebEngineSettings *m_settings;
 };
 
-static inline bool isTouchScreenAvailable() {
-    static bool initialized = false;
-    static bool touchScreenAvailable = false;
-    if (!initialized) {
-        Q_FOREACH (const QTouchDevice *d, QTouchDevice::devices()) {
-            if (d->type() == QTouchDevice::TouchScreen) {
-                touchScreenAvailable = true;
-                break;
-            }
-        }
-        initialized = true;
-    }
-    return touchScreenAvailable;
-}
-
 static inline bool isTouchEventsAPIEnabled() {
     static bool initialized = false;
     static bool touchEventsAPIEnabled = false;
@@ -114,7 +99,7 @@ static inline bool isTouchEventsAPIEnabled() {
         if (touchEventsSwitchValue == switches::kTouchEventFeatureDetectionEnabled)
             touchEventsAPIEnabled = true;
         else if (touchEventsSwitchValue == switches::kTouchEventFeatureDetectionAuto)
-            touchEventsAPIEnabled = isTouchScreenAvailable();
+            touchEventsAPIEnabled = (ui::GetTouchScreensAvailability() == ui::TouchScreensAvailability::ENABLED);
 
         initialized = true;
     }
@@ -323,7 +308,6 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
 {
     // Override for now
     prefs->touch_event_feature_detection_enabled = isTouchEventsAPIEnabled();
-    prefs->device_supports_touch = isTouchScreenAvailable();
     if (prefs->viewport_enabled) {
         // We should enable viewport and viewport-meta together, but since 5.7 we
         // no longer have a command-line flag for viewport-meta.

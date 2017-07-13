@@ -128,8 +128,8 @@ void UserResourceController::RenderViewObserverHelper::runScripts(UserScriptData
 
 void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
 {
-    content::RenderView *renderView = content::RenderView::FromWebView(frame->view());
-    const bool isMainFrame = (frame == renderView->GetWebView()->mainFrame());
+    content::RenderView *renderView = content::RenderView::FromWebView(frame->View());
+    const bool isMainFrame = (frame == renderView->GetWebView()->MainFrame());
 
     QList<uint64_t> scriptsToRun = m_viewUserScriptMap.value(globalScriptsIndex).toList();
     scriptsToRun.append(m_viewUserScriptMap.value(renderView).toList());
@@ -139,13 +139,13 @@ void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink:
         if (script.injectionPoint != p
                 || (!script.injectForSubframes && !isMainFrame))
             continue;
-        if (!scriptMatchesURL(script, frame->document().url()))
+        if (!scriptMatchesURL(script, frame->GetDocument().Url()))
             continue;
-        blink::WebScriptSource source(blink::WebString::fromUTF8(script.source), script.url);
+        blink::WebScriptSource source(blink::WebString::FromUTF8(script.source), script.url);
         if (script.worldId)
-            frame->executeScriptInIsolatedWorld(script.worldId, &source, /*numSources = */1, /*contentScriptExtentsionGroup = */ 0);
+            frame->ExecuteScriptInIsolatedWorld(script.worldId, &source, /*numSources = */1, /*contentScriptExtentsionGroup = */ 0);
         else
-            frame->executeScript(source);
+            frame->ExecuteScript(source);
     }
 }
 
@@ -186,8 +186,8 @@ void UserResourceController::RenderViewObserverHelper::DidStartProvisionalLoad(b
 
 void UserResourceController::RenderViewObserverHelper::FrameDetached(blink::WebFrame *frame)
 {
-    if (frame->isWebLocalFrame())
-        m_pendingFrames.remove(frame->toWebLocalFrame());
+    if (frame->IsWebLocalFrame())
+        m_pendingFrames.remove(frame->ToWebLocalFrame());
 }
 
 void UserResourceController::RenderViewObserverHelper::OnDestruct()

@@ -73,7 +73,6 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
-#include "ui/events/latency_info.h"
 
 #include <QDesktopServices>
 #include <QTimer>

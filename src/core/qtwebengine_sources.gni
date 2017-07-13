@@ -21,6 +21,7 @@ source_set("qtwebengine_spellcheck_sources") {
   deps = [
     "//components/spellcheck/browser",
     "//components/spellcheck/renderer",
+    "//third_party/boringssl",
     "//third_party/WebKit/public:blink",
     "//third_party/hunspell",
   ]

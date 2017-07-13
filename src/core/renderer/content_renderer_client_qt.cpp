@@ -114,15 +114,14 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
     new RenderViewObserverQt(render_view, m_webCacheImpl.data());
     new WebChannelIPCTransport(render_view);
     UserResourceController::instance()->renderViewCreated(render_view);
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-    new SpellCheckProvider(render_view, m_spellCheck.data());
-#endif
-
 }
 
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)
 {
     new QtWebEngineCore::RenderFrameObserverQt(render_frame);
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+    new SpellCheckProvider(render_frame, m_spellCheck.data());
+#endif
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     new printing::PrintWebViewHelper(
                 render_frame,
@@ -173,7 +172,7 @@ bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *fram
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
 void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* renderFrame, const blink::WebURLRequest &failedRequest, const blink::WebURLError &error, std::string *errorHtml, base::string16 *errorDescription)
 {
-    const bool isPost = QByteArray::fromStdString(failedRequest.httpMethod().utf8()) == QByteArrayLiteral("POST");
+    const bool isPost = QByteArray::fromStdString(failedRequest.HttpMethod().Utf8()) == QByteArrayLiteral("POST");
 
     if (errorHtml) {
         // Use a local error page.
@@ -184,8 +183,8 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* re
         // TODO(elproxy): We could potentially get better diagnostics here by first calling
         // NetErrorHelper::GetErrorStringsForDnsProbe, but that one is harder to untangle.
 
-        error_page::LocalizedError::GetStrings(error.reason, error.domain.utf8(), error.unreachableURL, isPost
-                                  , error.staleCopyInCache && !isPost, false, false, locale
+        error_page::LocalizedError::GetStrings(error.reason, error.domain.Utf8(), error.unreachable_url, isPost
+                                  , error.stale_copy_in_cache && !isPost, false, false, locale
                                   , std::unique_ptr<error_page::ErrorPageParams>(), &errorStrings);
         resourceId = IDR_NET_ERROR_HTML;
 
@@ -198,7 +197,7 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* re
     }
 
     if (errorDescription)
-        *errorDescription = error_page::LocalizedError::GetErrorDetails(error.domain.utf8(), error.reason, isPost);
+        *errorDescription = error_page::LocalizedError::GetErrorDetails(error.domain.Utf8(), error.reason, isPost);
 }
 
 unsigned long long ContentRendererClientQt::VisitedLinkHash(const char *canonicalUrl, size_t length)

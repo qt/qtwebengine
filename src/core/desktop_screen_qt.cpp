@@ -77,7 +77,7 @@ std::vector<display::Display>& DesktopScreenQt::GetAllDisplays() const
     return empty;
 }
 
-display::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeView window) const
+display::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeWindow window) const
 {
     // RenderViewHostImpl::OnStartDragging uses this to determine
     // the scale factor for the view.

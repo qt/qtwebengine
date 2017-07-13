@@ -169,8 +169,7 @@ static QVariant fromJSValue(const base::Value *result)
     }
     case base::Value::Type::BINARY:
     {
-        const base::BinaryValue *out = static_cast<const base::BinaryValue*>(result);
-        QByteArray data(out->GetBuffer(), out->GetSize());
+        QByteArray data(result->GetBuffer(), result->GetSize());
         ret.setValue(data);
         break;
     }
@@ -349,7 +348,7 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     , adapterClient(0)
     , nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
     , lastFindRequestId(0)
-    , currentDropAction(blink::WebDragOperationNone)
+    , currentDropAction(blink::kWebDragOperationNone)
 {
 }
 
@@ -899,8 +898,8 @@ quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitiv
 
     blink::WebFindOptions options;
     options.forward = !findBackward;
-    options.matchCase = caseSensitively;
-    options.findNext = subString == d->webContentsDelegate->lastSearchedString();
+    options.match_case = caseSensitively;
+    options.find_next = subString == d->webContentsDelegate->lastSearchedString();
     d->webContentsDelegate->setLastSearchedString(subString);
 
     // Find already allows a request ID as input, but only as an int.
@@ -970,11 +969,11 @@ void WebContentsAdapter::copyImageAt(const QPoint &location)
     d->webContents->GetRenderViewHost()->GetMainFrame()->CopyImageAt(location.x(), location.y());
 }
 
-ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerNoAction, blink::WebMediaPlayerAction::Unknown)
-ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerPlay, blink::WebMediaPlayerAction::Play)
-ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerMute, blink::WebMediaPlayerAction::Mute)
-ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerLoop,  blink::WebMediaPlayerAction::Loop)
-ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerControls,  blink::WebMediaPlayerAction::Controls)
+ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerNoAction, blink::WebMediaPlayerAction::kUnknown)
+ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerPlay, blink::WebMediaPlayerAction::kPlay)
+ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerMute, blink::WebMediaPlayerAction::kMute)
+ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerLoop,  blink::WebMediaPlayerAction::kLoop)
+ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerControls,  blink::WebMediaPlayerAction::kControls)
 
 void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, MediaPlayerAction action, bool enable)
 {
@@ -1170,13 +1169,13 @@ static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
 
 static blink::WebDragOperationsMask toWeb(const Qt::DropActions action)
 {
-    int result = blink::WebDragOperationNone;
+    int result = blink::kWebDragOperationNone;
     if (action & Qt::CopyAction)
-        result |= blink::WebDragOperationCopy;
+        result |= blink::kWebDragOperationCopy;
     if (action & Qt::LinkAction)
-        result |= blink::WebDragOperationLink;
+        result |= blink::kWebDragOperationLink;
     if (action & Qt::MoveAction)
-        result |= blink::WebDragOperationMove;
+        result |= blink::kWebDragOperationMove;
     return static_cast<blink::WebDragOperationsMask>(result);
 }
 
@@ -1196,7 +1195,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     d->currentDropData->file_contents.clear();
     d->currentDropData->file_contents_content_disposition.clear();
 
-    d->currentDropAction = blink::WebDragOperationNone;
+    d->currentDropAction = blink::kWebDragOperationNone;
     QDrag *drag = new QDrag(dragSource);    // will be deleted by Qt's DnD implementation
     bool dValid = true;
     QMetaObject::Connection onDestroyed = QObject::connect(dragSource, &QObject::destroyed, [&dValid](){
@@ -1301,11 +1300,11 @@ void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPoint &screenPos)
 
 Qt::DropAction toQt(blink::WebDragOperation op)
 {
-    if (op & blink::WebDragOperationCopy)
+    if (op & blink::kWebDragOperationCopy)
         return Qt::CopyAction;
-    if (op & blink::WebDragOperationLink)
+    if (op & blink::kWebDragOperationLink)
         return Qt::LinkAction;
-    if (op & blink::WebDragOperationMove || op & blink::WebDragOperationDelete)
+    if (op & blink::kWebDragOperationMove || op & blink::kWebDragOperationDelete)
         return Qt::MoveAction;
     return Qt::IgnoreAction;
 }
@@ -1314,11 +1313,11 @@ static int toWeb(Qt::MouseButtons buttons)
 {
     int result = 0;
     if (buttons & Qt::LeftButton)
-        result |= blink::WebInputEvent::LeftButtonDown;
+        result |= blink::WebInputEvent::kLeftButtonDown;
     if (buttons & Qt::RightButton)
-        result |= blink::WebInputEvent::RightButtonDown;
+        result |= blink::WebInputEvent::kRightButtonDown;
     if (buttons & Qt::MiddleButton)
-        result |= blink::WebInputEvent::MiddleButtonDown;
+        result |= blink::WebInputEvent::kMiddleButtonDown;
     return result;
 }
 
@@ -1326,13 +1325,13 @@ static int toWeb(Qt::KeyboardModifiers modifiers)
 {
     int result = 0;
     if (modifiers & Qt::ShiftModifier)
-        result |= blink::WebInputEvent::ShiftKey;
+        result |= blink::WebInputEvent::kShiftKey;
     if (modifiers & Qt::ControlModifier)
-        result |= blink::WebInputEvent::ControlKey;
+        result |= blink::WebInputEvent::kControlKey;
     if (modifiers & Qt::AltModifier)
-        result |= blink::WebInputEvent::AltKey;
+        result |= blink::WebInputEvent::kAltKey;
     if (modifiers & Qt::MetaModifier)
-        result |= blink::WebInputEvent::MetaKey;
+        result |= blink::WebInputEvent::kMetaKey;
     return result;
 }
 

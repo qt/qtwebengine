@@ -82,7 +82,7 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     // Initial spellcheck settings
     registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
-    registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries, new base::ListValue());
+    registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries, base::MakeUnique<base::ListValue>());
     registry->RegisterStringPref(spellcheck::prefs::kSpellCheckDictionary, std::string());
     registry->RegisterBooleanPref(spellcheck::prefs::kEnableSpellcheck, false);
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
@@ -229,7 +229,7 @@ QStringList BrowserContextQt::spellCheckLanguages() const
     QStringList spellcheck_dictionaries;
     for (const auto &value : *m_prefService->GetList(spellcheck::prefs::kSpellCheckDictionaries)) {
         std::string dictionary;
-        if (value->GetAsString(&dictionary))
+        if (value.GetAsString(&dictionary))
             spellcheck_dictionaries.append(QString::fromStdString(dictionary));
     }
 
