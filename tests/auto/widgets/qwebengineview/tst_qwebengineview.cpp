@@ -2152,14 +2152,16 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
     QObject *input = nullptr;
 
     QFETCH(QString, receiverObjectName);
-    if (receiverObjectName == "focusObject")
+    if (receiverObjectName == "focusObject") {
+        QTRY_VERIFY(qApp->focusObject());
         input = qApp->focusObject();
-    else if (receiverObjectName == "focusProxy")
+    } else if (receiverObjectName == "focusProxy") {
+        QTRY_VERIFY(view.focusProxy());
         input = view.focusProxy();
-    else if (receiverObjectName == "focusWidget")
+    } else if (receiverObjectName == "focusWidget") {
+        QTRY_VERIFY(view.focusWidget());
         input = view.focusWidget();
-
-    QVERIFY(input);
+    }
 
     QInputMethodQueryEvent srrndTextQuery(Qt::ImSurroundingText);
     QInputMethodQueryEvent cursorPosQuery(Qt::ImCursorPosition);
