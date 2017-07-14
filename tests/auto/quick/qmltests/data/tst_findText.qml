@@ -57,7 +57,7 @@ TestWebEngineView {
             runJavaScript("document.body.innerHTML", function(result) {
                 bodyInnerHTML = result;
             });
-            tryVerify(function() { return bodyInnerHTML != undefined; });
+            tryVerify(function() { return bodyInnerHTML != undefined; }, 20000);
             return bodyInnerHTML;
         }
 
@@ -66,7 +66,7 @@ TestWebEngineView {
             runJavaScript("document.getElementById('list').getElementsByTagName('li')[" + index + "].innerText;", function(result) {
                 listItemText = result;
             });
-            tryVerify(function() { return listItemText != undefined; });
+            tryVerify(function() { return listItemText != undefined; }, 20000);
             return listItemText;
         }
 
@@ -82,9 +82,9 @@ TestWebEngineView {
             var itemIndex;
 
             runJavaScript(script, function(result) { itemIndex = result; });
-            tryVerify(function() { return itemIndex != undefined; });
+            tryVerify(function() { return itemIndex != undefined; }, 20000);
             // Make sure the DOM is up-to-date.
-            tryVerify(function() { return getListItemText(itemIndex).length == text.length; });
+            tryVerify(function() { return getListItemText(itemIndex).length == text.length; }, 20000);
         }
 
         function test_findText() {
@@ -176,7 +176,7 @@ TestWebEngineView {
             verify(findFailed)
 
             runJavaScript("document.body.innerHTML = 'blahellobla'");
-            tryVerify(function() { return getBodyInnerHTML() == "blahellobla"; });
+            tryVerify(function() { return getBodyInnerHTML() == "blahellobla"; }, 20000);
 
             webEngineView.clear()
             webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)
@@ -213,7 +213,7 @@ TestWebEngineView {
 
             // The callback is not supposed to be called, see QTBUG-61506.
             // Check whether the callback was called (-1 = no, other values = yes).
-            tryVerify(function() { return webEngineView.matchCount == -1; });
+            tryVerify(function() { return webEngineView.matchCount == -1; }, 20000);
         }
     }
 }

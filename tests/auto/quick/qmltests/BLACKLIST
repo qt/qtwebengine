@@ -20,8 +20,5 @@ linux
 [WebEngineViewSingleFileUpload::test_acceptSingleFileSelection]
 *
 
-[WebViewFindText::test_findTextInterruptedByLoad]
-linux
-
 [WebEngineViewLoadProgress::test_loadProgress]
 osx
