@@ -87,6 +87,7 @@ void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
 
 void WebChannelIPCTransportHost::onWebChannelMessage(const std::vector<char> &message)
 {
+    Q_ASSERT(!message.empty());
     QJsonDocument doc = QJsonDocument::fromRawData(message.data(), message.size(), QJsonDocument::BypassValidation);
     Q_ASSERT(doc.isObject());
     Q_EMIT messageReceived(doc.object(), this);

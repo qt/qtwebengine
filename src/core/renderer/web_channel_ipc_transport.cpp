@@ -68,25 +68,30 @@ private:
     WebChannelTransport() { }
     virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate *isolate) override;
 
-    void NativeQtSendMessage(gin::Arguments *args)
+    bool NativeQtSendMessage(gin::Arguments *args)
     {
         content::RenderView *renderView = GetRenderView(args->isolate());
         if (!renderView || args->Length() != 1)
-            return;
+            return false;
         v8::Handle<v8::Value> val;
         args->GetNext(&val);
         if (!val->IsString() && !val->IsStringObject())
-            return;
+            return false;
         v8::String::Utf8Value utf8(val->ToString());
 
         QByteArray valueData(*utf8, utf8.length());
         QJsonParseError error;
         QJsonDocument doc = QJsonDocument::fromJson(valueData, &error);
-        if (error.error != QJsonParseError::NoError)
+        if (error.error != QJsonParseError::NoError) {
             qWarning("%s %d: Parsing error: %s",__FILE__, __LINE__, qPrintable(error.errorString()));
+            return false;
+        }
         int size = 0;
         const char *rawData = doc.rawData(&size);
+        if (size == 0)
+            return false;
         renderView->Send(new WebChannelIPCTransportHost_SendMessage(renderView->GetRoutingID(), std::vector<char>(rawData, rawData + size)));
+        return true;
     }
 
     DISALLOW_COPY_AND_ASSIGN(WebChannelTransport);
