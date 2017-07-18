@@ -146,6 +146,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/WebKit/ManualTests')
         or file_path.startswith('third_party/WebKit/PerformanceTests')
         or file_path.startswith('third_party/accessibility-audit')
+        or file_path.startswith('third_party/afl')
         or file_path.startswith('third_party/android_')
         or file_path.startswith('third_party/apache-win32')
         or file_path.startswith('third_party/apple_sample_code')
