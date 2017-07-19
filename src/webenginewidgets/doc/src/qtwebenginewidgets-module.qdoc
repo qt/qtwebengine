@@ -28,8 +28,7 @@
 /*!
     \module QtWebEngineWidgets
     \title Qt WebEngine Widgets C++ Classes
-    \brief Provides a web browser engine as well as C++ classes to render and
-    interact with web content
+    \brief Provides C++ classes for rendering web content in a QWidget based application
     \ingroup modules
     \ingroup qtwebengine-modules
     \qtvariable webenginewidgets
