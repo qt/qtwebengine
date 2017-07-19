@@ -77,8 +77,8 @@
     This feature can be tested by launching a Qt WebEngine application with the
     command line option \c {--remote-debugging-port=[your-port]} or by setting
     the environment variable \c QTWEBENGINE_REMOTE_DEBUGGING, and then using a
-    Chromium based browser (such as \l{WebEngine Demo Browser Example}
-    {Demo Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}) to connect
+    Chromium based browser (such as \l{WebEngine Widgets Simple Browser Example}
+    {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}) to connect
     to \c {http://localhost:[your-port]}.
 
     For more information, see \l {Qt WebEngine Debugging and Profiling}.
@@ -89,8 +89,8 @@
 
     This feature can be tested by opening an HTML5 drag and drop demo, such as
     \l{HTML5 Demos - Drag and Drop}, \l{HTML5 Demos - Simple Drag and Drop}, or
-    \l{HTML5 Demos - Drag and Drop, Automatic Upload}, in \l{WebEngine Demo
-    Browser Example}{Demo Browser} or \l{WebEngine Quick Nano Browser}
+    \l{HTML5 Demos - Drag and Drop, Automatic Upload}, in \l{WebEngine Widgets
+    Simple Browser Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}
     {Nano Browser}.
 
     Dragging files into the browser is not actually part of HTML5, but it is
@@ -108,7 +108,7 @@
     QWebEnginePage::fullScreenRequested.
 
     This feature can be tested by playing a video from YouTube in \l{WebEngine
-    Demo Browser Example}{Demo Browser} or \l{WebEngine Quick Nano Browser}
+    Widgets Video Player Example}{Video Player} or \l{WebEngine Quick Nano Browser}
     {Nano Browser}, and clicking the full screen icon to go into fullscreen
     mode.
 
@@ -123,8 +123,8 @@
     proprietary audio and video codecs. For more information about enabling the
     codecs, see \l{Audio and Video Codecs}.
 
-    This feature can be tested by playing a video in \l{WebEngine Demo Browser
-    Example}{Demo Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}
+    This feature can be tested by playing a video in \l{WebEngine Widgets Simple Browser
+    Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}
     from \l{castLabs}, \l{Swank Motion Pictures, Inc.}, or \l{Shaka Player}.
 
     Support for this feature was added in Qt 5.7.0.
@@ -136,11 +136,11 @@
     QWebEnginePage::Geolocation or \l{WebEngineView::Feature}
     {WebEngineView.Feature}.
 
-    This feature can be tested if Qt Location has been built before Qt WebEngine.
-    The \c http://html5demos.com/geo page can be opened in the \l{WebEngine Demo
-    Browser Example}{Demo Browser} and allowed to find the current position of
-    the user. Note that on Windows an external GPS receiver must be connected to
-    the application. For more information, see \l{Qt Positioning}.
+    If Qt Location has been built before Qt WebEngine then this feature can be
+    tested by using \l{WebEngine Widgets Maps Example}{Maps} and allowing it to
+    find the current position of the user. Note that on Windows an external GPS
+    receiver must be connected to the application. For more information, see
+    \l{Qt Positioning}.
 
     Support for this feature was added in Qt 5.5.0.
 
@@ -253,7 +253,7 @@
     --ppapi-flash-version=16.0.0.235
     \endcode
 
-    This feature can be tested in \l{WebEngine Demo Browser Example}{Demo Browser}
+    This feature can be tested in \l{WebEngine Widgets Simple Browser Example}{Simple Browser}
     or \l{WebEngine Quick Nano Browser}{Nano Browser} if the Adobe Flash PPAPI
     plugin is installed and plugins are enabled in the browser. To test the
     feature, the \c https://helpx.adobe.com/flash-player.html page can be opened
@@ -265,8 +265,8 @@
     information, see QWebEnginePage::printToPdf() and
     \l{WebEngineView::printToPdf}{WebEngineView.printToPdf}.
 
-    This feature can be tested in \l{WebEngine Demo Browser Example}
-    {Demo Browser} by selecting \uicontrol File > \uicontrol {Print to PDF}.
+    This feature can be tested using \l{WebEngine Widgets Html2Pdf Example}
+    {Html2Pdf}.
 
     Support for this feature was added in Qt 5.7.0.
 

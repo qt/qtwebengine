@@ -4,7 +4,6 @@ SUBDIRS += \
     minimal \
     contentmanipulation \
     cookiebrowser \
-    demobrowser \
     html2pdf \
     markdowneditor \
     simplebrowser \
