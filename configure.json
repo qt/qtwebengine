@@ -54,9 +54,9 @@
             ]
         },
         "webp": {
-            "label": "libwebp and libwebpdemux",
+            "label": "libwebp, libwebpmux and libwebpdemux",
             "sources": [
-                { "type": "pkgConfig", "args": "libwebp libwebpdemux" }
+                { "type": "pkgConfig", "args": "libwebp libwebpmux libwebpdemux" }
             ]
         },
         "nss": {
@@ -192,7 +192,7 @@
             "output": [ "privateFeature" ]
         },
         "system-webp": {
-            "label": "libwebp and libwebpdemux",
+            "label": "libwebp, libwebpmux and libwebpdemux",
             "autoDetect": "config.unix",
             "condition": "libs.webp",
             "output": [ "privateFeature" ]

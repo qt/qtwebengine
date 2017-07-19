@@ -47,7 +47,17 @@ CONFIG *= no_smart_library_merge
 osx {
     LIBS_PRIVATE += -Wl,-force_load,$${api_library_path}$${QMAKE_DIR_SEP}lib$${api_library_name}.a
 } else:msvc {
-    QMAKE_LFLAGS += /OPT:REF
+    !isDeveloperBuild() {
+        # Remove unused functions and data in debug non-developer builds, because the binaries will
+        # be smaller in the shipped packages.
+        QMAKE_LFLAGS += /OPT:REF
+    } else:CONFIG(debug, debug|release) {
+        # Make sure to override qtbase's QMAKE_LFLAGS_DEBUG option in debug developer builds,
+        # because qmake chooses and overrides the option when it gets appended to QMAKE_LFLAGS in
+        # qtbase\mkspecs\features\default_post.prf, regardless of what Chromium passes back from GN.
+        QMAKE_LFLAGS_DEBUG -= /DEBUG
+        QMAKE_LFLAGS_DEBUG += /DEBUG:FASTLINK
+    }
     QMAKE_LFLAGS += /WHOLEARCHIVE:$${api_library_path}$${QMAKE_DIR_SEP}$${api_library_name}.lib
 } else {
     LIBS_PRIVATE += -Wl,-whole-archive -l$$api_library_name -Wl,-no-whole-archive

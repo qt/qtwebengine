@@ -43,6 +43,7 @@
 #include "base/strings/pattern.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "extensions/common/url_pattern.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -97,16 +98,16 @@ static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url) 
     return true;
 }
 
-class UserResourceController::RenderViewObserverHelper : public content::RenderViewObserver
+class UserResourceController::RenderFrameObserverHelper : public content::RenderFrameObserver
 {
 public:
-    RenderViewObserverHelper(content::RenderView *);
+    RenderFrameObserverHelper(content::RenderFrame* render_frame);
 private:
-    // RenderViewObserver implementation.
-    void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
-    void DidFinishLoad(blink::WebLocalFrame* frame) override;
-    void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
-    void FrameDetached(blink::WebFrame* frame) override;
+    // RenderFrameObserver implementation.
+    void DidFinishDocumentLoad() override;
+    void DidFinishLoad() override;
+    void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
+    void FrameDetached() override;
     void OnDestruct() override;
     bool OnMessageReceived(const IPC::Message& message) override;
 
@@ -115,10 +116,23 @@ private:
     void onScriptsCleared();
 
     void runScripts(UserScriptData::InjectionPoint, blink::WebLocalFrame *);
+
+    // Set of frames which are pending to get an AfterLoad invocation of runScripts, if they
+    // haven't gotten it already.
     QSet<blink::WebLocalFrame *> m_pendingFrames;
 };
 
-void UserResourceController::RenderViewObserverHelper::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
+// Used only for script cleanup on RenderView destruction.
+class UserResourceController::RenderViewObserverHelper : public content::RenderViewObserver
+{
+public:
+    RenderViewObserverHelper(content::RenderView* render_view);
+private:
+    // RenderViewObserver implementation.
+    void OnDestruct() override;
+};
+
+void UserResourceController::RenderFrameObserverHelper::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
 {
     if (p == UserScriptData::AfterLoad && !m_pendingFrames.remove(frame))
         return;
@@ -128,10 +142,11 @@ void UserResourceController::RenderViewObserverHelper::runScripts(UserScriptData
 
 void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
 {
-    content::RenderView *renderView = content::RenderView::FromWebView(frame->View());
-    const bool isMainFrame = (frame == renderView->GetWebView()->MainFrame());
+    content::RenderFrame *renderFrame = content::RenderFrame::FromWebFrame(frame);
+    content::RenderView *renderView = renderFrame->GetRenderView();
+    const bool isMainFrame = renderFrame->IsMainFrame();
 
-    QList<uint64_t> scriptsToRun = m_viewUserScriptMap.value(globalScriptsIndex).toList();
+    QList<uint64_t> scriptsToRun = m_viewUserScriptMap.value(0).toList();
     scriptsToRun.append(m_viewUserScriptMap.value(renderView).toList());
 
     Q_FOREACH (uint64_t id, scriptsToRun) {
@@ -159,67 +174,89 @@ void UserResourceController::RunScriptsAtDocumentEnd(content::RenderFrame *rende
     runScripts(UserScriptData::DocumentLoadFinished, render_frame->GetWebFrame());
 }
 
-UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(content::RenderView *renderView)
-    : content::RenderViewObserver(renderView)
+UserResourceController::RenderFrameObserverHelper::RenderFrameObserverHelper(content::RenderFrame *render_frame)
+    : content::RenderFrameObserver(render_frame)
 {
 }
 
-void UserResourceController::RenderViewObserverHelper::DidFinishDocumentLoad(blink::WebLocalFrame *frame)
+UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(content::RenderView *render_view)
+    : content::RenderViewObserver(render_view)
 {
+}
+
+void UserResourceController::RenderFrameObserverHelper::DidFinishDocumentLoad()
+{
+    blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     m_pendingFrames.insert(frame);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::Bind(&UserResourceController::RenderViewObserverHelper::runScripts,
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::Bind(&UserResourceController::RenderFrameObserverHelper::runScripts,
                                                                                base::Unretained(this), UserScriptData::AfterLoad, frame),
                                                          base::TimeDelta::FromMilliseconds(afterLoadTimeout));
 }
 
-void UserResourceController::RenderViewObserverHelper::DidFinishLoad(blink::WebLocalFrame *frame)
+void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
 {
+    blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
+
     // DidFinishDocumentLoad always comes before this, so frame has already been marked as pending.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&UserResourceController::RenderViewObserverHelper::runScripts,
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&UserResourceController::RenderFrameObserverHelper::runScripts,
                                                                         base::Unretained(this), UserScriptData::AfterLoad, frame));
 }
 
-void UserResourceController::RenderViewObserverHelper::DidStartProvisionalLoad(blink::WebLocalFrame *frame)
+void UserResourceController::RenderFrameObserverHelper::DidStartProvisionalLoad(blink::WebDataSource *data_source)
 {
+    Q_UNUSED(data_source);
+    blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     m_pendingFrames.remove(frame);
 }
 
-void UserResourceController::RenderViewObserverHelper::FrameDetached(blink::WebFrame *frame)
+void UserResourceController::RenderFrameObserverHelper::FrameDetached()
 {
-    if (frame->IsWebLocalFrame())
-        m_pendingFrames.remove(frame->ToWebLocalFrame());
+    blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
+    m_pendingFrames.remove(frame);
+}
+
+void UserResourceController::RenderFrameObserverHelper::OnDestruct()
+{
+    // FIXME: Without this the instance will leak, but we can't delete it because the posted tasks
+    // could be executed after the instance is deleted.
+    //delete this;
 }
 
 void UserResourceController::RenderViewObserverHelper::OnDestruct()
 {
+    // Remove all scripts associated with the render view.
     UserResourceController::instance()->renderViewDestroyed(render_view());
+    delete this;
 }
 
-bool UserResourceController::RenderViewObserverHelper::OnMessageReceived(const IPC::Message &message)
+bool UserResourceController::RenderFrameObserverHelper::OnMessageReceived(const IPC::Message &message)
 {
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(UserResourceController::RenderViewObserverHelper, message)
-        IPC_MESSAGE_HANDLER(RenderViewObserverHelper_AddScript, onUserScriptAdded)
-        IPC_MESSAGE_HANDLER(RenderViewObserverHelper_RemoveScript, onUserScriptRemoved)
-        IPC_MESSAGE_HANDLER(RenderViewObserverHelper_ClearScripts, onScriptsCleared)
+    IPC_BEGIN_MESSAGE_MAP(UserResourceController::RenderFrameObserverHelper, message)
+        IPC_MESSAGE_HANDLER(RenderFrameObserverHelper_AddScript, onUserScriptAdded)
+        IPC_MESSAGE_HANDLER(RenderFrameObserverHelper_RemoveScript, onUserScriptRemoved)
+        IPC_MESSAGE_HANDLER(RenderFrameObserverHelper_ClearScripts, onScriptsCleared)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
             return handled;
 }
 
-void UserResourceController::RenderViewObserverHelper::onUserScriptAdded(const UserScriptData &script)
+void UserResourceController::RenderFrameObserverHelper::onUserScriptAdded(const UserScriptData &script)
 {
-    UserResourceController::instance()->addScriptForView(script, render_view());
+    content::RenderView *view = render_frame()->GetRenderView();
+    UserResourceController::instance()->addScriptForView(script, view);
 }
 
-void UserResourceController::RenderViewObserverHelper::onUserScriptRemoved(const UserScriptData &script)
+void UserResourceController::RenderFrameObserverHelper::onUserScriptRemoved(const UserScriptData &script)
 {
-    UserResourceController::instance()->removeScriptForView(script, render_view());
+    content::RenderView *view = render_frame()->GetRenderView();
+    UserResourceController::instance()->removeScriptForView(script, view);
 }
 
-void UserResourceController::RenderViewObserverHelper::onScriptsCleared()
+void UserResourceController::RenderFrameObserverHelper::onScriptsCleared()
 {
-    UserResourceController::instance()->clearScriptsForView(render_view());
+    content::RenderView *view = render_frame()->GetRenderView();
+    UserResourceController::instance()->clearScriptsForView(view);
 }
 
 UserResourceController *UserResourceController::instance()
@@ -248,9 +285,16 @@ UserResourceController::UserResourceController()
 #endif // !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
 }
 
+void UserResourceController::renderFrameCreated(content::RenderFrame *renderFrame)
+{
+    // FIXME: Actually make this to be true.
+    // Will destroy itself when the RenderView is destroyed.
+    new RenderFrameObserverHelper(renderFrame);
+}
+
 void UserResourceController::renderViewCreated(content::RenderView *renderView)
 {
-    // Will destroy itself with their RenderView.
+    // Will destroy itself when the RenderView is destroyed.
     new RenderViewObserverHelper(renderView);
 }
 

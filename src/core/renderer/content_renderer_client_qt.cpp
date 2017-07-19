@@ -57,6 +57,9 @@
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/child/child_thread.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/simple_connection_filter.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
@@ -75,7 +78,7 @@
 #include "renderer/render_view_observer_qt.h"
 #include "renderer/user_resource_controller.h"
 #include "renderer/web_channel_ipc_transport.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 #include "components/grit/components_resources.h"
 
@@ -98,8 +101,16 @@ void ContentRendererClientQt::RenderThreadStarted()
     content::RenderThread *renderThread = content::RenderThread::Get();
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheImpl.reset(new web_cache::WebCacheImpl());
-    renderThread->GetInterfaceRegistry()->AddInterface(
-        m_visitedLinkSlave->GetBindCallback());
+
+    auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+    registry->AddInterface(m_visitedLinkSlave->GetBindCallback(),
+                           base::ThreadTaskRunnerHandle::Get());
+    content::ChildThread::Get()
+        ->GetServiceManagerConnection()
+        ->AddConnectionFilter(base::MakeUnique<content::SimpleConnectionFilter>(
+            std::move(registry)));
+
+
     renderThread->AddObserver(UserResourceController::instance());
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -119,6 +130,8 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)
 {
     new QtWebEngineCore::RenderFrameObserverQt(render_frame);
+    UserResourceController::instance()->renderFrameCreated(render_frame);
+
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     new SpellCheckProvider(render_frame, m_spellCheck.data());
 #endif

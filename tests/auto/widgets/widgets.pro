@@ -6,8 +6,7 @@ SUBDIRS += \
     qwebenginefaviconmanager \
     qwebenginepage \
     qwebenginehistory \
-    # Skipped to due issue in 58-based. Restore once 60-based is in.
-    #qwebenginehistoryinterface \
+    qwebenginehistoryinterface \
     qwebengineinspector \
     qwebengineprofile \
     qwebenginescript \

@@ -64,6 +64,10 @@ RenderFrameObserverQt::~RenderFrameObserverQt()
 {
 }
 
+void RenderFrameObserverQt::OnDestruct() {
+    delete this;
+}
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 void RenderFrameObserverQt::DidCreatePepperPlugin(content::RendererPpapiHost* host)
 {

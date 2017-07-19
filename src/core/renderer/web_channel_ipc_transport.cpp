@@ -254,4 +254,9 @@ bool WebChannelIPCTransport::OnMessageReceived(const IPC::Message &message)
     return handled;
 }
 
+void WebChannelIPCTransport::OnDestruct()
+{
+    delete this;
+}
+
 } // namespace

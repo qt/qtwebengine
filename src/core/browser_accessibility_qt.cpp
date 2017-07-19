@@ -261,7 +261,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
         return QAccessible::NoRole; // FIXME
-    case ui::AX_ROLE_DIV:
+    case ui::AX_ROLE_GENERIC_CONTAINER:
         return QAccessible::Section;
     case ui::AX_ROLE_DOCUMENT:
         return QAccessible::Document;
@@ -454,7 +454,7 @@ QAccessible::State BrowserAccessibilityQt::state() const
     int32_t s = GetState();
     if (s & (1 << ui::AX_STATE_BUSY))
         state.busy = true;
-    if (s & (1 << ui::AX_STATE_CHECKED))
+    if (s & (1 << ui::AX_CHECKED_STATE_TRUE))
         state.checked = true;
     if (s & (1 << ui::AX_STATE_COLLAPSED))
         state.collapsed = true;

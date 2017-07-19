@@ -83,6 +83,11 @@ void RenderViewObserverQt::onSetBackgroundColor(quint32 color)
     render_view()->GetWebFrameWidget()->SetBaseBackgroundColor(color);
 }
 
+void RenderViewObserverQt::OnDestruct()
+{
+    delete this;
+}
+
 bool RenderViewObserverQt::OnMessageReceived(const IPC::Message& message)
 {
     bool handled = true;

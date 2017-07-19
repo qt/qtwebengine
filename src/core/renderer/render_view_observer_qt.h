@@ -57,7 +57,7 @@ private:
     void onFetchDocumentInnerText(quint64 requestId);
     void onSetBackgroundColor(quint32 color);
 
-    void OnDestruct() override { }
+    void OnDestruct() override;
 
     bool OnMessageReceived(const IPC::Message& message) override;
     void Navigate(const GURL& url) override;

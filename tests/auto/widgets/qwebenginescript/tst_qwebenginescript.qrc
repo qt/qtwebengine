@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>resources/test_iframe_main.html</file>
+    <file>resources/test_iframe_outer.html</file>
+    <file>resources/test_iframe_inner.html</file>
+</qresource>
+</RCC>

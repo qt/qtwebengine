@@ -352,13 +352,20 @@ SkBitmap ClipboardQt::ReadImage(ui::ClipboardType type) const
 
     image = image.convertToFormat(QImage::Format_ARGB32);
     SkBitmap bitmap;
-    bitmap.setInfo(SkImageInfo::MakeN32(image.width(), image.height(), kOpaque_SkAlphaType));
-    bitmap.setPixels(const_cast<uchar*>(image.constBits()));
 
-    // Return a deep copy of the pixel data.
-    SkBitmap copy;
-    bitmap.copyTo(&copy, kN32_SkColorType);
-    return copy;
+    bitmap.allocN32Pixels(image.width(), image.height(), true);
+    const size_t bytesPerRowDst = bitmap.rowBytes();
+    const size_t bytesPerLineSrc = static_cast<size_t>(image.bytesPerLine());
+    const size_t dataBytes = std::min(bytesPerRowDst, bytesPerLineSrc);
+    uchar *dst = static_cast<uchar *>(bitmap.getPixels());
+    const uchar *src = image.constBits();
+    for (int y = 0; y < image.height(); ++y) {
+        memcpy(dst, src, dataBytes);
+        dst += bytesPerRowDst;
+        src += bytesPerLineSrc;
+    }
+
+    return bitmap;
 }
 
 void ClipboardQt::ReadCustomData(ui::ClipboardType clipboard_type, const base::string16& type, base::string16* result) const

@@ -38,6 +38,7 @@ private Q_SLOTS:
     void webChannel_data();
     void webChannel();
     void noTransportWithoutWebChannel();
+    void scriptsInNestedIframes();
 };
 
 void tst_QWebEngineScript::domEditing()
@@ -244,6 +245,58 @@ void tst_QWebEngineScript::noTransportWithoutWebChannel()
     QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
     QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "qt.webChannelTransport"), QVariant(QVariant::Invalid));
+}
+
+void tst_QWebEngineScript::scriptsInNestedIframes()
+{
+    QWebEnginePage page;
+    QWebEngineView view;
+    view.setPage(&page);
+    QWebEngineScript s;
+    s.setInjectionPoint(QWebEngineScript::DocumentReady);
+    s.setWorldId(QWebEngineScript::ApplicationWorld);
+
+    // Prepend a "Modified prefix" to every frame's div content.
+    s.setSourceCode("var elements = document.getElementsByTagName(\"div\");\
+                    var i;\
+                    for (i = 0; i < elements.length; i++) {\
+                        var content = elements[i].innerHTML;\
+                        elements[i].innerHTML = \"Modified \" + content;\
+                    }\
+                    ");
+
+    // Make sure the script runs on all frames.
+    s.setRunsOnSubFrames(true);
+    page.scripts().insert(s);
+
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    page.load(QUrl("qrc:/resources/test_iframe_main.html"));
+    view.show();
+    QVERIFY(spyFinished.wait());
+
+    // Check that main frame has modified content.
+    QCOMPARE(
+        evaluateJavaScriptSyncInWorld(&page, "document.getElementsByTagName(\"div\")[0].innerHTML",
+                                      QWebEngineScript::ApplicationWorld),
+                QVariant::fromValue(QStringLiteral("Modified Main text")));
+
+    // Check that outer frame has modified content.
+    QCOMPARE(
+        evaluateJavaScriptSyncInWorld(&page,
+                                      "var i = document.getElementById(\"outer\").contentDocument;\
+                                       i.getElementsByTagName(\"div\")[0].innerHTML",
+                                      QWebEngineScript::ApplicationWorld),
+                QVariant::fromValue(QStringLiteral("Modified Outer text")));
+
+
+    // Check that inner frame has modified content.
+    QCOMPARE(
+        evaluateJavaScriptSyncInWorld(&page,
+                                      "var i = document.getElementById(\"outer\").contentDocument;\
+                                       var i2 = i.getElementById(\"inner\").contentDocument;\
+                                       i2.getElementsByTagName(\"div\")[0].innerHTML",
+                                      QWebEngineScript::ApplicationWorld),
+                QVariant::fromValue(QStringLiteral("Modified Inner text")));
 }
 
 QTEST_MAIN(tst_QWebEngineScript)

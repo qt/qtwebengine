@@ -69,7 +69,7 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
-#include "components/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
@@ -236,8 +236,11 @@ public:
                                  QSGNode *) override
     {
         QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
-        if (textureNode->texture() != texture)
+        if (textureNode->texture() != texture) {
             textureNode->setTexture(texture);
+            // @TODO: This is a workaround for funky rendering, figure out why this is needed.
+            textureNode->markDirty(QSGTextureNode::DirtyGeometry);
+        }
         if (textureNode->textureCoordinatesTransform() != texCoordTransForm)
             textureNode->setTextureCoordinatesTransform(texCoordTransForm);
         if (textureNode->rect() != rect)
@@ -251,15 +254,17 @@ public:
                                QSGTexture::Filtering filtering, QSGNode *) override
     {
         QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
-
+        if (textureNode->texture() != texture) {
+            textureNode->setTexture(texture);
+            // @TODO: This is a workaround for funky rendering, figure out why this is needed.
+            textureNode->markDirty(QSGTextureNode::DirtyGeometry);
+        }
         if (textureNode->rect() != rect)
             textureNode->setRect(rect);
         if (textureNode->sourceRect() != sourceRect)
             textureNode->setSourceRect(sourceRect);
         if (textureNode->filtering() != filtering)
             textureNode->setFiltering(filtering);
-        if (textureNode->texture() != texture)
-            textureNode->setTexture(texture);
     }
     void setupSolidColorNode(const QRect &rect, const QColor &color, QSGNode *) override
     {
@@ -652,7 +657,7 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
     if (!texture) {
         if (m_resource.is_software) {
             Q_ASSERT(apiDelegate);
-            std::unique_ptr<cc::SharedBitmap> sharedBitmap = display_compositor::HostSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size, m_resource.mailbox_holder.mailbox);
+            std::unique_ptr<cc::SharedBitmap> sharedBitmap = viz::HostSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size, m_resource.mailbox_holder.mailbox);
             // QSG interprets QImage::hasAlphaChannel meaning that a node should enable blending
             // to draw it but Chromium keeps this information in the quads.
             // The input format is currently always Format_ARGB32_Premultiplied, so assume that all

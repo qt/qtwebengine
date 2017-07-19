@@ -122,8 +122,9 @@ host_build {
     }
 
     qtConfig(system-zlib): use?(system_minizip): gn_args += use_system_zlib=true use_system_minizip=true
-    qtConfig(system-png): gn_args += use_system_libpng=true
+    use?(system_libpng): gn_args += use_system_libpng=true
     qtConfig(system-jpeg): gn_args += use_system_libjpeg=true
+    qtConfig(system-freetype): gn_args += use_system_freetype=true
     use?(system_harfbuzz): gn_args += use_system_harfbuzz=true
     !use?(glib): gn_args += use_glib=false
     qtConfig(pulseaudio) {

@@ -158,6 +158,7 @@ public:
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) override;
     void ClearCompositorFrame() override;
     void SetNeedsBeginFrames(bool needs_begin_frames) override;
+    void OnSetNeedsFlushInput() override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -255,6 +256,7 @@ private:
 
     std::unique_ptr<cc::SyntheticBeginFrameSource> m_beginFrameSource;
     bool m_needsBeginFrames;
+    bool m_needsFlushInput;
     bool m_addedFrameObserver;
 
     gfx::Vector2dF m_lastScrollOffset;

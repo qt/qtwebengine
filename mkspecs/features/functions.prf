@@ -38,26 +38,31 @@ defineTest(isPlatformSupported) {
       return(false)
     }
   } else:osx {
-    lessThan(QMAKE_XCODE_VERSION, 5.1) {
-      skipBuild("Using XCode version $$QMAKE_XCODE_VERSION, but at least version 5.1 is required to build Qt WebEngine.")
+    lessThan(QMAKE_XCODE_VERSION, 7.3) {
+      skipBuild("Using Xcode version $$QMAKE_XCODE_VERSION, but at least version 7.3 is required to build Qt WebEngine.")
       return(false)
     }
     !clang|intel_icc {
         skipBuild("Qt WebEngine on macOS requires Clang.")
         return(false)
     }
-    # We require OS X 10.0 (darwin version 14.0.0) or newer
+    # We require macOS 10.11 (darwin version 15.0.0) or newer.
     darwin_major_version = $$section(QMAKE_HOST.version, ., 0, 0)
-    lessThan(darwin_major_version, 14) {
-      skipBuild("Qt WebEngine requires OS X version 10.10 or newer.")
+    lessThan(darwin_major_version, 15) {
+      skipBuild("Building Qt WebEngine requires macOS version 10.11 or newer.")
       return(false)
     }
     !isMinOSXSDKVersion(10, 10): {
-      skipBuild("Qt WebEngine requires an OS X SDK version of 10.10 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
+      skipBuild("Building Qt WebEngine requires a macOS SDK version of 10.11 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
       return(false)
     }
   } else {
-    skipBuild("Unknown platform. Qt WebEngine only supports Linux, Windows, and OS X.")
+    skipBuild("Unknown platform. Qt WebEngine only supports Linux, Windows, and macOS.")
+    return(false)
+  }
+
+  cross_compile {
+    skipBuild("Temporarily disable failing b2qt builds until they are fixed in Coin.")
     return(false)
   }
 

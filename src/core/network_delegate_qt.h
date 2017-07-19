@@ -93,6 +93,13 @@ public:
     virtual bool OnCanEnablePrivacyMode(const GURL&, const GURL&) const override;
     virtual bool OnAreExperimentalCookieFeaturesEnabled() const override;
     virtual bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const override;
+
+    virtual bool OnCanQueueReportingReport(const url::Origin& origin) const override;
+    virtual bool OnCanSendReportingReport(const url::Origin& origin) const override;
+    virtual bool OnCanSetReportingClient(const url::Origin& origin,
+                                         const GURL& endpoint) const override;
+    virtual bool OnCanUseReportingClient(const url::Origin& origin,
+                                         const GURL& endpoint) const override;
 };
 
 } // namespace QtWebEngineCore

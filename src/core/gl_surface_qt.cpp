@@ -437,6 +437,11 @@ bool GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported()
     return false;
 }
 
+bool GLSurfaceEGL::IsEGLContextPrioritySupported()
+{
+    return false;
+}
+
 void GLSurfaceEGL::ShutdownOneOff()
 {
 }

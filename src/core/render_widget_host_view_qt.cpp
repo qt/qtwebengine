@@ -73,6 +73,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 
 #if defined(USE_AURA)
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursors_aura.h"
 #endif
 
@@ -218,7 +219,8 @@ public:
     }
     int GetFlags() const override { return flags; }
     float GetPressure(size_t pointer_index) const override { return touchPoints.at(pointer_index).pressure(); }
-    float GetTilt(size_t pointer_index) const override { return 0; }
+    float GetTiltX(size_t pointer_index) const override { return 0; }
+    float GetTiltY(size_t pointer_index) const override { return 0; }
     base::TimeTicks GetEventTime() const override { return eventTime; }
 
     size_t GetHistorySize() const override { return 0; }
@@ -267,6 +269,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_initPending(false)
     , m_beginFrameSource(nullptr)
     , m_needsBeginFrames(false)
+    , m_needsFlushInput(false)
     , m_addedFrameObserver(false)
     , m_backgroundColor(SK_ColorWHITE)
     , m_imState(0)
@@ -487,7 +490,7 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
     webCursor.GetCursorInfo(&cursorInfo);
     Qt::CursorShape shape = Qt::ArrowCursor;
 #if defined(USE_AURA)
-    int auraType = -1;
+    ui::CursorType auraType = ui::CursorType::kNull;
 #endif
     switch (cursorInfo.type) {
     case blink::WebCursorInfo::kTypePointer:
@@ -551,25 +554,25 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
         break;
 #if defined(USE_AURA)
     case blink::WebCursorInfo::kTypeVerticalText:
-        auraType = ui::kCursorVerticalText;
+        auraType = ui::CursorType::kVerticalText;
         break;
     case blink::WebCursorInfo::kTypeCell:
-        auraType = ui::kCursorCell;
+        auraType = ui::CursorType::kCell;
         break;
     case blink::WebCursorInfo::kTypeContextMenu:
-        auraType = ui::kCursorContextMenu;
+        auraType = ui::CursorType::kContextMenu;
         break;
     case blink::WebCursorInfo::kTypeAlias:
-        auraType = ui::kCursorAlias;
+        auraType = ui::CursorType::kAlias;
         break;
     case blink::WebCursorInfo::kTypeCopy:
-        auraType = ui::kCursorCopy;
+        auraType = ui::CursorType::kCopy;
         break;
     case blink::WebCursorInfo::kTypeZoomIn:
-        auraType = ui::kCursorZoomIn;
+        auraType = ui::CursorType::kZoomIn;
         break;
     case blink::WebCursorInfo::kTypeZoomOut:
-        auraType = ui::kCursorZoomOut;
+        auraType = ui::CursorType::kZoomOut;
         break;
 #else
     case blink::WebCursorInfo::kTypeVerticalText:
@@ -604,7 +607,7 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
         break;
     }
 #if defined(USE_AURA)
-    if (auraType > 0) {
+    if (auraType != ui::CursorType::kNull) {
         SkBitmap bitmap;
         gfx::Point hotspot;
         if (ui::GetCursorBitmap(auraType, &bitmap, &hotspot)) {
@@ -1479,24 +1482,34 @@ void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
     updateNeedsBeginFramesInternal();
 }
 
+void RenderWidgetHostViewQt::OnSetNeedsFlushInput()
+{
+    m_needsFlushInput = true;
+    updateNeedsBeginFramesInternal();
+}
+
 void RenderWidgetHostViewQt::updateNeedsBeginFramesInternal()
 {
     if (!m_beginFrameSource)
         return;
 
-    if (m_addedFrameObserver == m_needsBeginFrames)
+    // Based on upstream Chromium commit 7f7c8cc8b97dd0d5c9159d9e60c62efbc35e6b53.
+    bool needsFrame = m_needsBeginFrames || m_needsFlushInput;
+    if (m_addedFrameObserver == needsFrame)
         return;
 
-    if (m_needsBeginFrames)
+    m_addedFrameObserver = needsFrame;
+    if (needsFrame)
         m_beginFrameSource->AddObserver(this);
     else
         m_beginFrameSource->RemoveObserver(this);
-    m_addedFrameObserver = m_needsBeginFrames;
 }
 
 bool RenderWidgetHostViewQt::OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args)
 {
+    m_needsFlushInput = false;
     m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
+    updateNeedsBeginFramesInternal();
     m_host->Send(new ViewMsg_BeginFrame(m_host->GetRoutingID(), args));
     return true;
 }

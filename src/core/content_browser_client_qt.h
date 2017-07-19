@@ -66,6 +66,7 @@ class ResourceContext;
 class WebContentsViewPort;
 class WebContents;
 struct MainFunctionParams;
+struct Referrer;
 }
 
 namespace gl {
@@ -73,7 +74,7 @@ class GLShareGroup;
 }
 
 namespace service_manager {
-class InterfaceRegistry;
+class BinderRegistry;
 }
 
 namespace QtWebEngineCore {
@@ -109,6 +110,7 @@ public:
                                        const base::Callback<void(content::CertificateRequestResultType)>& callback) override;
     void SelectClientCertificate(content::WebContents* web_contents,
                                          net::SSLCertRequestInfo* cert_request_info,
+                                         net::CertificateList client_certs,
                                          std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() override;
 
@@ -117,7 +119,22 @@ public:
     void AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id) override;
     void GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes) override;
 
-    void RegisterRenderFrameMojoInterfaces(service_manager::InterfaceRegistry* registry, content::RenderFrameHost* render_frame_host) override;
+    void ExposeInterfacesToFrame(service_manager::BinderRegistry* registry, content::RenderFrameHost* render_frame_host) override;
+
+    bool CanCreateWindow(
+        content::RenderFrameHost* opener,
+        const GURL& opener_url,
+        const GURL& opener_top_level_frame_url,
+        const GURL& source_origin,
+        content::mojom::WindowContainerType container_type,
+        const GURL& target_url,
+        const content::Referrer& referrer,
+        const std::string& frame_name,
+        WindowOpenDisposition disposition,
+        const blink::mojom::WindowFeatures& features,
+        bool user_gesture,
+        bool opener_suppressed,
+        bool* no_javascript_access) override;
 
 #if defined(Q_OS_LINUX)
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::FileDescriptorInfo* mappings) override;

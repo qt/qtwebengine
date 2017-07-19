@@ -61,6 +61,7 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -196,7 +197,8 @@ void WebEngineContext::destroy()
         m_devtoolsServer->stop();
     delete m_globalQObject;
     m_globalQObject = 0;
-    base::MessagePump::Delegate *delegate = m_runLoop->loop_;
+    base::MessagePump::Delegate *delegate =
+            static_cast<base::MessageLoop *>(m_runLoop->delegate_);
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
     GLContextHelper::destroy();
@@ -345,6 +347,13 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
 
+    // Needed to allow navigations within pages that were set using setHtml(). One example is
+    // tst_QWebEnginePage::acceptNavigationRequest.
+    // This is deprecated behavior, and will be removed in a future Chromium version, as per
+    // upstream Chromium commit ba52f56207a4b9d70b34880fbff2352e71a06422.
+    parsedCommandLine->AppendSwitchASCII(switches::kEnableFeatures,
+                                         features::kAllowContentInitiatedDataUrlNavigations.name);
+
     if (useEmbeddedSwitches) {
         parsedCommandLine->AppendSwitchASCII(switches::kEnableFeatures, features::kOverlayScrollbar.name);
         if (!parsedCommandLine->HasSwitch(switches::kDisablePinch))
@@ -408,8 +417,7 @@ WebEngineContext::WebEngineContext()
                     QSurfaceFormat globalSharedFormat = qt_gl_global_share_context()->format();
                     if (globalSharedFormat.profile() == QSurfaceFormat::CoreProfile) {
 #ifdef Q_OS_MACOS
-                        // @TODO_FIXME_ADAPT_QT
-                        // glType = gl::kGLImplementationCoreProfileName;
+                        glType = gl::kGLImplementationCoreProfileName;
 #else
                         qWarning("An OpenGL Core Profile was requested, but it is not supported "
                                  "on the current platform. Falling back to a non-Core profile. "
@@ -439,7 +447,6 @@ WebEngineContext::WebEngineContext()
     mojo::edk::Init();
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
-    contentMainParams.setup_signal_handlers = false;
 #if defined(OS_WIN)
     sandbox::SandboxInterfaceInfo sandbox_info = {0};
     content::InitializeSandboxInfo(&sandbox_info);

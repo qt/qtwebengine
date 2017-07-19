@@ -4,11 +4,10 @@ gn_args += \
     use_qt=true \
     is_component_build=false \
     is_shared=true \
-    enable_media_router=false \
     enable_nacl=false \
     enable_remoting=false \
     enable_web_speech=false \
-    use_experimental_allocator_shim=false \
+    use_allocator_shim=false \
     use_allocator=\"none\" \
     v8_use_external_startup_data=false \
     treat_warnings_as_errors=false \
@@ -54,6 +53,10 @@ CONFIG(release, debug|release) {
     } else {
         gn_args += symbol_level=0
     }
+}
+
+CONFIG(debug, debug|release) {
+    gn_args += use_debug_fission=false
 }
 
 !webcore_debug: gn_args += remove_webcore_debug_symbols=true

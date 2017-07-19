@@ -68,7 +68,6 @@ void tst_QWebEngineAccessibility::cleanup()
 
 void tst_QWebEngineAccessibility::noPage()
 {
-    QSKIP("Skip to due 58-based issues. Restore once 60-based is in.");
     QWebEngineView webView;
     webView.show();
 
@@ -85,7 +84,6 @@ void tst_QWebEngineAccessibility::noPage()
 
 void tst_QWebEngineAccessibility::hierarchy()
 {
-    QSKIP("Skip to due 58-based issues. Restore once 60-based is in.");
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
         "Hello world" \
@@ -146,7 +144,6 @@ void tst_QWebEngineAccessibility::hierarchy()
 
 void tst_QWebEngineAccessibility::text()
 {
-    QSKIP("Skip to due 58-based issues. Restore once 60-based is in.");
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
         "<input type='text' value='Good morning!'></input>" \
@@ -216,7 +213,6 @@ void tst_QWebEngineAccessibility::text()
 
 void tst_QWebEngineAccessibility::value()
 {
-    QSKIP("Skip to due 58-based issues. Restore once 60-based is in.");
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
         "<div role='slider' aria-valuenow='4' aria-valuemin='1' aria-valuemax='10'></div>" \
@@ -294,7 +290,7 @@ void tst_QWebEngineAccessibility::roles_data()
     QTest::newRow("AX_ROLE_DIALOG") << QString("<div role='dialog'></div>") << true << QAccessible::Dialog;
     //QTest::newRow("AX_ROLE_DIRECTORY") << QString("<div role='directory'></div>") << true << QAccessible::NoRole; // FIXME: Aria role 'directory' should work
     QTest::newRow("AX_ROLE_DISCLOSURE_TRIANGLE") << QString("<details><summary>a</summary></details>") << false << QAccessible::NoRole;
-    QTest::newRow("AX_ROLE_DIV") << QString("<div>a</div>") << true << QAccessible::Section;
+    QTest::newRow("AX_ROLE_GENERIC_CONTAINER") << QString("<div>a</div>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_DOCUMENT") << QString("<div role='document'>a</div>") << true << QAccessible::Document;
     QTest::newRow("AX_ROLE_EMBEDDED_OBJECT") << QString("<object width='10' height='10'></object>") << false << QAccessible::Grouping;
     QTest::newRow("AX_ROLE_FEED") << QString("<div role='feed'>a</div>") << true << QAccessible::Section;
@@ -305,7 +301,7 @@ void tst_QWebEngineAccessibility::roles_data()
     QTest::newRow("AX_ROLE_GRID") << QString("<div role='grid'></div>") << true << QAccessible::Table;
     QTest::newRow("AX_ROLE_GROUP") << QString("<fieldset></fieldset>") << true << QAccessible::Grouping;
     QTest::newRow("AX_ROLE_HEADING") << QString("<h1>a</h1>") << true << QAccessible::Heading;
-    QTest::newRow("AX_ROLE_IFRAME") << QString("<iframe>a</iframe>") << true << QAccessible::Grouping;
+    QTest::newRow("AX_ROLE_IFRAME") << QString("<iframe>a</iframe>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_IFRAME_PRESENTATIONAL") << QString("<iframe role='presentation'>a</iframe>") << false << QAccessible::NoRole;
     //QTest::newRow("AX_ROLE_IGNORED") << QString("<tag>a</tag>") << true << QAccessible::NoRole; // FIXME: The HTML element should not be exposed as an element (see AXNodeObject.cpp)
     QTest::newRow("AX_ROLE_IMAGE") << QString("<img>") << false << QAccessible::Graphic;
@@ -390,7 +386,6 @@ void tst_QWebEngineAccessibility::roles_data()
 
 void tst_QWebEngineAccessibility::roles()
 {
-    QSKIP("Skip to due 58-based issues. Restore once 60-based is in.");
     QFETCH(QString, html);
     QFETCH(bool, isSection);
     QFETCH(QAccessible::Role, role);

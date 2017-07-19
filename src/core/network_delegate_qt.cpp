@@ -316,4 +316,24 @@ bool NetworkDelegateQt::OnCancelURLRequestWithPolicyViolatingReferrerHeader(cons
     return false;
 }
 
+bool NetworkDelegateQt::OnCanQueueReportingReport(const url::Origin& origin) const
+{
+    return false;
+}
+
+bool NetworkDelegateQt::OnCanSendReportingReport(const url::Origin& origin) const
+{
+    return false;
+}
+
+bool NetworkDelegateQt::OnCanSetReportingClient(const url::Origin& origin, const GURL& endpoint) const
+{
+    return false;
+}
+
+bool NetworkDelegateQt::OnCanUseReportingClient(const url::Origin& origin, const GURL& endpoint) const
+{
+    return false;
+}
+
 } // namespace QtWebEngineCore

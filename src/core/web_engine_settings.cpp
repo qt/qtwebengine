@@ -106,7 +106,6 @@ static inline bool isTouchEventsAPIEnabled() {
     return touchEventsAPIEnabled;
 }
 
-
 WebEngineSettings::WebEngineSettings(WebEngineSettings *_parentSettings)
     : m_adapter(0)
     , m_batchTimer(new BatchTimer(this))
@@ -317,7 +316,6 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     // Attributes mapping.
     prefs->loads_images_automatically = testAttribute(AutoLoadImages);
     prefs->javascript_enabled = testAttribute(JavascriptEnabled);
-    prefs->javascript_can_open_windows_automatically = testAttribute(JavascriptCanOpenWindows);
     prefs->javascript_can_access_clipboard = testAttribute(JavascriptCanAccessClipboard);
     prefs->tabs_to_links = testAttribute(LinksIncludedInFocusChain);
     prefs->local_storage_enabled = testAttribute(LocalStorageEnabled);
@@ -359,6 +357,11 @@ void WebEngineSettings::scheduleApplyRecursively()
     Q_FOREACH (WebEngineSettings *settings, childSettings) {
         settings->scheduleApply();
     }
+}
+
+bool WebEngineSettings::getJavaScriptCanOpenWindowsAutomatically()
+{
+    return testAttribute(JavascriptCanOpenWindows);
 }
 
 void WebEngineSettings::setParentSettings(WebEngineSettings *_parentSettings)

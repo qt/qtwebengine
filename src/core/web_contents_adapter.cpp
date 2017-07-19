@@ -169,7 +169,7 @@ static QVariant fromJSValue(const base::Value *result)
     }
     case base::Value::Type::BINARY:
     {
-        QByteArray data(result->GetBuffer(), result->GetSize());
+        QByteArray data(result->GetBlob().data(), result->GetBlob().size());
         ret.setValue(data);
         break;
     }

@@ -293,12 +293,12 @@ class WebViewCrashTest : public QObject {
     Q_OBJECT
     QWebEngineView* m_view;
 public:
-    bool m_executed;
+    bool m_invokedStop;
 
 
     WebViewCrashTest(QWebEngineView* view)
       : m_view(view)
-      , m_executed(false)
+      , m_invokedStop(false)
     {
         view->connect(view, SIGNAL(loadProgress(int)), this, SLOT(loading(int)));
     }
@@ -306,10 +306,11 @@ public:
 private Q_SLOTS:
     void loading(int progress)
     {
-        if (progress > 1 && progress < 100) {
-            QVERIFY(!m_executed);
+        qDebug() << "progress: " << progress;
+        if (progress > 0 && progress < 100) {
+            QVERIFY(!m_invokedStop);
             m_view->stop();
-            m_executed = true;
+            m_invokedStop = true;
         }
     }
 };
@@ -324,7 +325,10 @@ void tst_QWebEngineView::crashTests()
     WebViewCrashTest tester(&view);
     QUrl url("qrc:///resources/index.html");
     view.load(url);
-    QTRY_VERIFY(tester.m_executed); // If fail it means that the test wasn't executed.
+
+    // If the verification fails, it means that either stopping doesn't work, or the hardware is
+    // too slow to load the page and thus to slow to issue the first loadProgress > 0 signal.
+    QTRY_VERIFY_WITH_TIMEOUT(tester.m_invokedStop, 10000);
 }
 
 void tst_QWebEngineView::microFocusCoordinates()
@@ -1609,7 +1613,7 @@ void tst_QWebEngineView::inputMethods()
     view.setHtml("<html><body>"
                  "  <input type='text' id='input1' style='font-family: serif' value='' maxlength='20' size='50'/>"
                  "</body></html>");
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_COMPARE(loadFinishedSpy.size(), 1);
 
     QPoint textInputCenter = elementCenter(view.page(), "input1");
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
@@ -1655,8 +1659,7 @@ void tst_QWebEngineView::inputMethods()
     QInputMethodEvent eventSelection1("", inputAttributes);
 
     QApplication::sendEvent(view.focusProxy(), &eventSelection1);
-    QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 1);
+    QTRY_COMPARE(selectionChangedSpy.size(), 1);
 
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 3);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 5);
@@ -1667,8 +1670,7 @@ void tst_QWebEngineView::inputMethods()
     inputAttributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 6, -5, QVariant());
     QInputMethodEvent eventSelection2("", inputAttributes);
     QApplication::sendEvent(view.focusProxy(), &eventSelection2);
-    QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 2);
+    QTRY_COMPARE(selectionChangedSpy.size(), 2);
 
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 1);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 6);
@@ -1681,8 +1683,7 @@ void tst_QWebEngineView::inputMethods()
     attributes.append(newSelection);
     QInputMethodEvent eventComposition("composition", attributes);
     QApplication::sendEvent(view.focusProxy(), &eventComposition);
-    QVERIFY(selectionChangedSpy.wait());
-    QCOMPARE(selectionChangedSpy.count(), 3);
+    QTRY_COMPARE(selectionChangedSpy.size(), 3);
     QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
 
     // An ongoing composition should not change the surrounding text before it is committed.
