@@ -590,7 +590,7 @@ void QQuickWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
     }
 #endif
     if (q->parentItem())
-        q->window()->sendEvent(q->parentItem(), event);
+        QCoreApplication::sendEvent(q->parentItem(), event);
 }
 
 void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &, const QUrl &targetUrl)
