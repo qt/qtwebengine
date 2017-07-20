@@ -84,7 +84,8 @@ public:
         PrintElementBackgrounds,
         AllowRunningInsecureContent,
         AllowGeolocationOnInsecureOrigins,
-        AllowWindowActivationFromJavaScript
+        AllowWindowActivationFromJavaScript,
+        HideScrollbars
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

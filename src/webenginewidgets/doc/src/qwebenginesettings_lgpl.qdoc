@@ -165,6 +165,9 @@
     \value  AllowWindowActivationFromJavaScript
             Allows the window.focus() method in JavaScript. Disallowed by default.
             (Added in Qt 5.10)
+    \value  HideScrollbars
+            Hides scrollbars.
+            Disabled by default. (Added in Qt 5.10)
 
 */
 

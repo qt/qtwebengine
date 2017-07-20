@@ -373,6 +373,16 @@ bool QQuickWebEngineSettings::allowWindowActivationFromJavaScript() const
 }
 
 /*!
+  \qmlproperty bool WebEngineSettings::hideScrollbars
+  \since QtWebEngine 1.6
+  Hides scrollbars. Disabled by default.
+*/
+bool QQuickWebEngineSettings::hideScrollbars() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::HideScrollbars);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -580,6 +590,14 @@ void QQuickWebEngineSettings::setAllowWindowActivationFromJavaScript(bool on)
     d_ptr->setAttribute(WebEngineSettings::AllowWindowActivationFromJavaScript, on);
     if (wasOn != on)
         Q_EMIT allowWindowActivationFromJavaScriptChanged();
+}
+
+void QQuickWebEngineSettings::setHideScrollbars(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::HideScrollbars);
+    d_ptr->setAttribute(WebEngineSettings::HideScrollbars, on);
+    if (wasOn != on)
+        Q_EMIT hideScrollbarsChanged();
 }
 
 void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)

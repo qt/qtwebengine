@@ -3515,39 +3515,19 @@ void tst_QWebEnginePage::scrollPosition()
 
 void tst_QWebEnginePage::scrollbarsOff()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
     QWebEngineView view;
-    QWebEngineFrame* mainFrame = view.page();
+    view.page()->settings()->setAttribute(QWebEngineSettings::HideScrollbars, true);
 
-    mainFrame->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
-    mainFrame->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
+    QString html("<html><body>"
+                 "   <div style='margin-top:1000px ; margin-left:1000px'>"
+                 "       <a id='offscreen' href='a'>End</a>"
+                 "   </div>"
+                 "</body></html>");
 
-    QString html("<script>" \
-                 "   function checkScrollbar() {" \
-                 "       if (innerWidth === document.documentElement.offsetWidth)" \
-                 "           document.getElementById('span1').innerText = 'SUCCESS';" \
-                 "       else" \
-                 "           document.getElementById('span1').innerText = 'FAIL';" \
-                 "   }" \
-                 "</script>" \
-                 "<body>" \
-                 "   <div style='margin-top:1000px ; margin-left:1000px'>" \
-                 "       <a id='offscreen' href='a'>End</a>" \
-                 "   </div>" \
-                 "<span id='span1'></span>" \
-                 "</body>");
-
-
-    QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
+    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     view.setHtml(html);
-    QVERIFY(loadSpy.wait(200);
-    QCOMPARE(loadSpy.count(), 1);
-
-    mainFrame->evaluateJavaScript("checkScrollbar();");
-    QCOMPARE(mainFrame->documentElement().findAll("span").at(0).toPlainText(), QString("SUCCESS"));
-#endif
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QVERIFY(evaluateJavaScriptSync(view.page(), "innerWidth == document.documentElement.offsetWidth").toBool());
 }
 
 void tst_QWebEnginePage::horizontalScrollAfterBack()

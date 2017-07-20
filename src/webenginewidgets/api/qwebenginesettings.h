@@ -90,7 +90,8 @@ public:
         PrintElementBackgrounds,
         AllowRunningInsecureContent,
         AllowGeolocationOnInsecureOrigins,
-        AllowWindowActivationFromJavaScript
+        AllowWindowActivationFromJavaScript,
+        HideScrollbars
     };
 
     enum FontSize {
