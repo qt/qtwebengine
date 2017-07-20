@@ -204,8 +204,13 @@ WebView *TabWidget::createTab(bool makeCurrent)
     webView->setPage(webPage);
     setupView(webView);
     addTab(webView, tr("(Untitled)"));
-    if (makeCurrent)
+    if (makeCurrent) {
         setCurrentWidget(webView);
+    } else {
+        // Workaround for QTBUG-61770
+        webView->resize(currentWidget()->size());
+        webView->show();
+    }
     return webView;
 }
 
