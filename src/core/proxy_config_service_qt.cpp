@@ -36,6 +36,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+
+//================ Based on ChromeProxyConfigService =======================
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -67,11 +70,10 @@ net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qt
     return net::ProxyServer(proxyScheme, net::HostPortPair(qtProxy.hostName().toStdString(), qtProxy.port()));
 }
 
-//================ Based on ChromeProxyConfigService =======================
-
 ProxyConfigServiceQt::ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService)
     : m_baseService(baseService.release()),
-      m_registeredObserver(false)
+      m_registeredObserver(false),
+      m_usesSystemConfiguration(false)
 {
 }
 
@@ -83,7 +85,6 @@ ProxyConfigServiceQt::~ProxyConfigServiceQt()
 
 void ProxyConfigServiceQt::AddObserver(net::ProxyConfigService::Observer *observer)
 {
-    RegisterObserver();
     m_observers.AddObserver(observer);
 }
 
@@ -94,28 +95,31 @@ void ProxyConfigServiceQt::RemoveObserver(net::ProxyConfigService::Observer *obs
 
 net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxyConfig(net::ProxyConfig *config)
 {
-    RegisterObserver();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+    m_usesSystemConfiguration = QNetworkProxyFactory::usesSystemConfiguration();
+#endif
+    if (m_usesSystemConfiguration) {
+        // Use Chromium's base service to retrieve system settings
+        net::ProxyConfig systemConfig;
+        ConfigAvailability systemAvailability = net::ProxyConfigService::CONFIG_UNSET;
+        if (m_baseService.get())
+            systemAvailability = m_baseService->GetLatestProxyConfig(&systemConfig);
+        *config = systemConfig;
+        // make sure to get updates via OnProxyConfigChanged
+        RegisterObserver();
+        return systemAvailability;
+    }
 
-    // Ask the base service if available.
-    net::ProxyConfig systemConfig;
-    ConfigAvailability systemAvailability = net::ProxyConfigService::CONFIG_UNSET;
-    if (m_baseService.get())
-        systemAvailability = m_baseService->GetLatestProxyConfig(&systemConfig);
-
+    // Use QNetworkProxy::applicationProxy settings
     const QNetworkProxy &qtProxy = QNetworkProxy::applicationProxy();
     if (qtProxy == m_qtApplicationProxy && !m_qtProxyConfig.proxy_rules().empty()) {
+        // no changes
         *config = m_qtProxyConfig;
         return CONFIG_VALID;
     }
+
     m_qtApplicationProxy = qtProxy;
     m_qtProxyConfig = net::ProxyConfig();
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
-    if (qtProxy.type() == QNetworkProxy::NoProxy
-            && QNetworkProxyFactory::usesSystemConfiguration()) {
-        *config = systemConfig;
-        return systemAvailability;
-    }
-#endif
 
     net::ProxyConfig::ProxyRules qtRules;
     net::ProxyServer server = fromQNetworkProxy(qtProxy);
@@ -145,31 +149,51 @@ net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxy
 
 void ProxyConfigServiceQt::OnLazyPoll()
 {
-    if (m_qtApplicationProxy != QNetworkProxy::applicationProxy()) {
-        net::ProxyConfig unusedConfig;
-        OnProxyConfigChanged(unusedConfig, CONFIG_VALID);
-    }
-    if (m_baseService.get())
-        m_baseService->OnLazyPoll();
-}
-
-
-void ProxyConfigServiceQt::OnProxyConfigChanged(const net::ProxyConfig &config, ConfigAvailability availability)
-{
-    Q_UNUSED(config);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-    if (m_qtApplicationProxy != QNetworkProxy::applicationProxy()
-            || m_qtApplicationProxy.type() == QNetworkProxy::NoProxy) {
-        net::ProxyConfig actual_config;
-        availability = GetLatestProxyConfig(&actual_config);
-        if (availability == CONFIG_PENDING)
-            return;
-        for (net::ProxyConfigService::Observer &observer: m_observers)
-            observer.OnProxyConfigChanged(actual_config, availability);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+    // We need to update if
+    // - setUseSystemConfiguration() was called in between
+    // - user changed application proxy
+    if (m_usesSystemConfiguration != QNetworkProxyFactory::usesSystemConfiguration()
+        || (!m_usesSystemConfiguration && m_qtApplicationProxy != QNetworkProxy::applicationProxy())) {
+        Update();
+    } else if (m_usesSystemConfiguration) {
+        if (m_baseService.get())
+            m_baseService->OnLazyPoll();
     }
+#else
+    if (m_qtApplicationProxy != QNetworkProxy::applicationProxy())
+        Update();
+#endif
 }
 
+// Called when the base service changed
+void ProxyConfigServiceQt::OnProxyConfigChanged(const net::ProxyConfig &config, ConfigAvailability availability)
+{
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    Q_UNUSED(config);
+
+    if (!m_usesSystemConfiguration)
+        return;
+
+    Update();
+}
+
+// Update our observers
+void ProxyConfigServiceQt::Update()
+{
+    net::ProxyConfig actual_config;
+    ConfigAvailability availability = GetLatestProxyConfig(&actual_config);
+    if (availability == CONFIG_PENDING)
+        return;
+    for (net::ProxyConfigService::Observer &observer: m_observers)
+        observer.OnProxyConfigChanged(actual_config, availability);
+}
+
+// Register ourselves as observer of the base service.
+// This has to be done on the IO thread, and therefore cannot be done
+// in the constructor.
 void ProxyConfigServiceQt::RegisterObserver()
 {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
