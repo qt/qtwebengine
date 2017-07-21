@@ -63,7 +63,7 @@ net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qt
         proxyScheme = net::ProxyServer::SCHEME_HTTP;
         break;
     case QNetworkProxy::NoProxy:
-    default:
+    case QNetworkProxy::DefaultProxy:
         proxyScheme = net::ProxyServer::SCHEME_DIRECT;
             break;
     }
