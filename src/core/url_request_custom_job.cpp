@@ -56,6 +56,9 @@ URLRequestCustomJob::URLRequestCustomJob(URLRequest *request,
     , m_proxy(new URLRequestCustomJobProxy(this, scheme, adapter))
     , m_device(nullptr)
     , m_error(0)
+    , m_pendingReadSize(0)
+    , m_pendingReadPos(0)
+    , m_pendingReadBuffer(nullptr)
 {
 }
 
@@ -83,6 +86,12 @@ void URLRequestCustomJob::Kill()
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (m_device && m_device->isOpen())
         m_device->close();
+    if (m_pendingReadBuffer) {
+        m_pendingReadBuffer->Release();
+        m_pendingReadBuffer = nullptr;
+        m_pendingReadSize = 0;
+        m_pendingReadPos = 0;
+    }
     m_device = nullptr;
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      base::Bind(&URLRequestCustomJobProxy::release,
@@ -127,13 +136,64 @@ int URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize)
     if (m_error)
         return m_error;
     qint64 rv = m_device ? m_device->read(buf->data(), bufSize) : -1;
-    if (rv >= 0) {
+    if (rv > 0) {
         return static_cast<int>(rv);
+    } else if (rv == 0) {
+        // Returning zero is interpreted as EOF by Chromium, so only
+        // return zero if we are the end of the file.
+        if (m_device->atEnd())
+            return 0;
+        // Otherwise return IO_PENDING and call ReadRawDataComplete when we have data
+        // for them.
+        buf->AddRef();
+        m_pendingReadPos = 0;
+        m_pendingReadSize = bufSize;
+        m_pendingReadBuffer = buf;
+        return ERR_IO_PENDING;
     } else {
         // QIODevice::read might have called fail on us.
         if (m_error)
             return m_error;
+        if (m_device && m_device->atEnd())
+            return 0;
         return ERR_FAILED;
     }
 }
+
+void URLRequestCustomJob::notifyReadyRead()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    if (!m_device)
+        return;
+    if (!m_pendingReadSize)
+        return;
+    Q_ASSERT(m_pendingReadBuffer);
+    if (!m_pendingReadBuffer)
+        return;
+
+    qint64 rv = m_device->read(m_pendingReadBuffer->data() + m_pendingReadPos, m_pendingReadSize - m_pendingReadPos);
+    if (rv == 0)
+        return;
+    if (rv < 0) {
+        if (m_error)
+            rv = m_error;
+        else if (m_device->atEnd())
+            rv = 0;
+        else
+            rv = ERR_FAILED;
+    } else {
+        m_pendingReadPos += rv;
+        if (m_pendingReadPos < m_pendingReadSize && !m_device->atEnd())
+            return;
+        rv = m_pendingReadPos;
+    }
+    // killJob may be called from ReadRawDataComplete
+    net::IOBuffer *buf = m_pendingReadBuffer;
+    m_pendingReadBuffer = nullptr;
+    m_pendingReadSize = 0;
+    m_pendingReadPos = 0;
+    ReadRawDataComplete(rv);
+    buf->Release();
+}
+
 } // namespace

@@ -49,6 +49,7 @@ private Q_SLOTS:
     void urlSchemeHandlers();
     void urlSchemeHandlerFailRequest();
     void urlSchemeHandlerFailOnRead();
+    void urlSchemeHandlerStreaming();
     void customUserAgent();
     void httpAcceptLanguage();
     void downloadItem();
@@ -175,6 +176,74 @@ public:
     {
         m_bufferData = job->requestUrl().toString().toUtf8();
         job->reply("text/plain;charset=utf-8", &m_buffer);
+    }
+};
+
+class StreamingIODevice : public QIODevice {
+    Q_OBJECT
+public:
+    StreamingIODevice(QObject *parent) : QIODevice(parent), m_bytesRead(0), m_bytesAvailable(0)
+    {
+        setOpenMode(QIODevice::ReadOnly);
+        m_timer.start(100, this);
+    }
+    bool isSequential() const override { return true; }
+    qint64 bytesAvailable() const override
+    { return m_bytesAvailable; }
+    bool atEnd() const override
+    {
+        return (m_data.size() >= 1000 && m_bytesRead >= 1000);
+    }
+protected:
+    void timerEvent(QTimerEvent *) override
+    {
+        QMutexLocker lock(&m_mutex);
+        m_bytesAvailable += 200;
+        m_data.append(200, 'c');
+        emit readyRead();
+        if (m_data.size() >= 1000) {
+            m_timer.stop();
+            emit readChannelFinished();
+        }
+    }
+
+    qint64 readData(char *data, qint64 maxlen) override
+    {
+        QMutexLocker lock(&m_mutex);
+        qint64 len = qMin(qint64(m_bytesAvailable), maxlen);
+        if (len) {
+            memcpy(data, m_data.constData() + m_bytesRead, len);
+            m_bytesAvailable -= len;
+            m_bytesRead += len;
+        } else if (m_data.size() > 0)
+            return -1;
+
+        return len;
+    }
+    qint64 writeData(const char *, qint64) override
+    {
+        return 0;
+    }
+
+private:
+    QMutex m_mutex;
+    QByteArray m_data;
+    QBasicTimer m_timer;
+    int m_bytesRead;
+    int m_bytesAvailable;
+};
+
+class StreamingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
+{
+public:
+    StreamingUrlSchemeHandler(QObject *parent = nullptr)
+        : QWebEngineUrlSchemeHandler(parent)
+    {
+    }
+
+    void requestStarted(QWebEngineUrlRequestJob *job)
+    {
+        job->reply("text/plain;charset=utf-8", new StreamingIODevice(job));
     }
 };
 
@@ -308,6 +377,22 @@ void tst_QWebEngineProfile::urlSchemeHandlerFailOnRead()
     view.load(QUrl(QStringLiteral("foo://bar")));
     QVERIFY(loadFinishedSpy.wait());
     QCOMPARE(toPlainTextSync(view.page()), QString());
+}
+
+void tst_QWebEngineProfile::urlSchemeHandlerStreaming()
+{
+    StreamingUrlSchemeHandler handler;
+    QWebEngineProfile profile;
+    profile.installUrlSchemeHandler("stream", &handler);
+    QWebEngineView view;
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setPage(new QWebEnginePage(&profile, &view));
+    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    view.load(QUrl(QStringLiteral("stream://whatever")));
+    QVERIFY(loadFinishedSpy.wait());
+    QByteArray result;
+    result.append(1000, 'c');
+    QCOMPARE(toPlainTextSync(view.page()), QString::fromLatin1(result));
 }
 
 void tst_QWebEngineProfile::customUserAgent()

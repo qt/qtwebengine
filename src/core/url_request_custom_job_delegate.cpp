@@ -73,16 +73,23 @@ QByteArray URLRequestCustomJobDelegate::method() const
 
 void URLRequestCustomJobDelegate::reply(const QByteArray &contentType, QIODevice *device)
 {
+    if (device)
+        QObject::connect(device, &QIODevice::readyRead, this, &URLRequestCustomJobDelegate::slotReadyRead);
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                      base::Bind(&URLRequestCustomJobProxy::reply,
                                                 m_proxy,contentType.toStdString(),device));
 }
 
+void URLRequestCustomJobDelegate::slotReadyRead()
+{
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                     base::Bind(&URLRequestCustomJobProxy::readyRead, m_proxy));
+}
+
 void URLRequestCustomJobDelegate::abort()
 {
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::Bind(&URLRequestCustomJobProxy::abort,
-                                                m_proxy));
+                                     base::Bind(&URLRequestCustomJobProxy::abort, m_proxy));
 }
 
 void URLRequestCustomJobDelegate::redirect(const QUrl &url)

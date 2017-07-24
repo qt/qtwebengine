@@ -74,6 +74,9 @@ public:
     void abort();
     void fail(Error);
 
+private Q_SLOTS:
+    void slotReadyRead();
+
 private:
     URLRequestCustomJobDelegate(URLRequestCustomJobProxy *proxy,
                                 const QUrl &url,

@@ -144,6 +144,13 @@ void URLRequestCustomJobProxy::fail(int error)
     // else we fail on the next read, or the read that might already be in progress
 }
 
+void URLRequestCustomJobProxy::readyRead()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    if (m_job)
+        m_job->notifyReadyRead();
+}
+
 void URLRequestCustomJobProxy::initialize(GURL url, std::string method)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
