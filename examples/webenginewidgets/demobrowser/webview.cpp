@@ -341,8 +341,6 @@ WebView::WebView(QWidget* parent)
 
 void WebView::setPage(WebPage *_page)
 {
-    if (m_page)
-        m_page->deleteLater();
     m_page = _page;
     QWebEngineView::setPage(_page);
 #if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
