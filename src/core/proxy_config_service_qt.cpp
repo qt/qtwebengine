@@ -72,8 +72,8 @@ net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qt
 
 ProxyConfigServiceQt::ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService)
     : m_baseService(baseService.release()),
-      m_registeredObserver(false),
-      m_usesSystemConfiguration(false)
+      m_usesSystemConfiguration(false),
+      m_registeredObserver(false)
 {
 }
 
