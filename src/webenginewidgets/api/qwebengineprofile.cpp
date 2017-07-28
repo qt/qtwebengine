@@ -145,24 +145,35 @@ using QtWebEngineCore::BrowserContextAdapter;
   \sa QWebEngineDownloadItem
 */
 
-QWebEngineProfilePrivate::QWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter> browserContext)
+QWebEngineBrowserContext::QWebEngineBrowserContext(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext, QWebEngineProfilePrivate *profile)
+    : QObject(BrowserContextAdapter::globalQObjectRoot())
+    , browserContextRef(browserContext)
+    , m_profile(profile)
+{
+    browserContextRef->addClient(m_profile);
+}
+
+QWebEngineBrowserContext::~QWebEngineBrowserContext()
+{
+    Q_ASSERT(m_profile);
+    // In the case the user sets this profile as the parent of the interceptor
+    // it can be deleted before the browser-context still referencing it is.
+    browserContextRef->setRequestInterceptor(nullptr);
+    browserContextRef->removeClient(m_profile);
+}
+
+QWebEngineProfilePrivate::QWebEngineProfilePrivate(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext)
         : m_settings(new QWebEngineSettings())
         , m_scriptCollection(new QWebEngineScriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userResourceController())))
-        , m_browserContextRef(browserContext)
+        , m_browserContext(new QWebEngineBrowserContext(browserContext, this))
 {
-    m_browserContextRef->addClient(this);
     m_settings->d_ptr->initDefaults(browserContext->isOffTheRecord());
 }
 
 QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
 {
-    // In the case the user sets this profile as the parent of the interceptor
-    // it can be deleted before the browser-context still referencing it is.
-    m_browserContextRef->setRequestInterceptor(nullptr);
-
     delete m_settings;
     m_settings = 0;
-    m_browserContextRef->removeClient(this);
 
     Q_FOREACH (QWebEngineDownloadItem* download, m_ongoingDownloads) {
         if (download)
@@ -170,6 +181,11 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
     }
 
     m_ongoingDownloads.clear();
+}
+
+QSharedPointer<QtWebEngineCore::BrowserContextAdapter> QWebEngineProfilePrivate::browserContext() const
+{
+    return m_browserContext->browserContextRef;
 }
 
 void QWebEngineProfilePrivate::cancelDownload(quint32 downloadId)

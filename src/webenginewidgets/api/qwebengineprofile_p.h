@@ -65,7 +65,22 @@ class BrowserContextAdapter;
 
 QT_BEGIN_NAMESPACE
 
+class QWebEngineProfilePrivate;
 class QWebEngineSettings;
+
+// This is a wrapper class for BrowserContextAdapter. BrowserContextAdapter must be destructed before WebEngineContext
+// is destructed. Therefore access it via the QWebEngineBrowserContext which parent is the WebEngineContext::globalQObject.
+// This guarantees the destruction together with the WebEngineContext.
+class QWebEngineBrowserContext : public QObject {
+public:
+    QWebEngineBrowserContext(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext, QWebEngineProfilePrivate *profile);
+    ~QWebEngineBrowserContext();
+
+    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextRef;
+
+private:
+    QWebEngineProfilePrivate *m_profile;
+};
 
 class QWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
 public:
@@ -73,7 +88,7 @@ public:
     QWebEngineProfilePrivate(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext);
     ~QWebEngineProfilePrivate();
 
-    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext() const { return m_browserContextRef; }
+    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext() const;
     QWebEngineSettings *settings() const { return m_settings; }
 
     void cancelDownload(quint32 downloadId);
@@ -86,7 +101,7 @@ private:
     QWebEngineProfile *q_ptr;
     QWebEngineSettings *m_settings;
     QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
-    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextRef;
+    QPointer<QWebEngineBrowserContext> m_browserContext;
     QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
 };
 
