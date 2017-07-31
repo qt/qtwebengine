@@ -296,7 +296,7 @@
     When the Qt WebEngine spellchecker initializes, it will try to load the
     \c bdict dictionaries and to check them for consistency. First, it searches
     \e qtwebengine_dictionaries directories relative to the executable,
-    then it will look in \c QT_INSTALL_PREFIX/qtwebengines_dictionaries.
+    then it will look in \c QT_INSTALL_PREFIX/qtwebengine_dictionaries.
 
     Spellchecking is disabled by default and can be enabled per profile by
     using the QWebEngineProfile::setSpellCheckEnabled() method in widget-based
