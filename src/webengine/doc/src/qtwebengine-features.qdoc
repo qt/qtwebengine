@@ -293,9 +293,40 @@
     These two files can be converted into the \c bdic format by using the
     \c qwebengine_convert_dict tool that is shipped together with Qt.
     When the Qt WebEngine spellchecker initializes, it will try to load the
-    \c bdict dictionaries and to check them for consistency. First, it searches
-    \e qtwebengine_dictionaries directories relative to the executable,
-    then it will look in \c QT_INSTALL_PREFIX/qtwebengines_dictionaries.
+    \c bdict dictionaries and to check them for consistency.
+
+    If \c QTWEBENGINE_DICTIONARIES_PATH is set, the spellchecker uses the
+    dictionaries in the specified directory without looking anywere else.
+    Otherwise, it uses the \e qtwebengine_dictionaries directory relative to the
+    executable if it exists. If it does not exist, it will look in \c
+    QT_INSTALL_PREFIX/qtwebengines_dictionaries.
+
+    On macOS, depending on how Qt WebEngine is configured at build time, there
+    are two possibilities how spellchecking data is found:
+
+    \list
+        \li Hunspell dictionaries (default) - .bdic dictionaries are used, just
+            like on other platforms
+        \li Native dictionaries - the macOS spellchecking APIs are used (which
+            means the results will depend on the installed OS dictionaries)
+    \endlist
+
+    Thus, in the macOS Hunspell case, Qt WebEngine will look in the \e
+    qtwebengine_dictionaries subdirectory located inside the application bundle
+    \c Resources directory, and also in the \c Resources directory located
+    inside the Qt framework bundle.
+
+    To summarize, in case of Hunspell usage, the following paths are considered:
+
+    \list
+        \li \c QTWEBENGINE_DICTIONARIES_PATH, if set
+        \li QCoreApplication::applicationDirPath()/qtwebengine_dictionaries
+            or QCoreApplication::applicationDirPath()/../Contents/Resources/qtwebengine_dictionaries
+            (on macOS)
+        \li [QLibraryInfo::DataPath]/qtwebengine_dictionaries
+            or path/to/QtWebEngineCore.framework/Resources/qtwebengine_dictionaries (Qt framework
+            bundle on macOS)
+    \endlist
 
     Spellchecking is disabled by default and can be enabled per profile by
     using the QWebEngineProfile::setSpellCheckEnabled() method in widget-based

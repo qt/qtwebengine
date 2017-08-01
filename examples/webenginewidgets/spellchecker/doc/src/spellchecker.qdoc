@@ -75,15 +75,8 @@
     about how to create \c dic and \c aff files, see the Hunspell dictionary
     file format specification in the \l{Hunspell Project}.
 
-    When a specific spellchecking language is requested, Qt WebEngine will try
-    to load the already compiled matching \c .bdic file first from
-    \e qtwebengine_dictionaries directories relative to the executable,
-    then it will look in \c QT_INSTALL_PREFIX/qtwebengine_dictionaries.
-
-    On macOS, because this example was configured to use Hunspell dictionaries, Qt WebEngine will
-    look in the \e qtwebengine_dictionaries directory located inside the application bundle
-    \c Resources directory, and also in the \c Resources directory located inside the
-    Qt framework bundle.
+    See the \l {Spellchecker}{Spellchecker feature documentation} for how
+    dictionary files are searched.
 
     We specify the QMAKE_EXTRA_COMPILERS parameter in the project file to add a
     conversion step to the build process:
