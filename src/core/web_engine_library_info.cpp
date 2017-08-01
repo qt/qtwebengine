@@ -216,26 +216,32 @@ QString dictionariesPath()
     if (!initialized) {
         initialized = true;
 
-        // First try to find dictionaries near the application.
+        const QByteArray fromEnv = qgetenv("QTWEBENGINE_DICTIONARIES_PATH");
+        if (!fromEnv.isEmpty()) {
+            // Only search in QTWEBENGINE_DICTIONARIES_PATH if set
+            candidatePaths << QString::fromLocal8Bit(fromEnv);
+        } else {
+            // First try to find dictionaries near the application.
 #ifdef OS_MACOSX
-        QString resourcesDictionariesPath = getMainApplicationResourcesPath()
-                % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
-        candidatePaths << resourcesDictionariesPath;
+            QString resourcesDictionariesPath = getMainApplicationResourcesPath()
+                    % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
+            candidatePaths << resourcesDictionariesPath;
 #endif
-        QString applicationDictionariesPath = QCoreApplication::applicationDirPath()
-                % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
-        candidatePaths << applicationDictionariesPath;
+            QString applicationDictionariesPath = QCoreApplication::applicationDirPath()
+                    % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
+            candidatePaths << applicationDictionariesPath;
 
-        // Then try to find dictionaries near the installed library.
+            // Then try to find dictionaries near the installed library.
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
-        QString frameworkDictionariesPath = getResourcesPath(frameworkBundle())
-                % QLatin1String("/qtwebengine_dictionaries");
-        candidatePaths << frameworkDictionariesPath;
+            QString frameworkDictionariesPath = getResourcesPath(frameworkBundle())
+                    % QLatin1String("/qtwebengine_dictionaries");
+            candidatePaths << frameworkDictionariesPath;
 #endif
 
-        QString libraryDictionariesPath = QLibraryInfo::location(QLibraryInfo::DataPath)
-                % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
-        candidatePaths << libraryDictionariesPath;
+            QString libraryDictionariesPath = QLibraryInfo::location(QLibraryInfo::DataPath)
+                    % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
+            candidatePaths << libraryDictionariesPath;
+        }
 
         Q_FOREACH (const QString &candidate, candidatePaths) {
             if (QFileInfo::exists(candidate)) {
