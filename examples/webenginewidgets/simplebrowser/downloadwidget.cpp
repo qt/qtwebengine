@@ -62,14 +62,10 @@ DownloadWidget::DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent
     });
 
     connect(m_download, &QWebEngineDownloadItem::downloadProgress,
-            [this](qint64, qint64) {
-        updateWidget();
-    });
+            this, &DownloadWidget::updateWidget);
 
     connect(m_download, &QWebEngineDownloadItem::stateChanged,
-            [this](QWebEngineDownloadItem::DownloadState) {
-        updateWidget();
-    });
+            this, &DownloadWidget::updateWidget);
 
     updateWidget();
 }

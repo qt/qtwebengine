@@ -63,8 +63,10 @@ signals:
     // this download from the downloads list.
     void removeClicked(DownloadWidget *self);
 
-private:
+private slots:
     void updateWidget();
+
+private:
     QString withUnit(qreal bytes);
 
     QWebEngineDownloadItem *m_download;
