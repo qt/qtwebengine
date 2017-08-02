@@ -55,8 +55,9 @@
 #include <QTabBar>
 #include <QWebEngineProfile>
 
-TabWidget::TabWidget(QWidget *parent)
+TabWidget::TabWidget(QWebEngineProfile *profile, QWidget *parent)
     : QTabWidget(parent)
+    , m_profile(profile)
 {
     QTabBar *tabBar = this->tabBar();
     tabBar->setTabsClosable(true);
@@ -201,7 +202,7 @@ WebView *TabWidget::createTab()
 WebView *TabWidget::createBackgroundTab()
 {
     WebView *webView = new WebView;
-    WebPage *webPage = new WebPage(QWebEngineProfile::defaultProfile(), webView);
+    WebPage *webPage = new WebPage(m_profile, webView);
     webView->setPage(webPage);
     setupView(webView);
     int index = addTab(webView, tr("(Untitled)"));

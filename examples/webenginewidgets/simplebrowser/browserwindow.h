@@ -69,7 +69,7 @@ class BrowserWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    BrowserWindow(Browser *browser);
+    BrowserWindow(Browser *browser, QWebEngineProfile *profile);
     QSize sizeHint() const override;
     TabWidget *tabWidget() const;
     WebView *currentTab() const;
@@ -80,6 +80,7 @@ protected:
 
 private slots:
     void handleNewWindowTriggered();
+    void handleNewIncognitoWindowTriggered();
     void handleFileOpenTriggered();
     void handleFindActionTriggered();
     void handleShowWindowTriggered();
@@ -97,6 +98,7 @@ private:
 
 private:
     Browser *m_browser;
+    QWebEngineProfile *m_profile;
     TabWidget *m_tabWidget;
     QProgressBar *m_progressBar;
     QAction *m_historyBackAction;
