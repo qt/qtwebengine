@@ -83,6 +83,7 @@
 #include "content/public/common/web_preferences.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "printing/features/features.h"
+#include "ui/gfx/font_render_params.h"
 
 #include <QDir>
 #include <QGuiApplication>
@@ -425,6 +426,15 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     if (commandLine->HasSwitch(switches::kForceWebRtcIPHandlingPolicy))
         rendererPrefs->webrtc_ip_handling_policy = commandLine->GetSwitchValueASCII(switches::kForceWebRtcIPHandlingPolicy);
 #endif
+    // Set web-contents font settings to the default font settings as Chromium constantly overrides
+    // the global font defaults with the font settings of the latest web-contents created.
+    CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params, (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL)));
+    rendererPrefs->should_antialias_text = params.antialiasing;
+    rendererPrefs->use_subpixel_positioning = params.subpixel_positioning;
+    rendererPrefs->hinting = params.hinting;
+    rendererPrefs->use_autohinter = params.autohinter;
+    rendererPrefs->use_bitmaps = params.use_bitmaps;
+    rendererPrefs->subpixel_rendering = params.subpixel_rendering;
     d->webContents->GetRenderViewHost()->SyncRendererPrefs();
 
     // Create and attach observers to the WebContents.
