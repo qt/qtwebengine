@@ -92,11 +92,9 @@ private:
 
 Q_DECLARE_SHARED(QWebEngineCallback<int>)
 Q_DECLARE_SHARED(QWebEngineCallback<const QByteArray &>)
-#if QT_VERSION >= QT_VERSION_CHECK(5,6,0)
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineCallback<bool>)
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineCallback<const QString &>)
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineCallback<const QVariant &>)
-#endif
 
 QT_END_NAMESPACE
 

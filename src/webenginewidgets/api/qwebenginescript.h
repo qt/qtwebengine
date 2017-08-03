@@ -102,9 +102,7 @@ private:
     QSharedDataPointer<QtWebEngineCore::UserScript> d;
 };
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,6,0)
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineScript)
-#endif
 
 #ifndef QT_NO_DEBUG_STREAM
 QWEBENGINEWIDGETS_EXPORT QDebug operator<<(QDebug, const QWebEngineScript &);

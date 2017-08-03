@@ -50,11 +50,6 @@
 #include <private/qquickwindow_p.h>
 #include <private/qsgcontext_p.h>
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 8, 0))
-#include <QSGSimpleRectNode>
-#include <QSGSimpleTextureNode>
-#endif
-
 namespace QtWebEngineCore {
 
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
@@ -185,30 +180,17 @@ QSGLayer *RenderWidgetHostViewQtDelegateQuick::createLayer()
 QSGInternalImageNode *RenderWidgetHostViewQtDelegateQuick::createImageNode()
 {
     QSGRenderContext *renderContext = QQuickWindowPrivate::get(QQuickItem::window())->context;
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
     return renderContext->sceneGraphContext()->createInternalImageNode();
-#else
-    return renderContext->sceneGraphContext()->createImageNode();
-#endif
 }
 
 QSGTextureNode *RenderWidgetHostViewQtDelegateQuick::createTextureNode()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
     return QQuickItem::window()->createImageNode();
-#else
-    return new QSGSimpleTextureNode();
-#endif
 }
 
 QSGRectangleNode *RenderWidgetHostViewQtDelegateQuick::createRectangleNode()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
     return QQuickItem::window()->createRectangleNode();
-#else
-    QSGRenderContext *renderContext = QQuickWindowPrivate::get(QQuickItem::window())->context;
-    return renderContext->sceneGraphContext()->createRectangleNode();
-#endif
 }
 
 void RenderWidgetHostViewQtDelegateQuick::update()

@@ -82,13 +82,8 @@
 #include <QSGTexture>
 #include <private/qsgadaptationlayer_p.h>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
 #include <QSGImageNode>
 #include <QSGRectangleNode>
-#else
-#include <QSGSimpleRectNode>
-#include <QSGSimpleTextureNode>
-#endif
 
 #if !defined(QT_NO_EGL)
 #include <EGL/egl.h>
@@ -210,7 +205,6 @@ protected:
     QVector<QSGNode*> *m_sceneGraphNodes;
 };
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
 class DelegatedNodeTreeUpdater : public DelegatedNodeTreeHandler
 {
 public:
@@ -305,7 +299,6 @@ public:
 private:
     QVector<QSGNode*>::iterator m_nodeIterator;
 };
-#endif
 
 class DelegatedNodeTreeCreator : public DelegatedNodeTreeHandler
 {
@@ -875,13 +868,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // We first compare if the render passes from the previous frame data are structurally
     // equivalent to the render passes in the current frame data. If they are, we are going
     // to reuse the old nodes. Otherwise, we will delete the old nodes and build a new tree.
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
     cc::CompositorFrame *previousFrameData = &m_chromiumCompositorData->previousFrameData;
     const bool buildNewTree = !areRenderPassStructuresEqual(frameData, previousFrameData) || m_sceneGraphNodes.empty();
-#else
-    // No updates possible with old scenegraph nodes
-    const bool buildNewTree = true;
-#endif
 
     m_chromiumCompositorData->previousFrameData = cc::CompositorFrame();
     SGObjects previousSGObjects;
@@ -895,13 +883,11 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             delete oldChain;
         m_sceneGraphNodes.clear();
         nodeHandler.reset(new DelegatedNodeTreeCreator(&m_sceneGraphNodes, apiDelegate));
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
     } else {
         // Save the texture strong refs so they only go out of scope when the method returns and
         // the new vector of texture strong refs has been filled.
         qSwap(m_sgObjects.textureStrongRefs, textureStrongRefs);
         nodeHandler.reset(new DelegatedNodeTreeUpdater(&m_sceneGraphNodes));
-#endif
     }
     // The RenderPasses list is actually a tree where a parent RenderPass is connected
     // to its dependencies through a RenderPassId reference in one or more RenderPassQuads.

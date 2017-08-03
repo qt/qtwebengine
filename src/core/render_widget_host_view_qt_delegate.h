@@ -58,16 +58,9 @@ class QVariant;
 class QWindow;
 class QInputMethodEvent;
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 8, 0))
-class QSGImageNode;
-typedef QSGImageNode QSGInternalImageNode;
-class QSGSimpleTextureNode;
-typedef QSGSimpleTextureNode QSGTextureNode;
-#else
 class QSGInternalImageNode;
 class QSGImageNode;
 typedef QSGImageNode QSGTextureNode;
-#endif
 
 QT_END_NAMESPACE
 

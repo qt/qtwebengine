@@ -560,11 +560,7 @@ void UIDelegatesManager::showToolTip(const QString &text)
     int width = QQmlProperty(m_toolTip.data(), QStringLiteral("width")).read().toInt();
     QSize toolTipSize(width, height);
     QPoint position = m_view->cursor().pos();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
     position = m_view->mapFromGlobal(calculateToolTipPosition(position, toolTipSize)).toPoint();
-#else
-    position = m_view->window()->mapFromGlobal(calculateToolTipPosition(position, toolTipSize));
-#endif
 
     QQmlProperty(m_toolTip.data(), QStringLiteral("x")).write(position.x());
     QQmlProperty(m_toolTip.data(), QStringLiteral("y")).write(position.y());

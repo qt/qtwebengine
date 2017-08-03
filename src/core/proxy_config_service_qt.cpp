@@ -109,13 +109,11 @@ net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxy
     }
     m_qtApplicationProxy = qtProxy;
     m_qtProxyConfig = net::ProxyConfig();
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
     if (qtProxy.type() == QNetworkProxy::NoProxy
             && QNetworkProxyFactory::usesSystemConfiguration()) {
         *config = systemConfig;
         return systemAvailability;
     }
-#endif
 
     net::ProxyConfig::ProxyRules qtRules;
     net::ProxyServer server = fromQNetworkProxy(qtProxy);

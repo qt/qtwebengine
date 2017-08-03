@@ -20,50 +20,42 @@ defineTest(runConfigure) {
         qtCompileTest($$test)
     }
 
-    isQtMinimum(5, 8) {
-        include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
-        QT_FOR_CONFIG += webengine-private
+    include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+    QT_FOR_CONFIG += webengine-private
 
-        !qtConfig(gperf) {
-            skipBuild("Required gperf could not be found.")
-            return(false)
-        }
-        !qtConfig(bison) {
-            skipBuild("Required bison could not be found.")
-            return(false)
-        }
-        !qtConfig(flex) {
-            skipBuild("Required flex could not be found.")
-            return(false)
-        }
-        !qtConfig(python2) {
-            skipBuild("A suitable version of python2 could not be found.")
-            return(false)
-        }
-
-        qtConfig(pepper-plugins): WEBENGINE_CONFIG += use_pepper_plugins
-        qtConfig(printing-and-pdf): WEBENGINE_CONFIG += use_printing use_pdf
-        qtConfig(proprietary-codecs): WEBENGINE_CONFIG += use_proprietary_codecs
-        qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
-        qtConfig(webrtc): WEBENGINE_CONFIG += use_webrtc
-        qtConfig(embedded): WEBENGINE_CONFIG += embedded_build
-        qtConfig(system-webp): WEBENGINE_CONFIG += use_system_libwebp
-        qtConfig(system-opus): WEBENGINE_CONFIG += use_system_opus
-        qtConfig(system-ffmpeg): WEBENGINE_CONFIG += use_system_ffmpeg
-        qtConfig(system-icu): WEBENGINE_CONFIG += use_system_icu
-        qtConfig(nss-certificate-handling): WEBENGINE_CONFIG += use_nss
-        !contains(WEBENGINE_CONFIG, use_system_libwebp): WEBENGINE_CONFIG += use_bundled_libwebp
-        !contains(WEBENGINE_CONFIG, use_system_opus): WEBENGINE_CONFIG += use_bundled_opus
-        !contains(WEBENGINE_CONFIG, use_system_ffmpeg): WEBENGINE_CONFIG += use_bundled_ffmpeg
-        !contains(WEBENGINE_CONFIG, use_system_icu): WEBENGINE_CONFIG += use_bundled_icu
-    } else {
-        # Feature defaults when building with Qt 5.6 LTS:
-        cross_compile {
-            WEBENGINE_CONFIG += embedded_build reduce_binary_size
-        } else {
-            WEBENGINE_CONFIG += use_spellchecker use_webrtc use_pepper_plugins use_printing use_pdf
-        }
+    !qtConfig(gperf) {
+        skipBuild("Required gperf could not be found.")
+        return(false)
     }
+    !qtConfig(bison) {
+        skipBuild("Required bison could not be found.")
+        return(false)
+    }
+    !qtConfig(flex) {
+        skipBuild("Required flex could not be found.")
+        return(false)
+    }
+    !qtConfig(python2) {
+        skipBuild("A suitable version of python2 could not be found.")
+        return(false)
+    }
+
+    qtConfig(pepper-plugins): WEBENGINE_CONFIG += use_pepper_plugins
+    qtConfig(printing-and-pdf): WEBENGINE_CONFIG += use_printing use_pdf
+    qtConfig(proprietary-codecs): WEBENGINE_CONFIG += use_proprietary_codecs
+    qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
+    qtConfig(webrtc): WEBENGINE_CONFIG += use_webrtc
+    qtConfig(embedded): WEBENGINE_CONFIG += embedded_build
+    qtConfig(system-webp): WEBENGINE_CONFIG += use_system_libwebp
+    qtConfig(system-opus): WEBENGINE_CONFIG += use_system_opus
+    qtConfig(system-ffmpeg): WEBENGINE_CONFIG += use_system_ffmpeg
+    qtConfig(system-icu): WEBENGINE_CONFIG += use_system_icu
+    qtConfig(nss-certificate-handling): WEBENGINE_CONFIG += use_nss
+    !contains(WEBENGINE_CONFIG, use_system_libwebp): WEBENGINE_CONFIG += use_bundled_libwebp
+    !contains(WEBENGINE_CONFIG, use_system_opus): WEBENGINE_CONFIG += use_bundled_opus
+    !contains(WEBENGINE_CONFIG, use_system_ffmpeg): WEBENGINE_CONFIG += use_bundled_ffmpeg
+    !contains(WEBENGINE_CONFIG, use_system_icu): WEBENGINE_CONFIG += use_bundled_icu
+
     isQtMinimum(5, 9) {
         qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
         optimize_size: WEBENGINE_CONFIG += reduce_binary_size
@@ -92,12 +84,6 @@ defineTest(runConfigure) {
         }
         packagesExist(minizip, zlib): WEBENGINE_CONFIG += use_system_minizip use_system_zlib
         else: log("System zlib or minizip not found. Using Chromium's copies.$${EOL}")
-        !isQtMinimum(5, 8) {
-            packagesExist(libwebp,libwebpdemux): WEBENGINE_CONFIG += use_system_libwebp use_system_libwebpdemux
-            else: log("System libwebp or libwebpdemux not found. Using Chromium's copies.$${EOL}")
-            packagesExist(opus): WEBENGINE_CONFIG += use_system_opus
-            else: log("System opus not found. Using Chromium's copy.$${EOL}")
-        }
         packagesExist(libxml-2.0,libxslt) {
             PKGCONFIG_LIBS_STATIC = $$system($$PKG_CONFIG --libs --static libxml-2.0)
             contains(PKGCONFIG_LIBS_STATIC, -licuuc) {
@@ -152,35 +138,6 @@ defineTest(runConfigure) {
 
     unix:!darwin {
         log("System library dependencies:$${EOL}")
-        !isQtMinimum(5, 8) {
-            use?(system_icu) {
-                packagesExist("\'icu-uc >= 53\', \'icu-i18n >= 53\'") {
-                    log("  ICU ................................ Using system version$${EOL}")
-                } else {
-                    log("  ICU ................................ System ICU not found$${EOL}")
-                    skipBuild("Unmet dependencies: icu-uc, icu-i18n")
-                }
-            } else {
-                log("  ICU ................................ Using internal copy (Default, force system ICU with WEBENGINE_CONFIG+=use_system_icu)$${EOL}")
-                WEBENGINE_CONFIG += use_bundled_icu
-            }
-            use?(system_ffmpeg) {
-                packagesExist("libavcodec libavformat libavutil") {
-                    packagesExist("libwebp, libwebpdemux, opus, \'vpx >= 1.4\'"){
-                        log("  FFMPEG ............................. Using system version$${EOL}")
-                    } else {
-                        log("  FFMPEG ............................. Conflicting FFMPEG dependencies$${EOL}")
-                        skipBuild("Unmet dependencies: opus, vpx, libwebp, libwebpdemux")
-                    }
-                } else {
-                    log("  FFMPEG ............................. System FFMPEG not found$${EOL}")
-                    skipBuild("Unmet dependencies: libavcodec, libavformat, libavutil")
-                }
-            } else {
-                log("  FFMPEG ............................. Using internal copy (Default, force system FFMPEG with WEBENGINE_CONFIG+=use_system_ffmpeg)$${EOL}")
-                WEBENGINE_CONFIG += use_bundled_ffmpeg
-            }
-        }
         for(config, WEBENGINE_CONFIG) {
             match = $$find(config, "^use_system_")
             !isEmpty(match) {

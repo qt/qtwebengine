@@ -51,10 +51,6 @@
 #include <QWindow>
 #include <private/qquickwindow_p.h>
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 8, 0))
-#include <QSGSimpleRectNode>
-#include <QSGSimpleTextureNode>
-#endif
 #include <private/qwidget_p.h>
 
 namespace QtWebEngineCore {
@@ -115,8 +111,6 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
 {
     setFocusPolicy(Qt::StrongFocus);
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
-
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
@@ -149,7 +143,6 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     }
 
     setFormat(format);
-#endif
 #endif
     setMouseTracking(true);
     setAttribute(Qt::WA_AcceptTouchEvents);
@@ -290,30 +283,17 @@ QSGLayer *RenderWidgetHostViewQtDelegateWidget::createLayer()
 QSGInternalImageNode *RenderWidgetHostViewQtDelegateWidget::createImageNode()
 {
     QSGRenderContext *renderContext = QQuickWindowPrivate::get(quickWindow())->context;
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
     return renderContext->sceneGraphContext()->createInternalImageNode();
-#else
-    return renderContext->sceneGraphContext()->createImageNode();
-#endif
 }
 
 QSGTextureNode *RenderWidgetHostViewQtDelegateWidget::createTextureNode()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
     return quickWindow()->createImageNode();
-#else
-    return new QSGSimpleTextureNode();
-#endif
 }
 
 QSGRectangleNode *RenderWidgetHostViewQtDelegateWidget::createRectangleNode()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
     return quickWindow()->createRectangleNode();
-#else
-    QSGRenderContext *renderContext = QQuickWindowPrivate::get(quickWindow())->context;
-    return renderContext->sceneGraphContext()->createRectangleNode();
-#endif
 }
 
 void RenderWidgetHostViewQtDelegateWidget::update()

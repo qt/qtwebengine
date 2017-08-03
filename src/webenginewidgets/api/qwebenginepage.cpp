@@ -101,13 +101,8 @@ static const int MaxTooltipLength = 1024;
 static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
 {
     if (!data.size()) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         qWarning("Failure to print on printer %ls: Print result data is empty.",
                  qUtf16Printable(printer.printerName()));
-#else
-        qWarning("Failure to print on printer %s: Print result data is empty.",
-                 qPrintable(printer.printerName()));
-#endif
         return false;
     }
 
@@ -143,11 +138,7 @@ static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
 
     QPainter painter;
     if (!painter.begin(&printer)) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         qWarning("Failure to print on printer %ls: Could not open printer for painting.", qUtf16Printable(printer.printerName()));
-#else
-        qWarning("Failure to print on printer %s: Could not open printer for painting.", qPrintable(printer.printerName()));
-#endif
         return false;
     }
 
@@ -2119,11 +2110,7 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &page
     Q_D(const QWebEnginePage);
 #if defined(ENABLE_PRINTING)
     if (d->currentPrinter) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         qWarning("Cannot print to PDF while at the same time printing on printer %ls", qUtf16Printable(d->currentPrinter->printerName()));
-#else
-        qWarning("Cannot print to PDF while at the same time printing on printer %s", qPrintable(d->currentPrinter->printerName()));
-#endif
         return;
     }
 #endif // ENABLE_PRINTING
@@ -2152,11 +2139,7 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
 #if defined(ENABLE_PDF)
 #if defined(ENABLE_PRINTING)
     if (d->currentPrinter) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         qWarning("Cannot print to PDF while at the same time printing on printer %ls", qUtf16Printable(d->currentPrinter->printerName()));
-#else
-        qWarning("Cannot print to PDF while at the same time printing on printer %s", qPrintable(d->currentPrinter->printerName()));
-#endif
         d->m_callbacks.invokeEmpty(resultCallback);
         return;
     }
@@ -2188,11 +2171,7 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
 #if defined(ENABLE_PDF)
 #if defined(ENABLE_PRINTING)
     if (d->currentPrinter) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         qWarning("Cannot print page on printer %ls: Already printing on %ls.", qUtf16Printable(printer->printerName()), qUtf16Printable(d->currentPrinter->printerName()));
-#else
-        qWarning("Cannot print page on printer %s: Already printing on %s.", qPrintable(printer->printerName()), qPrintable(d->currentPrinter->printerName()));
-#endif
         d->m_callbacks.invokeDirectly(resultCallback, false);
         return;
     }

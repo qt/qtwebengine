@@ -242,12 +242,10 @@ void CallbackDirectory::CallbackSharedDataPointer<T>::invokeEmpty()
     parent->invokeEmptyInternal(callback);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,6,0)
 #define CHECK_RELOCATABLE(x) \
   Q_STATIC_ASSERT((QTypeInfoQuery<QWebEngineCallback< x > >::isRelocatable));
 FOR_EACH_TYPE(CHECK_RELOCATABLE)
 #undef CHECK_RELOCATABLE
-#endif
 
 } // namespace QtWebEngineCore
 
