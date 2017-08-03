@@ -12,6 +12,7 @@
             "ffmpeg": { "type": "enum", "name": "system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
             "opus": { "type": "enum", "name": "system-opus", "values": { "system": "yes", "qt": "no" } },
             "webp": { "type": "enum", "name": "system-webp", "values": { "system": "yes", "qt": "no" } },
+            "nss-certificate-handling": "boolean",
             "pepper-plugins": "boolean",
             "printing-and-pdf": "boolean",
             "proprietary-codecs": "boolean",
@@ -57,6 +58,12 @@
             "label": "libwebp and libwebpdemux",
             "sources": [
                 { "type": "pkgConfig", "args": "libwebp libwebpdemux" }
+            ]
+        },
+        "nss": {
+            "label": "NSS",
+            "sources": [
+                { "type": "pkgConfig", "args": "nss" }
             ]
         }
     },
@@ -171,6 +178,14 @@
             "autoDetect": "!features.embedded",
             "output": [ "privateFeature" ]
         },
+        "nss-certificate-handling": {
+            "label": "NSS certificate handling",
+            "purpose": "Use NSS to handle certificates instead of BoringSSL. Recommended on Linux.",
+            "section": "WebEngine",
+            "condition": "config.unix && !config.darwin",
+            "autoDetect": "libs.nss",
+            "output": [ "privateFeature" ]
+        },
         "system-webp": {
             "label": "libwebp and libwebpdemux",
             "autoDetect": "config.unix",
@@ -251,6 +266,11 @@
                     "type": "feature",
                     "args": "pulseaudio",
                     "condition": "config.unix"
+                },
+                {
+                    "type": "feature",
+                    "args": "nss-certificate-handling",
+                    "condition": "config.unix && !config.darwin"
                 },
                 {
                    "section": "System libraries",
