@@ -450,6 +450,9 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
     case QEvent::DragLeave:
     case QEvent::DragMove:
     case QEvent::Drop:
+    case QEvent::HoverEnter:
+    case QEvent::HoverLeave:
+    case QEvent::HoverMove:
         // Let the parent handle these events.
         return false;
     default:

@@ -944,8 +944,6 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::NativeGesture:
         handleGestureEvent(static_cast<QNativeGestureEvent *>(event));
         break;
-    case QEvent::HoverEnter:
-    case QEvent::HoverLeave:
     case QEvent::HoverMove:
         handleHoverEvent(static_cast<QHoverEvent*>(event));
         break;
