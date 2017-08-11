@@ -3,4 +3,5 @@ TEMPLATE=subdirs
 SUBDIRS += \
     customdialogs \
     minimal \
-    quicknanobrowser
+    quicknanobrowser \
+    recipebrowser

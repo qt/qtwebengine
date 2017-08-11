@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -71,4 +71,35 @@
 
     For a detailed explanation of the capabilities of developer tools, see the
     \l {Chrome DevTools} page.
+
+    \section1 Using Command-Line Arguments
+
+    You can use the following command-line arguments while debugging to provide
+    input for bug reports:
+
+    \list
+        \li \c {--disable-gpu} disables GPU hardware acceleration. This is
+            useful when diagnosing OpenGL problems.
+        \li \c {--disable-logging} disables console logging, which might be
+            useful for debug builds.
+        \li \c {--enable-logging --log-level=0} enables console logging and sets
+            the logging level to 0, which means that messages of the severity
+            \c info and above are recorded in the log. This is the default for
+            debug builds. Other possible log levels are \c 1 for warnings, \c 2
+            for errors, and \c 3 for fatal errors.
+        \li \c {--no-sandbox} disables the sandbox for the renderer and plugin
+            processes. Keep in mind that disabling the sandbox might present a
+            security risk.
+        \li \c {--single-process} runs the renderer and plugins in the same
+            process as the browser. This is useful for getting stack traces for
+            renderer crashes.
+    \endlist
+
+    Alternatively, the environment variable QTWEBENGINE_CHROMIUM_FLAGS can be
+    set. For example, the following value could be set to disable logging while
+    debugging an application called \e mybrowser:
+
+    \code
+    QTWEBENGINE_CHROMIUM_FLAGS="--disable-logging" mybrowser
+    \endcode
 */

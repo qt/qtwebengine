@@ -41,6 +41,8 @@
 #ifndef BROWSER_H
 #define BROWSER_H
 
+#include "downloadmanagerwidget.h"
+
 #include <QVector>
 
 class BrowserWindow;
@@ -48,14 +50,16 @@ class BrowserWindow;
 class Browser
 {
 public:
-    ~Browser();
+    Browser();
 
-    QVector<BrowserWindow*> windows();
-    void addWindow(BrowserWindow* window);
-    static Browser &instance();
+    QVector<BrowserWindow*> windows() { return m_windows; }
+
+    BrowserWindow *createWindow();
+
+    DownloadManagerWidget &downloadManagerWidget() { return m_downloadManagerWidget; }
 
 private:
-    Browser();
     QVector<BrowserWindow*> m_windows;
+    DownloadManagerWidget m_downloadManagerWidget;
 };
 #endif // BROWSER_H

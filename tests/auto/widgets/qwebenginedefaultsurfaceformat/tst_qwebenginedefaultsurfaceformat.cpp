@@ -51,8 +51,8 @@ private Q_SLOTS:
 
 void tst_QWebEngineDefaultSurfaceFormat::customDefaultSurfaceFormat()
 {
-#if defined(Q_OS_WIN)
-    QSKIP("Crashes on Windows");
+#if !defined(Q_OS_MACOSX)
+    QSKIP("OpenGL Core Profile is currently only supported on macOS.");
 #endif
     // Setting a new default QSurfaceFormat with a core OpenGL profile before
     // app instantiation should succeed, without abort() being called.

@@ -72,6 +72,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include <content/public/common/drop_data.h>
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
@@ -81,6 +82,7 @@
 #include "content/public/common/web_preferences.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "printing/features/features.h"
+#include "ui/gfx/font_render_params.h"
 
 #include <QDir>
 #include <QGuiApplication>
@@ -418,6 +420,20 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
     rendererPrefs->user_agent_override = d->browserContextAdapter->httpUserAgent().toStdString();
     rendererPrefs->accept_languages = d->browserContextAdapter->httpAcceptLanguageWithoutQualities().toStdString();
+#if defined(ENABLE_WEBRTC)
+    base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
+    if (commandLine->HasSwitch(switches::kForceWebRtcIPHandlingPolicy))
+        rendererPrefs->webrtc_ip_handling_policy = commandLine->GetSwitchValueASCII(switches::kForceWebRtcIPHandlingPolicy);
+#endif
+    // Set web-contents font settings to the default font settings as Chromium constantly overrides
+    // the global font defaults with the font settings of the latest web-contents created.
+    CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params, (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL)));
+    rendererPrefs->should_antialias_text = params.antialiasing;
+    rendererPrefs->use_subpixel_positioning = params.subpixel_positioning;
+    rendererPrefs->hinting = params.hinting;
+    rendererPrefs->use_autohinter = params.autohinter;
+    rendererPrefs->use_bitmaps = params.use_bitmaps;
+    rendererPrefs->subpixel_rendering = params.subpixel_rendering;
     d->webContents->GetRenderViewHost()->SyncRendererPrefs();
 
     // Create and attach observers to the WebContents.

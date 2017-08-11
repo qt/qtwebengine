@@ -56,7 +56,6 @@ class TabWidget : public QTabWidget
 
 public:
     TabWidget(QWidget *parent = nullptr);
-    ~TabWidget();
 
     WebView *currentWebView() const;
 
@@ -66,7 +65,7 @@ signals:
     void loadProgress(int progress);
     void titleChanged(const QString &title);
     void urlChanged(const QUrl &url);
-    void iconChanged(const QIcon &icon);
+    void favIconChanged(const QIcon &icon);
     void webActionEnabledChanged(QWebEnginePage::WebAction action, bool enabled);
 
 public slots:
@@ -74,7 +73,8 @@ public slots:
     void setUrl(const QUrl &url);
     void triggerWebPageAction(QWebEnginePage::WebAction action);
 
-    WebView *createTab(bool makeCurrent = true);
+    WebView *createTab();
+    WebView *createBackgroundTab();
     void closeTab(int index);
     void nextTab();
     void previousTab();

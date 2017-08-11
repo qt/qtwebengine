@@ -1,10 +1,13 @@
 load(qt_parts)
 
 isPlatformSupported() {
-   !exists(src/3rdparty/chromium): \
-       error("Submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
-   load(configure)
-   runConfigure()
+    !exists(src/3rdparty/chromium): \
+        error("Submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
+    WSPC = $$find(OUT_PWD, \\s)
+    !isEmpty(WSPC): \
+        error("QtWebEngine cannot be built in a path that contains whitespace characters.")
+    load(configure)
+    runConfigure()
 }
 
 !isEmpty(skipBuildReason) {

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2017 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -38,33 +38,39 @@
 **
 ****************************************************************************/
 
-#ifndef URLLINEEDIT_H
-#define URLLINEEDIT_H
+#ifndef DOWNLOADWIDGET_H
+#define DOWNLOADWIDGET_H
 
-#include <QLineEdit>
+#include "ui_downloadwidget.h"
+
+#include <QFrame>
+#include <QTime>
 
 QT_BEGIN_NAMESPACE
-class QToolButton;
+class QWebEngineDownloadItem;
 QT_END_NAMESPACE
 
-class UrlLineEdit : public QLineEdit
+// Displays one ongoing or finished download (QWebEngineDownloadItem).
+class DownloadWidget final : public QFrame, public Ui::DownloadWidget
 {
     Q_OBJECT
-
 public:
-    UrlLineEdit(QWidget *parent = nullptr);
+    // Precondition: The QWebEngineDownloadItem has been accepted.
+    explicit DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent = nullptr);
 
-public:
-    QUrl url() const;
-    void setUrl(const QUrl &url);
-    void setFavIcon(const QIcon &icon);
+signals:
+    // This signal is emitted when the user indicates that they want to remove
+    // this download from the downloads list.
+    void removeClicked(DownloadWidget *self);
 
-protected:
-    void resizeEvent(QResizeEvent *event) override;
+private slots:
+    void updateWidget();
 
 private:
-    QToolButton *m_favButton;
-    QToolButton *m_clearButton;
+    QString withUnit(qreal bytes);
+
+    QWebEngineDownloadItem *m_download;
+    QTime m_timeAdded;
 };
 
-#endif // URLLINEEDIT_H
+#endif // DOWNLOADWIDGET_H

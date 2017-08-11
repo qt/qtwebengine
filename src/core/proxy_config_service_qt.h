@@ -69,13 +69,17 @@ private:
     void OnProxyConfigChanged(const net::ProxyConfig& config,
                               ConfigAvailability availability) override;
 
+    // Retrieve new proxy settings and notify observers.
+    void Update();
+
     // Makes sure that the observer registration with the base service is set up.
     void RegisterObserver();
 
     std::unique_ptr<net::ProxyConfigService> m_baseService;
     base::ObserverList<net::ProxyConfigService::Observer, true> m_observers;
 
-    // Keep the last QNetworkProxy::applicationProxy state around.
+    // Keep the last state around.
+    bool m_usesSystemConfiguration;
     QNetworkProxy m_qtApplicationProxy;
     net::ProxyConfig m_qtProxyConfig;
 

@@ -181,8 +181,29 @@
     script to run, the injection point, and the world where the script is run. This enables
     accessing the DOM to manipulate it within a world.
 
-    The following \l Greasemonkey attributes are supported since Qt 5.8:
-    \c @exclude, \c @include, \c @name, \c @match, and \c @run-at.
+    Since Qt 5.8, Qt WebEngine supports augmenting a script by using the
+    following \l{Metadata Block}{Greasemonkey-like attributes}:
+
+    \list
+        \li \c {@exclude <regexp>}
+        \li \c {@include <regexp>}
+        \li \c {@match <regexp>}
+        \li \c {@name <free text>}
+        \li \c {@run-at [document-start|document-end|document-idle]}
+    \endlist
+
+    The attributes determine if and when a \l {User Scripts}{user script} is
+    run. They must be placed immediately in the beginning of the script, inside
+    a \c ==UserScript== comment:
+
+    \code
+    // ==UserScript==
+    // @include http://*.qt.io/*
+    // @exclude http://wiki.qt.io/*
+    // ==/UserScript==
+
+    window.alert("Page is from qt.io, but not wiki.qt.io");
+    \endcode
 
     \section1 Managing Certificates
 

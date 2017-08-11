@@ -333,6 +333,17 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kDisablePepper3DImageChromium);
 #endif
 
+#if defined(Q_OS_WIN)
+    // This switch is used in Chromium's gl_context_wgl.cc file to determine whether to create
+    // an OpenGL Core Profile context. If the switch is not set, it would always try to create a
+    // Core Profile context, even if Qt uses a legacy profile, which causes
+    // "Could not share GL contexts" warnings, because it's not possible to share between Core and
+    // legacy profiles.
+    // Given that Core profile is not currently supported on Windows anyway, pass this switch to
+    // get rid of the warnings.
+    parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
+#endif
+
     if (useEmbeddedSwitches) {
         // Inspired by the Android port's default switches
         if (!parsedCommandLine->HasSwitch(switches::kDisableOverlayScrollbar))
@@ -390,8 +401,23 @@ WebEngineContext::WebEngineContext()
                     }
                 }
             } else {
-                if (!qt_gl_global_share_context()->isOpenGLES())
+                if (!qt_gl_global_share_context()->isOpenGLES()) {
+                    // Default to Desktop non-Core profile OpenGL.
                     glType = gl::kGLImplementationDesktopName;
+
+                    // Check if Core profile was requested and is supported.
+                    QSurfaceFormat globalSharedFormat = qt_gl_global_share_context()->format();
+                    if (globalSharedFormat.profile() == QSurfaceFormat::CoreProfile) {
+#ifdef Q_OS_MACOS
+                        // @TODO_FIXME_ADAPT_QT
+                        // glType = gl::kGLImplementationCoreProfileName;
+#else
+                        qWarning("An OpenGL Core Profile was requested, but it is not supported "
+                                 "on the current platform. Falling back to a non-Core profile. "
+                                 "Note that this might cause rendering issues.");
+#endif
+                    }
+                }
             }
 
             if (qt_gl_global_share_context()->format().profile() == QSurfaceFormat::CompatibilityProfile)

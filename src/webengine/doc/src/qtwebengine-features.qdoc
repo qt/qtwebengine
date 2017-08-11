@@ -45,6 +45,7 @@
         \li \l{Pepper Plugin API}
         \li \l{Print to PDF}
         \li \l{Spellchecker}
+        \li \l{Touch}
         \li \l{View Source}
         \li \l{WebRTC}
     \endlist
@@ -342,6 +343,22 @@
     \l{WebEngine Widgets Spellchecker Example}{Spellchecker Example}.
 
     Support for this feature was added in Qt 5.8.0.
+
+    \section1 Touch
+
+    Qt WebEngine supports touch devices for navigating and interacting with web pages.
+
+    Applications can prohibit the use of touch events in the following ways:
+
+    \list
+        \li Passing the flag \c --touch-events=disabled on the command line will disable touch event
+        support in JavaScript API (meaning \c ontouchstart and related handlers will not be present
+        in the \c document.window object). Touch events will still be delivered to web pages.
+
+       \li Installing an event filter object using \l {QObject::installEventFilter} on the WebEngine
+       view focus proxy object, and filtering out all touch events.
+
+    \endlist
 
     \section1 View Source
 

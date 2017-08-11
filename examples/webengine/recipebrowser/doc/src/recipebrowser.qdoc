@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -213,4 +213,16 @@
     \quotefromfile webengine/recipebrowser/resources/pages/soup.html
     \printuntil </html>
 
+    \section1 Files and Attributions
+
+    The example bundles the following code with third-party licenses:
+
+    \table
+    \row
+        \li \l{recipebrowser-marked}{Marked}
+        \li MIT License
+    \row
+        \li \l{recipebrowser-markdowncss}{Markdown.css}
+        \li Apache License 2.0
+    \endtable
 */
