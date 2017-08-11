@@ -139,7 +139,6 @@ host_build {
 
     use?(system_libevent): gn_args += use_system_libevent=true
     use?(system_libwebp):  gn_args += use_system_libwebp=true
-    #use?(system_libsrtp):  gn_args += use_system_libsrtp=true
     use?(system_libxslt):  gn_args += use_system_libxml=true use_system_libxslt=true
     #use?(system_jsoncpp):  gn_args += use_system_jsoncpp=true
     use?(system_opus):     gn_args += use_system_opus=true

@@ -108,11 +108,6 @@ defineTest(runConfigure) {
             log("Compatible system libvpx not found. Using Chromium's copy.$${EOL}")
             WEBENGINE_CONFIG += use_bundled_libvpx
         }
-        config_srtp: WEBENGINE_CONFIG += use_system_libsrtp
-        else {
-            log("System libsrtp not found. Using Chromium's copy.$${EOL}")
-            WEBENGINE_CONFIG += use_bundled_srtp
-        }
         config_snappy: WEBENGINE_CONFIG += use_system_snappy
         else {
             log("System snappy not found. Using Chromium's copy.$${EOL}")
