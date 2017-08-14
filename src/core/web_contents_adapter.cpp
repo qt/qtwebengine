@@ -942,7 +942,7 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     if (!dlm)
         return;
 
-    dlmd->setDownloadType(BrowserContextAdapterClient::UserRequested);
+    dlmd->markNextDownloadAsUserRequested();
     dlm->SetDelegate(dlmd);
 
     GURL gurl = toGurl(url);

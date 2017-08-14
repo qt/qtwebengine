@@ -65,7 +65,7 @@ DownloadManagerDelegateQt::DownloadManagerDelegateQt(BrowserContextAdapter *cont
     : m_contextAdapter(contextAdapter)
     , m_currentId(0)
     , m_weakPtrFactory(this)
-    , m_downloadType(BrowserContextAdapterClient::Attachment)
+    , m_nextDownloadIsUserRequested(false)
 {
     Q_ASSERT(m_contextAdapter);
 }
@@ -107,10 +107,17 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
     QString suggestedFilename = toQt(item->GetSuggestedFilename());
     QString mimeTypeString = toQt(item->GetMimeType());
 
-    bool isAttachment = net::HttpContentDisposition(item->GetContentDisposition(), std::string()).is_attachment();
-
-    if (!isAttachment || !BrowserContextAdapterClient::UserRequested)
-        m_downloadType = BrowserContextAdapterClient::DownloadAttribute;
+    int downloadType = 0;
+    if (m_nextDownloadIsUserRequested) {
+        downloadType = BrowserContextAdapterClient::UserRequested;
+        m_nextDownloadIsUserRequested = false;
+    } else {
+        bool isAttachment = net::HttpContentDisposition(item->GetContentDisposition(), std::string()).is_attachment();
+        if (isAttachment)
+            downloadType = BrowserContextAdapterClient::Attachment;
+        else
+            downloadType = BrowserContextAdapterClient::DownloadAttribute;
+    }
 
     if (suggestedFilename.isEmpty())
         suggestedFilename = toQt(net::HttpContentDisposition(item->GetContentDisposition(), std::string()).filename());
@@ -155,7 +162,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
             suggestedFilePath,
             BrowserContextAdapterClient::UnknownSavePageFormat,
             false /* accepted */,
-            m_downloadType,
+            downloadType,
             item->GetLastReason()
         };
 
@@ -283,7 +290,7 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *downloa
             QString(),
             BrowserContextAdapterClient::UnknownSavePageFormat,
             true /* accepted */,
-            m_downloadType,
+            0 /* downloadType (unused) */,
             download->GetLastReason()
         };
 
