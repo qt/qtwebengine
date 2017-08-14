@@ -44,6 +44,8 @@ private Q_SLOTS:
     void downloadLink_data();
     void downloadLink();
     void downloadTwoLinks();
+    void downloadPage_data();
+    void downloadPage();
 };
 
 enum DownloadTestUserAction {
@@ -504,6 +506,89 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
         item2 = item;
     }));
     QVERIFY(item2);
+}
+
+void tst_QWebEngineDownloads::downloadPage_data()
+{
+    QTest::addColumn<QWebEngineDownloadItem::SavePageFormat>("savePageFormat");
+    QTest::newRow("SingleHtmlSaveFormat") << QWebEngineDownloadItem::SingleHtmlSaveFormat;
+    QTest::newRow("CompleteHtmlSaveFormat") << QWebEngineDownloadItem::CompleteHtmlSaveFormat;
+    QTest::newRow("MimeHtmlSaveFormat") << QWebEngineDownloadItem::MimeHtmlSaveFormat;
+}
+
+void tst_QWebEngineDownloads::downloadPage()
+{
+    QFETCH(QWebEngineDownloadItem::SavePageFormat, savePageFormat);
+
+    HttpServer server;
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    QWebEngineView view;
+    view.setPage(&page);
+
+    view.load(server.url());
+    view.show();
+    auto indexRR = waitForRequest(&server);
+    QVERIFY(indexRR);
+    QCOMPARE(indexRR->requestMethod(), QByteArrayLiteral("GET"));
+    QCOMPARE(indexRR->requestPath(), QByteArrayLiteral("/"));
+    indexRR->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/html"));
+    indexRR->setResponseBody(QByteArrayLiteral("<html><body>Hello</body></html>"));
+    indexRR->sendResponse();
+    bool loadOk = false;
+    QVERIFY(waitForSignal(&page, &QWebEnginePage::loadFinished, [&](bool ok){ loadOk = ok; }));
+    QVERIFY(loadOk);
+
+    auto favIconRR = waitForRequest(&server);
+    QVERIFY(favIconRR);
+    QCOMPARE(favIconRR->requestMethod(), QByteArrayLiteral("GET"));
+    QCOMPARE(favIconRR->requestPath(), QByteArrayLiteral("/favicon.ico"));
+    favIconRR->setResponseStatus(404);
+    favIconRR->sendResponse();
+
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+    QString downloadPath = tmpDir.path() + QStringLiteral("/test.html");
+    page.save(downloadPath, savePageFormat);
+
+    QWebEngineDownloadItem *downloadItem = nullptr;
+    QUrl downloadUrl = server.url("/");
+    QVERIFY(waitForSignal(&profile, &QWebEngineProfile::downloadRequested,
+                        [&](QWebEngineDownloadItem *item) {
+        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadInProgress);
+        QCOMPARE(item->isFinished(), false);
+        QCOMPARE(item->totalBytes(), -1);
+        QCOMPARE(item->receivedBytes(), 0);
+        QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+        QCOMPARE(item->type(), QWebEngineDownloadItem::SavePage);
+        // FIXME why is mimeType always the same?
+        QCOMPARE(item->mimeType(), QStringLiteral("application/x-mimearchive"));
+        QCOMPARE(item->path(), downloadPath);
+        QCOMPARE(item->savePageFormat(), savePageFormat);
+        QCOMPARE(item->url(), downloadUrl);
+        // no need to call item->accept()
+        downloadItem = item;
+    }));
+    QVERIFY(downloadItem);
+    bool finishOk = false;
+    QVERIFY(waitForSignal(downloadItem, &QWebEngineDownloadItem::finished, [&]() {
+        auto item = downloadItem;
+        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
+        QCOMPARE(item->isFinished(), true);
+        QCOMPARE(item->totalBytes(), item->receivedBytes());
+        QVERIFY(item->receivedBytes() > 0);
+        QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+        QCOMPARE(item->type(), QWebEngineDownloadItem::SavePage);
+        QCOMPARE(item->mimeType(), QStringLiteral("application/x-mimearchive"));
+        QCOMPARE(item->path(), downloadPath);
+        QCOMPARE(item->savePageFormat(), savePageFormat);
+        QCOMPARE(item->url(), downloadUrl);
+        finishOk = true;
+    }));
+    QVERIFY(finishOk);
+
+    QFile file(downloadPath);
+    QVERIFY(file.exists());
 }
 
 QTEST_MAIN(tst_QWebEngineDownloads)
