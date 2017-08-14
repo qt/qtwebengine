@@ -43,6 +43,7 @@ class tst_QWebEngineDownloads : public QObject
 private Q_SLOTS:
     void downloadLink_data();
     void downloadLink();
+    void downloadTwoLinks();
 };
 
 enum DownloadTestUserAction {
@@ -412,6 +413,97 @@ void tst_QWebEngineDownloads::downloadLink()
     QFile file(downloadPath);
     QVERIFY(file.open(QIODevice::ReadOnly));
     QCOMPARE(file.readAll(), fileContents);
+}
+
+void tst_QWebEngineDownloads::downloadTwoLinks()
+{
+    HttpServer server;
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    QWebEngineView view;
+    view.setPage(&page);
+
+    view.load(server.url());
+    view.show();
+    auto indexRR = waitForRequest(&server);
+    QVERIFY(indexRR);
+    QCOMPARE(indexRR->requestMethod(), QByteArrayLiteral("GET"));
+    QCOMPARE(indexRR->requestPath(), QByteArrayLiteral("/"));
+    indexRR->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/html"));
+    indexRR->setResponseBody(QByteArrayLiteral("<html><body><a href=\"file1\" download>Link1</a><br/><a href=\"file2\">Link2</a></body></html>"));
+    indexRR->sendResponse();
+    bool loadOk = false;
+    QVERIFY(waitForSignal(&page, &QWebEnginePage::loadFinished, [&](bool ok){ loadOk = ok; }));
+    QVERIFY(loadOk);
+
+    auto favIconRR = waitForRequest(&server);
+    QVERIFY(favIconRR);
+    QCOMPARE(favIconRR->requestMethod(), QByteArrayLiteral("GET"));
+    QCOMPARE(favIconRR->requestPath(), QByteArrayLiteral("/favicon.ico"));
+    favIconRR->setResponseStatus(404);
+    favIconRR->sendResponse();
+
+    QWidget *renderWidget = view.focusWidget();
+    QTest::mouseClick(renderWidget, Qt::LeftButton, {}, QPoint(10, 10));
+    QTest::mouseClick(renderWidget, Qt::LeftButton, {}, QPoint(10, 30));
+
+    auto file1RR = waitForRequest(&server);
+    QVERIFY(file1RR);
+    QCOMPARE(file1RR->requestMethod(), QByteArrayLiteral("GET"));
+    QCOMPARE(file1RR->requestPath(), QByteArrayLiteral("/file1"));
+    auto file2RR = waitForRequest(&server);
+    QVERIFY(file2RR);
+    QCOMPARE(file2RR->requestMethod(), QByteArrayLiteral("GET"));
+    QCOMPARE(file2RR->requestPath(), QByteArrayLiteral("/file2"));
+
+    file1RR->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/plain"));
+    file1RR->setResponseBody(QByteArrayLiteral("file1"));
+    file1RR->sendResponse();
+    file2RR->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/plain"));
+    file2RR->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
+    file2RR->setResponseBody(QByteArrayLiteral("file2"));
+    file2RR->sendResponse();
+
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+    QString standardDir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    QWebEngineDownloadItem *item1 = nullptr;
+    QVERIFY(waitForSignal(&profile, &QWebEngineProfile::downloadRequested,
+                          [&](QWebEngineDownloadItem *item) {
+        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+        QCOMPARE(item->isFinished(), false);
+        QCOMPARE(item->totalBytes(), -1);
+        QCOMPARE(item->receivedBytes(), 0);
+        QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+        QCOMPARE(item->type(), QWebEngineDownloadItem::DownloadAttribute);
+        QCOMPARE(item->mimeType(), QStringLiteral("text/plain"));
+        QCOMPARE(item->path(), standardDir + QByteArrayLiteral("/file1"));
+        QCOMPARE(item->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
+        QCOMPARE(item->url(), server.url(QByteArrayLiteral("/file1")));
+        item->setPath(tmpDir.path() + QByteArrayLiteral("/file1"));
+        item->accept();
+        item1 = item;
+    }));
+    QVERIFY(item1);
+
+    QWebEngineDownloadItem *item2 = nullptr;
+    QVERIFY(waitForSignal(&profile, &QWebEngineProfile::downloadRequested,
+                          [&](QWebEngineDownloadItem *item) {
+        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+        QCOMPARE(item->isFinished(), false);
+        QCOMPARE(item->totalBytes(), -1);
+        QCOMPARE(item->receivedBytes(), 0);
+        QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+        QCOMPARE(item->type(), QWebEngineDownloadItem::DownloadAttribute);
+        QCOMPARE(item->mimeType(), QStringLiteral("text/plain"));
+        QCOMPARE(item->path(), standardDir + QByteArrayLiteral("/file2"));
+        QCOMPARE(item->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
+        QCOMPARE(item->url(), server.url(QByteArrayLiteral("/file2")));
+        item->setPath(tmpDir.path() + QByteArrayLiteral("/file2"));
+        item->accept();
+        item2 = item;
+    }));
+    QVERIFY(item2);
 }
 
 QTEST_MAIN(tst_QWebEngineDownloads)
