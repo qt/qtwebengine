@@ -19,6 +19,3 @@ linux
 
 [WebEngineViewSingleFileUpload::test_acceptSingleFileSelection]
 *
-
-[WebEngineViewLoadProgress::test_loadProgress]
-osx

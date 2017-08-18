@@ -149,6 +149,8 @@ public:
 
 private:
     QWeakPointer<WebContentsAdapter> createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
+    void EmitLoadStarted(const QUrl &url, bool isErrorPage = false);
+    void EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString());
 
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;
@@ -158,6 +160,7 @@ private:
     SavePageInfo m_savePageInfo;
     QSharedPointer<FilePickerController> m_filePickerController;
     QUrl m_initialTargetUrl;
+    int m_lastLoadProgress;
 };
 
 } // namespace QtWebEngineCore

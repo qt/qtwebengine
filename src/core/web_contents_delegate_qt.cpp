@@ -94,6 +94,7 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
     : m_viewClient(adapterClient)
     , m_lastReceivedFindReply(0)
     , m_faviconManager(new FaviconManager(new FaviconManagerPrivate(webContents, adapterClient)))
+    , m_lastLoadProgress(-1)
 {
     webContents->SetDelegate(this);
     Observe(webContents);
@@ -177,7 +178,11 @@ void WebContentsDelegateQt::LoadProgressChanged(content::WebContents */*source*/
 {
     if (!m_loadingErrorFrameList.isEmpty())
         return;
-    m_viewClient->loadProgressChanged(qRound(progress * 100));
+    if (m_lastLoadProgress < 0) // suppress signals that aren't between loadStarted and loadFinished
+        return;
+    m_lastLoadProgress = qMax(m_lastLoadProgress, qRound(progress * 100)); // ensure monotonicity
+    m_lastLoadProgress = qMin(m_lastLoadProgress, 100);
+    m_viewClient->loadProgressChanged(m_lastLoadProgress);
 }
 
 void WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const content::NativeWebKeyboardEvent &event)
@@ -190,6 +195,15 @@ void WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const co
 void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
 {
     m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
+}
+
+void WebContentsDelegateQt::EmitLoadStarted(const QUrl &url, bool isErrorPage)
+{
+    if (m_lastLoadProgress >= 0) // already running
+        return;
+    m_viewClient->loadStarted(url, isErrorPage);
+    m_viewClient->loadProgressChanged(0);
+    m_lastLoadProgress = 0;
 }
 
 void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *navigation_handle)
@@ -212,7 +226,16 @@ void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *naviga
 
     m_loadingErrorFrameList.clear();
     m_faviconManager->resetCandidates();
-    m_viewClient->loadStarted(toQt(navigation_handle->GetURL()));
+    EmitLoadStarted(toQt(navigation_handle->GetURL()));
+}
+
+void WebContentsDelegateQt::EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
+{
+    if (m_lastLoadProgress < 0) // not currently running
+        return;
+    m_lastLoadProgress = -1;
+    m_viewClient->loadProgressChanged(100);
+    m_viewClient->loadFinished(success, url, isErrorPage, errorCode, errorDescription);
 }
 
 void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navigation_handle)
@@ -245,7 +268,7 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
         // Now report we are starting to load an error-page.
         m_loadingErrorFrameList.append(navigation_handle->GetRenderFrameHost()->GetRoutingID());
         m_faviconManager->resetCandidates();
-        m_viewClient->loadStarted(toQt(GURL(content::kUnreachableWebDataURL)), true);
+        EmitLoadStarted(toQt(GURL(content::kUnreachableWebDataURL)), true);
 
         // If it is already committed we will not see another DidFinishNavigation call or a DidFinishLoad call.
         if (navigation_handle->HasCommitted()) {
@@ -258,8 +281,7 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
 void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription)
 {
     m_viewClient->iconChanged(QUrl());
-    m_viewClient->loadFinished(false /* success */ , url, false /* isErrorPage */, errorCode, errorDescription);
-    m_viewClient->loadProgressChanged(0);
+    EmitLoadFinished(false /* success */ , url, false /* isErrorPage */, errorCode, errorDescription);
 }
 
 void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description, bool was_ignored_by_handler)
@@ -273,7 +295,8 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
         Q_ASSERT(error_code == -3 /* ERR_ABORTED */);
         m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
         m_viewClient->iconChanged(QUrl());
-        m_viewClient->loadFinished(false /* success */, toQt(validated_url), true /* isErrorPage */);
+
+        EmitLoadFinished(false /* success */, toQt(validated_url), true /* isErrorPage */);
         return;
     }
 
@@ -289,7 +312,7 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
 
         // Trigger LoadFinished signal for main frame's error page only.
         if (!render_frame_host->GetParent())
-            m_viewClient->loadFinished(true /* success */, toQt(validated_url), true /* isErrorPage */);
+            EmitLoadFinished(true /* success */, toQt(validated_url), true /* isErrorPage */);
 
         return;
     }
@@ -300,8 +323,7 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     if (!m_faviconManager->hasCandidate())
         m_viewClient->iconChanged(QUrl());
 
-    m_viewClient->loadProgressChanged(100);
-    m_viewClient->loadFinished(true, toQt(validated_url));
+    EmitLoadFinished(true, toQt(validated_url));
 }
 
 void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates)
