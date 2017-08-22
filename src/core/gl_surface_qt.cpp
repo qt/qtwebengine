@@ -48,6 +48,7 @@
 #include <QGuiApplication>
 #include "gl_context_qt.h"
 #include "qtwebenginecoreglobal_p.h"
+#include "web_engine_context.h"
 
 #include "base/logging.h"
 #include "gpu/ipc/service/image_transport_surface.h"
@@ -616,6 +617,11 @@ bool InitializeGLOneOffPlatform()
     }
 
     return false;
+}
+
+bool usingSoftwareDynamicGL()
+{
+    return QtWebEngineCore::usingSoftwareDynamicGL();
 }
 
 scoped_refptr<GLSurface>

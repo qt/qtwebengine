@@ -133,21 +133,6 @@ bool usingANGLE()
 #endif
 }
 
-bool usingSoftwareDynamicGL()
-{
-    if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
-        return true;
-#if defined(Q_OS_WIN)
-    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
-    wchar_t path[MAX_PATH];
-    DWORD size = GetModuleFileName(handle, path, MAX_PATH);
-    QFileInfo openGLModule(QString::fromWCharArray(path, size));
-    return openGLModule.fileName() == QLatin1String("opengl32sw.dll");
-#else
-    return false;
-#endif
-}
-
 bool usingQtQuick2DRenderer()
 {
     const QStringList args = QGuiApplication::arguments();
@@ -183,6 +168,21 @@ void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 } // namespace
 
 namespace QtWebEngineCore {
+
+bool usingSoftwareDynamicGL()
+{
+    if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
+        return true;
+#if defined(Q_OS_WIN)
+    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
+    wchar_t path[MAX_PATH];
+    DWORD size = GetModuleFileName(handle, path, MAX_PATH);
+    QFileInfo openGLModule(QString::fromWCharArray(path, size));
+    return openGLModule.fileName() == QLatin1String("opengl32sw.dll");
+#else
+    return false;
+#endif
+}
 
 void WebEngineContext::destroyBrowserContext()
 {
@@ -284,6 +284,9 @@ WebEngineContext::WebEngineContext()
         appArgs.append(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv)).split(' '));
     }
 
+    bool enableWebGLSoftwareRendering =
+            appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
+
     bool useEmbeddedSwitches = false;
 #if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
     useEmbeddedSwitches = !appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
@@ -363,7 +366,20 @@ WebEngineContext::WebEngineContext()
 
     const char *glType = 0;
 #ifndef QT_NO_OPENGL
-    if (!usingANGLE() && !usingSoftwareDynamicGL() && !usingQtQuick2DRenderer()) {
+
+    bool tryGL =
+            !usingANGLE()
+            && (!usingSoftwareDynamicGL()
+#ifdef Q_OS_WIN
+                // If user requested WebGL support on Windows, instead of using Skia rendering to
+                // bitmaps, use software rendering via opengl32sw.dll. This might be less
+                // performant, but at least provides WebGL support.
+                || enableWebGLSoftwareRendering
+#endif
+                )
+            && !usingQtQuick2DRenderer();
+
+    if (tryGL) {
         if (qt_gl_global_share_context() && qt_gl_global_share_context()->isValid()) {
             // If the native handle is QEGLNativeContext try to use GL ES/2, if there is no native handle
             // assume we are using wayland and try GL ES/2, and finally Ozone demands GL ES/2 too.
