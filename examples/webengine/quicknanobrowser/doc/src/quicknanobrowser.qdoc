@@ -115,9 +115,9 @@
 
     We create a menu item for allowing fullscreen mode in a settings menu that we place on the tool
     bar. Also, we create an action for leaving fullscreen mode by using a keyboard shortcut.
-    We call the \l{WebEngineFullScreenRequest::}{accept()} method to accept the fullscreen request.
+    We call the \l{FullScreenRequest::}{accept()} method to accept the fullscreen request.
     The methdod sets the \l{WebEngineView::}{isFullScreen} property to be equal to the
-    \l{WebEngineFullScreenRequest::}{toggleOn} property.
+    \l{FullScreenRequest::}{toggleOn} property.
 
     \quotefromfile webengine/quicknanobrowser/BrowserWindow.qml
     \skipto onFullScreenRequested

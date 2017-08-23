@@ -112,7 +112,7 @@
 
     A web page can request through the JavaScript API to be loaded in fullscreen mode. The
     \l fullScreenRequested() signal is emitted when the web page issues the request. The
-    WebEngineFullScreenRequest utility type can be used to toggle fullscreen requests. The
+    FullScreenRequest utility type can be used to toggle fullscreen requests. The
     \l fullScreenCancelled method can be used to notify the browser engine when the windowing
     system forces the application to leave fullscreen mode.
 
@@ -576,7 +576,7 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::fullScreenRequested(WebEngineFullScreenRequest request)
+    \qmlsignal WebEngineView::fullScreenRequested(FullScreenRequest request)
     \since QtWebEngine 1.1
 
     This signal is emitted when the web page requests fullscreen mode through the
@@ -1039,7 +1039,7 @@
 */
 
 /*!
-    \qmltype WebEngineFullScreenRequest
+    \qmltype FullScreenRequest
     \instantiates QQuickWebEngineFullScreenRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
@@ -1050,13 +1050,13 @@
 */
 
 /*!
-    \qmlproperty url WebEngineFullScreenRequest::origin
+    \qmlproperty url FullScreenRequest::origin
     \readonly
     The URL of the web page that issued the fullscreen request.
 */
 
 /*!
-    \qmlproperty bool WebEngineFullScreenRequest::toggleOn
+    \qmlproperty bool FullScreenRequest::toggleOn
     \readonly
 
     Returns \c{true} if the application should toggle fullscreen mode on, \c{false} otherwise.
@@ -1065,7 +1065,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineFullScreenRequest::accept()
+    \qmlmethod void FullScreenRequest::accept()
 
     Call this method to accept the fullscreen request. It sets the WebEngineView::isFullScreen
     property to be equal to toggleOn.
@@ -1089,7 +1089,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineFullScreenRequest::reject()
+    \qmlmethod void FullScreenRequest::reject()
     Rejects a fullscreen request.
 */
 
