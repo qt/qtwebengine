@@ -65,6 +65,7 @@ private Q_SLOTS:
     void saveAndRestore_crash_2();
     void saveAndRestore_crash_3();
     void saveAndRestore_crash_4();
+    void saveAndRestore_InternalPage();
 
     void popPushState_data();
     void popPushState();
@@ -418,6 +419,26 @@ void tst_QWebEngineHistory::saveAndRestore_crash_4()
     QDataStream load(&buffer, QIODevice::ReadOnly);
     load >> *page2->history();
     QTRY_COMPARE(loadFinishedSpy2.count(), 1);
+}
+
+void tst_QWebEngineHistory::saveAndRestore_InternalPage()
+{
+    QWebEngineView view;
+    view.show();
+    QSignalSpy loadFinishedSpy(&view, &QWebEngineView::loadFinished);
+    view.load(QUrl("view-source:http://qt.io"));
+    QTRY_LOOP_IMPL((loadFinishedSpy.size() == 1), 30000, 200)
+    if (loadFinishedSpy.size() != 1 || !loadFinishedSpy.at(0).at(0).toBool())
+         QSKIP("Couldn't load page from network, skipping test.");
+
+    // get history
+    QByteArray data;
+    QDataStream stream1(&data, QIODevice::WriteOnly);
+    stream1 << *view.history();
+
+    // restore history - this should not crash. see QTBUG-57826
+    QDataStream stream2(data);
+    stream2 >> *view.history();
 }
 
 void tst_QWebEngineHistory::popPushState_data()
