@@ -67,15 +67,16 @@ public:
 };
 
 template<typename T, typename R>
-struct RefWrapper {
-    R &ref;
+struct CallbackWrapper {
+    QPointer<R> p;
     void operator()(const T& result) {
-        ref(result);
+        if (p)
+            (*p)(result);
     }
 };
 
 template<typename T>
-class CallbackSpy {
+class CallbackSpy: public QObject {
 public:
     CallbackSpy() : called(false) {
         timeoutTimer.setSingleShot(true);
@@ -100,10 +101,9 @@ public:
         eventLoop.quit();
     }
 
-    // Cheap rip-off of boost/std::ref
-    RefWrapper<T, CallbackSpy<T> > ref()
+    CallbackWrapper<T, CallbackSpy<T> > ref()
     {
-        RefWrapper<T, CallbackSpy<T> > wrapper = {*this};
+        CallbackWrapper<T, CallbackSpy<T> > wrapper = {this};
         return wrapper;
     }
 

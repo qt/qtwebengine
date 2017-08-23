@@ -105,6 +105,7 @@ private Q_SLOTS:
     void updatePositionDependentActionsCrash();
     void createPluginWithPluginsEnabled();
     void createPluginWithPluginsDisabled();
+    void callbackSpyDeleted();
     void destroyPlugin_data();
     void destroyPlugin();
     void createViewlessPlugin_data();
@@ -439,6 +440,22 @@ static QImage imageWithoutAlpha(const QImage &image)
     painter.fillRect(result.rect(), Qt::green);
     painter.drawImage(0, 0, image);
     return result;
+}
+
+void tst_QWebEnginePage::callbackSpyDeleted()
+{
+    QWebEnginePage *page = m_view->page();
+    CallbackSpy<QVariant> spy;
+    QString poorManSleep("function wait(ms){"
+                         "  var start = new Date().getTime();"
+                         "  var end = start;"
+                         "  while (start + ms > end) {"
+                             "end = new Date().getTime();"
+                         "  }"
+                         "}"
+                        "wait(1000);");
+    page->runJavaScript(poorManSleep, spy.ref());
+    //spy deleted before callback
 }
 
 void tst_QWebEnginePage::pasteImage()
