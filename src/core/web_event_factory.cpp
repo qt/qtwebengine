@@ -1212,6 +1212,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
     return webKitEvent;
 }
 
+#ifndef QT_NO_GESTURES
 WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, double dpiScale)
 {
     WebGestureEvent webKitEvent;
@@ -1248,6 +1249,7 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, doub
 
     return webKitEvent;
 }
+#endif
 
 blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, double dpiScale)
 {

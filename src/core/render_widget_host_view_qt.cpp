@@ -942,9 +942,11 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::TouchCancel:
         handleTouchEvent(static_cast<QTouchEvent*>(event));
         break;
+#ifndef QT_NO_GESTURES
     case QEvent::NativeGesture:
         handleGestureEvent(static_cast<QNativeGestureEvent *>(event));
         break;
+#endif // QT_NO_GESTURES
     case QEvent::HoverMove:
         handleHoverEvent(static_cast<QHoverEvent*>(event));
         break;
@@ -1336,6 +1338,7 @@ void RenderWidgetHostViewQt::clearPreviousTouchMotionState()
     m_touchMotionStarted = false;
 }
 
+#ifndef QT_NO_GESTURES
 void RenderWidgetHostViewQt::handleGestureEvent(QNativeGestureEvent *ev)
 {
     const Qt::NativeGestureType type = ev->gestureType();
@@ -1346,6 +1349,7 @@ void RenderWidgetHostViewQt::handleGestureEvent(QNativeGestureEvent *ev)
                                         static_cast<double>(dpiScale())));
     }
 }
+#endif
 
 Q_DECLARE_LOGGING_CATEGORY(QWEBENGINE_TOUCH_HANDLING);
 Q_LOGGING_CATEGORY(QWEBENGINE_TOUCH_HANDLING, "qt.webengine.touch");
