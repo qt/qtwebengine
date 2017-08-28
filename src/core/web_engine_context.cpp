@@ -67,6 +67,7 @@
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "net/base/port_util.h"
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -454,6 +455,11 @@ WebEngineContext::WebEngineContext()
     MediaCaptureDevicesDispatcher::GetInstance();
 
     base::ThreadRestrictions::SetIOAllowed(true);
+
+    if (parsedCommandLine->HasSwitch(switches::kExplicitlyAllowedPorts)) {
+        std::string allowedPorts = parsedCommandLine->GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
+        net::SetExplicitlyAllowedPorts(allowedPorts);
+    }
 
 #if defined(ENABLE_PLUGINS)
     // Creating pepper plugins from the page (which calls PluginService::GetPluginInfoArray)
