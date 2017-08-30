@@ -50,7 +50,7 @@ defineTest(runConfigure) {
     qtConfig(system-opus): WEBENGINE_CONFIG += use_system_opus
     qtConfig(system-ffmpeg): WEBENGINE_CONFIG += use_system_ffmpeg
     qtConfig(system-icu): WEBENGINE_CONFIG += use_system_icu
-    qtConfig(nss-certificate-handling): WEBENGINE_CONFIG += use_nss
+
     !contains(WEBENGINE_CONFIG, use_system_libwebp): WEBENGINE_CONFIG += use_bundled_libwebp
     !contains(WEBENGINE_CONFIG, use_system_opus): WEBENGINE_CONFIG += use_bundled_opus
     !contains(WEBENGINE_CONFIG, use_system_ffmpeg): WEBENGINE_CONFIG += use_bundled_ffmpeg
@@ -68,6 +68,11 @@ defineTest(runConfigure) {
             skipBuild("A suitable version of libc could not be found. See: https://sourceware.org/bugzilla/show_bug.cgi?id=14898")
             return(false)
         }
+        !qtConfig(system-nss) {
+            skipBuild("A suitable version of NSS could not be found.")
+            return(false)
+        }
+        WEBENGINE_CONFIG += use_nss
 
         QT_FOR_CONFIG += gui-private
         !config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
