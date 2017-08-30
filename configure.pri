@@ -1,3 +1,6 @@
+# this must be done outside any function
+QTWEBENGINE_SOURCE_TREE = $$PWD
+
 equals(QMAKE_HOST.os, Windows): EXE_SUFFIX = .exe
 
 defineTest(isPythonVersionSupported) {
@@ -41,8 +44,18 @@ defineTest(qtConfTest_detectPython2) {
     return(true)
 }
 
+defineReplace(qtConfFindGnuTool) {
+    equals(QMAKE_HOST.os, Windows) {
+        gnuwin32bindir = $$absolute_path($$QTWEBENGINE_SOURCE_TREE/../gnuwin32/bin)
+        gnuwin32toolpath = "$$gnuwin32bindir/$${1}"
+        exists($$gnuwin32toolpath): \
+            return($$gnuwin32toolpath)
+    }
+    return($$qtConfFindInPath($$1))
+}
+
 defineTest(qtConfTest_detectGperf) {
-    gperf = $$qtConfFindInPath("gperf$$EXE_SUFFIX")
+    gperf = $$qtConfFindGnuTool("gperf$$EXE_SUFFIX")
     isEmpty(gperf) {
         qtLog("Required gperf could not be found.")
         return(false)
@@ -52,7 +65,7 @@ defineTest(qtConfTest_detectGperf) {
 }
 
 defineTest(qtConfTest_detectBison) {
-    bison = $$qtConfFindInPath("bison$$EXE_SUFFIX")
+    bison = $$qtConfFindGnuTool("bison$$EXE_SUFFIX")
     isEmpty(bison) {
         qtLog("Required bison could not be found.")
         return(false)
@@ -62,7 +75,7 @@ defineTest(qtConfTest_detectBison) {
 }
 
 defineTest(qtConfTest_detectFlex) {
-    flex = $$qtConfFindInPath("flex$$EXE_SUFFIX")
+    flex = $$qtConfFindGnuTool("flex$$EXE_SUFFIX")
     isEmpty(flex) {
         qtLog("Required flex could not be found.")
         return(false)
