@@ -97,6 +97,10 @@
         "embedded": {
             "label": "embedded",
             "type": "embedded"
+        },
+        "glibc": {
+            "label": "glibc > 2.16",
+            "type": "detectGlibc"
         }
     },
 
@@ -219,6 +223,11 @@
             "label": "Using system gn",
             "autoDetect": false,
             "condition": "tests.gn",
+            "output": [ "privateFeature" ]
+        },
+        "system-glibc": {
+            "label": "glibc",
+            "condition": "config.linux && tests.glibc",
             "output": [ "privateFeature" ]
         }
     },
