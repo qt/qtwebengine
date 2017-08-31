@@ -412,6 +412,20 @@ bool QQuickWebEngineSettings::playbackRequiresUserGesture() const
 }
 
 /*!
+  \qmlproperty bool WebEngineSettings::webRTCPublicInterfacesOnly
+  \since QtWebEngine 1.7
+  Limits WebRTC to public IP addresses only. When disabled WebRTC may also use
+  local network IP addresses, but remote hosts can also see your local network
+  IP address.
+
+  Disabled by default.
+*/
+bool QQuickWebEngineSettings::webRTCPublicInterfacesOnly() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -660,6 +674,14 @@ void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings:
     d_ptr->setUnknownUrlSchemePolicy(newPolicy);
     if (oldPolicy != newPolicy)
         Q_EMIT unknownUrlSchemePolicyChanged();
+}
+
+void QQuickWebEngineSettings::setWebRTCPublicInterfacesOnly(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly);
+    d_ptr->setAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly, on);
+    if (wasOn != on)
+        Q_EMIT webRTCPublicInterfacesOnlyChanged();
 }
 
 void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)

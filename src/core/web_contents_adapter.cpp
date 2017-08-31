@@ -60,7 +60,8 @@
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
 
-#include <base/run_loop.h>
+#include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -80,6 +81,7 @@
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "printing/features/features.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -428,10 +430,14 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
     rendererPrefs->user_agent_override = d->browserContextAdapter->httpUserAgent().toStdString();
     rendererPrefs->accept_languages = d->browserContextAdapter->httpAcceptLanguageWithoutQualities().toStdString();
-#if defined(ENABLE_WEBRTC)
+#if BUILDFLAG(ENABLE_WEBRTC)
     base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
     if (commandLine->HasSwitch(switches::kForceWebRtcIPHandlingPolicy))
         rendererPrefs->webrtc_ip_handling_policy = commandLine->GetSwitchValueASCII(switches::kForceWebRtcIPHandlingPolicy);
+    else
+        rendererPrefs->webrtc_ip_handling_policy = adapterClient->webEngineSettings()->testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly)
+                                                    ? content::kWebRTCIPHandlingDefaultPublicInterfaceOnly
+                                                    : content::kWebRTCIPHandlingDefault;
 #endif
     // Set web-contents font settings to the default font settings as Chromium constantly overrides
     // the global font defaults with the font settings of the latest web-contents created.

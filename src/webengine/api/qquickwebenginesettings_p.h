@@ -90,6 +90,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool showScrollBars READ showScrollBars WRITE setShowScrollBars NOTIFY showScrollBarsChanged REVISION 5 FINAL)
     Q_PROPERTY(UnknownUrlSchemePolicy unknownUrlSchemePolicy READ unknownUrlSchemePolicy WRITE setUnknownUrlSchemePolicy NOTIFY unknownUrlSchemePolicyChanged REVISION 6 FINAL)
     Q_PROPERTY(bool playbackRequiresUserGesture READ playbackRequiresUserGesture WRITE setPlaybackRequiresUserGesture NOTIFY playbackRequiresUserGestureChanged REVISION 6 FINAL)
+    Q_PROPERTY(bool webRTCPublicInterfacesOnly READ webRTCPublicInterfacesOnly WRITE setWebRTCPublicInterfacesOnly NOTIFY webRTCPublicInterfacesOnlyChanged REVISION 6 FINAL)
 
 public:
     enum UnknownUrlSchemePolicy {
@@ -129,6 +130,7 @@ public:
     bool showScrollBars() const;
     UnknownUrlSchemePolicy unknownUrlSchemePolicy() const;
     bool playbackRequiresUserGesture() const;
+    bool webRTCPublicInterfacesOnly() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -157,6 +159,7 @@ public:
     void setShowScrollBars(bool on);
     void setUnknownUrlSchemePolicy(UnknownUrlSchemePolicy policy);
     void setPlaybackRequiresUserGesture(bool on);
+    void setWebRTCPublicInterfacesOnly(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -186,6 +189,7 @@ signals:
     Q_REVISION(5) void showScrollBarsChanged();
     Q_REVISION(6) void unknownUrlSchemePolicyChanged();
     Q_REVISION(6) void playbackRequiresUserGestureChanged();
+    Q_REVISION(6) void webRTCPublicInterfacesOnlyChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);

@@ -92,7 +92,8 @@ public:
         AllowGeolocationOnInsecureOrigins,
         AllowWindowActivationFromJavaScript,
         ShowScrollBars,
-        PlaybackRequiresUserGesture
+        PlaybackRequiresUserGesture,
+        WebRTCPublicInterfacesOnly,
     };
 
     enum FontSize {

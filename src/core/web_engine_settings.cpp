@@ -46,9 +46,13 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
 #include "media/base/media_switches.h"
+#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "ui/events/event_switches.h"
 
 #include <QFont>
@@ -127,7 +131,7 @@ WebEngineSettings::~WebEngineSettings()
     }
 }
 
-void WebEngineSettings::overrideWebPreferences(content::WebPreferences *prefs)
+void WebEngineSettings::overrideWebPreferences(content::WebContents *webContents, content::WebPreferences *prefs)
 {
     // Apply our settings on top of those.
     applySettingsToWebPreferences(prefs);
@@ -136,6 +140,12 @@ void WebEngineSettings::overrideWebPreferences(content::WebPreferences *prefs)
     // before we get here (e.g. number_of_cpu_cores).
     if (webPreferences.isNull())
         webPreferences.reset(new content::WebPreferences(*prefs));
+
+    if (webContents
+            && webContents->GetRenderViewHost()
+            && applySettingsToRendererPreferences(webContents->GetMutableRendererPrefs())) {
+        webContents->GetRenderViewHost()->SyncRendererPrefs();
+    }
 }
 
 void WebEngineSettings::setAttribute(WebEngineSettings::Attribute attr, bool on)
@@ -286,6 +296,7 @@ void WebEngineSettings::initDefaults()
         if (commandLine->HasSwitch(switches::kAutoplayPolicy))
             playbackRequiresUserGesture = (commandLine->GetSwitchValueASCII(switches::kAutoplayPolicy) != switches::autoplay::kNoUserGestureRequiredPolicy);
         s_defaultAttributes.insert(PlaybackRequiresUserGesture, playbackRequiresUserGesture);
+        s_defaultAttributes.insert(WebRTCPublicInterfacesOnly, false);
     }
 
     if (s_defaultFontFamilies.isEmpty()) {
@@ -332,9 +343,11 @@ void WebEngineSettings::doApply()
         return;
     // Override with our settings when applicable
     applySettingsToWebPreferences(webPreferences.data());
-
     Q_ASSERT(m_adapter);
     m_adapter->updateWebPreferences(*webPreferences.data());
+
+    if (applySettingsToRendererPreferences(m_adapter->webContents()->GetMutableRendererPrefs()))
+        m_adapter->webContents()->GetRenderViewHost()->SyncRendererPrefs();
 }
 
 void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *prefs)
@@ -388,6 +401,23 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->minimum_font_size = fontSize(MinimumFontSize);
     prefs->minimum_logical_font_size = fontSize(MinimumLogicalFontSize);
     prefs->default_encoding = defaultTextEncoding().toStdString();
+}
+
+bool WebEngineSettings::applySettingsToRendererPreferences(content::RendererPreferences *prefs)
+{
+    bool changed = false;
+#if BUILDFLAG(ENABLE_WEBRTC)
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceWebRtcIPHandlingPolicy)) {
+        std::string webrtc_ip_handling_policy = testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly)
+                                              ? content::kWebRTCIPHandlingDefaultPublicInterfaceOnly
+                                              : content::kWebRTCIPHandlingDefault;
+        if (prefs->webrtc_ip_handling_policy != webrtc_ip_handling_policy) {
+            prefs->webrtc_ip_handling_policy = webrtc_ip_handling_policy;
+            changed = true;
+        }
+    }
+#endif
+    return changed;
 }
 
 void WebEngineSettings::scheduleApplyRecursively()

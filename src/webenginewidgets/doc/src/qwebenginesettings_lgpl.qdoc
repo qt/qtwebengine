@@ -173,6 +173,11 @@
             the page. This is similar to how Chrome on Android behaves, while
             the default behavior when it is disabled is similar to Chrome on desktops.
             Disabled by default. (Added in Qt 5.11)
+    \value  WebRTCPublicInterfacesOnly
+            Limits WebRTC to public IP addresses only. When disabled WebRTC may also use
+            local network IP addresses, but remote hosts can also see your local network
+            IP address.
+            Disabled by default. (Added in Qt 5.11)
 */
 
 /*!

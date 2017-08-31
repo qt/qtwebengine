@@ -87,6 +87,7 @@ ApplicationWindow {
         property alias fullScreenSupportEnabled: fullScreenSupportEnabled.checked
         property alias autoLoadIconsForPage: autoLoadIconsForPage.checked
         property alias touchIconsEnabled: touchIconsEnabled.checked
+        property alias webRTCPublicInterfacesOnly : webRTCPublicInterfacesOnly.checked
     }
 
     Action {
@@ -311,6 +312,12 @@ ApplicationWindow {
                             checked: WebEngine.settings.touchIconsEnabled
                             enabled: autoLoadIconsForPage.checked
                         }
+                        MenuItem {
+                            id: webRTCPublicInterfacesOnly
+                            text: "WebRTC Public Interfaces Only"
+                            checkable: true
+                            checked: WebEngine.settings.webRTCPublicInterfacesOnly
+                        }
                     }
                 }
             }
@@ -384,6 +391,7 @@ ApplicationWindow {
                 settings.fullScreenSupportEnabled: appSettings.fullScreenSupportEnabled
                 settings.autoLoadIconsForPage: appSettings.autoLoadIconsForPage
                 settings.touchIconsEnabled: appSettings.touchIconsEnabled
+                settings.webRTCPublicInterfacesOnly: appSettings.webRTCPublicInterfacesOnly
 
                 onCertificateError: {
                     error.defer();

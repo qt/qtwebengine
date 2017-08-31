@@ -48,6 +48,8 @@
 #include <QSet>
 
 namespace content {
+struct RendererPreferences;
+class WebContents;
 struct WebPreferences;
 }
 namespace QtWebEngineCore {
@@ -87,6 +89,7 @@ public:
         AllowWindowActivationFromJavaScript,
         ShowScrollBars,
         PlaybackRequiresUserGesture,
+        WebRTCPublicInterfacesOnly,
     };
 
     // Must match the values from the public API in qwebenginesettings.h.
@@ -121,7 +124,7 @@ public:
 
     void setParentSettings(WebEngineSettings *parentSettings);
 
-    void overrideWebPreferences(content::WebPreferences *prefs);
+    void overrideWebPreferences(content::WebContents *webContents, content::WebPreferences *prefs);
 
     void setAttribute(Attribute, bool on);
     bool testAttribute(Attribute) const;
@@ -152,6 +155,7 @@ public:
 private:
     void doApply();
     void applySettingsToWebPreferences(content::WebPreferences *);
+    bool applySettingsToRendererPreferences(content::RendererPreferences *);
     void setWebContentsAdapter(WebContentsAdapter *adapter) { m_adapter = adapter; }
 
     WebContentsAdapter* m_adapter;

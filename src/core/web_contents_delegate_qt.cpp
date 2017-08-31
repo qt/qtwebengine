@@ -485,9 +485,9 @@ void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_content
         m_viewClient->runMouseLockPermissionRequest(toQt(web_contents->GetVisibleURL()));
 }
 
-void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *, content::WebPreferences *webPreferences)
+void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *webContents, content::WebPreferences *webPreferences)
 {
-    m_viewClient->webEngineSettings()->overrideWebPreferences(webPreferences);
+    m_viewClient->webEngineSettings()->overrideWebPreferences(webContents, webPreferences);
 }
 
 QWeakPointer<WebContentsAdapter> WebContentsDelegateQt::createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture)

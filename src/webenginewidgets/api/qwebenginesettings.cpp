@@ -103,6 +103,8 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::ShowScrollBars;
     case QWebEngineSettings::PlaybackRequiresUserGesture:
         return WebEngineSettings::PlaybackRequiresUserGesture;
+    case QWebEngineSettings::WebRTCPublicInterfacesOnly:
+        return WebEngineSettings::WebRTCPublicInterfacesOnly;
 
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;
