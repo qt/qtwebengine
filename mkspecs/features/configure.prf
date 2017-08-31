@@ -8,17 +8,6 @@ defineTest(runConfigure) {
         skipBuild("pkg-config is required")
         return(false)
     }
-    # Ignore the cached config tests results in case they were not successful
-    CONFIG += recheck
-    #Override the config.tests path
-    QMAKE_CONFIG_TESTS_DIR = $$QTWEBENGINE_ROOT/config.tests
-    CONFIG_TESTS = $$files($$QMAKE_CONFIG_TESTS_DIR/*.pro, true)
-    log("Running configure tests$${EOL}")
-    for(test, CONFIG_TESTS) {
-        test = $$basename(test)
-        test ~= s/\\.pro$//
-        qtCompileTest($$test)
-    }
 
     include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
     QT_FOR_CONFIG += webengine-private
@@ -69,75 +58,67 @@ defineTest(runConfigure) {
             skipBuild("A suitable version of libc could not be found. See: https://sourceware.org/bugzilla/show_bug.cgi?id=14898")
             return(false)
         }
-        !qtConfig(system-nss) {
-            skipBuild("A suitable version of NSS could not be found.")
-            return(false)
-        }
-        WEBENGINE_CONFIG += use_nss
 
         QT_FOR_CONFIG += gui-private
-        !config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
 
-        REQUIRED_PACKAGES = dbus-1 fontconfig
-        !contains(WEBENGINE_CONFIG, embedded_build): qtConfig(xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xtst
-        qtConfig(pulseaudio): REQUIRED_PACKAGES += libpulse
-        qtConfig(system-png) {
-             packagesExist("\'libpng >= 1.6.0\'"): WEBENGINE_CONFIG += use_system_libpng
-             else: log("System libpng is too old (min. version 1.6). Using Chromium's copy.$${EOL}")
-        }
-        qtConfig(system-harfbuzz) {
-             packagesExist("\'harfbuzz >= 1.2.0\'"): WEBENGINE_CONFIG += use_system_harfbuzz
-             else: log("System harfbuzz is too old (min. version 1.2). Using Chromium's copy.$${EOL}")
-        }
-        qtConfig(glib) {
-             packagesExist("\'glib-2.0 >= 2.32.0\'"): WEBENGINE_CONFIG += use_glib
+        !qtConfig(system-khr) {
+            skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
+            return(false)
         }
 
-        for(package, $$list($$REQUIRED_PACKAGES)) {
-            !packagesExist($$package):skipBuild("Unmet dependency: $$package")
-        }
-        packagesExist(minizip, zlib): WEBENGINE_CONFIG += use_system_minizip use_system_zlib
-        else: log("System zlib or minizip not found. Using Chromium's copies.$${EOL}")
-        packagesExist(libxml-2.0,libxslt) {
-            PKGCONFIG_LIBS_STATIC = $$system($$PKG_CONFIG --libs --static libxml-2.0)
-            contains(PKGCONFIG_LIBS_STATIC, -licuuc) {
-                WEBENGINE_CONFIG += use_system_libxslt use_system_libxml2
-            } else {
-                log("System libxml2 is not configured with ICU. Using Chromium's copy.$${EOL}")
+        for(package, $$list("nss dbus fontconfig")) {
+            !qtConfig(system-$$package) {
+                skipBuild("A suitable version of $$package could not be found.")
+                return(false)
             }
+         }
+
+        WEBENGINE_CONFIG += use_nss
+
+        !contains(WEBENGINE_CONFIG, embedded_build): qtConfig(xcb) {
+             for(package, $$list("libdrm xcomposite xcursor xi xrandr xtst")) {
+                 !qtConfig(system-$$package) {
+                     skipBuild("A suitable version of $$package could not be found.")
+                     return(false)
+                 }
+             }
         }
-        else: log("System libxml2 or libxslt not found. Using Chromium's copies.$${EOL}")
-        for(package, $$list("libevent jsoncpp protobuf")) {
-            packagesExist($$package): WEBENGINE_CONFIG += use_system_$$package
-            else {
-                log("System $$package not found. Using Chromium's copy.$${EOL}")
+
+        # Fix me: mamke system-png a public feature in gui
+        qtConfig(system-png): qtConfig(webengine-system-png) {
+             WEBENGINE_CONFIG += use_system_libpng
+        }
+        # Fix me: make system-harfbuzz a public feautre in gui
+        qtConfig(system-harfbuzz): qtConfig(webengine-system-harfbuzz) {
+             WEBENGINE_CONFIG += use_system_harfbuzz
+        }
+        qtConfig(system-glib) {
+             WEBENGINE_CONFIG += use_glib
+        }
+        qtConfig(system-minizip) {
+             WEBENGINE_CONFIG += use_system_minizip
+        }
+        qtConfig(system-zlib) {
+             WEBENGINE_CONFIG += use_system_zlib
+        }
+        qtConfig(system-libxml2) {
+            WEBENGINE_CONFIG += use_system_libxslt use_system_libxml2
+        }
+
+        for(package, $$list("libevent jsoncpp protobuf libvpx libsrtp snappy")) {
+            qtConfig(system-$$package) {
+                WEBENGINE_CONFIG += use_system_$$package
+            } else {
                 WEBENGINE_CONFIG += use_bundled_$$package
             }
         }
-        use?(system_protobuf) {
-            !system("which protoc > /dev/null") {
-                log("Protobuf compiler not found. Using Chromium's copy of protobuf.$${EOL}")
-                WEBENGINE_CONFIG -= use_system_protobuf
-                WEBENGINE_CONFIG += use_bundled_protobuf
-            }
-        }
-        config_libvpx: WEBENGINE_CONFIG += use_system_vpx
-        else {
-            log("Compatible system libvpx not found. Using Chromium's copy.$${EOL}")
-            WEBENGINE_CONFIG += use_bundled_libvpx
-        }
-        config_snappy: WEBENGINE_CONFIG += use_system_snappy
-        else {
-            log("System snappy not found. Using Chromium's copy.$${EOL}")
-            WEBENGINE_CONFIG += use_bundled_snappy
-        }
     }
 
-    win32 {
-        !config_winversion: skipBuild("Needs VS 2015 Update 3 with Cumulative Servicing Release or higher")
+    win32:!qtConfig(winversion) {
+         skipBuild("Needs VS 2015 Update 3 with Cumulative Servicing Release or higher")
     }
 
-    isEmpty(skipBuildReason): {
+    isEmpty(skipBuildReason) {
         cache(CONFIG, add, $$list(webengine_successfully_configured))
         !isEmpty(WEBENGINE_CONFIG) {
             cache(WEBENGINE_CONFIG, add, $$list($$WEBENGINE_CONFIG))
@@ -145,36 +126,8 @@ defineTest(runConfigure) {
         }
     }
 
-    unix:!darwin {
-        log("System library dependencies:$${EOL}")
-        for(config, WEBENGINE_CONFIG) {
-            match = $$find(config, "^use_system_")
-            !isEmpty(match) {
-                use_system += $$replace(match, ^use_system_,)
-            }
-            match = $$find(config, "^use_bundled_")
-            !isEmpty(match) {
-                use_bundled += $$replace(match, ^use_bundled_,)
-            }
-        }
-        !isEmpty(use_system): log("  Optional system libraries used ..... $$use_system$${EOL}")
-        !isEmpty(use_bundled): log("  Optional bundled libraries used .... $$use_bundled$${EOL}")
-    }
-    log("Configurable features:$${EOL}")
-    qtHaveModule(positioning): {
-        log("  Geolocation ........................ Enabled$${EOL}")
-    } else {
-        log("  Geolocation ........................ Not enabled         (Requires Qt Positioning module)$${EOL}")
-    }
-    osx {
-        use?(native_spellchecker) {
-            log("Native Spellchecker .............. Enabled$${EOL}")
-        } else {
-            log("Native Spellchecker .............. Not enabled         (Default, enable with WEBENGINE_CONFIG+=use_native_spellchecker)$${EOL}")
-        }
-        !isMinOSXSDKVersion(10, 10, 3) {
-            log("  Force Touch API usage .............. Not enabled         (Because the OS X SDK version to be used \"$${WEBENGINE_OSX_SDK_PRODUCT_VERSION}\" is lower than the required \"10.10.3\")$${EOL}")
-        }
+    macos:qtConfig(native-spellchecker) {
+        WEBENGINE_CONFIG+=use_native_spellchecker
     }
 }
 

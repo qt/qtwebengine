@@ -148,7 +148,7 @@ host_build {
     #use?(system_jsoncpp):  gn_args += use_system_jsoncpp=true
     use?(system_opus):     gn_args += use_system_opus=true
     use?(system_snappy):   gn_args += use_system_snappy=true
-    use?(system_vpx):      gn_args += use_system_libvpx=true
+    use?(system_libvpx):   gn_args += use_system_libvpx=true
     use?(system_icu):      gn_args += use_system_icu=true icu_use_data_file=false
     use?(system_ffmpeg):   gn_args += use_system_ffmpeg=true
     use?(system_re2):      gn_args += use_system_re2=true

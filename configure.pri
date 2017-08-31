@@ -116,6 +116,16 @@ defineTest(qtConfTest_detectNinja) {
     return(false)
 }
 
+defineTest(qtConfTest_detectProtoc) {
+    protoc = $$qtConfFindInPath("protoc")
+    isEmpty(protoc) {
+        qtLog("Optional protoc could not be found.")
+        return(false)
+    }
+    qtLog("Found protoc from path: $$protoc")
+    return(true)
+}
+
 defineTest(qtConfTest_detectGn) {
     gn = $$qtConfFindInPath("gn$$EXE_SUFFIX")
     !isEmpty(gn) {
@@ -135,4 +145,14 @@ defineTest(qtConfTest_embedded) {
     }
     $$qtConfEvaluate("features.cross_compile"): return(true)
     return(false)
+}
+
+defineTest(qtConfTest_detectIcuuc) {
+   pkgConfig = $$first($$list($$pkgConfigExecutable()))
+   !isEmpty(pkgConfig) {
+       qtRunLoggedCommand("$$pkgConfig --libs --static libxml-2.0", xmllibs)
+       contains(xmllibs,".*-licuuc.*"):return(true)
+       qtLog("System libxml2 is not configured with ICU")
+   }
+   return(false)
 }
