@@ -34,6 +34,7 @@ defineTest(runConfigure) {
         qtConfig(system-opus): WEBENGINE_CONFIG += use_system_opus
         qtConfig(system-ffmpeg): WEBENGINE_CONFIG += use_system_ffmpeg
         qtConfig(system-icu): WEBENGINE_CONFIG += use_system_icu
+        qtConfig(system-re2): WEBENGINE_CONFIG += use_system_re2
         !contains(WEBENGINE_CONFIG, use_system_libwebp): WEBENGINE_CONFIG += use_bundled_libwebp
         !contains(WEBENGINE_CONFIG, use_system_opus): WEBENGINE_CONFIG += use_bundled_opus
         !contains(WEBENGINE_CONFIG, use_system_ffmpeg): WEBENGINE_CONFIG += use_bundled_ffmpeg

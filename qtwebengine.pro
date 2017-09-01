@@ -25,4 +25,5 @@ OTHER_FILES = \
     config.tests/libcap/* \
     config.tests/libvpx/* \
     config.tests/snappy/* \
+    config.tests/re2/* \
     mkspecs/features/*

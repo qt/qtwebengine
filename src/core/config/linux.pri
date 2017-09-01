@@ -150,5 +150,6 @@ host_build {
     use?(system_vpx):      gn_args += use_system_libvpx=true
     use?(system_icu):      gn_args += use_system_icu=true icu_use_data_file=false
     use?(system_ffmpeg):   gn_args += use_system_ffmpeg=true
+    use?(system_re2):      gn_args += use_system_re2=true
     #use?(system_protobuf): gn_args += use_system_protobuf=true
 }

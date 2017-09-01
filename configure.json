@@ -78,6 +78,11 @@
         "embedded": {
             "label": "embedded",
             "type": "embedded"
+        },
+        "re2": {
+            "label": "re2",
+            "test": "re2",
+            "type": "compile"
         }
     },
 
@@ -167,6 +172,12 @@
             "condition": "libs.icu",
             "output": [ "privateFeature" ]
         },
+        "system-re2": {
+            "label": "re2",
+            "autoDetect": "config.unix",
+            "condition": "tests.re2",
+            "output": [ "privateFeature" ]
+        },
         "system-ninja": {
             "label": "Using system ninja",
             "condition": "tests.ninja",
@@ -213,6 +224,7 @@
                    "section": "System libraries",
                    "condition": "config.unix",
                    "entries": [
+                        "system-re2",
                         "system-icu",
                         "system-webp",
                         "system-opus",
