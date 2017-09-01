@@ -238,10 +238,25 @@ bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
                                        const std::string& cookie_line,
                                        net::CookieOptions*)
 {
-    Q_ASSERT(m_requestContextGetter);
-    return m_requestContextGetter->m_cookieDelegate->canSetCookie(toQt(request.first_party_for_cookies()), QByteArray::fromStdString(cookie_line), toQt(request.url()));
+    return canSetCookies(request.first_party_for_cookies(), request.url(), cookie_line);
 }
 
+bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const net::CookieList&)
+{
+    return canGetCookies(request.first_party_for_cookies(), request.url());
+}
+
+bool NetworkDelegateQt::canSetCookies(const GURL &first_party, const GURL &url, const std::string &cookie_line) const
+{
+    Q_ASSERT(m_requestContextGetter);
+    return m_requestContextGetter->m_cookieDelegate->canSetCookie(toQt(first_party), QByteArray::fromStdString(cookie_line), toQt(url));
+}
+
+bool NetworkDelegateQt::canGetCookies(const GURL &first_party, const GURL &url) const
+{
+    Q_ASSERT(m_requestContextGetter);
+    return m_requestContextGetter->m_cookieDelegate->canGetCookies(toQt(first_party), toQt(url));
+}
 
 int NetworkDelegateQt::OnBeforeStartTransaction(net::URLRequest *request, const net::CompletionCallback &callback, net::HttpRequestHeaders *headers)
 {
@@ -289,11 +304,6 @@ void NetworkDelegateQt::OnPACScriptError(int, const base::string16&)
 net::NetworkDelegate::AuthRequiredResponse NetworkDelegateQt::OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, const AuthCallback&, net::AuthCredentials*)
 {
     return AUTH_REQUIRED_RESPONSE_NO_ACTION;
-}
-
-bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest&, const net::CookieList&)
-{
-    return true;
 }
 
 bool NetworkDelegateQt::OnCanAccessFile(const net::URLRequest&, const base::FilePath&, const base::FilePath&) const

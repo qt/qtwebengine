@@ -40,7 +40,10 @@
 #include "qwebenginecookiestore.h"
 #include "qwebenginecookiestore_p.h"
 
-#include <cookie_monster_delegate_qt.h>
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+
+#include "cookie_monster_delegate_qt.h"
+#include "type_conversion.h"
 
 #include <QByteArray>
 #include <QUrl>
@@ -179,6 +182,21 @@ void QWebEngineCookieStorePrivate::onCookieChanged(const QNetworkCookie &cookie,
         Q_EMIT q->cookieAdded(cookie);
 }
 
+bool QWebEngineCookieStorePrivate::canAccessCookies(const QUrl &firstPartyUrl, const QUrl &url)
+{
+    if (!filterCallback)
+        return true;
+
+    bool thirdParty =
+            !net::registry_controlled_domains::SameDomainOrHost(toGurl(url),
+                                                                toGurl(firstPartyUrl),
+                                                                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+    QWebEngineCookieStore::FilterRequest request = { true, thirdParty, firstPartyUrl, url };
+    callbackDirectory.invokeDirectly<QWebEngineCookieStore::FilterRequest&>(filterCallback, request);
+    return request.accepted;
+}
+
 /*!
     \class QWebEngineCookieStore
     \inmodule QtWebEngineCore
@@ -313,5 +331,75 @@ void QWebEngineCookieStore::deleteAllCookies()
     d->callbackDirectory.registerCallback(CallbackDirectory::DeleteAllCookiesCallbackId, QWebEngineCallback<int>());
     d->deleteAllCookies();
 }
+
+/*!
+    \fn void QWebEngineCookieStore::setCookieFilter(FunctorOrLambda filterCallback)
+    \since 5.11
+
+    Installs a cookie filter that can prevent sites and resources from using cookies.
+    The \a filterCallback must be a lambda or functor taking a FilterRequest structure. If the
+    cookie is to be rejected, the filter can set FilterRequest::accepted to \c false.
+
+    The callback should not be used to execute heavy tasks since it is running on the
+    IO thread and therefore blocks the Chromium networking.
+
+    \sa deleteAllCookies(), loadAllCookies()
+*/
+void QWebEngineCookieStore::setCookieFilter(const QWebEngineCallback<QWebEngineCookieStore::FilterRequest&> &filter)
+{
+    Q_D(QWebEngineCookieStore);
+    d->filterCallback = filter;
+}
+
+/*!
+    \class QWebEngineCookieStore::FilterRequest
+    \inmodule QtWebEngineCore
+    \since 5.11
+
+    \brief This struct is used in conjunction with QWebEngineCookieStore::setCookieFilter() and is
+    the type \a filterCallback operates on.
+
+    \sa QWebEngineCookieStore::setCookieFilter()
+*/
+
+/*!
+    \variable QWebEngineCookieStore::FilterRequest::accepted
+    \brief Whether the cookie access should be accepted or not. Defaults to \c true.
+
+    Can be set to \c false by the filter to block the cookie access.
+*/
+
+/*!
+    \variable QWebEngineCookieStore::FilterRequest::firstPartyUrl
+    \brief The URL that was navigated to.
+
+    The site that would be showing in the location bar if the application has one.
+
+    Can be used to white-list or black-list cookie access or third-party cookie access
+    for specific sites visited.
+
+    \sa origin, thirdParty
+*/
+
+/*!
+    \variable QWebEngineCookieStore::FilterRequest::origin
+    \brief The URL of the script or content accessing a cookie
+
+    Can be used to white-list or black-list third-party cookie access
+    for specific services.
+
+    \sa firstPartyUrl, thirdParty
+*/
+
+/*!
+    \variable QWebEngineCookieStore::FilterRequest::thirdParty
+    \brief Whether this is considered a third-party access
+
+    This is calculated by comparing FilterRequest::origin and FilterRequest::firstPartyUrl and
+    checking if they share a common origin that is not a top-domain (like .com or .co.uk),
+    or a known hosting site with independently owned subdomains.
+
+    \sa firstPartyUrl, origin
+*/
 
 QT_END_NAMESPACE

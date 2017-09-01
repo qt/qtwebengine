@@ -100,6 +100,9 @@ public:
                                          const GURL& endpoint) const override;
     virtual bool OnCanUseReportingClient(const url::Origin& origin,
                                          const GURL& endpoint) const override;
+
+    bool canSetCookies(const GURL &first_party, const GURL &url, const std::string &cookie_line) const;
+    bool canGetCookies(const GURL &first_party, const GURL &url) const;
 };
 
 } // namespace QtWebEngineCore

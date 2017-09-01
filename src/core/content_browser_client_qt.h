@@ -137,6 +137,21 @@ public:
         bool opener_suppressed,
         bool* no_javascript_access) override;
 
+    bool AllowGetCookie(const GURL& url,
+                        const GURL& first_party,
+                        const net::CookieList& cookie_list,
+                        content::ResourceContext* context,
+                        int render_process_id,
+                        int render_frame_id) override;
+
+    bool AllowSetCookie(const GURL& url,
+                        const GURL& first_party,
+                        const std::string& cookie_line,
+                        content::ResourceContext* context,
+                        int render_process_id,
+                        int render_frame_id,
+                        const net::CookieOptions& options) override;
+
 #if defined(Q_OS_LINUX)
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::FileDescriptorInfo* mappings) override;
 #endif

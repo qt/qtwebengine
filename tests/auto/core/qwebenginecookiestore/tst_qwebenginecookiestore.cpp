@@ -51,6 +51,7 @@ private Q_SLOTS:
     void cookieSignals();
     void setAndDeleteCookie();
     void batchCookieTasks();
+    void basicFilter();
 
 private:
     QWebEngineProfile m_profile;
@@ -184,6 +185,38 @@ void tst_QWebEngineCookieStore::batchCookieTasks()
 
     client->deleteAllCookies();
     QTRY_COMPARE(cookieRemovedSpy.count(), 4);
+}
+
+void tst_QWebEngineCookieStore::basicFilter()
+{
+    QWebEnginePage page(&m_profile);
+    QWebEngineCookieStore *client = m_profile.cookieStore();
+
+    QAtomicInt accessTested = 0;
+    client->setCookieFilter([&](QWebEngineCookieStore::FilterRequest &){ ++accessTested; });
+
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
+    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
+
+    page.load(QUrl("qrc:///resources/index.html"));
+
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
+    QTRY_COMPARE(cookieAddedSpy.count(), 2);
+    QTRY_COMPARE(accessTested.loadAcquire(), 2);
+
+    client->deleteAllCookies();
+    QTRY_COMPARE(cookieRemovedSpy.count(), 2);
+
+    client->setCookieFilter([&](QWebEngineCookieStore::FilterRequest &request){ ++accessTested; request.accepted = false; });
+    page.triggerAction(QWebEnginePage::ReloadAndBypassCache);
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
+    QTRY_COMPARE(accessTested.loadAcquire(), 4);
+    // Test cookies are NOT added:
+    QTest::qWait(100);
+    QCOMPARE(cookieAddedSpy.count(), 2);
 }
 
 QTEST_MAIN(tst_QWebEngineCookieStore)

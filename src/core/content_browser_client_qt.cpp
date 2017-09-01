@@ -68,6 +68,7 @@
 #include "device/geolocation/geolocation_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "printing/features/features.h"
 #include "net/ssl/client_cert_identity.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -93,7 +94,7 @@
 #include "device/geolocation/location_provider.h"
 #endif
 #include "media_capture_devices_dispatcher.h"
-#include "printing/features/features.h"
+#include "network_delegate_qt.h"
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "printing_message_filter_qt.h"
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -658,6 +659,29 @@ bool ContentBrowserClientQt::CanCreateWindow(
     }
 
     return (settings && settings->getJavaScriptCanOpenWindowsAutomatically()) || user_gesture;
+}
+
+bool ContentBrowserClientQt::AllowGetCookie(const GURL &url,
+                                            const GURL &first_party,
+                                            const net::CookieList & /*cookie_list*/,
+                                            content::ResourceContext *context,
+                                            int /*render_process_id*/,
+                                            int /*render_frame_id*/)
+{
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
+    return networkDelegate->canGetCookies(first_party, url);
+}
+
+bool ContentBrowserClientQt::AllowSetCookie(const GURL &url,
+                                            const GURL &first_party,
+                                            const std::string &cookie_line,
+                                            content::ResourceContext *context,
+                                            int /*render_process_id*/,
+                                            int /*render_frame_id*/,
+                                            const net::CookieOptions& /*options*/)
+{
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
+    return networkDelegate->canSetCookies(first_party, url, cookie_line);
 }
 
 } // namespace QtWebEngineCore

@@ -211,10 +211,20 @@ void CookieMonsterDelegateQt::setClient(QWebEngineCookieStore *client)
         m_client->d_func()->processPendingUserCookies();
 }
 
-bool CookieMonsterDelegateQt::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url)
+bool CookieMonsterDelegateQt::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &/*cookieLine*/, const QUrl &url)
 {
-    // TODO: should be used for FilterRequest implementation
-    return true;
+    if (!m_client)
+        return true;
+
+    return m_client->d_func()->canAccessCookies(firstPartyUrl, url);
+}
+
+bool CookieMonsterDelegateQt::canGetCookies(const QUrl &firstPartyUrl, const QUrl &url)
+{
+    if (!m_client)
+        return true;
+
+    return m_client->d_func()->canAccessCookies(firstPartyUrl, url);
 }
 
 void CookieMonsterDelegateQt::OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, net::CookieStore::ChangeCause cause)

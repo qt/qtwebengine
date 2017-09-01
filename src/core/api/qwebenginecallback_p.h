@@ -114,9 +114,15 @@ public:
 #undef DEFINE_INVOKE_FOR_TYPE
 
     template <typename A>
-    void invokeDirectly(const QWebEngineCallback<A> &callback, const A &argument)
+    void invokeDirectly(const QWebEngineCallback<typename std::remove_reference<A>::type &> &callback, A &argument)
     {
-        return callback.d.data()->operator()(std::forward<const A&>(argument));
+        return callback.d.data()->operator()(argument);
+    }
+
+    template <typename A>
+    void invokeDirectly(const QWebEngineCallback<typename std::remove_reference<A>::type> &callback, const A &argument)
+    {
+        return callback.d.data()->operator()(std::forward<const A &>(argument));
     }
 
 private:

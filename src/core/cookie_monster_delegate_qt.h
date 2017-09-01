@@ -83,6 +83,7 @@ public:
     void setClient(QWebEngineCookieStore *client);
 
     bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url);
+    bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url);
     void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, net::CookieStore::ChangeCause cause) override;
 
 private:
