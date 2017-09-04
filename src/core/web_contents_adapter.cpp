@@ -82,6 +82,8 @@
 #include "content/public/common/web_preferences.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "printing/features/features.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/font_render_params.h"
 
 #include <QDir>
@@ -1176,6 +1178,11 @@ static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
         mimeData->setHtml(toQt(dropData.html.string()));
     if (dropData.url.is_valid())
         mimeData->setUrls(QList<QUrl>() << toQt(dropData.url));
+    if (!dropData.custom_data.empty()) {
+        base::Pickle pickle;
+        ui::WriteCustomDataToPickle(dropData.custom_data, &pickle);
+        mimeData->setData(toQt(ui::Clipboard::GetWebCustomDataFormatType().ToString()), QByteArray((const char*)pickle.data(), pickle.size()));
+    }
     return mimeData;
 }
 
@@ -1291,6 +1298,10 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
         dropData->html = toNullableString16(mimeData->html());
     if (mimeData->hasText())
         dropData->text = toNullableString16(mimeData->text());
+    if (mimeData->hasFormat(toQt(ui::Clipboard::GetWebCustomDataFormatType().ToString()))) {
+        QByteArray customData = mimeData->data(toQt(ui::Clipboard::GetWebCustomDataFormatType().ToString()));
+        ui::ReadCustomDataIntoMap(customData.constData(), customData.length(), &dropData->custom_data);
+    }
 }
 
 void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPoint &screenPos)
