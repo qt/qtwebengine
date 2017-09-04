@@ -41,7 +41,7 @@ cross_compile:!host_build {
     !isEmpty(TOOLCHAIN_SYSROOT): gn_args += target_sysroot=\"$${TOOLCHAIN_SYSROOT}\"
 }
 
-contains(QT_ARCH, "arm"):!host_build {
+contains(QT_ARCH, "arm") {
     # Extract ARM specific compiler options that we have to pass to gn,
     # but let gn figure out a default if an option is not present.
     MTUNE = $$extractCFlag("-mtune=.*")
@@ -78,7 +78,7 @@ contains(QT_ARCH, "arm"):!host_build {
     else: contains(QMAKE_CFLAGS, "-mthumb"): gn_args += arm_use_thumb=true
 }
 
-contains(QT_ARCH, "mips"):!host_build {
+contains(QT_ARCH, "mips") {
     MARCH = $$extractCFlag("-march=.*")
     !isEmpty(MARCH) {
         equals(MARCH, "mips32r6"): gn_args += mips_arch_variant=\"r6\"
