@@ -44,6 +44,8 @@
 #include "url/gurl.h"
 #include <QtCore/QWeakPointer>
 
+QT_FORWARD_DECLARE_CLASS(QIODevice)
+
 namespace QtWebEngineCore {
 
 class BrowserContextAdapter;
@@ -53,7 +55,10 @@ class URLRequestCustomJobProxy;
 // A request job that handles reading custom URL schemes
 class URLRequestCustomJob : public net::URLRequestJob {
 public:
-    URLRequestCustomJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate, const std::string &scheme, QWeakPointer<const BrowserContextAdapter> adapter);
+    URLRequestCustomJob(net::URLRequest *request,
+                        net::NetworkDelegate *networkDelegate,
+                        const std::string &scheme,
+                        QWeakPointer<const BrowserContextAdapter> adapter);
     void Start() override;
     void Kill() override;
     int ReadRawData(net::IOBuffer *buf, int buf_size)  override;
@@ -65,9 +70,12 @@ protected:
     virtual ~URLRequestCustomJob();
 
 private:
-    std::string m_scheme;
-    QWeakPointer<const BrowserContextAdapter> m_adapter;
-    URLRequestCustomJobProxy *m_proxy;
+    scoped_refptr<URLRequestCustomJobProxy> m_proxy;
+    std::string m_mimeType;
+    std::string m_charset;
+    GURL m_redirect;
+    QIODevice *m_device;
+    int m_error;
 
     friend class URLRequestCustomJobProxy;
 

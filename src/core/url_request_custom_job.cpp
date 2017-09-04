@@ -53,47 +53,48 @@ URLRequestCustomJob::URLRequestCustomJob(URLRequest *request,
                                          const std::string &scheme,
                                          QWeakPointer<const BrowserContextAdapter> adapter)
     : URLRequestJob(request, networkDelegate)
-    , m_scheme(scheme)
-    , m_adapter(adapter)
-    , m_proxy(new URLRequestCustomJobProxy(this))
+    , m_proxy(new URLRequestCustomJobProxy(this, scheme, adapter))
+    , m_device(nullptr)
+    , m_error(0)
 {
 }
 
 URLRequestCustomJob::~URLRequestCustomJob()
 {
-    if (m_proxy)
-        m_proxy->killJob();
-}
-
-static void startAsync(URLRequestCustomJobProxy *proxy)
-{
-    proxy->startAsync();
+    m_proxy->m_job = nullptr;
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     base::Bind(&URLRequestCustomJobProxy::release,
+                                     m_proxy));
+    if (m_device && m_device->isOpen())
+        m_device->close();
+    m_device = nullptr;
 }
 
 void URLRequestCustomJob::Start()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&startAsync, m_proxy));
+                                     base::Bind(&URLRequestCustomJobProxy::initialize,
+                                     m_proxy, request()->url(), request()->method()));
 }
 
 void URLRequestCustomJob::Kill()
 {
-    if (m_proxy)
-        m_proxy->killJob();
-    m_proxy = 0;
-
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    if (m_device && m_device->isOpen())
+        m_device->close();
+    m_device = nullptr;
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     base::Bind(&URLRequestCustomJobProxy::release,
+                                     m_proxy));
     URLRequestJob::Kill();
 }
 
 bool URLRequestCustomJob::GetMimeType(std::string *mimeType) const
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (!m_proxy)
-        return false;
-    QMutexLocker lock(&m_proxy->m_mutex);
-    if (m_proxy->m_mimeType.size() > 0) {
-        *mimeType = m_proxy->m_mimeType;
+    if (m_mimeType.size() > 0) {
+        *mimeType = m_mimeType;
         return true;
     }
     return false;
@@ -102,11 +103,8 @@ bool URLRequestCustomJob::GetMimeType(std::string *mimeType) const
 bool URLRequestCustomJob::GetCharset(std::string* charset)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (!m_proxy)
-        return false;
-    QMutexLocker lock(&m_proxy->m_mutex);
-    if (m_proxy->m_charset.size() > 0) {
-        *charset = m_proxy->m_charset;
+    if (m_charset.size() > 0) {
+        *charset = m_charset;
         return true;
     }
     return false;
@@ -115,11 +113,8 @@ bool URLRequestCustomJob::GetCharset(std::string* charset)
 bool URLRequestCustomJob::IsRedirectResponse(GURL* location, int* http_status_code)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (!m_proxy)
-        return false;
-    QMutexLocker lock(&m_proxy->m_mutex);
-    if (m_proxy->m_redirect.is_valid()) {
-        *location = m_proxy->m_redirect;
+    if (m_redirect.is_valid()) {
+        *location = m_redirect;
         *http_status_code = 303;
         return true;
     }
@@ -129,17 +124,15 @@ bool URLRequestCustomJob::IsRedirectResponse(GURL* location, int* http_status_co
 int URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    Q_ASSERT(m_proxy);
-    QMutexLocker lock(&m_proxy->m_mutex);
-    if (m_proxy->m_error)
-        return m_proxy->m_error;
-    qint64 rv = m_proxy->m_device ? m_proxy->m_device->read(buf->data(), bufSize) : -1;
-    if (rv >= 0)
+    if (m_error)
+        return m_error;
+    qint64 rv = m_device ? m_device->read(buf->data(), bufSize) : -1;
+    if (rv >= 0) {
         return static_cast<int>(rv);
-    else {
+    } else {
         // QIODevice::read might have called fail on us.
-        if (m_proxy->m_error)
-            return m_proxy->m_error;
+        if (m_error)
+            return m_error;
         return ERR_FAILED;
     }
 }

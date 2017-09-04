@@ -40,11 +40,9 @@
 #ifndef URL_REQUEST_CUSTOM_JOB_PROXY_H_
 #define URL_REQUEST_CUSTOM_JOB_PROXY_H_
 
-#include "url/gurl.h"
 #include "base/memory/weak_ptr.h"
-#include <QtCore/QMutex>
-#include <QtCore/QPointer>
-
+#include "url/gurl.h"
+#include <QtCore/QWeakPointer>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
@@ -52,44 +50,35 @@ namespace QtWebEngineCore {
 
 class URLRequestCustomJob;
 class URLRequestCustomJobDelegate;
+class BrowserContextAdapter;
 
 // Used to comunicate between URLRequestCustomJob living on the IO thread
 // and URLRequestCustomJobDelegate living on the UI thread.
-class URLRequestCustomJobProxy {
+class URLRequestCustomJobProxy
+    : public base::RefCountedThreadSafe<URLRequestCustomJobProxy> {
+
 public:
-    URLRequestCustomJobProxy(URLRequestCustomJob *job);
+    URLRequestCustomJobProxy(URLRequestCustomJob *job,
+                             const std::string &scheme,
+                             QWeakPointer<const BrowserContextAdapter> adapter);
     ~URLRequestCustomJobProxy();
 
-    void setReplyMimeType(const std::string &);
-    void setReplyCharset(const std::string &);
-    void setReplyDevice(QIODevice *);
-
-    void redirect(const GURL &url);
-    void fail(int);
+    //void setReplyCharset(const std::string &);
+    void reply(std::string mimeType, QIODevice *device);
+    void redirect(GURL url);
     void abort();
+    void fail(int error);
+    void release();
+    void initialize(GURL url, std::string method);
 
-    void killJob();
-    void unsetJobDelegate();
-
-    void startAsync();
-    void notifyStarted();
-    void notifyFailure();
-    void notifyCanceled();
-
-    GURL requestUrl();
-    std::string requestMethod();
-
-    QMutex m_mutex;
-    QPointer<QIODevice> m_device;
+    //IO thread owned
     URLRequestCustomJob *m_job;
-    URLRequestCustomJobDelegate *m_delegate;
-    std::string m_mimeType;
-    std::string m_charset;
-    int m_error;
-    GURL m_redirect;
     bool m_started;
-    bool m_asyncInitialized;
-    base::WeakPtrFactory<URLRequestCustomJobProxy> m_weakFactory;
+
+    //UI thread owned
+    std::string m_scheme;
+    URLRequestCustomJobDelegate *m_delegate;
+    QWeakPointer<const BrowserContextAdapter> m_adapter;
 };
 
 } // namespace QtWebEngineCore

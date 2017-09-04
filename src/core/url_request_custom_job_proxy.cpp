@@ -49,217 +49,115 @@ using namespace net;
 
 namespace QtWebEngineCore {
 
-URLRequestCustomJobProxy::URLRequestCustomJobProxy(URLRequestCustomJob *job)
-    : m_mutex(QMutex::Recursive)
-    , m_job(job)
-    , m_delegate(0)
-    , m_error(0)
+URLRequestCustomJobProxy::URLRequestCustomJobProxy(URLRequestCustomJob *job,
+                                                   const std::string &scheme,
+                                                   QWeakPointer<const BrowserContextAdapter> adapter)
+    : m_job(job)
     , m_started(false)
-    , m_asyncInitialized(false)
-    , m_weakFactory(this)
+    , m_scheme(scheme)
+    , m_delegate(nullptr)
+    , m_adapter(adapter)
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
 URLRequestCustomJobProxy::~URLRequestCustomJobProxy()
 {
-    Q_ASSERT(!m_job);
-    Q_ASSERT(!m_delegate);
 }
 
-void URLRequestCustomJobProxy::killJob()
+void URLRequestCustomJobProxy::release()
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    QMutexLocker lock(&m_mutex);
-    m_job = 0;
-    bool doDelete = false;
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (m_delegate) {
         m_delegate->deleteLater();
-    } else {
-        // Do not delete yet if startAsync has not yet run.
-        doDelete = m_asyncInitialized;
+        m_delegate = nullptr;
     }
-    if (m_device && m_device->isOpen())
-        m_device->close();
-    m_device = 0;
-    m_weakFactory.InvalidateWeakPtrs();
-    lock.unlock();
-    if (doDelete)
-        delete this;
 }
 
-void URLRequestCustomJobProxy::unsetJobDelegate()
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    QMutexLocker lock(&m_mutex);
-    m_delegate = 0;
-    bool doDelete = false;
-    if (m_job)
-        abort();
-    else
-        doDelete = true;
-    lock.unlock();
-    if (doDelete)
-        delete this;
-}
-
-void URLRequestCustomJobProxy::setReplyMimeType(const std::string &mimeType)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    QMutexLocker lock(&m_mutex);
-    m_mimeType = mimeType;
-}
-
+// Fix me: this is  never used
+/*
 void URLRequestCustomJobProxy::setReplyCharset(const std::string &charset)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    QMutexLocker lock(&m_mutex);
-    m_charset = charset;
-}
-
-void URLRequestCustomJobProxy::setReplyDevice(QIODevice *device)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    QMutexLocker lock(&m_mutex);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (!m_job)
         return;
-    m_device = device;
-    if (m_device && !m_device->isReadable())
-        m_device->open(QIODevice::ReadOnly);
+    m_job->m_charset = charset;
+}
+*/
+void URLRequestCustomJobProxy::reply(std::string mimeType, QIODevice *device)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    if (!m_job)
+        return;
+    m_job->m_mimeType = mimeType;
+    m_job->m_device = device;
+    if (m_job->m_device && !m_job->m_device->isReadable())
+        m_job->m_device->open(QIODevice::ReadOnly);
 
-    qint64 size = m_device ? m_device->size() : -1;
+    qint64 size = m_job->m_device ? m_job->m_device->size() : -1;
     if (size > 0)
         m_job->set_expected_content_size(size);
-    if (m_device && m_device->isReadable()) {
-        content::BrowserThread::PostTask(
-                    content::BrowserThread::IO, FROM_HERE,
-                    base::Bind(&URLRequestCustomJobProxy::notifyStarted,
-                               m_weakFactory.GetWeakPtr()));
+    if (m_job->m_device && m_job->m_device->isReadable()) {
+        m_started = true;
+        m_job->NotifyHeadersComplete();
     } else {
         fail(ERR_INVALID_URL);
     }
 }
 
-void URLRequestCustomJobProxy::redirect(const GURL &url)
+void URLRequestCustomJobProxy::redirect(GURL url)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    QMutexLocker lock(&m_mutex);
-    if (m_device || m_error)
-        return;
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (!m_job)
         return;
-    m_redirect = url;
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::Bind(&URLRequestCustomJobProxy::notifyStarted,
-                                                m_weakFactory.GetWeakPtr()));
+    if (m_job->m_device || m_job->m_error)
+        return;
+    m_job->m_redirect = url;
+    m_started = true;
+    m_job->NotifyHeadersComplete();
 }
 
 void URLRequestCustomJobProxy::abort()
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    QMutexLocker lock(&m_mutex);
-    if (m_device && m_device->isOpen())
-        m_device->close();
-    m_device = 0;
-    if (!m_job)
-        return;
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::Bind(&URLRequestCustomJobProxy::notifyCanceled,
-                                                m_weakFactory.GetWeakPtr()));
-}
-
-void URLRequestCustomJobProxy::notifyCanceled()
-{
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    QMutexLocker lock(&m_mutex);
     if (!m_job)
         return;
+    if (m_job->m_device && m_job->m_device->isOpen())
+        m_job->m_device->close();
+    m_job->m_device = nullptr;
     if (m_started)
         m_job->NotifyCanceled();
     else
         m_job->NotifyStartError(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
 }
 
-void URLRequestCustomJobProxy::notifyStarted()
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    QMutexLocker lock(&m_mutex);
-    if (!m_job)
-        return;
-    Q_ASSERT(!m_started);
-    m_started = true;
-    m_job->NotifyHeadersComplete();
-}
-
 void URLRequestCustomJobProxy::fail(int error)
 {
-    QMutexLocker lock(&m_mutex);
-    m_error = error;
-    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO))
-        return;
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (!m_job)
-        return;
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::Bind(&URLRequestCustomJobProxy::notifyFailure,
-                                                m_weakFactory.GetWeakPtr()));
-}
-
-void URLRequestCustomJobProxy::notifyFailure()
-{
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    QMutexLocker lock(&m_mutex);
     if (!m_job)
         return;
-    if (m_device)
-        m_device->close();
+    m_job->m_error = error;
+    if (m_job->m_device)
+        m_job->m_device->close();
     if (!m_started)
-        m_job->NotifyStartError(URLRequestStatus::FromError(m_error));
+        m_job->NotifyStartError(URLRequestStatus::FromError(error));
     // else we fail on the next read, or the read that might already be in progress
 }
 
-GURL URLRequestCustomJobProxy::requestUrl()
-{
-    QMutexLocker lock(&m_mutex);
-    if (!m_job)
-        return GURL();
-    return m_job->request()->url();
-}
-
-std::string URLRequestCustomJobProxy::requestMethod()
-{
-    QMutexLocker lock(&m_mutex);
-    if (!m_job)
-        return std::string();
-    return m_job->request()->method();
-}
-
-void URLRequestCustomJobProxy::startAsync()
+void URLRequestCustomJobProxy::initialize(GURL url, std::string method)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    Q_ASSERT(!m_started);
     Q_ASSERT(!m_delegate);
-    QMutexLocker lock(&m_mutex);
-    if (!m_job) {
-        lock.unlock();
-        delete this;
-        return;
-    }
 
     QWebEngineUrlSchemeHandler *schemeHandler = 0;
-    QSharedPointer<const BrowserContextAdapter> browserContext = m_job->m_adapter.toStrongRef();
+    QSharedPointer<const BrowserContextAdapter> browserContext = m_adapter.toStrongRef();
     if (browserContext)
-        schemeHandler = browserContext->customUrlSchemeHandlers()[toQByteArray(m_job->m_scheme)];
+        schemeHandler = browserContext->customUrlSchemeHandlers()[toQByteArray(m_scheme)];
     if (schemeHandler) {
-        m_delegate = new URLRequestCustomJobDelegate(this);
-        m_asyncInitialized = true;
+        m_delegate = new URLRequestCustomJobDelegate(this, toQt(url),
+                                                     QByteArray::fromStdString(method));
         QWebEngineUrlRequestJob *requestJob = new QWebEngineUrlRequestJob(m_delegate);
         schemeHandler->requestStarted(requestJob);
-    } else {
-        lock.unlock();
-        abort();
-        delete this;
-        return;
     }
 }
 
