@@ -68,6 +68,7 @@ void tst_QWebEngineAccessibility::cleanup()
 
 void tst_QWebEngineAccessibility::noPage()
 {
+    QSKIP("Skip to due 58-based issues. Restore once 60-based is in.");
     QWebEngineView webView;
     webView.show();
 
@@ -84,6 +85,7 @@ void tst_QWebEngineAccessibility::noPage()
 
 void tst_QWebEngineAccessibility::hierarchy()
 {
+    QSKIP("Skip to due 58-based issues. Restore once 60-based is in.");
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
         "Hello world" \
@@ -144,6 +146,7 @@ void tst_QWebEngineAccessibility::hierarchy()
 
 void tst_QWebEngineAccessibility::text()
 {
+    QSKIP("Skip to due 58-based issues. Restore once 60-based is in.");
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
         "<input type='text' value='Good morning!'></input>" \
@@ -213,6 +216,7 @@ void tst_QWebEngineAccessibility::text()
 
 void tst_QWebEngineAccessibility::value()
 {
+    QSKIP("Skip to due 58-based issues. Restore once 60-based is in.");
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
         "<div role='slider' aria-valuenow='4' aria-valuemin='1' aria-valuemax='10'></div>" \
@@ -386,6 +390,7 @@ void tst_QWebEngineAccessibility::roles_data()
 
 void tst_QWebEngineAccessibility::roles()
 {
+    QSKIP("Skip to due 58-based issues. Restore once 60-based is in.");
     QFETCH(QString, html);
     QFETCH(bool, isSection);
     QFETCH(QAccessible::Role, role);
