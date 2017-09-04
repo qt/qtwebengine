@@ -39,6 +39,7 @@
 
 #include "qwebengineurlrequestjob.h"
 
+#include "url_request_custom_job_proxy.h"
 #include "url_request_custom_job_delegate.h"
 
 using QtWebEngineCore::URLRequestCustomJobDelegate;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,42 +37,61 @@
 **
 ****************************************************************************/
 
-#ifndef URL_REQUEST_CUSTOM_JOB_H_
-#define URL_REQUEST_CUSTOM_JOB_H_
+#ifndef URL_REQUEST_CUSTOM_JOB_PROXY_H_
+#define URL_REQUEST_CUSTOM_JOB_PROXY_H_
 
-#include "net/url_request/url_request_job.h"
 #include "url/gurl.h"
-#include <QtCore/QWeakPointer>
+#include "base/memory/weak_ptr.h"
+#include <QtCore/QMutex>
+#include <QtCore/QPointer>
+
+
+QT_FORWARD_DECLARE_CLASS(QIODevice)
 
 namespace QtWebEngineCore {
 
-class BrowserContextAdapter;
+class URLRequestCustomJob;
 class URLRequestCustomJobDelegate;
-class URLRequestCustomJobProxy;
 
-// A request job that handles reading custom URL schemes
-class URLRequestCustomJob : public net::URLRequestJob {
+// Used to comunicate between URLRequestCustomJob living on the IO thread
+// and URLRequestCustomJobDelegate living on the UI thread.
+class URLRequestCustomJobProxy {
 public:
-    URLRequestCustomJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate, const std::string &scheme, QWeakPointer<const BrowserContextAdapter> adapter);
-    void Start() override;
-    void Kill() override;
-    int ReadRawData(net::IOBuffer *buf, int buf_size)  override;
-    bool GetMimeType(std::string *mimeType) const override;
-    bool GetCharset(std::string *charset) override;
-    bool IsRedirectResponse(GURL* location, int* http_status_code) override;
+    URLRequestCustomJobProxy(URLRequestCustomJob *job);
+    ~URLRequestCustomJobProxy();
 
-protected:
-    virtual ~URLRequestCustomJob();
+    void setReplyMimeType(const std::string &);
+    void setReplyCharset(const std::string &);
+    void setReplyDevice(QIODevice *);
 
-private:
-    std::string m_scheme;
-    QWeakPointer<const BrowserContextAdapter> m_adapter;
-    URLRequestCustomJobProxy *m_proxy;
+    void redirect(const GURL &url);
+    void fail(int);
+    void abort();
 
-    friend class URLRequestCustomJobProxy;
+    void killJob();
+    void unsetJobDelegate();
 
-    DISALLOW_COPY_AND_ASSIGN(URLRequestCustomJob);
+    void startAsync();
+    void notifyStarted();
+    void notifyFailure();
+    void notifyCanceled();
+
+    GURL requestUrl();
+    std::string requestMethod();
+
+    QMutex m_mutex;
+    QPointer<QIODevice> m_device;
+    URLRequestCustomJob *m_job;
+    URLRequestCustomJobDelegate *m_delegate;
+    std::string m_mimeType;
+    std::string m_charset;
+    int m_error;
+    GURL m_redirect;
+    bool m_started;
+    bool m_asyncInitialized;
+    base::WeakPtrFactory<URLRequestCustomJobProxy> m_weakFactory;
 };
+
 } // namespace QtWebEngineCore
 
-#endif // URL_REQUEST_CUSTOM_JOB_H_
+#endif // URL_REQUEST_CUSTOM_JOB_PROXY_H_

@@ -49,7 +49,7 @@ QT_FORWARD_DECLARE_CLASS(QIODevice)
 
 namespace QtWebEngineCore {
 
-class URLRequestCustomJobShared;
+class URLRequestCustomJobProxy;
 
 class QWEBENGINE_EXPORT URLRequestCustomJobDelegate : public QObject {
     Q_OBJECT
@@ -75,10 +75,10 @@ public:
     void fail(Error);
 
 private:
-    URLRequestCustomJobDelegate(URLRequestCustomJobShared *shared);
+    URLRequestCustomJobDelegate(URLRequestCustomJobProxy *proxy);
 
-    friend class URLRequestCustomJobShared;
-    URLRequestCustomJobShared *m_shared;
+    friend class URLRequestCustomJobProxy;
+    URLRequestCustomJobProxy *m_proxy;
 };
 
 } // namespace

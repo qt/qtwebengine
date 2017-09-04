@@ -48,7 +48,7 @@
 
 namespace QtWebEngineCore {
 class URLRequestCustomJobDelegate;
-class URLRequestCustomJobShared;
+class URLRequestCustomJobProxy;
 } // namespace
 
 QT_BEGIN_NAMESPACE
@@ -79,7 +79,7 @@ public:
 
 private:
     QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate *);
-    friend class QtWebEngineCore::URLRequestCustomJobShared;
+    friend class QtWebEngineCore::URLRequestCustomJobProxy;
 
     QtWebEngineCore::URLRequestCustomJobDelegate* d_ptr;
 };
