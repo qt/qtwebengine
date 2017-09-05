@@ -35,7 +35,9 @@
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
 #include <QtWebEngine/QQuickWebEngineProfile>
+#include <private/qinputmethod_p.h>
 #include <private/qquickwebengineview_p.h>
+#include <qpa/qplatforminputcontext.h>
 
 #include <functional>
 
@@ -70,6 +72,8 @@ private Q_SLOTS:
 
     void inputMethod();
     void inputMethodHints();
+    void interruptImeTextComposition_data();
+    void interruptImeTextComposition();
     void basicRenderingSanity();
     void setZoomFactor();
     void printToPdf();
@@ -448,6 +452,95 @@ void tst_QQuickWebEngineView::inputMethod()
     runJavaScript("document.getElementById('inputField').blur();");
     QVERIFY(!view->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
 #endif
+}
+
+class TestInputContext : public QPlatformInputContext
+{
+public:
+    TestInputContext()
+        : commitCallCount(0)
+        , resetCallCount(0)
+    {
+        QInputMethodPrivate* inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+        inputMethodPrivate->testContext = this;
+    }
+
+    ~TestInputContext()
+    {
+        QInputMethodPrivate* inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+        inputMethodPrivate->testContext = 0;
+    }
+
+    virtual void commit() {
+        commitCallCount++;
+    }
+
+    virtual void reset() {
+        resetCallCount++;
+    }
+
+    int commitCallCount;
+    int resetCallCount;
+};
+
+void tst_QQuickWebEngineView::interruptImeTextComposition_data()
+{
+    QTest::addColumn<QString>("eventType");
+
+    QTest::newRow("MouseButton") << QString("MouseButton");
+#ifndef Q_OS_MACOS
+    QTest::newRow("Touch") << QString("Touch");
+#endif
+}
+
+void tst_QQuickWebEngineView::interruptImeTextComposition()
+{
+    m_window->show();
+    QTRY_VERIFY(qApp->focusObject());
+    QQuickItem *input;
+
+    QQuickWebEngineView *view = webEngineView();
+    view->loadHtml("<html><body>"
+                  "  <input type='text' id='input1' /><br>"
+                  "  <input type='text' id='input2' />"
+                  "</body></html>");
+    QVERIFY(waitForLoadSucceeded(view));
+
+    runJavaScript("document.getElementById('input1').focus();");
+    QTRY_COMPARE(activeElementId(view), QStringLiteral("input1"));
+
+    TestInputContext testContext;
+
+    // Send temporary text, which makes the editor has composition 'x'
+    QList<QInputMethodEvent::Attribute> attributes;
+    QInputMethodEvent event("x", attributes);
+    input = qobject_cast<QQuickItem *>(qApp->focusObject());
+    QGuiApplication::sendEvent(input, &event);
+    QTRY_COMPARE(elementValue(view, "input1"), QStringLiteral("x"));
+
+    // Focus 'input2' input field by an input event
+    QFETCH(QString, eventType);
+    if (eventType == "MouseButton") {
+        QPoint textInputCenter = elementCenter(view, QStringLiteral("input2"));
+        QTest::mouseClick(view->window(), Qt::LeftButton, 0, textInputCenter);
+    } else if (eventType == "Touch") {
+        QPoint textInputCenter = elementCenter(view, QStringLiteral("input2"));
+        QTouchDevice *touchDevice = QTest::createTouchDevice();
+        QTest::touchEvent(view->window(), touchDevice).press(0, textInputCenter, view->window());
+        QTest::touchEvent(view->window(), touchDevice).release(0, textInputCenter, view->window());
+    }
+    QTRY_COMPARE(activeElementId(view), QStringLiteral("input2"));
+#ifndef Q_OS_WIN
+    QTRY_COMPARE(testContext.commitCallCount, 1);
+#else
+    QTRY_COMPARE(testContext.resetCallCount, 2);
+#endif
+
+    // Check the composition text has been committed
+    runJavaScript("document.getElementById('input1').focus();");
+    QTRY_COMPARE(activeElementId(view), QStringLiteral("input1"));
+    input = qobject_cast<QQuickItem *>(qApp->focusObject());
+    QTRY_COMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QStringLiteral("x"));
 }
 
 void tst_QQuickWebEngineView::inputMethodHints()

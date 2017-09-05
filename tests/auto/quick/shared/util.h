@@ -142,4 +142,81 @@ inline QString bodyInnerText(QQuickWebEngineView *webEngineView)
     return arguments.at(1).toString();
 }
 
+inline QString activeElementId(QQuickWebEngineView *webEngineView)
+{
+    qRegisterMetaType<QQuickWebEngineView::JavaScriptConsoleMessageLevel>("JavaScriptConsoleMessageLevel");
+    QSignalSpy consoleMessageSpy(webEngineView, &QQuickWebEngineView::javaScriptConsoleMessage);
+
+    webEngineView->runJavaScript(
+                "if (document.activeElement == null)"
+                "   console.log('');"
+                "else"
+                "   console.log(document.activeElement.id);"
+    );
+
+    if (!consoleMessageSpy.wait())
+        return QString();
+
+    QList<QVariant> arguments = consoleMessageSpy.takeFirst();
+    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
+        return QString();
+
+    return arguments.at(1).toString();
+}
+
+inline QString elementValue(QQuickWebEngineView *webEngineView, const QString &id)
+{
+    qRegisterMetaType<QQuickWebEngineView::JavaScriptConsoleMessageLevel>("JavaScriptConsoleMessageLevel");
+    QSignalSpy consoleMessageSpy(webEngineView, &QQuickWebEngineView::javaScriptConsoleMessage);
+
+    webEngineView->runJavaScript(QString(
+                "var element = document.getElementById('" + id + "');"
+                "if (element == null)"
+                "   console.log('');"
+                "else"
+                "   console.log(element.value);")
+    );
+
+    if (!consoleMessageSpy.wait())
+        return QString();
+
+    QList<QVariant> arguments = consoleMessageSpy.takeFirst();
+    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
+        return QString();
+
+    return arguments.at(1).toString();
+}
+
+inline QPoint elementCenter(QQuickWebEngineView *webEngineView, const QString &id)
+{
+    qRegisterMetaType<QQuickWebEngineView::JavaScriptConsoleMessageLevel>("JavaScriptConsoleMessageLevel");
+    QSignalSpy consoleMessageSpy(webEngineView, &QQuickWebEngineView::javaScriptConsoleMessage);
+
+    webEngineView->runJavaScript(QString(
+        "var element = document.getElementById('" + id + "');"
+        "var rect = element.getBoundingClientRect();"
+        "console.log((rect.left + rect.right) / 2);"
+        "console.log((rect.top + rect.bottom) / 2);")
+    );
+
+    QTRY_LOOP_IMPL(consoleMessageSpy.count() == 2, 5000, 50);
+    if (consoleMessageSpy.count() != 2)
+        return QPoint();
+
+    QList<QVariant> arguments;
+    double x, y;
+
+    arguments = consoleMessageSpy.takeFirst();
+    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
+        return QPoint();
+    x = arguments.at(1).toDouble();
+
+    arguments = consoleMessageSpy.takeLast();
+    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
+        return QPoint();
+    y = arguments.at(1).toDouble();
+
+    return QPoint(x, y);
+}
+
 #endif /* UTIL_H */
