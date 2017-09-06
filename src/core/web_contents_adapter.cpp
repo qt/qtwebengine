@@ -92,6 +92,7 @@
 #include <QVariant>
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qmimedata.h>
+#include <QtCore/qtemporarydir.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/qdrag.h>
 #include <QtGui/qpixmap.h>
@@ -1203,7 +1204,11 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
         QDrag::cancel();
     });
 
-    drag->setMimeData(mimeDataFromDropData(*d->currentDropData));
+    QMimeData *mimeData = mimeDataFromDropData(*d->currentDropData);
+    if (handleDropDataFileContents(dropData, mimeData))
+        allowedActions = Qt::MoveAction;
+
+    drag->setMimeData(mimeData);
     if (!pixmap.isNull()) {
         drag->setPixmap(pixmap);
         drag->setHotSpot(offset);
@@ -1227,6 +1232,36 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
         }
         d->currentDropData.reset();
     }
+}
+
+bool WebContentsAdapter::handleDropDataFileContents(const content::DropData &dropData,
+                                                    QMimeData *mimeData)
+{
+    if (dropData.file_contents.empty())
+        return false;
+
+    Q_D(WebContentsAdapter);
+    if (!d->dndTmpDir) {
+        d->dndTmpDir.reset(new QTemporaryDir);
+        if (!d->dndTmpDir->isValid()) {
+            d->dndTmpDir.reset();
+            return false;
+        }
+    }
+
+    const auto maybeFilename = dropData.GetSafeFilenameForImageFileContents();
+    const QString fileName = maybeFilename ? toQt(maybeFilename->AsUTF16Unsafe()) : QString();
+    const QString &filePath = d->dndTmpDir->filePath(fileName);
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qWarning("Cannot write temporary file %s.", qUtf8Printable(filePath));
+        return false;
+    }
+    file.write(QByteArray::fromStdString(dropData.file_contents));
+
+    const QUrl &targetUrl = QUrl::fromLocalFile(filePath);
+    mimeData->setUrls(QList<QUrl>{targetUrl});
+    return true;
 }
 
 static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeData *mimeData)

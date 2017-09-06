@@ -162,7 +162,14 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
 
 void RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete()
 {
+    // Unset the parent, because parent is being destroyed, but the owner of this
+    // RenderWidgetHostViewQtDelegateWidget is actually a RenderWidgetHostViewQt instance.
     setParent(Q_NULLPTR);
+
+    // If this widget represents a popup window, make sure to close it, so that if the popup was the
+    // last visible top level window, the application event loop can quit if it deems it necessarry.
+    if (m_isPopup)
+        close();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient* container)
@@ -430,6 +437,9 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
     case QEvent::DragLeave:
     case QEvent::DragMove:
     case QEvent::Drop:
+    case QEvent::HoverEnter:
+    case QEvent::HoverLeave:
+    case QEvent::HoverMove:
         // Let the parent handle these events.
         return false;
     default:

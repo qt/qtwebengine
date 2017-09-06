@@ -50,6 +50,7 @@ defineTest(runConfigure) {
     qtConfig(system-opus): WEBENGINE_CONFIG += use_system_opus
     qtConfig(system-ffmpeg): WEBENGINE_CONFIG += use_system_ffmpeg
     qtConfig(system-icu): WEBENGINE_CONFIG += use_system_icu
+    qtConfig(system-re2): WEBENGINE_CONFIG += use_system_re2
 
     !contains(WEBENGINE_CONFIG, use_system_libwebp): WEBENGINE_CONFIG += use_bundled_libwebp
     !contains(WEBENGINE_CONFIG, use_system_opus): WEBENGINE_CONFIG += use_bundled_opus
@@ -122,11 +123,6 @@ defineTest(runConfigure) {
             log("Compatible system libvpx not found. Using Chromium's copy.$${EOL}")
             WEBENGINE_CONFIG += use_bundled_libvpx
         }
-        config_srtp: WEBENGINE_CONFIG += use_system_libsrtp
-        else {
-            log("System libsrtp not found. Using Chromium's copy.$${EOL}")
-            WEBENGINE_CONFIG += use_bundled_srtp
-        }
         config_snappy: WEBENGINE_CONFIG += use_system_snappy
         else {
             log("System snappy not found. Using Chromium's copy.$${EOL}")
@@ -162,11 +158,6 @@ defineTest(runConfigure) {
         !isEmpty(use_bundled): log("  Optional bundled libraries used .... $$use_bundled$${EOL}")
     }
     log("Configurable features:$${EOL}")
-    use?(proprietary_codecs) {
-        log("  Proprietary codecs (H264, MP3) ..... Enabled$${EOL}")
-    } else {
-        log("  Proprietary codecs (H264, MP3) ..... Not enabled         (Default, enable with -proprietary-codecs)$${EOL}")
-    }
     qtHaveModule(positioning): {
         log("  Geolocation ........................ Enabled$${EOL}")
     } else {

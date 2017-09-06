@@ -923,6 +923,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             rpLayer->setRect(toQt(pass->output_rect));
             rpLayer->setSize(toQt(pass->output_rect.size()));
             rpLayer->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
+            rpLayer->setMirrorVertical(true);
         } else
             renderPassParent = this;
 
