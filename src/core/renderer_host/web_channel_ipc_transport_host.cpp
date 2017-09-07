@@ -40,6 +40,7 @@
 #include "web_channel_ipc_transport_host.h"
 
 #include "base/strings/string16.h"
+#include "content/public/browser/render_view_host.h"
 
 #include "common/qt_messages.h"
 #include "type_conversion.h"
@@ -61,11 +62,16 @@ WebChannelIPCTransportHost::~WebChannelIPCTransportHost()
 {
 }
 
-void WebChannelIPCTransportHost::RenderViewHostChanged(content::RenderViewHost *, content::RenderViewHost *)
+void WebChannelIPCTransportHost::RenderViewHostChanged(content::RenderViewHost *oldHost, content::RenderViewHost *)
 {
-    // This means that we were moved into a different RenderView, possibly in a different
-    // render process and that we lost our WebChannelIPCTransport object and its state.
-    Send(new WebChannelIPCTransport_Install(routing_id(), m_worldId));
+    if (oldHost)
+        oldHost->Send(new WebChannelIPCTransport_Uninstall(oldHost->GetRoutingID(), m_worldId));
+}
+
+void WebChannelIPCTransportHost::RenderViewCreated(content::RenderViewHost *view_host)
+{
+    // Make sure the new view knows a webchannel is installed and in which world.
+    view_host->Send(new WebChannelIPCTransport_Install(view_host->GetRoutingID(), m_worldId));
 }
 
 void WebChannelIPCTransportHost::setWorldId(uint worldId)
