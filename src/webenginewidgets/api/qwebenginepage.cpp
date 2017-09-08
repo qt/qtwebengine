@@ -1397,7 +1397,7 @@ void QWebEnginePagePrivate::wasHidden()
 
 bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
-    if (!view || !view->d_func()->m_pendingContextMenuEvent)
+    if (!view)
         return false;
 
     contextData.reset();
@@ -1423,7 +1423,6 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
         event.ignore();
         return false;
     }
-    view->d_func()->m_pendingContextMenuEvent = false;
     return true;
 }
 
