@@ -144,7 +144,6 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
             return VK_SHIFT; // (10) SHIFT key
         case Qt::Key_Control:
             return VK_CONTROL; // (11) CTRL key
-        case Qt::Key_Menu:
         case Qt::Key_Alt:
             return VK_MENU; // (12) ALT key
         default:
@@ -167,7 +166,6 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
             return VK_SHIFT; // (10) SHIFT key
         case Qt::Key_Control:
             return VK_CONTROL; // (11) CTRL key
-        case Qt::Key_Menu:
         case Qt::Key_Alt:
             return VK_MENU; // (12) ALT key
 
@@ -357,7 +355,8 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
             return VK_LWIN; // (5B) Left Windows key (Microsoft Natural keyboard)
             // case Qt::Key_Meta_R: FIXME: What to do here?
             //    return VK_RWIN; // (5C) Right Windows key (Natural keyboard)
-            // VK_APPS (5D) Applications key (Natural keyboard)
+        case Qt::Key_Menu: // (5D) Applications key (Natural keyboard)
+            return VK_APPS;
             // VK_SLEEP (5F) Computer Sleep key
             // VK_SEPARATOR (6C) Separator key
             // VK_SUBTRACT (6D) Subtract key
