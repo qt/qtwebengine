@@ -21,9 +21,9 @@ defineTest(isPythonVersionSupported) {
 }
 
 defineTest(qtConfTest_detectPython2) {
-    python = $$qtConfFindInPath("python2")
+    python = $$qtConfFindInPath("python2$$EXE_SUFFIX")
     isEmpty(python) {
-        qtLog("'python2' not found in PATH. Checking for 'python'.")
+        qtLog("'python2$$EXE_SUFFIX' not found in PATH. Checking for 'python$$EXE_SUFFIX'.")
         python = $$qtConfFindInPath("python$$EXE_SUFFIX")
     }
     isEmpty(python) {

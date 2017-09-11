@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 class QAccessibleInterface;
 class QDragEnterEvent;
 class QDragMoveEvent;
+class QMimeData;
 class QPageLayout;
 class QString;
 class QWebChannel;
@@ -187,6 +188,7 @@ private:
     Q_DISABLE_COPY(WebContentsAdapter)
     Q_DECLARE_PRIVATE(WebContentsAdapter)
     void waitForUpdateDragActionCalled();
+    bool handleDropDataFileContents(const content::DropData &dropData, QMimeData *mimeData);
 
     QScopedPointer<WebContentsAdapterPrivate> d_ptr;
 };

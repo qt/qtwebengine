@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -26,10 +26,10 @@
 **
 ****************************************************************************/
 
-#include <srtp/srtp.h>
+#include <re2/re2.h>
 
 int main(int, char **)
 {
-    err_status_t status = srtp_init();
-    return status == err_status_ok;
+    RE2 re2("dummytest");
+    return 0;
 }
