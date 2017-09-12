@@ -76,6 +76,7 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QStyleHints>
+#include <QTabletEvent>
 #include <QWheelEvent>
 
 using namespace blink;
@@ -1032,7 +1033,8 @@ static inline double currentTimeForEvent(const QInputEvent* event)
     return static_cast<double>(timer.elapsed()) / 1000;
 }
 
-static WebMouseEvent::Button mouseButtonForEvent(QMouseEvent *event)
+template<class T>
+static WebMouseEvent::Button mouseButtonForEvent(T *event)
 {
     if (event->button() == Qt::LeftButton)
         return WebMouseEvent::Button::kLeft;
@@ -1041,7 +1043,7 @@ static WebMouseEvent::Button mouseButtonForEvent(QMouseEvent *event)
     else if (event->button() == Qt::MidButton)
         return WebMouseEvent::Button::kMiddle;
 
-    if (event->type() != QEvent::MouseMove)
+    if (event->type() != QEvent::MouseMove && event->type() != QEvent::TabletMove)
         return WebMouseEvent::Button::kNoButton;
 
     // This is technically wrong, mouse move should always have ButtonNone,
@@ -1147,14 +1149,17 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
 {
     switch (event->type()) {
     case QEvent::MouseButtonPress:
+    case QEvent::TabletPress:
         return WebInputEvent::kMouseDown;
     case QEvent::MouseButtonRelease:
+    case QEvent::TabletRelease:
         return WebInputEvent::kMouseUp;
     case QEvent::Enter:
         return WebInputEvent::kMouseEnter;
     case QEvent::Leave:
         return WebInputEvent::kMouseLeave;
     case QEvent::MouseMove:
+    case QEvent::TabletMove:
         return WebInputEvent::kMouseMove;
     case QEvent::Wheel:
         return WebInputEvent::kMouseWheel;
@@ -1178,6 +1183,20 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
     }
 }
 
+static WebPointerProperties::PointerType pointerTypeForTabletEvent(const QTabletEvent *ev)
+{
+    switch (ev->pointerType()) {
+    case QTabletEvent::UnknownPointer:
+        return WebPointerProperties::PointerType::kUnknown;
+    case QTabletEvent::Pen:
+        return WebPointerProperties::PointerType::kPen;
+    case QTabletEvent::Eraser:
+        return WebPointerProperties::PointerType::kEraser;
+    default:
+        return WebPointerProperties::PointerType::kMouse;
+    }
+}
+
 WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
@@ -1188,7 +1207,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
                               modifiersForEvent(ev),
                               currentTimeForEvent(ev));
 
-    webKitEvent.button = mouseButtonForEvent(ev);
+    webKitEvent.button = mouseButtonForEvent<QMouseEvent>(ev);
     webKitEvent.click_count = 0;
 
     return webKitEvent;
@@ -1204,6 +1223,29 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
     webKitEvent.SetPositionInWidget(ev->pos().x() / dpiScale, ev->pos().y() / dpiScale);
     webKitEvent.movement_x = ev->pos().x() - ev->oldPos().x();
     webKitEvent.movement_y = ev->pos().y() - ev->oldPos().y();
+
+    return webKitEvent;
+}
+
+WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev, double dpiScale)
+{
+    WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
+                              ev->x() / dpiScale,
+                              ev->y() / dpiScale,
+                              ev->globalX(),
+                              ev->globalY(),
+                              modifiersForEvent(ev),
+                              currentTimeForEvent(ev));
+
+    webKitEvent.force = ev->pressure();
+    webKitEvent.tilt_x = ev->xTilt();
+    webKitEvent.tilt_y = ev->yTilt();
+    webKitEvent.tangential_pressure = ev->tangentialPressure();
+    webKitEvent.twist = ev->rotation();
+    webKitEvent.pointer_type = pointerTypeForTabletEvent(ev);
+
+    webKitEvent.button = mouseButtonForEvent<QTabletEvent>(ev);
+    webKitEvent.click_count = 0;
 
     return webKitEvent;
 }

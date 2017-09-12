@@ -186,6 +186,7 @@ public:
     void handleKeyEvent(QKeyEvent*);
     void handleWheelEvent(QWheelEvent*);
     void handleTouchEvent(QTouchEvent*);
+    void handleTabletEvent(QTabletEvent *ev);
 #ifndef QT_NO_GESTURES
     void handleGestureEvent(QNativeGestureEvent *);
 #endif
@@ -193,6 +194,8 @@ public:
     void handleFocusEvent(QFocusEvent*);
     void handleInputMethodEvent(QInputMethodEvent*);
     void handleInputMethodQueryEvent(QInputMethodQueryEvent*);
+
+    template<class T> void handlePointerEvent(T*);
 
 #if defined(OS_MACOSX)
     void SetActive(bool active) override { QT_NOT_YET_IMPLEMENTED }

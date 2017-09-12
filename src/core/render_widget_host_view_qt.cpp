@@ -957,6 +957,12 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::TouchCancel:
         handleTouchEvent(static_cast<QTouchEvent*>(event));
         break;
+    case QEvent::TabletPress:
+        Focus(); // Fall through.
+    case QEvent::TabletRelease:
+    case QEvent::TabletMove:
+        handleTabletEvent(static_cast<QTabletEvent*>(event));
+        break;
 #ifndef QT_NO_GESTURES
     case QEvent::NativeGesture:
         handleGestureEvent(static_cast<QNativeGestureEvent *>(event));
@@ -1089,49 +1095,7 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
     // transformation done by Chromium.
     if (event->source() == Qt::MouseEventSynthesizedBySystem)
         return;
-
-    blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
-    if ((webEvent.GetType() == blink::WebInputEvent::kMouseDown || webEvent.GetType() == blink::WebInputEvent::kMouseUp)
-            && webEvent.button == blink::WebMouseEvent::Button::kNoButton) {
-        // Blink can only handle the 3 main mouse-buttons and may assert when processing mouse-down for no button.
-        return;
-    }
-
-
-    if (event->type() == QMouseEvent::MouseButtonPress) {
-        if (event->button() != m_clickHelper.lastPressButton
-            || (event->timestamp() - m_clickHelper.lastPressTimestamp > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
-            || (event->pos() - m_clickHelper.lastPressPosition).manhattanLength() > qGuiApp->styleHints()->startDragDistance())
-            m_clickHelper.clickCounter = 0;
-
-        m_clickHelper.lastPressTimestamp = event->timestamp();
-        webEvent.click_count = ++m_clickHelper.clickCounter;
-        m_clickHelper.lastPressButton = event->button();
-        m_clickHelper.lastPressPosition = QPointF(event->pos()).toPoint();
-    }
-
-    webEvent.movement_x = event->globalX() - m_previousMousePosition.x();
-    webEvent.movement_y = event->globalY() - m_previousMousePosition.y();
-
-    if (IsMouseLocked())
-        QCursor::setPos(m_previousMousePosition);
-    else
-        m_previousMousePosition = event->globalPos();
-
-    if (m_imeInProgress && event->type() == QMouseEvent::MouseButtonPress) {
-        m_imeInProgress = false;
-        // Tell input method to commit the pre-edit string entered so far, and finish the
-        // composition operation.
-#ifdef Q_OS_WIN
-        // Yes the function name is counter-intuitive, but commit isn't actually implemented
-        // by the Windows QPA, and reset does exactly what is necessary in this case.
-        qApp->inputMethod()->reset();
-#else
-        qApp->inputMethod()->commit();
-#endif
-    }
-
-    m_host->ForwardMouseEvent(webEvent);
+    handlePointerEvent<QMouseEvent>(event);
 }
 
 void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
@@ -1481,6 +1445,59 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
                                   i);
         processMotionEvent(motionEvent);
     }
+}
+
+void RenderWidgetHostViewQt::handleTabletEvent(QTabletEvent *event)
+{
+    handlePointerEvent<QTabletEvent>(event);
+}
+
+template<class T>
+void RenderWidgetHostViewQt::handlePointerEvent(T *event)
+{
+    // Currently WebMouseEvent is a subclass of WebPointerProperties, so basically
+    // tablet events are mouse events with extra properties.
+    blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
+    if ((webEvent.GetType() == blink::WebInputEvent::kMouseDown || webEvent.GetType() == blink::WebInputEvent::kMouseUp)
+            && webEvent.button == blink::WebMouseEvent::Button::kNoButton) {
+        // Blink can only handle the 3 main mouse-buttons and may assert when processing mouse-down for no button.
+        return;
+    }
+
+    if (webEvent.GetType() == blink::WebInputEvent::kMouseDown) {
+        if (event->button() != m_clickHelper.lastPressButton
+            || (event->timestamp() - m_clickHelper.lastPressTimestamp > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
+            || (event->pos() - m_clickHelper.lastPressPosition).manhattanLength() > qGuiApp->styleHints()->startDragDistance())
+            m_clickHelper.clickCounter = 0;
+
+        m_clickHelper.lastPressTimestamp = event->timestamp();
+        webEvent.click_count = ++m_clickHelper.clickCounter;
+        m_clickHelper.lastPressButton = event->button();
+        m_clickHelper.lastPressPosition = QPointF(event->pos()).toPoint();
+    }
+
+    webEvent.movement_x = event->globalX() - m_previousMousePosition.x();
+    webEvent.movement_y = event->globalY() - m_previousMousePosition.y();
+
+    if (IsMouseLocked())
+        QCursor::setPos(m_previousMousePosition);
+    else
+        m_previousMousePosition = event->globalPos();
+
+    if (m_imeInProgress && webEvent.GetType() == blink::WebInputEvent::kMouseDown) {
+        m_imeInProgress = false;
+        // Tell input method to commit the pre-edit string entered so far, and finish the
+        // composition operation.
+#ifdef Q_OS_WIN
+        // Yes the function name is counter-intuitive, but commit isn't actually implemented
+        // by the Windows QPA, and reset does exactly what is necessary in this case.
+        qApp->inputMethod()->reset();
+#else
+        qApp->inputMethod()->commit();
+#endif
+    }
+
+    m_host->ForwardMouseEvent(webEvent);
 }
 
 void RenderWidgetHostViewQt::handleHoverEvent(QHoverEvent *ev)
