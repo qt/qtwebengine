@@ -74,7 +74,7 @@ public:
     virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
     virtual void resize(int width, int height) Q_DECL_OVERRIDE;
     virtual void move(const QPoint &screenPos) Q_DECL_OVERRIDE;
-    virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
+    virtual void inputMethodStateChanged(bool editorVisible, bool passwordInput) Q_DECL_OVERRIDE;
     virtual void setInputMethodHints(Qt::InputMethodHints) Q_DECL_OVERRIDE;
     virtual void setClearColor(const QColor &color) Q_DECL_OVERRIDE;
 
@@ -94,6 +94,7 @@ private:
     RenderWidgetHostViewQtDelegateClient *m_client;
     QScopedPointer<QQuickItem> m_rootItem;
     bool m_isPopup;
+    bool m_isPasswordInput;
     QColor m_clearColor;
     QPoint m_lastGlobalPos;
     QList<QMetaObject::Connection> m_windowConnections;
