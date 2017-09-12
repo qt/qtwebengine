@@ -109,7 +109,8 @@ SOURCES = \
         web_engine_error.cpp \
         web_engine_library_info.cpp \
         web_engine_settings.cpp \
-        web_event_factory.cpp
+        web_event_factory.cpp \
+        webui/webui_controller_factory_qt.cpp
 
 HEADERS = \
         access_token_store_qt.h \
@@ -190,7 +191,8 @@ HEADERS = \
         web_engine_error.h \
         web_engine_library_info.h \
         web_engine_settings.h \
-        web_event_factory.h
+        web_event_factory.h \
+        webui/webui_controller_factory_qt.h
 
 
 use?(pdf) {

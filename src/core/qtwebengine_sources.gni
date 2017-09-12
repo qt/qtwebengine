@@ -45,8 +45,26 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/media/webrtc/desktop_media_list.h",
     "//chrome/browser/media/webrtc/desktop_streams_registry.cc",
     "//chrome/browser/media/webrtc/desktop_streams_registry.h",
+    "//chrome/browser/profiles/profile.cc",
+    "//chrome/browser/profiles/profile.h",
+    "//chrome/browser/ui/webui/devtools_ui.cc",
+    "//chrome/browser/ui/webui/devtools_ui.h",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_handler.cc",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_handler.h",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_proxy.cc",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_proxy.h",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_types.cc",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_types.h",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_ui.cc",
+    "//chrome/browser/ui/webui/quota_internals/quota_internals_ui.h",
+    "//chrome/browser/ui/webui/task_scheduler_internals/task_scheduler_internals_ui.cc",
+    "//chrome/browser/ui/webui/task_scheduler_internals/task_scheduler_internals_ui.h",
     "//chrome/common/chrome_switches.cc",
     "//chrome/common/chrome_switches.h",
+    "//chrome/common/pref_names.cc",
+    "//chrome/common/pref_names.h",
+    "//chrome/common/url_constants.cc",
+    "//chrome/common/url_constants.h",
     "//components/prefs/in_memory_pref_store.cc",
     "//components/prefs/in_memory_pref_store.h",
     "//extensions/common/constants.cc",
@@ -55,11 +73,14 @@ source_set("qtwebengine_sources") {
     "//extensions/common/url_pattern.h",
   ]
 
-  if (enable_spellcheck) {
+  if (is_linux) {
     sources += [
-      "//chrome/common/pref_names.cc",
-      "//chrome/common/pref_names.h",
+      "//chrome/browser/ui/webui/sandbox_internals_ui.cc",
+      "//chrome/browser/ui/webui/sandbox_internals_ui.h",
     ]
+  }
+
+  if (enable_spellcheck) {
     deps += [
       ":qtwebengine_spellcheck_sources",
       "//chrome/tools/convert_dict",

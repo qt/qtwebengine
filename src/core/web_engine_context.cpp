@@ -88,6 +88,8 @@
 #include "type_conversion.h"
 #include "surface_factory_qt.h"
 #include "web_engine_library_info.h"
+#include "webui/webui_controller_factory_qt.h"
+
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QOffscreenSurface>
@@ -509,6 +511,8 @@ WebEngineContext::WebEngineContext()
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     m_printJobManager.reset(new printing::PrintJobManager());
 #endif // defined(ENABLE_BASIC_PRINTING)
+
+    content::WebUIControllerFactory::RegisterFactory(WebUIControllerFactoryQt::GetInstance());
 }
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
