@@ -148,6 +148,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged FINAL REVISION 3)
     Q_PROPERTY(uint webChannelWorld READ webChannelWorld WRITE setWebChannelWorld NOTIFY webChannelWorldChanged REVISION 3 FINAL)
 
+    Q_PROPERTY(QQuickWebEngineView *inspectedView READ inspectedView WRITE setInspectedView NOTIFY inspectedViewChanged REVISION 7 FINAL)
+    Q_PROPERTY(QQuickWebEngineView *devToolsView READ devToolsView WRITE setDevToolsView NOTIFY devToolsViewChanged REVISION 7 FINAL)
 #ifdef ENABLE_QML_TESTSUPPORT_API
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport NOTIFY testSupportChanged FINAL)
 #endif
@@ -500,6 +502,11 @@ public:
 
     bool activeFocusOnPress() const;
 
+    void setInspectedView(QQuickWebEngineView *);
+    QQuickWebEngineView *inspectedView() const;
+    void setDevToolsView(QQuickWebEngineView *);
+    QQuickWebEngineView *devToolsView() const;
+
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
     Q_REVISION(3) void runJavaScript(const QString&, quint32 worldId, const QJSValue & = QJSValue());
@@ -557,6 +564,8 @@ Q_SIGNALS:
     Q_REVISION(5) void pdfPrintingFinished(const QString &filePath, bool success);
     Q_REVISION(7) void quotaPermissionRequested(const QQuickWebEngineQuotaPermissionRequest &request);
     Q_REVISION(7) void geometryChangeRequested(const QRect &geometry, const QRect &frameGeometry);
+    Q_REVISION(7) void inspectedViewChanged();
+    Q_REVISION(7) void devToolsViewChanged();
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     void testSupportChanged();

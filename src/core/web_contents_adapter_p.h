@@ -73,6 +73,7 @@ struct DropData;
 namespace QtWebEngineCore {
 
 class BrowserContextAdapter;
+class DevToolsFrontendQt;
 class RenderViewObserverHostQt;
 class WebChannelIPCTransportHost;
 class WebContentsAdapterClient;
@@ -100,6 +101,7 @@ public:
     gfx::Point lastDragClientPos;
     gfx::Point lastDragScreenPos;
     std::unique_ptr<QTemporaryDir> dndTmpDir;
+    DevToolsFrontendQt *devToolsFrontend;
 };
 
 } // namespace QtWebEngineCore

@@ -604,4 +604,9 @@ WebEngineSettings *WebContentsDelegateQt::webEngineSettings() const {
     return m_viewClient->webEngineSettings();
 }
 
+WebContentsAdapter *WebContentsDelegateQt::webContentsAdapter() const
+{
+    return m_viewClient->webContentsAdapter();
+}
+
 } // namespace QtWebEngineCore

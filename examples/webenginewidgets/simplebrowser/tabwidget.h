@@ -77,6 +77,7 @@ signals:
     void urlChanged(const QUrl &url);
     void favIconChanged(const QIcon &icon);
     void webActionEnabledChanged(QWebEnginePage::WebAction action, bool enabled);
+    void devToolsRequested(QWebEnginePage *source);
 
 public slots:
     // current tab/page slots

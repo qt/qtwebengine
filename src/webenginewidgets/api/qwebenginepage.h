@@ -316,6 +316,11 @@ public:
     void print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback);
 #endif // QDOC
 
+    void setInspectedPage(QWebEnginePage *page);
+    QWebEnginePage *inspectedPage() const;
+    void setDevToolsPage(QWebEnginePage *page);
+    QWebEnginePage *devToolsPage() const;
+
     const QWebEngineContextMenuData &contextMenuData() const;
 
 Q_SIGNALS:

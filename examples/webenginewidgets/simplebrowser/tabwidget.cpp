@@ -190,6 +190,7 @@ void TabWidget::setupView(WebView *webView)
         if (index >= 0)
             closeTab(index);
     });
+    connect(webView, &WebView::devToolsRequested, this, &TabWidget::devToolsRequested);
 }
 
 WebView *TabWidget::createTab()

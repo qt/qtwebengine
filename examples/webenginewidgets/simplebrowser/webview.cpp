@@ -167,6 +167,7 @@ QWebEngineView *WebView::createWindow(QWebEnginePage::WebWindowType type)
     }
     case QWebEnginePage::WebDialog: {
         WebPopupWindow *popup = new WebPopupWindow(page()->profile());
+        connect(popup->view(), &WebView::devToolsRequested, this, &WebView::devToolsRequested);
         return popup->view();
     }
     }
@@ -184,6 +185,13 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
         QAction *before(it == actions.cend() ? nullptr : *it);
         menu->insertAction(before, page()->action(QWebEnginePage::OpenLinkInNewWindow));
         menu->insertAction(before, page()->action(QWebEnginePage::OpenLinkInNewTab));
+    }
+    it = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::InspectElement));
+    if (it == actions.cend()) {
+        QAction *action = new QAction(menu);
+        action->setText("Inspect Element");
+        connect(action, &QAction::triggered, [this]() { emit devToolsRequested(page()); });
+        menu->addAction(action);
     }
     menu->popup(event->globalPos());
 }

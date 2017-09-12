@@ -69,7 +69,7 @@ class BrowserWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    BrowserWindow(Browser *browser, QWebEngineProfile *profile);
+    BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool forDevTools = false);
     QSize sizeHint() const override;
     TabWidget *tabWidget() const;
     WebView *currentTab() const;
@@ -87,6 +87,7 @@ private slots:
     void handleWebViewLoadProgress(int);
     void handleWebViewTitleChanged(const QString &title);
     void handleWebActionEnabledChanged(QWebEnginePage::WebAction action, bool enabled);
+    void handleDevToolsRequested(QWebEnginePage *source);
 
 private:
     QMenu *createFileMenu(TabWidget *tabWidget);

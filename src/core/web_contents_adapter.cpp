@@ -48,6 +48,7 @@
 #include "browser_context_adapter.h"
 #include "browser_context_adapter_client.h"
 #include "browser_context_qt.h"
+#include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "print_view_manager_qt.h"
@@ -359,6 +360,7 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     , nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
     , lastFindRequestId(0)
     , currentDropAction(blink::kWebDragOperationNone)
+    , devToolsFrontend(nullptr)
 {
 }
 
@@ -1035,17 +1037,54 @@ void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, Medi
 void WebContentsAdapter::inspectElementAt(const QPoint &location)
 {
     Q_D(WebContentsAdapter);
-    if (content::DevToolsAgentHost::HasFor(d->webContents.get())) {
-        content::DevToolsAgentHost::GetOrCreateFor(d->webContents.get())->InspectElement(nullptr, location.x(), location.y());
+    if (d->devToolsFrontend) {
+        d->devToolsFrontend->InspectElementAt(location.x(), location.y());
+        return;
     }
+    if (content::DevToolsAgentHost::HasFor(d->webContents.get()))
+        content::DevToolsAgentHost::GetOrCreateFor(d->webContents.get())->InspectElement(nullptr, location.x(), location.y());
 }
 
 bool WebContentsAdapter::hasInspector() const
 {
-    const Q_D(WebContentsAdapter);
+    Q_D(const WebContentsAdapter);
+    if (d->devToolsFrontend)
+        return true;
     if (content::DevToolsAgentHost::HasFor(d->webContents.get()))
         return content::DevToolsAgentHost::GetOrCreateFor(d->webContents.get())->IsAttached();
     return false;
+}
+
+void WebContentsAdapter::openDevToolsFrontend(QSharedPointer<WebContentsAdapter> frontendAdapter)
+{
+    Q_D(WebContentsAdapter);
+    if (d->devToolsFrontend &&
+            d->devToolsFrontend->frontendDelegate() == frontendAdapter->webContents()->GetDelegate())
+        return;
+
+    if (d->devToolsFrontend) {
+        d->devToolsFrontend->DisconnectFromTarget();
+        d->devToolsFrontend->Close();
+    }
+
+    d->devToolsFrontend = DevToolsFrontendQt::Show(frontendAdapter, d->webContents.get());
+}
+
+void WebContentsAdapter::closeDevToolsFrontend()
+{
+    Q_D(WebContentsAdapter);
+    if (d->devToolsFrontend) {
+        d->devToolsFrontend->DisconnectFromTarget();
+        d->devToolsFrontend->Close();
+    }
+}
+
+void WebContentsAdapter::devToolsFrontendDestroyed(DevToolsFrontendQt *frontend)
+{
+    Q_D(WebContentsAdapter);
+    Q_ASSERT(frontend == d->devToolsFrontend);
+    Q_UNUSED(frontend);
+    d->devToolsFrontend = nullptr;
 }
 
 void WebContentsAdapter::exitFullScreen()

@@ -487,7 +487,7 @@ bool RenderWidgetHostViewQt::HasFocus() const
 
 bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy() const
 {
-    return true;
+    return false;
 }
 
 void RenderWidgetHostViewQt::Show()

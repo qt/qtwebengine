@@ -823,6 +823,11 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
     if (m_webChannel)
         adapter->setWebChannel(m_webChannel, m_webChannelWorld);
 
+    if (devToolsView && devToolsView->d_ptr->adapter)
+        adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
+    else if (inspectedView && inspectedView->d_ptr->adapter)
+        inspectedView->d_ptr->adapter->openDevToolsFrontend(adapter);
+
     // set initial background color if non-default
     if (m_backgroundColor != Qt::white)
         adapter->backgroundColorChanged();
@@ -882,6 +887,8 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
             adapter->setWebChannel(m_webChannel, m_webChannelWorld);
         if (explicitUrl.isValid())
             adapter->load(explicitUrl);
+        if (inspectedView)
+            inspectedView->d_ptr->adapter->openDevToolsFrontend(adapter);
         // push down the page's user scripts
         Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
             script->d_func()->bind(browserContextAdapter()->userResourceController(), adapter.data());
@@ -1417,6 +1424,54 @@ void QQuickWebEngineView::setWebChannelWorld(uint webChannelWorld)
     if (d->adapter)
         d->adapter->setWebChannel(d->m_webChannel, d->m_webChannelWorld);
     Q_EMIT webChannelWorldChanged(webChannelWorld);
+}
+
+QQuickWebEngineView *QQuickWebEngineView::inspectedView() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->inspectedView;
+}
+
+void QQuickWebEngineView::setInspectedView(QQuickWebEngineView *view)
+{
+    Q_D(QQuickWebEngineView);
+    if (d->inspectedView == view)
+        return;
+    QQuickWebEngineView *oldView = d->inspectedView;
+    d->inspectedView = nullptr;
+    if (oldView)
+        oldView->setDevToolsView(nullptr);
+    d->inspectedView = view;
+    if (view)
+        view->setDevToolsView(this);
+    Q_EMIT inspectedViewChanged();
+}
+
+QQuickWebEngineView *QQuickWebEngineView::devToolsView() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->devToolsView;
+}
+
+void QQuickWebEngineView::setDevToolsView(QQuickWebEngineView *devToolsView)
+{
+    Q_D(QQuickWebEngineView);
+    if (d->devToolsView == devToolsView)
+        return;
+    QQuickWebEngineView *oldView = d->devToolsView;
+    d->devToolsView = nullptr;
+    if (oldView)
+        oldView->setInspectedView(nullptr);
+    d->devToolsView = devToolsView;
+    if (devToolsView)
+        devToolsView->setInspectedView(this);
+    if (d->adapter) {
+        if (devToolsView)
+            d->adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
+        else
+            d->adapter->closeDevToolsFrontend();
+    }
+    Q_EMIT devToolsViewChanged();
 }
 
 void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature feature, bool granted)

@@ -67,11 +67,11 @@
 #include <QVBoxLayout>
 #include <QWebEngineProfile>
 
-BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile)
+BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool forDevTools)
     : m_browser(browser)
     , m_profile(profile)
     , m_tabWidget(new TabWidget(profile, this))
-    , m_progressBar(new QProgressBar(this))
+    , m_progressBar(nullptr)
     , m_historyBackAction(nullptr)
     , m_historyForwardAction(nullptr)
     , m_stopAction(nullptr)
@@ -83,49 +83,59 @@ BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile)
     setAttribute(Qt::WA_DeleteOnClose, true);
     setFocusPolicy(Qt::ClickFocus);
 
-    QToolBar *toolbar = createToolBar();
-    addToolBar(toolbar);
-    menuBar()->addMenu(createFileMenu(m_tabWidget));
-    menuBar()->addMenu(createEditMenu());
-    menuBar()->addMenu(createViewMenu(toolbar));
-    menuBar()->addMenu(createWindowMenu(m_tabWidget));
-    menuBar()->addMenu(createHelpMenu());
+    if (!forDevTools) {
+        m_progressBar = new QProgressBar(this);
+
+        QToolBar *toolbar = createToolBar();
+        addToolBar(toolbar);
+        menuBar()->addMenu(createFileMenu(m_tabWidget));
+        menuBar()->addMenu(createEditMenu());
+        menuBar()->addMenu(createViewMenu(toolbar));
+        menuBar()->addMenu(createWindowMenu(m_tabWidget));
+        menuBar()->addMenu(createHelpMenu());
+    }
 
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setSpacing(0);
     layout->setMargin(0);
-    addToolBarBreak();
+    if (!forDevTools) {
+        addToolBarBreak();
 
-    m_progressBar->setMaximumHeight(1);
-    m_progressBar->setTextVisible(false);
-    m_progressBar->setStyleSheet(QStringLiteral("QProgressBar {border: 0px} QProgressBar::chunk {background-color: #da4453}"));
+        m_progressBar->setMaximumHeight(1);
+        m_progressBar->setTextVisible(false);
+        m_progressBar->setStyleSheet(QStringLiteral("QProgressBar {border: 0px} QProgressBar::chunk {background-color: #da4453}"));
 
-    layout->addWidget(m_progressBar);
+        layout->addWidget(m_progressBar);
+    }
+
     layout->addWidget(m_tabWidget);
     centralWidget->setLayout(layout);
     setCentralWidget(centralWidget);
 
     connect(m_tabWidget, &TabWidget::titleChanged, this, &BrowserWindow::handleWebViewTitleChanged);
-    connect(m_tabWidget, &TabWidget::linkHovered, [this](const QString& url) {
-        statusBar()->showMessage(url);
-    });
-    connect(m_tabWidget, &TabWidget::loadProgress, this, &BrowserWindow::handleWebViewLoadProgress);
-    connect(m_tabWidget, &TabWidget::webActionEnabledChanged, this, &BrowserWindow::handleWebActionEnabledChanged);
-    connect(m_tabWidget, &TabWidget::urlChanged, [this](const QUrl &url) {
-        m_urlLineEdit->setText(url.toDisplayString());
-    });
-    connect(m_tabWidget, &TabWidget::favIconChanged, m_favAction, &QAction::setIcon);
-    connect(m_urlLineEdit, &QLineEdit::returnPressed, [this]() {
-        m_tabWidget->setUrl(QUrl::fromUserInput(m_urlLineEdit->text()));
-    });
+    if (!forDevTools) {
+        connect(m_tabWidget, &TabWidget::linkHovered, [this](const QString& url) {
+            statusBar()->showMessage(url);
+        });
+        connect(m_tabWidget, &TabWidget::loadProgress, this, &BrowserWindow::handleWebViewLoadProgress);
+        connect(m_tabWidget, &TabWidget::webActionEnabledChanged, this, &BrowserWindow::handleWebActionEnabledChanged);
+        connect(m_tabWidget, &TabWidget::urlChanged, [this](const QUrl &url) {
+            m_urlLineEdit->setText(url.toDisplayString());
+        });
+        connect(m_tabWidget, &TabWidget::favIconChanged, m_favAction, &QAction::setIcon);
+        connect(m_tabWidget, &TabWidget::devToolsRequested, this, &BrowserWindow::handleDevToolsRequested);
+        connect(m_urlLineEdit, &QLineEdit::returnPressed, [this]() {
+            m_tabWidget->setUrl(QUrl::fromUserInput(m_urlLineEdit->text()));
+        });
 
-    QAction *focusUrlLineEditAction = new QAction(this);
-    addAction(focusUrlLineEditAction);
-    focusUrlLineEditAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L));
-    connect(focusUrlLineEditAction, &QAction::triggered, this, [this] () {
-        m_urlLineEdit->setFocus(Qt::ShortcutFocusReason);
-    });
+        QAction *focusUrlLineEditAction = new QAction(this);
+        addAction(focusUrlLineEditAction);
+        focusUrlLineEditAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L));
+        connect(focusUrlLineEditAction, &QAction::triggered, this, [this] () {
+            m_urlLineEdit->setFocus(Qt::ShortcutFocusReason);
+        });
+    }
 
     handleWebViewTitleChanged(QString());
     m_tabWidget->createTab();
@@ -503,4 +513,10 @@ void BrowserWindow::handleShowWindowTriggered()
         windows.at(offset)->activateWindow();
         windows.at(offset)->currentTab()->setFocus();
     }
+}
+
+void BrowserWindow::handleDevToolsRequested(QWebEnginePage *source)
+{
+    source->setDevToolsPage(m_browser->createDevToolsWindow()->currentTab()->page());
+    source->triggerAction(QWebEnginePage::InspectElement);
 }

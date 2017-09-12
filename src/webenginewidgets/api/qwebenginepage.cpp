@@ -832,6 +832,7 @@ QWebEnginePage::QWebEnginePage(QWebEngineProfile *profile, QObject* parent)
 QWebEnginePage::~QWebEnginePage()
 {
     Q_D(QWebEnginePage);
+    setDevToolsPage(nullptr);
     if (d->adapter)
         d->adapter->stopFinding();
     QWebEngineViewPrivate::bind(d->view, 0);
@@ -1994,6 +1995,94 @@ QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
             return newView->page();
     }
     return 0;
+}
+
+/*!
+    \since 5.11
+    Returns the page this page is inspecting, if any.
+
+    Returns \c nullptr if this page is not a developer tools page.
+
+    \sa setInspectedPage(), devToolsPage()
+*/
+
+QWebEnginePage *QWebEnginePage::inspectedPage() const
+{
+    Q_D(const QWebEnginePage);
+    return d->inspectedPage;
+}
+
+/*!
+    \since 5.11
+    Navigates this page to an internal URL that is the developer
+    tools of \a page.
+
+    This is the same as calling setDevToolsPage() on \a page
+    with \c this as argument.
+
+    \sa inspectedPage(), setDevToolsPage()
+*/
+
+void QWebEnginePage::setInspectedPage(QWebEnginePage *page)
+{
+    Q_D(QWebEnginePage);
+    if (d->inspectedPage == page)
+        return;
+    QWebEnginePage *oldPage = d->inspectedPage;
+    d->inspectedPage = nullptr;
+    if (oldPage)
+        oldPage->setDevToolsPage(nullptr);
+    d->inspectedPage = page;
+    if (page)
+        page->setDevToolsPage(this);
+}
+
+/*!
+    \since 5.11
+    Returns the pagethat is hosting the developer tools
+    of this page, if any.
+
+    Returns \c nullptr if no developer tools page is set.
+
+    \sa setDevToolsPage(), inspectedPage()
+*/
+
+QWebEnginePage *QWebEnginePage::devToolsPage() const
+{
+    Q_D(const QWebEnginePage);
+    return d->devToolsPage;
+}
+
+/*!
+    \since 5.11
+    Binds \a devToolsPage to be the developer tools of this page.
+    Triggers \a devToolsPage to navigate to an internal URL
+    with the developer tools.
+
+    This is the same as calling setInspectedPage() on \a devToolsPage
+    with \c this as argument.
+
+    \sa devToolsPage(), setInspectedPage()
+*/
+
+void QWebEnginePage::setDevToolsPage(QWebEnginePage *devToolsPage)
+{
+    Q_D(QWebEnginePage);
+    if (d->devToolsPage == devToolsPage)
+        return;
+    QWebEnginePage *oldDevTools = d->devToolsPage;
+    d->devToolsPage = nullptr;
+    if (oldDevTools)
+        oldDevTools->setInspectedPage(nullptr);
+    d->devToolsPage = devToolsPage;
+    if (devToolsPage)
+        devToolsPage->setInspectedPage(this);
+    if (d->adapter) {
+        if (devToolsPage)
+            d->adapter->openDevToolsFrontend(devToolsPage->d_ptr->adapter);
+        else
+            d->adapter->closeDevToolsFrontend();
+    }
 }
 
 ASSERT_ENUMS_MATCH(FilePickerController::Open, QWebEnginePage::FileSelectOpen)

@@ -59,6 +59,7 @@ SOURCES = \
         custom_protocol_handler.cpp \
         delegated_frame_node.cpp \
         desktop_screen_qt.cpp \
+        devtools_frontend_qt.cpp \
         devtools_manager_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
         favicon_manager.cpp \
@@ -135,6 +136,7 @@ HEADERS = \
         custom_protocol_handler.h \
         delegated_frame_node.h \
         desktop_screen_qt.h \
+        devtools_frontend_qt.h \
         devtools_manager_delegate_qt.h \
         download_manager_delegate_qt.h \
         chromium_gpu_helper.h \

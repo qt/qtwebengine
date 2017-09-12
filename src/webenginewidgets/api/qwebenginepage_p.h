@@ -57,7 +57,9 @@
 #include "qwebenginecontextmenudata.h"
 #include "qwebenginescriptcollection.h"
 #include "web_contents_adapter_client.h"
+
 #include <QtCore/qcompilerdetection.h>
+#include <QtCore/QPointer>
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegate;
@@ -175,6 +177,8 @@ public:
     unsigned int webChannelWorldId;
     QUrl iconUrl;
     bool m_navigationActionTriggered;
+    QPointer<QWebEnginePage> inspectedPage;
+    QPointer<QWebEnginePage> devToolsPage;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

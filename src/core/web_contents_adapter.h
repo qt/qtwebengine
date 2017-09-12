@@ -67,6 +67,7 @@ QT_END_NAMESPACE
 namespace QtWebEngineCore {
 
 class BrowserContextQt;
+class DevToolsFrontendQt;
 class MessagePassingInterface;
 class WebContentsAdapterPrivate;
 class FaviconManager;
@@ -148,6 +149,9 @@ public:
     void exitFullScreen();
     void requestClose();
     void changedFullScreen();
+    void openDevToolsFrontend(QSharedPointer<WebContentsAdapter> devtoolsFrontend);
+    void closeDevToolsFrontend();
+    void devToolsFrontendDestroyed(DevToolsFrontendQt *frontend);
 
     void wasShown();
     void wasHidden();

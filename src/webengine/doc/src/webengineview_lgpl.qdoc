@@ -1377,3 +1377,25 @@
     }
     \endqml
 */
+
+/*!
+    \qmlproperty WebEngineView WebEngineView::inspectedView
+    \since QtWebEngine 1.7
+
+    The view this view is currently inspecting, if any. Setting it
+    will navigate to an internal URL with the developer tools of
+    the view set.
+
+    \sa devToolView
+*/
+
+/*!
+    \qmlproperty WebEngineView WebEngineView::devToolsView
+    \since QtWebEngine 1.7
+
+    The view currently hosting the developer tools for this view.
+    Setting it to a new view will navigate that view to an internal
+    URL with the developer tools, and bind it to this view.
+
+    \sa inspectedView
+*/

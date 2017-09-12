@@ -67,6 +67,7 @@ namespace content {
 
 namespace QtWebEngineCore {
 
+class WebContentsAdapter;
 class WebContentsAdapterClient;
 class WebEngineSettings;
 
@@ -152,6 +153,7 @@ public:
     const SavePageInfo &savePageInfo() { return m_savePageInfo; }
 
     WebEngineSettings *webEngineSettings() const;
+    WebContentsAdapter *webContentsAdapter() const;
 
 private:
     QWeakPointer<WebContentsAdapter> createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);

@@ -54,6 +54,7 @@
 #include "qquickwebengineview_p.h"
 #include "web_contents_adapter_client.h"
 
+#include <QPointer>
 #include <QScopedPointer>
 #include <QSharedData>
 #include <QString>
@@ -185,6 +186,8 @@ public:
     QMap<quint64, QJSValue> m_callbacks;
     QList<QSharedPointer<CertificateErrorController> > m_certificateErrorControllers;
     QQmlWebChannel *m_webChannel;
+    QPointer<QQuickWebEngineView> inspectedView;
+    QPointer<QQuickWebEngineView> devToolsView;
     uint m_webChannelWorld;
 
 private:

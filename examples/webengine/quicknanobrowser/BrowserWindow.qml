@@ -88,6 +88,7 @@ ApplicationWindow {
         property alias autoLoadIconsForPage: autoLoadIconsForPage.checked
         property alias touchIconsEnabled: touchIconsEnabled.checked
         property alias webRTCPublicInterfacesOnly : webRTCPublicInterfacesOnly.checked
+        property alias devToolsEnabled: devToolsEnabled.checked
     }
 
     Action {
@@ -318,6 +319,12 @@ ApplicationWindow {
                             checkable: true
                             checked: WebEngine.settings.webRTCPublicInterfacesOnly
                         }
+                        MenuItem {
+                            id: devToolsEnabled
+                            text: "Open DevTools"
+                            checkable: true
+                            checked: false
+                        }
                     }
                 }
             }
@@ -475,6 +482,15 @@ ApplicationWindow {
                 }
             }
         }
+    }
+    WebEngineView {
+        id: devToolsView
+        visible: devToolsEnabled.checked
+        height: 400
+        inspectedView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
     }
     MessageDialog {
         id: sslDialog
