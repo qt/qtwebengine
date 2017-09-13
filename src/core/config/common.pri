@@ -13,37 +13,33 @@ gn_args += \
     treat_warnings_as_errors=false \
     enable_swiftshader=false
 
-use?(printing) {
+qtConfig(printing-and-pdf) {
     gn_args += enable_basic_printing=true enable_print_preview=true
-} else {
-    gn_args += enable_basic_printing=false enable_print_preview=false
-}
-
-use?(pdf) {
     gn_args += enable_pdf=true
 } else {
+    gn_args += enable_basic_printing=false enable_print_preview=false
     gn_args += enable_pdf=false
 }
 
-use?(pepper_plugins) {
+qtConfig(pepper-plugins) {
     gn_args += enable_plugins=true enable_widevine=true
 } else {
     gn_args += enable_plugins=false enable_widevine=false
 }
 
-use?(spellchecker) {
+qtConfig(spellchecker) {
     gn_args += enable_spellcheck=true
 } else {
     gn_args += enable_spellcheck=false
 }
 
-use?(webrtc) {
+qtConfig(webrtc) {
     gn_args += enable_webrtc=true
 } else {
     gn_args += enable_webrtc=false
 }
 
-use?(proprietary_codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
+qtConfig(proprietary-codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
 
 CONFIG(release, debug|release) {
     force_debug_info {
@@ -63,4 +59,4 @@ CONFIG(debug, debug|release) {
 !v8base_debug: gn_args += remove_v8base_debug_symbols=true
 
 # Compiling with -Os makes a huge difference in binary size
-contains(WEBENGINE_CONFIG, reduce_binary_size): gn_args += optimize_for_size=true
+optimize_size: gn_args += optimize_for_size=true

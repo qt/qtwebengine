@@ -51,17 +51,14 @@ qtConfig(ui-delegates) {
     DEFINES += QT_UI_DELEGATES
 }
 
-contains(WEBENGINE_CONFIG, use_spellchecker) {
+qtConfig(spellchecker) {
     DEFINES += ENABLE_SPELLCHECK
 }
 
-use?(printing) {
+qtConfig(printing-and-pdf) {
     DEFINES += ENABLE_PRINTING
-    QT += printsupport
-}
-
-use?(pdf) {
     DEFINES += ENABLE_PDF
+    QT += printsupport
 }
 
 load(qt_module)

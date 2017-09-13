@@ -67,11 +67,11 @@ qtConfig(testsupport) {
     DEFINES += ENABLE_QML_TESTSUPPORT_API
 }
 
-contains(WEBENGINE_CONFIG, use_spellchecker) {
+qtConfig(spellchecker) {
     DEFINES += ENABLE_SPELLCHECK
 }
 
-use?(pdf) {
+qtConfig(printing-and-pdf) {
     DEFINES += ENABLE_PDF
 }
 

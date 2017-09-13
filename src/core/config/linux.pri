@@ -8,17 +8,10 @@ gn_args += \
     use_gio=false \
     use_gnome_keyring=false \
     use_kerberos=false \
-    linux_use_bundled_binutils=false
+    linux_use_bundled_binutils=false \
+    use_nss_certs=true \
+    use_openssl_certs=false
 
-use?(nss) {
-    gn_args += \
-        use_nss_certs=true \
-        use_openssl_certs=false
-} else {
-    gn_args += \
-        use_nss_certs=false \
-        use_openssl_certs=true
-}
 gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): gn_args += no_delete_null_pointer_checks=true
 
 clang {
@@ -119,15 +112,20 @@ host_build {
         # Strip '>2 /dev/null' from $$pkgConfigExecutable()
         PKGCONFIG = $$first($$list($$pkgConfigExecutable()))
         gn_args += pkg_config=\"$$PKGCONFIG\"
-        gn_args += "host_pkg_config=\"pkg-config\""
+        gn_args += host_pkg_config=\"pkg-config\"
     }
 
-    qtConfig(system-zlib): use?(system_minizip): gn_args += use_system_zlib=true use_system_minizip=true
-    use?(system_libpng): gn_args += use_system_libpng=true
+    qtConfig(system-zlib): qtConfig(system-minizip): gn_args += use_system_zlib=true use_system_minizip=true
+
+    # FIXME: make system-png a public feature in gui
+    qtConfig(system-png): qtConfig(webengine-system-png): gn_args += use_system_libpng=true
+
     qtConfig(system-jpeg): gn_args += use_system_libjpeg=true
     qtConfig(system-freetype): gn_args += use_system_freetype=true
-    use?(system_harfbuzz): gn_args += use_system_harfbuzz=true
-    !use?(glib): gn_args += use_glib=false
+
+    # FIXME: make system-harfbuzz a public feautre in gui
+    qtConfig(system-harfbuzz): qtConfig(webengine-system-harfbuzz): gn_args += use_system_harfbuzz=true
+    qtConfig(system-glib): gn_args += use_glib=false
     qtConfig(pulseaudio) {
         gn_args += use_pulseaudio=true
     } else {
@@ -143,15 +141,18 @@ host_build {
     !packagesExist(libpci): gn_args += use_libpci=false
     !packagesExist(xscrnsaver): gn_args += use_xscrnsaver=false
 
-    use?(system_libevent): gn_args += use_system_libevent=true
-    use?(system_libwebp):  gn_args += use_system_libwebp=true
-    use?(system_libxslt):  gn_args += use_system_libxml=true use_system_libxslt=true
-    #use?(system_jsoncpp):  gn_args += use_system_jsoncpp=true
-    use?(system_opus):     gn_args += use_system_opus=true
-    use?(system_snappy):   gn_args += use_system_snappy=true
-    use?(system_libvpx):   gn_args += use_system_libvpx=true
-    use?(system_icu):      gn_args += use_system_icu=true icu_use_data_file=false
-    use?(system_ffmpeg):   gn_args += use_system_ffmpeg=true
-    use?(system_re2):      gn_args += use_system_re2=true
-    #use?(system_protobuf): gn_args += use_system_protobuf=true
+    qtConfig(system-libevent): gn_args += use_system_libevent=true
+    qtConfig(system-libwebp): gn_args += use_system_libwebp=true
+    qtConfig(system-libxml2): gn_args += use_system_libxml=true use_system_libxslt=true
+    qtConfig(system-opus): gn_args += use_system_opus=true
+    qtConfig(system-snappy):   gn_args += use_system_snappy=true
+    qtConfig(system-libvpx):   gn_args += use_system_libvpx=true
+    qtConfig(system-icu): gn_args += use_system_icu=true icu_use_data_file=false
+    qtConfig(system-ffmpeg): gn_args += use_system_ffmpeg=true
+    qtConfig(system-re2):      gn_args += use_system_re2=true
+
+    # FIXME:
+    #qtConfig(system-protobuf): gn_args += use_system_protobuf=true
+    #qtConfig(system-jsoncpp):  gn_args += use_system_jsoncpp=true
+    #qtConfig(system-libsrtp: gn_args += use_system_libsrtp=true
 }

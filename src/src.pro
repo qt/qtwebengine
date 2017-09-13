@@ -20,7 +20,7 @@ SUBDIRS += buildtools \
            plugins
 
 
-use?(spellchecker):!use?(native_spellchecker):!cross_compile {
+qtConfig(spellchecker):!qtConfig(native-spellchecker):!cross_compile {
     SUBDIRS += qwebengine_convert_dict
     qwebengine_convert_dict.subdir = tools/qwebengine_convert_dict
     qwebengine_convert_dict.depends = core

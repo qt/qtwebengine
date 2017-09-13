@@ -5,7 +5,7 @@ QT_PRIVATE += webengine-private gui-private
 
 HEADERS += ../shared/util.h
 
-use?(pdf) {
+qtConfig(printing-and-pdf) {
     DEFINES += ENABLE_PDF
 }
 

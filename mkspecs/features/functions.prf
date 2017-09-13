@@ -47,11 +47,6 @@ defineReplace(which) {
   return($$out)
 }
 
-defineTest(use?) {
-    contains(WEBENGINE_CONFIG, use_$$lower($$1)): return(true)
-    return(false)
-}
-
 # Returns the unquoted path to the python executable.
 defineReplace(pythonPath) {
     isEmpty(QMAKE_PYTHON2) {
@@ -88,7 +83,7 @@ defineReplace(gnPath) {
 
 defineReplace(gnArgs) {
     linux {
-        contains(WEBENGINE_CONFIG, embedded_build): include($$QTWEBENGINE_ROOT/src/core/config/embedded_linux.pri)
+        qtConfig(embedded): include($$QTWEBENGINE_ROOT/src/core/config/embedded_linux.pri)
         else: include($$QTWEBENGINE_ROOT/src/core/config/desktop_linux.pri)
     }
     macos: include($$QTWEBENGINE_ROOT/src/core/config/mac_osx.pri)
