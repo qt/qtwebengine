@@ -240,6 +240,10 @@
         "icuuc": {
             "label" : "libxml2 configured with icuuc",
             "type": "detectIcuuc"
+        },
+        "sanitizer": {
+            "label" : "sanitizer support",
+            "type": "isSanitizerSupported"
         }
     },
 
@@ -497,6 +501,12 @@
         "system-libxml2": {
             "label": "libxml2 and libxslt",
             "condition": "config.unix && libs.libxml2 && tests.icuuc",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-sanitizer" : {
+            "label": "Sanitizer ",
+            "autoDetect": "config.sanitizer && tests.sanitizer",
+            "condition": "config.sanitizer",
             "output": [ "privateFeature" ]
         }
     },
