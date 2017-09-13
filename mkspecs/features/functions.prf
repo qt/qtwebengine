@@ -116,18 +116,6 @@ defineReplace(gnOS) {
     return(unknown)
 }
 
-defineTest(isDeveloperBuild) {
-    qtConfig(private_tests): return(true) # enabled for developer-build
-    return(false)
-}
-
-defineTest(isQMLTestSupportApiEnabled) {
-    isDeveloperBuild(): return(true)
-    contains(QT_BUILD_PARTS, tests): return(true)
-    contains(WEBENGINE_CONFIG, testsupport): return(true)
-    return(false)
-}
-
 defineTest(skipBuild) {
     skipBuildReason = "$$skipBuildReason $${EOL}$$1"
     export(skipBuildReason)

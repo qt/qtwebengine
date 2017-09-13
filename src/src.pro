@@ -26,7 +26,7 @@ use?(spellchecker):!use?(native_spellchecker):!cross_compile {
     qwebengine_convert_dict.depends = core
 }
 
-isQMLTestSupportApiEnabled() {
+qtConfig(testsupport) {
     webengine_testsupport_plugin.subdir = webengine/plugin/testsupport
     webengine_testsupport_plugin.target = sub-webengine-testsupport-plugin
     webengine_testsupport_plugin.depends = webengine

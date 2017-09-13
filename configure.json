@@ -444,6 +444,11 @@
             "label": "UI Delegates",
             "output": [ "privateFeature" ]
         },
+        "testsupport": {
+            "label": "Test Support",
+            "autoDetect": "config.private_tests || call.isTestsInBuildParts",
+            "output": [ "privateFeature" ]
+        },
         "webrtc": {
             "label": "WebRTC",
             "purpose": "Provides WebRTC support.",

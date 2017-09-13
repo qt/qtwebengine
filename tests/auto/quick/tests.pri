@@ -1,3 +1,6 @@
+include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+QT_FOR_CONFIG += webengine-private
+
 TEMPLATE = app
 
 CONFIG += testcase
@@ -16,7 +19,7 @@ QT += testlib network quick webengine
 # This define is used by some tests to look up resources in the source tree
 DEFINES += TESTS_SOURCE_DIR=\\\"$$PWD/\\\"
 
-isQMLTestSupportApiEnabled() {
+qtConfig(testsupport) {
     DEFINES += ENABLE_QML_TESTSUPPORT_API
 }
 

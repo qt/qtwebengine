@@ -1,3 +1,6 @@
+include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+QT_FOR_CONFIG += webengine-private
+
 TARGET = QtWebEngine
 
 # For our export macros
@@ -55,7 +58,7 @@ HEADERS = \
         render_widget_host_view_qt_delegate_quickwindow.h \
         ui_delegates_manager.h
 
-isQMLTestSupportApiEnabled() {
+qtConfig(testsupport) {
     QT += testlib
 
     SOURCES += api/qquickwebenginetestsupport.cpp

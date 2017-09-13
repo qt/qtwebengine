@@ -245,3 +245,8 @@ defineTest(isSanitizerLinuxClangVersionSupported) {
   qtLog("Using Clang version $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}, but at least Clang version 3.7 is required to build a sanitizer-enabled Qt WebEngine.")
   return(false)
 }
+
+defineReplace(qtConfFunc_isTestsInBuildParts) {
+    contains(QT_BUILD_PARTS, tests): return(true)
+    return(false)
+}
