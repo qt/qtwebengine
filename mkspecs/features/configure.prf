@@ -1,9 +1,28 @@
 # Load configure.prf from qtbase first
 load(configure)
 load(functions)
+load(platform)
 
 defineTest(runConfigure) {
     webengine_successfully_configured: return(true)
+
+    !exists(src/3rdparty/chromium) {
+        skipBuild("Submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
+        return(false)
+    }
+
+    WSPC = $$find(OUT_PWD, \\s)
+    !isEmpty(WSPC) {
+        skipBuild("QtWebEngine cannot be built in a path that contains whitespace characters.")
+        return(false)
+    }
+
+    !isPlatformSupported() {
+        # make sure we have skipBuildReason
+        isEmpty(skipBuildReason): skipBuild("Unknow error. Platform unspported")
+        return(false)
+    }
+
     linux:contains(QT_CONFIG,no-pkg-config) {
         skipBuild("pkg-config is required")
         return(false)
@@ -46,12 +65,8 @@ defineTest(runConfigure) {
     !contains(WEBENGINE_CONFIG, use_system_ffmpeg): WEBENGINE_CONFIG += use_bundled_ffmpeg
     !contains(WEBENGINE_CONFIG, use_system_icu): WEBENGINE_CONFIG += use_bundled_icu
 
-    isQtMinimum(5, 9) {
-        qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
-        optimize_size: WEBENGINE_CONFIG += reduce_binary_size
-    } else {
-        qtConfig(embedded): WEBENGINE_CONFIG += reduce_binary_size
-    }
+    qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
+    optimize_size: WEBENGINE_CONFIG += reduce_binary_size
 
     sanitizer: !qtConfig(webengine-sanitizer) {
         skipBuild("Chosen sanitizer configuration is not supported. Use --feature-webengine-sanitizer=yes to force build with the chosen sanitizer configuration.")
@@ -117,10 +132,6 @@ defineTest(runConfigure) {
                 WEBENGINE_CONFIG += use_bundled_$$package
             }
         }
-    }
-
-    win32:!qtConfig(winversion) {
-         skipBuild("Needs VS 2015 Update 3 with Cumulative Servicing Release or higher")
     }
 
     isEmpty(skipBuildReason) {
