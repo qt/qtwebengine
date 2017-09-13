@@ -1,3 +1,6 @@
+include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+QT_FOR_CONFIG += webengine-private
+
 TARGET = QtWebEngineWidgets
 
 # For our export macros
@@ -42,7 +45,7 @@ HEADERS = \
         api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h
 
-!contains(WEBENGINE_CONFIG, no_ui_delegates) {
+qtConfig(ui-delegates) {
     SOURCES += ui/messagebubblewidget.cpp
     HEADERS += ui/messagebubblewidget_p.h
     DEFINES += QT_UI_DELEGATES

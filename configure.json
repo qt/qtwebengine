@@ -440,6 +440,10 @@
             "section": "WebEngine",
             "output": [ "privateFeature" ]
         },
+        "ui-delegates": {
+            "label": "UI Delegates",
+            "output": [ "privateFeature" ]
+        },
         "webrtc": {
             "label": "WebRTC",
             "purpose": "Provides WebRTC support.",

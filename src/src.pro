@@ -1,3 +1,6 @@
+include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+QT_FOR_CONFIG += webengine-private
+
 TEMPLATE = subdirs
 
 process.depends = core
@@ -30,7 +33,7 @@ isQMLTestSupportApiEnabled() {
     SUBDIRS += webengine_testsupport_plugin
 }
 
-!contains(WEBENGINE_CONFIG, no_ui_delegates) {
+qtConfig(ui-delegates) {
     SUBDIRS += webengine/ui \
                webengine/ui2
 }
