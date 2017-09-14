@@ -39,6 +39,7 @@
 
 #include "user_resource_controller.h"
 
+#include "base/memory/weak_ptr.h"
 #include "base/pending_task.h"
 #include "base/strings/pattern.h"
 #include "content/public/renderer/render_frame.h"
@@ -102,7 +103,10 @@ class UserResourceController::RenderFrameObserverHelper : public content::Render
 {
 public:
     RenderFrameObserverHelper(content::RenderFrame* render_frame);
+
 private:
+    ~RenderFrameObserverHelper() override;
+
     // RenderFrameObserver implementation.
     void DidFinishDocumentLoad() override;
     void DidFinishLoad() override;
@@ -120,6 +124,7 @@ private:
     // Set of frames which are pending to get an AfterLoad invocation of runScripts, if they
     // haven't gotten it already.
     QSet<blink::WebLocalFrame *> m_pendingFrames;
+    base::WeakPtrFactory<RenderFrameObserverHelper> m_weakPtrFactory;
 };
 
 // Used only for script cleanup on RenderView destruction.
@@ -175,8 +180,13 @@ void UserResourceController::RunScriptsAtDocumentEnd(content::RenderFrame *rende
 }
 
 UserResourceController::RenderFrameObserverHelper::RenderFrameObserverHelper(content::RenderFrame *render_frame)
-    : content::RenderFrameObserver(render_frame)
+    : content::RenderFrameObserver(render_frame), m_weakPtrFactory(this)
 {
+}
+
+UserResourceController::RenderFrameObserverHelper::~RenderFrameObserverHelper()
+{
+    m_weakPtrFactory.InvalidateWeakPtrs();
 }
 
 UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(content::RenderView *render_view)
@@ -189,7 +199,7 @@ void UserResourceController::RenderFrameObserverHelper::DidFinishDocumentLoad()
     blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     m_pendingFrames.insert(frame);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::Bind(&UserResourceController::RenderFrameObserverHelper::runScripts,
-                                                                               base::Unretained(this), UserScriptData::AfterLoad, frame),
+                                                                               m_weakPtrFactory.GetWeakPtr(), UserScriptData::AfterLoad, frame),
                                                          base::TimeDelta::FromMilliseconds(afterLoadTimeout));
 }
 
@@ -199,7 +209,7 @@ void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
 
     // DidFinishDocumentLoad always comes before this, so frame has already been marked as pending.
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&UserResourceController::RenderFrameObserverHelper::runScripts,
-                                                                        base::Unretained(this), UserScriptData::AfterLoad, frame));
+                                                                        m_weakPtrFactory.GetWeakPtr(), UserScriptData::AfterLoad, frame));
 }
 
 void UserResourceController::RenderFrameObserverHelper::DidStartProvisionalLoad(blink::WebDataSource *data_source)
@@ -217,9 +227,7 @@ void UserResourceController::RenderFrameObserverHelper::FrameDetached()
 
 void UserResourceController::RenderFrameObserverHelper::OnDestruct()
 {
-    // FIXME: Without this the instance will leak, but we can't delete it because the posted tasks
-    // could be executed after the instance is deleted.
-    //delete this;
+    delete this;
 }
 
 void UserResourceController::RenderViewObserverHelper::OnDestruct()
@@ -287,8 +295,7 @@ UserResourceController::UserResourceController()
 
 void UserResourceController::renderFrameCreated(content::RenderFrame *renderFrame)
 {
-    // FIXME: Actually make this to be true.
-    // Will destroy itself when the RenderView is destroyed.
+    // Will destroy itself when the RenderFrame is destroyed.
     new RenderFrameObserverHelper(renderFrame);
 }
 
