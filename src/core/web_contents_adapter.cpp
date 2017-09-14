@@ -926,7 +926,9 @@ void WebContentsAdapter::updateWebPreferences(const content::WebPreferences & we
     d->webContents->GetRenderViewHost()->UpdateWebkitPreferences(webPreferences);
 }
 
-void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileName)
+void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileName,
+                                  const QUrl &referrerUrl,
+                                  ReferrerPolicy referrerPolicy)
 {
     Q_D(WebContentsAdapter);
     content::BrowserContext *bctx = webContents()->GetBrowserContext();
@@ -939,9 +941,19 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     dlmd->setDownloadType(BrowserContextAdapterClient::UserRequested);
     dlm->SetDelegate(dlmd);
 
+    GURL gurl = toGurl(url);
     std::unique_ptr<content::DownloadUrlParameters> params(
-            content::DownloadUrlParameters::CreateForWebContentsMainFrame(webContents(), toGurl(url)));
+        content::DownloadUrlParameters::CreateForWebContentsMainFrame(webContents(), gurl));
+
     params->set_suggested_name(toString16(suggestedFileName));
+
+    // referrer logic based on chrome/browser/renderer_context_menu/render_view_context_menu.cc:
+    params->set_referrer(
+        content::Referrer::SanitizeForRequest(
+            gurl,
+            content::Referrer(toGurl(referrerUrl).GetAsReferrer(),
+                              static_cast<blink::WebReferrerPolicy>(referrerPolicy))));
+
     dlm->DownloadUrl(std::move(params));
 }
 
@@ -1472,5 +1484,14 @@ ASSERT_ENUMS_MATCH(WebContentsAdapterClient::NewWindowDisposition, WindowOpenDis
 ASSERT_ENUMS_MATCH(WebContentsAdapterClient::SaveToDiskDisposition, WindowOpenDisposition::SAVE_TO_DISK)
 ASSERT_ENUMS_MATCH(WebContentsAdapterClient::OffTheRecordDisposition, WindowOpenDisposition::OFF_THE_RECORD)
 ASSERT_ENUMS_MATCH(WebContentsAdapterClient::IgnoreActionDisposition, WindowOpenDisposition::IGNORE_ACTION)
+
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Always, blink::kWebReferrerPolicyAlways)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Default, blink::kWebReferrerPolicyDefault)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngrade, blink::kWebReferrerPolicyNoReferrerWhenDowngrade)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Never, blink::kWebReferrerPolicyNever)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Origin, blink::kWebReferrerPolicyOrigin)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::OriginWhenCrossOrigin, blink::kWebReferrerPolicyOriginWhenCrossOrigin)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngradeOriginWhenCrossOrigin, blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Last, blink::kWebReferrerPolicyLast)
 
 } // namespace QtWebEngineCore

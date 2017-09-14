@@ -88,11 +88,6 @@ void UserResourceControllerHost::WebContentsObserverHelper::RenderFrameHostChang
 {
     if (oldHost)
         oldHost->Send(new RenderFrameObserverHelper_ClearScripts(oldHost->GetRoutingID()));
-
-    content::WebContents *contents = web_contents();
-    Q_FOREACH (const UserScript &script, m_controllerHost->m_perContentsScripts.value(contents))
-        newHost->Send(new RenderFrameObserverHelper_AddScript(newHost->GetRoutingID(),
-                                                              script.data()));
 }
 
 void UserResourceControllerHost::WebContentsObserverHelper::WebContentsDestroyed()

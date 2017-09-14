@@ -70,7 +70,6 @@ public:
     QWebEngineViewPrivate();
 
     QWebEnginePage *page;
-    bool m_pendingContextMenuEvent;
     bool m_dragEntered;
 };
 

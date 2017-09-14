@@ -60,6 +60,7 @@ public:
 
     // WebContentsObserver
     void RenderViewHostChanged(content::RenderViewHost* old_host, content::RenderViewHost* new_host) override;
+    void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
     // QWebChannelAbstractTransport
     void sendMessage(const QJsonObject &message) override;
