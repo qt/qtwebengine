@@ -5,7 +5,6 @@
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
-**
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
