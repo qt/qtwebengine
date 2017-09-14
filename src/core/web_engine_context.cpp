@@ -323,7 +323,6 @@ WebEngineContext::WebEngineContext()
     }
 
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
-    parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
     // These are currently only default on OS X, and we don't support them:
     parsedCommandLine->AppendSwitch(switches::kDisableZeroCopy);
     parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferCompositorResources);
@@ -451,10 +450,12 @@ WebEngineContext::WebEngineContext()
     }
 #endif
 
-    if (glType)
+    if (glType) {
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
-    else
+        parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
+    } else {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
+    }
 
     content::UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
     content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
