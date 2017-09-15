@@ -406,11 +406,11 @@ void BrowserWindow::handleNewWindowTriggered()
 
 void BrowserWindow::handleFileOpenTriggered()
 {
-    QString file = QFileDialog::getOpenFileName(this, tr("Open Web Resource"), QString(),
+    QUrl url = QFileDialog::getOpenFileUrl(this, tr("Open Web Resource"), QString(),
                                                 tr("Web Resources (*.html *.htm *.svg *.png *.gif *.svgz);;All files (*.*)"));
-    if (file.isEmpty())
+    if (url.isEmpty())
         return;
-    currentTab()->setUrl(file);
+    currentTab()->setUrl(url);
 }
 
 void BrowserWindow::handleFindActionTriggered()
