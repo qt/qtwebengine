@@ -287,8 +287,10 @@ WebEngineContext::WebEngineContext()
         appArgs.append(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv)).split(' '));
     }
 
+#ifdef Q_OS_WIN
     bool enableWebGLSoftwareRendering =
             appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
+#endif
 
     bool useEmbeddedSwitches = false;
 #if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
@@ -453,6 +455,10 @@ WebEngineContext::WebEngineContext()
     if (glType) {
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
         parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
+#ifdef Q_OS_WIN
+        if (enableWebGLSoftwareRendering)
+            parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
+#endif
     } else {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     }
