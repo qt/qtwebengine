@@ -328,6 +328,7 @@ void tst_QWebEngineDownloads::downloadLink()
     //
     // - Navigate: user left-clicks on link
     // - SaveLink: user right-clicks on link and chooses "save link as" from menu
+    QTRY_VERIFY(view.focusWidget());
     QWidget *renderWidget = view.focusWidget();
     QPoint linkPos(10, 10);
     if (userAction == SaveLink) {
@@ -445,6 +446,7 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
     favIconRR->setResponseStatus(404);
     favIconRR->sendResponse();
 
+    QTRY_VERIFY(view.focusWidget());
     QWidget *renderWidget = view.focusWidget();
     QTest::mouseClick(renderWidget, Qt::LeftButton, {}, QPoint(10, 10));
     QTest::mouseClick(renderWidget, Qt::LeftButton, {}, QPoint(10, 30));
