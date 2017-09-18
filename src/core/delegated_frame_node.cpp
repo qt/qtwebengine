@@ -57,6 +57,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/base/math_util.h"
+#include "cc/output/bsp_tree.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
@@ -910,10 +912,15 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // All RenderPasses except the last one are rendered to an FBO.
     cc::RenderPass *rootRenderPass = frameData->render_pass_list.back().get();
 
+    QRectF screenRectQt = apiDelegate->screenRect();
+    gfx::Size thisSize(int(screenRectQt.width() * m_chromiumCompositorData->frameDevicePixelRatio),
+                       int(screenRectQt.height() * m_chromiumCompositorData->frameDevicePixelRatio));
+
     for (unsigned i = 0; i < frameData->render_pass_list.size(); ++i) {
         cc::RenderPass *pass = frameData->render_pass_list.at(i).get();
 
         QSGNode *renderPassParent = 0;
+        gfx::Rect scissorRect;
         if (pass != rootRenderPass) {
             QSharedPointer<QSGLayer> rpLayer;
             if (buildNewTree) {
@@ -937,30 +944,68 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             rpLayer->setSize(toQt(pass->output_rect.size()));
             rpLayer->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
             rpLayer->setMirrorVertical(true);
-        } else
+            scissorRect = pass->output_rect;
+        } else {
             renderPassParent = this;
+            scissorRect = gfx::Rect(thisSize);
+            scissorRect += rootRenderPass->output_rect.OffsetFromOrigin();
+        }
 
-        const cc::SharedQuadState *currentLayerState = nullptr;
-        QSGNode *currentLayerChain = nullptr;
+        if (scissorRect.IsEmpty())
+            continue;
 
         QSGNode *renderPassChain = nullptr;
         if (buildNewTree)
             renderPassChain = buildRenderPassChain(renderPassParent);
 
-        cc::QuadList::ConstBackToFrontIterator it = pass->quad_list.BackToFrontBegin();
-        cc::QuadList::ConstBackToFrontIterator end = pass->quad_list.BackToFrontEnd();
-        for (; it != end; ++it) {
+        std::deque<std::unique_ptr<cc::DrawPolygon>> polygonQueue;
+        int nextPolygonId = 0;
+        int currentSortingContextId = 0;
+        const cc::SharedQuadState *currentLayerState = nullptr;
+        QSGNode *currentLayerChain = nullptr;
+        const auto quadListBegin = pass->quad_list.BackToFrontBegin();
+        const auto quadListEnd = pass->quad_list.BackToFrontEnd();
+        for (auto it = quadListBegin; it != quadListEnd; ++it) {
             const cc::DrawQuad *quad = *it;
             const cc::SharedQuadState *quadState = quad->shared_quad_state;
 
+            gfx::Rect targetRect =
+                cc::MathUtil::MapEnclosingClippedRect(quadState->quad_to_target_transform,
+                                                      quad->visible_rect);
+            if (quadState->is_clipped)
+                targetRect.Intersect(quadState->clip_rect);
+            targetRect.Intersect(scissorRect);
+            if (targetRect.IsEmpty())
+                continue;
+
+            if (quadState->sorting_context_id != currentSortingContextId) {
+                flushPolygons(&polygonQueue, renderPassChain,
+                              nodeHandler.data(), resourceCandidates, apiDelegate);
+                currentSortingContextId = quadState->sorting_context_id;
+            }
+
+            if (currentSortingContextId != 0) {
+                std::unique_ptr<cc::DrawPolygon> polygon(
+                    new cc::DrawPolygon(
+                        quad,
+                        gfx::RectF(quad->visible_rect),
+                        quadState->quad_to_target_transform,
+                        nextPolygonId++));
+                if (polygon->points().size() > 2u)
+                    polygonQueue.push_back(std::move(polygon));
+                continue;
+            }
+
             if (renderPassChain && currentLayerState != quadState) {
                 currentLayerState = quadState;
-                currentLayerChain = buildLayerChain(renderPassChain, currentLayerState);
+                currentLayerChain = buildLayerChain(renderPassChain, quadState);
             }
 
             handleQuad(quad, currentLayerChain,
                        nodeHandler.data(), resourceCandidates, apiDelegate);
         }
+        flushPolygons(&polygonQueue, renderPassChain,
+                      nodeHandler.data(), resourceCandidates, apiDelegate);
     }
     // Send resources of remaining candidates back to the child compositors so that
     // they can be freed or reused.
@@ -970,6 +1015,83 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     ResourceHolderIterator end = resourceCandidates.constEnd();
     for (ResourceHolderIterator it = resourceCandidates.constBegin(); it != end ; ++it)
         resourcesToRelease->push_back((*it)->returnResource());
+}
+
+void DelegatedFrameNode::flushPolygons(
+    std::deque<std::unique_ptr<cc::DrawPolygon>> *polygonQueue,
+    QSGNode *renderPassChain,
+    DelegatedNodeTreeHandler *nodeHandler,
+    QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+    RenderWidgetHostViewQtDelegate *apiDelegate)
+{
+    if (polygonQueue->empty())
+        return;
+
+    const auto actionHandler = [&](cc::DrawPolygon *polygon) {
+        const cc::DrawQuad *quad = polygon->original_ref();
+        const cc::SharedQuadState *quadState = quad->shared_quad_state;
+
+        QSGNode *currentLayerChain = nullptr;
+        if (renderPassChain)
+            currentLayerChain = buildLayerChain(renderPassChain, quad->shared_quad_state);
+
+        gfx::Transform inverseTransform;
+        bool invertible = quadState->quad_to_target_transform.GetInverse(&inverseTransform);
+        DCHECK(invertible);
+        polygon->TransformToLayerSpace(inverseTransform);
+
+        handlePolygon(polygon, currentLayerChain,
+                      nodeHandler, resourceCandidates, apiDelegate);
+    };
+
+    cc::BspTree(polygonQueue).TraverseWithActionHandler(&actionHandler);
+}
+
+void DelegatedFrameNode::handlePolygon(
+    const cc::DrawPolygon *polygon,
+    QSGNode *currentLayerChain,
+    DelegatedNodeTreeHandler *nodeHandler,
+    QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+    RenderWidgetHostViewQtDelegate *apiDelegate)
+{
+    const cc::DrawQuad *quad = polygon->original_ref();
+
+    if (!polygon->is_split()) {
+        handleQuad(quad, currentLayerChain,
+                   nodeHandler, resourceCandidates, apiDelegate);
+    } else {
+        std::vector<gfx::QuadF> clipRegionList;
+        polygon->ToQuads2D(&clipRegionList);
+        for (const auto & clipRegion : clipRegionList)
+            handleClippedQuad(quad, clipRegion, currentLayerChain,
+                              nodeHandler, resourceCandidates, apiDelegate);
+    }
+}
+
+void DelegatedFrameNode::handleClippedQuad(
+    const cc::DrawQuad *quad,
+    const gfx::QuadF &clipRegion,
+    QSGNode *currentLayerChain,
+    DelegatedNodeTreeHandler *nodeHandler,
+    QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+    RenderWidgetHostViewQtDelegate *apiDelegate)
+{
+    if (currentLayerChain) {
+        auto clipGeometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 4);
+        auto clipGeometryVertices = clipGeometry->vertexDataAsPoint2D();
+        clipGeometryVertices[0].set(clipRegion.p1().x(), clipRegion.p1().y());
+        clipGeometryVertices[1].set(clipRegion.p2().x(), clipRegion.p2().y());
+        clipGeometryVertices[2].set(clipRegion.p4().x(), clipRegion.p4().y());
+        clipGeometryVertices[3].set(clipRegion.p3().x(), clipRegion.p3().y());
+        auto clipNode = new QSGClipNode;
+        clipNode->setGeometry(clipGeometry);
+        clipNode->setIsRectangular(false);
+        clipNode->setFlag(QSGNode::OwnsGeometry);
+        currentLayerChain->appendChildNode(clipNode);
+        currentLayerChain = clipNode;
+    }
+    handleQuad(quad, currentLayerChain,
+               nodeHandler, resourceCandidates, apiDelegate);
 }
 
 void DelegatedFrameNode::handleQuad(

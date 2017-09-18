@@ -61,6 +61,11 @@ QT_END_NAMESPACE
 namespace cc {
 class DelegatedFrameData;
 class DrawQuad;
+class DrawPolygon;
+}
+
+namespace gfx {
+class QuadF;
 }
 
 namespace QtWebEngineCore {
@@ -88,6 +93,25 @@ public:
     void commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
 
 private:
+    void flushPolygons(
+        std::deque<std::unique_ptr<cc::DrawPolygon>> *polygonQueue,
+        QSGNode *renderPassChain,
+        DelegatedNodeTreeHandler *nodeHandler,
+        QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+        RenderWidgetHostViewQtDelegate *apiDelegate);
+    void handlePolygon(
+        const cc::DrawPolygon *polygon,
+        QSGNode *currentLayerChain,
+        DelegatedNodeTreeHandler *nodeHandler,
+        QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+        RenderWidgetHostViewQtDelegate *apiDelegate);
+    void handleClippedQuad(
+        const cc::DrawQuad *quad,
+        const gfx::QuadF &clipRegion,
+        QSGNode *currentLayerChain,
+        DelegatedNodeTreeHandler *nodeHandler,
+        QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+        RenderWidgetHostViewQtDelegate *apiDelegate);
     void handleQuad(
         const cc::DrawQuad *quad,
         QSGNode *currentLayerChain,
