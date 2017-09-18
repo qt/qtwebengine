@@ -60,10 +60,12 @@ QT_END_NAMESPACE
 
 namespace cc {
 class DelegatedFrameData;
+class DrawQuad;
 }
 
 namespace QtWebEngineCore {
 
+class DelegatedNodeTreeHandler;
 class MailboxTexture;
 class ResourceHolder;
 
@@ -86,6 +88,12 @@ public:
     void commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
 
 private:
+    void handleQuad(
+        const cc::DrawQuad *quad,
+        QSGNode *currentLayerChain,
+        DelegatedNodeTreeHandler *nodeHandler,
+        QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+        RenderWidgetHostViewQtDelegate *apiDelegate);
     void fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxesToFetch);
     // Making those callbacks static bypasses base::Bind's ref-counting requirement
     // of the this pointer when the callback is a method.
