@@ -3,3 +3,9 @@ windows
 
 [inputEventForwardingDisabledWhenActiveFocusOnPressDisabled]
 *
+
+[transparentWebEngineViews]
+*
+
+[basicRenderingSanity]
+*

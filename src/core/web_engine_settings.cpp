@@ -83,21 +83,6 @@ private:
     WebEngineSettings *m_settings;
 };
 
-static inline bool isTouchScreenAvailable() {
-    static bool initialized = false;
-    static bool touchScreenAvailable = false;
-    if (!initialized) {
-        Q_FOREACH (const QTouchDevice *d, QTouchDevice::devices()) {
-            if (d->type() == QTouchDevice::TouchScreen) {
-                touchScreenAvailable = true;
-                break;
-            }
-        }
-        initialized = true;
-    }
-    return touchScreenAvailable;
-}
-
 static inline bool isTouchEventsAPIEnabled() {
     static bool initialized = false;
     static bool touchEventsAPIEnabled = false;
@@ -114,13 +99,12 @@ static inline bool isTouchEventsAPIEnabled() {
         if (touchEventsSwitchValue == switches::kTouchEventFeatureDetectionEnabled)
             touchEventsAPIEnabled = true;
         else if (touchEventsSwitchValue == switches::kTouchEventFeatureDetectionAuto)
-            touchEventsAPIEnabled = isTouchScreenAvailable();
+            touchEventsAPIEnabled = (ui::GetTouchScreensAvailability() == ui::TouchScreensAvailability::ENABLED);
 
         initialized = true;
     }
     return touchEventsAPIEnabled;
 }
-
 
 WebEngineSettings::WebEngineSettings(WebEngineSettings *_parentSettings)
     : m_adapter(0)
@@ -264,7 +248,7 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(Accelerated2dCanvasEnabled, accelerated2dCanvas);
         s_defaultAttributes.insert(AutoLoadIconsForPage, true);
         s_defaultAttributes.insert(TouchIconsEnabled, false);
-        s_defaultAttributes.insert(FocusOnNavigationEnabled, true);
+        s_defaultAttributes.insert(FocusOnNavigationEnabled, false);
         s_defaultAttributes.insert(PrintElementBackgrounds, true);
         s_defaultAttributes.insert(AllowRunningInsecureContent, allowRunningInsecureContent);
         s_defaultAttributes.insert(AllowGeolocationOnInsecureOrigins, false);
@@ -323,7 +307,6 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
 {
     // Override for now
     prefs->touch_event_feature_detection_enabled = isTouchEventsAPIEnabled();
-    prefs->device_supports_touch = isTouchScreenAvailable();
     if (prefs->viewport_enabled) {
         // We should enable viewport and viewport-meta together, but since 5.7 we
         // no longer have a command-line flag for viewport-meta.
@@ -333,7 +316,6 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     // Attributes mapping.
     prefs->loads_images_automatically = testAttribute(AutoLoadImages);
     prefs->javascript_enabled = testAttribute(JavascriptEnabled);
-    prefs->javascript_can_open_windows_automatically = testAttribute(JavascriptCanOpenWindows);
     prefs->javascript_can_access_clipboard = testAttribute(JavascriptCanAccessClipboard);
     prefs->tabs_to_links = testAttribute(LinksIncludedInFocusChain);
     prefs->local_storage_enabled = testAttribute(LocalStorageEnabled);
@@ -375,6 +357,11 @@ void WebEngineSettings::scheduleApplyRecursively()
     Q_FOREACH (WebEngineSettings *settings, childSettings) {
         settings->scheduleApply();
     }
+}
+
+bool WebEngineSettings::getJavaScriptCanOpenWindowsAutomatically()
+{
+    return testAttribute(JavascriptCanOpenWindows);
 }
 
 void WebEngineSettings::setParentSettings(WebEngineSettings *_parentSettings)

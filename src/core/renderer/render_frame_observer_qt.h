@@ -63,7 +63,7 @@ public:
 #if BUILDFLAG(ENABLE_PLUGINS)
     void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
 #endif
-    void OnDestruct() override { }
+    void OnDestruct() override;
     void FrameDetached() override;
 
     bool isFrameDetached() const;

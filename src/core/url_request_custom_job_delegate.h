@@ -40,6 +40,7 @@
 #ifndef URL_REQUEST_CUSTOM_JOB_DELEGATE_H_
 #define URL_REQUEST_CUSTOM_JOB_DELEGATE_H_
 
+#include "base/memory/ref_counted.h"
 #include "qtwebenginecoreglobal.h"
 
 #include <QObject>
@@ -49,7 +50,7 @@ QT_FORWARD_DECLARE_CLASS(QIODevice)
 
 namespace QtWebEngineCore {
 
-class URLRequestCustomJobShared;
+class URLRequestCustomJobProxy;
 
 class QWEBENGINE_EXPORT URLRequestCustomJobDelegate : public QObject {
     Q_OBJECT
@@ -68,17 +69,20 @@ public:
     QUrl url() const;
     QByteArray method() const;
 
-    void setReply(const QByteArray &contentType, QIODevice *device);
+    void reply(const QByteArray &contentType, QIODevice *device);
     void redirect(const QUrl& url);
     void abort();
-
     void fail(Error);
 
 private:
-    URLRequestCustomJobDelegate(URLRequestCustomJobShared *shared);
+    URLRequestCustomJobDelegate(URLRequestCustomJobProxy *proxy,
+                                const QUrl &url,
+                                const QByteArray &method);
 
-    friend class URLRequestCustomJobShared;
-    URLRequestCustomJobShared *m_shared;
+    friend class URLRequestCustomJobProxy;
+    scoped_refptr<URLRequestCustomJobProxy> m_proxy;
+    QUrl m_request;
+    QByteArray m_method;
 };
 
 } // namespace

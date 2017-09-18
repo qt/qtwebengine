@@ -40,11 +40,9 @@
 #ifndef URL_REQUEST_CUSTOM_JOB_H_
 #define URL_REQUEST_CUSTOM_JOB_H_
 
-#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
-
-#include <QtCore/QMutex>
-#include <QtCore/QPointer>
+#include "url/gurl.h"
+#include <QtCore/QWeakPointer>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
@@ -52,12 +50,15 @@ namespace QtWebEngineCore {
 
 class BrowserContextAdapter;
 class URLRequestCustomJobDelegate;
-class URLRequestCustomJobShared;
+class URLRequestCustomJobProxy;
 
 // A request job that handles reading custom URL schemes
 class URLRequestCustomJob : public net::URLRequestJob {
 public:
-    URLRequestCustomJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate, const std::string &scheme, QWeakPointer<const BrowserContextAdapter> adapter);
+    URLRequestCustomJob(net::URLRequest *request,
+                        net::NetworkDelegate *networkDelegate,
+                        const std::string &scheme,
+                        QWeakPointer<const BrowserContextAdapter> adapter);
     void Start() override;
     void Kill() override;
     int ReadRawData(net::IOBuffer *buf, int buf_size)  override;
@@ -69,54 +70,17 @@ protected:
     virtual ~URLRequestCustomJob();
 
 private:
-    std::string m_scheme;
-    QWeakPointer<const BrowserContextAdapter> m_adapter;
-    URLRequestCustomJobShared *m_shared;
+    scoped_refptr<URLRequestCustomJobProxy> m_proxy;
+    std::string m_mimeType;
+    std::string m_charset;
+    GURL m_redirect;
+    QIODevice *m_device;
+    int m_error;
 
-    friend class URLRequestCustomJobShared;
+    friend class URLRequestCustomJobProxy;
 
     DISALLOW_COPY_AND_ASSIGN(URLRequestCustomJob);
 };
-
-// A shared state between URLRequestCustomJob living on the IO thread
-// and URLRequestCustomJobDelegate living on the UI thread.
-class URLRequestCustomJobShared {
-public:
-    URLRequestCustomJobShared(URLRequestCustomJob *job);
-    ~URLRequestCustomJobShared();
-
-    void setReplyMimeType(const std::string &);
-    void setReplyCharset(const std::string &);
-    void setReplyDevice(QIODevice *);
-
-    void redirect(const GURL &url);
-    void fail(int);
-    void abort();
-
-    void killJob();
-    void unsetJobDelegate();
-
-    void startAsync();
-    void notifyStarted();
-    void notifyFailure();
-    void notifyCanceled();
-
-    GURL requestUrl();
-    std::string requestMethod();
-
-    QMutex m_mutex;
-    QPointer<QIODevice> m_device;
-    URLRequestCustomJob *m_job;
-    URLRequestCustomJobDelegate *m_delegate;
-    std::string m_mimeType;
-    std::string m_charset;
-    int m_error;
-    GURL m_redirect;
-    bool m_started;
-    bool m_asyncInitialized;
-    base::WeakPtrFactory<URLRequestCustomJobShared> m_weakFactory;
-};
-
 } // namespace QtWebEngineCore
 
 #endif // URL_REQUEST_CUSTOM_JOB_H_

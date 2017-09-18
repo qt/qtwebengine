@@ -50,7 +50,7 @@
 QT_BEGIN_NAMESPACE
 class QStringList;
 QT_END_NAMESPACE
-class TestingPrefStore;
+class InMemoryPrefStore;
 class PrefService;
 
 namespace QtWebEngineCore {
@@ -100,7 +100,7 @@ public:
     BrowserContextAdapter *adapter() { return m_adapter; }
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-    void failedToLoadDictionary(const std::string& language) override;
+    void FailedToLoadDictionary(const std::string& language) override;
     void setSpellCheckLanguages(const QStringList &languages);
     QStringList spellCheckLanguages() const;
     void setSpellCheckEnabled(bool enabled);
@@ -115,7 +115,7 @@ private:
     std::unique_ptr<PermissionManagerQt> permissionManager;
     std::unique_ptr<SSLHostStateDelegateQt> sslHostStateDelegate;
     BrowserContextAdapter *m_adapter;
-    scoped_refptr<TestingPrefStore> m_prefStore;
+    scoped_refptr<InMemoryPrefStore> m_prefStore;
     std::unique_ptr<PrefService> m_prefService;
     friend class BrowserContextAdapter;
 

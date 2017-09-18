@@ -106,7 +106,6 @@ static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *obje
 
 QWebEngineViewPrivate::QWebEngineViewPrivate()
     : page(0)
-    , m_pendingContextMenuEvent(false)
     , m_dragEntered(false)
 {
 #ifndef QT_NO_ACCESSIBILITY
@@ -316,12 +315,10 @@ void QWebEngineView::setZoomFactor(qreal factor)
  */
 bool QWebEngineView::event(QEvent *ev)
 {
-    Q_D(QWebEngineView);
     // We swallow spontaneous contextMenu events and synthethize those back later on when we get the
     // HandleContextMenu callback from chromium
     if (ev->type() == QEvent::ContextMenu) {
         ev->accept();
-        d->m_pendingContextMenuEvent = true;
         return true;
     }
     return QWidget::event(ev);

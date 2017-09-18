@@ -73,6 +73,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 
 #if defined(USE_AURA)
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursors_aura.h"
 #endif
 
@@ -80,6 +81,7 @@
 #include <QFocusEvent>
 #include <QGuiApplication>
 #include <QInputMethodEvent>
+#include <QLoggingCategory>
 #include <QTextFormat>
 #include <QKeyEvent>
 #include <QMouseEvent>
@@ -104,9 +106,9 @@ enum ImStateFlags {
 static inline ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
   ui::LatencyInfo latency_info;
   // The latency number should only be added if the timestamp is valid.
-  if (event.timeStampSeconds()) {
+  if (event.TimeStampSeconds()) {
     const int64_t time_micros = static_cast<int64_t>(
-        event.timeStampSeconds() * base::Time::kMicrosecondsPerSecond);
+        event.TimeStampSeconds() * base::Time::kMicrosecondsPerSecond);
     latency_info.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
         0,
@@ -217,7 +219,8 @@ public:
     }
     int GetFlags() const override { return flags; }
     float GetPressure(size_t pointer_index) const override { return touchPoints.at(pointer_index).pressure(); }
-    float GetTilt(size_t pointer_index) const override { return 0; }
+    float GetTiltX(size_t pointer_index) const override { return 0; }
+    float GetTiltY(size_t pointer_index) const override { return 0; }
     base::TimeTicks GetEventTime() const override { return eventTime; }
 
     size_t GetHistorySize() const override { return 0; }
@@ -260,12 +263,15 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_needsDelegatedFrameAck(false)
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
+    , m_rendererCompositorFrameSink(0)
     , m_imeInProgress(false)
     , m_receivedEmptyImeText(false)
     , m_initPending(false)
     , m_beginFrameSource(nullptr)
     , m_needsBeginFrames(false)
+    , m_needsFlushInput(false)
     , m_addedFrameObserver(false)
+    , m_backgroundColor(SK_ColorWHITE)
     , m_imState(0)
     , m_anchorPositionWithinSelection(-1)
     , m_cursorPositionWithinSelection(-1)
@@ -443,12 +449,20 @@ gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
     return gfx::BoundingRect(p1, p2);
 }
 
+SkColor RenderWidgetHostViewQt::background_color() const
+{
+    return m_backgroundColor;
+}
+
 void RenderWidgetHostViewQt::SetBackgroundColor(SkColor color)
 {
-    RenderWidgetHostViewBase::SetBackgroundColor(color);
+    if (m_backgroundColor == color)
+        return;
+    m_backgroundColor = color;
     // Set the background of the compositor if necessary
     m_delegate->setClearColor(toQt(color));
     // Set the background of the blink::FrameView
+    m_host->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
     m_host->Send(new RenderViewObserverQt_SetBackgroundColor(m_host->GetRoutingID(), color));
 }
 
@@ -472,119 +486,119 @@ void RenderWidgetHostViewQt::UnlockMouse()
 
 void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
 {
-    content::WebCursor::CursorInfo cursorInfo;
+    content::CursorInfo cursorInfo;
     webCursor.GetCursorInfo(&cursorInfo);
     Qt::CursorShape shape = Qt::ArrowCursor;
 #if defined(USE_AURA)
-    int auraType = -1;
+    ui::CursorType auraType = ui::CursorType::kNull;
 #endif
     switch (cursorInfo.type) {
-    case blink::WebCursorInfo::TypePointer:
+    case blink::WebCursorInfo::kTypePointer:
         shape = Qt::ArrowCursor;
         break;
-    case blink::WebCursorInfo::TypeCross:
+    case blink::WebCursorInfo::kTypeCross:
         shape = Qt::CrossCursor;
         break;
-    case blink::WebCursorInfo::TypeHand:
+    case blink::WebCursorInfo::kTypeHand:
         shape = Qt::PointingHandCursor;
         break;
-    case blink::WebCursorInfo::TypeIBeam:
+    case blink::WebCursorInfo::kTypeIBeam:
         shape = Qt::IBeamCursor;
         break;
-    case blink::WebCursorInfo::TypeWait:
+    case blink::WebCursorInfo::kTypeWait:
         shape = Qt::WaitCursor;
         break;
-    case blink::WebCursorInfo::TypeHelp:
+    case blink::WebCursorInfo::kTypeHelp:
         shape = Qt::WhatsThisCursor;
         break;
-    case blink::WebCursorInfo::TypeEastResize:
-    case blink::WebCursorInfo::TypeWestResize:
-    case blink::WebCursorInfo::TypeEastWestResize:
-    case blink::WebCursorInfo::TypeEastPanning:
-    case blink::WebCursorInfo::TypeWestPanning:
+    case blink::WebCursorInfo::kTypeEastResize:
+    case blink::WebCursorInfo::kTypeWestResize:
+    case blink::WebCursorInfo::kTypeEastWestResize:
+    case blink::WebCursorInfo::kTypeEastPanning:
+    case blink::WebCursorInfo::kTypeWestPanning:
         shape = Qt::SizeHorCursor;
         break;
-    case blink::WebCursorInfo::TypeNorthResize:
-    case blink::WebCursorInfo::TypeSouthResize:
-    case blink::WebCursorInfo::TypeNorthSouthResize:
-    case blink::WebCursorInfo::TypeNorthPanning:
-    case blink::WebCursorInfo::TypeSouthPanning:
+    case blink::WebCursorInfo::kTypeNorthResize:
+    case blink::WebCursorInfo::kTypeSouthResize:
+    case blink::WebCursorInfo::kTypeNorthSouthResize:
+    case blink::WebCursorInfo::kTypeNorthPanning:
+    case blink::WebCursorInfo::kTypeSouthPanning:
         shape = Qt::SizeVerCursor;
         break;
-    case blink::WebCursorInfo::TypeNorthEastResize:
-    case blink::WebCursorInfo::TypeSouthWestResize:
-    case blink::WebCursorInfo::TypeNorthEastSouthWestResize:
-    case blink::WebCursorInfo::TypeNorthEastPanning:
-    case blink::WebCursorInfo::TypeSouthWestPanning:
+    case blink::WebCursorInfo::kTypeNorthEastResize:
+    case blink::WebCursorInfo::kTypeSouthWestResize:
+    case blink::WebCursorInfo::kTypeNorthEastSouthWestResize:
+    case blink::WebCursorInfo::kTypeNorthEastPanning:
+    case blink::WebCursorInfo::kTypeSouthWestPanning:
         shape = Qt::SizeBDiagCursor;
         break;
-    case blink::WebCursorInfo::TypeNorthWestResize:
-    case blink::WebCursorInfo::TypeSouthEastResize:
-    case blink::WebCursorInfo::TypeNorthWestSouthEastResize:
-    case blink::WebCursorInfo::TypeNorthWestPanning:
-    case blink::WebCursorInfo::TypeSouthEastPanning:
+    case blink::WebCursorInfo::kTypeNorthWestResize:
+    case blink::WebCursorInfo::kTypeSouthEastResize:
+    case blink::WebCursorInfo::kTypeNorthWestSouthEastResize:
+    case blink::WebCursorInfo::kTypeNorthWestPanning:
+    case blink::WebCursorInfo::kTypeSouthEastPanning:
         shape = Qt::SizeFDiagCursor;
         break;
-    case blink::WebCursorInfo::TypeColumnResize:
+    case blink::WebCursorInfo::kTypeColumnResize:
         shape = Qt::SplitHCursor;
         break;
-    case blink::WebCursorInfo::TypeRowResize:
+    case blink::WebCursorInfo::kTypeRowResize:
         shape = Qt::SplitVCursor;
         break;
-    case blink::WebCursorInfo::TypeMiddlePanning:
-    case blink::WebCursorInfo::TypeMove:
+    case blink::WebCursorInfo::kTypeMiddlePanning:
+    case blink::WebCursorInfo::kTypeMove:
         shape = Qt::SizeAllCursor;
         break;
-    case blink::WebCursorInfo::TypeProgress:
+    case blink::WebCursorInfo::kTypeProgress:
         shape = Qt::BusyCursor;
         break;
 #if defined(USE_AURA)
-    case blink::WebCursorInfo::TypeVerticalText:
-        auraType = ui::kCursorVerticalText;
+    case blink::WebCursorInfo::kTypeVerticalText:
+        auraType = ui::CursorType::kVerticalText;
         break;
-    case blink::WebCursorInfo::TypeCell:
-        auraType = ui::kCursorCell;
+    case blink::WebCursorInfo::kTypeCell:
+        auraType = ui::CursorType::kCell;
         break;
-    case blink::WebCursorInfo::TypeContextMenu:
-        auraType = ui::kCursorContextMenu;
+    case blink::WebCursorInfo::kTypeContextMenu:
+        auraType = ui::CursorType::kContextMenu;
         break;
-    case blink::WebCursorInfo::TypeAlias:
-        auraType = ui::kCursorAlias;
+    case blink::WebCursorInfo::kTypeAlias:
+        auraType = ui::CursorType::kAlias;
         break;
-    case blink::WebCursorInfo::TypeCopy:
-        auraType = ui::kCursorCopy;
+    case blink::WebCursorInfo::kTypeCopy:
+        auraType = ui::CursorType::kCopy;
         break;
-    case blink::WebCursorInfo::TypeZoomIn:
-        auraType = ui::kCursorZoomIn;
+    case blink::WebCursorInfo::kTypeZoomIn:
+        auraType = ui::CursorType::kZoomIn;
         break;
-    case blink::WebCursorInfo::TypeZoomOut:
-        auraType = ui::kCursorZoomOut;
+    case blink::WebCursorInfo::kTypeZoomOut:
+        auraType = ui::CursorType::kZoomOut;
         break;
 #else
-    case blink::WebCursorInfo::TypeVerticalText:
-    case blink::WebCursorInfo::TypeCell:
-    case blink::WebCursorInfo::TypeContextMenu:
-    case blink::WebCursorInfo::TypeAlias:
-    case blink::WebCursorInfo::TypeCopy:
-    case blink::WebCursorInfo::TypeZoomIn:
-    case blink::WebCursorInfo::TypeZoomOut:
+    case blink::WebCursorInfo::kTypeVerticalText:
+    case blink::WebCursorInfo::kTypeCell:
+    case blink::WebCursorInfo::kTypeContextMenu:
+    case blink::WebCursorInfo::kTypeAlias:
+    case blink::WebCursorInfo::kTypeCopy:
+    case blink::WebCursorInfo::kTypeZoomIn:
+    case blink::WebCursorInfo::kTypeZoomOut:
         // FIXME: Support on OS X
         break;
 #endif
-    case blink::WebCursorInfo::TypeNoDrop:
-    case blink::WebCursorInfo::TypeNotAllowed:
+    case blink::WebCursorInfo::kTypeNoDrop:
+    case blink::WebCursorInfo::kTypeNotAllowed:
         shape = Qt::ForbiddenCursor;
         break;
-    case blink::WebCursorInfo::TypeNone:
+    case blink::WebCursorInfo::kTypeNone:
         shape = Qt::BlankCursor;
         break;
-    case blink::WebCursorInfo::TypeGrab:
+    case blink::WebCursorInfo::kTypeGrab:
         shape = Qt::OpenHandCursor;
         break;
-    case blink::WebCursorInfo::TypeGrabbing:
+    case blink::WebCursorInfo::kTypeGrabbing:
         shape = Qt::ClosedHandCursor;
         break;
-    case blink::WebCursorInfo::TypeCustom:
+    case blink::WebCursorInfo::kTypeCustom:
         if (cursorInfo.custom_image.colorType() == SkColorType::kN32_SkColorType) {
             QImage cursor = toQImage(cursorInfo.custom_image, QImage::Format_ARGB32);
             m_delegate->updateCursor(QCursor(QPixmap::fromImage(cursor), cursorInfo.hotspot.x(), cursorInfo.hotspot.y()));
@@ -593,7 +607,7 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
         break;
     }
 #if defined(USE_AURA)
-    if (auraType > 0) {
+    if (auraType != ui::CursorType::kNull) {
         SkBitmap bitmap;
         gfx::Point hotspot;
         if (ui::GetCursorBitmap(auraType, &bitmap, &hotspot)) {
@@ -644,15 +658,28 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
     return false;
 }
 
-void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, cc::CompositorFrame frame)
+void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(cc::mojom::MojoCompositorFrameSinkClient *frameSink)
+{
+    // Accumulated resources belong to the old RendererCompositorFrameSink and
+    // should not be returned.
+    m_resourcesToRelease.clear();
+    m_rendererCompositorFrameSink = frameSink;
+}
+
+void RenderWidgetHostViewQt::SubmitCompositorFrame(const cc::LocalSurfaceId &local_surface_id, cc::CompositorFrame frame)
 {
     bool scrollOffsetChanged = (m_lastScrollOffset != frame.metadata.root_scroll_offset);
     bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);
     m_lastScrollOffset = frame.metadata.root_scroll_offset;
     m_lastContentsSize = frame.metadata.root_layer_size;
+    m_backgroundColor = frame.metadata.root_background_color;
+    if (m_localSurfaceId != local_surface_id) {
+        m_localSurfaceId = local_surface_id;
+        // FIXME: update frame_size and device_scale_factor?
+        // FIXME: showPrimarySurface()?
+    }
     Q_ASSERT(!m_needsDelegatedFrameAck);
     m_needsDelegatedFrameAck = true;
-    m_pendingOutputSurfaceId = output_surface_id;
     m_chromiumCompositorData->previousFrameData = std::move(m_chromiumCompositorData->frameData);
     m_chromiumCompositorData->frameDevicePixelRatio = frame.metadata.device_scale_factor;
     m_chromiumCompositorData->frameData = std::move(frame);
@@ -919,11 +946,11 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::TouchCancel:
         handleTouchEvent(static_cast<QTouchEvent*>(event));
         break;
+#ifndef QT_NO_GESTURES
     case QEvent::NativeGesture:
         handleGestureEvent(static_cast<QNativeGestureEvent *>(event));
         break;
-    case QEvent::HoverEnter:
-    case QEvent::HoverLeave:
+#endif // QT_NO_GESTURES
     case QEvent::HoverMove:
         handleHoverEvent(static_cast<QHoverEvent*>(event));
         break;
@@ -983,7 +1010,7 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
     Q_UNUSED(touch);
     const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
-    m_gestureProvider.OnTouchEventAck(touch.event.uniqueTouchEventId, eventConsumed);
+    m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed);
 }
 
 void RenderWidgetHostViewQt::sendDelegatedFrameAck()
@@ -992,9 +1019,8 @@ void RenderWidgetHostViewQt::sendDelegatedFrameAck()
     m_beginFrameSource->DidFinishFrame(this, ack);
     cc::ReturnedResourceArray resources;
     m_resourcesToRelease.swap(resources);
-    content::RenderWidgetHostImpl::SendReclaimCompositorResources(
-        m_host->GetRoutingID(), m_pendingOutputSurfaceId,
-        m_host->GetProcess()->GetID(), true, resources);
+    if (m_rendererCompositorFrameSink)
+        m_rendererCompositorFrameSink->DidReceiveCompositorFrameAck(resources);
 }
 
 void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)
@@ -1034,7 +1060,7 @@ float RenderWidgetHostViewQt::dpiScale() const
 
 bool RenderWidgetHostViewQt::IsPopup() const
 {
-    return popup_type_ != blink::WebPopupTypeNone;
+    return popup_type_ != blink::kWebPopupTypeNone;
 }
 
 void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
@@ -1047,8 +1073,8 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
         return;
 
     blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
-    if ((webEvent.type() == blink::WebInputEvent::MouseDown || webEvent.type() == blink::WebInputEvent::MouseUp)
-            && webEvent.button == blink::WebMouseEvent::Button::NoButton) {
+    if ((webEvent.GetType() == blink::WebInputEvent::kMouseDown || webEvent.GetType() == blink::WebInputEvent::kMouseUp)
+            && webEvent.button == blink::WebMouseEvent::Button::kNoButton) {
         // Blink can only handle the 3 main mouse-buttons and may assert when processing mouse-down for no button.
         return;
     }
@@ -1061,13 +1087,13 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
             m_clickHelper.clickCounter = 0;
 
         m_clickHelper.lastPressTimestamp = event->timestamp();
-        webEvent.clickCount = ++m_clickHelper.clickCounter;
+        webEvent.click_count = ++m_clickHelper.clickCounter;
         m_clickHelper.lastPressButton = event->button();
         m_clickHelper.lastPressPosition = QPointF(event->pos()).toPoint();
     }
 
-    webEvent.movementX = event->globalX() - m_previousMousePosition.x();
-    webEvent.movementY = event->globalY() - m_previousMousePosition.y();
+    webEvent.movement_x = event->globalX() - m_previousMousePosition.x();
+    webEvent.movement_y = event->globalY() - m_previousMousePosition.y();
 
     if (IsMouseLocked())
         QCursor::setPos(m_previousMousePosition);
@@ -1118,7 +1144,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
     }
 
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(ev);
-    bool keyDownTextInsertion = webEvent.type() == blink::WebInputEvent::RawKeyDown && webEvent.text[0];
+    bool keyDownTextInsertion = webEvent.GetType() == blink::WebInputEvent::kRawKeyDown && webEvent.text[0];
     webEvent.skip_in_browser = keyDownTextInsertion;
     m_host->ForwardKeyboardEvent(webEvent);
 
@@ -1127,7 +1153,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         // The RawKeyDown is skipped on the way back (see above).
         // The same os_event will be set on both NativeWebKeyboardEvents.
         webEvent.skip_in_browser = false;
-        webEvent.setType(blink::WebInputEvent::Char);
+        webEvent.SetType(blink::WebInputEvent::kChar);
         m_host->ForwardKeyboardEvent(webEvent);
     }
 }
@@ -1316,6 +1342,7 @@ void RenderWidgetHostViewQt::clearPreviousTouchMotionState()
     m_touchMotionStarted = false;
 }
 
+#ifndef QT_NO_GESTURES
 void RenderWidgetHostViewQt::handleGestureEvent(QNativeGestureEvent *ev)
 {
     const Qt::NativeGestureType type = ev->gestureType();
@@ -1326,12 +1353,22 @@ void RenderWidgetHostViewQt::handleGestureEvent(QNativeGestureEvent *ev)
                                         static_cast<double>(dpiScale())));
     }
 }
+#endif
+
+Q_DECLARE_LOGGING_CATEGORY(QWEBENGINE_TOUCH_HANDLING);
+Q_LOGGING_CATEGORY(QWEBENGINE_TOUCH_HANDLING, "qt.webengine.touch");
 
 void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 {
     // On macOS instead of handling touch events, we use the OS provided QNativeGestureEvents.
 #ifdef Q_OS_MACOS
-    return;
+    if (ev->spontaneous()) {
+        return;
+    } else {
+        qCWarning(QWEBENGINE_TOUCH_HANDLING)
+            << "Sending simulated touch events to Chromium does not work properly on macOS. "
+               "Consider using QNativeGestureEvents or QMouseEvents.";
+    }
 #endif
 
     // Chromium expects the touch event timestamps to be comparable to base::TimeTicks::Now().
@@ -1445,24 +1482,34 @@ void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
     updateNeedsBeginFramesInternal();
 }
 
+void RenderWidgetHostViewQt::OnSetNeedsFlushInput()
+{
+    m_needsFlushInput = true;
+    updateNeedsBeginFramesInternal();
+}
+
 void RenderWidgetHostViewQt::updateNeedsBeginFramesInternal()
 {
     if (!m_beginFrameSource)
         return;
 
-    if (m_addedFrameObserver == m_needsBeginFrames)
+    // Based on upstream Chromium commit 7f7c8cc8b97dd0d5c9159d9e60c62efbc35e6b53.
+    bool needsFrame = m_needsBeginFrames || m_needsFlushInput;
+    if (m_addedFrameObserver == needsFrame)
         return;
 
-    if (m_needsBeginFrames)
+    m_addedFrameObserver = needsFrame;
+    if (needsFrame)
         m_beginFrameSource->AddObserver(this);
     else
         m_beginFrameSource->RemoveObserver(this);
-    m_addedFrameObserver = m_needsBeginFrames;
 }
 
 bool RenderWidgetHostViewQt::OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args)
 {
+    m_needsFlushInput = false;
     m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
+    updateNeedsBeginFramesInternal();
     m_host->Send(new ViewMsg_BeginFrame(m_host->GetRoutingID(), args));
     return true;
 }

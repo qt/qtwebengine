@@ -127,7 +127,7 @@ void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
 
 QAccessibleInterface *BrowserAccessibilityQt::parent() const
 {
-    BrowserAccessibility *p = GetParent();
+    BrowserAccessibility *p = PlatformGetParent();
     if (p)
         return static_cast<BrowserAccessibilityQt*>(p);
     return static_cast<BrowserAccessibilityManagerQt*>(manager())->rootParentAccessible();
@@ -261,7 +261,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
         return QAccessible::NoRole; // FIXME
-    case ui::AX_ROLE_DIV:
+    case ui::AX_ROLE_GENERIC_CONTAINER:
         return QAccessible::Section;
     case ui::AX_ROLE_DOCUMENT:
         return QAccessible::Document;
@@ -454,7 +454,7 @@ QAccessible::State BrowserAccessibilityQt::state() const
     int32_t s = GetState();
     if (s & (1 << ui::AX_STATE_BUSY))
         state.busy = true;
-    if (s & (1 << ui::AX_STATE_CHECKED))
+    if (s & (1 << ui::AX_CHECKED_STATE_TRUE))
         state.checked = true;
     if (s & (1 << ui::AX_STATE_COLLAPSED))
         state.collapsed = true;
@@ -830,9 +830,9 @@ bool BrowserAccessibilityQt::isSelected() const
 
 QAccessibleInterface *BrowserAccessibilityQt::table() const
 {
-    BrowserAccessibility* find_table = GetParent();
+    BrowserAccessibility* find_table = PlatformGetParent();
     while (find_table && find_table->GetRole() != ui::AX_ROLE_TABLE)
-        find_table = find_table->GetParent();
+        find_table = find_table->PlatformGetParent();
     if (!find_table)
         return 0;
     return static_cast<BrowserAccessibilityQt*>(find_table);

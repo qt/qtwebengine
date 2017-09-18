@@ -41,7 +41,7 @@ cross_compile:!host_build {
     !isEmpty(TOOLCHAIN_SYSROOT): gn_args += target_sysroot=\"$${TOOLCHAIN_SYSROOT}\"
 }
 
-contains(QT_ARCH, "arm"):!host_build {
+contains(QT_ARCH, "arm") {
     # Extract ARM specific compiler options that we have to pass to gn,
     # but let gn figure out a default if an option is not present.
     MTUNE = $$extractCFlag("-mtune=.*")
@@ -78,7 +78,7 @@ contains(QT_ARCH, "arm"):!host_build {
     else: contains(QMAKE_CFLAGS, "-mthumb"): gn_args += arm_use_thumb=true
 }
 
-contains(QT_ARCH, "mips"):!host_build {
+contains(QT_ARCH, "mips") {
     MARCH = $$extractCFlag("-march=.*")
     !isEmpty(MARCH) {
         equals(MARCH, "mips32r6"): gn_args += mips_arch_variant=\"r6\"
@@ -106,20 +106,26 @@ host_build {
 } else {
     gn_args += custom_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:target\"
     gn_args += host_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:host\"
+    GN_TARGET_CPU = $$gnArch($$QT_ARCH)
     cross_compile {
         gn_args += v8_snapshot_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:v8_snapshot\"
-        GN_TARGET_CPU = $$gnArch($$QT_ARCH)
+        # FIXME: we should set host_cpu in case host-toolchain doesn't match os arch,
+        # but currently we don't it available at this point
         gn_args += target_cpu=\"$$GN_TARGET_CPU\"
+    } else {
+        gn_args += host_cpu=\"$$GN_TARGET_CPU\"
     }
     !contains(QT_CONFIG, no-pkg-config) {
         # Strip '>2 /dev/null' from $$pkgConfigExecutable()
         PKGCONFIG = $$first($$list($$pkgConfigExecutable()))
         gn_args += pkg_config=\"$$PKGCONFIG\"
+        gn_args += "host_pkg_config=\"pkg-config\""
     }
 
     qtConfig(system-zlib): use?(system_minizip): gn_args += use_system_zlib=true use_system_minizip=true
-    qtConfig(system-png): gn_args += use_system_libpng=true
+    use?(system_libpng): gn_args += use_system_libpng=true
     qtConfig(system-jpeg): gn_args += use_system_libjpeg=true
+    qtConfig(system-freetype): gn_args += use_system_freetype=true
     use?(system_harfbuzz): gn_args += use_system_harfbuzz=true
     !use?(glib): gn_args += use_glib=false
     qtConfig(pulseaudio) {
@@ -139,13 +145,13 @@ host_build {
 
     use?(system_libevent): gn_args += use_system_libevent=true
     use?(system_libwebp):  gn_args += use_system_libwebp=true
-    #use?(system_libsrtp):  gn_args += use_system_libsrtp=true
     use?(system_libxslt):  gn_args += use_system_libxml=true use_system_libxslt=true
     #use?(system_jsoncpp):  gn_args += use_system_jsoncpp=true
     use?(system_opus):     gn_args += use_system_opus=true
     use?(system_snappy):   gn_args += use_system_snappy=true
-    use?(system_vpx):      gn_args += use_system_libvpx=true
+    use?(system_libvpx):   gn_args += use_system_libvpx=true
     use?(system_icu):      gn_args += use_system_icu=true icu_use_data_file=false
     use?(system_ffmpeg):   gn_args += use_system_ffmpeg=true
+    use?(system_re2):      gn_args += use_system_re2=true
     #use?(system_protobuf): gn_args += use_system_protobuf=true
 }

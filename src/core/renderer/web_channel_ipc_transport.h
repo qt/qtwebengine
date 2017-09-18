@@ -71,7 +71,7 @@ private:
 
     // content::RenderViewObserver overrides:
     bool OnMessageReceived(const IPC::Message &message) override;
-    void OnDestruct() override { }
+    void OnDestruct() override;
 
     bool m_installed;
     uint m_installedWorldId;

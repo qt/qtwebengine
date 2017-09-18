@@ -81,7 +81,7 @@ void DownloadManagerDelegateQt::GetNextId(const content::DownloadIdCallback& cal
 
 void DownloadManagerDelegateQt::cancelDownload(const content::DownloadTargetCallback& callback)
 {
-    callback.Run(base::FilePath(), content::DownloadItem::TARGET_DISPOSITION_PROMPT, content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, base::FilePath());
+    callback.Run(base::FilePath(), content::DownloadItem::TARGET_DISPOSITION_PROMPT, content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, base::FilePath(), content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
 }
 
 void DownloadManagerDelegateQt::cancelDownload(quint32 downloadId)
@@ -116,7 +116,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
     // store downloads and other special downloads, so they might never end up here anyway.
     if (!item->GetForcedFilePath().empty()) {
         callback.Run(item->GetForcedFilePath(), content::DownloadItem::TARGET_DISPOSITION_PROMPT,
-                     content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, item->GetForcedFilePath());
+                     content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, item->GetForcedFilePath(), content::DOWNLOAD_INTERRUPT_REASON_NONE);
         return true;
     }
 
@@ -196,8 +196,11 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
         }
 
         base::FilePath filePathForCallback(toFilePathString(suggestedFile.absoluteFilePath()));
-        callback.Run(filePathForCallback, content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                     content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, filePathForCallback.AddExtension(toFilePathString("download")));
+        callback.Run(filePathForCallback,
+                     content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                     content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+                     filePathForCallback.AddExtension(toFilePathString("download")),
+                     content::DOWNLOAD_INTERRUPT_REASON_NONE);
     } else
         cancelDownload(callback);
 

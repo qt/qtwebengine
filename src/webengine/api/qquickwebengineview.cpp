@@ -1647,7 +1647,8 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         break;
     case DownloadLinkToDisk:
         if (d->m_contextMenuData.linkUrl().isValid())
-            d->adapter->download(d->m_contextMenuData.linkUrl(), d->m_contextMenuData.suggestedFileName());
+            d->adapter->download(d->m_contextMenuData.linkUrl(), d->m_contextMenuData.suggestedFileName(),
+                                 d->m_contextMenuData.referrerUrl(), d->m_contextMenuData.referrerPolicy());
         break;
     case CopyImageToClipboard:
         if (d->m_contextMenuData.hasImageContent() &&
@@ -1674,7 +1675,8 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
     case DownloadImageToDisk:
     case DownloadMediaToDisk:
         if (d->m_contextMenuData.mediaUrl().isValid())
-            d->adapter->download(d->m_contextMenuData.mediaUrl(), d->m_contextMenuData.suggestedFileName());
+            d->adapter->download(d->m_contextMenuData.mediaUrl(), d->m_contextMenuData.suggestedFileName(),
+                                 d->m_contextMenuData.referrerUrl(), d->m_contextMenuData.referrerPolicy());
         break;
     case CopyMediaUrlToClipboard:
         if (d->m_contextMenuData.mediaUrl().isValid() &&

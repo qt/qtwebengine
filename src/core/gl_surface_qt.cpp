@@ -48,6 +48,7 @@
 #include <QGuiApplication>
 #include "gl_context_qt.h"
 #include "qtwebenginecoreglobal_p.h"
+#include "web_engine_context.h"
 
 #include "base/logging.h"
 #include "gpu/ipc/service/image_transport_surface.h"
@@ -177,6 +178,16 @@ bool GLSurfaceGLX::IsCreateContextSupported()
 bool GLSurfaceGLX::IsCreateContextRobustnessSupported()
 {
     return false; // ExtensionsContain(g_extensions, "GLX_ARB_create_context_robustness");
+}
+
+bool GLSurfaceGLX::IsEXTSwapControlSupported()
+{
+    return HasGLXExtension("GLX_EXT_swap_control");
+}
+
+bool GLSurfaceGLX::IsMESASwapControlSupported()
+{
+    return HasGLXExtension("GLX_MESA_swap_control");
 }
 
 bool GLSurfaceGLX::IsCreateContextProfileSupported()
@@ -427,6 +438,11 @@ bool GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported()
     return false;
 }
 
+bool GLSurfaceEGL::IsEGLContextPrioritySupported()
+{
+    return false;
+}
+
 void GLSurfaceEGL::ShutdownOneOff()
 {
 }
@@ -635,6 +651,11 @@ bool InitializeGLOneOffPlatform()
     }
 
     return false;
+}
+
+bool usingSoftwareDynamicGL()
+{
+    return QtWebEngineCore::usingSoftwareDynamicGL();
 }
 
 scoped_refptr<GLSurface>

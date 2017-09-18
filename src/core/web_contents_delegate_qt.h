@@ -68,6 +68,7 @@ namespace content {
 namespace QtWebEngineCore {
 
 class WebContentsAdapterClient;
+class WebEngineSettings;
 
 class SavePageInfo
 {
@@ -104,7 +105,7 @@ public:
     void LoadProgressChanged(content::WebContents* source, double progress) override;
     void HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) override;
     content::ColorChooser *OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion) override;
-    void WebContentsCreated(content::WebContents* source_contents, int opener_render_process_id, int opener_render_frame_id, const std::string& frame_name, const GURL& target_url, content::WebContents* new_contents) override;
+    void WebContentsCreated(content::WebContents* source_contents, int opener_render_process_id, int opener_render_frame_id, const std::string& frame_name, const GURL& target_url, content::WebContents* new_contents, const base::Optional<content::WebContents::CreateParams>& create_params) override;
     content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) override;
     void EnterFullscreenModeForTab(content::WebContents* web_contents, const GURL& origin) override;
     void ExitFullscreenModeForTab(content::WebContents*) override;
@@ -131,11 +132,11 @@ public:
     void DidFailLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url,
                              int error_code, const base::string16 &error_description, bool was_ignored_by_handler) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
+    void BeforeUnloadFired(const base::TimeTicks& proceed_time) override;
     void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) override;
     void WasShown() override;
     void DidFirstVisuallyNonEmptyPaint() override;
     void ActivateContents(content::WebContents* contents) override;
-
 
     void didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription);
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
@@ -146,6 +147,8 @@ public:
 
     void setSavePageInfo(const SavePageInfo &spi) { m_savePageInfo = spi; }
     const SavePageInfo &savePageInfo() { return m_savePageInfo; }
+
+    WebEngineSettings *webEngineSettings() const;
 
 private:
     QWeakPointer<WebContentsAdapter> createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);

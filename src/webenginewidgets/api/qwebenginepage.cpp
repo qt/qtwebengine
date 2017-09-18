@@ -1294,7 +1294,9 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         break;
     case DownloadLinkToDisk:
         if (menuData.linkUrl().isValid())
-            d->adapter->download(menuData.linkUrl(), menuData.suggestedFileName());
+            d->adapter->download(menuData.linkUrl(), menuData.suggestedFileName(),
+                                 menuData.referrerUrl(), menuData.referrerPolicy());
+
         break;
     case CopyImageToClipboard:
         if (menuData.hasImageContent() &&
@@ -1321,7 +1323,8 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case DownloadImageToDisk:
     case DownloadMediaToDisk:
         if (menuData.mediaUrl().isValid())
-            d->adapter->download(menuData.mediaUrl(), menuData.suggestedFileName());
+            d->adapter->download(menuData.mediaUrl(), menuData.suggestedFileName(),
+                                 menuData.referrerUrl(), menuData.referrerPolicy());
         break;
     case CopyMediaUrlToClipboard:
         if (menuData.mediaUrl().isValid() &&
@@ -1485,7 +1488,7 @@ void QWebEnginePagePrivate::wasHidden()
 
 bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
-    if (!view || !view->d_func()->m_pendingContextMenuEvent)
+    if (!view)
         return false;
 
     contextData.reset();
@@ -1511,7 +1514,6 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
         event.ignore();
         return false;
     }
-    view->d_func()->m_pendingContextMenuEvent = false;
     return true;
 }
 

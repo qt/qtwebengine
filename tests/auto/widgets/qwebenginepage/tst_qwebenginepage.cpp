@@ -253,6 +253,7 @@ void tst_QWebEnginePage::init()
     m_view = new QWebEngineView();
     m_page = m_view->page();
     m_page->settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    m_view->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
 }
 
 void tst_QWebEnginePage::cleanup()
@@ -310,6 +311,10 @@ void tst_QWebEnginePage::acceptNavigationRequest()
     NavigationRequestOverride* newPage = new NavigationRequestOverride(&view, false);
     view.setPage(newPage);
 
+    // acceptNavigationRequest and QWebEngineUrlRequestInterceptor::interceptRequest are not called
+    // for data: urls, which means the test is broken, aka setting
+    // newPage->m_acceptNavigationRequest to false does nothing to stop the page from loading.
+    // See QTBUG-50922 comments.
     view.setHtml(QString("<html><body><form name='tstform' action='data:text/html,foo'method='get'>"
                             "<input type='text'><input type='submit'></form></body></html>"), QUrl());
     QTRY_COMPARE(loadSpy.count(), 1);
@@ -4409,5 +4414,7 @@ void tst_QWebEnginePage::viewSourceURL()
     QVERIFY(!page.action(QWebEnginePage::ViewSource)->isEnabled());
 }
 
-QTEST_MAIN(tst_QWebEnginePage)
+static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
+W_QTEST_MAIN(tst_QWebEnginePage, params)
+
 #include "tst_qwebenginepage.moc"

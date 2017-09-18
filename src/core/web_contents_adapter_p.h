@@ -61,6 +61,7 @@
 #include <QScopedPointer>
 #include <QSharedPointer>
 
+QT_FORWARD_DECLARE_CLASS(QTemporaryDir)
 QT_FORWARD_DECLARE_CLASS(QWebChannel)
 
 class WebEngineContext;
@@ -98,6 +99,7 @@ public:
     bool updateDragActionCalled;
     gfx::Point lastDragClientPos;
     gfx::Point lastDragScreenPos;
+    std::unique_ptr<QTemporaryDir> dndTmpDir;
 };
 
 } // namespace QtWebEngineCore

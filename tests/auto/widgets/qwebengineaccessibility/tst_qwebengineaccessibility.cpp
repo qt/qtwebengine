@@ -290,7 +290,7 @@ void tst_QWebEngineAccessibility::roles_data()
     QTest::newRow("AX_ROLE_DIALOG") << QString("<div role='dialog'></div>") << true << QAccessible::Dialog;
     //QTest::newRow("AX_ROLE_DIRECTORY") << QString("<div role='directory'></div>") << true << QAccessible::NoRole; // FIXME: Aria role 'directory' should work
     QTest::newRow("AX_ROLE_DISCLOSURE_TRIANGLE") << QString("<details><summary>a</summary></details>") << false << QAccessible::NoRole;
-    QTest::newRow("AX_ROLE_DIV") << QString("<div>a</div>") << true << QAccessible::Section;
+    QTest::newRow("AX_ROLE_GENERIC_CONTAINER") << QString("<div>a</div>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_DOCUMENT") << QString("<div role='document'>a</div>") << true << QAccessible::Document;
     QTest::newRow("AX_ROLE_EMBEDDED_OBJECT") << QString("<object width='10' height='10'></object>") << false << QAccessible::Grouping;
     QTest::newRow("AX_ROLE_FEED") << QString("<div role='feed'>a</div>") << true << QAccessible::Section;
@@ -301,7 +301,7 @@ void tst_QWebEngineAccessibility::roles_data()
     QTest::newRow("AX_ROLE_GRID") << QString("<div role='grid'></div>") << true << QAccessible::Table;
     QTest::newRow("AX_ROLE_GROUP") << QString("<fieldset></fieldset>") << true << QAccessible::Grouping;
     QTest::newRow("AX_ROLE_HEADING") << QString("<h1>a</h1>") << true << QAccessible::Heading;
-    QTest::newRow("AX_ROLE_IFRAME") << QString("<iframe>a</iframe>") << true << QAccessible::Grouping;
+    QTest::newRow("AX_ROLE_IFRAME") << QString("<iframe>a</iframe>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_IFRAME_PRESENTATIONAL") << QString("<iframe role='presentation'>a</iframe>") << false << QAccessible::NoRole;
     //QTest::newRow("AX_ROLE_IGNORED") << QString("<tag>a</tag>") << true << QAccessible::NoRole; // FIXME: The HTML element should not be exposed as an element (see AXNodeObject.cpp)
     QTest::newRow("AX_ROLE_IMAGE") << QString("<img>") << false << QAccessible::Graphic;

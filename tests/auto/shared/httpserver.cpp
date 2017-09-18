@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -25,11 +25,46 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "httpserver.h"
 
-#include <srtp/srtp.h>
+#include "waitforsignal.h"
 
-int main(int, char **)
+HttpServer::HttpServer(QObject *parent) : QObject(parent)
 {
-    err_status_t status = srtp_init();
-    return status == err_status_ok;
+    connect(&m_tcpServer, &QTcpServer::newConnection, this, &HttpServer::handleNewConnection);
+    if (!m_tcpServer.listen())
+        qWarning("HttpServer: listen() failed");
+    m_url = QStringLiteral("http://127.0.0.1:") + QString::number(m_tcpServer.serverPort());
+}
+
+QUrl HttpServer::url(const QString &path) const
+{
+    auto copy = m_url;
+    copy.setPath(path);
+    return copy;
+}
+
+void HttpServer::handleNewConnection()
+{
+    auto reqRep = new HttpReqRep(m_tcpServer.nextPendingConnection(), this);
+    connect(reqRep, &HttpReqRep::readFinished, this, &HttpServer::handleReadFinished);
+}
+
+void HttpServer::handleReadFinished(bool ok)
+{
+    auto reqRep = qobject_cast<HttpReqRep *>(sender());
+    if (ok)
+        Q_EMIT newRequest(reqRep);
+    else
+        reqRep->deleteLater();
+}
+
+std::unique_ptr<HttpReqRep> waitForRequest(HttpServer *server)
+{
+    std::unique_ptr<HttpReqRep> result;
+    waitForSignal(server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        rr->setParent(nullptr);
+        result.reset(rr);
+    });
+    return result;
 }

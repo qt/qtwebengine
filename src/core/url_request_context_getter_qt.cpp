@@ -189,9 +189,9 @@ void URLRequestContextGetterQt::cancelAllUrlRequests()
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
 
-    std::set<const net::URLRequest*>* url_requests = m_urlRequestContext->url_requests();
-    std::set<const net::URLRequest*>::const_iterator it = url_requests->begin();
-    std::set<const net::URLRequest*>::const_iterator end = url_requests->end();
+    const std::set<const net::URLRequest*>& url_requests = m_urlRequestContext->url_requests();
+    std::set<const net::URLRequest*>::const_iterator it = url_requests.begin();
+    std::set<const net::URLRequest*>::const_iterator end = url_requests.end();
     for ( ; it != end; ++it) {
         net::URLRequest* request = const_cast<net::URLRequest*>(*it);
         if (request)

@@ -7,12 +7,25 @@ gn_args += \
     enable_session_service=false \
     ninja_use_custom_environment_files=false \
     is_multi_dll_chrome=false \
-    use_incremental_linking=false \
     win_linker_timing=true
 
 isDeveloperBuild() {
     gn_args += \
         is_win_fastlink=true
+
+    # Incremental linking doesn't work in release developer builds due to usage of /OPT:ICF
+    # by Chromium.
+    CONFIG(debug, debug|release) {
+        gn_args += \
+            use_incremental_linking=true
+    } else {
+        gn_args += \
+            use_incremental_linking=false
+    }
+} else {
+    gn_args += \
+        is_win_fastlink=false \
+        use_incremental_linking=false
 }
 
 defineTest(usingMSVC32BitCrossCompiler) {

@@ -72,6 +72,17 @@ class WebContentsAdapter;
 class WebContentsDelegateQt;
 class WebEngineSettings;
 
+// Must match blink::WebReferrerPolicy
+enum class ReferrerPolicy {
+    Always,
+    Default,
+    NoReferrerWhenDowngrade,
+    Never,
+    Origin,
+    OriginWhenCrossOrigin,
+    NoReferrerWhenDowngradeOriginWhenCrossOrigin,
+    Last = NoReferrerWhenDowngradeOriginWhenCrossOrigin,
+};
 
 class WebEngineContextMenuSharedData : public QSharedData {
 
@@ -98,6 +109,9 @@ public:
     QString suggestedFileName;
     QString misspelledWord;
     QStringList spellCheckerSuggestions;
+    QUrl pageUrl;
+    QUrl frameUrl;
+    ReferrerPolicy referrerPolicy = ReferrerPolicy::Default;
     // Some likely candidates for future additions as we add support for the related actions:
     //    bool isImageBlocked;
     //    <enum tbd> mediaType;
@@ -252,6 +266,34 @@ public:
 
     QStringList spellCheckerSuggestions() const {
         return d->spellCheckerSuggestions;
+    }
+
+    void setFrameUrl(const QUrl &url) {
+        d->frameUrl = url;
+    }
+
+    QUrl frameUrl() const {
+        return d->frameUrl;
+    }
+
+    void setPageUrl(const QUrl &url) {
+        d->pageUrl = url;
+    }
+
+    QUrl pageUrl() const {
+        return d->pageUrl;
+    }
+
+    QUrl referrerUrl() const {
+        return !d->frameUrl.isEmpty() ? d->frameUrl : d->pageUrl;
+    }
+
+    void setReferrerPolicy(ReferrerPolicy referrerPolicy) {
+        d->referrerPolicy = referrerPolicy;
+    }
+
+    ReferrerPolicy referrerPolicy() const {
+        return d->referrerPolicy;
     }
 
 private:
