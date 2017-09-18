@@ -67,6 +67,7 @@ namespace QtWebEngineCore {
 
 PrintViewManagerBaseQt::PrintViewManagerBaseQt(content::WebContents *contents)
     : printing::PrintManager(contents)
+    , cookie_(0)
     , m_isInsideInnerMessageLoop(false)
     , m_isExpectingFirstPage(false)
     , m_didPrintingSucceed(false)
