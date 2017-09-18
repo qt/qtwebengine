@@ -68,7 +68,8 @@
 #include "device/geolocation/geolocation_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
@@ -479,6 +480,7 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
 
 void ContentBrowserClientQt::SelectClientCertificate(content::WebContents * /*webContents*/,
                                                      net::SSLCertRequestInfo * /*certRequestInfo*/,
+                                                     net::CertificateList /*client_certs*/,
                                                      std::unique_ptr<content::ClientCertificateDelegate> delegate)
 {
     delegate->ContinueWithCertificate(nullptr);
@@ -559,6 +561,7 @@ public:
         return FromWebContents(web_contents);
     }
     static void BindSensitiveInputVisibilityService(content::RenderFrameHost* render_frame_host,
+                                                    const service_manager::BindSourceInfo& source_info,
                                                     blink::mojom::SensitiveInputVisibilityServiceRequest request)
     {
         CreateForRenderFrameHost(render_frame_host);
@@ -585,10 +588,52 @@ private:
 
 };
 
-void ContentBrowserClientQt::RegisterRenderFrameMojoInterfaces(service_manager::InterfaceRegistry* registry,
-                                                               content::RenderFrameHost* render_frame_host)
+void ContentBrowserClientQt::ExposeInterfacesToFrame(service_manager::BinderRegistry* registry,
+                                                     content::RenderFrameHost* render_frame_host)
 {
     registry->AddInterface(base::Bind(&ServiceDriver::BindSensitiveInputVisibilityService, render_frame_host));
+}
+
+bool ContentBrowserClientQt::CanCreateWindow(
+    content::RenderFrameHost* opener,
+    const GURL& opener_url,
+    const GURL& opener_top_level_frame_url,
+    const GURL& source_origin,
+    content::mojom::WindowContainerType container_type,
+    const GURL& target_url,
+    const content::Referrer& referrer,
+    const std::string& frame_name,
+    WindowOpenDisposition disposition,
+    const blink::mojom::WindowFeatures& features,
+    bool user_gesture,
+    bool opener_suppressed,
+    bool* no_javascript_access) {
+
+    Q_UNUSED(opener_url);
+    Q_UNUSED(opener_top_level_frame_url);
+    Q_UNUSED(source_origin);
+    Q_UNUSED(container_type);
+    Q_UNUSED(target_url);
+    Q_UNUSED(referrer);
+    Q_UNUSED(frame_name);
+    Q_UNUSED(disposition);
+    Q_UNUSED(features);
+    Q_UNUSED(opener_suppressed);
+
+    if (no_javascript_access)
+        *no_javascript_access = false;
+
+    content::WebContents* webContents = content::WebContents::FromRenderFrameHost(opener);
+
+    WebEngineSettings *settings = nullptr;
+    if (webContents) {
+        WebContentsDelegateQt* delegate =
+                static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+        if (delegate)
+            settings = delegate->webEngineSettings();
+    }
+
+    return (settings && settings->getJavaScriptCanOpenWindowsAutomatically()) || user_gesture;
 }
 
 } // namespace QtWebEngineCore

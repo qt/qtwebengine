@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
+    <file>resources/basic_printing_page.html</file>
     <file>resources/content.html</file>
     <file>resources/index.html</file>
     <file>resources/frame_a.html</file>

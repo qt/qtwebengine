@@ -37,50 +37,59 @@
 **
 ****************************************************************************/
 
-#include "url_request_custom_job.h"
 #include "url_request_custom_job_delegate.h"
+#include "url_request_custom_job_proxy.h"
 
 #include "type_conversion.h"
 #include "net/base/net_errors.h"
+#include "content/public/browser/browser_thread.h"
 
 #include <QByteArray>
 
 namespace QtWebEngineCore {
 
-URLRequestCustomJobDelegate::URLRequestCustomJobDelegate(URLRequestCustomJobShared *shared)
-    : m_shared(shared)
+URLRequestCustomJobDelegate::URLRequestCustomJobDelegate(URLRequestCustomJobProxy *proxy,
+                                                         const QUrl &url,
+                                                         const QByteArray &method)
+    : m_proxy(proxy),
+      m_request(url),
+      m_method(method)
 {
 }
 
 URLRequestCustomJobDelegate::~URLRequestCustomJobDelegate()
 {
-    m_shared->unsetJobDelegate();
 }
 
 QUrl URLRequestCustomJobDelegate::url() const
 {
-    return toQt(m_shared->requestUrl());
+    return m_request;
 }
 
 QByteArray URLRequestCustomJobDelegate::method() const
 {
-    return QByteArray::fromStdString(m_shared->requestMethod());
+    return m_method;
 }
 
-void URLRequestCustomJobDelegate::setReply(const QByteArray &contentType, QIODevice *device)
+void URLRequestCustomJobDelegate::reply(const QByteArray &contentType, QIODevice *device)
 {
-    m_shared->setReplyMimeType(contentType.toStdString());
-    m_shared->setReplyDevice(device);
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                     base::Bind(&URLRequestCustomJobProxy::reply,
+                                                m_proxy,contentType.toStdString(),device));
 }
 
 void URLRequestCustomJobDelegate::abort()
 {
-    m_shared->abort();
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                     base::Bind(&URLRequestCustomJobProxy::abort,
+                                                m_proxy));
 }
 
 void URLRequestCustomJobDelegate::redirect(const QUrl &url)
 {
-    m_shared->redirect(toGurl(url));
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                     base::Bind(&URLRequestCustomJobProxy::redirect,
+                                                m_proxy, toGurl(url)));
 }
 
 void URLRequestCustomJobDelegate::fail(Error error)
@@ -105,8 +114,11 @@ void URLRequestCustomJobDelegate::fail(Error error)
         net_error = net::ERR_FAILED;
         break;
     }
-    if (net_error)
-        m_shared->fail(net_error);
+    if (net_error) {
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                         base::Bind(&URLRequestCustomJobProxy::fail,
+                                                    m_proxy, net_error));
+    }
 }
 
 } // namespace

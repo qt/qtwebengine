@@ -33,6 +33,7 @@ import QtWebEngine 1.7
 WebEngineView {
     property var loadStatus: null
     property bool windowCloseRequestedSignalEmitted: false
+    settings.focusOnNavigationEnabled: true
 
     function waitForLoadSucceeded() {
         var success = _waitFor(function() { return loadStatus == WebEngineView.LoadSucceededStatus })

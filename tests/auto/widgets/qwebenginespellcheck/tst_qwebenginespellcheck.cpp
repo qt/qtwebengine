@@ -32,6 +32,7 @@
 #include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
+#include <qwebenginesettings.h>
 
 class WebView : public QWebEngineView
 {
@@ -142,6 +143,8 @@ void tst_QWebEngineSpellcheck::spellcheck()
 {
     QFETCH(QStringList, languages);
     QFETCH(QStringList, suggestions);
+
+    m_view->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
 
     QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
     QVERIFY(profile);

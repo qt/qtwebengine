@@ -55,10 +55,10 @@
     Qt WebEngine supports the MPEG-4 Part 14 (MP4) file format only if the
     required proprietary audio and video codecs, such as H.264 and MPEG layer-3
     (MP3), have been enabled. Proprietary codecs can be enabled by passing the
-    following option to qmake when building Qt WebEngine:
+    following option when configuring Qt:
 
     \code
-    qmake WEBENGINE_CONFIG+=use_proprietary_codecs
+    -proprietary-codecs
     \endcode
 
     \warning When distributing proprietary codec libraries, you must acquire

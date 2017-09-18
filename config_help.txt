@@ -1,0 +1,13 @@
+Webengine options:
+
+  -alsa ................ Enable ALSA support [auto] (Linux only)
+  -webengine-icu ....... Select used ICU libraries [system/qt] (Linux only)
+  -ffmpeg .............. Select used FFmpeg libraries [system/qt] (Linux only)
+  -opus ................ Select used Opus libraries [system/qt] (Linux only)
+  -webp ................ Select used WebP libraries [system/qt] (Linux only)
+  -pepper-plugins ...... Enable use of Pepper Flash and Widevine plugins [auto]
+  -printing-and-pdf .... Enable use of printing and output to PDF [auto]
+  -proprietary-codecs .. Enable support for proprietary codecs [no]
+  -pulseaudio .......... Enable PulseAudio support [auto] (Linux only)
+  -spellchecker ........ Enable support for spellchecker [yes]
+  -webrtc .............. Enable support for WebRTC [auto]

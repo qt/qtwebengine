@@ -12,26 +12,116 @@
             "ffmpeg": { "type": "enum", "name": "system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
             "opus": { "type": "enum", "name": "system-opus", "values": { "system": "yes", "qt": "no" } },
             "webp": { "type": "enum", "name": "system-webp", "values": { "system": "yes", "qt": "no" } },
-            "nss-certificate-handling": "boolean",
             "pepper-plugins": "boolean",
             "printing-and-pdf": "boolean",
             "proprietary-codecs": "boolean",
             "pulseaudio": "boolean",
             "spellchecker": "boolean",
-            "webrtc": "boolean"
+            "native-spellchecker": "boolean",
+            "webrtc": "boolean",
+            "geolocation" : "boolean"
         }
     },
 
     "libraries": {
-        "alsa": {
-            "label": "ALSA",
-            "test": "alsa",
+        "dbus": {
+            "label": "d-bus",
             "sources": [
-                "-lasound"
+                { "type": "pkgConfig", "args": "dbus-1" }
+            ]
+        },
+        "fontconfig": {
+            "label": "fontconfig",
+            "sources": [
+                { "type": "pkgConfig", "args": "fontconfig" }
+            ]
+        },
+        "libdrm": {
+            "label": "libdrm",
+            "sources": [
+                { "type": "pkgConfig", "args": "libdrm" }
+            ]
+        },
+        "xcomposite": {
+            "label": "xcomposite",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcomposite" }
+            ]
+        },
+        "xcursor": {
+            "label": "xcursor",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcursor" }
+            ]
+        },
+        "xi": {
+            "label": "xi",
+            "sources": [
+                { "type": "pkgConfig", "args": "xi" }
+            ]
+        },
+        "xrandr": {
+            "label": "xrandr",
+            "sources": [
+                { "type": "pkgConfig", "args": "xrandr" }
+            ]
+        },
+        "xtst": {
+            "label": "xtst",
+            "sources": [
+                { "type": "pkgConfig", "args": "xtst" }
+            ]
+        },
+        "harfbuzz": {
+            "label": "harfbuzz >= 1.4.2",
+            "sources": [
+                { "type": "pkgConfig", "args": "harfbuzz >= 1.4.2" }
+            ]
+        },
+        "glib": {
+            "label": "glib-2.0 >= 2.32.0",
+            "sources": [
+                { "type": "pkgConfig", "args": "glib-2.0 >= 2.32.0" }
+            ]
+        },
+        "zlib": {
+            "label": "zlib",
+            "sources": [
+                { "type": "pkgConfig", "args": "zlib" }
+            ]
+        },
+        "minizip": {
+            "label": "minizip",
+            "sources": [
+                { "type": "pkgConfig", "args": "minizip" }
+            ]
+        },
+        "libevent": {
+            "label": "libevent",
+            "sources": [
+                { "type": "pkgConfig", "args": "libevent" }
+            ]
+        },
+        "libxml2": {
+            "label": "libxml2 and libxslt",
+            "sources": [
+                { "type": "pkgConfig", "args": "libxml-2.0 libxslt" }
+            ]
+        },
+        "jsoncpp": {
+            "label": "jsoncpp",
+            "sources": [
+                { "type": "pkgConfig", "args": "jsoncpp" }
+            ]
+        },
+        "protobuf": {
+            "label": "protobuf",
+            "sources": [
+                { "type": "pkgConfig", "args": "protobuf" }
             ]
         },
         "pulseaudio": {
-            "label": "PulseAudio >= 0.9.10",
+            "label": "pulseaudio >= 0.9.10",
             "sources": [
                 { "type": "pkgConfig", "args": "libpulse >= 0.9.10 libpulse-mainloop-glib" }
             ]
@@ -55,22 +145,62 @@
             ]
         },
         "webp": {
-            "label": "libwebp and libwebpdemux",
+            "label": "libwebp, libwebpmux and libwebpdemux",
             "sources": [
-                { "type": "pkgConfig", "args": "libwebp libwebpdemux" }
+                { "type": "pkgConfig", "args": "libwebp libwebpmux libwebpdemux" }
             ]
         },
         "nss": {
-            "label": "NSS",
+            "label": "nss",
             "sources": [
                 { "type": "pkgConfig", "args": "nss" }
+            ]
+        },
+        "png": {
+            "label": "libpng >= 1.6.0",
+            "sources": [
+                { "type": "pkgConfig", "args": "libpng >= 1.6.0" }
             ]
         }
     },
 
     "tests" : {
+        "alsa": {
+            "label": "alsa",
+            "test": "alsa",
+            "type": "compile"
+        },
+        "khr": {
+            "label": "khr",
+            "test": "khr",
+            "type": "compile"
+        },
+        "libvpx": {
+            "label": "libvpx",
+            "test": "libvpx",
+            "type": "compile"
+        },
+        "snappy": {
+            "label": "snappy",
+            "test": "snappy",
+            "type": "compile"
+        },
+        "srtp": {
+            "label": "srtp",
+            "test": "srtp",
+            "type": "compile"
+        },
+        "winversion": {
+            "label": "winversion",
+            "test": "winversion",
+            "type": "compile"
+        },
+        "protoc": {
+            "label": "protoc",
+            "type": "detectProtoc"
+        },
         "python2": {
-            "label": "Python 2",
+            "label": "python2",
             "type": "detectPython2",
             "log": "location"
         },
@@ -97,12 +227,105 @@
         "embedded": {
             "label": "embedded",
             "type": "embedded"
+        },
+        "re2": {
+            "label": "re2",
+            "test": "re2",
+            "type": "compile"
+        },
+        "glibc": {
+            "label": "glibc > 2.16",
+            "type": "detectGlibc"
+        },
+        "icuuc": {
+            "label" : "libxml2 configured with icuuc",
+            "type": "detectIcuuc"
         }
     },
 
     "features": {
+        "system-fontconfig": {
+            "label": "fontconfig",
+            "condition": "libs.fontconfig",
+            "output": [ "privateFeature" ]
+        },
+        "system-dbus": {
+            "label": "dbus",
+            "condition": "libs.dbus",
+            "output": [ "privateFeature" ]
+        },
+        "system-libdrm": {
+            "label": "libdrm",
+            "condition": "libs.libdrm",
+            "output": [ "privateFeature" ]
+        },
+        "system-xcomposite": {
+            "label": "xcomposite",
+            "condition": "libs.xcomposite",
+            "output": [ "privateFeature" ]
+        },
+        "system-xcursor": {
+            "label": "xcursor",
+            "condition": "libs.xcursor",
+            "output": [ "privateFeature" ]
+        },
+        "system-xi": {
+            "label": "xi",
+            "condition": "libs.xi",
+            "output": [ "privateFeature" ]
+        },
+        "system-xrandr": {
+            "label": "xrandr",
+            "condition": "libs.xrandr",
+            "output": [ "privateFeature" ]
+        },
+        "system-xtst": {
+            "label": "xtst",
+            "condition": "libs.xtst",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-harfbuzz": {
+            "label": "harfbuzz",
+            "condition": "libs.harfbuzz",
+            "output": [ "privateFeature" ]
+        },
+        "system-glib" : {
+            "label": "glib",
+            "condition": "config.unix && libs.glib",
+            "output": [ "privateFeature" ]
+        },
+        "system-minizip" : {
+            "label": "minizip",
+            "condition": "config.unix && libs.minizip",
+            "output": [ "privateFeature" ]
+        },
+        "system-zlib" : {
+            "label": "zlib",
+            "condition": "config.unix && libs.zlib",
+            "output": [ "privateFeature" ]
+        },
+        "system-libevent" : {
+            "label": "libevent",
+            "condition": "config.unix && libs.libevent",
+            "output": [ "privateFeature" ]
+        },
+        "system-jsoncpp" : {
+            "label": "jsoncpp",
+            "condition": "config.unix && libs.jsoncpp",
+            "output": [ "privateFeature" ]
+        },
+        "system-protobuf" : {
+            "label": "protobuf",
+            "condition": "config.unix && libs.protobuf && tests.protoc",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-png" : {
+            "label": "png",
+            "condition": "config.unix && libs.png",
+            "output": [ "privateFeature" ]
+        },
         "python2": {
-            "label": "Python 2",
+            "label": "python2",
             "condition": "tests.python2",
             "output": [
                 "privateFeature",
@@ -133,12 +356,47 @@
             "output": [ "privateFeature" ]
         },
         "alsa": {
-            "label": "ALSA",
-            "condition": "config.unix && libs.alsa",
+            "label": "Use ALSA",
+            "condition": "config.unix && tests.alsa",
+            "output": [ "privateFeature" ]
+        },
+        "system-khr" : {
+            "label": "khr",
+            "condition": "config.unix && tests.khr",
+            "output": [ "privateFeature" ]
+        },
+        "system-libvpx" : {
+            "label": "libvpx",
+            "condition": "config.unix && tests.libvpx",
+            "output": [ "privateFeature" ]
+        },
+        "system-snappy" : {
+            "label": "snappy",
+            "condition": "config.unix && tests.snappy",
+            "output": [ "privateFeature" ]
+        },
+        "system-libsrtp" : {
+            "label": "libsrtp",
+            "condition": "config.unix && tests.srtp",
+            "output": [ "privateFeature" ]
+        },
+        "system-libxml2" : {
+            "label": "libxml2",
+            "condition": "config.unix && tests.srtp",
+            "output": [ "privateFeature" ]
+        },
+        "winversion" : {
+            "label": "winversion",
+            "condition": "config.win32 && tests.winversion",
+            "output": [ "privateFeature" ]
+        },
+        "geolocation": {
+            "label": "Geolocation",
+            "condition": "module.positioning",
             "output": [ "privateFeature" ]
         },
         "pulseaudio": {
-            "label": "PulseAudio",
+            "label": "Use PulseAudio",
             "autoDetect": "config.unix",
             "condition": "libs.pulseaudio",
             "output": [ "privateFeature" ]
@@ -171,6 +429,13 @@
             "section": "WebEngine",
             "output": [ "privateFeature" ]
         },
+        "native-spellchecker": {
+            "label": "Native Spellchecker",
+            "purpose": "Provides a native spellchecker.",
+            "condition": "config.macos",
+            "section": "WebEngine",
+            "output": [ "privateFeature" ]
+        },
         "webrtc": {
             "label": "WebRTC",
             "purpose": "Provides WebRTC support.",
@@ -178,22 +443,19 @@
             "autoDetect": "!features.embedded",
             "output": [ "privateFeature" ]
         },
-        "nss-certificate-handling": {
-            "label": "NSS certificate handling",
-            "purpose": "Use NSS to handle certificates instead of BoringSSL. Recommended on Linux.",
-            "section": "WebEngine",
-            "condition": "config.unix && !config.darwin",
-            "autoDetect": "libs.nss",
+        "system-nss": {
+            "label": "nss",
+            "condition": "config.unix && !config.darwin && libs.nss",
             "output": [ "privateFeature" ]
         },
         "system-webp": {
-            "label": "libwebp and libwebpdemux",
+            "label": "libwebp, libwebpmux and libwebpdemux",
             "autoDetect": "config.unix",
             "condition": "libs.webp",
             "output": [ "privateFeature" ]
         },
         "system-opus": {
-            "label": "Opus",
+            "label": "opus",
             "autoDetect": "config.unix",
             "condition": "libs.opus",
             "output": [ "privateFeature" ]
@@ -205,20 +467,36 @@
             "output": [ "privateFeature" ]
         },
         "system-icu": {
-            "label": "ICU",
+            "label": "icu",
             "autoDetect": false,
             "condition": "libs.icu",
             "output": [ "privateFeature" ]
         },
+        "system-re2": {
+            "label": "re2",
+            "autoDetect": "config.unix",
+            "condition": "tests.re2",
+            "output": [ "privateFeature" ]
+        },
         "system-ninja": {
-            "label": "Using system ninja",
+            "label": "Use System Ninja",
             "condition": "tests.ninja",
             "output": [ "privateFeature" ]
         },
         "system-gn": {
-            "label": "Using system gn",
+            "label": "Use System Gn",
             "autoDetect": false,
             "condition": "tests.gn",
+            "output": [ "privateFeature" ]
+        },
+        "system-glibc": {
+            "label": "glibc",
+            "condition": "config.linux && tests.glibc",
+            "output": [ "privateFeature" ]
+        },
+        "system-libxml2": {
+            "label": "libxml2 and libxslt",
+            "condition": "config.unix && libs.libxml2 && tests.icuuc",
             "output": [ "privateFeature" ]
         }
     },
@@ -255,8 +533,10 @@
                 "printing-and-pdf",
                 "proprietary-codecs",
                 "spellchecker",
+                "native-spellchecker",
                 "webrtc",
                 "system-ninja",
+                "geolocation",
                 {
                     "type": "feature",
                     "args": "alsa",
@@ -268,18 +548,49 @@
                     "condition": "config.unix"
                 },
                 {
-                    "type": "feature",
-                    "args": "nss-certificate-handling",
-                    "condition": "config.unix && !config.darwin"
-                },
-                {
-                   "section": "System libraries",
+                   "section": "Optional system libraries used",
                    "condition": "config.unix",
                    "entries": [
+                        "system-re2",
                         "system-icu",
                         "system-webp",
                         "system-opus",
-                        "system-ffmpeg"
+                        "system-ffmpeg",
+                        "system-libvpx",
+                        "system-snappy",
+                        "system-libsrtp",
+                        "system-glib",
+                        "system-zlib",
+                        "system-minizip",
+                        "system-libevent",
+                        "system-jsoncpp",
+                        "system-protobuf",
+                        "system-libxml2",
+                        "webengine-system-png",
+                        "webengine-system-harfbuzz"
+                    ]
+                },
+                {
+                   "section": "Required system libraries",
+                   "condition": "config.unix && !config.macos",
+                   "entries": [
+                        "system-fontconfig",
+                        "system-dbus",
+                        "system-nss",
+                        "system-khr",
+                        "system-glibc"
+                    ]
+                },
+                {
+                   "section": "Required system libraries for qpa-xcb",
+                   "condition": "config.unix && !config.macos",
+                   "entries": [
+                        "system-libdrm",
+                        "system-xcomposite",
+                        "system-xcursor",
+                        "system-xi",
+                        "system-xrandr",
+                        "system-xtst"
                     ]
                 }
             ]

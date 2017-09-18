@@ -73,7 +73,6 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
-#include "ui/events/latency_info.h"
 
 #include <QDesktopServices>
 #include <QTimer>
@@ -338,7 +337,7 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::Favic
     m_faviconManager->update(faviconCandidates);
 }
 
-void WebContentsDelegateQt::WebContentsCreated(content::WebContents* /*source_contents*/, int /*opener_render_process_id*/, int /*opener_render_frame_id*/, const std::string& /*frame_name*/, const GURL& target_url, content::WebContents* new_contents)
+void WebContentsDelegateQt::WebContentsCreated(content::WebContents* /*source_contents*/, int /*opener_render_process_id*/, int /*opener_render_frame_id*/, const std::string& /*frame_name*/, const GURL& target_url, content::WebContents* new_contents, const base::Optional<content::WebContents::CreateParams>& create_params)
 {
     this->m_initialTargetUrl = toQt(target_url);
 }
@@ -537,6 +536,10 @@ void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool pr
         m_viewClient->windowCloseRejected();
 }
 
+void WebContentsDelegateQt::BeforeUnloadFired(const base::TimeTicks &proceed_time) {
+    Q_UNUSED(proceed_time);
+}
+
 bool WebContentsDelegateQt::CheckMediaAccessPermission(content::WebContents *web_contents, const GURL& security_origin, content::MediaStreamType type)
 {
     switch (type) {
@@ -554,6 +557,10 @@ bool WebContentsDelegateQt::CheckMediaAccessPermission(content::WebContents *web
 FaviconManager *WebContentsDelegateQt::faviconManager()
 {
     return m_faviconManager.data();
+}
+
+WebEngineSettings *WebContentsDelegateQt::webEngineSettings() const {
+    return m_viewClient->webEngineSettings();
 }
 
 } // namespace QtWebEngineCore

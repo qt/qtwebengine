@@ -114,8 +114,17 @@ int main(int argc, char **argv)
     // Force to use English language for testing due to error message checks
     QLocale::setDefault(QLocale("en"));
 
-    if (!QCoreApplication::instance())
-        app.reset(new Application(argc, argv));
+    static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
+    QVector<const char *> w_argv(argc); \
+    for (int i = 0; i < argc; ++i) \
+        w_argv[i] = argv[i]; \
+    for (int i = 0; i < params.size(); ++i) \
+        w_argv.append(params[i].data()); \
+    int w_argc = w_argv.size(); \
+
+    if (!QCoreApplication::instance()) {
+        app.reset(new Application(w_argc, const_cast<char **>(w_argv.data())));
+    }
     QtWebEngine::initialize();
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
 

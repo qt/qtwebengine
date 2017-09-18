@@ -43,11 +43,11 @@ IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Uninstall, uint /* worldId */)
 IPC_MESSAGE_ROUTED2(WebChannelIPCTransport_Message, std::vector<char> /*binaryJSON*/, uint /* worldId */)
 
 // User scripts messages
-IPC_MESSAGE_ROUTED1(RenderViewObserverHelper_AddScript,
+IPC_MESSAGE_ROUTED1(RenderFrameObserverHelper_AddScript,
                     UserScriptData /* script */)
-IPC_MESSAGE_ROUTED1(RenderViewObserverHelper_RemoveScript,
+IPC_MESSAGE_ROUTED1(RenderFrameObserverHelper_RemoveScript,
                     UserScriptData /* script */)
-IPC_MESSAGE_ROUTED0(RenderViewObserverHelper_ClearScripts)
+IPC_MESSAGE_ROUTED0(RenderFrameObserverHelper_ClearScripts)
 
 IPC_MESSAGE_CONTROL1(UserResourceController_AddScript, UserScriptData /* scriptContents */)
 IPC_MESSAGE_CONTROL1(UserResourceController_RemoveScript, UserScriptData /* scriptContents */)

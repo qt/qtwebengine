@@ -61,8 +61,9 @@ class UserResourceController : public content::RenderThreadObserver {
 public:
     static UserResourceController *instance();
     UserResourceController();
+    void renderFrameCreated(content::RenderFrame *);
     void renderViewCreated(content::RenderView *);
-    void renderViewDestroyed(content::RenderView *);
+    void renderViewDestroyed(content::RenderView *renderView);
     void addScriptForView(const UserScriptData &, content::RenderView *);
     void removeScriptForView(const UserScriptData &, content::RenderView *);
     void clearScriptsForView(content::RenderView *);
@@ -73,6 +74,7 @@ public:
 private:
     Q_DISABLE_COPY(UserResourceController)
 
+    class RenderFrameObserverHelper;
     class RenderViewObserverHelper;
 
     // RenderProcessObserver implementation.
@@ -89,7 +91,7 @@ private:
     ViewUserScriptMap m_viewUserScriptMap;
     QHash<uint64_t, UserScriptData> m_scripts;
 
-    friend class RenderViewObserverHelper;
+    friend class RenderFrameObserverHelper;
 };
 
 #endif // USER_RESOURCE_CONTROLLER_H

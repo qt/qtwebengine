@@ -1,3 +1,6 @@
+# this must be done outside any function
+QTWEBENGINE_SOURCE_TREE = $$PWD
+
 equals(QMAKE_HOST.os, Windows): EXE_SUFFIX = .exe
 
 defineTest(isPythonVersionSupported) {
@@ -18,9 +21,9 @@ defineTest(isPythonVersionSupported) {
 }
 
 defineTest(qtConfTest_detectPython2) {
-    python = $$qtConfFindInPath("python2")
+    python = $$qtConfFindInPath("python2$$EXE_SUFFIX")
     isEmpty(python) {
-        qtLog("'python2' not found in PATH. Checking for 'python'.")
+        qtLog("'python2$$EXE_SUFFIX' not found in PATH. Checking for 'python$$EXE_SUFFIX'.")
         python = $$qtConfFindInPath("python$$EXE_SUFFIX")
     }
     isEmpty(python) {
@@ -41,8 +44,18 @@ defineTest(qtConfTest_detectPython2) {
     return(true)
 }
 
+defineReplace(qtConfFindGnuTool) {
+    equals(QMAKE_HOST.os, Windows) {
+        gnuwin32bindir = $$absolute_path($$QTWEBENGINE_SOURCE_TREE/../gnuwin32/bin)
+        gnuwin32toolpath = "$$gnuwin32bindir/$${1}"
+        exists($$gnuwin32toolpath): \
+            return($$gnuwin32toolpath)
+    }
+    return($$qtConfFindInPath($$1))
+}
+
 defineTest(qtConfTest_detectGperf) {
-    gperf = $$qtConfFindInPath("gperf$$EXE_SUFFIX")
+    gperf = $$qtConfFindGnuTool("gperf$$EXE_SUFFIX")
     isEmpty(gperf) {
         qtLog("Required gperf could not be found.")
         return(false)
@@ -52,7 +65,7 @@ defineTest(qtConfTest_detectGperf) {
 }
 
 defineTest(qtConfTest_detectBison) {
-    bison = $$qtConfFindInPath("bison$$EXE_SUFFIX")
+    bison = $$qtConfFindGnuTool("bison$$EXE_SUFFIX")
     isEmpty(bison) {
         qtLog("Required bison could not be found.")
         return(false)
@@ -62,12 +75,32 @@ defineTest(qtConfTest_detectBison) {
 }
 
 defineTest(qtConfTest_detectFlex) {
-    flex = $$qtConfFindInPath("flex$$EXE_SUFFIX")
+    flex = $$qtConfFindGnuTool("flex$$EXE_SUFFIX")
     isEmpty(flex) {
         qtLog("Required flex could not be found.")
         return(false)
     }
     qtLog("Found flex from path: $$flex")
+    return(true)
+}
+
+defineTest(qtConfTest_detectGlibc) {
+    ldd = $$qtConfFindInPath("ldd")
+    !isEmpty(ldd) {
+        qtLog("Found ldd from path: $$ldd")
+        qtRunLoggedCommand("$$ldd --version", version)|return(true)
+        version ~= 's/^.*[^0-9]\([0-9]*\.[0-9]*\).*$/\1/'
+        version = $$first(version)
+        qtLog("Found libc version: $$version")
+        version = $$split(version,'.')
+        version = $$member(version, 1)
+        greaterThan(version, 16) {
+            return(true)
+        }
+        qtLog("Detected too old version of glibc. Required min 2.17.")
+        return(false)
+    }
+    qtLog("No ldd found. Assuming right version of glibc.")
     return(true)
 }
 
@@ -81,6 +114,16 @@ defineTest(qtConfTest_detectNinja) {
     }
     qtLog("Building own ninja")
     return(false)
+}
+
+defineTest(qtConfTest_detectProtoc) {
+    protoc = $$qtConfFindInPath("protoc")
+    isEmpty(protoc) {
+        qtLog("Optional protoc could not be found.")
+        return(false)
+    }
+    qtLog("Found protoc from path: $$protoc")
+    return(true)
 }
 
 defineTest(qtConfTest_detectGn) {
@@ -102,4 +145,14 @@ defineTest(qtConfTest_embedded) {
     }
     $$qtConfEvaluate("features.cross_compile"): return(true)
     return(false)
+}
+
+defineTest(qtConfTest_detectIcuuc) {
+   pkgConfig = $$first($$list($$pkgConfigExecutable()))
+   !isEmpty(pkgConfig) {
+       qtRunLoggedCommand("$$pkgConfig --libs --static libxml-2.0", xmllibs)
+       contains(xmllibs,".*-licuuc.*"):return(true)
+       qtLog("System libxml2 is not configured with ICU")
+   }
+   return(false)
 }

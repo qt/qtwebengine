@@ -134,6 +134,8 @@ public:
 
     void scheduleApplyRecursively();
 
+    bool getJavaScriptCanOpenWindowsAutomatically();
+
 private:
     void doApply();
     void applySettingsToWebPreferences(content::WebPreferences *);

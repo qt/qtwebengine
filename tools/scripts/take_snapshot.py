@@ -71,7 +71,8 @@ def isInChromiumBlacklist(file_path):
             not file_path.startswith('net/test/') and
             not file_path.endswith('mock_chrome_application_mac.h') and
             not file_path.endswith('perftimer.h') and
-            not 'ozone' in file_path)
+            not 'ozone' in file_path and
+            not file_path.startswith('extensions/browser/'))
         or file_path.endswith('.java')
         or file_path.startswith('android_webview')
         or file_path.startswith('apps/')
@@ -91,6 +92,8 @@ def isInChromiumBlacklist(file_path):
             not 'third_party/chromevox' in file_path and
             not 'media/webrtc/desktop_media_list.h' in file_path and
             not 'media/webrtc/desktop_streams_registry.' in file_path and
+            not '/browser/devtools/' in file_path and
+            not '/browser/ui/webui/' in file_path and
             not 'common/chrome_constants.' in file_path and
             not 'common/chrome_paths' in file_path and
             not 'common/chrome_switches.' in file_path and
@@ -125,7 +128,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('components/proximity_auth/')
         or (file_path.startswith('components/resources/terms/') and not file_path.endswith('terms_chromium.html'))
         or file_path.startswith('components/rlz/')
-        or file_path.startswith('components/sync/')
+        or file_path.startswith('components/sync/') and not file_path.endswith('ordinal.h')
         or file_path.startswith('components/test/')
         or file_path.startswith('components/test_runner/')
         or file_path.startswith('components/translate/')

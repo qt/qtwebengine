@@ -61,15 +61,17 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "net/base/port_util.h"
 #include "ppapi/features/features.h"
 #include "ui/events/event_switches.h"
-#include "ui/native_theme/native_theme_switches.h"
+#include "ui/native_theme/native_theme_features.h"
 #include "ui/gl/gl_switches.h"
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
@@ -133,21 +135,6 @@ bool usingANGLE()
 #endif
 }
 
-bool usingSoftwareDynamicGL()
-{
-    if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
-        return true;
-#if defined(Q_OS_WIN)
-    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
-    wchar_t path[MAX_PATH];
-    DWORD size = GetModuleFileName(handle, path, MAX_PATH);
-    QFileInfo openGLModule(QString::fromWCharArray(path, size));
-    return openGLModule.fileName() == QLatin1String("opengl32sw.dll");
-#else
-    return false;
-#endif
-}
-
 bool usingQtQuick2DRenderer()
 {
     const QStringList args = QGuiApplication::arguments();
@@ -184,6 +171,21 @@ void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 
 namespace QtWebEngineCore {
 
+bool usingSoftwareDynamicGL()
+{
+    if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
+        return true;
+#if defined(Q_OS_WIN)
+    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
+    wchar_t path[MAX_PATH];
+    DWORD size = GetModuleFileName(handle, path, MAX_PATH);
+    QFileInfo openGLModule(QString::fromWCharArray(path, size));
+    return openGLModule.fileName() == QLatin1String("opengl32sw.dll");
+#else
+    return false;
+#endif
+}
+
 void WebEngineContext::destroyBrowserContext()
 {
     m_defaultBrowserContext.reset();
@@ -195,7 +197,8 @@ void WebEngineContext::destroy()
         m_devtoolsServer->stop();
     delete m_globalQObject;
     m_globalQObject = 0;
-    base::MessagePump::Delegate *delegate = m_runLoop->loop_;
+    base::MessagePump::Delegate *delegate =
+            static_cast<base::MessageLoop *>(m_runLoop->delegate_);
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
     GLContextHelper::destroy();
@@ -284,6 +287,11 @@ WebEngineContext::WebEngineContext()
         appArgs.append(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv)).split(' '));
     }
 
+#ifdef Q_OS_WIN
+    bool enableWebGLSoftwareRendering =
+            appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
+#endif
+
     bool useEmbeddedSwitches = false;
 #if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
     useEmbeddedSwitches = !appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
@@ -317,7 +325,6 @@ WebEngineContext::WebEngineContext()
     }
 
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
-    parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
     // These are currently only default on OS X, and we don't support them:
     parsedCommandLine->AppendSwitch(switches::kDisableZeroCopy);
     parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferCompositorResources);
@@ -344,10 +351,15 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
 
+    // Needed to allow navigations within pages that were set using setHtml(). One example is
+    // tst_QWebEnginePage::acceptNavigationRequest.
+    // This is deprecated behavior, and will be removed in a future Chromium version, as per
+    // upstream Chromium commit ba52f56207a4b9d70b34880fbff2352e71a06422.
+    parsedCommandLine->AppendSwitchASCII(switches::kEnableFeatures,
+                                         features::kAllowContentInitiatedDataUrlNavigations.name);
+
     if (useEmbeddedSwitches) {
-        // Inspired by the Android port's default switches
-        if (!parsedCommandLine->HasSwitch(switches::kDisableOverlayScrollbar))
-            parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
+        parsedCommandLine->AppendSwitchASCII(switches::kEnableFeatures, features::kOverlayScrollbar.name);
         if (!parsedCommandLine->HasSwitch(switches::kDisablePinch))
             parsedCommandLine->AppendSwitch(switches::kEnablePinch);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
@@ -363,7 +375,20 @@ WebEngineContext::WebEngineContext()
 
     const char *glType = 0;
 #ifndef QT_NO_OPENGL
-    if (!usingANGLE() && !usingSoftwareDynamicGL() && !usingQtQuick2DRenderer()) {
+
+    bool tryGL =
+            !usingANGLE()
+            && (!usingSoftwareDynamicGL()
+#ifdef Q_OS_WIN
+                // If user requested WebGL support on Windows, instead of using Skia rendering to
+                // bitmaps, use software rendering via opengl32sw.dll. This might be less
+                // performant, but at least provides WebGL support.
+                || enableWebGLSoftwareRendering
+#endif
+                )
+            && !usingQtQuick2DRenderer();
+
+    if (tryGL) {
         if (qt_gl_global_share_context() && qt_gl_global_share_context()->isValid()) {
             // If the native handle is QEGLNativeContext try to use GL ES/2, if there is no native handle
             // assume we are using wayland and try GL ES/2, and finally Ozone demands GL ES/2 too.
@@ -409,8 +434,7 @@ WebEngineContext::WebEngineContext()
                     QSurfaceFormat globalSharedFormat = qt_gl_global_share_context()->format();
                     if (globalSharedFormat.profile() == QSurfaceFormat::CoreProfile) {
 #ifdef Q_OS_MACOS
-                        // @TODO_FIXME_ADAPT_QT
-                        // glType = gl::kGLImplementationCoreProfileName;
+                        glType = gl::kGLImplementationCoreProfileName;
 #else
                         qWarning("An OpenGL Core Profile was requested, but it is not supported "
                                  "on the current platform. Falling back to a non-Core profile. "
@@ -428,17 +452,24 @@ WebEngineContext::WebEngineContext()
     }
 #endif
 
-    if (glType)
+    if (glType) {
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
-    else
+        parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
+#ifdef Q_OS_WIN
+        if (enableWebGLSoftwareRendering)
+            parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
+#endif
+    } else {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
+    }
 
     content::UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
     content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
     content::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
 
+    mojo::edk::Init();
+
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
-    contentMainParams.setup_signal_handlers = false;
 #if defined(OS_WIN)
     sandbox::SandboxInterfaceInfo sandbox_info = {0};
     content::InitializeSandboxInfo(&sandbox_info);
@@ -459,6 +490,11 @@ WebEngineContext::WebEngineContext()
     MediaCaptureDevicesDispatcher::GetInstance();
 
     base::ThreadRestrictions::SetIOAllowed(true);
+
+    if (parsedCommandLine->HasSwitch(switches::kExplicitlyAllowedPorts)) {
+        std::string allowedPorts = parsedCommandLine->GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
+        net::SetExplicitlyAllowedPorts(allowedPorts);
+    }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     // Creating pepper plugins from the page (which calls PluginService::GetPluginInfoArray)

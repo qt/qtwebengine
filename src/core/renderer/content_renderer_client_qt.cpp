@@ -57,6 +57,9 @@
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/child/child_thread.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/simple_connection_filter.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
@@ -75,7 +78,7 @@
 #include "renderer/render_view_observer_qt.h"
 #include "renderer/user_resource_controller.h"
 #include "renderer/web_channel_ipc_transport.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 #include "components/grit/components_resources.h"
 
@@ -98,8 +101,16 @@ void ContentRendererClientQt::RenderThreadStarted()
     content::RenderThread *renderThread = content::RenderThread::Get();
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheImpl.reset(new web_cache::WebCacheImpl());
-    renderThread->GetInterfaceRegistry()->AddInterface(
-        m_visitedLinkSlave->GetBindCallback());
+
+    auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+    registry->AddInterface(m_visitedLinkSlave->GetBindCallback(),
+                           base::ThreadTaskRunnerHandle::Get());
+    content::ChildThread::Get()
+        ->GetServiceManagerConnection()
+        ->AddConnectionFilter(base::MakeUnique<content::SimpleConnectionFilter>(
+            std::move(registry)));
+
+
     renderThread->AddObserver(UserResourceController::instance());
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -114,15 +125,16 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
     new RenderViewObserverQt(render_view, m_webCacheImpl.data());
     new WebChannelIPCTransport(render_view);
     UserResourceController::instance()->renderViewCreated(render_view);
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-    new SpellCheckProvider(render_view, m_spellCheck.data());
-#endif
-
 }
 
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)
 {
     new QtWebEngineCore::RenderFrameObserverQt(render_frame);
+    UserResourceController::instance()->renderFrameCreated(render_frame);
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+    new SpellCheckProvider(render_frame, m_spellCheck.data());
+#endif
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     new printing::PrintWebViewHelper(
                 render_frame,
@@ -173,7 +185,7 @@ bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *fram
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
 void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* renderFrame, const blink::WebURLRequest &failedRequest, const blink::WebURLError &error, std::string *errorHtml, base::string16 *errorDescription)
 {
-    const bool isPost = QByteArray::fromStdString(failedRequest.httpMethod().utf8()) == QByteArrayLiteral("POST");
+    const bool isPost = QByteArray::fromStdString(failedRequest.HttpMethod().Utf8()) == QByteArrayLiteral("POST");
 
     if (errorHtml) {
         // Use a local error page.
@@ -184,8 +196,8 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* re
         // TODO(elproxy): We could potentially get better diagnostics here by first calling
         // NetErrorHelper::GetErrorStringsForDnsProbe, but that one is harder to untangle.
 
-        error_page::LocalizedError::GetStrings(error.reason, error.domain.utf8(), error.unreachableURL, isPost
-                                  , error.staleCopyInCache && !isPost, false, false, locale
+        error_page::LocalizedError::GetStrings(error.reason, error.domain.Utf8(), error.unreachable_url, isPost
+                                  , error.stale_copy_in_cache && !isPost, false, false, locale
                                   , std::unique_ptr<error_page::ErrorPageParams>(), &errorStrings);
         resourceId = IDR_NET_ERROR_HTML;
 
@@ -198,7 +210,7 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* re
     }
 
     if (errorDescription)
-        *errorDescription = error_page::LocalizedError::GetErrorDetails(error.domain.utf8(), error.reason, isPost);
+        *errorDescription = error_page::LocalizedError::GetErrorDetails(error.domain.Utf8(), error.reason, isPost);
 }
 
 unsigned long long ContentRendererClientQt::VisitedLinkHash(const char *canonicalUrl, size_t length)

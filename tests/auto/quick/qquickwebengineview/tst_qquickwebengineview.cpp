@@ -442,6 +442,7 @@ void tst_QQuickWebEngineView::inputMethod()
     QQuickItem *input;
 
     QQuickWebEngineView *view = webEngineView();
+    view->settings()->setFocusOnNavigationEnabled(true);
     view->setUrl(urlFromTestPath("html/inputmethod.html"));
     QVERIFY(waitForLoadSucceeded(view));
 
@@ -469,6 +470,7 @@ void tst_QQuickWebEngineView::inputMethodHints()
     QQuickItem *input;
 
     QQuickWebEngineView *view = webEngineView();
+    view->settings()->setFocusOnNavigationEnabled(true);
     view->setUrl(urlFromTestPath("html/inputmethod.html"));
     QVERIFY(waitForLoadSucceeded(view));
 
@@ -560,6 +562,7 @@ void tst_QQuickWebEngineView::stopSettingFocusWhenDisabled()
 
     QQuickWebEngineView *view = webEngineView();
     m_window->show();
+    view->settings()->setFocusOnNavigationEnabled(true);
     view->setSize(QSizeF(640, 480));
     view->setEnabled(viewEnabled);
     view->loadHtml("<html><head><title>Title</title></head><body>Hello"

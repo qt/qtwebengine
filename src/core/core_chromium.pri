@@ -98,6 +98,7 @@ SOURCES = \
         url_request_context_getter_qt.cpp \
         url_request_custom_job.cpp \
         url_request_custom_job_delegate.cpp \
+        url_request_custom_job_proxy.cpp \
         url_request_qrc_job_qt.cpp \
         user_script.cpp \
         visited_links_manager_qt.cpp \
@@ -176,6 +177,7 @@ HEADERS = \
         url_request_context_getter_qt.h \
         url_request_custom_job.h \
         url_request_custom_job_delegate.h \
+        url_request_custom_job_proxy.h \
         url_request_qrc_job_qt.h \
         user_script.h \
         visited_links_manager_qt.h \

@@ -311,8 +311,7 @@ bool QQuickWebEngineSettings::touchIconsEnabled() const
   Focus is given to the view whenever a navigation operation occurs
   (load, stop, reload, reload and bypass cache, forward, backward, set content, and so on).
 
-  Enabled by default. See \l{WebEngine Recipe Browser} for an example where
-  this property is disabled.
+  Disabled by default.
 */
 bool QQuickWebEngineSettings::focusOnNavigationEnabled() const
 {

@@ -51,7 +51,7 @@ private Q_SLOTS:
 
 void tst_QWebEngineDefaultSurfaceFormat::customDefaultSurfaceFormat()
 {
-#if !defined(Q_OS_MACOSX)
+#if !defined(Q_OS_MACOS)
     QSKIP("OpenGL Core Profile is currently only supported on macOS.");
 #endif
     // Setting a new default QSurfaceFormat with a core OpenGL profile before

@@ -3,6 +3,7 @@ TEMPLATE = subdirs
 SUBDIRS += \
     qwebengineaccessibility \
     qwebenginedefaultsurfaceformat \
+    qwebenginedownloads \
     qwebenginefaviconmanager \
     qwebenginepage \
     qwebenginehistory \
@@ -24,4 +25,5 @@ contains(WEBENGINE_CONFIG, use_spellchecker):!cross_compile {
 # QTBUG-60268
 boot2qt: SUBDIRS -= qwebengineaccessibility qwebenginedefaultsurfaceformat \
                     qwebenginefaviconmanager qwebenginepage qwebenginehistory \
-                    qwebengineprofile qwebenginescript qwebengineview
+                    qwebengineprofile qwebenginescript qwebengineview \
+                    qwebenginedownloads

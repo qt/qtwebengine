@@ -57,6 +57,7 @@
 #include "content/public/common/web_preferences.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/print_job_constants.h"
+#include "printing/units.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(QtWebEngineCore::PrintViewManagerQt);
 
@@ -129,6 +130,10 @@ static base::DictionaryValue *createPrintSettings()
 
     printSettings->SetBoolean(printing::kSettingGenerateDraftData, false);
     printSettings->SetBoolean(printing::kSettingPreviewModifiable, false);
+
+    printSettings->SetInteger(printing::kSettingDpiHorizontal, printing::kPointsPerInch);
+    printSettings->SetInteger(printing::kSettingDpiVertical, printing::kPointsPerInch);
+
     printSettings->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
     printSettings->SetInteger(printing::kSettingCopies, 1);
     printSettings->SetBoolean(printing::kSettingCollate, false);
