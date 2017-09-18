@@ -100,7 +100,7 @@ SHIM_HIDDEN void* ShimCalloc(size_t n, size_t size) {
 }
 
 SHIM_HIDDEN void ShimCFree(void* ptr) {
-    cfree(ptr);
+    free(ptr);
 }
 
 SHIM_HIDDEN void* ShimMemalign(size_t align, size_t s) {
