@@ -372,13 +372,13 @@ bool QQuickWebEngineSettings::allowWindowActivationFromJavaScript() const
 }
 
 /*!
-  \qmlproperty bool WebEngineSettings::hideScrollbars
+  \qmlproperty bool WebEngineSettings::showScrollBars
   \since QtWebEngine 1.6
-  Hides scrollbars. Disabled by default.
+  Shows scroll bars. Enabled by default.
 */
-bool QQuickWebEngineSettings::hideScrollbars() const
+bool QQuickWebEngineSettings::showScrollBars() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::HideScrollbars);
+    return d_ptr->testAttribute(WebEngineSettings::ShowScrollBars);
 }
 
 /*!
@@ -591,12 +591,12 @@ void QQuickWebEngineSettings::setAllowWindowActivationFromJavaScript(bool on)
         Q_EMIT allowWindowActivationFromJavaScriptChanged();
 }
 
-void QQuickWebEngineSettings::setHideScrollbars(bool on)
+void QQuickWebEngineSettings::setShowScrollBars(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::HideScrollbars);
-    d_ptr->setAttribute(WebEngineSettings::HideScrollbars, on);
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::ShowScrollBars);
+    d_ptr->setAttribute(WebEngineSettings::ShowScrollBars, on);
     if (wasOn != on)
-        Q_EMIT hideScrollbarsChanged();
+        Q_EMIT showScrollBarsChanged();
 }
 
 void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)

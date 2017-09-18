@@ -3538,7 +3538,7 @@ void tst_QWebEnginePage::scrollPosition()
 void tst_QWebEnginePage::scrollbarsOff()
 {
     QWebEngineView view;
-    view.page()->settings()->setAttribute(QWebEngineSettings::HideScrollbars, true);
+    view.page()->settings()->setAttribute(QWebEngineSettings::ShowScrollBars, false);
 
     QString html("<html><body>"
                  "   <div style='margin-top:1000px ; margin-left:1000px'>"

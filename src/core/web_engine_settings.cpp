@@ -231,7 +231,7 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(PluginsEnabled, false);
         s_defaultAttributes.insert(FullScreenSupportEnabled, false);
         s_defaultAttributes.insert(ScreenCaptureEnabled, false);
-        s_defaultAttributes.insert(HideScrollbars, false);
+        s_defaultAttributes.insert(ShowScrollBars, true);
         // The following defaults matches logic in render_view_host_impl.cc
         // But first we must ensure the WebContext has been initialized
         QtWebEngineCore::WebEngineContext::current();
@@ -334,7 +334,7 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->should_print_backgrounds = testAttribute(PrintElementBackgrounds);
     prefs->allow_running_insecure_content = testAttribute(AllowRunningInsecureContent);
     prefs->allow_geolocation_on_insecure_origins = testAttribute(AllowGeolocationOnInsecureOrigins);
-    prefs->hide_scrollbars = testAttribute(HideScrollbars);
+    prefs->hide_scrollbars = !testAttribute(ShowScrollBars);
 
     // Fonts settings.
     prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));
