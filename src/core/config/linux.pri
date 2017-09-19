@@ -116,15 +116,10 @@ host_build {
     }
 
     qtConfig(system-zlib): qtConfig(system-minizip): gn_args += use_system_zlib=true use_system_minizip=true
-
-    # FIXME: make system-png a public feature in gui
-    qtConfig(system-png): qtConfig(webengine-system-png): gn_args += use_system_libpng=true
-
+    qtConfig(webengine-system-png): gn_args += use_system_libpng=true
     qtConfig(system-jpeg): gn_args += use_system_libjpeg=true
     qtConfig(system-freetype): gn_args += use_system_freetype=true
-
-    # FIXME: make system-harfbuzz a public feautre in gui
-    qtConfig(system-harfbuzz): qtConfig(webengine-system-harfbuzz): gn_args += use_system_harfbuzz=true
+    qtConfig(webengine-system-harfbuzz): gn_args += use_system_harfbuzz=true
     qtConfig(system-glib): gn_args += use_glib=false
     qtConfig(pulseaudio) {
         gn_args += use_pulseaudio=true

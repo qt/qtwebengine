@@ -1,6 +1,7 @@
 {
     "module": "webengine",
     "depends": [
+        "gui-private",
         "printsupport"
     ],
 
@@ -290,7 +291,7 @@
         },
         "webengine-system-harfbuzz": {
             "label": "harfbuzz",
-            "condition": "libs.harfbuzz",
+            "condition": "config.unix && features.system-harfbuzz && libs.harfbuzz",
             "output": [ "privateFeature" ]
         },
         "system-glib" : {
@@ -325,7 +326,7 @@
         },
         "webengine-system-png" : {
             "label": "png",
-            "condition": "config.unix && libs.png",
+            "condition": "config.unix && features.system-png && libs.png",
             "output": [ "privateFeature" ]
         },
         "python2": {
