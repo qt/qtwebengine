@@ -40,7 +40,7 @@
 // This is based on chrome/browser/renderer_host/pepper/pepper_isolated_file_system_message_filter.cc:
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// found in the LICENSE.Chromium file.
 
 #include "pepper_isolated_file_system_message_filter.h"
 
