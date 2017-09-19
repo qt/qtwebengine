@@ -507,7 +507,7 @@ void tst_QQuickWebEngineView::interruptImeTextComposition()
     QVERIFY(waitForLoadSucceeded(view));
 
     runJavaScript("document.getElementById('input1').focus();");
-    QTRY_COMPARE(activeElementId(view), QStringLiteral("input1"));
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input1"));
 
     TestInputContext testContext;
 
@@ -516,7 +516,7 @@ void tst_QQuickWebEngineView::interruptImeTextComposition()
     QInputMethodEvent event("x", attributes);
     input = qobject_cast<QQuickItem *>(qApp->focusObject());
     QGuiApplication::sendEvent(input, &event);
-    QTRY_COMPARE(elementValue(view, "input1"), QStringLiteral("x"));
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "document.getElementById('input1').value").toString(), QStringLiteral("x"));
 
     // Focus 'input2' input field by an input event
     QFETCH(QString, eventType);
@@ -529,7 +529,7 @@ void tst_QQuickWebEngineView::interruptImeTextComposition()
         QTest::touchEvent(view->window(), touchDevice).press(0, textInputCenter, view->window());
         QTest::touchEvent(view->window(), touchDevice).release(0, textInputCenter, view->window());
     }
-    QTRY_COMPARE(activeElementId(view), QStringLiteral("input2"));
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input2"));
 #ifndef Q_OS_WIN
     QTRY_COMPARE(testContext.commitCallCount, 1);
 #else
@@ -538,7 +538,7 @@ void tst_QQuickWebEngineView::interruptImeTextComposition()
 
     // Check the composition text has been committed
     runJavaScript("document.getElementById('input1').focus();");
-    QTRY_COMPARE(activeElementId(view), QStringLiteral("input1"));
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input1"));
     input = qobject_cast<QQuickItem *>(qApp->focusObject());
     QTRY_COMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QStringLiteral("x"));
 }
@@ -786,8 +786,8 @@ void tst_QQuickWebEngineView::changeLocale()
     viewDE->setUrl(url);
     QVERIFY(waitForLoadFailed(viewDE.data()));
 
-    QTRY_VERIFY(!bodyInnerText(viewDE.data()).isEmpty());
-    errorLines = bodyInnerText(viewDE.data()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
+    errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Diese Website ist nicht erreichbar"));
 
     QLocale::setDefault(QLocale("en"));
@@ -795,8 +795,8 @@ void tst_QQuickWebEngineView::changeLocale()
     viewEN->setUrl(url);
     QVERIFY(waitForLoadFailed(viewEN.data()));
 
-    QTRY_VERIFY(!bodyInnerText(viewEN.data()).isEmpty());
-    errorLines = bodyInnerText(viewEN.data()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").isNull());
+    errorLines = evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").toString().split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("This site can\xE2\x80\x99t be reached"));
 
     // Reset error page
@@ -807,8 +807,8 @@ void tst_QQuickWebEngineView::changeLocale()
     viewDE->setUrl(url);
     QVERIFY(waitForLoadFailed(viewDE.data()));
 
-    QTRY_VERIFY(!bodyInnerText(viewDE.data()).isEmpty());
-    errorLines = bodyInnerText(viewDE.data()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
+    errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Diese Website ist nicht erreichbar"));
 }
 
