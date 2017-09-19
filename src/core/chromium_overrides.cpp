@@ -176,6 +176,19 @@ void GetFontsInFamily_SlowBlocking(const std::string &, std::vector<ppapi::proxy
 
 } // namespace content
 
+namespace aura {
+class Window;
+}
+
+namespace wm {
+class ActivationClient;
+
+ActivationClient *GetActivationClient(aura::Window *)
+{
+    return nullptr;
+}
+
+} // namespace wm
 #endif // defined(USE_AURA) || defined(USE_OZONE)
 
 std::unique_ptr<ui::OSExchangeData::Provider>

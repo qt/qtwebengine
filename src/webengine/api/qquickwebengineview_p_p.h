@@ -179,6 +179,7 @@ public:
     bool isLoading;
     bool m_activeFocusOnPress;
     bool m_navigationActionTriggered;
+    bool m_validationShowing;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
     QList<QSharedPointer<CertificateErrorController> > m_certificateErrorControllers;

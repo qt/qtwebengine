@@ -954,9 +954,26 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     dlmd->setDownloadType(BrowserContextAdapterClient::UserRequested);
     dlm->SetDelegate(dlmd);
 
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation(
+            "WebContentsAdapter::download", R"(
+            semantics {
+              sender: "User"
+              description:
+                "User requested download"
+              trigger: "User."
+              data: "Anything."
+              destination: OTHER
+            }
+            policy {
+              cookies_allowed: YES
+              cookies_store: "user"
+              setting:
+                "It's possible not to use this feature."
+            })");
     GURL gurl = toGurl(url);
     std::unique_ptr<content::DownloadUrlParameters> params(
-        content::DownloadUrlParameters::CreateForWebContentsMainFrame(webContents(), gurl));
+        content::DownloadUrlParameters::CreateForWebContentsMainFrame(webContents(), gurl, traffic_annotation));
 
     params->set_suggested_name(toString16(suggestedFileName));
 
@@ -1514,6 +1531,8 @@ ASSERT_ENUMS_MATCH(ReferrerPolicy::Never, blink::kWebReferrerPolicyNever)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::Origin, blink::kWebReferrerPolicyOrigin)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::OriginWhenCrossOrigin, blink::kWebReferrerPolicyOriginWhenCrossOrigin)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngradeOriginWhenCrossOrigin, blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::SameOrigin, blink::kWebReferrerPolicySameOrigin)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::StrictOrigin, blink::kWebReferrerPolicyStrictOrigin)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::Last, blink::kWebReferrerPolicyLast)
 
 } // namespace QtWebEngineCore

@@ -105,7 +105,8 @@ public:
     void LoadProgressChanged(content::WebContents* source, double progress) override;
     void HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) override;
     content::ColorChooser *OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion) override;
-    void WebContentsCreated(content::WebContents* source_contents, int opener_render_process_id, int opener_render_frame_id, const std::string& frame_name, const GURL& target_url, content::WebContents* new_contents, const base::Optional<content::WebContents::CreateParams>& create_params) override;
+    void WebContentsCreated(content::WebContents *source_contents, int opener_render_process_id, int opener_render_frame_id,
+                            const std::string &frame_name, const GURL &target_url, content::WebContents *new_contents) override;
     content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) override;
     void EnterFullscreenModeForTab(content::WebContents* web_contents, const GURL& origin) override;
     void ExitFullscreenModeForTab(content::WebContents*) override;

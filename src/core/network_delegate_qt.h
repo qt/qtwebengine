@@ -89,7 +89,8 @@ public:
     virtual void OnPACScriptError(int, const base::string16&) override;
     virtual net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, const AuthCallback&, net::AuthCredentials*) override;
     virtual bool OnCanGetCookies(const net::URLRequest&, const net::CookieList&) override;
-    virtual bool OnCanAccessFile(const net::URLRequest& request, const base::FilePath& path) const override;
+    virtual bool OnCanAccessFile(const net::URLRequest&, const base::FilePath&, const base::FilePath&) const override;
+
     virtual bool OnCanEnablePrivacyMode(const GURL&, const GURL&) const override;
     virtual bool OnAreExperimentalCookieFeaturesEnabled() const override;
     virtual bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const override;

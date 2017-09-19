@@ -480,7 +480,9 @@ void tst_QWebEnginePage::pasteImage()
             "window.myImageDataURL ? window.myImageDataURL.length : 0").toInt() > 0);
     QByteArray data = evaluateJavaScriptSync(page, "window.myImageDataURL").toByteArray();
     data.remove(0, data.indexOf(";base64,") + 8);
-    const QImage image = QImage::fromData(QByteArray::fromBase64(data), "PNG");
+    QImage image = QImage::fromData(QByteArray::fromBase64(data), "PNG");
+    if (image.format() == QImage::Format_RGB32)
+        image.reinterpretAsFormat(QImage::Format_ARGB32);
     QCOMPARE(image, origImage);
 }
 

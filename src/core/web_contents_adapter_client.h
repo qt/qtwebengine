@@ -80,7 +80,9 @@ enum class ReferrerPolicy {
     Origin,
     OriginWhenCrossOrigin,
     NoReferrerWhenDowngradeOriginWhenCrossOrigin,
-    Last = NoReferrerWhenDowngradeOriginWhenCrossOrigin,
+    SameOrigin,
+    StrictOrigin,
+    Last = StrictOrigin,
 };
 
 class WebEngineContextMenuSharedData : public QSharedData {

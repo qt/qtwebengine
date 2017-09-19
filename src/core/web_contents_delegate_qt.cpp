@@ -118,6 +118,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     load_url_params.extra_headers = params.extra_headers;
     load_url_params.should_replace_current_entry = params.should_replace_current_entry;
     load_url_params.is_renderer_initiated = params.is_renderer_initiated;
+    load_url_params.started_from_context_menu = params.started_from_context_menu;
     load_url_params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
     if (params.uses_post) {
         load_url_params.load_type = content::NavigationController::LOAD_TYPE_HTTP_POST;
@@ -340,9 +341,12 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::Favic
     m_faviconManager->update(faviconCandidates);
 }
 
-void WebContentsDelegateQt::WebContentsCreated(content::WebContents* /*source_contents*/, int /*opener_render_process_id*/, int /*opener_render_frame_id*/, const std::string& /*frame_name*/, const GURL& target_url, content::WebContents* new_contents, const base::Optional<content::WebContents::CreateParams>& create_params)
+void WebContentsDelegateQt::WebContentsCreated(content::WebContents */*source_contents*/,
+                                               int /*opener_render_process_id*/, int /*opener_render_frame_id*/,
+                                               const std::string &/*frame_name*/,
+                                               const GURL &target_url, content::WebContents */*new_contents*/)
 {
-    this->m_initialTargetUrl = toQt(target_url);
+    m_initialTargetUrl = toQt(target_url);
 }
 
 content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion)

@@ -91,7 +91,7 @@ public:
     DelegatedFrameNode();
     ~DelegatedFrameNode();
     void preprocess();
-    void commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
+    void commit(ChromiumCompositorData *chromiumCompositorData, std::vector<cc::ReturnedResource> *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
 
 private:
     void flushPolygons(

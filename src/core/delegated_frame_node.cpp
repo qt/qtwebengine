@@ -71,7 +71,7 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
-#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
@@ -659,7 +659,7 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
     if (!texture) {
         if (m_resource.is_software) {
             Q_ASSERT(apiDelegate);
-            std::unique_ptr<cc::SharedBitmap> sharedBitmap = viz::HostSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size, m_resource.mailbox_holder.mailbox);
+            std::unique_ptr<viz::SharedBitmap> sharedBitmap = viz::ServerSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size, m_resource.mailbox_holder.mailbox);
             // QSG interprets QImage::hasAlphaChannel meaning that a node should enable blending
             // to draw it but Chromium keeps this information in the quads.
             // The input format is currently always Format_ARGB32_Premultiplied, so assume that all
@@ -837,7 +837,7 @@ static bool areRenderPassStructuresEqual(cc::CompositorFrame *frameData,
 }
 
 void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
-                                cc::ReturnedResourceArray *resourcesToRelease,
+                                std::vector<cc::ReturnedResource> *resourcesToRelease,
                                 RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     m_chromiumCompositorData = chromiumCompositorData;

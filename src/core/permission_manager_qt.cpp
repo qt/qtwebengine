@@ -88,17 +88,51 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &origin, BrowserCont
     QPair<QUrl, BrowserContextAdapter::PermissionType> key(origin, type);
     m_permissions[key] = reply;
     blink::mojom::PermissionStatus status = reply ? blink::mojom::PermissionStatus::GRANTED : blink::mojom::PermissionStatus::DENIED;
-    auto it = m_requests.begin();
-    while (it != m_requests.end()) {
-        if (it->origin == origin && it->type == type) {
-            it->callback.Run(status);
-            it = m_requests.erase(it);
-        } else
-            ++it;
+    {
+        auto it = m_requests.begin();
+        while (it != m_requests.end()) {
+            if (it->origin == origin && it->type == type) {
+                it->callback.Run(status);
+                it = m_requests.erase(it);
+            } else
+                ++it;
+        }
     }
     Q_FOREACH (const RequestOrSubscription &subscriber, m_subscribers) {
         if (subscriber.origin == origin && subscriber.type == type)
             subscriber.callback.Run(status);
+    }
+
+    auto it = m_multiRequests.begin();
+    while (it != m_multiRequests.end()) {
+        if (it->origin == origin) {
+            bool answerable = true;
+            std::vector<blink::mojom::PermissionStatus> result;
+            result.reserve(it->types.size());
+            for (content::PermissionType permission : it->types) {
+                const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
+                if (permissionType == BrowserContextAdapter::UnsupportedPermission) {
+                    result.push_back(blink::mojom::PermissionStatus::DENIED);
+                    continue;
+                }
+
+                QPair<QUrl, BrowserContextAdapter::PermissionType> key(origin, permissionType);
+                if (!m_permissions.contains(key)) {
+                    answerable = false;
+                    break;
+                }
+                if (m_permissions[key])
+                    result.push_back(blink::mojom::PermissionStatus::GRANTED);
+                else
+                    result.push_back(blink::mojom::PermissionStatus::DENIED);
+            }
+            if (answerable) {
+                it->callback.Run(result);
+                it = m_multiRequests.erase(it);
+                continue;
+            }
+        }
+        ++it;
     }
 }
 
@@ -144,32 +178,46 @@ int PermissionManagerQt::RequestPermissions(const std::vector<content::Permissio
                                             bool /*user_gesture*/,
                                             const base::Callback<void(const std::vector<blink::mojom::PermissionStatus>&)>& callback)
 {
-    NOTIMPLEMENTED() << "RequestPermissions has not been implemented in QtWebEngine";
-    Q_UNUSED(frameHost);
-
-    std::vector<blink::mojom::PermissionStatus> result(permissions.size());
+    bool answerable = true;
+    std::vector<blink::mojom::PermissionStatus> result;
+    result.reserve(permissions.size());
     for (content::PermissionType permission : permissions) {
         const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
         if (permissionType == BrowserContextAdapter::UnsupportedPermission)
             result.push_back(blink::mojom::PermissionStatus::DENIED);
         else {
-            QPair<QUrl, BrowserContextAdapter::PermissionType> key(toQt(requesting_origin), permissionType);
-            // TODO: Request permission from UI
-            if (m_permissions.contains(key) && m_permissions[key])
-                result.push_back(blink::mojom::PermissionStatus::GRANTED);
-            else
-                result.push_back(blink::mojom::PermissionStatus::DENIED);
+            answerable = false;
+            break;
         }
     }
+    if (answerable) {
+        callback.Run(result);
+        return kNoPendingOperation;
+    }
 
-    callback.Run(result);
-    return kNoPendingOperation;
+    int request_id = ++m_requestIdCount;
+    content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents();
+    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+    Q_ASSERT(contentsDelegate);
+    MultiRequest request = {
+        permissions,
+        toQt(requesting_origin),
+        callback
+    };
+    m_multiRequests.insert(request_id, request);
+    for (content::PermissionType permission : permissions) {
+        const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
+        if (permissionType == BrowserContextAdapter::GeolocationPermission)
+            contentsDelegate->requestGeolocationPermission(request.origin);
+    }
+    return request_id;
 }
 
 void PermissionManagerQt::CancelPermissionRequest(int request_id)
 {
     // Should we add API to cancel permissions in the UI level?
     m_requests.remove(request_id);
+    m_multiRequests.remove(request_id);
 }
 
 blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(
