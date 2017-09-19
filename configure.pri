@@ -148,7 +148,7 @@ defineTest(qtConfTest_embedded) {
 }
 
 defineTest(qtConfTest_detectIcuuc) {
-   pkgConfig = $$first($$list($$pkgConfigExecutable()))
+   pkgConfig = $$qtConfPkgConfig()
    !isEmpty(pkgConfig) {
        qtRunLoggedCommand("$$pkgConfig --libs --static libxml-2.0", xmllibs)
        contains(xmllibs,".*-licuuc.*"):return(true)
