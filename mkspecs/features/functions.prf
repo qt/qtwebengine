@@ -1,11 +1,6 @@
 defineReplace(getConfigDir) {
-  win32:contains(QMAKE_TARGET.arch, x86_64) {
-      CONFIG(release, debug|release):return("Release_x64")
-      return("Debug_x64")
-  }
-
-  CONFIG(release, debug|release):return("Release")
-  return("Debug")
+  CONFIG(release, debug|release):return("release")
+  return("debug")
 }
 
 defineReplace(getChromiumSrcDir) {
