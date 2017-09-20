@@ -42,7 +42,7 @@
 
 #include "content/public/browser/quota_permission_context.h"
 
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#include <QtCore/qcompilerdetection.h> // Needed for override
 
 namespace QtWebEngineCore {
 
@@ -50,7 +50,7 @@ class QuotaPermissionContextQt : public content::QuotaPermissionContext {
 public:
     void RequestQuotaPermission(const content::StorageQuotaParams &params,
                                 int render_process_id,
-                                const PermissionCallback &callback) Q_DECL_OVERRIDE;
+                                const PermissionCallback &callback) override;
 
     void dispatchCallbackOnIOThread(const PermissionCallback &callback,
                                     QuotaPermissionContext::QuotaPermissionResponse response);

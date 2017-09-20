@@ -476,7 +476,7 @@ public:
     Q_ENUM(PrintedPageOrientation)
 
     // QmlParserStatus
-    virtual void componentComplete() Q_DECL_OVERRIDE;
+    void componentComplete() override;
 
     QQuickWebEngineProfile *profile() const;
     void setProfile(QQuickWebEngineProfile *);
@@ -562,12 +562,12 @@ Q_SIGNALS:
 #endif
 
 protected:
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) Q_DECL_OVERRIDE;
-    void itemChange(ItemChange, const ItemChangeData &) Q_DECL_OVERRIDE;
-    void dragEnterEvent(QDragEnterEvent *e) Q_DECL_OVERRIDE;
-    void dragLeaveEvent(QDragLeaveEvent *e) Q_DECL_OVERRIDE;
-    void dragMoveEvent(QDragMoveEvent *e) Q_DECL_OVERRIDE;
-    void dropEvent(QDropEvent *e) Q_DECL_OVERRIDE;
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
+    void itemChange(ItemChange, const ItemChangeData &) override;
+    void dragEnterEvent(QDragEnterEvent *e) override;
+    void dragLeaveEvent(QDragLeaveEvent *e) override;
+    void dragMoveEvent(QDragMoveEvent *e) override;
+    void dropEvent(QDropEvent *e) override;
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)

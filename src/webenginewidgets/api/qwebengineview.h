@@ -103,7 +103,7 @@ public:
     void findText(const QString &subString, QWebEnginePage::FindFlags options = QWebEnginePage::FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
 #endif
 
-    virtual QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
     QWebEngineSettings *settings() const;
 
 public Q_SLOTS:
@@ -126,14 +126,14 @@ Q_SIGNALS:
 
 protected:
     virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);
-    virtual void contextMenuEvent(QContextMenuEvent*) Q_DECL_OVERRIDE;
-    virtual bool event(QEvent*) Q_DECL_OVERRIDE;
-    virtual void showEvent(QShowEvent *) Q_DECL_OVERRIDE;
-    virtual void hideEvent(QHideEvent *) Q_DECL_OVERRIDE;
-    void dragEnterEvent(QDragEnterEvent *e) Q_DECL_OVERRIDE;
-    void dragLeaveEvent(QDragLeaveEvent *e) Q_DECL_OVERRIDE;
-    void dragMoveEvent(QDragMoveEvent *e) Q_DECL_OVERRIDE;
-    void dropEvent(QDropEvent *e) Q_DECL_OVERRIDE;
+    void contextMenuEvent(QContextMenuEvent*) override;
+    bool event(QEvent*) override;
+    void showEvent(QShowEvent *) override;
+    void hideEvent(QHideEvent *) override;
+    void dragEnterEvent(QDragEnterEvent *e) override;
+    void dragLeaveEvent(QDragLeaveEvent *e) override;
+    void dragMoveEvent(QDragMoveEvent *e) override;
+    void dropEvent(QDropEvent *e) override;
 
 private:
     Q_DISABLE_COPY(QWebEngineView)

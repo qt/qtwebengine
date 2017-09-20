@@ -73,7 +73,7 @@ public:
     static void moveBubble(QWebEngineView *view, const QRect &anchor);
 
 protected:
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) override;
 
 private:
     void createBubble(const int maxWidth, const QString &mainText, const QString &subText);

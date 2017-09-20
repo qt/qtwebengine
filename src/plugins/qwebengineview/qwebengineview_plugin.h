@@ -83,17 +83,17 @@ class QWebEngineViewPlugin: public QObject, public QDesignerCustomWidgetInterfac
 public:
     explicit QWebEngineViewPlugin(QObject *parent = Q_NULLPTR);
 
-    QString name() const Q_DECL_OVERRIDE;
-    QString group() const Q_DECL_OVERRIDE;
-    QString toolTip() const Q_DECL_OVERRIDE;
-    QString whatsThis() const Q_DECL_OVERRIDE;
-    QString includeFile() const Q_DECL_OVERRIDE;
-    QIcon icon() const Q_DECL_OVERRIDE;
-    bool isContainer() const Q_DECL_OVERRIDE;
-    QWidget *createWidget(QWidget *parent) Q_DECL_OVERRIDE;
-    bool isInitialized() const Q_DECL_OVERRIDE;
-    void initialize(QDesignerFormEditorInterface *core) Q_DECL_OVERRIDE;
-    QString domXml() const Q_DECL_OVERRIDE;
+    QString name() const override;
+    QString group() const override;
+    QString toolTip() const override;
+    QString whatsThis() const override;
+    QString includeFile() const override;
+    QIcon icon() const override;
+    bool isContainer() const override;
+    QWidget *createWidget(QWidget *parent) override;
+    bool isInitialized() const override;
+    void initialize(QDesignerFormEditorInterface *core) override;
+    QString domXml() const override;
 
 private:
     bool m_initialized;

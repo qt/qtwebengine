@@ -73,29 +73,29 @@ public:
                                       const net::CompletionCallback &callback);
 
     // net::NetworkDelegate implementation
-    virtual int OnBeforeURLRequest(net::URLRequest* request, const net::CompletionCallback& callback, GURL* newUrl) override;
-    virtual void OnURLRequestDestroyed(net::URLRequest* request) override;
-    virtual bool OnCanSetCookie(const net::URLRequest&, const std::string&, net::CookieOptions*) override;
-    virtual int OnBeforeStartTransaction(net::URLRequest *request, const net::CompletionCallback &callback, net::HttpRequestHeaders *headers) override;
+    int OnBeforeURLRequest(net::URLRequest* request, const net::CompletionCallback& callback, GURL* newUrl) override;
+    void OnURLRequestDestroyed(net::URLRequest* request) override;
+    bool OnCanSetCookie(const net::URLRequest&, const std::string&, net::CookieOptions*) override;
+    int OnBeforeStartTransaction(net::URLRequest *request, const net::CompletionCallback &callback, net::HttpRequestHeaders *headers) override;
     virtual void OnBeforeSendHeaders(net::URLRequest* request, const net::ProxyInfo& proxy_info,
                                      const net::ProxyRetryInfoMap& proxy_retry_info, net::HttpRequestHeaders* headers) override;
-    virtual void OnStartTransaction(net::URLRequest *request, const net::HttpRequestHeaders &headers) override;
-    virtual int OnHeadersReceived(net::URLRequest*, const net::CompletionCallback&, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*) override;
-    virtual void OnBeforeRedirect(net::URLRequest*, const GURL&) override;
-    virtual void OnResponseStarted(net::URLRequest*) override;
-    virtual void OnNetworkBytesReceived(net::URLRequest*, int64_t) override;
-    virtual void OnNetworkBytesSent(net::URLRequest *, int64_t) override;
-    virtual void OnCompleted(net::URLRequest*, bool) override;
-    virtual void OnPACScriptError(int, const base::string16&) override;
-    virtual net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, const AuthCallback&, net::AuthCredentials*) override;
-    virtual bool OnCanGetCookies(const net::URLRequest&, const net::CookieList&) override;
-    virtual bool OnCanAccessFile(const net::URLRequest& request, const base::FilePath& path) const override;
-    virtual bool OnCanEnablePrivacyMode(const GURL&, const GURL&) const override;
-    virtual bool OnAreExperimentalCookieFeaturesEnabled() const override;
-    virtual bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const override;
+    void OnStartTransaction(net::URLRequest *request, const net::HttpRequestHeaders &headers) override;
+    int OnHeadersReceived(net::URLRequest*, const net::CompletionCallback&, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*) override;
+    void OnBeforeRedirect(net::URLRequest*, const GURL&) override;
+    void OnResponseStarted(net::URLRequest*) override;
+    void OnNetworkBytesReceived(net::URLRequest*, int64_t) override;
+    void OnNetworkBytesSent(net::URLRequest *, int64_t) override;
+    void OnCompleted(net::URLRequest*, bool) override;
+    void OnPACScriptError(int, const base::string16&) override;
+    net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, const AuthCallback&, net::AuthCredentials*) override;
+    bool OnCanGetCookies(const net::URLRequest&, const net::CookieList&) override;
+    bool OnCanAccessFile(const net::URLRequest& request, const base::FilePath& path) const override;
+    bool OnCanEnablePrivacyMode(const GURL&, const GURL&) const override;
+    bool OnAreExperimentalCookieFeaturesEnabled() const override;
+    bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const override;
 
-    virtual bool OnCanQueueReportingReport(const url::Origin& origin) const override;
-    virtual bool OnCanSendReportingReport(const url::Origin& origin) const override;
+    bool OnCanQueueReportingReport(const url::Origin& origin) const override;
+    bool OnCanSendReportingReport(const url::Origin& origin) const override;
     virtual bool OnCanSetReportingClient(const url::Origin& origin,
                                          const GURL& endpoint) const override;
     virtual bool OnCanUseReportingClient(const url::Origin& origin,

@@ -78,8 +78,8 @@ public:
 
     void downloadDestroyed(quint32 downloadId);
 
-    void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
-    void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
+    void downloadRequested(DownloadItemInfo &info) override;
+    void downloadUpdated(const DownloadItemInfo &info) override;
 
 private:
     QWebEngineProfile *q_ptr;

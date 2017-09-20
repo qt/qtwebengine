@@ -52,49 +52,49 @@ class RenderWidgetHostViewQtDelegateQuick : public QQuickItem, public RenderWidg
 public:
     RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup);
 
-    virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
-    virtual void initAsPopup(const QRect&) Q_DECL_OVERRIDE;
-    virtual QRectF screenRect() const Q_DECL_OVERRIDE;
-    virtual QRectF contentsRect() const Q_DECL_OVERRIDE;
-    virtual void setKeyboardFocus() Q_DECL_OVERRIDE;
-    virtual bool hasKeyboardFocus() Q_DECL_OVERRIDE;
-    virtual void lockMouse() Q_DECL_OVERRIDE;
-    virtual void unlockMouse() Q_DECL_OVERRIDE;
-    virtual void show() Q_DECL_OVERRIDE;
-    virtual void hide() Q_DECL_OVERRIDE;
-    virtual bool isVisible() const Q_DECL_OVERRIDE;
-    virtual QWindow* window() const Q_DECL_OVERRIDE;
-    virtual QSGTexture *createTextureFromImage(const QImage &) Q_DECL_OVERRIDE;
-    virtual QSGLayer *createLayer() Q_DECL_OVERRIDE;
-    virtual QSGInternalImageNode *createImageNode() Q_DECL_OVERRIDE;
-    virtual QSGTextureNode *createTextureNode() Q_DECL_OVERRIDE;
-    virtual QSGRectangleNode *createRectangleNode() Q_DECL_OVERRIDE;
-    virtual void update() Q_DECL_OVERRIDE;
-    virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
-    virtual void resize(int width, int height) Q_DECL_OVERRIDE;
-    virtual void move(const QPoint&) Q_DECL_OVERRIDE { }
-    virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
-    virtual void setInputMethodHints(Qt::InputMethodHints) Q_DECL_OVERRIDE { }
+    void initAsChild(WebContentsAdapterClient* container) override;
+    void initAsPopup(const QRect&) override;
+    QRectF screenRect() const override;
+    QRectF contentsRect() const override;
+    void setKeyboardFocus() override;
+    bool hasKeyboardFocus() override;
+    void lockMouse() override;
+    void unlockMouse() override;
+    void show() override;
+    void hide() override;
+    bool isVisible() const override;
+    QWindow* window() const override;
+    QSGTexture *createTextureFromImage(const QImage &) override;
+    QSGLayer *createLayer() override;
+    QSGInternalImageNode *createImageNode() override;
+    QSGTextureNode *createTextureNode() override;
+    QSGRectangleNode *createRectangleNode() override;
+    void update() override;
+    void updateCursor(const QCursor &) override;
+    void resize(int width, int height) override;
+    void move(const QPoint&) override { }
+    void inputMethodStateChanged(bool editorVisible) override;
+    void setInputMethodHints(Qt::InputMethodHints) override { }
     // The QtQuick view doesn't have a backbuffer of its own and doesn't need this
-    virtual void setClearColor(const QColor &) Q_DECL_OVERRIDE { }
+    void setClearColor(const QColor &) override { }
 
 protected:
-    virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
-    virtual void focusInEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
-    virtual void focusOutEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
-    virtual void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    virtual void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    virtual void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    virtual void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
-    virtual void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
-    virtual void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
-    virtual void touchEvent(QTouchEvent *event) Q_DECL_OVERRIDE;
-    virtual void hoverMoveEvent(QHoverEvent *event) Q_DECL_OVERRIDE;
-    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
-    virtual void inputMethodEvent(QInputMethodEvent *event) Q_DECL_OVERRIDE;
-    virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) Q_DECL_OVERRIDE;
-    virtual void itemChange(ItemChange change, const ItemChangeData &value) Q_DECL_OVERRIDE;
-    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
+    void focusInEvent(QFocusEvent *event) override;
+    void focusOutEvent(QFocusEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
+    void touchEvent(QTouchEvent *event) override;
+    void hoverMoveEvent(QHoverEvent *event) override;
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
+    void inputMethodEvent(QInputMethodEvent *event) override;
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
+    void itemChange(ItemChange change, const ItemChangeData &value) override;
+    QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
 
 private slots:
     void onWindowPosChanged();

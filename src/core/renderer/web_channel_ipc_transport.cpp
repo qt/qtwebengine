@@ -66,7 +66,7 @@ public:
 private:
     content::RenderView *GetRenderView(v8::Isolate *isolate);
     WebChannelTransport() { }
-    virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate *isolate) override;
+    gin::ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate *isolate) override;
 
     bool NativeQtSendMessage(gin::Arguments *args)
     {

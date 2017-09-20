@@ -77,8 +77,8 @@ public:
     void cancelDownload(quint32 downloadId);
     void downloadDestroyed(quint32 downloadId);
 
-    void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
-    void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
+    void downloadRequested(DownloadItemInfo &info) override;
+    void downloadUpdated(const DownloadItemInfo &info) override;
 
     // QQmlListPropertyHelpers
     static void userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script);

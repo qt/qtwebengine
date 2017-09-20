@@ -80,9 +80,9 @@ public:
     QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o)
     {}
 
-    int childCount() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
-    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
+    int childCount() const override;
+    QAccessibleInterface *child(int index) const override;
+    int indexOfChild(const QAccessibleInterface *child) const override;
 
 private:
     QWebEngineView *view() const { return static_cast<QWebEngineView*>(object()); }
