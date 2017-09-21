@@ -140,7 +140,7 @@ private:
     QSize m_textureSize;
     bool m_hasAlpha;
     GLenum m_target;
-#if defined(USE_X11)
+#if defined(USE_OZONE)
     bool m_ownsTexture;
 #endif
 #ifdef Q_OS_QNX
@@ -571,7 +571,7 @@ MailboxTexture::MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QS
     , m_textureSize(textureSize)
     , m_hasAlpha(false)
     , m_target(GL_TEXTURE_2D)
-#if defined(USE_X11)
+#if defined(USE_OZONE)
     , m_ownsTexture(false)
 #endif
 {
@@ -586,7 +586,7 @@ MailboxTexture::MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QS
 
 MailboxTexture::~MailboxTexture()
 {
-#if defined(USE_X11)
+#if defined(USE_OZONE)
    // This is rare case, where context is not shared
    // we created extra texture in current context, so
    // delete it now
@@ -708,12 +708,12 @@ RectClipNode::RectClipNode(const QRectF &rect)
 
 DelegatedFrameNode::DelegatedFrameNode()
     : m_numPendingSyncPoints(0)
-#if defined(USE_X11) && !defined(QT_NO_OPENGL)
+#if defined(USE_OZONE) && !defined(QT_NO_OPENGL)
     , m_contextShared(true)
 #endif
 {
     setFlag(UsePreprocess);
-#if defined(USE_X11) && !defined(QT_NO_OPENGL)
+#if defined(USE_OZONE) && !defined(QT_NO_OPENGL)
     QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
     QOpenGLContext *sharedContext = qt_gl_global_share_context();
     if (currentContext && sharedContext && !QOpenGLContext::areSharing(currentContext, sharedContext)) {
@@ -1294,7 +1294,7 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         deleteChromiumSync(&sync);
     }
 
-#if defined(USE_X11)
+#if defined(USE_OZONE)
     // Workaround when context is not shared QTBUG-48969
     // Make slow copy between two contexts.
     if (!m_contextShared) {

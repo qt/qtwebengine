@@ -46,10 +46,6 @@
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_implementation.h"
 
-#if defined(USE_X11)
-#include <X11/Xlib.h>
-#endif
-
 #if defined(OS_WIN)
 #include "ui/gl/gl_context_wgl.h"
 #endif
@@ -128,15 +124,8 @@ void* GLContextHelper::getEGLDisplay()
 
 void* GLContextHelper::getXDisplay()
 {
-    void *display = qApp->platformNativeInterface()->nativeResourceForScreen(QByteArrayLiteral("display"), qApp->primaryScreen());
-#if defined(USE_X11)
-    if (!display) {
-        // XLib isn't available or has not been initialized, which is a decision we wish to
-        // support, for example for the GPU process.
-        display = XOpenDisplay(NULL);
-    }
-#endif
-    return display;
+    return qApp->platformNativeInterface()->nativeResourceForScreen(
+                QByteArrayLiteral("display"), qApp->primaryScreen());
 }
 
 void* GLContextHelper::getNativeDisplay()
@@ -168,17 +157,14 @@ QFunctionPointer GLContextHelper::getEglGetProcAddress()
 
 QT_END_NAMESPACE
 
-#if defined(USE_OZONE) || defined(OS_WIN)
-
+#if defined(OS_WIN)
 namespace gl {
-
 namespace init {
 
 scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
                                          GLSurface* compatible_surface,
                                          const GLContextAttribs& attribs)
 {
-#if defined(OS_WIN)
     scoped_refptr<GLContext> context;
     if (GetGLImplementation() == kGLImplementationDesktopGL) {
         context = new GLContextWGL(share_group);
@@ -188,18 +174,14 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
     } else {
         context = new GLContextEGL(share_group);
     }
-#else
-    scoped_refptr<GLContext> context = new GLContextEGL(share_group);
-#endif
 
     if (!GLContextHelper::initializeContext(context.get(), compatible_surface, attribs))
-        return NULL;
+        return nullptr;
 
     return context;
 }
 
 }  // namespace init
-
 }  // namespace gl
 
-#endif // defined(USE_OZONE) || defined(OS_WIN)
+#endif // defined(OS_WIN)

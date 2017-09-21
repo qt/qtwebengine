@@ -316,14 +316,6 @@ WebEngineContext::WebEngineContext()
     , m_browserRunner(content::BrowserMainRunner::Create())
     , m_globalQObject(new QObject())
 {
-#if defined(USE_X11)
-    QString platform = qApp->platformName();
-    if (platform != QLatin1String("xcb")) {
-         qWarning("WebEngine compiled with X11 support, however qpa backend is not xcb. "
-                  "This may fail.");
-    }
-#endif
-
 #ifdef Q_OS_LINUX
     // Call qputenv before BrowserMainRunnerImpl::Initialize is called.
     // http://crbug.com/245466
@@ -453,9 +445,6 @@ WebEngineContext::WebEngineContext()
             // If the native handle is QEGLNativeContext try to use GL ES/2, if there is no native handle
             // assume we are using wayland and try GL ES/2, and finally Ozone demands GL ES/2 too.
             if (qt_gl_global_share_context()->nativeHandle().isNull()
-#ifdef USE_OZONE
-                || true
-#endif
                 || !strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext"))
             {
                 if (qt_gl_global_share_context()->isOpenGLES()) {

@@ -77,10 +77,7 @@ defineReplace(gnPath) {
 }
 
 defineReplace(gnArgs) {
-    linux {
-        qtConfig(webengine-embedded-build): include($$QTWEBENGINE_ROOT/src/core/config/embedded_linux.pri)
-        else: include($$QTWEBENGINE_ROOT/src/core/config/desktop_linux.pri)
-    }
+    linux: include($$QTWEBENGINE_ROOT/src/core/config/linux.pri)
     macos: include($$QTWEBENGINE_ROOT/src/core/config/mac_osx.pri)
     win32: include($$QTWEBENGINE_ROOT/src/core/config/windows.pri)
     isEmpty(gn_args): error(No gn_args found please make sure you have valid configuration.)

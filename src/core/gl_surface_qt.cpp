@@ -68,13 +68,6 @@
 #include "ui/gl/vsync_provider_win.h"
 #endif
 
-#if defined(USE_X11)
-#include "ozone/gl_surface_glx_qt.h"
-#include "ui/gl/gl_glx_api_implementation.h"
-#include <dlfcn.h>
-
-#endif
-
 #include "ozone/gl_surface_egl_qt.h"
 #include "ui/gl/gl_egl_api_implementation.h"
 
@@ -142,13 +135,11 @@ void* GLSurfaceQt::GetConfig()
     return g_config;
 }
 
+#if defined(OS_WIN)
 namespace init {
-
 bool InitializeGLOneOffPlatform()
 {
-#if defined(OS_WIN)
     VSyncProviderWin::InitializeOneOff();
-#endif
 
     if (GetGLImplementation() == kGLImplementationOSMesaGL)
         return false;
@@ -157,12 +148,8 @@ bool InitializeGLOneOffPlatform()
         return GLSurfaceEGLQt::InitializeOneOff();
 
     if (GetGLImplementation() == kGLImplementationDesktopGL) {
-#if defined(OS_WIN)
         return GLSurfaceWGLQt::InitializeOneOff();
-#elif defined(USE_X11)
-        if (GLSurfaceGLXQt::InitializeOneOff())
-            return true;
-#endif
+
         // Fallback to trying EGL with desktop GL.
         if (GLSurfaceEGLQt::InitializeOneOff()) {
             g_initializedEGL = true;
@@ -172,87 +159,6 @@ bool InitializeGLOneOffPlatform()
 
     return false;
 }
-
-#if defined(USE_X11)
-// FIXME: This should be removed when we switch to OZONE only
-bool InitializeStaticGLBindings(GLImplementation implementation) {
-  // Prevent reinitialization with a different implementation. Once the gpu
-  // unit tests have initialized with kGLImplementationMock, we don't want to
-  // later switch to another GL implementation.
-  DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
-  switch (implementation) {
-    case kGLImplementationOSMesaGL:
-      return false;
-    case kGLImplementationDesktopGL: {
-      base::NativeLibrary library = dlopen(NULL, RTLD_LAZY);
-      if (!library) {
-          LOG(ERROR) << "Failed to obtain glx handle" << dlerror();
-          return false;
-      }
-
-      GLGetProcAddressProc get_proc_address =
-          reinterpret_cast<GLGetProcAddressProc>(
-              base::GetFunctionPointerFromNativeLibrary(library,
-                                                        "glXGetProcAddress"));
-      if (!get_proc_address) {
-          QFunctionPointer address = GLContextHelper::getGlXGetProcAddress();
-          get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(address);
-      }
-      if (!get_proc_address) {
-          LOG(ERROR) << "glxGetProcAddress not found.";
-          base::UnloadNativeLibrary(library);
-          return false;
-      }
-
-      SetGLGetProcAddressProc(get_proc_address);
-      AddGLNativeLibrary(library);
-      SetGLImplementation(kGLImplementationDesktopGL);
-
-      InitializeStaticGLBindingsGL();
-      InitializeStaticGLBindingsGLX();
-      return true;
-    }
-    case kGLImplementationSwiftShaderGL:
-    case kGLImplementationEGLGLES2: {
-       base::NativeLibrary library = dlopen(NULL, RTLD_LAZY);
-       if (!library) {
-           LOG(ERROR) << "Failed to obtain egl handle" << dlerror();
-           return false;
-       }
-
-       GLGetProcAddressProc get_proc_address =
-          reinterpret_cast<GLGetProcAddressProc>(
-              base::GetFunctionPointerFromNativeLibrary(library,
-                                                        "eglGetProcAddress"));
-      if (!get_proc_address) {
-          QFunctionPointer address = GLContextHelper::getEglGetProcAddress();
-          get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(address);
-      }
-      if (!get_proc_address) {
-        LOG(ERROR) << "eglGetProcAddress not found.";
-        base::UnloadNativeLibrary(library);
-        return false;
-      }
-
-      SetGLGetProcAddressProc(get_proc_address);
-      AddGLNativeLibrary(library);
-      SetGLImplementation(kGLImplementationEGLGLES2);
-
-      InitializeStaticGLBindingsGL();
-      InitializeStaticGLBindingsEGL();
-      return true;
-    }
-    case kGLImplementationMockGL:
-    case kGLImplementationStubGL:
-      return false;
-    default:
-      NOTREACHED();
-  }
-  return false;
-}
-#endif
 
 bool usingSoftwareDynamicGL()
 {
@@ -266,19 +172,10 @@ CreateOffscreenGLSurfaceWithFormat(const gfx::Size& size, GLSurfaceFormat format
     switch (GetGLImplementation()) {
     case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationDesktopGL: {
-#if defined(OS_WIN)
         surface = new GLSurfaceWGLQt(size);
         if (surface->Initialize(format))
             return surface;
         break;
-#elif defined(USE_X11)
-        if (!g_initializedEGL) {
-            surface = new GLSurfaceGLXQt(size);
-            if (surface->Initialize(format))
-                return surface;
-        }
-        Q_FALLTHROUGH();
-#endif
     }
     case kGLImplementationEGLGLES2: {
         surface = new GLSurfaceEGLQt(size);
@@ -313,8 +210,10 @@ CreateViewGLSurface(gfx::AcceleratedWidget window)
 }
 
 } // namespace init
-}  // namespace gl
+#endif  // defined(OS_WIN)
+} // namespace gl
 
+#if defined(OS_WIN)
 namespace gpu {
 class GpuCommandBufferStub;
 class GpuChannelManager;
@@ -325,11 +224,10 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(base::We
     return scoped_refptr<gl::GLSurface>();
 }
 
-#if defined(OS_WIN)
 bool DirectCompositionSurfaceWin::IsHDRSupported()
-{   return false; }
-#endif
-
+{
+    return false;
+}
 } // namespace gpu
-
+#endif
 #endif // !defined(OS_MACOSX)

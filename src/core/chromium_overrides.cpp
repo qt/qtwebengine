@@ -59,10 +59,6 @@
 #include <QFontDatabase>
 #include <QStringList>
 
-#if defined(USE_X11)
-#include "ui/gfx/x/x11_types.h"
-#endif
-
 #if defined(USE_AURA) && !defined(USE_OZONE)
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
@@ -94,27 +90,6 @@ void GetScreenInfoFromNativeWindow(QWindow* window, content::ScreenInfo* results
 }
 
 } // namespace QtWebEngineCore
-
-#if defined(USE_X11)
-XDisplay* GetQtXDisplay()
-{
-    return static_cast<XDisplay*>(GLContextHelper::getXDisplay());
-}
-
-namespace ui {
-class DummyPlatformEventSource : public PlatformEventSource
-{
-public:
-    DummyPlatformEventSource() {
-        DeviceDataManager::CreateInstance();
-    }
-};
-
-std::unique_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
-  return std::make_unique<DummyPlatformEventSource>();
-}
-} // namespace ui
-#endif // defined(USE_X11)
 
 namespace content {
 class WebContentsImpl;

@@ -84,7 +84,6 @@ SOURCES = \
         net/webui_controller_factory_qt.cpp \
         ozone/gl_ozone_egl_qt.cpp \
         ozone/gl_surface_egl_qt.cpp \
-        ozone/gl_surface_glx_qt.cpp \
         ozone/gl_surface_wgl_qt.cpp \
         ozone/ozone_platform_qt.cpp \
         ozone/platform_window_qt.cpp \
@@ -174,7 +173,6 @@ HEADERS = \
         net/webui_controller_factory_qt.h \
         ozone/gl_ozone_egl_qt.h \
         ozone/gl_surface_egl_qt.h \
-        ozone/gl_surface_glx_qt.h \
         ozone/gl_surface_wgl_qt.h \
         ozone/ozone_platform_qt.h \
         ozone/platform_window_qt.h \
@@ -218,6 +216,14 @@ HEADERS = \
         web_engine_library_info.h \
         web_engine_settings.h \
         web_event_factory.h
+
+
+qtConfig(webengine-system-x11) {
+    HEADERS += ozone/gl_ozone_glx_qt.h \
+               ozone/gl_surface_glx_qt.h
+    SOURCES += ozone/gl_surface_glx_qt.cpp \
+               ozone/gl_ozone_glx_qt.cpp
+}
 
 qtConfig(webengine-pepper-plugins) {
 

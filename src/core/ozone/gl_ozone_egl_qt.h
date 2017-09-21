@@ -44,18 +44,16 @@
 
 #include "ui/ozone/common/gl_ozone_egl.h"
 
-namespace QtWebEngineCore {
+namespace ui {
 
-class GLOzoneEGLQt : public ui::GLOzoneEGL {
+class GLOzoneEGLQt : public GLOzoneEGL {
 public:
-    scoped_refptr<gl::GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget /*window*/) override
-    {
-        return nullptr;
-    }
-    scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(const gfx::Size& /*size*/) override
-    {
-        return nullptr;
-    }
+    bool InitializeGLOneOffPlatform() override;
+    bool InitializeExtensionSettingsOneOffPlatform() override;
+    scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+            gfx::AcceleratedWidget window) override;
+    scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
+            const gfx::Size& size) override;
 
 protected:
     // Returns native platform display handle. This is used to obtain the EGL
@@ -66,7 +64,7 @@ protected:
     bool LoadGLES2Bindings(gl::GLImplementation implementation) override;
 };
 
-} // namespace QtWebEngineCore
+} // namespace ui
 
 #endif // defined(USE_OZONE)
 

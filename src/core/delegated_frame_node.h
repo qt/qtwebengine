@@ -143,7 +143,7 @@ private:
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;
     QList<gl::TransferableFence> m_textureFences;
-#if defined(USE_X11)
+#if defined(USE_OZONE)
     bool m_contextShared;
     QScopedPointer<QOffscreenSurface> m_offsurface;
 #endif

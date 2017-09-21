@@ -145,7 +145,6 @@ void OzonePlatformQt::InitializeGPU(const ui::OzonePlatform::InitParams &)
 
 } // namespace
 
-
 OzonePlatform* CreateOzonePlatformQt() { return new OzonePlatformQt; }
 
 gfx::ClientNativePixmapFactory* CreateClientNativePixmapFactoryQt()

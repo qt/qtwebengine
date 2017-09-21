@@ -37,6 +37,17 @@
 **
 ****************************************************************************/
 
+#include "surface_factory_qt.h"
+#include "qtwebenginecoreglobal_p.h"
+#include "gl_ozone_egl_qt.h"
+
+#if QT_CONFIG(webengine_system_x11)
+#include "gl_ozone_glx_qt.h"
+#endif
+
+#include "ui/gl/gl_surface.h"
+#include <QGuiApplication>
+
 #if defined(USE_OZONE)
 
 #include "ozone/gl_ozone_egl_qt.h"
@@ -44,16 +55,34 @@
 #include "ui/gl/gl_surface.h"
 namespace QtWebEngineCore {
 
+SurfaceFactoryQt::SurfaceFactoryQt()
+{
+    // Fixme: make better platform switch handling
+    QString platform = qApp->platformName();
+    if (platform == QLatin1String("xcb")) {
+        m_impls.push_back(gl::kGLImplementationDesktopGL);
+    } else {
+        m_impls.push_back(gl::kGLImplementationEGLGLES2);
+    }
+}
+
 std::vector<gl::GLImplementation> SurfaceFactoryQt::GetAllowedGLImplementations()
 {
-    std::vector<gl::GLImplementation> impls;
-    impls.push_back(gl::kGLImplementationEGLGLES2);
-    return impls;
+    return m_impls;
 }
 
 ui::GLOzone* SurfaceFactoryQt::GetGLOzone(gl::GLImplementation implementation)
 {
-    return new GLOzoneEGLQt();
+
+    QString platform = qApp->platformName();
+    if (platform == QLatin1String("xcb")) {
+#if QT_CONFIG(webengine_system_x11)
+        return new ui::GLOzoneGLXQt();
+#endif
+        return nullptr;
+    } else {
+        return new ui::GLOzoneEGLQt();
+    }
 }
 
 } // namespace QtWebEngineCore

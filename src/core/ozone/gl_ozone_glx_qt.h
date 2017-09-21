@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,28 +37,49 @@
 **
 ****************************************************************************/
 
-#ifndef SURFACE_FACTORY_QT
-#define SURFACE_FACTORY_QT
+#ifndef UI_OZONE_GLX_QT_H_
+#define UI_OZONE_GLX_QT_H
 
-#if defined(USE_OZONE)
+#include "base/macros.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/ozone/public/gl_ozone.h"
 
-#include "ui/ozone/public/surface_factory_ozone.h"
+namespace ui {
 
-namespace QtWebEngineCore {
+class GLOzoneGLXQt : public GLOzone {
 
-class SurfaceFactoryQt : public ui::SurfaceFactoryOzone
-{
 public:
-    SurfaceFactoryQt();
-    std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
-    ui::GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
+    GLOzoneGLXQt() {}
+    ~GLOzoneGLXQt() override {}
+
+    bool InitializeGLOneOffPlatform() override;
+    bool InitializeStaticGLBindings(gl::GLImplementation implementation) override;
+    void InitializeDebugGLBindings() override;
+    bool InitializeExtensionSettingsOneOffPlatform() override;
+    void ShutdownGL() override;
+    void SetDisabledExtensionsPlatform(
+        const std::string& disabled_extensions) override;
+    bool GetGLWindowSystemBindingInfo(
+            gl::GLWindowSystemBindingInfo* info) override;
+
+    scoped_refptr<gl::GLContext> CreateGLContext(
+            gl::GLShareGroup* share_group,
+            gl::GLSurface* compatible_surface,
+            const gl::GLContextAttribs& attribs) override;
+
+    scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+            gfx::AcceleratedWidget window) override;
+
+    scoped_refptr<gl::GLSurface> CreateSurfacelessViewGLSurface(
+            gfx::AcceleratedWidget window) override;
+
+    scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
+            const gfx::Size& size) override;
+
 private:
-    std::vector<gl::GLImplementation> m_impls;
+    DISALLOW_COPY_AND_ASSIGN(GLOzoneGLXQt);
 };
 
-} // namespace QtWebEngineCore
+}  // namespace ui
 
-#endif // defined(USE_OZONE)
-
-#endif // SURFACE_FACTORY_QT
-
+#endif  // UI_OZONE_GLX_QT_H

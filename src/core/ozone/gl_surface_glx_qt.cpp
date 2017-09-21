@@ -41,8 +41,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(USE_X11)
-
 #include "gl_context_qt.h"
 #include "ozone/gl_surface_glx_qt.h"
 #include "ui/gl/gl_bindings.h"
@@ -156,7 +154,7 @@ bool GLSurfaceGLXQt::InitializeExtensionSettingsOneOff()
 
     Display* display = static_cast<Display*>(g_display);
     GLSurfaceQt::g_extensions = glXQueryExtensionsString(display, 0);
-    g_driver_glx.InitializeExtensionBindings();
+    g_driver_glx.InitializeExtensionBindings(g_extensions);
     return true;
 }
 
@@ -210,4 +208,3 @@ void* GLSurfaceGLXQt::GetHandle()
 
 } //namespace gl
 
-#endif // defined(USE_X11)

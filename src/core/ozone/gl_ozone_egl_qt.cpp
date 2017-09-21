@@ -38,11 +38,13 @@
 ****************************************************************************/
 
 #if defined(USE_OZONE)
-
+#include "gl_ozone_egl_qt.h"
+#include "gl_context_qt.h"
+#include "gl_surface_egl_qt.h"
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "gl_context_qt.h"
-#include "ozone/gl_ozone_egl_qt.h"
+#include "gl_ozone_egl_qt.h"
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -55,10 +57,12 @@
 
 #ifndef QT_NO_OPENGL
 #include <QOpenGLContext>
+QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
+QT_END_NAMESPACE
 #endif
 
-namespace QtWebEngineCore {
+namespace ui {
 
 base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
     base::NativeLibraryLoadError error;
@@ -103,6 +107,39 @@ bool GLOzoneEGLQt::LoadGLES2Bindings(gl::GLImplementation /*implementation*/)
     return true;
 }
 
+bool GLOzoneEGLQt::InitializeGLOneOffPlatform()
+{
+    if (!gl::GLSurfaceEGLQt::InitializeOneOff()) {
+        LOG(ERROR) << "GLOzoneEGLQt::InitializeOneOff failed.";
+        return false;
+    }
+    return true;
+}
+
+bool GLOzoneEGLQt::InitializeExtensionSettingsOneOffPlatform()
+{
+    return gl::GLSurfaceEGLQt::InitializeExtensionSettingsOneOff();
+}
+
+scoped_refptr<gl::GLSurface> GLOzoneEGLQt::CreateViewGLSurface(gfx::AcceleratedWidget window)
+{
+    return nullptr;
+}
+
+scoped_refptr<gl::GLSurface> GLOzoneEGLQt::CreateOffscreenGLSurface(const gfx::Size &size)
+{
+    scoped_refptr<gl::GLSurface> surface = new gl::GLSurfaceEGLQt(size);
+    if (surface->Initialize(gl::GLSurfaceFormat()))
+        return surface;
+
+    surface = new gl::GLSurfacelessQtEGL(size);
+    if (surface->Initialize(gl::GLSurfaceFormat()))
+        return surface;
+
+    LOG(WARNING) << "Failed to create offscreen GL surface";
+    return nullptr;
+}
+
 intptr_t GLOzoneEGLQt::GetNativeDisplay()
 {
     static void *display = GLContextHelper::getNativeDisplay();
@@ -113,6 +150,6 @@ intptr_t GLOzoneEGLQt::GetNativeDisplay()
     return reinterpret_cast<intptr_t>(EGL_DEFAULT_DISPLAY);
 }
 
-} // namespace QtWebEngineCore
+} // namespace ui
 
 #endif // defined(USE_OZONE)

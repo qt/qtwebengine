@@ -208,9 +208,14 @@
             "sources": [
                 { "type": "pkgConfig", "args": "freetype2 >= 2.4.2" }
             ]
+        },
+        "webengine-x11" : {
+            "label" : "x11",
+            "sources": [
+                { "type": "pkgConfig", "args": "x11" }
+            ]
         }
     },
-
     "tests" : {
         "webengine-alsa": {
             "label": "alsa",
@@ -604,6 +609,11 @@
             "condition": "config.unix && features.system-freetype && libs.webengine-freetype",
             "output": [ "privateFeature" ]
         },
+        "webengine-system-x11" : {
+            "label": "x11",
+            "condition": "config.unix && libs.webengine-x11",
+            "output": [ "privateFeature" ]
+        },
         "webengine-sanitizer" : {
             "label": "Sanitizer",
             "autoDetect": "config.sanitizer && tests.webengine-sanitizer",
@@ -732,7 +742,8 @@
                         "webengine-system-png",
                         "webengine-system-jpeg",
                         "webengine-system-harfbuzz",
-                        "webengine-system-freetype"
+                        "webengine-system-freetype",
+                        "webengine-system-x11"
                     ]
                 },
                 {

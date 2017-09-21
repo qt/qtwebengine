@@ -8,7 +8,26 @@ gn_args += \
     use_kerberos=false \
     linux_use_bundled_binutils=false \
     use_udev=true \
-    use_bundled_fontconfig=false
+    use_bundled_fontconfig=false \
+    use_sysroot=false \
+    enable_session_service=false \
+    toolkit_views=false \
+    use_ozone=true \
+    ozone_auto_platforms=false \
+    ozone_platform_headless=true \
+    ozone_platform_external=true \
+    ozone_platform=\"qt\"
+
+qtConfig(webengine-embedded-build) {
+    gn_args += is_desktop_linux=false
+    gn_args += use_gold=false
+} else {
+    !use_gold_linker: gn_args += use_gold=false
+}
+
+qtConfig(webengine-system-x11) {
+   gn_args += ozone_platform_x11=true
+}
 
 clang {
     clang_full_path = $$which($${QMAKE_CXX})
