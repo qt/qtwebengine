@@ -1,3 +1,6 @@
+include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+QT_FOR_CONFIG += webengine-private
+
 TEMPLATE=subdirs
 
 SUBDIRS += \
@@ -12,10 +15,9 @@ SUBDIRS += \
 
 qtHaveModule(positioning): SUBDIRS += maps
 
-contains(WEBENGINE_CONFIG, use_spellchecker):!cross_compile {
-    !contains(WEBENGINE_CONFIG, use_native_spellchecker) {
-        SUBDIRS += spellchecker
-    } else {
-        message("Spellcheck example will not be built because it depends on usage of Hunspell dictionaries.")
-    }
+qtConfig(spellchecker):!qtConfig(native-spellchecker):!cross_compile {
+    SUBDIRS += spellchecker
+} else {
+    message("Spellcheck example will not be built because it depends on usage of Hunspell dictionaries.")
 }
+

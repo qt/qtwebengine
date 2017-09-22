@@ -28,7 +28,7 @@ RCC_DIR = $$OUT_PWD/$$getConfigDir()/.rcc
 
 # Assume that we want mobile touch and low-end hardware behaviors
 # whenever we are cross compiling.
-contains(WEBENGINE_CONFIG, embedded_build): DEFINES += QTWEBENGINE_EMBEDDED_SWITCHES
+qtConfig(embedded): DEFINES += QTWEBENGINE_EMBEDDED_SWITCHES
 
 qtConfig(egl): CONFIG += egl
 
@@ -194,13 +194,8 @@ HEADERS = \
         web_event_factory.h \
         webui/webui_controller_factory_qt.h
 
+qtConfig(pepper-plugins) {
 
-use?(pdf) {
-    SOURCES += pdfium_document_wrapper_qt.cpp
-    HEADERS += pdfium_document_wrapper_qt.h
-}
-
-use?(pepper_plugins) {
     SOURCES += \
         renderer_host/pepper/pepper_flash_browser_host_qt.cpp \
         renderer_host/pepper/pepper_host_factory_qt.cpp \
@@ -216,7 +211,8 @@ use?(pepper_plugins) {
         renderer/pepper/pepper_renderer_host_factory_qt.h
 }
 
-use?(printing) {
+qtConfig(printing-and-pdf) {
+
     SOURCES += \
         printing_message_filter_qt.cpp \
         print_view_manager_base_qt.cpp \
@@ -228,6 +224,10 @@ use?(printing) {
         print_view_manager_base_qt.h \
         print_view_manager_qt.h \
         renderer/print_web_view_helper_delegate_qt.h
+
+    # pdf sources
+    SOURCES += pdfium_document_wrapper_qt.cpp
+    HEADERS += pdfium_document_wrapper_qt.h
 }
 
 contains(QT_CONFIG, opengl) {

@@ -1,6 +1,7 @@
 {
     "module": "webengine",
     "depends": [
+        "gui-private",
         "printsupport"
     ],
 
@@ -11,7 +12,7 @@
             "webengine-icu": { "type": "enum", "name": "system-icu", "values": { "system": "yes", "qt": "no" } },
             "ffmpeg": { "type": "enum", "name": "system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
             "opus": { "type": "enum", "name": "system-opus", "values": { "system": "yes", "qt": "no" } },
-            "webp": { "type": "enum", "name": "system-webp", "values": { "system": "yes", "qt": "no" } },
+            "webp": { "type": "enum", "name": "system-libwebp", "values": { "system": "yes", "qt": "no" } },
             "pepper-plugins": "boolean",
             "printing-and-pdf": "boolean",
             "proprietary-codecs": "boolean",
@@ -240,6 +241,10 @@
         "icuuc": {
             "label" : "libxml2 configured with icuuc",
             "type": "detectIcuuc"
+        },
+        "sanitizer": {
+            "label" : "sanitizer support",
+            "type": "isSanitizerSupported"
         }
     },
 
@@ -286,7 +291,7 @@
         },
         "webengine-system-harfbuzz": {
             "label": "harfbuzz",
-            "condition": "libs.harfbuzz",
+            "condition": "config.unix && features.system-harfbuzz && libs.harfbuzz",
             "output": [ "privateFeature" ]
         },
         "system-glib" : {
@@ -321,7 +326,7 @@
         },
         "webengine-system-png" : {
             "label": "png",
-            "condition": "config.unix && libs.png",
+            "condition": "config.unix && features.system-png && libs.png",
             "output": [ "privateFeature" ]
         },
         "python2": {
@@ -432,8 +437,18 @@
         "native-spellchecker": {
             "label": "Native Spellchecker",
             "purpose": "Provides a native spellchecker.",
-            "condition": "config.macos",
             "section": "WebEngine",
+            "autoDetect": false,
+            "condition": "config.macos && features.spellchecker",
+            "output": [ "privateFeature" ]
+        },
+        "ui-delegates": {
+            "label": "UI Delegates",
+            "output": [ "privateFeature" ]
+        },
+        "testsupport": {
+            "label": "Test Support",
+            "autoDetect": "config.private_tests || call.isTestsInBuildParts",
             "output": [ "privateFeature" ]
         },
         "webrtc": {
@@ -448,7 +463,7 @@
             "condition": "config.unix && !config.darwin && libs.nss",
             "output": [ "privateFeature" ]
         },
-        "system-webp": {
+        "system-libwebp": {
             "label": "libwebp, libwebpmux and libwebpdemux",
             "autoDetect": "config.unix",
             "condition": "libs.webp",
@@ -463,7 +478,7 @@
         "system-ffmpeg": {
             "label": "ffmpeg",
             "autoDetect": false,
-            "condition": "libs.ffmpeg && features.system-opus && features.system-webp",
+            "condition": "libs.ffmpeg && features.system-opus && features.system-libwebp",
             "output": [ "privateFeature" ]
         },
         "system-icu": {
@@ -497,6 +512,12 @@
         "system-libxml2": {
             "label": "libxml2 and libxslt",
             "condition": "config.unix && libs.libxml2 && tests.icuuc",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-sanitizer" : {
+            "label": "Sanitizer ",
+            "autoDetect": "config.sanitizer && tests.sanitizer",
+            "condition": "config.sanitizer",
             "output": [ "privateFeature" ]
         }
     },
@@ -553,7 +574,7 @@
                    "entries": [
                         "system-re2",
                         "system-icu",
-                        "system-webp",
+                        "system-libwebp",
                         "system-opus",
                         "system-ffmpeg",
                         "system-libvpx",

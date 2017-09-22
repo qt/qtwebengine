@@ -100,7 +100,7 @@ OTHER_FILES += \
 load(qt_build_paths)
 DEFINES += QUICK_TEST_SOURCE_DIR=\\\"$$re_escape($$PWD$${QMAKE_DIR_SEP}data)\\\"
 
-!isQMLTestSupportApiEnabled() {
+!qtConfig(testsupport) {
     PLUGIN_EXTENSION = .so
     PLUGIN_PREFIX = lib
     osx: PLUGIN_PREFIX = .dylib
@@ -115,6 +115,6 @@ DEFINES += QUICK_TEST_SOURCE_DIR=\\\"$$re_escape($$PWD$${QMAKE_DIR_SEP}data)\\\"
 
     warning("QML Test Support API is disabled. This means some QML tests that use Test Support API will fail.")
     warning("Use the following command to build Test Support module and rebuild WebEngineView API:")
-    warning("cd $$BUILD_DIR && qmake WEBENGINE_CONFIG+=testsupport -r $$shell_path($$SRC_DIR/qtwebengine.pro) && make -C $$shell_path($$BUILD_DIR/src/webengine) clean && make")
+    warning("cd $$BUILD_DIR && qmake -r $$shell_path($$SRC_DIR/qtwebengine.pro -- --feature-testsupport=yes) && make -C $$shell_path($$BUILD_DIR/src/webengine) clean && make")
     warning("After performing the command above make sure QML module \"QtWebEngine.testsupport\" is deployed at $$TESTSUPPORT_MODULE")
 }

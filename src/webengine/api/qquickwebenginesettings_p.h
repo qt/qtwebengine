@@ -87,7 +87,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool allowRunningInsecureContent READ allowRunningInsecureContent WRITE setAllowRunningInsecureContent NOTIFY allowRunningInsecureContentChanged REVISION 3 FINAL)
     Q_PROPERTY(bool allowGeolocationOnInsecureOrigins READ allowGeolocationOnInsecureOrigins WRITE setAllowGeolocationOnInsecureOrigins NOTIFY allowGeolocationOnInsecureOriginsChanged REVISION 4 FINAL)
     Q_PROPERTY(bool allowWindowActivationFromJavaScript READ allowWindowActivationFromJavaScript WRITE setAllowWindowActivationFromJavaScript NOTIFY allowWindowActivationFromJavaScriptChanged REVISION 5 FINAL)
-    Q_PROPERTY(bool hideScrollbars READ hideScrollbars WRITE setHideScrollbars NOTIFY hideScrollbarsChanged REVISION 5 FINAL)
+    Q_PROPERTY(bool showScrollBars READ showScrollBars WRITE setShowScrollBars NOTIFY showScrollBarsChanged REVISION 5 FINAL)
     Q_PROPERTY(UnknownUrlSchemePolicy unknownUrlSchemePolicy READ unknownUrlSchemePolicy WRITE setUnknownUrlSchemePolicy NOTIFY unknownUrlSchemePolicyChanged REVISION 5 FINAL)
 
 public:
@@ -125,7 +125,7 @@ public:
     bool allowRunningInsecureContent() const;
     bool allowGeolocationOnInsecureOrigins() const;
     bool allowWindowActivationFromJavaScript() const;
-    bool hideScrollbars() const;
+    bool showScrollBars() const;
     UnknownUrlSchemePolicy unknownUrlSchemePolicy() const;
 
     void setAutoLoadImages(bool on);
@@ -152,7 +152,7 @@ public:
     void setAllowRunningInsecureContent(bool on);
     void setAllowGeolocationOnInsecureOrigins(bool on);
     void setAllowWindowActivationFromJavaScript(bool on);
-    void setHideScrollbars(bool on);
+    void setShowScrollBars(bool on);
     void setUnknownUrlSchemePolicy(UnknownUrlSchemePolicy policy);
 
 signals:
@@ -180,7 +180,7 @@ signals:
     Q_REVISION(3) void allowRunningInsecureContentChanged();
     Q_REVISION(4) void allowGeolocationOnInsecureOriginsChanged();
     Q_REVISION(5) void allowWindowActivationFromJavaScriptChanged();
-    Q_REVISION(5) void hideScrollbarsChanged();
+    Q_REVISION(5) void showScrollBarsChanged();
     Q_REVISION(5) void unknownUrlSchemePolicyChanged();
 
 private:

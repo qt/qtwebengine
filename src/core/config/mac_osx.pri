@@ -32,9 +32,9 @@ gn_args += \
     toolkit_views=false \
     use_external_popup_menu=false
 
-use?(spellchecker) {
-    use?(native_spellchecker): gn_args += use_browser_spellchecker=true
+qtConfig(spellchecker) {
+    qtConfig(native-spellchecker): gn_args += use_browser_spellchecker=true
     else: gn_args += use_browser_spellchecker=false
 } else {
-    macos: gn_args += use_browser_spellchecker=false
+    gn_args += use_browser_spellchecker=false
 }

@@ -46,7 +46,7 @@
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-#include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
+#include "components/spellcheck/browser/spellcheck_message_filter_platform.h"
 #endif
 #endif
 #include "content/browser/renderer_host/render_view_host_delegate.h"

@@ -11,7 +11,3 @@ gn_args += \
     ozone_platform_external=true \
     ozone_platform=\"qt\" \
     toolkit_views=false
-
-use?(icecc) {
-    gn_args += use_debug_fission=false
-}

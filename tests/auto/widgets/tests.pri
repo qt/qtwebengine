@@ -1,3 +1,6 @@
+include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+QT_FOR_CONFIG += webengine-private
+
 TEMPLATE = app
 
 CONFIG += testcase

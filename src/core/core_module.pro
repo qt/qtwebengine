@@ -1,3 +1,6 @@
+include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+QT_FOR_CONFIG += webengine-private
+
 MODULE = webenginecore
 
 include(core_common.pri)
@@ -110,7 +113,7 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         resources.path = $$[QT_INSTALL_DATA]/resources
         INSTALLS += locales resources
 
-        !use?(system_icu) {
+        !qtConfig(system-icu) {
             icu.CONFIG += no_check_exist
             icu.path = $$[QT_INSTALL_DATA]/resources
             INSTALLS += icu
@@ -122,7 +125,7 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         # Copy essential files to the qtbase build directory for non-prefix builds
         #
 
-        !use?(system_icu) {
+        !qtConfig(system-icu) {
             COPIES += icu
         }
 

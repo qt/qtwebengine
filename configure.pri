@@ -148,11 +148,105 @@ defineTest(qtConfTest_embedded) {
 }
 
 defineTest(qtConfTest_detectIcuuc) {
-   pkgConfig = $$first($$list($$pkgConfigExecutable()))
+   pkgConfig = $$qtConfPkgConfig()
    !isEmpty(pkgConfig) {
        qtRunLoggedCommand("$$pkgConfig --libs --static libxml-2.0", xmllibs)
        contains(xmllibs,".*-licuuc.*"):return(true)
        qtLog("System libxml2 is not configured with ICU")
    }
    return(false)
+}
+
+defineTest(qtConfTest_isSanitizerSupported) {
+  sanitizer_combo_supported = true
+  sanitize_address {
+    asan_supported = false
+    linux-clang-libc++:isSanitizerSupportedOnLinux() {
+      asan_supported = true
+    } else:macos:isSanitizerSupportedOnMacOS() {
+      asan_supported = true
+    }
+    !$$asan_supported {
+      sanitizer_combo_supported = false
+       qtLog("An address sanitizer-enabled Qt WebEngine build can only be built on Linux or macOS using Clang and libc++.")
+    }
+  }
+
+  sanitize_memory {
+    sanitizer_combo_supported = false
+    qtLog("A memory sanitizer-enabled Qt WebEngine build is not supported.")
+  }
+
+  sanitize_undefined {
+    ubsan_supported = false
+    linux-clang-libc++:isSanitizerSupportedOnLinux():CONFIG(release, debug|release):!debug_and_release {
+      ubsan_supported = true
+    }
+    !$$ubsan_supported {
+      sanitizer_combo_supported = false
+      qtLog("An undefined behavior sanitizer-enabled Qt WebEngine build can only be built on Linux using Clang and libc++ in release mode.")
+    }
+  }
+
+  sanitize_thread {
+    tsan_supported = false
+    linux-clang-libc++:isSanitizerSupportedOnLinux() {
+      tsan_supported = true
+    }
+    !$$tsan_supported {
+      sanitizer_combo_supported = false
+      qtLog("A thread sanitizer-enabled Qt WebEngine build can only be built on Linux using Clang and libc++.")
+    }
+  }
+
+  $$sanitizer_combo_supported: return(true)
+  return(false)
+}
+
+defineTest(isSanitizerSupportedOnLinux) {
+  isSanitizerLinuxClangVersionSupported(): return(true)
+  return(false)
+}
+
+defineTest(isSanitizerSupportedOnMacOS) {
+  isEmpty(QT_APPLE_CLANG_MAJOR_VERSION) {
+    QTWEBENGINE_CLANG_IS_APPLE = false
+  } else {
+    QTWEBENGINE_CLANG_IS_APPLE = true
+  }
+  $$QTWEBENGINE_CLANG_IS_APPLE:isSanitizerMacOSAppleClangVersionSupported(): return(true)
+  else:isSanitizerMacOSClangVersionSupported(): return(true)
+  return(false)
+}
+
+defineTest(isSanitizerMacOSAppleClangVersionSupported) {
+  # Clang sanitizer suppression attributes work from Apple Clang version 7.3.0+.
+  greaterThan(QT_APPLE_CLANG_MAJOR_VERSION, 7): return(true)
+  greaterThan(QT_APPLE_CLANG_MINOR_VERSION, 2): return(true)
+
+  qtLog("Using Apple Clang version $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}.$${QT_APPLE_CLANG_PATCH_VERSION}, but at least Apple Clang version 7.3.0 is required to build a sanitizer-enabled Qt WebEngine.")
+  return(false)
+}
+
+defineTest(isSanitizerMacOSClangVersionSupported) {
+  # Clang sanitizer suppression attributes work from non-apple Clang version 3.7+.
+  greaterThan(QT_CLANG_MAJOR_VERSION, 3): return(true)
+  greaterThan(QT_CLANG_MINOR_VERSION, 6): return(true)
+
+  qtLog("Using Clang version $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}, but at least Clang version 3.7 is required to build a sanitizer-enabled Qt WebEngine.")
+  return(false)
+}
+
+defineTest(isSanitizerLinuxClangVersionSupported) {
+  # Clang sanitizer suppression attributes work from Clang version 3.7+.
+  greaterThan(QT_CLANG_MAJOR_VERSION, 3): return(true)
+  greaterThan(QT_CLANG_MINOR_VERSION, 6): return(true)
+
+  qtLog("Using Clang version $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}, but at least Clang version 3.7 is required to build a sanitizer-enabled Qt WebEngine.")
+  return(false)
+}
+
+defineReplace(qtConfFunc_isTestsInBuildParts) {
+    contains(QT_BUILD_PARTS, tests): return(true)
+    return(false)
 }

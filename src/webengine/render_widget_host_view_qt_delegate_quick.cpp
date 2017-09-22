@@ -48,7 +48,6 @@
 #include <QVariant>
 #include <QWindow>
 #include <private/qquickwindow_p.h>
-#include <private/qsgcontext_p.h>
 
 namespace QtWebEngineCore {
 

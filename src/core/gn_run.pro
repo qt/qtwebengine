@@ -1,7 +1,5 @@
-isQtMinimum(5, 8) {
-    include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
-    QT_FOR_CONFIG += webengine-private
-}
+include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+QT_FOR_CONFIG += webengine-private
 
 TEMPLATE = aux
 

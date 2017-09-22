@@ -1,9 +1,27 @@
 # Load configure.prf from qtbase first
 load(configure)
 load(functions)
+load(platform)
 
 defineTest(runConfigure) {
-    webengine_successfully_configured: return(true)
+
+    !exists(src/3rdparty/chromium) {
+        skipBuild("Submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
+        return(false)
+    }
+
+    WSPC = $$find(OUT_PWD, \\s)
+    !isEmpty(WSPC) {
+        skipBuild("QtWebEngine cannot be built in a path that contains whitespace characters.")
+        return(false)
+    }
+
+    !isPlatformSupported() {
+        # make sure we have skipBuildReason
+        isEmpty(skipBuildReason): skipBuild("Unknow error. Platform unspported")
+        return(false)
+    }
+
     linux:contains(QT_CONFIG,no-pkg-config) {
         skipBuild("pkg-config is required")
         return(false)
@@ -29,28 +47,9 @@ defineTest(runConfigure) {
         return(false)
     }
 
-    qtConfig(pepper-plugins): WEBENGINE_CONFIG += use_pepper_plugins
-    qtConfig(printing-and-pdf): WEBENGINE_CONFIG += use_printing use_pdf
-    qtConfig(proprietary-codecs): WEBENGINE_CONFIG += use_proprietary_codecs
-    qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
-    qtConfig(webrtc): WEBENGINE_CONFIG += use_webrtc
-    qtConfig(embedded): WEBENGINE_CONFIG += embedded_build
-    qtConfig(system-webp): WEBENGINE_CONFIG += use_system_libwebp
-    qtConfig(system-opus): WEBENGINE_CONFIG += use_system_opus
-    qtConfig(system-ffmpeg): WEBENGINE_CONFIG += use_system_ffmpeg
-    qtConfig(system-icu): WEBENGINE_CONFIG += use_system_icu
-    qtConfig(system-re2): WEBENGINE_CONFIG += use_system_re2
-
-    !contains(WEBENGINE_CONFIG, use_system_libwebp): WEBENGINE_CONFIG += use_bundled_libwebp
-    !contains(WEBENGINE_CONFIG, use_system_opus): WEBENGINE_CONFIG += use_bundled_opus
-    !contains(WEBENGINE_CONFIG, use_system_ffmpeg): WEBENGINE_CONFIG += use_bundled_ffmpeg
-    !contains(WEBENGINE_CONFIG, use_system_icu): WEBENGINE_CONFIG += use_bundled_icu
-
-    isQtMinimum(5, 9) {
-        qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
-        optimize_size: WEBENGINE_CONFIG += reduce_binary_size
-    } else {
-        qtConfig(embedded): WEBENGINE_CONFIG += reduce_binary_size
+    sanitizer: !qtConfig(webengine-sanitizer) {
+        skipBuild("Chosen sanitizer configuration is not supported. Use --feature-webengine-sanitizer=yes to force build with the chosen sanitizer configuration.")
+        return(false);
     }
 
     linux {
@@ -73,9 +72,7 @@ defineTest(runConfigure) {
             }
          }
 
-        WEBENGINE_CONFIG += use_nss
-
-        !contains(WEBENGINE_CONFIG, embedded_build): qtConfig(xcb) {
+        !qtConfig(embedded): qtConfig(xcb) {
              for(package, $$list("libdrm xcomposite xcursor xi xrandr xtst")) {
                  !qtConfig(system-$$package) {
                      skipBuild("A suitable version of $$package could not be found.")
@@ -83,51 +80,6 @@ defineTest(runConfigure) {
                  }
              }
         }
-
-        # Fix me: mamke system-png a public feature in gui
-        qtConfig(system-png): qtConfig(webengine-system-png) {
-             WEBENGINE_CONFIG += use_system_libpng
-        }
-        # Fix me: make system-harfbuzz a public feautre in gui
-        qtConfig(system-harfbuzz): qtConfig(webengine-system-harfbuzz) {
-             WEBENGINE_CONFIG += use_system_harfbuzz
-        }
-        qtConfig(system-glib) {
-             WEBENGINE_CONFIG += use_glib
-        }
-        qtConfig(system-minizip) {
-             WEBENGINE_CONFIG += use_system_minizip
-        }
-        qtConfig(system-zlib) {
-             WEBENGINE_CONFIG += use_system_zlib
-        }
-        qtConfig(system-libxml2) {
-            WEBENGINE_CONFIG += use_system_libxslt use_system_libxml2
-        }
-
-        for(package, $$list("libevent jsoncpp protobuf libvpx libsrtp snappy")) {
-            qtConfig(system-$$package) {
-                WEBENGINE_CONFIG += use_system_$$package
-            } else {
-                WEBENGINE_CONFIG += use_bundled_$$package
-            }
-        }
-    }
-
-    win32:!qtConfig(winversion) {
-         skipBuild("Needs VS 2015 Update 3 with Cumulative Servicing Release or higher")
-    }
-
-    isEmpty(skipBuildReason) {
-        cache(CONFIG, add, $$list(webengine_successfully_configured))
-        !isEmpty(WEBENGINE_CONFIG) {
-            cache(WEBENGINE_CONFIG, add, $$list($$WEBENGINE_CONFIG))
-            export(WEBENGINE_CONFIG)
-        }
-    }
-
-    macos:qtConfig(native-spellchecker) {
-        WEBENGINE_CONFIG+=use_native_spellchecker
     }
 }
 

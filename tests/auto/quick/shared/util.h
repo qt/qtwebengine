@@ -115,7 +115,7 @@ inline bool waitForViewportReady(QQuickWebEngineView *webEngineView, int timeout
     Q_UNUSED(timeout)
     qFatal("Test Support API is disabled. The result is not reliable.\
             Use the following command to build Test Support module and rebuild WebEngineView API:\
-            qmake -r WEBENGINE_CONFIG+=testsupport && make");
+            qmake -r -- --feature-testsupport=yes && make");
     return false;
 #endif
 }

@@ -85,7 +85,7 @@ public:
         AllowRunningInsecureContent,
         AllowGeolocationOnInsecureOrigins,
         AllowWindowActivationFromJavaScript,
-        HideScrollbars
+        ShowScrollBars
     };
 
     // Must match the values from the public API in qwebenginesettings.h.
