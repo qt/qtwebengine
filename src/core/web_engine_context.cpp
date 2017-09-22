@@ -91,7 +91,7 @@
 #include "media_capture_devices_dispatcher.h"
 #include "net/webui_controller_factory_qt.h"
 #include "type_conversion.h"
-#include "surface_factory_qt.h"
+#include "ozone/surface_factory_qt.h"
 #include "web_engine_library_info.h"
 
 #include <QFileInfo>

@@ -80,7 +80,10 @@ SOURCES = \
         net/url_request_custom_job_proxy.cpp \
         net/url_request_qrc_job_qt.cpp \
         net/webui_controller_factory_qt.cpp \
-        ozone_platform_qt.cpp \
+        ozone/gl_ozone_qt.cpp \
+        ozone/ozone_platform_qt.cpp \
+        ozone/platform_window_qt.cpp \
+        ozone/surface_factory_qt.cpp \
         permission_manager_qt.cpp \
         process_main.cpp \
         quota_permission_context_qt.cpp \
@@ -99,7 +102,6 @@ SOURCES = \
         renderer_host/web_channel_ipc_transport_host.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
-        surface_factory_qt.cpp \
         type_conversion.cpp \
         user_script.cpp \
         visited_links_manager_qt.cpp \
@@ -161,7 +163,10 @@ HEADERS = \
         net/url_request_custom_job_proxy.h \
         net/url_request_qrc_job_qt.h \
         net/webui_controller_factory_qt.h \
-        ozone_platform_qt.h \
+        ozone/gl_ozone_qt.h \
+        ozone/ozone_platform_qt.h \
+        ozone/platform_window_qt.h \
+        ozone/surface_factory_qt.h \
         permission_controller.h \
         permission_manager_qt.h \
         process_main.h \
@@ -184,7 +189,6 @@ HEADERS = \
         renderer_host/user_resource_controller_host.h \
         renderer_host/web_channel_ipc_transport_host.h \
         resource_context_qt.h \
-        surface_factory_qt.h \
         type_conversion.h \
         user_script.h \
         visited_links_manager_qt.h \

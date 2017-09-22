@@ -37,23 +37,18 @@
 **
 ****************************************************************************/
 
-#include "surface_factory_qt.h"
-
-#include "gl_context_qt.h"
-#include "type_conversion.h"
+#if defined(USE_OZONE)
 
 #include "base/files/file_path.h"
 #include "base/native_library.h"
+#include "gl_context_qt.h"
+#include "ozone/gl_ozone_qt.h"
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/init/gl_initializer.h"
 #include "ui/gl/init/gl_factory.h"
-#include "ui/ozone/common/gl_ozone_egl.h"
+#include "ui/gl/init/gl_initializer.h"
 
-#include <QGuiApplication>
-
-#if defined(USE_OZONE)
 
 #include <EGL/egl.h>
 #include <dlfcn.h>
@@ -64,26 +59,6 @@ Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 #endif
 
 namespace QtWebEngineCore {
-
-class GLOzoneQt : public ui::GLOzoneEGL {
-public:
-    scoped_refptr<gl::GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget /*window*/) override
-    {
-        return nullptr;
-    }
-    scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(const gfx::Size& /*size*/) override
-    {
-        return nullptr;
-    }
-
-protected:
-    // Returns native platform display handle. This is used to obtain the EGL
-    // display connection for the native display.
-    intptr_t GetNativeDisplay() override;
-
-    // Sets up GL bindings for the native surface.
-    bool LoadGLES2Bindings(gl::GLImplementation implementation) override;
-};
 
 base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
     base::NativeLibraryLoadError error;
@@ -138,19 +113,6 @@ intptr_t GLOzoneQt::GetNativeDisplay()
     return reinterpret_cast<intptr_t>(EGL_DEFAULT_DISPLAY);
 }
 
-std::vector<gl::GLImplementation> SurfaceFactoryQt::GetAllowedGLImplementations()
-{
-    std::vector<gl::GLImplementation> impls;
-    impls.push_back(gl::kGLImplementationEGLGLES2);
-    return impls;
-}
-
-ui::GLOzone* SurfaceFactoryQt::GetGLOzone(gl::GLImplementation implementation)
-{
-    return new GLOzoneQt();
-}
-
 } // namespace QtWebEngineCore
 
 #endif // defined(USE_OZONE)
-
