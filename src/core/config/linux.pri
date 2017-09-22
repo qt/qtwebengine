@@ -115,7 +115,9 @@ host_build {
         gn_args += host_pkg_config=\"pkg-config\"
     }
 
-    qtConfig(system-zlib): qtConfig(system-minizip): gn_args += use_system_zlib=true use_system_minizip=true
+    qtConfig(webengine-system-zlib): qtConfig(system-minizip) {
+        gn_args += use_system_zlib=true use_system_minizip=true
+    }
     qtConfig(webengine-system-png): gn_args += use_system_libpng=true
     qtConfig(system-jpeg): gn_args += use_system_libjpeg=true
     qtConfig(system-freetype): gn_args += use_system_freetype=true

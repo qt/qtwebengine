@@ -1,6 +1,7 @@
 {
     "module": "webengine",
     "depends": [
+        "core-private",
         "gui-private",
         "printsupport"
     ],
@@ -304,9 +305,9 @@
             "condition": "config.unix && libs.minizip",
             "output": [ "privateFeature" ]
         },
-        "system-zlib" : {
+        "webengine-system-zlib" : {
             "label": "zlib",
-            "condition": "config.unix && libs.zlib",
+            "condition": "config.unix && features.system-zlib && libs.zlib",
             "output": [ "privateFeature" ]
         },
         "system-libevent" : {
@@ -581,7 +582,7 @@
                         "system-snappy",
                         "system-libsrtp",
                         "system-glib",
-                        "system-zlib",
+                        "webengine-system-zlib",
                         "system-minizip",
                         "system-libevent",
                         "system-jsoncpp",
