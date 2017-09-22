@@ -2655,18 +2655,19 @@ Q_OBJECT
 public:
     GetUserMediaTestPage()
         : m_gotRequest(false)
+        , m_loadSucceeded(false)
     {
         connect(this, &QWebEnginePage::featurePermissionRequested, this, &GetUserMediaTestPage::onFeaturePermissionRequested);
-
+        connect(this, &QWebEnginePage::loadFinished, [this](bool success){
+            m_loadSucceeded = success;
+        });
         // We need to load content from a resource in order for the securityOrigin to be valid.
-        QSignalSpy loadSpy(this, SIGNAL(loadFinished(bool)));
         load(QUrl("qrc:///resources/content.html"));
-        QTRY_COMPARE(loadSpy.count(), 1);
     }
 
     void jsGetUserMedia(const QString & constraints)
     {
-        runJavaScript(
+        evaluateJavaScriptSync(this,
             QStringLiteral(
                 "var promiseFulfilled = false;"
                 "var promiseRejected = false;"
@@ -2707,6 +2708,11 @@ public:
         return m_gotRequest;
     }
 
+    bool loadSucceeded() const
+    {
+        return m_loadSucceeded;
+    }
+
 private Q_SLOTS:
     void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature)
     {
@@ -2717,6 +2723,7 @@ private Q_SLOTS:
 
 private:
     bool m_gotRequest;
+    bool m_loadSucceeded;
     QWebEnginePage::Feature m_requestedFeature;
     QUrl m_requestSecurityOrigin;
 
@@ -2747,6 +2754,7 @@ void tst_QWebEnginePage::getUserMediaRequest()
     QFETCH(QWebEnginePage::Feature, feature);
 
     GetUserMediaTestPage page;
+    QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
 
     // 1. Rejecting request on C++ side should reject promise on JS side.
@@ -2775,6 +2783,7 @@ void tst_QWebEnginePage::getUserMediaRequest()
 void tst_QWebEnginePage::getUserMediaRequestDesktopAudio()
 {
     GetUserMediaTestPage page;
+    QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
 
     // Audio-only desktop capture is not supported. JS Promise should be
@@ -2792,6 +2801,7 @@ void tst_QWebEnginePage::getUserMediaRequestDesktopAudio()
 void tst_QWebEnginePage::getUserMediaRequestSettingDisabled()
 {
     GetUserMediaTestPage page;
+    QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, false);
 
     // With the setting disabled, the JS Promise should be rejected without
