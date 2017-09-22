@@ -143,6 +143,7 @@ private:
     bool m_contextShared;
     QScopedPointer<QOffscreenSurface> m_offsurface;
 #endif
+    QSize m_previousViewportSize;
 };
 
 } // namespace QtWebEngineCore
