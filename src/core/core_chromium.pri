@@ -81,6 +81,8 @@ SOURCES = \
         net/url_request_qrc_job_qt.cpp \
         net/webui_controller_factory_qt.cpp \
         ozone/gl_ozone_qt.cpp \
+        ozone/gl_surface_egl_qt.cpp \
+        ozone/gl_surface_glx_qt.cpp \
         ozone/ozone_platform_qt.cpp \
         ozone/platform_window_qt.cpp \
         ozone/surface_factory_qt.cpp \
@@ -164,6 +166,8 @@ HEADERS = \
         net/url_request_qrc_job_qt.h \
         net/webui_controller_factory_qt.h \
         ozone/gl_ozone_qt.h \
+        ozone/gl_surface_egl_qt.h \
+        ozone/gl_surface_glx_qt.h \
         ozone/ozone_platform_qt.h \
         ozone/platform_window_qt.h \
         ozone/surface_factory_qt.h \

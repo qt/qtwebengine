@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,46 +37,61 @@
 **
 ****************************************************************************/
 
+#ifndef GL_SURFACE_EGL_QT_H_
+#define GL_SURFACE_EGL_QT_H_
 
-
-#ifndef GL_SURFACE_QT_H_
-#define GL_SURFACE_QT_H_
-
-#include "ui/gfx/geometry/size.h"
-#include "ui/gl/gl_surface.h"
+#include "gl_surface_qt.h"
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 namespace gl {
 
-class GLSurfaceQt: public GLSurface {
+class GLSurfaceEGLQt: public GLSurfaceQt {
 public:
-    explicit GLSurfaceQt(const gfx::Size& size);
+    explicit GLSurfaceEGLQt(const gfx::Size& size);
 
-    static bool HasEGLExtension(const char* name);
+    static bool InitializeOneOff();
+    static bool InitializeExtensionSettingsOneOff();
 
-    // Implement GLSurface.
-    void *GetDisplay() override;
-    void *GetConfig() override;
-    bool IsOffscreen() override;
-    gfx::SwapResult SwapBuffers(const PresentationCallback &callback) override;
-    gfx::Size GetSize() override;
-    GLSurfaceFormat GetFormat() override;
+    bool Initialize(GLSurfaceFormat format) override;
+    void Destroy() override;
+    void* GetHandle() override;
+    bool Resize(const gfx::Size& size, float scale_factor,
+                ColorSpace color_space, bool has_alpha) override;
 
 protected:
-    GLSurfaceQt();
-    virtual ~GLSurfaceQt();
-
-    gfx::Size m_size;
-    GLSurfaceFormat m_format;
+    ~GLSurfaceEGLQt();
 
 public:
-    static void* g_config;
-    static void* g_display;
-    static const char* g_extensions;
+   static bool g_egl_surfaceless_context_supported;
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(GLSurfaceQt);
+   EGLSurface m_surfaceBuffer;
+   static bool s_initialized;
+   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGLQt);
 };
 
+// The following comment is cited from chromium/ui/gl/gl_surface_egl.cc:
+// SurfacelessEGL is used as Offscreen surface when platform supports
+// KHR_surfaceless_context and GL_OES_surfaceless_context. This would avoid the
+// need to create a dummy EGLsurface in case we render to client API targets.
+
+class GLSurfacelessQtEGL : public GLSurfaceQt {
+public:
+    explicit GLSurfacelessQtEGL(const gfx::Size& size);
+
+public:
+    bool Initialize(GLSurfaceFormat format) override;
+    void Destroy() override;
+    bool IsSurfaceless() const override;
+    bool Resize(const gfx::Size& size, float scale_factor,
+                ColorSpace color_space, bool has_alpha) override;
+    EGLSurface GetHandle() override;
+    void* GetShareHandle() override;
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(GLSurfacelessQtEGL);
+};
 }
 
 #endif

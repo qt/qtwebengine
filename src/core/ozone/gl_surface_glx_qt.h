@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,46 +37,36 @@
 **
 ****************************************************************************/
 
+#ifndef GL_SURFACE_GLX_QT_H_
+#define GL_SURFACE_GLX_QT_H_
 
+#include "gl_surface_qt.h"
 
-#ifndef GL_SURFACE_QT_H_
-#define GL_SURFACE_QT_H_
-
-#include "ui/gfx/geometry/size.h"
-#include "ui/gl/gl_surface.h"
+extern "C" {
+#include <X11/Xlib.h>
+}
 
 namespace gl {
 
-class GLSurfaceQt: public GLSurface {
+class GLSurfaceGLXQt: public GLSurfaceQt {
 public:
-    explicit GLSurfaceQt(const gfx::Size& size);
+    explicit GLSurfaceGLXQt(const gfx::Size& size);
 
-    static bool HasEGLExtension(const char* name);
+    static bool InitializeOneOff();
+    static bool InitializeExtensionSettingsOneOff();
 
-    // Implement GLSurface.
-    void *GetDisplay() override;
-    void *GetConfig() override;
-    bool IsOffscreen() override;
-    gfx::SwapResult SwapBuffers(const PresentationCallback &callback) override;
-    gfx::Size GetSize() override;
-    GLSurfaceFormat GetFormat() override;
+    bool Initialize(GLSurfaceFormat format) override;
+    void Destroy() override;
+    void* GetHandle() override;
 
 protected:
-    GLSurfaceQt();
-    virtual ~GLSurfaceQt();
-
-    gfx::Size m_size;
-    GLSurfaceFormat m_format;
-
-public:
-    static void* g_config;
-    static void* g_display;
-    static const char* g_extensions;
+    ~GLSurfaceGLXQt();
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(GLSurfaceQt);
+    static bool s_initialized;
+    XID m_surfaceBuffer;
+    DISALLOW_COPY_AND_ASSIGN(GLSurfaceGLXQt);
 };
 
 }
-
 #endif
