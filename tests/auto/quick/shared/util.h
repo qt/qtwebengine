@@ -30,6 +30,7 @@
 #define UTIL_H
 
 #include <QEventLoop>
+#include <QQmlEngine>
 #include <QSignalSpy>
 #include <QTimer>
 #include <QtTest/QtTest>
@@ -120,103 +121,43 @@ inline bool waitForViewportReady(QQuickWebEngineView *webEngineView, int timeout
 #endif
 }
 
-inline QString bodyInnerText(QQuickWebEngineView *webEngineView)
+inline QVariant evaluateJavaScriptSync(QQuickWebEngineView *view, const QString &script)
 {
-    qRegisterMetaType<QQuickWebEngineView::JavaScriptConsoleMessageLevel>("JavaScriptConsoleMessageLevel");
-    QSignalSpy consoleMessageSpy(webEngineView, &QQuickWebEngineView::javaScriptConsoleMessage);
+    QQmlEngine *engine = qmlEngine(view);
+    engine->globalObject().setProperty("called", false);
+    engine->globalObject().setProperty("result", QJSValue());
+    QJSValue callback = engine->evaluate(
+            "(function callback(r) {"
+            "   called = true;"
+            "   result = r;"
+            "})"
+            );
+    view->runJavaScript(script, callback);
+    QTRY_LOOP_IMPL(engine->globalObject().property("called").toBool(), 5000, 50);
+    if (!engine->globalObject().property("called").toBool()) {
+        qWarning("JavaScript wasn't evaluated");
+        return QVariant();
+    }
 
-    webEngineView->runJavaScript(
-                "if (document.body == null)"
-                "   console.log('');"
-                "else"
-                "   console.log(document.body.innerText);"
-    );
-
-    if (!consoleMessageSpy.wait())
-        return QString();
-
-    QList<QVariant> arguments = consoleMessageSpy.takeFirst();
-    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
-        return QString();
-
-    return arguments.at(1).toString();
+    return engine->globalObject().property("result").toVariant();
 }
 
-inline QString activeElementId(QQuickWebEngineView *webEngineView)
+inline QPoint elementCenter(QQuickWebEngineView *view, const QString &id)
 {
-    qRegisterMetaType<QQuickWebEngineView::JavaScriptConsoleMessageLevel>("JavaScriptConsoleMessageLevel");
-    QSignalSpy consoleMessageSpy(webEngineView, &QQuickWebEngineView::javaScriptConsoleMessage);
+    const QString jsCode(
+            "(function(){"
+            "   var elem = document.getElementById('" + id + "');"
+            "   var rect = elem.getBoundingClientRect();"
+            "   return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
+            "})()");
+    QVariantList rectList = evaluateJavaScriptSync(view, jsCode).toList();
 
-    webEngineView->runJavaScript(
-                "if (document.activeElement == null)"
-                "   console.log('');"
-                "else"
-                "   console.log(document.activeElement.id);"
-    );
-
-    if (!consoleMessageSpy.wait())
-        return QString();
-
-    QList<QVariant> arguments = consoleMessageSpy.takeFirst();
-    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
-        return QString();
-
-    return arguments.at(1).toString();
-}
-
-inline QString elementValue(QQuickWebEngineView *webEngineView, const QString &id)
-{
-    qRegisterMetaType<QQuickWebEngineView::JavaScriptConsoleMessageLevel>("JavaScriptConsoleMessageLevel");
-    QSignalSpy consoleMessageSpy(webEngineView, &QQuickWebEngineView::javaScriptConsoleMessage);
-
-    webEngineView->runJavaScript(QString(
-                "var element = document.getElementById('" + id + "');"
-                "if (element == null)"
-                "   console.log('');"
-                "else"
-                "   console.log(element.value);")
-    );
-
-    if (!consoleMessageSpy.wait())
-        return QString();
-
-    QList<QVariant> arguments = consoleMessageSpy.takeFirst();
-    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
-        return QString();
-
-    return arguments.at(1).toString();
-}
-
-inline QPoint elementCenter(QQuickWebEngineView *webEngineView, const QString &id)
-{
-    qRegisterMetaType<QQuickWebEngineView::JavaScriptConsoleMessageLevel>("JavaScriptConsoleMessageLevel");
-    QSignalSpy consoleMessageSpy(webEngineView, &QQuickWebEngineView::javaScriptConsoleMessage);
-
-    webEngineView->runJavaScript(QString(
-        "var element = document.getElementById('" + id + "');"
-        "var rect = element.getBoundingClientRect();"
-        "console.log((rect.left + rect.right) / 2);"
-        "console.log((rect.top + rect.bottom) / 2);")
-    );
-
-    QTRY_LOOP_IMPL(consoleMessageSpy.count() == 2, 5000, 50);
-    if (consoleMessageSpy.count() != 2)
+    if (rectList.count() != 2) {
+        qWarning("elementCenter failed.");
         return QPoint();
+    }
 
-    QList<QVariant> arguments;
-    double x, y;
-
-    arguments = consoleMessageSpy.takeFirst();
-    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
-        return QPoint();
-    x = arguments.at(1).toDouble();
-
-    arguments = consoleMessageSpy.takeLast();
-    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
-        return QPoint();
-    y = arguments.at(1).toDouble();
-
-    return QPoint(x, y);
+    return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
 }
 
 #endif /* UTIL_H */
