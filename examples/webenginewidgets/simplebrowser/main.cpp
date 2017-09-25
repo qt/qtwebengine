@@ -44,12 +44,14 @@
 #include <QApplication>
 #include <QWebEngineSettings>
 
-QUrl getCommandLineUrlArgument()
+QUrl commandLineUrlArgument()
 {
     const QStringList args = QCoreApplication::arguments();
-    if (args.count() > 1)
-        return QUrl::fromUserInput(args.last());
-    return QUrl();
+    for (const QString &arg : args.mid(1)) {
+        if (!arg.startsWith(QLatin1Char('-')))
+            return QUrl::fromUserInput(arg);
+    }
+    return QUrl(QStringLiteral("https://www.qt.io"));
 }
 
 int main(int argc, char **argv)
@@ -62,9 +64,7 @@ int main(int argc, char **argv)
 
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
 
-    QUrl url = getCommandLineUrlArgument();
-    if (!url.isValid())
-        url = QStringLiteral("https://www.qt.io");
+    QUrl url = commandLineUrlArgument();
 
     Browser browser;
     BrowserWindow *window = browser.createWindow();
