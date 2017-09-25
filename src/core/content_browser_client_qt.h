@@ -153,7 +153,7 @@ public:
                         const net::CookieOptions& options) override;
 
 #if defined(Q_OS_LINUX)
-    void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::FileDescriptorInfo* mappings) override;
+    void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)

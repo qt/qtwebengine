@@ -69,8 +69,8 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
-#include "cc/resources/returned_resource.h"
-#include "cc/resources/transferable_resource.h"
+#include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "ui/gl/gl_context.h"
@@ -151,17 +151,17 @@ private:
 #endif // QT_NO_OPENGL
 class ResourceHolder {
 public:
-    ResourceHolder(const cc::TransferableResource &resource);
+    ResourceHolder(const viz::TransferableResource &resource);
     QSharedPointer<QSGTexture> initTexture(bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate = 0);
     QSGTexture *texture() const { return m_texture.data(); }
-    cc::TransferableResource &transferableResource() { return m_resource; }
-    cc::ReturnedResource returnResource();
+    viz::TransferableResource &transferableResource() { return m_resource; }
+    viz::ReturnedResource returnResource();
     void incImportCount() { ++m_importCount; }
     bool needsToFetch() const { return !m_resource.is_software && m_texture && !m_texture.data()->textureId(); }
 
 private:
     QWeakPointer<QSGTexture> m_texture;
-    cc::TransferableResource m_resource;
+    viz::TransferableResource m_resource;
     int m_importCount;
 };
 
@@ -449,7 +449,7 @@ static QSGNode *buildRenderPassChain(QSGNode *chainParent)
     return zCompressNode;
 }
 
-static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState *layerState)
+static QSGNode *buildLayerChain(QSGNode *chainParent, const viz::SharedQuadState *layerState)
 {
     QSGNode *layerChain = chainParent;
     if (layerState->is_clipped) {
@@ -634,7 +634,7 @@ void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
 }
 #endif //QT_NO_OPENGL
 
-ResourceHolder::ResourceHolder(const cc::TransferableResource &resource)
+ResourceHolder::ResourceHolder(const viz::TransferableResource &resource)
     : m_resource(resource)
     , m_importCount(1)
 {
@@ -671,9 +671,9 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
     return texture;
 }
 
-cc::ReturnedResource ResourceHolder::returnResource()
+viz::ReturnedResource ResourceHolder::returnResource()
 {
-    cc::ReturnedResource returned;
+    viz::ReturnedResource returned;
     // The ResourceProvider ensures that the resource isn't used by the parent compositor's GL
     // context in the GPU process by inserting a sync point to be waited for by the child
     // compositor's GL context. We don't need this since we are triggering the delegated frame
@@ -765,8 +765,8 @@ static YUVVideoMaterial::ColorSpace toQt(cc::YUVVideoDrawQuad::ColorSpace color_
     return YUVVideoMaterial::REC_601;
 }
 
-static bool areSharedQuadStatesEqual(const cc::SharedQuadState *layerState,
-                                     const cc::SharedQuadState *prevLayerState)
+static bool areSharedQuadStatesEqual(const viz::SharedQuadState *layerState,
+                                     const viz::SharedQuadState *prevLayerState)
 {
     if (layerState->is_clipped != prevLayerState->is_clipped
         || layerState->clip_rect != prevLayerState->clip_rect)
@@ -824,7 +824,7 @@ static bool areRenderPassStructuresEqual(cc::CompositorFrame *frameData,
 }
 
 void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
-                                std::vector<cc::ReturnedResource> *resourcesToRelease,
+                                std::vector<viz::ReturnedResource> *resourcesToRelease,
                                 RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     m_chromiumCompositorData = chromiumCompositorData;
@@ -849,7 +849,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // candidates to be picked up by quads, it's then our responsibility to return unused resources
     // to the producing child compositor.
     for (unsigned i = 0; i < frameData->resource_list.size(); ++i) {
-        const cc::TransferableResource &res = frameData->resource_list.at(i);
+        const viz::TransferableResource &res = frameData->resource_list.at(i);
         if (QSharedPointer<ResourceHolder> resource = resourceCandidates.value(res.id))
             resource->incImportCount();
         else
@@ -947,13 +947,13 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
         std::deque<std::unique_ptr<cc::DrawPolygon>> polygonQueue;
         int nextPolygonId = 0;
         int currentSortingContextId = 0;
-        const cc::SharedQuadState *currentLayerState = nullptr;
+        const viz::SharedQuadState *currentLayerState = nullptr;
         QSGNode *currentLayerChain = nullptr;
         const auto quadListBegin = pass->quad_list.BackToFrontBegin();
         const auto quadListEnd = pass->quad_list.BackToFrontEnd();
         for (auto it = quadListBegin; it != quadListEnd; ++it) {
             const cc::DrawQuad *quad = *it;
-            const cc::SharedQuadState *quadState = quad->shared_quad_state;
+            const viz::SharedQuadState *quadState = quad->shared_quad_state;
 
             gfx::Rect targetRect =
                 cc::MathUtil::MapEnclosingClippedRect(quadState->quad_to_target_transform,
@@ -1019,7 +1019,7 @@ void DelegatedFrameNode::flushPolygons(
 
     const auto actionHandler = [&](cc::DrawPolygon *polygon) {
         const cc::DrawQuad *quad = polygon->original_ref();
-        const cc::SharedQuadState *quadState = quad->shared_quad_state;
+        const viz::SharedQuadState *quadState = quad->shared_quad_state;
 
         QSGNode *currentLayerChain = nullptr;
         if (renderPassChain)

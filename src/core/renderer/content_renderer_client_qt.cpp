@@ -49,10 +49,11 @@
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #endif
 #include "components/cdm/renderer/widevine_key_system_properties.h"
+#include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-#include "components/printing/renderer/print_web_view_helper.h"
+#include "components/printing/renderer/print_render_frame_helper.h"
 #endif // if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
@@ -136,7 +137,7 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_fr
     new SpellCheckProvider(render_frame, m_spellCheck.data());
 #endif
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-    new printing::PrintWebViewHelper(
+    new printing::PrintRenderFrameHelper(
                 render_frame,
                 base::WrapUnique(new PrintWebViewHelperDelegateQt()));
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -166,20 +167,33 @@ void ContentRendererClientQt::RunScriptsAtDocumentEnd(content::RenderFrame* rend
     UserResourceController::instance()->RunScriptsAtDocumentEnd(render_frame);
 }
 
-bool ContentRendererClientQt::HasErrorPage(int httpStatusCode, std::string *errorDomain)
+bool ContentRendererClientQt::HasErrorPage(int httpStatusCode)
 {
     // Use an internal error page, if we have one for the status code.
-    if (!error_page::LocalizedError::HasStrings(error_page::LocalizedError::kHttpErrorDomain, httpStatusCode)) {
+    if (!error_page::LocalizedError::HasStrings(error_page::Error::kHttpErrorDomain, httpStatusCode)) {
         return false;
     }
 
-    *errorDomain = error_page::LocalizedError::kHttpErrorDomain;
     return true;
 }
 
 bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *frame, const GURL &)
 {
     return !(frame->GetWebkitPreferences().enable_error_page);
+}
+
+std::string domain2String(blink::WebURLError::Domain domain)
+{
+    switch (domain) {
+    case blink::WebURLError::Domain::kEmpty:
+        return "(null)";
+    case blink::WebURLError::Domain::kNet:
+        return "net";
+    case blink::WebURLError::Domain::kTest:
+        return "testing";
+    }
+    Q_UNREACHABLE();
+    return std::string();
 }
 
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
@@ -196,11 +210,11 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* re
         // TODO(elproxy): We could potentially get better diagnostics here by first calling
         // NetErrorHelper::GetErrorStringsForDnsProbe, but that one is harder to untangle.
 
-        error_page::LocalizedError::GetStrings(error.reason, error.domain.Utf8(), error.unreachable_url, isPost
-                                  , error.stale_copy_in_cache && !isPost, false, false, locale
-                                  , std::unique_ptr<error_page::ErrorPageParams>(), &errorStrings);
+        error_page::LocalizedError::GetStrings(
+            error.reason, domain2String(error.domain), error.unreachable_url, isPost,
+            error.stale_copy_in_cache, false, false,
+            locale, std::unique_ptr<error_page::ErrorPageParams>(), &errorStrings);
         resourceId = IDR_NET_ERROR_HTML;
-
 
         const base::StringPiece template_html(ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resourceId));
         if (template_html.empty())
@@ -210,7 +224,7 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* re
     }
 
     if (errorDescription)
-        *errorDescription = error_page::LocalizedError::GetErrorDetails(error.domain.Utf8(), error.reason, isPost);
+        *errorDescription = error_page::LocalizedError::GetErrorDetails(domain2String(error.domain), error.reason, isPost);
 }
 
 unsigned long long ContentRendererClientQt::VisitedLinkHash(const char *canonicalUrl, size_t length)
@@ -228,7 +242,7 @@ bool ContentRendererClientQt::IsLinkVisited(unsigned long long linkHash)
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE.Chromium file.
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 static const char kExternalClearKeyPepperType[] = "application/x-ppapi-clearkey-cdm";
 
 static bool IsPepperCdmAvailable(const std::string& pepper_type,
@@ -410,7 +424,7 @@ static void AddPepperBasedWidevine(std::vector<std::unique_ptr<media::KeySystemP
 
 void ContentRendererClientQt::AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>> *key_systems)
 {
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     AddExternalClearKey(key_systems);
 
 #if defined(WIDEVINE_CDM_AVAILABLE)

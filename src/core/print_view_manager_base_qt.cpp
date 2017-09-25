@@ -171,7 +171,7 @@ void PrintViewManagerBaseQt::OnDidPrintPage(
     }
   }
 
-  std::unique_ptr<printing::PdfMetafileSkia> metafile(new printing::PdfMetafileSkia(printing::PDF_SKIA_DOCUMENT_TYPE));
+  std::unique_ptr<printing::PdfMetafileSkia> metafile(new printing::PdfMetafileSkia(printing::SkiaDocumentType::PDF));
   if (metafile_must_be_valid) {
     if (!metafile->InitFromData(shared_buf->memory(), params.data_size)) {
       NOTREACHED() << "Invalid metafile header";
@@ -328,7 +328,7 @@ void PrintViewManagerBaseQt::ShouldQuitFromInnerMessageLoop()
         m_isInsideInnerMessageLoop) {
       // We are in a message loop created by RenderAllMissingPagesNow. Quit from
       // it.
-      base::MessageLoop::current()->QuitWhenIdle();
+      base::MessageLoop::current()->QuitWhenIdleClosure();
       m_isInsideInnerMessageLoop = false;
     }
 }
@@ -440,15 +440,15 @@ bool PrintViewManagerBaseQt::RunInnerMessageLoop() {
   // memory-bound.
   static const int kPrinterSettingsTimeout = 60000;
   base::OneShotTimer quit_timer;
+  base::RunLoop runLoop;
   quit_timer.Start(FROM_HERE,
                    base::TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
-                   base::MessageLoop::current(), &base::MessageLoop::QuitWhenIdle);
+                   runLoop.QuitWhenIdleClosure());
 
   m_isInsideInnerMessageLoop = true;
 
   // Need to enable recursive task.
   {
-      base::RunLoop runLoop;
       m_quitClosure = runLoop.QuitClosure();
       base::MessageLoop* loop = base::MessageLoop::current();
       base::MessageLoop::ScopedNestableTaskAllower allowNested(loop);

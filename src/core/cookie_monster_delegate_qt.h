@@ -64,9 +64,10 @@ namespace QtWebEngineCore {
 static const char* const kCookieableSchemes[] =
     { "http", "https", "qrc", "ws", "wss" };
 
-class QWEBENGINE_EXPORT CookieMonsterDelegateQt: public net::CookieMonsterDelegate {
+class QWEBENGINE_EXPORT CookieMonsterDelegateQt : public base::RefCountedThreadSafe<CookieMonsterDelegateQt> {
     QPointer<QWebEngineCookieStore> m_client;
     net::CookieMonster *m_cookieMonster;
+    std::vector<std::unique_ptr<net::CookieStore::CookieChangedSubscription>> m_subscriptions;
 public:
     CookieMonsterDelegateQt();
     ~CookieMonsterDelegateQt();
@@ -84,7 +85,9 @@ public:
 
     bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url);
     bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url);
-    void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, net::CookieStore::ChangeCause cause) override;
+
+    void AddStore(net::CookieStore *store);
+    void OnCookieChanged(const net::CanonicalCookie &cookie, net::CookieStore::ChangeCause cause);
 
 private:
     void GetAllCookiesOnIOThread(net::CookieMonster::GetCookieListCallback callback);

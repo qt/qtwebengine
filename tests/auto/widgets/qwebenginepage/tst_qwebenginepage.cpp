@@ -4053,10 +4053,8 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
 
     url = QUrl("qrc:/resources/test1.html");
     m_page->setUrl(url);
-    QSignalSpy spyFinished(m_page, &QWebEnginePage::loadFinished);
-    QVERIFY(spyFinished.wait());
     expectedUrlChangeCount++;
-    QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
+    QTRY_COMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->history()->count(), 1);
 
@@ -4076,9 +4074,8 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
     QVERIFY(m_page->history()->canGoBack());
 
     evaluateJavaScriptSync(m_page, "window.history.back()");
-    QTest::qWait(100);
     expectedUrlChangeCount++;
-    QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
+    QTRY_COMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), QUrl("qrc:/resources/test1.html"));
     QVERIFY(m_page->history()->canGoForward());
     QVERIFY(!m_page->history()->canGoBack());

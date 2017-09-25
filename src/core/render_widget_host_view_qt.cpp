@@ -67,7 +67,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
-#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
@@ -342,8 +341,8 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_wheelAckPending(false)
 {
     auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
-    m_beginFrameSource.reset(new cc::DelayBasedBeginFrameSource(
-                                 base::MakeUnique<cc::DelayBasedTimeSource>(task_runner)));
+    m_beginFrameSource.reset(new viz::DelayBasedBeginFrameSource(
+            base::MakeUnique<viz::DelayBasedTimeSource>(task_runner)));
 
     m_host->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
@@ -353,6 +352,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
             content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
     }
 #endif // QT_NO_ACCESSIBILITY
+
     if (GetTextInputManager())
         GetTextInputManager()->AddObserver(this);
 
@@ -724,7 +724,7 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
     return false;
 }
 
-void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(cc::mojom::CompositorFrameSinkClient *frameSink)
+void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient *frameSink)
 {
     // Accumulated resources belong to the old RendererCompositorFrameSink and
     // should not be returned.
@@ -1138,7 +1138,7 @@ void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWit
 void RenderWidgetHostViewQt::sendDelegatedFrameAck()
 {
     m_beginFrameSource->DidFinishFrame(this);
-    std::vector<cc::ReturnedResource> resources;
+    std::vector<viz::ReturnedResource> resources;
     m_resourcesToRelease.swap(resources);
     if (m_rendererCompositorFrameSink)
         m_rendererCompositorFrameSink->DidReceiveCompositorFrameAck(resources);
@@ -1211,7 +1211,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
             if (ev->type() == QEvent::KeyRelease) {
                 m_receivedEmptyImeText = false;
                 m_host->ImeSetComposition(toString16(ev->text()),
-                                          std::vector<ui::CompositionUnderline>(),
+                                          std::vector<ui::ImeTextSpan>(),
                                           gfx::Range::InvalidRange(),
                                           gfx::Range::InvalidRange().start(),
                                           gfx::Range::InvalidRange().end());
@@ -1262,7 +1262,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     gfx::Range selectionRange = gfx::Range::InvalidRange();
 
     const QList<QInputMethodEvent::Attribute> &attributes = ev->attributes();
-    std::vector<ui::CompositionUnderline> underlines;
+    std::vector<ui::ImeTextSpan> underlines;
     bool hasSelection = false;
 
     for (const auto &attribute : attributes) {
@@ -1287,7 +1287,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             if (format.underlineStyle() != QTextCharFormat::NoUnderline)
                 underlineColor = format.underlineColor();
 
-            underlines.push_back(ui::CompositionUnderline(start, end, toSk(underlineColor), /*thick*/ false, SK_ColorTRANSPARENT));
+            underlines.push_back(ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, start, end, toSk(underlineColor), /*thick*/ false, SK_ColorTRANSPARENT));
             break;
         }
         case QInputMethodEvent::Cursor:
@@ -1672,7 +1672,7 @@ void RenderWidgetHostViewQt::updateNeedsBeginFramesInternal()
     m_addedFrameObserver = m_needsBeginFrames;
 }
 
-bool RenderWidgetHostViewQt::OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args)
+bool RenderWidgetHostViewQt::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args)
 {
     m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
     if (m_rendererCompositorFrameSink)

@@ -44,7 +44,7 @@
 #ifndef PRINT_WEB_VIEW_HELPER_DELEGATE_QT_H
 #define PRINT_WEB_VIEW_HELPER_DELEGATE_QT_H
 
-#include "components/printing/renderer/print_web_view_helper.h"
+#include "components/printing/renderer/print_render_frame_helper.h"
 
 namespace content {
 class RenderView;
@@ -52,7 +52,7 @@ class RenderView;
 
 namespace QtWebEngineCore {
 
-class PrintWebViewHelperDelegateQt : public printing::PrintWebViewHelper::Delegate
+class PrintWebViewHelperDelegateQt : public printing::PrintRenderFrameHelper::Delegate
 {
 public:
     ~PrintWebViewHelperDelegateQt() override;

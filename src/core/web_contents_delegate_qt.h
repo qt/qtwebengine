@@ -133,8 +133,7 @@ public:
     void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) override;
     void DidStartNavigation(content::NavigationHandle *navigation_handle) override;
     void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
-    void DidFailLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url,
-                             int error_code, const base::string16 &error_description, bool was_ignored_by_handler) override;
+    void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
     void BeforeUnloadFired(const base::TimeTicks& proceed_time) override;
     void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) override;

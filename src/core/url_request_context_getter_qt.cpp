@@ -312,47 +312,44 @@ void URLRequestContextGetterQt::generateCookieStore()
                     new net::DefaultChannelIDStore(channel_id_db.get()))));
 
     // Unset it first to get a chance to destroy and flush the old cookie store before opening a new on possibly the same file.
-    m_storage->set_cookie_store(0);
     m_cookieDelegate->setCookieMonster(0);
+    m_storage->set_cookie_store(0);
 
     std::unique_ptr<net::CookieStore> cookieStore;
     switch (m_persistentCookiesPolicy) {
     case BrowserContextAdapter::NoPersistentCookies:
-        cookieStore =
-            content::CreateCookieStore(content::CookieStoreConfig(
+        cookieStore = content::CreateCookieStore(
+            content::CookieStoreConfig(
                 base::FilePath(),
                 content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
-                NULL,
-                m_cookieDelegate.get())
-            );
+                nullptr)
+        );
         break;
     case BrowserContextAdapter::AllowPersistentCookies:
-        cookieStore =
-            content::CreateCookieStore(content::CookieStoreConfig(
+        cookieStore = content::CreateCookieStore(
+            content::CookieStoreConfig(
                 toFilePath(m_cookiesPath),
                 content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES,
-                NULL,
-                m_cookieDelegate.get())
+                nullptr)
             );
         break;
     case BrowserContextAdapter::ForcePersistentCookies:
-        cookieStore =
-            content::CreateCookieStore(content::CookieStoreConfig(
+        cookieStore = content::CreateCookieStore(
+            content::CookieStoreConfig(
                 toFilePath(m_cookiesPath),
                 content::CookieStoreConfig::RESTORED_SESSION_COOKIES,
-                NULL,
-                m_cookieDelegate.get())
+                nullptr)
             );
         break;
     }
 
     net::CookieMonster * const cookieMonster = static_cast<net::CookieMonster*>(cookieStore.get());
     cookieStore->SetChannelIDServiceID(m_urlRequestContext->channel_id_service()->GetUniqueID());
+    m_cookieDelegate->setCookieMonster(cookieMonster);
     m_storage->set_cookie_store(std::move(cookieStore));
 
     const std::vector<std::string> cookieableSchemes(kCookieableSchemes, kCookieableSchemes + arraysize(kCookieableSchemes));
     cookieMonster->SetCookieableSchemes(cookieableSchemes);
-    m_cookieDelegate->setCookieMonster(cookieMonster);
 
     if (!m_updateAllStorage && m_updateHttpCache) {
         // HttpCache needs to be regenerated when we generate a new channel id service
@@ -509,8 +506,7 @@ void URLRequestContextGetterQt::generateHttpCache()
                 net::MEMORY_CACHE,
                 net::CACHE_BACKEND_DEFAULT,
                 base::FilePath(),
-                m_httpCacheMaxSize,
-                BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)
+                m_httpCacheMaxSize
             );
         break;
     case BrowserContextAdapter::DiskHttpCache:
@@ -519,8 +515,7 @@ void URLRequestContextGetterQt::generateHttpCache()
                 net::DISK_CACHE,
                 net::CACHE_BACKEND_DEFAULT,
                 toFilePath(m_httpCachePath),
-                m_httpCacheMaxSize,
-                BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)
+                m_httpCacheMaxSize
             );
         break;
     case BrowserContextAdapter::NoCache:

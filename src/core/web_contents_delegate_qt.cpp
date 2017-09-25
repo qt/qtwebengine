@@ -295,9 +295,8 @@ void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QS
     EmitLoadFinished(false /* success */ , url, false /* isErrorPage */, errorCode, errorDescription);
 }
 
-void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description, bool was_ignored_by_handler)
+void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description)
 {
-    Q_UNUSED(was_ignored_by_handler);
     if (render_frame_host->GetParent())
         return;
 

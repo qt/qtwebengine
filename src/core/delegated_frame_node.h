@@ -42,7 +42,7 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/render_pass.h"
-#include "cc/resources/transferable_resource.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ui/gl/gl_fence.h"
 #include <QMutex>
@@ -91,7 +91,7 @@ public:
     DelegatedFrameNode();
     ~DelegatedFrameNode();
     void preprocess();
-    void commit(ChromiumCompositorData *chromiumCompositorData, std::vector<cc::ReturnedResource> *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
+    void commit(ChromiumCompositorData *chromiumCompositorData, std::vector<viz::ReturnedResource> *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
 
 private:
     void flushPolygons(

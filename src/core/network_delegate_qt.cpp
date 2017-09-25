@@ -120,7 +120,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
         QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(toQt(resourceType),
                                                                                            toQt(navigationType),
                                                                                            qUrl,
-                                                                                           toQt(request->first_party_for_cookies()),
+                                                                                           toQt(request->site_for_cookies()),
                                                                                            QByteArray::fromStdString(request->method()));
         QWebEngineUrlRequestInfo requestInfo(infoPrivate);
         interceptor->interceptRequest(requestInfo);
@@ -238,12 +238,12 @@ bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
                                        const std::string& cookie_line,
                                        net::CookieOptions*)
 {
-    return canSetCookies(request.first_party_for_cookies(), request.url(), cookie_line);
+    return canSetCookies(request.site_for_cookies(), request.url(), cookie_line);
 }
 
 bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const net::CookieList&)
 {
-    return canGetCookies(request.first_party_for_cookies(), request.url());
+    return canGetCookies(request.site_for_cookies(), request.url());
 }
 
 bool NetworkDelegateQt::canSetCookies(const GURL &first_party, const GURL &url, const std::string &cookie_line) const

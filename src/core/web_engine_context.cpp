@@ -377,6 +377,8 @@ WebEngineContext::WebEngineContext()
     // upstream Chromium commit ba52f56207a4b9d70b34880fbff2352e71a06422.
     parsedCommandLine->AppendSwitchASCII(switches::kEnableFeatures,
                                          features::kAllowContentInitiatedDataUrlNavigations.name);
+    // If the renderer renders the validation messages, we no longer get the callbacks we have in the API.
+    parsedCommandLine->AppendSwitchASCII(switches::kDisableBlinkFeatures, "ValidationBubbleInRenderer");
 
     if (useEmbeddedSwitches) {
         parsedCommandLine->AppendSwitchASCII(switches::kEnableFeatures, features::kOverlayScrollbar.name);
@@ -464,8 +466,9 @@ WebEngineContext::WebEngineContext()
                 }
             }
 
-            if (qt_gl_global_share_context()->format().profile() == QSurfaceFormat::CompatibilityProfile)
-                parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
+// FIXME:
+//            if (qt_gl_global_share_context()->format().profile() == QSurfaceFormat::CompatibilityProfile)
+//                parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
         } else {
             qWarning("WebEngineContext used before QtWebEngine::initialize() or OpenGL context creation failed.");
         }

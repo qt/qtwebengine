@@ -67,6 +67,8 @@ BrowserContextAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::MIDI:
     case content::PermissionType::DURABLE_STORAGE:
     case content::PermissionType::BACKGROUND_SYNC:
+    case content::PermissionType::SENSORS:
+    case content::PermissionType::ACCESSIBILITY_EVENTS:
     case content::PermissionType::NUM:
         break;
     }

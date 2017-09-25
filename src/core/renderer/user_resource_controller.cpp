@@ -110,7 +110,7 @@ private:
     // RenderFrameObserver implementation.
     void DidFinishDocumentLoad() override;
     void DidFinishLoad() override;
-    void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
+    void DidStartProvisionalLoad(blink::WebDocumentLoader *document_loader) override;
     void FrameDetached() override;
     void OnDestruct() override;
     bool OnMessageReceived(const IPC::Message& message) override;
@@ -217,9 +217,9 @@ void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
                                                                         m_weakPtrFactory.GetWeakPtr(), UserScriptData::AfterLoad, frame));
 }
 
-void UserResourceController::RenderFrameObserverHelper::DidStartProvisionalLoad(blink::WebDataSource *data_source)
+void UserResourceController::RenderFrameObserverHelper::DidStartProvisionalLoad(blink::WebDocumentLoader *document_loader)
 {
-    Q_UNUSED(data_source);
+    Q_UNUSED(document_loader);
     blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     m_pendingFrames.remove(frame);
 }

@@ -4,6 +4,7 @@
 
 // Multiply-included file, no traditional include guard.
 
+#include "media/media_features.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/features/features.h"
@@ -73,7 +74,7 @@ IPC_MESSAGE_ROUTED1(WebChannelIPCTransportHost_SendMessage, std::vector<char> /*
 // Misc messages
 // These are messages sent from the renderer to the browser process.
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 // Returns whether any internal plugin supporting |mime_type| is registered and
 // enabled. Does not determine whether the plugin can actually be instantiated
 // (e.g. whether it has all its dependencies).

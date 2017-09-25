@@ -223,7 +223,7 @@ void ClipboardQt::WriteObjects(ui::ClipboardType type, const ObjectMap& objects)
         if (text_iter != objects.end()) {
             // Copy text and SourceTag to the selection clipboard.
             ObjectMap::const_iterator next_iter = text_iter;
-            WriteObjects(ui::CLIPBOARD_TYPE_SELECTION, ObjectMap(text_iter, ++next_iter));
+            WriteObjects(ui::CLIPBOARD_TYPE_SELECTION, ObjectMap(text_iter, ++next_iter, base::KEEP_FIRST_OF_DUPES));
         }
     }
 }
