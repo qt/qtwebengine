@@ -13,6 +13,7 @@ SUBDIRS += \
     qwebenginehistoryinterface \
     qwebengineinspector \
     qwebengineprofile \
+    qwebengineschemes \
     qwebenginescript \
     qwebenginesettings \
     qwebengineview
@@ -28,5 +29,6 @@ qtConfig(spellchecker):!cross_compile {
 # QTBUG-60268
 boot2qt: SUBDIRS -= qwebengineaccessibility qwebenginedefaultsurfaceformat \
                     qwebenginefaviconmanager qwebenginepage qwebenginehistory \
-                    qwebengineprofile qwebenginescript qwebengineview \
-                    qwebenginedownloads
+                    qwebengineprofile qwebengineschemes qwebenginescript \
+                    qwebengineview qwebenginedownloads
+

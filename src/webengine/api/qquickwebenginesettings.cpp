@@ -74,7 +74,7 @@ QQuickWebEngineSettings::~QQuickWebEngineSettings()
 
 /*!
     \enum QQuickWebEngineSettings::UnknownUrlSchemePolicy
-    \since WebEngine 1.6
+    \since WebEngine 1.7
 
     This enum describes how navigation requests to URLs with unknown schemes are handled.
 
@@ -417,7 +417,7 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AllowAllUnknownUrlSchemes, WebEngine
 
 /*!
   \qmlproperty WebEngineSettings::UnknownUrlSchemePolicy WebEngineSettings::unknownUrlSchemePolicy
-  \since QtWebEngine 1.6
+  \since QtWebEngine 1.7
   Specifies how navigation requests to URLs with unknown schemes are handled.
 
   Default is \l{QWebEngineSettings::UnknownUrlSchemePolicy}{WebEngineSettings.AllowUnknownUrlSchemesFromUserInteraction}.

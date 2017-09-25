@@ -88,7 +88,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool allowGeolocationOnInsecureOrigins READ allowGeolocationOnInsecureOrigins WRITE setAllowGeolocationOnInsecureOrigins NOTIFY allowGeolocationOnInsecureOriginsChanged REVISION 4 FINAL)
     Q_PROPERTY(bool allowWindowActivationFromJavaScript READ allowWindowActivationFromJavaScript WRITE setAllowWindowActivationFromJavaScript NOTIFY allowWindowActivationFromJavaScriptChanged REVISION 5 FINAL)
     Q_PROPERTY(bool showScrollBars READ showScrollBars WRITE setShowScrollBars NOTIFY showScrollBarsChanged REVISION 5 FINAL)
-    Q_PROPERTY(UnknownUrlSchemePolicy unknownUrlSchemePolicy READ unknownUrlSchemePolicy WRITE setUnknownUrlSchemePolicy NOTIFY unknownUrlSchemePolicyChanged REVISION 5 FINAL)
+    Q_PROPERTY(UnknownUrlSchemePolicy unknownUrlSchemePolicy READ unknownUrlSchemePolicy WRITE setUnknownUrlSchemePolicy NOTIFY unknownUrlSchemePolicyChanged REVISION 6 FINAL)
 
 public:
     enum UnknownUrlSchemePolicy {
@@ -181,7 +181,7 @@ signals:
     Q_REVISION(4) void allowGeolocationOnInsecureOriginsChanged();
     Q_REVISION(5) void allowWindowActivationFromJavaScriptChanged();
     Q_REVISION(5) void showScrollBarsChanged();
-    Q_REVISION(5) void unknownUrlSchemePolicyChanged();
+    Q_REVISION(6) void unknownUrlSchemePolicyChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);

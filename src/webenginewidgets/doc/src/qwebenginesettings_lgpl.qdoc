@@ -172,7 +172,7 @@
 
 /*!
     \enum QWebEngineSettings::UnknownUrlSchemePolicy
-    \since Qt 5.10
+    \since Qt 5.11
 
     This enum describes how navigation requests to URLs with unknown schemes are handled.
 
@@ -184,6 +184,8 @@
            from JavaScript) are suppressed.
     \value AllowAllUnknownUrlSchemes
            Allows all navigation requests to URLs with unknown schemes.
+
+    \sa unknownUrlSchemePolicy setUnknownUrlSchemePolicy resetUnknownUrlSchemePolicy
 */
 
 /*!
@@ -240,6 +242,7 @@
 
 /*!
     \fn QWebEngineSettings::UnknownUrlSchemePolicy QWebEngineSettings::unknownUrlSchemePolicy() const
+    \since Qt 5.11
     Returns the currently selected policy for handling navigation requests to URLs with
     unknown schemes. Default is \l{QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction}.
     \sa setUnknownUrlSchemePolicy resetUnknownUrlSchemePolicy
@@ -247,6 +250,7 @@
 
 /*!
     \fn void QWebEngineSettings::setUnknownUrlSchemePolicy(QWebEngineSettings::UnknownUrlSchemePolicy policy)
+    \since Qt 5.11
     Sets the policy for handling navigation requests to URLs with unknown schemes to \a policy.
     Default is \l{QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction}.
     \sa unknownUrlSchemePolicy resetUnknownUrlSchemePolicy
@@ -254,6 +258,7 @@
 
 /*!
     \fn void QWebEngineSettings::resetUnknownUrlSchemePolicy()
+    \since Qt 5.11
     Removes the policy for handling navigation requests to URLs with unknown schemes.
     \sa unknownUrlSchemePolicy setUnknownUrlSchemePolicy
 */
