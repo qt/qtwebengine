@@ -8,7 +8,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 **
 ** Use of this source code is governed by a BSD-style license that can be
-** found in the LICENSE file.
+** found in the LICENSE.Chromium file.
 **
 ** This tool converts Hunspell .aff/.dic pairs to a combined binary dictionary
 ** format (.bdic). This format is more compact, and can be more efficiently

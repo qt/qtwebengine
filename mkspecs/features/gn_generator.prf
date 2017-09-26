@@ -175,7 +175,8 @@ GN_CONTENTS += "  if (!defined(include_dirs)) {"\
                "  }"
 GN_CONTENTS += "  include_dirs += ["
 for (path, INCLUDEPATH): GN_CONTENTS += "    \"$$path\","
-GN_CONTENTS += "    rebase_path(\"$target_gen_dir/.moc/\")"
+GN_CONTENTS += "    rebase_path(\"$target_gen_dir/.moc/\"),"
+GN_CONTENTS += "    \"$$QMAKESPEC\""
 GN_CONTENTS += "  ]"
 
 GN_CONTENTS += "  if (!defined(ldflags)) {"\

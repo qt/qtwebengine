@@ -57,6 +57,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/base/math_util.h"
+#include "cc/output/bsp_tree.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -902,10 +904,15 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // All RenderPasses except the last one are rendered to an FBO.
     cc::RenderPass *rootRenderPass = frameData->render_pass_list.back().get();
 
+    QRectF screenRectQt = apiDelegate->screenRect();
+    gfx::Size thisSize(int(screenRectQt.width() * m_chromiumCompositorData->frameDevicePixelRatio),
+                       int(screenRectQt.height() * m_chromiumCompositorData->frameDevicePixelRatio));
+
     for (unsigned i = 0; i < frameData->render_pass_list.size(); ++i) {
         cc::RenderPass *pass = frameData->render_pass_list.at(i).get();
 
         QSGNode *renderPassParent = 0;
+        gfx::Rect scissorRect;
         if (pass != rootRenderPass) {
             QSharedPointer<QSGLayer> rpLayer;
             if (buildNewTree) {
@@ -929,159 +936,68 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             rpLayer->setSize(toQt(pass->output_rect.size()));
             rpLayer->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
             rpLayer->setMirrorVertical(true);
-        } else
+            scissorRect = pass->output_rect;
+        } else {
             renderPassParent = this;
+            scissorRect = gfx::Rect(thisSize);
+            scissorRect += rootRenderPass->output_rect.OffsetFromOrigin();
+        }
 
-        const cc::SharedQuadState *currentLayerState = nullptr;
-        QSGNode *currentLayerChain = nullptr;
+        if (scissorRect.IsEmpty())
+            continue;
 
         QSGNode *renderPassChain = nullptr;
         if (buildNewTree)
             renderPassChain = buildRenderPassChain(renderPassParent);
 
-        cc::QuadList::ConstBackToFrontIterator it = pass->quad_list.BackToFrontBegin();
-        cc::QuadList::ConstBackToFrontIterator end = pass->quad_list.BackToFrontEnd();
-        for (; it != end; ++it) {
+        std::deque<std::unique_ptr<cc::DrawPolygon>> polygonQueue;
+        int nextPolygonId = 0;
+        int currentSortingContextId = 0;
+        const cc::SharedQuadState *currentLayerState = nullptr;
+        QSGNode *currentLayerChain = nullptr;
+        const auto quadListBegin = pass->quad_list.BackToFrontBegin();
+        const auto quadListEnd = pass->quad_list.BackToFrontEnd();
+        for (auto it = quadListBegin; it != quadListEnd; ++it) {
             const cc::DrawQuad *quad = *it;
+            const cc::SharedQuadState *quadState = quad->shared_quad_state;
 
-            if (buildNewTree && currentLayerState != quad->shared_quad_state) {
-                currentLayerState = quad->shared_quad_state;
-                currentLayerChain = buildLayerChain(renderPassChain, currentLayerState);
+            gfx::Rect targetRect =
+                cc::MathUtil::MapEnclosingClippedRect(quadState->quad_to_target_transform,
+                                                      quad->visible_rect);
+            if (quadState->is_clipped)
+                targetRect.Intersect(quadState->clip_rect);
+            targetRect.Intersect(scissorRect);
+            if (targetRect.IsEmpty())
+                continue;
+
+            if (quadState->sorting_context_id != currentSortingContextId) {
+                flushPolygons(&polygonQueue, renderPassChain,
+                              nodeHandler.data(), resourceCandidates, apiDelegate);
+                currentSortingContextId = quadState->sorting_context_id;
             }
-            switch (quad->material) {
-            case cc::DrawQuad::RENDER_PASS: {
-                const cc::RenderPassDrawQuad *renderPassQuad
-                        = cc::RenderPassDrawQuad::MaterialCast(quad);
-                QSGTexture *layer = findRenderPassLayer(renderPassQuad->render_pass_id,
-                                                        m_sgObjects.renderPassLayers).data();
 
-                nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), currentLayerChain);
-                break;
-            } case cc::DrawQuad::TEXTURE_CONTENT: {
-                const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
-                ResourceHolder *resource = findAndHoldResource(tquad->resource_id(),
-                                                               resourceCandidates);
-                QSGTexture *texture = initAndHoldTexture(resource,
-                                                         quad->ShouldDrawWithBlending(),
-                                                         apiDelegate);
-                QSizeF textureSize;
-                if (texture)
-                    textureSize = texture->textureSize();
-                gfx::RectF uv_rect = gfx::ScaleRect(
-                    gfx::BoundingRect(tquad->uv_top_left, tquad->uv_bottom_right),
-                    textureSize.width(), textureSize.height());
-
-                nodeHandler->setupTextureContentNode(
-                                              texture,
-                                              toQt(quad->rect), toQt(uv_rect),
-                                              resource->transferableResource().filter == GL_LINEAR
-                                                               ? QSGTexture::Linear
-                                                               : QSGTexture::Nearest,
-                                              tquad->y_flipped ? QSGTextureNode::MirrorVertically
-                                                               : QSGTextureNode::NoTransform,
-                                              currentLayerChain);
-                break;
-            } case cc::DrawQuad::SOLID_COLOR: {
-                const cc::SolidColorDrawQuad *scquad = cc::SolidColorDrawQuad::MaterialCast(quad);
-                // Qt only supports MSAA and this flag shouldn't be needed.
-                // If we ever want to use QSGRectangleNode::setAntialiasing for this we should
-                // try to see if we can do something similar for tile quads first.
-                Q_UNUSED(scquad->force_anti_aliasing_off);
-                nodeHandler->setupSolidColorNode(toQt(quad->rect), toQt(scquad->color),
-                                                 currentLayerChain);
-                break;
-#ifndef QT_NO_OPENGL
-            } case cc::DrawQuad::DEBUG_BORDER: {
-                const cc::DebugBorderDrawQuad *dbquad
-                        = cc::DebugBorderDrawQuad::MaterialCast(quad);
-
-                QSGGeometry *geometry
-                        = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 4);
-                geometry->setDrawingMode(GL_LINE_LOOP);
-                geometry->setLineWidth(dbquad->width);
-                // QSGGeometry::updateRectGeometry would actually set the
-                // corners in the following order:
-                // top-left, bottom-left, top-right, bottom-right, leading to a nice criss cross,
-                // instead of having a closed loop.
-                const gfx::Rect &r(dbquad->rect);
-                geometry->vertexDataAsPoint2D()[0].set(r.x(), r.y());
-                geometry->vertexDataAsPoint2D()[1].set(r.x() + r.width(), r.y());
-                geometry->vertexDataAsPoint2D()[2].set(r.x() + r.width(), r.y() + r.height());
-                geometry->vertexDataAsPoint2D()[3].set(r.x(), r.y() + r.height());
-
-                QSGFlatColorMaterial *material = new QSGFlatColorMaterial;
-                material->setColor(toQt(dbquad->color));
-
-                nodeHandler->setupDebugBorderNode(geometry, material, currentLayerChain);
-                break;
-#endif
-            } case cc::DrawQuad::TILED_CONTENT: {
-                const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
-                ResourceHolder *resource
-                        = findAndHoldResource(tquad->resource_id(), resourceCandidates);
-                nodeHandler->setupTiledContentNode(
-                                    initAndHoldTexture(resource,
-                                                       quad->ShouldDrawWithBlending(),
-                                                       apiDelegate),
-                                    toQt(quad->rect), toQt(tquad->tex_coord_rect),
-                                    resource->transferableResource().filter
-                                            == GL_LINEAR ? QSGTexture::Linear
-                                                         : QSGTexture::Nearest,
-                                    currentLayerChain);
-                break;
-#ifndef QT_NO_OPENGL
-            } case cc::DrawQuad::YUV_VIDEO_CONTENT: {
-                const cc::YUVVideoDrawQuad *vquad = cc::YUVVideoDrawQuad::MaterialCast(quad);
-                ResourceHolder *yResource
-                        = findAndHoldResource(vquad->y_plane_resource_id(), resourceCandidates);
-                ResourceHolder *uResource
-                        = findAndHoldResource(vquad->u_plane_resource_id(), resourceCandidates);
-                ResourceHolder *vResource
-                        = findAndHoldResource(vquad->v_plane_resource_id(), resourceCandidates);
-                ResourceHolder *aResource = 0;
-                // This currently requires --enable-vp8-alpha-playback and
-                // needs a video with alpha data to be triggered.
-                if (vquad->a_plane_resource_id())
-                    aResource = findAndHoldResource(vquad->a_plane_resource_id(),
-                                                    resourceCandidates);
-
-                nodeHandler->setupYUVVideoNode(
-                            initAndHoldTexture(yResource, quad->ShouldDrawWithBlending()),
-                            initAndHoldTexture(uResource, quad->ShouldDrawWithBlending()),
-                            initAndHoldTexture(vResource, quad->ShouldDrawWithBlending()),
-                            aResource
-                                ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending())
-                                : 0,
-                            toQt(vquad->ya_tex_coord_rect), toQt(vquad->uv_tex_coord_rect),
-                            toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size),
-                            toQt(vquad->color_space),
-                            vquad->resource_multiplier, vquad->resource_offset,
-                            toQt(quad->rect),
-                            currentLayerChain);
-                break;
-#ifdef GL_OES_EGL_image_external
-            } case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
-                const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
-                ResourceHolder *resource = findAndHoldResource(squad->resource_id(),
-                                                               resourceCandidates);
-                MailboxTexture *texture
-                        = static_cast<MailboxTexture *>(
-                            initAndHoldTexture(resource, quad->ShouldDrawWithBlending())
-                            );
-                // since this is not default TEXTURE_2D type
-                texture->setTarget(GL_TEXTURE_EXTERNAL_OES);
-
-                nodeHandler->setupStreamVideoNode(texture, toQt(squad->rect),
-                                                  toQt(squad->matrix.matrix()), currentLayerChain);
-                break;
-#endif // GL_OES_EGL_image_external
-#endif // QT_NO_OPENGL
-            } case cc::DrawQuad::SURFACE_CONTENT:
-                Q_UNREACHABLE();
-            default:
-                qWarning("Unimplemented quad material: %d", quad->material);
+            if (currentSortingContextId != 0) {
+                std::unique_ptr<cc::DrawPolygon> polygon(
+                    new cc::DrawPolygon(
+                        quad,
+                        gfx::RectF(quad->visible_rect),
+                        quadState->quad_to_target_transform,
+                        nextPolygonId++));
+                if (polygon->points().size() > 2u)
+                    polygonQueue.push_back(std::move(polygon));
+                continue;
             }
+
+            if (renderPassChain && currentLayerState != quadState) {
+                currentLayerState = quadState;
+                currentLayerChain = buildLayerChain(renderPassChain, quadState);
+            }
+
+            handleQuad(quad, currentLayerChain,
+                       nodeHandler.data(), resourceCandidates, apiDelegate);
         }
+        flushPolygons(&polygonQueue, renderPassChain,
+                      nodeHandler.data(), resourceCandidates, apiDelegate);
     }
     // Send resources of remaining candidates back to the child compositors so that
     // they can be freed or reused.
@@ -1091,6 +1007,211 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     ResourceHolderIterator end = resourceCandidates.constEnd();
     for (ResourceHolderIterator it = resourceCandidates.constBegin(); it != end ; ++it)
         resourcesToRelease->push_back((*it)->returnResource());
+}
+
+void DelegatedFrameNode::flushPolygons(
+    std::deque<std::unique_ptr<cc::DrawPolygon>> *polygonQueue,
+    QSGNode *renderPassChain,
+    DelegatedNodeTreeHandler *nodeHandler,
+    QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+    RenderWidgetHostViewQtDelegate *apiDelegate)
+{
+    if (polygonQueue->empty())
+        return;
+
+    const auto actionHandler = [&](cc::DrawPolygon *polygon) {
+        const cc::DrawQuad *quad = polygon->original_ref();
+        const cc::SharedQuadState *quadState = quad->shared_quad_state;
+
+        QSGNode *currentLayerChain = nullptr;
+        if (renderPassChain)
+            currentLayerChain = buildLayerChain(renderPassChain, quad->shared_quad_state);
+
+        gfx::Transform inverseTransform;
+        bool invertible = quadState->quad_to_target_transform.GetInverse(&inverseTransform);
+        DCHECK(invertible);
+        polygon->TransformToLayerSpace(inverseTransform);
+
+        handlePolygon(polygon, currentLayerChain,
+                      nodeHandler, resourceCandidates, apiDelegate);
+    };
+
+    cc::BspTree(polygonQueue).TraverseWithActionHandler(&actionHandler);
+}
+
+void DelegatedFrameNode::handlePolygon(
+    const cc::DrawPolygon *polygon,
+    QSGNode *currentLayerChain,
+    DelegatedNodeTreeHandler *nodeHandler,
+    QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+    RenderWidgetHostViewQtDelegate *apiDelegate)
+{
+    const cc::DrawQuad *quad = polygon->original_ref();
+
+    if (!polygon->is_split()) {
+        handleQuad(quad, currentLayerChain,
+                   nodeHandler, resourceCandidates, apiDelegate);
+    } else {
+        std::vector<gfx::QuadF> clipRegionList;
+        polygon->ToQuads2D(&clipRegionList);
+        for (const auto & clipRegion : clipRegionList)
+            handleClippedQuad(quad, clipRegion, currentLayerChain,
+                              nodeHandler, resourceCandidates, apiDelegate);
+    }
+}
+
+void DelegatedFrameNode::handleClippedQuad(
+    const cc::DrawQuad *quad,
+    const gfx::QuadF &clipRegion,
+    QSGNode *currentLayerChain,
+    DelegatedNodeTreeHandler *nodeHandler,
+    QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+    RenderWidgetHostViewQtDelegate *apiDelegate)
+{
+    if (currentLayerChain) {
+        auto clipGeometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 4);
+        auto clipGeometryVertices = clipGeometry->vertexDataAsPoint2D();
+        clipGeometryVertices[0].set(clipRegion.p1().x(), clipRegion.p1().y());
+        clipGeometryVertices[1].set(clipRegion.p2().x(), clipRegion.p2().y());
+        clipGeometryVertices[2].set(clipRegion.p4().x(), clipRegion.p4().y());
+        clipGeometryVertices[3].set(clipRegion.p3().x(), clipRegion.p3().y());
+        auto clipNode = new QSGClipNode;
+        clipNode->setGeometry(clipGeometry);
+        clipNode->setIsRectangular(false);
+        clipNode->setFlag(QSGNode::OwnsGeometry);
+        currentLayerChain->appendChildNode(clipNode);
+        currentLayerChain = clipNode;
+    }
+    handleQuad(quad, currentLayerChain,
+               nodeHandler, resourceCandidates, apiDelegate);
+}
+
+void DelegatedFrameNode::handleQuad(
+    const cc::DrawQuad *quad,
+    QSGNode *currentLayerChain,
+    DelegatedNodeTreeHandler *nodeHandler,
+    QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+    RenderWidgetHostViewQtDelegate *apiDelegate)
+{
+    switch (quad->material) {
+    case cc::DrawQuad::RENDER_PASS: {
+        const cc::RenderPassDrawQuad *renderPassQuad = cc::RenderPassDrawQuad::MaterialCast(quad);
+        QSGTexture *layer =
+            findRenderPassLayer(renderPassQuad->render_pass_id, m_sgObjects.renderPassLayers).data();
+
+        nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), currentLayerChain);
+        break;
+    }
+    case cc::DrawQuad::TEXTURE_CONTENT: {
+        const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
+        ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
+        QSGTexture *texture =
+            initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate);
+        QSizeF textureSize;
+        if (texture)
+            textureSize = texture->textureSize();
+        gfx::RectF uv_rect =
+            gfx::ScaleRect(gfx::BoundingRect(tquad->uv_top_left, tquad->uv_bottom_right),
+                           textureSize.width(), textureSize.height());
+
+        nodeHandler->setupTextureContentNode(
+            texture, toQt(quad->rect), toQt(uv_rect),
+            resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear
+                                                                 : QSGTexture::Nearest,
+            tquad->y_flipped ? QSGTextureNode::MirrorVertically : QSGTextureNode::NoTransform,
+            currentLayerChain);
+        break;
+    }
+    case cc::DrawQuad::SOLID_COLOR: {
+        const cc::SolidColorDrawQuad *scquad = cc::SolidColorDrawQuad::MaterialCast(quad);
+        // Qt only supports MSAA and this flag shouldn't be needed.
+        // If we ever want to use QSGRectangleNode::setAntialiasing for this we should
+        // try to see if we can do something similar for tile quads first.
+        Q_UNUSED(scquad->force_anti_aliasing_off);
+        nodeHandler->setupSolidColorNode(toQt(quad->rect), toQt(scquad->color), currentLayerChain);
+        break;
+#ifndef QT_NO_OPENGL
+    }
+    case cc::DrawQuad::DEBUG_BORDER: {
+        const cc::DebugBorderDrawQuad *dbquad = cc::DebugBorderDrawQuad::MaterialCast(quad);
+
+        QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 4);
+        geometry->setDrawingMode(GL_LINE_LOOP);
+        geometry->setLineWidth(dbquad->width);
+        // QSGGeometry::updateRectGeometry would actually set the
+        // corners in the following order:
+        // top-left, bottom-left, top-right, bottom-right, leading to a nice criss cross,
+        // instead of having a closed loop.
+        const gfx::Rect &r(dbquad->rect);
+        geometry->vertexDataAsPoint2D()[0].set(r.x(), r.y());
+        geometry->vertexDataAsPoint2D()[1].set(r.x() + r.width(), r.y());
+        geometry->vertexDataAsPoint2D()[2].set(r.x() + r.width(), r.y() + r.height());
+        geometry->vertexDataAsPoint2D()[3].set(r.x(), r.y() + r.height());
+
+        QSGFlatColorMaterial *material = new QSGFlatColorMaterial;
+        material->setColor(toQt(dbquad->color));
+
+        nodeHandler->setupDebugBorderNode(geometry, material, currentLayerChain);
+        break;
+#endif
+    }
+    case cc::DrawQuad::TILED_CONTENT: {
+        const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
+        ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
+        nodeHandler->setupTiledContentNode(
+            initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate),
+            toQt(quad->rect), toQt(tquad->tex_coord_rect),
+            resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear
+                                                                 : QSGTexture::Nearest,
+            currentLayerChain);
+        break;
+#ifndef QT_NO_OPENGL
+    }
+    case cc::DrawQuad::YUV_VIDEO_CONTENT: {
+        const cc::YUVVideoDrawQuad *vquad = cc::YUVVideoDrawQuad::MaterialCast(quad);
+        ResourceHolder *yResource =
+            findAndHoldResource(vquad->y_plane_resource_id(), resourceCandidates);
+        ResourceHolder *uResource =
+            findAndHoldResource(vquad->u_plane_resource_id(), resourceCandidates);
+        ResourceHolder *vResource =
+            findAndHoldResource(vquad->v_plane_resource_id(), resourceCandidates);
+        ResourceHolder *aResource = 0;
+        // This currently requires --enable-vp8-alpha-playback and
+        // needs a video with alpha data to be triggered.
+        if (vquad->a_plane_resource_id())
+            aResource = findAndHoldResource(vquad->a_plane_resource_id(), resourceCandidates);
+
+        nodeHandler->setupYUVVideoNode(
+            initAndHoldTexture(yResource, quad->ShouldDrawWithBlending()),
+            initAndHoldTexture(uResource, quad->ShouldDrawWithBlending()),
+            initAndHoldTexture(vResource, quad->ShouldDrawWithBlending()),
+            aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending()) : 0,
+            toQt(vquad->ya_tex_coord_rect), toQt(vquad->uv_tex_coord_rect),
+            toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size), toQt(vquad->color_space),
+            vquad->resource_multiplier, vquad->resource_offset, toQt(quad->rect),
+            currentLayerChain);
+        break;
+#ifdef GL_OES_EGL_image_external
+    }
+    case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
+        const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
+        ResourceHolder *resource = findAndHoldResource(squad->resource_id(), resourceCandidates);
+        MailboxTexture *texture = static_cast<MailboxTexture *>(
+            initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
+        // since this is not default TEXTURE_2D type
+        texture->setTarget(GL_TEXTURE_EXTERNAL_OES);
+
+        nodeHandler->setupStreamVideoNode(texture, toQt(squad->rect), toQt(squad->matrix.matrix()),
+                                          currentLayerChain);
+        break;
+#endif // GL_OES_EGL_image_external
+#endif // QT_NO_OPENGL
+    }
+    case cc::DrawQuad::SURFACE_CONTENT:
+        Q_UNREACHABLE();
+    default:
+        qWarning("Unimplemented quad material: %d", quad->material);
+    }
 }
 
 ResourceHolder *DelegatedFrameNode::findAndHoldResource(unsigned resourceId, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
