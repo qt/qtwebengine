@@ -40,19 +40,23 @@
 #include "content_main_delegate_qt.h"
 
 #include "base/command_line.h"
+#include <base/i18n/rtl.h>
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include <chrome/grit/generated_resources.h>
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
+#include <ui/base/webui/jstemplate_builder.h>
 #include "net/grit/net_resources.h"
 #include "net/base/net_module.h"
 
 #include "content_client_qt.h"
 #include "renderer/content_renderer_client_qt.h"
+#include "type_conversion.h"
 #include "web_engine_library_info.h"
 
 #if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
@@ -63,12 +67,38 @@
 #include "ui/base/ui_base_switches.h"
 #endif
 
+#include <QtCore/qcoreapplication.h>
+
 namespace QtWebEngineCore {
+
+// The logic of this function is based on chrome/common/net/net_resource_provider.cc
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE.Chromium file.
+static std::string constructDirHeaderHTML()
+{
+    base::DictionaryValue dict;
+    dict.SetString("header", l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_HEADER));
+    dict.SetString("parentDirText", l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_PARENT));
+    dict.SetString("headerName", l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_NAME));
+    dict.SetString("headerSize", l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_SIZE));
+    dict.SetString("headerDateModified",
+                    l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_DATE_MODIFIED));
+    dict.SetString("language", l10n_util::GetLanguage(base::i18n::GetConfiguredLocale()));
+    dict.SetString("listingParsingErrorBoxText",
+                    l10n_util::GetStringFUTF16(IDS_DIRECTORY_LISTING_PARSING_ERROR_BOX_TEXT,
+                    toString16(QCoreApplication::applicationName())));
+    dict.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
+    std::string html = webui::GetI18nTemplateHtml(
+                ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DIR_HEADER_HTML),
+                &dict);
+    return html;
+}
 
 static base::StringPiece PlatformResourceProvider(int key) {
     if (key == IDR_DIR_HEADER_HTML) {
-        base::StringPiece html_data = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DIR_HEADER_HTML);
-        return html_data;
+        static std::string html_data = constructDirHeaderHTML();
+        return base::StringPiece(html_data);
     }
     return base::StringPiece();
 }
