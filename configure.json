@@ -449,7 +449,7 @@
         },
         "testsupport": {
             "label": "Test Support",
-            "autoDetect": "config.private_tests || call.isTestsInBuildParts",
+            "autoDetect": "features.private_tests || call.isTestsInBuildParts",
             "output": [ "privateFeature" ]
         },
         "webrtc": {
