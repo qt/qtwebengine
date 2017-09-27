@@ -32,8 +32,6 @@ qtConfig(embedded): DEFINES += QTWEBENGINE_EMBEDDED_SWITCHES
 
 qtConfig(egl): CONFIG += egl
 
-RESOURCES += devtools.qrc
-
 INCLUDEPATH += $$PWD $$PWD/api
 
 SOURCES = \
@@ -61,7 +59,7 @@ SOURCES = \
         custom_protocol_handler.cpp \
         delegated_frame_node.cpp \
         desktop_screen_qt.cpp \
-        dev_tools_http_handler_delegate_qt.cpp \
+        devtools_manager_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
         favicon_manager.cpp \
         file_picker_controller.cpp \
@@ -138,7 +136,7 @@ HEADERS = \
         custom_protocol_handler.h \
         delegated_frame_node.h \
         desktop_screen_qt.h \
-        dev_tools_http_handler_delegate_qt.h \
+        devtools_manager_delegate_qt.h \
         download_manager_delegate_qt.h \
         chromium_gpu_helper.h \
         favicon_manager_p.h \

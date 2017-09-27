@@ -82,7 +82,7 @@
 #include "content_browser_client_qt.h"
 #include "content_client_qt.h"
 #include "content_main_delegate_qt.h"
-#include "dev_tools_http_handler_delegate_qt.h"
+#include "devtools_manager_delegate_qt.h"
 #include "gl_context_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "type_conversion.h"

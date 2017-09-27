@@ -82,23 +82,25 @@ GN_CONTENTS += "}"
 
 CLEAN_QMAKE_RCC = $$clean_path($$QMAKE_RCC)
 
-GN_CONTENTS += "action_foreach(\"generate_resources\") {"\
-               "  script = \"$$GN_RUN_BINARY_SCRIPT\""
-GN_CONTENTS += "  sources = ["
-for (sourcefile, RESOURCES): GN_CONTENTS += "    \"$$GN_SRC_DIR/$$sourcefile\","
-GN_CONTENTS += "  ]" \
-               "  outputs = [ \"$target_gen_dir/.rcc/qrc_{{source_name_part}}.cpp\" ]"
-GN_CONTENTS += "  inputs = [ \"$$system_path($$_PRO_FILE_)\" ]" \
-               "  args = [" \
-               "    \"$$replace(CLEAN_QMAKE_RCC,\",\\\")\","
-for(resource_flag, $$QMAKE_RESOURCE_FLAGS): GN_CONTENTS += "    \"$$resource_flag\""
-GN_CONTENTS += "    \"-name\"," \
-               "    \"{{source_name_part}}\"," \
-               "    \"{{source}}\"," \
-               "    \"-o\"," \
-               "    rebase_path(\"$target_gen_dir/.rcc/qrc_{{source_name_part}}.cpp\")"\
-               "   ]"
-GN_CONTENTS += "}"
+!isEmpty(RESOURCES) {
+    GN_CONTENTS += "action_foreach(\"generate_resources\") {"\
+                "  script = \"$$GN_RUN_BINARY_SCRIPT\""
+    GN_CONTENTS += "  sources = ["
+    for (sourcefile, RESOURCES): GN_CONTENTS += "    \"$$GN_SRC_DIR/$$sourcefile\","
+    GN_CONTENTS += "  ]" \
+                "  outputs = [ \"$target_gen_dir/.rcc/qrc_{{source_name_part}}.cpp\" ]"
+    GN_CONTENTS += "  inputs = [ \"$$system_path($$_PRO_FILE_)\" ]" \
+                "  args = [" \
+                "    \"$$replace(CLEAN_QMAKE_RCC,\",\\\")\","
+    for(resource_flag, $$QMAKE_RESOURCE_FLAGS): GN_CONTENTS += "    \"$$resource_flag\""
+    GN_CONTENTS += "    \"-name\"," \
+                "    \"{{source_name_part}}\"," \
+                "    \"{{source}}\"," \
+                "    \"-o\"," \
+                "    rebase_path(\"$target_gen_dir/.rcc/qrc_{{source_name_part}}.cpp\")"\
+                "   ]"
+    GN_CONTENTS += "}"
+}
 
 # TARGET SETUP
 

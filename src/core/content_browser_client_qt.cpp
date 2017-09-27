@@ -85,7 +85,7 @@
 #include "certificate_error_controller.h"
 #include "certificate_error_controller_p.h"
 #include "desktop_screen_qt.h"
-#include "dev_tools_http_handler_delegate_qt.h"
+#include "devtools_manager_delegate_qt.h"
 #ifdef QT_USE_POSITIONING
 #include "location_provider_qt.h"
 #else

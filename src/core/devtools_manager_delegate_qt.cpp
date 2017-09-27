@@ -37,22 +37,19 @@
 **
 ****************************************************************************/
 
+// based on content/shell/browser/shell_devtools_manager_delegate.cc:
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "dev_tools_http_handler_delegate_qt.h"
-
-#include "type_conversion.h"
-
-#include <QByteArray>
-#include <QFile>
+#include "devtools_manager_delegate_qt.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/grit/qt_webengine_resources.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
@@ -66,8 +63,11 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
+#include "ui/base/resource/resource_bundle.h"
 
-using namespace content;
+#include "type_conversion.h"
+
+using content::DevToolsAgentHost;
 
 namespace {
 
@@ -181,14 +181,7 @@ void DevToolsManagerDelegateQt::Initialized(const net::IPEndPoint *ip_address)
 
 std::string DevToolsManagerDelegateQt::GetDiscoveryPageHTML()
 {
-    static std::string html;
-    if (html.empty()) {
-        QFile html_file(":/data/discovery_page.html");
-        html_file.open(QIODevice::ReadOnly);
-        QByteArray contents = html_file.readAll();
-        html = contents.data();
-    }
-    return html;
+    return ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
 }
 
 std::string DevToolsManagerDelegateQt::GetFrontendResource(const std::string& path)
