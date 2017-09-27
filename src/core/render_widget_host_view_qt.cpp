@@ -927,6 +927,8 @@ void RenderWidgetHostViewQt::windowChanged()
 
 bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
 {
+    Q_ASSERT(m_host->GetView());
+
     switch (event->type()) {
     case QEvent::MouseButtonPress:
         Focus(); // Fall through.
