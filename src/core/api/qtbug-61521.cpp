@@ -5,7 +5,6 @@
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
-**
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
@@ -100,7 +99,7 @@ SHIM_HIDDEN void* ShimCalloc(size_t n, size_t size) {
 }
 
 SHIM_HIDDEN void ShimCFree(void* ptr) {
-    cfree(ptr);
+    free(ptr);
 }
 
 SHIM_HIDDEN void* ShimMemalign(size_t align, size_t s) {

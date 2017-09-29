@@ -1418,6 +1418,19 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         break;
     }
 
+    if (m_imeInProgress && ev->type() == QEvent::TouchBegin) {
+        m_imeInProgress = false;
+        // Tell input method to commit the pre-edit string entered so far, and finish the
+        // composition operation.
+#ifdef Q_OS_WIN
+        // Yes the function name is counter-intuitive, but commit isn't actually implemented
+        // by the Windows QPA, and reset does exactly what is necessary in this case.
+        qApp->inputMethod()->reset();
+#else
+        qApp->inputMethod()->commit();
+#endif
+    }
+
     // Make sure that ACTION_POINTER_DOWN is delivered before ACTION_MOVE,
     // and ACTION_MOVE before ACTION_POINTER_UP.
     std::sort(touchPoints.begin(), touchPoints.end(), compareTouchPoints);

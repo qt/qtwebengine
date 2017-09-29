@@ -35,8 +35,10 @@
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
 #include <QtWebEngine/QQuickWebEngineProfile>
+#include <private/qinputmethod_p.h>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebenginesettings_p.h>
+#include <qpa/qplatforminputcontext.h>
 
 #include <functional>
 
@@ -71,6 +73,8 @@ private Q_SLOTS:
 
     void inputMethod();
     void inputMethodHints();
+    void interruptImeTextComposition_data();
+    void interruptImeTextComposition();
     void basicRenderingSanity();
     void setZoomFactor();
     void printToPdf();
@@ -463,6 +467,96 @@ void tst_QQuickWebEngineView::inputMethod()
     QVERIFY(!view->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
 }
 
+class TestInputContext : public QPlatformInputContext
+{
+public:
+    TestInputContext()
+        : commitCallCount(0)
+        , resetCallCount(0)
+    {
+        QInputMethodPrivate* inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+        inputMethodPrivate->testContext = this;
+    }
+
+    ~TestInputContext()
+    {
+        QInputMethodPrivate* inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+        inputMethodPrivate->testContext = 0;
+    }
+
+    virtual void commit() {
+        commitCallCount++;
+    }
+
+    virtual void reset() {
+        resetCallCount++;
+    }
+
+    int commitCallCount;
+    int resetCallCount;
+};
+
+void tst_QQuickWebEngineView::interruptImeTextComposition_data()
+{
+    QTest::addColumn<QString>("eventType");
+
+    QTest::newRow("MouseButton") << QString("MouseButton");
+#ifndef Q_OS_MACOS
+    QTest::newRow("Touch") << QString("Touch");
+#endif
+}
+
+void tst_QQuickWebEngineView::interruptImeTextComposition()
+{
+    m_window->show();
+    QTRY_VERIFY(qApp->focusObject());
+    QQuickItem *input;
+
+    QQuickWebEngineView *view = webEngineView();
+    view->settings()->setFocusOnNavigationEnabled(true);
+    view->loadHtml("<html><body>"
+                  "  <input type='text' id='input1' /><br>"
+                  "  <input type='text' id='input2' />"
+                  "</body></html>");
+    QVERIFY(waitForLoadSucceeded(view));
+
+    runJavaScript("document.getElementById('input1').focus();");
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input1"));
+
+    TestInputContext testContext;
+
+    // Send temporary text, which makes the editor has composition 'x'
+    QList<QInputMethodEvent::Attribute> attributes;
+    QInputMethodEvent event("x", attributes);
+    input = qobject_cast<QQuickItem *>(qApp->focusObject());
+    QGuiApplication::sendEvent(input, &event);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "document.getElementById('input1').value").toString(), QStringLiteral("x"));
+
+    // Focus 'input2' input field by an input event
+    QFETCH(QString, eventType);
+    if (eventType == "MouseButton") {
+        QPoint textInputCenter = elementCenter(view, QStringLiteral("input2"));
+        QTest::mouseClick(view->window(), Qt::LeftButton, 0, textInputCenter);
+    } else if (eventType == "Touch") {
+        QPoint textInputCenter = elementCenter(view, QStringLiteral("input2"));
+        QTouchDevice *touchDevice = QTest::createTouchDevice();
+        QTest::touchEvent(view->window(), touchDevice).press(0, textInputCenter, view->window());
+        QTest::touchEvent(view->window(), touchDevice).release(0, textInputCenter, view->window());
+    }
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input2"));
+#ifndef Q_OS_WIN
+    QTRY_COMPARE(testContext.commitCallCount, 1);
+#else
+    QTRY_COMPARE(testContext.resetCallCount, 1);
+#endif
+
+    // Check the composition text has been committed
+    runJavaScript("document.getElementById('input1').focus();");
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input1"));
+    input = qobject_cast<QQuickItem *>(qApp->focusObject());
+    QTRY_COMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QStringLiteral("x"));
+}
+
 void tst_QQuickWebEngineView::inputMethodHints()
 {
     m_window->show();
@@ -717,8 +811,8 @@ void tst_QQuickWebEngineView::changeLocale()
     viewDE->setUrl(url);
     QVERIFY(waitForLoadFailed(viewDE.data()));
 
-    QTRY_VERIFY(!bodyInnerText(viewDE.data()).isEmpty());
-    errorLines = bodyInnerText(viewDE.data()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
+    errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Diese Website ist nicht erreichbar"));
 
     QLocale::setDefault(QLocale("en"));
@@ -726,8 +820,8 @@ void tst_QQuickWebEngineView::changeLocale()
     viewEN->setUrl(url);
     QVERIFY(waitForLoadFailed(viewEN.data()));
 
-    QTRY_VERIFY(!bodyInnerText(viewEN.data()).isEmpty());
-    errorLines = bodyInnerText(viewEN.data()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").isNull());
+    errorLines = evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").toString().split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("This site can\xE2\x80\x99t be reached"));
 
     // Reset error page
@@ -738,8 +832,8 @@ void tst_QQuickWebEngineView::changeLocale()
     viewDE->setUrl(url);
     QVERIFY(waitForLoadFailed(viewDE.data()));
 
-    QTRY_VERIFY(!bodyInnerText(viewDE.data()).isEmpty());
-    errorLines = bodyInnerText(viewDE.data()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
+    errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Diese Website ist nicht erreichbar"));
 }
 

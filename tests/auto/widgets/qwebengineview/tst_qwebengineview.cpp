@@ -1914,8 +1914,8 @@ void tst_QWebEngineView::emptyInputMethodEvent()
     QApplication::sendEvent(view.focusProxy(), &emptyEvent);
 
     QString inputValue = evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString();
-    QCOMPARE(inputValue, QStringLiteral("QtWebEngine"));
-    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QStringLiteral("QtWebEngine"));
+    QTRY_COMPARE(inputValue, QStringLiteral("QtWebEngine"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QStringLiteral("QtWebEngine"));
 
     // Reset: clear input field
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1').value = ''");
@@ -1928,12 +1928,12 @@ void tst_QWebEngineView::emptyInputMethodEvent()
     QInputMethodEvent eventComposition("a", attributes);
     QApplication::sendEvent(view.focusProxy(), &eventComposition);
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QStringLiteral("a"));
-    QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().isEmpty());
+    QTRY_VERIFY(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().isEmpty());
 
     // Cancel IME composition
     QApplication::sendEvent(view.focusProxy(), &emptyEvent);
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
-    QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().isEmpty());
+    QTRY_VERIFY(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().isEmpty());
 
     // Try key press after cancelled IME composition
     QTest::keyClick(view.focusProxy(), Qt::Key_B);

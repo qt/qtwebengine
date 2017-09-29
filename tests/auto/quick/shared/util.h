@@ -30,6 +30,7 @@
 #define UTIL_H
 
 #include <QEventLoop>
+#include <QQmlEngine>
 #include <QSignalSpy>
 #include <QTimer>
 #include <QtTest/QtTest>
@@ -120,26 +121,43 @@ inline bool waitForViewportReady(QQuickWebEngineView *webEngineView, int timeout
 #endif
 }
 
-inline QString bodyInnerText(QQuickWebEngineView *webEngineView)
+inline QVariant evaluateJavaScriptSync(QQuickWebEngineView *view, const QString &script)
 {
-    qRegisterMetaType<QQuickWebEngineView::JavaScriptConsoleMessageLevel>("JavaScriptConsoleMessageLevel");
-    QSignalSpy consoleMessageSpy(webEngineView, &QQuickWebEngineView::javaScriptConsoleMessage);
+    QQmlEngine *engine = qmlEngine(view);
+    engine->globalObject().setProperty("called", false);
+    engine->globalObject().setProperty("result", QJSValue());
+    QJSValue callback = engine->evaluate(
+            "(function callback(r) {"
+            "   called = true;"
+            "   result = r;"
+            "})"
+            );
+    view->runJavaScript(script, callback);
+    QTRY_LOOP_IMPL(engine->globalObject().property("called").toBool(), 5000, 50);
+    if (!engine->globalObject().property("called").toBool()) {
+        qWarning("JavaScript wasn't evaluated");
+        return QVariant();
+    }
 
-    webEngineView->runJavaScript(
-                "if (document.body == null)"
-                "   console.log('');"
-                "else"
-                "   console.log(document.body.innerText);"
-    );
+    return engine->globalObject().property("result").toVariant();
+}
 
-    if (!consoleMessageSpy.wait())
-        return QString();
+inline QPoint elementCenter(QQuickWebEngineView *view, const QString &id)
+{
+    const QString jsCode(
+            "(function(){"
+            "   var elem = document.getElementById('" + id + "');"
+            "   var rect = elem.getBoundingClientRect();"
+            "   return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
+            "})()");
+    QVariantList rectList = evaluateJavaScriptSync(view, jsCode).toList();
 
-    QList<QVariant> arguments = consoleMessageSpy.takeFirst();
-    if (static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(arguments.at(0).toInt()) != QQuickWebEngineView::InfoMessageLevel)
-        return QString();
+    if (rectList.count() != 2) {
+        qWarning("elementCenter failed.");
+        return QPoint();
+    }
 
-    return arguments.at(1).toString();
+    return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
 }
 
 inline QString activeElementId(QQuickWebEngineView *webEngineView)
