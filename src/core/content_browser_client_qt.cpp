@@ -505,7 +505,7 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
         command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
 }
 
-void ContentBrowserClientQt::GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes)
+void ContentBrowserClientQt::GetAdditionalViewSourceSchemes(std::vector<std::string>* additional_schemes)
 {
     additional_schemes->push_back(kQrcSchemeQt);
 }

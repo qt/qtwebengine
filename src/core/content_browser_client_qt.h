@@ -117,7 +117,7 @@ public:
     std::string GetApplicationLocale() override;
     std::string GetAcceptLangs(content::BrowserContext* context) override;
     void AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id) override;
-    void GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes) override;
+    void GetAdditionalViewSourceSchemes(std::vector<std::string>* additional_schemes) override;
 
     void ExposeInterfacesToFrame(service_manager::BinderRegistry* registry, content::RenderFrameHost* render_frame_host) override;
 
