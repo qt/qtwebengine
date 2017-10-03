@@ -200,6 +200,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ui::AX_ROLE_ALERT:
     case ui::AX_ROLE_ALERT_DIALOG:
         return QAccessible::AlertMessage;
+    case ui::AX_ROLE_ANCHOR:
+        return QAccessible::Link;
     case ui::AX_ROLE_ANNOTATION:
         return QAccessible::StaticText;
     case ui::AX_ROLE_APPLICATION:
@@ -222,6 +224,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Canvas;
     case ui::AX_ROLE_CAPTION:
         return QAccessible::Heading;
+    case ui::AX_ROLE_CARET:
+        return QAccessible::NoRole; // FIXME: https://codereview.chromium.org/2781613003
     case ui::AX_ROLE_CELL:
         return QAccessible::Cell;
     case ui::AX_ROLE_CHECK_BOX:
