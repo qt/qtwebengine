@@ -225,7 +225,7 @@ void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVis
 bool RenderWidgetHostViewQtDelegateQuick::event(QEvent *event)
 {
     if (event->type() == QEvent::ShortcutOverride)
-        return m_client->handleShortcutOverrideEvent(static_cast<QKeyEvent *>(event));
+        return m_client->forwardEvent(event);
 
 #ifndef QT_NO_GESTURES
     if (event->type() == QEvent::NativeGesture)

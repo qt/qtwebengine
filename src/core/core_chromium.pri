@@ -79,7 +79,6 @@ SOURCES = \
         qrc_protocol_handler_qt.cpp \
         render_view_observer_host_qt.cpp \
         render_widget_host_view_qt.cpp \
-        render_widget_host_view_qt_delegate.cpp \
         renderer/content_renderer_client_qt.cpp \
         renderer/render_frame_observer_qt.cpp \
         renderer/render_view_observer_qt.cpp \

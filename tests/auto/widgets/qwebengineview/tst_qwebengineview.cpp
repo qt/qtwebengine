@@ -1487,7 +1487,7 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     view.addAction(action);
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
-    view.setHtml(QString("<html><body onload=\"input1=document.getElementById('input1')\">"
+    view.setHtml(QString("<html><body>"
                          "<button id=\"btn1\" type=\"button\">push it real good</button>"
                          "<input id=\"input1\" type=\"text\" value=\"x\">"
                          "</body></html>"));
@@ -1498,7 +1498,7 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
 
     auto inputFieldValue = [&view] () -> QString {
         return evaluateJavaScriptSync(view.page(),
-                                      "input1.value").toString();
+                                      "document.getElementById('input1').value").toString();
     };
 
     // The input form is not focused. The action is triggered on pressing Shift+Delete.
@@ -1515,10 +1515,13 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     QCOMPARE(inputFieldValue(), QString("x"));
 
     // The input form is focused. The action is not triggered, and the form's text changed.
-    evaluateJavaScriptSync(view.page(), "input1.focus();");
+    evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus();");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
     actionTriggered = false;
     QTest::keyClick(view.windowHandle(), Qt::Key_Y);
     QTRY_COMPARE(inputFieldValue(), QString("yx"));
+    QTest::keyClick(view.windowHandle(), Qt::Key_X);
+    QTRY_COMPARE(inputFieldValue(), QString("yxx"));
     QVERIFY(!actionTriggered);
 
     // The input form is focused. Make sure we don't override all short cuts.
@@ -1526,10 +1529,20 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     action->setShortcut(Qt::CTRL + Qt::Key_1);
     QTest::keyClick(view.windowHandle(), Qt::Key_1, Qt::ControlModifier);
     QTRY_VERIFY(actionTriggered);
-    QCOMPARE(inputFieldValue(), QString("yx"));
+    QCOMPARE(inputFieldValue(), QString("yxx"));
+
+    // The input form is focused. The following shortcuts are not overridden
+    // thus handled by Qt WebEngine. Make sure the subsequent shortcuts with text
+    // character don't cause assert due to an unconsumed editor command.
+    QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
+    QTest::keyClick(view.windowHandle(), Qt::Key_C, Qt::ControlModifier);
+    QTest::keyClick(view.windowHandle(), Qt::Key_V, Qt::ControlModifier);
+    QTest::keyClick(view.windowHandle(), Qt::Key_V, Qt::ControlModifier);
+    QTRY_COMPARE(inputFieldValue(), QString("yxxyxx"));
 
     // Remove focus from the input field. A QKeySequence::Copy action must be triggerable.
     evaluateJavaScriptSync(view.page(), "document.getElementById('btn1').focus();");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("btn1"));
     action->setShortcut(QKeySequence::Copy);
     actionTriggered = false;
     QTest::keyClick(view.windowHandle(), Qt::Key_C, Qt::ControlModifier);
@@ -1824,13 +1837,8 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
-    // Workaround for macOS: press ctrl+a without key text
-    QKeyEvent keyPressCtrlA(QEvent::KeyPress, Qt::Key_A, Qt::ControlModifier);
-    QKeyEvent keyReleaseCtrlA(QEvent::KeyRelease, Qt::Key_A, Qt::ControlModifier);
-
     // Select text by ctrl+a
-    QApplication::sendEvent(view.focusProxy(), &keyPressCtrlA);
-    QApplication::sendEvent(view.focusProxy(), &keyReleaseCtrlA);
+    QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QVERIFY(selectionChangedSpy.wait());
     QCOMPARE(selectionChangedSpy.count(), 1);
     QVERIFY(view.hasSelection());
@@ -1860,8 +1868,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
 
     // Select the whole page by ctrl+a
-    QApplication::sendEvent(view.focusProxy(), &keyPressCtrlA);
-    QApplication::sendEvent(view.focusProxy(), &keyReleaseCtrlA);
+    QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QVERIFY(selectionChangedSpy.wait());
     QCOMPARE(selectionChangedSpy.count(), 1);
     QVERIFY(view.hasSelection());
@@ -1877,8 +1884,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QVERIFY(view.page()->selectedText().isEmpty());
 
     // Select the content of the input field by ctrl+a
-    QApplication::sendEvent(view.focusProxy(), &keyPressCtrlA);
-    QApplication::sendEvent(view.focusProxy(), &keyReleaseCtrlA);
+    QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QVERIFY(selectionChangedSpy.wait());
     QCOMPARE(selectionChangedSpy.count(), 3);
     QVERIFY(view.hasSelection());

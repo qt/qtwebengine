@@ -1328,3 +1328,83 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
 
     return webKitEvent;
 }
+
+bool WebEventFactory::getEditCommand(QKeyEvent *event, std::string *editCommand)
+{
+    // Assign Qt standard key bindings to blink editor commands. Editor command names
+    // come from chromium/third_party/WebKit/Source/editing/commands/EditorCommandNames.h
+    static struct {
+        QKeySequence::StandardKey standardKey;
+        std::string name;
+    } editCommands[] = {
+        { QKeySequence::Delete, "Delete" },
+        { QKeySequence::Cut, "Cut" },
+        { QKeySequence::Copy, "Copy" },
+        { QKeySequence::Paste, "Paste" },
+        { QKeySequence::Undo, "Undo" },
+        { QKeySequence::Redo, "Redo" },
+        { QKeySequence::SelectAll, "SelectAll" },
+        { QKeySequence::Bold, "Bold" },
+        { QKeySequence::Italic, "Italic" },
+        { QKeySequence::Underline, "Underline" },
+
+        { QKeySequence::MoveToNextChar, "MoveRight" },
+        { QKeySequence::MoveToPreviousChar, "MoveLeft" },
+        { QKeySequence::MoveToNextWord, "MoveWordForward" },
+        { QKeySequence::MoveToPreviousWord, "MoveWordBackward" },
+        { QKeySequence::MoveToNextLine, "MoveDown" },
+        { QKeySequence::MoveToPreviousLine, "MoveUp" },
+        { QKeySequence::MoveToNextPage, "MovePageDown" },
+        { QKeySequence::MoveToPreviousPage, "MovePageUp" },
+        { QKeySequence::MoveToStartOfLine, "MoveToBeginningOfLine" },
+        { QKeySequence::MoveToEndOfLine, "MoveToEndOfLine" },
+        { QKeySequence::MoveToStartOfBlock, "MoveToBeginningOfParagraph" },
+        { QKeySequence::MoveToEndOfBlock, "MoveToEndOfParagraph" },
+        { QKeySequence::MoveToStartOfDocument, "MoveToBeginningOfDocument" },
+        { QKeySequence::MoveToEndOfDocument, "MoveToEndOfDocument" },
+
+        { QKeySequence::SelectNextChar, "MoveRightAndModifySelection" },
+        { QKeySequence::SelectPreviousChar, "MoveLeftAndModifySelection" },
+        { QKeySequence::SelectNextWord, "MoveWordForwardAndModifySelection" },
+        { QKeySequence::SelectPreviousWord, "MoveWordBackwardAndModifySelection" },
+        { QKeySequence::SelectNextLine, "MoveDownAndModifySelection" },
+        { QKeySequence::SelectPreviousLine, "MoveUpAndModifySelection" },
+        { QKeySequence::SelectNextPage, "MovePageDownAndModifySelection" },
+        { QKeySequence::SelectPreviousPage, "MovePageUpAndModifySelection" },
+        { QKeySequence::SelectStartOfLine, "MoveToBeginningOfLineAndModifySelection" },
+        { QKeySequence::SelectEndOfLine, "MoveToEndOfLineAndModifySelection" },
+        { QKeySequence::SelectStartOfBlock, "MoveToBeginningOfParagraphAndModifySelection" },
+        { QKeySequence::SelectEndOfBlock, "MoveToEndOfParagraphAndModifySelection" },
+        { QKeySequence::SelectStartOfDocument, "MoveToBeginningOfDocumentAndModifySelection" },
+        { QKeySequence::SelectEndOfDocument, "MoveToEndOfDocumentAndModifySelection" },
+
+        { QKeySequence::DeleteStartOfWord, "DeleteWordBackward" },
+        { QKeySequence::DeleteEndOfWord, "DeleteWordForward" },
+        { QKeySequence::DeleteEndOfLine, "DeleteToEndOfLine" },
+        { QKeySequence::Deselect, "Unselect" },
+        { QKeySequence::Backspace, "BackwardDelete" },
+
+        { QKeySequence::UnknownKey, "" }
+    };
+
+    for (int i = 0; editCommands[i].standardKey != QKeySequence::UnknownKey; ++i) {
+        if (event == editCommands[i].standardKey) {
+            *editCommand = editCommands[i].name;
+            return true;
+        }
+    }
+
+#ifdef Q_OS_MACOS
+    Qt::KeyboardModifier cmdKey = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta) ?
+                Qt::MetaModifier :
+                Qt::ControlModifier;
+    if ((event->modifiers() & ~Qt::ShiftModifier) == cmdKey) {
+        if (event->key() == Qt::Key_Backspace) {
+            *editCommand = "DeleteToBeginningOfLine";
+            return true;
+        }
+    }
+#endif
+
+    return false;
+}

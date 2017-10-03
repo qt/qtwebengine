@@ -70,6 +70,7 @@ public:
     static blink::WebMouseWheelEvent toWebWheelEvent(QWheelEvent*, double dpiScale);
     static bool coalesceWebWheelEvent(blink::WebMouseWheelEvent &, QWheelEvent*, double dpiScale);
     static content::NativeWebKeyboardEvent toWebKeyboardEvent(QKeyEvent*);
+    static bool getEditCommand(QKeyEvent *event, std::string *editCommand);
 };
 
 

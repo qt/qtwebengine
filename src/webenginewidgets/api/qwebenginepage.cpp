@@ -375,19 +375,6 @@ void QWebEnginePagePrivate::focusContainer()
 
 void QWebEnginePagePrivate::unhandledKeyEvent(QKeyEvent *event)
 {
-#ifdef Q_OS_OSX
-    Q_Q(QWebEnginePage);
-    if (event->type() == QEvent::KeyPress) {
-        QWebEnginePage::WebAction action = editorActionForKeyEvent(event);
-        if (action != QWebEnginePage::NoWebAction) {
-            // Try triggering a registered short-cut
-            if (QGuiApplicationPrivate::instance()->shortcutMap.tryShortcut(event))
-                return;
-            q->triggerAction(action);
-            return;
-        }
-    }
-#endif
     if (view && view->parentWidget())
         QGuiApplication::sendEvent(view->parentWidget(), event);
 }

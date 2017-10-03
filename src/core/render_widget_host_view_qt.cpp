@@ -73,6 +73,7 @@
 #include "ui/events/event.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 #if defined(USE_AURA)
@@ -97,6 +98,9 @@
 #include <QVariant>
 #include <QWheelEvent>
 #include <QWindow>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
+#include <QtGui/private/qinputcontrol_p.h>
+#endif
 #include <QtGui/qaccessible.h>
 
 namespace QtWebEngineCore {
@@ -182,6 +186,59 @@ static inline bool compareTouchPoints(const QTouchEvent::TouchPoint &lhs, const 
 {
     // TouchPointPressed < TouchPointMoved < TouchPointReleased
     return lhs.state() < rhs.state();
+}
+
+static inline bool isCommonTextEditShortcut(const QKeyEvent *ke)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
+    return QInputControl::isCommonTextEditShortcut(ke);
+#else
+    if (ke->modifiers() == Qt::NoModifier
+        || ke->modifiers() == Qt::ShiftModifier
+        || ke->modifiers() == Qt::KeypadModifier) {
+        if (ke->key() < Qt::Key_Escape) {
+            return true;
+        } else {
+            switch (ke->key()) {
+                case Qt::Key_Return:
+                case Qt::Key_Enter:
+                case Qt::Key_Delete:
+                case Qt::Key_Home:
+                case Qt::Key_End:
+                case Qt::Key_Backspace:
+                case Qt::Key_Left:
+                case Qt::Key_Right:
+                case Qt::Key_Up:
+                case Qt::Key_Down:
+                case Qt::Key_Tab:
+                return true;
+            default:
+                break;
+            }
+        }
+    } else if (ke->matches(QKeySequence::Copy)
+               || ke->matches(QKeySequence::Paste)
+               || ke->matches(QKeySequence::Cut)
+               || ke->matches(QKeySequence::Redo)
+               || ke->matches(QKeySequence::Undo)
+               || ke->matches(QKeySequence::MoveToNextWord)
+               || ke->matches(QKeySequence::MoveToPreviousWord)
+               || ke->matches(QKeySequence::MoveToStartOfDocument)
+               || ke->matches(QKeySequence::MoveToEndOfDocument)
+               || ke->matches(QKeySequence::SelectNextWord)
+               || ke->matches(QKeySequence::SelectPreviousWord)
+               || ke->matches(QKeySequence::SelectStartOfLine)
+               || ke->matches(QKeySequence::SelectEndOfLine)
+               || ke->matches(QKeySequence::SelectStartOfBlock)
+               || ke->matches(QKeySequence::SelectEndOfBlock)
+               || ke->matches(QKeySequence::SelectStartOfDocument)
+               || ke->matches(QKeySequence::SelectEndOfDocument)
+               || ke->matches(QKeySequence::SelectAll)
+              ) {
+        return true;
+    }
+    return false;
+#endif
 }
 
 static uint32_t s_eventId = 0;
@@ -933,6 +990,41 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     Q_ASSERT(m_host->GetView());
 
     switch (event->type()) {
+    case QEvent::ShortcutOverride: {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+
+        auto acceptKeyOutOfInputField = [](QKeyEvent *keyEvent) -> bool {
+#ifdef Q_OS_MACOS
+            // Try triggering a registered shortcut
+            if (QGuiApplicationPrivate::instance()->shortcutMap.tryShortcut(keyEvent))
+                return false;
+
+            // The following shortcuts are handled out of input field too but
+            // disabled on macOS to let the blinking menu handling to the
+            // embedder application (see kKeyboardCodeKeyDownEntries in
+            // third_party/WebKit/Source/core/editing/EditingBehavior.cpp).
+            // Let them pass on macOS to generate the corresponding edit command.
+            return keyEvent->matches(QKeySequence::Copy)
+                    || keyEvent->matches(QKeySequence::Paste)
+                    || keyEvent->matches(QKeySequence::Cut)
+                    || keyEvent->matches(QKeySequence::SelectAll);
+#else
+            return false;
+#endif
+        };
+
+        if (!inputMethodQuery(Qt::ImEnabled).toBool() && !acceptKeyOutOfInputField(keyEvent))
+            return false;
+
+        Q_ASSERT(m_editCommand.empty());
+        if (WebEventFactory::getEditCommand(keyEvent, &m_editCommand)
+                || isCommonTextEditShortcut(keyEvent)) {
+            event->accept();
+            return true;
+        }
+
+        return false;
+    }
     case QEvent::MouseButtonPress:
         Focus(); // Fall through.
     case QEvent::MouseButtonRelease:
@@ -1162,6 +1254,16 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
     }
 
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(ev);
+    if (webEvent.GetType() == blink::WebInputEvent::kRawKeyDown && !m_editCommand.empty()) {
+        ui::LatencyInfo latency;
+        latency.set_source_event_type(ui::SourceEventType::KEY_PRESS);
+        content::EditCommands commands;
+        commands.emplace_back(m_editCommand, "");
+        m_editCommand.clear();
+        m_host->ForwardKeyboardEventWithCommands(webEvent, latency, &commands, nullptr);
+        return;
+    }
+
     bool keyDownTextInsertion = webEvent.GetType() == blink::WebInputEvent::kRawKeyDown && webEvent.text[0];
     webEvent.skip_in_browser = keyDownTextInsertion;
     m_host->ForwardKeyboardEvent(webEvent);

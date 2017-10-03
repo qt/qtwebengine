@@ -274,6 +274,8 @@ private:
 
     bool m_wheelAckPending;
     QList<blink::WebMouseWheelEvent> m_pendingWheelEvents;
+
+    std::string m_editCommand;
 };
 
 } // namespace QtWebEngineCore
