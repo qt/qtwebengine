@@ -139,6 +139,11 @@ inline QRectF toQt(const gfx::RectF &rect)
     return QRectF(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
+inline gfx::Size toGfx(const QSize &size)
+{
+    return gfx::Size(size.width(), size.height());
+}
+
 inline QSize toQt(const gfx::Size &size)
 {
     return QSize(size.width(), size.height());
