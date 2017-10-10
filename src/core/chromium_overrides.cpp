@@ -49,6 +49,8 @@
 #include "content/common/font_list.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ppapi/features/features.h"
 
 #include <QGuiApplication>
@@ -97,7 +99,21 @@ XDisplay* GetQtXDisplay()
 {
     return static_cast<XDisplay*>(GLContextHelper::getXDisplay());
 }
-#endif
+
+namespace ui {
+class DummyPlatformEventSource : public PlatformEventSource
+{
+public:
+    DummyPlatformEventSource() {
+        DeviceDataManager::CreateInstance();
+    }
+};
+
+std::unique_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
+  return base::MakeUnique<DummyPlatformEventSource>();
+}
+} // namespace ui
+#endif // defined(USE_X11)
 
 namespace content {
 class WebContentsImpl;
