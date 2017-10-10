@@ -68,11 +68,6 @@ private:
     void triggerDialog();
     void destroy();
 
-    QUrl m_url;
-    QString m_realm;
-    bool m_isProxy;
-    QString m_host;
-
     int m_renderProcessId;
     int m_renderFrameId;
 
