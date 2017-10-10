@@ -1264,8 +1264,8 @@ bool WebContentsAdapter::handleDropDataFileContents(const content::DropData &dro
         }
     }
 
-    const QString &fileName = toQt(dropData.file_description_filename);
-    const QString &filePath = d->dndTmpDir->filePath(fileName);
+    const QString fileName = toQt(dropData.file_description_filename);
+    const QString filePath = d->dndTmpDir->filePath(fileName);
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly)) {
         qWarning("Cannot write temporary file %s.", qUtf8Printable(filePath));
@@ -1273,7 +1273,7 @@ bool WebContentsAdapter::handleDropDataFileContents(const content::DropData &dro
     }
     file.write(QByteArray::fromStdString(dropData.file_contents));
 
-    const QUrl &targetUrl = QUrl::fromLocalFile(filePath);
+    const QUrl targetUrl = QUrl::fromLocalFile(filePath);
     mimeData->setUrls(QList<QUrl>{targetUrl});
     return true;
 }
