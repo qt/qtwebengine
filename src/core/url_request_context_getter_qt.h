@@ -62,6 +62,7 @@
 #include <QtCore/qsharedpointer.h>
 
 namespace net {
+class HttpAuthPreferences;
 class MappedHostResolver;
 class ProxyConfigService;
 }
@@ -126,6 +127,7 @@ private:
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
     std::unique_ptr<net::HttpNetworkSession> m_httpNetworkSession;
+    std::unique_ptr<net::HttpAuthPreferences> m_httpAuthPreferences;
 
     QList<QByteArray> m_installedCustomSchemes;
     QWebEngineUrlRequestInterceptor* m_requestInterceptor;

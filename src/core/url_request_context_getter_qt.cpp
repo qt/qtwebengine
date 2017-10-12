@@ -59,6 +59,8 @@
 #include "net/dns/mapped_host_resolver.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_preferences.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
@@ -209,6 +211,13 @@ void URLRequestContextGetterQt::generateAllStorage()
     m_updateAllStorage = false;
 }
 
+static const char* const kDefaultAuthSchemes[] = { net::kBasicAuthScheme,
+                                                   net::kDigestAuthScheme,
+#if defined(USE_KERBEROS) && !defined(OS_ANDROID)
+                                                   net::kNegotiateAuthScheme,
+#endif
+                                                   net::kNtlmAuthScheme };
+
 void URLRequestContextGetterQt::generateStorage()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -251,7 +260,15 @@ void URLRequestContextGetterQt::generateStorage()
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     m_storage->set_transport_security_state(std::unique_ptr<net::TransportSecurityState>(new net::TransportSecurityState()));
 
-    m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
+    if (!m_httpAuthPreferences) {
+        std::vector<std::string> auth_types(std::begin(kDefaultAuthSchemes), std::end(kDefaultAuthSchemes));
+        m_httpAuthPreferences.reset(new net::HttpAuthPreferences(auth_types
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+                                                                , std::string() /* gssapi library name */
+#endif
+                                   ));
+    }
+    m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerRegistryFactory::Create(m_httpAuthPreferences.get(), host_resolver.get()));
     m_storage->set_http_server_properties(std::unique_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
 
      // Give |m_storage| ownership at the end in case it's |mapped_host_resolver|.
