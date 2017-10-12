@@ -243,9 +243,12 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
         return;
 
     if (navigation_handle->HasCommitted() && !navigation_handle->IsErrorPage()) {
+        BrowserContextAdapter *browserContextAdapter = m_viewClient->browserContextAdapter().data();
         // VisistedLinksMaster asserts !IsOffTheRecord().
-        if (navigation_handle->ShouldUpdateHistory() && m_viewClient->browserContextAdapter()->trackVisitedLinks())
-            m_viewClient->browserContextAdapter()->visitedLinksManager()->addUrl(navigation_handle->GetURL());
+        if (navigation_handle->ShouldUpdateHistory() && browserContextAdapter->trackVisitedLinks()) {
+            for (const GURL &url : navigation_handle->GetRedirectChain())
+                browserContextAdapter->visitedLinksManager()->addUrl(url);
+        }
 
         // Make sure that we don't set the findNext WebFindOptions on a new frame.
         m_lastSearchedString = QString();
