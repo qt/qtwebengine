@@ -40,7 +40,7 @@
 // This is based on chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.cc:
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// found in the LICENSE.Chromium file.
 
 #include "pepper_host_factory_qt.h"
 

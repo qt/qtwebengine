@@ -73,7 +73,7 @@ public:
     void updateCursor(const QCursor &) override;
     void resize(int width, int height) override;
     void move(const QPoint&) override { }
-    void inputMethodStateChanged(bool editorVisible) override;
+    void inputMethodStateChanged(bool editorVisible, bool isPasswordInput) override;
     void setInputMethodHints(Qt::InputMethodHints) override { }
     // The QtQuick view doesn't have a backbuffer of its own and doesn't need this
     void setClearColor(const QColor &) override { }
@@ -104,6 +104,7 @@ private:
     RenderWidgetHostViewQtDelegateClient *m_client;
     QList<QMetaObject::Connection> m_windowConnections;
     bool m_isPopup;
+    bool m_isPasswordInput;
     bool m_initialized;
     QPoint m_lastGlobalPos;
 };

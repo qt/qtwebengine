@@ -77,6 +77,9 @@
 #include "ui/base/cursor/cursors_aura.h"
 #endif
 
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatforminputcontext.h>
+#include <qpa/qplatformintegration.h>
 #include <QEvent>
 #include <QFocusEvent>
 #include <QGuiApplication>
@@ -292,6 +295,9 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
 
     if (GetTextInputManager())
         GetTextInputManager()->AddObserver(this);
+
+    const QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    m_imeHasHiddenTextCapability = context && context->hasCapability(QPlatformInputContext::HiddenTextCapability);
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
@@ -735,7 +741,7 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
     Q_UNUSED(did_update_state);
 
     ui::TextInputType type = getTextInputType();
-    m_delegate->inputMethodStateChanged(type != ui::TEXT_INPUT_TYPE_NONE);
+    m_delegate->inputMethodStateChanged(type != ui::TEXT_INPUT_TYPE_NONE, type == ui::TEXT_INPUT_TYPE_PASSWORD);
     m_delegate->setInputMethodHints(toQtInputMethodHints(type));
 
     const content::TextInputState *state = text_input_manager_->GetTextInputState();
@@ -922,6 +928,8 @@ void RenderWidgetHostViewQt::windowChanged()
 
 bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
 {
+    Q_ASSERT(m_host->GetView());
+
     switch (event->type()) {
     case QEvent::MouseButtonPress:
         Focus(); // Fall through.
@@ -974,8 +982,16 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
 QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
 {
     switch (query) {
-    case Qt::ImEnabled:
-        return QVariant(getTextInputType() != ui::TEXT_INPUT_TYPE_NONE);
+    case Qt::ImEnabled: {
+        ui::TextInputType type = getTextInputType();
+        bool editorVisible = type != ui::TEXT_INPUT_TYPE_NONE;
+        // IME manager should disable composition on input fields with ImhHiddenText hint if supported
+        if (m_imeHasHiddenTextCapability)
+            return QVariant(editorVisible);
+
+        bool passwordInput = type == ui::TEXT_INPUT_TYPE_PASSWORD;
+        return QVariant(editorVisible && !passwordInput);
+    }
     case Qt::ImFont:
         // TODO: Implement this
         return QVariant();
@@ -1417,6 +1433,19 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         break;
     default:
         break;
+    }
+
+    if (m_imeInProgress && ev->type() == QEvent::TouchBegin) {
+        m_imeInProgress = false;
+        // Tell input method to commit the pre-edit string entered so far, and finish the
+        // composition operation.
+#ifdef Q_OS_WIN
+        // Yes the function name is counter-intuitive, but commit isn't actually implemented
+        // by the Windows QPA, and reset does exactly what is necessary in this case.
+        qApp->inputMethod()->reset();
+#else
+        qApp->inputMethod()->commit();
+#endif
     }
 
     // Make sure that ACTION_POINTER_DOWN is delivered before ACTION_MOVE,

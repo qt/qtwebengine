@@ -54,6 +54,7 @@ namespace QtWebEngineCore {
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
     : m_client(client)
     , m_isPopup(isPopup)
+    , m_isPasswordInput(false)
     , m_initialized(false)
 {
     setFlag(ItemHasContents);
@@ -207,16 +208,17 @@ void RenderWidgetHostViewQtDelegateQuick::resize(int width, int height)
     setSize(QSizeF(width, height));
 }
 
-void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVisible)
+void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVisible, bool passwordInput)
 {
-    setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible);
+    setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible && !passwordInput);
 
     if (parentItem())
-        parentItem()->setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible);
+        parentItem()->setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible && !passwordInput);
 
-    if (qApp->inputMethod()->isVisible() != editorVisible) {
+    if (qApp->inputMethod()->isVisible() != editorVisible || m_isPasswordInput != passwordInput) {
         qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
         qApp->inputMethod()->setVisible(editorVisible);
+        m_isPasswordInput = passwordInput;
     }
 }
 

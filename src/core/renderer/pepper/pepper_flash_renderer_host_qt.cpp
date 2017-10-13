@@ -40,7 +40,7 @@
 // This is based on chrome/renderer/pepper/pepper_flash_renderer_host.cc:
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// found in the LICENSE.Chromium file.
 
 #include "pepper_flash_renderer_host_qt.h"
 

@@ -53,7 +53,7 @@ BrowserMessageFilterQt::BrowserMessageFilterQt(int /*render_process_id*/)
 // The following is based on chrome/browser/plugins/plugin_info_message_filter.cc:
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// found in the LICENSE.Chromium file.
 
 bool BrowserMessageFilterQt::OnMessageReceived(const IPC::Message& message)
 {

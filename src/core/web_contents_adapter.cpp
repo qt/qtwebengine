@@ -39,7 +39,7 @@
 
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// found in the LICENSE.Chromium file.
 
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_p.h"
@@ -101,6 +101,12 @@
 #include <QtWebChannel/QWebChannel>
 
 namespace QtWebEngineCore {
+
+#define CHECK_VALID_RENDER_WIDGET_HOST_VIEW(render_view_host) \
+    if (!render_view_host->IsRenderViewLive() && render_view_host->GetWidget()->GetView()) { \
+        qWarning("Ignore navigation due to terminated render process with invalid RenderWidgetHostView."); \
+        return; \
+    }
 
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
@@ -501,6 +507,7 @@ void WebContentsAdapter::stop()
 void WebContentsAdapter::reload()
 {
     Q_D(WebContentsAdapter);
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(d->webContents->GetRenderViewHost());
     d->webContents->GetController().Reload(content::ReloadType::NORMAL, /*checkRepost = */false);
     focusIfNecessary();
 }
@@ -508,6 +515,7 @@ void WebContentsAdapter::reload()
 void WebContentsAdapter::reloadAndBypassCache()
 {
     Q_D(WebContentsAdapter);
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(d->webContents->GetRenderViewHost());
     d->webContents->GetController().Reload(content::ReloadType::BYPASSING_CACHE, /*checkRepost = */false);
     focusIfNecessary();
 }
@@ -520,6 +528,9 @@ void WebContentsAdapter::load(const QUrl &url)
 
 void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
 {
+    Q_D(WebContentsAdapter);
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(d->webContents->GetRenderViewHost());
+
     // The situation can occur when relying on the editingFinished signal in QML to set the url
     // of the WebView.
     // When enter is pressed, onEditingFinished fires and the url of the webview is set, which
@@ -533,7 +544,6 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
     LoadRecursionGuard guard(this);
     Q_UNUSED(guard);
 
-    Q_D(WebContentsAdapter);
     GURL gurl = toGurl(request.url());
 
     // Add URL scheme if missing from view-source URL.
@@ -590,6 +600,8 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
 void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
 {
     Q_D(WebContentsAdapter);
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(d->webContents->GetRenderViewHost());
+
     QByteArray encodedData = data.toPercentEncoding();
     std::string urlString("data:");
     urlString.append(mimeType.toStdString());
@@ -724,6 +736,7 @@ void WebContentsAdapter::unselect()
 void WebContentsAdapter::navigateToIndex(int offset)
 {
     Q_D(WebContentsAdapter);
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(d->webContents->GetRenderViewHost());
     d->webContents->GetController().GoToIndex(offset);
     focusIfNecessary();
 }
@@ -731,6 +744,7 @@ void WebContentsAdapter::navigateToIndex(int offset)
 void WebContentsAdapter::navigateToOffset(int offset)
 {
     Q_D(WebContentsAdapter);
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(d->webContents->GetRenderViewHost());
     d->webContents->GetController().GoToOffset(offset);
     focusIfNecessary();
 }
@@ -916,9 +930,6 @@ void WebContentsAdapter::stopFinding()
 {
     Q_D(WebContentsAdapter);
     d->webContentsDelegate->setLastSearchedString(QString());
-    // Clear any previous selection,
-    // but keep the renderer blue rectangle selection just like Chromium does.
-    d->webContents->CollapseSelection();
     d->webContents->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }
 

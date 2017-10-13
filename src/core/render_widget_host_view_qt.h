@@ -271,6 +271,8 @@ private:
     uint m_cursorPosition;
     bool m_emptyPreviousSelection;
     QString m_surroundingText;
+
+    bool m_imeHasHiddenTextCapability;
 };
 
 } // namespace QtWebEngineCore

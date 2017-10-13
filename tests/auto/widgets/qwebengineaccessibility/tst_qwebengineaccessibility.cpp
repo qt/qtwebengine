@@ -259,6 +259,7 @@ void tst_QWebEngineAccessibility::roles_data()
     QTest::newRow("AX_ROLE_ABBR") << QString("<abbr>a</abbr>") << false << QAccessible::StaticText;
     QTest::newRow("AX_ROLE_ALERT") << QString("<div role='alert'>alert</div>") << true << QAccessible::AlertMessage;
     QTest::newRow("AX_ROLE_ALERT_DIALOG") << QString("<div role='alertdialog'>alert</div>") << true << QAccessible::AlertMessage;
+    //QTest::newRow("AX_ROLE_ANCHOR") << QString("<a>target</a>") << false << QAccessible::Link; // FIXME: The test case might be wrong (see https://codereview.chromium.org/2713193003)
     QTest::newRow("AX_ROLE_ANNOTATION") << QString("<rt>a</rt>") << false << QAccessible::StaticText;
     QTest::newRow("AX_ROLE_APPLICATION") << QString("<div role='application'>landmark</div>") << true << QAccessible::Document;
     QTest::newRow("AX_ROLE_ARTICLE") << QString("<article>a</article>") << true << QAccessible::Section;
@@ -270,6 +271,7 @@ void tst_QWebEngineAccessibility::roles_data()
     //QTest::newRow("AX_ROLE_BUTTON_DROP_DOWN"); // Not a blink accessibility role
     //QTest::newRow("AX_ROLE_CANVAS") << QString("<canvas width='10' height='10'></canvas>") << true << QAccessible::Canvas; // FIXME: The test case might be wrong (see AXLayoutObject.cpp)
     QTest::newRow("AX_ROLE_CAPTION") << QString("<table><caption>a</caption></table>") << false << QAccessible::Heading;
+    //QTest::newRow("AX_ROLE_CARET"); // Not a blink accessibility role
     //QTest::newRow("AX_ROLE_CELL") << QString("<td role='cell'>a</td>") << true << QAccessible::Cell; // FIXME: Aria role 'cell' should work for <td>
     QTest::newRow("AX_ROLE_CHECK_BOX") << QString("<input type='checkbox'>a</input>") << false << QAccessible::CheckBox;
     QTest::newRow("AX_ROLE_CLIENT") << QString("") << true << QAccessible::Client;
@@ -378,7 +380,7 @@ void tst_QWebEngineAccessibility::roles_data()
     QTest::newRow("AX_ROLE_TOOLBAR") << QString("<div role='toolbar'>a</div>") << true << QAccessible::ToolBar;
     QTest::newRow("AX_ROLE_TOOLTIP") << QString("<div role='tooltip'>a</div>") << true << QAccessible::ToolTip;
     QTest::newRow("AX_ROLE_TREE") << QString("<div role='tree'>a</div>") << true << QAccessible::Tree;
-    //QTest::newRow("AX_ROLE_TREE_GRID") << QString("<div role='treegrid'>a</div>") << true << QAccessible::Tree; // FIXME: Aria role 'treegrid' should work
+    QTest::newRow("AX_ROLE_TREE_GRID") << QString("<div role='treegrid'>a</div>") << true << QAccessible::Tree;
     QTest::newRow("AX_ROLE_TREE_ITEM") << QString("<div role='treeitem'>a</div>") << true << QAccessible::TreeItem;
     QTest::newRow("AX_ROLE_VIDEO") << QString("<video><source src='test.mp4' type='video/mp4'></video>") << false << QAccessible::Animation;
     //QTest::newRow("AX_ROLE_WINDOW"); // No mapping to ARIA role

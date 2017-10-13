@@ -2137,29 +2137,55 @@ void tst_QWebEnginePage::testStopScheduledPageRefresh()
 
 void tst_QWebEnginePage::findText()
 {
-    QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
-    m_page->setHtml(QString("<html><head></head><body><div>foo bar</div></body></html>"));
+    QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
+    m_view->setHtml(QString("<html><head></head><body><div>foo bar</div></body></html>"));
+
+    // Showing is required, otherwise all find operations fail.
+    m_view->show();
     QTRY_COMPARE(loadSpy.count(), 1);
 
     // Select whole page contents.
-    m_page->triggerAction(QWebEnginePage::SelectAll);
-    QTRY_COMPARE(m_page->hasSelection(), true);
+    m_view->page()->triggerAction(QWebEnginePage::SelectAll);
+    QTRY_COMPARE(m_view->hasSelection(), true);
 
-    // Invoke a stopFinding() operation, which should clear the currently selected text.
-    m_page->findText("");
-    QTRY_VERIFY(m_page->selectedText().isEmpty());
+    // Invoking a stopFinding operation will not change or clear the currently selected text,
+    // if nothing was found beforehand.
+    {
+        CallbackSpy<bool> spy;
+        m_view->findText("", 0, spy.ref());
+        QVERIFY(spy.wasCalled());
+        QTRY_COMPARE(m_view->selectedText(), QString("foo bar"));
+    }
 
-    QStringList words = (QStringList() << "foo" << "bar");
-    foreach (QString subString, words) {
-        // Invoke a find operation, which should clear the currently selected text, should
-        // highlight all the found ocurrences, but should not update the selected text to the
-        // searched for string.
-        m_page->findText(subString);
-        QTRY_VERIFY(m_page->selectedText().isEmpty());
+    // Invoking a startFinding operation with text that won't be found, will clear the current
+    // selection.
+    {
+        CallbackSpy<bool> spy;
+        m_view->findText("Will not be found", 0, spy.ref());
+        QCOMPARE(spy.waitForResult(), false);
+        QTRY_VERIFY(m_view->selectedText().isEmpty());
+    }
 
-        // Search highlights should be cleared, selected text should still be empty.
-        m_page->findText("");
-        QTRY_VERIFY(m_page->selectedText().isEmpty());
+    // Select whole page contents again.
+    m_view->page()->triggerAction(QWebEnginePage::SelectAll);
+    QTRY_COMPARE(m_view->hasSelection(), true);
+
+    // Invoking a startFinding operation with text that will be found, will clear the current
+    // selection as well.
+    {
+        CallbackSpy<bool> spy;
+        m_view->findText("foo", 0, spy.ref());
+        QVERIFY(spy.waitForResult());
+        QTRY_VERIFY(m_view->selectedText().isEmpty());
+    }
+
+    // Invoking a stopFinding operation after text was found, will set the selected text to the
+    // found text.
+    {
+        CallbackSpy<bool> spy;
+        m_view->findText("", 0, spy.ref());
+        QTRY_VERIFY(spy.wasCalled());
+        QTRY_COMPARE(m_view->selectedText(), QString("foo"));
     }
 }
 

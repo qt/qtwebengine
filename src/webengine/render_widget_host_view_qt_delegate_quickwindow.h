@@ -76,7 +76,7 @@ public:
     void updateCursor(const QCursor &) override;
     void resize(int width, int height) override;
     void move(const QPoint &screenPos) override;
-    void inputMethodStateChanged(bool) override {}
+    void inputMethodStateChanged(bool, bool) override {}
     void setInputMethodHints(Qt::InputMethodHints) override { }
     void setClearColor(const QColor &) override { }
 

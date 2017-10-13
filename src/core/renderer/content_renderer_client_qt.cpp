@@ -226,7 +226,7 @@ bool ContentRendererClientQt::IsLinkVisited(unsigned long long linkHash)
 // The following is based on chrome/renderer/media/chrome_key_systems.cc:
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// found in the LICENSE.Chromium file.
 
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)
 static const char kExternalClearKeyPepperType[] = "application/x-ppapi-clearkey-cdm";
