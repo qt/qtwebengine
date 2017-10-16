@@ -193,6 +193,8 @@ private Q_SLOTS:
     void setUrlWithPendingLoads();
     void setUrlToEmpty();
     void setUrlToInvalid();
+    void setUrlToBadDomain();
+    void setUrlToBadPort();
     void setUrlHistory();
     void setUrlUsingStateObject();
     void setUrlThenLoads_data();
@@ -3827,6 +3829,92 @@ void tst_QWebEnginePage::setUrlToInvalid()
     QCOMPARE(page.url(), aboutBlank);
     QCOMPARE(page.requestedUrl().toEncoded(), anotherInvalidUrl.toEncoded());
     QCOMPARE(baseUrlSync(&page), aboutBlank);
+}
+
+void tst_QWebEnginePage::setUrlToBadDomain()
+{
+    // Failing to load a URL should still emit a urlChanged signal.
+    //
+    // This test is based on the scenario in QTBUG-48995 where the second setUrl
+    // call first triggers an unexpected additional urlChanged signal with the
+    // original url before the expected signal with the new url.
+
+    // RFC 2606 says the .invalid TLD should be invalid.
+    const QUrl url1 = QStringLiteral("http://this.is.definitely.invalid/");
+    const QUrl url2 = QStringLiteral("http://this.is.also.invalid/");
+    QWebEnginePage page;
+    QSignalSpy urlSpy(&page, &QWebEnginePage::urlChanged);
+    QSignalSpy titleSpy(&page, &QWebEnginePage::titleChanged);
+    QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
+
+    page.setUrl(url1);
+
+    QTRY_COMPARE(urlSpy.count(), 1);
+    QTRY_COMPARE(titleSpy.count(), 2);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url1);
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url1.host());
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url1.host());
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
+
+    QCOMPARE(page.url(), url1);
+    QCOMPARE(page.title(), url1.host());
+
+    page.setUrl(url2);
+
+    QTRY_COMPARE(urlSpy.count(), 1);
+    QTRY_COMPARE(titleSpy.count(), 2);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url2);
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url2.host());
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url2.host());
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
+
+    QCOMPARE(page.url(), url2);
+    QCOMPARE(page.title(), url2.host());
+}
+
+void tst_QWebEnginePage::setUrlToBadPort()
+{
+    // Failing to load a URL should still emit a urlChanged signal.
+
+    // Ports 244-245 are hopefully unbound (marked unassigned in RFC1700).
+    const QUrl url1 = QStringLiteral("http://127.0.0.1:244/");
+    const QUrl url2 = QStringLiteral("http://127.0.0.1:245/");
+    QWebEnginePage page;
+    QSignalSpy urlSpy(&page, &QWebEnginePage::urlChanged);
+    QSignalSpy titleSpy(&page, &QWebEnginePage::titleChanged);
+    QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
+
+    page.setUrl(url1);
+
+    QTRY_COMPARE(urlSpy.count(), 1);
+    QTRY_COMPARE(titleSpy.count(), 2);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url1);
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url1.authority());
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url1.host());
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
+
+    QCOMPARE(page.url(), url1);
+    QCOMPARE(page.title(), url1.host());
+
+    page.setUrl(url2);
+
+    QTRY_COMPARE(urlSpy.count(), 1);
+    QTRY_COMPARE(titleSpy.count(), 2);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url2);
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url2.authority());
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url2.host());
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
+
+    QCOMPARE(page.url(), url2);
+    QCOMPARE(page.title(), url2.host());
 }
 
 static QStringList collectHistoryUrls(QWebEngineHistory *history)
