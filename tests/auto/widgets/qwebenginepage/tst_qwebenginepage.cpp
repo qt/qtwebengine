@@ -3192,21 +3192,19 @@ void tst_QWebEnginePage::progressSignal()
 
 void tst_QWebEnginePage::urlChange()
 {
-    QSignalSpy urlSpy(m_page, SIGNAL(urlChanged(QUrl)));
+    QSignalSpy urlSpy(m_page, &QWebEnginePage::urlChanged);
 
     QUrl dataUrl("data:text/html,<h1>Test");
     m_view->setUrl(dataUrl);
 
-    QVERIFY(urlSpy.wait());
-
-    QCOMPARE(urlSpy.size(), 1);
+    QTRY_COMPARE(urlSpy.size(), 1);
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), dataUrl);
 
     QUrl dataUrl2("data:text/html,<html><head><title>title</title></head><body><h1>Test</body></html>");
     m_view->setUrl(dataUrl2);
 
-    QVERIFY(urlSpy.wait());
-
-    QCOMPARE(urlSpy.size(), 2);
+    QTRY_COMPARE(urlSpy.size(), 1);
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), dataUrl2);
 }
 
 class FakeReply : public QNetworkReply {
@@ -3317,7 +3315,7 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
 
     page.load(second);
     QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 12000);
-    QCOMPARE(page.url(), first);
+    QCOMPARE(page.url(), second);
     QCOMPARE(page.requestedUrl(), second);
     QVERIFY(!spy.at(1).first().toBool());
 }
@@ -3850,11 +3848,10 @@ void tst_QWebEnginePage::setUrlToBadDomain()
     page.setUrl(url1);
 
     QTRY_COMPARE(urlSpy.count(), 1);
-    QTRY_COMPARE(titleSpy.count(), 2);
+    QTRY_COMPARE(titleSpy.count(), 1);
     QTRY_COMPARE(loadSpy.count(), 1);
 
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url1);
-    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url1.host());
     QCOMPARE(titleSpy.takeFirst().value(0).toString(), url1.host());
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
 
@@ -3864,11 +3861,10 @@ void tst_QWebEnginePage::setUrlToBadDomain()
     page.setUrl(url2);
 
     QTRY_COMPARE(urlSpy.count(), 1);
-    QTRY_COMPARE(titleSpy.count(), 2);
+    QTRY_COMPARE(titleSpy.count(), 1);
     QTRY_COMPARE(loadSpy.count(), 1);
 
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url2);
-    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url2.host());
     QCOMPARE(titleSpy.takeFirst().value(0).toString(), url2.host());
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
 
@@ -4077,9 +4073,8 @@ void tst_QWebEnginePage::setUrlThenLoads()
     const QUrl urlToLoad1("qrc:/resources/test2.html");
     const QUrl urlToLoad2("qrc:/resources/test1.html");
 
-    // Just after first load. URL didn't changed yet.
     m_page->load(urlToLoad1);
-    QCOMPARE(m_page->url(), url);
+    QCOMPARE(m_page->url(), urlToLoad1);
     QCOMPARE(m_page->requestedUrl(), urlToLoad1);
     // baseUrlSync spins an event loop and this sometimes return the next result.
     // QCOMPARE(baseUrlSync(m_page), baseUrl);
@@ -4093,9 +4088,8 @@ void tst_QWebEnginePage::setUrlThenLoads()
     QCOMPARE(m_page->requestedUrl(), urlToLoad1);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
 
-    // Just after second load. URL didn't changed yet.
     m_page->load(urlToLoad2);
-    QCOMPARE(m_page->url(), urlToLoad1);
+    QCOMPARE(m_page->url(), urlToLoad2);
     QCOMPARE(m_page->requestedUrl(), urlToLoad2);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
     QTRY_COMPARE(startedSpy.count(), 3);

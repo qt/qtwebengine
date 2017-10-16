@@ -131,10 +131,21 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
 
 void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags)
 {
-    if (changed_flags & content::INVALIDATE_TYPE_URL)
-        m_viewClient->urlChanged(toQt(source->GetVisibleURL()));
-    if (changed_flags & content::INVALIDATE_TYPE_TITLE)
-        m_viewClient->titleChanged(toQt(source->GetTitle()));
+    if (changed_flags & content::INVALIDATE_TYPE_URL) {
+        QUrl newUrl = toQt(source->GetVisibleURL());
+        if (m_url != newUrl) {
+            m_url = newUrl;
+            m_viewClient->urlChanged(m_url);
+        }
+    }
+
+    if (changed_flags & content::INVALIDATE_TYPE_TITLE) {
+        QString newTitle = toQt(source->GetTitle());
+        if (m_title != newTitle) {
+            m_title = newTitle;
+            m_viewClient->titleChanged(m_title);
+        }
+    }
 
     // NavigationStateChanged gets called with INVALIDATE_TYPE_TAB by AudioStateProvider::Notify,
     // whenever an audio sound gets played or stopped, this is the only way to actually figure out
@@ -144,20 +155,6 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
     if ((changed_flags & content::INVALIDATE_TYPE_TAB) && !(changed_flags & content::INVALIDATE_TYPE_LOAD)) {
         m_viewClient->recentlyAudibleChanged(source->WasRecentlyAudible());
     }
-}
-
-bool WebContentsDelegateQt::ShouldPreserveAbortedURLs(content::WebContents *source)
-{
-    Q_UNUSED(source)
-
-    // Allow failed URLs to stick around in the URL bar, but only when the error-page is enabled.
-    WebEngineSettings *settings = m_viewClient->webEngineSettings();
-    bool isErrorPageEnabled = settings->testAttribute(settings->Attribute::ErrorPageEnabled);
-
-    if (isErrorPageEnabled)
-        return true;
-
-    return false;
 }
 
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
