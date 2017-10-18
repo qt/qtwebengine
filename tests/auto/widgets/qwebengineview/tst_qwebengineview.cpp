@@ -273,14 +273,14 @@ void tst_QWebEngineView::reusePage()
     }
 
     view1->show();
-    QTest::qWaitForWindowExposed(view1);
+    QVERIFY(QTest::qWaitForWindowExposed(view1));
     delete view1;
     QVERIFY(page != 0); // deleting view must not have deleted the page, since it's not a child of view
 
     QWebEngineView *view2 = new QWebEngineView;
     view2->setPage(page.data());
     view2->show(); // in Windowless mode, you should still be able to see the plugin here
-    QTest::qWaitForWindowExposed(view2);
+    QVERIFY(QTest::qWaitForWindowExposed(view2));
     delete view2;
 
     delete page.data(); // must not crash
@@ -335,7 +335,7 @@ void tst_QWebEngineView::microFocusCoordinates()
 {
     QWebEngineView webView;
     webView.show();
-    QTest::qWaitForWindowExposed(&webView);
+    QVERIFY(QTest::qWaitForWindowExposed(&webView));
 
     QSignalSpy scrollSpy(webView.page(), SIGNAL(scrollPositionChanged(QPointF)));
     QSignalSpy loadFinishedSpy(&webView, SIGNAL(loadFinished(bool)));
@@ -369,7 +369,7 @@ void tst_QWebEngineView::focusInputTypes()
 
     QWebEngineView webView;
     webView.show();
-    QTest::qWaitForWindowExposed(&webView);
+    QVERIFY(QTest::qWaitForWindowExposed(&webView));
 
     QSignalSpy loadFinishedSpy(&webView, SIGNAL(loadFinished(bool)));
     webView.load(QUrl("qrc:///resources/input_types.html"));
@@ -472,7 +472,7 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
     KeyEventRecordingWidget parentWidget;
     QWebEngineView webView(&parentWidget);
     parentWidget.show();
-    QTest::qWaitForWindowExposed(&webView);
+    QVERIFY(QTest::qWaitForWindowExposed(&webView));
 
     QSignalSpy loadFinishedSpy(&webView, SIGNAL(loadFinished(bool)));
     webView.load(QUrl("qrc:///resources/keyboardEvents.html"));
@@ -530,7 +530,7 @@ void tst_QWebEngineView::horizontalScrollbarTest()
     view.setFixedSize(600, 600);
     view.show();
 
-    QTest::qWaitForWindowExposed(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
     view.setHtml(html);
@@ -820,7 +820,7 @@ void tst_QWebEngineView::doNotSendMouseKeyboardEventsWhenDisabled()
     parentWidget.layout()->addWidget(&webView);
     webView.resize(640, 480);
     parentWidget.show();
-    QTest::qWaitForWindowExposed(&webView);
+    QVERIFY(QTest::qWaitForWindowExposed(&webView));
 
     QSignalSpy loadSpy(&webView, SIGNAL(loadFinished(bool)));
     webView.setHtml("<html><head><title>Title</title></head><body>Hello"
@@ -866,7 +866,7 @@ void tst_QWebEngineView::stopSettingFocusWhenDisabled()
     webView.resize(640, 480);
     webView.show();
     webView.setEnabled(viewEnabled);
-    QTest::qWaitForWindowExposed(&webView);
+    QVERIFY(QTest::qWaitForWindowExposed(&webView));
 
     QSignalSpy loadSpy(&webView, SIGNAL(loadFinished(bool)));
     webView.setHtml("<html><head><title>Title</title></head><body>Hello"
@@ -926,7 +926,7 @@ void tst_QWebEngineView::focusOnNavigation()
 
     containerWidget->setLayout(layout);
     containerWidget->show();
-    QTest::qWaitForWindowExposed(containerWidget.data());
+    QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
 
     // Load the content, invoke javascript focus on the view, and check which widget has focus.
     QSignalSpy loadSpy(webView, SIGNAL(loadFinished(bool)));
@@ -992,7 +992,7 @@ void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
 
     containerWidget->setLayout(layout);
     containerWidget->show();
-    QTest::qWaitForWindowExposed(containerWidget.data());
+    QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
 
     // Load the content, and check that focus is not set.
     QSignalSpy loadSpy(webView, SIGNAL(loadFinished(bool)));
@@ -1252,7 +1252,7 @@ void tst_QWebEngineView::keyboardFocusAfterPopup()
 
     containerWidget->setLayout(layout);
     containerWidget->show();
-    QTest::qWaitForWindowExposed(containerWidget.data());
+    QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
 
     // Trigger completer's popup and select the first suggestion
     QTest::keyClick(urlLine, Qt::Key_T);
@@ -1277,7 +1277,7 @@ void tst_QWebEngineView::mouseClick()
     QWebEngineView view;
     view.show();
     view.resize(200, 200);
-    QTest::qWaitForWindowExposed(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
@@ -1490,7 +1490,7 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     QVERIFY(loadFinishedSpy.wait());
 
     view.show();
-    QTest::qWaitForWindowActive(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     auto inputFieldValue = [&view] () -> QString {
         return evaluateJavaScriptSync(view.page(),
