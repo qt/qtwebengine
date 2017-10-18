@@ -315,9 +315,15 @@ void QWebEngineView::setZoomFactor(qreal factor)
  */
 bool QWebEngineView::event(QEvent *ev)
 {
-    // We swallow spontaneous contextMenu events and synthethize those back later on when we get the
-    // HandleContextMenu callback from chromium
     if (ev->type() == QEvent::ContextMenu) {
+        if (contextMenuPolicy() == Qt::NoContextMenu) {
+            // We forward the contextMenu event to the parent widget
+            ev->ignore();
+            return false;
+        }
+
+        // We swallow spontaneous contextMenu events and synthethize those back later on when we get the
+        // HandleContextMenu callback from chromium
         ev->accept();
         return true;
     }

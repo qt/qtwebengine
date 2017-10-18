@@ -37,6 +37,7 @@
 #include <QCompleter>
 #include <QLineEdit>
 #include <QHBoxLayout>
+#include <QMenu>
 #include <QQuickItem>
 #include <QQuickWidget>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
@@ -174,6 +175,9 @@ private Q_SLOTS:
 #ifndef QT_NO_CLIPBOARD
     void globalMouseSelection();
 #endif
+    void noContextMenu();
+    void contextMenu_data();
+    void contextMenu();
 };
 
 // This will be called before the first test function is executed.
@@ -2353,6 +2357,65 @@ void tst_QWebEngineView::globalMouseSelection()
     QCOMPARE(QApplication::clipboard()->text(QClipboard::Selection), QStringLiteral("QtWebEngine"));
 }
 #endif
+
+void tst_QWebEngineView::noContextMenu()
+{
+    QWidget wrapper;
+    wrapper.setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(&wrapper, &QWidget::customContextMenuRequested, [&wrapper](const QPoint &pt) {
+        QMenu* menu = new QMenu(&wrapper);
+        menu->addAction("Action1");
+        menu->addAction("Action2");
+        menu->popup(pt);
+    });
+
+    QWebEngineView view(&wrapper);
+    view.setContextMenuPolicy(Qt::NoContextMenu);
+    wrapper.show();
+
+    QVERIFY(view.findChildren<QMenu *>().isEmpty());
+    QVERIFY(wrapper.findChildren<QMenu *>().isEmpty());
+    QTest::mouseMove(wrapper.windowHandle(), QPoint(10,10));
+    QTest::mouseClick(wrapper.windowHandle(), Qt::RightButton);
+
+    QTRY_COMPARE(wrapper.findChildren<QMenu *>().count(), 1);
+    QVERIFY(view.findChildren<QMenu *>().isEmpty());
+}
+
+void tst_QWebEngineView::contextMenu_data()
+{
+    QTest::addColumn<int>("childrenCount");
+    QTest::addColumn<Qt::ContextMenuPolicy>("contextMenuPolicy");
+    QTest::newRow("defaultContextMenu") << 1 << Qt::DefaultContextMenu;
+    QTest::newRow("customContextMenu") << 1 << Qt::CustomContextMenu;
+    QTest::newRow("preventContextMenu") << 0 << Qt::PreventContextMenu;
+}
+
+void tst_QWebEngineView::contextMenu()
+{
+    QFETCH(int, childrenCount);
+    QFETCH(Qt::ContextMenuPolicy, contextMenuPolicy);
+
+    QWebEngineView view;
+
+    if (contextMenuPolicy == Qt::CustomContextMenu) {
+        connect(&view, &QWebEngineView::customContextMenuRequested, [&view](const QPoint &pt) {
+            QMenu* menu = new QMenu(&view);
+            menu->addAction("Action1");
+            menu->addAction("Action2");
+            menu->popup(pt);
+        });
+    }
+
+    view.setContextMenuPolicy(contextMenuPolicy);
+    view.show();
+
+    QVERIFY(view.findChildren<QMenu *>().isEmpty());
+    QTest::mouseMove(view.windowHandle(), QPoint(10,10));
+    QTest::mouseClick(view.windowHandle(), Qt::RightButton);
+    QTRY_COMPARE(view.findChildren<QMenu *>().count(), childrenCount);
+}
 
 QTEST_MAIN(tst_QWebEngineView)
 #include "tst_qwebengineview.moc"
