@@ -398,6 +398,20 @@ bool QQuickWebEngineSettings::showScrollBars() const
 }
 
 /*!
+  \qmlproperty bool WebEngineSettings::playbackRequiresUserGesture
+  \since QtWebEngine 1.7
+  Inhibits playback of media content until the user interacts with
+  the page. Disabled by default.
+
+  \note The behavior is similar to Chrome on Android when enabled,
+  and similar to Chrome on desktops when disabled (default).
+*/
+bool QQuickWebEngineSettings::playbackRequiresUserGesture() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::PlaybackRequiresUserGesture);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -629,6 +643,14 @@ void QQuickWebEngineSettings::setShowScrollBars(bool on)
     d_ptr->setAttribute(WebEngineSettings::ShowScrollBars, on);
     if (wasOn != on)
         Q_EMIT showScrollBarsChanged();
+}
+
+void QQuickWebEngineSettings::setPlaybackRequiresUserGesture(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::PlaybackRequiresUserGesture);
+    d_ptr->setAttribute(WebEngineSettings::PlaybackRequiresUserGesture, on);
+    if (wasOn != on)
+        Q_EMIT playbackRequiresUserGestureChanged();
 }
 
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)

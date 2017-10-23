@@ -89,6 +89,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool allowWindowActivationFromJavaScript READ allowWindowActivationFromJavaScript WRITE setAllowWindowActivationFromJavaScript NOTIFY allowWindowActivationFromJavaScriptChanged REVISION 5 FINAL)
     Q_PROPERTY(bool showScrollBars READ showScrollBars WRITE setShowScrollBars NOTIFY showScrollBarsChanged REVISION 5 FINAL)
     Q_PROPERTY(UnknownUrlSchemePolicy unknownUrlSchemePolicy READ unknownUrlSchemePolicy WRITE setUnknownUrlSchemePolicy NOTIFY unknownUrlSchemePolicyChanged REVISION 6 FINAL)
+    Q_PROPERTY(bool playbackRequiresUserGesture READ playbackRequiresUserGesture WRITE setPlaybackRequiresUserGesture NOTIFY playbackRequiresUserGestureChanged REVISION 6 FINAL)
 
 public:
     enum UnknownUrlSchemePolicy {
@@ -127,6 +128,7 @@ public:
     bool allowWindowActivationFromJavaScript() const;
     bool showScrollBars() const;
     UnknownUrlSchemePolicy unknownUrlSchemePolicy() const;
+    bool playbackRequiresUserGesture() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -154,6 +156,7 @@ public:
     void setAllowWindowActivationFromJavaScript(bool on);
     void setShowScrollBars(bool on);
     void setUnknownUrlSchemePolicy(UnknownUrlSchemePolicy policy);
+    void setPlaybackRequiresUserGesture(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -182,6 +185,7 @@ signals:
     Q_REVISION(5) void allowWindowActivationFromJavaScriptChanged();
     Q_REVISION(5) void showScrollBarsChanged();
     Q_REVISION(6) void unknownUrlSchemePolicyChanged();
+    Q_REVISION(6) void playbackRequiresUserGestureChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);

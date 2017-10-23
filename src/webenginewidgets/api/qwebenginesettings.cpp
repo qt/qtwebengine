@@ -101,6 +101,8 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::AllowWindowActivationFromJavaScript;
     case QWebEngineSettings::ShowScrollBars:
         return WebEngineSettings::ShowScrollBars;
+    case QWebEngineSettings::PlaybackRequiresUserGesture:
+        return WebEngineSettings::PlaybackRequiresUserGesture;
 
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;

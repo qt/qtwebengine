@@ -91,7 +91,8 @@ public:
         AllowRunningInsecureContent,
         AllowGeolocationOnInsecureOrigins,
         AllowWindowActivationFromJavaScript,
-        ShowScrollBars
+        ShowScrollBars,
+        PlaybackRequiresUserGesture
     };
 
     enum FontSize {

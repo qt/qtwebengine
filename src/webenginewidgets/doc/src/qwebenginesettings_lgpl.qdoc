@@ -168,6 +168,11 @@
     \value  ShowScrollBars
             Shows scroll bars.
             Enabled by default. (Added in Qt 5.10)
+    \value  PlaybackRequiresUserGesture
+            Inhibits playback of media content until the user interacts with
+            the page. This is similar to how Chrome on Android behaves, while
+            the default behavior when it is disabled is similar to Chrome on desktops.
+            Disabled by default. (Added in Qt 5.11)
 */
 
 /*!

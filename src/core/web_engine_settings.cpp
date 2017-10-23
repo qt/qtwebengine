@@ -48,6 +48,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
+#include "media/base/media_switches.h"
 #include "ui/events/event_switches.h"
 
 #include <QFont>
@@ -150,6 +151,17 @@ bool WebEngineSettings::testAttribute(WebEngineSettings::Attribute attr) const
         return m_attributes.value(attr, s_defaultAttributes.value(attr));
     }
     return m_attributes.value(attr, parentSettings->testAttribute(attr));
+}
+
+bool WebEngineSettings::isAttributeExplicitlySet(Attribute attr) const
+{
+    if (m_attributes.contains(attr))
+        return true;
+
+    if (parentSettings)
+        return parentSettings->isAttributeExplicitlySet(attr);
+
+    return false;
 }
 
 void WebEngineSettings::resetAttribute(WebEngineSettings::Attribute attr)
@@ -270,6 +282,10 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(AllowRunningInsecureContent, allowRunningInsecureContent);
         s_defaultAttributes.insert(AllowGeolocationOnInsecureOrigins, false);
         s_defaultAttributes.insert(AllowWindowActivationFromJavaScript, false);
+        bool playbackRequiresUserGesture = false;
+        if (commandLine->HasSwitch(switches::kAutoplayPolicy))
+            playbackRequiresUserGesture = (commandLine->GetSwitchValueASCII(switches::kAutoplayPolicy) != switches::autoplay::kNoUserGestureRequiredPolicy);
+        s_defaultAttributes.insert(PlaybackRequiresUserGesture, playbackRequiresUserGesture);
     }
 
     if (s_defaultFontFamilies.isEmpty()) {
@@ -353,6 +369,11 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->allow_running_insecure_content = testAttribute(AllowRunningInsecureContent);
     prefs->allow_geolocation_on_insecure_origins = testAttribute(AllowGeolocationOnInsecureOrigins);
     prefs->hide_scrollbars = !testAttribute(ShowScrollBars);
+    if (isAttributeExplicitlySet(PlaybackRequiresUserGesture)) {
+        prefs->autoplay_policy = testAttribute(PlaybackRequiresUserGesture)
+                               ? content::AutoplayPolicy::kUserGestureRequired
+                               : content::AutoplayPolicy::kNoUserGestureRequired;
+    }
 
     // Fonts settings.
     prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));

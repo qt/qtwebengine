@@ -85,7 +85,8 @@ public:
         AllowRunningInsecureContent,
         AllowGeolocationOnInsecureOrigins,
         AllowWindowActivationFromJavaScript,
-        ShowScrollBars
+        ShowScrollBars,
+        PlaybackRequiresUserGesture,
     };
 
     // Must match the values from the public API in qwebenginesettings.h.
@@ -125,6 +126,7 @@ public:
     void setAttribute(Attribute, bool on);
     bool testAttribute(Attribute) const;
     void resetAttribute(Attribute);
+    bool isAttributeExplicitlySet(Attribute) const;
 
     void setFontFamily(FontFamily, const QString &);
     QString fontFamily(FontFamily);
