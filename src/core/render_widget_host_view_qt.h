@@ -152,6 +152,7 @@ public:
     bool HasAcceleratedSurface(const gfx::Size&) override;
     void DidCreateNewRendererCompositorFrameSink(cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
     void SubmitCompositorFrame(const viz::LocalSurfaceId&, cc::CompositorFrame) override;
+    void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
 
     void GetScreenInfo(content::ScreenInfo* results);
     gfx::Rect GetBoundsInRootWindow() override;
@@ -270,6 +271,9 @@ private:
     QString m_surroundingText;
 
     bool m_imeHasHiddenTextCapability;
+
+    bool m_wheelAckPending;
+    QList<blink::WebMouseWheelEvent> m_pendingWheelEvents;
 };
 
 } // namespace QtWebEngineCore

@@ -1247,36 +1247,54 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, doub
 }
 #endif
 
-blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, double dpiScale)
+static void setBlinkWheelEventDelta(blink::WebMouseWheelEvent &webEvent)
 {
-    WebMouseWheelEvent webEvent;
-    webEvent.delta_x = 0;
-    webEvent.delta_y = 0;
-    webEvent.wheel_ticks_x = 0;
-    webEvent.wheel_ticks_y = 0;
-    webEvent.SetType(webEventTypeForEvent(ev));
-    webEvent.SetModifiers(modifiersForEvent(ev));
-    webEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
-
-    webEvent.wheel_ticks_x = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
-    webEvent.wheel_ticks_y = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
-
     // We can't use the device specific QWheelEvent::pixelDelta(), so we calculate
     // a pixel delta based on ticks and scroll per line.
     static const float cDefaultQtScrollStep = 20.f;
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
-    const int wheelScrollLines = QGuiApplication::styleHints()->wheelScrollLines();
+    static const int wheelScrollLines = QGuiApplication::styleHints()->wheelScrollLines();
 #else
-    const int wheelScrollLines = 3;
+    static const int wheelScrollLines = 3;
 #endif
     webEvent.delta_x = webEvent.wheel_ticks_x * wheelScrollLines * cDefaultQtScrollStep;
     webEvent.delta_y = webEvent.wheel_ticks_y * wheelScrollLines * cDefaultQtScrollStep;
+}
 
+
+blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, double dpiScale)
+{
+    WebMouseWheelEvent webEvent;
+    webEvent.SetType(webEventTypeForEvent(ev));
+    webEvent.SetModifiers(modifiersForEvent(ev));
+    webEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
     webEvent.SetPositionInWidget(ev->x() / dpiScale, ev->y() / dpiScale);
     webEvent.SetPositionInScreen(ev->globalX(), ev->globalY());
 
+    webEvent.wheel_ticks_x = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.wheel_ticks_y = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
+    setBlinkWheelEventDelta(webEvent);
+
     return webEvent;
+}
+
+bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent, QWheelEvent *ev, double dpiScale)
+{
+    if (webEventTypeForEvent(ev) != webEvent.GetType())
+        return false;
+    if (modifiersForEvent(ev) != webEvent.GetModifiers())
+        return false;
+
+    webEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
+    webEvent.SetPositionInWidget(ev->x() / dpiScale, ev->y() / dpiScale);
+    webEvent.SetPositionInScreen(ev->globalX(), ev->globalY());
+
+    webEvent.wheel_ticks_x += static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.wheel_ticks_y += static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
+    setBlinkWheelEventDelta(webEvent);
+
+    return true;
 }
 
 content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *ev)

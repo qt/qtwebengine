@@ -282,6 +282,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_cursorPositionWithinSelection(-1)
     , m_cursorPosition(0)
     , m_emptyPreviousSelection(true)
+    , m_wheelAckPending(false)
 {
     m_host->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
@@ -1350,7 +1351,28 @@ void RenderWidgetHostViewQt::accessibilityActiveChanged(bool active)
 
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {
-    m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev, dpiScale()));
+    if (!m_wheelAckPending) {
+        Q_ASSERT(m_pendingWheelEvents.isEmpty());
+        m_wheelAckPending = true;
+        m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev, dpiScale()));
+        return;
+    }
+    if (!m_pendingWheelEvents.isEmpty()) {
+        // Try to combine with this wheel event with the last pending one.
+        if (WebEventFactory::coalesceWebWheelEvent(m_pendingWheelEvents.last(), ev, dpiScale()))
+            return;
+    }
+    m_pendingWheelEvents.append(WebEventFactory::toWebWheelEvent(ev, dpiScale()));
+}
+
+void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &/*event*/, content::InputEventAckState /*ack_result*/)
+{
+    m_wheelAckPending = false;
+    if (!m_pendingWheelEvents.isEmpty()) {
+        m_wheelAckPending = true;
+        m_host->ForwardWheelEvent(m_pendingWheelEvents.takeFirst());
+    }
+    // TODO: We could forward unhandled wheelevents to our parent.
 }
 
 void RenderWidgetHostViewQt::clearPreviousTouchMotionState()
