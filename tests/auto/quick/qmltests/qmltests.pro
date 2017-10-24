@@ -100,7 +100,7 @@ OTHER_FILES += \
 load(qt_build_paths)
 DEFINES += QUICK_TEST_SOURCE_DIR=\\\"$$re_escape($$PWD$${QMAKE_DIR_SEP}data)\\\"
 
-!qtConfig(testsupport) {
+!qtConfig(webengine-testsupport) {
     PLUGIN_EXTENSION = .so
     PLUGIN_PREFIX = lib
     osx: PLUGIN_PREFIX = .dylib

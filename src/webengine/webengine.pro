@@ -58,7 +58,7 @@ HEADERS = \
         render_widget_host_view_qt_delegate_quickwindow.h \
         ui_delegates_manager.h
 
-qtConfig(testsupport) {
+qtConfig(webengine-testsupport) {
     QT += testlib
 
     SOURCES += api/qquickwebenginetestsupport.cpp
@@ -67,11 +67,11 @@ qtConfig(testsupport) {
     DEFINES += ENABLE_QML_TESTSUPPORT_API
 }
 
-qtConfig(spellchecker) {
+qtConfig(webengine-spellchecker) {
     DEFINES += ENABLE_SPELLCHECK
 }
 
-qtConfig(printing-and-pdf) {
+qtConfig(webengine-printing-and-pdf) {
     DEFINES += ENABLE_PDF
 }
 

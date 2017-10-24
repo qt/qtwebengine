@@ -19,8 +19,8 @@ qtConfig(accessibility) {
     SUBDIRS += qwebengineaccessibility
 }
 
-qtConfig(spellchecker):!cross_compile {
-    !qtConfig(native-spellchecker) {
+qtConfig(webengine-spellchecker):!cross_compile {
+    !qtConfig(webengine-native-spellchecker) {
         SUBDIRS += qwebenginespellcheck
     } else {
         message("Spellcheck test will not be built because it depends on usage of Hunspell dictionaries.")

@@ -14,7 +14,7 @@ gn_args += \
     enable_swiftshader=false \
     use_custom_libcxx=false
 
-qtConfig(printing-and-pdf) {
+qtConfig(webengine-printing-and-pdf) {
     gn_args += enable_basic_printing=true enable_print_preview=true
     gn_args += enable_pdf=true
 } else {
@@ -22,25 +22,25 @@ qtConfig(printing-and-pdf) {
     gn_args += enable_pdf=false
 }
 
-qtConfig(pepper-plugins) {
+qtConfig(webengine-pepper-plugins) {
     gn_args += enable_plugins=true enable_widevine=true
 } else {
     gn_args += enable_plugins=false enable_widevine=false
 }
 
-qtConfig(spellchecker) {
+qtConfig(webengine-spellchecker) {
     gn_args += enable_spellcheck=true
 } else {
     gn_args += enable_spellcheck=false
 }
 
-qtConfig(webrtc) {
+qtConfig(webengine-webrtc) {
     gn_args += enable_webrtc=true
 } else {
     gn_args += enable_webrtc=false
 }
 
-qtConfig(proprietary-codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
+qtConfig(webengine-proprietary-codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
 
 CONFIG(release, debug|release) {
     force_debug_info {
