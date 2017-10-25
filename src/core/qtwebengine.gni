@@ -17,6 +17,7 @@ deps = [
   "//components/keyed_service/content",
   "//components/visitedlink/browser",
   "//components/visitedlink/renderer",
+  "//components/signin/core/common:signin_features",
   "//components/web_cache/browser",
   "//components/web_cache/renderer",
   "//components/spellcheck:build_features",

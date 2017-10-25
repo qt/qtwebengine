@@ -73,10 +73,6 @@ namespace gl {
 class GLShareGroup;
 }
 
-namespace service_manager {
-class BinderRegistry;
-}
-
 namespace QtWebEngineCore {
 class BrowserContextQt;
 class BrowserMainPartsQt;
@@ -97,7 +93,7 @@ public:
     content::QuotaPermissionContext *CreateQuotaPermissionContext() override;
     void GetQuotaSettings(content::BrowserContext *context,
                         content::StoragePartition *partition,
-                        const storage::OptionalQuotaSettingsCallback &callback) override;
+                        storage::OptionalQuotaSettingsCallback callback) override;
     void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) override;
     void AllowCertificateError(content::WebContents* web_contents,
                                        int cert_error,
@@ -110,7 +106,7 @@ public:
                                        const base::Callback<void(content::CertificateRequestResultType)>& callback) override;
     void SelectClientCertificate(content::WebContents* web_contents,
                                          net::SSLCertRequestInfo* cert_request_info,
-                                         net::CertificateList client_certs,
+                                         net::ClientCertIdentityList client_certs,
                                          std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() override;
 
@@ -119,7 +115,12 @@ public:
     void AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id) override;
     void GetAdditionalViewSourceSchemes(std::vector<std::string>* additional_schemes) override;
 
-    void ExposeInterfacesToFrame(service_manager::BinderRegistry* registry, content::RenderFrameHost* render_frame_host) override;
+    void BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,
+                                       const std::string& interface_name,
+                                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+    void ExposeInterfacesToRenderer(service_manager::BinderRegistry *registry,
+                                    content::AssociatedInterfaceRegistry *associated_registry,
+                                    content::RenderProcessHost *render_process_host) override;
 
     bool CanCreateWindow(
         content::RenderFrameHost* opener,
@@ -145,9 +146,12 @@ public:
 #endif
 
 private:
+    void InitFrameInterfaces();
     BrowserMainPartsQt* m_browserMainParts;
     std::unique_ptr<ResourceDispatcherHostDelegateQt> m_resourceDispatcherHostDelegate;
     scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
+    std::unique_ptr<service_manager::BinderRegistry> m_frameInterfaces;
+    std::unique_ptr<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>> m_frameInterfacesParameterized;
 };
 
 } // namespace QtWebEngineCore

@@ -7,14 +7,14 @@ import("//printing/features/features.gni")
 
 source_set("qtwebengine_spellcheck_sources") {
   sources = [
+    "//chrome/browser/spellchecker/spell_check_host_impl.cc",
+    "//chrome/browser/spellchecker/spell_check_host_impl.h",
     "//chrome/browser/spellchecker/spellcheck_custom_dictionary.cc",
     "//chrome/browser/spellchecker/spellcheck_custom_dictionary.h",
     "//chrome/browser/spellchecker/spellcheck_factory.cc",
     "//chrome/browser/spellchecker/spellcheck_factory.h",
     "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc",
     "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h",
-    "//chrome/browser/spellchecker/spellcheck_message_filter.cc",
-    "//chrome/browser/spellchecker/spellcheck_message_filter.h",
     "//chrome/browser/spellchecker/spellcheck_service.cc",
     "//chrome/browser/spellchecker/spellcheck_service.h",
   ]
@@ -27,7 +27,6 @@ source_set("qtwebengine_spellcheck_sources") {
   ]
   if (is_mac && use_browser_spellchecker) {
     sources += [
-        "//chrome/browser/spellchecker/spellcheck_message_filter_platform.h",
         "//chrome/browser/spellchecker/spellcheck_message_filter_platform_mac.cc",
     ]
   }

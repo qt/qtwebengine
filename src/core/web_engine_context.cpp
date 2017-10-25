@@ -334,6 +334,9 @@ WebEngineContext::WebEngineContext()
     // Enabled on OS X and Linux but currently not working. It worked in 5.7 on OS X.
     parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
 
+    // The Mojo local-storage is currently pretty broken and saves in $$PWD/Local\ Storage
+    parsedCommandLine->AppendSwitch(switches::kDisableMojoLocalStorage);
+
 #if defined(Q_OS_MACOS)
     // Accelerated decoding currently does not work on macOS due to issues with OpenGL Rectangle
     // texture support. See QTBUG-60002.

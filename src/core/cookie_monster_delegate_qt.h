@@ -86,11 +86,11 @@ public:
     void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, net::CookieStore::ChangeCause cause) override;
 
 private:
-    void GetAllCookiesOnIOThread(const net::CookieMonster::GetCookieListCallback& callback);
-    void SetCookieOnIOThread(const GURL& url, const std::string& cookie_line, const net::CookieMonster::SetCookiesCallback& callback);
+    void GetAllCookiesOnIOThread(net::CookieMonster::GetCookieListCallback callback);
+    void SetCookieOnIOThread(const GURL& url, const std::string& cookie_line, net::CookieMonster::SetCookiesCallback callback);
     void DeleteCookieOnIOThread(const GURL& url, const std::string& cookie_name);
-    void DeleteSessionCookiesOnIOThread(const net::CookieMonster::DeleteCallback& callback);
-    void DeleteAllOnIOThread(const net::CookieMonster::DeleteCallback& callback);
+    void DeleteSessionCookiesOnIOThread(net::CookieMonster::DeleteCallback callback);
+    void DeleteAllOnIOThread(net::CookieMonster::DeleteCallback callback);
 };
 
 }

@@ -99,6 +99,7 @@ private:
     void clearCurrentCacheBackend();
     void cancelAllUrlRequests();
     net::HttpNetworkSession::Params generateNetworkSessionParams();
+    net::HttpNetworkSession::Context generateNetworkSessionContext();
 
     void setFullConfiguration(QSharedPointer<BrowserContextAdapter> browserContext);
 

@@ -54,7 +54,6 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/favicon_url.h"
 #include "favicon_manager.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -64,6 +63,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
+
+namespace content {
+struct FaviconURL;
+}
 
 namespace gfx {
 class ImageSkiaRep;

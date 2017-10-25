@@ -105,7 +105,7 @@ void WebChannelTransport::Install(blink::WebFrame *frame, uint worldId)
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context;
     if (worldId == 0)
-        context = frame->MainWorldScriptContext();
+        context = frame->ToWebLocalFrame()->MainWorldScriptContext();
     else
         context = frame->ToWebLocalFrame()->IsolatedWorldScriptContext(worldId);
     v8::Context::Scope contextScope(context);
@@ -126,7 +126,7 @@ void WebChannelTransport::Uninstall(blink::WebFrame *frame, uint worldId)
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context;
     if (worldId == 0)
-        context = frame->MainWorldScriptContext();
+        context = frame->ToWebLocalFrame()->MainWorldScriptContext();
     else
         context = frame->ToWebLocalFrame()->IsolatedWorldScriptContext(worldId);
     v8::Context::Scope contextScope(context);
@@ -209,7 +209,7 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     blink::WebFrame *frame = webView->MainFrame();
     v8::Handle<v8::Context> context;
     if (worldId == 0)
-        context = frame->MainWorldScriptContext();
+        context = frame->ToWebLocalFrame()->MainWorldScriptContext();
     else
         context = frame->ToWebLocalFrame()->IsolatedWorldScriptContext(worldId);
     v8::Context::Scope contextScope(context);
@@ -239,7 +239,7 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     const int argc = 1;
     v8::Handle<v8::Value> argv[argc];
     argv[0] = messageObject;
-    frame->CallFunctionEvenIfScriptDisabled(callback, webChannelObjectValue->ToObject(), argc, argv);
+    frame->ToWebLocalFrame()->CallFunctionEvenIfScriptDisabled(callback, webChannelObjectValue->ToObject(), argc, argv);
 }
 
 bool WebChannelIPCTransport::OnMessageReceived(const IPC::Message &message)

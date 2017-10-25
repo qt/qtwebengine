@@ -64,7 +64,6 @@ def isInChromiumBlacklist(file_path):
     if ( '_jni' in file_path
         or 'jni_' in file_path
         or 'testdata/' in file_path
-        or file_path.startswith('third_party/android_tools')
         or '/tests/' in file_path
         or ('/test/' in file_path and
             not '/webrtc/' in file_path and
@@ -72,6 +71,7 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('mock_chrome_application_mac.h') and
             not file_path.endswith('perftimer.h') and
             not 'ozone' in file_path and
+            not 'core/mojo/test/' in file_path and
             not file_path.startswith('extensions/browser/'))
         or file_path.endswith('.java')
         or file_path.startswith('android_webview')
@@ -142,12 +142,14 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('media/base/android/java')
         or file_path.startswith('native_client')
         or file_path.startswith('net/android/java')
+        or (file_path.startswith('net/data/') and '_unittest/' in file_path)
         or file_path.startswith('remoting')
         or file_path.startswith('rlz')
         or file_path.startswith('testing/android')
         or file_path.startswith('testing/buildbot')
         or file_path.startswith('third_party/WebKit/LayoutTests')
         or file_path.startswith('third_party/WebKit/ManualTests')
+        or file_path.startswith('third_party/WebKit/Source/core/testing/data/')
         or file_path.startswith('third_party/WebKit/Source/devtools/devtools-node-modules')
         or file_path.startswith('third_party/WebKit/PerformanceTests')
         or file_path.startswith('third_party/accessibility-audit')
@@ -160,15 +162,18 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/bison')
         or (file_path.startswith('third_party/cacheinvalidation') and
             not file_path.endswith('isolate'))
+        or file_path.startswith('third_party/boringssl/crypto_test_data.cc')
         or file_path.startswith('third_party/boringssl/src/fuzz')
         or file_path.startswith('third_party/catapult')
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
+        or file_path.startswith('third_party/closure_compiler')
         or file_path.startswith('third_party/codesighs')
         or file_path.startswith('third_party/colorama')
         or file_path.startswith('third_party/cygwin')
         or file_path.startswith('third_party/cython')
         or file_path.startswith('third_party/deqp')
+        or file_path.startswith('third_party/depot_tools')
         or file_path.startswith('third_party/elfutils')
         or file_path.startswith('third_party/freetype-android')
         or file_path.startswith('third_party/google_input_tools')
@@ -180,6 +185,8 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/google_toolbox_for_mac')
         or file_path.startswith('third_party/hunspell_dictionaries')
         or (file_path.startswith('third_party/icu') and file_path.endswith('icudtl_dat.S'))
+        or file_path.startswith('third_party/icu/android')
+        or file_path.startswith('third_party/icu/ios')
         or file_path.startswith('third_party/instrumented_libraries')
         or file_path.startswith('third_party/jsr-305/src')
         or file_path.startswith('third_party/junit')
@@ -198,6 +205,7 @@ def isInChromiumBlacklist(file_path):
         or (file_path.startswith('third_party/polymer') and
             not file_path.startswith('third_party/polymer/v1_0/components-chromium/'))
         or file_path.startswith('third_party/openh264/src/res')
+        or file_path.startswith('third_party/pdfium/testing/resources')
         or file_path.startswith('third_party/pdfium/tools')
         or file_path.startswith('third_party/pdfsqueeze')
         or file_path.startswith('third_party/pefile')
@@ -206,6 +214,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/pylint')
         or file_path.startswith('third_party/scons-2.0.1')
         or file_path.startswith('third_party/sfntly/src/cpp/data/fonts')
+        or file_path.startswith('third_party/sfntly/src/java')
         or file_path.startswith('third_party/skia/infra')
         or file_path.startswith('third_party/speech-dispatcher')
         or file_path.startswith('third_party/talloc')

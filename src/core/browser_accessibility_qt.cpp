@@ -160,7 +160,7 @@ QString BrowserAccessibilityQt::text(QAccessible::Text t) const
     case QAccessible::Value:
         return toQt(GetStringAttribute(ui::AX_ATTR_VALUE));
     case QAccessible::Accelerator:
-        return toQt(GetStringAttribute(ui::AX_ATTR_SHORTCUT));
+        return toQt(GetStringAttribute(ui::AX_ATTR_KEY_SHORTCUTS));
     default:
         break;
     }
@@ -458,18 +458,16 @@ QAccessible::State BrowserAccessibilityQt::state() const
     int32_t s = GetState();
     if (s & (1 << ui::AX_STATE_BUSY))
         state.busy = true;
-    if (s & (1 << ui::AX_CHECKED_STATE_TRUE))
-        state.checked = true;
     if (s & (1 << ui::AX_STATE_COLLAPSED))
         state.collapsed = true;
-    if (s & (1 << ui::AX_STATE_DISABLED))
-        state.disabled = true;
+    if (s & (1 << ui::AX_STATE_DEFAULT))
+        state.defaultButton = true;
+    if (s & (1 << ui::AX_STATE_EDITABLE))
+        state.editable = true;
     if (s & (1 << ui::AX_STATE_EXPANDED))
         state.expanded = true;
     if (s & (1 << ui::AX_STATE_FOCUSABLE))
         state.focusable = true;
-    if (manager()->GetFocus() == this)
-        state.focused = true;
     if (s & (1 << ui::AX_STATE_HASPOPUP))
         state.hasPopup = true;
     if (s & (1 << ui::AX_STATE_HOVERED))
@@ -482,13 +480,11 @@ QAccessible::State BrowserAccessibilityQt::state() const
         state.multiSelectable = true;
     if (s & (1 << ui::AX_STATE_OFFSCREEN))
         state.offscreen = true;
-    if (s & (1 << ui::AX_STATE_PRESSED))
-        state.pressed = true;
     if (s & (1 << ui::AX_STATE_PROTECTED))
     {} // FIXME
-    if (s & (1 << ui::AX_STATE_READ_ONLY))
-        state.readOnly = true;
     if (s & (1 << ui::AX_STATE_REQUIRED))
+    {} // FIXME
+    if (s & (1 << ui::AX_STATE_RICHLY_EDITABLE))
     {} // FIXME
     if (s & (1 << ui::AX_STATE_SELECTABLE))
         state.selectable = true;
@@ -498,8 +494,40 @@ QAccessible::State BrowserAccessibilityQt::state() const
     {} // FIXME
     if (s & (1 << ui::AX_STATE_VISITED))
     {} // FIXME
-    if (HasState(ui::AX_STATE_EDITABLE))
-        state.editable = true;
+
+    if (manager()->GetFocus() == this)
+        state.focused = true;
+    if (HasIntAttribute(ui::AX_ATTR_CHECKED_STATE)) {
+        ui::AXCheckedState checkedState = (ui::AXCheckedState)GetIntAttribute(ui::AX_ATTR_CHECKED_STATE);
+        switch (checkedState) {
+        case ui::AX_CHECKED_STATE_TRUE:
+            if (GetRole() == ui::AX_ROLE_TOGGLE_BUTTON)
+                state.pressed = true;
+            else
+                state.checked = true;
+            break;
+        case ui::AX_CHECKED_STATE_MIXED:
+            state.checkStateMixed = true;
+            break;
+        case ui::AX_CHECKED_STATE_FALSE:
+        case ui::AX_CHECKED_STATE_NONE:
+            break;
+        }
+    }
+    if (HasIntAttribute(ui::AX_ATTR_RESTRICTION)) {
+        ui::AXRestriction restriction = (ui::AXRestriction)GetIntAttribute(ui::AX_ATTR_RESTRICTION);
+        switch (restriction) {
+        case ui::AX_RESTRICTION_READ_ONLY:
+            state.readOnly = true;
+            break;
+        case ui::AX_RESTRICTION_DISABLED:
+            state.disabled = true;
+            break;
+        case ui::AX_RESTRICTION_NONE:
+            break;
+        }
+    }
+
     return state;
 }
 

@@ -102,8 +102,14 @@ private:
         QUrl origin;
         base::Callback<void(blink::mojom::PermissionStatus)> callback;
     };
+    struct MultiRequest {
+        std::vector<content::PermissionType> types;
+        QUrl origin;
+        base::Callback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback;
+    };
     QHash<int, RequestOrSubscription> m_requests;
     QHash<int, RequestOrSubscription> m_subscribers;
+    QHash<int, MultiRequest> m_multiRequests;
     int m_requestIdCount;
     int m_subscriberIdCount;
 

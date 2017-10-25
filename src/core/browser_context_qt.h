@@ -91,6 +91,7 @@ public:
     std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) override;
     content::PermissionManager *GetPermissionManager() override;
     content::BackgroundSyncController* GetBackgroundSyncController() override;
+    content::BrowsingDataRemoverDelegate *GetBrowsingDataRemoverDelegate() override;
 
     // Profile implementation:
     PrefService* GetPrefs() override;

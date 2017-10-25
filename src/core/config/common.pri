@@ -11,7 +11,8 @@ gn_args += \
     use_allocator=\"none\" \
     v8_use_external_startup_data=false \
     treat_warnings_as_errors=false \
-    enable_swiftshader=false
+    enable_swiftshader=false \
+    use_custom_libcxx=false
 
 qtConfig(printing-and-pdf) {
     gn_args += enable_basic_printing=true enable_print_preview=true

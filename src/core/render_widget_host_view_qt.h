@@ -151,15 +151,14 @@ public:
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
     bool HasAcceleratedSurface(const gfx::Size&) override;
-    void DidCreateNewRendererCompositorFrameSink(cc::mojom::MojoCompositorFrameSinkClient*) override;
-    void SubmitCompositorFrame(const cc::LocalSurfaceId&, cc::CompositorFrame) override;
+    void DidCreateNewRendererCompositorFrameSink(cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
+    void SubmitCompositorFrame(const viz::LocalSurfaceId&, cc::CompositorFrame) override;
 
     void GetScreenInfo(content::ScreenInfo* results);
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) override;
     void ClearCompositorFrame() override;
     void SetNeedsBeginFrames(bool needs_begin_frames) override;
-    void OnSetNeedsFlushInput() override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -240,14 +239,14 @@ private:
     std::unique_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
-    cc::ReturnedResourceArray m_resourcesToRelease;
+    std::vector<cc::ReturnedResource> m_resourcesToRelease;
     bool m_needsDelegatedFrameAck;
     LoadVisuallyCommittedState m_loadVisuallyCommittedState;
 
     QMetaObject::Connection m_adapterClientDestroyedConnection;
     WebContentsAdapterClient *m_adapterClient;
     MultipleMouseClickHelper m_clickHelper;
-    cc::mojom::MojoCompositorFrameSinkClient *m_rendererCompositorFrameSink;
+    cc::mojom::CompositorFrameSinkClient *m_rendererCompositorFrameSink;
 
     bool m_imeInProgress;
     bool m_receivedEmptyImeText;
@@ -257,13 +256,12 @@ private:
 
     std::unique_ptr<cc::SyntheticBeginFrameSource> m_beginFrameSource;
     bool m_needsBeginFrames;
-    bool m_needsFlushInput;
     bool m_addedFrameObserver;
 
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
     SkColor m_backgroundColor;
-    cc::LocalSurfaceId m_localSurfaceId;
+    viz::LocalSurfaceId m_localSurfaceId;
 
     uint m_imState;
     int m_anchorPositionWithinSelection;
