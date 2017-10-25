@@ -433,7 +433,7 @@
             "label": "Spellchecker",
             "purpose": "Provides a spellchecker.",
             "section": "WebEngine",
-            "output": [ "privateFeature" ]
+            "output": [ "publicFeature" ]
         },
         "native-spellchecker": {
             "label": "Native Spellchecker",
@@ -441,7 +441,7 @@
             "section": "WebEngine",
             "autoDetect": false,
             "condition": "config.macos && features.spellchecker",
-            "output": [ "privateFeature" ]
+            "output": [ "publicFeature" ]
         },
         "ui-delegates": {
             "label": "UI Delegates",

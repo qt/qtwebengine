@@ -1,4 +1,4 @@
-QT_FOR_CONFIG += webengine-private
+QT_FOR_CONFIG += webengine
 
 TEMPLATE=subdirs
 

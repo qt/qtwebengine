@@ -4,7 +4,7 @@ option(host_build)
 !debug_and_release: CONFIG += release
 
 include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
-QT_FOR_CONFIG += webengine-private
+QT_FOR_CONFIG += webengine webengine-private
 
 build_pass|!debug_and_release {
     !qtConfig(system-gn): CONFIG(release, debug|release) {
