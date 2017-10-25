@@ -30,6 +30,7 @@
 #include <QTextStream>
 #include <QLibraryInfo>
 #include <QDir>
+#include <QCoreApplication>
 
 // see also src/core/type_conversion.h
 inline base::FilePath::StringType toFilePathString(const QString &str)
@@ -117,6 +118,11 @@ QString frameworkIcuDataPath()
 
 int main(int argc, char *argv[])
 {
+    // Required only for making QLibraryInfo::location() return a valid path, when the application
+    // picks up a qt.conf file (which is the case for official Qt packages).
+    QCoreApplication app(argc, argv);
+    Q_UNUSED(app);
+
     QTextStream out(stdout);
 
     if (argc != 3) {
