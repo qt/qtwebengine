@@ -125,6 +125,8 @@ private:
     static void fenceAndUnlockQt(DelegatedFrameNode *frameNode);
 
     ResourceHolder *findAndHoldResource(unsigned resourceId, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
+    void holdResources(const cc::DrawQuad *quad, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
+    void holdResources(const cc::RenderPass *pass, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
     QSGTexture *initAndHoldTexture(ResourceHolder *resource, bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate = 0);
 
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;

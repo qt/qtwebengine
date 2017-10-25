@@ -957,8 +957,10 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             scissorRect += rootRenderPass->output_rect.OffsetFromOrigin();
         }
 
-        if (scissorRect.IsEmpty())
+        if (scissorRect.IsEmpty()) {
+            holdResources(pass, resourceCandidates);
             continue;
+        }
 
         QSGNode *renderPassChain = nullptr;
         if (buildNewTree)
@@ -981,8 +983,10 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             if (quadState->is_clipped)
                 targetRect.Intersect(quadState->clip_rect);
             targetRect.Intersect(scissorRect);
-            if (targetRect.IsEmpty())
+            if (targetRect.IsEmpty()) {
+                holdResources(quad, resourceCandidates);
                 continue;
+            }
 
             if (quadState->sorting_context_id != currentSortingContextId) {
                 flushPolygons(&polygonQueue, renderPassChain,
@@ -1238,6 +1242,20 @@ ResourceHolder *DelegatedFrameNode::findAndHoldResource(unsigned resourceId, QHa
         resource = candidates.take(resourceId);
     Q_ASSERT(resource);
     return resource.data();
+}
+
+void DelegatedFrameNode::holdResources(const cc::DrawQuad *quad, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
+{
+    auto first = quad->resources.const_begin();
+    auto last = quad->resources.const_end();
+    for (auto it = first; it != last; ++it)
+        findAndHoldResource(*it, candidates);
+}
+
+void DelegatedFrameNode::holdResources(const cc::RenderPass *pass, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
+{
+    for (const auto &quad : pass->quad_list)
+        holdResources(quad, candidates);
 }
 
 QSGTexture *DelegatedFrameNode::initAndHoldTexture(ResourceHolder *resource, bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate)
