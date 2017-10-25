@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    qwebengineaccessibility \
     qwebenginedefaultsurfaceformat \
     qwebenginedownloads \
     qwebenginefaviconmanager \
@@ -13,6 +12,10 @@ SUBDIRS += \
     qwebenginescript \
     qwebenginesettings \
     qwebengineview
+
+qtConfig(accessibility) {
+    SUBDIRS += qwebengineaccessibility
+}
 
 contains(WEBENGINE_CONFIG, use_spellchecker):!cross_compile {
     !contains(WEBENGINE_CONFIG, use_native_spellchecker) {
