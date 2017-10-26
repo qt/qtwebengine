@@ -91,6 +91,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(UnknownUrlSchemePolicy unknownUrlSchemePolicy READ unknownUrlSchemePolicy WRITE setUnknownUrlSchemePolicy NOTIFY unknownUrlSchemePolicyChanged REVISION 6 FINAL)
     Q_PROPERTY(bool playbackRequiresUserGesture READ playbackRequiresUserGesture WRITE setPlaybackRequiresUserGesture NOTIFY playbackRequiresUserGestureChanged REVISION 6 FINAL)
     Q_PROPERTY(bool webRTCPublicInterfacesOnly READ webRTCPublicInterfacesOnly WRITE setWebRTCPublicInterfacesOnly NOTIFY webRTCPublicInterfacesOnlyChanged REVISION 6 FINAL)
+    Q_PROPERTY(bool javascriptCanPaste READ javascriptCanPaste WRITE setJavascriptCanPaste NOTIFY javascriptCanPaste REVISION 6 FINAL)
 
 public:
     enum UnknownUrlSchemePolicy {
@@ -131,6 +132,7 @@ public:
     UnknownUrlSchemePolicy unknownUrlSchemePolicy() const;
     bool playbackRequiresUserGesture() const;
     bool webRTCPublicInterfacesOnly() const;
+    bool javascriptCanPaste() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -160,6 +162,7 @@ public:
     void setUnknownUrlSchemePolicy(UnknownUrlSchemePolicy policy);
     void setPlaybackRequiresUserGesture(bool on);
     void setWebRTCPublicInterfacesOnly(bool on);
+    void setJavascriptCanPaste(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -190,6 +193,7 @@ signals:
     Q_REVISION(6) void unknownUrlSchemePolicyChanged();
     Q_REVISION(6) void playbackRequiresUserGestureChanged();
     Q_REVISION(6) void webRTCPublicInterfacesOnlyChanged();
+    Q_REVISION(6) void javascriptCanPasteChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);

@@ -94,6 +94,8 @@
     \value  JavascriptCanAccessClipboard
             Allows JavaScript programs to read from and write to the clipboard.
             Writing to the clipboard is always allowed if it is specifically requested by the user.
+            See JavascriptCanPaste to also allow pasting the content of the clipboard content from
+            JavaScript.
             Disabled by default.
     \value  LinksIncludedInFocusChain
             Includes hyperlinks in the keyboard focus chain. Enabled by default.
@@ -173,6 +175,9 @@
             Inhibits playback of media content until the user interacts with
             the page. This is similar to how Chrome on Android behaves, while
             the default behavior when it is disabled is similar to Chrome on desktops.
+    \value  JavascriptCanPaste
+            Enables JavaScript \c{execCommand("paste")}. This also requires
+            enabling JavascriptCanAccessClipboard.
             Disabled by default. (Added in Qt 5.11)
     \value  WebRTCPublicInterfacesOnly
             Limits WebRTC to public IP addresses only. When disabled WebRTC may also use
