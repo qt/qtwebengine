@@ -437,7 +437,7 @@
         },
         "native-spellchecker": {
             "label": "Native Spellchecker",
-            "purpose": "Provides a native spellchecker.",
+            "purpose": "Use the system's native spellchecking engine.",
             "section": "WebEngine",
             "autoDetect": false,
             "condition": "config.macos && features.spellchecker",
