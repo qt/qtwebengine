@@ -296,7 +296,7 @@ bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest&, const net::Cooki
     return true;
 }
 
-bool NetworkDelegateQt::OnCanAccessFile(const net::URLRequest& request, const base::FilePath& path) const
+bool NetworkDelegateQt::OnCanAccessFile(const net::URLRequest&, const base::FilePath&, const base::FilePath&) const
 {
     return true;
 }

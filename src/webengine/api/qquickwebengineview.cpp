@@ -139,6 +139,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_fullscreenMode(false)
     , isLoading(false)
     , m_activeFocusOnPress(true)
+    , m_validationShowing(false)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_webChannel(0)
     , m_webChannelWorld(0)
@@ -1132,7 +1133,8 @@ void QQuickWebEngineViewPrivate::showValidationMessage(const QRect &anchor, cons
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineFormValidationMessageRequest *request;
     request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::Show,
-                                                          anchor,mainText,subText);
+                                                              anchor,mainText,subText);
+    m_validationShowing = true;
     // mark the object for gc by creating temporary jsvalue
     qmlEngine(q)->newQObject(request);
     Q_EMIT q->formValidationMessageRequested(request);
@@ -1143,8 +1145,12 @@ void QQuickWebEngineViewPrivate::showValidationMessage(const QRect &anchor, cons
 void QQuickWebEngineViewPrivate::hideValidationMessage()
 {
     Q_Q(QQuickWebEngineView);
+    // Suppress the initial hide message before any show messages (Since 61-based)
+    if (!m_validationShowing)
+        return;
     QQuickWebEngineFormValidationMessageRequest *request;
     request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::Hide);
+    m_validationShowing = false;
     // mark the object for gc by creating temporary jsvalue
     qmlEngine(q)->newQObject(request);
     Q_EMIT q->formValidationMessageRequested(request);

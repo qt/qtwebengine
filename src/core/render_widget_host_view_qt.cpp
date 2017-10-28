@@ -53,7 +53,10 @@
 
 #include "base/command_line.h"
 #include "cc/output/direct_renderer.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/browser_main_loop.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/cursors/webcursor.h"
@@ -272,7 +275,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_initPending(false)
     , m_beginFrameSource(nullptr)
     , m_needsBeginFrames(false)
-    , m_needsFlushInput(false)
     , m_addedFrameObserver(false)
     , m_backgroundColor(SK_ColorWHITE)
     , m_imState(0)
@@ -664,7 +666,7 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
     return false;
 }
 
-void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(cc::mojom::MojoCompositorFrameSinkClient *frameSink)
+void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(cc::mojom::CompositorFrameSinkClient *frameSink)
 {
     // Accumulated resources belong to the old RendererCompositorFrameSink and
     // should not be returned.
@@ -672,7 +674,7 @@ void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(cc::mojom::
     m_rendererCompositorFrameSink = frameSink;
 }
 
-void RenderWidgetHostViewQt::SubmitCompositorFrame(const cc::LocalSurfaceId &local_surface_id, cc::CompositorFrame frame)
+void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, cc::CompositorFrame frame)
 {
     bool scrollOffsetChanged = (m_lastScrollOffset != frame.metadata.root_scroll_offset);
     bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);
@@ -795,10 +797,10 @@ void RenderWidgetHostViewQt::OnTextSelectionChanged(content::TextInputManager *t
         return;
 
 #if defined(USE_X11)
-    if (!GetSelectedText().empty() && selection->user_initiated()) {
+    if (!selection->selected_text().empty() && selection->user_initiated()) {
         // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
         ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
-        clipboard_writer.WriteText(GetSelectedText());
+        clipboard_writer.WriteText(selection->selected_text());
     }
 #endif // defined(USE_X11)
 
@@ -866,10 +868,10 @@ void RenderWidgetHostViewQt::selectionChanged()
     m_anchorPositionWithinSelection = newAnchorPositionWithinSelection;
     m_cursorPositionWithinSelection = newCursorPositionWithinSelection;
 
-    if (!GetSelectedText().empty())
+    if (!selection->selected_text().empty())
         m_cursorPosition = newCursorPositionWithinSelection;
 
-    m_emptyPreviousSelection = GetSelectedText().empty();
+    m_emptyPreviousSelection = selection->selected_text().empty();
     m_adapterClient->selectionChanged();
 }
 
@@ -1027,14 +1029,13 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
     Q_UNUSED(touch);
     const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
-    m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed);
+    m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, /*fixme: ?? */false);
 }
 
 void RenderWidgetHostViewQt::sendDelegatedFrameAck()
 {
-    const cc::BeginFrameAck ack;
-    m_beginFrameSource->DidFinishFrame(this, ack);
-    cc::ReturnedResourceArray resources;
+    m_beginFrameSource->DidFinishFrame(this);
+    std::vector<cc::ReturnedResource> resources;
     m_resourcesToRelease.swap(resources);
     if (m_rendererCompositorFrameSink)
         m_rendererCompositorFrameSink->DidReceiveCompositorFrameAck(resources);
@@ -1149,7 +1150,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
             if (ev->type() == QEvent::KeyRelease) {
                 m_receivedEmptyImeText = false;
                 m_host->ImeSetComposition(toString16(ev->text()),
-                                          std::vector<blink::WebCompositionUnderline>(),
+                                          std::vector<ui::CompositionUnderline>(),
                                           gfx::Range::InvalidRange(),
                                           gfx::Range::InvalidRange().start(),
                                           gfx::Range::InvalidRange().end());
@@ -1190,7 +1191,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     gfx::Range selectionRange = gfx::Range::InvalidRange();
 
     const QList<QInputMethodEvent::Attribute> &attributes = ev->attributes();
-    std::vector<blink::WebCompositionUnderline> underlines;
+    std::vector<ui::CompositionUnderline> underlines;
     bool hasSelection = false;
 
     for (const auto &attribute : attributes) {
@@ -1215,7 +1216,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             if (format.underlineStyle() != QTextCharFormat::NoUnderline)
                 underlineColor = format.underlineColor();
 
-            underlines.push_back(blink::WebCompositionUnderline(start, end, toSk(underlineColor), /*thick*/ false, SK_ColorTRANSPARENT));
+            underlines.push_back(ui::CompositionUnderline(start, end, toSk(underlineColor), /*thick*/ false, SK_ColorTRANSPARENT));
             break;
         }
         case QInputMethodEvent::Cursor:
@@ -1254,9 +1255,9 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     }
 
     if (hasSelection) {
-        content::RenderFrameHost *frameHost = getFocusedFrameHost();
+        content::RenderFrameHostImpl *frameHost = static_cast<content::RenderFrameHostImpl *>(getFocusedFrameHost());
         if (frameHost)
-            frameHost->Send(new InputMsg_SetEditableSelectionOffsets(frameHost->GetRoutingID(), selectionRange.start(), selectionRange.end()));
+            frameHost->GetFrameInputHandler()->SetEditableSelectionOffsets(selectionRange.start(), selectionRange.end());
     }
 
     int replacementLength = ev->replacementLength();
@@ -1512,35 +1513,28 @@ void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
     updateNeedsBeginFramesInternal();
 }
 
-void RenderWidgetHostViewQt::OnSetNeedsFlushInput()
-{
-    m_needsFlushInput = true;
-    updateNeedsBeginFramesInternal();
-}
-
 void RenderWidgetHostViewQt::updateNeedsBeginFramesInternal()
 {
     if (!m_beginFrameSource)
         return;
 
-    // Based on upstream Chromium commit 7f7c8cc8b97dd0d5c9159d9e60c62efbc35e6b53.
-    bool needsFrame = m_needsBeginFrames || m_needsFlushInput;
-    if (m_addedFrameObserver == needsFrame)
+    if (m_addedFrameObserver == m_needsBeginFrames)
         return;
 
-    m_addedFrameObserver = needsFrame;
-    if (needsFrame)
+    if (m_needsBeginFrames)
         m_beginFrameSource->AddObserver(this);
     else
         m_beginFrameSource->RemoveObserver(this);
+    m_addedFrameObserver = m_needsBeginFrames;
 }
 
 bool RenderWidgetHostViewQt::OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args)
 {
-    m_needsFlushInput = false;
     m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
-    updateNeedsBeginFramesInternal();
-    m_host->Send(new ViewMsg_BeginFrame(m_host->GetRoutingID(), args));
+    if (m_rendererCompositorFrameSink)
+        m_rendererCompositorFrameSink->OnBeginFrame(args);
+    else // FIXME: is this else part ever needed?
+        m_host->Send(new ViewMsg_BeginFrame(m_host->GetRoutingID(), args));
     return true;
 }
 

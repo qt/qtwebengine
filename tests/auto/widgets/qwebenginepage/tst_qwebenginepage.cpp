@@ -482,7 +482,9 @@ void tst_QWebEnginePage::pasteImage()
             "window.myImageDataURL ? window.myImageDataURL.length : 0").toInt() > 0);
     QByteArray data = evaluateJavaScriptSync(page, "window.myImageDataURL").toByteArray();
     data.remove(0, data.indexOf(";base64,") + 8);
-    const QImage image = QImage::fromData(QByteArray::fromBase64(data), "PNG");
+    QImage image = QImage::fromData(QByteArray::fromBase64(data), "PNG");
+    if (image.format() == QImage::Format_RGB32)
+        image.reinterpretAsFormat(QImage::Format_ARGB32);
     QCOMPARE(image, origImage);
 }
 
@@ -3586,7 +3588,7 @@ void tst_QWebEnginePage::scrollPosition()
     view.setFixedSize(200,200);
     view.show();
 
-    QTest::qWaitForWindowExposed(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
     view.setHtml(html);
@@ -3665,7 +3667,7 @@ void tst_QWebEnginePage::evaluateWillCauseRepaint()
 {
     WebView view;
     view.show();
-    QTest::qWaitForWindowExposed(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QString html("<html><body>"
                  "  top"
@@ -4301,7 +4303,7 @@ void tst_QWebEnginePage::mouseButtonTranslation()
                       </div>\
                       </body></html>"));
     view.show();
-    QTest::qWaitForWindowExposed(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(spy.count() == 1);
 
     QVERIFY(view.focusProxy() != nullptr);
@@ -4325,7 +4327,7 @@ void tst_QWebEnginePage::mouseMovementProperties()
     ConsolePage page;
     view.setPage(&page);
     view.show();
-    QTest::qWaitForWindowExposed(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.setHtml(QStringLiteral(

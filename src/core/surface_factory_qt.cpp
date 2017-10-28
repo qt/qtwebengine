@@ -77,8 +77,7 @@ protected:
     intptr_t GetNativeDisplay() override;
 
     // Sets up GL bindings for the native surface.
-    bool LoadGLES2Bindings() override;
-
+    bool LoadGLES2Bindings(gl::GLImplementation implementation) override;
 };
 
 base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
@@ -91,7 +90,7 @@ base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
     return library;
 }
 
-bool GLOzoneQt::LoadGLES2Bindings()
+bool GLOzoneQt::LoadGLES2Bindings(gl::GLImplementation /*implementation*/)
 {
     base::NativeLibrary eglgles2Library = dlopen(NULL, RTLD_LAZY);
     if (!eglgles2Library) {

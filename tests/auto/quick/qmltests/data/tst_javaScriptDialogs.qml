@@ -83,6 +83,15 @@ TestWebEngineView {
             compare(webEngineView.title, "REJECTED")
 
         }
+        function readMousePressRecieved() {
+            var mousePressReceived;
+            runJavaScript("window.mousePressReceived", function(result) {
+                mousePressReceived = result;
+            });
+
+            _waitFor(function() { return mousePressReceived != undefined; });
+            return mousePressReceived;
+        }
 
         function simulateUserGesture() {
             // A user gesture after page load is required since Chromium 60 to allow showing
@@ -90,14 +99,7 @@ TestWebEngineView {
             // See https://www.chromestatus.com/feature/5082396709879808
             mouseClick(webEngineView, 10, 10, Qt.LeftButton)
 
-            var mousePressReceived;
-            runJavaScript("window.mousePressReceived", function(result) {
-                mousePressReceived = result;
-            });
-
-            tryVerify(function() {
-                return mousePressReceived != undefined
-            }, 5000);
+            tryVerify(readMousePressRecieved)
         }
 
         function test_confirmClose() {

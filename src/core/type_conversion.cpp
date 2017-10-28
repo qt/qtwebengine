@@ -39,6 +39,7 @@
 
 #include "type_conversion.h"
 
+#include <content/public/common/favicon_url.h>
 #include <ui/events/event_constants.h>
 #include <ui/gfx/image/image_skia.h>
 #include <QtCore/qcoreapplication.h>
@@ -104,17 +105,6 @@ QImage toQImage(const SkBitmap &bitmap)
             break;
         }
         break;
-    case kIndex_8_SkColorType: {
-        image = toQImage(bitmap, QImage::Format_Indexed8);
-        SkColorTable *skTable = bitmap.getColorTable();
-        if (skTable) {
-            QVector<QRgb> qTable(skTable->count());
-            for (int i = 0; i < skTable->count(); ++i)
-                qTable[i] = (*skTable)[i];
-            image.setColorTable(qTable);
-        }
-        break;
-    }
     case kGray_8_SkColorType:
         image = toQImage(bitmap, QImage::Format_Grayscale8);
         break;
@@ -171,31 +161,30 @@ int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
     return modifierFlags;
 }
 
+FaviconInfo::FaviconType toQt(content::FaviconURL::IconType type)
+{
+    switch (type) {
+    case content::FaviconURL::IconType::kFavicon:
+        return FaviconInfo::Favicon;
+    case content::FaviconURL::IconType::kTouchIcon:
+        return FaviconInfo::TouchIcon;
+    case content::FaviconURL::IconType::kTouchPrecomposedIcon:
+        return FaviconInfo::TouchPrecomposedIcon;
+    case content::FaviconURL::IconType::kInvalid:
+        return FaviconInfo::InvalidIcon;
+    }
+    Q_UNREACHABLE();
+    return FaviconInfo::InvalidIcon;
+}
+
 FaviconInfo toFaviconInfo(const content::FaviconURL &favicon_url)
 {
     FaviconInfo info;
-
     info.url = toQt(favicon_url.icon_url);
-
-    switch (favicon_url.icon_type) {
-    case content::FaviconURL::FAVICON:
-        info.type = FaviconInfo::Favicon;
-        break;
-    case content::FaviconURL::TOUCH_ICON:
-        info.type = FaviconInfo::TouchIcon;
-        break;
-    case content::FaviconURL::TOUCH_PRECOMPOSED_ICON:
-        info.type = FaviconInfo::TouchPrecomposedIcon;
-        break;
-    default:
-        info.type = FaviconInfo::InvalidIcon;
-        break;
-    }
-
+    info.type = toQt(favicon_url.icon_type);
     // TODO: Add support for rel sizes attribute (favicon_url.icon_sizes):
     // http://www.w3schools.com/tags/att_link_sizes.asp
     info.size = QSize(0, 0);
-
     return info;
 }
 

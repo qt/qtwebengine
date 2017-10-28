@@ -182,6 +182,11 @@ content::BackgroundSyncController* BrowserContextQt::GetBackgroundSyncController
     return nullptr;
 }
 
+content::BrowsingDataRemoverDelegate *BrowserContextQt::GetBrowsingDataRemoverDelegate()
+{
+    return nullptr;
+}
+
 content::PermissionManager *BrowserContextQt::GetPermissionManager()
 {
     if (!permissionManager)
