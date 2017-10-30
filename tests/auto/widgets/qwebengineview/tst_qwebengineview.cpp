@@ -182,6 +182,8 @@ private Q_SLOTS:
     void noContextMenu();
     void contextMenu_data();
     void contextMenu();
+    void webUIURLs_data();
+    void webUIURLs();
 };
 
 // This will be called before the first test function is executed.
@@ -2476,6 +2478,90 @@ void tst_QWebEngineView::mouseLeave()
     QTRY_COMPARE(innerText(), QStringLiteral("Mouse IN"));
     QTest::mouseMove(containerWidget->windowHandle(), QPoint(50, 50));
     QTRY_COMPARE(innerText(), QStringLiteral("Mouse OUT"));
+}
+
+void tst_QWebEngineView::webUIURLs_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<bool>("supported");
+    QTest::newRow("about") << QUrl("chrome://about") << false;
+    QTest::newRow("accessibility") << QUrl("chrome://accessibility") << false;
+    QTest::newRow("appcache-internals") << QUrl("chrome://appcache-internals") << true;
+    QTest::newRow("apps") << QUrl("chrome://apps") << false;
+    QTest::newRow("blob-internals") << QUrl("chrome://blob-internals") << true;
+    QTest::newRow("bluetooth-internals") << QUrl("chrome://bluetooth-internals") << false;
+    QTest::newRow("bookmarks") << QUrl("chrome://bookmarks") << false;
+    QTest::newRow("cache") << QUrl("chrome://cache") << false;
+    QTest::newRow("chrome") << QUrl("chrome://chrome") << false;
+    QTest::newRow("chrome-urls") << QUrl("chrome://chrome-urls") << false;
+    QTest::newRow("components") << QUrl("chrome://components") << false;
+    QTest::newRow("crashes") << QUrl("chrome://crashes") << false;
+    QTest::newRow("credits") << QUrl("chrome://credits") << false;
+    QTest::newRow("device-log") << QUrl("chrome://device-log") << false;
+    QTest::newRow("devices") << QUrl("chrome://devices") << false;
+    QTest::newRow("dino") << QUrl("chrome://dino") << false; // It works but this is an error page
+    QTest::newRow("dns") << QUrl("chrome://dns") << false;
+    QTest::newRow("downloads") << QUrl("chrome://downloads") << false;
+    QTest::newRow("extensions") << QUrl("chrome://extensions") << false;
+    QTest::newRow("flags") << QUrl("chrome://flags") << false;
+    QTest::newRow("flash") << QUrl("chrome://flash") << false;
+    QTest::newRow("gcm-internals") << QUrl("chrome://gcm-internals") << false;
+    QTest::newRow("gpu") << QUrl("chrome://gpu") << true;
+    QTest::newRow("help") << QUrl("chrome://help") << false;
+    QTest::newRow("histograms") << QUrl("chrome://histograms") << true;
+    QTest::newRow("indexeddb-internals") << QUrl("chrome://indexeddb-internals") << true;
+    QTest::newRow("inspect") << QUrl("chrome://inspect") << false;
+    QTest::newRow("invalidations") << QUrl("chrome://invalidations") << false;
+    QTest::newRow("linux-proxy-config") << QUrl("chrome://linux-proxy-config") << false;
+    QTest::newRow("local-state") << QUrl("chrome://local-state") << false;
+    QTest::newRow("media-internals") << QUrl("chrome://media-internals") << true;
+    QTest::newRow("net-export") << QUrl("chrome://net-export") << false;
+    QTest::newRow("net-internals") << QUrl("chrome://net-internals") << false;
+    QTest::newRow("network-error") << QUrl("chrome://network-error") << false;
+    QTest::newRow("network-errors") << QUrl("chrome://network-errors") << true;
+    QTest::newRow("newtab") << QUrl("chrome://newtab") << false;
+    QTest::newRow("ntp-tiles-internals") << QUrl("chrome://ntp-tiles-internals") << false;
+    QTest::newRow("omnibox") << QUrl("chrome://omnibox") << false;
+    QTest::newRow("password-manager-internals") << QUrl("chrome://password-manager-internals") << false;
+    QTest::newRow("policy") << QUrl("chrome://policy") << false;
+    QTest::newRow("predictors") << QUrl("chrome://predictors") << false;
+    QTest::newRow("print") << QUrl("chrome://print") << false;
+    QTest::newRow("profiler") << QUrl("chrome://profiler") << false;
+    QTest::newRow("quota-internals") << QUrl("chrome://quota-internals") << false;
+    QTest::newRow("safe-browsing") << QUrl("chrome://safe-browsing") << false;
+    QTest::newRow("sandbox") << QUrl("chrome://sandbox") << false;
+    QTest::newRow("serviceworker-internals") << QUrl("chrome://serviceworker-internals") << true;
+    QTest::newRow("settings") << QUrl("chrome://settings") << false;
+    QTest::newRow("signin-internals") << QUrl("chrome://signin-internals") << false;
+    QTest::newRow("site-engagement") << QUrl("chrome://site-engagement") << false;
+    QTest::newRow("suggestions") << QUrl("chrome://suggestions") << false;
+    QTest::newRow("supervised-user-internals") << QUrl("chrome://supervised-user-internals") << false;
+    QTest::newRow("sync-internals") << QUrl("chrome://sync-internals") << false;
+    QTest::newRow("system") << QUrl("chrome://system") << false;
+    QTest::newRow("taskscheduler-internals") << QUrl("chrome://taskscheduler-internals") << false;
+    QTest::newRow("terms") << QUrl("chrome://terms") << false;
+    QTest::newRow("thumbnails") << QUrl("chrome://thumbnails") << false;
+    QTest::newRow("tracing") << QUrl("chrome://tracing") << false;
+    QTest::newRow("translate-internals") << QUrl("chrome://translate-internals") << false;
+    QTest::newRow("usb-internals") << QUrl("chrome://usb-internals") << false;
+    QTest::newRow("user-actions") << QUrl("chrome://user-actions") << false;
+    QTest::newRow("version") << QUrl("chrome://version") << false;
+    QTest::newRow("view-http-cache") << QUrl("chrome://view-http-cache") << true;
+    QTest::newRow("webrtc-internals") << QUrl("chrome://webrtc-internals") << true;
+    QTest::newRow("webrtc-logs") << QUrl("chrome://webrtc-logs") << false;
+}
+
+void tst_QWebEngineView::webUIURLs()
+{
+    QFETCH(QUrl, url);
+    QFETCH(bool, supported);
+
+    QWebEngineView view;
+    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.load(url);
+    QVERIFY(loadFinishedSpy.wait());
+    QCOMPARE(loadFinishedSpy.takeFirst().at(0).toBool(), supported);
 }
 
 QTEST_MAIN(tst_QWebEngineView)
