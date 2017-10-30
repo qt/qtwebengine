@@ -1194,6 +1194,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 
     webKitEvent.type = webEventTypeForEvent(ev);
     webKitEvent.clickCount = 0;
+    webKitEvent.pointerType = WebPointerProperties::PointerType::Mouse;
 
     return webKitEvent;
 }
@@ -1208,6 +1209,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
     webKitEvent.y = webKitEvent.windowY = ev->pos().y() / dpiScale;
     webKitEvent.movementX = ev->pos().x() - ev->oldPos().x();
     webKitEvent.movementY = ev->pos().y() - ev->oldPos().y();
+    webKitEvent.pointerType = WebPointerProperties::PointerType::Mouse;
 
     webKitEvent.type = webEventTypeForEvent(ev);
     return webKitEvent;
