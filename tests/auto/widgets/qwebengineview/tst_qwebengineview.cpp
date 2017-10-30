@@ -1944,10 +1944,9 @@ void tst_QWebEngineView::emptyInputMethodEvent()
 
     // 1. Empty input method event does not clear text
     QInputMethodEvent emptyEvent;
-    QApplication::sendEvent(view.focusProxy(), &emptyEvent);
-
-    QString inputValue = evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString();
-    QTRY_COMPARE(inputValue, QStringLiteral("QtWebEngine"));
+    QVERIFY(QApplication::sendEvent(view.focusProxy(), &emptyEvent));
+    qApp->processEvents();
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QStringLiteral("QtWebEngine"));
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QStringLiteral("QtWebEngine"));
 
     // Reset: clear input field
@@ -1959,12 +1958,12 @@ void tst_QWebEngineView::emptyInputMethodEvent()
     // Start IME composition
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent eventComposition("a", attributes);
-    QApplication::sendEvent(view.focusProxy(), &eventComposition);
+    QVERIFY(QApplication::sendEvent(view.focusProxy(), &eventComposition));
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QStringLiteral("a"));
     QTRY_VERIFY(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().isEmpty());
 
     // Cancel IME composition
-    QApplication::sendEvent(view.focusProxy(), &emptyEvent);
+    QVERIFY(QApplication::sendEvent(view.focusProxy(), &emptyEvent));
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
     QTRY_VERIFY(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().isEmpty());
 
