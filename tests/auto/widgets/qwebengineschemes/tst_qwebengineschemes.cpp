@@ -63,7 +63,7 @@ void tst_QWebEngineSchemes::unknownUrlSchemePolicy()
     view.setPage(&page);
     view.resize(400, 40);
     view.show();
-    QTest::qWaitForWindowExposed(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QWebEngineSettings *settings = view.page()->profile()->settings();
     settings->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     QSignalSpy loadFinishedSpy(&view, &QWebEngineView::loadFinished);
