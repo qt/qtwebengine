@@ -3,5 +3,9 @@ TEMPLATE=subdirs
 SUBDIRS += \
     customdialogs \
     minimal \
-    quicknanobrowser \
-    recipebrowser
+    quicknanobrowser
+
+qtHaveModule(quickcontrols2) {
+    SUBDIRS += \
+        recipebrowser
+}

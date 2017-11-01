@@ -849,8 +849,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // countering the scale of devicePixel-scaled tiles when rendering them
     // to the final surface.
     QMatrix4x4 matrix;
-    matrix.scale(1 / m_chromiumCompositorData->frameDevicePixelRatio,
-                 1 / m_chromiumCompositorData->frameDevicePixelRatio);
+    const float devicePixelRatio = m_chromiumCompositorData->frameDevicePixelRatio;
+    matrix.scale(1 / devicePixelRatio, 1 / devicePixelRatio);
     if (QSGTransformNode::matrix() != matrix)
         setMatrix(matrix);
 
@@ -872,11 +872,19 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     frameData->resource_list.clear();
     QScopedPointer<DelegatedNodeTreeHandler> nodeHandler;
 
+    const QSizeF viewportSizeInPt = apiDelegate->screenRect().size();
+    const QSize viewportSize = (viewportSizeInPt * devicePixelRatio).toSize();
+
     // We first compare if the render passes from the previous frame data are structurally
     // equivalent to the render passes in the current frame data. If they are, we are going
     // to reuse the old nodes. Otherwise, we will delete the old nodes and build a new tree.
-    cc::CompositorFrame *previousFrameData = &m_chromiumCompositorData->previousFrameData;
-    const bool buildNewTree = !areRenderPassStructuresEqual(frameData, previousFrameData) || m_sceneGraphNodes.empty();
+    //
+    // Additionally, because we clip (i.e. don't build scene graph nodes for) quads outside
+    // of the visible area, we also have to rebuild the tree whenever the window is resized.
+    const bool buildNewTree =
+        !areRenderPassStructuresEqual(frameData, &m_chromiumCompositorData->previousFrameData) ||
+        m_sceneGraphNodes.empty() ||
+        viewportSize != m_previousViewportSize;
 
     m_chromiumCompositorData->previousFrameData = cc::CompositorFrame();
     SGObjects previousSGObjects;
@@ -904,10 +912,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // All RenderPasses except the last one are rendered to an FBO.
     cc::RenderPass *rootRenderPass = frameData->render_pass_list.back().get();
 
-    QRectF screenRectQt = apiDelegate->screenRect();
-    gfx::Size thisSize(int(screenRectQt.width() * m_chromiumCompositorData->frameDevicePixelRatio),
-                       int(screenRectQt.height() * m_chromiumCompositorData->frameDevicePixelRatio));
-
+    gfx::Rect viewportRect(toGfx(viewportSize));
     for (unsigned i = 0; i < frameData->render_pass_list.size(); ++i) {
         cc::RenderPass *pass = frameData->render_pass_list.at(i).get();
 
@@ -939,12 +944,14 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             scissorRect = pass->output_rect;
         } else {
             renderPassParent = this;
-            scissorRect = gfx::Rect(thisSize);
+            scissorRect = viewportRect;
             scissorRect += rootRenderPass->output_rect.OffsetFromOrigin();
         }
 
-        if (scissorRect.IsEmpty())
+        if (scissorRect.IsEmpty()) {
+            holdResources(pass, resourceCandidates);
             continue;
+        }
 
         QSGNode *renderPassChain = nullptr;
         if (buildNewTree)
@@ -967,8 +974,10 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             if (quadState->is_clipped)
                 targetRect.Intersect(quadState->clip_rect);
             targetRect.Intersect(scissorRect);
-            if (targetRect.IsEmpty())
+            if (targetRect.IsEmpty()) {
+                holdResources(quad, resourceCandidates);
                 continue;
+            }
 
             if (quadState->sorting_context_id != currentSortingContextId) {
                 flushPolygons(&polygonQueue, renderPassChain,
@@ -1007,6 +1016,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     ResourceHolderIterator end = resourceCandidates.constEnd();
     for (ResourceHolderIterator it = resourceCandidates.constBegin(); it != end ; ++it)
         resourcesToRelease->push_back((*it)->returnResource());
+
+    m_previousViewportSize = viewportSize;
 }
 
 void DelegatedFrameNode::flushPolygons(
@@ -1222,6 +1233,18 @@ ResourceHolder *DelegatedFrameNode::findAndHoldResource(unsigned resourceId, QHa
         resource = candidates.take(resourceId);
     Q_ASSERT(resource);
     return resource.data();
+}
+
+void DelegatedFrameNode::holdResources(const cc::DrawQuad *quad, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
+{
+    for (auto resource : quad->resources)
+        findAndHoldResource(resource, candidates);
+}
+
+void DelegatedFrameNode::holdResources(const cc::RenderPass *pass, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
+{
+    for (const auto &quad : pass->quad_list)
+        holdResources(quad, candidates);
 }
 
 QSGTexture *DelegatedFrameNode::initAndHoldTexture(ResourceHolder *resource, bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate)

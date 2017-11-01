@@ -70,7 +70,11 @@ QUrl QQuickWebEngineFaviconProvider::faviconProviderUrl(const QUrl &url)
     QUrl providerUrl;
     providerUrl.setScheme(QStringLiteral("image"));
     providerUrl.setHost(identifier());
-    providerUrl.setPath(QStringLiteral("/%1").arg(url.toString()));
+    providerUrl.setPath(QStringLiteral("/%1").arg(url.toString(QUrl::RemoveQuery | QUrl::RemoveFragment)));
+    if (url.hasQuery())
+        providerUrl.setQuery(url.query(QUrl::FullyDecoded));
+    if (url.hasFragment())
+        providerUrl.setFragment(url.fragment(QUrl::FullyDecoded));
 
     return providerUrl;
 }

@@ -4,7 +4,6 @@ QT_FOR_CONFIG += webengine-private
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    qwebengineaccessibility \
     qwebenginedefaultsurfaceformat \
     qwebenginedownloads \
     qwebenginefaviconmanager \
@@ -16,6 +15,10 @@ SUBDIRS += \
     qwebenginescript \
     qwebenginesettings \
     qwebengineview
+
+qtConfig(accessibility) {
+    SUBDIRS += qwebengineaccessibility
+}
 
 qtConfig(spellchecker):!cross_compile {
     !qtConfig(native-spellchecker) {

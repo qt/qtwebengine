@@ -56,7 +56,13 @@
 #if defined(USE_OZONE)
 
 #include <EGL/egl.h>
-#include <dlfcn.h>
+
+#ifndef QT_LIBDIR_EGL
+#define QT_LIBDIR_EGL "/usr/lib"
+#endif
+#ifndef QT_LIBDIR_GLES2
+#define QT_LIBDIR_GLES2 QT_LIBDIR_EGL
+#endif
 
 namespace QtWebEngineCore {
 
@@ -92,21 +98,29 @@ base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
 
 bool GLOzoneQt::LoadGLES2Bindings(gl::GLImplementation /*implementation*/)
 {
-    base::NativeLibrary eglgles2Library = dlopen(NULL, RTLD_LAZY);
-    if (!eglgles2Library) {
-        LOG(ERROR) << "Failed to open EGL/GLES2 context " << dlerror();
+    base::FilePath libEGLPath = QtWebEngineCore::toFilePath(QT_LIBDIR_EGL);
+    libEGLPath = libEGLPath.Append("libEGL.so.1");
+    base::NativeLibrary eglLibrary = LoadLibrary(libEGLPath);
+    if (!eglLibrary)
         return false;
-    }
 
-    gl::GLGetProcAddressProc get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(base::GetFunctionPointerFromNativeLibrary(eglgles2Library, "eglGetProcAddress"));
+    base::FilePath libGLES2Path = QtWebEngineCore::toFilePath(QT_LIBDIR_GLES2);
+    libGLES2Path = libGLES2Path.Append("libGLESv2.so.2");
+    base::NativeLibrary gles2Library = LoadLibrary(libGLES2Path);
+    if (!gles2Library)
+        return false;
+
+    gl::GLGetProcAddressProc get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(base::GetFunctionPointerFromNativeLibrary(eglLibrary, "eglGetProcAddress"));
     if (!get_proc_address) {
         LOG(ERROR) << "eglGetProcAddress not found.";
-        base::UnloadNativeLibrary(eglgles2Library);
+        base::UnloadNativeLibrary(eglLibrary);
+        base::UnloadNativeLibrary(gles2Library);
         return false;
     }
 
     gl::SetGLGetProcAddressProc(get_proc_address);
-    gl::AddGLNativeLibrary(eglgles2Library);
+    gl::AddGLNativeLibrary(eglLibrary);
+    gl::AddGLNativeLibrary(gles2Library);
     return true;
 }
 

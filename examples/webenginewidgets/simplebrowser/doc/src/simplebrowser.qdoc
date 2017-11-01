@@ -202,9 +202,6 @@
 
     \section1 Implementing WebPage Functionality
 
-    As mentioned earlier, each \c WebView contains a \c WebPage instance that
-    was created by using QWebEngineProfile::defaultProfile().
-
     We implement \c WebPage as a subclass of QWebEnginePage to enable HTTP,
     proxy authentication, and ignoring SSL certificate errors when accessing web
     pages:
@@ -242,8 +239,16 @@
     over to \c TabWidget::setUrl:
 
     \quotefromfile webenginewidgets/simplebrowser/browserwindow.cpp
+    \skipto BrowserWindow::BrowserWindow
+    \printline BrowserWindow::BrowserWindow
+    \skipto /^\{/
+    \printline /^\{/
+    \dots
     \skipto connect(m_urlLineEdit
-    \printline connect
+    \printuntil });
+    \dots
+    \skipto /^\}/
+    \printline /^\}/
 
     The call is forwarded to the currently selected tab:
 
@@ -254,6 +259,50 @@
 
     The \c setUrl() method of \c WebView just forwards the \c url to the associated \c WebPage,
     which in turn starts the downloading of the page's content in the background.
+
+    \section1 Implementing Private Browsing
+
+    \e{Private browsing}, \e{incognito mode}, or \e{off-the-record mode} is a
+    feature of many browsers where normally persistent data, such as cookies,
+    the HTTP cache, or browsing history, is kept only in memory, leaving no
+    trace on disk. In this example we will implement private browsing on the
+    window level with tabs in one window all in either normal or private mode.
+    Alternatively we could implement private browsing on the tab-level, with
+    some tabs in a window in normal mode, others in private mode.
+
+    Implementing private browsing is quite easy using Qt WebEngine. All one has
+    to do is to create a new \l{QWebEngineProfile} and use it in the
+    \l{QWebEnginePage} instead of the default profile. In the example this new
+    profile is created and owned by the \c Browser object:
+
+    \quotefromfile webenginewidgets/simplebrowser/browser.h
+    \skipto /^class Browser$/
+    \printuntil public:
+    \dots
+    \skipto createWindow
+    \printline createWindow
+    \skipto private:
+    \printline private:
+    \dots
+    \skipto m_otrProfile
+    \printline m_otrProfile
+    \printline /^\};$/
+
+    The default constructor for \l{QWebEngineProfile} already puts it in
+    \e{off-the-record} mode. All that is left to do is to pass the appropriate
+    profile down to the appropriate \l QWebEnginePage objects. The \c Browser
+    object will hand to each new \c BrowserWindow either the global default
+    profile (see \l{QWebEngineProfile::defaultProfile}) or its own
+    off-the-record profile:
+
+    \quotefromfile webenginewidgets/simplebrowser/browser.cpp
+    \skipto Browser::createWindow
+    \printuntil mainWindow = new BrowserWindow
+    \skipto return mainWindow
+    \printuntil /^\}/
+
+    The \c BrowserWindow and \c TabWidget objects will then ensure that all \l
+    QWebEnginePage objects contained in a window will use this profile.
 
     \section1 Managing Downloads
 
