@@ -63,6 +63,7 @@ public:
                              QWeakPointer<const BrowserContextAdapter> adapter);
     ~URLRequestCustomJobProxy();
 
+    // Called from URLRequestCustomJobDelegate via post:
     //void setReplyCharset(const std::string &);
     void reply(std::string mimeType, QIODevice *device);
     void redirect(GURL url);
@@ -70,12 +71,13 @@ public:
     void fail(int error);
     void release();
     void initialize(GURL url, std::string method);
+    void readyRead();
 
-    //IO thread owned
+    // IO thread owned:
     URLRequestCustomJob *m_job;
     bool m_started;
 
-    //UI thread owned
+    // UI thread owned:
     std::string m_scheme;
     URLRequestCustomJobDelegate *m_delegate;
     QWeakPointer<const BrowserContextAdapter> m_adapter;

@@ -61,7 +61,9 @@ osx {
         QMAKE_LFLAGS_DEBUG -= /DEBUG
         QMAKE_LFLAGS_DEBUG += /DEBUG:FASTLINK
     }
-    QMAKE_LFLAGS += /WHOLEARCHIVE:$${api_library_path}$${QMAKE_DIR_SEP}$${api_library_name}.lib
+    # Simulate -whole-archive by passing the list of object files that belong to the public
+    # API library as response file to the linker.
+    QMAKE_LFLAGS += @$${api_library_path}$${QMAKE_DIR_SEP}$${api_library_name}.lib.objects
 } else {
     LIBS_PRIVATE += -Wl,-whole-archive -l$$api_library_name -Wl,-no-whole-archive
 }

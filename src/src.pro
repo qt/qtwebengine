@@ -1,5 +1,5 @@
 include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
-QT_FOR_CONFIG += webengine-private
+QT_FOR_CONFIG += webengine webengine-private
 
 TEMPLATE = subdirs
 

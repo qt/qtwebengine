@@ -388,7 +388,7 @@
         },
         "system-libxml2" : {
             "label": "libxml2",
-            "condition": "config.unix && tests.srtp",
+            "condition": "config.unix && tests.libxml2",
             "output": [ "privateFeature" ]
         },
         "winversion" : {
@@ -433,15 +433,15 @@
             "label": "Spellchecker",
             "purpose": "Provides a spellchecker.",
             "section": "WebEngine",
-            "output": [ "privateFeature" ]
+            "output": [ "publicFeature" ]
         },
         "native-spellchecker": {
             "label": "Native Spellchecker",
-            "purpose": "Provides a native spellchecker.",
+            "purpose": "Use the system's native spellchecking engine.",
             "section": "WebEngine",
             "autoDetect": false,
             "condition": "config.macos && features.spellchecker",
-            "output": [ "privateFeature" ]
+            "output": [ "publicFeature" ]
         },
         "ui-delegates": {
             "label": "UI Delegates",

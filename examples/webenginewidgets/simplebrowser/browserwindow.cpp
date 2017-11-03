@@ -67,9 +67,10 @@
 #include <QVBoxLayout>
 #include <QWebEngineProfile>
 
-BrowserWindow::BrowserWindow(Browser *browser)
+BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile)
     : m_browser(browser)
-    , m_tabWidget(new TabWidget(this))
+    , m_profile(profile)
+    , m_tabWidget(new TabWidget(profile, this))
     , m_progressBar(new QProgressBar(this))
     , m_historyBackAction(nullptr)
     , m_historyForwardAction(nullptr)
@@ -141,6 +142,7 @@ QMenu *BrowserWindow::createFileMenu(TabWidget *tabWidget)
 {
     QMenu *fileMenu = new QMenu(tr("&File"));
     fileMenu->addAction(tr("&New Window"), this, &BrowserWindow::handleNewWindowTriggered, QKeySequence::New);
+    fileMenu->addAction(tr("New &Incognito Window"), this, &BrowserWindow::handleNewIncognitoWindowTriggered);
 
     QAction *newTabAction = new QAction(tr("New &Tab"), this);
     newTabAction->setShortcuts(QKeySequence::AddTab);
@@ -403,15 +405,24 @@ void BrowserWindow::handleWebActionEnabledChanged(QWebEnginePage::WebAction acti
 
 void BrowserWindow::handleWebViewTitleChanged(const QString &title)
 {
+    QString suffix = m_profile->isOffTheRecord()
+        ? tr("Qt Simple Browser (Incognito)")
+        : tr("Qt Simple Browser");
+
     if (title.isEmpty())
-        setWindowTitle(tr("Qt Simple Browser"));
+        setWindowTitle(suffix);
     else
-        setWindowTitle(tr("%1 - Qt Simple Browser").arg(title));
+        setWindowTitle(title + " - " + suffix);
 }
 
 void BrowserWindow::handleNewWindowTriggered()
 {
     m_browser->createWindow();
+}
+
+void BrowserWindow::handleNewIncognitoWindowTriggered()
+{
+    m_browser->createWindow(/* offTheRecord: */ true);
 }
 
 void BrowserWindow::handleFileOpenTriggered()

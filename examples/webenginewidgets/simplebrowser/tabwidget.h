@@ -65,7 +65,7 @@ class TabWidget : public QTabWidget
     Q_OBJECT
 
 public:
-    TabWidget(QWidget *parent = nullptr);
+    TabWidget(QWebEngineProfile *profile, QWidget *parent = nullptr);
 
     WebView *currentWebView() const;
 
@@ -100,6 +100,8 @@ private slots:
 private:
     WebView *webView(int index) const;
     void setupView(WebView *webView);
+
+    QWebEngineProfile *m_profile;
 };
 
 #endif // TABWIDGET_H

@@ -70,12 +70,16 @@ protected:
     virtual ~URLRequestCustomJob();
 
 private:
+    void notifyReadyRead();
     scoped_refptr<URLRequestCustomJobProxy> m_proxy;
     std::string m_mimeType;
     std::string m_charset;
     GURL m_redirect;
     QIODevice *m_device;
     int m_error;
+    int m_pendingReadSize;
+    int m_pendingReadPos;
+    net::IOBuffer *m_pendingReadBuffer;
 
     friend class URLRequestCustomJobProxy;
 
