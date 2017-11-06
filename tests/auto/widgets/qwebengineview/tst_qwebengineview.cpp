@@ -34,6 +34,7 @@
 #include <qstackedlayout.h>
 #include <qtemporarydir.h>
 #include <QCompleter>
+#include <QLabel>
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QQuickItem>
@@ -145,6 +146,8 @@ private Q_SLOTS:
     void imeCompositionQueryEvent_data();
     void imeCompositionQueryEvent();
     void newlineInTextarea();
+
+    void mouseLeave();
 };
 
 // This will be called before the first test function is executed.
@@ -2205,6 +2208,56 @@ void tst_QWebEngineView::imeCompositionQueryEvent()
     QTRY_COMPARE(srrndTextQuery.value(Qt::ImSurroundingText).toString(), QString("composition"));
     QTRY_COMPARE(cursorPosQuery.value(Qt::ImCursorPosition).toInt(), 11);
     QTRY_COMPARE(anchorPosQuery.value(Qt::ImAnchorPosition).toInt(), 11);
+}
+
+void tst_QWebEngineView::mouseLeave()
+{
+    QScopedPointer<QWidget> containerWidget(new QWidget);
+
+    QLabel *label = new QLabel(containerWidget.data());
+    label->setStyleSheet("background-color: red;");
+    label->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
+    label->setMinimumHeight(100);
+
+    QWebEngineView *view = new QWebEngineView(containerWidget.data());
+    view->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
+    view->setMinimumHeight(100);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setAlignment(Qt::AlignTop);
+    layout->setSpacing(0);
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(view);
+    containerWidget->setLayout(layout);
+    containerWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
+    QTest::mouseMove(containerWidget->windowHandle(), QPoint(0, 0));
+
+    auto innerText = [view]() -> QString {
+        return evaluateJavaScriptSync(view->page(), "document.getElementById('testDiv').innerText").toString();
+    };
+
+    QSignalSpy loadFinishedSpy(view, SIGNAL(loadFinished(bool)));
+    view->setHtml("<html>"
+                  "<head><script>"
+                  "function init() {"
+                  " var div = document.getElementById('testDiv');"
+                  " div.onmouseenter = function(e) { div.innerText = 'Mouse IN' };"
+                  " div.onmouseleave = function(e) { div.innerText = 'Mouse OUT' };"
+                  "}"
+                  "</script></head>"
+                  "<body onload='init()' style='margin: 0px; padding: 0px'>"
+                  " <div id='testDiv' style='width: 100%; height: 100%; background-color: green' />"
+                  "</body>"
+                  "</html>");
+    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(innerText().isEmpty());
+
+    QTest::mouseMove(containerWidget->windowHandle(), QPoint(50, 150));
+    QTRY_COMPARE(innerText(), QStringLiteral("Mouse IN"));
+    QTest::mouseMove(containerWidget->windowHandle(), QPoint(50, 50));
+    QTRY_COMPARE(innerText(), QStringLiteral("Mouse OUT"));
 }
 
 QTEST_MAIN(tst_QWebEngineView)
