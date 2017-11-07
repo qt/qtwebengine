@@ -117,6 +117,7 @@ host_build {
 
     qtConfig(webengine-system-zlib): qtConfig(system-minizip) {
         gn_args += use_system_zlib=true use_system_minizip=true
+        qtConfig(printing-and-pdf): gn_args += pdfium_use_system_zlib=true
     }
     qtConfig(webengine-system-png): gn_args += use_system_libpng=true
     qtConfig(system-jpeg): gn_args += use_system_libjpeg=true
@@ -139,14 +140,15 @@ host_build {
     !packagesExist(xscrnsaver): gn_args += use_xscrnsaver=false
 
     qtConfig(system-libevent): gn_args += use_system_libevent=true
-    qtConfig(system-libwebp): gn_args += use_system_libwebp=true
-    qtConfig(system-libxml2): gn_args += use_system_libxml=true use_system_libxslt=true
-    qtConfig(system-opus): gn_args += use_system_opus=true
+    qtConfig(system-libwebp):  gn_args += use_system_libwebp=true
+    qtConfig(system-libxml2):  gn_args += use_system_libxml=true use_system_libxslt=true
+    qtConfig(system-opus):     gn_args += use_system_opus=true
     qtConfig(system-snappy):   gn_args += use_system_snappy=true
     qtConfig(system-libvpx):   gn_args += use_system_libvpx=true
-    qtConfig(system-icu): gn_args += use_system_icu=true icu_use_data_file=false
-    qtConfig(system-ffmpeg): gn_args += use_system_ffmpeg=true
+    qtConfig(system-icu):      gn_args += use_system_icu=true icu_use_data_file=false
+    qtConfig(system-ffmpeg):   gn_args += use_system_ffmpeg=true
     qtConfig(system-re2):      gn_args += use_system_re2=true
+    qtConfig(system-lcms2):    gn_args += use_system_lcms2=true
 
     # FIXME:
     #qtConfig(system-protobuf): gn_args += use_system_protobuf=true
