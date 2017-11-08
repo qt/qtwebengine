@@ -112,7 +112,9 @@ host_build {
         # Strip '>2 /dev/null' from $$pkgConfigExecutable()
         PKGCONFIG = $$first($$list($$pkgConfigExecutable()))
         gn_args += pkg_config=\"$$PKGCONFIG\"
-        gn_args += host_pkg_config=\"pkg-config\"
+        PKG_CONFIG_HOST = $$(GN_PKG_CONFIG_HOST)
+        isEmpty(PKG_CONFIG_HOST): PKG_CONFIG_HOST = pkg-config
+        gn_args += host_pkg_config=\"$$PKG_CONFIG_HOST\"
     }
 
     qtConfig(webengine-system-zlib): qtConfig(webengine-system-minizip) {
