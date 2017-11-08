@@ -1427,6 +1427,12 @@ void WebContentsAdapter::focusIfNecessary()
         d->webContents->Focus();
 }
 
+bool WebContentsAdapter::isFindTextInProgress() const
+{
+    Q_D(const WebContentsAdapter);
+    return d->lastFindRequestId != d->webContentsDelegate->lastReceivedFindReply();
+}
+
 WebContentsAdapterClient::RenderProcessTerminationStatus
 WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
     auto status = WebContentsAdapterClient::RenderProcessTerminationStatus(-1);
