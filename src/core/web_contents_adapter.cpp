@@ -90,6 +90,7 @@
 #include <QPageLayout>
 #include <QStringList>
 #include <QStyleHints>
+#include <QTimer>
 #include <QVariant>
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qmimedata.h>
@@ -583,8 +584,26 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         params.extra_headers += (*it).toStdString() + ": " + request.header(*it).toStdString();
     }
 
-    d->webContents->GetController().LoadURLWithParams(params);
-    focusIfNecessary();
+    bool resizeNeeded = false;
+    if (request.url().hasFragment()) {
+        if (content::RenderWidgetHostView *rwhv = webContents()->GetRenderWidgetHostView()) {
+            const gfx::Size &viewportSize = rwhv->GetVisibleViewportSize();
+            resizeNeeded = (viewportSize.width() == 0 || viewportSize.height() == 0);
+        }
+    }
+
+    auto navigate = [this, params]() {
+        Q_D(WebContentsAdapter);
+        webContents()->GetController().LoadURLWithParams(params);
+        focusIfNecessary();
+    };
+
+    if (resizeNeeded) {
+        // Schedule navigation on the event loop.
+        QTimer::singleShot(0, navigate);
+    } else {
+        navigate();
+    }
 }
 
 void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
