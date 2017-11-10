@@ -181,7 +181,7 @@ void WebChannelIPCTransport::installWebChannel(uint worldId)
 
 void WebChannelIPCTransport::uninstallWebChannel(uint worldId)
 {
-    Q_ASSERT(worldId = m_installedWorldId);
+    Q_ASSERT(worldId == m_installedWorldId);
     blink::WebView *webView = render_view()->GetWebView();
     if (!webView)
         return;
