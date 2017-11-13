@@ -117,7 +117,7 @@ host_build {
 
     qtConfig(webengine-system-zlib): qtConfig(webengine-system-minizip) {
         gn_args += use_system_zlib=true use_system_minizip=true
-        qtConfig(printing-and-pdf): gn_args += pdfium_use_system_zlib=true
+        qtConfig(webengine-printing-and-pdf): gn_args += pdfium_use_system_zlib=true
     }
     qtConfig(webengine-system-png): gn_args += use_system_libpng=true
     qtConfig(system-jpeg): gn_args += use_system_libjpeg=true
