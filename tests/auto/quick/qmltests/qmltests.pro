@@ -89,11 +89,11 @@ OTHER_FILES += \
     $$PWD/data/icons/qt144.png \
     $$PWD/data/icons/qt32.ico \
     $$PWD/data/icons/qtmulti.ico \
-    $$PWD/mock-delegates/QtWebEngine/UIDelegates/AlertDialog.qml \
-    $$PWD/mock-delegates/QtWebEngine/UIDelegates/ConfirmDialog.qml \
-    $$PWD/mock-delegates/QtWebEngine/UIDelegates/FilePicker.qml \
-    $$PWD/mock-delegates/QtWebEngine/UIDelegates/PromptDialog.qml \
-    $$PWD/mock-delegates/QtWebEngine/UIDelegates/qmldir \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/AlertDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/ConfirmDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/FilePicker.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/PromptDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/qmldir \
     $$PWD/mock-delegates/TestParams/FilePickerParams.qml \
     $$PWD/mock-delegates/TestParams/JSDialogParams.qml \
     $$PWD/mock-delegates/TestParams/qmldir \
