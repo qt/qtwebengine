@@ -101,7 +101,7 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
     , downloadId(-1)
     , downloadState(QQuickWebEngineDownloadItem::DownloadCancelled)
     , savePageFormat(QQuickWebEngineDownloadItem::UnknownSaveFormat)
-    , type(QQuickWebEngineDownloadItem::Attachment)
+    , isSavePageDownload(false)
     , interruptReason(QQuickWebEngineDownloadItem::NoReason)
     , totalBytes(-1)
     , receivedBytes(0)
@@ -397,26 +397,33 @@ void QQuickWebEngineDownloadItem::setSavePageFormat(QQuickWebEngineDownloadItem:
     \qmlproperty enumeration WebEngineDownloadItem::type
     \readonly
     \since QtWebEngine 1.4
+    \obsolete
 
     Describes the requested download's type.
 
-    \value WebEngineDownloadItem.Attachment The web server's response includes a
-           \c Content-Disposition header with the \c attachment directive. If \c Content-Disposition
-           is present in the reply, the web server is indicating that the client should prompt the
-           user to save the content regardless of the content type.
-           See \l {RFC 2616 section 19.5.1} for details.
-    \value WebEngineDownloadItem.DownloadAttribute The user clicked a link with the \c download
-           attribute. See \l {HTML download attribute} for details.
-    \value WebEngineDownloadItem.UserRequested The user initiated the download, for example by
-           selecting a web action.
-    \value WebEngineDownloadItem.SavePage Saving of the current page was requested (for example by
-           the \l{WebEngineView::WebAction}{WebEngineView.SavePage} web action).
+    Unfortunately, this property only ever worked correctly for \c SavePage
+    downloads. In other cases, it followed the documented semantics rather
+    loosely, sometimes non-deterministically. Use \l isSavePageDownload instead.
  */
 
 QQuickWebEngineDownloadItem::DownloadType QQuickWebEngineDownloadItem::type() const
 {
+    return isSavePageDownload() ? SavePage : UserRequested;
+}
+
+/*!
+    \qmlproperty bool WebEngineDownloadItem::isSavePageDownload
+    \readonly
+    \since QtWebEngine 1.7
+
+    Whether this is a download request for saving a web page or a file.
+
+    \sa savePageFormat
+*/
+bool QQuickWebEngineDownloadItem::isSavePageDownload() const
+{
     Q_D(const QQuickWebEngineDownloadItem);
-    return d->type;
+    return d->isSavePageDownload;
 }
 
 /*!

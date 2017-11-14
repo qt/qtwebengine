@@ -113,11 +113,6 @@
 */
 
 /*!
-    \externalpage https://www.w3.org/TR/html5/links.html#downloading-resources
-    \title HTML download attribute
-*/
-
-/*!
   \externalpage https://www.iana.org/assignments/uri-schemes/prov/view-source
   \title view-source URI scheme
 */

@@ -73,7 +73,7 @@ public:
     quint32 downloadId;
     QQuickWebEngineDownloadItem::DownloadState downloadState;
     QQuickWebEngineDownloadItem::SavePageFormat savePageFormat;
-    QQuickWebEngineDownloadItem::DownloadType type;
+    bool isSavePageDownload;
     QQuickWebEngineDownloadItem::DownloadInterruptReason interruptReason;
     qint64 totalBytes;
     qint64 receivedBytes;

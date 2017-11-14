@@ -86,8 +86,6 @@ public:
     void pauseDownload(quint32 downloadId);
     void resumeDownload(quint32 downloadId);
 
-    void setDownloadType(int downloadType) { m_downloadType = downloadType; }
-
     // Inherited from content::DownloadItem::Observer
     void OnDownloadUpdated(content::DownloadItem *download) override;
     void OnDownloadDestroyed(content::DownloadItem *download) override;
@@ -99,7 +97,6 @@ private:
 
     uint64_t m_currentId;
     base::WeakPtrFactory<DownloadManagerDelegateQt> m_weakPtrFactory;
-    int m_downloadType;
 
     friend class DownloadManagerDelegateInstance;
     DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateQt);

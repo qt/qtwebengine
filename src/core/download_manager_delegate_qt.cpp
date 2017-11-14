@@ -65,7 +65,6 @@ DownloadManagerDelegateQt::DownloadManagerDelegateQt(BrowserContextAdapter *cont
     : m_contextAdapter(contextAdapter)
     , m_currentId(0)
     , m_weakPtrFactory(this)
-    , m_downloadType(BrowserContextAdapterClient::Attachment)
 {
     Q_ASSERT(m_contextAdapter);
 }
@@ -123,11 +122,6 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
     QString suggestedFilename = toQt(item->GetSuggestedFilename());
     QString mimeTypeString = toQt(item->GetMimeType());
 
-    bool isAttachment = net::HttpContentDisposition(item->GetContentDisposition(), std::string()).is_attachment();
-
-    if (!isAttachment || !BrowserContextAdapterClient::UserRequested)
-        m_downloadType = BrowserContextAdapterClient::DownloadAttribute;
-
     if (suggestedFilename.isEmpty())
         suggestedFilename = toQt(net::HttpContentDisposition(item->GetContentDisposition(), std::string()).filename());
 
@@ -173,7 +167,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
             false /* accepted */,
             false /* paused */,
             false /* done */,
-            m_downloadType,
+            false /* isSavePageDownload */,
             item->GetLastReason()
         };
 
@@ -268,7 +262,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         acceptedByDefault,
         false, /* paused */
         false, /* done */
-        BrowserContextAdapterClient::SavePage,
+        true /* isSavePageDownload */,
         BrowserContextAdapterClient::NoReason
     };
 
@@ -308,7 +302,7 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *downloa
             true /* accepted */,
             download->IsPaused(),
             download->IsDone(),
-            m_downloadType,
+            download->IsSavePackageDownload(),
             download->GetLastReason()
         };
 
