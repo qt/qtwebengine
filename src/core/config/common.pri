@@ -12,7 +12,8 @@ gn_args += \
     v8_use_external_startup_data=false \
     treat_warnings_as_errors=false \
     enable_swiftshader=false \
-    use_custom_libcxx=false
+    use_custom_libcxx=false \
+    use_jumbo_build=true
 
 qtConfig(webengine-printing-and-pdf) {
     gn_args += enable_basic_printing=true enable_print_preview=true
