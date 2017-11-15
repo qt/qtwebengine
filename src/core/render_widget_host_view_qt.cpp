@@ -1067,6 +1067,10 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::InputMethodQuery:
         handleInputMethodQueryEvent(static_cast<QInputMethodQueryEvent*>(event));
         break;
+    case QEvent::HoverLeave:
+    case QEvent::Leave:
+        m_host->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(event));
+        break;
     default:
         return false;
     }

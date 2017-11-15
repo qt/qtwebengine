@@ -1019,12 +1019,14 @@ static ui::DomKey getDomKeyFromQKeyEvent(QKeyEvent *ev)
     }
 }
 
-static inline double currentTimeForEvent(const QInputEvent* event)
+static inline double currentTimeForEvent(const QEvent *event)
 {
     Q_ASSERT(event);
 
-    if (event->timestamp())
-        return static_cast<double>(event->timestamp()) / 1000;
+    if (const QInputEvent *inputEvent = static_cast<const QInputEvent *>(event)) {
+        if (inputEvent->timestamp())
+            return static_cast<double>(inputEvent->timestamp()) / 1000;
+    }
 
     static QElapsedTimer timer;
     if (!timer.isValid())
@@ -1207,6 +1209,16 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
     webKitEvent.movement_y = ev->pos().y() - ev->oldPos().y();
     webKitEvent.pointer_type = WebPointerProperties::PointerType::kMouse;
 
+    return webKitEvent;
+}
+
+WebMouseEvent WebEventFactory::toWebMouseEvent(QEvent *ev)
+{
+    Q_ASSERT(ev->type() == QEvent::Leave || ev->type() == QEvent::HoverLeave);
+
+    WebMouseEvent webKitEvent;
+    webKitEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.SetType(WebInputEvent::kMouseLeave);
     return webKitEvent;
 }
 
