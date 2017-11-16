@@ -218,14 +218,8 @@ public:
 
     void setupRenderPassNode(QSGTexture *layer, const QRect &rect, QSGNode *) override
     {
+        Q_ASSERT(layer);
         QSGInternalImageNode *imageNode = static_cast<QSGInternalImageNode*>(*m_nodeIterator++);
-        // In case of a missing render pass, set the target rects to be empty and return early.
-        // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes
-        if (!layer) {
-            imageNode->setTargetRect(QRect());
-            imageNode->setInnerTargetRect(QRect());
-            return;
-        }
         imageNode->setTargetRect(rect);
         imageNode->setInnerTargetRect(rect);
         imageNode->setTexture(layer);
@@ -320,23 +314,16 @@ public:
     void setupRenderPassNode(QSGTexture *layer, const QRect &rect,
                              QSGNode *layerChain) override
     {
+        Q_ASSERT(layer);
         // Only QSGInternalImageNode currently supports QSGLayer textures.
         QSGInternalImageNode *imageNode = m_apiDelegate->createImageNode();
-        layerChain->appendChildNode(imageNode);
-        m_sceneGraphNodes->append(imageNode);
-
-        // In case of a missing render pass, set the target rects to be empty and return early.
-        // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes
-        if (!layer) {
-            imageNode->setTargetRect(QRect());
-            imageNode->setInnerTargetRect(QRect());
-            return;
-        }
-
         imageNode->setTargetRect(rect);
         imageNode->setInnerTargetRect(rect);
         imageNode->setTexture(layer);
         imageNode->update();
+
+        layerChain->appendChildNode(imageNode);
+        m_sceneGraphNodes->append(imageNode);
     }
 
     void setupTextureContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
@@ -1110,7 +1097,8 @@ void DelegatedFrameNode::handleQuad(
         QSGTexture *layer =
             findRenderPassLayer(renderPassQuad->render_pass_id, m_sgObjects.renderPassLayers).data();
 
-        nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), currentLayerChain);
+        if (layer)
+            nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), currentLayerChain);
         break;
     }
     case cc::DrawQuad::TEXTURE_CONTENT: {
