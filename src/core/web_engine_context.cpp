@@ -117,7 +117,11 @@ void destroyContext()
     // Before destroying MessageLoop via destroying BrowserMainRunner destructor
     // WebEngineContext's pointer is used.
     sContext->destroy();
-    sContext = 0;
+#if !defined(NDEBUG)
+    if (!sContext->HasOneRef())
+        qWarning("WebEngineContext leaked on exit, likely due to leaked WebEngine View or Page");
+#endif
+    sContext = nullptr;
     s_destroyed = true;
 }
 
@@ -193,19 +197,26 @@ void WebEngineContext::destroy()
 {
     if (m_devtoolsServer)
         m_devtoolsServer->stop();
-    delete m_globalQObject;
-    m_globalQObject = 0;
     base::MessagePump::Delegate *delegate = m_runLoop->loop_;
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
+
+    if (m_defaultBrowserContext)
+        m_defaultBrowserContext->shutdown();
+    // Delete the global object and thus custom profiles
+    delete m_globalQObject;
+    m_globalQObject = nullptr;
+    // Handle any events posted by browser-context shutdown.
+    while (delegate->DoWork()) { }
+
     GLContextHelper::destroy();
-    m_devtoolsServer.reset(0);
+    m_devtoolsServer.reset();
     m_runLoop->AfterRun();
 
     // Force to destroy RenderProcessHostImpl by destroying BrowserMainRunner.
     // RenderProcessHostImpl should be destroyed before WebEngineContext since
     // default BrowserContext might be used by the RenderprocessHostImpl's destructor.
-    m_browserRunner.reset(0);
+    m_browserRunner.reset();
 
     // Drop the false reference.
     sContext->Release();
