@@ -89,7 +89,7 @@
     \l{https://chromium.googlesource.com/chromium/src/+/master/docs/chromium_browser_vs_google_chrome.md}{overview}
     that is part of the documentation in the \l {Chromium Project} upstream source tree.
 
-    This version of Qt WebEngine is based on Chromium version 56.0.2924.122, with
+    This version of Qt WebEngine is based on Chromium version 61.0.3163.99, with
     additional security fixes from newer versions.
 
     \section2 Qt WebEngine Process
