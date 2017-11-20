@@ -112,6 +112,20 @@
     \note Qt WebEngine cannot be built for the 32-bit mode of \macos (using the
     \c macx-clang-32 \c mkspec).
 
+    \section1 Using Earlier Qt Versions to Build Qt WebEngine
+
+    Building Qt WebEngine with earlier Qt versions (down to the last LTS
+    version) is supported. It means that Qt WebEngine 5.11 can be built with
+    Qt 5.9.x, Qt 5.10.x, and Qt 5.11.
+
+    To use an earlier Qt version to build Qt Webengine:
+
+    \list 1
+        \li Download the qtwebengine sources.
+        \li From the earlier Qt version, run
+            \c {qmake && make (&& make install)}.
+    \endlist
+
     \section1 Mac App Store Compatibility
 
     Applications using Qt WebEngine are not compatible with the Mac App Store, because:
