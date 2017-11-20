@@ -257,7 +257,7 @@ QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, 
     if (!title.isEmpty())
         QQmlProperty(menu, QStringLiteral("title")).write(title);
     if (!pos.isNull())
-        QQmlProperty(menu, QStringLiteral("pos")).write(pos);
+        menu->setProperty("pos", pos);
 
     menu->setParent(parentMenu);
 
@@ -496,9 +496,38 @@ void UIDelegatesManager::showFilePicker(QSharedPointer<FilePickerController> con
     QMetaObject::invokeMethod(filePicker, "open");
 }
 
+class TemporaryCursorMove
+{
+public:
+    TemporaryCursorMove(const QQuickItem *item, const QPoint &pos)
+    {
+        if (pos.isNull() || !item->contains(pos))
+            return;
+        const QPoint oldPos = QCursor::pos();
+        const QPoint globalPos = item->mapToGlobal(QPointF(pos)).toPoint();
+        if (oldPos == globalPos)
+            return;
+        m_oldCursorPos = oldPos;
+        QCursor::setPos(globalPos);
+    }
+
+    ~TemporaryCursorMove()
+    {
+        if (!m_oldCursorPos.isNull())
+            QCursor::setPos(m_oldCursorPos);
+    }
+
+private:
+    QPoint m_oldCursorPos;
+};
+
 void UIDelegatesManager::showMenu(QObject *menu)
 {
-     QMetaObject::invokeMethod(menu, "popup");
+    // QtQuick.Controls.Menu.popup() always shows the menu under the mouse cursor, i.e. the menu's
+    // position we set above is ignored. Work around the problem by moving the mouse cursor
+    // temporarily to the right position.
+    TemporaryCursorMove tcm(m_view, menu->property("pos").toPoint());
+    QMetaObject::invokeMethod(menu, "popup");
 }
 
 void UIDelegatesManager::showMessageBubble(const QRect &anchor, const QString &mainText, const QString &subText)

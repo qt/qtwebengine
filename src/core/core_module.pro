@@ -115,7 +115,7 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         resources.path = $$[QT_INSTALL_DATA]/resources
         INSTALLS += locales resources
 
-        !qtConfig(system-icu) {
+        !qtConfig(webengine-system-icu) {
             icu.CONFIG += no_check_exist
             icu.path = $$[QT_INSTALL_DATA]/resources
             INSTALLS += icu
@@ -127,7 +127,7 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         # Copy essential files to the qtbase build directory for non-prefix builds
         #
 
-        !qtConfig(system-icu) {
+        !qtConfig(webengine-system-icu) {
             COPIES += icu
         }
 

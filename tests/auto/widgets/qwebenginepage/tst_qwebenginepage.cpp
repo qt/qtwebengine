@@ -193,6 +193,8 @@ private Q_SLOTS:
     void setUrlWithPendingLoads();
     void setUrlToEmpty();
     void setUrlToInvalid();
+    void setUrlToBadDomain();
+    void setUrlToBadPort();
     void setUrlHistory();
     void setUrlUsingStateObject();
     void setUrlThenLoads_data();
@@ -200,6 +202,7 @@ private Q_SLOTS:
     void loadFinishedAfterNotFoundError();
     void loadInSignalHandlers_data();
     void loadInSignalHandlers();
+    void loadFromQrc();
 
     void restoreHistory();
     void toPlainTextLoadFinishedRace_data();
@@ -2655,18 +2658,19 @@ Q_OBJECT
 public:
     GetUserMediaTestPage()
         : m_gotRequest(false)
+        , m_loadSucceeded(false)
     {
         connect(this, &QWebEnginePage::featurePermissionRequested, this, &GetUserMediaTestPage::onFeaturePermissionRequested);
-
+        connect(this, &QWebEnginePage::loadFinished, [this](bool success){
+            m_loadSucceeded = success;
+        });
         // We need to load content from a resource in order for the securityOrigin to be valid.
-        QSignalSpy loadSpy(this, SIGNAL(loadFinished(bool)));
         load(QUrl("qrc:///resources/content.html"));
-        QTRY_COMPARE(loadSpy.count(), 1);
     }
 
     void jsGetUserMedia(const QString & constraints)
     {
-        runJavaScript(
+        evaluateJavaScriptSync(this,
             QStringLiteral(
                 "var promiseFulfilled = false;"
                 "var promiseRejected = false;"
@@ -2707,6 +2711,11 @@ public:
         return m_gotRequest;
     }
 
+    bool loadSucceeded() const
+    {
+        return m_loadSucceeded;
+    }
+
 private Q_SLOTS:
     void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature)
     {
@@ -2717,6 +2726,7 @@ private Q_SLOTS:
 
 private:
     bool m_gotRequest;
+    bool m_loadSucceeded;
     QWebEnginePage::Feature m_requestedFeature;
     QUrl m_requestSecurityOrigin;
 
@@ -2747,6 +2757,7 @@ void tst_QWebEnginePage::getUserMediaRequest()
     QFETCH(QWebEnginePage::Feature, feature);
 
     GetUserMediaTestPage page;
+    QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
 
     // 1. Rejecting request on C++ side should reject promise on JS side.
@@ -2775,6 +2786,7 @@ void tst_QWebEnginePage::getUserMediaRequest()
 void tst_QWebEnginePage::getUserMediaRequestDesktopAudio()
 {
     GetUserMediaTestPage page;
+    QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
 
     // Audio-only desktop capture is not supported. JS Promise should be
@@ -2792,6 +2804,7 @@ void tst_QWebEnginePage::getUserMediaRequestDesktopAudio()
 void tst_QWebEnginePage::getUserMediaRequestSettingDisabled()
 {
     GetUserMediaTestPage page;
+    QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, false);
 
     // With the setting disabled, the JS Promise should be rejected without
@@ -3180,21 +3193,19 @@ void tst_QWebEnginePage::progressSignal()
 
 void tst_QWebEnginePage::urlChange()
 {
-    QSignalSpy urlSpy(m_page, SIGNAL(urlChanged(QUrl)));
+    QSignalSpy urlSpy(m_page, &QWebEnginePage::urlChanged);
 
     QUrl dataUrl("data:text/html,<h1>Test");
     m_view->setUrl(dataUrl);
 
-    QVERIFY(urlSpy.wait());
-
-    QCOMPARE(urlSpy.size(), 1);
+    QTRY_COMPARE(urlSpy.size(), 1);
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), dataUrl);
 
     QUrl dataUrl2("data:text/html,<html><head><title>title</title></head><body><h1>Test</body></html>");
     m_view->setUrl(dataUrl2);
 
-    QVERIFY(urlSpy.wait());
-
-    QCOMPARE(urlSpy.size(), 2);
+    QTRY_COMPARE(urlSpy.size(), 1);
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), dataUrl2);
 }
 
 class FakeReply : public QNetworkReply {
@@ -3305,7 +3316,7 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
 
     page.load(second);
     QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 12000);
-    QCOMPARE(page.url(), first);
+    QCOMPARE(page.url(), second);
     QCOMPARE(page.requestedUrl(), second);
     QVERIFY(!spy.at(1).first().toBool());
 }
@@ -3819,6 +3830,90 @@ void tst_QWebEnginePage::setUrlToInvalid()
     QCOMPARE(baseUrlSync(&page), aboutBlank);
 }
 
+void tst_QWebEnginePage::setUrlToBadDomain()
+{
+    // Failing to load a URL should still emit a urlChanged signal.
+    //
+    // This test is based on the scenario in QTBUG-48995 where the second setUrl
+    // call first triggers an unexpected additional urlChanged signal with the
+    // original url before the expected signal with the new url.
+
+    // RFC 2606 says the .invalid TLD should be invalid.
+    const QUrl url1 = QStringLiteral("http://this.is.definitely.invalid/");
+    const QUrl url2 = QStringLiteral("http://this.is.also.invalid/");
+    QWebEnginePage page;
+    QSignalSpy urlSpy(&page, &QWebEnginePage::urlChanged);
+    QSignalSpy titleSpy(&page, &QWebEnginePage::titleChanged);
+    QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
+
+    page.setUrl(url1);
+
+    QTRY_COMPARE(urlSpy.count(), 1);
+    QTRY_COMPARE(titleSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url1);
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url1.host());
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
+
+    QCOMPARE(page.url(), url1);
+    QCOMPARE(page.title(), url1.host());
+
+    page.setUrl(url2);
+
+    QTRY_COMPARE(urlSpy.count(), 1);
+    QTRY_COMPARE(titleSpy.count(), 1);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url2);
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url2.host());
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
+
+    QCOMPARE(page.url(), url2);
+    QCOMPARE(page.title(), url2.host());
+}
+
+void tst_QWebEnginePage::setUrlToBadPort()
+{
+    // Failing to load a URL should still emit a urlChanged signal.
+
+    // Ports 244-245 are hopefully unbound (marked unassigned in RFC1700).
+    const QUrl url1 = QStringLiteral("http://127.0.0.1:244/");
+    const QUrl url2 = QStringLiteral("http://127.0.0.1:245/");
+    QWebEnginePage page;
+    QSignalSpy urlSpy(&page, &QWebEnginePage::urlChanged);
+    QSignalSpy titleSpy(&page, &QWebEnginePage::titleChanged);
+    QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
+
+    page.setUrl(url1);
+
+    QTRY_COMPARE(urlSpy.count(), 1);
+    QTRY_COMPARE(titleSpy.count(), 2);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url1);
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url1.authority());
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url1.host());
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
+
+    QCOMPARE(page.url(), url1);
+    QCOMPARE(page.title(), url1.host());
+
+    page.setUrl(url2);
+
+    QTRY_COMPARE(urlSpy.count(), 1);
+    QTRY_COMPARE(titleSpy.count(), 2);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url2);
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url2.authority());
+    QCOMPARE(titleSpy.takeFirst().value(0).toString(), url2.host());
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
+
+    QCOMPARE(page.url(), url2);
+    QCOMPARE(page.title(), url2.host());
+}
+
 static QStringList collectHistoryUrls(QWebEngineHistory *history)
 {
     QStringList urls;
@@ -3979,9 +4074,8 @@ void tst_QWebEnginePage::setUrlThenLoads()
     const QUrl urlToLoad1("qrc:/resources/test2.html");
     const QUrl urlToLoad2("qrc:/resources/test1.html");
 
-    // Just after first load. URL didn't changed yet.
     m_page->load(urlToLoad1);
-    QCOMPARE(m_page->url(), url);
+    QCOMPARE(m_page->url(), urlToLoad1);
     QCOMPARE(m_page->requestedUrl(), urlToLoad1);
     // baseUrlSync spins an event loop and this sometimes return the next result.
     // QCOMPARE(baseUrlSync(m_page), baseUrl);
@@ -3995,9 +4089,8 @@ void tst_QWebEnginePage::setUrlThenLoads()
     QCOMPARE(m_page->requestedUrl(), urlToLoad1);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
 
-    // Just after second load. URL didn't changed yet.
     m_page->load(urlToLoad2);
-    QCOMPARE(m_page->url(), urlToLoad1);
+    QCOMPARE(m_page->url(), urlToLoad2);
     QCOMPARE(m_page->requestedUrl(), urlToLoad2);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
     QTRY_COMPARE(startedSpy.count(), 3);
@@ -4118,6 +4211,41 @@ void tst_QWebEnginePage::loadInSignalHandlers()
     QSignalSpy spy(&setter, &URLSetter::finished);
     QVERIFY(spy.wait());
     QCOMPARE(m_page->url(), urlForSetter);
+}
+
+void tst_QWebEnginePage::loadFromQrc()
+{
+    QWebEnginePage page;
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+
+    // Standard case.
+    page.load(QStringLiteral("qrc:///resources/foo.txt"));
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().value(0).toBool(), true);
+    QCOMPARE(toPlainTextSync(&page), QStringLiteral("foo\n"));
+
+    // Query and fragment parts are ignored.
+    page.load(QStringLiteral("qrc:///resources/bar.txt?foo=1#bar"));
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().value(0).toBool(), true);
+    QCOMPARE(toPlainTextSync(&page), QStringLiteral("bar\n"));
+
+    // Literal spaces are OK.
+    page.load(QStringLiteral("qrc:///resources/path with spaces.txt"));
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().value(0).toBool(), true);
+    QCOMPARE(toPlainTextSync(&page), QStringLiteral("contents with spaces\n"));
+
+    // Escaped spaces are OK too.
+    page.load(QStringLiteral("qrc:///resources/path%20with%20spaces.txt"));
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().value(0).toBool(), true);
+    QCOMPARE(toPlainTextSync(&page), QStringLiteral("contents with spaces\n"));
+
+    // Resource not found, loading fails.
+    page.load(QStringLiteral("qrc:///nope"));
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().value(0).toBool(), false);
 }
 
 void tst_QWebEnginePage::restoreHistory()

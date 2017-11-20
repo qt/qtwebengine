@@ -44,17 +44,17 @@ HEADERS = \
         api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h
 
-qtConfig(ui-delegates) {
+qtConfig(webengine-ui-delegates) {
     SOURCES += ui/messagebubblewidget.cpp
     HEADERS += ui/messagebubblewidget_p.h
     DEFINES += QT_UI_DELEGATES
 }
 
-qtConfig(spellchecker) {
+qtConfig(webengine-spellchecker) {
     DEFINES += ENABLE_SPELLCHECK
 }
 
-qtConfig(printing-and-pdf) {
+qtConfig(webengine-printing-and-pdf) {
     DEFINES += ENABLE_PRINTING
     DEFINES += ENABLE_PDF
     QT += printsupport

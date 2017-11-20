@@ -97,6 +97,9 @@ public:
     void setLastSearchedString(const QString &s) { m_lastSearchedString = s; }
     int lastReceivedFindReply() const { return m_lastReceivedFindReply; }
 
+    QUrl url() const { return m_url; }
+    QString title() const { return m_title; }
+
     // WebContentsDelegate overrides
     content::WebContents *OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params) override;
     void NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags) override;
@@ -119,7 +122,6 @@ public:
     bool IsPopupOrPanel(const content::WebContents *source) const override;
     void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
     void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) override;
-    bool ShouldPreserveAbortedURLs(content::WebContents *source) override;
     void ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text) override;
     void HideValidationMessage(content::WebContents *web_contents) override;
     void MoveValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view) override;
@@ -165,6 +167,9 @@ private:
     QSharedPointer<FilePickerController> m_filePickerController;
     QUrl m_initialTargetUrl;
     int m_lastLoadProgress;
+
+    QUrl m_url;
+    QString m_title;
 };
 
 } // namespace QtWebEngineCore

@@ -316,6 +316,11 @@ void RenderWidgetHostViewQtDelegateQuick::hoverMoveEvent(QHoverEvent *event)
     m_client->forwardEvent(event);
 }
 
+void RenderWidgetHostViewQtDelegateQuick::hoverLeaveEvent(QHoverEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
 QVariant RenderWidgetHostViewQtDelegateQuick::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     return m_client->inputMethodQuery(query);

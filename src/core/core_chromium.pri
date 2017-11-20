@@ -28,7 +28,7 @@ RCC_DIR = $$OUT_PWD/$$getConfigDir()/.rcc
 
 # Assume that we want mobile touch and low-end hardware behaviors
 # whenever we are cross compiling.
-qtConfig(embedded): DEFINES += QTWEBENGINE_EMBEDDED_SWITCHES
+qtConfig(webengine-embedded-build): DEFINES += QTWEBENGINE_EMBEDDED_SWITCHES
 
 qtConfig(egl): CONFIG += egl
 
@@ -186,7 +186,7 @@ HEADERS = \
         web_engine_settings.h \
         web_event_factory.h
 
-qtConfig(pepper-plugins) {
+qtConfig(webengine-pepper-plugins) {
 
     SOURCES += \
         renderer_host/pepper/pepper_flash_browser_host_qt.cpp \
@@ -203,7 +203,7 @@ qtConfig(pepper-plugins) {
         renderer/pepper/pepper_renderer_host_factory_qt.h
 }
 
-qtConfig(printing-and-pdf) {
+qtConfig(webengine-printing-and-pdf) {
 
     SOURCES += \
         printing_message_filter_qt.cpp \

@@ -32,8 +32,8 @@ gn_args += \
     toolkit_views=false \
     use_external_popup_menu=false
 
-qtConfig(spellchecker) {
-    qtConfig(native-spellchecker): gn_args += use_browser_spellchecker=true
+qtConfig(webengine-spellchecker) {
+    qtConfig(webengine-native-spellchecker): gn_args += use_browser_spellchecker=true
     else: gn_args += use_browser_spellchecker=false
 } else {
     gn_args += use_browser_spellchecker=false

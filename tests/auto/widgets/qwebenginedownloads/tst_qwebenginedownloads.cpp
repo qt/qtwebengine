@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QCoreApplication>
+#include <QSignalSpy>
 #include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTest>
@@ -37,6 +38,18 @@
 #include <httpserver.h>
 #include <waitforsignal.h>
 
+static std::unique_ptr<HttpReqRep> waitForFaviconRequest(HttpServer *server)
+{
+    auto rr = waitForRequest(server);
+    if (!rr ||
+        rr->requestMethod() != QByteArrayLiteral("GET") ||
+        rr->requestPath() != QByteArrayLiteral("/favicon.ico"))
+        return nullptr;
+    rr->setResponseStatus(404);
+    rr->sendResponse();
+    return std::move(rr);
+}
+
 class tst_QWebEngineDownloads : public QObject
 {
     Q_OBJECT
@@ -46,6 +59,7 @@ private Q_SLOTS:
     void downloadTwoLinks();
     void downloadPage_data();
     void downloadPage();
+    void downloadViaSetUrl();
 };
 
 enum DownloadTestUserAction {
@@ -317,12 +331,8 @@ void tst_QWebEngineDownloads::downloadLink()
     QVERIFY(loadOk);
 
     // 1.1. Ignore favicon request
-    auto favIconRR = waitForRequest(&server);
+    auto favIconRR = waitForFaviconRequest(&server);
     QVERIFY(favIconRR);
-    QCOMPARE(favIconRR->requestMethod(), QByteArrayLiteral("GET"));
-    QCOMPARE(favIconRR->requestPath(), QByteArrayLiteral("/favicon.ico"));
-    favIconRR->setResponseStatus(404);
-    favIconRR->sendResponse();
 
     // 2. Simulate user action
     //
@@ -439,12 +449,8 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
     QVERIFY(waitForSignal(&page, &QWebEnginePage::loadFinished, [&](bool ok){ loadOk = ok; }));
     QVERIFY(loadOk);
 
-    auto favIconRR = waitForRequest(&server);
+    auto favIconRR = waitForFaviconRequest(&server);
     QVERIFY(favIconRR);
-    QCOMPARE(favIconRR->requestMethod(), QByteArrayLiteral("GET"));
-    QCOMPARE(favIconRR->requestPath(), QByteArrayLiteral("/favicon.ico"));
-    favIconRR->setResponseStatus(404);
-    favIconRR->sendResponse();
 
     QTRY_VERIFY(view.focusWidget());
     QWidget *renderWidget = view.focusWidget();
@@ -541,12 +547,8 @@ void tst_QWebEngineDownloads::downloadPage()
     QVERIFY(waitForSignal(&page, &QWebEnginePage::loadFinished, [&](bool ok){ loadOk = ok; }));
     QVERIFY(loadOk);
 
-    auto favIconRR = waitForRequest(&server);
+    auto favIconRR = waitForFaviconRequest(&server);
     QVERIFY(favIconRR);
-    QCOMPARE(favIconRR->requestMethod(), QByteArrayLiteral("GET"));
-    QCOMPARE(favIconRR->requestPath(), QByteArrayLiteral("/favicon.ico"));
-    favIconRR->setResponseStatus(404);
-    favIconRR->sendResponse();
 
     QTemporaryDir tmpDir;
     QVERIFY(tmpDir.isValid());
@@ -591,6 +593,71 @@ void tst_QWebEngineDownloads::downloadPage()
 
     QFile file(downloadPath);
     QVERIFY(file.exists());
+}
+
+void tst_QWebEngineDownloads::downloadViaSetUrl()
+{
+    // Reproduce the scenario described in QTBUG-63388 by triggering downloads
+    // of the same file multiple times via QWebEnginePage::setUrl
+
+    HttpServer server;
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
+    QSignalSpy urlSpy(&page, &QWebEnginePage::urlChanged);
+    const QUrl indexUrl = server.url();
+    const QUrl fileUrl = server.url(QByteArrayLiteral("/file"));
+
+    // Set up the test scenario by trying to load some unrelated HTML.
+
+    page.setUrl(indexUrl);
+
+    auto indexRR = waitForRequest(&server);
+    QVERIFY(indexRR);
+    QCOMPARE(indexRR->requestMethod(), QByteArrayLiteral("GET"));
+    QCOMPARE(indexRR->requestPath(), QByteArrayLiteral("/"));
+    indexRR->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/html"));
+    indexRR->setResponseBody(QByteArrayLiteral("<html><body>Hello</body></html>"));
+    indexRR->sendResponse();
+
+    auto indexFavRR = waitForFaviconRequest(&server);
+    QVERIFY(indexFavRR);
+
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(urlSpy.count(), 1);
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), indexUrl);
+
+    // Download files via setUrl. With QTBUG-63388 after the first iteration the
+    // downloads would be triggered for indexUrl and not fileUrl.
+
+    QVector<QUrl> downloadUrls;
+    QObject::connect(&profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+        downloadUrls.append(item->url());
+    });
+
+    for (int i = 0; i != 3; ++i) {
+        page.setUrl(fileUrl);
+        QCOMPARE(page.url(), fileUrl);
+
+        auto fileRR = waitForRequest(&server);
+        QVERIFY(fileRR);
+        fileRR->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
+        fileRR->setResponseBody(QByteArrayLiteral("redacted"));
+        fileRR->sendResponse();
+
+        auto fileFavRR = waitForFaviconRequest(&server);
+        QVERIFY(fileFavRR);
+
+        QTRY_COMPARE(loadSpy.count(), 1);
+        QTRY_COMPARE(urlSpy.count(), 2);
+        QTRY_COMPARE(downloadUrls.count(), 1);
+        QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
+        QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), fileUrl);
+        QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), indexUrl);
+        QCOMPARE(downloadUrls.takeFirst(), fileUrl);
+        QCOMPARE(page.url(), indexUrl);
+    }
 }
 
 QTEST_MAIN(tst_QWebEngineDownloads)

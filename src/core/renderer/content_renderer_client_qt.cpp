@@ -262,11 +262,11 @@ public:
             return true;
 
         case media::EmeInitDataType::CENC:
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
             return true;
 #else
             return false;
-#endif  // defined(USE_PROPRIETARY_CODECS)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
         case media::EmeInitDataType::UNKNOWN:
             return false;
@@ -277,7 +277,7 @@ public:
 
     media::SupportedCodecs GetSupportedCodecs() const override
     {
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
         return media::EME_CODEC_MP4_ALL | media::EME_CODEC_WEBM_ALL;
 #else
         return media::EME_CODEC_WEBM_ALL;
@@ -390,10 +390,10 @@ static void AddPepperBasedWidevine(std::vector<std::unique_ptr<media::KeySystemP
     supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
     supported_codecs |= media::EME_CODEC_WEBM_VP8;
     supported_codecs |= media::EME_CODEC_WEBM_VP9;
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     supported_codecs |= media::EME_CODEC_MP4_AVC1;
     supported_codecs |= media::EME_CODEC_MP4_AAC;
-#endif  // defined(USE_PROPRIETARY_CODECS)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
     using Robustness = cdm::WidevineKeySystemProperties::Robustness;
     concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
