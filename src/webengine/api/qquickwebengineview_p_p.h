@@ -52,6 +52,7 @@
 //
 
 #include "qquickwebengineview_p.h"
+#include "render_view_context_menu_qt.h"
 #include "web_contents_adapter_client.h"
 
 #include <QPointer>
@@ -215,6 +216,24 @@ private:
     QQuickWebEngineView *engineView() const { return static_cast<QQuickWebEngineView*>(object()); }
 };
 #endif // QT_NO_ACCESSIBILITY
+
+class QQuickContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt
+{
+public:
+    QQuickContextMenuBuilder(const QtWebEngineCore::WebEngineContextMenuData &data, QQuickWebEngineView *view, QObject *menu);
+    void appendExtraItems(QQmlEngine *engine);
+
+private:
+    virtual bool hasInspector() override;
+    virtual bool isFullScreenMode() override;
+
+    virtual void addMenuItem(ContextMenuItem menuItem) override;
+    virtual bool isMenuItemEnabled(ContextMenuItem menuItem) override;
+
+    QQuickWebEngineView *m_view;
+    QObject *m_menu;
+};
+
 QT_END_NAMESPACE
 
 #endif // QQUICKWEBENGINEVIEW_P_P_H

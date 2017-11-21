@@ -184,16 +184,18 @@
 
     \section2 Adding Context Menu Items
 
-    We add menu items to the context menu, so that users can right-click a link
-    to have it opened in the same tab, a new window, or a new tab. We override
-    QWebEngineView::contextMenuEvent and use
+    We add a menu item to the context menu, so that users can right-click to have an inspector
+    opened in a new window. We override QWebEngineView::contextMenuEvent and use
     QWebEnginePage::createStandardContextMenu to create a default QMenu with a
     default list of QWebEnginePage::WebAction actions.
 
-    The default name for QWebEnginePage::OpenLinkInThisWindow action is
-    \uicontrol Follow. For clarity, we rename it
-    \uicontrol {Open Link in This Tab}. Also, we add the actions for opening
-    links in a separate window or in a new tab:
+    The default name for QWebEnginePage::InspectElement action is
+    \uicontrol Inspect. For clarity, we rename it to \uicontrol {Open Inspector In New Window} when
+    there is no Inspector present yet,
+    and \uicontrol {Inspect Element} when it's already created.
+
+    We also check if the QWebEnginePage::ViewSource action is in the menu, because if it's not
+    we have to add a separator as well.
 
     \quotefromfile webenginewidgets/simplebrowser/webview.cpp
     \skipto WebView::contextMenuEvent(
