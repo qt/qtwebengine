@@ -81,7 +81,9 @@ Rectangle {
                         "</body>" +
                         "</html>");
             verify(webEngineView.waitForLoadSucceeded());
-            verify(!webEngineView.getInnerText("testDiv"));
+            // Make sure the testDiv text is empty.
+            webEngineView.runJavaScript("document.getElementById('testDiv').innerText = ''");
+            tryVerify(function() { return !webEngineView.getInnerText("testDiv") });
 
             for (var i = 90; i < 110; ++i)
                 mouseMove(root, 50, i);

@@ -2469,7 +2469,9 @@ void tst_QWebEngineView::mouseLeave()
                   "</body>"
                   "</html>");
     QVERIFY(loadFinishedSpy.wait());
-    QVERIFY(innerText().isEmpty());
+    // Make sure the testDiv text is empty.
+    evaluateJavaScriptSync(view->page(), "document.getElementById('testDiv').innerText = ''");
+    QTRY_VERIFY(innerText().isEmpty());
 
     QTest::mouseMove(containerWidget->windowHandle(), QPoint(50, 150));
     QTRY_COMPARE(innerText(), QStringLiteral("Mouse IN"));
