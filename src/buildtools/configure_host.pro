@@ -23,6 +23,8 @@ contains(GN_TARGET_CPU, "arm")|contains(GN_TARGET_CPU, "mipsel")|contains(GN_TAR
     else: contains(GN_V8_HOST_CPU, mips64el): GN_V8_HOST_CPU = "mipsel"
 }
 
+GN_HOST_EXTRA_CPPFLAGS = $$(GN_HOST_TOOLCHAIN_EXTRA_CPPFLAGS)
+
 # We always use the gcc_toolchain, because clang_toolchain is just
 # a broken wrapper around it for Google's custom clang binaries.
 GN_CONTENTS = \
@@ -34,6 +36,7 @@ GN_CONTENTS = \
 "  ld = \"$$which($$QMAKE_LINK)\" " \
 "  ar = \"$$which(ar)\" " \
 "  nm = \"$$which(nm)\" " \
+"  extra_cppflags = \"$$GN_HOST_EXTRA_CPPFLAGS\" " \
 "  toolchain_args = { " \
 "    current_os = \"$$GN_OS\" " \
 "    current_cpu = \"$$GN_HOST_CPU\" " \

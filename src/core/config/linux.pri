@@ -112,12 +112,14 @@ host_build {
         # Strip '>2 /dev/null' from $$pkgConfigExecutable()
         PKGCONFIG = $$first($$list($$pkgConfigExecutable()))
         gn_args += pkg_config=\"$$PKGCONFIG\"
-        gn_args += host_pkg_config=\"pkg-config\"
+        PKG_CONFIG_HOST = $$(GN_PKG_CONFIG_HOST)
+        isEmpty(PKG_CONFIG_HOST): PKG_CONFIG_HOST = pkg-config
+        gn_args += host_pkg_config=\"$$PKG_CONFIG_HOST\"
     }
 
     qtConfig(webengine-system-zlib): qtConfig(webengine-system-minizip) {
         gn_args += use_system_zlib=true use_system_minizip=true
-        qtConfig(printing-and-pdf): gn_args += pdfium_use_system_zlib=true
+        qtConfig(webengine-printing-and-pdf): gn_args += pdfium_use_system_zlib=true
     }
     qtConfig(webengine-system-png): gn_args += use_system_libpng=true
     qtConfig(system-jpeg): gn_args += use_system_libjpeg=true
