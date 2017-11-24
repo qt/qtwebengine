@@ -529,8 +529,8 @@
         },
         "webengine-system-lcms2" : {
             "label": "lcms2",
-            "autoDetect": "libs.webengine-lcms2",
-            "condition": "config.unix && features.printing-and-pdf",
+            "autoDetect": "features.webengine-printing-and-pdf",
+            "condition": "config.unix && libs.webengine-lcms2",
             "output": [ "privateFeature" ]
         },
         "webengine-sanitizer" : {
