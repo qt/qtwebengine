@@ -77,7 +77,7 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
 {
     PrefServiceFactory factory;
     factory.set_user_prefs(m_prefStore);
-    scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
+    PrefRegistrySimple *registry = new PrefRegistrySimple();
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     // Initial spellcheck settings
@@ -87,7 +87,7 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     registry->RegisterBooleanPref(spellcheck::prefs::kEnableSpellcheck, false);
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
 #endif //ENABLE_SPELLCHECK
-    m_prefService = factory.Create(std::move(registry.get()));
+    m_prefService = factory.Create(registry);
     user_prefs::UserPrefs::Set(this, m_prefService.get());
 }
 
