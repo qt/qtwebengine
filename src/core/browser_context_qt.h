@@ -116,7 +116,6 @@ private:
     std::unique_ptr<PermissionManagerQt> permissionManager;
     std::unique_ptr<SSLHostStateDelegateQt> sslHostStateDelegate;
     BrowserContextAdapter *m_adapter;
-    scoped_refptr<InMemoryPrefStore> m_prefStore;
     std::unique_ptr<PrefService> m_prefService;
     friend class BrowserContextAdapter;
 

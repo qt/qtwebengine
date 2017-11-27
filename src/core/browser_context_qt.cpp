@@ -72,11 +72,10 @@
 namespace QtWebEngineCore {
 
 BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
-    : m_adapter(adapter),
-      m_prefStore(new InMemoryPrefStore())
+    : m_adapter(adapter)
 {
     PrefServiceFactory factory;
-    factory.set_user_prefs(m_prefStore);
+    factory.set_user_prefs(new InMemoryPrefStore);
     PrefRegistrySimple *registry = new PrefRegistrySimple();
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
