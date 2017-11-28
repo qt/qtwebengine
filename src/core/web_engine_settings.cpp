@@ -325,9 +325,10 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->touch_enabled = isTouchEventsAPIEnabled();
     prefs->device_supports_touch = isTouchScreenAvailable();
     if (prefs->viewport_enabled) {
-        // We should enable viewport and viewport-meta together, but since 5.7 we
-        // no longer have a command-line flag for viewport-meta.
+        // We need to enable the viewport options together as it doesn't really work
+        // to enable them separately. With viewport-enabled we match Android defaults.
         prefs->viewport_meta_enabled = true;
+        prefs->shrinks_viewport_contents_to_fit = true;
     }
 
     // Attributes mapping.
