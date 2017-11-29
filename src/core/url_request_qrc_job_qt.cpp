@@ -112,7 +112,7 @@ int URLRequestQrcJobQt::ReadRawData(IOBuffer *buf, int bufSize)
 void URLRequestQrcJobQt::startGetHead()
 {
     // Get qrc file path.
-    QString qrcFilePath = ':' + toQt(request_->url()).path(QUrl::RemovePath | QUrl::RemoveQuery);
+    QString qrcFilePath = ':' + toQt(request_->url()).path();
     m_file.setFileName(qrcFilePath);
     QFileInfo qrcFileInfo(m_file);
     // Get qrc file mime type.

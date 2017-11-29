@@ -184,6 +184,7 @@ public:
     void viewSource();
     bool canViewSource();
     void focusIfNecessary();
+    bool isFindTextInProgress() const;
 
 
 private:

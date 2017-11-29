@@ -20,20 +20,20 @@ SUBDIRS += buildtools \
            plugins
 
 
-qtConfig(spellchecker):!qtConfig(native-spellchecker):!cross_compile {
+qtConfig(webengine-spellchecker):!qtConfig(webengine-native-spellchecker):!cross_compile {
     SUBDIRS += qwebengine_convert_dict
     qwebengine_convert_dict.subdir = tools/qwebengine_convert_dict
     qwebengine_convert_dict.depends = core
 }
 
-qtConfig(testsupport) {
+qtConfig(webengine-testsupport) {
     webengine_testsupport_plugin.subdir = webengine/plugin/testsupport
     webengine_testsupport_plugin.target = sub-webengine-testsupport-plugin
     webengine_testsupport_plugin.depends = webengine
     SUBDIRS += webengine_testsupport_plugin
 }
 
-qtConfig(ui-delegates) {
+qtConfig(webengine-ui-delegates) {
     SUBDIRS += webengine/ui \
                webengine/ui2
 }

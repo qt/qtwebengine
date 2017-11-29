@@ -13,3 +13,6 @@ osx
 
 [WebEngineViewSingleFileUpload::test_acceptSingleFileSelection]
 *
+
+[WebViewFindText::test_findTextInterruptedByLoad]
+*

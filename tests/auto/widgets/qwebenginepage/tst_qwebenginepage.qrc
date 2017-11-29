@@ -19,5 +19,8 @@
     <file>resources/test2.html</file>
     <file>resources/testiframe.html</file>
     <file>resources/testiframe2.html</file>
+    <file>resources/foo.txt</file>
+    <file>resources/bar.txt</file>
+    <file>resources/path with spaces.txt</file>
 </qresource>
 </RCC>

@@ -19,7 +19,7 @@ QT += testlib network quick webengine
 # This define is used by some tests to look up resources in the source tree
 DEFINES += TESTS_SOURCE_DIR=\\\"$$PWD/\\\"
 
-qtConfig(testsupport) {
+qtConfig(webengine-testsupport) {
     DEFINES += ENABLE_QML_TESTSUPPORT_API
 }
 

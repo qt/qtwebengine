@@ -33,7 +33,7 @@ defineTest(isPlatformSupported) {
       skipBuild("Qt WebEngine on Windows requires a Windows SDK version 10.0.10586 or newer.")
       return(false)
     }
-    !qtConfig(winversion) {
+    !qtConfig(webengine-winversion) {
          skipBuild("Needs VS 2015 Update 3 with Cumulative Servicing Release or higher")
          return(false)
     }

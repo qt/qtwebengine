@@ -366,6 +366,9 @@
 
     This signal is emitted whenever the selection changes.
 
+    \note When using the mouse to select text by left-clicking and dragging, the signal will be
+    emitted for each new character selected, and not upon releasing the left mouse button.
+
     \sa selectedText()
 */
 

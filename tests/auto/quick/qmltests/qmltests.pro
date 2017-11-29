@@ -62,6 +62,7 @@ OTHER_FILES += \
     $$PWD/data/tst_loadRecursionCrash.qml \
     $$PWD/data/tst_loadUrl.qml \
     $$PWD/data/tst_mouseClick.qml \
+    $$PWD/data/tst_mouseMove.qml \
     $$PWD/data/tst_navigationHistory.qml \
     $$PWD/data/tst_navigationRequested.qml \
     $$PWD/data/tst_newViewRequest.qml \
@@ -88,11 +89,11 @@ OTHER_FILES += \
     $$PWD/data/icons/qt144.png \
     $$PWD/data/icons/qt32.ico \
     $$PWD/data/icons/qtmulti.ico \
-    $$PWD/mock-delegates/QtWebEngine/UIDelegates/AlertDialog.qml \
-    $$PWD/mock-delegates/QtWebEngine/UIDelegates/ConfirmDialog.qml \
-    $$PWD/mock-delegates/QtWebEngine/UIDelegates/FilePicker.qml \
-    $$PWD/mock-delegates/QtWebEngine/UIDelegates/PromptDialog.qml \
-    $$PWD/mock-delegates/QtWebEngine/UIDelegates/qmldir \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/AlertDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/ConfirmDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/FilePicker.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/PromptDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/qmldir \
     $$PWD/mock-delegates/TestParams/FilePickerParams.qml \
     $$PWD/mock-delegates/TestParams/JSDialogParams.qml \
     $$PWD/mock-delegates/TestParams/qmldir \
@@ -100,7 +101,7 @@ OTHER_FILES += \
 load(qt_build_paths)
 DEFINES += QUICK_TEST_SOURCE_DIR=\\\"$$re_escape($$PWD$${QMAKE_DIR_SEP}data)\\\"
 
-!qtConfig(testsupport) {
+!qtConfig(webengine-testsupport) {
     PLUGIN_EXTENSION = .so
     PLUGIN_PREFIX = lib
     osx: PLUGIN_PREFIX = .dylib

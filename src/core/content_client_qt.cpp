@@ -236,6 +236,7 @@ void AddPepperWidevine(std::vector<content::PepperPluginInfo>* plugins)
 #elif defined(Q_OS_LINUX)
         pluginPaths << QStringLiteral("/opt/google/chrome/libwidevinecdmadapter.so") // Google Chrome
                     << QStringLiteral("/usr/lib/chromium/libwidevinecdmadapter.so") // Arch
+                    << QStringLiteral("/usr/lib/chromium-browser/libwidevinecdmadapter.so") // Ubuntu/neon
                     << QStringLiteral("/usr/lib64/chromium/libwidevinecdmadapter.so"); // OpenSUSE style
 #endif
     }
@@ -257,7 +258,7 @@ void AddPepperWidevine(std::vector<content::PepperPluginInfo>* plugins)
             std::vector<std::string> codecs;
             codecs.push_back(kCdmSupportedCodecVp8);
             codecs.push_back(kCdmSupportedCodecVp9);
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
             codecs.push_back(kCdmSupportedCodecAvc1);
 #endif  // defined(USE_PROPRIETARY_CODECS)
             std::string codec_string =

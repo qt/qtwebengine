@@ -63,7 +63,7 @@ TestWebEngineView {
         name: "WebEngineViewSource"
 
         function init() {
-            webEngineView.url = Qt.resolvedUrl("about:blank");
+            webEngineView.url = Qt.resolvedUrl("test1.html");
             verify(webEngineView.waitForLoadSucceeded());
 
             newViewRequestedSpy.clear();
@@ -103,8 +103,8 @@ TestWebEngineView {
                    { tag: "view-source:about:blank", userInputUrl: "view-source:about:blank", loadSucceed: true, url: "view-source:about:blank", title: "view-source:about:blank" },
                    { tag: testLocalUrl, userInputUrl: testLocalUrl, loadSucceed: true, url: testLocalUrl, title: "test1.html" },
                    { tag: testLocalUrlWithoutScheme, userInputUrl: testLocalUrlWithoutScheme, loadSucceed: true, url: testLocalUrl, title: "test1.html" },
-                   { tag: "view-source:http://non.existent", userInputUrl: "view-source:http://non.existent", loadSucceed: false, url: "view-source:http://non.existent/", title: "non.existent" },
-                   { tag: "view-source:non.existent", userInputUrl: "view-source:non.existent", loadSucceed: false, url: "view-source:http://non.existent/", title: "non.existent" },
+                   { tag: "view-source:http://non.existent", userInputUrl: "view-source:http://non.existent", loadSucceed: false, url: "http://non.existent/", title: "non.existent" },
+                   { tag: "view-source:non.existent", userInputUrl: "view-source:non.existent", loadSucceed: false, url: "http://non.existent/", title: "non.existent" },
             ];
         }
 
@@ -114,11 +114,10 @@ TestWebEngineView {
 
             if (row.loadSucceed) {
                 verify(webEngineView.waitForLoadSucceeded());
-                tryVerify(function() { return titleChangedSpy.count >= 1; });
             } else {
                 verify(webEngineView.waitForLoadFailed());
-                tryVerify(function() { return titleChangedSpy.count >= 2; });
             }
+            tryVerify(function() { return titleChangedSpy.count == 1; });
 
             compare(webEngineView.url, row.url);
             tryCompare(webEngineView, "title", row.title);

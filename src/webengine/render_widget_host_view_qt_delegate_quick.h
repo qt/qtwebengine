@@ -90,6 +90,7 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
     void touchEvent(QTouchEvent *event) override;
     void hoverMoveEvent(QHoverEvent *event) override;
+    void hoverLeaveEvent(QHoverEvent *event) override;
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
     void inputMethodEvent(QInputMethodEvent *event) override;
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;

@@ -5,7 +5,7 @@ TARGET = spellchecker
 QT += webenginewidgets
 CONFIG += c++11
 
-qtConfig(native-spellchecker) {
+qtConfig(webengine-native-spellchecker) {
     error("Spellcheck example can not be built when using native OS dictionaries.")
 }
 

@@ -30,19 +30,19 @@ defineTest(runConfigure) {
     include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
     QT_FOR_CONFIG += webengine-private
 
-    !qtConfig(gperf) {
+    !qtConfig(webengine-gperf) {
         skipBuild("Required gperf could not be found.")
         return(false)
     }
-    !qtConfig(bison) {
+    !qtConfig(webengine-bison) {
         skipBuild("Required bison could not be found.")
         return(false)
     }
-    !qtConfig(flex) {
+    !qtConfig(webengine-flex) {
         skipBuild("Required flex could not be found.")
         return(false)
     }
-    !qtConfig(python2) {
+    !qtConfig(webengine-python2) {
         skipBuild("A suitable version of python2 could not be found.")
         return(false)
     }
@@ -53,28 +53,28 @@ defineTest(runConfigure) {
     }
 
     linux {
-        !qtConfig(system-glibc) {
+        !qtConfig(webengine-system-glibc) {
             skipBuild("A suitable version of libc could not be found. See: https://sourceware.org/bugzilla/show_bug.cgi?id=14898")
             return(false)
         }
 
         QT_FOR_CONFIG += gui-private
 
-        !qtConfig(system-khr) {
+        !qtConfig(webengine-system-khr) {
             skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
             return(false)
         }
 
         for(package, $$list("nss dbus fontconfig")) {
-            !qtConfig(system-$$package) {
+            !qtConfig(webengine-system-$$package) {
                 skipBuild("A suitable version of $$package could not be found.")
                 return(false)
             }
          }
 
-        !qtConfig(embedded): qtConfig(xcb) {
+        !qtConfig(webengine-embedded-build): qtConfig(xcb) {
              for(package, $$list("libdrm xcomposite xcursor xi xrandr xtst")) {
-                 !qtConfig(system-$$package) {
+                 !qtConfig(webengine-system-$$package) {
                      skipBuild("A suitable version of $$package could not be found.")
                      return(false)
                  }

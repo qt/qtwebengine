@@ -8,7 +8,7 @@ SUBDIRS += \
     qquickwebenginedefaultsurfaceformat \
     qquickwebengineview
 
-qtConfig(testsupport) {
+qtConfig(webengine-testsupport) {
     SUBDIRS += \
         qmltests \
         qquickwebengineviewgraphics

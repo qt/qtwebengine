@@ -1,4 +1,4 @@
 include(../tests.pri)
 QT *= core-private
 
-qtConfig(printing-and-pdf): DEFINES+=QWEBENGINEPAGE_PDFPRINTINGENABLED
+qtConfig(webengine-printing-and-pdf): DEFINES+=QWEBENGINEPAGE_PDFPRINTINGENABLED

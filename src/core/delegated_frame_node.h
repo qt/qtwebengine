@@ -123,7 +123,9 @@ private:
     // Making those callbacks static bypasses base::Bind's ref-counting requirement
     // of the this pointer when the callback is a method.
     static void pullTexture(DelegatedFrameNode *frameNode, MailboxTexture *mailbox);
+    static void pullTextures(DelegatedFrameNode *frameNode, const QVector<MailboxTexture *> mailboxes);
     static void fenceAndUnlockQt(DelegatedFrameNode *frameNode);
+    static void unlockQt(DelegatedFrameNode *frameNode);
 
     ResourceHolder *findAndHoldResource(unsigned resourceId, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
     void holdResources(const cc::DrawQuad *quad, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);

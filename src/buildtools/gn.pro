@@ -7,11 +7,11 @@ include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
 QT_FOR_CONFIG += webengine webengine-private
 
 build_pass|!debug_and_release {
-    !qtConfig(system-gn): CONFIG(release, debug|release) {
+    !qtConfig(webengine-system-gn): CONFIG(release, debug|release) {
         buildgn.target = build_gn
         gn_args = $$gnArgs()
         out = $$gnPath()
-        !qtConfig(system-ninja): ninja_path = "--path $$ninjaPath()"
+        !qtConfig(webengine-system-ninja): ninja_path = "--path $$ninjaPath()"
         # check if it is not already build
         !exists($$out) {
             mkpath($$dirname(out))
