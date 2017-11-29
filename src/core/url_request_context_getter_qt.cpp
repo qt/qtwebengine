@@ -54,7 +54,6 @@
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
-#include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
@@ -543,23 +542,6 @@ void URLRequestContextGetterQt::generateHttpCache()
     cache = new net::HttpCache(m_httpNetworkSession.get(), std::unique_ptr<net::HttpCache::DefaultBackend>(main_backend), false);
 
     m_storage->set_http_transaction_factory(std::unique_ptr<net::HttpCache>(cache));
-}
-
-void URLRequestContextGetterQt::clearHttpCache()
-{
-    if (m_urlRequestContext)
-        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::clearCurrentCacheBackend, this));
-}
-
-static void doomCallback(int error_code) { Q_UNUSED(error_code); }
-
-void URLRequestContextGetterQt::clearCurrentCacheBackend()
-{
-    if (m_urlRequestContext->http_transaction_factory() && m_urlRequestContext->http_transaction_factory()->GetCache()) {
-        disk_cache::Backend *backend = m_urlRequestContext->http_transaction_factory()->GetCache()->GetCurrentBackend();
-        if (backend)
-            backend->DoomAllEntries(base::Bind(&doomCallback));
-    }
 }
 
 void URLRequestContextGetterQt::generateJobFactory()

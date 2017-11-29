@@ -44,6 +44,7 @@ SOURCES = \
         browser_context_adapter.cpp \
         browser_context_adapter_client.cpp \
         browser_context_qt.cpp \
+        browsing_data_remover_delegate_qt.cpp \
         browser_message_filter_qt.cpp \
         certificate_error_controller.cpp \
         chromium_gpu_helper.cpp \
@@ -117,6 +118,7 @@ HEADERS = \
         browser_context_adapter.h \
         browser_context_adapter_client.h \
         browser_context_qt.h \
+        browsing_data_remover_delegate_qt.h \
         browser_message_filter_qt.h \
         certificate_error_controller_p.h \
         certificate_error_controller.h \

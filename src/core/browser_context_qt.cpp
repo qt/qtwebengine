@@ -40,6 +40,7 @@
 #include "browser_context_qt.h"
 
 #include "browser_context_adapter.h"
+#include "browsing_data_remover_delegate_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "permission_manager_qt.h"
 #include "qtwebenginecoreglobal_p.h"
@@ -184,7 +185,7 @@ content::BackgroundSyncController* BrowserContextQt::GetBackgroundSyncController
 
 content::BrowsingDataRemoverDelegate *BrowserContextQt::GetBrowsingDataRemoverDelegate()
 {
-    return nullptr;
+    return new BrowsingDataRemoverDelegateQt;
 }
 
 content::PermissionManager *BrowserContextQt::GetPermissionManager()

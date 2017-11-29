@@ -82,7 +82,6 @@ public:
     void updateUserAgent();
     void updateCookieStore();
     void updateHttpCache();
-    void clearHttpCache();
     void updateJobFactory();
     void updateRequestInterceptor();
 
@@ -97,7 +96,6 @@ private:
     void generateUserAgent();
     void generateJobFactory();
     void regenerateJobFactory();
-    void clearCurrentCacheBackend();
     void cancelAllUrlRequests();
     net::HttpNetworkSession::Params generateNetworkSessionParams();
     net::HttpNetworkSession::Context generateNetworkSessionContext();
