@@ -229,7 +229,10 @@ QWebEngineCookieStore::~QWebEngineCookieStore()
 
 /*!
     Adds \a cookie to the cookie store.
-    It is possible to provide an optional \a origin URL argument to limit the scope of the cookie.
+    \note If \a cookie specifies a QNetworkCookie::domain() that does not start with a dot,
+    a dot is automatically prepended. To limit the cookie to the exact server,
+    omit QNetworkCookie::domain() and set \a origin instead.
+
     The provided URL should also include the scheme.
 
     \note This operation is asynchronous.
