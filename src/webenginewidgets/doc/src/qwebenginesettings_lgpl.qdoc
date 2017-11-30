@@ -163,7 +163,8 @@
             origins to access Geolocation again.
             Disabled by default. (Added in Qt 5.9)
     \value  AllowWindowActivationFromJavaScript
-            Allows the window.focus() method in JavaScript. Disallowed by default.
+            Allows activating windows by using the window.focus() JavaScript
+            method. Disabled by default.
             (Added in Qt 5.10)
     \value  ShowScrollBars
             Shows scroll bars.

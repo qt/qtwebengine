@@ -600,6 +600,8 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
     }
 
     d->webContents->GetController().LoadURLWithParams(params);
+    // Follow chrome::Navigate and invalidate the URL immediately.
+    d->webContentsDelegate->NavigationStateChanged(d->webContents.get(), content::INVALIDATE_TYPE_URL);
     focusIfNecessary();
 }
 
@@ -641,7 +643,7 @@ void WebContentsAdapter::save(const QString &filePath, int savePageFormat)
 QUrl WebContentsAdapter::activeUrl() const
 {
     Q_D(const WebContentsAdapter);
-    return toQt(d->webContents->GetLastCommittedURL());
+    return d->webContentsDelegate->url();
 }
 
 QUrl WebContentsAdapter::requestedUrl() const
@@ -676,7 +678,7 @@ QUrl WebContentsAdapter::iconUrl() const
 QString WebContentsAdapter::pageTitle() const
 {
     Q_D(const WebContentsAdapter);
-    return toQt(d->webContents->GetTitle());
+    return d->webContentsDelegate->title();
 }
 
 QString WebContentsAdapter::selectedText() const
@@ -1467,6 +1469,12 @@ void WebContentsAdapter::focusIfNecessary()
     bool focusOnNavigation = settings->testAttribute(WebEngineSettings::FocusOnNavigationEnabled);
     if (focusOnNavigation)
         d->webContents->Focus();
+}
+
+bool WebContentsAdapter::isFindTextInProgress() const
+{
+    Q_D(const WebContentsAdapter);
+    return d->lastFindRequestId != d->webContentsDelegate->lastReceivedFindReply();
 }
 
 WebContentsAdapterClient::RenderProcessTerminationStatus

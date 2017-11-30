@@ -67,7 +67,8 @@ protected:
     bool event(QEvent *event) override
     {
         if (event->type() == QEvent::ShortcutOverride)
-            return m_client->handleShortcutOverrideEvent(static_cast<QKeyEvent *>(event));
+            return m_client->forwardEvent(event);
+
         return QQuickItem::event(event);
     }
     void focusInEvent(QFocusEvent *event) override
@@ -448,10 +449,6 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
     case QEvent::FocusOut:
         // We forward focus events later, once they have made it to the m_rootItem.
         return QQuickWidget::event(event);
-    case QEvent::ShortcutOverride:
-        if (m_client->handleShortcutOverrideEvent(static_cast<QKeyEvent *>(event)))
-            return true;
-        break;
     case QEvent::DragEnter:
     case QEvent::DragLeave:
     case QEvent::DragMove:

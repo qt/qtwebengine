@@ -78,7 +78,7 @@ defineReplace(gnPath) {
 
 defineReplace(gnArgs) {
     linux {
-        qtConfig(embedded): include($$QTWEBENGINE_ROOT/src/core/config/embedded_linux.pri)
+        qtConfig(webengine-embedded-build): include($$QTWEBENGINE_ROOT/src/core/config/embedded_linux.pri)
         else: include($$QTWEBENGINE_ROOT/src/core/config/desktop_linux.pri)
     }
     macos: include($$QTWEBENGINE_ROOT/src/core/config/mac_osx.pri)

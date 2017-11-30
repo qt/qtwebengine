@@ -218,14 +218,8 @@ public:
 
     void setupRenderPassNode(QSGTexture *layer, const QRect &rect, QSGNode *) override
     {
+        Q_ASSERT(layer);
         QSGInternalImageNode *imageNode = static_cast<QSGInternalImageNode*>(*m_nodeIterator++);
-        // In case of a missing render pass, set the target rects to be empty and return early.
-        // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes
-        if (!layer) {
-            imageNode->setTargetRect(QRect());
-            imageNode->setInnerTargetRect(QRect());
-            return;
-        }
         imageNode->setTargetRect(rect);
         imageNode->setInnerTargetRect(rect);
         imageNode->setTexture(layer);
@@ -320,23 +314,16 @@ public:
     void setupRenderPassNode(QSGTexture *layer, const QRect &rect,
                              QSGNode *layerChain) override
     {
+        Q_ASSERT(layer);
         // Only QSGInternalImageNode currently supports QSGLayer textures.
         QSGInternalImageNode *imageNode = m_apiDelegate->createImageNode();
-        layerChain->appendChildNode(imageNode);
-        m_sceneGraphNodes->append(imageNode);
-
-        // In case of a missing render pass, set the target rects to be empty and return early.
-        // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes
-        if (!layer) {
-            imageNode->setTargetRect(QRect());
-            imageNode->setInnerTargetRect(QRect());
-            return;
-        }
-
         imageNode->setTargetRect(rect);
         imageNode->setInnerTargetRect(rect);
         imageNode->setTexture(layer);
         imageNode->update();
+
+        layerChain->appendChildNode(imageNode);
+        m_sceneGraphNodes->append(imageNode);
     }
 
     void setupTextureContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
@@ -1110,7 +1097,8 @@ void DelegatedFrameNode::handleQuad(
         QSGTexture *layer =
             findRenderPassLayer(renderPassQuad->render_pass_id, m_sgObjects.renderPassLayers).data();
 
-        nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), currentLayerChain);
+        if (layer)
+            nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), currentLayerChain);
         break;
     }
     case cc::DrawQuad::TEXTURE_CONTENT: {
@@ -1263,6 +1251,8 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
     QList<gl::TransferableFence> transferredFences;
     {
         QMutexLocker lock(&m_mutex);
+        QVector<MailboxTexture *> mailboxesToPull;
+        mailboxesToPull.reserve(mailboxesToFetch.size());
 
         gpu::SyncPointManager *syncPointManager = sync_point_manager();
         base::MessageLoop *gpuMessageLoop = gpu_message_loop();
@@ -1271,9 +1261,12 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         for (MailboxTexture *mailboxTexture : qAsConst(mailboxesToFetch)) {
             gpu::SyncToken &syncToken = mailboxTexture->mailboxHolder().sync_token;
             const auto task = base::Bind(&DelegatedFrameNode::pullTexture, this, mailboxTexture);
-            if (syncPointManager->WaitOutOfOrderNonThreadSafe(syncToken, gpuMessageLoop->task_runner(), task))
-                continue;
-            gpuMessageLoop->task_runner()->PostTask(FROM_HERE, task);
+            if (!syncPointManager->WaitOutOfOrderNonThreadSafe(syncToken, gpuMessageLoop->task_runner(), std::move(task)))
+                mailboxesToPull.append(mailboxTexture);
+        }
+        if (!mailboxesToPull.isEmpty()) {
+            auto task = base::BindOnce(&DelegatedFrameNode::pullTextures, this, std::move(mailboxesToPull));
+            gpuMessageLoop->task_runner()->PostTask(FROM_HERE, std::move(task));
         }
 
         m_mailboxesFetchedWaitCond.wait(&m_mutex);
@@ -1349,6 +1342,25 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
 }
 
 
+void DelegatedFrameNode::pullTextures(DelegatedFrameNode *frameNode, const QVector<MailboxTexture *> textures)
+{
+#ifndef QT_NO_OPENGL
+    gpu::gles2::MailboxManager *mailboxManager = mailbox_manager();
+    for (MailboxTexture *texture : textures) {
+        gpu::SyncToken &syncToken = texture->mailboxHolder().sync_token;
+        if (syncToken.HasData())
+            mailboxManager->PullTextureUpdates(syncToken);
+        texture->fetchTexture(mailboxManager);
+        --frameNode->m_numPendingSyncPoints;
+    }
+
+    fenceAndUnlockQt(frameNode);
+#else
+    Q_UNUSED(frameNode)
+    Q_UNUSED(textures)
+#endif
+}
+
 void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTexture *texture)
 {
 #ifndef QT_NO_OPENGL
@@ -1357,15 +1369,9 @@ void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTextu
     if (syncToken.HasData())
         mailboxManager->PullTextureUpdates(syncToken);
     texture->fetchTexture(mailboxManager);
-    if (!!gl::GLContext::GetCurrent() && gl::GLFence::IsSupported()) {
-        // Create a fence on the Chromium GPU-thread and context
-        gl::GLFence *fence = gl::GLFence::Create();
-        // But transfer it to something generic since we need to read it using Qt's OpenGL.
-        frameNode->m_textureFences.append(fence->Transfer());
-        delete fence;
-    }
-    if (--frameNode->m_numPendingSyncPoints == 0)
-        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::fenceAndUnlockQt, frameNode));
+    --frameNode->m_numPendingSyncPoints;
+
+    fenceAndUnlockQt(frameNode);
 #else
     Q_UNUSED(frameNode)
     Q_UNUSED(texture)
@@ -1373,6 +1379,23 @@ void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTextu
 }
 
 void DelegatedFrameNode::fenceAndUnlockQt(DelegatedFrameNode *frameNode)
+{
+#ifndef QT_NO_OPENGL
+    if (!!gl::GLContext::GetCurrent() && gl::GLFence::IsSupported()) {
+        // Create a fence on the Chromium GPU-thread and context
+        gl::GLFence *fence = gl::GLFence::Create();
+        // But transfer it to something generic since we need to read it using Qt's OpenGL.
+        frameNode->m_textureFences.append(fence->Transfer());
+        delete fence;
+    }
+    if (frameNode->m_numPendingSyncPoints == 0)
+        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::unlockQt, frameNode));
+#else
+    Q_UNUSED(frameNode)
+#endif
+}
+
+void DelegatedFrameNode::unlockQt(DelegatedFrameNode *frameNode)
 {
     QMutexLocker lock(&frameNode->m_mutex);
     // Signal preprocess() the textures are ready

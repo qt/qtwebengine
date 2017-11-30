@@ -376,19 +376,6 @@ void QWebEnginePagePrivate::focusContainer()
 
 void QWebEnginePagePrivate::unhandledKeyEvent(QKeyEvent *event)
 {
-#ifdef Q_OS_OSX
-    Q_Q(QWebEnginePage);
-    if (event->type() == QEvent::KeyPress) {
-        QWebEnginePage::WebAction action = editorActionForKeyEvent(event);
-        if (action != QWebEnginePage::NoWebAction) {
-            // Try triggering a registered short-cut
-            if (QGuiApplicationPrivate::instance()->shortcutMap.tryShortcut(event))
-                return;
-            q->triggerAction(action);
-            return;
-        }
-    }
-#endif
     if (view && view->parentWidget())
         QGuiApplication::sendEvent(view->parentWidget(), event);
 }
@@ -1521,7 +1508,7 @@ void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &
 {
     Q_Q(QWebEnginePage);
     bool accepted = q->acceptNavigationRequest(url, static_cast<QWebEnginePage::NavigationType>(navigationType), isMainFrame);
-    if (accepted && adapter)
+    if (accepted && adapter && adapter->isFindTextInProgress())
         adapter->stopFinding();
     navigationRequestAction = accepted ? WebContentsAdapterClient::AcceptRequest : WebContentsAdapterClient::IgnoreRequest;
 }

@@ -50,6 +50,7 @@
 #include <QtGlobal>
 
 QT_BEGIN_NAMESPACE
+class QEvent;
 class QHoverEvent;
 class QKeyEvent;
 class QMouseEvent;
@@ -66,12 +67,14 @@ public:
     static blink::WebMouseEvent toWebMouseEvent(QMouseEvent*, double dpiScale);
     static blink::WebMouseEvent toWebMouseEvent(QHoverEvent*, double dpiScale);
     static blink::WebMouseEvent toWebMouseEvent(QTabletEvent*, double dpiScale);
+    static blink::WebMouseEvent toWebMouseEvent(QEvent *);
 #ifndef QT_NO_GESTURES
     static blink::WebGestureEvent toWebGestureEvent(QNativeGestureEvent *, double dpiScale);
 #endif
     static blink::WebMouseWheelEvent toWebWheelEvent(QWheelEvent*, double dpiScale);
     static bool coalesceWebWheelEvent(blink::WebMouseWheelEvent &, QWheelEvent*, double dpiScale);
     static content::NativeWebKeyboardEvent toWebKeyboardEvent(QKeyEvent*);
+    static bool getEditCommand(QKeyEvent *event, std::string *editCommand);
 };
 
 

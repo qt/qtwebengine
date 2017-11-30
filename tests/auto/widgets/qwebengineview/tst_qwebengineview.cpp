@@ -35,6 +35,7 @@
 #include <qtemporarydir.h>
 #include <QClipboard>
 #include <QCompleter>
+#include <QLabel>
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QMenu>
@@ -172,6 +173,9 @@ private Q_SLOTS:
     void imeCompositionQueryEvent_data();
     void imeCompositionQueryEvent();
     void newlineInTextarea();
+
+    void mouseLeave();
+
 #ifndef QT_NO_CLIPBOARD
     void globalMouseSelection();
 #endif
@@ -1487,7 +1491,7 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     view.addAction(action);
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
-    view.setHtml(QString("<html><body onload=\"input1=document.getElementById('input1')\">"
+    view.setHtml(QString("<html><body>"
                          "<button id=\"btn1\" type=\"button\">push it real good</button>"
                          "<input id=\"input1\" type=\"text\" value=\"x\">"
                          "</body></html>"));
@@ -1498,7 +1502,7 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
 
     auto inputFieldValue = [&view] () -> QString {
         return evaluateJavaScriptSync(view.page(),
-                                      "input1.value").toString();
+                                      "document.getElementById('input1').value").toString();
     };
 
     // The input form is not focused. The action is triggered on pressing Shift+Delete.
@@ -1515,10 +1519,13 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     QCOMPARE(inputFieldValue(), QString("x"));
 
     // The input form is focused. The action is not triggered, and the form's text changed.
-    evaluateJavaScriptSync(view.page(), "input1.focus();");
+    evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus();");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
     actionTriggered = false;
     QTest::keyClick(view.windowHandle(), Qt::Key_Y);
     QTRY_COMPARE(inputFieldValue(), QString("yx"));
+    QTest::keyClick(view.windowHandle(), Qt::Key_X);
+    QTRY_COMPARE(inputFieldValue(), QString("yxx"));
     QVERIFY(!actionTriggered);
 
     // The input form is focused. Make sure we don't override all short cuts.
@@ -1526,10 +1533,20 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     action->setShortcut(Qt::CTRL + Qt::Key_1);
     QTest::keyClick(view.windowHandle(), Qt::Key_1, Qt::ControlModifier);
     QTRY_VERIFY(actionTriggered);
-    QCOMPARE(inputFieldValue(), QString("yx"));
+    QCOMPARE(inputFieldValue(), QString("yxx"));
+
+    // The input form is focused. The following shortcuts are not overridden
+    // thus handled by Qt WebEngine. Make sure the subsequent shortcuts with text
+    // character don't cause assert due to an unconsumed editor command.
+    QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
+    QTest::keyClick(view.windowHandle(), Qt::Key_C, Qt::ControlModifier);
+    QTest::keyClick(view.windowHandle(), Qt::Key_V, Qt::ControlModifier);
+    QTest::keyClick(view.windowHandle(), Qt::Key_V, Qt::ControlModifier);
+    QTRY_COMPARE(inputFieldValue(), QString("yxxyxx"));
 
     // Remove focus from the input field. A QKeySequence::Copy action must be triggerable.
     evaluateJavaScriptSync(view.page(), "document.getElementById('btn1').focus();");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("btn1"));
     action->setShortcut(QKeySequence::Copy);
     actionTriggered = false;
     QTest::keyClick(view.windowHandle(), Qt::Key_C, Qt::ControlModifier);
@@ -1824,13 +1841,8 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
-    // Workaround for macOS: press ctrl+a without key text
-    QKeyEvent keyPressCtrlA(QEvent::KeyPress, Qt::Key_A, Qt::ControlModifier);
-    QKeyEvent keyReleaseCtrlA(QEvent::KeyRelease, Qt::Key_A, Qt::ControlModifier);
-
     // Select text by ctrl+a
-    QApplication::sendEvent(view.focusProxy(), &keyPressCtrlA);
-    QApplication::sendEvent(view.focusProxy(), &keyReleaseCtrlA);
+    QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QVERIFY(selectionChangedSpy.wait());
     QCOMPARE(selectionChangedSpy.count(), 1);
     QVERIFY(view.hasSelection());
@@ -1860,8 +1872,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
 
     // Select the whole page by ctrl+a
-    QApplication::sendEvent(view.focusProxy(), &keyPressCtrlA);
-    QApplication::sendEvent(view.focusProxy(), &keyReleaseCtrlA);
+    QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QVERIFY(selectionChangedSpy.wait());
     QCOMPARE(selectionChangedSpy.count(), 1);
     QVERIFY(view.hasSelection());
@@ -1877,8 +1888,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QVERIFY(view.page()->selectedText().isEmpty());
 
     // Select the content of the input field by ctrl+a
-    QApplication::sendEvent(view.focusProxy(), &keyPressCtrlA);
-    QApplication::sendEvent(view.focusProxy(), &keyReleaseCtrlA);
+    QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QVERIFY(selectionChangedSpy.wait());
     QCOMPARE(selectionChangedSpy.count(), 3);
     QVERIFY(view.hasSelection());
@@ -1934,10 +1944,9 @@ void tst_QWebEngineView::emptyInputMethodEvent()
 
     // 1. Empty input method event does not clear text
     QInputMethodEvent emptyEvent;
-    QApplication::sendEvent(view.focusProxy(), &emptyEvent);
-
-    QString inputValue = evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString();
-    QTRY_COMPARE(inputValue, QStringLiteral("QtWebEngine"));
+    QVERIFY(QApplication::sendEvent(view.focusProxy(), &emptyEvent));
+    qApp->processEvents();
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QStringLiteral("QtWebEngine"));
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QStringLiteral("QtWebEngine"));
 
     // Reset: clear input field
@@ -1949,12 +1958,12 @@ void tst_QWebEngineView::emptyInputMethodEvent()
     // Start IME composition
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent eventComposition("a", attributes);
-    QApplication::sendEvent(view.focusProxy(), &eventComposition);
+    QVERIFY(QApplication::sendEvent(view.focusProxy(), &eventComposition));
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QStringLiteral("a"));
     QTRY_VERIFY(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().isEmpty());
 
     // Cancel IME composition
-    QApplication::sendEvent(view.focusProxy(), &emptyEvent);
+    QVERIFY(QApplication::sendEvent(view.focusProxy(), &emptyEvent));
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
     QTRY_VERIFY(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().isEmpty());
 
@@ -2415,6 +2424,58 @@ void tst_QWebEngineView::contextMenu()
     QTest::mouseMove(view.windowHandle(), QPoint(10,10));
     QTest::mouseClick(view.windowHandle(), Qt::RightButton);
     QTRY_COMPARE(view.findChildren<QMenu *>().count(), childrenCount);
+}
+
+void tst_QWebEngineView::mouseLeave()
+{
+    QScopedPointer<QWidget> containerWidget(new QWidget);
+
+    QLabel *label = new QLabel(containerWidget.data());
+    label->setStyleSheet("background-color: red;");
+    label->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
+    label->setMinimumHeight(100);
+
+    QWebEngineView *view = new QWebEngineView(containerWidget.data());
+    view->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
+    view->setMinimumHeight(100);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setAlignment(Qt::AlignTop);
+    layout->setSpacing(0);
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(view);
+    containerWidget->setLayout(layout);
+    containerWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
+    QTest::mouseMove(containerWidget->windowHandle(), QPoint(0, 0));
+
+    auto innerText = [view]() -> QString {
+        return evaluateJavaScriptSync(view->page(), "document.getElementById('testDiv').innerText").toString();
+    };
+
+    QSignalSpy loadFinishedSpy(view, SIGNAL(loadFinished(bool)));
+    view->setHtml("<html>"
+                  "<head><script>"
+                  "function init() {"
+                  " var div = document.getElementById('testDiv');"
+                  " div.onmouseenter = function(e) { div.innerText = 'Mouse IN' };"
+                  " div.onmouseleave = function(e) { div.innerText = 'Mouse OUT' };"
+                  "}"
+                  "</script></head>"
+                  "<body onload='init()' style='margin: 0px; padding: 0px'>"
+                  " <div id='testDiv' style='width: 100%; height: 100%; background-color: green' />"
+                  "</body>"
+                  "</html>");
+    QVERIFY(loadFinishedSpy.wait());
+    // Make sure the testDiv text is empty.
+    evaluateJavaScriptSync(view->page(), "document.getElementById('testDiv').innerText = ''");
+    QTRY_VERIFY(innerText().isEmpty());
+
+    QTest::mouseMove(containerWidget->windowHandle(), QPoint(50, 150));
+    QTRY_COMPARE(innerText(), QStringLiteral("Mouse IN"));
+    QTest::mouseMove(containerWidget->windowHandle(), QPoint(50, 50));
+    QTRY_COMPARE(innerText(), QStringLiteral("Mouse OUT"));
 }
 
 QTEST_MAIN(tst_QWebEngineView)

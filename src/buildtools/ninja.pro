@@ -7,7 +7,7 @@ QT_FOR_CONFIG += webengine-private
 
 
 build_pass|!debug_and_release {
-    !qtConfig(system-ninja): CONFIG(release, debug|release) {
+    !qtConfig(webengine-system-ninja): CONFIG(release, debug|release) {
         out = $$ninjaPath()
         # check if it is not already build
         !exists($$out) {
