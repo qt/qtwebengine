@@ -591,9 +591,11 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
 {
     Q_D(WebContentsAdapter);
     QByteArray encodedData = data.toPercentEncoding();
-    std::string urlString("data:");
-    urlString.append(mimeType.toStdString());
-    urlString.append(",");
+    std::string urlString;
+    if (!mimeType.isEmpty())
+        urlString = std::string("data:") + mimeType.toStdString() + std::string(",");
+    else
+        urlString = std::string("data:text/plain;charset=US-ASCII,");
     urlString.append(encodedData.constData(), encodedData.length());
 
     GURL dataUrlToLoad(urlString);
