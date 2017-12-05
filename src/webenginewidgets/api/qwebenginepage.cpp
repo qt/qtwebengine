@@ -1345,7 +1345,8 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         d->adapter->inspectElementAt(menuData.position());
         break;
     case ExitFullScreen:
-        d->adapter->exitFullScreen();
+        // See under ViewSource, anything that can trigger a delete of the current view is dangerous to call directly here.
+        QTimer::singleShot(0, this, [d](){ d->adapter->exitFullScreen(); });
         break;
     case RequestClose:
         d->adapter->requestClose();

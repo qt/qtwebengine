@@ -341,6 +341,10 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_emptyPreviousSelection(true)
     , m_wheelAckPending(false)
 {
+    auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
+    m_beginFrameSource.reset(new cc::DelayBasedBeginFrameSource(
+                                 base::MakeUnique<cc::DelayBasedTimeSource>(task_runner)));
+
     m_host->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
     if (isAccessibilityEnabled()) {
@@ -349,10 +353,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
             content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
     }
 #endif // QT_NO_ACCESSIBILITY
-    auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
-    m_beginFrameSource.reset(new cc::DelayBasedBeginFrameSource(
-            base::MakeUnique<cc::DelayBasedTimeSource>(task_runner)));
-
     if (GetTextInputManager())
         GetTextInputManager()->AddObserver(this);
 
@@ -1642,8 +1642,7 @@ void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
 
 void RenderWidgetHostViewQt::updateNeedsBeginFramesInternal()
 {
-    if (!m_beginFrameSource)
-        return;
+    Q_ASSERT(m_beginFrameSource);
 
     if (m_addedFrameObserver == m_needsBeginFrames)
         return;
