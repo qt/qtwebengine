@@ -60,6 +60,8 @@ private Q_SLOTS:
     void downloadPage_data();
     void downloadPage();
     void downloadViaSetUrl();
+    void downloadFileNot1();
+    void downloadFileNot2();
 };
 
 enum DownloadTestUserAction {
@@ -643,6 +645,62 @@ void tst_QWebEngineDownloads::downloadViaSetUrl()
         QCOMPARE(downloadUrls.takeFirst(), fileUrl);
         QCOMPARE(page.url(), indexUrl);
     }
+}
+
+void tst_QWebEngineDownloads::downloadFileNot1()
+{
+    // Trigger file download via download() but don't accept().
+
+    HttpServer server;
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    const auto filePath = QByteArrayLiteral("/file");
+    const auto fileUrl = server.url(filePath);
+
+    page.download(fileUrl);
+    auto fileRR = waitForRequest(&server);
+    QVERIFY(fileRR);
+    QCOMPARE(fileRR->requestMethod(), QByteArrayLiteral("GET"));
+    QCOMPARE(fileRR->requestPath(), filePath);
+    fileRR->sendResponse();
+
+    QPointer<QWebEngineDownloadItem> downloadItem;
+    QVERIFY(waitForSignal(&profile, &QWebEngineProfile::downloadRequested,
+                          [&](QWebEngineDownloadItem *item) {
+        QVERIFY(item);
+        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+        downloadItem = item;
+    }));
+    QVERIFY(!downloadItem);
+}
+
+void tst_QWebEngineDownloads::downloadFileNot2()
+{
+    // Trigger file download via download() but call cancel() instead of accept().
+
+    HttpServer server;
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    const auto filePath = QByteArrayLiteral("/file");
+    const auto fileUrl = server.url(filePath);
+
+    page.download(fileUrl);
+    auto fileRR = waitForRequest(&server);
+    QVERIFY(fileRR);
+    QCOMPARE(fileRR->requestMethod(), QByteArrayLiteral("GET"));
+    QCOMPARE(fileRR->requestPath(), filePath);
+    fileRR->sendResponse();
+
+    QPointer<QWebEngineDownloadItem> downloadItem;
+    QVERIFY(waitForSignal(&profile, &QWebEngineProfile::downloadRequested,
+                          [&](QWebEngineDownloadItem *item) {
+        QVERIFY(item);
+        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+        item->cancel();
+        downloadItem = item;
+    }));
+    QVERIFY(downloadItem);
+    QCOMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCancelled);
 }
 
 QTEST_MAIN(tst_QWebEngineDownloads)
