@@ -106,7 +106,55 @@ static inline QWebEngineDownloadItem::DownloadInterruptReason toDownloadInterrup
 
     \inmodule QtWebEngineWidgets
 
-    QWebEngineDownloadItem stores the state of a download to be used to manage requested downloads.
+    QWebEngineDownloadItem models a download throughout its life cycle, starting
+    with a pending download request and finishing with a completed download. It
+    can be used, for example, to get information about new downloads, to monitor
+    progress, and to pause, resume, and cancel downloads.
+
+    Downloads are usually triggered by user interaction on a web page. It is the
+    QWebEngineProfile's responsibility to notify the application of new download
+    requests, which it does by emitting the
+    \l{QWebEngineProfile::downloadRequested}{downloadRequested} signal together
+    with a newly created QWebEngineDownloadItem. The application can then
+    examine this item and decide whether to accept it or not. A signal handler
+    must explicitly call accept() on the item for Qt WebEngine to actually start
+    downloading and writing data to disk. If no signal handler calls accept(),
+    then the download request will be automatically rejected and nothing will be
+    written to disk.
+
+    \note Some properties, like the \l path under which the file will be saved,
+    can only be changed before calling accept().
+
+    \section2 Object Life Cycle
+
+    All items are guaranteed to be valid during the emission of the
+    \l{QWebEngineProfile::downloadRequested}{downloadRequested} signal. If
+    accept() is \e not called by any signal handler, then the item will be
+    deleted \e immediately after signal emission. This means that the
+    application \b{must not} keep references to rejected download items. It also
+    means the application should not use a queued connection to this signal.
+
+    If accept() \e is called by a signal handler, then the QWebEngineProfile
+    will take ownership of the item. However, it is safe for the application to
+    delete the item at any time, except during the handling of the
+    \l{QWebEngineProfile::downloadRequested}{downloadRequested} signal. The
+    QWebEngineProfile being a long-lived object, it is in fact recommended that
+    the application delete any items it is no longer interested in.
+
+    \note Deleting an item will not cancel a possible ongoing download. If that
+    is desirable, then cancel() must be called separately.
+
+    \section2 Web Page Downloads
+
+    In addition to normal file downloads, which consist simply of retrieving
+    some raw bytes from the network and writing them to disk, Qt WebEngine also
+    supports saving complete web pages, which involves parsing the page's HTML,
+    downloading any dependent resources, and potentially packaging everything
+    into a special file format (\l savePageFormat). To check if a download is
+    for a file or a web page, use \l isSavePageDownload.
+
+    \sa QWebEngineProfile, QWebEngineProfile::downloadRequested,
+    QWebEnginePage::download, QWebEnginePage::save
 */
 
 QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QWebEngineProfilePrivate *p, const QUrl &url)
@@ -163,6 +211,10 @@ void QWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClient::Do
 /*!
     Accepts the current download request, which will start the download.
 
+    If the item is in the \l DownloadRequested state, then it will transition
+    into the \l DownloadInProgress state and the downloading will begin. If the
+    item is in any other state, then nothing will happen.
+
     \sa finished(), stateChanged()
 */
 
@@ -179,6 +231,14 @@ void QWebEngineDownloadItem::accept()
 
 /*!
     Cancels the current download.
+
+    If the item is in the \l DownloadInProgress state, then it will transition
+    into the \l DownloadCancelled state, the downloading will stop, and partially
+    downloaded files will be deleted from disk.
+
+    If the item is in the \l DownloadCompleted state, then nothing will happen.
+    If the item is in any other state, then it will transition into the \l
+    DownloadCancelled state without further effect.
 
     \sa finished(), stateChanged()
 */
@@ -206,9 +266,12 @@ void QWebEngineDownloadItem::cancel()
 
 /*!
     \since 5.10
-    Pauses the current download. Has no effect if the state is not \c DownloadInProgress.
+    Pauses the download.
 
-    \sa resume()
+    Has no effect if the state is not \l DownloadInProgress. Does not change the
+    state.
+
+    \sa resume(), isPaused()
 */
 
 void QWebEngineDownloadItem::pause()
@@ -226,6 +289,9 @@ void QWebEngineDownloadItem::pause()
 /*!
     \since 5.10
     Resumes the current download if it was paused or interrupted.
+
+    Has no effect if the state is not \l DownloadInProgress or \l
+    DownloadInterrupted. Does not change the state.
 
     \sa pause(), isPaused(), state()
 */
@@ -251,7 +317,7 @@ quint32 QWebEngineDownloadItem::id() const
 }
 
 /*!
-    \fn QWebEngineDownloadItem::finished()
+    \fn void QWebEngineDownloadItem::finished()
 
     This signal is emitted when the download finishes.
 
@@ -259,7 +325,7 @@ quint32 QWebEngineDownloadItem::id() const
 */
 
 /*!
-    \fn QWebEngineDownloadItem::isPausedChanged(bool isPaused)
+    \fn void QWebEngineDownloadItem::isPausedChanged(bool isPaused)
     \since 5.10
 
     This signal is emitted whenever \a isPaused changes.
@@ -268,7 +334,7 @@ quint32 QWebEngineDownloadItem::id() const
 */
 
 /*!
-    \fn QWebEngineDownloadItem::stateChanged(DownloadState state)
+    \fn void QWebEngineDownloadItem::stateChanged(DownloadState state)
 
     This signal is emitted whenever the download's \a state changes.
 
@@ -276,7 +342,7 @@ quint32 QWebEngineDownloadItem::id() const
 */
 
 /*!
-    \fn QWebEngineDownloadItem::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+    \fn void QWebEngineDownloadItem::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 
     This signal is emitted to indicate the progress of the download request.
 
@@ -478,7 +544,7 @@ bool QWebEngineDownloadItem::isFinished() const
 /*!
     Returns whether this download is paused.
 
-    \sa pause()
+    \sa pause(), resume()
 */
 
 bool QWebEngineDownloadItem::isPaused() const

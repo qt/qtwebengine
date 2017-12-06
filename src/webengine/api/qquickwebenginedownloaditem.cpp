@@ -123,10 +123,44 @@ QQuickWebEngineDownloadItemPrivate::~QQuickWebEngineDownloadItemPrivate()
     \since QtWebEngine 1.1
     \brief Provides information about a download.
 
-    Stores the state of a download to be used to manage requested downloads.
+    WebEngineDownloadItem models a download throughout its life cycle, starting
+    with a pending download request and finishing with a completed download. It
+    can be used, for example, to get information about new downloads, to monitor
+    progress, and to pause, resume, and cancel downloads.
 
-    By default, the download is rejected unless the user explicitly accepts it with
-    accept().
+    Downloads are usually triggered by user interaction on a web page. It is the
+    WebEngineProfile's responsibility to notify the application of new download
+    requests, which it does by emitting the
+    \l{WebEngineProfile::downloadRequested}{downloadRequested} signal together
+    with a newly created WebEngineDownloadItem. The application can then examine
+    this item and decide whether to accept it or not. A signal handler must
+    explicitly call accept() on the item for Qt WebEngine to actually start
+    downloading and writing data to disk. If no signal handler calls accept(),
+    then the download request will be automatically rejected and nothing will be
+    written to disk.
+
+    \note Some properties, like the \l path under which the file will be saved,
+    can only be changed before calling accept().
+
+    \section2 Object Life Cycle
+
+    All items are guaranteed to be valid during the emission of the
+    \l{WebEngineProfile::downloadRequested}{downloadRequested} signal. If
+    accept() is \e not called by any signal handler, then the item will be
+    deleted \e immediately after signal emission. This means that the
+    application \b{must not} keep references to rejected download items.
+
+    \section2 Web Page Downloads
+
+    In addition to normal file downloads, which consist simply of retrieving
+    some raw bytes from the network and writing them to disk, Qt WebEngine also
+    supports saving complete web pages, which involves parsing the page's HTML,
+    downloading any dependent resources, and potentially packaging everything
+    into a special file format (\l savePageFormat). To check if a download is
+    for a file or a web page, use \l isSavePageDownload.
+
+    \sa WebEngineProfile, WebEngineProfile::downloadRequested,
+    WebEngineProfile::downloadFinished
 */
 
 void QQuickWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClient::DownloadItemInfo &info)
@@ -175,6 +209,12 @@ void QQuickWebEngineDownloadItemPrivate::updateState(QQuickWebEngineDownloadItem
     \qmlmethod void WebEngineDownloadItem::accept()
 
     Accepts the download request, which will start the download.
+
+    If the item is in the \c DownloadRequested state, then it will transition
+    into the \c DownloadInProgress state and the downloading will begin. If the
+    item is in any other state, then nothing will happen.
+
+    \sa state
 */
 
 void QQuickWebEngineDownloadItem::accept()
@@ -191,6 +231,16 @@ void QQuickWebEngineDownloadItem::accept()
     \qmlmethod void WebEngineDownloadItem::cancel()
 
     Cancels the download.
+
+    If the item is in the \c DownloadInProgress state, then it will transition
+    into the \c DownloadCancelled state, the downloading will stop, and
+    partially downloaded files will be deleted from disk.
+
+    If the item is in the \c DownloadCompleted state, then nothing will happen.
+    If the item is in any other state, then it will transition into the \c
+    DownloadCancelled state without further effect.
+
+    \sa state
 */
 
 void QQuickWebEngineDownloadItem::cancel()
@@ -219,6 +269,11 @@ void QQuickWebEngineDownloadItem::cancel()
     \since QtWebEngine 1.6
 
     Pauses the download.
+
+    Has no effect if the state is not \c DownloadInProgress. Does not change the
+    state.
+
+    \sa resume, isPaused
 */
 
 void QQuickWebEngineDownloadItem::pause()
@@ -239,6 +294,11 @@ void QQuickWebEngineDownloadItem::pause()
     \since QtWebEngine 1.6
 
     Resumes the download if it was paused or interrupted.
+
+    Has no effect if the state is not \c DownloadInProgress or \c
+    DownloadInterrupted. Does not change the state.
+
+    \sa pause, isPaused
 */
 void QQuickWebEngineDownloadItem::resume()
 {
@@ -335,8 +395,9 @@ QString QQuickWebEngineDownloadItem::mimeType() const
     The path includes the file name. The default suggested path is the standard
     download location and file name is deduced not to overwrite already existing files.
 
-    The download path can only be set in the \c WebEngineProfile.onDownloadRequested
-    handler before the download is accepted.
+    The download path can only be set in the
+    \l{WebEngineProfile::downloadRequested}{downloadRequested} handler before
+    the download is accepted.
 
     \sa WebEngineProfile::downloadRequested(), accept()
 */
@@ -520,6 +581,8 @@ bool QQuickWebEngineDownloadItem::isFinished() const
     \since QtWebEngine 1.6
 
     Whether this download is paused.
+
+    \sa pause, resume
  */
 
 bool QQuickWebEngineDownloadItem::isPaused() const
