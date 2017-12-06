@@ -84,3 +84,10 @@ optimize_size: gn_args += optimize_for_size=true
     # rtti, linking would fail at build time.
     sanitize_undefined: gn_args += is_ubsan=true use_rtti=true
 }
+
+qtConfig(webengine-v8-snapshot) {
+    gn_args += v8_use_snapshot=true
+} else {
+    gn_args += v8_use_snapshot=false
+}
+

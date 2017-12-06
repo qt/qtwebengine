@@ -21,8 +21,8 @@
             "webengine-spellchecker": "boolean",
             "webengine-native-spellchecker": "boolean",
             "webengine-webrtc": "boolean",
-            "webengine-geolocation" : "boolean",
-
+            "webengine-geolocation": "boolean",
+            "webengine-v8-snapshot": "boolean",
             "alsa": { "type": "boolean", "name": "webengine-alsa" },
             "pulseaudio": { "type": "boolean", "name": "webengine-pulseaudio" },
             "ffmpeg": { "type": "enum", "name": "webengine-system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
@@ -187,6 +187,11 @@
         "alsa": {
             "label": "alsa",
             "test": "alsa",
+            "type": "compile"
+        },
+        "webengine-host-compiler": {
+            "label": "host compiler",
+            "test": "hostcompiler",
             "type": "compile"
         },
         "webengine-khr": {
@@ -396,6 +401,16 @@
             "condition": "config.unix && tests.alsa",
             "output": [ "privateFeature" ]
         },
+        "webengine-v8-snapshot": {
+            "label" : "Use v8 snapshot",
+            "purpuse": "Enables the v8 snapshot, for fast v8 context creation",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-v8-snapshot-support": {
+            "autoDetect": "features.webengine-v8-snapshot",
+            "condition": "!config.unix || !features.webengine-embedded-build || tests.webengine-host-compiler",
+            "output": [ "privateFeature" ]
+        },
         "webengine-system-khr" : {
             "label": "khr",
             "condition": "config.unix && tests.webengine-khr",
@@ -600,6 +615,7 @@
                 "webengine-webrtc",
                 "webengine-system-ninja",
                 "webengine-geolocation",
+                "webengine-v8-snapshot-support",
                 {
                     "type": "feature",
                     "args": "webengine-alsa",

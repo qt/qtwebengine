@@ -30,6 +30,13 @@ defineTest(runConfigure) {
     include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
     QT_FOR_CONFIG += webengine-private
 
+    !qtConfig(webengine-v8-snapshot-support):qtConfig(webengine-v8-snapshot) {
+        skipBuild("V8 snapshot cannot be built. Most likely, the 32-bit host compiler does not work."\
+                  "Please make sure you have 32-bit devel environment installed, or "\
+                  "configure webengine with '-no-webengine-v8-snapshot'")
+        return(false)
+    }
+
     !qtConfig(webengine-gperf) {
         skipBuild("Required gperf could not be found.")
         return(false)
