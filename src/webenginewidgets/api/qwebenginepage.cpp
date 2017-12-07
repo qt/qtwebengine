@@ -2039,7 +2039,7 @@ void QWebEnginePage::setInspectedPage(QWebEnginePage *page)
 
 /*!
     \since 5.11
-    Returns the pagethat is hosting the developer tools
+    Returns the page that is hosting the developer tools
     of this page, if any.
 
     Returns \c nullptr if no developer tools page is set.
