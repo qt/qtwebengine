@@ -289,6 +289,9 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::Favic
         faviconCandidates.append(toFaviconInfo(candidate));
     }
 
+    // Favicon URL can be changed from JavaScript too. Thus we need to reset
+    // the current candidate icon list to not handle previous icon as a candidate.
+    m_faviconManager->resetCandidates();
     m_faviconManager->update(faviconCandidates);
 }
 
