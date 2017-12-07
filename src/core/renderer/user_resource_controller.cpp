@@ -129,6 +129,8 @@ void UserResourceController::RenderViewObserverHelper::runScripts(UserScriptData
 void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
 {
     content::RenderView *renderView = content::RenderView::FromWebView(frame->view());
+    if (!renderView)
+        return;
     const bool isMainFrame = (frame == renderView->GetWebView()->mainFrame());
 
     QList<uint64_t> scriptsToRun = m_viewUserScriptMap.value(globalScriptsIndex).toList();
@@ -192,7 +194,8 @@ void UserResourceController::RenderViewObserverHelper::FrameDetached(blink::WebF
 
 void UserResourceController::RenderViewObserverHelper::OnDestruct()
 {
-    UserResourceController::instance()->renderViewDestroyed(render_view());
+    if (content::RenderView *view = render_view())
+        UserResourceController::instance()->renderViewDestroyed(view);
 }
 
 bool UserResourceController::RenderViewObserverHelper::OnMessageReceived(const IPC::Message &message)
@@ -209,17 +212,20 @@ bool UserResourceController::RenderViewObserverHelper::OnMessageReceived(const I
 
 void UserResourceController::RenderViewObserverHelper::onUserScriptAdded(const UserScriptData &script)
 {
-    UserResourceController::instance()->addScriptForView(script, render_view());
+    if (content::RenderView *view = render_view())
+        UserResourceController::instance()->addScriptForView(script, view);
 }
 
 void UserResourceController::RenderViewObserverHelper::onUserScriptRemoved(const UserScriptData &script)
 {
-    UserResourceController::instance()->removeScriptForView(script, render_view());
+    if (content::RenderView *view = render_view())
+        UserResourceController::instance()->removeScriptForView(script, view);
 }
 
 void UserResourceController::RenderViewObserverHelper::onScriptsCleared()
 {
-    UserResourceController::instance()->clearScriptsForView(render_view());
+    if (content::RenderView *view = render_view())
+        UserResourceController::instance()->clearScriptsForView(view);
 }
 
 UserResourceController *UserResourceController::instance()
