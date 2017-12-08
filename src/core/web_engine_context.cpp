@@ -69,6 +69,7 @@
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/ipc/host/gpu_switches.h"
 #include "net/base/port_util.h"
 #include "ppapi/features/features.h"
 #include "ui/events/event_switches.h"
@@ -342,6 +343,8 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
     // Same problem with Pepper using OpenGL images.
     parsedCommandLine->AppendSwitch(switches::kDisablePepper3DImageChromium);
+    // Same problem with select popups.
+    parsedCommandLine->AppendSwitch(switches::kDisableNativeGpuMemoryBuffers);
 #endif
 
 #if defined(Q_OS_WIN)
