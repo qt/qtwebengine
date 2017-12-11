@@ -48,6 +48,8 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
+#include "net/base/data_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "ui/gfx/geometry/size.h"
@@ -57,6 +59,11 @@ namespace QtWebEngineCore {
 static inline bool isResourceUrl(const QUrl &url)
 {
     return !url.scheme().compare(QLatin1String("qrc"));
+}
+
+static inline bool isDataUrl(const QUrl &url)
+{
+    return !url.scheme().compare(QLatin1String(url::kDataScheme));
 }
 
 static inline unsigned area(const QSize &size)
@@ -82,7 +89,7 @@ int FaviconManagerPrivate::downloadIcon(const QUrl &url)
     int id;
 
     bool cached = m_icons.contains(url);
-    if (isResourceUrl(url) || cached) {
+    if (isResourceUrl(url) || isDataUrl(url) || cached) {
         id = --fakeId;
         m_pendingRequests.insert(id, url);
     } else {
@@ -124,8 +131,18 @@ void FaviconManagerPrivate::downloadPendingRequests()
         QIcon icon;
 
         QUrl requestUrl = it.value();
-        if (isResourceUrl(requestUrl) && !m_icons.contains(requestUrl))
-            icon = QIcon(requestUrl.toString().remove(0, 3));
+        if (!m_icons.contains(requestUrl)) {
+            if (isResourceUrl(requestUrl)) {
+                icon = QIcon(requestUrl.toString().remove(0, 3));
+            } else if (isDataUrl(requestUrl)) {
+                std::string mime_type, char_set, data;
+                if (net::DataURL::Parse(toGurl(requestUrl), &mime_type, &char_set, &data) && !data.empty()) {
+                    const unsigned char *src_data = reinterpret_cast<const unsigned char *>(data.data());
+                    QImage image = QImage::fromData(src_data, data.size());
+                    icon.addPixmap(QPixmap::fromImage(image).copy());
+                }
+            }
+        }
 
         storeIcon(it.key(), icon);
     }
