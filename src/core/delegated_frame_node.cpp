@@ -753,6 +753,7 @@ void DelegatedFrameNode::preprocess()
 
     if (!mailboxesToFetch.isEmpty())
         fetchAndSyncMailboxes(mailboxesToFetch);
+#endif
 
     // Then render any intermediate RenderPass in order.
     typedef QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > Pair;
@@ -762,7 +763,6 @@ void DelegatedFrameNode::preprocess()
         // Proceed with the actual update.
         pair.second->updateTexture();
     }
-#endif
 }
 
 static YUVVideoMaterial::ColorSpace toQt(cc::YUVVideoDrawQuad::ColorSpace color_space)
