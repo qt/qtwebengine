@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -124,7 +124,9 @@ private:
 };
 
 
-PdfiumDocumentWrapperQt::PdfiumDocumentWrapperQt(const void *pdfData, size_t size, const QSize& imageSize, const char *password)
+PdfiumDocumentWrapperQt::PdfiumDocumentWrapperQt(const void *pdfData, size_t size,
+                                                 const QSize& imageSize,
+                                                 const char *password)
     : m_imageSize(imageSize * 2.0)
 {
     Q_ASSERT(pdfData);
@@ -148,21 +150,13 @@ QImage PdfiumDocumentWrapperQt::pageAsQImage(size_t index)
         return QImage();
     }
 
-    PdfiumPageWrapperQt *pageWrapper = nullptr;
-    if (!m_cachedPages.contains(index)) {
-        pageWrapper = new PdfiumPageWrapperQt(m_documentHandle, index,
-                                              m_imageSize.width(), m_imageSize.height());
-        m_cachedPages.insert(index, pageWrapper);
-    } else {
-        pageWrapper = m_cachedPages.value(index);
-    }
-
-    return pageWrapper->image();
+    PdfiumPageWrapperQt pageWrapper(m_documentHandle, index,
+                                    m_imageSize.width(), m_imageSize.height());
+    return pageWrapper.image();
 }
 
 PdfiumDocumentWrapperQt::~PdfiumDocumentWrapperQt()
 {
-    qDeleteAll(m_cachedPages);
     FPDF_CloseDocument(m_documentHandle);
     if (--m_libraryUsers == 0)
         FPDF_DestroyLibrary();

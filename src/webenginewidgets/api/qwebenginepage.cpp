@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -143,9 +143,11 @@ static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
     QPainter painter;
     if (!painter.begin(&printer)) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
-        qWarning("Failure to print on printer %ls: Could not open printer for painting.", qUtf16Printable(printer.printerName()));
+        qWarning("Failure to print on printer %ls: Could not open printer for painting.",
+                  qUtf16Printable(printer.printerName()));
 #else
-        qWarning("Failure to print on printer %s: Could not open printer for painting.", qPrintable(printer.printerName()));
+        qWarning("Failure to print on printer %s: Could not open printer for painting.",
+                 qPrintable(printer.printerName()));
 #endif
         return false;
     }
