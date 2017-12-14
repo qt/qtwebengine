@@ -57,6 +57,10 @@ TestWebEngineView {
         function mouseTripleClick(item, x, y) {
             mouseMultiClick(item, x, y, 3);
         }
+
+        function mouseQuadraClick(item, x, y) {
+            mouseMultiClick(item, x, y, 4);
+        }
     }
 
 
@@ -107,6 +111,19 @@ TestWebEngineView {
             tryVerify(function() { return getTextSelection() == "The Qt Company" });
 
             mouseClick(webEngineView, center.x, center.y);
+            tryVerify(function() { return getTextSelection() == "" });
+        }
+
+        function test_quadraClick() {
+            webEngineView.settings.focusOnNavigationEnabled = true;
+            webEngineView.loadHtml("<html><body onload='document.getElementById(\"input\").focus()'>" +
+                                   "<form><input id='input' width='150' type='text' value='The Qt Company' /></form>" +
+                                   "</body></html>");
+            verify(webEngineView.waitForLoadSucceeded());
+
+            var center = getElementCenter("input");
+            webEngineView.testSupport.mouseQuadraClick(webEngineView, center.x, center.y);
+            verifyElementHasFocus("input");
             tryVerify(function() { return getTextSelection() == "" });
         }
     }

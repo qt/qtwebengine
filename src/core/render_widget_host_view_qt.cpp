@@ -1197,7 +1197,8 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
     if (event->type() == QMouseEvent::MouseButtonPress) {
         if (event->button() != m_clickHelper.lastPressButton
             || (event->timestamp() - m_clickHelper.lastPressTimestamp > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
-            || (event->pos() - m_clickHelper.lastPressPosition).manhattanLength() > qGuiApp->styleHints()->startDragDistance())
+            || (event->pos() - m_clickHelper.lastPressPosition).manhattanLength() > qGuiApp->styleHints()->startDragDistance()
+            || m_clickHelper.clickCounter >= 3)
             m_clickHelper.clickCounter = 0;
 
         m_clickHelper.lastPressTimestamp = event->timestamp();
