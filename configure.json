@@ -534,7 +534,7 @@
             "output": [ "privateFeature" ]
         },
         "webengine-sanitizer" : {
-            "label": "Sanitizer ",
+            "label": "Sanitizer",
             "autoDetect": "config.sanitizer && tests.webengine-sanitizer",
             "condition": "config.sanitizer",
             "output": [ "privateFeature" ]
@@ -561,6 +561,11 @@
             "type": "warning",
             "condition": "!features.webengine-flex",
             "message": "flex is required to build QtWebEngine."
+        },
+        {
+            "type": "warning",
+            "condition": "config.sanitizer && !tests.webengine-sanitizer && !features.webengine-sanitizer",
+            "message": "Qt WebEngine cannot be built with the chosen sanitizer configuration. Check config.log for details or use -feature-webengine-sanitizer to force the build."
         }
     ],
 
@@ -586,6 +591,11 @@
                     "type": "feature",
                     "args": "webengine-pulseaudio",
                     "condition": "config.unix"
+                },
+                {
+                    "type": "feature",
+                    "args": "webengine-sanitizer",
+                    "condition": "config.sanitizer"
                 },
                 {
                    "section": "Optional system libraries used",
