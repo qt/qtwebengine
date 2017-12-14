@@ -65,12 +65,12 @@ URLRequestCustomJob::URLRequestCustomJob(URLRequest *request,
 URLRequestCustomJob::~URLRequestCustomJob()
 {
     m_proxy->m_job = nullptr;
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&URLRequestCustomJobProxy::release,
-                                     m_proxy));
     if (m_device && m_device->isOpen())
         m_device->close();
     m_device = nullptr;
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     base::Bind(&URLRequestCustomJobProxy::release,
+                                     m_proxy));
 }
 
 void URLRequestCustomJob::Start()
