@@ -1023,7 +1023,8 @@ static inline double currentTimeForEvent(const QEvent *event)
 {
     Q_ASSERT(event);
 
-    if (const QInputEvent *inputEvent = static_cast<const QInputEvent *>(event)) {
+    if (event->type() != QEvent::Leave) {
+        const QInputEvent *inputEvent = static_cast<const QInputEvent *>(event);
         if (inputEvent->timestamp())
             return static_cast<double>(inputEvent->timestamp()) / 1000;
     }
