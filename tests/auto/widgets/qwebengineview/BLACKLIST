@@ -3,3 +3,6 @@ windows
 
 [mouseLeave]
 *
+
+[textSelectionOutOfInputField]
+windows
