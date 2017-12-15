@@ -29,6 +29,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QMimeDatabase>
+#include <QNetworkProxy>
 #include <QOpenGLWidget>
 #include <QPaintEngine>
 #include <QPushButton>
@@ -210,6 +211,7 @@ private Q_SLOTS:
     void viewSource();
     void viewSourceURL_data();
     void viewSourceURL();
+    void proxyConfigWithUnexpectedHostPortPair();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4351,6 +4353,23 @@ void tst_QWebEnginePage::viewSourceURL()
     QCOMPARE(page.requestedUrl(), requestedUrl);
     QCOMPARE(page.title(), title);
     QVERIFY(!page.action(QWebEnginePage::ViewSource)->isEnabled());
+}
+
+Q_DECLARE_METATYPE(QNetworkProxy::ProxyType);
+
+void tst_QWebEnginePage::proxyConfigWithUnexpectedHostPortPair()
+{
+    // Chromium expects a proxy of type NoProxy to not have a host or port set.
+
+    QNetworkProxy proxy;
+    proxy.setType(QNetworkProxy::NoProxy);
+    proxy.setHostName(QStringLiteral("127.0.0.1"));
+    proxy.setPort(244);
+    QNetworkProxy::setApplicationProxy(proxy);
+
+    QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
+    m_page->load(QStringLiteral("http://127.0.0.1:245/"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QWebEnginePage)
