@@ -223,6 +223,11 @@
             "type": "detectPython2",
             "log": "location"
         },
+        "webengine-host-pkg-config": {
+            "label": "host pkg-config",
+            "type": "detectHostPkgConfig",
+            "log": "path"
+        },
         "webengine-gperf": {
             "label": "gperf",
             "type": "detectGperf"
@@ -353,6 +358,14 @@
             "output": [
                 "privateFeature",
                 { "type": "varAssign", "name": "QMAKE_PYTHON2", "value": "tests.webengine-python2.location" }
+            ]
+        },
+        "webengine-host-pkg-config": {
+            "label": "host-pkg-config",
+            "condition": "config.unix && tests.webengine-host-pkg-config",
+            "output": [
+                "privateFeature",
+                { "type": "varAssign", "name": "QMAKE_PKG_CONFIG_HOST", "value": "tests.webengine-host-pkg-config.path" }
             ]
         },
         "webengine-gperf": {
@@ -566,6 +579,11 @@
             "type": "warning",
             "condition": "config.sanitizer && !tests.webengine-sanitizer && !features.webengine-sanitizer",
             "message": "Qt WebEngine cannot be built with the chosen sanitizer configuration. Check config.log for details or use -feature-webengine-sanitizer to force the build."
+        },
+        {
+            "type": "warning",
+            "condition": "config.unix && !features.webengine-host-pkg-config",
+            "message": "host pkg-config not found"
         }
     ],
 

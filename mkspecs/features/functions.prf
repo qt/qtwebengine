@@ -115,3 +115,18 @@ defineTest(skipBuild) {
     skipBuildReason = "$$skipBuildReason $${EOL}$$1"
     export(skipBuildReason)
 }
+
+defineReplace(pkgConfigHostExecutable) {
+    wrapper_name = $$OUT_PWD/pkg-config-host_wrapper.sh
+    wrapper_cmd = $$QMAKE_PKG_CONFIG_HOST
+    isEmpty(wrapper_cmd): wrapper_cmd = pkg-config
+    wrapper_content = \
+        "$$LITERAL_HASH!/bin/sh" \
+        "unset PKG_CONFIG_LIBDIR" \
+        "unset PKG_CONFIG_SYSROOT_DIR" \
+        "exec $$wrapper_cmd \"$@\""
+    !build_pass:!write_file($$wrapper_name, wrapper_content, exe): error()
+    QMAKE_DISTCLEAN += $$wrapper_name
+    export(QMAKE_DISTCLEAN)
+    return($$system_quote($$system_path($$wrapper_name)))
+}
