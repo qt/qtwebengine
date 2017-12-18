@@ -51,6 +51,7 @@
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "chrome/browser/printing/print_job_manager.h"
 #endif // defined(ENABLE_BASIC_PRINTING)
+#include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -68,6 +69,7 @@
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/ipc/host/gpu_switches.h"
 #include "net/base/port_util.h"
 #include "ppapi/features/features.h"
 #include "ui/events/event_switches.h"
@@ -343,6 +345,8 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
     // Same problem with Pepper using OpenGL images.
     parsedCommandLine->AppendSwitch(switches::kDisablePepper3DImageChromium);
+    // Same problem with select popups.
+    parsedCommandLine->AppendSwitch(switches::kDisableNativeGpuMemoryBuffers);
 #endif
 
 #if defined(Q_OS_WIN)
@@ -493,6 +497,9 @@ WebEngineContext::WebEngineContext()
     // thread to avoid a thread check assertion in its constructor when it
     // first gets referenced on the IO thread.
     MediaCaptureDevicesDispatcher::GetInstance();
+
+    // Initialize WebCacheManager here to ensure its subscription to render process creation events.
+    web_cache::WebCacheManager::GetInstance();
 
     base::ThreadRestrictions::SetIOAllowed(true);
 

@@ -8,12 +8,12 @@ SUBDIRS += \
     qwebenginefaviconmanager \
     qwebenginepage \
     qwebenginehistory \
-    qwebenginehistoryinterface \
     qwebengineinspector \
     qwebengineprofile \
     qwebengineschemes \
     qwebenginescript \
     qwebenginesettings \
+    qwebengineshutdown \
     qwebengineview
 
 qtConfig(accessibility) {
