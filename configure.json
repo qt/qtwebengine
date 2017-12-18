@@ -35,7 +35,7 @@
                 { "type": "pkgConfig", "args": "libpulse >= 0.9.10 libpulse-mainloop-glib" }
             ]
         },
-        "icu": {
+        "webengine-icu": {
             "label": "icu >= 53",
             "sources": [
                 { "type": "pkgConfig", "args": "icu-uc >= 53 icu-i18n >= 53" }
@@ -169,7 +169,7 @@
         "system-icu": {
             "label": "ICU",
             "autoDetect": false,
-            "condition": "libs.icu",
+            "condition": "libs.webengine-icu",
             "output": [ "privateFeature" ]
         },
         "system-re2": {
