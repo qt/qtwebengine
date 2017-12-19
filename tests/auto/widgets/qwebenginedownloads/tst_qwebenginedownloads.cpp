@@ -622,6 +622,8 @@ void tst_QWebEngineDownloads::downloadViaSetUrl()
 
     auto indexFavRR = waitForFaviconRequest(&server);
     QVERIFY(indexFavRR);
+    indexRR.reset();
+    indexFavRR.reset();
 
     QTRY_COMPARE(loadSpy.count(), 1);
     QTRY_COMPARE(urlSpy.count(), 1);
@@ -642,16 +644,20 @@ void tst_QWebEngineDownloads::downloadViaSetUrl()
 
         auto fileRR = waitForRequest(&server);
         QVERIFY(fileRR);
+        QCOMPARE(fileRR->requestMethod(), QByteArrayLiteral("GET"));
+        QCOMPARE(fileRR->requestPath(), QByteArrayLiteral("/file"));
         fileRR->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
         fileRR->setResponseBody(QByteArrayLiteral("redacted"));
         fileRR->sendResponse();
 
-        auto fileFavRR = waitForFaviconRequest(&server);
-        QVERIFY(fileFavRR);
+// Since 63 we no longer get favicon requests here:
+//        auto fileFavRR = waitForFaviconRequest(&server);
+//        QVERIFY(fileFavRR);
 
         QTRY_COMPARE(loadSpy.count(), 1);
         QTRY_COMPARE(urlSpy.count(), 2);
         QTRY_COMPARE(downloadUrls.count(), 1);
+        fileRR.reset();
         QCOMPARE(loadSpy.takeFirst().value(0).toBool(), false);
         QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), fileUrl);
         QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), indexUrl);

@@ -88,6 +88,9 @@ public:
 
     void interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
+        // Since 63 we also intercept some unrelated blob requests..
+        if (info.requestUrl().scheme() == QLatin1String("blob"))
+            return;
         info.block(info.requestMethod() != QByteArrayLiteral("GET"));
         if (shouldIntercept && info.requestUrl().toString().endsWith(QLatin1String("__placeholder__")))
             info.redirect(QUrl("qrc:///resources/content.html"));
@@ -152,6 +155,9 @@ public:
 
     void interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
+        // Since 63 we also intercept the original data requests
+        if (info.requestUrl().scheme() == QLatin1String("data"))
+            return;
         if (info.resourceType() == QWebEngineUrlRequestInfo::ResourceTypeFavicon)
             return;
 
