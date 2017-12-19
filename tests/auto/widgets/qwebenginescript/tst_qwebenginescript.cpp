@@ -81,15 +81,12 @@ void tst_QWebEngineScript::injectionPoint()
     s.setInjectionPoint(static_cast<QWebEngineScript::InjectionPoint>(injectionPoint));
     s.setWorldId(QWebEngineScript::MainWorld);
     QWebEnginePage page;
-    page.scripts().insert(s);
-    page.setHtml(QStringLiteral("<html><head><script> var contents;") + testScript
-                 + QStringLiteral("document.addEventListener(\"load\", setTimeout(function(event) {\
-                                   document.body.innerText = contents;\
-                                   }, 550));\
-                                   </script></head><body></body></html>"));
     QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    page.scripts().insert(s);
+    page.setHtml(QStringLiteral("<html><head><script>") + testScript + QStringLiteral("</script></head><body></body></html>"));
     QVERIFY(spyFinished.wait());
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "document.body.innerText"), QVariant::fromValue(QStringLiteral("SUCCESS")));
+    const QVariant expected(QVariant::fromValue(QStringLiteral("SUCCESS")));
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "document.myContents"), expected);
 }
 
 void tst_QWebEngineScript::injectionPoint_data()
@@ -97,17 +94,21 @@ void tst_QWebEngineScript::injectionPoint_data()
     QTest::addColumn<int>("injectionPoint");
     QTest::addColumn<QString>("testScript");
     QTest::newRow("DocumentCreation") << static_cast<int>(QWebEngineScript::DocumentCreation)
-                                      << QStringLiteral("var contents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";");
+                                      << QStringLiteral("document.myContents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";");
     QTest::newRow("DocumentReady") << static_cast<int>(QWebEngineScript::DocumentReady)
     // use a zero timeout to make sure the user script got a chance to run as the order is undefined.
                                    << QStringLiteral("document.addEventListener(\"DOMContentLoaded\", function() {\
-                                                      setTimeout(function() {\
-                                                      contents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";\
-                                                      }, 0)});");
-    QTest::newRow("Deferred") << static_cast<int>(QWebEngineScript::Deferred)
-                              << QStringLiteral("document.addEventListener(\"load\", setTimeout(function(event) {\
-                                                 contents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";\
-                                                 }, 500));");
+                                                        setTimeout(function() {\
+                                                          document.myContents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";\
+                                                        }, 0)});");
+    QTest::newRow("Deferred") << static_cast<int>(QWebEngineScript::DocumentReady)
+                              << QStringLiteral("document.onreadystatechange = function() { \
+                                                   if (document.readyState == \"complete\") { \
+                                                     setTimeout(function() {\
+                                                       document.myContents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";\
+                                                     }, 0);\
+                                                   } \
+                                                 };");
 }
 
 void tst_QWebEngineScript::scriptWorld()
