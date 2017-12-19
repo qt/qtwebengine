@@ -50,11 +50,11 @@
 #include "components/printing/browser/print_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "printing/printed_pages_source.h"
 
 struct PrintHostMsg_DidPrintPage_Params;
 
 namespace content {
+class RenderFrameHost;
 class RenderViewHost;
 }
 
@@ -70,7 +70,6 @@ namespace QtWebEngineCore {
 class PrintViewManagerBaseQt
         : public content::NotificationObserver
         , public printing::PrintManager
-        , public printing::PrintedPagesSource
 {
 public:
     ~PrintViewManagerBaseQt() override;
@@ -78,8 +77,7 @@ public:
     // Whether printing is enabled or not.
     void UpdatePrintingEnabled();
 
-    // PrintedPagesSource implementation.
-    base::string16 RenderSourceName() override;
+    virtual base::string16 RenderSourceName();
 
 protected:
     explicit PrintViewManagerBaseQt(content::WebContents*);
@@ -88,10 +86,8 @@ protected:
     // Cancels the print job.
     void NavigationStopped() override;
 
-    // Terminates or cancels the print job if one was pending.
-    void RenderProcessGone(base::TerminationStatus status) override;
-
     // content::WebContentsObserver implementation.
+    void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
     bool OnMessageReceived(const IPC::Message& message,
                            content::RenderFrameHost* render_frame_host) override;
 
@@ -132,7 +128,6 @@ protected:
     bool RunInnerMessageLoop();
 
     void TerminatePrintJob(bool cancel);
-    void PrintingDone(bool success);
     void DisconnectFromCurrentPrintJob();
 
     bool CreateNewPrintJob(printing::PrintJobWorkerOwner* job);

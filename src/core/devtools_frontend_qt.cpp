@@ -123,9 +123,9 @@ int ResponseWriter::Write(net::IOBuffer *buffer, int num_bytes, const net::Compl
 
     content::BrowserThread::PostTask(
                 content::BrowserThread::UI, FROM_HERE,
-                base::Bind(&DevToolsFrontendQt::CallClientFunction, shell_devtools_,
-                           "DevToolsAPI.streamWrite", base::Owned(id),
-                           base::Owned(chunkValue), nullptr));
+                base::BindOnce(&DevToolsFrontendQt::CallClientFunction,
+                               shell_devtools_, "DevToolsAPI.streamWrite",
+                               base::Owned(id), base::Owned(chunkValue), nullptr));
     return num_bytes;
 }
 
@@ -259,6 +259,8 @@ void DevToolsFrontendQt::DocumentAvailableInMainFrame()
     scoped_refptr<content::DevToolsAgentHost> agent_host =
             content::DevToolsAgentHost::GetOrCreateFor(m_inspectedContents);
     if (agent_host != m_agentHost) {
+        if (m_agentHost)
+            m_agentHost->DetachClient(this);
         m_agentHost = agent_host;
         m_agentHost->AttachClient(this);
         if (m_inspect_element_at_x != -1) {
@@ -274,8 +276,10 @@ void DevToolsFrontendQt::WebContentsDestroyed()
     if (m_inspectedContents)
         static_cast<WebContentsDelegateQt *>(m_inspectedContents->GetDelegate())->webContentsAdapter()->devToolsFrontendDestroyed(this);
 
-    if (m_agentHost)
+    if (m_agentHost) {
         m_agentHost->DetachClient(this);
+        m_agentHost = nullptr;
+    }
     delete this;
 }
 
@@ -327,8 +331,6 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
     dict->GetList("params", &params);
 
     if (method == "dispatchProtocolMessage" && params && params->GetSize() == 1) {
-        if (!m_agentHost || !m_agentHost->IsAttached())
-            return;
         std::string protocol_message;
         if (!params->GetString(0, &protocol_message))
             return;
@@ -386,7 +388,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
         fetcher->Start();
         return;
     } else if (method == "getPreferences") {
-        m_preferences = *m_prefStore->GetValues();
+        m_preferences = std::move(*m_prefStore->GetValues());
         SendMessageAck(request_id, &m_preferences);
         return;
     } else if (method == "setPreference") {

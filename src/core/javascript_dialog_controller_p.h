@@ -51,8 +51,11 @@
 // We mean it.
 //
 
+#include "base/callback.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+
 #include "web_contents_adapter_client.h"
+
 #include <QString>
 
 namespace content {
@@ -67,7 +70,7 @@ public:
     void dialogFinished(bool accepted, const base::string16 &promptValue);
     JavaScriptDialogControllerPrivate(WebContentsAdapterClient::JavascriptDialogType, const QString &message, const QString &prompt
                                       , const QString& title, const QUrl &securityOrigin
-                                      , const content::JavaScriptDialogManager::DialogClosedCallback &, content::WebContents *);
+                                      , content::JavaScriptDialogManager::DialogClosedCallback &&, content::WebContents *);
 
     WebContentsAdapterClient::JavascriptDialogType type;
     QString message;

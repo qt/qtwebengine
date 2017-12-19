@@ -249,8 +249,8 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout, bool 
         , web_contents()->GetRenderViewHost()->GetWebkitPreferences().should_print_backgrounds);
     m_printSettings->SetInteger(printing::kSettingColor,
                                 printInColor ? printing::COLOR : printing::GRAYSCALE);
-    return Send(new PrintMsg_InitiatePrintPreview(
-                    web_contents()->GetMainFrame()->GetRoutingID(), false));
+    return web_contents()->GetMainFrame()->Send(
+                new PrintMsg_InitiatePrintPreview(web_contents()->GetMainFrame()->GetRoutingID(), false));
 }
 
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -273,10 +273,8 @@ bool PrintViewManagerQt::OnMessageReceived(const IPC::Message& message, content:
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PrintViewManagerQt, message)
       IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview,
-                                 OnRequestPrintPreview)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_MetafileReadyForPrinting,
-                                 OnMetafileReadyForPrinting);
+      IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview, OnRequestPrintPreview)
+      IPC_MESSAGE_HANDLER(PrintHostMsg_MetafileReadyForPrinting, OnMetafileReadyForPrinting);
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled || PrintManager::OnMessageReceived(message, render_frame_host);
@@ -293,10 +291,11 @@ void PrintViewManagerQt::resetPdfState()
 // IPC handlers
 
 void PrintViewManagerQt::OnRequestPrintPreview(
-    const PrintHostMsg_RequestPrintPreview_Params& params)
+    const PrintHostMsg_RequestPrintPreview_Params &/*params*/)
 {
-    Send(new PrintMsg_PrintPreview(
-             web_contents()->GetMainFrame()->GetRoutingID(), *m_printSettings));
+    auto *rfh = web_contents()->GetMainFrame();
+    rfh->Send(new PrintMsg_PrintPreview(rfh->GetRoutingID(), *m_printSettings));
+    rfh->Send(new PrintMsg_ClosePrintPreviewDialog(rfh->GetRoutingID()));
 }
 
 void PrintViewManagerQt::OnMetafileReadyForPrinting(

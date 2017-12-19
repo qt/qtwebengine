@@ -35,15 +35,19 @@ source_set("qtwebengine_spellcheck_sources") {
 source_set("qtwebengine_sources") {
   include_dirs = [
     "//skia/config",
+    "//third_party/boringssl/src/include",
     "//third_party/skia/include/core"
   ]
   deps = [
+      "//components/nacl/common:features",
       "//extensions/features:features",
   ]
   sources = [
     "//chrome/browser/media/webrtc/desktop_media_list.h",
     "//chrome/browser/media/webrtc/desktop_streams_registry.cc",
     "//chrome/browser/media/webrtc/desktop_streams_registry.h",
+    "//chrome/browser/net/chrome_mojo_proxy_resolver_factory.cc",
+    "//chrome/browser/net/chrome_mojo_proxy_resolver_factory.h",
     "//chrome/browser/profiles/profile.cc",
     "//chrome/browser/profiles/profile.h",
     "//chrome/browser/ui/webui/devtools_ui.cc",
@@ -64,8 +68,6 @@ source_set("qtwebengine_sources") {
     "//chrome/common/pref_names.h",
     "//chrome/common/url_constants.cc",
     "//chrome/common/url_constants.h",
-    "//components/prefs/in_memory_pref_store.cc",
-    "//components/prefs/in_memory_pref_store.h",
     "//extensions/common/constants.cc",
     "//extensions/common/constants.h",
     "//extensions/common/url_pattern.cc",

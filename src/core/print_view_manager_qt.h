@@ -55,7 +55,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "printing/features/features.h"
-#include "printing/printed_pages_source.h"
 
 struct PrintHostMsg_RequestPrintPreview_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
@@ -97,7 +96,6 @@ public:
                                 const PrintToPDFCallback &callback);
 #endif  // ENABLE_BASIC_PRINTING
 
-    // PrintedPagesSource implementation.
     base::string16 RenderSourceName() override;
 
 protected:

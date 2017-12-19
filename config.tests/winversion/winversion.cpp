@@ -26,8 +26,8 @@
 **
 ****************************************************************************/
 
-#if !defined(_MSC_FULL_VER) || _MSC_FULL_VER < 190024213
-#error VS 2015 Update 3 with Cumulative Servicing Release or higher is required
+#if !defined(__clang__) && _MSC_FULL_VER < 191125507
+#error VS 2017 Update 3.2 or higher is required
 #endif
 
 int main(int, char **)

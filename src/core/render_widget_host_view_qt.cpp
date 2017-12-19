@@ -52,7 +52,7 @@
 #include "web_event_factory.h"
 
 #include "base/command_line.h"
-#include "cc/output/direct_renderer.h"
+#include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/browser_main_loop.h"
@@ -732,7 +732,7 @@ void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom:
     m_rendererCompositorFrameSink = frameSink;
 }
 
-void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, cc::CompositorFrame frame)
+void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame)
 {
     bool scrollOffsetChanged = (m_lastScrollOffset != frame.metadata.root_scroll_offset);
     bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);

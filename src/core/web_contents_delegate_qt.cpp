@@ -219,16 +219,6 @@ void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *naviga
     if (!navigation_handle->IsInMainFrame())
         return;
 
-    // Suppress extra loadStarted signal for data URL with specified base URL.
-    if (navigation_handle->GetURL().SchemeIs(url::kDataScheme)) {
-        content::NavigationEntry *pending_entry = navigation_handle->GetWebContents()->GetController().GetPendingEntry();
-
-        if (pending_entry && !pending_entry->GetBaseURLForDataURL().is_empty() &&
-                navigation_handle->GetURL() == pending_entry->GetURL()) {
-            return;
-        }
-    }
-
     // Error-pages are not reported as separate started navigations.
     Q_ASSERT(!navigation_handle->IsErrorPage());
 
@@ -459,7 +449,7 @@ void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const 
 
 void WebContentsDelegateQt::WasShown()
 {
-    web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetRenderProcessHost()->GetID());
+    web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetMainFrame()->GetProcess()->GetID());
 }
 
 void WebContentsDelegateQt::DidFirstVisuallyNonEmptyPaint()

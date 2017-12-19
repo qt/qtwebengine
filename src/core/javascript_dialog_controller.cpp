@@ -40,7 +40,7 @@
 #include "javascript_dialog_controller.h"
 #include "javascript_dialog_controller_p.h"
 
-#include"javascript_dialog_manager_qt.h"
+#include "javascript_dialog_manager_qt.h"
 #include "type_conversion.h"
 
 namespace QtWebEngineCore {
@@ -51,18 +51,18 @@ void JavaScriptDialogControllerPrivate::dialogFinished(bool accepted, const base
     // but hold a shared pointer so the dialog does not get deleted prematurely when running in-process.
     QSharedPointer<JavaScriptDialogController> dialog = JavaScriptDialogManagerQt::GetInstance()->takeDialogForContents(contents);
 
-    callback.Run(accepted, promptValue);
+    std::move(callback).Run(accepted, promptValue);
 }
 
 JavaScriptDialogControllerPrivate::JavaScriptDialogControllerPrivate(WebContentsAdapterClient::JavascriptDialogType t, const QString &msg, const QString &prompt
                                                                      , const QString &title, const QUrl &securityOrigin
-                                                                     , const content::JavaScriptDialogManager::DialogClosedCallback &cb, content::WebContents *c)
+                                                                     , content::JavaScriptDialogManager::DialogClosedCallback &&cb, content::WebContents *c)
     : type(t)
     , message(msg)
     , defaultPrompt(prompt)
     , securityOrigin(securityOrigin)
     , title(title)
-    , callback(cb)
+    , callback(std::move(cb))
     , contents(c)
 {
 }

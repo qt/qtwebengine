@@ -142,9 +142,10 @@ void UserResourceControllerHost::addUserScript(const UserScript &script, WebCont
                 m_perContentsScripts.insert(contents, currentScripts);
             }
         }
-        contents->Send(new RenderFrameObserverHelper_AddScript(contents->GetRenderViewHost()->
-                                                               GetMainFrame()->GetRoutingID(),
-                                                               script.data()));
+        contents->GetRenderViewHost()->Send(
+                    new RenderFrameObserverHelper_AddScript(
+                        contents->GetRenderViewHost()->GetMainFrame()->GetRoutingID(),
+                        script.data()));
     }
 }
 
@@ -180,9 +181,10 @@ bool UserResourceControllerHost::removeUserScript(const UserScript &script, WebC
         QList<UserScript>::iterator it = std::find(list.begin(), list.end(), script);
         if (it == list.end())
             return false;
-        contents->Send(new RenderFrameObserverHelper_RemoveScript(contents->
-                                                                  GetMainFrame()->GetRoutingID(),
-                                                                  (*it).data()));
+        contents->GetRenderViewHost()->Send(
+                    new RenderFrameObserverHelper_RemoveScript(
+                        contents->GetMainFrame()->GetRoutingID(),
+                        (*it).data()));
         list.erase(it);
     }
     return true;
@@ -198,8 +200,8 @@ void UserResourceControllerHost::clearAllScripts(WebContentsAdapter *adapter)
     } else {
         content::WebContents *contents = adapter->webContents();
         m_perContentsScripts.remove(contents);
-        contents->Send(new RenderFrameObserverHelper_ClearScripts(contents->
-                                                                  GetMainFrame()->GetRoutingID()));
+        contents->GetRenderViewHost()->Send(
+                    new RenderFrameObserverHelper_ClearScripts(contents->GetMainFrame()->GetRoutingID()));
     }
 }
 

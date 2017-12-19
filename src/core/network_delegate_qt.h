@@ -46,6 +46,10 @@
 #include <QUrl>
 #include <QSet>
 
+namespace content {
+class WebContents;
+}
+
 namespace QtWebEngineCore {
 
 class URLRequestContextGetterQt;
@@ -60,12 +64,11 @@ public:
         QUrl url;
         bool isMainFrameRequest;
         int navigationType;
-        int renderProcessId;
-        int renderFrameId;
     };
 
     void NotifyNavigationRequestedOnUIThread(net::URLRequest *request,
                                              RequestParams params,
+                                             int frameTreeNodeId,
                                              const net::CompletionCallback &callback);
 
     void CompleteURLRequestOnIOThread(net::URLRequest *request,
@@ -77,15 +80,15 @@ public:
     void OnURLRequestDestroyed(net::URLRequest* request) override;
     bool OnCanSetCookie(const net::URLRequest&, const std::string&, net::CookieOptions*) override;
     int OnBeforeStartTransaction(net::URLRequest *request, const net::CompletionCallback &callback, net::HttpRequestHeaders *headers) override;
-    virtual void OnBeforeSendHeaders(net::URLRequest* request, const net::ProxyInfo& proxy_info,
-                                     const net::ProxyRetryInfoMap& proxy_retry_info, net::HttpRequestHeaders* headers) override;
+    void OnBeforeSendHeaders(net::URLRequest* request, const net::ProxyInfo& proxy_info,
+                             const net::ProxyRetryInfoMap& proxy_retry_info, net::HttpRequestHeaders* headers) override;
     void OnStartTransaction(net::URLRequest *request, const net::HttpRequestHeaders &headers) override;
     int OnHeadersReceived(net::URLRequest*, const net::CompletionCallback&, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*) override;
     void OnBeforeRedirect(net::URLRequest*, const GURL&) override;
     void OnResponseStarted(net::URLRequest*) override;
     void OnNetworkBytesReceived(net::URLRequest*, int64_t) override;
     void OnNetworkBytesSent(net::URLRequest *, int64_t) override;
-    void OnCompleted(net::URLRequest*, bool) override;
+    void OnCompleted(net::URLRequest *request, bool started, int net_error) override;
     void OnPACScriptError(int, const base::string16&) override;
     net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, const AuthCallback&, net::AuthCredentials*) override;
     bool OnCanGetCookies(const net::URLRequest&, const net::CookieList&) override;
@@ -96,10 +99,8 @@ public:
 
     bool OnCanQueueReportingReport(const url::Origin& origin) const override;
     bool OnCanSendReportingReport(const url::Origin& origin) const override;
-    virtual bool OnCanSetReportingClient(const url::Origin& origin,
-                                         const GURL& endpoint) const override;
-    virtual bool OnCanUseReportingClient(const url::Origin& origin,
-                                         const GURL& endpoint) const override;
+    bool OnCanSetReportingClient(const url::Origin& origin, const GURL& endpoint) const override;
+    bool OnCanUseReportingClient(const url::Origin& origin, const GURL& endpoint) const override;
 
     bool canSetCookies(const GURL &first_party, const GURL &url, const std::string &cookie_line) const;
     bool canGetCookies(const GURL &first_party, const GURL &url) const;

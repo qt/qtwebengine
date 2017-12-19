@@ -390,7 +390,6 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableGpuShaderDiskCache);
         parsedCommandLine->AppendSwitch(switches::kDisable2dCanvasAntialiasing);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
-        parsedCommandLine->AppendSwitchASCII(switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);
     }
 
     GLContextHelper::initialize();

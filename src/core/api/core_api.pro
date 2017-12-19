@@ -3,7 +3,7 @@ DESTDIR = $$OUT_PWD/$$getConfigDir()
 
 TEMPLATE = lib
 
-CONFIG += staticlib c++11
+CONFIG += staticlib c++14
 QT += network core-private
 QT_PRIVATE += webenginecoreheaders-private
 

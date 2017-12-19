@@ -258,7 +258,7 @@ void tst_QWebEngineFaviconManager::errorPageDisabled()
     QUrl url("http://url.invalid");
     m_page->load(url);
 
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 12000);
     QCOMPARE(iconUrlChangedSpy.count(), 0);
     QCOMPARE(iconChangedSpy.count(), 0);
 

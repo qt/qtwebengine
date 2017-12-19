@@ -177,6 +177,11 @@ std::unique_ptr<content::ZoomLevelDelegate> BrowserContextQt::CreateZoomLevelDel
     return nullptr;
 }
 
+content::BackgroundFetchDelegate* BrowserContextQt::GetBackgroundFetchDelegate()
+{
+    return nullptr;
+}
+
 content::BackgroundSyncController* BrowserContextQt::GetBackgroundSyncController()
 {
     return nullptr;

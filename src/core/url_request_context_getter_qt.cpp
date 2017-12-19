@@ -42,8 +42,10 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
+#include "content/network/proxy_service_mojo.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_features.h"
@@ -66,8 +68,6 @@
 #include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
-#include "net/proxy/proxy_service_v8.h"
-#include "net/proxy/proxy_resolver_v8.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -224,11 +224,14 @@ void URLRequestContextGetterQt::generateStorage()
 
     // We must stop all requests before deleting their backends.
     if (m_storage) {
+        m_cookieDelegate->setCookieMonster(0);
+        m_storage->set_cookie_store(0);
         cancelAllUrlRequests();
         // we need to get rid of dangling pointer due to coming storage deletion
         m_urlRequestContext->set_http_transaction_factory(0);
         m_httpNetworkSession.reset();
     }
+
 
     m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
 
@@ -248,12 +251,13 @@ void URLRequestContextGetterQt::generateStorage()
     if (!m_dhcpProxyScriptFetcherFactory)
         m_dhcpProxyScriptFetcherFactory.reset(new net::DhcpProxyScriptFetcherFactory);
 
-    m_storage->set_proxy_service(net::CreateProxyServiceUsingV8ProxyResolver(
+    m_storage->set_proxy_service(content::CreateProxyServiceUsingMojoFactory(
+                                     ChromeMojoProxyResolverFactory::GetInstance(),
                                      std::unique_ptr<net::ProxyConfigService>(proxyConfigService),
                                      new net::ProxyScriptFetcherImpl(m_urlRequestContext.get()),
                                      m_dhcpProxyScriptFetcherFactory->Create(m_urlRequestContext.get()),
                                      host_resolver.get(),
-                                     NULL /* NetLog */,
+                                     nullptr /* NetLog */,
                                      m_networkDelegate.get()));
 
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
@@ -303,8 +307,8 @@ void URLRequestContextGetterQt::generateCookieStore()
     if (!m_channelIdPath.isEmpty() && m_persistentCookiesPolicy != BrowserContextAdapter::NoPersistentCookies) {
         channel_id_db = new net::SQLiteChannelIDStore(
                 toFilePath(m_channelIdPath),
-                BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-                        BrowserThread::GetBlockingPool()->GetSequenceToken()));
+                base::CreateSequencedTaskRunnerWithTraits(
+                                {base::MayBlock(), base::TaskPriority::BACKGROUND}));
     }
 
     m_storage->set_channel_id_service(
@@ -554,9 +558,11 @@ void URLRequestContextGetterQt::generateJobFactory()
     m_protocolHandlers.clear();
 
     jobFactory->SetProtocolHandler(url::kDataScheme, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::DataProtocolHandler()));
-    jobFactory->SetProtocolHandler(url::kFileScheme, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FileProtocolHandler(
-        content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
+    jobFactory->SetProtocolHandler(url::kFileScheme,
+                                   std::make_unique<net::FileProtocolHandler>(
+                                                        base::CreateTaskRunnerWithTraits({base::MayBlock(),
+                                                                                          base::TaskPriority::BACKGROUND,
+                                                                                          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
     jobFactory->SetProtocolHandler(kQrcSchemeQt, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new QrcProtocolHandlerQt()));
     jobFactory->SetProtocolHandler(url::kFtpScheme,
             net::FtpProtocolHandler::Create(m_urlRequestContext->host_resolver()));

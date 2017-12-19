@@ -66,7 +66,7 @@ public:
 
 protected:
     const char *vertexShader() const override {
-        // Keep in sync with cc::VertexShaderPosTexYUVStretchOffset
+        // Keep in sync with logic in VertexShader in components/viz/service/display/shader.cc
         const char *shader =
         "attribute highp vec4 a_position;\n"
         "attribute mediump vec2 a_texCoord;\n"
@@ -86,7 +86,7 @@ protected:
     }
 
     const char *fragmentShader() const override {
-        // Keep in sync with cc::FragmentShaderYUVVideo
+        // Keep in sync with logic in FragmentShader in components/viz/service/display/shader.cc
         static const char *shader =
         "varying mediump vec2 v_yaTexCoord;\n"
         "varying mediump vec2 v_uvTexCoord;\n"

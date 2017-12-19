@@ -278,7 +278,7 @@ void WebEngineSettings::initDefaults()
         bool smoothScrolling = commandLine->HasSwitch(switches::kEnableSmoothScrolling);
         bool webGL = content::GpuProcessHost::gpu_enabled() &&
                 !commandLine->HasSwitch(switches::kDisable3DAPIs) &&
-                !commandLine->HasSwitch(switches::kDisableExperimentalWebGL);
+                !commandLine->HasSwitch(switches::kDisableWebGL);
         bool accelerated2dCanvas = content::GpuProcessHost::gpu_enabled() &&
                 !commandLine->HasSwitch(switches::kDisableAccelerated2dCanvas);
         bool allowRunningInsecureContent = commandLine->HasSwitch(switches::kAllowRunningInsecureContent);
@@ -378,7 +378,7 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->plugins_enabled = testAttribute(PluginsEnabled);
     prefs->fullscreen_supported = testAttribute(FullScreenSupportEnabled);
     prefs->accelerated_2d_canvas_enabled = testAttribute(Accelerated2dCanvasEnabled);
-    prefs->experimental_webgl_enabled = testAttribute(WebGLEnabled);
+    prefs->webgl1_enabled = prefs->webgl2_enabled = testAttribute(WebGLEnabled);
     prefs->should_print_backgrounds = testAttribute(PrintElementBackgrounds);
     prefs->allow_running_insecure_content = testAttribute(AllowRunningInsecureContent);
     prefs->allow_geolocation_on_insecure_origins = testAttribute(AllowGeolocationOnInsecureOrigins);

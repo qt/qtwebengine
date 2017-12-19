@@ -144,10 +144,9 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
     if (!resourceInfo)
         return net::OK;
 
-    int renderProcessId;
-    int renderFrameId;
+    int frameTreeNodeId = resourceInfo->GetFrameTreeNodeId();
     // Only intercept MAIN_FRAME and SUB_FRAME with an associated render frame.
-    if (!content::IsResourceTypeFrame(resourceType) || !resourceInfo->GetRenderFrameForRequest(request, &renderProcessId, &renderFrameId))
+    if (!content::IsResourceTypeFrame(resourceType) || frameTreeNodeId == -1)
         return net::OK;
 
     // Track active requests since |callback| and |new_url| are valid
@@ -157,9 +156,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
     RequestParams params = {
         qUrl,
         resourceInfo->IsMainFrame(),
-        navigationType,
-        renderProcessId,
-        renderFrameId
+        navigationType
     };
 
     content::BrowserThread::PostTask(
@@ -169,6 +166,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
                            base::Unretained(this),
                            request,
                            params,
+                           frameTreeNodeId,
                            callback)
                 );
 
@@ -179,6 +177,10 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
 void NetworkDelegateQt::OnURLRequestDestroyed(net::URLRequest* request)
 {
     m_activeRequests.remove(request);
+}
+
+void NetworkDelegateQt::OnCompleted(net::URLRequest */*request*/, bool /*started*/, int /*net_error*/)
+{
 }
 
 void NetworkDelegateQt::CompleteURLRequestOnIOThread(net::URLRequest *request,
@@ -209,15 +211,14 @@ void NetworkDelegateQt::CompleteURLRequestOnIOThread(net::URLRequest *request,
 
 void NetworkDelegateQt::NotifyNavigationRequestedOnUIThread(net::URLRequest *request,
                                                             RequestParams params,
+                                                            int frameTreeNodeId,
                                                             const net::CompletionCallback &callback)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
     int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
-    content::RenderFrameHost *rfh = content::RenderFrameHost::FromID(params.renderProcessId, params.renderFrameId);
-
-    if (rfh) {
-        content::WebContents *webContents = content::WebContents::FromRenderViewHost(rfh->GetRenderViewHost());
+    content::WebContents *webContents = content::WebContents::FromFrameTreeNodeId(frameTreeNodeId);
+    if (webContents) {
         WebContentsAdapterClient *client = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
         client->navigationRequested(params.navigationType, params.url, navigationRequestAction, params.isMainFrameRequest);
     }
@@ -244,6 +245,11 @@ bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
 bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const net::CookieList&)
 {
     return canGetCookies(request.site_for_cookies(), request.url());
+}
+
+bool NetworkDelegateQt::OnCanEnablePrivacyMode(const GURL &url, const GURL &site_for_cookies) const
+{
+    return !canGetCookies(site_for_cookies, url);
 }
 
 bool NetworkDelegateQt::canSetCookies(const GURL &first_party, const GURL &url, const std::string &cookie_line) const
@@ -293,10 +299,6 @@ void NetworkDelegateQt::OnNetworkBytesSent(net::URLRequest*, int64_t)
 {
 }
 
-void NetworkDelegateQt::OnCompleted(net::URLRequest*, bool)
-{
-}
-
 void NetworkDelegateQt::OnPACScriptError(int, const base::string16&)
 {
 }
@@ -309,11 +311,6 @@ net::NetworkDelegate::AuthRequiredResponse NetworkDelegateQt::OnAuthRequired(net
 bool NetworkDelegateQt::OnCanAccessFile(const net::URLRequest&, const base::FilePath&, const base::FilePath&) const
 {
     return true;
-}
-
-bool NetworkDelegateQt::OnCanEnablePrivacyMode(const GURL&, const GURL&) const
-{
-    return false;
 }
 
 bool NetworkDelegateQt::OnAreExperimentalCookieFeaturesEnabled() const

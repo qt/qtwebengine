@@ -462,8 +462,6 @@ QAccessible::State BrowserAccessibilityQt::state() const
         state.linked = true;
     if (s & (1 << ui::AX_STATE_MULTISELECTABLE))
         state.multiSelectable = true;
-    if (s & (1 << ui::AX_STATE_OFFSCREEN))
-        state.offscreen = true;
     if (s & (1 << ui::AX_STATE_PROTECTED))
     {} // FIXME
     if (s & (1 << ui::AX_STATE_REQUIRED))
@@ -479,6 +477,8 @@ QAccessible::State BrowserAccessibilityQt::state() const
     if (s & (1 << ui::AX_STATE_VISITED))
     {} // FIXME
 
+    if (IsOffscreen())
+        state.offscreen = true;
     if (manager()->GetFocus() == this)
         state.focused = true;
     if (GetBoolAttribute(ui::AX_ATTR_BUSY))

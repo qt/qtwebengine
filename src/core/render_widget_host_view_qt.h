@@ -152,7 +152,7 @@ public:
     void SetTooltipText(const base::string16 &tooltip_text) override;
     bool HasAcceleratedSurface(const gfx::Size&) override;
     void DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
-    void SubmitCompositorFrame(const viz::LocalSurfaceId&, cc::CompositorFrame) override;
+    void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame) override;
     void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
 
     void GetScreenInfo(content::ScreenInfo* results);

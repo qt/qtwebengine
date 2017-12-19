@@ -50,6 +50,7 @@
 #endif
 #endif
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/common/url_schemes.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -388,7 +389,7 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
     if (!shareContext) {
         qFatal("QWebEngine: OpenGL resource sharing is not set up in QtQuick. Please make sure to call QtWebEngine::initialize() in your main() function.");
     }
-    m_shareContextQtQuick = make_scoped_refptr(new QtShareGLContext(shareContext));
+    m_shareContextQtQuick = new QtShareGLContext(shareContext);
 #endif
 }
 
@@ -472,18 +473,17 @@ void ContentBrowserClientQt::GetQuotaSettings(content::BrowserContext* context,
 }
 
 void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webContents,
-                                   int cert_error,
-                                   const net::SSLInfo& ssl_info,
-                                   const GURL& request_url,
-                                   content::ResourceType resource_type,
-                                   bool overridable,
-                                   bool strict_enforcement,
-                                   bool expired_previous_decision,
-                                   const base::Callback<void(content::CertificateRequestResultType)>& callback)
+                                                   int cert_error,
+                                                   const net::SSLInfo &ssl_info,
+                                                   const GURL &request_url,
+                                                   content::ResourceType resource_type,
+                                                   bool strict_enforcement,
+                                                   bool expired_previous_decision,
+                                                   const base::Callback<void(content::CertificateRequestResultType)> &callback)
 {
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
-    QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
+    QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, strict_enforcement, strict_enforcement, callback)));
     contentsDelegate->allowCertificateError(errorController);
 }
 
@@ -514,8 +514,14 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
         command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
 }
 
+void ContentBrowserClientQt::GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes)
+{
+    additional_schemes->push_back(content::kChromeDevToolsScheme);
+}
+
 void ContentBrowserClientQt::GetAdditionalViewSourceSchemes(std::vector<std::string>* additional_schemes)
 {
+    GetAdditionalWebUISchemes(additional_schemes);
     additional_schemes->push_back(kQrcSchemeQt);
 }
 
