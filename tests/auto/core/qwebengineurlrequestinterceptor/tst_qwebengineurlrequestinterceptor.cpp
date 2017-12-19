@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -32,7 +32,6 @@
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginesettings.h>
-#include <QtWebEngineWidgets/qwebengineview.h>
 
 class tst_QWebEngineUrlRequestInterceptor : public QObject
 {
@@ -104,20 +103,22 @@ public:
 
 void tst_QWebEngineUrlRequestInterceptor::interceptRequest()
 {
-    QWebEngineView view;
+    QWebEngineProfile profile;
+    profile.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     TestRequestInterceptor interceptor(/* intercept */ true);
-    view.page()->settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    profile.setRequestInterceptor(&interceptor);
 
-    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
-    view.page()->profile()->setRequestInterceptor(&interceptor);
-    view.load(QUrl("qrc:///resources/index.html"));
+    QWebEnginePage page(&profile);
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+
+    page.load(QUrl("qrc:///resources/index.html"));
     QTRY_COMPARE(loadSpy.count(), 1);
     QVariant success = loadSpy.takeFirst().takeFirst();
     QVERIFY(success.toBool());
     loadSpy.clear();
     QVariant ok;
 
-    view.page()->runJavaScript("post();", [&ok](const QVariant result){ ok = result; });
+    page.runJavaScript("post();", [&ok](const QVariant result){ ok = result; });
     QTRY_VERIFY(ok.toBool());
     QTRY_COMPARE(loadSpy.count(), 1);
     success = loadSpy.takeFirst().takeFirst();
@@ -125,7 +126,7 @@ void tst_QWebEngineUrlRequestInterceptor::interceptRequest()
     QVERIFY(!success.toBool());
     loadSpy.clear();
 
-    view.load(QUrl("qrc:///resources/__placeholder__"));
+    page.load(QUrl("qrc:///resources/__placeholder__"));
     QTRY_COMPARE(loadSpy.count(), 1);
     success = loadSpy.takeFirst().takeFirst();
     // The redirection for __placeholder__ should succeed.
@@ -135,8 +136,8 @@ void tst_QWebEngineUrlRequestInterceptor::interceptRequest()
 
     // Make sure that registering an observer does not modify the request.
     TestRequestInterceptor observer(/* intercept */ false);
-    view.page()->profile()->setRequestInterceptor(&observer);
-    view.load(QUrl("qrc:///resources/__placeholder__"));
+    profile.setRequestInterceptor(&observer);
+    page.load(QUrl("qrc:///resources/__placeholder__"));
     QTRY_COMPARE(loadSpy.count(), 1);
     success = loadSpy.takeFirst().takeFirst();
     // Since we do not intercept, loading an invalid path should not succeed.
@@ -163,18 +164,18 @@ public:
 
 void tst_QWebEngineUrlRequestInterceptor::ipv6HostEncoding()
 {
-    QWebEngineView view;
-    QWebEnginePage *page = view.page();
+    QWebEngineProfile profile;
     LocalhostContentProvider contentProvider;
-    QSignalSpy spyLoadFinished(page, SIGNAL(loadFinished(bool)));
+    profile.setRequestInterceptor(&contentProvider);
 
-    page->profile()->setRequestInterceptor(&contentProvider);
+    QWebEnginePage page(&profile);
+    QSignalSpy spyLoadFinished(&page, SIGNAL(loadFinished(bool)));
 
-    page->setHtml("<p>Hi", QUrl::fromEncoded("http://[::1]/index.html"));
+    page.setHtml("<p>Hi", QUrl::fromEncoded("http://[::1]/index.html"));
     QTRY_COMPARE(spyLoadFinished.count(), 1);
     QCOMPARE(contentProvider.requestedUrls.count(), 0);
 
-    evaluateJavaScriptSync(page, "var r = new XMLHttpRequest();"
+    evaluateJavaScriptSync(&page, "var r = new XMLHttpRequest();"
             "r.open('GET', 'http://[::1]/test.xml', false);"
             "r.send(null);"
             );
@@ -185,12 +186,13 @@ void tst_QWebEngineUrlRequestInterceptor::ipv6HostEncoding()
 
 void tst_QWebEngineUrlRequestInterceptor::requestedUrl()
 {
-    QWebEnginePage page;
-    page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
-
-    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    QWebEngineProfile profile;
+    profile.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     TestRequestInterceptor interceptor(/* intercept */ true);
-    page.profile()->setRequestInterceptor(&interceptor);
+    profile.setRequestInterceptor(&interceptor);
+
+    QWebEnginePage page(&profile);
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     page.setUrl(QUrl("qrc:///resources/__placeholder__"));
     QVERIFY(spy.wait());
@@ -214,10 +216,11 @@ void tst_QWebEngineUrlRequestInterceptor::requestedUrl()
 
 void tst_QWebEngineUrlRequestInterceptor::setUrlSameUrl()
 {
-    QWebEnginePage page;
+    QWebEngineProfile profile;
     TestRequestInterceptor interceptor(/* intercept */ true);
-    page.profile()->setRequestInterceptor(&interceptor);
+    profile.setRequestInterceptor(&interceptor);
 
+    QWebEnginePage page(&profile);
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     page.setUrl(QUrl("qrc:///resources/__placeholder__"));
@@ -244,10 +247,11 @@ void tst_QWebEngineUrlRequestInterceptor::setUrlSameUrl()
 
 void tst_QWebEngineUrlRequestInterceptor::firstPartyUrl()
 {
-    QWebEnginePage page;
+    QWebEngineProfile profile;
     TestRequestInterceptor interceptor(/* intercept */ false);
-    page.profile()->setRequestInterceptor(&interceptor);
+    profile.setRequestInterceptor(&interceptor);
 
+    QWebEnginePage page(&profile);
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     page.setUrl(QUrl("qrc:///resources/firstparty.html"));
