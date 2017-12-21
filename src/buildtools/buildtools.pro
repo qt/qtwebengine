@@ -1,12 +1,5 @@
 TEMPLATE = subdirs
 
-ninja.file = ninja.pro
-SUBDIRS += ninja
-
-gn.file = gn.pro
-gn.depends = ninja
-SUBDIRS += gn
-
 linux {
     # configure_host.pro and configure_target.pro are phony pro files that
     # extract things like compiler and linker from qmake.
@@ -18,3 +11,10 @@ linux {
 
     SUBDIRS += configure_host configure_target
 }
+
+ninja.file = ninja.pro
+SUBDIRS += ninja
+
+gn.file = gn.pro
+gn.depends = ninja
+SUBDIRS += gn
