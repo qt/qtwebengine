@@ -1267,7 +1267,11 @@ bool WebContentsAdapter::handleDropDataFileContents(const content::DropData &dro
     }
 
     const QString &fileName = toQt(dropData.file_description_filename);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
     const QString &filePath = d->dndTmpDir->filePath(fileName);
+#else
+    const QString &filePath = d->dndTmpDir->path() + QLatin1Char('/') + fileName;
+#endif
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly)) {
         qWarning("Cannot write temporary file %s.", qUtf8Printable(filePath));
