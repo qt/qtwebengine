@@ -155,11 +155,18 @@ QWebEngineBrowserContext::QWebEngineBrowserContext(QSharedPointer<QtWebEngineCor
 
 QWebEngineBrowserContext::~QWebEngineBrowserContext()
 {
+    if (m_profile)
+        shutdown();
+}
+
+void QWebEngineBrowserContext::shutdown()
+{
     Q_ASSERT(m_profile);
     // In the case the user sets this profile as the parent of the interceptor
     // it can be deleted before the browser-context still referencing it is.
     browserContextRef->setRequestInterceptor(nullptr);
     browserContextRef->removeClient(m_profile);
+    m_profile = 0;
 }
 
 QWebEngineProfilePrivate::QWebEngineProfilePrivate(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext)
@@ -181,6 +188,8 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
     }
 
     m_ongoingDownloads.clear();
+    if (m_browserContext)
+        m_browserContext->shutdown();
 }
 
 QSharedPointer<QtWebEngineCore::BrowserContextAdapter> QWebEngineProfilePrivate::browserContext() const

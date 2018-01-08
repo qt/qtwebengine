@@ -686,9 +686,8 @@
 
 /*!
     \fn void QWebEnginePage::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
-    Sets the content of this page to \a data. If the \a mimeType argument
-    is empty, it is currently assumed that the content is HTML but in future versions we may introduce
-    auto-detection.
+    Sets the content of the web page to \a data. If the \a mimeType argument
+    is empty, it is assumed that the content is \c{text/plain,charset=US-ASCII}.
 
     External objects referenced in the content are located relative to \a baseUrl.
 

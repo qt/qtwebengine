@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -138,7 +138,8 @@ static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
 
     QPainter painter;
     if (!painter.begin(&printer)) {
-        qWarning("Failure to print on printer %ls: Could not open printer for painting.", qUtf16Printable(printer.printerName()));
+        qWarning("Failure to print on printer %ls: Could not open printer for painting.",
+                  qUtf16Printable(printer.printerName()));
         return false;
     }
 
@@ -1610,12 +1611,21 @@ bool QWebEnginePagePrivate::isEnabled() const
 
 void QWebEnginePagePrivate::setToolTip(const QString &toolTipText)
 {
-    if (view) {
-        QString wrappedTip;
-        if (!toolTipText.isEmpty())
-             wrappedTip = QLatin1String("<p>") % toolTipText.toHtmlEscaped().left(MaxTooltipLength) % QLatin1String("</p>");
-        view->setToolTip(wrappedTip);
+    if (!view)
+        return;
+
+    // Hide tooltip if shown.
+    if (toolTipText.isEmpty()) {
+        if (!view->toolTip().isEmpty())
+            view->setToolTip(QString());
+
+        return;
     }
+
+    // Update tooltip if text was changed.
+    QString wrappedTip = QLatin1String("<p>") % toolTipText.toHtmlEscaped().left(MaxTooltipLength) % QLatin1String("</p>");
+    if (view->toolTip() != wrappedTip)
+        view->setToolTip(wrappedTip);
 }
 
 QMenu *QWebEnginePage::createStandardContextMenu()

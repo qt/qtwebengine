@@ -80,7 +80,7 @@ class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
     static scoped_refptr<WebEngineContext> current();
 
-    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> defaultBrowserContext();
+    QSharedPointer<BrowserContextAdapter> defaultBrowserContext();
     QObject *globalQObject();
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     printing::PrintJobManager* getPrintJobManager();
@@ -90,6 +90,7 @@ public:
 
 private:
     friend class base::RefCounted<WebEngineContext>;
+    friend class BrowserContextAdapter;
     WebEngineContext();
     ~WebEngineContext();
 
@@ -98,7 +99,7 @@ private:
     std::unique_ptr<content::ContentMainRunner> m_contentRunner;
     std::unique_ptr<content::BrowserMainRunner> m_browserRunner;
     QObject* m_globalQObject;
-    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> m_defaultBrowserContext;
+    QSharedPointer<BrowserContextAdapter> m_defaultBrowserContext;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;

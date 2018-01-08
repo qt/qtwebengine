@@ -105,6 +105,10 @@
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
 
+#if defined(Q_OS_WIN)
+#include "ui/display/win/screen_win.h"
+#endif
+
 #if defined(Q_OS_LINUX)
 #include "global_descriptors_qt.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -295,8 +299,11 @@ public:
     {
         base::ThreadRestrictions::SetIOAllowed(true);
         // Like ChromeBrowserMainExtraPartsViews::PreCreateThreads does.
+#if defined(Q_OS_WIN)
+        display::Screen::SetScreenInstance(new display::win::ScreenWin);
+#else
         display::Screen::SetScreenInstance(new DesktopScreenQt);
-
+#endif
         return 0;
     }
 

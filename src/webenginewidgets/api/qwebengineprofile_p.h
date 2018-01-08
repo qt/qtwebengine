@@ -76,6 +76,8 @@ public:
     QWebEngineBrowserContext(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext, QWebEngineProfilePrivate *profile);
     ~QWebEngineBrowserContext();
 
+    void shutdown();
+
     QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextRef;
 
 private:
