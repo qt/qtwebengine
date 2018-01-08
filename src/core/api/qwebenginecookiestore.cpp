@@ -49,8 +49,9 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
 
-QWebEngineCookieStorePrivate::QWebEngineCookieStorePrivate()
-    : m_nextCallbackId(CallbackDirectory::ReservedCallbackIdsEnd)
+QWebEngineCookieStorePrivate::QWebEngineCookieStorePrivate(QWebEngineCookieStore *q)
+    : q_ptr(q)
+    , m_nextCallbackId(CallbackDirectory::ReservedCallbackIdsEnd)
     , m_deleteSessionCookiesPending(false)
     , m_deleteAllCookiesPending(false)
     , m_getAllCookiesPending(false)
@@ -213,9 +214,9 @@ void QWebEngineCookieStorePrivate::onCookieChanged(const QNetworkCookie &cookie,
 */
 
 QWebEngineCookieStore::QWebEngineCookieStore(QObject *parent)
-    : QObject(*new QWebEngineCookieStorePrivate, parent)
+    : QObject(parent)
+    , d_ptr(new QWebEngineCookieStorePrivate(this))
 {
-
 }
 
 /*!

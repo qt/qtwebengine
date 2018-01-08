@@ -78,6 +78,7 @@ private:
     friend class QtWebEngineCore::CookieMonsterDelegateQt;
     Q_DISABLE_COPY(QWebEngineCookieStore)
     Q_DECLARE_PRIVATE(QWebEngineCookieStore)
+    QScopedPointer<QWebEngineCookieStorePrivate> d_ptr;
 };
 
 QT_END_NAMESPACE

@@ -10964,14 +10964,6 @@ QWebEngineCookieStore::_ZTV21QWebEngineCookieStore: 14u entries
 96    (int (*)(...))QObject::connectNotify
 104   (int (*)(...))QObject::disconnectNotify
 
-Class QWebEngineCookieStore
-   size=16 align=8
-   base size=16 base align=8
-QWebEngineCookieStore (0x0x7f2623007d68) 0
-    vptr=((& QWebEngineCookieStore::_ZTV21QWebEngineCookieStore) + 16u)
-  QObject (0x0x7f26230dd6c0) 0
-      primary-for QWebEngineCookieStore (0x0x7f2623007d68)
-
 Class QWebEngineUrlRequestInfo
    size=8 align=8
    base size=8 base align=8
