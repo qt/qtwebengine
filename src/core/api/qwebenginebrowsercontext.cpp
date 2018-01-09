@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,62 +37,37 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEPROFILE_P_H
-#define QWEBENGINEPROFILE_P_H
+#include "qwebenginebrowsercontext_p.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "browser_context_adapter_client.h"
-#include "qwebengineprofile.h"
-#include "qwebenginescriptcollection.h"
-
-#include <QMap>
-#include <QPointer>
-#include <QScopedPointer>
-#include <QSharedPointer>
-
-namespace QtWebEngineCore {
-class BrowserContextAdapter;
-}
+#include "browser_context_adapter.h"
+#include <qtwebenginecoreglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineBrowserContext;
-class QWebEngineProfilePrivate;
-class QWebEngineSettings;
+QWebEngineBrowserContext::QWebEngineBrowserContext(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext,
+                                                   QtWebEngineCore::BrowserContextAdapterClient *profile)
+        : QObject(QtWebEngineCore::BrowserContextAdapter::globalQObjectRoot())
+        , browserContextRef(browserContext)
+        , m_profile(profile)
+{
+    browserContextRef->addClient(m_profile);
+}
 
-class QWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
-public:
-    Q_DECLARE_PUBLIC(QWebEngineProfile)
-    QWebEngineProfilePrivate(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext);
-    ~QWebEngineProfilePrivate();
+QWebEngineBrowserContext::~QWebEngineBrowserContext()
+{
+    if (m_profile)
+        shutdown();
+}
 
-    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext() const;
-    QWebEngineSettings *settings() const { return m_settings; }
-
-    void cancelDownload(quint32 downloadId);
-    void downloadDestroyed(quint32 downloadId);
-
-    void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
-    void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
-
-private:
-    QWebEngineProfile *q_ptr;
-    QWebEngineSettings *m_settings;
-    QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
-    QPointer<QWebEngineBrowserContext> m_browserContext;
-    QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
-};
+void QWebEngineBrowserContext::shutdown()
+{
+    Q_ASSERT(m_profile);
+    // In the case the user sets this profile as the parent of the interceptor
+    // it can be deleted before the browser-context still referencing it is.
+    browserContextRef->setRequestInterceptor(nullptr);
+    browserContextRef->removeClient(m_profile);
+    m_profile = 0;
+    deleteLater();
+}
 
 QT_END_NAMESPACE
-
-#endif // QWEBENGINEPROFILE_P_H

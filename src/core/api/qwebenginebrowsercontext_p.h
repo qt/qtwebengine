@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINEPROFILE_P_H
-#define QQUICKWEBENGINEPROFILE_P_H
+#ifndef QWEBENGINEBROWSERCONTEXT_P_H
+#define QWEBENGINEBROWSERCONTEXT_P_H
 
 //
 //  W A R N I N G
@@ -50,52 +50,34 @@
 //
 // We mean it.
 //
+#include "qtwebenginecoreglobal_p.h"
 
-#include "browser_context_adapter_client.h"
-#include "browser_context_adapter.h"
-#include "qwebenginebrowsercontext_p.h"
-#include "qquickwebengineprofile_p.h"
-
-#include <QExplicitlySharedDataPointer>
-#include <QMap>
-#include <QPointer>
+#include <QObject>
 #include <QSharedPointer>
+
+namespace QtWebEngineCore {
+class BrowserContextAdapter;
+class BrowserContextAdapterClient;
+}
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineDownloadItem;
-class QQuickWebEngineSettings;
-
-class QQuickWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
+// This is a wrapper class for BrowserContextAdapter. BrowserContextAdapter must be destructed before WebEngineContext
+// is destructed. Therefore access it via the QWebEngineBrowserContext which parent is the WebEngineContext::globalQObject.
+// This guarantees the destruction together with the WebEngineContext.
+class QWEBENGINE_PRIVATE_EXPORT QWebEngineBrowserContext : public QObject {
 public:
-    Q_DECLARE_PUBLIC(QQuickWebEngineProfile)
-    QQuickWebEngineProfilePrivate(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext);
-    ~QQuickWebEngineProfilePrivate();
+    QWebEngineBrowserContext(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext, QtWebEngineCore::BrowserContextAdapterClient *profile);
+    ~QWebEngineBrowserContext();
 
-    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext() const;
-    QQuickWebEngineSettings *settings() const { return m_settings.data(); }
+    void shutdown();
 
-    void cancelDownload(quint32 downloadId);
-    void downloadDestroyed(quint32 downloadId);
-
-    void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
-    void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
-
-    // QQmlListPropertyHelpers
-    static void userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script);
-    static int userScripts_count(QQmlListProperty<QQuickWebEngineScript> *p);
-    static QQuickWebEngineScript *userScripts_at(QQmlListProperty<QQuickWebEngineScript> *p, int idx);
-    static void userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p);
+    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextRef;
 
 private:
-    friend class QQuickWebEngineViewPrivate;
-    QQuickWebEngineProfile *q_ptr;
-    QScopedPointer<QQuickWebEngineSettings> m_settings;
-    QPointer<QWebEngineBrowserContext> m_browserContext;
-    QMap<quint32, QPointer<QQuickWebEngineDownloadItem> > m_ongoingDownloads;
-    QList<QQuickWebEngineScript *> m_userScripts;
+    QtWebEngineCore::BrowserContextAdapterClient *m_profile;
 };
 
 QT_END_NAMESPACE
 
-#endif // QQUICKWEBENGINEPROFILE_P_H
+#endif // QWEBENGINEBROWSERCONTEXT_P_H

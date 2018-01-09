@@ -47,8 +47,9 @@
 #include "qwebenginesettings.h"
 #include "qwebenginescriptcollection_p.h"
 
+#include "qwebenginebrowsercontext_p.h"
+#include "qtwebenginecoreglobal.h"
 #include "browser_context_adapter.h"
-#include <qtwebenginecoreglobal.h>
 #include "visited_links_manager_qt.h"
 #include "web_engine_settings.h"
 
@@ -145,30 +146,6 @@ using QtWebEngineCore::BrowserContextAdapter;
   \sa QWebEngineDownloadItem
 */
 
-QWebEngineBrowserContext::QWebEngineBrowserContext(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext, QWebEngineProfilePrivate *profile)
-    : QObject(BrowserContextAdapter::globalQObjectRoot())
-    , browserContextRef(browserContext)
-    , m_profile(profile)
-{
-    browserContextRef->addClient(m_profile);
-}
-
-QWebEngineBrowserContext::~QWebEngineBrowserContext()
-{
-    if (m_profile)
-        shutdown();
-}
-
-void QWebEngineBrowserContext::shutdown()
-{
-    Q_ASSERT(m_profile);
-    // In the case the user sets this profile as the parent of the interceptor
-    // it can be deleted before the browser-context still referencing it is.
-    browserContextRef->setRequestInterceptor(nullptr);
-    browserContextRef->removeClient(m_profile);
-    m_profile = 0;
-}
-
 QWebEngineProfilePrivate::QWebEngineProfilePrivate(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext)
         : m_settings(new QWebEngineSettings())
         , m_scriptCollection(new QWebEngineScriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userResourceController())))
@@ -194,12 +171,13 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
 
 QSharedPointer<QtWebEngineCore::BrowserContextAdapter> QWebEngineProfilePrivate::browserContext() const
 {
-    return m_browserContext->browserContextRef;
+    return m_browserContext ? m_browserContext->browserContextRef : nullptr;
 }
 
 void QWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
 {
-    browserContext()->cancelDownload(downloadId);
+    if (m_browserContext)
+        m_browserContext->browserContextRef->cancelDownload(downloadId);
 }
 
 void QWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)

@@ -142,9 +142,8 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
 
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter> browserContext)
         : m_settings(new QQuickWebEngineSettings())
-        , m_browserContextRef(browserContext)
+        , m_browserContext(new QWebEngineBrowserContext(browserContext, this))
 {
-    m_browserContextRef->addClient(this);
     m_settings->d_ptr->initDefaults(browserContext->isOffTheRecord());
     // Fullscreen API was implemented before the supported setting, so we must
     // make it default true to avoid change in default API behavior.
@@ -153,21 +152,26 @@ QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(QSharedPointer<Brow
 
 QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 {
-    m_browserContextRef->setRequestInterceptor(nullptr);
-
-    m_browserContextRef->removeClient(this);
-
-    Q_FOREACH (QQuickWebEngineDownloadItem* download, m_ongoingDownloads) {
+    Q_FOREACH (QQuickWebEngineDownloadItem *download, m_ongoingDownloads) {
         if (download)
             download->cancel();
     }
 
     m_ongoingDownloads.clear();
+
+    if (m_browserContext)
+        m_browserContext->shutdown();
+}
+
+QSharedPointer<QtWebEngineCore::BrowserContextAdapter> QQuickWebEngineProfilePrivate::browserContext() const
+{
+    return m_browserContext ? m_browserContext->browserContextRef : nullptr;
 }
 
 void QQuickWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
 {
-    browserContext()->cancelDownload(downloadId);
+    if (m_browserContext)
+        m_browserContext->browserContextRef->cancelDownload(downloadId);
 }
 
 void QQuickWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
