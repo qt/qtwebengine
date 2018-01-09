@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QCoreApplication>
+#include <QSignalSpy>
 #include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTest>
@@ -420,6 +421,13 @@ void tst_QWebEngineDownloads::downloadLink()
 void tst_QWebEngineDownloads::downloadTwoLinks()
 {
     HttpServer server;
+    QSignalSpy requestSpy(&server, &HttpServer::newRequest);
+    QList<HttpReqRep*> results;
+    connect(&server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        rr->setParent(nullptr);
+        results.append(rr);
+    });
+
     QWebEngineProfile profile;
     QWebEnginePage page(&profile);
     QWebEngineView view;
@@ -427,7 +435,8 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
 
     view.load(server.url());
     view.show();
-    auto indexRR = waitForRequest(&server);
+    QTRY_COMPARE(requestSpy.count(), 1);
+    std::unique_ptr<HttpReqRep> indexRR(results.takeFirst());
     QVERIFY(indexRR);
     QCOMPARE(indexRR->requestMethod(), QByteArrayLiteral("GET"));
     QCOMPARE(indexRR->requestPath(), QByteArrayLiteral("/"));
@@ -438,7 +447,8 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
     QVERIFY(waitForSignal(&page, &QWebEnginePage::loadFinished, [&](bool ok){ loadOk = ok; }));
     QVERIFY(loadOk);
 
-    auto favIconRR = waitForRequest(&server);
+    QTRY_COMPARE(requestSpy.count(), 2);
+    std::unique_ptr<HttpReqRep> favIconRR(results.takeFirst());
     QVERIFY(favIconRR);
     QCOMPARE(favIconRR->requestMethod(), QByteArrayLiteral("GET"));
     QCOMPARE(favIconRR->requestPath(), QByteArrayLiteral("/favicon.ico"));
@@ -449,11 +459,13 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
     QTest::mouseClick(renderWidget, Qt::LeftButton, {}, QPoint(10, 10));
     QTest::mouseClick(renderWidget, Qt::LeftButton, {}, QPoint(10, 30));
 
-    auto file1RR = waitForRequest(&server);
+    QTRY_VERIFY(requestSpy.count() >= 3);
+    std::unique_ptr<HttpReqRep> file1RR(results.takeFirst());
     QVERIFY(file1RR);
     QCOMPARE(file1RR->requestMethod(), QByteArrayLiteral("GET"));
     QCOMPARE(file1RR->requestPath(), QByteArrayLiteral("/file1"));
-    auto file2RR = waitForRequest(&server);
+    QTRY_COMPARE(requestSpy.count(), 4);
+    std::unique_ptr<HttpReqRep> file2RR(results.takeFirst());
     QVERIFY(file2RR);
     QCOMPARE(file2RR->requestMethod(), QByteArrayLiteral("GET"));
     QCOMPARE(file2RR->requestPath(), QByteArrayLiteral("/file2"));
