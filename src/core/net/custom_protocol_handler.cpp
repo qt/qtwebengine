@@ -46,7 +46,7 @@
 
 namespace QtWebEngineCore {
 
-CustomProtocolHandler::CustomProtocolHandler(QWeakPointer<const BrowserContextAdapter> adapter)
+CustomProtocolHandler::CustomProtocolHandler(QPointer<BrowserContextAdapter> adapter)
     : m_adapter(adapter)
 {
 }

@@ -53,7 +53,6 @@
 
 #include "browser_context_adapter_client.h"
 #include "browser_context_adapter.h"
-#include "qwebenginebrowsercontext_p.h"
 #include "qquickwebengineprofile_p.h"
 
 #include <QExplicitlySharedDataPointer>
@@ -70,12 +69,12 @@ class QQuickWebEngineViewPrivate;
 class QQuickWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineProfile)
-    QQuickWebEngineProfilePrivate(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext);
+    QQuickWebEngineProfilePrivate(QtWebEngineCore::BrowserContextAdapter *browserContext);
     ~QQuickWebEngineProfilePrivate();
     void addWebContentsAdapterClient(QQuickWebEngineViewPrivate *adapter);
     void removeWebContentsAdapterClient(QQuickWebEngineViewPrivate *adapter);
 
-    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext() const;
+    QtWebEngineCore::BrowserContextAdapter* browserContext() const { return m_browserContextAdapter; }
     QQuickWebEngineSettings *settings() const { return m_settings.data(); }
 
     void cancelDownload(quint32 downloadId);
@@ -94,7 +93,7 @@ private:
     friend class QQuickWebEngineViewPrivate;
     QQuickWebEngineProfile *q_ptr;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
-    QPointer<QWebEngineBrowserContext> m_browserContext;
+    QPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextAdapter;
     QMap<quint32, QPointer<QQuickWebEngineDownloadItem> > m_ongoingDownloads;
     QList<QQuickWebEngineScript *> m_userScripts;
     QVector<QQuickWebEngineViewPrivate *> m_webContentsAdapterClients;

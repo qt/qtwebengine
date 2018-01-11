@@ -287,7 +287,7 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
         return;
 
     if (navigation_handle->HasCommitted() && !navigation_handle->IsErrorPage()) {
-        BrowserContextAdapter *browserContextAdapter = m_viewClient->browserContextAdapter().data();
+        BrowserContextAdapter *browserContextAdapter = m_viewClient->browserContextAdapter();
         // VisistedLinksMaster asserts !IsOffTheRecord().
         if (navigation_handle->ShouldUpdateHistory() && browserContextAdapter->trackVisitedLinks()) {
             for (const GURL &url : navigation_handle->GetRedirectChain())

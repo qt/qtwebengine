@@ -42,7 +42,7 @@
 
 #include "net/url_request/url_request_job.h"
 #include "url/gurl.h"
-#include <QtCore/QWeakPointer>
+#include <QtCore/QPointer>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
@@ -58,7 +58,7 @@ public:
     URLRequestCustomJob(net::URLRequest *request,
                         net::NetworkDelegate *networkDelegate,
                         const std::string &scheme,
-                        QWeakPointer<const BrowserContextAdapter> adapter);
+                        QPointer<BrowserContextAdapter> adapter);
     void Start() override;
     void Kill() override;
     int ReadRawData(net::IOBuffer *buf, int buf_size)  override;

@@ -77,7 +77,8 @@ inline QString buildLocationFromStandardPath(const QString &standardPath, const 
 namespace QtWebEngineCore {
 
 BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
-    : m_offTheRecord(offTheRecord)
+    : QObject(BrowserContextAdapter::globalQObjectRoot())
+    , m_offTheRecord(offTheRecord)
     , m_browserContext(new BrowserContextQt(this))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
@@ -96,7 +97,8 @@ BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
 }
 
 BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
-    : m_name(storageName)
+    : QObject(BrowserContextAdapter::globalQObjectRoot())
+    , m_name(storageName)
     , m_offTheRecord(false)
     , m_browserContext(new BrowserContextQt(this))
     , m_httpCacheType(DiskHttpCache)
@@ -117,12 +119,7 @@ BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
 
 BrowserContextAdapter::~BrowserContextAdapter()
 {
-    Q_ASSERT(!m_downloadManagerDelegate);
     m_browserContext->ShutdownStoragePartitions();
-}
-
-void BrowserContextAdapter::shutdown()
-{
     if (m_downloadManagerDelegate) {
         m_browserContext->GetDownloadManager(m_browserContext.data())->Shutdown();
         m_downloadManagerDelegate.reset();
@@ -202,8 +199,6 @@ void BrowserContextAdapter::addClient(BrowserContextAdapterClient *adapterClient
 void BrowserContextAdapter::removeClient(BrowserContextAdapterClient *adapterClient)
 {
     m_clients.removeOne(adapterClient);
-    if (m_clients.isEmpty() && this != WebEngineContext::current()->m_defaultBrowserContext.data())
-        shutdown();
 }
 
 void BrowserContextAdapter::cancelDownload(quint32 downloadId)
@@ -221,7 +216,7 @@ void BrowserContextAdapter::resumeDownload(quint32 downloadId)
     downloadManagerDelegate()->resumeDownload(downloadId);
 }
 
-QSharedPointer<BrowserContextAdapter> BrowserContextAdapter::defaultContext()
+BrowserContextAdapter *BrowserContextAdapter::defaultContext()
 {
     return WebEngineContext::current()->defaultBrowserContext();
 }

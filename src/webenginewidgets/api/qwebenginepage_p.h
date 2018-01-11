@@ -146,7 +146,7 @@ public:
     void setToolTip(const QString &toolTipText) override;
     const QObject *holdingQObject() const override;
 
-    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextAdapter() override;
+    QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
 
     void updateAction(QWebEnginePage::WebAction) const;

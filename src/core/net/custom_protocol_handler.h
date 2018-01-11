@@ -45,7 +45,7 @@
 
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
-#include <QtCore/QWeakPointer>
+#include <QtCore/QPointer>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
@@ -63,13 +63,13 @@ class BrowserContextAdapter;
 class QWEBENGINE_EXPORT CustomProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 
 public:
-    CustomProtocolHandler(QWeakPointer<const BrowserContextAdapter> adapter);
+    CustomProtocolHandler(QPointer<BrowserContextAdapter> adapter);
 
     net::URLRequestJob *MaybeCreateJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate) const override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CustomProtocolHandler);
-    QWeakPointer<const BrowserContextAdapter> m_adapter;
+    QPointer<BrowserContextAdapter> m_adapter;
 };
 
 } // namespace

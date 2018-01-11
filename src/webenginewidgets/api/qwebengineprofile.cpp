@@ -46,12 +46,11 @@
 #include "qwebengineprofile_p.h"
 #include "qwebenginesettings.h"
 #include "qwebenginescriptcollection_p.h"
-
-#include "qwebenginebrowsercontext_p.h"
 #include "qtwebenginecoreglobal.h"
 #include "browser_context_adapter.h"
 #include "visited_links_manager_qt.h"
 #include "web_engine_settings.h"
+
 
 QT_BEGIN_NAMESPACE
 
@@ -148,18 +147,38 @@ using QtWebEngineCore::BrowserContextAdapter;
   \sa QWebEngineDownloadItem, QWebEnginePage::download()
 */
 
-QWebEngineProfilePrivate::QWebEngineProfilePrivate(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext)
-        : m_settings(new QWebEngineSettings())
-        , m_scriptCollection(new QWebEngineScriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userResourceController())))
-        , m_browserContext(new QWebEngineBrowserContext(browserContext, this))
+// Fixme: fix storage name setters and unify constructors here and in BrowserContextAdapter
+QWebEngineProfilePrivate::QWebEngineProfilePrivate(const QString &storageName)
+    : m_settings(new QWebEngineSettings())
+    , m_browserContextAdapter(storageName.isEmpty()?
+                                  new QtWebEngineCore::BrowserContextAdapter(true):
+                                  new QtWebEngineCore::BrowserContextAdapter(storageName))
+    , m_scriptCollection(new QWebEngineScriptCollection(
+                             new QWebEngineScriptCollectionPrivate(m_browserContextAdapter->userResourceController())))
 {
+    m_browserContextAdapter->addClient(this);
+    m_settings->d_ptr->initDefaults();
+}
+
+// Fixme: fix storage name setters and unify constructors here and in BrowserContextAdapter
+QWebEngineProfilePrivate::QWebEngineProfilePrivate(BrowserContextAdapter* browserContextAdapter)
+    : m_settings(new QWebEngineSettings())
+    , m_browserContextAdapter(browserContextAdapter)
+    , m_scriptCollection(new QWebEngineScriptCollection(
+                             new QWebEngineScriptCollectionPrivate(m_browserContextAdapter->userResourceController())))
+{
+    m_browserContextAdapter->addClient(this);
     m_settings->d_ptr->initDefaults();
 }
 
 QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
 {
-    delete m_settings;
-    m_settings = 0;
+    if (m_browserContextAdapter) {
+        // In the case the user sets this profile as the parent of the interceptor
+        // it can be deleted before the browser-context still referencing it is.
+        m_browserContextAdapter->setRequestInterceptor(nullptr);
+        m_browserContextAdapter->removeClient(this);
+    }
 
     Q_FOREACH (QWebEngineDownloadItem* download, m_ongoingDownloads) {
         if (download)
@@ -167,13 +186,16 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
     }
 
     m_ongoingDownloads.clear();
-    if (m_browserContext)
-        m_browserContext->shutdown();
+
+    if (q_ptr != QWebEngineProfile::defaultProfile())
+        delete m_browserContextAdapter;
+
+    delete m_settings;
 }
 
-QSharedPointer<QtWebEngineCore::BrowserContextAdapter> QWebEngineProfilePrivate::browserContext() const
+BrowserContextAdapter* QWebEngineProfilePrivate::browserContext() const
 {
-    return m_browserContext ? m_browserContext->browserContextRef : nullptr;
+    return m_browserContextAdapter;
 }
 
 void QWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
@@ -245,7 +267,7 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
 */
 QWebEngineProfile::QWebEngineProfile(QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter>::create(true)))
+    , d_ptr(new QWebEngineProfilePrivate())
 {
     d_ptr->q_ptr = this;
 }
@@ -262,7 +284,7 @@ QWebEngineProfile::QWebEngineProfile(QObject *parent)
 */
 QWebEngineProfile::QWebEngineProfile(const QString &storageName, QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter>::create(storageName)))
+    , d_ptr(new QWebEngineProfilePrivate(storageName))
 {
     d_ptr->q_ptr = this;
 }

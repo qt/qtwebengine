@@ -407,9 +407,7 @@ void WebContentsAdapter::setClient(WebContentsAdapterClient *adapterClient)
 {
     Q_ASSERT(!isInitialized());
     m_adapterClient = adapterClient;
-    // We keep a reference to browserContextAdapter to keep it alive as long as we use it.
-    // This is needed in case the QML WebEngineProfile is garbage collected before the WebEnginePage.
-    m_browserContextAdapter = adapterClient->browserContextAdapter().data();
+    m_browserContextAdapter = adapterClient->browserContextAdapter();
     Q_ASSERT(m_browserContextAdapter);
 
     // This might replace any adapter that has been initialized with this WebEngineSettings.
@@ -893,7 +891,9 @@ BrowserContextQt* WebContentsAdapter::browserContext()
 
 BrowserContextAdapter* WebContentsAdapter::browserContextAdapter()
 {
-    return m_browserContextAdapter ? m_browserContextAdapter : m_webContents ? static_cast<BrowserContextQt*>(m_webContents->GetBrowserContext())->adapter() : 0;
+    return m_browserContextAdapter ?
+                m_browserContextAdapter : m_webContents ?
+                    static_cast<BrowserContextQt*>(m_webContents->GetBrowserContext())->adapter() : nullptr;
 }
 
 #ifndef QT_NO_ACCESSIBILITY

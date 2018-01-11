@@ -48,7 +48,7 @@
 #include "base/values.h"
 #include "printing/features/features.h"
 
-#include <QSharedPointer>
+#include <QScopedPointer>
 
 namespace base {
 class RunLoop;
@@ -80,7 +80,8 @@ class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
     static WebEngineContext *current();
 
-    QSharedPointer<BrowserContextAdapter> defaultBrowserContext();
+    BrowserContextAdapter *defaultBrowserContext();
+
     QObject *globalQObject();
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     printing::PrintJobManager* getPrintJobManager();
@@ -99,7 +100,7 @@ private:
     std::unique_ptr<content::ContentMainRunner> m_contentRunner;
     std::unique_ptr<content::BrowserMainRunner> m_browserRunner;
     QObject* m_globalQObject;
-    QSharedPointer<BrowserContextAdapter> m_defaultBrowserContext;
+    QScopedPointer<BrowserContextAdapter> m_defaultBrowserContext;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;

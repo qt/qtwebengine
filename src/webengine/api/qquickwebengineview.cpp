@@ -103,9 +103,9 @@ static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *obje
 #endif // QT_NO_ACCESSIBILITY
 
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
-    : adapter(QSharedPointer<WebContentsAdapter>::create())
+    : m_profile(QQuickWebEngineProfile::defaultProfile())
+    , adapter(QSharedPointer<WebContentsAdapter>::create())
     , m_history(new QQuickWebEngineHistory(this))
-    , m_profile(QQuickWebEngineProfile::defaultProfile())
     , m_settings(new QQuickWebEngineSettings(m_profile->settings()))
 #ifdef ENABLE_QML_TESTSUPPORT_API
     , m_testSupport(0)
@@ -621,7 +621,7 @@ QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
     return q;
 }
 
-QSharedPointer<BrowserContextAdapter> QQuickWebEngineViewPrivate::browserContextAdapter()
+BrowserContextAdapter *QQuickWebEngineViewPrivate::browserContextAdapter()
 {
     return m_profile->d_ptr->browserContext();
 }

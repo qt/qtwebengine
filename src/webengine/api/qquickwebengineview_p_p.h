@@ -74,6 +74,7 @@ class QQmlContext;
 class QQuickWebEngineContextMenuRequest;
 class QQuickWebEngineSettings;
 class QQuickWebEngineFaviconProvider;
+class QQuickWebEngineProfilePrivate;
 
 QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event);
 
@@ -149,7 +150,7 @@ public:
     void setToolTip(const QString &toolTipText) override;
     const QObject *holdingQObject() const override;
 
-    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextAdapter() override;
+    QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
 
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
@@ -163,9 +164,9 @@ public:
     static QQuickWebEngineScript *userScripts_at(QQmlListProperty<QQuickWebEngineScript> *p, int idx);
     static void userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p);
 
+    QQuickWebEngineProfile *m_profile;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
     QScopedPointer<QQuickWebEngineHistory> m_history;
-    QQuickWebEngineProfile *m_profile;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
 #ifdef ENABLE_QML_TESTSUPPORT_API
     QQuickWebEngineTestSupport *m_testSupport;

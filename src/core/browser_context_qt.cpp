@@ -195,9 +195,12 @@ content::PermissionManager *BrowserContextQt::GetPermissionManager()
     return permissionManager.get();
 }
 
-net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
+net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(
+        content::ProtocolHandlerMap *protocol_handlers,
+        content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    url_request_getter_ = new URLRequestContextGetterQt(m_adapter->sharedFromThis(), protocol_handlers, std::move(request_interceptors));
+    url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers,
+                                                        std::move(request_interceptors));
     return url_request_getter_.get();
 }
 

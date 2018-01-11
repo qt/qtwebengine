@@ -199,7 +199,8 @@ bool usingSoftwareDynamicGL()
 
 void WebEngineContext::destroyBrowserContext()
 {
-    m_defaultBrowserContext.reset();
+    if (m_defaultBrowserContext)
+        qWarning() << "PostMainMessageLoopRun is done, but global profile still exists !";
 }
 
 void WebEngineContext::destroy()
@@ -211,11 +212,12 @@ void WebEngineContext::destroy()
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
 
-    if (m_defaultBrowserContext)
-        m_defaultBrowserContext->shutdown();
     // Delete the global object and thus custom profiles
+    m_defaultBrowserContext.reset();
     delete m_globalQObject;
     m_globalQObject = nullptr;
+
+
     // Handle any events posted by browser-context shutdown.
     while (delegate->DoWork()) { }
 
@@ -223,7 +225,7 @@ void WebEngineContext::destroy()
     m_devtoolsServer.reset();
     m_runLoop->AfterRun();
 
-    // Force to destroy RenderProcessHostImpl by destroying BrowserMainRunner.
+    // Fixme: Force to destroy RenderProcessHostImpl by destroying BrowserMainRunner.
     // RenderProcessHostImpl should be destroyed before WebEngineContext since
     // default BrowserContext might be used by the RenderprocessHostImpl's destructor.
     m_browserRunner.reset();
@@ -254,11 +256,12 @@ WebEngineContext *WebEngineContext::current()
     return sContext.get();
 }
 
-QSharedPointer<BrowserContextAdapter> WebEngineContext::defaultBrowserContext()
+BrowserContextAdapter *WebEngineContext::defaultBrowserContext()
 {
+    Q_ASSERT(!s_destroyed);
     if (!m_defaultBrowserContext)
-        m_defaultBrowserContext = QSharedPointer<BrowserContextAdapter>::create(QStringLiteral("Default"));
-    return m_defaultBrowserContext;
+        m_defaultBrowserContext.reset(new BrowserContextAdapter(QStringLiteral("Default")));
+    return m_defaultBrowserContext.data();
 }
 
 QObject *WebEngineContext::globalQObject()

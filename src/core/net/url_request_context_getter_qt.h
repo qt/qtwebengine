@@ -70,7 +70,9 @@ namespace QtWebEngineCore {
 // FIXME: This class should be split into a URLRequestContextGetter and a ProfileIOData, similar to what chrome does.
 class URLRequestContextGetterQt : public net::URLRequestContextGetter {
 public:
-    URLRequestContextGetterQt(QSharedPointer<BrowserContextAdapter> browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors);
+    URLRequestContextGetterQt(BrowserContextAdapter *browserContext,
+                              content::ProtocolHandlerMap *protocolHandlers,
+                              content::URLRequestInterceptorScopedVector request_interceptors);
 
     net::URLRequestContext *GetURLRequestContext() override;
     scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const override;
@@ -82,6 +84,7 @@ public:
     void updateHttpCache();
     void updateJobFactory();
     void updateRequestInterceptor();
+    void setFullConfiguration();
 
 private:
     virtual ~URLRequestContextGetterQt();
@@ -98,10 +101,7 @@ private:
     net::HttpNetworkSession::Params generateNetworkSessionParams();
     net::HttpNetworkSession::Context generateNetworkSessionContext();
 
-    void setFullConfiguration(QSharedPointer<BrowserContextAdapter> browserContext);
-
     bool m_ignoreCertificateErrors;
-
     QMutex m_mutex;
     bool m_contextInitialized;
     bool m_updateAllStorage;
@@ -110,9 +110,10 @@ private:
     bool m_updateJobFactory;
     bool m_updateUserAgent;
 
-    QWeakPointer<BrowserContextAdapter> m_browserContext;
+    // m_browserContext is never dereferenced in IO thread and it is passed by
+    // qpointer in generateJobFactory
+    QPointer<BrowserContextAdapter> m_browserContextAdapter;
     content::ProtocolHandlerMap m_protocolHandlers;
-
     QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
     std::unique_ptr<net::URLRequestContext> m_urlRequestContext;
     std::unique_ptr<NetworkDelegateQt> m_networkDelegate;

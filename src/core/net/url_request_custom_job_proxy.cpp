@@ -51,7 +51,7 @@ namespace QtWebEngineCore {
 
 URLRequestCustomJobProxy::URLRequestCustomJobProxy(URLRequestCustomJob *job,
                                                    const std::string &scheme,
-                                                   QWeakPointer<const BrowserContextAdapter> adapter)
+                                                   QPointer<BrowserContextAdapter> adapter)
     : m_job(job)
     , m_started(false)
     , m_scheme(scheme)
@@ -160,10 +160,11 @@ void URLRequestCustomJobProxy::initialize(GURL url, std::string method, base::Op
     if (initiator.has_value())
         initiatorOrigin = toQt(initiator.value().GetURL());
 
-    QWebEngineUrlSchemeHandler *schemeHandler = 0;
-    QSharedPointer<const BrowserContextAdapter> browserContext = m_adapter.toStrongRef();
-    if (browserContext)
-        schemeHandler = browserContext->customUrlSchemeHandlers()[toQByteArray(m_scheme)];
+    QWebEngineUrlSchemeHandler *schemeHandler = nullptr;
+
+    if (m_adapter)
+        schemeHandler = m_adapter->customUrlSchemeHandlers()[toQByteArray(m_scheme)];
+
     if (schemeHandler) {
         m_delegate = new URLRequestCustomJobDelegate(this, toQt(url),
                                                      QByteArray::fromStdString(method),

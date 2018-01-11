@@ -44,7 +44,7 @@
 #include "base/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-#include <QtCore/QWeakPointer>
+#include <QtCore/QPointer>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
@@ -62,7 +62,7 @@ class URLRequestCustomJobProxy
 public:
     URLRequestCustomJobProxy(URLRequestCustomJob *job,
                              const std::string &scheme,
-                             QWeakPointer<const BrowserContextAdapter> adapter);
+                             QPointer<BrowserContextAdapter> adapter);
     ~URLRequestCustomJobProxy();
 
     // Called from URLRequestCustomJobDelegate via post:
@@ -82,7 +82,7 @@ public:
     // UI thread owned:
     std::string m_scheme;
     URLRequestCustomJobDelegate *m_delegate;
-    QWeakPointer<const BrowserContextAdapter> m_adapter;
+    QPointer<BrowserContextAdapter> m_adapter;
 };
 
 } // namespace QtWebEngineCore

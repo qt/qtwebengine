@@ -142,10 +142,11 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
   The \a download argument holds the state of the finished download instance.
 */
 
-QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter> browserContext)
+QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(BrowserContextAdapter *browserContext)
         : m_settings(new QQuickWebEngineSettings())
-        , m_browserContext(new QWebEngineBrowserContext(browserContext, this))
+        , m_browserContextAdapter(browserContext)
 {
+    m_browserContextAdapter->addClient(this);
     m_settings->d_ptr->initDefaults();
     // Fullscreen API was implemented before the supported setting, so we must
     // make it default true to avoid change in default API behavior.
@@ -154,8 +155,16 @@ QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(QSharedPointer<Brow
 
 QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 {
+
     while (!m_webContentsAdapterClients.isEmpty()) {
        m_webContentsAdapterClients.first()->destroy();
+    }
+
+    if (m_browserContextAdapter) {
+        // In the case the user sets this profile as the parent of the interceptor
+        // it can be deleted before the browser-context still referencing it is.
+        m_browserContextAdapter->setRequestInterceptor(nullptr);
+        m_browserContextAdapter->removeClient(this);
     }
 
     Q_FOREACH (QQuickWebEngineDownloadItem *download, m_ongoingDownloads) {
@@ -165,8 +174,8 @@ QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 
     m_ongoingDownloads.clear();
 
-    if (m_browserContext)
-        m_browserContext->shutdown();
+    if (q_ptr != QQuickWebEngineProfile::defaultProfile())
+        delete m_browserContextAdapter;
 }
 
 void QQuickWebEngineProfilePrivate::addWebContentsAdapterClient(QQuickWebEngineViewPrivate *adapter)
@@ -179,15 +188,10 @@ void QQuickWebEngineProfilePrivate::removeWebContentsAdapterClient(QQuickWebEngi
     m_webContentsAdapterClients.removeAll(adapter);
 }
 
-QSharedPointer<QtWebEngineCore::BrowserContextAdapter> QQuickWebEngineProfilePrivate::browserContext() const
-{
-    return m_browserContext ? m_browserContext->browserContextRef : nullptr;
-}
-
 void QQuickWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
 {
-    if (m_browserContext)
-        m_browserContext->browserContextRef->cancelDownload(downloadId);
+    if (m_browserContextAdapter)
+        m_browserContextAdapter->cancelDownload(downloadId);
 }
 
 void QQuickWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
@@ -322,7 +326,7 @@ void QQuickWebEngineProfilePrivate::userScripts_clear(QQmlListProperty<QQuickWeb
 */
 QQuickWebEngineProfile::QQuickWebEngineProfile(QObject *parent)
     : QObject(parent),
-      d_ptr(new QQuickWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter>::create(false)))
+      d_ptr(new QQuickWebEngineProfilePrivate(new QtWebEngineCore::BrowserContextAdapter(true)))
 {
     // Sets up the global WebEngineContext
     QQuickWebEngineProfile::defaultProfile();

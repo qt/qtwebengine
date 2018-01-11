@@ -90,7 +90,9 @@ namespace QtWebEngineCore {
 
 using content::BrowserThread;
 
-URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserContextAdapter> browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors)
+URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextAdapter *browserContext,
+                                                     content::ProtocolHandlerMap *protocolHandlers,
+                                                     content::URLRequestInterceptorScopedVector request_interceptors)
     : m_ignoreCertificateErrors(false)
     , m_mutex(QMutex::Recursive)
     , m_contextInitialized(false)
@@ -99,7 +101,7 @@ URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserConte
     , m_updateHttpCache(false)
     , m_updateJobFactory(true)
     , m_updateUserAgent(false)
-    , m_browserContext(browserContext)
+    , m_browserContextAdapter(browserContext)
     , m_baseJobFactory(0)
     , m_cookieDelegate(new CookieMonsterDelegateQt())
     , m_requestInterceptors(std::move(request_interceptors))
@@ -116,7 +118,6 @@ URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserConte
 
     QMutexLocker lock(&m_mutex);
     m_cookieDelegate->setClient(browserContext->cookieStore());
-    setFullConfiguration(browserContext);
     updateStorageSettings();
 }
 
@@ -127,21 +128,19 @@ URLRequestContextGetterQt::~URLRequestContextGetterQt()
 }
 
 
-void URLRequestContextGetterQt::setFullConfiguration(QSharedPointer<BrowserContextAdapter> browserContext)
+void URLRequestContextGetterQt::setFullConfiguration()
 {
-    if (!browserContext)
-        return;
-
-    m_requestInterceptor = browserContext->requestInterceptor();
-    m_persistentCookiesPolicy = browserContext->persistentCookiesPolicy();
-    m_cookiesPath = browserContext->cookiesPath();
-    m_channelIdPath = browserContext->channelIdPath();
-    m_httpAcceptLanguage = browserContext->httpAcceptLanguage();
-    m_httpUserAgent = browserContext->httpUserAgent();
-    m_httpCacheType = browserContext->httpCacheType();
-    m_httpCachePath = browserContext->httpCachePath();
-    m_httpCacheMaxSize = browserContext->httpCacheMaxSize();
-    m_customUrlSchemes = browserContext->customUrlSchemes();
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    m_requestInterceptor = m_browserContextAdapter->requestInterceptor();
+    m_persistentCookiesPolicy = m_browserContextAdapter->persistentCookiesPolicy();
+    m_cookiesPath = m_browserContextAdapter->cookiesPath();
+    m_channelIdPath = m_browserContextAdapter->channelIdPath();
+    m_httpAcceptLanguage = m_browserContextAdapter->httpAcceptLanguage();
+    m_httpUserAgent = m_browserContextAdapter->httpUserAgent();
+    m_httpCacheType = m_browserContextAdapter->httpCacheType();
+    m_httpCachePath = m_browserContextAdapter->httpCachePath();
+    m_httpCacheMaxSize = m_browserContextAdapter->httpCacheMaxSize();
+    m_customUrlSchemes = m_browserContextAdapter->customUrlSchemes();
 }
 
 net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
@@ -168,7 +167,7 @@ void URLRequestContextGetterQt::updateStorageSettings()
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
     QMutexLocker lock(&m_mutex);
-    setFullConfiguration(m_browserContext.toStrongRef());
+    setFullConfiguration();
 
     if (!m_updateAllStorage) {
         m_updateAllStorage = true;
@@ -287,9 +286,9 @@ void URLRequestContextGetterQt::updateCookieStore()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     QMutexLocker lock(&m_mutex);
-    m_persistentCookiesPolicy = m_browserContext.data()->persistentCookiesPolicy();
-    m_cookiesPath = m_browserContext.data()->cookiesPath();
-    m_channelIdPath = m_browserContext.data()->channelIdPath();
+    m_persistentCookiesPolicy = m_browserContextAdapter->persistentCookiesPolicy();
+    m_cookiesPath = m_browserContextAdapter->cookiesPath();
+    m_channelIdPath = m_browserContextAdapter->channelIdPath();
 
     if (m_contextInitialized && !m_updateAllStorage && !m_updateCookieStore) {
         m_updateCookieStore = true;
@@ -373,8 +372,8 @@ void URLRequestContextGetterQt::updateUserAgent()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     QMutexLocker lock(&m_mutex);
-    m_httpAcceptLanguage = m_browserContext.data()->httpAcceptLanguage();
-    m_httpUserAgent = m_browserContext.data()->httpUserAgent();
+    m_httpAcceptLanguage = m_browserContextAdapter->httpAcceptLanguage();
+    m_httpUserAgent = m_browserContextAdapter->httpUserAgent();
 
     if (m_contextInitialized && !m_updateAllStorage && !m_updateUserAgent) {
         m_updateUserAgent = true;
@@ -400,12 +399,12 @@ void URLRequestContextGetterQt::updateHttpCache()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     QMutexLocker lock(&m_mutex);
-    m_httpCacheType = m_browserContext.data()->httpCacheType();
-    m_httpCachePath = m_browserContext.data()->httpCachePath();
-    m_httpCacheMaxSize = m_browserContext.data()->httpCacheMaxSize();
+    m_httpCacheType = m_browserContextAdapter->httpCacheType();
+    m_httpCachePath = m_browserContextAdapter->httpCachePath();
+    m_httpCacheMaxSize = m_browserContextAdapter->httpCacheMaxSize();
 
     if (m_httpCacheType == BrowserContextAdapter::NoCache) {
-        content::BrowsingDataRemover *remover = content::BrowserContext::GetBrowsingDataRemover(m_browserContext.data()->browserContext());
+        content::BrowsingDataRemover *remover = content::BrowserContext::GetBrowsingDataRemover(m_browserContextAdapter->browserContext());
         remover->Remove(base::Time(), base::Time::Max(),
             content::BrowsingDataRemover::DATA_TYPE_CACHE,
             content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB | content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB);
@@ -422,7 +421,8 @@ void URLRequestContextGetterQt::updateJobFactory()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     QMutexLocker lock(&m_mutex);
-    m_customUrlSchemes = m_browserContext.data()->customUrlSchemes();
+
+    m_customUrlSchemes = m_browserContextAdapter->customUrlSchemes();
 
     if (m_contextInitialized && !m_updateJobFactory) {
         m_updateJobFactory = true;
@@ -435,7 +435,7 @@ void URLRequestContextGetterQt::updateRequestInterceptor()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     QMutexLocker lock(&m_mutex);
-    m_requestInterceptor = m_browserContext.data()->requestInterceptor();
+    m_requestInterceptor = m_browserContextAdapter->requestInterceptor();
 
     // We in this case do not need to regenerate any Chromium classes.
 }
@@ -584,7 +584,7 @@ void URLRequestContextGetterQt::generateJobFactory()
 
     m_installedCustomSchemes = m_customUrlSchemes;
     Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
-        jobFactory->SetProtocolHandler(scheme.toStdString(), std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContext)));
+        jobFactory->SetProtocolHandler(scheme.toStdString(), std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContextAdapter)));
     }
 
     m_baseJobFactory = jobFactory.get();
@@ -627,7 +627,7 @@ void URLRequestContextGetterQt::regenerateJobFactory()
 
     m_installedCustomSchemes = m_customUrlSchemes;
     Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
-        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContext)));
+        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContextAdapter)));
     }
 }
 

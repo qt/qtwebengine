@@ -453,7 +453,7 @@ public:
     virtual const QObject *holdingQObject() const = 0;
     virtual void setToolTip(const QString& toolTipText) = 0;
 
-    virtual QSharedPointer<BrowserContextAdapter> browserContextAdapter() = 0;
+    virtual BrowserContextAdapter *browserContextAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;
 
 };

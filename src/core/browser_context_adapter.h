@@ -63,17 +63,15 @@ class DownloadManagerDelegateQt;
 class UserResourceControllerHost;
 class VisitedLinksManagerQt;
 
-class QWEBENGINE_EXPORT BrowserContextAdapter : public QEnableSharedFromThis<BrowserContextAdapter>
+class QWEBENGINE_EXPORT BrowserContextAdapter : public QObject
 {
 public:
     explicit BrowserContextAdapter(bool offTheRecord = false);
     explicit BrowserContextAdapter(const QString &storagePrefix);
     virtual ~BrowserContextAdapter();
 
-    static QSharedPointer<BrowserContextAdapter> defaultContext();
+    static BrowserContextAdapter* defaultContext();
     static QObject* globalQObjectRoot();
-
-    void shutdown();
 
     VisitedLinksManagerQt *visitedLinksManager();
     DownloadManagerDelegateQt *downloadManagerDelegate();
