@@ -76,29 +76,25 @@ inline QString buildLocationFromStandardPath(const QString &standardPath, const 
 
 namespace QtWebEngineCore {
 
-BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
-    : QObject(BrowserContextAdapter::globalQObjectRoot())
-    , m_offTheRecord(offTheRecord)
+BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord):
+      m_offTheRecord(offTheRecord)
     , m_browserContext(new BrowserContextQt(this))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
 {
-    WebEngineContext::current(); // Ensure the WebEngineContext has been initialized
-
+    WebEngineContext::current()->addBrowserContext(this);
     // Mark the context as live. This prevents the use-after-free DCHECK in
     // AssertBrowserContextWasntDestroyed from being triggered when a new
     // BrowserContextQt object is allocated at the same address as a previously
     // destroyed one. Needs to be called after WebEngineContext initialization.
     BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(m_browserContext.data());
-
     content::BrowserContext::Initialize(m_browserContext.data(), toFilePath(dataPath()));
 }
 
-BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
-    : QObject(BrowserContextAdapter::globalQObjectRoot())
-    , m_name(storageName)
+BrowserContextAdapter::BrowserContextAdapter(const QString &storageName):
+      m_name(storageName)
     , m_offTheRecord(false)
     , m_browserContext(new BrowserContextQt(this))
     , m_httpCacheType(DiskHttpCache)
@@ -106,19 +102,18 @@ BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
 {
-    WebEngineContext::current(); // Ensure the WebEngineContext has been initialized
-
+    WebEngineContext::current()->addBrowserContext(this);
     // Mark the context as live. This prevents the use-after-free DCHECK in
     // AssertBrowserContextWasntDestroyed from being triggered when a new
     // BrowserContextQt object is allocated at the same address as a previously
     // destroyed one. Needs to be called after WebEngineContext initialization.
     BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(m_browserContext.data());
-
     content::BrowserContext::Initialize(m_browserContext.data(), toFilePath(dataPath()));
 }
 
 BrowserContextAdapter::~BrowserContextAdapter()
 {
+    WebEngineContext::current()->removeBrowserContext(this);
     m_browserContext->ShutdownStoragePartitions();
     if (m_downloadManagerDelegate) {
         m_browserContext->GetDownloadManager(m_browserContext.data())->Shutdown();

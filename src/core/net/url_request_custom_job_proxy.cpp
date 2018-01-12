@@ -44,6 +44,7 @@
 #include "browser_context_adapter.h"
 #include "type_conversion.h"
 #include "content/public/browser/browser_thread.h"
+#include "web_engine_context.h"
 
 using namespace net;
 

@@ -47,8 +47,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "printing/features/features.h"
-
-#include <QScopedPointer>
+#include <QVector>
 
 namespace base {
 class RunLoop;
@@ -88,6 +87,8 @@ public:
     printing::PrintJobManager* getPrintJobManager();
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
     void destroyBrowserContext();
+    void addBrowserContext(BrowserContextAdapter*);
+    void removeBrowserContext(BrowserContextAdapter*);
     void destroy();
 
 private:
@@ -103,6 +104,8 @@ private:
     std::unique_ptr<QObject> m_globalQObject;
     std::unique_ptr<BrowserContextAdapter> m_defaultBrowserContext;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
+    QVector<BrowserContextAdapter*> m_browserContextAdapters;
+
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
