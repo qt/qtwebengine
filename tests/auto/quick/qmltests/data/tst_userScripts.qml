@@ -170,7 +170,7 @@ Item {
 
             webEngineView.userScripts = [ scriptWithMetadata ];
 
-            // @include *test*.html
+            // @include *data/test*.html
             webEngineView.url = Qt.resolvedUrl("test1.html");
             webEngineView.waitForLoadSucceeded();
             tryCompare(webEngineView, "title", "New title");
@@ -179,6 +179,16 @@ Item {
             webEngineView.url = Qt.resolvedUrl("test2.html");
             webEngineView.waitForLoadSucceeded();
             tryCompare(webEngineView, "title", "Test page with huge link area");
+
+            // @include /favicon.html?$/
+            webEngineView.url = Qt.resolvedUrl("favicon.html");
+            webEngineView.waitForLoadSucceeded();
+            tryCompare(webEngineView, "title", "New title");
+
+            // @exclude /test[-]iframe/
+            webEngineView.url = Qt.resolvedUrl("test-iframe.html");
+            webEngineView.waitForLoadSucceeded();
+            tryCompare(webEngineView, "title", "Test page with huge link area and iframe");
         }
 
         function test_profileWideScript() {
