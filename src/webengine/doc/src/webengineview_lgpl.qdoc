@@ -1357,6 +1357,55 @@
 */
 
 /*!
+    \qmlsignal WebEngineView::registerProtocolHandlerPermissionRequested(RegisterProtocolHandlerPermissionRequest request)
+    \since QtWebEngine 1.7
+
+    This signal is emitted when the web page tries to register a custom protocol
+    using the \l registerProtocolHandler API.
+
+    \sa RegisterProtocolHandlerPermissionRequest
+*/
+
+/*!
+    \qmltype RegisterProtocolHandlerPermissionRequest
+    \instantiates QQuickWebEngineRegisterProtocolHandlerPermissionRequest
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 1.7
+    \brief The RegisterProtocolHandlerPermissionRequest type enables accepting
+    or rejecting requests from the \l registerProtocolHandler API.
+
+    \sa WebEngineView::registerProtocolHandlerPermissionRequested()
+*/
+
+/*!
+    \qmlproperty url RegisterProtocolHandlerPermissionRequest::origin
+    \brief The URL template for the protocol handler.
+
+    This is the second parameter from the \l registerProtocolHandler call.
+*/
+
+/*!
+    \qmlproperty string RegisterProtocolHandlerPermissionRequest::protocol
+    \brief The URL scheme for the protocol handler.
+
+    This is the first parameter from the \l registerProtocolHandler call.
+*/
+
+/*!
+    \qmlmethod void RegisterProtocolHandlerPermissionRequest::accept()
+    \brief Accepts the request.
+
+    Subsequent calls to accept() and reject() are ignored.
+*/
+
+/*!
+    \qmlmethod void RegisterProtocolHandlerPermissionRequest::reject()
+    \brief Accepts the request.
+
+    Subsequent calls to accept() and reject() are ignored.
+*/
+
+/*!
     \qmlsignal WebEngineView::geometryChangeRequested(rect geometry, rect frameGeometry)
     \since QtWebEngine 1.7
 

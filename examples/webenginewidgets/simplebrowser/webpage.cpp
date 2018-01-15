@@ -63,6 +63,7 @@ WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
 {
     connect(this, &QWebEnginePage::authenticationRequired, this, &WebPage::handleAuthenticationRequired);
     connect(this, &QWebEnginePage::proxyAuthenticationRequired, this, &WebPage::handleProxyAuthenticationRequired);
+    connect(this, &QWebEnginePage::registerProtocolHandlerPermissionRequested, this, &WebPage::handleRegisterProtocolHandlerPermissionRequested);
 }
 
 bool WebPage::certificateError(const QWebEngineCertificateError &error)
@@ -141,3 +142,19 @@ void WebPage::handleProxyAuthenticationRequired(const QUrl &, QAuthenticator *au
         *auth = QAuthenticator();
     }
 }
+
+//! [registerProtocolHandlerPermissionRequested]
+void WebPage::handleRegisterProtocolHandlerPermissionRequested(QWebEngineRegisterProtocolHandlerPermissionRequest request)
+{
+    auto answer = QMessageBox::question(
+        view()->window(),
+        tr("Permission Request"),
+        tr("Allow %1 to open all %2 links?")
+        .arg(request.origin().host())
+        .arg(request.protocol()));
+    if (answer == QMessageBox::Yes)
+        request.accept();
+    else
+        request.reject();
+}
+//! [registerProtocolHandlerPermissionRequested]

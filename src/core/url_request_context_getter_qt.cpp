@@ -44,6 +44,7 @@
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "content/network/proxy_service_mojo.h"
 #include "content/public/browser/browser_thread.h"
@@ -81,6 +82,7 @@
 
 #include "api/qwebengineurlschemehandler.h"
 #include "browser_context_adapter.h"
+#include "browser_context_qt.h"
 #include "custom_protocol_handler.h"
 #include "cookie_monster_delegate_qt.h"
 #include "content_client_qt.h"
@@ -110,6 +112,14 @@ URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserConte
     , m_requestInterceptors(std::move(request_interceptors))
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
+
+    // The ProtocolHandlerRegistry and it's JobInterceptorFactory need to be
+    // created on the UI thread:
+    ProtocolHandlerRegistry* protocolHandlerRegistry =
+        ProtocolHandlerRegistryFactory::GetForBrowserContext(browserContext->browserContext());
+    DCHECK(protocolHandlerRegistry);
+    m_protocolHandlerInterceptor =
+        protocolHandlerRegistry->CreateJobInterceptorFactory();
 
     QMutexLocker lock(&m_mutex);
     m_cookieDelegate->setClient(browserContext->cookieStore());
@@ -582,6 +592,11 @@ void URLRequestContextGetterQt::generateJobFactory()
     }
 
     m_requestInterceptors.clear();
+
+    if (m_protocolHandlerInterceptor) {
+        m_protocolHandlerInterceptor->Chain(std::move(topJobFactory));
+        topJobFactory = std::move(m_protocolHandlerInterceptor);
+    }
 
     m_jobFactory = std::move(topJobFactory);
 

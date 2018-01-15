@@ -43,6 +43,12 @@ source_set("qtwebengine_sources") {
       "//extensions/features:features",
   ]
   sources = [
+    "//chrome/common/custom_handlers/protocol_handler.cc",
+    "//chrome/common/custom_handlers/protocol_handler.h",
+    "//chrome/browser/custom_handlers/protocol_handler_registry.cc",
+    "//chrome/browser/custom_handlers/protocol_handler_registry.h",
+    "//chrome/browser/custom_handlers/protocol_handler_registry_factory.cc",
+    "//chrome/browser/custom_handlers/protocol_handler_registry_factory.h",
     "//chrome/browser/media/webrtc/desktop_media_list.h",
     "//chrome/browser/media/webrtc/desktop_streams_registry.cc",
     "//chrome/browser/media/webrtc/desktop_streams_registry.h",
