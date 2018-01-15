@@ -64,7 +64,7 @@ QWebEngineQuotaPermissionRequest::QWebEngineQuotaPermissionRequest(QSharedPointe
 */
 void QWebEngineQuotaPermissionRequest::reject()
 {
-    d_ptr->cancel();
+    d_ptr->reject();
 }
 
 /*!

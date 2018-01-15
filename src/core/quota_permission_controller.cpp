@@ -77,7 +77,7 @@ void QuotaPermissionController::accept()
     }
 }
 
-void QuotaPermissionController::cancel()
+void QuotaPermissionController::reject()
 {
     if (!m_answered) {
         d->m_context->dispatchCallbackOnIOThread(d->m_callback, QuotaPermissionContextQt::QUOTA_PERMISSION_RESPONSE_DISALLOW);

@@ -1809,7 +1809,7 @@ void QQuickWebEngineQuotaPermissionRequest::accept()
 
 void QQuickWebEngineQuotaPermissionRequest::reject()
 {
-    d_ptr->cancel();
+    d_ptr->reject();
 }
 
 QUrl QQuickWebEngineQuotaPermissionRequest::origin() const

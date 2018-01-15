@@ -55,7 +55,7 @@ public:
     ~QuotaPermissionController();
 
     void accept();
-    void cancel();
+    void reject();
 
     QUrl origin();
     qint64 requestedSize();
