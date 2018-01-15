@@ -37,62 +37,30 @@
 **
 ****************************************************************************/
 
-#include "quota_permission_controller.h"
-#include "quota_permission_controller_p.h"
+#ifndef QUOTA_PERMISSION_CONTROLLER_IMPL_H
+#define QUOTA_PERMISSION_CONTROLLER_IMPL_H
 
+#include "quota_permission_controller.h"
 #include "quota_permission_context_qt.h"
-#include "type_conversion.h"
 
 namespace QtWebEngineCore {
 
-QuotaPermissionControllerPrivate::QuotaPermissionControllerPrivate(QuotaPermissionContextQt *context,
-                                                                   const content::StorageQuotaParams &params,
-                                                                   const content::QuotaPermissionContext::PermissionCallback &callback)
-    : m_context(context),
-      m_originUrl(toQt(params.origin_url)),
-      m_requestedSize(params.requested_size),
-      m_callback(callback)
-{
-}
+class QuotaPermissionControllerImpl final : public QuotaPermissionController {
+public:
+    QuotaPermissionControllerImpl(
+        QuotaPermissionContextQt *context,
+        const content::StorageQuotaParams &params,
+        const content::QuotaPermissionContext::PermissionCallback &callback);
 
-QuotaPermissionControllerPrivate::~QuotaPermissionControllerPrivate()
-{
-}
+protected:
+    void accepted() override;
+    void rejected() override;
 
-QuotaPermissionController::QuotaPermissionController(QuotaPermissionControllerPrivate *controllerPrivate)
-    : d(controllerPrivate)
-    , m_answered(false)
-{
-}
-
-QuotaPermissionController::~QuotaPermissionController()
-{
-}
-
-void QuotaPermissionController::accept()
-{
-    if (!m_answered) {
-        d->m_context->dispatchCallbackOnIOThread(d->m_callback, QuotaPermissionContextQt::QUOTA_PERMISSION_RESPONSE_ALLOW);
-        m_answered = true;
-    }
-}
-
-void QuotaPermissionController::reject()
-{
-    if (!m_answered) {
-        d->m_context->dispatchCallbackOnIOThread(d->m_callback, QuotaPermissionContextQt::QUOTA_PERMISSION_RESPONSE_DISALLOW);
-        m_answered = true;
-    }
-}
-
-QUrl QuotaPermissionController::origin()
-{
-    return d->m_originUrl;
-}
-
-qint64 QuotaPermissionController::requestedSize()
-{
-    return d->m_requestedSize;
-}
+private:
+    scoped_refptr<QuotaPermissionContextQt> m_context;
+    content::QuotaPermissionContext::PermissionCallback m_callback;
+};
 
 } // namespace QtWebEngineCore
+
+#endif // QUOTA_PERMISSION_CONTROLLER_IMPL_H

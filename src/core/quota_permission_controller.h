@@ -41,28 +41,45 @@
 #define QUOTA_PERMISSION_CONTROLLER_H
 
 #include "qtwebenginecoreglobal.h"
-#include <QtCore/qscopedpointer.h>
 #include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
 
-class QuotaPermissionContextQt;
-class QuotaPermissionControllerPrivate;
-
 class QWEBENGINE_EXPORT QuotaPermissionController {
 public:
-    QuotaPermissionController(QuotaPermissionControllerPrivate *controllerPrivate);
-    ~QuotaPermissionController();
+    QuotaPermissionController(QUrl origin, qint64 requestedSize)
+        : m_answered(false)
+        , m_origin(std::move(origin))
+        , m_requestedSize(requestedSize)
+    {}
 
-    void accept();
-    void reject();
+    QUrl origin() const { return m_origin; }
+    qint64 requestedSize() const { return m_requestedSize; }
 
-    QUrl origin();
-    qint64 requestedSize();
+    void accept() {
+        if (!m_answered) {
+            m_answered = true;
+            accepted();
+        }
+    }
+
+    void reject() {
+        if (!m_answered) {
+            m_answered = true;
+            rejected();
+        }
+    }
+
+    virtual ~QuotaPermissionController() {}
+
+protected:
+    virtual void accepted() = 0;
+    virtual void rejected() = 0;
 
 private:
-    QScopedPointer<QuotaPermissionControllerPrivate> d;
     bool m_answered;
+    QUrl m_origin;
+    qint64 m_requestedSize;
 };
 
 } // namespace QtWebEngineCore
