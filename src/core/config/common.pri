@@ -13,7 +13,9 @@ gn_args += \
     v8_use_external_startup_data=false \
     treat_warnings_as_errors=false \
     enable_swiftshader=false \
-    use_custom_libcxx=false \
+    use_custom_libcxx=false
+
+!win32: gn_args += \
     use_jumbo_build=true \
     jumbo_file_merge_limit=50
 
