@@ -54,6 +54,13 @@ QT_BEGIN_NAMESPACE
     \inmodule QtWebEngineWidgets
 */
 
+static void registerMetaTypes()
+{
+    qRegisterMetaType<QWebEngineQuotaPermissionRequest>();
+}
+
+Q_CONSTRUCTOR_FUNCTION(registerMetaTypes)
+
 QWebEngineQuotaPermissionRequest::QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
     : d_ptr(controller)
 {
