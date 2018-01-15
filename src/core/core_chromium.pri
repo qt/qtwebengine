@@ -155,6 +155,7 @@ HEADERS = \
         media_capture_devices_dispatcher.h \
         network_delegate_qt.h \
         ozone_platform_qt.h \
+        permission_controller.h \
         permission_manager_qt.h \
         process_main.h \
         proxy_config_service_qt.h \
