@@ -195,9 +195,10 @@ void QWebEngineDownloadItem::cancel()
 
     // We directly cancel the download request if the user cancels
     // before it even started, so no need to notify the profile here.
-    if (state == QWebEngineDownloadItem::DownloadInProgress)
-        d->profile->browserContext()->cancelDownload(d->downloadId);
-    else {
+    if (state == QWebEngineDownloadItem::DownloadInProgress) {
+        if (auto browserContext = d->profile->browserContext())
+            browserContext->cancelDownload(d->downloadId);
+    } else {
         d->downloadState = QWebEngineDownloadItem::DownloadCancelled;
         Q_EMIT stateChanged(d->downloadState);
     }

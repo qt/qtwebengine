@@ -52,22 +52,20 @@ using content::BrowserThread;
 
 net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qtProxy)
 {
-    net::ProxyServer::Scheme proxyScheme = net::ProxyServer::SCHEME_INVALID;
+    net::HostPortPair hostPortPair(qtProxy.hostName().toStdString(), qtProxy.port());
     switch (qtProxy.type()) {
     case QNetworkProxy::Socks5Proxy:
-        proxyScheme = net::ProxyServer::SCHEME_SOCKS5;
-        break;
+        return net::ProxyServer(net::ProxyServer::SCHEME_SOCKS5, hostPortPair);
     case QNetworkProxy::HttpProxy:
     case QNetworkProxy::HttpCachingProxy:
     case QNetworkProxy::FtpCachingProxy:
-        proxyScheme = net::ProxyServer::SCHEME_HTTP;
-        break;
+        return net::ProxyServer(net::ProxyServer::SCHEME_HTTP, hostPortPair);
     case QNetworkProxy::NoProxy:
     case QNetworkProxy::DefaultProxy:
-        proxyScheme = net::ProxyServer::SCHEME_DIRECT;
-            break;
+        return net::ProxyServer(net::ProxyServer::SCHEME_DIRECT, net::HostPortPair());
+    default:
+        return net::ProxyServer(net::ProxyServer::SCHEME_INVALID, net::HostPortPair());
     }
-    return net::ProxyServer(proxyScheme, net::HostPortPair(qtProxy.hostName().toStdString(), qtProxy.port()));
 }
 
 ProxyConfigServiceQt::ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService)
