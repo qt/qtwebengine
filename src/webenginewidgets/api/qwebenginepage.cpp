@@ -328,7 +328,7 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isError
         return;
 
     isLoading = true;
-    Q_EMIT q->loadStarted();
+    QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
     updateNavigationActions();
 }
 
@@ -346,7 +346,9 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
 
     if (isErrorPage) {
         Q_ASSERT(settings->testAttribute(QWebEngineSettings::ErrorPageEnabled));
-        Q_EMIT q->loadFinished(false);
+        QTimer::singleShot(0, q, [q](){
+            emit q->loadFinished(false);
+        });
         return;
     }
 
@@ -356,7 +358,9 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
     // Delay notifying failure until the error-page is done loading.
     // Error-pages are not loaded on failures due to abort.
     if (success || errorCode == -3 /* ERR_ABORTED*/ || !settings->testAttribute(QWebEngineSettings::ErrorPageEnabled)) {
-        Q_EMIT q->loadFinished(success);
+        QTimer::singleShot(0, q, [q, success](){
+            emit q->loadFinished(success);
+        });
     }
     updateNavigationActions();
 }
