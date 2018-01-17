@@ -59,7 +59,7 @@ HEADERS = \
         ui_delegates_manager.h
 
 qtConfig(webengine-testsupport) {
-    QT += testlib
+    QT_PRIVATE += testlib
 
     SOURCES += api/qquickwebenginetestsupport.cpp
     HEADERS += api/qquickwebenginetestsupport_p.h

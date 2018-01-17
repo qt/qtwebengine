@@ -48,7 +48,7 @@ defineTest(runConfigure) {
     }
 
     sanitizer: !qtConfig(webengine-sanitizer) {
-        skipBuild("Chosen sanitizer configuration is not supported. Use --feature-webengine-sanitizer=yes to force build with the chosen sanitizer configuration.")
+        skipBuild("Chosen sanitizer configuration is not supported. Check config.log for details or use -feature-webengine-sanitizer to force build with the chosen sanitizer configuration.")
         return(false);
     }
 

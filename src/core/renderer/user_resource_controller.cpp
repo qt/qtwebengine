@@ -148,8 +148,13 @@ void UserResourceController::RenderFrameObserverHelper::runScripts(UserScriptDat
 void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
 {
     content::RenderFrame *renderFrame = content::RenderFrame::FromWebFrame(frame);
-    content::RenderView *renderView = renderFrame->GetRenderView();
+    if (!renderFrame)
+        return;
     const bool isMainFrame = renderFrame->IsMainFrame();
+
+    content::RenderView *renderView = renderFrame->GetRenderView();
+    if (!renderView)
+        return;
 
     QList<uint64_t> scriptsToRun = m_viewUserScriptMap.value(0).toList();
     scriptsToRun.append(m_viewUserScriptMap.value(renderView).toList());
@@ -233,7 +238,8 @@ void UserResourceController::RenderFrameObserverHelper::OnDestruct()
 void UserResourceController::RenderViewObserverHelper::OnDestruct()
 {
     // Remove all scripts associated with the render view.
-    UserResourceController::instance()->renderViewDestroyed(render_view());
+    if (content::RenderView *view = render_view())
+        UserResourceController::instance()->renderViewDestroyed(view);
     delete this;
 }
 
@@ -251,20 +257,23 @@ bool UserResourceController::RenderFrameObserverHelper::OnMessageReceived(const 
 
 void UserResourceController::RenderFrameObserverHelper::onUserScriptAdded(const UserScriptData &script)
 {
-    content::RenderView *view = render_frame()->GetRenderView();
-    UserResourceController::instance()->addScriptForView(script, view);
+    if (content::RenderFrame *frame = render_frame())
+        if (content::RenderView *view = frame->GetRenderView())
+            UserResourceController::instance()->addScriptForView(script, view);
 }
 
 void UserResourceController::RenderFrameObserverHelper::onUserScriptRemoved(const UserScriptData &script)
 {
-    content::RenderView *view = render_frame()->GetRenderView();
-    UserResourceController::instance()->removeScriptForView(script, view);
+    if (content::RenderFrame *frame = render_frame())
+        if (content::RenderView *view = frame->GetRenderView())
+            UserResourceController::instance()->removeScriptForView(script, view);
 }
 
 void UserResourceController::RenderFrameObserverHelper::onScriptsCleared()
 {
-    content::RenderView *view = render_frame()->GetRenderView();
-    UserResourceController::instance()->clearScriptsForView(view);
+    if (content::RenderFrame *frame = render_frame())
+        if (content::RenderView *view = frame->GetRenderView())
+            UserResourceController::instance()->clearScriptsForView(view);
 }
 
 UserResourceController *UserResourceController::instance()

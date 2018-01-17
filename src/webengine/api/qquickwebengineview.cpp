@@ -183,7 +183,7 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
     return quickDelegate;
 }
 
-bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenuData &data)
+void QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
     Q_Q(QQuickWebEngineView);
 
@@ -195,13 +195,13 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
     Q_EMIT q->contextMenuRequested(request);
 
     if (request->isAccepted())
-        return true;
+        return;
 
     // Assign the WebEngineView as the parent of the menu, so mouse events are properly propagated
     // on OSX.
     QObject *menu = ui()->addMenu(q, QString(), data.position());
     if (!menu)
-        return false;
+        return;
 
     // Populate our menu
     MenuItemHandler *item = 0;
@@ -329,7 +329,6 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
 
     // Now fire the popup() method on the top level menu
     ui()->showMenu(menu);
-    return true;
 }
 
 void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)

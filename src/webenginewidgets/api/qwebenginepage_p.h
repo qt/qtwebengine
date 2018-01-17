@@ -109,7 +109,7 @@ public:
     bool isBeingAdopted() override;
     void close() override;
     void windowCloseRejected() override;
-    bool contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &data) override;
+    void contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &data) override;
     void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) override;
     void requestFullScreenMode(const QUrl &origin, bool fullscreen) override;
     bool isFullScreenMode() const override;
@@ -135,8 +135,7 @@ public:
     void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) override;
     void hideValidationMessage() override;
     void moveValidationMessage(const QRect &anchor) override;
-    virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
-                                     int exitCode) override;
+    void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) override;
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
     void updateScrollPosition(const QPointF &position) override;
     void updateContentsSize(const QSizeF &size) override;

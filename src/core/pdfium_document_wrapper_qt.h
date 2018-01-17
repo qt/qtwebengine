@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -53,7 +53,8 @@ class PdfiumPageWrapperQt;
 class QWEBENGINE_EXPORT PdfiumDocumentWrapperQt
 {
 public:
-    PdfiumDocumentWrapperQt(const void *pdfData, size_t size, const QSize &imageSize, const char *password = nullptr);
+    PdfiumDocumentWrapperQt(const void *pdfData, size_t size, const QSize &imageSize,
+                            const char *password = nullptr);
     virtual ~PdfiumDocumentWrapperQt();
     QImage pageAsQImage(size_t index);
     int pageCount() const { return m_pageCount; }
@@ -63,7 +64,6 @@ private:
     int m_pageCount;
     void *m_documentHandle;
     QSize m_imageSize;
-    QHash<int, PdfiumPageWrapperQt*> m_cachedPages;
 };
 
 } // namespace QtWebEngineCore

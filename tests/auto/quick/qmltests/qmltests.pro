@@ -43,6 +43,7 @@ OTHER_FILES += \
     $$PWD/data/keyboardEvents.html \
     $$PWD/data/titleupdate.js \
     $$PWD/data/tst_activeFocusOnPress.qml \
+    $$PWD/data/tst_contextMenu.qml \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_download.qml \
     $$PWD/data/tst_favicon.qml \
@@ -92,6 +93,8 @@ OTHER_FILES += \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/AlertDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/ConfirmDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/FilePicker.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/Menu.qml \
+    $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/MenuItem.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/PromptDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/Controls1Delegates/qmldir \
     $$PWD/mock-delegates/TestParams/FilePickerParams.qml \

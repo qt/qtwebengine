@@ -54,6 +54,7 @@
 #include "browser_context_adapter_client.h"
 #include "qwebengineprofile.h"
 #include "qwebenginescriptcollection.h"
+
 #include <QMap>
 #include <QPointer>
 #include <QScopedPointer>
@@ -65,22 +66,9 @@ class BrowserContextAdapter;
 
 QT_BEGIN_NAMESPACE
 
+class QWebEngineBrowserContext;
 class QWebEngineProfilePrivate;
 class QWebEngineSettings;
-
-// This is a wrapper class for BrowserContextAdapter. BrowserContextAdapter must be destructed before WebEngineContext
-// is destructed. Therefore access it via the QWebEngineBrowserContext which parent is the WebEngineContext::globalQObject.
-// This guarantees the destruction together with the WebEngineContext.
-class QWebEngineBrowserContext : public QObject {
-public:
-    QWebEngineBrowserContext(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext, QWebEngineProfilePrivate *profile);
-    ~QWebEngineBrowserContext();
-
-    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextRef;
-
-private:
-    QWebEngineProfilePrivate *m_profile;
-};
 
 class QWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
 public:
