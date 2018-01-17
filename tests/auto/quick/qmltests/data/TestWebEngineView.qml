@@ -82,6 +82,24 @@ WebEngineView {
         verifyElementHasFocus(element);
     }
 
+    function getElementCenter(element) {
+            var center;
+            runJavaScript("(function() {" +
+                          "   var elem = document.getElementById('" + element + "');" +
+                          "   var rect = elem.getBoundingClientRect();" +
+                          "   return { 'x': (rect.left + rect.right) / 2, 'y': (rect.top + rect.bottom) / 2 };" +
+                          "})();", function(result) { center = result } );
+            testCase.tryVerify(function() { return center !== undefined; });
+            return center;
+    }
+
+    function getTextSelection() {
+        var textSelection;
+        runJavaScript("window.getSelection().toString()", function(result) { textSelection = result });
+        testCase.tryVerify(function() { return textSelection !== undefined; });
+        return textSelection;
+    }
+
     TestResult { id: testResult }
     TestCase { id: testCase }
 

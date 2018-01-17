@@ -13,7 +13,8 @@ gn_args += \
     treat_warnings_as_errors=false \
     enable_swiftshader=false \
     use_custom_libcxx=false \
-    use_jumbo_build=true
+    use_jumbo_build=true \
+    jumbo_file_merge_limit=50
 
 qtConfig(webengine-printing-and-pdf) {
     gn_args += enable_basic_printing=true enable_print_preview=true
@@ -62,3 +63,15 @@ CONFIG(debug, debug|release) {
 
 # Compiling with -Os makes a huge difference in binary size
 optimize_size: gn_args += optimize_for_size=true
+
+# We don't want to apply sanitizer options to the build tools (GN, dict convert, etc).
+!host_build {
+    sanitizer: gn_args += sanitizer_keep_symbols=true
+    sanitize_address: gn_args += is_asan=true
+    sanitize_thread: gn_args += is_tsan=true
+    sanitize_memory: gn_args += is_msan=true
+    # rtti is required for a specific check of ubsan, -fsanitize=vptr, which uses the runtime
+    # type information to check that correct derived objects are assigned to base pointers. Without
+    # rtti, linking would fail at build time.
+    sanitize_undefined: gn_args += is_ubsan=true use_rtti=true
+}

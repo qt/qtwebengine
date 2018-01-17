@@ -40,8 +40,17 @@ else: LIBS_PRIVATE += $$NINJA_ARCHIVES
 LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
 # GN's LFLAGS doesn't always work across all the Linux configurations we support.
 # The Windows and macOS ones from GN does provide a few useful flags however
-linux: QMAKE_LFLAGS += -Wl,--gc-sections -Wl,-O1 -Wl,-z,now -Wl,-z,defs
-else: QMAKE_LFLAGS += $$NINJA_LFLAGS
+
+linux {
+    QMAKE_LFLAGS += -Wl,--gc-sections -Wl,-O1 -Wl,-z,now
+    # Embedded address sanitizer symbols are undefined and are picked up by the dynamic link loader
+    # at runtime. Thus we do not to pass the linker flag below, because the linker would complain
+    # about the undefined sanitizer symbols.
+    !sanitizer: QMAKE_LFLAGS += -Wl,-z,defs
+} else {
+    QMAKE_LFLAGS += $$NINJA_LFLAGS
+}
+
 POST_TARGETDEPS += $$NINJA_TARGETDEPS
 
 

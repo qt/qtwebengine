@@ -42,6 +42,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/download_manager.h"
 
 #include "browser_context_qt.h"
 #include "content_client_qt.h"
@@ -102,9 +103,16 @@ BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
 
 BrowserContextAdapter::~BrowserContextAdapter()
 {
+    Q_ASSERT(!m_downloadManagerDelegate);
+}
+
+void BrowserContextAdapter::shutdown()
+{
     m_browserContext->ShutdownStoragePartitions();
-    if (m_downloadManagerDelegate)
-        content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE, m_downloadManagerDelegate.take());
+    if (m_downloadManagerDelegate) {
+        m_browserContext->GetDownloadManager(m_browserContext.data())->Shutdown();
+        m_downloadManagerDelegate.reset();
+    }
     BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(m_browserContext.data());
 }
 
@@ -178,6 +186,8 @@ void BrowserContextAdapter::addClient(BrowserContextAdapterClient *adapterClient
 void BrowserContextAdapter::removeClient(BrowserContextAdapterClient *adapterClient)
 {
     m_clients.removeOne(adapterClient);
+    if (m_clients.isEmpty() && this != WebEngineContext::current()->m_defaultBrowserContext.data())
+        shutdown();
 }
 
 void BrowserContextAdapter::cancelDownload(quint32 downloadId)

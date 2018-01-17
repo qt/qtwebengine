@@ -54,6 +54,35 @@ TestWebEngineView {
         return url.toString().substring(16)
     }
 
+    function getFaviconPixel(faviconImage) {
+        var grabImage = Qt.createQmlObject("
+                import QtQuick 2.5\n
+                Image { }", test)
+        var faviconCanvas = Qt.createQmlObject("
+                import QtQuick 2.5\n
+                Canvas { }", test)
+
+        test.tryVerify(function() { return faviconImage.status == Image.Ready });
+        faviconImage.grabToImage(function(result) {
+                grabImage.source = result.url
+            });
+        test.tryVerify(function() { return grabImage.status == Image.Ready });
+
+        faviconCanvas.width = faviconImage.width;
+        faviconCanvas.height = faviconImage.height;
+        var ctx = faviconCanvas.getContext("2d");
+        ctx.drawImage(grabImage, 0, 0, grabImage.width, grabImage.height);
+        var imageData = ctx.getImageData(Math.round(faviconCanvas.width/2),
+                                         Math.round(faviconCanvas.height/2),
+                                         faviconCanvas.width,
+                                         faviconCanvas.height);
+
+        grabImage.destroy();
+        faviconCanvas.destroy();
+
+        return imageData.data;
+    }
+
     SignalSpy {
         id: iconChangedSpy
         target: webEngineView
@@ -285,12 +314,6 @@ TestWebEngineView {
             var faviconImage = Qt.createQmlObject("
                     import QtQuick 2.5\n
                     Image { sourceSize: Qt.size(width, height) }", test)
-            var grabImage = Qt.createQmlObject("
-                    import QtQuick 2.5\n
-                    Image { }", test)
-            var faviconCanvas = Qt.createQmlObject("
-                    import QtQuick 2.5\n
-                    Canvas { }", test)
 
             compare(iconChangedSpy.count, 0)
 
@@ -303,27 +326,53 @@ TestWebEngineView {
             faviconImage.width = row.size
             faviconImage.height = row.size
             faviconImage.source = webEngineView.icon
-            verify(_waitFor(function() { return faviconImage.status == Image.Ready } ))
 
-            faviconImage.grabToImage(function(result) {
-                    grabImage.source = result.url
-                })
-            verify(_waitFor(function() { return grabImage.status == Image.Ready } ))
-
-            faviconCanvas.width = faviconImage.width
-            faviconCanvas.height = faviconImage.height
-            var ctx = faviconCanvas.getContext("2d")
-            ctx.drawImage(grabImage, 0, 0, grabImage.width, grabImage.height)
-
-            var center = Math.round(row.size/2)
-            var imageData = ctx.getImageData(center, center, center, center)
-            var pixel = imageData.data
-
+            var pixel = getFaviconPixel(faviconImage);
             compare(pixel[0], row.value)
 
             faviconImage.destroy()
-            grabImage.destroy()
-            faviconCanvas.destroy()
+        }
+
+        function test_dynamicFavicon() {
+            var faviconImage = Qt.createQmlObject("
+                    import QtQuick 2.5\n
+                    Image { width: 16; height: 16; sourceSize: Qt.size(width, height); }", test)
+            faviconImage.source = Qt.binding(function() { return webEngineView.icon; });
+
+            var colors = [
+                {"url": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==", "r": 255, "g": 0, "b": 0},
+                {"url": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIApD5fRAAAAABJRU5ErkJggg==", "r": 0, "g": 255, "b": 0},
+                {"url": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPj/HwADBwIAMCbHYQAAAABJRU5ErkJggg==", "r": 0, "g": 0, "b": 255},
+            ];
+            var pixel;
+
+            compare(iconChangedSpy.count, 0);
+            webEngineView.loadHtml(
+                        "<html>" +
+                        "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='/>" +
+                        "</html>"
+            );
+            verify(webEngineView.waitForLoadSucceeded());
+            tryCompare(iconChangedSpy, "count", 1);
+
+            pixel = getFaviconPixel(faviconImage);
+            compare(pixel[0], 0);
+            compare(pixel[1], 0);
+            compare(pixel[2], 0);
+
+            for (var i = 0; i < colors.length; ++i) {
+                iconChangedSpy.clear();
+                runJavaScript("document.getElementsByTagName('link')[0].href = 'data:image/png;base64," + colors[i]["url"] + "';");
+                tryCompare(faviconImage, "source", "image://favicon/data:image/png;base64," + colors[i]["url"]);
+                compare(iconChangedSpy.count, 1);
+
+                pixel = getFaviconPixel(faviconImage);
+                compare(pixel[0], colors[i]["r"]);
+                compare(pixel[1], colors[i]["g"]);
+                compare(pixel[2], colors[i]["b"]);
+            }
+
+            faviconImage.destroy()
         }
     }
 }

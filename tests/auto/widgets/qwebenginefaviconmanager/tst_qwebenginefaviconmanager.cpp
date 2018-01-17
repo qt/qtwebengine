@@ -60,6 +60,7 @@ private Q_SLOTS:
     void downloadIconsDisabled();
     void downloadTouchIconsEnabled_data();
     void downloadTouchIconsEnabled();
+    void dynamicFavicon();
 
 private:
     QWebEngineView *m_view;
@@ -471,6 +472,35 @@ void tst_QWebEngineFaviconManager::downloadTouchIconsEnabled()
 
     QVERIFY(icon.availableSizes().count() >= 1);
     QVERIFY(icon.availableSizes().contains(expectedIconSize));
+}
+
+void tst_QWebEngineFaviconManager::dynamicFavicon()
+{
+    QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
+    QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
+    QSignalSpy iconChangedSpy(m_page, SIGNAL(iconChanged(QIcon)));
+
+    QMap<Qt::GlobalColor, QString> colors;
+    colors.insert(Qt::red, QString("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="));
+    colors.insert(Qt::green, QString("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIApD5fRAAAAABJRU5ErkJggg=="));
+    colors.insert(Qt::blue, QString("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPj/HwADBwIAMCbHYQAAAABJRU5ErkJggg=="));
+
+    m_page->setHtml("<html>"
+                    "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='/>"
+                    "</html>");
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
+    QTRY_COMPARE(iconChangedSpy.count(), 1);
+
+    QCOMPARE(m_page->icon().pixmap(1, 1).toImage().pixelColor(0, 0), QColor(Qt::black));
+
+    for (Qt::GlobalColor color : colors.keys()) {
+        iconChangedSpy.clear();
+        evaluateJavaScriptSync(m_page, "document.getElementsByTagName('link')[0].href = 'data:image/png;base64," + colors[color] + "';");
+        QTRY_COMPARE(iconChangedSpy.count(), 1);
+        QTRY_COMPARE(m_page->iconUrl().toString(), QString("data:image/png;base64," + colors[color]));
+        QCOMPARE(m_page->icon().pixmap(1, 1).toImage().pixelColor(0, 0), QColor(color));
+    }
 }
 
 QTEST_MAIN(tst_QWebEngineFaviconManager)

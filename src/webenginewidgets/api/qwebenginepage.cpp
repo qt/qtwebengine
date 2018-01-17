@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -139,7 +139,8 @@ static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
 
     QPainter painter;
     if (!painter.begin(&printer)) {
-        qWarning("Failure to print on printer %ls: Could not open printer for painting.", qUtf16Printable(printer.printerName()));
+        qWarning("Failure to print on printer %ls: Could not open printer for painting.",
+                  qUtf16Printable(printer.printerName()));
         return false;
     }
 
@@ -1475,35 +1476,36 @@ void QWebEnginePagePrivate::wasHidden()
     adapter->wasHidden();
 }
 
-bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
+void QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
     if (!view)
-        return false;
+        return;
 
     contextData.reset();
-    QContextMenuEvent event(QContextMenuEvent::Mouse, data.position(), view->mapToGlobal(data.position()));
     switch (view->contextMenuPolicy()) {
-    case Qt::PreventContextMenu:
-        return false;
     case Qt::DefaultContextMenu:
+    {
         contextData = data;
+        QContextMenuEvent event(QContextMenuEvent::Mouse, data.position(), view->mapToGlobal(data.position()));
         view->contextMenuEvent(&event);
-        break;
+        return;
+    }
     case Qt::CustomContextMenu:
         contextData = data;
         Q_EMIT view->customContextMenuRequested(data.position());
-        break;
+        return;
     case Qt::ActionsContextMenu:
         if (view->actions().count()) {
+            QContextMenuEvent event(QContextMenuEvent::Mouse, data.position(), view->mapToGlobal(data.position()));
             QMenu::exec(view->actions(), event.globalPos(), 0, view);
-            break;
         }
-        // fallthrough
+        return;
+    case Qt::PreventContextMenu:
     case Qt::NoContextMenu:
-        event.ignore();
-        return false;
+        return;
     }
-    return true;
+
+    Q_UNREACHABLE();
 }
 
 void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)
@@ -1630,12 +1632,21 @@ bool QWebEnginePagePrivate::isEnabled() const
 
 void QWebEnginePagePrivate::setToolTip(const QString &toolTipText)
 {
-    if (view) {
-        QString wrappedTip;
-        if (!toolTipText.isEmpty())
-             wrappedTip = QLatin1String("<p>") % toolTipText.toHtmlEscaped().left(MaxTooltipLength) % QLatin1String("</p>");
-        view->setToolTip(wrappedTip);
+    if (!view)
+        return;
+
+    // Hide tooltip if shown.
+    if (toolTipText.isEmpty()) {
+        if (!view->toolTip().isEmpty())
+            view->setToolTip(QString());
+
+        return;
     }
+
+    // Update tooltip if text was changed.
+    QString wrappedTip = QLatin1String("<p>") % toolTipText.toHtmlEscaped().left(MaxTooltipLength) % QLatin1String("</p>");
+    if (view->toolTip() != wrappedTip)
+        view->setToolTip(wrappedTip);
 }
 
 QMenu *QWebEnginePage::createStandardContextMenu()

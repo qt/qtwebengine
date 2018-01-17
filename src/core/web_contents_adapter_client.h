@@ -390,7 +390,7 @@ public:
     virtual bool isBeingAdopted() = 0;
     virtual void close() = 0;
     virtual void windowCloseRejected() = 0;
-    virtual bool contextMenuRequested(const WebEngineContextMenuData &) = 0;
+    virtual void contextMenuRequested(const WebEngineContextMenuData &) = 0;
     virtual void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) = 0;
     virtual void requestFullScreenMode(const QUrl &origin, bool fullscreen) = 0;
     virtual bool isFullScreenMode() const = 0;

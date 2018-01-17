@@ -632,9 +632,11 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(d->webContents->GetRenderViewHost());
 
     QByteArray encodedData = data.toPercentEncoding();
-    std::string urlString("data:");
-    urlString.append(mimeType.toStdString());
-    urlString.append(",");
+    std::string urlString;
+    if (!mimeType.isEmpty())
+        urlString = std::string("data:") + mimeType.toStdString() + std::string(",");
+    else
+        urlString = std::string("data:text/plain;charset=US-ASCII,");
     urlString.append(encodedData.constData(), encodedData.length());
 
     GURL dataUrlToLoad(urlString);
@@ -1359,7 +1361,11 @@ bool WebContentsAdapter::handleDropDataFileContents(const content::DropData &dro
 
     const auto maybeFilename = dropData.GetSafeFilenameForImageFileContents();
     const QString fileName = maybeFilename ? toQt(maybeFilename->AsUTF16Unsafe()) : QString();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
     const QString &filePath = d->dndTmpDir->filePath(fileName);
+#else
+    const QString &filePath = d->dndTmpDir->path() + QLatin1Char('/') + fileName;
+#endif
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly)) {
         qWarning("Cannot write temporary file %s.", qUtf8Printable(filePath));

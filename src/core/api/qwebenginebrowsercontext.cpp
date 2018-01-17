@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,75 +37,37 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_ENGINE_CONTEXT_H
-#define WEB_ENGINE_CONTEXT_H
+#include "qwebenginebrowsercontext_p.h"
 
-#include "qtwebenginecoreglobal.h"
+#include "browser_context_adapter.h"
+#include <qtwebenginecoreglobal.h>
 
-#include "build/build_config.h"
+QT_BEGIN_NAMESPACE
 
-#include "base/memory/ref_counted.h"
-#include "base/values.h"
-#include "printing/features/features.h"
-
-#include <QSharedPointer>
-
-namespace base {
-class RunLoop;
+QWebEngineBrowserContext::QWebEngineBrowserContext(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext,
+                                                   QtWebEngineCore::BrowserContextAdapterClient *profile)
+        : QObject(QtWebEngineCore::BrowserContextAdapter::globalQObjectRoot())
+        , browserContextRef(browserContext)
+        , m_profile(profile)
+{
+    browserContextRef->addClient(m_profile);
 }
 
-namespace content {
-class BrowserMainRunner;
-class ContentMainRunner;
+QWebEngineBrowserContext::~QWebEngineBrowserContext()
+{
+    if (m_profile)
+        shutdown();
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-namespace printing {
-class PrintJobManager;
+void QWebEngineBrowserContext::shutdown()
+{
+    Q_ASSERT(m_profile);
+    // In the case the user sets this profile as the parent of the interceptor
+    // it can be deleted before the browser-context still referencing it is.
+    browserContextRef->setRequestInterceptor(nullptr);
+    browserContextRef->removeClient(m_profile);
+    m_profile = 0;
+    deleteLater();
 }
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
-QT_FORWARD_DECLARE_CLASS(QObject)
-
-namespace QtWebEngineCore {
-
-class BrowserContextAdapter;
-class ContentMainDelegateQt;
-class DevToolsServerQt;
-class SurfaceFactoryQt;
-
-bool usingSoftwareDynamicGL();
-
-class WebEngineContext : public base::RefCounted<WebEngineContext> {
-public:
-    static scoped_refptr<WebEngineContext> current();
-
-    QSharedPointer<BrowserContextAdapter> defaultBrowserContext();
-    QObject *globalQObject();
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-    printing::PrintJobManager* getPrintJobManager();
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
-    void destroyBrowserContext();
-    void destroy();
-
-private:
-    friend class base::RefCounted<WebEngineContext>;
-    friend class BrowserContextAdapter;
-    WebEngineContext();
-    ~WebEngineContext();
-
-    std::unique_ptr<base::RunLoop> m_runLoop;
-    std::unique_ptr<ContentMainDelegateQt> m_mainDelegate;
-    std::unique_ptr<content::ContentMainRunner> m_contentRunner;
-    std::unique_ptr<content::BrowserMainRunner> m_browserRunner;
-    QObject* m_globalQObject;
-    QSharedPointer<BrowserContextAdapter> m_defaultBrowserContext;
-    std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-    std::unique_ptr<printing::PrintJobManager> m_printJobManager;
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
-};
-
-} // namespace
-
-#endif // WEB_ENGINE_CONTEXT_H
+QT_END_NAMESPACE

@@ -114,7 +114,7 @@ public:
     void windowCloseRejected() override;
     void requestFullScreenMode(const QUrl &origin, bool fullscreen) override;
     bool isFullScreenMode() const override;
-    bool contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &) override;
+    void contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &) override;
     void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) override;
     void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) override;
     void runFileChooser(QSharedPointer<QtWebEngineCore::FilePickerController>) override;
@@ -138,8 +138,7 @@ public:
     void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) override;
     void hideValidationMessage() override;
     void moveValidationMessage(const QRect &anchor) override;
-    virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
-                                     int exitCode) override;
+    void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) override;
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
     void updateScrollPosition(const QPointF &position) override;
     void updateContentsSize(const QSizeF &size) override;

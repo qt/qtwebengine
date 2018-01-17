@@ -37,75 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_ENGINE_CONTEXT_H
-#define WEB_ENGINE_CONTEXT_H
+import QtQuick 2.5
+import QtQuick.Controls 1.4 as Controls
 
-#include "qtwebenginecoreglobal.h"
+Controls.MenuItem { }
 
-#include "build/build_config.h"
-
-#include "base/memory/ref_counted.h"
-#include "base/values.h"
-#include "printing/features/features.h"
-
-#include <QSharedPointer>
-
-namespace base {
-class RunLoop;
-}
-
-namespace content {
-class BrowserMainRunner;
-class ContentMainRunner;
-}
-
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-namespace printing {
-class PrintJobManager;
-}
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
-
-QT_FORWARD_DECLARE_CLASS(QObject)
-
-namespace QtWebEngineCore {
-
-class BrowserContextAdapter;
-class ContentMainDelegateQt;
-class DevToolsServerQt;
-class SurfaceFactoryQt;
-
-bool usingSoftwareDynamicGL();
-
-class WebEngineContext : public base::RefCounted<WebEngineContext> {
-public:
-    static scoped_refptr<WebEngineContext> current();
-
-    QSharedPointer<BrowserContextAdapter> defaultBrowserContext();
-    QObject *globalQObject();
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-    printing::PrintJobManager* getPrintJobManager();
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
-    void destroyBrowserContext();
-    void destroy();
-
-private:
-    friend class base::RefCounted<WebEngineContext>;
-    friend class BrowserContextAdapter;
-    WebEngineContext();
-    ~WebEngineContext();
-
-    std::unique_ptr<base::RunLoop> m_runLoop;
-    std::unique_ptr<ContentMainDelegateQt> m_mainDelegate;
-    std::unique_ptr<content::ContentMainRunner> m_contentRunner;
-    std::unique_ptr<content::BrowserMainRunner> m_browserRunner;
-    QObject* m_globalQObject;
-    QSharedPointer<BrowserContextAdapter> m_defaultBrowserContext;
-    std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
-    std::unique_ptr<printing::PrintJobManager> m_printJobManager;
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
-};
-
-} // namespace
-
-#endif // WEB_ENGINE_CONTEXT_H
