@@ -136,8 +136,6 @@ namespace QtWebEngineCore {
 
 namespace {
 
-ContentBrowserClientQt* gBrowserClient = 0; // Owned by ContentMainDelegateQt.
-
 // Return a timeout suitable for the glib loop, -1 to block forever,
 // 0 to return right away, or a timeout in milliseconds from now.
 int GetTimeIntervalMilliseconds(const base::TimeTicks& from) {
@@ -368,18 +366,10 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
 ContentBrowserClientQt::ContentBrowserClientQt()
     : m_browserMainParts(0)
 {
-    Q_ASSERT(!gBrowserClient);
-    gBrowserClient = this;
 }
 
 ContentBrowserClientQt::~ContentBrowserClientQt()
 {
-    gBrowserClient = 0;
-}
-
-ContentBrowserClientQt *ContentBrowserClientQt::Get()
-{
-    return gBrowserClient;
 }
 
 content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const content::MainFunctionParams&)

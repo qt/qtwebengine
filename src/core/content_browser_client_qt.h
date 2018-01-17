@@ -84,7 +84,6 @@ class ContentBrowserClientQt : public content::ContentBrowserClient {
 public:
     ContentBrowserClientQt();
     ~ContentBrowserClientQt();
-    static ContentBrowserClientQt* Get();
     content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) override;
     void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
     void ResourceDispatcherHostCreated() override;
