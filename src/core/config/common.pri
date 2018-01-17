@@ -6,6 +6,7 @@ gn_args += \
     is_shared=true \
     enable_nacl=false \
     enable_remoting=false \
+    enable_reporting=false \
     enable_web_speech=false \
     use_allocator_shim=false \
     use_allocator=\"none\" \
