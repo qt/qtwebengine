@@ -3893,7 +3893,7 @@ void tst_QWebEnginePage::setUrlToBadDomain()
     page.setUrl(url1);
 
     QTRY_COMPARE(urlSpy.count(), 1);
-    QTRY_COMPARE(titleSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(titleSpy.count(), 1, 12000);
     QTRY_COMPARE(loadSpy.count(), 1);
 
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url1);
@@ -3906,7 +3906,7 @@ void tst_QWebEnginePage::setUrlToBadDomain()
     page.setUrl(url2);
 
     QTRY_COMPARE(urlSpy.count(), 1);
-    QTRY_COMPARE(titleSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(titleSpy.count(), 1, 12000);
     QTRY_COMPARE(loadSpy.count(), 1);
 
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url2);
