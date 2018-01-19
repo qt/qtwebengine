@@ -68,6 +68,7 @@ public:
 
     QUrl url() const;
     QByteArray method() const;
+    QUrl initiator() const;
 
     void reply(const QByteArray &contentType, QIODevice *device);
     void redirect(const QUrl& url);
@@ -80,12 +81,14 @@ private Q_SLOTS:
 private:
     URLRequestCustomJobDelegate(URLRequestCustomJobProxy *proxy,
                                 const QUrl &url,
-                                const QByteArray &method);
+                                const QByteArray &method,
+                                const QUrl &initiatorOrigin);
 
     friend class URLRequestCustomJobProxy;
     scoped_refptr<URLRequestCustomJobProxy> m_proxy;
     QUrl m_request;
     QByteArray m_method;
+    QUrl m_initiatorOrigin;
 };
 
 } // namespace

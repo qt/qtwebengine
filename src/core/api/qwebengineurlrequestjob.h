@@ -72,6 +72,7 @@ public:
 
     QUrl requestUrl() const;
     QByteArray requestMethod() const;
+    QUrl initiator() const;
 
     void reply(const QByteArray &contentType, QIODevice *device);
     void fail(Error error);

@@ -114,6 +114,17 @@ QByteArray QWebEngineUrlRequestJob::requestMethod() const
 }
 
 /*!
+    \since 5.11
+    Returns the origin URL of the content that initiated the request. If the
+    request was not initiated by web content the function will return an
+    empty QUrl.
+*/
+QUrl QWebEngineUrlRequestJob::initiator() const
+{
+    return d_ptr->initiator();
+}
+
+/*!
     Replies to the request with \a device and the MIME type \a contentType.
 
     The user has to be aware that \a device will be used on another thread

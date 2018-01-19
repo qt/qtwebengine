@@ -41,7 +41,9 @@
 #define URL_REQUEST_CUSTOM_JOB_PROXY_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 #include <QtCore/QWeakPointer>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
@@ -70,7 +72,7 @@ public:
     void abort();
     void fail(int error);
     void release();
-    void initialize(GURL url, std::string method);
+    void initialize(GURL url, std::string method, base::Optional<url::Origin> initiatorOrigin);
     void readyRead();
 
     // IO thread owned:

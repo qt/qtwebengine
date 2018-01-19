@@ -78,7 +78,7 @@ void URLRequestCustomJob::Start()
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      base::Bind(&URLRequestCustomJobProxy::initialize,
-                                     m_proxy, request()->url(), request()->method()));
+                                     m_proxy, request()->url(), request()->method(), request()->initiator()));
 }
 
 void URLRequestCustomJob::Kill()
