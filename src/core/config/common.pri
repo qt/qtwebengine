@@ -6,13 +6,16 @@ gn_args += \
     is_shared=true \
     enable_nacl=false \
     enable_remoting=false \
+    enable_reporting=false \
     enable_web_speech=false \
     use_allocator_shim=false \
     use_allocator=\"none\" \
     v8_use_external_startup_data=false \
     treat_warnings_as_errors=false \
     enable_swiftshader=false \
-    use_custom_libcxx=false \
+    use_custom_libcxx=false
+
+!win32: gn_args += \
     use_jumbo_build=true \
     jumbo_file_merge_limit=50
 
@@ -43,6 +46,8 @@ qtConfig(webengine-webrtc) {
 }
 
 qtConfig(webengine-proprietary-codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
+
+!precompile_header: gn_args += disable_precompiled_headers=true
 
 CONFIG(release, debug|release) {
     force_debug_info {
