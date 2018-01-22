@@ -106,8 +106,8 @@ static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
         return false;
     }
 
-    QRect printerPageRect = printer.pageRect();
-    PdfiumDocumentWrapperQt pdfiumWrapper(data.constData(), data.size(), printerPageRect.size());
+    QSize pageSize = printer.pageRect().size();
+    PdfiumDocumentWrapperQt pdfiumWrapper(data.constData(), data.size(), pageSize);
 
     int toPage = printer.toPage();
     int fromPage = printer.fromPage();
@@ -155,7 +155,8 @@ static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
                 if (currentImage.isNull())
                     return false;
 
-                painter.drawImage(printerPageRect, currentImage, currentImage.rect());
+                // Painting operations are automatically clipped to the bounds of the drawable part of the page.
+                painter.drawImage(QRect(0, 0, pageSize.width(), pageSize.height()), currentImage, currentImage.rect());
                 if (printedPages < pageCopies - 1)
                     printer.newPage();
             }
