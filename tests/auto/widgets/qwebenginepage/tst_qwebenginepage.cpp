@@ -3750,8 +3750,6 @@ void tst_QWebEnginePage::setUrlWithPendingLoads()
 
 void tst_QWebEnginePage::setUrlToEmpty()
 {
-    QSKIP("FIXME: [0908/090526:FATAL:navigation_controller_impl.cc(927)] Check failed: active_entry->site_instance() == rfh->GetSiteInstance().");
-
     int expectedLoadFinishedCount = 0;
     const QUrl aboutBlank("about:blank");
     const QUrl url("qrc:/resources/test2.html");
@@ -3759,7 +3757,8 @@ void tst_QWebEnginePage::setUrlToEmpty()
     QWebEnginePage page;
     QCOMPARE(page.url(), QUrl());
     QCOMPARE(page.requestedUrl(), QUrl());
-    QCOMPARE(baseUrlSync(&page), QUrl());
+// Chromium now returns about:blank as the base url here:
+//     QCOMPARE(baseUrlSync(&page), QUrl());
 
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
@@ -3926,8 +3925,6 @@ static QStringList collectHistoryUrls(QWebEngineHistory *history)
 
 void tst_QWebEnginePage::setUrlHistory()
 {
-    QSKIP("FIXME: [0908/090526:FATAL:navigation_controller_impl.cc(927)] Check failed: active_entry->site_instance() == rfh->GetSiteInstance().");
-
     const QUrl aboutBlank("about:blank");
     QUrl url;
     int expectedLoadFinishedCount = 0;
@@ -3943,10 +3940,10 @@ void tst_QWebEnginePage::setUrlHistory()
     // Chromium stores navigation entry for every successful loads. The load of the empty page is committed and stored as about:blank.
     QCOMPARE(collectHistoryUrls(m_page->history()), QStringList() << aboutBlank.toString());
 
-    url = QUrl("http://non.existent/");
+    url = QUrl("http://url.invalid/");
     m_page->setUrl(url);
     expectedLoadFinishedCount++;
-    QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), expectedLoadFinishedCount, 20000);
     // When error page is disabled in case of LoadFail the entry of the unavailable page is not stored.
     // We expect the url of the previously loaded page here.
     QCOMPARE(m_page->url(), aboutBlank);
