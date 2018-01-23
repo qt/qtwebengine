@@ -67,6 +67,38 @@ public:
         MediaTypeFile,
         MediaTypePlugin
     };
+
+    // Must match QWebEngineCore::WebEngineContextMenuData::MediaFlags:
+    enum MediaFlag {
+        MediaNone = 0x0,
+        MediaInError = 0x1,
+        MediaPaused = 0x2,
+        MediaMuted = 0x4,
+        MediaLoop = 0x8,
+        MediaCanSave = 0x10,
+        MediaHasAudio = 0x20,
+        MediaCanToggleControls = 0x40,
+        MediaControls = 0x80,
+        MediaCanPrint = 0x100,
+        MediaCanRotate = 0x200,
+    };
+    Q_DECLARE_FLAGS(MediaFlags, MediaFlag)
+
+    // Must match QWebEngineCore::WebEngineContextMenuData::EditFlags:
+    enum EditFlag {
+        CanDoNone = 0x0,
+        CanUndo = 0x1,
+        CanRedo = 0x2,
+        CanCut = 0x4,
+        CanCopy = 0x8,
+        CanPaste = 0x10,
+        CanDelete = 0x20,
+        CanSelectAll = 0x40,
+        CanTranslate = 0x80,
+        CanEditRichly = 0x100,
+    };
+    Q_DECLARE_FLAGS(EditFlags, EditFlag)
+
     bool isValid() const;
 
     QPoint position() const;
@@ -78,12 +110,16 @@ public:
     bool isContentEditable() const;
     QString misspelledWord() const;
     QStringList spellCheckerSuggestions() const;
+    MediaFlags mediaFlags() const;
+    EditFlags editFlags() const;
 
 private:
     void reset();
     typedef QtWebEngineCore::WebEngineContextMenuData QWebEngineContextDataPrivate;
     QWebEngineContextMenuData &operator=(const QWebEngineContextDataPrivate &priv);
     const QWebEngineContextDataPrivate *d;
+    Q_FLAGS(MediaFlags)
+    Q_FLAGS(EditFlags)
 
     friend class QWebEnginePagePrivate;
     friend class QWebEnginePage;

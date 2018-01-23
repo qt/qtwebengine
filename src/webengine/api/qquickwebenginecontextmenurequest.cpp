@@ -42,6 +42,7 @@
 
 QT_BEGIN_NAMESPACE
 
+// Match MediaType enum
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypeNone,
                    QQuickWebEngineContextMenuRequest::MediaTypeNone)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypeImage,
@@ -56,6 +57,52 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypeFile,
                    QQuickWebEngineContextMenuRequest::MediaTypeFile)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypePlugin,
                    QQuickWebEngineContextMenuRequest::MediaTypePlugin)
+
+// Match MediaFlag enum
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaNone,
+                   QQuickWebEngineContextMenuRequest::MediaNone)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaInError,
+                   QQuickWebEngineContextMenuRequest::MediaInError)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaPaused,
+                   QQuickWebEngineContextMenuRequest::MediaPaused)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaMuted,
+                   QQuickWebEngineContextMenuRequest::MediaMuted)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaLoop,
+                   QQuickWebEngineContextMenuRequest::MediaLoop)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaCanSave,
+                   QQuickWebEngineContextMenuRequest::MediaCanSave)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaHasAudio,
+                   QQuickWebEngineContextMenuRequest::MediaHasAudio)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaCanToggleControls,
+                   QQuickWebEngineContextMenuRequest::MediaCanToggleControls)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaControls,
+                   QQuickWebEngineContextMenuRequest::MediaControls)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaCanPrint,
+                   QQuickWebEngineContextMenuRequest::MediaCanPrint)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaCanRotate,
+                   QQuickWebEngineContextMenuRequest::MediaCanRotate)
+
+// Match EditFlag enum
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanDoNone,
+                   QQuickWebEngineContextMenuRequest::CanDoNone)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanUndo,
+                   QQuickWebEngineContextMenuRequest::CanUndo)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanRedo,
+                   QQuickWebEngineContextMenuRequest::CanRedo)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanCut,
+                   QQuickWebEngineContextMenuRequest::CanCut)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanCopy,
+                   QQuickWebEngineContextMenuRequest::CanCopy)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanPaste,
+                   QQuickWebEngineContextMenuRequest::CanPaste)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanDelete,
+                   QQuickWebEngineContextMenuRequest::CanDelete)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanSelectAll,
+                   QQuickWebEngineContextMenuRequest::CanSelectAll)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanTranslate,
+                   QQuickWebEngineContextMenuRequest::CanTranslate)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanEditRichly,
+                   QQuickWebEngineContextMenuRequest::CanEditRichly)
 
 /*!
     \qmltype ContextMenuRequest
@@ -270,6 +317,75 @@ bool QQuickWebEngineContextMenuRequest::isAccepted() const
 void QQuickWebEngineContextMenuRequest::setAccepted(bool accepted)
 {
     m_accepted = accepted;
+}
+
+/*!
+    \qmlproperty flags ContextMenuRequest::mediaFlags
+    \readonly
+    \since QtWebEngine 1.7
+
+    The current media element's status and its available operations.
+    \c MediaNone if the selected web page content is not a media element.
+
+    \value  ContextMenuRequest.MediaNone
+            Not a media element.
+    \value  ContextMenuRequest.MediaInError
+            An error occurred.
+    \value  ContextMenuRequest.MediaPaused
+            Media is paused.
+    \value  ContextMenuRequest.MediaMuted
+            Media is muted.
+    \value  ContextMenuRequest.MediaLoop
+            Media can be looped.
+    \value  ContextMenuRequest.MediaCanSave
+            Media can be saved.
+    \value  ContextMenuRequest.MediaHasAudio
+            Media has audio.
+    \value  ContextMenuRequest.MediaCanToggleControls
+            Media can show controls.
+    \value  ContextMenuRequest.MediaControls
+            Media controls are shown.
+    \value  ContextMenuRequest.MediaCanPrint
+            Media is printable.
+    \value  ContextMenuRequest.MediaCanRotate
+            Media is rotatable.
+*/
+QQuickWebEngineContextMenuRequest::MediaFlags QQuickWebEngineContextMenuRequest::mediaFlags() const
+{
+    return static_cast<QQuickWebEngineContextMenuRequest::MediaFlags>(m_data->mediaFlags());
+}
+
+/*!
+    \qmlproperty flags ContextMenuRequest::editFlags
+    \readonly
+    \since QtWebEngine 1.7
+
+    The available edit operations in the current context or \c CanDoNone if no actions are available.
+
+    \value  ContextMenuRequest.CanDoNone
+            Nothing can be done.
+    \value  ContextMenuRequest.CanUndo
+            Undo is available.
+    \value  ContextMenuRequest.CanRedo
+            Redo is available.
+    \value  ContextMenuRequest.CanCut
+            Cut is available.
+    \value  ContextMenuRequest.CanCopy
+            Copy is available.
+    \value  ContextMenuRequest.CanPaste
+            Paste is available.
+    \value  ContextMenuRequest.CanDelete
+            Delete is available.
+    \value  ContextMenuRequest.CanSelectAll
+            Select All is available.
+    \value  ContextMenuRequest.CanTranslate
+            Translate is available.
+    \value  ContextMenuRequest.CanEditRichly
+            Context is richly editable.
+*/
+QQuickWebEngineContextMenuRequest::EditFlags QQuickWebEngineContextMenuRequest::editFlags() const
+{
+    return static_cast<QQuickWebEngineContextMenuRequest::EditFlags>(m_data->editFlags());
 }
 
 QT_END_NAMESPACE

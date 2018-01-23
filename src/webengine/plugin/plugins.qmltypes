@@ -84,9 +84,12 @@ Module {
     Component {
         name: "QQuickWebEngineContextMenuRequest"
         prototype: "QObject"
-        exports: ["QtWebEngine/ContextMenuRequest 1.4"]
+        exports: [
+            "QtWebEngine/ContextMenuRequest 1.4",
+            "QtWebEngine/ContextMenuRequest 1.7"
+        ]
         isCreatable: false
-        exportMetaObjectRevisions: [0]
+        exportMetaObjectRevisions: [0, 1]
         Enum {
             name: "MediaType"
             values: {
@@ -97,6 +100,37 @@ Module {
                 "MediaTypeCanvas": 4,
                 "MediaTypeFile": 5,
                 "MediaTypePlugin": 6
+            }
+        }
+        Enum {
+            name: "MediaFlags"
+            values: {
+                "MediaNone": 0,
+                "MediaInError": 1,
+                "MediaPaused": 2,
+                "MediaMuted": 4,
+                "MediaLoop": 8,
+                "MediaCanSave": 16,
+                "MediaHasAudio": 32,
+                "MediaCanToggleControls": 64,
+                "MediaControls": 128,
+                "MediaCanPrint": 256,
+                "MediaCanRotate": 512
+            }
+        }
+        Enum {
+            name: "EditFlags"
+            values: {
+                "CanDoNone": 0,
+                "CanUndo": 1,
+                "CanRedo": 2,
+                "CanCut": 4,
+                "CanCopy": 8,
+                "CanPaste": 16,
+                "CanDelete": 32,
+                "CanSelectAll": 64,
+                "CanTranslate": 128,
+                "CanEditRichly": 256
             }
         }
         Property { name: "x"; type: "int"; isReadonly: true }
@@ -110,6 +144,8 @@ Module {
         Property { name: "misspelledWord"; type: "string"; isReadonly: true }
         Property { name: "spellCheckerSuggestions"; type: "QStringList"; isReadonly: true }
         Property { name: "accepted"; type: "bool" }
+        Property { name: "mediaFlags"; revision: 1; type: "MediaFlags"; isReadonly: true }
+        Property { name: "editFlags"; revision: 1; type: "EditFlags"; isReadonly: true }
     }
     Component {
         name: "QQuickWebEngineDownloadItem"
@@ -198,6 +234,7 @@ Module {
         Property { name: "interruptReasonString"; revision: 4; type: "string"; isReadonly: true }
         Property { name: "isFinished"; revision: 5; type: "bool"; isReadonly: true }
         Property { name: "isPaused"; revision: 5; type: "bool"; isReadonly: true }
+        Property { name: "isSavePageDownload"; revision: 6; type: "bool"; isReadonly: true }
         Signal { name: "savePageFormatChanged"; revision: 2 }
         Signal { name: "mimeTypeChanged"; revision: 1 }
         Signal { name: "typeChanged"; revision: 3 }
@@ -527,10 +564,11 @@ Module {
             "QtWebEngine/WebEngineSettings 1.3",
             "QtWebEngine/WebEngineSettings 1.4",
             "QtWebEngine/WebEngineSettings 1.5",
-            "QtWebEngine/WebEngineSettings 1.6"
+            "QtWebEngine/WebEngineSettings 1.6",
+            "QtWebEngine/WebEngineSettings 1.7"
         ]
         isCreatable: false
-        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5]
+        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5, 6]
         Enum {
             name: "UnknownUrlSchemePolicy"
             values: {
@@ -565,6 +603,8 @@ Module {
         Property { name: "allowWindowActivationFromJavaScript"; revision: 5; type: "bool" }
         Property { name: "showScrollBars"; revision: 5; type: "bool" }
         Property { name: "unknownUrlSchemePolicy"; revision: 6; type: "UnknownUrlSchemePolicy" }
+        Property { name: "playbackRequiresUserGesture"; revision: 6; type: "bool" }
+        Property { name: "webRTCPublicInterfacesOnly"; revision: 6; type: "bool" }
         Signal { name: "fullScreenSupportEnabledChanged"; revision: 1 }
         Signal { name: "screenCaptureEnabledChanged"; revision: 2 }
         Signal { name: "webGLEnabledChanged"; revision: 2 }
@@ -578,6 +618,8 @@ Module {
         Signal { name: "allowWindowActivationFromJavaScriptChanged"; revision: 5 }
         Signal { name: "showScrollBarsChanged"; revision: 5 }
         Signal { name: "unknownUrlSchemePolicyChanged"; revision: 6 }
+        Signal { name: "playbackRequiresUserGestureChanged"; revision: 6 }
+        Signal { name: "webRTCPublicInterfacesOnlyChanged"; revision: 6 }
     }
     Component {
         name: "QQuickWebEngineSingleton"
@@ -606,9 +648,10 @@ Module {
             "QtWebEngine/WebEngineView 1.3",
             "QtWebEngine/WebEngineView 1.4",
             "QtWebEngine/WebEngineView 1.5",
-            "QtWebEngine/WebEngineView 1.6"
+            "QtWebEngine/WebEngineView 1.6",
+            "QtWebEngine/WebEngineView 1.7"
         ]
-        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5, 6]
+        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5, 6, 7]
         Enum {
             name: "NavigationRequestAction"
             values: {
@@ -921,6 +964,9 @@ Module {
         Property { name: "audioMuted"; revision: 3; type: "bool" }
         Property { name: "recentlyAudible"; revision: 3; type: "bool"; isReadonly: true }
         Property { name: "webChannelWorld"; revision: 3; type: "uint" }
+        Property { name: "inspectedView"; revision: 7; type: "QQuickWebEngineView"; isPointer: true }
+        Property { name: "devToolsView"; revision: 7; type: "QQuickWebEngineView"; isPointer: true }
+        Property { name: "testSupport"; type: "QQuickWebEngineTestSupport"; isPointer: true }
         Signal {
             name: "loadingChanged"
             Parameter { name: "loadRequest"; type: "QQuickWebEngineLoadRequest"; isPointer: true }
@@ -1056,6 +1102,14 @@ Module {
             revision: 7
             Parameter { name: "request"; type: "QQuickWebEngineQuotaPermissionRequest" }
         }
+        Signal {
+            name: "geometryChangeRequested"
+            revision: 7
+            Parameter { name: "geometry"; type: "QRect" }
+            Parameter { name: "frameGeometry"; type: "QRect" }
+        }
+        Signal { name: "inspectedViewChanged"; revision: 7 }
+        Signal { name: "devToolsViewChanged"; revision: 7 }
         Method {
             name: "runJavaScript"
             Parameter { type: "string" }

@@ -125,6 +125,8 @@ public:
 
         qmlRegisterUncreatableType<QQuickWebEngineContextMenuRequest>(uri, 1, 4, "ContextMenuRequest",
                                                                     msgUncreatableType("ContextMenuRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineContextMenuRequest, 1>(uri, 1, 7, "ContextMenuRequest",
+                                                                    msgUncreatableType("ContextMenuRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineAuthenticationDialogRequest>(uri, 1, 4, "AuthenticationDialogRequest",
                                                                        msgUncreatableType("AuthenticationDialogRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineJavaScriptDialogRequest>(uri, 1, 4, "JavaScriptDialogRequest",
