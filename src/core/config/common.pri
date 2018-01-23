@@ -47,7 +47,11 @@ qtConfig(webengine-webrtc) {
 
 qtConfig(webengine-proprietary-codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
 
-!precompile_header: gn_args += disable_precompiled_headers=true
+precompile_header {
+    gn_args += enable_precompiled_headers=true
+} else {
+    gn_args += enable_precompiled_headers=false
+}
 
 CONFIG(release, debug|release) {
     force_debug_info {
