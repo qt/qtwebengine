@@ -104,7 +104,7 @@ private Q_SLOTS:
     void contextMenuCrash();
     void updatePositionDependentActionsCrash();
     void callbackSpyDeleted();
-    void multiplePageGroupsAndLocalStorage();
+    void multipleProfilesAndLocalStorage();
     void cursorMovements();
     void textSelection();
     void textEditing();
@@ -794,50 +794,47 @@ void tst_QWebEnginePage::contextMenuCrash()
 #endif
 }
 
-void tst_QWebEnginePage::multiplePageGroupsAndLocalStorage()
+void tst_QWebEnginePage::multipleProfilesAndLocalStorage()
 {
-#if !defined(QWEBENGINESETTINGS_SETLOCALSTORAGEPATH)
-    QSKIP("QWEBENGINESETTINGS_SETLOCALSTORAGEPATH");
-#else
     QDir dir(tmpDirPath());
-    dir.mkdir("path1");
-    dir.mkdir("path2");
+    bool success = dir.mkpath("path1");
+    success = success && dir.mkdir("path2");
+    QVERIFY(success);
+    {
+        QWebEngineProfile profile1("test1");
+        QWebEngineProfile profile2("test2");
+        profile1.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+        profile2.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+        profile1.setPersistentStoragePath(QDir::toNativeSeparators(tmpDirPath() + "/path1"));
+        profile2.setPersistentStoragePath(QDir::toNativeSeparators(tmpDirPath() + "/path2"));
 
-    QWebEngineView view1;
-    QWebEngineView view2;
+        QWebEnginePage page1(&profile1, nullptr);
+        QWebEnginePage page2(&profile2, nullptr);
+        QSignalSpy loadSpy1(&page1, SIGNAL(loadFinished(bool)));
+        QSignalSpy loadSpy2(&page2, SIGNAL(loadFinished(bool)));
 
-    view1.page()->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
-    view1.page()->settings()->setLocalStoragePath(QDir::toNativeSeparators(tmpDirPath() + "/path1"));
-    DumpRenderTreeSupportQt::webPageSetGroupName(view1.page()->handle(), "group1");
-    view2.page()->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
-    view2.page()->settings()->setLocalStoragePath(QDir::toNativeSeparators(tmpDirPath() + "/path2"));
-    DumpRenderTreeSupportQt::webPageSetGroupName(view2.page()->handle(), "group2");
-    QCOMPARE(DumpRenderTreeSupportQt::webPageGroupName(view1.page()->handle()), QString("group1"));
-    QCOMPARE(DumpRenderTreeSupportQt::webPageGroupName(view2.page()->handle()), QString("group2"));
+        page1.setHtml(QString("<html><body> </body></html>"), QUrl("http://wwww.example.com"));
+        page2.setHtml(QString("<html><body> </body></html>"), QUrl("http://wwww.example.com"));
+        QTRY_COMPARE(loadSpy1.count(), 1);
+        QTRY_COMPARE(loadSpy2.count(), 1);
 
+        evaluateJavaScriptSync(&page1, "localStorage.setItem('test', 'value1');");
+        evaluateJavaScriptSync(&page2, "localStorage.setItem('test', 'value2');");
 
-    view1.setHtml(QString("<html><body> </body></html>"), QUrl("http://www.myexample.com"));
-    view2.setHtml(QString("<html><body> </body></html>"), QUrl("http://www.myexample.com"));
+        page1.setHtml(QString("<html><body> </body></html>"), QUrl("http://wwww.example.com"));
+        page2.setHtml(QString("<html><body> </body></html>"), QUrl("http://wwww.example.com"));
+        QTRY_COMPARE(loadSpy1.count(), 2);
+        QTRY_COMPARE(loadSpy2.count(), 2);
 
-    evaluateJavaScriptSync(view1.page(), "localStorage.test='value1';");
-    evaluateJavaScriptSync(view2.page(), "localStorage.test='value2';");
-
-    view1.setHtml(QString("<html><body> </body></html>"), QUrl("http://www.myexample.com"));
-    view2.setHtml(QString("<html><body> </body></html>"), QUrl("http://www.myexample.com"));
-
-    QVariant s1 = evaluateJavaScriptSync(view1.page(), "localStorage.test");
-    QCOMPARE(s1.toString(), QString("value1"));
-
-    QVariant s2 = evaluateJavaScriptSync(view2.page(), "localStorage.test");
-    QCOMPARE(s2.toString(), QString("value2"));
-
+        QVariant s1 = evaluateJavaScriptSync(&page1, "localStorage.getItem('test')");
+        QCOMPARE(s1.toString(), QString("value1"));
+        QVariant s2 = evaluateJavaScriptSync(&page2, "localStorage.getItem('test')");
+        QCOMPARE(s2.toString(), QString("value2"));
+    }
+    // Avoid deleting on-disk dbs before the underlying browser-context has been asynchronously deleted
     QTest::qWait(1000);
-
-    QFile::remove(QDir::toNativeSeparators(tmpDirPath() + "/path1/http_www.myexample.com_0.localstorage"));
-    QFile::remove(QDir::toNativeSeparators(tmpDirPath() + "/path2/http_www.myexample.com_0.localstorage"));
-    dir.rmdir(QDir::toNativeSeparators("./path1"));
-    dir.rmdir(QDir::toNativeSeparators("./path2"));
-#endif
+    QDir(tmpDirPath() + "/path1").removeRecursively();
+    QDir(tmpDirPath() + "/path2").removeRecursively();
 }
 
 class CursorTrackedPage : public QWebEnginePage
