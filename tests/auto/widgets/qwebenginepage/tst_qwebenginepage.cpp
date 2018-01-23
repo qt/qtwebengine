@@ -100,7 +100,6 @@ private Q_SLOTS:
     void userStyleSheet();
     void userStyleSheetFromLocalFileUrl();
     void userStyleSheetFromQrcUrl();
-    void loadHtml5Video();
     void modified();
     void contextMenuCrash();
     void updatePositionDependentActionsCrash();
@@ -686,20 +685,6 @@ void tst_QWebEnginePage::userStyleSheetFromQrcUrl()
 
     QVERIFY(networkManager->requestedUrls.count() >= 1);
     QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
-#endif
-}
-
-void tst_QWebEnginePage::loadHtml5Video()
-{
-#if defined(WTF_USE_QT_MULTIMEDIA) && WTF_USE_QT_MULTIMEDIA
-    QByteArray url("http://does.not/exist?a=1%2Cb=2");
-    m_view->setHtml("<p><video id ='video' src='" + url + "' autoplay/></p>");
-    QTest::qWait(2000);
-    QUrl mUrl = DumpRenderTreeSupportQt::mediaContentUrlByElementId(m_page->mainFrame()->handle(), "video");
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=65452", Continue);
-    QCOMPARE(mUrl.toEncoded(), url);
-#else
-    W_QSKIP("This test requires Qt Multimedia", SkipAll);
 #endif
 }
 
