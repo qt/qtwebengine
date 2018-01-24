@@ -99,7 +99,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
         /* fileAction                 */ << FileIsDownloaded
-        /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
+        /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
     // SaveLink should always trigger a download, also for text files.
     QTest::newRow("save link to text file")
@@ -112,7 +112,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
         /* fileAction                 */ << FileIsDownloaded
-        /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
+        /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
     // ... adding the "download" attribute should have no effect.
     QTest::newRow("save link to text file (attribute)")
@@ -125,7 +125,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
         /* fileAction                 */ << FileIsDownloaded
-        /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
+        /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
     // ... adding the "attachment" content disposition should also have no effect.
     QTest::newRow("save link to text file (attachment)")
@@ -517,7 +517,7 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
         QCOMPARE(item->totalBytes(), -1);
         QCOMPARE(item->receivedBytes(), 0);
         QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
-        QCOMPARE(item->type(), QWebEngineDownloadItem::DownloadAttribute);
+        QCOMPARE(item->type(), QWebEngineDownloadItem::Attachment);
         QCOMPARE(item->mimeType(), QStringLiteral("text/plain"));
         QCOMPARE(item->path(), standardDir + QByteArrayLiteral("/file2"));
         QCOMPARE(item->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
