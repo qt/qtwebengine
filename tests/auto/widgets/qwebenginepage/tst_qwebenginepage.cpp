@@ -3788,7 +3788,6 @@ public:
     enum Signal {
         LoadStarted,
         LoadFinished,
-        ProvisionalLoad
     };
 
     enum Type {
@@ -3820,25 +3819,21 @@ URLSetter::URLSetter(QWebEnginePage* page, Signal signal, URLSetter::Type type, 
         connect(m_page, SIGNAL(loadStarted()), SLOT(execute()));
     else if (signal == LoadFinished)
         connect(m_page, SIGNAL(loadFinished(bool)), SLOT(execute()));
-    else
-        connect(m_page, SIGNAL(provisionalLoad()), SLOT(execute()));
 }
 
 void URLSetter::execute()
 {
     // We track only the first emission.
     m_page->disconnect(this);
+    connect(m_page, SIGNAL(loadFinished(bool)), SIGNAL(finished()));
     if (m_type == URLSetter::UseLoad)
         m_page->load(m_url);
     else
         m_page->setUrl(m_url);
-    connect(m_page, SIGNAL(loadFinished(bool)), SIGNAL(finished()));
 }
 
 void tst_QWebEnginePage::loadInSignalHandlers_data()
 {
-    QSKIP("FIXME: This crashes in content::WebContentsImpl::NavigateToEntry because of reentrancy. Should we require QueuedConnections or do it ourselves to support this?");
-
     QTest::addColumn<URLSetter::Type>("type");
     QTest::addColumn<URLSetter::Signal>("signal");
     QTest::addColumn<QUrl>("url");
@@ -3850,15 +3845,11 @@ void tst_QWebEnginePage::loadInSignalHandlers_data()
     QTest::newRow("call load() in loadStarted() after invalid url") << URLSetter::UseLoad << URLSetter::LoadStarted << invalidUrl;
     QTest::newRow("call load() in loadFinished() after valid url") << URLSetter::UseLoad << URLSetter::LoadFinished << validUrl;
     QTest::newRow("call load() in loadFinished() after invalid url") << URLSetter::UseLoad << URLSetter::LoadFinished << invalidUrl;
-    QTest::newRow("call load() in provisionalLoad() after valid url") << URLSetter::UseLoad << URLSetter::ProvisionalLoad << validUrl;
-    QTest::newRow("call load() in provisionalLoad() after invalid url") << URLSetter::UseLoad << URLSetter::ProvisionalLoad << invalidUrl;
 
     QTest::newRow("call setUrl() in loadStarted() after valid url") << URLSetter::UseSetUrl << URLSetter::LoadStarted << validUrl;
     QTest::newRow("call setUrl() in loadStarted() after invalid url") << URLSetter::UseSetUrl << URLSetter::LoadStarted << invalidUrl;
     QTest::newRow("call setUrl() in loadFinished() after valid url") << URLSetter::UseSetUrl << URLSetter::LoadFinished << validUrl;
     QTest::newRow("call setUrl() in loadFinished() after invalid url") << URLSetter::UseSetUrl << URLSetter::LoadFinished << invalidUrl;
-    QTest::newRow("call setUrl() in provisionalLoad() after valid url") << URLSetter::UseSetUrl << URLSetter::ProvisionalLoad << validUrl;
-    QTest::newRow("call setUrl() in provisionalLoad() after invalid url") << URLSetter::UseSetUrl << URLSetter::ProvisionalLoad << invalidUrl;
 }
 
 void tst_QWebEnginePage::loadInSignalHandlers()
@@ -3869,10 +3860,13 @@ void tst_QWebEnginePage::loadInSignalHandlers()
 
     const QUrl urlForSetter("qrc:/resources/test1.html");
     URLSetter setter(m_page, signal, type, urlForSetter);
-
-    m_page->load(url);
     QSignalSpy spy(&setter, &URLSetter::finished);
-    QVERIFY(spy.wait());
+    m_page->load(url);
+    // every loadStarted() call should have also loadFinished()
+    if (signal == URLSetter::LoadStarted)
+        QTRY_COMPARE(spy.count(), 2);
+    else
+        QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(m_page->url(), urlForSetter);
 }
 
