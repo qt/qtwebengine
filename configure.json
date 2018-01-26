@@ -615,7 +615,7 @@
                 "webengine-webrtc",
                 "webengine-system-ninja",
                 "webengine-geolocation",
-                "webengine-v8-snapshot-support",
+                "webengine-v8-snapshot",
                 {
                     "type": "feature",
                     "args": "webengine-alsa",
