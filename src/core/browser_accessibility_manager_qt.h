@@ -63,10 +63,8 @@ public:
                                   const ui::AXTreeUpdate& initialTree,
                                   BrowserAccessibilityDelegate* delegate,
                                   BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactoryQt());
-
-    void NotifyAccessibilityEvent(BrowserAccessibilityEvent::Source source,
-                                  ui::AXEvent event_type,
-                                  BrowserAccessibility* node) override;
+    void FireBlinkEvent(ui::AXEvent event_type,
+                        BrowserAccessibility* node) override;
 
     QAccessibleInterface *rootParentAccessible();
 

@@ -92,18 +92,18 @@ def isInChromiumBlacklist(file_path):
             not 'third_party/chromevox' in file_path and
             not 'media/webrtc/desktop_media_list.h' in file_path and
             not 'media/webrtc/desktop_streams_registry.' in file_path and
-            not 'browser/custom_handlers/protocol_handler_registry.' in file_path and
-            not 'browser/custom_handlers/protocol_handler_registry_factory.' in file_path and
             not 'browser/net/chrome_mojo_proxy_resolver_factory.' in file_path and
+            not '/browser/custom_handlers/' in file_path and
             not '/browser/devtools/' in file_path and
             not '/browser/ui/webui/' in file_path and
             not 'common/chrome_constants.' in file_path and
             not 'common/chrome_paths' in file_path and
             not 'common/chrome_switches.' in file_path and
             not 'common/content_restriction.h' in file_path and
-            not 'common/custom_handlers/protocol_handler.' in file_path and
+            not 'common/custom_handlers/' in file_path and
             not 'common/spellcheck_' in file_path and
             not 'common/url_constants' in file_path and
+            not 'common/webui_url_constants' in file_path and
             not '/extensions/api/' in file_path and
             not '/extensions/browser/api/' in file_path and
             not '/extensions/permissions/' in file_path and
@@ -319,8 +319,8 @@ def exportChromium():
     files = listFilesInCurrentRepository()
     # Add LASTCHANGE files which are not tracked by git.
     files.append('build/util/LASTCHANGE')
-    files.append('build/util/LASTCHANGE.blink')
     files.append('skia/ext/skia_commit_hash.h')
+    files.append('gpu/config/gpu_lists_version.h')
     print 'copying files to ' + third_party_chromium
     for i in xrange(len(files)):
         printProgress(i+1, len(files))

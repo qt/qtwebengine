@@ -13,12 +13,10 @@ include_dirs = [
 
 deps = [
   "//base",
-  "//chrome/common:features",
   "//components/error_page/common",
   "//components/keyed_service/content",
   "//components/visitedlink/browser",
   "//components/visitedlink/renderer",
-  "//components/signin/core/common:signin_features",
   "//components/web_cache/browser",
   "//components/web_cache/renderer",
   "//components/spellcheck:build_features",
@@ -48,6 +46,8 @@ if (enable_webrtc) {
 if (is_linux && !is_desktop_linux) {
   deps += [ "//ui/events/ozone:events_ozone_evdev"]
 }
+
+data_deps = [ "//qtwebengine/browser:service_manifests" ]
 
 defines = [
   "CHROMIUM_VERSION=\"" + chromium_version[0] + "\""

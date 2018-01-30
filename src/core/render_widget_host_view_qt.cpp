@@ -342,7 +342,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
 {
     auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
     m_beginFrameSource.reset(new viz::DelayBasedBeginFrameSource(
-            base::MakeUnique<viz::DelayBasedTimeSource>(task_runner)));
+            base::MakeUnique<viz::DelayBasedTimeSource>(task_runner), 0));
 
     m_host->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
@@ -732,7 +732,7 @@ void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom:
     m_rendererCompositorFrameSink = frameSink;
 }
 
-void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame)
+void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, viz::mojom::HitTestRegionListPtr)
 {
     bool scrollOffsetChanged = (m_lastScrollOffset != frame.metadata.root_scroll_offset);
     bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);

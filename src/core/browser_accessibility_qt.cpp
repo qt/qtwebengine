@@ -236,7 +236,9 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Column;
     case ui::AX_ROLE_COLUMN_HEADER:
         return QAccessible::ColumnHeader;
-    case ui::AX_ROLE_COMBO_BOX:
+    case ui::AX_ROLE_COMBO_BOX_GROUPING:
+    case ui::AX_ROLE_COMBO_BOX_MENU_BUTTON:
+    case ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX:
         return QAccessible::ComboBox;
     case ui::AX_ROLE_COMPLEMENTARY:
         return QAccessible::ComplementaryContent;

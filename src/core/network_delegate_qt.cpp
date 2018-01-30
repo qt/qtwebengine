@@ -281,10 +281,10 @@ void NetworkDelegateQt::OnCompleted(net::URLRequest */*request*/, bool /*started
 }
 
 bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
-                                       const std::string& cookie_line,
+                                       const net::CanonicalCookie & /*cookie*/,
                                        net::CookieOptions*)
 {
-    return canSetCookies(request.site_for_cookies(), request.url(), cookie_line);
+    return canSetCookies(request.site_for_cookies(), request.url(), std::string());
 }
 
 bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const net::CookieList&)
@@ -332,7 +332,7 @@ void NetworkDelegateQt::OnBeforeRedirect(net::URLRequest*, const GURL&)
 {
 }
 
-void NetworkDelegateQt::OnResponseStarted(net::URLRequest*)
+void NetworkDelegateQt::OnResponseStarted(net::URLRequest*, int)
 {
 }
 

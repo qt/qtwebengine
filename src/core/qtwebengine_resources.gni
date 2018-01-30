@@ -17,7 +17,7 @@ group("qtwebengine_resources") {
 repack("qtwebengine_repack_resources") {
   sources = [
     "$root_gen_dir/blink/public/resources/blink_resources.pak",
-    "$root_gen_dir/chrome/qt_webengine_resources.pak",
+    "$root_gen_dir/qtwebengine/qt_webengine_resources.pak",
     "$root_gen_dir/chrome/quota_internals_resources.pak",
     "$root_gen_dir/chrome/task_scheduler_internals_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
@@ -27,7 +27,7 @@ repack("qtwebengine_repack_resources") {
   ]
   output = "$root_out_dir/qtwebengine_resources.pak"
   deps = [
-     "//chrome/browser/resources:qt_webengine_resources",
+     "//qtwebengine/browser:qt_webengine_resources",
      "//chrome/browser/resources:quota_internals_resources",
      "//chrome/browser/resources:task_scheduler_internals_resources",
      "//components/resources:components_resources_grit",

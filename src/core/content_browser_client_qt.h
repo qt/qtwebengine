@@ -118,10 +118,8 @@ public:
     void BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,
                                        const std::string& interface_name,
                                        mojo::ScopedMessagePipeHandle interface_pipe) override;
-    void ExposeInterfacesToRenderer(service_manager::BinderRegistry *registry,
-                                    content::AssociatedInterfaceRegistry *associated_registry,
-                                    content::RenderProcessHost *render_process_host) override;
-
+    void RegisterInProcessServices(StaticServiceMap* services) override;
+    std::unique_ptr<base::Value> GetServiceManifestOverlay(base::StringPiece name) override;
     bool CanCreateWindow(
         content::RenderFrameHost* opener,
         const GURL& opener_url,
@@ -146,7 +144,7 @@ public:
 
     bool AllowSetCookie(const GURL& url,
                         const GURL& first_party,
-                        const std::string& cookie_line,
+                        const net::CanonicalCookie& cookie,
                         content::ResourceContext* context,
                         int render_process_id,
                         int render_frame_id,

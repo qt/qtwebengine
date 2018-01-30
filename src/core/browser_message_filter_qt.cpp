@@ -70,9 +70,8 @@ bool BrowserMessageFilterQt::OnMessageReceived(const IPC::Message& message)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 void BrowserMessageFilterQt::OnIsInternalPluginAvailableForMimeType(
-    const std::string& mime_type, bool* is_available,
-    std::vector<base::string16>* additional_param_names,
-    std::vector<base::string16>* additional_param_values)
+    const std::string& mime_type,
+    base::Optional<std::vector<content::WebPluginMimeType::Param>> *opt_additional_params)
 {
     std::vector<content::WebPluginInfo> plugins;
     content::PluginService::GetInstance()->GetInternalPlugins(&plugins);
@@ -82,15 +81,11 @@ void BrowserMessageFilterQt::OnIsInternalPluginAvailableForMimeType(
         const std::vector<content::WebPluginMimeType>& mime_types = plugin.mime_types;
         for (size_t j = 0; j < mime_types.size(); ++j) {
             if (mime_types[j].mime_type == mime_type) {
-                *is_available = true;
-                *additional_param_names = mime_types[j].additional_param_names;
-                *additional_param_values = mime_types[j].additional_param_values;
+                *opt_additional_params = base::make_optional(mime_types[j].additional_params);
                 return;
             }
         }
     }
-
-    *is_available = false;
 }
 
 #endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)

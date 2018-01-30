@@ -120,6 +120,9 @@ public:
 
     void GetScreenInfo(content::ScreenInfo* results) const override;
 
+    void FocusThroughTabTraversal(bool reverse) override;
+
+
 #if defined(OS_MACOSX)
     void SetAllowOtherViews(bool allow) override { m_allowOtherViews = allow; }
     bool GetAllowOtherViews() const override { return m_allowOtherViews; }

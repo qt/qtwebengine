@@ -288,9 +288,9 @@ bool GLSurfaceQtGLX::Initialize(GLSurfaceFormat format)
     const int pbuffer_attributes[] = {
         GLX_PBUFFER_WIDTH, m_size.width(),
         GLX_PBUFFER_HEIGHT, m_size.height(),
-        GLX_LARGEST_PBUFFER, False,
-        GLX_PRESERVED_CONTENTS, False,
-        0
+        GLX_LARGEST_PBUFFER, x11::False,
+        GLX_PRESERVED_CONTENTS, x11::False,
+        GLX_NONE
     };
 
     m_surfaceBuffer = glXCreatePbuffer(display, static_cast<GLXFBConfig>(g_config), pbuffer_attributes);
@@ -577,7 +577,7 @@ bool GLSurfaceQt::IsOffscreen()
     return true;
 }
 
-gfx::SwapResult GLSurfaceQt::SwapBuffers()
+gfx::SwapResult GLSurfaceQt::SwapBuffers(const PresentationCallback &callback)
 {
     LOG(ERROR) << "Attempted to call SwapBuffers on a pbuffer.";
     Q_UNREACHABLE();

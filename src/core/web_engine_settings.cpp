@@ -276,10 +276,10 @@ void WebEngineSettings::initDefaults()
         QtWebEngineCore::WebEngineContext::current();
         base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
         bool smoothScrolling = commandLine->HasSwitch(switches::kEnableSmoothScrolling);
-        bool webGL = content::GpuProcessHost::gpu_enabled() &&
+        bool webGL =
                 !commandLine->HasSwitch(switches::kDisable3DAPIs) &&
                 !commandLine->HasSwitch(switches::kDisableWebGL);
-        bool accelerated2dCanvas = content::GpuProcessHost::gpu_enabled() &&
+        bool accelerated2dCanvas =
                 !commandLine->HasSwitch(switches::kDisableAccelerated2dCanvas);
         bool allowRunningInsecureContent = commandLine->HasSwitch(switches::kAllowRunningInsecureContent);
         s_defaultAttributes.insert(ScrollAnimatorEnabled, smoothScrolling);

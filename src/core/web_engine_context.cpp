@@ -72,6 +72,7 @@
 #include "gpu/ipc/host/gpu_switches.h"
 #include "net/base/port_util.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 #include "ui/gl/gl_switches.h"
@@ -332,7 +333,7 @@ WebEngineContext::WebEngineContext()
 #if defined(Q_OS_WIN)
         parsedCommandLine->AppendSwitch(switches::kNoSandbox);
 #elif defined(Q_OS_LINUX)
-        parsedCommandLine->AppendSwitch(switches::kDisableSetuidSandbox);
+        parsedCommandLine->AppendSwitch(service_manager::switches::kDisableSetuidSandbox);
 #endif
     } else {
         parsedCommandLine->AppendSwitch(switches::kNoSandbox);

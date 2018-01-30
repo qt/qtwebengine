@@ -510,7 +510,7 @@ void DevToolsFrontendQt::SendMessageAck(int request_id, const base::Value *arg)
     CallClientFunction("DevToolsAPI.embedderMessageAck", &id_value, arg, nullptr);
 }
 
-void DevToolsFrontendQt::AgentHostClosed(content::DevToolsAgentHost *agentHost, bool /*replaced*/)
+void DevToolsFrontendQt::AgentHostClosed(content::DevToolsAgentHost *agentHost)
 {
     DCHECK(agentHost == m_agentHost.get());
     m_agentHost = nullptr;

@@ -80,6 +80,7 @@
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/ftp/ftp_network_layer.h"
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 
 #include "api/qwebengineurlschemehandler.h"
 #include "browser_context_adapter.h"
@@ -188,6 +189,8 @@ void URLRequestContextGetterQt::updateStorageSettings()
                 new ProxyConfigServiceQt(
                     net::ProxyService::CreateSystemProxyConfigService(
                         content::BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+        m_proxyResolverFactory = ChromeMojoProxyResolverFactory::CreateWithStrongBinding();
+
         if (m_contextInitialized)
             content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                              base::Bind(&URLRequestContextGetterQt::generateAllStorage, this));
@@ -263,9 +266,9 @@ void URLRequestContextGetterQt::generateStorage()
         m_dhcpProxyScriptFetcherFactory.reset(new net::DhcpProxyScriptFetcherFactory);
 
     m_storage->set_proxy_service(content::CreateProxyServiceUsingMojoFactory(
-                                     ChromeMojoProxyResolverFactory::GetInstance(),
+                                     std::move(m_proxyResolverFactory),
                                      std::unique_ptr<net::ProxyConfigService>(proxyConfigService),
-                                     new net::ProxyScriptFetcherImpl(m_urlRequestContext.get()),
+                                     std::make_unique<net::ProxyScriptFetcherImpl>(m_urlRequestContext.get()),
                                      m_dhcpProxyScriptFetcherFactory->Create(m_urlRequestContext.get()),
                                      host_resolver.get(),
                                      nullptr /* NetLog */,

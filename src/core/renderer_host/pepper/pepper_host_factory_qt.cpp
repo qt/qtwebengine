@@ -86,7 +86,7 @@ std::unique_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHo
         case PpapiHostMsg_Flash_Create::ID:
             return base::WrapUnique(new PepperFlashBrowserHostQt(host_, instance, resource));
         case PpapiHostMsg_FlashClipboard_Create::ID: {
-            scoped_refptr<ResourceMessageFilter> clipboard_filter(new chrome::PepperFlashClipboardMessageFilter);
+            scoped_refptr<ResourceMessageFilter> clipboard_filter(new PepperFlashClipboardMessageFilter);
             return base::WrapUnique(new MessageFilterHost(
                 host_->GetPpapiHost(), instance, resource, clipboard_filter));
         }

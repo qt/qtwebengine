@@ -62,14 +62,14 @@ public:
     // net::NetworkDelegate implementation
     int OnBeforeURLRequest(net::URLRequest* request, const net::CompletionCallback& callback, GURL* newUrl) override;
     void OnURLRequestDestroyed(net::URLRequest* request) override;
-    bool OnCanSetCookie(const net::URLRequest&, const std::string&, net::CookieOptions*) override;
+    bool OnCanSetCookie(const net::URLRequest& request, const net::CanonicalCookie& cookie, net::CookieOptions* options) override;
     int OnBeforeStartTransaction(net::URLRequest *request, const net::CompletionCallback &callback, net::HttpRequestHeaders *headers) override;
     void OnBeforeSendHeaders(net::URLRequest* request, const net::ProxyInfo& proxy_info,
                              const net::ProxyRetryInfoMap& proxy_retry_info, net::HttpRequestHeaders* headers) override;
     void OnStartTransaction(net::URLRequest *request, const net::HttpRequestHeaders &headers) override;
     int OnHeadersReceived(net::URLRequest*, const net::CompletionCallback&, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*) override;
     void OnBeforeRedirect(net::URLRequest*, const GURL&) override;
-    void OnResponseStarted(net::URLRequest*) override;
+    void OnResponseStarted(net::URLRequest*, int) override;
     void OnNetworkBytesReceived(net::URLRequest*, int64_t) override;
     void OnNetworkBytesSent(net::URLRequest *, int64_t) override;
     void OnCompleted(net::URLRequest *request, bool started, int net_error) override;

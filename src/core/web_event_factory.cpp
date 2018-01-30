@@ -1203,15 +1203,13 @@ static WebPointerProperties::PointerType pointerTypeForTabletEvent(const QTablet
 WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
-                              ev->x() / dpiScale,
-                              ev->y() / dpiScale,
-                              ev->globalX(),
-                              ev->globalY(),
+                              WebFloatPoint(ev->x() / dpiScale, ev->y() / dpiScale),
+                              WebFloatPoint(ev->globalX(), ev->globalY()),
+                              mouseButtonForEvent<QMouseEvent>(ev),
+                              0,
                               modifiersForEvent(ev),
                               currentTimeForEvent(ev));
 
-    webKitEvent.button = mouseButtonForEvent<QMouseEvent>(ev);
-    webKitEvent.click_count = 0;
     webKitEvent.pointer_type = WebPointerProperties::PointerType::kMouse;
 
     return webKitEvent;
@@ -1235,10 +1233,10 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
-                              ev->x() / dpiScale,
-                              ev->y() / dpiScale,
-                              ev->globalX(),
-                              ev->globalY(),
+                              WebFloatPoint(ev->x() / dpiScale, ev->y() / dpiScale),
+                              WebFloatPoint(ev->globalX(), ev->globalY()),
+                              mouseButtonForEvent<QTabletEvent>(ev),
+                              0,
                               modifiersForEvent(ev),
                               currentTimeForEvent(ev));
 
@@ -1248,9 +1246,6 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev, double dpiScale
     webKitEvent.tangential_pressure = ev->tangentialPressure();
     webKitEvent.twist = ev->rotation();
     webKitEvent.pointer_type = pointerTypeForTabletEvent(ev);
-
-    webKitEvent.button = mouseButtonForEvent<QTabletEvent>(ev);
-    webKitEvent.click_count = 0;
     return webKitEvent;
 }
 

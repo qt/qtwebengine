@@ -263,11 +263,9 @@ void AddPepperWidevine(std::vector<content::PepperPluginInfo>* plugins)
 #endif  // defined(USE_PROPRIETARY_CODECS)
             std::string codec_string =
                 base::JoinString(codecs, ",");
-            widevine_cdm_mime_type.additional_param_names.push_back(
-                base::ASCIIToUTF16(kCdmSupportedCodecsParamName));
-            widevine_cdm_mime_type.additional_param_values.push_back(
-                base::ASCIIToUTF16(codec_string));
-
+            widevine_cdm_mime_type.additional_params.emplace_back(
+                        base::ASCIIToUTF16(kCdmSupportedCodecsParamName),
+                        base::ASCIIToUTF16(codec_string));
             widevine_cdm.mime_types.push_back(widevine_cdm_mime_type);
             widevine_cdm.permissions = kWidevineCdmPluginPermissions;
             plugins->push_back(widevine_cdm);
@@ -300,12 +298,12 @@ std::string ContentClientQt::getUserAgent()
 }
 
 base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ScaleFactor scale_factor) const {
-    return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(resource_id, scale_factor);
+    return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(resource_id, scale_factor);
 }
 
 base::RefCountedMemory *ContentClientQt::GetDataResourceBytes(int resource_id) const
 {
-    return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
+    return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
 }
 
 base::string16 ContentClientQt::GetLocalizedString(int message_id) const

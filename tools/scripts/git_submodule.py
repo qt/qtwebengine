@@ -81,8 +81,10 @@ class DEPSParser:
 
                 if len(rev) == 40: # Length of a git shasum
                     submodule.ref = rev
+                elif len(rev) == 0:
+                    submodule.ref = 'master'
                 else:
-                    sys.exit("Invalid shasum: " + str(rev))
+                    sys.exit("Invalid shasum: " + str(scope[dep]))
                 submodules.append(submodule)
         return submodules
 
