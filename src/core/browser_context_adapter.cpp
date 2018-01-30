@@ -103,11 +103,11 @@ BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
 BrowserContextAdapter::~BrowserContextAdapter()
 {
     Q_ASSERT(!m_downloadManagerDelegate);
+    m_browserContext->ShutdownStoragePartitions();
 }
 
 void BrowserContextAdapter::shutdown()
 {
-    m_browserContext->ShutdownStoragePartitions();
     if (m_downloadManagerDelegate) {
         m_browserContext->GetDownloadManager(m_browserContext.data())->Shutdown();
         m_downloadManagerDelegate.reset();
