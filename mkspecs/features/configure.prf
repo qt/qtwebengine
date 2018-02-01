@@ -30,6 +30,13 @@ defineTest(runConfigure) {
     include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
     QT_FOR_CONFIG += webengine-private
 
+    !qtConfig(webengine-v8-snapshot-support):qtConfig(webengine-v8-snapshot) {
+        skipBuild("V8 snapshot cannot be built. Most likely, the 32-bit host compiler does not work."\
+                  "Please make sure you have 32-bit devel environment installed, or "\
+                  "configure webengine with '-no-webengine-v8-snapshot'")
+        return(false)
+    }
+
     !qtConfig(webengine-gperf) {
         skipBuild("Required gperf could not be found.")
         return(false)
@@ -53,6 +60,12 @@ defineTest(runConfigure) {
     }
 
     linux {
+
+        !qtConfig(webengine-host-pkg-config) {
+            skipBuild("Host pkg-config is required")
+            return(false)
+        }
+
         !qtConfig(webengine-system-glibc) {
             skipBuild("A suitable version of libc could not be found. See: https://sourceware.org/bugzilla/show_bug.cgi?id=14898")
             return(false)

@@ -1,4 +1,3 @@
-osx-10.11 ci
 [WebViewGeopermission::test_deniedGeolocationByUser]
 osx
 

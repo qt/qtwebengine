@@ -42,6 +42,7 @@
 #include "qquickwebengineloadrequest_p.h"
 #include <QQuickWindow>
 #include <QtTest/qtest.h>
+#include <QtCore/QTimer>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,18 +57,19 @@ QQuickWebEngineErrorPage::QQuickWebEngineErrorPage()
 void QQuickWebEngineErrorPage::loadFinished(bool success, const QUrl &url)
 {
     Q_UNUSED(success);
-
-    QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus);
-    Q_EMIT loadingChanged(&loadRequest);
-    return;
+    QTimer::singleShot(0, this, [this, url]() {
+       QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus);
+       emit loadingChanged(&loadRequest);
+    });
 }
 
 void QQuickWebEngineErrorPage::loadStarted(const QUrl &provisionalUrl)
 {
-    QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
-    Q_EMIT loadingChanged(&loadRequest);
+    QTimer::singleShot(0, this, [this, provisionalUrl]() {
+        QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
+        emit loadingChanged(&loadRequest);
+    });
 }
-
 
 QQuickWebEngineTestInputContext::QQuickWebEngineTestInputContext()
     : m_visible(false)
