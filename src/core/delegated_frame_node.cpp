@@ -131,7 +131,7 @@ public:
 
     void setHasAlphaChannel(bool hasAlpha) { m_hasAlpha = hasAlpha; }
     gpu::MailboxHolder &mailboxHolder() { return m_mailboxHolder; }
-    void fetchTexture(gpu::gles2::MailboxManager *mailboxManager);
+    void fetchTexture(gpu::MailboxManager *mailboxManager);
     void setTarget(GLenum target);
 
 private:
@@ -618,9 +618,9 @@ void MailboxTexture::setTarget(GLenum target)
     m_target = target;
 }
 
-void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
+void MailboxTexture::fetchTexture(gpu::MailboxManager *mailboxManager)
 {
-    gpu::gles2::TextureBase *tex = ConsumeTexture(mailboxManager, m_target, m_mailboxHolder.mailbox);
+    gpu::TextureBase *tex = ConsumeTexture(mailboxManager, m_target, m_mailboxHolder.mailbox);
 
     // The texture might already have been deleted (e.g. when navigating away from a page).
     if (tex) {
@@ -1331,7 +1331,7 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
 void DelegatedFrameNode::pullTextures(DelegatedFrameNode *frameNode, const QVector<MailboxTexture *> textures)
 {
 #ifndef QT_NO_OPENGL
-    gpu::gles2::MailboxManager *mailboxManager = mailbox_manager();
+    gpu::MailboxManager *mailboxManager = mailbox_manager();
     for (MailboxTexture *texture : textures) {
         gpu::SyncToken &syncToken = texture->mailboxHolder().sync_token;
         if (syncToken.HasData())
@@ -1350,7 +1350,7 @@ void DelegatedFrameNode::pullTextures(DelegatedFrameNode *frameNode, const QVect
 void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTexture *texture)
 {
 #ifndef QT_NO_OPENGL
-    gpu::gles2::MailboxManager *mailboxManager = mailbox_manager();
+    gpu::MailboxManager *mailboxManager = mailbox_manager();
     gpu::SyncToken &syncToken = texture->mailboxHolder().sync_token;
     if (syncToken.HasData())
         mailboxManager->PullTextureUpdates(syncToken);

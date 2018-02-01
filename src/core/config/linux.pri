@@ -4,11 +4,12 @@ QT_FOR_CONFIG += gui-private webengine-private
 
 gn_args += \
     use_cups=false \
-    use_gconf=false \
     use_gio=false \
     use_gnome_keyring=false \
     use_kerberos=false \
-    linux_use_bundled_binutils=false
+    linux_use_bundled_binutils=false \
+    use_udev=true \
+    use_bundled_fontconfig=false
 
 gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): gn_args += no_delete_null_pointer_checks=true
 
@@ -127,7 +128,7 @@ host_build {
         qtConfig(webengine-printing-and-pdf): gn_args += pdfium_use_system_zlib=true
     }
     qtConfig(webengine-system-png): gn_args += use_system_libpng=true
-    qtConfig(system-jpeg): gn_args += use_system_libjpeg=true
+    qtConfig(webengine-system-jpeg): gn_args += use_system_libjpeg=true
     qtConfig(system-freetype): gn_args += use_system_freetype=true
     qtConfig(webengine-system-harfbuzz): gn_args += use_system_harfbuzz=true
     !qtConfig(webengine-system-glib): gn_args += use_glib=false

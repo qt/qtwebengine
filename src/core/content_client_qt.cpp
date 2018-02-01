@@ -94,6 +94,13 @@ const char kPpapiFlashVersion[] = "ppapi-flash-version";
 const char kPpapiWidevinePath[] = "ppapi-widevine-path";
 }
 
+const char kCdmSupportedCodecsParamName[] = "codecs";
+const char kCdmSupportedCodecVp8[] = "vp8";
+const char kCdmSupportedCodecVp9[] = "vp9.0";
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+const char kCdmSupportedCodecAvc1[] = "avc1";
+#endif
+
 static const char kWidevineCdmPluginExtension[] = "";
 
 static const int32_t kWidevineCdmPluginPermissions = ppapi::PERMISSION_DEV

@@ -175,6 +175,28 @@
                 { "type": "pkgConfig", "args": "libpng >= 1.6.0" }
             ]
         },
+        "webengine-jpeglib": {
+            "label": "compatible jpeglib",
+            "type": "compile",
+            "test": {
+                "head": [
+                    "#include <cstdio>",
+                    "#include <cstring>",
+                    "extern \"C\" {",
+                    "    #include <jpeglib.h>",
+                    "}"
+                ],
+                "main": [
+                    "JDIMENSION dummy;",
+                    "jpeg_crop_scanline(nullptr, &dummy, &dummy);",
+                    "jpeg_skip_scanlines(nullptr, dummy);"
+                ]
+            },
+            "sources": [
+                { "type": "pkgConfig", "args": "libjpeg" },
+                "-ljpeg"
+            ]
+        },
         "webengine-lcms2": {
             "label": "lcms2",
             "sources": [
@@ -184,7 +206,7 @@
     },
 
     "tests" : {
-        "alsa": {
+        "webengine-alsa": {
             "label": "alsa",
             "test": "alsa",
             "type": "compile"
@@ -357,6 +379,11 @@
             "condition": "config.unix && features.system-png && libs.webengine-png",
             "output": [ "privateFeature" ]
         },
+        "webengine-system-jpeg" : {
+            "label": "JPEG",
+            "condition": "config.unix && features.system-jpeg && libs.webengine-jpeglib",
+            "output": [ "privateFeature" ]
+        },
         "webengine-python2": {
             "label": "python2",
             "condition": "tests.webengine-python2",
@@ -398,7 +425,7 @@
         },
         "webengine-alsa": {
             "label": "Use ALSA",
-            "condition": "config.unix && tests.alsa",
+            "condition": "config.unix && tests.webengine-alsa",
             "output": [ "privateFeature" ]
         },
         "webengine-v8-snapshot": {
@@ -658,6 +685,7 @@
                         "webengine-system-libxml2",
                         "webengine-system-lcms2",
                         "webengine-system-png",
+                        "webengine-system-jpeg",
                         "webengine-system-harfbuzz"
                     ]
                 },

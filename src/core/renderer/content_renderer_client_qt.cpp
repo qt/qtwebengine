@@ -184,18 +184,18 @@ bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *fram
 }
 
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
-void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* renderFrame, const blink::WebURLRequest &failedRequest,
-                                                        const blink::WebURLError &web_error,
-                                                        std::string *errorHtml, base::string16 *errorDescription)
+void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame* renderFrame, const blink::WebURLRequest &failedRequest,
+                                               const blink::WebURLError &web_error,
+                                               std::string *errorHtml, base::string16 *errorDescription)
 {
     GetNavigationErrorStringsInternal(renderFrame, failedRequest,
                                       error_page::Error::NetError(web_error.url(), web_error.reason(), web_error.has_copy_in_cache()),
                                       errorHtml, errorDescription);
 }
 
-void ContentRendererClientQt::GetNavigationErrorStringsForHttpStatusError(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
-                                                                          const GURL& unreachable_url, int http_status,
-                                                                          std::string* errorHtml, base::string16* errorDescription)
+void ContentRendererClientQt::PrepareErrorPageForHttpStatusError(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
+                                                                 const GURL& unreachable_url, int http_status,
+                                                                 std::string* errorHtml, base::string16* errorDescription)
 {
     GetNavigationErrorStringsInternal(renderFrame, failedRequest,
                                       error_page::Error::HttpError(unreachable_url, http_status),

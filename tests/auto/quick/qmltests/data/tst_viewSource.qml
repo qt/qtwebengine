@@ -63,8 +63,10 @@ TestWebEngineView {
         name: "WebEngineViewSource"
 
         function init() {
+            webEngineView.loadStatus = null;
             webEngineView.url = Qt.resolvedUrl("test1.html");
-            verify(webEngineView.waitForLoadSucceeded(20000));
+            tryCompare(webEngineView, "loadStatus", WebEngineView.LoadSucceededStatus);
+            webEngineView.loadStatus = null;
 
             newViewRequestedSpy.clear();
             titleChangedSpy.clear();
@@ -113,9 +115,9 @@ TestWebEngineView {
             webEngineView.url = row.userInputUrl;
 
             if (row.loadSucceed) {
-                verify(webEngineView.waitForLoadSucceeded(15000));
+                tryCompare(webEngineView, "loadStatus", WebEngineView.LoadSucceededStatus);
             } else {
-                verify(webEngineView.waitForLoadFailed(15000));
+                tryCompare(webEngineView, "loadStatus", WebEngineView.LoadFailedStatus, 15000);
             }
             tryVerify(function() { return titleChangedSpy.count == 1; });
 

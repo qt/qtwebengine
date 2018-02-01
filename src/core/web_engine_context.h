@@ -78,7 +78,7 @@ bool usingSoftwareDynamicGL();
 
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
-    static scoped_refptr<WebEngineContext> current();
+    static WebEngineContext *current();
 
     QSharedPointer<BrowserContextAdapter> defaultBrowserContext();
     QObject *globalQObject();

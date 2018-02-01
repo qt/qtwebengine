@@ -102,8 +102,8 @@ def isInChromiumBlacklist(file_path):
             not 'common/content_restriction.h' in file_path and
             not 'common/custom_handlers/' in file_path and
             not 'common/spellcheck_' in file_path and
-            not 'common/url_constants' in file_path and
-            not 'common/webui_url_constants' in file_path and
+            not 'common/url_constants.' in file_path and
+            not 'common/webui_url_constants.' in file_path and
             not '/extensions/api/' in file_path and
             not '/extensions/browser/api/' in file_path and
             not '/extensions/permissions/' in file_path and
@@ -165,7 +165,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/ashmem')
         or file_path.startswith('third_party/binutils')
         or file_path.startswith('third_party/bison')
-        or file_path.startswith('third_party/breakpad')
+        or file_path.startswith('third_party/breakpad/src/processor/testdata/')
         or file_path.startswith('third_party/boringssl/crypto_test_data.cc')
         or file_path.startswith('third_party/boringssl/src/fuzz')
         or (file_path.startswith('third_party/cacheinvalidation') and
@@ -226,11 +226,11 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/talloc')
         or file_path.startswith('third_party/trace-viewer')
         or file_path.startswith('third_party/undoview')
+        or file_path.startswith('third_party/wayland/src')
         or file_path.startswith('third_party/webgl')
         or file_path.startswith('third_party/webrtc/resources/')
         or file_path.startswith('tools/android')
         or file_path.startswith('tools/luci_go')
-        or file_path.startswith('tools/metrics')
         or file_path.startswith('tools/memory_inspector')
         or file_path.startswith('tools/perf')
         or file_path.startswith('tools/swarming_client')

@@ -55,7 +55,10 @@ CertPolicy::~CertPolicy()
 {
 }
 
-bool CertPolicy::Check(const net::X509Certificate& cert, net::CertStatus error) const
+// For an allowance, we consider a given |cert| to be a match to a saved
+// allowed cert if the |error| is an exact match to or subset of the errors
+// in the saved CertStatus.
+bool CertPolicy::Check(const net::X509Certificate &cert, net::CertStatus error) const
 {
     net::SHA256HashValue fingerprint = cert.CalculateChainFingerprint256();
     auto allowed_iter = m_allowed.find(fingerprint);

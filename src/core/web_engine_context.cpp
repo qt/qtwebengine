@@ -51,6 +51,7 @@
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "chrome/browser/printing/print_job_manager.h"
 #endif // defined(ENABLE_BASIC_PRINTING)
+#include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
@@ -238,7 +239,7 @@ WebEngineContext::~WebEngineContext()
     Q_ASSERT(!m_browserRunner);
 }
 
-scoped_refptr<WebEngineContext> WebEngineContext::current()
+WebEngineContext *WebEngineContext::current()
 {
     if (s_destroyed)
         return nullptr;
@@ -249,7 +250,7 @@ scoped_refptr<WebEngineContext> WebEngineContext::current()
         // Add a false reference so there is no race between unreferencing sContext and a global QApplication.
         sContext->AddRef();
     }
-    return sContext;
+    return sContext.get();
 }
 
 QSharedPointer<BrowserContextAdapter> WebEngineContext::defaultBrowserContext()
@@ -271,6 +272,17 @@ QObject *WebEngineContext::globalQObject()
 
 const static char kChromiumFlagsEnv[] = "QTWEBENGINE_CHROMIUM_FLAGS";
 const static char kDisableSandboxEnv[] = "QTWEBENGINE_DISABLE_SANDBOX";
+
+static void appendToFeatureSwitch(base::CommandLine *commandLine, const char *featureSwitch, const char *feature)
+{
+    if (!commandLine->HasSwitch(featureSwitch)) {
+        commandLine->AppendSwitchASCII(featureSwitch, feature);
+    } else {
+        std::string featureList = commandLine->GetSwitchValueASCII(featureSwitch);
+        featureList = featureList + "," + feature;
+        commandLine->AppendSwitchASCII(featureSwitch, featureList);
+    }
+}
 
 WebEngineContext::WebEngineContext()
     : m_mainDelegate(new ContentMainDelegateQt)
@@ -351,9 +363,6 @@ WebEngineContext::WebEngineContext()
     // The Mojo local-storage is currently pretty broken and saves in $$PWD/Local\ Storage
     parsedCommandLine->AppendSwitch(switches::kDisableMojoLocalStorage);
 
-    // Shared workers are not safe until Chromium 64
-    parsedCommandLine->AppendSwitch(switches::kDisableSharedWorkers);
-
 #if defined(Q_OS_MACOS)
     // Accelerated decoding currently does not work on macOS due to issues with OpenGL Rectangle
     // texture support. See QTBUG-60002.
@@ -379,13 +388,17 @@ WebEngineContext::WebEngineContext()
     // tst_QWebEnginePage::acceptNavigationRequest.
     // This is deprecated behavior, and will be removed in a future Chromium version, as per
     // upstream Chromium commit ba52f56207a4b9d70b34880fbff2352e71a06422.
-    parsedCommandLine->AppendSwitchASCII(switches::kEnableFeatures,
-                                         features::kAllowContentInitiatedDataUrlNavigations.name);
+    appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kAllowContentInitiatedDataUrlNavigations.name);
+    // Surface synchronization breaks our current graphics integration (since 65)
+    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kEnableSurfaceSynchronization.name);
+    // Scroll latching expects phases on all wheel events when it really only makes sense for simulated ones.
+    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kTouchpadAndWheelScrollLatching.name);
+
     // If the renderer renders the validation messages, we no longer get the callbacks we have in the API.
     parsedCommandLine->AppendSwitchASCII(switches::kDisableBlinkFeatures, "ValidationBubbleInRenderer");
 
     if (useEmbeddedSwitches) {
-        parsedCommandLine->AppendSwitchASCII(switches::kEnableFeatures, features::kOverlayScrollbar.name);
+        appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kOverlayScrollbar.name);
         if (!parsedCommandLine->HasSwitch(switches::kDisablePinch))
             parsedCommandLine->AppendSwitch(switches::kEnablePinch);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);

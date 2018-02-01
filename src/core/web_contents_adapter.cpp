@@ -75,11 +75,10 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include <content/public/common/drop_data.h>
+#include "content/public/common/drop_data.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
@@ -588,7 +587,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         break;
     }
 
-    params.post_data = content::ResourceRequestBody::CreateFromBytes(
+    params.post_data = network::ResourceRequestBody::CreateFromBytes(
                 (const char*)request.postData().constData(),
                 request.postData().length());
 

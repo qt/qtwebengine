@@ -42,7 +42,6 @@
 #include "browser_context_adapter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/resource_request_info.h"
 #include "cookie_monster_delegate_qt.h"
 #include "ui/base/page_transition_types.h"

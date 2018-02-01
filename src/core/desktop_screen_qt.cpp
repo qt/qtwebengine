@@ -72,7 +72,6 @@ int DesktopScreenQt::GetNumDisplays() const
 
 std::vector<display::Display>& DesktopScreenQt::GetAllDisplays() const
 {
-    Q_UNREACHABLE();
     static std::vector<display::Display> empty;
     return empty;
 }

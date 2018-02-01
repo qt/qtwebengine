@@ -399,7 +399,7 @@ void WebContentsDelegateQt::WebContentsCreated(content::WebContents */*source_co
     m_initialTargetUrl = toQt(target_url);
 }
 
-content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion)
+content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<blink::mojom::ColorSuggestionPtr> &suggestion)
 {
     Q_UNUSED(suggestion);
     ColorChooserQt *colorChooser = new ColorChooserQt(source, toQt(color));

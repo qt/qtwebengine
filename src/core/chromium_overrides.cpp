@@ -74,6 +74,10 @@
 #include "net/ssl/openssl_client_key_store.h"
 #endif
 
+#if defined(OS_WIN)
+#include "gpu/ipc/service/direct_composition_surface_win.h"
+#endif
+
 namespace QtWebEngineCore {
 void GetScreenInfoFromNativeWindow(QWindow* window, content::ScreenInfo* results)
 {
@@ -196,6 +200,10 @@ ui::OSExchangeDataProviderFactory::CreateProvider() {
     return nullptr;
 }
 
+#if defined(OS_WIN)
+bool gpu::DirectCompositionSurfaceWin::IsHDRSupported()
+{   return false; }
+#endif
 
 #if defined(USE_OPENSSL_CERTS)
 namespace net {

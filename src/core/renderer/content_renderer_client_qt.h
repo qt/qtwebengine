@@ -74,11 +74,11 @@ public:
     void RenderFrameCreated(content::RenderFrame* render_frame) override;
     bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) override;
     bool HasErrorPage(int http_status_code) override;
-    void GetNavigationErrorStrings(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
-                                   const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) override;
-    void GetNavigationErrorStringsForHttpStatusError(content::RenderFrame* render_frame, const blink::WebURLRequest& failed_request,
-                                                     const GURL& unreachable_url, int http_status,
-                                                     std::string* error_html, base::string16* error_description) override;
+    void PrepareErrorPage(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
+                          const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) override;
+    void PrepareErrorPageForHttpStatusError(content::RenderFrame* render_frame, const blink::WebURLRequest& failed_request,
+                                            const GURL& unreachable_url, int http_status,
+                                            std::string* error_html, base::string16* error_description) override;
 
     unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) override;
     bool IsLinkVisited(unsigned long long linkHash) override;

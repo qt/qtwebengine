@@ -45,7 +45,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-#include "chrome/browser/spellchecker/spell_check_host_impl.h"
+#include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "components/spellcheck/browser/spellcheck_message_filter_platform.h"
 #endif
@@ -75,6 +75,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "third_party/WebKit/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_context.h"
@@ -82,7 +83,7 @@
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gpu_timing.h"
 
-#include "chrome/grit/qt_webengine_resources.h"
+#include "qtwebengine/grit/qt_webengine_resources.h"
 
 #include "browser_context_adapter.h"
 #include "browser_context_qt.h"
@@ -616,7 +617,7 @@ ServiceQt::ServiceQt()
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     m_registry_with_source_info.AddInterface(
-            base::Bind(&SpellCheckHostImpl::Create),
+            base::Bind(&SpellCheckHostChromeImpl::Create),
                        content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI));
 #endif
 }

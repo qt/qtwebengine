@@ -1313,6 +1313,21 @@ static void setBlinkWheelEventDelta(blink::WebMouseWheelEvent &webEvent)
     webEvent.delta_y = webEvent.wheel_ticks_y * wheelScrollLines * cDefaultQtScrollStep;
 }
 
+blink::WebMouseWheelEvent::Phase toBlinkPhase(Qt::ScrollPhase phase)
+{
+    switch (phase) {
+    case Qt::NoScrollPhase:
+        return blink::WebMouseWheelEvent::kPhaseNone;
+    case Qt::ScrollBegin:
+        return blink::WebMouseWheelEvent::kPhaseBegan;
+    case Qt::ScrollUpdate:
+        return blink::WebMouseWheelEvent::kPhaseChanged;
+    case Qt::ScrollEnd:
+        return blink::WebMouseWheelEvent::kPhaseEnded;
+    }
+    Q_UNREACHABLE();
+    return blink::WebMouseWheelEvent::kPhaseNone;
+}
 
 blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, double dpiScale)
 {
@@ -1325,6 +1340,8 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
 
     webEvent.wheel_ticks_x = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
     webEvent.wheel_ticks_y = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.phase = toBlinkPhase(ev->phase());
+    webEvent.has_precise_scrolling_deltas = true;
     setBlinkWheelEventDelta(webEvent);
 
     return webEvent;
@@ -1335,6 +1352,8 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
     if (webEventTypeForEvent(ev) != webEvent.GetType())
         return false;
     if (modifiersForEvent(ev) != webEvent.GetModifiers())
+        return false;
+    if (toBlinkPhase(ev->phase()) != webEvent.phase)
         return false;
 
     webEvent.SetTimeStampSeconds(currentTimeForEvent(ev));

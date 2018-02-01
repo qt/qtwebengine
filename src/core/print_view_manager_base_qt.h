@@ -51,7 +51,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-struct PrintHostMsg_DidPrintPage_Params;
+struct PrintHostMsg_DidPrintDocument_Params;
+
+namespace base {
+class RefCountedBytes;
+}
 
 namespace content {
 class RenderFrameHost;
@@ -64,12 +68,13 @@ class MetafilePlayer;
 class PrintJob;
 class PrintJobWorkerOwner;
 class PrintQueriesQueue;
+class PrintedDocument;
+class PrinterQuery;
 }
 
 namespace QtWebEngineCore {
-class PrintViewManagerBaseQt
-        : public content::NotificationObserver
-        , public printing::PrintManager
+class PrintViewManagerBaseQt : public content::NotificationObserver
+                             , public printing::PrintManager
 {
 public:
     ~PrintViewManagerBaseQt() override;
@@ -92,7 +97,7 @@ protected:
                            content::RenderFrameHost* render_frame_host) override;
 
     // IPC Message handlers.
-    void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
+    void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params);
     void OnShowInvalidPrinterSettingsError();
 
     // Processes a NOTIFY_PRINT_JOB_EVENT notification.
@@ -118,9 +123,22 @@ protected:
     // been requested to the renderer.
     bool RenderAllMissingPagesNow();
 
+    // Checks that synchronization is correct and a print query exists for
+    // |cookie|. If so, returns the document associated with the cookie.
+    printing::PrintedDocument* GetDocument(int cookie);
+
+    // Starts printing a document with data given in |print_data|. |print_data|
+    // must successfully initialize a metafile. |document| is the printed
+    // document associated with the print job. Returns true if successful.
+    bool PrintDocument(printing::PrintedDocument *document,
+                       const scoped_refptr<base::RefCountedBytes> &print_data,
+                       const gfx::Size &page_size,
+                       const gfx::Rect &content_area,
+                       const gfx::Point &offsets);
+
     // Quits the current message loop if these conditions hold true: a document is
     // loaded and is complete and waiting_for_pages_to_be_rendered_ is true. This
-    // function is called in DidPrintPage() or on ALL_PAGES_REQUESTED
+    // function is called in DidPrintDocument() or on ALL_PAGES_REQUESTED
     // notification. The inner message loop is created was created by
     // RenderAllMissingPagesNow().
     void ShouldQuitFromInnerMessageLoop();

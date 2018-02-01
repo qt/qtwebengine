@@ -202,9 +202,9 @@ void URLRequestContextGetterQt::cancelAllUrlRequests()
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
 
-    const std::set<const net::URLRequest*>& url_requests = m_urlRequestContext->url_requests();
-    std::set<const net::URLRequest*>::const_iterator it = url_requests.begin();
-    std::set<const net::URLRequest*>::const_iterator end = url_requests.end();
+    const std::set<const net::URLRequest*> *url_requests = m_urlRequestContext->url_requests();
+    std::set<const net::URLRequest*>::const_iterator it = url_requests->begin();
+    std::set<const net::URLRequest*>::const_iterator end = url_requests->end();
     for ( ; it != end; ++it) {
         net::URLRequest* request = const_cast<net::URLRequest*>(*it);
         if (request)
@@ -339,7 +339,8 @@ void URLRequestContextGetterQt::generateCookieStore()
         cookieStore = content::CreateCookieStore(
             content::CookieStoreConfig(
                 base::FilePath(),
-                content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
+                false,
+                false,
                 nullptr)
         );
         break;
@@ -347,7 +348,8 @@ void URLRequestContextGetterQt::generateCookieStore()
         cookieStore = content::CreateCookieStore(
             content::CookieStoreConfig(
                 toFilePath(m_cookiesPath),
-                content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES,
+                false,
+                true,
                 nullptr)
             );
         break;
@@ -355,7 +357,8 @@ void URLRequestContextGetterQt::generateCookieStore()
         cookieStore = content::CreateCookieStore(
             content::CookieStoreConfig(
                 toFilePath(m_cookiesPath),
-                content::CookieStoreConfig::RESTORED_SESSION_COOKIES,
+                true,
+                true,
                 nullptr)
             );
         break;

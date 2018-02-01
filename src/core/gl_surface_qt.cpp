@@ -178,6 +178,10 @@ GLSurfaceQtGLX::~GLSurfaceQtGLX()
 
 bool GLSurfaceQtGLX::s_initialized = false;
 
+void GLSurfaceGLX::ShutdownOneOff()
+{
+}
+
 bool GLSurfaceGLX::IsCreateContextSupported()
 {
     return ExtensionsContain(g_extensions, "GLX_ARB_create_context");
@@ -510,6 +514,11 @@ bool GLSurfaceEGL::HasEGLExtension(const char* name)
 bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType /*native_display*/)
 {
     return GLSurfaceQtEGL::InitializeOneOff();
+}
+
+bool GLSurfaceEGL::IsAndroidNativeFenceSyncSupported()
+{
+    return false;
 }
 
 GLSurfaceQt::GLSurfaceQt(const gfx::Size& size)
