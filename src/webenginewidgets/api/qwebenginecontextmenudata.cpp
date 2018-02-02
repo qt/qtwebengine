@@ -43,6 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 
+// Match MediaType enum
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypeNone,   QWebEngineContextMenuData::MediaTypeNone)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypeImage,  QWebEngineContextMenuData::MediaTypeImage)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypeAudio,  QWebEngineContextMenuData::MediaTypeAudio)
@@ -50,6 +51,31 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypeVideo,  Q
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypeCanvas, QWebEngineContextMenuData::MediaTypeCanvas)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypeFile,   QWebEngineContextMenuData::MediaTypeFile)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypePlugin, QWebEngineContextMenuData::MediaTypePlugin)
+
+// Match MediaFlag enum
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaNone,              QWebEngineContextMenuData::MediaNone)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaInError,           QWebEngineContextMenuData::MediaInError)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaPaused,            QWebEngineContextMenuData::MediaPaused)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaMuted,             QWebEngineContextMenuData::MediaMuted)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaLoop,              QWebEngineContextMenuData::MediaLoop)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaCanSave,           QWebEngineContextMenuData::MediaCanSave)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaHasAudio,          QWebEngineContextMenuData::MediaHasAudio)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaCanToggleControls, QWebEngineContextMenuData::MediaCanToggleControls)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaControls,          QWebEngineContextMenuData::MediaControls)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaCanPrint,          QWebEngineContextMenuData::MediaCanPrint)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaCanRotate,         QWebEngineContextMenuData::MediaCanRotate)
+
+// Match EditFlag enum
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanDoNone,     QWebEngineContextMenuData::CanDoNone)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanUndo,       QWebEngineContextMenuData::CanUndo)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanRedo,       QWebEngineContextMenuData::CanRedo)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanCut,        QWebEngineContextMenuData::CanCut)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanCopy,       QWebEngineContextMenuData::CanCopy)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanPaste,      QWebEngineContextMenuData::CanPaste)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanDelete,     QWebEngineContextMenuData::CanDelete)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanSelectAll,  QWebEngineContextMenuData::CanSelectAll)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanTranslate,  QWebEngineContextMenuData::CanTranslate)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanEditRichly, QWebEngineContextMenuData::CanEditRichly)
 
 /*!
     \class QWebEngineContextMenuData
@@ -75,6 +101,46 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypePlugin, Q
     \value MediaTypeCanvas The context is a canvas element.
     \value MediaTypeFile The context is a file.
     \value MediaTypePlugin The context is a plugin element.
+*/
+
+/*!
+    \enum QWebEngineContextMenuData::EditFlag
+    \readonly
+    \since 5.11
+
+    The available edit operations in the current context.
+
+    \value  CanDoNone Nothing can be done.
+    \value  CanUndo Undo is available.
+    \value  CanRedo Redo is available.
+    \value  CanCut Cut is available.
+    \value  CanCopy Copy is available.
+    \value  CanPaste Paste is available.
+    \value  CanDelete Delete is available.
+    \value  CanSelectAll Select All is available.
+    \value  CanTranslate Translate is available.
+    \value  CanEditRichly Context is richly editable.
+*/
+
+/*!
+    \enum QWebEngineContextMenuData::MediaFlag
+    \readonly
+    \since 5.11
+
+    The current media element's status and its available operations.
+    \c MediaNone if the selected web page content is not a media element.
+
+    \value  MediaNone Not a media element.
+    \value  MediaInError An error occurred.
+    \value  MediaPaused Media is paused.
+    \value  MediaMuted Media is muted.
+    \value  MediaLoop Media can be looped.
+    \value  MediaCanSave Media can be saved.
+    \value  MediaHasAudio Media has audio.
+    \value  MediaCanToggleControls Media can show controls.
+    \value  MediaControls Media controls are shown.
+    \value  MediaCanPrint Media is printable.
+    \value  MediaCanRotate Media is rotatable.
 */
 
 /*!
@@ -222,6 +288,27 @@ QWebEngineContextMenuData &QWebEngineContextMenuData::operator=(const QWebEngine
     delete d;
     d = new QtWebEngineCore::WebEngineContextMenuData(priv);
     return *this;
+}
+
+/*!
+    Returns the current media element's status and its available operations.
+    \c MediaNone if the selected web page content is not a media element.
+*/
+QWebEngineContextMenuData::MediaFlags QWebEngineContextMenuData::mediaFlags() const
+{
+    if (d)
+        return static_cast<QWebEngineContextMenuData::MediaFlags>(d->mediaFlags());
+    return QWebEngineContextMenuData::MediaNone;
+}
+
+/*!
+    Returns the available edit operations in the current context or \c CanDoNone if no actions are available.
+*/
+QWebEngineContextMenuData::EditFlags QWebEngineContextMenuData::editFlags() const
+{
+    if (d)
+        return static_cast<QWebEngineContextMenuData::EditFlags>(d->editFlags());
+    return QWebEngineContextMenuData::CanDoNone;
 }
 
 QT_END_NAMESPACE

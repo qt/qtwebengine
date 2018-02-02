@@ -105,6 +105,8 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::PlaybackRequiresUserGesture;
     case QWebEngineSettings::WebRTCPublicInterfacesOnly:
         return WebEngineSettings::WebRTCPublicInterfacesOnly;
+    case QWebEngineSettings::JavascriptCanPaste:
+        return WebEngineSettings::JavascriptCanPaste;
 
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;

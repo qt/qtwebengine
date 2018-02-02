@@ -65,6 +65,7 @@ namespace QtWebEngineCore {
 QT_BEGIN_NAMESPACE
 
 class QQmlWebChannel;
+class QQuickContextMenuBuilder;
 class QQuickWebEngineAuthenticationDialogRequest;
 class QQuickWebEngineCertificateError;
 class QQuickWebEngineColorDialogRequest;
@@ -583,6 +584,7 @@ private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
     QScopedPointer<QQuickWebEngineViewPrivate> d_ptr;
 
+    friend class QQuickContextMenuBuilder;
     friend class QQuickWebEngineNewViewRequest;
     friend class QQuickWebEngineFaviconProvider;
 #ifndef QT_NO_ACCESSIBILITY

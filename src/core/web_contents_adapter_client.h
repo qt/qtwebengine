@@ -95,6 +95,7 @@ public:
         , isSpellCheckerEnabled(false)
         , mediaType(0)
         , mediaFlags(0)
+        , editFlags(0)
     {
     }
     bool hasImageContent;
@@ -102,6 +103,7 @@ public:
     bool isSpellCheckerEnabled;
     uint mediaType;
     uint mediaFlags;
+    uint editFlags;
     QPoint pos;
     QUrl linkUrl;
     QUrl unfilteredLinkUrl;
@@ -153,6 +155,20 @@ public:
         MediaControls = 0x80,
         MediaCanPrint = 0x100,
         MediaCanRotate = 0x200,
+    };
+
+    // Must match blink::WebContextMenuData::EditFlags:
+    enum EditFlags {
+        CanDoNone = 0x0,
+        CanUndo = 0x1,
+        CanRedo = 0x2,
+        CanCut = 0x4,
+        CanCopy = 0x8,
+        CanPaste = 0x10,
+        CanDelete = 0x20,
+        CanSelectAll = 0x40,
+        CanTranslate = 0x80,
+        CanEditRichly = 0x100,
     };
 
     WebEngineContextMenuData():d(new WebEngineContextMenuSharedData) {
@@ -228,6 +244,14 @@ public:
 
     MediaFlags mediaFlags() const {
         return MediaFlags(d->mediaFlags);
+    }
+
+    void setEditFlags(EditFlags flags) {
+        d->editFlags = flags;
+    }
+
+    EditFlags editFlags() const {
+        return EditFlags(d->editFlags);
     }
 
     void setSuggestedFileName(const QString &filename) {

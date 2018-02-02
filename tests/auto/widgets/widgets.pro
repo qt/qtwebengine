@@ -32,5 +32,5 @@ qtConfig(webengine-spellchecker):!cross_compile {
 boot2qt: SUBDIRS -= qwebengineaccessibility qwebenginedefaultsurfaceformat \
                     qwebenginefaviconmanager qwebenginepage qwebenginehistory \
                     qwebengineprofile qwebengineschemes qwebenginescript \
-                    qwebengineview qwebenginedownloads
+                    qwebengineview qwebenginedownloads qwebenginesettings
 

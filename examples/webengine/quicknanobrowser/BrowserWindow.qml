@@ -487,7 +487,7 @@ ApplicationWindow {
         id: devToolsView
         visible: devToolsEnabled.checked
         height: 400
-        inspectedView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
+        inspectedView: visible && tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom

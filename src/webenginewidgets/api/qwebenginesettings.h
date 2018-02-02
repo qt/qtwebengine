@@ -94,6 +94,7 @@ public:
         ShowScrollBars,
         PlaybackRequiresUserGesture,
         WebRTCPublicInterfacesOnly,
+        JavascriptCanPaste,
     };
 
     enum FontSize {

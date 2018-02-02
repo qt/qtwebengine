@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
 class QMenu;
 class QPrinter;
 
+class QContextMenuBuilder;
 class QWebChannel;
 class QWebEngineContextMenuData;
 class QWebEngineFullScreenRequest;
@@ -374,6 +375,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))
 #endif
 
+    friend class QContextMenuBuilder;
     friend class QWebEngineFullScreenRequest;
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;

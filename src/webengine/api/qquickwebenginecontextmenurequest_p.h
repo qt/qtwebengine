@@ -75,6 +75,38 @@ public:
     };
     Q_ENUM(MediaType)
 
+    // Must match QWebEngineCore::WebEngineContextMenuData::MediaFlags:
+    enum MediaFlag {
+        MediaNone = 0x0,
+        MediaInError = 0x1,
+        MediaPaused = 0x2,
+        MediaMuted = 0x4,
+        MediaLoop = 0x8,
+        MediaCanSave = 0x10,
+        MediaHasAudio = 0x20,
+        MediaCanToggleControls = 0x40,
+        MediaControls = 0x80,
+        MediaCanPrint = 0x100,
+        MediaCanRotate = 0x200,
+    };
+    Q_DECLARE_FLAGS(MediaFlags, MediaFlag)
+
+
+    // Must match QWebEngineCore::WebEngineContextMenuData::EditFlags:
+    enum EditFlag {
+        CanDoNone = 0x0,
+        CanUndo = 0x1,
+        CanRedo = 0x2,
+        CanCut = 0x4,
+        CanCopy = 0x8,
+        CanPaste = 0x10,
+        CanDelete = 0x20,
+        CanSelectAll = 0x40,
+        CanTranslate = 0x80,
+        CanEditRichly = 0x100,
+    };
+    Q_DECLARE_FLAGS(EditFlags, EditFlag)
+
     Q_PROPERTY(int x READ x CONSTANT FINAL)
     Q_PROPERTY(int y READ y CONSTANT FINAL)
     Q_PROPERTY(QString selectedText READ selectedText CONSTANT FINAL)
@@ -86,6 +118,8 @@ public:
     Q_PROPERTY(QString misspelledWord READ misspelledWord CONSTANT FINAL)
     Q_PROPERTY(QStringList spellCheckerSuggestions READ spellCheckerSuggestions CONSTANT FINAL)
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
+    Q_PROPERTY(MediaFlags mediaFlags READ mediaFlags CONSTANT FINAL REVISION 1)
+    Q_PROPERTY(EditFlags editFlags READ editFlags CONSTANT FINAL REVISION 1)
 
     ~QQuickWebEngineContextMenuRequest();
     int x() const;
@@ -100,11 +134,15 @@ public:
     QStringList spellCheckerSuggestions() const;
     bool isAccepted() const;
     void setAccepted(bool accepted);
+    MediaFlags mediaFlags() const;
+    EditFlags editFlags() const;
 
 private:
     QQuickWebEngineContextMenuRequest(const QtWebEngineCore::WebEngineContextMenuData &data, QObject *parent = nullptr);
     QScopedPointer<QtWebEngineCore::WebEngineContextMenuData> m_data;
     bool m_accepted;
+    Q_FLAGS(MediaFlags)
+    Q_FLAGS(EditFlags)
     friend class QQuickWebEngineView;
     friend class QQuickWebEngineViewPrivate;
     Q_DISABLE_COPY(QQuickWebEngineContextMenuRequest)

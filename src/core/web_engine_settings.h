@@ -90,6 +90,7 @@ public:
         ShowScrollBars,
         PlaybackRequiresUserGesture,
         WebRTCPublicInterfacesOnly,
+        JavascriptCanPaste,
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

@@ -130,6 +130,9 @@ bool QQuickWebEngineSettings::javascriptCanOpenWindows() const
     Allows JavaScript programs to read from or write to the clipboard.
     Writing to the clipboard is always allowed if it is specifically requested by the user.
 
+    To enable also the pasting of clipboard content from JavaScript,
+    use javascriptCanPaste.
+
     Disabled by default.
 */
 bool QQuickWebEngineSettings::javascriptCanAccessClipboard() const
@@ -426,6 +429,20 @@ bool QQuickWebEngineSettings::webRTCPublicInterfacesOnly() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::javascriptCanPaste
+    \since QtWebEngine 1.7
+
+    Enables JavaScript \c{execCommand("paste")}.
+    This also requires enabling javascriptCanAccessClipboard.
+
+    Disabled by default.
+*/
+bool QQuickWebEngineSettings::javascriptCanPaste() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::JavascriptCanPaste);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -665,6 +682,14 @@ void QQuickWebEngineSettings::setPlaybackRequiresUserGesture(bool on)
     d_ptr->setAttribute(WebEngineSettings::PlaybackRequiresUserGesture, on);
     if (wasOn != on)
         Q_EMIT playbackRequiresUserGestureChanged();
+}
+
+void QQuickWebEngineSettings::setJavascriptCanPaste(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::JavascriptCanPaste);
+    d_ptr->setAttribute(WebEngineSettings::JavascriptCanPaste, on);
+    if (wasOn != on)
+        Q_EMIT javascriptCanPasteChanged();
 }
 
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)

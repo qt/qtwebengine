@@ -79,6 +79,7 @@ SOURCES = \
         qrc_protocol_handler_qt.cpp \
         quota_permission_context_qt.cpp \
         quota_permission_controller.cpp \
+        render_view_context_menu_qt.cpp \
         render_view_observer_host_qt.cpp \
         render_widget_host_view_qt.cpp \
         renderer/content_renderer_client_qt.cpp \
@@ -161,6 +162,7 @@ HEADERS = \
         quota_permission_context_qt.h \
         quota_permission_controller.h \
         quota_permission_controller_p.h \
+        render_view_context_menu_qt.h \
         render_view_observer_host_qt.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \

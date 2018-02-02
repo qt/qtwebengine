@@ -31,6 +31,8 @@
 
 #include <QScopedPointer>
 #include <QtCore/qelapsedtimer.h>
+#include <QtGui/qclipboard.h>
+#include <QtGui/qguiapplication.h>
 #include <QtGui/qpa/qwindowsysteminterface.h>
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
@@ -84,6 +86,8 @@ private Q_SLOTS:
 
     void changeLocale();
     void userScripts();
+    void javascriptClipboard_data();
+    void javascriptClipboard();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -858,6 +862,68 @@ void tst_QQuickWebEngineView::userScripts()
     QTRY_COMPARE(webEngineView2->title(), QStringLiteral("New title"));
 
     list.clear();
+}
+
+void tst_QQuickWebEngineView::javascriptClipboard_data()
+{
+    QTest::addColumn<bool>("javascriptCanAccessClipboard");
+    QTest::addColumn<bool>("javascriptCanPaste");
+    QTest::addColumn<bool>("copyResult");
+    QTest::addColumn<bool>("pasteResult");
+
+    QTest::newRow("default") << false << false << false << false;
+    QTest::newRow("canCopy") << true << false << true << false;
+    // paste command requires both permissions
+    QTest::newRow("canPaste") << false << true << false << false;
+    QTest::newRow("canCopyAndPaste") << true << true << true << true;
+}
+
+void tst_QQuickWebEngineView::javascriptClipboard()
+{
+    QFETCH(bool, javascriptCanAccessClipboard);
+    QFETCH(bool, javascriptCanPaste);
+    QFETCH(bool, copyResult);
+    QFETCH(bool, pasteResult);
+
+    // check defaults
+    QCOMPARE(webEngineView()->settings()->javascriptCanAccessClipboard(), false);
+    QCOMPARE(webEngineView()->settings()->javascriptCanPaste(), false);
+
+    // check accessors
+    webEngineView()->settings()->setJavascriptCanAccessClipboard(javascriptCanAccessClipboard);
+    webEngineView()->settings()->setJavascriptCanPaste(javascriptCanPaste);
+    QCOMPARE(webEngineView()->settings()->javascriptCanAccessClipboard(),
+             javascriptCanAccessClipboard);
+    QCOMPARE(webEngineView()->settings()->javascriptCanPaste(), javascriptCanPaste);
+
+    QQuickWebEngineView *view = webEngineView();
+    view->loadHtml("<html><body>"
+                   "<input type='text' value='OriginalText' id='myInput'/>"
+                   "</body></html>");
+    QVERIFY(waitForLoadSucceeded(view));
+
+    // make sure that 'OriginalText' is selected
+    evaluateJavaScriptSync(view, "document.getElementById('myInput').select()");
+    QCOMPARE(evaluateJavaScriptSync(view, "window.getSelection().toString()").toString(),
+             "OriginalText");
+
+    // Check that the actual settings work by the
+    // - return value of queryCommandEnabled and
+    // - return value of execCommand
+    // - comparing the clipboard / input field
+    QGuiApplication::clipboard()->clear();
+    QCOMPARE(evaluateJavaScriptSync(view, "document.queryCommandEnabled('copy')").toBool(),
+             copyResult);
+    QCOMPARE(evaluateJavaScriptSync(view, "document.execCommand('copy')").toBool(), copyResult);
+    QCOMPARE(QGuiApplication::clipboard()->text(),
+             (copyResult ? QString("OriginalText") : QString()));
+
+    QGuiApplication::clipboard()->setText("AnotherText");
+    QCOMPARE(evaluateJavaScriptSync(view, "document.queryCommandEnabled('paste')").toBool(),
+             pasteResult);
+    QCOMPARE(evaluateJavaScriptSync(view, "document.execCommand('paste')").toBool(), pasteResult);
+    QCOMPARE(evaluateJavaScriptSync(view, "document.getElementById('myInput').value").toString(),
+                (pasteResult ? QString("AnotherText") : QString("OriginalText")));
 }
 
 QTEST_MAIN(tst_QQuickWebEngineView)

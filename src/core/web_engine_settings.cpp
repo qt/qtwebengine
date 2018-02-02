@@ -297,6 +297,7 @@ void WebEngineSettings::initDefaults()
             playbackRequiresUserGesture = (commandLine->GetSwitchValueASCII(switches::kAutoplayPolicy) != switches::autoplay::kNoUserGestureRequiredPolicy);
         s_defaultAttributes.insert(PlaybackRequiresUserGesture, playbackRequiresUserGesture);
         s_defaultAttributes.insert(WebRTCPublicInterfacesOnly, false);
+        s_defaultAttributes.insert(JavascriptCanPaste, false);
     }
 
     if (s_defaultFontFamilies.isEmpty()) {
@@ -388,6 +389,7 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
                                ? content::AutoplayPolicy::kUserGestureRequired
                                : content::AutoplayPolicy::kNoUserGestureRequired;
     }
+    prefs->dom_paste_enabled = testAttribute(JavascriptCanPaste);
 
     // Fonts settings.
     prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));

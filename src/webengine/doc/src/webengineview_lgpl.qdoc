@@ -1386,6 +1386,10 @@
     will navigate to an internal URL with the developer tools of
     the view set.
 
+    It is recommended to unset this property when developer tools
+    are not visible; otherwise some debug information may appear
+    in the inspected WebEngineView.
+
     \sa devToolView
 */
 
