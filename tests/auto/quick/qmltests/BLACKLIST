@@ -16,3 +16,6 @@ osx
 
 [WebViewFindText::test_findTextInterruptedByLoad]
 *
+
+[WebEngineViewSource::test_viewSourceURL]
+*
