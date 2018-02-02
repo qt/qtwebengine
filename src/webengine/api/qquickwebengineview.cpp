@@ -434,14 +434,14 @@ void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
 
     iconUrl = faviconProvider->attach(q, url);
     m_history->reset();
-    Q_EMIT q->iconChanged();
+    QTimer::singleShot(0, q, &QQuickWebEngineView::iconChanged);
 }
 
 void QQuickWebEngineViewPrivate::loadProgressChanged(int progress)
 {
     Q_Q(QQuickWebEngineView);
     loadProgress = progress;
-    Q_EMIT q->loadProgressChanged();
+    QTimer::singleShot(0, q, &QQuickWebEngineView::loadProgressChanged);
 }
 
 void QQuickWebEngineViewPrivate::didUpdateTargetURL(const QUrl &hoveredUrl)
@@ -486,8 +486,11 @@ void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl, bool is
     isLoading = true;
     m_history->reset();
     m_certificateErrorControllers.clear();
-    QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
-    Q_EMIT q->loadingChanged(&loadRequest);
+
+    QTimer::singleShot(0, q, [q, provisionalUrl]() {
+        QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
+        emit q->loadingChanged(&loadRequest);
+    });
 }
 
 void QQuickWebEngineViewPrivate::loadCommitted()
@@ -522,25 +525,27 @@ void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, boo
     isLoading = false;
     m_history->reset();
     if (errorCode == WebEngineError::UserAbortedError) {
-        QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadStoppedStatus);
-        Q_EMIT q->loadingChanged(&loadRequest);
+        QTimer::singleShot(0, q, [q, url]() {
+            QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadStoppedStatus);
+            emit q->loadingChanged(&loadRequest);
+        });
         return;
     }
     if (success) {
         explicitUrl = QUrl();
-        QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus);
-        Q_EMIT q->loadingChanged(&loadRequest);
+        QTimer::singleShot(0, q, [q, url]() {
+            QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus);
+            emit q->loadingChanged(&loadRequest);
+        });
         return;
     }
 
     Q_ASSERT(errorCode);
-    QQuickWebEngineLoadRequest loadRequest(
-        url,
-        QQuickWebEngineView::LoadFailedStatus,
-        errorDescription,
-        errorCode,
-        static_cast<QQuickWebEngineView::ErrorDomain>(WebEngineError::toQtErrorDomain(errorCode)));
-    Q_EMIT q->loadingChanged(&loadRequest);
+    QQuickWebEngineView::ErrorDomain errorDomain = static_cast<QQuickWebEngineView::ErrorDomain>(WebEngineError::toQtErrorDomain(errorCode));
+    QTimer::singleShot(0, q, [q, url, errorDescription, errorCode, errorDomain]() {
+        QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadFailedStatus,errorDescription, errorCode, errorDomain);
+        emit q->loadingChanged(&loadRequest);
+    });
     return;
 }
 
