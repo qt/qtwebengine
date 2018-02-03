@@ -40,7 +40,9 @@
 #include <QImage>
 #include <QThread>
 
+QT_BEGIN_NAMESPACE
 class QPdfDocument;
+QT_END_NAMESPACE
 
 class PageRenderer : public QThread
 {

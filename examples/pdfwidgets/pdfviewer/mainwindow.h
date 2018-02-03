@@ -42,12 +42,15 @@
 
 Q_DECLARE_LOGGING_CATEGORY(lcExample)
 
+QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
 }
 
 class QLineEdit;
 class QPdfDocument;
+QT_END_NAMESPACE
+
 class SequentialPageWidget;
 
 class MainWindow : public QMainWindow

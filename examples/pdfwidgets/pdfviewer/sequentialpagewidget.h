@@ -39,7 +39,10 @@
 
 #include <QWidget>
 
+QT_BEGIN_NAMESPACE
 class QPdfDocument;
+QT_END_NAMESPACE
+
 class PageRenderer;
 
 class SequentialPageWidget : public QWidget
