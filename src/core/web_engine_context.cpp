@@ -348,6 +348,9 @@ WebEngineContext::WebEngineContext()
     // The Mojo local-storage is currently pretty broken and saves in $$PWD/Local\ Storage
     parsedCommandLine->AppendSwitch(switches::kDisableMojoLocalStorage);
 
+    // Shared workers are not safe until Chromium 64
+    parsedCommandLine->AppendSwitch(switches::kDisableSharedWorkers);
+
 #if defined(Q_OS_MACOS)
     // Accelerated decoding currently does not work on macOS due to issues with OpenGL Rectangle
     // texture support. See QTBUG-60002.
