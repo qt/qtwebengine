@@ -391,6 +391,9 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisable2dCanvasAntialiasing);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
+    base::FeatureList::InitializeInstance(
+        parsedCommandLine->GetSwitchValueASCII(switches::kEnableFeatures),
+        parsedCommandLine->GetSwitchValueASCII(switches::kDisableFeatures));
 
     GLContextHelper::initialize();
 
