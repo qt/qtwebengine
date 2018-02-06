@@ -85,6 +85,13 @@ BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
     , m_httpCacheMaxSize(0)
 {
     WebEngineContext::current(); // Ensure the WebEngineContext has been initialized
+
+    // Mark the context as live. This prevents the use-after-free DCHECK in
+    // AssertBrowserContextWasntDestroyed from being triggered when a new
+    // BrowserContextQt object is allocated at the same address as a previously
+    // destroyed one. Needs to be called after WebEngineContext initialization.
+    BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(m_browserContext.data());
+
     content::BrowserContext::Initialize(m_browserContext.data(), toFilePath(dataPath()));
 }
 
@@ -98,6 +105,13 @@ BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
     , m_httpCacheMaxSize(0)
 {
     WebEngineContext::current(); // Ensure the WebEngineContext has been initialized
+
+    // Mark the context as live. This prevents the use-after-free DCHECK in
+    // AssertBrowserContextWasntDestroyed from being triggered when a new
+    // BrowserContextQt object is allocated at the same address as a previously
+    // destroyed one. Needs to be called after WebEngineContext initialization.
+    BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(m_browserContext.data());
+
     content::BrowserContext::Initialize(m_browserContext.data(), toFilePath(dataPath()));
 }
 
