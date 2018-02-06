@@ -93,7 +93,7 @@ class WebContentsDelegateQt : public content::WebContentsDelegate
 {
 public:
     WebContentsDelegateQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
-    ~WebContentsDelegateQt() { Q_ASSERT(m_loadingErrorFrameList.isEmpty()); }
+    ~WebContentsDelegateQt();
     QString lastSearchedString() const { return m_lastSearchedString; }
     void setLastSearchedString(const QString &s) { m_lastSearchedString = s; }
     int lastReceivedFindReply() const { return m_lastReceivedFindReply; }

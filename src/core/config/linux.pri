@@ -110,7 +110,14 @@ host_build {
         PKGCONFIG = $$first($$list($$pkgConfigExecutable()))
         gn_args += pkg_config=\"$$PKGCONFIG\"
         PKG_CONFIG_HOST = $$(GN_PKG_CONFIG_HOST)
-        isEmpty(PKG_CONFIG_HOST): PKG_CONFIG_HOST = pkg-config
+        pkgConfigLibDir = $$(PKG_CONFIG_LIBDIR)
+        pkgConfigSysrootDir = $$(PKG_CONFIG_SYSROOT_DIR)
+        isEmpty(PKG_CONFIG_HOST): PKG_CONFIG_HOST = $$QMAKE_PKG_CONFIG_HOST
+        cross_compile {
+            !isEmpty(pkgConfigLibDir)|!isEmpty(pkgConfigSysrootDir) {
+                PKG_CONFIG_HOST = $$pkgConfigHostExecutable()
+            }
+        }
         gn_args += host_pkg_config=\"$$PKG_CONFIG_HOST\"
     }
 

@@ -107,8 +107,8 @@ static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
         return false;
     }
 
-    QRect printerPageRect = printer.pageRect();
-    PdfiumDocumentWrapperQt pdfiumWrapper(data.constData(), data.size(), printerPageRect.size());
+    QSize pageSize = printer.pageRect().size();
+    PdfiumDocumentWrapperQt pdfiumWrapper(data.constData(), data.size(), pageSize);
 
     int toPage = printer.toPage();
     int fromPage = printer.fromPage();
@@ -156,7 +156,8 @@ static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
                 if (currentImage.isNull())
                     return false;
 
-                painter.drawImage(printerPageRect, currentImage, currentImage.rect());
+                // Painting operations are automatically clipped to the bounds of the drawable part of the page.
+                painter.drawImage(QRect(0, 0, pageSize.width(), pageSize.height()), currentImage, currentImage.rect());
                 if (printedPages < pageCopies - 1)
                     printer.newPage();
             }
@@ -328,7 +329,7 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isError
         return;
 
     isLoading = true;
-    Q_EMIT q->loadStarted();
+    QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
     updateNavigationActions();
 }
 
@@ -346,7 +347,9 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
 
     if (isErrorPage) {
         Q_ASSERT(settings->testAttribute(QWebEngineSettings::ErrorPageEnabled));
-        Q_EMIT q->loadFinished(false);
+        QTimer::singleShot(0, q, [q](){
+            emit q->loadFinished(false);
+        });
         return;
     }
 
@@ -356,7 +359,9 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
     // Delay notifying failure until the error-page is done loading.
     // Error-pages are not loaded on failures due to abort.
     if (success || errorCode == -3 /* ERR_ABORTED*/ || !settings->testAttribute(QWebEngineSettings::ErrorPageEnabled)) {
-        Q_EMIT q->loadFinished(success);
+        QTimer::singleShot(0, q, [q, success](){
+            emit q->loadFinished(success);
+        });
     }
     updateNavigationActions();
 }

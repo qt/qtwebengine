@@ -157,6 +157,20 @@ defineTest(qtConfTest_detectIcuuc) {
    return(false)
 }
 
+defineTest(qtConfTest_detectHostPkgConfig) {
+   PKG_CONFIG = $$qtConfPkgConfig(true)
+   isEmpty(PKG_CONFIG) {
+       qtLog("Could not find host pkg-config")
+       return(false)
+   }
+   qtLog("Found host pkg-config: $$PKG_CONFIG")
+   $${1}.path = $$PKG_CONFIG
+   export($${1}.path)
+   $${1}.cache += path
+   export($${1}.cache)
+   return(true)
+}
+
 defineTest(qtConfTest_isSanitizerSupported) {
   sanitizer_combo_supported = true
 
