@@ -47,7 +47,11 @@ qtConfig(webengine-webrtc) {
 
 qtConfig(webengine-proprietary-codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
 
-!precompile_header: gn_args += disable_precompiled_headers=true
+precompile_header {
+    gn_args += enable_precompiled_headers=true
+} else {
+    gn_args += enable_precompiled_headers=false
+}
 
 CONFIG(release, debug|release) {
     force_debug_info {
@@ -80,3 +84,10 @@ optimize_size: gn_args += optimize_for_size=true
     # rtti, linking would fail at build time.
     sanitize_undefined: gn_args += is_ubsan=true use_rtti=true
 }
+
+qtConfig(webengine-v8-snapshot) {
+    gn_args += v8_use_snapshot=true
+} else {
+    gn_args += v8_use_snapshot=false
+}
+

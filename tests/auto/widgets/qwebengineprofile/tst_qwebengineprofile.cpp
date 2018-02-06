@@ -200,9 +200,13 @@ public:
     }
     bool isSequential() const override { return true; }
     qint64 bytesAvailable() const override
-    { return m_bytesAvailable; }
+    {
+        QMutexLocker lock(&m_mutex);
+        return m_bytesAvailable;
+    }
     bool atEnd() const override
     {
+        QMutexLocker lock(&m_mutex);
         return (m_data.size() >= 1000 && m_bytesRead >= 1000);
     }
 protected:
@@ -237,7 +241,7 @@ protected:
     }
 
 private:
-    QMutex m_mutex;
+    mutable QMutex m_mutex{QMutex::Recursive};
     QByteArray m_data;
     QBasicTimer m_timer;
     int m_bytesRead;

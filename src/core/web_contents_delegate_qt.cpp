@@ -110,6 +110,13 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
     Observe(webContents);
 }
 
+WebContentsDelegateQt::~WebContentsDelegateQt()
+{
+    // The destruction of this object should take place before
+    // WebContents destruction since WebContentsAdapterClient
+    // might be already deleted.
+}
+
 content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params)
 {
     content::WebContents *target = source;
