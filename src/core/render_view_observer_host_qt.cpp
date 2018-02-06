@@ -40,7 +40,9 @@
 #include "render_view_observer_host_qt.h"
 
 #include "common/qt_messages.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+
 #include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
@@ -55,12 +57,16 @@ RenderViewObserverHostQt::RenderViewObserverHostQt(content::WebContents *webCont
 
 void RenderViewObserverHostQt::fetchDocumentMarkup(quint64 requestId)
 {
-    Send(new RenderViewObserverQt_FetchDocumentMarkup(routing_id(), requestId));
+    web_contents()->GetRenderViewHost()->Send(
+                new RenderViewObserverQt_FetchDocumentMarkup(
+                        web_contents()->GetRenderViewHost()->GetRoutingID(), requestId));
 }
 
 void RenderViewObserverHostQt::fetchDocumentInnerText(quint64 requestId)
 {
-    Send(new RenderViewObserverQt_FetchDocumentInnerText(routing_id(), requestId));
+    web_contents()->GetRenderViewHost()->Send(
+                new RenderViewObserverQt_FetchDocumentInnerText(
+                        web_contents()->GetRenderViewHost()->GetRoutingID(), requestId));
 }
 
 bool RenderViewObserverHostQt::OnMessageReceived(const IPC::Message& message)

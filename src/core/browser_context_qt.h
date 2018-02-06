@@ -90,6 +90,7 @@ public:
             content::URLRequestInterceptorScopedVector request_interceptors) override;
     std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) override;
     content::PermissionManager *GetPermissionManager() override;
+    content::BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
     content::BackgroundSyncController* GetBackgroundSyncController() override;
     content::BrowsingDataRemoverDelegate *GetBrowsingDataRemoverDelegate() override;
 

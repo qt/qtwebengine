@@ -58,19 +58,19 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
-#include "cc/output/bsp_tree.h"
-#include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_metadata.h"
-#include "cc/quads/debug_border_draw_quad.h"
-#include "cc/quads/draw_quad.h"
-#include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/stream_video_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
-#include "cc/quads/tile_draw_quad.h"
-#include "cc/quads/yuv_video_draw_quad.h"
-#include "cc/resources/returned_resource.h"
-#include "cc/resources/transferable_resource.h"
+#include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "components/viz/common/quads/debug_border_draw_quad.h"
+#include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/stream_video_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
+#include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "ui/gl/gl_context.h"
@@ -151,17 +151,17 @@ private:
 #endif // QT_NO_OPENGL
 class ResourceHolder {
 public:
-    ResourceHolder(const cc::TransferableResource &resource);
+    ResourceHolder(const viz::TransferableResource &resource);
     QSharedPointer<QSGTexture> initTexture(bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate = 0);
     QSGTexture *texture() const { return m_texture.data(); }
-    cc::TransferableResource &transferableResource() { return m_resource; }
-    cc::ReturnedResource returnResource();
+    viz::TransferableResource &transferableResource() { return m_resource; }
+    viz::ReturnedResource returnResource();
     void incImportCount() { ++m_importCount; }
     bool needsToFetch() const { return !m_resource.is_software && m_texture && !m_texture.data()->textureId(); }
 
 private:
     QWeakPointer<QSGTexture> m_texture;
-    cc::TransferableResource m_resource;
+    viz::TransferableResource m_resource;
     int m_importCount;
 };
 
@@ -449,7 +449,7 @@ static QSGNode *buildRenderPassChain(QSGNode *chainParent)
     return zCompressNode;
 }
 
-static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState *layerState)
+static QSGNode *buildLayerChain(QSGNode *chainParent, const viz::SharedQuadState *layerState)
 {
     QSGNode *layerChain = chainParent;
     if (layerState->is_clipped) {
@@ -634,7 +634,7 @@ void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
 }
 #endif //QT_NO_OPENGL
 
-ResourceHolder::ResourceHolder(const cc::TransferableResource &resource)
+ResourceHolder::ResourceHolder(const viz::TransferableResource &resource)
     : m_resource(resource)
     , m_importCount(1)
 {
@@ -671,9 +671,9 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
     return texture;
 }
 
-cc::ReturnedResource ResourceHolder::returnResource()
+viz::ReturnedResource ResourceHolder::returnResource()
 {
-    cc::ReturnedResource returned;
+    viz::ReturnedResource returned;
     // The ResourceProvider ensures that the resource isn't used by the parent compositor's GL
     // context in the GPU process by inserting a sync point to be waited for by the child
     // compositor's GL context. We don't need this since we are triggering the delegated frame
@@ -751,22 +751,22 @@ void DelegatedFrameNode::preprocess()
     }
 }
 
-static YUVVideoMaterial::ColorSpace toQt(cc::YUVVideoDrawQuad::ColorSpace color_space)
+static YUVVideoMaterial::ColorSpace toQt(viz::YUVVideoDrawQuad::ColorSpace color_space)
 {
     switch (color_space) {
-    case cc::YUVVideoDrawQuad::REC_601:
+    case viz::YUVVideoDrawQuad::REC_601:
         return YUVVideoMaterial::REC_601;
-    case cc::YUVVideoDrawQuad::REC_709:
+    case viz::YUVVideoDrawQuad::REC_709:
         return YUVVideoMaterial::REC_709;
-    case cc::YUVVideoDrawQuad::JPEG:
+    case viz::YUVVideoDrawQuad::JPEG:
         return YUVVideoMaterial::JPEG;
     }
     Q_UNREACHABLE();
     return YUVVideoMaterial::REC_601;
 }
 
-static bool areSharedQuadStatesEqual(const cc::SharedQuadState *layerState,
-                                     const cc::SharedQuadState *prevLayerState)
+static bool areSharedQuadStatesEqual(const viz::SharedQuadState *layerState,
+                                     const viz::SharedQuadState *prevLayerState)
 {
     if (layerState->is_clipped != prevLayerState->is_clipped
         || layerState->clip_rect != prevLayerState->clip_rect)
@@ -779,8 +779,8 @@ static bool areSharedQuadStatesEqual(const cc::SharedQuadState *layerState,
 // Compares if the frame data that we got from the Chromium Compositor is
 // *structurally* equivalent to the one of the previous frame.
 // If it is, we will just reuse and update the old nodes where necessary.
-static bool areRenderPassStructuresEqual(cc::CompositorFrame *frameData,
-                                         cc::CompositorFrame *previousFrameData)
+static bool areRenderPassStructuresEqual(viz::CompositorFrame *frameData,
+                                         viz::CompositorFrame *previousFrameData)
 {
     if (!previousFrameData)
         return false;
@@ -789,8 +789,8 @@ static bool areRenderPassStructuresEqual(cc::CompositorFrame *frameData,
         return false;
 
     for (unsigned i = 0; i < frameData->render_pass_list.size(); ++i) {
-        cc::RenderPass *newPass = frameData->render_pass_list.at(i).get();
-        cc::RenderPass *prevPass = previousFrameData->render_pass_list.at(i).get();
+        viz::RenderPass *newPass = frameData->render_pass_list.at(i).get();
+        viz::RenderPass *prevPass = previousFrameData->render_pass_list.at(i).get();
 
         if (newPass->id != prevPass->id)
             return false;
@@ -798,22 +798,22 @@ static bool areRenderPassStructuresEqual(cc::CompositorFrame *frameData,
         if (newPass->quad_list.size() != prevPass->quad_list.size())
             return false;
 
-        cc::QuadList::ConstBackToFrontIterator it = newPass->quad_list.BackToFrontBegin();
-        cc::QuadList::ConstBackToFrontIterator end = newPass->quad_list.BackToFrontEnd();
-        cc::QuadList::ConstBackToFrontIterator prevIt = prevPass->quad_list.BackToFrontBegin();
-        cc::QuadList::ConstBackToFrontIterator prevEnd = prevPass->quad_list.BackToFrontEnd();
+        viz::QuadList::ConstBackToFrontIterator it = newPass->quad_list.BackToFrontBegin();
+        viz::QuadList::ConstBackToFrontIterator end = newPass->quad_list.BackToFrontEnd();
+        viz::QuadList::ConstBackToFrontIterator prevIt = prevPass->quad_list.BackToFrontBegin();
+        viz::QuadList::ConstBackToFrontIterator prevEnd = prevPass->quad_list.BackToFrontEnd();
         for (; it != end && prevIt != prevEnd; ++it, ++prevIt) {
-            const cc::DrawQuad *quad = *it;
-            const cc::DrawQuad *prevQuad = *prevIt;
+            const viz::DrawQuad *quad = *it;
+            const viz::DrawQuad *prevQuad = *prevIt;
             if (!areSharedQuadStatesEqual(quad->shared_quad_state, prevQuad->shared_quad_state))
                 return false;
             if (quad->material != prevQuad->material)
                 return false;
 #ifndef QT_NO_OPENGL
-            if (quad->material == cc::DrawQuad::YUV_VIDEO_CONTENT)
+            if (quad->material == viz::DrawQuad::YUV_VIDEO_CONTENT)
                 return false;
 #ifdef GL_OES_EGL_image_external
-            if (quad->material == cc::DrawQuad::STREAM_VIDEO_CONTENT)
+            if (quad->material == viz::DrawQuad::STREAM_VIDEO_CONTENT)
                 return false;
 #endif // GL_OES_EGL_image_external
 #endif // QT_NO_OPENGL
@@ -824,11 +824,11 @@ static bool areRenderPassStructuresEqual(cc::CompositorFrame *frameData,
 }
 
 void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
-                                std::vector<cc::ReturnedResource> *resourcesToRelease,
+                                std::vector<viz::ReturnedResource> *resourcesToRelease,
                                 RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     m_chromiumCompositorData = chromiumCompositorData;
-    cc::CompositorFrame* frameData = &m_chromiumCompositorData->frameData;
+    viz::CompositorFrame* frameData = &m_chromiumCompositorData->frameData;
     if (frameData->render_pass_list.empty())
         return;
 
@@ -849,7 +849,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // candidates to be picked up by quads, it's then our responsibility to return unused resources
     // to the producing child compositor.
     for (unsigned i = 0; i < frameData->resource_list.size(); ++i) {
-        const cc::TransferableResource &res = frameData->resource_list.at(i);
+        const viz::TransferableResource &res = frameData->resource_list.at(i);
         if (QSharedPointer<ResourceHolder> resource = resourceCandidates.value(res.id))
             resource->incImportCount();
         else
@@ -873,7 +873,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
         m_sceneGraphNodes.empty() ||
         viewportSize != m_previousViewportSize;
 
-    m_chromiumCompositorData->previousFrameData = cc::CompositorFrame();
+    m_chromiumCompositorData->previousFrameData = viz::CompositorFrame();
     SGObjects previousSGObjects;
     QVector<QSharedPointer<QSGTexture> > textureStrongRefs;
     if (buildNewTree) {
@@ -897,11 +897,11 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // parent, with the last one in the list being the root RenderPass, the one
     // that we displayed to the user.
     // All RenderPasses except the last one are rendered to an FBO.
-    cc::RenderPass *rootRenderPass = frameData->render_pass_list.back().get();
+    viz::RenderPass *rootRenderPass = frameData->render_pass_list.back().get();
 
     gfx::Rect viewportRect(toGfx(viewportSize));
     for (unsigned i = 0; i < frameData->render_pass_list.size(); ++i) {
-        cc::RenderPass *pass = frameData->render_pass_list.at(i).get();
+        viz::RenderPass *pass = frameData->render_pass_list.at(i).get();
 
         QSGNode *renderPassParent = 0;
         gfx::Rect scissorRect;
@@ -944,16 +944,16 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
         if (buildNewTree)
             renderPassChain = buildRenderPassChain(renderPassParent);
 
-        std::deque<std::unique_ptr<cc::DrawPolygon>> polygonQueue;
+        base::circular_deque<std::unique_ptr<viz::DrawPolygon>> polygonQueue;
         int nextPolygonId = 0;
         int currentSortingContextId = 0;
-        const cc::SharedQuadState *currentLayerState = nullptr;
+        const viz::SharedQuadState *currentLayerState = nullptr;
         QSGNode *currentLayerChain = nullptr;
         const auto quadListBegin = pass->quad_list.BackToFrontBegin();
         const auto quadListEnd = pass->quad_list.BackToFrontEnd();
         for (auto it = quadListBegin; it != quadListEnd; ++it) {
-            const cc::DrawQuad *quad = *it;
-            const cc::SharedQuadState *quadState = quad->shared_quad_state;
+            const viz::DrawQuad *quad = *it;
+            const viz::SharedQuadState *quadState = quad->shared_quad_state;
 
             gfx::Rect targetRect =
                 cc::MathUtil::MapEnclosingClippedRect(quadState->quad_to_target_transform,
@@ -973,8 +973,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             }
 
             if (currentSortingContextId != 0) {
-                std::unique_ptr<cc::DrawPolygon> polygon(
-                    new cc::DrawPolygon(
+                std::unique_ptr<viz::DrawPolygon> polygon(
+                    new viz::DrawPolygon(
                         quad,
                         gfx::RectF(quad->visible_rect),
                         quadState->quad_to_target_transform,
@@ -1008,7 +1008,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
 }
 
 void DelegatedFrameNode::flushPolygons(
-    std::deque<std::unique_ptr<cc::DrawPolygon>> *polygonQueue,
+    base::circular_deque<std::unique_ptr<viz::DrawPolygon>> *polygonQueue,
     QSGNode *renderPassChain,
     DelegatedNodeTreeHandler *nodeHandler,
     QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
@@ -1017,9 +1017,9 @@ void DelegatedFrameNode::flushPolygons(
     if (polygonQueue->empty())
         return;
 
-    const auto actionHandler = [&](cc::DrawPolygon *polygon) {
-        const cc::DrawQuad *quad = polygon->original_ref();
-        const cc::SharedQuadState *quadState = quad->shared_quad_state;
+    const auto actionHandler = [&](viz::DrawPolygon *polygon) {
+        const viz::DrawQuad *quad = polygon->original_ref();
+        const viz::SharedQuadState *quadState = quad->shared_quad_state;
 
         QSGNode *currentLayerChain = nullptr;
         if (renderPassChain)
@@ -1034,17 +1034,17 @@ void DelegatedFrameNode::flushPolygons(
                       nodeHandler, resourceCandidates, apiDelegate);
     };
 
-    cc::BspTree(polygonQueue).TraverseWithActionHandler(&actionHandler);
+    viz::BspTree(polygonQueue).TraverseWithActionHandler(&actionHandler);
 }
 
 void DelegatedFrameNode::handlePolygon(
-    const cc::DrawPolygon *polygon,
+    const viz::DrawPolygon *polygon,
     QSGNode *currentLayerChain,
     DelegatedNodeTreeHandler *nodeHandler,
     QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
     RenderWidgetHostViewQtDelegate *apiDelegate)
 {
-    const cc::DrawQuad *quad = polygon->original_ref();
+    const viz::DrawQuad *quad = polygon->original_ref();
 
     if (!polygon->is_split()) {
         handleQuad(quad, currentLayerChain,
@@ -1059,7 +1059,7 @@ void DelegatedFrameNode::handlePolygon(
 }
 
 void DelegatedFrameNode::handleClippedQuad(
-    const cc::DrawQuad *quad,
+    const viz::DrawQuad *quad,
     const gfx::QuadF &clipRegion,
     QSGNode *currentLayerChain,
     DelegatedNodeTreeHandler *nodeHandler,
@@ -1085,15 +1085,15 @@ void DelegatedFrameNode::handleClippedQuad(
 }
 
 void DelegatedFrameNode::handleQuad(
-    const cc::DrawQuad *quad,
+    const viz::DrawQuad *quad,
     QSGNode *currentLayerChain,
     DelegatedNodeTreeHandler *nodeHandler,
     QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
     RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     switch (quad->material) {
-    case cc::DrawQuad::RENDER_PASS: {
-        const cc::RenderPassDrawQuad *renderPassQuad = cc::RenderPassDrawQuad::MaterialCast(quad);
+    case viz::DrawQuad::RENDER_PASS: {
+        const viz::RenderPassDrawQuad *renderPassQuad = viz::RenderPassDrawQuad::MaterialCast(quad);
         QSGTexture *layer =
             findRenderPassLayer(renderPassQuad->render_pass_id, m_sgObjects.renderPassLayers).data();
 
@@ -1101,8 +1101,8 @@ void DelegatedFrameNode::handleQuad(
             nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), currentLayerChain);
         break;
     }
-    case cc::DrawQuad::TEXTURE_CONTENT: {
-        const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
+    case viz::DrawQuad::TEXTURE_CONTENT: {
+        const viz::TextureDrawQuad *tquad = viz::TextureDrawQuad::MaterialCast(quad);
         ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
         QSGTexture *texture =
             initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate);
@@ -1121,8 +1121,8 @@ void DelegatedFrameNode::handleQuad(
             currentLayerChain);
         break;
     }
-    case cc::DrawQuad::SOLID_COLOR: {
-        const cc::SolidColorDrawQuad *scquad = cc::SolidColorDrawQuad::MaterialCast(quad);
+    case viz::DrawQuad::SOLID_COLOR: {
+        const viz::SolidColorDrawQuad *scquad = viz::SolidColorDrawQuad::MaterialCast(quad);
         // Qt only supports MSAA and this flag shouldn't be needed.
         // If we ever want to use QSGRectangleNode::setAntialiasing for this we should
         // try to see if we can do something similar for tile quads first.
@@ -1131,8 +1131,8 @@ void DelegatedFrameNode::handleQuad(
         break;
 #ifndef QT_NO_OPENGL
     }
-    case cc::DrawQuad::DEBUG_BORDER: {
-        const cc::DebugBorderDrawQuad *dbquad = cc::DebugBorderDrawQuad::MaterialCast(quad);
+    case viz::DrawQuad::DEBUG_BORDER: {
+        const viz::DebugBorderDrawQuad *dbquad = viz::DebugBorderDrawQuad::MaterialCast(quad);
 
         QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 4);
         geometry->setDrawingMode(GL_LINE_LOOP);
@@ -1154,8 +1154,8 @@ void DelegatedFrameNode::handleQuad(
         break;
 #endif
     }
-    case cc::DrawQuad::TILED_CONTENT: {
-        const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
+    case viz::DrawQuad::TILED_CONTENT: {
+        const viz::TileDrawQuad *tquad = viz::TileDrawQuad::MaterialCast(quad);
         ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
         nodeHandler->setupTiledContentNode(
             initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate),
@@ -1166,8 +1166,8 @@ void DelegatedFrameNode::handleQuad(
         break;
 #ifndef QT_NO_OPENGL
     }
-    case cc::DrawQuad::YUV_VIDEO_CONTENT: {
-        const cc::YUVVideoDrawQuad *vquad = cc::YUVVideoDrawQuad::MaterialCast(quad);
+    case viz::DrawQuad::YUV_VIDEO_CONTENT: {
+        const viz::YUVVideoDrawQuad *vquad = viz::YUVVideoDrawQuad::MaterialCast(quad);
         ResourceHolder *yResource =
             findAndHoldResource(vquad->y_plane_resource_id(), resourceCandidates);
         ResourceHolder *uResource =
@@ -1192,8 +1192,8 @@ void DelegatedFrameNode::handleQuad(
         break;
 #ifdef GL_OES_EGL_image_external
     }
-    case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
-        const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
+    case viz::DrawQuad::STREAM_VIDEO_CONTENT: {
+        const viz::StreamVideoDrawQuad *squad = viz::StreamVideoDrawQuad::MaterialCast(quad);
         ResourceHolder *resource = findAndHoldResource(squad->resource_id(), resourceCandidates);
         MailboxTexture *texture = static_cast<MailboxTexture *>(
             initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
@@ -1206,7 +1206,7 @@ void DelegatedFrameNode::handleQuad(
 #endif // GL_OES_EGL_image_external
 #endif // QT_NO_OPENGL
     }
-    case cc::DrawQuad::SURFACE_CONTENT:
+    case viz::DrawQuad::SURFACE_CONTENT:
         Q_UNREACHABLE();
     default:
         qWarning("Unimplemented quad material: %d", quad->material);
@@ -1223,13 +1223,13 @@ ResourceHolder *DelegatedFrameNode::findAndHoldResource(unsigned resourceId, QHa
     return resource.data();
 }
 
-void DelegatedFrameNode::holdResources(const cc::DrawQuad *quad, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
+void DelegatedFrameNode::holdResources(const viz::DrawQuad *quad, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
 {
     for (auto resource : quad->resources)
         findAndHoldResource(resource, candidates);
 }
 
-void DelegatedFrameNode::holdResources(const cc::RenderPass *pass, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
+void DelegatedFrameNode::holdResources(const viz::RenderPass *pass, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
 {
     for (const auto &quad : pass->quad_list)
         holdResources(quad, candidates);

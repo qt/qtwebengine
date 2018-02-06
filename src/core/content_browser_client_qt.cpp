@@ -50,6 +50,7 @@
 #endif
 #endif
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/common/url_schemes.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -72,7 +73,7 @@
 #include "net/ssl/client_cert_identity.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/WebKit/public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom.h"
+#include "third_party/WebKit/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_context.h"
@@ -358,6 +359,14 @@ public:
     {
         return nullptr;
     }
+    const gl::ExtensionSet& GetExtensions() override
+    {
+        static const gl::ExtensionSet s_emptySet;
+        return s_emptySet;
+    }
+    void ResetExtensions() override
+    {
+    }
 
 private:
     void *m_handle;
@@ -380,7 +389,7 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
     if (!shareContext) {
         qFatal("QWebEngine: OpenGL resource sharing is not set up in QtQuick. Please make sure to call QtWebEngine::initialize() in your main() function.");
     }
-    m_shareContextQtQuick = make_scoped_refptr(new QtShareGLContext(shareContext));
+    m_shareContextQtQuick = new QtShareGLContext(shareContext);
 #endif
 }
 
@@ -413,7 +422,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     const int id = host->GetID();
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(id, url::kFileScheme);
     static_cast<BrowserContextQt*>(host->GetBrowserContext())->m_adapter->userResourceController()->renderProcessStartedWithHost(host);
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     host->AddFilter(new BrowserMessageFilterQt(id));
 #endif
 #if defined(Q_OS_MACOS) && BUILDFLAG(ENABLE_SPELLCHECK) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
@@ -464,18 +473,17 @@ void ContentBrowserClientQt::GetQuotaSettings(content::BrowserContext* context,
 }
 
 void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webContents,
-                                   int cert_error,
-                                   const net::SSLInfo& ssl_info,
-                                   const GURL& request_url,
-                                   content::ResourceType resource_type,
-                                   bool overridable,
-                                   bool strict_enforcement,
-                                   bool expired_previous_decision,
-                                   const base::Callback<void(content::CertificateRequestResultType)>& callback)
+                                                   int cert_error,
+                                                   const net::SSLInfo &ssl_info,
+                                                   const GURL &request_url,
+                                                   content::ResourceType resource_type,
+                                                   bool strict_enforcement,
+                                                   bool expired_previous_decision,
+                                                   const base::Callback<void(content::CertificateRequestResultType)> &callback)
 {
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
-    QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
+    QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, strict_enforcement, strict_enforcement, callback)));
     contentsDelegate->allowCertificateError(errorController);
 }
 
@@ -506,13 +514,19 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
         command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
 }
 
+void ContentBrowserClientQt::GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes)
+{
+    additional_schemes->push_back(content::kChromeDevToolsScheme);
+}
+
 void ContentBrowserClientQt::GetAdditionalViewSourceSchemes(std::vector<std::string>* additional_schemes)
 {
+    GetAdditionalWebUISchemes(additional_schemes);
     additional_schemes->push_back(kQrcSchemeQt);
 }
 
 #if defined(Q_OS_LINUX)
-void ContentBrowserClientQt::GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::FileDescriptorInfo* mappings)
+void ContentBrowserClientQt::GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings)
 {
     const std::string &locale = GetApplicationLocale();
     const base::FilePath &locale_file_path = ui::ResourceBundle::GetSharedInstance().GetLocaleFilePath(locale, true);
@@ -542,7 +556,7 @@ content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDele
 
 // This is a really complicated way of doing absolutely nothing, but Mojo demands it:
 class ServiceDriver
-        : public blink::mojom::SensitiveInputVisibilityService
+        : public blink::mojom::InsecureInputService
         , public content::WebContentsUserData<ServiceDriver>
 {
 public:
@@ -561,38 +575,38 @@ public:
             return nullptr;
         return FromWebContents(web_contents);
     }
-    static void BindSensitiveInputVisibilityService(blink::mojom::SensitiveInputVisibilityServiceRequest request,
-                                                    content::RenderFrameHost* render_frame_host)
+    static void BindInsecureInputService(blink::mojom::InsecureInputServiceRequest request, content::RenderFrameHost *render_frame_host)
     {
         CreateForRenderFrameHost(render_frame_host);
         ServiceDriver *driver = FromRenderFrameHost(render_frame_host);
 
         if (driver)
-            driver->BindSensitiveInputVisibilityServiceRequest(std::move(request));
+            driver->BindInsecureInputServiceRequest(std::move(request));
     }
-    void BindSensitiveInputVisibilityServiceRequest(blink::mojom::SensitiveInputVisibilityServiceRequest request)
+    void BindInsecureInputServiceRequest(blink::mojom::InsecureInputServiceRequest request)
     {
-        m_sensitiveInputVisibilityBindings.AddBinding(this, std::move(request));
+        m_insecureInputServiceBindings.AddBinding(this, std::move(request));
     }
 
-    // blink::mojom::SensitiveInputVisibility:
+    // blink::mojom::InsecureInputService:
     void PasswordFieldVisibleInInsecureContext() override
     { }
     void AllPasswordFieldsInInsecureContextInvisible() override
+    { }
+    void DidEditFieldInInsecureContext() override
     { }
 
 private:
     explicit ServiceDriver(content::WebContents* /*web_contents*/) { }
     friend class content::WebContentsUserData<ServiceDriver>;
-    mojo::BindingSet<blink::mojom::SensitiveInputVisibilityService> m_sensitiveInputVisibilityBindings;
-
+    mojo::BindingSet<blink::mojom::InsecureInputService> m_insecureInputServiceBindings;
 };
 
 void ContentBrowserClientQt::InitFrameInterfaces()
 {
     m_frameInterfaces = base::MakeUnique<service_manager::BinderRegistry>();
     m_frameInterfacesParameterized = base::MakeUnique<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
-    m_frameInterfacesParameterized->AddInterface(base::Bind(&ServiceDriver::BindSensitiveInputVisibilityService));
+    m_frameInterfacesParameterized->AddInterface(base::Bind(&ServiceDriver::BindInsecureInputService));
 }
 
 void ContentBrowserClientQt::BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,

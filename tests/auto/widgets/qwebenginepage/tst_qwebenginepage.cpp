@@ -294,43 +294,41 @@ void tst_QWebEnginePage::cleanupTestCase()
 class NavigationRequestOverride : public QWebEnginePage
 {
 public:
-    NavigationRequestOverride(QWebEngineView* parent, bool initialValue) : QWebEnginePage(parent), m_acceptNavigationRequest(initialValue) {}
+    NavigationRequestOverride(QWebEngineProfile* profile, bool initialValue) : QWebEnginePage(profile, nullptr), m_acceptNavigationRequest(initialValue) {}
 
     bool m_acceptNavigationRequest;
 protected:
     virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
     {
         Q_UNUSED(url);
-        Q_UNUSED(type);
         Q_UNUSED(isMainFrame);
-
-        return m_acceptNavigationRequest;
+        if (type == QWebEnginePage::NavigationTypeFormSubmitted)
+            return m_acceptNavigationRequest;
+        return true;
     }
 };
 
 void tst_QWebEnginePage::acceptNavigationRequest()
 {
-    QWebEngineView view;
-    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
+    QWebEngineProfile profile;
+    NavigationRequestOverride page(&profile, false);
 
-    NavigationRequestOverride* newPage = new NavigationRequestOverride(&view, false);
-    view.setPage(newPage);
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
 
-    // acceptNavigationRequest and QWebEngineUrlRequestInterceptor::interceptRequest are not called
-    // for data: urls, which means the test is broken, aka setting
-    // newPage->m_acceptNavigationRequest to false does nothing to stop the page from loading.
-    // See QTBUG-50922 comments.
-    view.setHtml(QString("<html><body><form name='tstform' action='data:text/html,foo'method='get'>"
+    page.setHtml(QString("<html><body><form name='tstform' action='data:text/html,foo'method='get'>"
                             "<input type='text'><input type='submit'></form></body></html>"), QUrl());
     QTRY_COMPARE(loadSpy.count(), 1);
 
-    evaluateJavaScriptSync(view.page(), "tstform.submit();");
-
-    newPage->m_acceptNavigationRequest = true;
-    evaluateJavaScriptSync(view.page(), "tstform.submit();");
+    evaluateJavaScriptSync(&page, "tstform.submit();");
     QTRY_COMPARE(loadSpy.count(), 2);
 
-    QCOMPARE(toPlainTextSync(view.page()), QString("foo?"));
+    // Content hasn't changed so the form submit will still work
+    page.m_acceptNavigationRequest = true;
+    evaluateJavaScriptSync(&page, "tstform.submit();");
+    QTRY_COMPARE(loadSpy.count(), 3);
+
+    // Now the content has changed
+    QCOMPARE(toPlainTextSync(&page), QString("foo?"));
 }
 
 class JSTestPage : public QWebEnginePage
@@ -1936,7 +1934,7 @@ void tst_QWebEnginePage::userAgentNewlineStripping()
     // The user agent will be updated after a page load.
     page.load(QUrl("about:blank"));
 
-    QCOMPARE(evaluateJavaScriptSync(&page, "navigator.userAgent").toString(), QStringLiteral("My User Agent X-New-Http-Header: Oh Noes!"));
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "navigator.userAgent").toString(), QStringLiteral("My User Agent X-New-Http-Header: Oh Noes!"));
 }
 
 void tst_QWebEnginePage::crashTests_LazyInitializationOfMainFrame()
@@ -3405,7 +3403,7 @@ void tst_QWebEnginePage::setHtmlWithImageResource()
 
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
     page.setHtml(html, QUrl("file:///path/to/file"));
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
 
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 128);
@@ -4044,7 +4042,6 @@ void tst_QWebEnginePage::setUrlHistory()
 
 void tst_QWebEnginePage::setUrlUsingStateObject()
 {
-    const QUrl aboutBlank("about:blank");
     QUrl url;
     QSignalSpy urlChangedSpy(m_page, SIGNAL(urlChanged(QUrl)));
     int expectedUrlChangeCount = 0;
@@ -4053,12 +4050,10 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
 
     url = QUrl("qrc:/resources/test1.html");
     m_page->setUrl(url);
-    QSignalSpy spyFinished(m_page, &QWebEnginePage::loadFinished);
-    QVERIFY(spyFinished.wait());
     expectedUrlChangeCount++;
-    QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
+    QTRY_COMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), url);
-    QCOMPARE(m_page->history()->count(), 1);
+    QTRY_COMPARE(m_page->history()->count(), 1);
 
     evaluateJavaScriptSync(m_page, "window.history.pushState(null, 'push', 'navigate/to/here')");
     expectedUrlChangeCount++;
@@ -4076,9 +4071,8 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
     QVERIFY(m_page->history()->canGoBack());
 
     evaluateJavaScriptSync(m_page, "window.history.back()");
-    QTest::qWait(100);
     expectedUrlChangeCount++;
-    QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
+    QTRY_COMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), QUrl("qrc:/resources/test1.html"));
     QVERIFY(m_page->history()->canGoForward());
     QVERIFY(!m_page->history()->canGoBack());
@@ -4339,8 +4333,8 @@ void tst_QWebEnginePage::toPlainTextLoadFinishedRace()
     QTRY_VERIFY(spy.count() == 1);
     QCOMPARE(toPlainTextSync(page.data()), QString("foobarbaz"));
 
-    page->load(QUrl("fail:unknown/scheme"));
-    QTRY_VERIFY(spy.count() == 2);
+    page->load(QUrl("http://fail.invalid/"));
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 12000);
     QString s = toPlainTextSync(page.data());
     QVERIFY(s.contains("foobarbaz") == !enableErrorPage);
 

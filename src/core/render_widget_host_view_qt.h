@@ -43,8 +43,8 @@
 #include "render_widget_host_view_qt_delegate.h"
 
 #include "base/memory/weak_ptr.h"
-#include "cc/scheduler/begin_frame_source.h"
-#include "cc/resources/transferable_resource.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -102,7 +102,7 @@ class RenderWidgetHostViewQt
     , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
-    , public cc::BeginFrameObserverBase
+    , public viz::BeginFrameObserverBase
 #ifndef QT_NO_ACCESSIBILITY
     , public QAccessible::ActivationObserver
 #endif // QT_NO_ACCESSIBILITY
@@ -151,8 +151,8 @@ public:
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
     bool HasAcceleratedSurface(const gfx::Size&) override;
-    void DidCreateNewRendererCompositorFrameSink(cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
-    void SubmitCompositorFrame(const viz::LocalSurfaceId&, cc::CompositorFrame) override;
+    void DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
+    void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame) override;
     void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
 
     void GetScreenInfo(content::ScreenInfo* results);
@@ -180,7 +180,7 @@ public:
     void OnTextSelectionChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view) override;
 
     // cc::BeginFrameObserverBase implementation.
-    bool OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) override;
+    bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;
     void OnBeginFrameSourcePausedChanged(bool paused) override;
 
     void handleMouseEvent(QMouseEvent*);
@@ -243,14 +243,14 @@ private:
     std::unique_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
-    std::vector<cc::ReturnedResource> m_resourcesToRelease;
+    std::vector<viz::ReturnedResource> m_resourcesToRelease;
     bool m_needsDelegatedFrameAck;
     LoadVisuallyCommittedState m_loadVisuallyCommittedState;
 
     QMetaObject::Connection m_adapterClientDestroyedConnection;
     WebContentsAdapterClient *m_adapterClient;
     MultipleMouseClickHelper m_clickHelper;
-    cc::mojom::CompositorFrameSinkClient *m_rendererCompositorFrameSink;
+    viz::mojom::CompositorFrameSinkClient *m_rendererCompositorFrameSink;
 
     bool m_imeInProgress;
     bool m_receivedEmptyImeText;
@@ -258,7 +258,7 @@ private:
 
     bool m_initPending;
 
-    std::unique_ptr<cc::SyntheticBeginFrameSource> m_beginFrameSource;
+    std::unique_ptr<viz::SyntheticBeginFrameSource> m_beginFrameSource;
     bool m_needsBeginFrames;
     bool m_addedFrameObserver;
 

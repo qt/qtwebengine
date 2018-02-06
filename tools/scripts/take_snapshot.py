@@ -92,6 +92,7 @@ def isInChromiumBlacklist(file_path):
             not 'third_party/chromevox' in file_path and
             not 'media/webrtc/desktop_media_list.h' in file_path and
             not 'media/webrtc/desktop_streams_registry.' in file_path and
+            not 'browser/net/chrome_mojo_proxy_resolver_factory.' in file_path and
             not '/browser/devtools/' in file_path and
             not '/browser/ui/webui/' in file_path and
             not 'common/chrome_constants.' in file_path and
@@ -143,6 +144,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('native_client')
         or file_path.startswith('net/android/java')
         or (file_path.startswith('net/data/') and '_unittest/' in file_path)
+        or file_path.startswith('net/data/fuzzer_data/')
         or file_path.startswith('remoting')
         or file_path.startswith('rlz')
         or file_path.startswith('testing/android')
@@ -160,10 +162,11 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/ashmem')
         or file_path.startswith('third_party/binutils')
         or file_path.startswith('third_party/bison')
-        or (file_path.startswith('third_party/cacheinvalidation') and
-            not file_path.endswith('isolate'))
+        or file_path.startswith('third_party/breakpad')
         or file_path.startswith('third_party/boringssl/crypto_test_data.cc')
         or file_path.startswith('third_party/boringssl/src/fuzz')
+        or (file_path.startswith('third_party/cacheinvalidation') and
+            not file_path.endswith('isolate'))
         or file_path.startswith('third_party/catapult')
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
@@ -221,6 +224,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/trace-viewer')
         or file_path.startswith('third_party/undoview')
         or file_path.startswith('third_party/webgl')
+        or file_path.startswith('third_party/webrtc/resources/')
         or file_path.startswith('tools/android')
         or file_path.startswith('tools/luci_go')
         or file_path.startswith('tools/metrics')

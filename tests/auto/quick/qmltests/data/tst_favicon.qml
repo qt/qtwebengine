@@ -179,7 +179,7 @@ TestWebEngineView {
 
             compare(iconChangedSpy.count, 0)
 
-            var url = Qt.resolvedUrl("invalid://url")
+            var url = Qt.resolvedUrl("http://url.invalid")
             webEngineView.url = url
             verify(webEngineView.waitForLoadFailed())
             verify(webEngineView.testSupport.waitForErrorPageLoadSucceeded())
@@ -195,7 +195,7 @@ TestWebEngineView {
 
             compare(iconChangedSpy.count, 0)
 
-            var url = Qt.resolvedUrl("invalid://url")
+            var url = Qt.resolvedUrl("http://url.invalid")
             webEngineView.url = url
             verify(webEngineView.waitForLoadFailed())
 

@@ -202,7 +202,7 @@ void AddPepperFlashFromCommandLine(std::vector<content::PepperPluginInfo>* plugi
 
 void AddPepperWidevine(std::vector<content::PepperPluginInfo>* plugins)
 {
-#if defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_PEPPER_CDMS) && !defined(WIDEVINE_CDM_IS_COMPONENT)
+#if defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_LIBRARY_CDMS) && !defined(WIDEVINE_CDM_IS_COMPONENT)
     QStringList pluginPaths;
     const base::CommandLine::StringType widevine_argument = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kPpapiWidevinePath);
     if (!widevine_argument.empty())

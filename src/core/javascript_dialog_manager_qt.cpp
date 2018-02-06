@@ -58,7 +58,7 @@ JavaScriptDialogManagerQt *JavaScriptDialogManagerQt::GetInstance()
     return base::Singleton<JavaScriptDialogManagerQt>::get();
 }
 
-void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webContents, const GURL &originUrl, content::JavaScriptDialogType dialog_type, const base::string16 &messageText, const base::string16 &defaultPromptText, const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage)
+void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webContents, const GURL &originUrl, content::JavaScriptDialogType dialog_type, const base::string16 &messageText, const base::string16 &defaultPromptText, content::JavaScriptDialogManager::DialogClosedCallback callback, bool *didSuppressMessage)
 {
     WebContentsAdapterClient *client = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
     if (!client) {
@@ -68,13 +68,13 @@ void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webCon
     }
 
     WebContentsAdapterClient::JavascriptDialogType dialogType = static_cast<WebContentsAdapterClient::JavascriptDialogType>(dialog_type);
-    runDialogForContents(webContents, dialogType, toQt(messageText).toHtmlEscaped(), toQt(defaultPromptText).toHtmlEscaped(), toQt(originUrl.GetOrigin()), callback);
+    runDialogForContents(webContents, dialogType, toQt(messageText).toHtmlEscaped(), toQt(defaultPromptText).toHtmlEscaped(), toQt(originUrl.GetOrigin()), std::move(callback));
 }
 
 void JavaScriptDialogManagerQt::RunBeforeUnloadDialog(content::WebContents *webContents, bool isReload,
-                                                      const content::JavaScriptDialogManager::DialogClosedCallback &callback) {
+                                                      content::JavaScriptDialogManager::DialogClosedCallback callback) {
     Q_UNUSED(isReload);
-    runDialogForContents(webContents, WebContentsAdapterClient::UnloadDialog, QString(), QString(), QUrl(), callback);
+    runDialogForContents(webContents, WebContentsAdapterClient::UnloadDialog, QString(), QString(), QUrl(), std::move(callback));
 }
 
 bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *contents, bool accept, const base::string16 *promptOverride)
@@ -89,13 +89,13 @@ bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *con
 
 void JavaScriptDialogManagerQt::runDialogForContents(content::WebContents *webContents, WebContentsAdapterClient::JavascriptDialogType type
                                                      , const QString &messageText, const QString &defaultPrompt, const QUrl &origin
-                                                     , const content::JavaScriptDialogManager::DialogClosedCallback &callback, const QString &title)
+                                                     , content::JavaScriptDialogManager::DialogClosedCallback &&callback, const QString &title)
 {
     WebContentsAdapterClient *client = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
     if (!client)
         return;
 
-    JavaScriptDialogControllerPrivate *dialogData = new JavaScriptDialogControllerPrivate(type, messageText, defaultPrompt, title, origin, callback, webContents);
+    JavaScriptDialogControllerPrivate *dialogData = new JavaScriptDialogControllerPrivate(type, messageText, defaultPrompt, title, origin, std::move(callback), webContents);
     QSharedPointer<JavaScriptDialogController> dialog(new JavaScriptDialogController(dialogData));
 
     // We shouldn't get new dialogs for a given WebContents until we gave back a result.

@@ -236,10 +236,10 @@ void tst_QWebEngineFaviconManager::errorPageEnabled()
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
     QSignalSpy iconChangedSpy(m_page, SIGNAL(iconChanged(QIcon)));
 
-    QUrl url("invalid://url");
+    QUrl url("http://url.invalid");
     m_page->load(url);
 
-    QTRY_COMPARE(loadFinishedSpy.count(), 2);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 14000);
     QCOMPARE(iconUrlChangedSpy.count(), 0);
     QCOMPARE(iconChangedSpy.count(), 0);
 
@@ -255,10 +255,10 @@ void tst_QWebEngineFaviconManager::errorPageDisabled()
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
     QSignalSpy iconChangedSpy(m_page, SIGNAL(iconChanged(QIcon)));
 
-    QUrl url("invalid://url");
+    QUrl url("http://url.invalid");
     m_page->load(url);
 
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 12000);
     QCOMPARE(iconUrlChangedSpy.count(), 0);
     QCOMPARE(iconChangedSpy.count(), 0);
 

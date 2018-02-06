@@ -66,7 +66,7 @@ public:
     void RenderViewCreated(content::RenderView *render_view) override;
     void RenderFrameCreated(content::RenderFrame* render_frame) override;
     bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) override;
-    bool HasErrorPage(int httpStatusCode, std::string *errorDomain) override;
+    bool HasErrorPage(int http_status_code) override;
     void GetNavigationErrorStrings(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
                                    const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) override;
 

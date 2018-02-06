@@ -40,9 +40,10 @@
 #ifndef DELEGATED_FRAME_NODE_H
 #define DELEGATED_FRAME_NODE_H
 
-#include "cc/output/compositor_frame.h"
-#include "cc/quads/render_pass.h"
-#include "cc/resources/transferable_resource.h"
+#include "base/containers/circular_deque.h"
+#include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ui/gl/gl_fence.h"
 #include <QMutex>
@@ -59,14 +60,14 @@ QT_BEGIN_NAMESPACE
 class QSGLayer;
 QT_END_NAMESPACE
 
-namespace cc {
+namespace gfx {
+class QuadF;
+}
+
+namespace viz {
 class DelegatedFrameData;
 class DrawQuad;
 class DrawPolygon;
-}
-
-namespace gfx {
-class QuadF;
 }
 
 namespace QtWebEngineCore {
@@ -81,8 +82,8 @@ class ChromiumCompositorData : public QSharedData {
 public:
     ChromiumCompositorData() : frameDevicePixelRatio(1) { }
     QHash<unsigned, QSharedPointer<ResourceHolder> > resourceHolders;
-    cc::CompositorFrame frameData;
-    cc::CompositorFrame previousFrameData;
+    viz::CompositorFrame frameData;
+    viz::CompositorFrame previousFrameData;
     qreal frameDevicePixelRatio;
 };
 
@@ -91,30 +92,29 @@ public:
     DelegatedFrameNode();
     ~DelegatedFrameNode();
     void preprocess();
-    void commit(ChromiumCompositorData *chromiumCompositorData, std::vector<cc::ReturnedResource> *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
+    void commit(ChromiumCompositorData *chromiumCompositorData, std::vector<viz::ReturnedResource> *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
 
 private:
-    void flushPolygons(
-        std::deque<std::unique_ptr<cc::DrawPolygon>> *polygonQueue,
+    void flushPolygons(base::circular_deque<std::unique_ptr<viz::DrawPolygon> > *polygonQueue,
         QSGNode *renderPassChain,
         DelegatedNodeTreeHandler *nodeHandler,
         QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
         RenderWidgetHostViewQtDelegate *apiDelegate);
     void handlePolygon(
-        const cc::DrawPolygon *polygon,
+        const viz::DrawPolygon *polygon,
         QSGNode *currentLayerChain,
         DelegatedNodeTreeHandler *nodeHandler,
         QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
         RenderWidgetHostViewQtDelegate *apiDelegate);
     void handleClippedQuad(
-        const cc::DrawQuad *quad,
+        const viz::DrawQuad *quad,
         const gfx::QuadF &clipRegion,
         QSGNode *currentLayerChain,
         DelegatedNodeTreeHandler *nodeHandler,
         QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
         RenderWidgetHostViewQtDelegate *apiDelegate);
     void handleQuad(
-        const cc::DrawQuad *quad,
+        const viz::DrawQuad *quad,
         QSGNode *currentLayerChain,
         DelegatedNodeTreeHandler *nodeHandler,
         QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
@@ -128,8 +128,8 @@ private:
     static void unlockQt(DelegatedFrameNode *frameNode);
 
     ResourceHolder *findAndHoldResource(unsigned resourceId, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
-    void holdResources(const cc::DrawQuad *quad, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
-    void holdResources(const cc::RenderPass *pass, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
+    void holdResources(const viz::DrawQuad *quad, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
+    void holdResources(const viz::RenderPass *pass, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
     QSGTexture *initAndHoldTexture(ResourceHolder *resource, bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate = 0);
 
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;

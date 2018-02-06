@@ -383,8 +383,14 @@ void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl, bool is
     isLoading = true;
     m_history->reset();
     m_certificateErrorControllers.clear();
-    QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
-    Q_EMIT q->loadingChanged(&loadRequest);
+
+    QPointer<QQuickWebEngineView> pq(q);
+    QTimer::singleShot(0, [=]()
+    {
+        QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
+        if (pq)
+            pq->loadingChanged(&loadRequest);
+    });
 }
 
 void QQuickWebEngineViewPrivate::loadCommitted()

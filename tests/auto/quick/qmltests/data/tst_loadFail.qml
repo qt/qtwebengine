@@ -128,14 +128,14 @@ TestWebEngineView {
             loadRequest = loadRequestArray[2]
             compare(loadRequest.status, WebEngineView.LoadStartedStatus)
             compare(loadRequest.errorDomain, WebEngineView.NoErrorDomain)
-            compare(loadRequest.url, "data:text/html,chromewebdata")
+            compare(loadRequest.url, "chrome-error://chromewebdata/")
             verify(loadRequest.isErrorPage)
 
             // Loading of the error page must be successful
             loadRequest = loadRequestArray[3]
             compare(loadRequest.status, WebEngineView.LoadSucceededStatus)
             compare(loadRequest.errorDomain, WebEngineView.NoErrorDomain)
-            compare(loadRequest.url, "data:text/html,chromewebdata")
+            compare(loadRequest.url, "chrome-error://chromewebdata/")
             verify(loadRequest.isErrorPage)
 
             compare(webEngineView.url, unavailableUrl)

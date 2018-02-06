@@ -244,13 +244,20 @@ void UserScript::parseMetadataHeader()
             if (GetDeclarationValue(line, kNameDeclaration, &value)) {
                 setName(toQt(value));
             } else if (GetDeclarationValue(line, kIncludeDeclaration, &value)) {
-                // We escape some characters that MatchPattern() considers special.
-                base::ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
-                base::ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
+                if (value.front() != '/' || value.back() != '/') {
+                  // The greasemonkey spec only allows for wildcards (*), so
+                  // escape the additional things which MatchPattern allows.
+                  base::ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
+                  base::ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
+                }
                 scriptData->globs.push_back(value);
             } else if (GetDeclarationValue(line, kExcludeDeclaration, &value)) {
-                base::ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
-                base::ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
+                if (value.front() != '/' || value.back() != '/') {
+                  // The greasemonkey spec only allows for wildcards (*), so
+                  // escape the additional things which MatchPattern allows.
+                  base::ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
+                  base::ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
+                }
                 scriptData->excludeGlobs.push_back(value);
             } else if (GetDeclarationValue(line, kMatchDeclaration, &value)) {
                 if (URLPattern::PARSE_SUCCESS == urlPatternParser.Parse(value))

@@ -41,6 +41,7 @@
 
 #include "base/strings/string16.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 
 #include "common/qt_messages.h"
 #include "type_conversion.h"
@@ -55,7 +56,10 @@ WebChannelIPCTransportHost::WebChannelIPCTransportHost(content::WebContents *con
     , content::WebContentsObserver(contents)
     , m_worldId(worldId)
 {
-    Send(new WebChannelIPCTransport_Install(routing_id(), m_worldId));
+    contents->GetRenderViewHost()->Send(
+                new WebChannelIPCTransport_Install(
+                    contents->GetRenderViewHost()->GetRoutingID(),
+                    m_worldId));
 }
 
 WebChannelIPCTransportHost::~WebChannelIPCTransportHost()
@@ -78,9 +82,15 @@ void WebChannelIPCTransportHost::setWorldId(uint worldId)
 {
     if (worldId == m_worldId)
         return;
-    Send(new WebChannelIPCTransport_Uninstall(routing_id(), m_worldId));
+    web_contents()->GetRenderViewHost()->Send(
+                new WebChannelIPCTransport_Uninstall(
+                    web_contents()->GetRenderViewHost()->GetRoutingID(),
+                    m_worldId));
     m_worldId = worldId;
-    Send(new WebChannelIPCTransport_Install(routing_id(), m_worldId));
+    web_contents()->GetRenderViewHost()->Send(
+                new WebChannelIPCTransport_Install(
+                    web_contents()->GetRenderViewHost()->GetRoutingID(),
+                    m_worldId));
 }
 
 void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
@@ -88,7 +98,11 @@ void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
     QJsonDocument doc(message);
     int size = 0;
     const char *rawData = doc.rawData(&size);
-    Send(new WebChannelIPCTransport_Message(routing_id(), std::vector<char>(rawData, rawData + size), m_worldId));
+    web_contents()->GetRenderViewHost()->Send(
+                new WebChannelIPCTransport_Message(
+                    web_contents()->GetRenderViewHost()->GetRoutingID(),
+                    std::vector<char>(rawData, rawData + size),
+                    m_worldId));
 }
 
 void WebChannelIPCTransportHost::onWebChannelMessage(const std::vector<char> &message)

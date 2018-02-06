@@ -36,7 +36,8 @@ win32: QMAKE_CXXFLAGS_WARN_ON = -wd4577
 win32: DEFINES += NOMINMAX
 
 CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
-INCLUDEPATH += $$CHROMIUM_SRC_DIR
+INCLUDEPATH += $$CHROMIUM_SRC_DIR \
+               $$OUT_PWD/../../core/$$getConfigDir()/gen
 
 SOURCES += \
     main.cpp

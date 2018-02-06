@@ -8,9 +8,7 @@ gn_args += \
     use_gio=false \
     use_gnome_keyring=false \
     use_kerberos=false \
-    linux_use_bundled_binutils=false \
-    use_nss_certs=true \
-    use_openssl_certs=false
+    linux_use_bundled_binutils=false
 
 gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): gn_args += no_delete_null_pointer_checks=true
 
@@ -95,7 +93,6 @@ host_build {
     gn_args += host_cpu=\"$$GN_HOST_CPU\"
     # Don't bother trying to use system libraries in this case
     gn_args += use_glib=false
-    gn_args += use_system_libffi=false
 } else {
     gn_args += custom_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:target\"
     gn_args += host_toolchain=\"$$QTWEBENGINE_OUT_ROOT/src/toolchain:host\"
@@ -136,8 +133,6 @@ host_build {
     } else {
         gn_args += use_alsa=false
     }
-    packagesExist(libffi): gn_args += use_system_libffi=true
-    else: gn_args += use_system_libffi=false
     !packagesExist(libpci): gn_args += use_libpci=false
     !packagesExist(xscrnsaver): gn_args += use_xscrnsaver=false
 

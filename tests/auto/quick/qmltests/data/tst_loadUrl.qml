@@ -209,7 +209,7 @@ TestWebEngineView {
 
             var bogusSite = "http://www.somesitethatdoesnotexist.abc/";
             var handleLoadFailed = function(loadRequest) {
-                if (loadRequest.status == WebEngineView.LoadFailedStatus) {
+                if (loadRequest.status === WebEngineView.LoadFailedStatus) {
                     // loadHtml constructs data URL
                     webEngineView.loadHtml("load failed", bogusSite);
                     compare(loadRequest.url, bogusSite);
@@ -231,7 +231,7 @@ TestWebEngineView {
             loadRequest = loadRequestArray[2];
             compare(loadRequest.status, WebEngineView.LoadStartedStatus);
             compare(loadRequest.activeUrl, aboutBlank);
-            compare(loadRequest.url, bogusSite)
+            compare(loadRequest.url, "data:text/html;charset=UTF-8,load failed")
             loadRequest = loadRequestArray[3];
             compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
             compare(loadRequest.activeUrl, bogusSite);
@@ -262,7 +262,7 @@ TestWebEngineView {
             var loadRequest = null;
 
             var handleLoadStarted = function(loadRequest) {
-                if (loadRequest.status == WebEngineView.LoadStartedStatus)
+                if (loadRequest.status === WebEngineView.LoadStartedStatus)
                     webEngineView.stop();
             }
             webEngineView.loadingChanged.connect(handleLoadStarted);

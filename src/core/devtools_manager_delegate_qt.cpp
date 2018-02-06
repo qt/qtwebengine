@@ -159,8 +159,7 @@ void DevToolsServerQt::start()
     m_isStarted = true;
     DevToolsAgentHost::StartRemoteDebuggingServer(
         std::move(socketFactory), std::string(),
-        base::FilePath(), base::FilePath(),
-        std::string(), std::string());
+        base::FilePath(), base::FilePath());
 }
 
 void DevToolsServerQt::stop()

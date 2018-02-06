@@ -58,12 +58,36 @@
 #include "type_conversion.h"
 #include "user_script.h"
 
+#include <QRegularExpression>
+
 Q_GLOBAL_STATIC(UserResourceController, qt_webengine_userResourceController)
 
 static content::RenderView * const globalScriptsIndex = 0;
 
 // Scripts meant to run after the load event will be run 500ms after DOMContentLoaded if the load event doesn't come within that delay.
 static const int afterLoadTimeout = 500;
+
+static bool regexMatchesURL(const std::string &pat, const GURL &url) {
+    QRegularExpression qre(QtWebEngineCore::toQt(pat));
+    qre.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+    if (!qre.isValid())
+        return false;
+    return qre.match(QtWebEngineCore::toQt(url.spec())).hasMatch();
+}
+
+static bool includeRuleMatchesURL(const std::string &pat, const GURL &url)
+{
+    // Match patterns for greasemonkey's @include and @exclude rules which can
+    // be either strings with wildcards or regular expressions.
+    if (pat.front() == '/' && pat.back() == '/') {
+        std::string re(++pat.cbegin(), --pat.cend());
+        if (regexMatchesURL(re, url))
+            return true;
+    } else if (base::MatchPattern(url.spec(), pat)) {
+        return true;
+    }
+    return false;
+}
 
 static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url) {
     // Logic taken from Chromium (extensions/common/user_script.cc)
@@ -82,7 +106,7 @@ static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url) 
     if (!scriptData.globs.empty()) {
         matchFound = false;
         for (auto it = scriptData.globs.begin(), end = scriptData.globs.end(); it != end; ++it) {
-            if (base::MatchPattern(url.spec(), *it))
+            if (includeRuleMatchesURL(*it, url))
                 matchFound = true;
         }
         if (!matchFound)
@@ -91,7 +115,7 @@ static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url) 
 
     if (!scriptData.excludeGlobs.empty()) {
         for (auto it = scriptData.excludeGlobs.begin(), end = scriptData.excludeGlobs.end(); it != end; ++it) {
-            if (base::MatchPattern(url.spec(), *it))
+            if (includeRuleMatchesURL(*it, url))
                 return false;
         }
     }
@@ -110,7 +134,7 @@ private:
     // RenderFrameObserver implementation.
     void DidFinishDocumentLoad() override;
     void DidFinishLoad() override;
-    void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
+    void DidStartProvisionalLoad(blink::WebDocumentLoader *document_loader) override;
     void FrameDetached() override;
     void OnDestruct() override;
     bool OnMessageReceived(const IPC::Message& message) override;
@@ -217,9 +241,9 @@ void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
                                                                         m_weakPtrFactory.GetWeakPtr(), UserScriptData::AfterLoad, frame));
 }
 
-void UserResourceController::RenderFrameObserverHelper::DidStartProvisionalLoad(blink::WebDataSource *data_source)
+void UserResourceController::RenderFrameObserverHelper::DidStartProvisionalLoad(blink::WebDocumentLoader *document_loader)
 {
-    Q_UNUSED(data_source);
+    Q_UNUSED(document_loader);
     blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     m_pendingFrames.remove(frame);
 }

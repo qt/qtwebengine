@@ -389,7 +389,7 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
         // Set up the file access rights for the selected navigation entry.
         // TODO(joth): This is duplicated from chrome/.../session_restore.cc and
         // should be shared e.g. in  NavigationController. http://crbug.com/68222
-        const int id = newWebContents->GetRenderProcessHost()->GetID();
+        const int id = newWebContents->GetMainFrame()->GetProcess()->GetID();
         const content::PageState& pageState = controller.GetActiveEntry()->GetPageState();
         const std::vector<base::FilePath>& filePaths = pageState.GetReferencedFiles();
         for (std::vector<base::FilePath>::const_iterator file = filePaths.begin(); file != filePaths.end(); ++file)
@@ -478,7 +478,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
-        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, content::FrameReplicationState());
+        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, base::UnguessableToken::Create(), content::FrameReplicationState());
 }
 
 void WebContentsAdapter::reattachRWHV()
@@ -707,7 +707,9 @@ QString WebContentsAdapter::pageTitle() const
 QString WebContentsAdapter::selectedText() const
 {
     Q_D(const WebContentsAdapter);
-    return toQt(d->webContents->GetRenderWidgetHostView()->GetSelectedText());
+    if (auto *rwhv = d->webContents->GetRenderWidgetHostView())
+        return toQt(rwhv->GetSelectedText());
+    return QString();
 }
 
 void WebContentsAdapter::undo()
@@ -853,7 +855,7 @@ void WebContentsAdapter::setZoomFactor(qreal factor)
     content::HostZoomMap *zoomMap = content::HostZoomMap::GetForWebContents(d->webContents.get());
 
     if (zoomMap) {
-        int render_process_id = d->webContents->GetRenderProcessHost()->GetID();
+        int render_process_id = d->webContents->GetMainFrame()->GetProcess()->GetID();
         int render_view_id = d->webContents->GetRenderViewHost()->GetRoutingID();
         zoomMap->SetTemporaryZoomLevel(render_process_id, render_view_id, zoomLevel);
     }
@@ -884,6 +886,8 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     content::BrowserAccessibilityManager *manager = static_cast<content::RenderFrameHostImpl*>(rvh->GetMainFrame())->GetOrCreateBrowserAccessibilityManager();
+    if (!manager) // FIXME!
+        return nullptr;
     content::BrowserAccessibility *acc = manager->GetRoot();
     content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);
     return accQt;
