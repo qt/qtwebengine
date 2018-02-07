@@ -48,6 +48,7 @@
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "content/network/proxy_service_mojo.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -405,6 +406,13 @@ void URLRequestContextGetterQt::updateHttpCache()
     m_httpCacheType = m_browserContext.data()->httpCacheType();
     m_httpCachePath = m_browserContext.data()->httpCachePath();
     m_httpCacheMaxSize = m_browserContext.data()->httpCacheMaxSize();
+
+    if (m_httpCacheType == BrowserContextAdapter::NoCache) {
+        content::BrowsingDataRemover *remover = content::BrowserContext::GetBrowsingDataRemover(m_browserContext.data()->browserContext());
+        remover->Remove(base::Time(), base::Time::Max(),
+            content::BrowsingDataRemover::DATA_TYPE_CACHE,
+            content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB | content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB);
+    }
 
     if (m_contextInitialized && !m_updateAllStorage && !m_updateHttpCache) {
         m_updateHttpCache = true;
