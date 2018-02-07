@@ -90,8 +90,6 @@
 #include <QTimer>
 #include <QUrl>
 
-#include <private/qguiapplication_p.h>
-
 QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
