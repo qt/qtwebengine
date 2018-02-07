@@ -76,6 +76,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "net/base/data_url.h"
 
 #include <QDesktopServices>
 #include <QTimer>
@@ -150,10 +151,38 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     return target;
 }
 
+static bool shouldUseActualURL(const content::NavigationEntry *entry)
+{
+    if (!entry)
+        return false;
+
+    // Show actual URL for data URLs only
+    if (!entry->GetURL().SchemeIs(url::kDataScheme))
+        return false;
+
+    // Keep view-source: prefix
+    if (entry->IsViewSourceMode())
+        return false;
+
+    // Do not show data URL of interstitial and error pages
+    if (entry->GetPageType() != content::PAGE_TYPE_NORMAL)
+        return false;
+
+    // Show invalid data URL
+    std::string mime_type, charset, data;
+    if (!net::DataURL::Parse(entry->GetURL(), &mime_type, &charset, &data))
+        return false;
+
+    // Do not show empty data URL
+    return !data.empty();
+}
+
 void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags)
 {
     if (changed_flags & content::INVALIDATE_TYPE_URL) {
-        QUrl newUrl = toQt(source->GetVisibleURL());
+        // If there is a visible entry there are special cases when we dont wan't to use the actual URL
+        content::NavigationEntry *entry = source->GetController().GetVisibleEntry();
+        QUrl newUrl = shouldUseActualURL(entry) ? toQt(entry->GetURL()) : toQt(source->GetVisibleURL());
         if (m_url != newUrl) {
             m_url = newUrl;
             m_viewClient->urlChanged(m_url);

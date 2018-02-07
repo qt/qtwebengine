@@ -214,6 +214,7 @@ private Q_SLOTS:
     void proxyConfigWithUnexpectedHostPortPair();
     void registerProtocolHandler_data();
     void registerProtocolHandler();
+    void dataURLFragment();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4265,6 +4266,23 @@ void tst_QWebEnginePage::registerProtocolHandler()
 
     QTRY_COMPARE(loadSpy.count(), 1);
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), permission);
+}
+
+void tst_QWebEnginePage::dataURLFragment()
+{
+    m_view->resize(800, 600);
+    m_view->show();
+    QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
+
+    m_page->setHtml("<html><body>"
+                    "<a id='link' href='#anchor'>anchor</a>"
+                    "</body></html>");
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+
+    QSignalSpy urlChangedSpy(m_page, SIGNAL(urlChanged(QUrl)));
+    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, 0, elementCenter(m_page, "link"));
+    QVERIFY(urlChangedSpy.wait());
+    QCOMPARE(m_page->url().fragment(), QStringLiteral("anchor"));
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
