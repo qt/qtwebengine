@@ -1719,12 +1719,16 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
 QSizeF QQuickWebEngineView::contentsSize() const
 {
     Q_D(const QQuickWebEngineView);
+    if (!d->adapter)
+        return QSizeF();
     return d->adapter->lastContentsSize();
 }
 
 QPointF QQuickWebEngineView::scrollPosition() const
 {
     Q_D(const QQuickWebEngineView);
+    if (!d->adapter)
+        return QPointF();
     return d->adapter->lastScrollOffset();
 }
 
