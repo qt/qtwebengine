@@ -205,6 +205,10 @@
     window.alert("Page is from qt.io, but not wiki.qt.io");
     \endcode
 
+    If your WebEngine application is built using the Qt Quick Compiler, and the application ships
+    JavaScript files inside .qrc resources, consider reading the section
+    \l{JavaScript Files in Qt Resource Files}.
+
     \section1 Managing Certificates
 
     Qt WebEngine uses its own network stack, and therefore QSslConfiguration is not used to
