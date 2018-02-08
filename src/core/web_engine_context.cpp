@@ -383,7 +383,6 @@ WebEngineContext::WebEngineContext()
     // get rid of the warnings.
     parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
-
     // Needed to allow navigations within pages that were set using setHtml(). One example is
     // tst_QWebEnginePage::acceptNavigationRequest.
     // This is deprecated behavior, and will be removed in a future Chromium version, as per
@@ -393,9 +392,6 @@ WebEngineContext::WebEngineContext()
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kEnableSurfaceSynchronization.name);
     // Scroll latching expects phases on all wheel events when it really only makes sense for simulated ones.
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kTouchpadAndWheelScrollLatching.name);
-
-    // If the renderer renders the validation messages, we no longer get the callbacks we have in the API.
-    parsedCommandLine->AppendSwitchASCII(switches::kDisableBlinkFeatures, "ValidationBubbleInRenderer");
 
     if (useEmbeddedSwitches) {
         appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kOverlayScrollbar.name);

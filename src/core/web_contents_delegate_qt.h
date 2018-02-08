@@ -123,9 +123,6 @@ public:
     bool IsPopupOrPanel(const content::WebContents *source) const override;
     void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
     void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) override;
-    void ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text) override;
-    void HideValidationMessage(content::WebContents *web_contents) override;
-    void MoveValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view) override;
     void BeforeUnloadFired(content::WebContents* tab, bool proceed, bool* proceed_to_fire_unload) override;
     bool CheckMediaAccessPermission(content::WebContents *web_contents, const GURL& security_origin, content::MediaStreamType type) override;
     void RegisterProtocolHandler(content::WebContents* web_contents, const std::string& protocol, const GURL& url, bool user_gesture) override;

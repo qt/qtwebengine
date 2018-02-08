@@ -1271,14 +1271,9 @@
 /*!
     \qmlsignal WebEngineView::formValidationMessageRequested(FormValidationMessageRequest request)
     \since QtWebEngine 1.4
+    \obsolete
 
-    This signal is emitted when a validation message is requested.
-
-    The request can be handled by using the methods of the FormValidationMessageRequest
-    type.
-
-    \note Signal handlers need to call \c{request.accepted = true} to prevent a
-    default dialog from showing up.
+    No longer used since 5.11, as Blink now renders Validation messages internally.
 */
 
 /*!

@@ -716,40 +716,11 @@ void QQuickWebEngineFileDialogRequest::dialogReject()
     \instantiates QQuickWebEngineFormValidationMessageRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.4
+    \obsolete
 
     \brief A request for showing a HTML5 form validation message to the user.
 
-    A FormValidationMessageRequest is passed as an argument of the
-    WebEngineView::formValidationMessageRequested signal. It is generated when
-    the handling of the validation message is requested.
-
-    The \l accepted property of the request indicates whether the request
-    is handled by the user code or the default message should be displayed.
-
-    The following code uses a custom message to handle the request:
-
-    \code
-    WebEngineView {
-        // ...
-        onFormValidationMessageRequested: function(request) {
-            request.accepted = true;
-            switch (request.type) {
-                case FormValidationMessageRequest.Show:
-                    validationMessage.text = request.text;
-                    validationMessage.x = request.x;
-                    validationMessage.y = request.y
-                    validationMessage.visible = true;
-                    break;
-                 case FormValidationMessageRequest.Move:
-                    break;
-                 case FormValidationMessageRequest.Hide:
-                    validationMessage.visible = false;
-                    break;
-                 }
-        }
-        // ...
-    }
-    \endcode
+    No longer used since 5.11, as Blink now renders Validation messages internally.
 */
 
 QQuickWebEngineFormValidationMessageRequest::QQuickWebEngineFormValidationMessageRequest(

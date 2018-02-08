@@ -85,16 +85,6 @@
 
 namespace QtWebEngineCore {
 
-static gfx::Rect rootViewToScreenRect(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view)
-{
-    RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt *>(web_contents->GetRenderWidgetHostView());
-    if (!rwhv)
-        return gfx::Rect();
-    content::ScreenInfo screenInfo;
-    rwhv->GetScreenInfo(&screenInfo);
-    return gfx::ScaleToEnclosingRect(anchor_in_root_view, 1 / screenInfo.device_scale_factor);
-}
-
 // Maps the LogSeverity defines in base/logging.h to the web engines message levels.
 static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32_t messageLevel) {
     if (messageLevel < 1)
@@ -600,28 +590,6 @@ void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransitio
             m_viewClient->webContentsAdapter()->load(toQt(GURL(content::kUnreachableWebDataURL)));
         }
     }
-}
-
-void WebContentsDelegateQt::ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text)
-{
-    gfx::Rect anchor = rootViewToScreenRect(web_contents, anchor_in_root_view);
-    if (anchor.IsEmpty())
-        return;
-    m_viewClient->showValidationMessage(toQt(anchor), toQt(main_text), toQt(sub_text));
-}
-
-void WebContentsDelegateQt::HideValidationMessage(content::WebContents *web_contents)
-{
-    Q_UNUSED(web_contents);
-    m_viewClient->hideValidationMessage();
-}
-
-void WebContentsDelegateQt::MoveValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view)
-{
-    gfx::Rect anchor = rootViewToScreenRect(web_contents, anchor_in_root_view);
-    if (anchor.IsEmpty())
-        return;
-    m_viewClient->moveValidationMessage(toQt(anchor));
 }
 
 void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool proceed, bool *proceed_to_fire_unload)

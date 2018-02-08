@@ -64,10 +64,6 @@
 #include "web_engine_settings.h"
 #include "qwebenginescript.h"
 
-#ifdef QT_UI_DELEGATES
-#include "ui/messagebubblewidget_p.h"
-#endif
-
 #include <QAction>
 #include <QApplication>
 #include <QAuthenticator>
@@ -1602,27 +1598,6 @@ void QWebEnginePagePrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLev
 {
     Q_Q(QWebEnginePage);
     q->javaScriptConsoleMessage(static_cast<QWebEnginePage::JavaScriptConsoleMessageLevel>(level), message, lineNumber, sourceID);
-}
-
-void QWebEnginePagePrivate::showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText)
-{
-#ifdef QT_UI_DELEGATES
-    QtWebEngineWidgetUI::MessageBubbleWidget::showBubble(view, anchor, mainText, subText);
-#endif
-}
-
-void QWebEnginePagePrivate::hideValidationMessage()
-{
-#ifdef QT_UI_DELEGATES
-    QtWebEngineWidgetUI::MessageBubbleWidget::hideBubble();
-#endif
-}
-
-void QWebEnginePagePrivate::moveValidationMessage(const QRect &anchor)
-{
-#ifdef QT_UI_DELEGATES
-    QtWebEngineWidgetUI::MessageBubbleWidget::moveBubble(view, anchor);
-#endif
 }
 
 void QWebEnginePagePrivate::renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,

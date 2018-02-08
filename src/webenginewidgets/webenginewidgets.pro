@@ -44,12 +44,6 @@ HEADERS = \
         api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h
 
-qtConfig(webengine-ui-delegates) {
-    SOURCES += ui/messagebubblewidget.cpp
-    HEADERS += ui/messagebubblewidget_p.h
-    DEFINES += QT_UI_DELEGATES
-}
-
 qtConfig(webengine-spellchecker) {
     DEFINES += ENABLE_SPELLCHECK
 }

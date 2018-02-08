@@ -440,9 +440,6 @@ public:
     virtual void runQuotaPermissionRequest(QSharedPointer<QuotaPermissionController>) = 0;
     virtual void runRegisterProtocolHandlerPermissionRequest(QSharedPointer<RegisterProtocolHandlerPermissionController>) = 0;
     virtual WebEngineSettings *webEngineSettings() const = 0;
-    virtual void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) = 0;
-    virtual void hideValidationMessage() = 0;
-    virtual void moveValidationMessage(const QRect &anchor) = 0;
     RenderProcessTerminationStatus renderProcessExitStatus(int);
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;
     virtual void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) = 0;

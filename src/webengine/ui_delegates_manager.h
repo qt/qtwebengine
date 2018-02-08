@@ -58,7 +58,6 @@
     F(ConfirmDialog, confirmDialog) SEPARATOR \
     F(PromptDialog, promptDialog) SEPARATOR \
     F(FilePicker, filePicker) SEPARATOR \
-    F(MessageBubble, messageBubble) SEPARATOR \
     F(AuthenticationDialog, authenticationDialog) SEPARATOR \
     F(ToolTip, toolTip) SEPARATOR \
 
@@ -120,17 +119,12 @@ public:
     void showDialog(QSharedPointer<AuthenticationDialogController>);
     void showFilePicker(QSharedPointer<FilePickerController>);
     virtual void showMenu(QObject *menu);
-    void showMessageBubble(const QRect &anchor, const QString &mainText,
-                           const QString &subText);
-    void hideMessageBubble();
-    void moveMessageBubble(const QRect &anchor);
     void showToolTip(const QString &text);
 
 protected:
     bool ensureComponentLoaded(ComponentType);
 
     QQuickWebEngineView *m_view;
-    QScopedPointer<QQuickItem> m_messageBubbleItem;
     QScopedPointer<QObject> m_toolTip;
     QStringList m_importDirs;
 
