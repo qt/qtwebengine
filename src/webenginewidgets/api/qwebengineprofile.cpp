@@ -109,9 +109,11 @@ using QtWebEngineCore::BrowserContextAdapter;
 
     This enum describes the HTTP cache type:
 
-    \value MemoryHttpCache Use an in-memory cache. This is the only setting possible if
-    \c off-the-record is set or no cache path is available.
-    \value DiskHttpCache Use a disk cache. This is the default.
+    \value MemoryHttpCache Use an in-memory cache. This is the default if
+    \c off-the-record is set.
+    \value DiskHttpCache Use a disk cache. This is the default if the profile
+    is not \c off-the-record. If set on an \c off-the-record profile will instead
+    set \c MemoryHttpCache.
     \value NoCache Disable both in-memory and disk caching. (Added in Qt 5.7)
 */
 

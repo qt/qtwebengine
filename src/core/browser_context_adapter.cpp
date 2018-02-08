@@ -334,6 +334,8 @@ void BrowserContextAdapter::setHttpUserAgent(const QString &userAgent)
 
 BrowserContextAdapter::HttpCacheType BrowserContextAdapter::httpCacheType() const
 {
+    if (m_httpCacheType == NoCache)
+        return NoCache;
     if (isOffTheRecord() || httpCachePath().isEmpty())
         return MemoryHttpCache;
     return m_httpCacheType;
