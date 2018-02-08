@@ -48,11 +48,49 @@
 #include <QtGui/qopenglfunctions.h>
 #include <QtQuick/qsgtexture.h>
 
+#include "ui/gfx/color_space.h"
+#include "ui/gfx/color_transform.h"
+
 namespace QtWebEngineCore {
 
 class YUVVideoMaterialShader : public QSGMaterialShader
 {
 public:
+    YUVVideoMaterialShader(const gfx::ColorSpace &colorSpace) : m_colorSpace(colorSpace)
+    {
+        static const char *shaderHead =
+            "varying mediump vec2 v_yaTexCoord;\n"
+            "varying mediump vec2 v_uvTexCoord;\n"
+            "uniform sampler2D y_texture;\n"
+            "uniform sampler2D u_texture;\n"
+            "uniform sampler2D v_texture;\n"
+            "uniform mediump float alpha;\n"
+            "uniform mediump vec4 ya_clamp_rect;\n"
+            "uniform mediump vec4 uv_clamp_rect;\n";
+        static const char *shader =
+            "void main() {\n"
+            "  mediump vec2 ya_clamped =\n"
+            "      max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_yaTexCoord));\n"
+            "  mediump float y_raw = texture2D(y_texture, ya_clamped).x;\n"
+            "  mediump vec2 uv_clamped =\n"
+            "      max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));\n"
+            "  mediump float u_unsigned = texture2D(u_texture, uv_clamped).x;\n"
+            "  mediump float v_unsigned = texture2D(v_texture, uv_clamped).x;\n"
+            "  mediump vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned);\n"
+            "  mediump vec3 rgb = DoColorConversion(yuv);\n"
+            "  gl_FragColor = vec4(rgb, 1.0) * alpha;\n"
+            "}";
+        gfx::ColorSpace dst = gfx::ColorSpace::CreateSRGB();
+        std::unique_ptr<gfx::ColorTransform> transform =
+                gfx::ColorTransform::NewColorTransform(m_colorSpace, dst, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+
+        QByteArray header(shaderHead);
+        if (QOpenGLContext::currentContext()->isOpenGLES())
+            header = QByteArray("precision mediump float;\n") + header;
+
+        m_csShader = QByteArray::fromStdString(transform->GetShaderSource());
+        m_fragmentShader = header + m_csShader + QByteArray(shader);
+    }
     void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial) override;
 
     char const *const *attributeNames() const override {
@@ -86,31 +124,7 @@ protected:
     }
 
     const char *fragmentShader() const override {
-        // Keep in sync with logic in FragmentShader in components/viz/service/display/shader.cc
-        static const char *shader =
-        "varying mediump vec2 v_yaTexCoord;\n"
-        "varying mediump vec2 v_uvTexCoord;\n"
-        "uniform sampler2D y_texture;\n"
-        "uniform sampler2D u_texture;\n"
-        "uniform sampler2D v_texture;\n"
-        "uniform mediump float alpha;\n"
-        "uniform mediump vec3 yuv_adj;\n"
-        "uniform mediump mat3 yuv_matrix;\n"
-        "uniform mediump vec4 ya_clamp_rect;\n"
-        "uniform mediump vec4 uv_clamp_rect;\n"
-        "void main() {\n"
-        "  mediump vec2 ya_clamped =\n"
-        "      max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_yaTexCoord));\n"
-        "  mediump float y_raw = texture2D(y_texture, ya_clamped).x;\n"
-        "  mediump vec2 uv_clamped =\n"
-        "      max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));\n"
-        "  mediump float u_unsigned = texture2D(u_texture, uv_clamped).x;\n"
-        "  mediump float v_unsigned = texture2D(v_texture, uv_clamped).x;\n"
-        "  mediump vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;\n"
-        "  mediump vec3 rgb = yuv_matrix * yuv;\n"
-        "  gl_FragColor = vec4(rgb, 1.0) * alpha;\n"
-        "}";
-        return shader;
+        return m_fragmentShader.constData();
     }
 
     void initialize() override {
@@ -129,6 +143,7 @@ protected:
         m_id_opacity = program()->uniformLocation("alpha");
     }
 
+    gfx::ColorSpace m_colorSpace;
     int m_id_matrix;
     int m_id_yaTexScale;
     int m_id_uvTexScale;
@@ -142,43 +157,47 @@ protected:
     int m_id_yuvMatrix;
     int m_id_yuvAdjust;
     int m_id_opacity;
+    QByteArray m_csShader;
+    QByteArray m_fragmentShader;
 };
 
 class YUVAVideoMaterialShader : public YUVVideoMaterialShader
 {
+public:
+    YUVAVideoMaterialShader(const gfx::ColorSpace &colorSpace) : YUVVideoMaterialShader(colorSpace)
+    {
+        static const char *shaderHead =
+            "varying mediump vec2 v_yaTexCoord;\n"
+            "varying mediump vec2 v_uvTexCoord;\n"
+            "uniform sampler2D y_texture;\n"
+            "uniform sampler2D u_texture;\n"
+            "uniform sampler2D v_texture;\n"
+            "uniform sampler2D a_texture;\n"
+            "uniform mediump float alpha;\n"
+            "uniform mediump vec4 ya_clamp_rect;\n"
+            "uniform mediump vec4 uv_clamp_rect;\n";
+        static const char *shader =
+            "void main() {\n"
+            "  mediump vec2 ya_clamped =\n"
+            "      max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_yaTexCoord));\n"
+            "  mediump float y_raw = texture2D(y_texture, ya_clamped).x;\n"
+            "  mediump vec2 uv_clamped =\n"
+            "      max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));\n"
+            "  mediump float u_unsigned = texture2D(u_texture, uv_clamped).x;\n"
+            "  mediump float v_unsigned = texture2D(v_texture, uv_clamped).x;\n"
+            "  mediump float a_raw = texture2D(a_texture, ya_clamped).x;\n"
+            "  mediump vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned);\n"
+            "  mediump vec3 rgb = DoColorConversion(yuv);\n"
+            "  gl_FragColor = vec4(rgb, 1.0) * (alpha * a_raw);\n"
+            "}";
+        QByteArray header(shaderHead);
+        if (QOpenGLContext::currentContext()->isOpenGLES())
+            header = QByteArray("precision mediump float;\n") + header;
+        m_fragmentShader = header + m_csShader + QByteArray(shader);
+    }
     void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial) override;
 
 protected:
-    const char *fragmentShader() const override {
-        // Keep in sync with cc::FragmentShaderYUVAVideo
-        static const char *shader =
-        "varying mediump vec2 v_yaTexCoord;\n"
-        "varying mediump vec2 v_uvTexCoord;\n"
-        "uniform sampler2D y_texture;\n"
-        "uniform sampler2D u_texture;\n"
-        "uniform sampler2D v_texture;\n"
-        "uniform sampler2D a_texture;\n"
-        "uniform mediump float alpha;\n"
-        "uniform mediump vec3 yuv_adj;\n"
-        "uniform mediump mat3 yuv_matrix;\n"
-        "uniform mediump vec4 ya_clamp_rect;\n"
-        "uniform mediump vec4 uv_clamp_rect;\n"
-        "void main() {\n"
-        "  mediump vec2 ya_clamped =\n"
-        "      max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_yaTexCoord));\n"
-        "  mediump float y_raw = texture2D(y_texture, ya_clamped).x;\n"
-        "  mediump vec2 uv_clamped =\n"
-        "      max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));\n"
-        "  mediump float u_unsigned = texture2D(u_texture, uv_clamped).x;\n"
-        "  mediump float v_unsigned = texture2D(v_texture, uv_clamped).x;\n"
-        "  mediump float a_raw = texture2D(a_texture, ya_clamped).x;\n"
-        "  mediump vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;\n"
-        "  mediump vec3 rgb = yuv_matrix * yuv;\n"
-        "  gl_FragColor = vec4(rgb, 1.0) * (alpha * a_raw);\n"
-        "}";
-        return shader;
-    }
-
     void initialize() override {
         // YUVVideoMaterialShader has a subset of the uniforms.
         YUVVideoMaterialShader::initialize();
@@ -231,72 +250,6 @@ void YUVVideoMaterialShader::updateState(const RenderState &state, QSGMaterial *
     program()->setUniformValue(m_id_yaClampRect, yaClampV);
     program()->setUniformValue(m_id_uvClampRect, uvClampV);
 
-    // These values are magic numbers that are used in the transformation from YUV
-    // to RGB color values.  They are taken from the following webpage:
-    // http://www.fourcc.org/fccyvrgb.php
-    const float yuv_to_rgb_rec601[9] = {
-        1.164f, 0.0f, 1.596f,
-        1.164f, -.391f, -.813f,
-        1.164f, 2.018f, 0.0f,
-    };
-    const float yuv_to_rgb_rec709[9] = {
-        1.164f, 0.0f, 1.793f,
-        1.164f, -0.213f, -0.533f,
-        1.164f, 2.112f, 0.0f,
-    };
-    const float yuv_to_rgb_jpeg[9] = {
-        1.f, 0.0f, 1.402f,
-        1.f, -.34414f, -.71414f,
-        1.f, 1.772f, 0.0f,
-    };
-
-    // These values map to 16, 128, and 128 respectively, and are computed
-    // as a fraction over 256 (e.g. 16 / 256 = 0.0625).
-    // They are used in the YUV to RGBA conversion formula:
-    //   Y - 16   : Gives 16 values of head and footroom for overshooting
-    //   U - 128  : Turns unsigned U into signed U [-128,127]
-    //   V - 128  : Turns unsigned V into signed V [-128,127]
-    const float yuv_adjust_constrained[3] = {
-        -0.0625f, -0.5f, -0.5f,
-    };
-
-    // Same as above, but without the head and footroom.
-    const float yuv_adjust_full[3] = {
-        0.0f, -0.5f, -0.5f,
-    };
-
-    const float *yuv_to_rgb = 0;
-    const float *yuv_adjust = 0;
-
-    switch (mat->m_colorSpace) {
-      case YUVVideoMaterial::REC_601:
-        yuv_to_rgb = yuv_to_rgb_rec601;
-        yuv_adjust = yuv_adjust_constrained;
-        break;
-      case YUVVideoMaterial::REC_709:
-        yuv_to_rgb = yuv_to_rgb_rec709;
-        yuv_adjust = yuv_adjust_constrained;
-        break;
-      case YUVVideoMaterial::JPEG:
-        yuv_to_rgb = yuv_to_rgb_jpeg;
-        yuv_adjust = yuv_adjust_full;
-        break;
-    }
-
-    float yuv_to_rgb_multiplied[9];
-    float yuv_adjust_with_offset[3];
-
-    for (int i = 0; i < 9; ++i)
-      yuv_to_rgb_multiplied[i] = yuv_to_rgb[i] * mat->m_resourceMultiplier;
-
-    for (int i = 0; i < 3; ++i)
-      yuv_adjust_with_offset[i] =
-          yuv_adjust[i] / mat->m_resourceMultiplier - mat->m_resourceOffset;
-
-
-    program()->setUniformValue(m_id_yuvMatrix, QMatrix3x3(yuv_to_rgb_multiplied));
-    program()->setUniformValue(m_id_yuvAdjust, QVector3D(yuv_adjust_with_offset[0], yuv_adjust_with_offset[1], yuv_adjust_with_offset[2]));
-
     if (state.isOpacityDirty())
         program()->setUniformValue(m_id_opacity, state.opacity());
 
@@ -323,7 +276,7 @@ void YUVAVideoMaterialShader::updateState(const RenderState &state, QSGMaterial 
 
 YUVVideoMaterial::YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture,
                                    const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                                   YUVVideoMaterial::ColorSpace colorspace,
+                                   const gfx::ColorSpace &colorspace,
                                    float rMul, float rOff)
     : m_yTexture(yTexture)
     , m_uTexture(uTexture)
@@ -340,7 +293,7 @@ YUVVideoMaterial::YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, Q
 
 QSGMaterialShader *YUVVideoMaterial::createShader() const
 {
-    return new YUVVideoMaterialShader;
+    return new YUVVideoMaterialShader(m_colorSpace);
 }
 
 int YUVVideoMaterial::compare(const QSGMaterial *other) const
@@ -355,7 +308,7 @@ int YUVVideoMaterial::compare(const QSGMaterial *other) const
 
 YUVAVideoMaterial::YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture,
                                      const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                                     YUVVideoMaterial::ColorSpace colorspace,
+                                     const gfx::ColorSpace &colorspace,
                                      float rMul, float rOff)
     : YUVVideoMaterial(yTexture, uTexture, vTexture, yaTexCoordRect, uvTexCoordRect, yaTexSize, uvTexSize, colorspace, rMul, rOff)
     , m_aTexture(aTexture)
@@ -365,7 +318,7 @@ YUVAVideoMaterial::YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture,
 
 QSGMaterialShader *YUVAVideoMaterial::createShader() const
 {
-    return new YUVAVideoMaterialShader;
+    return new YUVAVideoMaterialShader(m_colorSpace);
 }
 
 int YUVAVideoMaterial::compare(const QSGMaterial *other) const
@@ -378,7 +331,7 @@ int YUVAVideoMaterial::compare(const QSGMaterial *other) const
 
 YUVVideoNode::YUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture,
                            const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                           YUVVideoMaterial::ColorSpace colorspace, float rMul, float rOff)
+                           const gfx::ColorSpace &colorspace, float rMul, float rOff)
     : m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
 {
     setGeometry(&m_geometry);

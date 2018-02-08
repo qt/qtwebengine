@@ -196,7 +196,7 @@ public:
     virtual void setupDebugBorderNode(QSGGeometry *, QSGFlatColorMaterial *, QSGNode *) = 0;
     virtual void setupYUVVideoNode(QSGTexture *, QSGTexture *, QSGTexture *, QSGTexture *,
                            const QRectF &, const QRectF &, const QSizeF &, const QSizeF &,
-                           YUVVideoMaterial::ColorSpace, float, float, const QRectF &,
+                           gfx::ColorSpace, float, float, const QRectF &,
                                    QSGNode *) = 0;
 #ifdef GL_OES_EGL_image_external
     virtual void setupStreamVideoNode(MailboxTexture *, const QRectF &,
@@ -283,7 +283,7 @@ public:
 
     void setupYUVVideoNode(QSGTexture *, QSGTexture *, QSGTexture *, QSGTexture *,
                            const QRectF &, const QRectF &, const QSizeF &, const QSizeF &,
-                           YUVVideoMaterial::ColorSpace, float, float, const QRectF &,
+                           gfx::ColorSpace, float, float, const QRectF &,
                            QSGNode *) override
     {
         Q_UNREACHABLE();
@@ -384,7 +384,7 @@ public:
     void setupYUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture,
                            QSGTexture *aTexture, const QRectF &yaTexCoordRect,
                            const QRectF &uvTexCoordRect, const QSizeF &yaTexSize,
-                           const QSizeF &uvTexSize, YUVVideoMaterial::ColorSpace colorspace,
+                           const QSizeF &uvTexSize, gfx::ColorSpace colorspace,
                            float rMul, float rOff, const QRectF &rect,
                            QSGNode *layerChain) override
     {
@@ -749,20 +749,6 @@ void DelegatedFrameNode::preprocess()
         // Proceed with the actual update.
         pair.second->updateTexture();
     }
-}
-
-static YUVVideoMaterial::ColorSpace toQt(viz::YUVVideoDrawQuad::ColorSpace color_space)
-{
-    switch (color_space) {
-    case viz::YUVVideoDrawQuad::REC_601:
-        return YUVVideoMaterial::REC_601;
-    case viz::YUVVideoDrawQuad::REC_709:
-        return YUVVideoMaterial::REC_709;
-    case viz::YUVVideoDrawQuad::JPEG:
-        return YUVVideoMaterial::JPEG;
-    }
-    Q_UNREACHABLE();
-    return YUVVideoMaterial::REC_601;
 }
 
 static bool areSharedQuadStatesEqual(const viz::SharedQuadState *layerState,
@@ -1186,7 +1172,7 @@ void DelegatedFrameNode::handleQuad(
             initAndHoldTexture(vResource, quad->ShouldDrawWithBlending()),
             aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending()) : 0,
             toQt(vquad->ya_tex_coord_rect), toQt(vquad->uv_tex_coord_rect),
-            toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size), toQt(vquad->color_space),
+            toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size), vquad->video_color_space,
             vquad->resource_multiplier, vquad->resource_offset, toQt(quad->rect),
             currentLayerChain);
         break;
@@ -1261,7 +1247,7 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         for (MailboxTexture *mailboxTexture : qAsConst(mailboxesToFetch)) {
             gpu::SyncToken &syncToken = mailboxTexture->mailboxHolder().sync_token;
             const auto task = base::Bind(&DelegatedFrameNode::pullTexture, this, mailboxTexture);
-            if (!syncPointManager->WaitOutOfOrderNonThreadSafe(syncToken, gpuMessageLoop->task_runner(), std::move(task)))
+            if (!syncPointManager->WaitOutOfOrder(syncToken, std::move(task)))
                 mailboxesToPull.append(mailboxTexture);
         }
         if (!mailboxesToPull.isEmpty()) {

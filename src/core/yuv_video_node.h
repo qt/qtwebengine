@@ -43,6 +43,8 @@
 #include <QtQuick/qsgmaterial.h>
 #include <QtQuick/qsgnode.h>
 
+#include "ui/gfx/color_space.h"
+
 QT_FORWARD_DECLARE_CLASS(QSGTexture)
 
 namespace QtWebEngineCore {
@@ -53,14 +55,9 @@ namespace QtWebEngineCore {
 class YUVVideoMaterial : public QSGMaterial
 {
 public:
-    enum ColorSpace {
-        REC_601,  // SDTV standard with restricted "studio swing" color range.
-        REC_709,  // HDTV standard with restricted "studio swing" color range.
-        JPEG      // Full color range [0, 255] JPEG color space.
-    };
     YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture,
                      const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                     ColorSpace colorspace, float rMul, float rOff);
+                     const gfx::ColorSpace &colorspace, float rMul, float rOff);
 
     QSGMaterialType *type() const override
     {
@@ -78,7 +75,7 @@ public:
     QRectF m_uvTexCoordRect;
     QSizeF m_yaTexSize;
     QSizeF m_uvTexSize;
-    ColorSpace m_colorSpace;
+    gfx::ColorSpace m_colorSpace;
     float m_resourceMultiplier;
     float m_resourceOffset;
 };
@@ -88,7 +85,7 @@ class YUVAVideoMaterial : public YUVVideoMaterial
 public:
     YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture,
                       const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                      ColorSpace colorspace, float rMul, float rOff);
+                      const gfx::ColorSpace &colorspace, float rMul, float rOff);
 
     QSGMaterialType *type() const override
     {
@@ -107,7 +104,7 @@ class YUVVideoNode : public QSGGeometryNode
 public:
     YUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture,
                  const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                 YUVVideoMaterial::ColorSpace colorspace, float rMul, float rOff);
+                 const gfx::ColorSpace &colorspace, float rMul, float rOff);
     void setRect(const QRectF &rect);
 
 private:
