@@ -287,6 +287,7 @@ void tst_QWebEngineDownloads::downloadLink()
 
     HttpServer server;
     QWebEngineProfile profile;
+    profile.setHttpCacheType(QWebEngineProfile::NoCache);
     QWebEnginePage page(&profile);
     QWebEngineView view;
     view.setPage(&page);
@@ -425,7 +426,26 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
         results.append(rr);
     });
 
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+    QString standardDir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+
     QWebEngineProfile profile;
+    profile.setHttpCacheType(QWebEngineProfile::NoCache);
+    QList<QPointer<QWebEngineDownloadItem>> downloadItems;
+    connect(&profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+        QCOMPARE(item->isFinished(), false);
+        QCOMPARE(item->totalBytes(), -1);
+        QCOMPARE(item->receivedBytes(), 0);
+        QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+        QString filePart = QChar('/') + item->url().fileName();
+        QCOMPARE(item->path(), standardDir + filePart);
+        item->setPath(tmpDir.path() + filePart);
+        item->accept();
+        downloadItems.append(item);
+    });
+
     QWebEnginePage page(&profile);
     QWebEngineView view;
     view.setPage(&page);
@@ -479,44 +499,26 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
     file2RR->setResponseBody(QByteArrayLiteral("file2"));
     file2RR->sendResponse();
 
-    QTemporaryDir tmpDir;
-    QVERIFY(tmpDir.isValid());
-    QString standardDir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-    QWebEngineDownloadItem *item1 = nullptr;
-    QVERIFY(waitForSignal(&profile, &QWebEngineProfile::downloadRequested,
-                          [&](QWebEngineDownloadItem *item) {
-        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
-        QCOMPARE(item->isFinished(), false);
-        QCOMPARE(item->totalBytes(), -1);
-        QCOMPARE(item->receivedBytes(), 0);
-        QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
-        QCOMPARE(item->mimeType(), QStringLiteral("text/plain"));
-        QCOMPARE(item->path(), standardDir + QByteArrayLiteral("/file1"));
-        QCOMPARE(item->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
-        QCOMPARE(item->url(), server.url(QByteArrayLiteral("/file1")));
-        item->setPath(tmpDir.path() + QByteArrayLiteral("/file1"));
-        item->accept();
-        item1 = item;
-    }));
+    // Now wait for downloadRequested signals:
+    QTRY_VERIFY(downloadItems.count() >= 2);
+    QScopedPointer<QWebEngineDownloadItem> item1(downloadItems.takeFirst());
+    QScopedPointer<QWebEngineDownloadItem> item2(downloadItems.takeFirst());
     QVERIFY(item1);
-
-    QWebEngineDownloadItem *item2 = nullptr;
-    QVERIFY(waitForSignal(&profile, &QWebEngineProfile::downloadRequested,
-                          [&](QWebEngineDownloadItem *item) {
-        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
-        QCOMPARE(item->isFinished(), false);
-        QCOMPARE(item->totalBytes(), -1);
-        QCOMPARE(item->receivedBytes(), 0);
-        QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
-        QCOMPARE(item->mimeType(), QStringLiteral("text/plain"));
-        QCOMPARE(item->path(), standardDir + QByteArrayLiteral("/file2"));
-        QCOMPARE(item->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
-        QCOMPARE(item->url(), server.url(QByteArrayLiteral("/file2")));
-        item->setPath(tmpDir.path() + QByteArrayLiteral("/file2"));
-        item->accept();
-        item2 = item;
-    }));
     QVERIFY(item2);
+
+    // Handle one request overtaking the other
+    if (item1->url().fileName() == QByteArrayLiteral("file2"))
+        qSwap(item1, item2);
+
+    QTRY_COMPARE(item1->state(), QWebEngineDownloadItem::DownloadCompleted);
+    QCOMPARE(item1->mimeType(), QStringLiteral("text/plain"));
+    QCOMPARE(item1->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
+    QCOMPARE(item1->url(), server.url(QByteArrayLiteral("/file1")));
+
+    QTRY_COMPARE(item2->state(), QWebEngineDownloadItem::DownloadCompleted);
+    QCOMPARE(item2->mimeType(), QStringLiteral("text/plain"));
+    QCOMPARE(item2->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
+    QCOMPARE(item2->url(), server.url(QByteArrayLiteral("/file2")));
 }
 
 void tst_QWebEngineDownloads::downloadPage_data()
