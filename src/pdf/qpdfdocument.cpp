@@ -325,6 +325,17 @@ void QPdfDocumentPrivate::fpdf_AddSegment(_FX_DOWNLOADHINTS *pThis, size_t offse
     Q_UNUSED(size);
 }
 
+/*!
+    \class QPdfDocument
+    \since 5.10
+    \inmodule QtPdf
+
+    \brief The QPdfDocument class loads a PDF document and renders pages from it.
+*/
+
+/*!
+    Constructs a new document with parent object \a parent.
+*/
 QPdfDocument::QPdfDocument(QObject *parent)
     : QObject(parent)
     , d(new QPdfDocumentPrivate)
@@ -424,7 +435,7 @@ QString QPdfDocument::password() const
 */
 
 /*!
-    Returns the meta data of the document for the given field.
+    Returns the meta data of the document for the given \a field.
 */
 QVariant QPdfDocument::metaData(MetaDataField field) const
 {
@@ -502,14 +513,6 @@ QPdfDocument::DocumentError QPdfDocument::error() const
 }
 
 /*!
-    \fn void QPdfDocument::aboutToBeClosed()
-
-    This signal is emitted whenever the document is closed.
-
-    \sa close()
-*/
-
-/*!
   Closes the document.
 */
 void QPdfDocument::close()
@@ -529,6 +532,10 @@ void QPdfDocument::close()
     d->setStatus(Null);
 }
 
+/*!
+  Returns the amount of pages for the loaded document or \c 0 if
+  no document is loaded.
+*/
 int QPdfDocument::pageCount() const
 {
     return d->pageCount;
