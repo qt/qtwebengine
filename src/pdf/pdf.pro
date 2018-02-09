@@ -12,6 +12,8 @@ load(qt_module)
 
 LIBS_PRIVATE += -L$$MODULE_BASE_OUTDIR/lib -lqtpdfium$$qtPlatformTargetSuffix()
 
+QMAKE_DOCS = $$PWD/doc/qtpdf.qdocconf
+
 gcc {
     QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
 }
