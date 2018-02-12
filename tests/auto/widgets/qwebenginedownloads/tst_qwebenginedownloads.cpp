@@ -459,11 +459,16 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
     std::unique_ptr<HttpReqRep> file1RR(results.takeFirst());
     QVERIFY(file1RR);
     QCOMPARE(file1RR->requestMethod(), QByteArrayLiteral("GET"));
-    QCOMPARE(file1RR->requestPath(), QByteArrayLiteral("/file1"));
     QTRY_COMPARE(requestSpy.count(), 4);
     std::unique_ptr<HttpReqRep> file2RR(results.takeFirst());
     QVERIFY(file2RR);
     QCOMPARE(file2RR->requestMethod(), QByteArrayLiteral("GET"));
+
+    // Handle one request overtaking the other
+    if (file1RR->requestPath() == QByteArrayLiteral("/file2"))
+        std::swap(file1RR, file2RR);
+
+    QCOMPARE(file1RR->requestPath(), QByteArrayLiteral("/file1"));
     QCOMPARE(file2RR->requestPath(), QByteArrayLiteral("/file2"));
 
     file1RR->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/plain"));

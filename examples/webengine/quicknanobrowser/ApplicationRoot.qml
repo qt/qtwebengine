@@ -55,7 +55,7 @@ QtObject {
     id: root
 
     property QtObject defaultProfile: WebEngineProfile {
-        storageName: "Default"
+        storageName: "Profile"
     }
 
     property QtObject otrProfile: WebEngineProfile {
