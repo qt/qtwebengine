@@ -42,7 +42,7 @@
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "gl_context_qt.h"
-#include "ozone/gl_ozone_qt.h"
+#include "ozone/gl_ozone_egl_qt.h"
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -70,7 +70,7 @@ base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
     return library;
 }
 
-bool GLOzoneQt::LoadGLES2Bindings(gl::GLImplementation /*implementation*/)
+bool GLOzoneEGLQt::LoadGLES2Bindings(gl::GLImplementation /*implementation*/)
 {
     base::NativeLibrary eglgles2Library = dlopen(NULL, RTLD_LAZY);
     if (!eglgles2Library) {
@@ -103,7 +103,7 @@ bool GLOzoneQt::LoadGLES2Bindings(gl::GLImplementation /*implementation*/)
     return true;
 }
 
-intptr_t GLOzoneQt::GetNativeDisplay()
+intptr_t GLOzoneEGLQt::GetNativeDisplay()
 {
     static void *display = GLContextHelper::getNativeDisplay();
 
