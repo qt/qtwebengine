@@ -353,6 +353,10 @@ void QWebEngineCookieStore::deleteAllCookies()
     The callback should not be used to execute heavy tasks since it is running on the
     IO thread and therefore blocks the Chromium networking.
 
+    \note The cookie filter also controls other features with tracking capabilities similar to
+    those of cookies; including IndexedDB, DOM storage, filesystem API, service workers,
+    and AppCache.
+
     \sa deleteAllCookies(), loadAllCookies()
 */
 void QWebEngineCookieStore::setCookieFilter(const std::function<bool(const FilterRequest &)> &filterCallback)

@@ -95,6 +95,7 @@
 #include "media_capture_devices_dispatcher.h"
 #include "net/network_delegate_qt.h"
 #include "net/qrc_protocol_handler_qt.h"
+#include "net/url_request_context_getter_qt.h"
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "printing/printing_message_filter_qt.h"
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -740,6 +741,7 @@ bool ContentBrowserClientQt::AllowGetCookie(const GURL &url,
                                             int /*render_process_id*/,
                                             int /*render_frame_id*/)
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
     return networkDelegate->canGetCookies(first_party, url);
 }
@@ -752,8 +754,51 @@ bool ContentBrowserClientQt::AllowSetCookie(const GURL &url,
                                             int /*render_frame_id*/,
                                             const net::CookieOptions& /*options*/)
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
     return networkDelegate->canSetCookies(first_party, url, std::string());
+}
+
+bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
+                                           const GURL &first_party,
+                                           content::ResourceContext *context)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
+    return networkDelegate->canGetCookies(first_party, manifest_url);
+}
+
+bool ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
+                                                const GURL &first_party,
+                                                content::ResourceContext *context,
+                                                const base::Callback<content::WebContents*(void)> &/*wc_getter*/)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    // FIXME: Chrome also checks if javascript is enabled here to check if has been disabled since the service worker
+    // was started.
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
+    return networkDelegate->canGetCookies(first_party, scope);
+}
+
+// We control worker access to FS and indexed-db using cookie permissions, this is mirroring Chromium's logic.
+void ContentBrowserClientQt::AllowWorkerFileSystem(const GURL &url,
+                                                   content::ResourceContext *context,
+                                                   const std::vector<std::pair<int, int> > &/*render_frames*/,
+                                                   base::Callback<void(bool)> callback)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
+    callback.Run(networkDelegate->canSetCookies(url, url, std::string()));
+}
+
+bool ContentBrowserClientQt::AllowWorkerIndexedDB(const GURL &url,
+                                                  const base::string16 &/*name*/,
+                                                  content::ResourceContext *context,
+                                                  const std::vector<std::pair<int, int> > &/*render_frames*/)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
+    return networkDelegate->canSetCookies(url, url, std::string());
 }
 
 } // namespace QtWebEngineCore
