@@ -101,7 +101,7 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
     , downloadId(-1)
     , downloadState(QQuickWebEngineDownloadItem::DownloadCancelled)
     , savePageFormat(QQuickWebEngineDownloadItem::UnknownSaveFormat)
-    , isSavePageDownload(false)
+    , type(QQuickWebEngineDownloadItem::Attachment)
     , interruptReason(QQuickWebEngineDownloadItem::NoReason)
     , totalBytes(-1)
     , receivedBytes(0)
@@ -401,14 +401,27 @@ void QQuickWebEngineDownloadItem::setSavePageFormat(QQuickWebEngineDownloadItem:
 
     Describes the requested download's type.
 
-    Unfortunately, this property only ever worked correctly for \c SavePage
-    downloads. In other cases, it followed the documented semantics rather
-    loosely, sometimes non-deterministically. Use \l isSavePageDownload instead.
- */
+    \note This property works unreliably, except for \c SavePage
+    downloads. Use \l isSavePageDownload instead.
+
+    \value WebEngineDownloadItem.Attachment The web server's response includes a
+           \c Content-Disposition header with the \c attachment directive. If \c Content-Disposition
+           is present in the reply, the web server is indicating that the client should prompt the
+           user to save the content regardless of the content type.
+           See \l {RFC 2616 section 19.5.1} for details.
+    \value WebEngineDownloadItem.DownloadAttribute The user clicked a link with the \c download
+           attribute. See \l {HTML download attribute} for details.
+    \value WebEngineDownloadItem.UserRequested The user initiated the download, for example by
+           selecting a web action.
+    \value WebEngineDownloadItem.SavePage Saving of the current page was requested (for example by
+           the \l{WebEngineView::WebAction}{WebEngineView.SavePage} web action).
+
+*/
 
 QQuickWebEngineDownloadItem::DownloadType QQuickWebEngineDownloadItem::type() const
 {
-    return isSavePageDownload() ? SavePage : UserRequested;
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->type;
 }
 
 /*!
@@ -423,7 +436,7 @@ QQuickWebEngineDownloadItem::DownloadType QQuickWebEngineDownloadItem::type() co
 bool QQuickWebEngineDownloadItem::isSavePageDownload() const
 {
     Q_D(const QQuickWebEngineDownloadItem);
-    return d->isSavePageDownload;
+    return d->type == QQuickWebEngineDownloadItem::SavePage;
 }
 
 /*!

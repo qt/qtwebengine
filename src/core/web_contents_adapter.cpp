@@ -979,9 +979,13 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     Q_D(WebContentsAdapter);
     content::BrowserContext *bctx = webContents()->GetBrowserContext();
     content::DownloadManager *dlm =  content::BrowserContext::GetDownloadManager(bctx);
+    DownloadManagerDelegateQt *dlmd = d->browserContextAdapter->downloadManagerDelegate();
 
     if (!dlm)
         return;
+
+    dlmd->markNextDownloadAsUserRequested();
+    dlm->SetDelegate(dlmd);
 
     net::NetworkTrafficAnnotationTag traffic_annotation =
         net::DefineNetworkTrafficAnnotation(

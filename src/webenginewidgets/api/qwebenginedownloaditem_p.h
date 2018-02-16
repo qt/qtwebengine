@@ -72,7 +72,7 @@ public:
     quint32 downloadId;
     QWebEngineDownloadItem::DownloadState downloadState;
     QWebEngineDownloadItem::SavePageFormat savePageFormat;
-    bool isSavePageDownload;
+    QWebEngineDownloadItem::DownloadType type;
     QWebEngineDownloadItem::DownloadInterruptReason interruptReason;
     QString downloadPath;
     const QUrl downloadUrl;

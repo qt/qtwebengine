@@ -88,6 +88,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
     QTest::addColumn<QByteArray>("fileDisposition");
     QTest::addColumn<bool>("fileHasReferer");
     QTest::addColumn<DownloadTestFileAction>("fileAction");
+    QTest::addColumn<QWebEngineDownloadItem::DownloadType>("downloadType");
 
     // SaveLink should always trigger a download, even for empty files.
     QTest::newRow("save link to empty file")
@@ -99,7 +100,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
     // SaveLink should always trigger a download, also for text files.
     QTest::newRow("save link to text file")
@@ -111,7 +113,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
     // ... adding the "download" attribute should have no effect.
     QTest::newRow("save link to text file (attribute)")
@@ -123,7 +126,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
     // ... adding the "attachment" content disposition should also have no effect.
     QTest::newRow("save link to text file (attachment)")
@@ -135,7 +139,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("attachment")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
     // ... even adding both should have no effect.
     QTest::newRow("save link to text file (attribute+attachment)")
@@ -147,7 +152,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("attachment")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
     // Navigating to an empty file should show an empty page.
     QTest::newRow("navigate to empty file")
@@ -159,7 +165,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDisplayed;
+        /* fileAction                 */ << FileIsDisplayed
+        /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
     // Navigating to a text file should show the text file.
     QTest::newRow("navigate to text file")
@@ -171,7 +178,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDisplayed;
+        /* fileAction                 */ << FileIsDisplayed
+        /* downloadType               */ << QWebEngineDownloadItem::UserRequested;
 
     // ... unless the link has the "download" attribute: then the file should be downloaded.
     QTest::newRow("navigate to text file (attribute)")
@@ -183,7 +191,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << false // crbug.com/455987
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
 
     // ... same with the content disposition header save for the download type.
     QTest::newRow("navigate to text file (attachment)")
@@ -195,7 +204,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("attachment")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::Attachment;
 
     // ... and both.
     QTest::newRow("navigate to text file (attribute+attachment)")
@@ -207,7 +217,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("attachment")
         /* fileHasReferer             */ << false // crbug.com/455987
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::Attachment;
 
     // The file's extension has no effect.
     QTest::newRow("navigate to supposed zip file")
@@ -219,7 +230,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDisplayed;
+        /* fileAction                 */ << FileIsDisplayed
+        /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
 
     // ... the file's mime type however does.
     QTest::newRow("navigate to supposed zip file (application/zip)")
@@ -231,7 +243,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("application/zip")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
 
     // ... but we're not very picky about the exact type.
     QTest::newRow("navigate to supposed zip file (application/octet-stream)")
@@ -243,7 +256,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("application/octet-stream")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
 
     // empty zip file (consisting only of "end of central directory record")
     QByteArray zipFile = QByteArrayLiteral("PK\x05\x06") + QByteArray(18, 0);
@@ -258,7 +272,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("application/octet-stream")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
 
     // The mime type is not guessed automatically if provided by the server.
     QTest::newRow("navigate to actual zip file (application/zip)")
@@ -270,7 +285,8 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("application/zip")
         /* fileDisposition            */ << QByteArrayLiteral("")
         /* fileHasReferer             */ << true
-        /* fileAction                 */ << FileIsDownloaded;
+        /* fileAction                 */ << FileIsDownloaded
+        /* downloadType               */ << QWebEngineDownloadItem::DownloadAttribute;
 }
 
 void tst_QWebEngineDownloads::downloadLink()
@@ -284,6 +300,7 @@ void tst_QWebEngineDownloads::downloadLink()
     QFETCH(QByteArray, fileDisposition);
     QFETCH(bool, fileHasReferer);
     QFETCH(DownloadTestFileAction, fileAction);
+    QFETCH(QWebEngineDownloadItem::DownloadType, downloadType);
 
     HttpServer server;
     QWebEngineProfile profile;
@@ -381,7 +398,7 @@ void tst_QWebEngineDownloads::downloadLink()
         QCOMPARE(item->totalBytes(), -1);
         QCOMPARE(item->receivedBytes(), 0);
         QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
-        QCOMPARE(item->type(), QWebEngineDownloadItem::UserRequested);
+        QCOMPARE(item->type(), downloadType);
         QCOMPARE(item->isSavePageDownload(), false);
         QCOMPARE(item->mimeType(), QString(fileMimeTypeDetected));
         QCOMPARE(item->path(), suggestedPath);
@@ -400,7 +417,7 @@ void tst_QWebEngineDownloads::downloadLink()
         QCOMPARE(item->totalBytes(), fileContents.size());
         QCOMPARE(item->receivedBytes(), fileContents.size());
         QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
-        QCOMPARE(item->type(), QWebEngineDownloadItem::UserRequested);
+        QCOMPARE(item->type(), downloadType);
         QCOMPARE(item->isSavePageDownload(), false);
         QCOMPARE(item->mimeType(), QString(fileMimeTypeDetected));
         QCOMPARE(item->path(), downloadPath);
@@ -510,15 +527,17 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
     if (item1->url().fileName() == QByteArrayLiteral("file2"))
         qSwap(item1, item2);
 
-    QTRY_COMPARE(item1->state(), QWebEngineDownloadItem::DownloadCompleted);
+    QCOMPARE(item1->type(), QWebEngineDownloadItem::DownloadAttribute);
     QCOMPARE(item1->mimeType(), QStringLiteral("text/plain"));
     QCOMPARE(item1->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
     QCOMPARE(item1->url(), server.url(QByteArrayLiteral("/file1")));
+    QTRY_COMPARE(item1->state(), QWebEngineDownloadItem::DownloadCompleted);
 
-    QTRY_COMPARE(item2->state(), QWebEngineDownloadItem::DownloadCompleted);
+    QCOMPARE(item2->type(), QWebEngineDownloadItem::Attachment);
     QCOMPARE(item2->mimeType(), QStringLiteral("text/plain"));
     QCOMPARE(item2->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
     QCOMPARE(item2->url(), server.url(QByteArrayLiteral("/file2")));
+    QTRY_COMPARE(item2->state(), QWebEngineDownloadItem::DownloadCompleted);
 }
 
 void tst_QWebEngineDownloads::downloadPage_data()
