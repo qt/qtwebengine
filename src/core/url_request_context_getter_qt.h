@@ -45,6 +45,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/url_constants.h"
@@ -120,6 +121,7 @@ private:
     std::unique_ptr<NetworkDelegateQt> m_networkDelegate;
     std::unique_ptr<net::URLRequestContextStorage> m_storage;
     std::unique_ptr<net::URLRequestJobFactory> m_jobFactory;
+    std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> m_protocolHandlerInterceptor;
     net::URLRequestJobFactoryImpl *m_baseJobFactory;
     std::unique_ptr<net::DhcpProxyScriptFetcherFactory> m_dhcpProxyScriptFetcherFactory;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;

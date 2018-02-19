@@ -445,6 +445,11 @@ ApplicationWindow {
                         request.reject();
                 }
 
+                onRegisterProtocolHandlerPermissionRequested: {
+                    print("accepting registerProtocolHandler permission request for " + request.protocol + " from " + request.origin);
+                    request.accept();
+                }
+
                 onRenderProcessTerminated: {
                     var status = "";
                     switch (terminationStatus) {

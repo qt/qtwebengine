@@ -42,8 +42,10 @@ class tst_QWebEngineProfile : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
-    void defaultProfile();
-    void profileConstructors();
+    void init();
+    void cleanup();
+    void privateProfile();
+    void testProfile();
     void clearDataFromCache();
     void disableCache();
     void urlSchemeHandlers();
@@ -56,28 +58,60 @@ private Q_SLOTS:
     void changePersistentPath();
 };
 
-void tst_QWebEngineProfile::defaultProfile()
+void tst_QWebEngineProfile::init()
 {
+    //make sure defualt global profile is 'default' across all the tests
     QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
     QVERIFY(profile);
     QVERIFY(!profile->isOffTheRecord());
     QCOMPARE(profile->storageName(), QStringLiteral("Default"));
     QCOMPARE(profile->httpCacheType(), QWebEngineProfile::DiskHttpCache);
     QCOMPARE(profile->persistentCookiesPolicy(), QWebEngineProfile::AllowPersistentCookies);
+    QCOMPARE(profile->cachePath(),  QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
+             + QStringLiteral("/QtWebEngine/Default"));
+    QCOMPARE(profile->persistentStoragePath(),  QStandardPaths::writableLocation(QStandardPaths::DataLocation)
+             + QStringLiteral("/QtWebEngine/Default"));
 }
 
-void tst_QWebEngineProfile::profileConstructors()
+void tst_QWebEngineProfile::cleanup()
+{
+    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
+    profile->setCachePath(QString());
+    profile->setPersistentStoragePath(QString());
+    profile->setHttpCacheType(QWebEngineProfile::DiskHttpCache);
+}
+
+void tst_QWebEngineProfile::privateProfile()
 {
     QWebEngineProfile otrProfile;
-    QWebEngineProfile diskProfile(QStringLiteral("Test"));
-
     QVERIFY(otrProfile.isOffTheRecord());
-    QVERIFY(!diskProfile.isOffTheRecord());
-    QCOMPARE(diskProfile.storageName(), QStringLiteral("Test"));
     QCOMPARE(otrProfile.httpCacheType(), QWebEngineProfile::MemoryHttpCache);
-    QCOMPARE(diskProfile.httpCacheType(), QWebEngineProfile::DiskHttpCache);
     QCOMPARE(otrProfile.persistentCookiesPolicy(), QWebEngineProfile::NoPersistentCookies);
-    QCOMPARE(diskProfile.persistentCookiesPolicy(), QWebEngineProfile::AllowPersistentCookies);
+    QCOMPARE(otrProfile.cachePath(), QString());
+    QCOMPARE(otrProfile.persistentStoragePath(), QString());
+    // TBD: setters do not really work
+    otrProfile.setCachePath(QStringLiteral("/home/foo/bar"));
+    QCOMPARE(otrProfile.cachePath(), QString());
+    otrProfile.setPersistentStoragePath(QStringLiteral("/home/foo/bar"));
+    QCOMPARE(otrProfile.persistentStoragePath(), QString());
+    otrProfile.setHttpCacheType(QWebEngineProfile::DiskHttpCache);
+    QCOMPARE(otrProfile.httpCacheType(), QWebEngineProfile::MemoryHttpCache);
+    otrProfile.setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);
+    QCOMPARE(otrProfile.persistentCookiesPolicy(), QWebEngineProfile::NoPersistentCookies);
+}
+
+
+void tst_QWebEngineProfile::testProfile()
+{
+    QWebEngineProfile profile(QStringLiteral("Test"));
+    QVERIFY(!profile.isOffTheRecord());
+    QCOMPARE(profile.storageName(), QStringLiteral("Test"));
+    QCOMPARE(profile.httpCacheType(), QWebEngineProfile::DiskHttpCache);
+    QCOMPARE(profile.persistentCookiesPolicy(), QWebEngineProfile::AllowPersistentCookies);
+    QCOMPARE(profile.cachePath(),  QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
+             + QStringLiteral("/QtWebEngine/Test"));
+    QCOMPARE(profile.persistentStoragePath(),  QStandardPaths::writableLocation(QStandardPaths::DataLocation)
+             + QStringLiteral("/QtWebEngine/Test"));
 }
 
 void tst_QWebEngineProfile::clearDataFromCache()

@@ -65,6 +65,7 @@ class ColorChooserController;
 class FilePickerController;
 class JavaScriptDialogController;
 class QuotaPermissionController;
+class RegisterProtocolHandlerPermissionController;
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
@@ -437,6 +438,7 @@ public:
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runQuotaPermissionRequest(QSharedPointer<QuotaPermissionController>) = 0;
+    virtual void runRegisterProtocolHandlerPermissionRequest(QSharedPointer<RegisterProtocolHandlerPermissionController>) = 0;
     virtual WebEngineSettings *webEngineSettings() const = 0;
     virtual void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) = 0;
     virtual void hideValidationMessage() = 0;

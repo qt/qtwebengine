@@ -139,6 +139,8 @@ public:
                                                                          msgUncreatableType("FormValidationMessageRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineQuotaPermissionRequest>(uri, 1, 7, "QuotaPermissionRequest",
             tr("Cannot create a separate instance of QuotaPermissionRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineRegisterProtocolHandlerPermissionRequest>(uri, 1, 7, "RegisterProtocolHandlerPermissionRequest",
+            tr("Cannot create a separate instance of RegisterProtocolHandlerPermissionRequest"));
     }
 
 private:

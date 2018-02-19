@@ -67,6 +67,7 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineSettings::staticMetaObject
     << &QQuickWebEngineFullScreenRequest::staticMetaObject
     << &QQuickWebEngineQuotaPermissionRequest::staticMetaObject
+    << &QQuickWebEngineRegisterProtocolHandlerPermissionRequest::staticMetaObject
     << &QQuickWebEngineSingleton::staticMetaObject
     << &QQuickWebEngineAuthenticationDialogRequest::staticMetaObject
     << &QQuickWebEngineJavaScriptDialogRequest::staticMetaObject
@@ -295,6 +296,10 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineQuotaPermissionRequest.origin --> QUrl"
     << "QQuickWebEngineQuotaPermissionRequest.reject() --> void"
     << "QQuickWebEngineQuotaPermissionRequest.requestedSize --> qlonglong"
+    << "QQuickWebEngineRegisterProtocolHandlerPermissionRequest.accept() --> void"
+    << "QQuickWebEngineRegisterProtocolHandlerPermissionRequest.origin --> QUrl"
+    << "QQuickWebEngineRegisterProtocolHandlerPermissionRequest.protocol --> QString"
+    << "QQuickWebEngineRegisterProtocolHandlerPermissionRequest.reject() --> void"
     << "QQuickWebEngineScript.ApplicationWorld --> ScriptWorldId"
     << "QQuickWebEngineScript.Deferred --> InjectionPoint"
     << "QQuickWebEngineScript.DocumentCreation --> InjectionPoint"
@@ -653,6 +658,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.quotaPermissionRequested(QQuickWebEngineQuotaPermissionRequest) --> void"
     << "QQuickWebEngineView.recentlyAudible --> bool"
     << "QQuickWebEngineView.recentlyAudibleChanged(bool) --> void"
+    << "QQuickWebEngineView.registerProtocolHandlerPermissionRequested(QQuickWebEngineRegisterProtocolHandlerPermissionRequest) --> void"
     << "QQuickWebEngineView.reload() --> void"
     << "QQuickWebEngineView.reloadAndBypassCache() --> void"
     << "QQuickWebEngineView.renderProcessTerminated(RenderProcessTerminationStatus,int) --> void"

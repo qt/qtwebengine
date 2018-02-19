@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,26 +37,37 @@
 **
 ****************************************************************************/
 
-#ifndef QUOTA_PERMISSION_CONTROLLER_H
-#define QUOTA_PERMISSION_CONTROLLER_H
+#ifndef QWEBENGINEREGISTERPROTOCOLHANDLERPERMISSIONREQUEST_H
+#define QWEBENGINEREGISTERPROTOCOLHANDLERPERMISSIONREQUEST_H
 
-#include "permission_controller.h"
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qurl.h>
+#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
 namespace QtWebEngineCore {
+    class RegisterProtocolHandlerPermissionController;
+}
 
-class QWEBENGINE_EXPORT QuotaPermissionController : public PermissionController {
+QT_BEGIN_NAMESPACE
+
+class QWEBENGINEWIDGETS_EXPORT QWebEngineRegisterProtocolHandlerPermissionRequest {
+    Q_GADGET
+    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
+    Q_PROPERTY(QString protocol READ protocol CONSTANT FINAL)
 public:
-    QuotaPermissionController(QUrl origin, qint64 requestedSize)
-        : PermissionController(std::move(origin))
-        , m_requestedSize(requestedSize)
-    {}
-
-    qint64 requestedSize() const { return m_requestedSize; }
+    QWebEngineRegisterProtocolHandlerPermissionRequest() {}
+    QWebEngineRegisterProtocolHandlerPermissionRequest(
+        QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerPermissionController>);
+    Q_INVOKABLE void accept();
+    Q_INVOKABLE void reject();
+    QUrl origin() const;
+    QString protocol() const;
 
 private:
-    qint64 m_requestedSize;
+    QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerPermissionController> d_ptr;
 };
 
-} // namespace QtWebEngineCore
+QT_END_NAMESPACE
+Q_DECLARE_METATYPE(QWebEngineRegisterProtocolHandlerPermissionRequest)
 
-#endif // QUOTA_PERMISSION_CONTROLLER_H
+#endif // QWEBENGINEREGISTERPROTOCOLHANDLERPERMISSIONREQUEST_H

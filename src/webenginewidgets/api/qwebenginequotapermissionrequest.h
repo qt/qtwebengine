@@ -52,20 +52,22 @@ QT_BEGIN_NAMESPACE
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineQuotaPermissionRequest {
     Q_GADGET
-    Q_PROPERTY(QUrl origin READ origin)
-    Q_PROPERTY(qint64 requestedSize READ requestedSize)
+    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
+    Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)
 public:
+    explicit QWebEngineQuotaPermissionRequest() { Q_UNREACHABLE(); }
+    explicit QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller);
     Q_INVOKABLE void accept();
     Q_INVOKABLE void reject();
     QUrl origin() const;
     qint64 requestedSize() const;
 
 private:
-    QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller);
     QSharedPointer<QtWebEngineCore::QuotaPermissionController> d_ptr;
-    friend class QWebEnginePagePrivate;
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QWebEngineQuotaPermissionRequest)
 
 #endif // QWEBENGINEQUOTAPERMISSIONREQUEST_H

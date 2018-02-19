@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -36,63 +36,49 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef PERMISSION_CONTROLLER_H
+#define PERMISSION_CONTROLLER_H
 
-#include "quota_permission_controller.h"
-#include "quota_permission_controller_p.h"
+#include "qtwebenginecoreglobal.h"
 
-#include "quota_permission_context_qt.h"
-#include "type_conversion.h"
+#include <QUrl>
 
 namespace QtWebEngineCore {
 
-QuotaPermissionControllerPrivate::QuotaPermissionControllerPrivate(QuotaPermissionContextQt *context,
-                                                                   const content::StorageQuotaParams &params,
-                                                                   const content::QuotaPermissionContext::PermissionCallback &callback)
-    : m_context(context),
-      m_originUrl(toQt(params.origin_url)),
-      m_requestedSize(params.requested_size),
-      m_callback(callback)
-{
-}
+class QWEBENGINE_EXPORT PermissionController {
+public:
+    PermissionController(QUrl origin)
+        : m_answered(false)
+        , m_origin(std::move(origin))
+    {}
 
-QuotaPermissionControllerPrivate::~QuotaPermissionControllerPrivate()
-{
-}
+    QUrl origin() const { return m_origin; }
 
-QuotaPermissionController::QuotaPermissionController(QuotaPermissionControllerPrivate *controllerPrivate)
-    : d(controllerPrivate)
-    , m_answered(false)
-{
-}
-
-QuotaPermissionController::~QuotaPermissionController()
-{
-}
-
-void QuotaPermissionController::accept()
-{
-    if (!m_answered) {
-        d->m_context->dispatchCallbackOnIOThread(d->m_callback, QuotaPermissionContextQt::QUOTA_PERMISSION_RESPONSE_ALLOW);
-        m_answered = true;
+    void accept() {
+        if (!m_answered) {
+            m_answered = true;
+            accepted();
+        }
     }
-}
 
-void QuotaPermissionController::cancel()
-{
-    if (!m_answered) {
-        d->m_context->dispatchCallbackOnIOThread(d->m_callback, QuotaPermissionContextQt::QUOTA_PERMISSION_RESPONSE_DISALLOW);
-        m_answered = true;
+    void reject() {
+        if (!m_answered) {
+            m_answered = true;
+            rejected();
+        }
     }
-}
 
-QUrl QuotaPermissionController::origin()
-{
-    return d->m_originUrl;
-}
+    virtual ~PermissionController() {}
 
-qint64 QuotaPermissionController::requestedSize()
-{
-    return d->m_requestedSize;
-}
+protected:
+    virtual void accepted() = 0;
+    virtual void rejected() = 0;
+
+private:
+    bool m_answered;
+    QUrl m_origin;
+};
 
 } // namespace QtWebEngineCore
+
+#endif // PERMISSION_CONTROLLER_H

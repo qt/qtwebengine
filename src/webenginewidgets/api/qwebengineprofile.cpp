@@ -109,9 +109,11 @@ using QtWebEngineCore::BrowserContextAdapter;
 
     This enum describes the HTTP cache type:
 
-    \value MemoryHttpCache Use an in-memory cache. This is the only setting possible if
-    \c off-the-record is set or no cache path is available.
-    \value DiskHttpCache Use a disk cache. This is the default.
+    \value MemoryHttpCache Use an in-memory cache. This is the default if
+    \c off-the-record is set.
+    \value DiskHttpCache Use a disk cache. This is the default if the profile
+    is not \c off-the-record. If set on an \c off-the-record profile will instead
+    set \c MemoryHttpCache.
     \value NoCache Disable both in-memory and disk caching. (Added in Qt 5.7)
 */
 
@@ -308,8 +310,11 @@ bool QWebEngineProfile::isOffTheRecord() const
 
     Persistent data includes persistent cookies, HTML5 local storage, and visited links.
 
-    By default, this is below QStandardPaths::writableLocation() in a storage name specific
-    directory.
+    By default, this is below QStandardPaths::DataLocation in a QtWebengine/StorageName specific
+    subdirectory.
+
+    \note Use QStandardPaths::writableLocation(QStandardPaths::DataLocation)
+    to obtain the QStandardPaths::DataLocation path.
 
     \sa setPersistentStoragePath(), storageName(), QStandardPaths::writableLocation()
 */
@@ -335,8 +340,11 @@ void QWebEngineProfile::setPersistentStoragePath(const QString &path)
 /*!
     Returns the path used for caches.
 
-    By default, this is below QStandardPaths::writableLocation() in a storage name specific
-    directory.
+    By default, this is below StandardPaths::CacheLocation in a QtWebengine/StorageName specific
+    subdirectory.
+
+    \note Use QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
+    to obtain the QStandardPaths::CacheLocation path.
 
     \sa setCachePath(), storageName(), QStandardPaths::writableLocation()
 */

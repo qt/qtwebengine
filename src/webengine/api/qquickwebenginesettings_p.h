@@ -91,7 +91,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(UnknownUrlSchemePolicy unknownUrlSchemePolicy READ unknownUrlSchemePolicy WRITE setUnknownUrlSchemePolicy NOTIFY unknownUrlSchemePolicyChanged REVISION 6 FINAL)
     Q_PROPERTY(bool playbackRequiresUserGesture READ playbackRequiresUserGesture WRITE setPlaybackRequiresUserGesture NOTIFY playbackRequiresUserGestureChanged REVISION 6 FINAL)
     Q_PROPERTY(bool webRTCPublicInterfacesOnly READ webRTCPublicInterfacesOnly WRITE setWebRTCPublicInterfacesOnly NOTIFY webRTCPublicInterfacesOnlyChanged REVISION 6 FINAL)
-    Q_PROPERTY(bool javascriptCanPaste READ javascriptCanPaste WRITE setJavascriptCanPaste NOTIFY javascriptCanPaste REVISION 6 FINAL)
+    Q_PROPERTY(bool javascriptCanPaste READ javascriptCanPaste WRITE setJavascriptCanPaste NOTIFY javascriptCanPasteChanged REVISION 6 FINAL)
 
 public:
     enum UnknownUrlSchemePolicy {

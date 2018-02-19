@@ -54,6 +54,7 @@
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
 #include "qwebenginequotapermissionrequest.h"
+#include "qwebengineregisterprotocolhandlerpermissionrequest.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qwebenginesettings.h"
 #include "qwebengineview.h"
@@ -89,8 +90,6 @@
 #include <QStyle>
 #include <QTimer>
 #include <QUrl>
-
-#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -580,6 +579,13 @@ void QWebEnginePagePrivate::runQuotaPermissionRequest(QSharedPointer<QtWebEngine
     Q_EMIT q->quotaPermissionRequested(request);
 }
 
+void QWebEnginePagePrivate::runRegisterProtocolHandlerPermissionRequest(QSharedPointer<RegisterProtocolHandlerPermissionController> controller)
+{
+    Q_Q(QWebEnginePage);
+    QWebEngineRegisterProtocolHandlerPermissionRequest request(std::move(controller));
+    Q_EMIT q->registerProtocolHandlerPermissionRequested(request);
+}
+
 QObject *QWebEnginePagePrivate::accessibilityParentObject()
 {
     return view;
@@ -749,6 +755,18 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
     is 0 bytes.
 
     The request object \a request can be used to accept or reject the request.
+*/
+
+/*!
+    \fn QWebEnginePage::registerProtocolHandlerPermissionRequested(QWebEngineRegisterProtocolHandlerPermissionRequest request)
+    \since 5.11
+
+    This signal is emitted when the web page tries to register a custom protocol
+    using the \l registerProtocolHandler API.
+
+    The request object \a request can be used to accept or reject the request:
+
+    \snippet webenginewidgets/simplebrowser/webpage.cpp registerProtocolHandlerPermissionRequested
 */
 
 /*!

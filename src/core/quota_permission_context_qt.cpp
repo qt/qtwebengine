@@ -42,8 +42,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "quota_permission_controller.h"
-#include "quota_permission_controller_p.h"
+#include "quota_permission_controller_impl.h"
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 
@@ -83,8 +82,8 @@ void QuotaPermissionContextQt::RequestQuotaPermission(const StorageQuotaParams &
     if (!client)
         return;
 
-    QSharedPointer<QuotaPermissionController> controller(new QuotaPermissionController(new QuotaPermissionControllerPrivate(this, params, callback)));
-    client->runQuotaPermissionRequest(controller);
+    QSharedPointer<QuotaPermissionController> request(new QuotaPermissionControllerImpl(this, params, callback));
+    client->runQuotaPermissionRequest(request);
 }
 
 void QuotaPermissionContextQt::dispatchCallbackOnIOThread(const PermissionCallback &callback,

@@ -40,6 +40,7 @@
 #include <QtTest/QtTest>
 #include <QTextCharFormat>
 #include <QWebChannel>
+#include <httpserver.h>
 #include <qnetworkcookiejar.h>
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
@@ -49,6 +50,7 @@
 #include <qwebenginepage.h>
 #include <qwebengineprofile.h>
 #include <qwebenginequotapermissionrequest.h>
+#include <qwebengineregisterprotocolhandlerpermissionrequest.h>
 #include <qwebenginescript.h>
 #include <qwebenginescriptcollection.h>
 #include <qwebenginesettings.h>
@@ -210,6 +212,8 @@ private Q_SLOTS:
     void viewSourceURL_data();
     void viewSourceURL();
     void proxyConfigWithUnexpectedHostPortPair();
+    void registerProtocolHandler_data();
+    void registerProtocolHandler();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4200,6 +4204,67 @@ void tst_QWebEnginePage::proxyConfigWithUnexpectedHostPortPair()
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     m_page->load(QStringLiteral("http://127.0.0.1:245/"));
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
+}
+
+void tst_QWebEnginePage::registerProtocolHandler_data()
+{
+    QTest::addColumn<bool>("permission");
+    QTest::newRow("accept") << true;
+    QTest::newRow("reject") << false;
+}
+
+void tst_QWebEnginePage::registerProtocolHandler()
+{
+    QFETCH(bool, permission);
+
+    HttpServer server;
+    QWebEnginePage page;
+    QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
+    QSignalSpy permissionSpy(&page, &QWebEnginePage::registerProtocolHandlerPermissionRequested);
+
+    page.setUrl(server.url("/"));
+    auto rr1 = waitForRequest(&server);
+    QVERIFY(rr1);
+    rr1->setResponseBody(QByteArrayLiteral("<html><body><a id=\"link\" href=\"mailto:foo@bar.com\">some text here</a></body></html>"));
+    rr1->sendResponse();
+    auto rr2 = waitForRequest(&server);
+    QVERIFY(rr2);
+    QCOMPARE(rr2->requestMethod(), QByteArrayLiteral("GET"));
+    QCOMPARE(rr2->requestPath(), QByteArrayLiteral("/favicon.ico"));
+    rr2->setResponseStatus(404);
+    rr2->sendResponse();
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
+
+    QString callFormat = QStringLiteral("window.navigator.registerProtocolHandler(\"%1\", \"%2\", \"%3\")");
+    QString protocol = QStringLiteral("mailto");
+    QString url = server.url("/mail").toString() + QStringLiteral("?uri=%s");
+    QString title;
+    QString call = callFormat.arg(protocol).arg(url).arg(title);
+    page.runJavaScript(call);
+
+    QTRY_COMPARE(permissionSpy.count(), 1);
+    auto request = permissionSpy.takeFirst().value(0).value<QWebEngineRegisterProtocolHandlerPermissionRequest>();
+    QCOMPARE(request.origin(), QUrl(url));
+    QCOMPARE(request.protocol(), protocol);
+    if (permission)
+        request.accept();
+    else
+        request.reject();
+
+    page.runJavaScript(QStringLiteral("document.getElementById(\"link\").click()"));
+
+    std::unique_ptr<HttpReqRep> rr3;
+    if (permission) {
+        rr3 = waitForRequest(&server);
+        QVERIFY(rr3);
+        QCOMPARE(rr3->requestMethod(), QByteArrayLiteral("GET"));
+        QCOMPARE(rr3->requestPath(), QByteArrayLiteral("/mail?uri=mailto%3Afoo%40bar.com"));
+        rr3->sendResponse();
+    }
+
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QCOMPARE(loadSpy.takeFirst().value(0).toBool(), permission);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
