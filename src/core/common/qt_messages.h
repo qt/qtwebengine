@@ -40,8 +40,7 @@ IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentInnerText,
 IPC_MESSAGE_ROUTED1(RenderViewObserverQt_SetBackgroundColor,
                     uint32_t /* color */)
 
-IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Install, uint /* worldId */)
-IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Uninstall, uint /* worldId */)
+IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_SetWorldId, base::Optional<uint> /* worldId */)
 IPC_MESSAGE_ROUTED2(WebChannelIPCTransport_Message, std::vector<char> /*binaryJSON*/, uint /* worldId */)
 
 // User scripts messages

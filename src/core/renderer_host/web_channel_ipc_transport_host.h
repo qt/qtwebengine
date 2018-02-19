@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -40,38 +40,40 @@
 #ifndef WEB_CHANNEL_IPC_TRANSPORT_H
 #define WEB_CHANNEL_IPC_TRANSPORT_H
 
+#include "qtwebenginecoreglobal.h"
 
-#include <QtWebChannel/QWebChannelAbstractTransport>
 #include "content/public/browser/web_contents_observer.h"
 
-#include "qtwebenginecoreglobal.h"
-#include <QtCore/QObject>
+#include <QWebChannelAbstractTransport>
 
 QT_FORWARD_DECLARE_CLASS(QString)
 
 namespace QtWebEngineCore {
 
 class WebChannelIPCTransportHost : public QWebChannelAbstractTransport
-        , public content::WebContentsObserver
-{
+                                 , private content::WebContentsObserver {
 public:
-    WebChannelIPCTransportHost(content::WebContents *, uint worldId = 0, QObject *parent = 0);
+    WebChannelIPCTransportHost(content::WebContents *webContents, uint worldId = 0, QObject *parent = nullptr);
     virtual ~WebChannelIPCTransportHost();
 
-    // WebContentsObserver
-    void RenderViewHostChanged(content::RenderViewHost* old_host, content::RenderViewHost* new_host) override;
-    void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+    void setWorldId(uint worldId) { setWorldId(base::Optional<uint>(worldId)); }
+    uint worldId() const { return *m_worldId; }
 
     // QWebChannelAbstractTransport
     void sendMessage(const QJsonObject &message) override;
 
-    void setWorldId(uint worldId);
-    uint worldId() const { return m_worldId; }
-
 private:
-    bool OnMessageReceived(const IPC::Message& message) override;
+    void setWorldId(base::Optional<uint> worldId);
+    void setWorldId(content::RenderFrameHost *frame, base::Optional<uint> worldId);
     void onWebChannelMessage(const std::vector<char> &message);
-    uint m_worldId;
+
+    // WebContentsObserver
+    void RenderFrameCreated(content::RenderFrameHost *frame) override;
+    bool OnMessageReceived(const IPC::Message& message, content::RenderFrameHost *receiver) override;
+
+    // Empty only during construction/destruction. Synchronized to all the
+    // WebChannelIPCTransports/RenderFrames in the observed WebContents.
+    base::Optional<uint> m_worldId;
 };
 
 } // namespace

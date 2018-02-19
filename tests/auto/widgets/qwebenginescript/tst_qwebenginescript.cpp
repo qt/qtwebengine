@@ -20,6 +20,7 @@
 #include <QtTest/QtTest>
 
 #include <qwebenginepage.h>
+#include <qwebengineprofile.h>
 #include <qwebenginescript.h>
 #include <qwebenginescriptcollection.h>
 #include <qwebengineview.h>
@@ -39,6 +40,9 @@ private Q_SLOTS:
     void webChannel();
     void noTransportWithoutWebChannel();
     void scriptsInNestedIframes();
+    void webChannelResettingAndUnsetting();
+    void webChannelWithExistingQtObject();
+    void navigation();
 };
 
 void tst_QWebEngineScript::domEditing()
@@ -183,6 +187,27 @@ private:
     QString m_text;
 };
 
+static QString readFile(const QString &path)
+{
+    QFile file(path);
+    file.open(QFile::ReadOnly);
+    QByteArray contents = file.readAll();
+    file.close();
+    return contents;
+}
+
+static QWebEngineScript webChannelScript()
+{
+    QString sourceCode = readFile(QStringLiteral(":/qwebchannel.js"));
+    if (sourceCode.isEmpty())
+        return {};
+
+    QWebEngineScript script;
+    script.setSourceCode(sourceCode);
+    script.setInjectionPoint(QWebEngineScript::DocumentCreation);
+    script.setWorldId(QWebEngineScript::MainWorld);
+    return script;
+}
 
 void tst_QWebEngineScript::webChannel_data()
 {
@@ -204,15 +229,8 @@ void tst_QWebEngineScript::webChannel()
     channel->registerObject(QStringLiteral("object"), &testObject);
     page.setWebChannel(channel.data(), worldId);
 
-    QFile qwebchanneljs(":/qwebchannel.js");
-    QVERIFY(qwebchanneljs.exists());
-    qwebchanneljs.open(QFile::ReadOnly);
-    QByteArray scriptSrc = qwebchanneljs.readAll();
-    qwebchanneljs.close();
-    QWebEngineScript script;
-    script.setInjectionPoint(QWebEngineScript::DocumentCreation);
+    QWebEngineScript script = webChannelScript();
     script.setWorldId(worldId);
-    script.setSourceCode(QString::fromLatin1(scriptSrc));
     page.scripts().insert(script);
     page.setHtml(QStringLiteral("<html><body></body></html>"));
     QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
@@ -298,6 +316,93 @@ void tst_QWebEngineScript::scriptsInNestedIframes()
                                        i2.getElementsByTagName(\"div\")[0].innerHTML",
                                       QWebEngineScript::ApplicationWorld),
                 QVariant::fromValue(QStringLiteral("Modified Inner text")));
+}
+
+void tst_QWebEngineScript::webChannelResettingAndUnsetting()
+{
+    QWebEnginePage page;
+
+    // There should be no webChannelTransport yet.
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "qt.webChannelTransport", QWebEngineScript::MainWorld),
+             QVariant(QVariant::Invalid));
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "qt.webChannelTransport", QWebEngineScript::ApplicationWorld),
+             QVariant(QVariant::Invalid));
+
+    QWebChannel channel;
+    page.setWebChannel(&channel, QWebEngineScript::MainWorld);
+
+    // There should be one in MainWorld now.
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "qt.webChannelTransport", QWebEngineScript::MainWorld),
+             QVariant(QVariantMap()));
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "qt.webChannelTransport", QWebEngineScript::ApplicationWorld),
+             QVariant(QVariant::Invalid));
+
+    page.setWebChannel(&channel, QWebEngineScript::ApplicationWorld);
+
+    // Now it should have moved to ApplicationWorld.
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "qt.webChannelTransport", QWebEngineScript::MainWorld),
+             QVariant(QVariant::Invalid));
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "qt.webChannelTransport", QWebEngineScript::ApplicationWorld),
+             QVariant(QVariantMap()));
+
+    page.setWebChannel(nullptr);
+
+    // And now it should be gone again.
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "qt.webChannelTransport", QWebEngineScript::MainWorld),
+             QVariant(QVariant::Invalid));
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "qt.webChannelTransport", QWebEngineScript::ApplicationWorld),
+             QVariant(QVariant::Invalid));
+}
+
+void tst_QWebEngineScript::webChannelWithExistingQtObject()
+{
+    QWebEnginePage page;
+
+    evaluateJavaScriptSync(&page, "qt = 42");
+    QCOMPARE(evaluateJavaScriptSync(&page, "qt.webChannelTransport"), QVariant(QVariant::Invalid));
+
+    QWebChannel channel;
+    page.setWebChannel(&channel);
+
+    // setWebChannel should have overwritten the qt variable
+    QCOMPARE(evaluateJavaScriptSync(&page, "qt.webChannelTransport"), QVariant(QVariantMap()));
+}
+
+static QWebEngineScript locationMonitorScript()
+{
+    QWebEngineScript script = webChannelScript();
+    script.setSourceCode(script.sourceCode() + QStringLiteral(R"(
+        new QWebChannel(qt.webChannelTransport, channel => {
+            channel.objects.object.text = window.location.href;
+        })
+    )"));
+    return script;
+}
+
+void tst_QWebEngineScript::navigation()
+{
+    QWebEnginePage page;
+    TestObject testObject;
+    QSignalSpy spyTextChanged(&testObject, &TestObject::textChanged);
+    QWebChannel channel;
+    channel.registerObject(QStringLiteral("object"), &testObject);
+    page.setWebChannel(&channel);
+    page.scripts().insert(locationMonitorScript());
+
+    QString url1 = QStringLiteral("about:blank");
+    page.setUrl(url1);
+    QTRY_COMPARE(spyTextChanged.count(), 1);
+    QCOMPARE(testObject.text(), url1);
+
+    QString url2 = QStringLiteral("chrome://gpu/");
+    page.setUrl(url2);
+    QTRY_COMPARE(spyTextChanged.count(), 2);
+    QCOMPARE(testObject.text(), url2);
+
+    QString url3 = QStringLiteral("qrc:/resources/test_iframe_main.html");
+    page.setUrl(url3);
+    QTRY_COMPARE(spyTextChanged.count(), 3);
+    QCOMPARE(testObject.text(), url3);
 }
 
 QTEST_MAIN(tst_QWebEngineScript)

@@ -40,41 +40,31 @@
 #ifndef WEB_CHANNEL_IPC_TRANSPORT_H
 #define WEB_CHANNEL_IPC_TRANSPORT_H
 
-#include "base/values.h"
-#include "content/public/renderer/render_view_observer.h"
-#include "content/public/renderer/render_view_observer_tracker.h"
+#include "content/public/renderer/render_frame_observer.h"
 
 #include <QtCore/qglobal.h>
 
-namespace content {
-class RenderFrame;
-}
-
-namespace v8 {
-class Extension;
-}
-
 namespace QtWebEngineCore {
 
-class WebChannelIPCTransport : public content::RenderViewObserver
-                             , public content::RenderViewObserverTracker<WebChannelIPCTransport>
-{
+class WebChannelIPCTransport : private content::RenderFrameObserver {
 public:
-    WebChannelIPCTransport(content::RenderView *);
-
-    void RunScriptsAtDocumentStart(content::RenderFrame *render_frame);
+    WebChannelIPCTransport(content::RenderFrame *);
 
 private:
-    void dispatchWebChannelMessage(const std::vector<char> &binaryJSON, uint worldId);
-    void installWebChannel(uint worldId);
-    void uninstallWebChannel(uint worldId);
+    void setWorldId(base::Optional<uint> worldId);
+    void dispatchWebChannelMessage(const std::vector<char> &binaryJson, uint worldId);
 
-    // content::RenderViewObserver overrides:
+    // RenderFrameObserver
+    void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;
+    void DidClearWindowObject() override;
     bool OnMessageReceived(const IPC::Message &message) override;
     void OnDestruct() override;
 
-    bool m_installed;
-    uint m_installedWorldId;
+    // The worldId from our WebChannelIPCTransportHost or empty when there is no
+    // WebChannelIPCTransportHost.
+    base::Optional<uint> m_worldId;
+    // True means it's currently OK to manipulate the frame's script context.
+    bool m_canUseContext = false;
 };
 
 } // namespace
