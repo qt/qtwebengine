@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,69 +37,79 @@
 **
 ****************************************************************************/
 
-#include "qwebenginequotapermissionrequest.h"
+#include "qwebengineregisterprotocolhandlerpermissionrequest.h"
 
-#include "quota_permission_controller.h"
+#include "register_protocol_handler_permission_controller.h"
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QWebEngineQuotaPermissionRequest
-    \brief The QWebEngineQuotaPermissionRequest class enables accepting or rejecting
-    requests for larger persistent storage than the application's current allocation
-    in File System API.
-
-    \since 5.11
-
+    \class QWebEngineRegisterProtocolHandlerPermissionRequest
     \inmodule QtWebEngineWidgets
+    \since 5.11
+    \brief The QWebEngineRegisterProtocolHandlerPermissionRequest type enables
+    accepting or rejecting requests from the \l registerProtocolHandler API.
+
+    \sa QWebEnginePage::registerProtocolHandlerPermissionRequested
 */
 
 static void registerMetaTypes()
 {
-    qRegisterMetaType<QWebEngineQuotaPermissionRequest>();
+    qRegisterMetaType<QWebEngineRegisterProtocolHandlerPermissionRequest>();
 }
 
 Q_CONSTRUCTOR_FUNCTION(registerMetaTypes)
 
-QWebEngineQuotaPermissionRequest::QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
-    : d_ptr(controller)
-{
-}
+/*! \fn QWebEngineRegisterProtocolHandlerPermissionRequest::QWebEngineRegisterProtocolHandlerPermissionRequest()
+    \internal
+*/
+
+/*! \internal */
+QWebEngineRegisterProtocolHandlerPermissionRequest::QWebEngineRegisterProtocolHandlerPermissionRequest(
+    QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerPermissionController> d_ptr)
+    : d_ptr(std::move(d_ptr))
+{}
 
 /*!
-    Rejects a request for larger persistent storage.
+    Rejects the request.
+
+    Subsequent calls to accept() and reject() are ignored.
 */
-void QWebEngineQuotaPermissionRequest::reject()
+void QWebEngineRegisterProtocolHandlerPermissionRequest::reject()
 {
     d_ptr->reject();
 }
 
 /*!
-    Accepts a request for larger persistent storage.
+    Accepts the request
+
+    Subsequent calls to accept() and reject() are ignored.
 */
-void QWebEngineQuotaPermissionRequest::accept()
+void QWebEngineRegisterProtocolHandlerPermissionRequest::accept()
 {
     d_ptr->accept();
 }
 
 /*!
-    \property QWebEngineQuotaPermissionRequest::origin
-    \brief The URL of the web page that issued the quota permission request.
-*/
+    \property QWebEngineRegisterProtocolHandlerPermissionRequest::origin
+    \brief The URL template for the protocol handler.
 
-QUrl QWebEngineQuotaPermissionRequest::origin() const
+    This is the second parameter from the \l registerProtocolHandler call.
+*/
+QUrl QWebEngineRegisterProtocolHandlerPermissionRequest::origin() const
 {
     return d_ptr->origin();
 }
 
 /*!
-    \property QWebEngineQuotaPermissionRequest::requestedSize
-    \brief Contains the size of the requested disk space in bytes.
-*/
+    \property QWebEngineRegisterProtocolHandlerPermissionRequest::protocol
+    \brief The URL scheme for the protocol handler.
 
-qint64 QWebEngineQuotaPermissionRequest::requestedSize() const
+    This is the first parameter from the \l registerProtocolHandler call.
+*/
+QString QWebEngineRegisterProtocolHandlerPermissionRequest::protocol() const
 {
-    return d_ptr->requestedSize();
+    return d_ptr->protocol();
 }
 
 QT_END_NAMESPACE

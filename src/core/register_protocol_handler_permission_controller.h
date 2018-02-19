@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,26 +37,26 @@
 **
 ****************************************************************************/
 
-#ifndef QUOTA_PERMISSION_CONTROLLER_H
-#define QUOTA_PERMISSION_CONTROLLER_H
+#ifndef REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_H
+#define REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_H
 
 #include "permission_controller.h"
 
 namespace QtWebEngineCore {
 
-class QWEBENGINE_EXPORT QuotaPermissionController : public PermissionController {
+class QWEBENGINE_EXPORT RegisterProtocolHandlerPermissionController : public PermissionController {
 public:
-    QuotaPermissionController(QUrl origin, qint64 requestedSize)
+    RegisterProtocolHandlerPermissionController(QUrl origin, QString protocol)
         : PermissionController(std::move(origin))
-        , m_requestedSize(requestedSize)
+        , m_protocol(std::move(protocol))
     {}
 
-    qint64 requestedSize() const { return m_requestedSize; }
+    QString protocol() const { return m_protocol; }
 
 private:
-    qint64 m_requestedSize;
+    QString m_protocol;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // QUOTA_PERMISSION_CONTROLLER_H
+#endif // REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_H

@@ -19,7 +19,8 @@ clang {
     gn_args += \
         is_clang=true \
         clang_use_chrome_plugins=false \
-        clang_base_path=\"$${clang_prefix}\"
+        clang_base_path=\"$${clang_prefix}\" \
+        use_lld=false
 
     linux-clang-libc++: gn_args += use_libcxx=true
 } else {
@@ -112,12 +113,12 @@ host_build {
         PKG_CONFIG_HOST = $$(GN_PKG_CONFIG_HOST)
         pkgConfigLibDir = $$(PKG_CONFIG_LIBDIR)
         pkgConfigSysrootDir = $$(PKG_CONFIG_SYSROOT_DIR)
-        isEmpty(PKG_CONFIG_HOST): PKG_CONFIG_HOST = $$QMAKE_PKG_CONFIG_HOST
-        cross_compile {
+        isEmpty(PKG_CONFIG_HOST): cross_compile {
             !isEmpty(pkgConfigLibDir)|!isEmpty(pkgConfigSysrootDir) {
                 PKG_CONFIG_HOST = $$pkgConfigHostExecutable()
             }
         }
+        isEmpty(PKG_CONFIG_HOST): PKG_CONFIG_HOST = $$QMAKE_PKG_CONFIG_HOST
         gn_args += host_pkg_config=\"$$PKG_CONFIG_HOST\"
     }
 

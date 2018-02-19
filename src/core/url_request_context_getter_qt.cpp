@@ -44,9 +44,11 @@
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "content/network/proxy_service_mojo.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -81,6 +83,7 @@
 
 #include "api/qwebengineurlschemehandler.h"
 #include "browser_context_adapter.h"
+#include "browser_context_qt.h"
 #include "custom_protocol_handler.h"
 #include "cookie_monster_delegate_qt.h"
 #include "content_client_qt.h"
@@ -110,6 +113,14 @@ URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserConte
     , m_requestInterceptors(std::move(request_interceptors))
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
+
+    // The ProtocolHandlerRegistry and it's JobInterceptorFactory need to be
+    // created on the UI thread:
+    ProtocolHandlerRegistry* protocolHandlerRegistry =
+        ProtocolHandlerRegistryFactory::GetForBrowserContext(browserContext->browserContext());
+    DCHECK(protocolHandlerRegistry);
+    m_protocolHandlerInterceptor =
+        protocolHandlerRegistry->CreateJobInterceptorFactory();
 
     QMutexLocker lock(&m_mutex);
     m_cookieDelegate->setClient(browserContext->cookieStore());
@@ -396,6 +407,13 @@ void URLRequestContextGetterQt::updateHttpCache()
     m_httpCachePath = m_browserContext.data()->httpCachePath();
     m_httpCacheMaxSize = m_browserContext.data()->httpCacheMaxSize();
 
+    if (m_httpCacheType == BrowserContextAdapter::NoCache) {
+        content::BrowsingDataRemover *remover = content::BrowserContext::GetBrowsingDataRemover(m_browserContext.data()->browserContext());
+        remover->Remove(base::Time(), base::Time::Max(),
+            content::BrowsingDataRemover::DATA_TYPE_CACHE,
+            content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB | content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB);
+    }
+
     if (m_contextInitialized && !m_updateAllStorage && !m_updateHttpCache) {
         m_updateHttpCache = true;
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
@@ -582,6 +600,11 @@ void URLRequestContextGetterQt::generateJobFactory()
     }
 
     m_requestInterceptors.clear();
+
+    if (m_protocolHandlerInterceptor) {
+        m_protocolHandlerInterceptor->Chain(std::move(topJobFactory));
+        topJobFactory = std::move(m_protocolHandlerInterceptor);
+    }
 
     m_jobFactory = std::move(topJobFactory);
 

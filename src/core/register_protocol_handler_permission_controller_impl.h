@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,26 +37,33 @@
 **
 ****************************************************************************/
 
-#ifndef QUOTA_PERMISSION_CONTROLLER_H
-#define QUOTA_PERMISSION_CONTROLLER_H
+#ifndef REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_IMPL_H
+#define REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_IMPL_H
 
-#include "permission_controller.h"
+#include "register_protocol_handler_permission_controller.h"
+
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/common/custom_handlers/protocol_handler.h"
+
+class ProtocolHandlerRegistry;
 
 namespace QtWebEngineCore {
 
-class QWEBENGINE_EXPORT QuotaPermissionController : public PermissionController {
+class RegisterProtocolHandlerPermissionControllerImpl final : public RegisterProtocolHandlerPermissionController {
 public:
-    QuotaPermissionController(QUrl origin, qint64 requestedSize)
-        : PermissionController(std::move(origin))
-        , m_requestedSize(requestedSize)
-    {}
+    RegisterProtocolHandlerPermissionControllerImpl(
+        ProtocolHandlerRegistry *registry,
+        ProtocolHandler handler);
 
-    qint64 requestedSize() const { return m_requestedSize; }
+protected:
+    void accepted() override;
+    void rejected() override;
 
 private:
-    qint64 m_requestedSize;
+    ProtocolHandlerRegistry *m_registry;
+    ProtocolHandler m_handler;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // QUOTA_PERMISSION_CONTROLLER_H
+#endif // REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_IMPL_H

@@ -905,7 +905,7 @@ void tst_QQuickWebEngineView::javascriptClipboard()
     // make sure that 'OriginalText' is selected
     evaluateJavaScriptSync(view, "document.getElementById('myInput').select()");
     QCOMPARE(evaluateJavaScriptSync(view, "window.getSelection().toString()").toString(),
-             "OriginalText");
+             QStringLiteral("OriginalText"));
 
     // Check that the actual settings work by the
     // - return value of queryCommandEnabled and

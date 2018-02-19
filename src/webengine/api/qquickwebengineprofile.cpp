@@ -98,9 +98,10 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
 
     This enum describes the HTTP cache type:
 
-    \value MemoryHttpCache Use an in-memory cache. This is the only setting possible if
-    \c off-the-record is set or no cache path is available.
-    \value DiskHttpCache Use a disk cache. This is the default.
+    \value MemoryHttpCache Use an in-memory cache. This is the default if
+    \c off-the-record is set.
+    \value DiskHttpCache Use a disk cache. This is the default if \c off-the-record
+    is not set. Falls back to \c MemoryHttpCache if \c off-the-record is set.
     \value NoCache Disable both in-memory and disk caching. (Added in Qt 5.7)
 */
 

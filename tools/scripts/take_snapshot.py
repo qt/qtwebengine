@@ -92,6 +92,8 @@ def isInChromiumBlacklist(file_path):
             not 'third_party/chromevox' in file_path and
             not 'media/webrtc/desktop_media_list.h' in file_path and
             not 'media/webrtc/desktop_streams_registry.' in file_path and
+            not 'browser/custom_handlers/protocol_handler_registry.' in file_path and
+            not 'browser/custom_handlers/protocol_handler_registry_factory.' in file_path and
             not 'browser/net/chrome_mojo_proxy_resolver_factory.' in file_path and
             not '/browser/devtools/' in file_path and
             not '/browser/ui/webui/' in file_path and
@@ -99,6 +101,7 @@ def isInChromiumBlacklist(file_path):
             not 'common/chrome_paths' in file_path and
             not 'common/chrome_switches.' in file_path and
             not 'common/content_restriction.h' in file_path and
+            not 'common/custom_handlers/protocol_handler.' in file_path and
             not 'common/spellcheck_' in file_path and
             not 'common/url_constants' in file_path and
             not '/extensions/api/' in file_path and

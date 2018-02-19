@@ -59,6 +59,7 @@
 
 namespace QtWebEngineCore {
     class QuotaPermissionController;
+    class RegisterProtocolHandlerPermissionController;
 }
 
 
@@ -121,6 +122,24 @@ public:
 
 private:
     QSharedPointer<QtWebEngineCore::QuotaPermissionController> d_ptr;
+};
+
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineRegisterProtocolHandlerPermissionRequest {
+    Q_GADGET
+    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
+    Q_PROPERTY(QString protocol READ protocol CONSTANT FINAL)
+public:
+    QQuickWebEngineRegisterProtocolHandlerPermissionRequest() {}
+    QQuickWebEngineRegisterProtocolHandlerPermissionRequest(
+        QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerPermissionController>);
+
+    Q_INVOKABLE void accept();
+    Q_INVOKABLE void reject();
+    QUrl origin() const;
+    QString protocol() const;
+
+private:
+    QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerPermissionController> d_ptr;
 };
 
 #define LATEST_WEBENGINEVIEW_REVISION 7
@@ -567,6 +586,7 @@ Q_SIGNALS:
     Q_REVISION(7) void geometryChangeRequested(const QRect &geometry, const QRect &frameGeometry);
     Q_REVISION(7) void inspectedViewChanged();
     Q_REVISION(7) void devToolsViewChanged();
+    Q_REVISION(7) void registerProtocolHandlerPermissionRequested(const QQuickWebEngineRegisterProtocolHandlerPermissionRequest &request);
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     void testSupportChanged();
@@ -597,5 +617,6 @@ QT_END_NAMESPACE
 QML_DECLARE_TYPE(QQuickWebEngineView)
 Q_DECLARE_METATYPE(QQuickWebEngineFullScreenRequest)
 Q_DECLARE_METATYPE(QQuickWebEngineQuotaPermissionRequest)
+Q_DECLARE_METATYPE(QQuickWebEngineRegisterProtocolHandlerPermissionRequest)
 
 #endif // QQUICKWEBENGINEVIEW_P_H

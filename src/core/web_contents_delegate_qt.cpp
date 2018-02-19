@@ -58,9 +58,12 @@
 #include "web_contents_adapter_p.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
+#include "register_protocol_handler_permission_controller_impl.h"
 
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -606,6 +609,39 @@ bool WebContentsDelegateQt::CheckMediaAccessPermission(content::WebContents *web
                   << "Unsupported media stream type checked" << type;
         return false;
     }
+}
+
+void WebContentsDelegateQt::RegisterProtocolHandler(content::WebContents *webContents, const std::string &protocol, const GURL &url, bool)
+{
+    content::BrowserContext *context = webContents->GetBrowserContext();
+    if (context->IsOffTheRecord())
+        return;
+
+    ProtocolHandler handler =
+        ProtocolHandler::CreateProtocolHandler(protocol, url);
+
+    ProtocolHandlerRegistry *registry =
+        ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
+    if (registry->SilentlyHandleRegisterHandlerRequest(handler))
+        return;
+
+    QSharedPointer<RegisterProtocolHandlerPermissionController> controller(
+        new RegisterProtocolHandlerPermissionControllerImpl(registry, handler));
+    m_viewClient->runRegisterProtocolHandlerPermissionRequest(std::move(controller));
+}
+
+void WebContentsDelegateQt::UnregisterProtocolHandler(content::WebContents *webContents, const std::string &protocol, const GURL &url, bool)
+{
+    content::BrowserContext* context = webContents->GetBrowserContext();
+    if (context->IsOffTheRecord())
+        return;
+
+    ProtocolHandler handler =
+        ProtocolHandler::CreateProtocolHandler(protocol, url);
+
+    ProtocolHandlerRegistry* registry =
+        ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
+    registry->RemoveHandler(handler);
 }
 
 FaviconManager *WebContentsDelegateQt::faviconManager()

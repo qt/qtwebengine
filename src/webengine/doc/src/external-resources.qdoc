@@ -141,3 +141,8 @@
     \externalpage https://wiki.greasespot.net/Metadata_Block#.40name
     \title Metadata Block
 */
+
+/*!
+    \externalpage https://developer.mozilla.org/en-US/docs/Web/API/Navigator/registerProtocolHandler
+    \title registerProtocolHandler
+*/

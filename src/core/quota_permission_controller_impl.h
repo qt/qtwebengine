@@ -37,30 +37,30 @@
 **
 ****************************************************************************/
 
-#ifndef QUOTA_PERMISSION_CONTROLLER_P_H
-#define QUOTA_PERMISSION_CONTROLLER_P_H
+#ifndef QUOTA_PERMISSION_CONTROLLER_IMPL_H
+#define QUOTA_PERMISSION_CONTROLLER_IMPL_H
 
+#include "quota_permission_controller.h"
 #include "quota_permission_context_qt.h"
-#include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
 
-class QuotaPermissionControllerPrivate {
+class QuotaPermissionControllerImpl final : public QuotaPermissionController {
 public:
-    QuotaPermissionControllerPrivate(QuotaPermissionContextQt *context,
-                                     const content::StorageQuotaParams &params,
-                                     const content::QuotaPermissionContext::PermissionCallback &callback);
-    ~QuotaPermissionControllerPrivate();
+    QuotaPermissionControllerImpl(
+        QuotaPermissionContextQt *context,
+        const content::StorageQuotaParams &params,
+        const content::QuotaPermissionContext::PermissionCallback &callback);
+
+protected:
+    void accepted() override;
+    void rejected() override;
 
 private:
     scoped_refptr<QuotaPermissionContextQt> m_context;
-    QUrl m_originUrl;
-    qint64 m_requestedSize;
     content::QuotaPermissionContext::PermissionCallback m_callback;
-
-    friend class QuotaPermissionController;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // QUOTA_PERMISSION_CONTROLLER_P_H
+#endif // QUOTA_PERMISSION_CONTROLLER_IMPL_H

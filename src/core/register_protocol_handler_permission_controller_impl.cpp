@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -36,27 +36,30 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "register_protocol_handler_permission_controller_impl.h"
 
-#ifndef QUOTA_PERMISSION_CONTROLLER_H
-#define QUOTA_PERMISSION_CONTROLLER_H
-
-#include "permission_controller.h"
+#include "type_conversion.h"
 
 namespace QtWebEngineCore {
 
-class QWEBENGINE_EXPORT QuotaPermissionController : public PermissionController {
-public:
-    QuotaPermissionController(QUrl origin, qint64 requestedSize)
-        : PermissionController(std::move(origin))
-        , m_requestedSize(requestedSize)
-    {}
+RegisterProtocolHandlerPermissionControllerImpl::RegisterProtocolHandlerPermissionControllerImpl(
+    ProtocolHandlerRegistry *registry,
+    ProtocolHandler handler)
+    : RegisterProtocolHandlerPermissionController(
+        toQt(handler.url()),
+        toQt(handler.protocol()))
+    , m_registry(registry)
+    , m_handler(handler)
+{}
 
-    qint64 requestedSize() const { return m_requestedSize; }
+void RegisterProtocolHandlerPermissionControllerImpl::accepted()
+{
+    m_registry->OnAcceptRegisterProtocolHandler(m_handler);
+}
 
-private:
-    qint64 m_requestedSize;
-};
+void RegisterProtocolHandlerPermissionControllerImpl::rejected()
+{
+    m_registry->OnIgnoreRegisterProtocolHandler(m_handler);
+}
 
 } // namespace QtWebEngineCore
-
-#endif // QUOTA_PERMISSION_CONTROLLER_H
