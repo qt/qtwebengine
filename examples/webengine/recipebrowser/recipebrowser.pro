@@ -10,6 +10,9 @@ SOURCES += main.cpp
 
 RESOURCES += resources/resources.qrc
 
+# Make sure Qt Quick compiler does not remove the source code of the .js files.
+QTQUICK_COMPILER_SKIPPED_RESOURCES = resources/resources.qrc
+
 DISTFILES += \
     resources/pages/assets/3rdparty/MARKDOWN-LICENSE.txt \
     resources/pages/assets/3rdparty/MARKED-LICENSE.txt

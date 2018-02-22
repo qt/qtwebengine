@@ -141,4 +141,18 @@
             directory specified by
             QLibraryInfo::location(QLibraryInfo::TranslationsPath)
     \endlist
+
+    \section2 JavaScript Files in Qt Resource Files
+
+    If your WebEngine application is built using the Qt Quick Compiler, and the application ships
+    JavaScript files inside .qrc resources, and these files are supposed to be loaded from inside
+    HTML pages, make sure to specify the resource files in a \c QTQUICK_COMPILER_SKIPPED_RESOURCES
+    qmake variable inside your project. This prevents the Qt Quick Compiler from trying to generate
+    C++ code for the corresponding JavaScript code, as well as removing the original JavaScript code
+    from the Qt resources file, which would lead to broken HTML pages. For example:
+
+    \code
+    QTQUICK_COMPILER_SKIPPED_RESOURCES += resources/my_resource.qrc
+    \endcode
+
 */

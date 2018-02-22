@@ -35,14 +35,34 @@ TestWebEngineView {
     width: 200
     height: 400
 
+    SignalSpy {
+        id: urlChangedSpy
+        target: webEngineView
+        signalName: "urlChanged"
+    }
+
     TestCase {
         name: "WebEngineViewLoadHtml"
+        when: windowShown
 
         function test_loadProgressAfterLoadHtml() {
             compare(webEngineView.loadProgress, 0)
             webEngineView.loadHtml("<html><head><title>Test page 1</title></head><body>Hello.</body></html>")
             verify(webEngineView.waitForLoadSucceeded())
             compare(webEngineView.loadProgress, 100)
+        }
+
+        function test_dataURLFragment() {
+            webEngineView.loadHtml("<html><body>" +
+                                   "<a id='link' href='#anchor'>anchor</a>" +
+                                   "</body></html>");
+            verify(webEngineView.waitForLoadSucceeded());
+
+            urlChangedSpy.clear();
+            var center = getElementCenter("link");
+            mouseClick(webEngineView, center.x, center.y);
+            urlChangedSpy.wait();
+            compare(webEngineView.url.toString().split("#")[1], "anchor");
         }
     }
 }

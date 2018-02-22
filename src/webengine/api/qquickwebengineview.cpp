@@ -89,9 +89,6 @@
 #include <QTimer>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
-#ifndef QT_NO_ACCESSIBILITY
-#include <private/qquickaccessibleattached_p.h>
-#endif // QT_NO_ACCESSIBILITY
 
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
@@ -768,11 +765,6 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     d->q_ptr = this;
     this->setActiveFocusOnTab(true);
     this->setFlags(QQuickItem::ItemIsFocusScope | QQuickItem::ItemAcceptsDrops);
-
-#ifndef QT_NO_ACCESSIBILITY
-    QQuickAccessibleAttached *accessible = QQuickAccessibleAttached::qmlAttachedProperties(this);
-    accessible->setRole(QAccessible::Grouping);
-#endif // QT_NO_ACCESSIBILITY
 }
 
 QQuickWebEngineView::~QQuickWebEngineView()
@@ -1777,6 +1769,16 @@ void QQuickWebEngineViewPrivate::userScripts_clear(QQmlListProperty<QQuickWebEng
 void QQuickWebEngineView::componentComplete()
 {
     QQuickItem::componentComplete();
+
+#ifndef QT_NO_ACCESSIBILITY
+    // Enable accessibility via a dynamic QQmlProperty, instead of using private API call
+    // QQuickAccessibleAttached::qmlAttachedProperties(this). The qmlContext is required, otherwise
+    // it is not possible to reference attached properties.
+    QQmlContext *qmlContext = QQmlEngine::contextForObject(this);
+    QQmlProperty role(this, QStringLiteral("Accessible.role"), qmlContext);
+    role.write(QAccessible::Grouping);
+#endif // QT_NO_ACCESSIBILITY
+
     QTimer::singleShot(0, this, &QQuickWebEngineView::lazyInitialize);
 }
 

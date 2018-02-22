@@ -17,6 +17,10 @@ SOURCES = \
 RESOURCES = \
     resources/markdowneditor.qrc
 
+# Disable Qt Quick compiler because the example doesn't use QML, but more importantly so that
+# the source code of the .js files is not removed from the embedded qrc file.
+CONFIG -= qtquickcompiler
+
 FORMS += \
     mainwindow.ui
 

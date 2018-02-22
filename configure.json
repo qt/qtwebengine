@@ -407,8 +407,9 @@
             "output": [ "privateFeature" ]
         },
         "webengine-v8-snapshot-support": {
+            "label" : "Building v8 snapshot supported",
             "autoDetect": "features.webengine-v8-snapshot",
-            "condition": "!config.unix || !features.webengine-embedded-build || tests.webengine-host-compiler",
+            "condition": "!config.unix || !features.cross_compile || arch.arm64 || tests.webengine-host-compiler",
             "output": [ "privateFeature" ]
         },
         "webengine-system-khr" : {
@@ -616,6 +617,11 @@
                 "webengine-system-ninja",
                 "webengine-geolocation",
                 "webengine-v8-snapshot",
+                {
+                    "type": "feature",
+                    "args": "webengine-v8-snapshot-support",
+                    "condition": "config.unix && config.cross_compile && features.webengine-v8-snapshot"
+                },
                 {
                     "type": "feature",
                     "args": "webengine-alsa",
