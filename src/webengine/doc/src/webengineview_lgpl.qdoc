@@ -1439,7 +1439,7 @@
     are not visible; otherwise some debug information may appear
     in the inspected WebEngineView.
 
-    \sa devToolView
+    \sa devToolsView
 */
 
 /*!

@@ -48,6 +48,7 @@
 
 namespace QtWebEngine {
 
+/*! \internal */
 int processMain(int argc, const char **argv)
 {
     QtWebEngineCore::ContentMainDelegateQt delegate;
