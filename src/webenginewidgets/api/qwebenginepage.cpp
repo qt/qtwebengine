@@ -2237,7 +2237,9 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
     }
     d->currentPrinter = printer;
 #endif // ENABLE_PRINTING
-    quint64 requestId = d->adapter->printToPDFCallbackResult(printer->pageLayout(), printer->colorMode() == QPrinter::Color);
+    quint64 requestId = d->adapter->printToPDFCallbackResult(printer->pageLayout(),
+                                                             printer->colorMode() == QPrinter::Color,
+                                                             false);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 #else // if defined(ENABLE_PDF)
     Q_UNUSED(printer);

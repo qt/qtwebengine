@@ -179,7 +179,9 @@ public:
     void endDragging(const QPoint &clientPos, const QPoint &screenPos);
     void leaveDrag();
     void printToPDF(const QPageLayout&, const QString&);
-    quint64 printToPDFCallbackResult(const QPageLayout &, const bool colorMode = true);
+    quint64 printToPDFCallbackResult(const QPageLayout &,
+                                     bool colorMode = true,
+                                     bool useCustomMargins = true);
 
     // meant to be used within WebEngineCore only
     content::WebContents *webContents() const;

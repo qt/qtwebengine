@@ -1149,7 +1149,8 @@ void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString
 }
 
 quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayout,
-                                                     const bool colorMode)
+                                                     bool colorMode,
+                                                     bool useCustomMargins)
 {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     Q_D(WebContentsAdapter);
@@ -1158,6 +1159,7 @@ quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayo
                                                                  d->nextRequestId);
     PrintViewManagerQt::FromWebContents(webContents())->PrintToPDFWithCallback(pageLayout,
                                                                                colorMode,
+                                                                               useCustomMargins,
                                                                                callback);
     return d->nextRequestId++;
 #else

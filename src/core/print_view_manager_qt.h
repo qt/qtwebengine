@@ -93,6 +93,7 @@ public:
                                     const PrintToPDFFileCallback& callback);
     void PrintToPDFWithCallback(const QPageLayout &pageLayout,
                                 bool printInColor,
+                                bool useCustomMargins,
                                 const PrintToPDFCallback &callback);
 #endif  // ENABLE_BASIC_PRINTING
 
@@ -118,7 +119,7 @@ protected:
     void OnMetafileReadyForPrinting(const PrintHostMsg_DidPreviewDocument_Params& params);
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-    bool PrintToPDFInternal(const QPageLayout &, bool printInColor);
+    bool PrintToPDFInternal(const QPageLayout &, bool printInColor, bool useCustomMargins = true);
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
     base::FilePath m_pdfOutputPath;
