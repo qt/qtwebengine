@@ -3974,8 +3974,8 @@ void tst_QWebEnginePage::setZoomFactor()
 
     const QUrl urlToLoad("qrc:/resources/test1.html");
 
-    QSignalSpy finishedSpy(m_page, SIGNAL(loadFinished(bool)));
-    m_page->setUrl(urlToLoad);
+    QSignalSpy finishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.load(urlToLoad);
     QTRY_COMPARE(finishedSpy.count(), 1);
     QVERIFY(finishedSpy.at(0).first().toBool());
     QVERIFY(qFuzzyCompare(page.zoomFactor(), 2.5));

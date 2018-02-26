@@ -226,6 +226,8 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , fullscreenMode(false)
     , webChannel(nullptr)
     , webChannelWorldId(QWebEngineScript::MainWorld)
+    , defaultAudioMuted(false)
+    , defaultZoomFactor(1.0)
 #if defined(ENABLE_PRINTING)
     , currentPrinter(nullptr)
 #endif
@@ -234,6 +236,13 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
 
     qRegisterMetaType<QWebEngineQuotaPermissionRequest>();
     qRegisterMetaType<QWebEngineRegisterProtocolHandlerPermissionRequest>();
+
+    // See wasShown() and wasHidden().
+    wasShownTimer.setSingleShot(true);
+    QObject::connect(&wasShownTimer, &QTimer::timeout, [this](){
+        ensureInitialized();
+        wasShown();
+    });
 }
 
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
@@ -254,6 +263,22 @@ RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostVie
     // If the delegate is not for a popup, but for a newly created QWebEngineView, the parent is 0
     // just like before.
     return new RenderWidgetHostViewQtDelegateWidget(client, this->view);
+}
+
+void QWebEnginePagePrivate::initializationFinished()
+{
+    if (m_backgroundColor != Qt::white)
+        adapter->backgroundColorChanged();
+    if (webChannel)
+        adapter->setWebChannel(webChannel, webChannelWorldId);
+    if (defaultAudioMuted != adapter->isAudioMuted())
+        adapter->setAudioMuted(defaultAudioMuted);
+    if (!qFuzzyCompare(adapter->currentZoomFactor(), defaultZoomFactor))
+        adapter->setZoomFactor(defaultZoomFactor);
+
+    scriptCollection.d->initializationFinished(adapter);
+
+    m_isBeingAdopted = false;
 }
 
 void QWebEnginePagePrivate::titleChanged(const QString &title)
@@ -426,18 +451,10 @@ void QWebEnginePagePrivate::adoptNewWindowImpl(QWebEnginePage *newPage,
 
     // Overwrite the new page's WebContents with ours.
     newPage->d_func()->adapter = newWebContents;
-    newWebContents->initialize(newPage->d_func());
-    newPage->d_func()->scriptCollection.d->rebindToContents(newWebContents);
+    newWebContents->setClient(newPage->d_func());
+
     if (!initialGeometry.isEmpty())
         emit newPage->geometryChangeRequested(initialGeometry);
-
-    // If the constructor of the QWebEnginePage descendant set a web channel,
-    // set it on the new adapter.
-    newWebContents->setWebChannel(newPage->d_func()->webChannel
-                                  , newPage->d_func()->webChannelWorldId);
-
-    // Page has finished the adoption process.
-    newPage->d_func()->m_isBeingAdopted = false;
 }
 
 bool QWebEnginePagePrivate::isBeingAdopted()
@@ -599,6 +616,11 @@ void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
     if (!a)
         return;
 
+    if (!adapter->isInitialized()) {
+        a->setEnabled(false);
+        return;
+    }
+
     bool enabled = true;
 
     switch (action) {
@@ -653,10 +675,8 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
     QSharedPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this);
     if (newWebContents) {
         adapter = std::move(newWebContents);
-        adapter->initialize(this);
-        if (webChannel)
-            adapter->setWebChannel(webChannel, webChannelWorldId);
-        scriptCollection.d->rebindToContents(adapter);
+        adapter->setClient(this);
+        adapter->loadDefault();
     }
 }
 
@@ -687,6 +707,7 @@ QSharedPointer<BrowserContextAdapter> QWebEnginePagePrivate::browserContextAdapt
 
 WebContentsAdapter *QWebEnginePagePrivate::webContentsAdapter()
 {
+    ensureInitialized();
     return adapter.data();
 }
 
@@ -696,13 +717,19 @@ const QObject *QWebEnginePagePrivate::holdingQObject() const
     return q;
 }
 
+void QWebEnginePagePrivate::ensureInitialized() const
+{
+    if (!adapter->isInitialized())
+        adapter->loadDefault();
+}
+
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(parent)
     , d_ptr(new QWebEnginePagePrivate())
 {
     Q_D(QWebEnginePage);
     d->q_ptr = this;
-    d->adapter->initialize(d);
+    d->adapter->setClient(d);
 }
 
 /*!
@@ -849,15 +876,14 @@ QWebEnginePage::QWebEnginePage(QWebEngineProfile *profile, QObject* parent)
 {
     Q_D(QWebEnginePage);
     d->q_ptr = this;
-    d->adapter->initialize(d);
+    d->adapter->setClient(d);
 }
 
 QWebEnginePage::~QWebEnginePage()
 {
     Q_D(QWebEnginePage);
     setDevToolsPage(nullptr);
-    if (d->adapter)
-        d->adapter->stopFinding();
+    d->adapter->stopFinding();
     QWebEngineViewPrivate::bind(d->view, 0);
 }
 
@@ -976,6 +1002,7 @@ void QWebEnginePage::save(const QString &filePath,
                           QWebEngineDownloadItem::SavePageFormat format) const
 {
     Q_D(const QWebEnginePage);
+    d->ensureInitialized();
     d->adapter->save(filePath, format);
 }
 
@@ -988,19 +1015,18 @@ void QWebEnginePage::save(const QString &filePath,
     \sa recentlyAudible
 */
 bool QWebEnginePage::isAudioMuted() const {
-    const Q_D(QWebEnginePage);
-    return d->adapter->isAudioMuted();
+    Q_D(const QWebEnginePage);
+    if (d->adapter->isInitialized())
+        return d->adapter->isAudioMuted();
+    return d->defaultAudioMuted;
 }
 
 void QWebEnginePage::setAudioMuted(bool muted) {
     Q_D(QWebEnginePage);
-    bool _isAudioMuted = isAudioMuted();
-    d->adapter->setAudioMuted(muted);
-    if (_isAudioMuted != muted) {
-        Q_EMIT audioMutedChanged(muted);
-    }
+    d->defaultAudioMuted = muted;
+    if (d->adapter->isInitialized())
+        d->adapter->setAudioMuted(muted);
 }
-
 
 /*!
     \property QWebEnginePage::recentlyAudible
@@ -1013,8 +1039,8 @@ void QWebEnginePage::setAudioMuted(bool muted) {
 */
 bool QWebEnginePage::recentlyAudible() const
 {
-    const Q_D(QWebEnginePage);
-    return d->adapter->recentlyAudible();
+    Q_D(const QWebEnginePage);
+    return d->adapter->isInitialized() && d->adapter->recentlyAudible();
 }
 
 void QWebEnginePage::setView(QWidget *view)
@@ -1225,6 +1251,7 @@ QAction *QWebEnginePage::action(WebAction action) const
 void QWebEnginePage::triggerAction(WebAction action, bool)
 {
     Q_D(QWebEnginePage);
+    d->ensureInitialized();
     const QtWebEngineCore::WebEngineContextMenuData &menuData = *d->contextData.d;
     switch (action) {
     case Back:
@@ -1471,6 +1498,10 @@ void QWebEnginePage::replaceMisspelledWord(const QString &replacement)
 void QWebEnginePage::findText(const QString &subString, FindFlags options, const QWebEngineCallback<bool> &resultCallback)
 {
     Q_D(QWebEnginePage);
+    if (!d->adapter->isInitialized()) {
+        d->m_callbacks.invokeEmpty(resultCallback);
+        return;
+    }
     if (subString.isEmpty()) {
         d->adapter->stopFinding();
         d->m_callbacks.invokeEmpty(resultCallback);
@@ -1490,11 +1521,26 @@ bool QWebEnginePage::event(QEvent *e)
 
 void QWebEnginePagePrivate::wasShown()
 {
+    if (!adapter->isInitialized()) {
+        // On the one hand, it is too early to initialize here. The application
+        // may call show() before load(), or it may call show() from
+        // createWindow(), and then we would create an unnecessary blank
+        // WebContents here. On the other hand, if the application calls show()
+        // then it expects something to be shown, so we have to initialize.
+        // Therefore we have to delay the initialization via the event loop.
+        wasShownTimer.start();
+        return;
+    }
     adapter->wasShown();
 }
 
 void QWebEnginePagePrivate::wasHidden()
 {
+    if (!adapter->isInitialized()) {
+        // Cancel timer from wasShown() above.
+        wasShownTimer.stop();
+        return;
+    }
     adapter->wasHidden();
 }
 
@@ -1534,7 +1580,7 @@ void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &
 {
     Q_Q(QWebEnginePage);
     bool accepted = q->acceptNavigationRequest(url, static_cast<QWebEnginePage::NavigationType>(navigationType), isMainFrame);
-    if (accepted && adapter && adapter->isFindTextInProgress())
+    if (accepted && adapter->isFindTextInProgress())
         adapter->stopFinding();
     navigationRequestAction = accepted ? WebContentsAdapterClient::AcceptRequest : WebContentsAdapterClient::IgnoreRequest;
 }
@@ -1655,6 +1701,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     Q_D(QWebEnginePage);
     if (!d->contextData.d)
         return nullptr;
+    d->ensureInitialized();
 
     QMenu *menu = new QMenu(d->view);
     const WebEngineContextMenuData &contextMenuData = *d->contextData.d;
@@ -1767,6 +1814,7 @@ WebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
 void QWebEnginePage::download(const QUrl& url, const QString& filename)
 {
     Q_D(QWebEnginePage);
+    d->ensureInitialized();
     d->adapter->download(url, filename);
 }
 
@@ -1791,6 +1839,7 @@ void QWebEnginePage::load(const QWebEngineHttpRequest& request)
 void QWebEnginePage::toHtml(const QWebEngineCallback<const QString &> &resultCallback) const
 {
     Q_D(const QWebEnginePage);
+    d->ensureInitialized();
     quint64 requestId = d->adapter->fetchDocumentMarkup();
     d->m_callbacks.registerCallback(requestId, resultCallback);
 }
@@ -1798,6 +1847,7 @@ void QWebEnginePage::toHtml(const QWebEngineCallback<const QString &> &resultCal
 void QWebEnginePage::toPlainText(const QWebEngineCallback<const QString &> &resultCallback) const
 {
     Q_D(const QWebEnginePage);
+    d->ensureInitialized();
     quint64 requestId = d->adapter->fetchDocumentInnerText();
     d->m_callbacks.registerCallback(requestId, resultCallback);
 }
@@ -1867,7 +1917,7 @@ QIcon QWebEnginePage::icon() const
 {
     Q_D(const QWebEnginePage);
 
-    if (d->iconUrl.isEmpty())
+    if (d->iconUrl.isEmpty() || !d->adapter->isInitialized())
         return QIcon();
 
     return d->adapter->faviconManager()->getIcon();
@@ -1876,24 +1926,30 @@ QIcon QWebEnginePage::icon() const
 qreal QWebEnginePage::zoomFactor() const
 {
     Q_D(const QWebEnginePage);
-    return d->adapter->currentZoomFactor();
+    if (d->adapter->isInitialized())
+        return d->adapter->currentZoomFactor();
+    return d->defaultZoomFactor;
 }
 
 void QWebEnginePage::setZoomFactor(qreal factor)
 {
     Q_D(QWebEnginePage);
-    d->adapter->setZoomFactor(factor);
+    d->defaultZoomFactor = factor;
+    if (d->adapter->isInitialized())
+        d->adapter->setZoomFactor(factor);
 }
 
 void QWebEnginePage::runJavaScript(const QString &scriptSource)
 {
     Q_D(QWebEnginePage);
+    d->ensureInitialized();
     d->adapter->runJavaScript(scriptSource, QWebEngineScript::MainWorld);
 }
 
 void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback)
 {
     Q_D(QWebEnginePage);
+    d->ensureInitialized();
     quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, QWebEngineScript::MainWorld);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 }
@@ -1901,12 +1957,14 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngine
 void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId)
 {
     Q_D(QWebEnginePage);
+    d->ensureInitialized();
     d->adapter->runJavaScript(scriptSource, worldId);
 }
 
 void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, const QWebEngineCallback<const QVariant &> &resultCallback)
 {
     Q_D(QWebEnginePage);
+    d->ensureInitialized();
     quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, worldId);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 }
@@ -2010,6 +2068,7 @@ void QWebEnginePage::setDevToolsPage(QWebEnginePage *devToolsPage)
     Q_D(QWebEnginePage);
     if (d->devToolsPage == devToolsPage)
         return;
+    d->ensureInitialized();
     QWebEnginePage *oldDevTools = d->devToolsPage;
     d->devToolsPage = nullptr;
     if (oldDevTools)
@@ -2152,6 +2211,7 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &page
         return;
     }
 #endif // ENABLE_PRINTING
+    d->ensureInitialized();
     d->adapter->printToPDF(pageLayout, filePath);
 #else
     Q_UNUSED(filePath);
@@ -2181,6 +2241,7 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
         return;
     }
 #endif // ENABLE_PRINTING
+    d->ensureInitialized();
     quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 #else // if defined(ENABLE_PDF)
@@ -2213,6 +2274,7 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
     }
     d->currentPrinter = printer;
 #endif // ENABLE_PRINTING
+    d->ensureInitialized();
     quint64 requestId = d->adapter->printToPDFCallbackResult(printer->pageLayout(),
                                                              printer->colorMode() == QPrinter::Color,
                                                              false);

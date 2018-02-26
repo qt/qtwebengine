@@ -61,6 +61,7 @@
 
 #include <QtCore/qcompilerdetection.h>
 #include <QtCore/QPointer>
+#include <QtCore/QTimer>
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegate;
@@ -87,6 +88,7 @@ public:
 
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override { return CreateRenderWidgetHostViewQtDelegate(client); }
+    void initializationFinished() override;
     void titleChanged(const QString&) override;
     void urlChanged(const QUrl&) override;
     void iconChanged(const QUrl&) override;
@@ -158,6 +160,7 @@ public:
     void recreateFromSerializedHistory(QDataStream &input);
 
     void setFullScreenMode(bool);
+    void ensureInitialized() const;
 
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
     QWebEngineHistory *history;
@@ -177,6 +180,9 @@ public:
     bool m_navigationActionTriggered;
     QPointer<QWebEnginePage> inspectedPage;
     QPointer<QWebEnginePage> devToolsPage;
+    bool defaultAudioMuted;
+    qreal defaultZoomFactor;
+    QTimer wasShownTimer;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

@@ -93,6 +93,7 @@ public:
 
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
+    void initializationFinished() override;
     void titleChanged(const QString&) override;
     void urlChanged(const QUrl&) override;
     void iconChanged(const QUrl&) override;
@@ -185,6 +186,7 @@ public:
     QPointer<QQuickWebEngineView> inspectedView;
     QPointer<QQuickWebEngineView> devToolsView;
     uint m_webChannelWorld;
+    bool m_isBeingAdopted;
 
 private:
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;

@@ -73,7 +73,7 @@ public:
     QList<QWebEngineScript> toList(const QString &scriptName = QString()) const;
     QWebEngineScript find(const QString & name) const;
 
-    void rebindToContents(QSharedPointer<QtWebEngineCore::WebContentsAdapter> contents);
+    void initializationFinished(QSharedPointer<QtWebEngineCore::WebContentsAdapter> contents);
 
     void insert(const QWebEngineScript &);
     bool remove(const QWebEngineScript &);
@@ -83,6 +83,7 @@ public:
 private:
     QtWebEngineCore::UserResourceControllerHost *m_scriptController;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> m_contents;
+    QList<QWebEngineScript> m_scripts;
 };
 
 QT_END_NAMESPACE

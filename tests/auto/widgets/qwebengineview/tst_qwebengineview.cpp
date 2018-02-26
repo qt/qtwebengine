@@ -873,6 +873,7 @@ void tst_QWebEngineView::stopSettingFocusWhenDisabled()
     QFETCH(bool, focusResult);
 
     QWebEngineView webView;
+    webView.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     webView.resize(640, 480);
     webView.show();
     webView.setEnabled(viewEnabled);

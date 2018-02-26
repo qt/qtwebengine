@@ -52,6 +52,8 @@
 namespace content {
 class WebContents;
 struct WebPreferences;
+struct OpenURLParams;
+class SiteInstance;
 }
 
 QT_BEGIN_NAMESPACE
@@ -78,7 +80,18 @@ public:
     // Takes ownership of the WebContents.
     WebContentsAdapter(content::WebContents *webContents = 0);
     ~WebContentsAdapter();
-    void initialize(WebContentsAdapterClient *adapterClient);
+
+    void setClient(WebContentsAdapterClient *adapterClient);
+
+    bool isInitialized() const;
+
+    // These and only these methods will initialize the WebContentsAdapter. All
+    // other methods below will do nothing until one of these has been called.
+    void loadDefault();
+    void load(const QUrl &url);
+    void load(const QWebEngineHttpRequest &request);
+    void setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl);
+
     void reattachRWHV();
 
     bool canGoBack() const;
@@ -86,9 +99,6 @@ public:
     void stop();
     void reload();
     void reloadAndBypassCache();
-    void load(const QUrl &url);
-    void load(const QWebEngineHttpRequest &request);
-    void setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl);
     void save(const QString &filePath = QString(), int savePageFormat = -1);
     QUrl activeUrl() const;
     QUrl requestedUrl() const;
@@ -183,15 +193,15 @@ public:
                                      bool colorMode = true,
                                      bool useCustomMargins = true);
 
-    // meant to be used within WebEngineCore only
-    content::WebContents *webContents() const;
     void replaceMisspelling(const QString &word);
-
     void viewSource();
     bool canViewSource();
     void focusIfNecessary();
     bool isFindTextInProgress() const;
 
+    // meant to be used within WebEngineCore only
+    void initialize(content::SiteInstance *site);
+    content::WebContents *webContents() const;
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter)
