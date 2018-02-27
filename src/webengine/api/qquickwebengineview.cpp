@@ -631,14 +631,6 @@ const QObject *QQuickWebEngineViewPrivate::holdingQObject() const
     return q;
 }
 
-void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
-{
-    Q_Q(QQuickWebEngineView);
-    this->devicePixelRatio = devicePixelRatio;
-    QScreen *screen = q->window() ? q->window()->screen() : QGuiApplication::primaryScreen();
-    m_dpiScale = devicePixelRatio / screen->devicePixelRatio();
-}
-
 #ifndef QT_NO_ACCESSIBILITY
 QQuickWebEngineViewAccessible::QQuickWebEngineViewAccessible(QQuickWebEngineView *o)
     : QAccessibleObject(o)
