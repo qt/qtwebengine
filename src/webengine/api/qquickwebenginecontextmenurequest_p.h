@@ -89,7 +89,7 @@ public:
         MediaCanRotate = 0x200,
     };
     Q_DECLARE_FLAGS(MediaFlags, MediaFlag)
-
+    Q_FLAG(MediaFlags)
 
     // Must match QWebEngineCore::WebEngineContextMenuData::EditFlags:
     enum EditFlag {
@@ -104,6 +104,7 @@ public:
         CanEditRichly = 0x100,
     };
     Q_DECLARE_FLAGS(EditFlags, EditFlag)
+    Q_FLAG(EditFlags)
 
     Q_PROPERTY(int x READ x CONSTANT FINAL)
     Q_PROPERTY(int y READ y CONSTANT FINAL)
@@ -139,8 +140,6 @@ private:
     QQuickWebEngineContextMenuRequest(const QtWebEngineCore::WebEngineContextMenuData &data, QObject *parent = nullptr);
     QScopedPointer<QtWebEngineCore::WebEngineContextMenuData> m_data;
     bool m_accepted;
-    Q_FLAGS(MediaFlags)
-    Q_FLAGS(EditFlags)
     friend class QQuickWebEngineView;
     friend class QQuickWebEngineViewPrivate;
     Q_DISABLE_COPY(QQuickWebEngineContextMenuRequest)

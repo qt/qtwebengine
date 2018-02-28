@@ -134,8 +134,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport NOTIFY testSupportChanged FINAL)
 #endif
 
-    Q_FLAGS(FindFlags);
-
 public:
     QQuickWebEngineView(QQuickItem *parent = 0);
     ~QQuickWebEngineView();
@@ -296,6 +294,7 @@ public:
         FindCaseSensitively = 2,
     };
     Q_DECLARE_FLAGS(FindFlags, FindFlag)
+    Q_FLAG(FindFlags)
 
     // must match QPageSize::PageSizeId
     enum PrintedPageSizeId {
