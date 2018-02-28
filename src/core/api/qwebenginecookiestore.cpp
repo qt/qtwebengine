@@ -333,7 +333,6 @@ void QWebEngineCookieStore::deleteAllCookies()
 }
 
 /*!
-    \fn void QWebEngineCookieStore::setCookieFilter(FunctorOrLambda filterCallback)
     \since 5.11
 
     Installs a cookie filter that can prevent sites and resources from using cookies.
