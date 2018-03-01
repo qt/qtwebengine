@@ -37,37 +37,75 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEQUOTAPERMISSIONREQUEST_H
-#define QWEBENGINEQUOTAPERMISSIONREQUEST_H
+#include "qwebenginequotapermissionrequest.h"
 
-#include <QtCore/qsharedpointer.h>
-#include <QtCore/qurl.h>
-#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
-
-namespace QtWebEngineCore {
-    class QuotaPermissionController;
-}
+#include "quota_permission_controller.h"
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineQuotaPermissionRequest {
-    Q_GADGET
-    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
-    Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)
-public:
-    explicit QWebEngineQuotaPermissionRequest() { Q_UNREACHABLE(); }
-    explicit QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller);
-    Q_INVOKABLE void accept();
-    Q_INVOKABLE void reject();
-    QUrl origin() const;
-    qint64 requestedSize() const;
+/*!
+    \class QWebEngineQuotaPermissionRequest
+    \brief The QWebEngineQuotaPermissionRequest class enables accepting or rejecting
+    requests for larger persistent storage than the application's current allocation
+    in File System API.
 
-private:
-    QSharedPointer<QtWebEngineCore::QuotaPermissionController> d_ptr;
-};
+    \since 5.11
+
+    \inmodule QtWebEngineCore
+*/
+
+/*! \fn QWebEngineQuotaPermissionRequest::QWebEngineQuotaPermissionRequest()
+    \internal
+*/
+
+/*! \internal */
+QWebEngineQuotaPermissionRequest::QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
+    : d_ptr(controller)
+{
+}
+
+/*!
+    Rejects a request for larger persistent storage.
+*/
+void QWebEngineQuotaPermissionRequest::reject()
+{
+    d_ptr->reject();
+}
+
+/*!
+    Accepts a request for larger persistent storage.
+*/
+void QWebEngineQuotaPermissionRequest::accept()
+{
+    d_ptr->accept();
+}
+
+/*!
+    \property QWebEngineQuotaPermissionRequest::origin
+    \brief The URL of the web page that issued the quota permission request.
+*/
+
+QUrl QWebEngineQuotaPermissionRequest::origin() const
+{
+    return d_ptr->origin();
+}
+
+/*!
+    \property QWebEngineQuotaPermissionRequest::requestedSize
+    \brief Contains the size of the requested disk space in bytes.
+*/
+
+qint64 QWebEngineQuotaPermissionRequest::requestedSize() const
+{
+    return d_ptr->requestedSize();
+}
+
+/*! \fn bool QWebEngineQuotaPermissionRequest::operator==(const QWebEngineQuotaPermissionRequest &that) const
+    Returns \c true if the objects are equal.
+*/
+
+/*! \fn bool QWebEngineQuotaPermissionRequest::operator!=(const QWebEngineQuotaPermissionRequest &that) const
+    Returns \c true if the objects are not equal.
+*/
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QWebEngineQuotaPermissionRequest)
-
-#endif // QWEBENGINEQUOTAPERMISSIONREQUEST_H

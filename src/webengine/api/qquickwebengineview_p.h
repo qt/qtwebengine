@@ -57,12 +57,6 @@
 #include <QtGui/qcolor.h>
 
 
-namespace QtWebEngineCore {
-    class QuotaPermissionController;
-    class RegisterProtocolHandlerPermissionController;
-}
-
-
 QT_BEGIN_NAMESPACE
 
 class QQmlWebChannel;
@@ -82,6 +76,8 @@ class QQuickWebEngineProfile;
 class QQuickWebEngineSettings;
 class QQuickWebEngineFormValidationMessageRequest;
 class QQuickWebEngineViewPrivate;
+class QWebEngineQuotaPermissionRequest;
+class QWebEngineRegisterProtocolHandlerPermissionRequest;
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
 class QQuickWebEngineTestSupport;
@@ -104,42 +100,6 @@ private:
     QQuickWebEngineViewPrivate *m_viewPrivate;
     const QUrl m_origin;
     const bool m_toggleOn;
-};
-
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineQuotaPermissionRequest {
-    Q_GADGET
-    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
-    Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)
-public:
-    QQuickWebEngineQuotaPermissionRequest() {}
-    QQuickWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller);
-    ~QQuickWebEngineQuotaPermissionRequest();
-
-    Q_INVOKABLE void accept();
-    Q_INVOKABLE void reject();
-    QUrl origin() const;
-    qint64 requestedSize() const;
-
-private:
-    QSharedPointer<QtWebEngineCore::QuotaPermissionController> d_ptr;
-};
-
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineRegisterProtocolHandlerPermissionRequest {
-    Q_GADGET
-    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
-    Q_PROPERTY(QString protocol READ protocol CONSTANT FINAL)
-public:
-    QQuickWebEngineRegisterProtocolHandlerPermissionRequest() {}
-    QQuickWebEngineRegisterProtocolHandlerPermissionRequest(
-        QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerPermissionController>);
-
-    Q_INVOKABLE void accept();
-    Q_INVOKABLE void reject();
-    QUrl origin() const;
-    QString protocol() const;
-
-private:
-    QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerPermissionController> d_ptr;
 };
 
 #define LATEST_WEBENGINEVIEW_REVISION 7
@@ -582,11 +542,11 @@ Q_SIGNALS:
     Q_REVISION(4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
     Q_REVISION(4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
     Q_REVISION(5) void pdfPrintingFinished(const QString &filePath, bool success);
-    Q_REVISION(7) void quotaPermissionRequested(const QQuickWebEngineQuotaPermissionRequest &request);
+    Q_REVISION(7) void quotaPermissionRequested(const QWebEngineQuotaPermissionRequest &request);
     Q_REVISION(7) void geometryChangeRequested(const QRect &geometry, const QRect &frameGeometry);
     Q_REVISION(7) void inspectedViewChanged();
     Q_REVISION(7) void devToolsViewChanged();
-    Q_REVISION(7) void registerProtocolHandlerPermissionRequested(const QQuickWebEngineRegisterProtocolHandlerPermissionRequest &request);
+    Q_REVISION(7) void registerProtocolHandlerPermissionRequested(const QWebEngineRegisterProtocolHandlerPermissionRequest &request);
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     void testSupportChanged();
@@ -616,7 +576,5 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QQuickWebEngineView)
 Q_DECLARE_METATYPE(QQuickWebEngineFullScreenRequest)
-Q_DECLARE_METATYPE(QQuickWebEngineQuotaPermissionRequest)
-Q_DECLARE_METATYPE(QQuickWebEngineRegisterProtocolHandlerPermissionRequest)
 
 #endif // QQUICKWEBENGINEVIEW_P_H

@@ -235,6 +235,9 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
 #endif
 {
     memset(actions, 0, sizeof(actions));
+
+    qRegisterMetaType<QWebEngineQuotaPermissionRequest>();
+    qRegisterMetaType<QWebEngineRegisterProtocolHandlerPermissionRequest>();
 }
 
 QWebEnginePagePrivate::~QWebEnginePagePrivate()

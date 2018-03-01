@@ -37,69 +37,36 @@
 **
 ****************************************************************************/
 
-#include "qwebenginequotapermissionrequest.h"
+#ifndef QWEBENGINEQUOTAPERMISSIONREQUEST_H
+#define QWEBENGINEQUOTAPERMISSIONREQUEST_H
 
-#include "quota_permission_controller.h"
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qurl.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+
+namespace QtWebEngineCore {
+    class QuotaPermissionController;
+}
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QWebEngineQuotaPermissionRequest
-    \brief The QWebEngineQuotaPermissionRequest class enables accepting or rejecting
-    requests for larger persistent storage than the application's current allocation
-    in File System API.
-
-    \since 5.11
-
-    \inmodule QtWebEngineWidgets
-*/
-
-static void registerMetaTypes()
-{
-    qRegisterMetaType<QWebEngineQuotaPermissionRequest>();
-}
-
-Q_CONSTRUCTOR_FUNCTION(registerMetaTypes)
-
-QWebEngineQuotaPermissionRequest::QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
-    : d_ptr(controller)
-{
-}
-
-/*!
-    Rejects a request for larger persistent storage.
-*/
-void QWebEngineQuotaPermissionRequest::reject()
-{
-    d_ptr->reject();
-}
-
-/*!
-    Accepts a request for larger persistent storage.
-*/
-void QWebEngineQuotaPermissionRequest::accept()
-{
-    d_ptr->accept();
-}
-
-/*!
-    \property QWebEngineQuotaPermissionRequest::origin
-    \brief The URL of the web page that issued the quota permission request.
-*/
-
-QUrl QWebEngineQuotaPermissionRequest::origin() const
-{
-    return d_ptr->origin();
-}
-
-/*!
-    \property QWebEngineQuotaPermissionRequest::requestedSize
-    \brief Contains the size of the requested disk space in bytes.
-*/
-
-qint64 QWebEngineQuotaPermissionRequest::requestedSize() const
-{
-    return d_ptr->requestedSize();
-}
+class QWEBENGINE_EXPORT QWebEngineQuotaPermissionRequest {
+    Q_GADGET
+    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
+    Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)
+public:
+    QWebEngineQuotaPermissionRequest() {}
+    QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController>);
+    Q_INVOKABLE void accept();
+    Q_INVOKABLE void reject();
+    QUrl origin() const;
+    qint64 requestedSize() const;
+    bool operator==(const QWebEngineQuotaPermissionRequest &that) const { return d_ptr == that.d_ptr; }
+    bool operator!=(const QWebEngineQuotaPermissionRequest &that) const { return d_ptr != that.d_ptr; }
+private:
+    QSharedPointer<QtWebEngineCore::QuotaPermissionController> d_ptr;
+};
 
 QT_END_NAMESPACE
+
+#endif // QWEBENGINEQUOTAPERMISSIONREQUEST_H

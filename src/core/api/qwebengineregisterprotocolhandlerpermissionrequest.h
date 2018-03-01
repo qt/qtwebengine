@@ -42,7 +42,7 @@
 
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qurl.h>
-#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 namespace QtWebEngineCore {
     class RegisterProtocolHandlerPermissionController;
@@ -50,7 +50,7 @@ namespace QtWebEngineCore {
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineRegisterProtocolHandlerPermissionRequest {
+class QWEBENGINE_EXPORT QWebEngineRegisterProtocolHandlerPermissionRequest {
     Q_GADGET
     Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
     Q_PROPERTY(QString protocol READ protocol CONSTANT FINAL)
@@ -62,12 +62,12 @@ public:
     Q_INVOKABLE void reject();
     QUrl origin() const;
     QString protocol() const;
-
+    bool operator==(const QWebEngineRegisterProtocolHandlerPermissionRequest &that) const { return d_ptr == that.d_ptr; }
+    bool operator!=(const QWebEngineRegisterProtocolHandlerPermissionRequest &that) const { return d_ptr != that.d_ptr; }
 private:
     QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerPermissionController> d_ptr;
 };
 
 QT_END_NAMESPACE
-Q_DECLARE_METATYPE(QWebEngineRegisterProtocolHandlerPermissionRequest)
 
 #endif // QWEBENGINEREGISTERPROTOCOLHANDLERPERMISSIONREQUEST_H

@@ -1311,7 +1311,7 @@
 
 /*!
     \qmltype QuotaPermissionRequest
-    \instantiates QQuickWebEngineQuotaPermissionRequest
+    \instantiates QWebEngineQuotaPermissionRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.7
 
@@ -1368,7 +1368,7 @@
 
 /*!
     \qmltype RegisterProtocolHandlerPermissionRequest
-    \instantiates QQuickWebEngineRegisterProtocolHandlerPermissionRequest
+    \instantiates QWebEngineRegisterProtocolHandlerPermissionRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.7
     \brief The RegisterProtocolHandlerPermissionRequest type enables accepting

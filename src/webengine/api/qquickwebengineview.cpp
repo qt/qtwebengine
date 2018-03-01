@@ -45,8 +45,6 @@
 #include "certificate_error_controller.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
-#include "quota_permission_controller.h"
-#include "register_protocol_handler_permission_controller.h"
 #include "qquickwebenginehistory_p.h"
 #include "qquickwebenginecertificateerror_p.h"
 #include "qquickwebenginecontextmenurequest_p.h"
@@ -58,6 +56,8 @@
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescript_p.h"
+#include "qwebenginequotapermissionrequest.h"
+#include "qwebengineregisterprotocolhandlerpermissionrequest.h"
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
 #include "qquickwebenginetestsupport_p.h"
@@ -593,14 +593,14 @@ void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &secur
 void QQuickWebEngineViewPrivate::runQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
 {
     Q_Q(QQuickWebEngineView);
-    QQuickWebEngineQuotaPermissionRequest request(controller);
+    QWebEngineQuotaPermissionRequest request(std::move(controller));
     Q_EMIT q->quotaPermissionRequested(request);
 }
 
 void QQuickWebEngineViewPrivate::runRegisterProtocolHandlerPermissionRequest(QSharedPointer<RegisterProtocolHandlerPermissionController> controller)
 {
     Q_Q(QQuickWebEngineView);
-    QQuickWebEngineRegisterProtocolHandlerPermissionRequest request(std::move(controller));
+    QWebEngineRegisterProtocolHandlerPermissionRequest request(std::move(controller));
     Q_EMIT q->registerProtocolHandlerPermissionRequested(request);
 }
 
@@ -1803,60 +1803,6 @@ void QQuickWebEngineFullScreenRequest::reject()
 {
     if (m_viewPrivate)
         m_viewPrivate->setFullScreenMode(!m_toggleOn);
-}
-
-QQuickWebEngineQuotaPermissionRequest::QQuickWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
-    : d_ptr(controller)
-{
-}
-
-QQuickWebEngineQuotaPermissionRequest::~QQuickWebEngineQuotaPermissionRequest()
-{
-}
-
-void QQuickWebEngineQuotaPermissionRequest::accept()
-{
-    d_ptr->accept();
-}
-
-void QQuickWebEngineQuotaPermissionRequest::reject()
-{
-    d_ptr->reject();
-}
-
-QUrl QQuickWebEngineQuotaPermissionRequest::origin() const
-{
-    return d_ptr->origin();
-}
-
-qint64 QQuickWebEngineQuotaPermissionRequest::requestedSize() const
-{
-    return d_ptr->requestedSize();
-}
-
-QQuickWebEngineRegisterProtocolHandlerPermissionRequest::QQuickWebEngineRegisterProtocolHandlerPermissionRequest(
-    QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerPermissionController> d_ptr)
-    : d_ptr(std::move(d_ptr))
-{}
-
-void QQuickWebEngineRegisterProtocolHandlerPermissionRequest::accept()
-{
-    d_ptr->accept();
-}
-
-void QQuickWebEngineRegisterProtocolHandlerPermissionRequest::reject()
-{
-    d_ptr->reject();
-}
-
-QUrl QQuickWebEngineRegisterProtocolHandlerPermissionRequest::origin() const
-{
-    return d_ptr->origin();
-}
-
-QString QQuickWebEngineRegisterProtocolHandlerPermissionRequest::protocol() const
-{
-    return d_ptr->protocol();
 }
 
 QQuickContextMenuBuilder::QQuickContextMenuBuilder(const QtWebEngineCore::WebEngineContextMenuData &data,

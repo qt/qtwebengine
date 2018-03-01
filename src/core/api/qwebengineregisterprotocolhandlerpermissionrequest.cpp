@@ -45,20 +45,13 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QWebEngineRegisterProtocolHandlerPermissionRequest
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
     \since 5.11
     \brief The QWebEngineRegisterProtocolHandlerPermissionRequest type enables
     accepting or rejecting requests from the \l registerProtocolHandler API.
 
     \sa QWebEnginePage::registerProtocolHandlerPermissionRequested
 */
-
-static void registerMetaTypes()
-{
-    qRegisterMetaType<QWebEngineRegisterProtocolHandlerPermissionRequest>();
-}
-
-Q_CONSTRUCTOR_FUNCTION(registerMetaTypes)
 
 /*! \fn QWebEngineRegisterProtocolHandlerPermissionRequest::QWebEngineRegisterProtocolHandlerPermissionRequest()
     \internal
@@ -111,5 +104,13 @@ QString QWebEngineRegisterProtocolHandlerPermissionRequest::protocol() const
 {
     return d_ptr->protocol();
 }
+
+/*! \fn bool QWebEngineRegisterProtocolHandlerPermissionRequest::operator==(const QWebEngineRegisterProtocolHandlerPermissionRequest &that) const
+    Returns \c true if the objects are equal.
+*/
+
+/*! \fn bool QWebEngineRegisterProtocolHandlerPermissionRequest::operator!=(const QWebEngineRegisterProtocolHandlerPermissionRequest &that) const
+    Returns \c true if the objects are not equal.
+*/
 
 QT_END_NAMESPACE
