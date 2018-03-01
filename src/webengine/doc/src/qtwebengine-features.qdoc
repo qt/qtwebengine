@@ -58,7 +58,7 @@
     following option when configuring Qt:
 
     \code
-    -proprietary-codecs
+    -webengine-proprietary-codecs
     \endcode
 
     \warning When distributing proprietary codec libraries, you must acquire
