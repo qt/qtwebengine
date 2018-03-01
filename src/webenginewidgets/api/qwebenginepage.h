@@ -364,6 +364,7 @@ private:
 #endif // QT_NO_ACCESSIBILITY
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags)
 
 QT_END_NAMESPACE
 
