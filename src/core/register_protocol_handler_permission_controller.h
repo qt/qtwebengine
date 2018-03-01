@@ -46,15 +46,15 @@ namespace QtWebEngineCore {
 
 class QWEBENGINE_EXPORT RegisterProtocolHandlerPermissionController : public PermissionController {
 public:
-    RegisterProtocolHandlerPermissionController(QUrl origin, QString protocol)
+    RegisterProtocolHandlerPermissionController(QUrl origin, QString scheme)
         : PermissionController(std::move(origin))
-        , m_protocol(std::move(protocol))
+        , m_scheme(std::move(scheme))
     {}
 
-    QString protocol() const { return m_protocol; }
+    QString scheme() const { return m_scheme; }
 
 private:
-    QString m_protocol;
+    QString m_scheme;
 };
 
 } // namespace QtWebEngineCore

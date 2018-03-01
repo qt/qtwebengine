@@ -688,7 +688,7 @@ static QStringList expectedAPI = QStringList()
     << "QWebEngineRegisterProtocolHandlerPermissionRequest.accept() --> void"
     << "QWebEngineRegisterProtocolHandlerPermissionRequest.origin --> QUrl"
     << "QWebEngineRegisterProtocolHandlerPermissionRequest.reject() --> void"
-    << "QWebEngineRegisterProtocolHandlerPermissionRequest.protocol --> QString"
+    << "QWebEngineRegisterProtocolHandlerPermissionRequest.scheme --> QString"
     ;
 
 static bool isCheckedEnum(const QByteArray &typeName)

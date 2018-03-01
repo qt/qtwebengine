@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 class QWEBENGINE_EXPORT QWebEngineRegisterProtocolHandlerPermissionRequest {
     Q_GADGET
     Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
-    Q_PROPERTY(QString protocol READ protocol CONSTANT FINAL)
+    Q_PROPERTY(QString scheme READ scheme CONSTANT FINAL)
 public:
     QWebEngineRegisterProtocolHandlerPermissionRequest() {}
     QWebEngineRegisterProtocolHandlerPermissionRequest(
@@ -61,7 +61,7 @@ public:
     Q_INVOKABLE void accept();
     Q_INVOKABLE void reject();
     QUrl origin() const;
-    QString protocol() const;
+    QString scheme() const;
     bool operator==(const QWebEngineRegisterProtocolHandlerPermissionRequest &that) const { return d_ptr == that.d_ptr; }
     bool operator!=(const QWebEngineRegisterProtocolHandlerPermissionRequest &that) const { return d_ptr != that.d_ptr; }
 private:

@@ -1385,7 +1385,7 @@
 */
 
 /*!
-    \qmlproperty string RegisterProtocolHandlerPermissionRequest::protocol
+    \qmlproperty string RegisterProtocolHandlerPermissionRequest::scheme
     \brief The URL scheme for the protocol handler.
 
     This is the first parameter from the \l registerProtocolHandler call.

@@ -4238,16 +4238,16 @@ void tst_QWebEnginePage::registerProtocolHandler()
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
 
     QString callFormat = QStringLiteral("window.navigator.registerProtocolHandler(\"%1\", \"%2\", \"%3\")");
-    QString protocol = QStringLiteral("mailto");
+    QString scheme = QStringLiteral("mailto");
     QString url = server.url("/mail").toString() + QStringLiteral("?uri=%s");
     QString title;
-    QString call = callFormat.arg(protocol).arg(url).arg(title);
+    QString call = callFormat.arg(scheme).arg(url).arg(title);
     page.runJavaScript(call);
 
     QTRY_COMPARE(permissionSpy.count(), 1);
     auto request = permissionSpy.takeFirst().value(0).value<QWebEngineRegisterProtocolHandlerPermissionRequest>();
     QCOMPARE(request.origin(), QUrl(url));
-    QCOMPARE(request.protocol(), protocol);
+    QCOMPARE(request.scheme(), scheme);
     if (permission)
         request.accept();
     else

@@ -151,7 +151,7 @@ void WebPage::handleRegisterProtocolHandlerPermissionRequested(QWebEngineRegiste
         tr("Permission Request"),
         tr("Allow %1 to open all %2 links?")
         .arg(request.origin().host())
-        .arg(request.protocol()));
+        .arg(request.scheme()));
     if (answer == QMessageBox::Yes)
         request.accept();
     else

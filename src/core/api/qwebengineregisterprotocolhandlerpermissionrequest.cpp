@@ -95,14 +95,14 @@ QUrl QWebEngineRegisterProtocolHandlerPermissionRequest::origin() const
 }
 
 /*!
-    \property QWebEngineRegisterProtocolHandlerPermissionRequest::protocol
+    \property QWebEngineRegisterProtocolHandlerPermissionRequest::scheme
     \brief The URL scheme for the protocol handler.
 
     This is the first parameter from the \l registerProtocolHandler call.
 */
-QString QWebEngineRegisterProtocolHandlerPermissionRequest::protocol() const
+QString QWebEngineRegisterProtocolHandlerPermissionRequest::scheme() const
 {
-    return d_ptr->protocol();
+    return d_ptr->scheme();
 }
 
 /*! \fn bool QWebEngineRegisterProtocolHandlerPermissionRequest::operator==(const QWebEngineRegisterProtocolHandlerPermissionRequest &that) const
