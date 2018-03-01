@@ -491,7 +491,7 @@ bool QWebEngineDownloadItem::isPaused() const
     Returns the format the web page will be saved in if this is a download request for a web page.
     \since 5.7
 
-    \sa setSavePageFormat()
+    \sa setSavePageFormat(), isSavePageDownload()
 */
 QWebEngineDownloadItem::SavePageFormat QWebEngineDownloadItem::savePageFormat() const
 {
@@ -503,7 +503,7 @@ QWebEngineDownloadItem::SavePageFormat QWebEngineDownloadItem::savePageFormat() 
     Sets the \a format the web page will be saved in if this is a download request for a web page.
     \since 5.7
 
-    \sa savePageFormat()
+    \sa savePageFormat(), isSavePageDownload()
 */
 void QWebEngineDownloadItem::setSavePageFormat(QWebEngineDownloadItem::SavePageFormat format)
 {
@@ -529,6 +529,8 @@ QWebEngineDownloadItem::DownloadType QWebEngineDownloadItem::type() const
 /*!
     Returns \c true if this is a download request for saving a web page.
     \since 5.11
+
+    \sa savePageFormat(), setSavePageFormat()
  */
 bool QWebEngineDownloadItem::isSavePageDownload() const
 {
