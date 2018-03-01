@@ -467,14 +467,7 @@
 */
 
 /*!
-    \fn void QWebEnginePage::findText(const QString &subString, FindFlags options)
-    Finds the specified string, \a subString, in the page, using the given \a options.
-
-    To clear the search highlight, just pass an empty string.
-*/
-
-/*!
-    \fn void QWebEnginePage::findText(const QString &subString, FindFlags options, FunctorOrLambda resultCallback)
+    \fn void QWebEnginePage::findText(const QString &subString, QWebEnginePage::FindFlags options = FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>())
     Finds the specified string, \a subString, in the page, using the given \a options.
 
     To clear the search highlight, just pass an empty string.
@@ -604,7 +597,7 @@
 */
 
 /*!
-    \fn void QWebEnginePage::toHtml(FunctorOrLambda resultCallback) const
+    \fn void QWebEnginePage::toHtml(const QWebEngineCallback<const QString &> &resultCallback) const
     Asynchronous method to retrieve the page's content as HTML, enclosed in HTML and BODY tags.
     Upon successful completion, \a resultCallback is called with the page's content.
 
@@ -614,7 +607,7 @@
 */
 
 /*!
-    \fn void QWebEnginePage::toPlainText(FunctorOrLambda resultCallback) const
+    \fn void QWebEnginePage::toPlainText(const QWebEngineCallback<const QString &> &resultCallback) const
     Asynchronous method to retrieve the page's content converted to plain text, completely stripped of all
     HTML formatting.
     Upon successful completion, \a resultCallback is called with the page's content.
@@ -718,7 +711,10 @@
 */
 
 /*!
-    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, FunctorOrLambda resultCallback)
+    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId, const QWebEngineCallback<const QVariant &> &resultCallback)
+    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId)
+    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource)
+    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback)
     \since 5.7
 
     Runs the JavaScript code contained in \a scriptSource in the world specified by \a worldId.
@@ -740,39 +736,6 @@
     See scripts() for an alternative API to inject scripts.
 
     \sa QWebEngineScript::ScriptWorldId
-*/
-
-/*!
-    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId)
-    \since 5.7
-    \overload runJavaScript()
-
-    This convenience function runs the JavaScript code contained in \a scriptSource in the world
-    specified by \a worldId.
-*/
-
-/*!
-    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource)
-    \overload runJavaScript()
-
-    This convenience function runs the JavaScript code contained in \a scriptSource in the same
-    world as other scripts that are part of the loaded site.
-
-    \sa QWebEngineScript::MainWorld
-*/
-
-/*!
-    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback)
-    \overload runJavaScript()
-
-    Runs the JavaScript code contained in \a scriptSource.
-
-    The script will run in the same world as other scripts that are part of the loaded site.
-
-    When the script has been executed, \a resultCallback is called with the result of the last
-    executed statement.
-
-    \sa QWebEngineScript::MainWorld
 */
 
 /*!
