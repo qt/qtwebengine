@@ -38,28 +38,41 @@
 ****************************************************************************/
 #include "register_protocol_handler_permission_controller_impl.h"
 
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "content/public/browser/web_contents.h"
 #include "type_conversion.h"
 
 namespace QtWebEngineCore {
 
 RegisterProtocolHandlerPermissionControllerImpl::RegisterProtocolHandlerPermissionControllerImpl(
-    ProtocolHandlerRegistry *registry,
+    content::WebContents *webContents,
     ProtocolHandler handler)
     : RegisterProtocolHandlerPermissionController(
         toQt(handler.url()),
         toQt(handler.protocol()))
-    , m_registry(registry)
+    , content::WebContentsObserver(webContents)
     , m_handler(handler)
 {}
 
+ProtocolHandlerRegistry *RegisterProtocolHandlerPermissionControllerImpl::protocolHandlerRegistry()
+{
+    content::WebContents *webContents = web_contents();
+    if (!webContents)
+        return nullptr;
+    content::BrowserContext *context = webContents->GetBrowserContext();
+    return ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
+}
+
 void RegisterProtocolHandlerPermissionControllerImpl::accepted()
 {
-    m_registry->OnAcceptRegisterProtocolHandler(m_handler);
+    if (ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
+        registry->OnAcceptRegisterProtocolHandler(m_handler);
 }
 
 void RegisterProtocolHandlerPermissionControllerImpl::rejected()
 {
-    m_registry->OnIgnoreRegisterProtocolHandler(m_handler);
+    if (ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
+        registry->OnIgnoreRegisterProtocolHandler(m_handler);
 }
 
 } // namespace QtWebEngineCore

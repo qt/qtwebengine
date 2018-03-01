@@ -655,7 +655,7 @@ void WebContentsDelegateQt::RegisterProtocolHandler(content::WebContents *webCon
         return;
 
     QSharedPointer<RegisterProtocolHandlerPermissionController> controller(
-        new RegisterProtocolHandlerPermissionControllerImpl(registry, handler));
+        new RegisterProtocolHandlerPermissionControllerImpl(webContents, handler));
     m_viewClient->runRegisterProtocolHandlerPermissionRequest(std::move(controller));
 }
 
