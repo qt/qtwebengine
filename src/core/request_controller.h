@@ -54,21 +54,26 @@ public:
 
     QUrl origin() const { return m_origin; }
 
-    void accept() {
+    void accept()
+    {
         if (!m_answered) {
             m_answered = true;
             accepted();
         }
     }
 
-    void reject() {
+    void reject()
+    {
         if (!m_answered) {
             m_answered = true;
             rejected();
         }
     }
 
-    virtual ~RequestController() {}
+    virtual ~RequestController()
+    {
+        reject();
+    }
 
 protected:
     virtual void accepted() = 0;
