@@ -45,7 +45,8 @@
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 namespace QtWebEngineCore {
-    class QuotaRequestController;
+class QuotaPermissionContextQt;
+class QuotaRequestController;
 }
 
 QT_BEGIN_NAMESPACE
@@ -56,7 +57,6 @@ class QWEBENGINE_EXPORT QWebEngineQuotaRequest {
     Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)
 public:
     QWebEngineQuotaRequest() {}
-    QWebEngineQuotaRequest(QSharedPointer<QtWebEngineCore::QuotaRequestController>);
     Q_INVOKABLE void accept();
     Q_INVOKABLE void reject();
     QUrl origin() const;
@@ -64,6 +64,8 @@ public:
     bool operator==(const QWebEngineQuotaRequest &that) const { return d_ptr == that.d_ptr; }
     bool operator!=(const QWebEngineQuotaRequest &that) const { return d_ptr != that.d_ptr; }
 private:
+    QWebEngineQuotaRequest(QSharedPointer<QtWebEngineCore::QuotaRequestController>);
+    friend QtWebEngineCore::QuotaPermissionContextQt;
     QSharedPointer<QtWebEngineCore::QuotaRequestController> d_ptr;
 };
 
