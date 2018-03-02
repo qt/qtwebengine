@@ -131,8 +131,8 @@ public:
     void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) override;
     void runGeolocationPermissionRequest(const QUrl &securityOrigin) override;
     void runMouseLockPermissionRequest(const QUrl &securityOrigin) override;
-    void runQuotaRequest(QSharedPointer<QtWebEngineCore::QuotaRequestController>) override;
-    void runRegisterProtocolHandlerRequest(QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerRequestController>) override;
+    void runQuotaRequest(QWebEngineQuotaRequest) override;
+    void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) override;
     QObject *accessibilityParentObject() override;
     QtWebEngineCore::WebEngineSettings *webEngineSettings() const override;
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &controller) override;

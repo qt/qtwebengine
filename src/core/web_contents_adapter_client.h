@@ -49,9 +49,11 @@
 #include <QStringList>
 #include <QUrl>
 
+QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
-QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
+QT_FORWARD_DECLARE_CLASS(QWebEngineQuotaRequest)
+QT_FORWARD_DECLARE_CLASS(QWebEngineRegisterProtocolHandlerRequest)
 
 namespace content {
 struct DropData;
@@ -64,8 +66,6 @@ class BrowserContextAdapter;
 class ColorChooserController;
 class FilePickerController;
 class JavaScriptDialogController;
-class QuotaRequestController;
-class RegisterProtocolHandlerRequestController;
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
@@ -438,8 +438,8 @@ public:
     virtual void runGeolocationPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
-    virtual void runQuotaRequest(QSharedPointer<QuotaRequestController>) = 0;
-    virtual void runRegisterProtocolHandlerRequest(QSharedPointer<RegisterProtocolHandlerRequestController>) = 0;
+    virtual void runQuotaRequest(QWebEngineQuotaRequest) = 0;
+    virtual void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) = 0;
     virtual WebEngineSettings *webEngineSettings() const = 0;
     RenderProcessTerminationStatus renderProcessExitStatus(int);
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;

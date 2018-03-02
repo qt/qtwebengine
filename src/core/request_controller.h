@@ -45,7 +45,7 @@
 
 namespace QtWebEngineCore {
 
-class QWEBENGINE_EXPORT RequestController {
+class RequestController {
 public:
     RequestController(QUrl origin)
         : m_answered(false)

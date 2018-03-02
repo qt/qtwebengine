@@ -590,17 +590,15 @@ void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &secur
     adapter->grantMouseLockPermission(false);
 }
 
-void QQuickWebEngineViewPrivate::runQuotaRequest(QSharedPointer<QtWebEngineCore::QuotaRequestController> controller)
+void QQuickWebEngineViewPrivate::runQuotaRequest(QWebEngineQuotaRequest request)
 {
     Q_Q(QQuickWebEngineView);
-    QWebEngineQuotaRequest request(std::move(controller));
     Q_EMIT q->quotaRequested(request);
 }
 
-void QQuickWebEngineViewPrivate::runRegisterProtocolHandlerRequest(QSharedPointer<RegisterProtocolHandlerRequestController> controller)
+void QQuickWebEngineViewPrivate::runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest request)
 {
     Q_Q(QQuickWebEngineView);
-    QWebEngineRegisterProtocolHandlerRequest request(std::move(controller));
     Q_EMIT q->registerProtocolHandlerRequested(request);
 }
 

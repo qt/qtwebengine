@@ -44,7 +44,7 @@
 
 namespace QtWebEngineCore {
 
-class QWEBENGINE_EXPORT RegisterProtocolHandlerRequestController : public RequestController {
+class RegisterProtocolHandlerRequestController : public RequestController {
 public:
     RegisterProtocolHandlerRequestController(QUrl origin, QString scheme)
         : RequestController(std::move(origin))

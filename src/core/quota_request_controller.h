@@ -44,7 +44,7 @@
 
 namespace QtWebEngineCore {
 
-class QWEBENGINE_EXPORT QuotaRequestController : public RequestController {
+class QuotaRequestController : public RequestController {
 public:
     QuotaRequestController(QUrl origin, qint64 requestedSize)
         : RequestController(std::move(origin))
