@@ -808,6 +808,8 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
     if (!state)
         return;
 
+    // At this point it is unknown whether the text input state has been updated due to a text selection.
+    // Keep the cursor position updated for cursor movements too.
     if (GetSelectedText().empty())
         m_cursorPosition = state->selection_start;
 
@@ -891,6 +893,11 @@ void RenderWidgetHostViewQt::selectionChanged()
     }
 
     if (GetSelectedText().empty()) {
+        // RenderWidgetHostViewQt::OnUpdateTextInputStateCalled() does not update the cursor position
+        // if the selection is cleared because TextInputState changes before the TextSelection change.
+        Q_ASSERT(text_input_manager_->GetTextInputState());
+        m_cursorPosition = text_input_manager_->GetTextInputState()->selection_start;
+
         m_anchorPositionWithinSelection = m_cursorPosition;
         m_cursorPositionWithinSelection = m_cursorPosition;
 
