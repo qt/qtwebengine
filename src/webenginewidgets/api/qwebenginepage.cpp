@@ -735,12 +735,12 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
-    \fn QWebEnginePage::fullScreenRequested(QWebEngineFullScreenRequest request)
+    \fn QWebEnginePage::fullScreenRequested(QWebEngineFullScreenRequest fullScreenRequest)
 
     This signal is emitted when the web page issues the request to enter fullscreen mode for
     a web-element, usually a video element.
 
-    The request object \a request can be used to accept or reject the request.
+    The request object \a fullScreenRequest can be used to accept or reject the request.
 
     If the request is accepted the element requesting fullscreen will fill the viewport,
     but it is up to the application to make the view fullscreen or move the page to a view
@@ -750,14 +750,14 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
-    \fn QWebEnginePage::quotaPermissionRequested(QWebEngineQuotaPermissionRequest request)
+    \fn QWebEnginePage::quotaPermissionRequested(QWebEngineQuotaPermissionRequest quotaPermissionRequest)
     \since 5.11
 
     This signal is emitted when the web page requests larger persistent storage
     than the application's current allocation in File System API. The default quota
     is 0 bytes.
 
-    The request object \a request can be used to accept or reject the request.
+    The request object \a quotaPermissionRequest can be used to accept or reject the request.
 */
 
 /*!
