@@ -46,10 +46,18 @@ TestWebEngineView {
         when: windowShown
 
         function test_loadProgressAfterLoadHtml() {
-            compare(webEngineView.loadProgress, 0)
+            var loadProgressChangedCount = 0;
+
+            var handleLoadProgressChanged = function() {
+                loadProgressChangedCount++;
+            }
+
+            webEngineView.loadProgressChanged.connect(handleLoadProgressChanged);
             webEngineView.loadHtml("<html><head><title>Test page 1</title></head><body>Hello.</body></html>")
             verify(webEngineView.waitForLoadSucceeded())
             compare(webEngineView.loadProgress, 100)
+            verify(loadProgressChangedCount);
+            webEngineView.loadProgressChanged.disconnect(handleLoadProgressChanged);
         }
 
         function test_dataURLFragment() {
