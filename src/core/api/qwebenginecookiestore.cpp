@@ -336,8 +336,19 @@ void QWebEngineCookieStore::deleteAllCookies()
     \since 5.11
 
     Installs a cookie filter that can prevent sites and resources from using cookies.
-    The \a filterCallback must be a lambda or functor taking a FilterRequest structure. If the
+    The \a filter must be a lambda or functor taking a FilterRequest structure. If the
     cookie is to be rejected, the filter can set FilterRequest::accepted to \c false.
+
+    The following code snippet illustrates how to set a cookie filter:
+
+    \code
+    profile->setCookieFilter(
+        [&allowThirdPartyCookiesSetting](QWebEngineCookieStore::FilterRequest &request)
+        { request.accepted = !request.thirdParty || allowThirdPartyCookiesSetting; }
+    );
+    \endcode
+
+    You can unset the filter with a nullptr argument.
 
     The callback should not be used to execute heavy tasks since it is running on the
     IO thread and therefore blocks the Chromium networking.
