@@ -281,5 +281,31 @@ TestWebEngineView {
             compare(loadRequest.activeUrl, url);
             webEngineView.clear();
         }
+
+        function test_loadStartedAfterInPageNavigation() {
+            webEngineView.url = Qt.resolvedUrl("test4.html");
+            verify(webEngineView.waitForLoadSucceeded());
+            compare(webEngineView.loadProgress, 100);
+            compare(loadRequestArray.length, 2);
+            compare(loadRequestArray[0].status, WebEngineView.LoadStartedStatus);
+            compare(loadRequestArray[1].status, WebEngineView.LoadSucceededStatus);
+
+            // In-page navigation.
+            webEngineView.url = Qt.resolvedUrl("test4.html#content");
+            // In-page navigation doesn't trigger load succeeded, wait for load progress instead.
+            tryCompare(webEngineView, "loadProgress", 100);
+            compare(loadRequestArray.length, 3);
+            compare(loadRequestArray[2].status, WebEngineView.LoadStartedStatus);
+
+            // Load after in-page navigation.
+            webEngineView.url = Qt.resolvedUrl("test4.html");
+            verify(webEngineView.waitForLoadSucceeded());
+            compare(webEngineView.loadProgress, 100);
+            compare(loadRequestArray.length, 5);
+            compare(loadRequestArray[3].status, WebEngineView.LoadStartedStatus);
+            compare(loadRequestArray[4].status, WebEngineView.LoadSucceededStatus);
+
+            webEngineView.clear();
+        }
     }
 }
