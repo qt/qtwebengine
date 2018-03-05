@@ -130,7 +130,7 @@ host_build {
     qtConfig(system-jpeg): gn_args += use_system_libjpeg=true
     qtConfig(system-freetype): gn_args += use_system_freetype=true
     qtConfig(webengine-system-harfbuzz): gn_args += use_system_harfbuzz=true
-    qtConfig(webengine-system-glib): gn_args += use_glib=false
+    !qtConfig(webengine-system-glib): gn_args += use_glib=false
     qtConfig(webengine-pulseaudio) {
         gn_args += use_pulseaudio=true
     } else {
