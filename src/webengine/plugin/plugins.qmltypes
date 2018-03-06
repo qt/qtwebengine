@@ -7,7 +7,7 @@ import QtQuick.tooling 1.2
 // 'qmlplugindump -defaultplatform -dependencies dependencies.json -nonrelocatable QtWebEngine 1.7'
 
 Module {
-    dependencies: ["QtQuick 2.6"]
+    dependencies: ["QtQuick 2.8"]
     Component {
         name: "QQuickWebEngineAuthenticationDialogRequest"
         prototype: "QObject"
@@ -154,10 +154,11 @@ Module {
             "QtWebEngine/WebEngineDownloadItem 1.3",
             "QtWebEngine/WebEngineDownloadItem 1.4",
             "QtWebEngine/WebEngineDownloadItem 1.5",
-            "QtWebEngine/WebEngineDownloadItem 1.6"
+            "QtWebEngine/WebEngineDownloadItem 1.6",
+            "QtWebEngine/WebEngineDownloadItem 1.7"
         ]
         isCreatable: false
-        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5]
+        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5, 6]
         Enum {
             name: "DownloadState"
             values: {
@@ -467,16 +468,6 @@ Module {
         Method { name: "clearHttpCache"; revision: 2 }
     }
     Component {
-        name: "QQuickWebEngineQuotaPermissionRequest"
-        exports: ["QtWebEngine/QuotaPermissionRequest 1.7"]
-        isCreatable: false
-        exportMetaObjectRevisions: [0]
-        Property { name: "origin"; type: "QUrl"; isReadonly: true }
-        Property { name: "requestedSize"; type: "qlonglong"; isReadonly: true }
-        Method { name: "accept" }
-        Method { name: "reject" }
-    }
-    Component {
         name: "QQuickWebEngineScript"
         prototype: "QObject"
         exports: ["QtWebEngine/WebEngineScript 1.1"]
@@ -603,6 +594,7 @@ Module {
         Property { name: "unknownUrlSchemePolicy"; revision: 6; type: "UnknownUrlSchemePolicy" }
         Property { name: "playbackRequiresUserGesture"; revision: 6; type: "bool" }
         Property { name: "webRTCPublicInterfacesOnly"; revision: 6; type: "bool" }
+        Property { name: "javascriptCanPaste"; revision: 6; type: "bool" }
         Signal { name: "fullScreenSupportEnabledChanged"; revision: 1 }
         Signal { name: "screenCaptureEnabledChanged"; revision: 2 }
         Signal { name: "webGLEnabledChanged"; revision: 2 }
@@ -618,6 +610,7 @@ Module {
         Signal { name: "unknownUrlSchemePolicyChanged"; revision: 6 }
         Signal { name: "playbackRequiresUserGestureChanged"; revision: 6 }
         Signal { name: "webRTCPublicInterfacesOnlyChanged"; revision: 6 }
+        Signal { name: "javascriptCanPasteChanged"; revision: 6 }
     }
     Component {
         name: "QQuickWebEngineSingleton"
@@ -1096,9 +1089,9 @@ Module {
             Parameter { name: "success"; type: "bool" }
         }
         Signal {
-            name: "quotaPermissionRequested"
+            name: "quotaRequested"
             revision: 7
-            Parameter { name: "request"; type: "QQuickWebEngineQuotaPermissionRequest" }
+            Parameter { name: "request"; type: "QWebEngineQuotaRequest" }
         }
         Signal {
             name: "geometryChangeRequested"
@@ -1108,6 +1101,11 @@ Module {
         }
         Signal { name: "inspectedViewChanged"; revision: 7 }
         Signal { name: "devToolsViewChanged"; revision: 7 }
+        Signal {
+            name: "registerProtocolHandlerRequested"
+            revision: 7
+            Parameter { name: "request"; type: "QWebEngineRegisterProtocolHandlerRequest" }
+        }
         Method {
             name: "runJavaScript"
             Parameter { type: "string" }
@@ -1226,5 +1224,25 @@ Module {
             revision: 4
             Parameter { name: "replacement"; type: "string" }
         }
+    }
+    Component {
+        name: "QWebEngineQuotaRequest"
+        exports: ["QtWebEngine/QuotaRequest 1.7"]
+        isCreatable: false
+        exportMetaObjectRevisions: [0]
+        Property { name: "origin"; type: "QUrl"; isReadonly: true }
+        Property { name: "requestedSize"; type: "qlonglong"; isReadonly: true }
+        Method { name: "accept" }
+        Method { name: "reject" }
+    }
+    Component {
+        name: "QWebEngineRegisterProtocolHandlerRequest"
+        exports: ["QtWebEngine/RegisterProtocolHandlerRequest 1.7"]
+        isCreatable: false
+        exportMetaObjectRevisions: [0]
+        Property { name: "origin"; type: "QUrl"; isReadonly: true }
+        Property { name: "scheme"; type: "string"; isReadonly: true }
+        Method { name: "accept" }
+        Method { name: "reject" }
     }
 }
