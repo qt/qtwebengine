@@ -54,7 +54,6 @@
 #include "qtwebenginecoreglobal_p.h"
 #include <QMap>
 #include <QPoint>
-#include <QRect>
 #include <QtGlobal>
 #include <QtGui/qaccessible.h>
 #include <QtGui/QTouchEvent>

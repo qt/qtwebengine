@@ -43,7 +43,6 @@
 #include "printing/features/features.h"
 
 #include "base/strings/string_split.h"
-#include "base/strings/utf_string_conversions.h"
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
@@ -64,7 +63,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "ui/base/resource/resource_bundle.h"

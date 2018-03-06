@@ -56,7 +56,6 @@
 #include "renderer_host/web_channel_ipc_transport_host.h"
 #include "render_view_observer_host_qt.h"
 #include "type_conversion.h"
-#include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
