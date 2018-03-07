@@ -34,7 +34,7 @@ defineTest(isPlatformSupported) {
       return(false)
     }
     !qtConfig(webengine-winversion) {
-         skipBuild("Needs VS 2017 Update 3.2 with Cumulative Servicing Release or higher")
+         skipBuild("Needs Visual Studio 2017 or higher")
          return(false)
     }
   } else:osx {
