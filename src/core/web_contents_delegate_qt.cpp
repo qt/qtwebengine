@@ -77,6 +77,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "net/base/data_url.h"
+#include "net/base/url_util.h"
 
 #include <QDesktopServices>
 #include <QTimer>
@@ -153,15 +154,10 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
 
 static bool shouldUseActualURL(const content::NavigationEntry *entry)
 {
-    if (!entry)
-        return false;
+    Q_ASSERT(entry);
 
     // Show actual URL for data URLs only
     if (!entry->GetURL().SchemeIs(url::kDataScheme))
-        return false;
-
-    // Keep view-source: prefix
-    if (entry->IsViewSourceMode())
         return false;
 
     // Do not show data URL of interstitial and error pages
@@ -180,9 +176,24 @@ static bool shouldUseActualURL(const content::NavigationEntry *entry)
 void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags)
 {
     if (changed_flags & content::INVALIDATE_TYPE_URL) {
-        // If there is a visible entry there are special cases when we dont wan't to use the actual URL
         content::NavigationEntry *entry = source->GetController().GetVisibleEntry();
-        QUrl newUrl = shouldUseActualURL(entry) ? toQt(entry->GetURL()) : toQt(source->GetVisibleURL());
+
+        QUrl newUrl;
+        if (source->GetVisibleURL().SchemeIs(content::kViewSourceScheme)) {
+            Q_ASSERT(entry);
+            GURL url = entry->GetURL();
+
+            // Strip user name, password and reference section from view-source URLs
+            if (url.has_password() || url.has_username() || url.has_ref()) {
+                GURL strippedUrl = net::SimplifyUrlForRequest(entry->GetURL());
+                newUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme, QString::fromStdString(strippedUrl.spec())));
+            }
+        }
+
+        // If there is a visible entry there are special cases when we dont wan't to use the actual URL
+        if (entry && newUrl.isEmpty())
+            newUrl = shouldUseActualURL(entry) ? toQt(entry->GetURL()) : toQt(source->GetVisibleURL());
+
         if (m_url != newUrl) {
             m_url = newUrl;
             m_viewClient->urlChanged(m_url);

@@ -124,6 +124,34 @@ TestWebEngineView {
             // FIXME(pvarga): Reintroduce this check in the fix for QTBUG-56117
             //verify(!webEngineView.canViewSource);
         }
+
+        function test_viewSourceCredentials() {
+            var url = "http://user:passwd@httpbin.org/basic-auth/user/passwd";
+
+            // Test explicit view-source URL with credentials
+            webEngineView.url = Qt.resolvedUrl("view-source:" + url);
+            if (!webEngineView.waitForLoadSucceeded(12000))
+                skip("Couldn't load page from network, skipping test.");
+
+            compare(webEngineView.url, "view-source:" + url.replace("user:passwd@", ""));
+            compare(webEngineView.title, "view-source:" + url.replace("http://user:passwd@", ""));
+            titleChangedSpy.clear();
+
+            // Test ViewSource web action on URL with credentials
+            webEngineView.url = Qt.resolvedUrl(url);
+            if (!webEngineView.waitForLoadSucceeded(12000))
+                skip("Couldn't load page from network, skipping test.");
+            webEngineView.triggerWebAction(WebEngineView.ViewSource);
+            tryCompare(newViewRequestedSpy, "count", 1);
+
+            // The first titleChanged signal is emitted by adoptWebContents()
+            tryVerify(function() { return titleChangedSpy.count >= 2; });
+            compare(viewRequest.destination, WebEngineView.NewViewInTab);
+            verify(viewRequest.userInitiated);
+
+            tryCompare(webEngineView, "url", "view-source:" + url.replace("user:passwd@", ""));
+            tryCompare(webEngineView, "title", "view-source:" + url.replace("http://user:passwd@", ""));
+        }
     }
 }
 
