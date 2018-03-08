@@ -33,29 +33,55 @@
 #include <QTcpServer>
 #include <QUrl>
 
-#include <memory>
-
 // Listens on a TCP socket and creates HttpReqReps for each connection.
+//
+// Usage:
+//
+//     HttpServer server;
+//     connect(&server, &HttpServer::newRequest, [](HttpReqRep *rr) {
+//         if (rr->requestPath() == "/myPage.html") {
+//             rr->setResponseBody("<html><body>Hello, World!</body></html>");
+//             rr->sendResponse();
+//         }
+//     });
+//     QVERIFY(server.start());
+//     /* do stuff */
+//     QVERIFY(server.stop());
+//
+// HttpServer owns the HttpReqRep objects. The signal handler should not store
+// references to HttpReqRep objects.
+//
+// Only if a handler calls sendResponse() will a response be actually sent. This
+// means that multiple handlers can be connected to the signal, with different
+// handlers responsible for different paths.
 class HttpServer : public QObject
 {
     Q_OBJECT
-
-    QTcpServer m_tcpServer;
-    QUrl m_url;
-
 public:
-    HttpServer(QObject *parent = nullptr);
+    explicit HttpServer(QObject *parent = nullptr);
+
+    // Must be called to start listening.
+    //
+    // Returns true if a TCP port has been successfully bound.
+    Q_REQUIRED_RESULT bool start();
+
+    // Stops listening and performs final error checks.
+    Q_REQUIRED_RESULT bool stop();
+
+    // Full URL for given relative path
     QUrl url(const QString &path = QStringLiteral("/")) const;
 
 Q_SIGNALS:
+    // Emitted after a HTTP request has been successfully parsed.
     void newRequest(HttpReqRep *reqRep);
 
 private Q_SLOTS:
     void handleNewConnection();
-    void handleReadFinished(bool ok);
-};
 
-// Wait for an HTTP request to be received.
-std::unique_ptr<HttpReqRep> waitForRequest(HttpServer *server);
+private:
+    QTcpServer m_tcpServer;
+    QUrl m_url;
+    bool m_error = false;
+};
 
 #endif // !HTTPSERVER_H

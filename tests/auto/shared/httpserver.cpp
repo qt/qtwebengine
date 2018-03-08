@@ -27,14 +27,35 @@
 ****************************************************************************/
 #include "httpserver.h"
 
-#include "waitforsignal.h"
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY(gHttpServerLog, "HttpServer")
 
 HttpServer::HttpServer(QObject *parent) : QObject(parent)
 {
     connect(&m_tcpServer, &QTcpServer::newConnection, this, &HttpServer::handleNewConnection);
-    if (!m_tcpServer.listen())
-        qWarning("HttpServer: listen() failed");
-    m_url = QStringLiteral("http://127.0.0.1:") + QString::number(m_tcpServer.serverPort());
+}
+
+bool HttpServer::start()
+{
+    m_error = false;
+
+    if (!m_tcpServer.listen()) {
+        qCWarning(gHttpServerLog).noquote() << m_tcpServer.errorString();
+        return false;
+    }
+
+    m_url.setScheme(QStringLiteral("http"));
+    m_url.setHost(QStringLiteral("127.0.0.1"));
+    m_url.setPort(m_tcpServer.serverPort());
+
+    return true;
+}
+
+bool HttpServer::stop()
+{
+    m_tcpServer.close();
+    return !m_error;
 }
 
 QUrl HttpServer::url(const QString &path) const
@@ -46,25 +67,19 @@ QUrl HttpServer::url(const QString &path) const
 
 void HttpServer::handleNewConnection()
 {
-    auto reqRep = new HttpReqRep(m_tcpServer.nextPendingConnection(), this);
-    connect(reqRep, &HttpReqRep::readFinished, this, &HttpServer::handleReadFinished);
-}
-
-void HttpServer::handleReadFinished(bool ok)
-{
-    auto reqRep = qobject_cast<HttpReqRep *>(sender());
-    if (ok)
-        Q_EMIT newRequest(reqRep);
-    else
-        reqRep->deleteLater();
-}
-
-std::unique_ptr<HttpReqRep> waitForRequest(HttpServer *server)
-{
-    std::unique_ptr<HttpReqRep> result;
-    waitForSignal(server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
-        rr->setParent(nullptr);
-        result.reset(rr);
+    auto rr = new HttpReqRep(m_tcpServer.nextPendingConnection(), this);
+    connect(rr, &HttpReqRep::requestReceived, [this, rr]() {
+        Q_EMIT newRequest(rr);
+        rr->close();
     });
-    return result;
+    connect(rr, &HttpReqRep::responseSent, [this, rr]() {
+        qCInfo(gHttpServerLog).noquote() << rr->requestMethod() << rr->requestPath()
+                                         << rr->responseStatus() << rr->responseBody().size();
+    });
+    connect(rr, &HttpReqRep::error, [this, rr](const QString &error) {
+        qCWarning(gHttpServerLog).noquote() << rr->requestMethod() << rr->requestPath()
+                                            << error;
+        m_error = true;
+    });
+    connect(rr, &HttpReqRep::closed, rr, &QObject::deleteLater);
 }

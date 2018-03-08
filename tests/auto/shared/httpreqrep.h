@@ -30,6 +30,7 @@
 
 #include <QTcpSocket>
 
+#include <map>
 #include <utility>
 
 // Represents an HTTP request-response exchange.
@@ -37,11 +38,20 @@ class HttpReqRep : public QObject
 {
     Q_OBJECT
 public:
-    HttpReqRep(QTcpSocket *socket, QObject *parent = nullptr);
+    explicit HttpReqRep(QTcpSocket *socket, QObject *parent = nullptr);
+
     void sendResponse();
+    void close();
+
+    // Request parameters (only valid after requestReceived())
+
     QByteArray requestMethod() const { return m_requestMethod; }
     QByteArray requestPath() const { return m_requestPath; }
     QByteArray requestHeader(const QByteArray &key) const;
+
+    // Response parameters (can be set until sendResponse()/close()).
+
+    int responseStatus() const { return m_responseStatusCode; }
     void setResponseStatus(int statusCode)
     {
         m_responseStatusCode = statusCode;
@@ -50,6 +60,7 @@ public:
     {
         m_responseHeaders[key.toLower()] = std::move(value);
     }
+    QByteArray responseBody() const { return m_responseBody; }
     void setResponseBody(QByteArray content)
     {
         m_responseHeaders["content-length"] = QByteArray::number(content.size());
@@ -57,13 +68,34 @@ public:
     }
 
 Q_SIGNALS:
-    void readFinished(bool ok);
+    // Emitted when the request has been correctly parsed.
+    void requestReceived();
+    // Emitted on first call to sendResponse().
+    void responseSent();
+    // Emitted when something goes wrong.
+    void error(const QString &error);
+    // Emitted during or some time after sendResponse() or close().
+    void closed();
 
 private Q_SLOTS:
     void handleReadyRead();
+    void handleDisconnected();
 
 private:
+    enum class State {
+        // Waiting for first line of request.
+        RECEIVING_REQUEST,      // Next: RECEIVING_HEADERS or DISCONNECTING.
+        // Waiting for header lines.
+        RECEIVING_HEADERS,      // Next: REQUEST_RECEIVED or DISCONNECTING.
+        // Request parsing succeeded, waiting for sendResponse() or close().
+        REQUEST_RECEIVED,       // Next: DISCONNECTING.
+        // Waiting for network.
+        DISCONNECTING,          // Next: DISCONNECTED.
+        // Connection is dead.
+        DISCONNECTED,           // Next: -
+    };
     QTcpSocket *m_socket = nullptr;
+    State m_state = State::RECEIVING_REQUEST;
     QByteArray m_requestMethod;
     QByteArray m_requestPath;
     std::map<QByteArray, QByteArray> m_requestHeaders;

@@ -4247,21 +4247,26 @@ void tst_QWebEnginePage::registerProtocolHandler()
     QFETCH(bool, permission);
 
     HttpServer server;
+    int mailRequestCount = 0;
+    connect(&server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        if (rr->requestMethod() == "GET" && rr->requestPath() == "/") {
+            rr->setResponseBody(QByteArrayLiteral("<html><body><a id=\"link\" href=\"mailto:foo@bar.com\">some text here</a></body></html>"));
+            rr->sendResponse();
+        } else if (rr->requestMethod() == "GET" && rr->requestPath() == "/mail?uri=mailto%3Afoo%40bar.com") {
+            mailRequestCount++;
+            rr->sendResponse();
+        } else {
+            rr->setResponseStatus(404);
+            rr->sendResponse();
+        }
+    });
+    QVERIFY(server.start());
+
     QWebEnginePage page;
     QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
     QSignalSpy permissionSpy(&page, &QWebEnginePage::registerProtocolHandlerPermissionRequested);
 
     page.setUrl(server.url("/"));
-    auto rr1 = waitForRequest(&server);
-    QVERIFY(rr1);
-    rr1->setResponseBody(QByteArrayLiteral("<html><body><a id=\"link\" href=\"mailto:foo@bar.com\">some text here</a></body></html>"));
-    rr1->sendResponse();
-    auto rr2 = waitForRequest(&server);
-    QVERIFY(rr2);
-    QCOMPARE(rr2->requestMethod(), QByteArrayLiteral("GET"));
-    QCOMPARE(rr2->requestPath(), QByteArrayLiteral("/favicon.ico"));
-    rr2->setResponseStatus(404);
-    rr2->sendResponse();
     QTRY_COMPARE(loadSpy.count(), 1);
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), true);
 
@@ -4283,17 +4288,10 @@ void tst_QWebEnginePage::registerProtocolHandler()
 
     page.runJavaScript(QStringLiteral("document.getElementById(\"link\").click()"));
 
-    std::unique_ptr<HttpReqRep> rr3;
-    if (permission) {
-        rr3 = waitForRequest(&server);
-        QVERIFY(rr3);
-        QCOMPARE(rr3->requestMethod(), QByteArrayLiteral("GET"));
-        QCOMPARE(rr3->requestPath(), QByteArrayLiteral("/mail?uri=mailto%3Afoo%40bar.com"));
-        rr3->sendResponse();
-    }
-
     QTRY_COMPARE(loadSpy.count(), 1);
     QCOMPARE(loadSpy.takeFirst().value(0).toBool(), permission);
+    QCOMPARE(mailRequestCount, permission ? 1 : 0);
+    QVERIFY(server.stop());
 }
 
 void tst_QWebEnginePage::dataURLFragment()
