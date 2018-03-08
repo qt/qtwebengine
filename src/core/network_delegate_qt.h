@@ -55,25 +55,9 @@ namespace QtWebEngineCore {
 class URLRequestContextGetterQt;
 
 class NetworkDelegateQt : public net::NetworkDelegate {
-    QSet<net::URLRequest *> m_activeRequests;
     URLRequestContextGetterQt *m_requestContextGetter;
 public:
     NetworkDelegateQt(URLRequestContextGetterQt *requestContext);
-
-    struct RequestParams {
-        QUrl url;
-        bool isMainFrameRequest;
-        int navigationType;
-    };
-
-    void NotifyNavigationRequestedOnUIThread(net::URLRequest *request,
-                                             RequestParams params,
-                                             int frameTreeNodeId,
-                                             const net::CompletionCallback &callback);
-
-    void CompleteURLRequestOnIOThread(net::URLRequest *request,
-                                      int navigationRequestAction,
-                                      const net::CompletionCallback &callback);
 
     // net::NetworkDelegate implementation
     int OnBeforeURLRequest(net::URLRequest* request, const net::CompletionCallback& callback, GURL* newUrl) override;

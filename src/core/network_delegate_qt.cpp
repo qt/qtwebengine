@@ -81,6 +81,8 @@ WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::Page
     }
 }
 
+namespace {
+
 QWebEngineUrlRequestInfo::ResourceType toQt(content::ResourceType resourceType)
 {
     if (resourceType >= 0 && resourceType < content::ResourceType(QWebEngineUrlRequestInfo::ResourceTypeLast))
@@ -92,6 +94,114 @@ QWebEngineUrlRequestInfo::NavigationType toQt(WebContentsAdapterClient::Navigati
 {
     return static_cast<QWebEngineUrlRequestInfo::NavigationType>(navigationType);
 }
+
+// Notifies WebContentsAdapterClient of a new URLRequest.
+class URLRequestNotification {
+public:
+    URLRequestNotification(net::URLRequest *request,
+                           const QUrl &url,
+                           bool isMainFrameRequest,
+                           int navigationType,
+                           int frameTreeNodeId,
+                           const net::CompletionCallback &callback)
+        : m_request(request)
+        , m_url(url)
+        , m_isMainFrameRequest(isMainFrameRequest)
+        , m_navigationType(navigationType)
+        , m_frameTreeNodeId(frameTreeNodeId)
+        , m_callback(callback)
+    {
+        DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+        m_request->SetUserData(UserData::key, std::make_unique<UserData>(this));
+
+        content::BrowserThread::PostTask(
+            content::BrowserThread::UI,
+            FROM_HERE,
+            base::Bind(&URLRequestNotification::notify, base::Unretained(this)));
+    }
+
+private:
+    // Calls cancel() when the URLRequest is destroyed.
+    class UserData : public base::SupportsUserData::Data {
+    public:
+        UserData(URLRequestNotification *ptr) : m_ptr(ptr) {}
+        ~UserData() { m_ptr->cancel(); }
+        static const char key[];
+    private:
+        URLRequestNotification *m_ptr;
+    };
+
+    void cancel()
+    {
+        DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+        // May run concurrently with notify() but we only touch m_request here.
+
+        m_request = nullptr;
+    }
+
+    void notify()
+    {
+        DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+        // May run concurrently with cancel() so no peeking at m_request here.
+
+        int error = net::OK;
+        content::WebContents *webContents = content::WebContents::FromFrameTreeNodeId(m_frameTreeNodeId);
+        if (webContents) {
+            int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
+            WebContentsAdapterClient *client =
+                WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
+            client->navigationRequested(m_navigationType,
+                                        m_url,
+                                        navigationRequestAction,
+                                        m_isMainFrameRequest);
+            error = net::ERR_FAILED;
+            switch (static_cast<WebContentsAdapterClient::NavigationRequestAction>(navigationRequestAction)) {
+            case WebContentsAdapterClient::AcceptRequest:
+                error = net::OK;
+                break;
+            case WebContentsAdapterClient::IgnoreRequest:
+                error = net::ERR_ABORTED;
+                break;
+            }
+            DCHECK(error != net::ERR_FAILED);
+        }
+
+        // Run the callback on the IO thread.
+        content::BrowserThread::PostTask(
+            content::BrowserThread::IO,
+            FROM_HERE,
+            base::Bind(&URLRequestNotification::complete, base::Unretained(this), error));
+    }
+
+    void complete(int error)
+    {
+        DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+        if (m_request) {
+            if (m_request->status().status() != net::URLRequestStatus::CANCELED)
+                m_callback.Run(error);
+            m_request->RemoveUserData(UserData::key);
+        }
+
+        delete this;
+    }
+
+    ~URLRequestNotification() {}
+
+    net::URLRequest *m_request;
+    QUrl m_url;
+    bool m_isMainFrameRequest;
+    int m_navigationType;
+    int m_frameTreeNodeId;
+    net::CompletionCallback m_callback;
+};
+
+const char URLRequestNotification::UserData::key[] = "QtWebEngineCore::URLRequestNotification";
+
+} // namespace
 
 NetworkDelegateQt::NetworkDelegateQt(URLRequestContextGetterQt *requestContext)
     : m_requestContextGetter(requestContext)
@@ -149,90 +259,25 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
     if (!content::IsResourceTypeFrame(resourceType) || frameTreeNodeId == -1)
         return net::OK;
 
-    // Track active requests since |callback| and |new_url| are valid
-    // only until OnURLRequestDestroyed is called for this request.
-    m_activeRequests.insert(request);
-
-    RequestParams params = {
+    new URLRequestNotification(
+        request,
         qUrl,
         resourceInfo->IsMainFrame(),
-        navigationType
-    };
-
-    content::BrowserThread::PostTask(
-                content::BrowserThread::UI,
-                FROM_HERE,
-                base::Bind(&NetworkDelegateQt::NotifyNavigationRequestedOnUIThread,
-                           base::Unretained(this),
-                           request,
-                           params,
-                           frameTreeNodeId,
-                           callback)
-                );
+        navigationType,
+        frameTreeNodeId,
+        callback
+    );
 
     // We'll run the callback after we notified the UI thread.
     return net::ERR_IO_PENDING;
 }
 
-void NetworkDelegateQt::OnURLRequestDestroyed(net::URLRequest* request)
+void NetworkDelegateQt::OnURLRequestDestroyed(net::URLRequest*)
 {
-    m_activeRequests.remove(request);
 }
 
 void NetworkDelegateQt::OnCompleted(net::URLRequest */*request*/, bool /*started*/, int /*net_error*/)
 {
-}
-
-void NetworkDelegateQt::CompleteURLRequestOnIOThread(net::URLRequest *request,
-                                                     int navigationRequestAction,
-                                                     const net::CompletionCallback &callback)
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    if (!m_activeRequests.contains(request))
-        return;
-
-    if (request->status().status() == net::URLRequestStatus::CANCELED)
-        return;
-
-    int error = net::OK;
-    switch (navigationRequestAction) {
-    case WebContentsAdapterClient::AcceptRequest:
-        error = net::OK;
-        break;
-    case WebContentsAdapterClient::IgnoreRequest:
-        error = net::ERR_ABORTED;
-        break;
-    default:
-        error = net::ERR_FAILED;
-        Q_UNREACHABLE();
-    }
-    callback.Run(error);
-}
-
-void NetworkDelegateQt::NotifyNavigationRequestedOnUIThread(net::URLRequest *request,
-                                                            RequestParams params,
-                                                            int frameTreeNodeId,
-                                                            const net::CompletionCallback &callback)
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-    int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
-    content::WebContents *webContents = content::WebContents::FromFrameTreeNodeId(frameTreeNodeId);
-    if (webContents) {
-        WebContentsAdapterClient *client = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
-        client->navigationRequested(params.navigationType, params.url, navigationRequestAction, params.isMainFrameRequest);
-    }
-
-    // Run the callback on the IO thread.
-    content::BrowserThread::PostTask(
-                content::BrowserThread::IO,
-                FROM_HERE,
-                base::Bind(&NetworkDelegateQt::CompleteURLRequestOnIOThread,
-                           base::Unretained(this),
-                           request,
-                           navigationRequestAction,
-                           callback)
-                );
 }
 
 bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
