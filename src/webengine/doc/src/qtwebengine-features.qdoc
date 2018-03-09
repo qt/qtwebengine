@@ -82,6 +82,15 @@
     {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}) to connect
     to \c {http://localhost:[your-port]}.
 
+    The Chromium DevTools page can also be shown within the application. To set
+    this up, you can call either QWebEnginePage::setInspectedPage() to the page
+    to be inspected, which implicitly loads the DevTools into the \c this page,
+    or QWebEnginePage::setDevToolsPage() to let the \c this page be inspected.
+
+    The respective QML properties are \l{WebEngineView::devToolsView}
+    {WebEngineView.devToolsView} and \l{WebEngineView::inspectedView}
+    {WebEngineView.inspectedView}.
+
     For more information, see \l {Qt WebEngine Debugging and Profiling}.
 
     \section1 Drag and Drop
