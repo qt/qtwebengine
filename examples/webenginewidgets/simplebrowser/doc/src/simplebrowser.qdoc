@@ -121,12 +121,7 @@
 
     \quotefromfile webenginewidgets/simplebrowser/tabwidget.cpp
     \skipto TabWidget::setupView
-    \printuntil emit loadProgress
-    \skipto closeTab
-    \skipto });
-    \printline }
-    \dots
-    \printline }
+    \printuntil /^\}/
 
     \section1 Implementing WebView Functionality
 

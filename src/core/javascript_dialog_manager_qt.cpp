@@ -68,7 +68,7 @@ void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webCon
     }
 
     WebContentsAdapterClient::JavascriptDialogType dialogType = static_cast<WebContentsAdapterClient::JavascriptDialogType>(dialog_type);
-    runDialogForContents(webContents, dialogType, toQt(messageText).toHtmlEscaped(), toQt(defaultPromptText).toHtmlEscaped(), toQt(originUrl.GetOrigin()), std::move(callback));
+    runDialogForContents(webContents, dialogType, toQt(messageText), toQt(defaultPromptText), toQt(originUrl.GetOrigin()), std::move(callback));
 }
 
 void JavaScriptDialogManagerQt::RunBeforeUnloadDialog(content::WebContents *webContents, bool isReload,

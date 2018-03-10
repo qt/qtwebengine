@@ -153,7 +153,6 @@ public:
     QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
 
-    void setDevicePixelRatio(qreal);
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     void setProfile(QQuickWebEngineProfile *profile);
     void ensureContentsAdapter();

@@ -446,7 +446,7 @@ ApplicationWindow {
                 }
 
                 onRegisterProtocolHandlerPermissionRequested: {
-                    print("accepting registerProtocolHandler permission request for " + request.protocol + " from " + request.origin);
+                    print("accepting registerProtocolHandler permission request for " + request.scheme + " from " + request.origin);
                     request.accept();
                 }
 

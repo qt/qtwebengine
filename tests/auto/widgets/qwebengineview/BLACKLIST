@@ -1,6 +1,9 @@
 [doNotSendMouseKeyboardEventsWhenDisabled]
 windows
 
+[microFocusCoordinates]
+osx
+
 [mouseLeave]
 *
 

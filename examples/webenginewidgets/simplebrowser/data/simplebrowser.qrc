@@ -9,5 +9,6 @@
         <file>process-stop.png</file>
         <file>text-html.png</file>
         <file>view-refresh.png</file>
+        <file>ninja.png</file>
     </qresource>
 </RCC>

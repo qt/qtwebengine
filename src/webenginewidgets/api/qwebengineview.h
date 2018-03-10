@@ -95,13 +95,7 @@ public:
 
     qreal zoomFactor() const;
     void setZoomFactor(qreal factor);
-
-#ifdef Q_QDOC
-    void findText(const QString &subString, QWebEnginePage::FindFlags options = QWebEnginePage::FindFlags());
-    void findText(const QString &subString, QWebEnginePage::FindFlags options, FunctorOrLambda resultCallback);
-#else
     void findText(const QString &subString, QWebEnginePage::FindFlags options = QWebEnginePage::FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
-#endif
 
     QSize sizeHint() const override;
     QWebEngineSettings *settings() const;

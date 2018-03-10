@@ -244,16 +244,7 @@
 */
 
 /*!
-    \fn void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options)
-    Finds the specified string, \a subString, in the page, using the given \a options.
-
-    To clear the selection, just pass an empty string.
-
-    \sa selectedText(), selectionChanged()
-*/
-
-/*!
-    \fn void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options, FunctorOrLambda resultCallback)
+    \fn void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options = QWebEnginePage::FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>())
     Finds the specified string, \a subString, in the page, using the given \a options.
 
     To clear the selection, just pass an empty string.

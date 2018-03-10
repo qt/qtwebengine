@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,79 +37,75 @@
 **
 ****************************************************************************/
 
-#include "qwebengineregisterprotocolhandlerpermissionrequest.h"
+#include "qwebenginequotapermissionrequest.h"
 
-#include "register_protocol_handler_permission_controller.h"
+#include "quota_permission_controller.h"
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QWebEngineRegisterProtocolHandlerPermissionRequest
-    \inmodule QtWebEngineWidgets
-    \since 5.11
-    \brief The QWebEngineRegisterProtocolHandlerPermissionRequest type enables
-    accepting or rejecting requests from the \l registerProtocolHandler API.
+    \class QWebEngineQuotaPermissionRequest
+    \brief The QWebEngineQuotaPermissionRequest class enables accepting or rejecting
+    requests for larger persistent storage than the application's current allocation
+    in File System API.
 
-    \sa QWebEnginePage::registerProtocolHandlerPermissionRequested
+    \since 5.11
+
+    \inmodule QtWebEngineCore
 */
 
-static void registerMetaTypes()
-{
-    qRegisterMetaType<QWebEngineRegisterProtocolHandlerPermissionRequest>();
-}
-
-Q_CONSTRUCTOR_FUNCTION(registerMetaTypes)
-
-/*! \fn QWebEngineRegisterProtocolHandlerPermissionRequest::QWebEngineRegisterProtocolHandlerPermissionRequest()
+/*! \fn QWebEngineQuotaPermissionRequest::QWebEngineQuotaPermissionRequest()
     \internal
 */
 
 /*! \internal */
-QWebEngineRegisterProtocolHandlerPermissionRequest::QWebEngineRegisterProtocolHandlerPermissionRequest(
-    QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerPermissionController> d_ptr)
-    : d_ptr(std::move(d_ptr))
-{}
+QWebEngineQuotaPermissionRequest::QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
+    : d_ptr(controller)
+{
+}
 
 /*!
-    Rejects the request.
-
-    Subsequent calls to accept() and reject() are ignored.
+    Rejects a request for larger persistent storage.
 */
-void QWebEngineRegisterProtocolHandlerPermissionRequest::reject()
+void QWebEngineQuotaPermissionRequest::reject()
 {
     d_ptr->reject();
 }
 
 /*!
-    Accepts the request
-
-    Subsequent calls to accept() and reject() are ignored.
+    Accepts a request for larger persistent storage.
 */
-void QWebEngineRegisterProtocolHandlerPermissionRequest::accept()
+void QWebEngineQuotaPermissionRequest::accept()
 {
     d_ptr->accept();
 }
 
 /*!
-    \property QWebEngineRegisterProtocolHandlerPermissionRequest::origin
-    \brief The URL template for the protocol handler.
-
-    This is the second parameter from the \l registerProtocolHandler call.
+    \property QWebEngineQuotaPermissionRequest::origin
+    \brief The URL of the web page that issued the quota permission request.
 */
-QUrl QWebEngineRegisterProtocolHandlerPermissionRequest::origin() const
+
+QUrl QWebEngineQuotaPermissionRequest::origin() const
 {
     return d_ptr->origin();
 }
 
 /*!
-    \property QWebEngineRegisterProtocolHandlerPermissionRequest::protocol
-    \brief The URL scheme for the protocol handler.
-
-    This is the first parameter from the \l registerProtocolHandler call.
+    \property QWebEngineQuotaPermissionRequest::requestedSize
+    \brief Contains the size of the requested disk space in bytes.
 */
-QString QWebEngineRegisterProtocolHandlerPermissionRequest::protocol() const
+
+qint64 QWebEngineQuotaPermissionRequest::requestedSize() const
 {
-    return d_ptr->protocol();
+    return d_ptr->requestedSize();
 }
+
+/*! \fn bool QWebEngineQuotaPermissionRequest::operator==(const QWebEngineQuotaPermissionRequest &that) const
+    Returns \c true if the objects are equal.
+*/
+
+/*! \fn bool QWebEngineQuotaPermissionRequest::operator!=(const QWebEngineQuotaPermissionRequest &that) const
+    Returns \c true if the objects are not equal.
+*/
 
 QT_END_NAMESPACE

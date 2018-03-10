@@ -246,7 +246,7 @@ void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_
 
 void WebContentsDelegateQt::EmitLoadStarted(const QUrl &url, bool isErrorPage)
 {
-    if (m_lastLoadProgress >= 0) // already running
+    if (m_lastLoadProgress >= 0 && m_lastLoadProgress < 100) // already running
         return;
     m_viewClient->loadStarted(url, isErrorPage);
     m_viewClient->loadProgressChanged(0);
@@ -655,7 +655,7 @@ void WebContentsDelegateQt::RegisterProtocolHandler(content::WebContents *webCon
         return;
 
     QSharedPointer<RegisterProtocolHandlerPermissionController> controller(
-        new RegisterProtocolHandlerPermissionControllerImpl(registry, handler));
+        new RegisterProtocolHandlerPermissionControllerImpl(webContents, handler));
     m_viewClient->runRegisterProtocolHandlerPermissionRequest(std::move(controller));
 }
 

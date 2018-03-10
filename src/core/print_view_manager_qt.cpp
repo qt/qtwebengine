@@ -154,13 +154,14 @@ static base::DictionaryValue *createPrintSettings()
     return printSettings;
 }
 
-static base::DictionaryValue *createPrintSettingsFromQPageLayout(const QPageLayout &pageLayout, bool printToPdf)
+static base::DictionaryValue *createPrintSettingsFromQPageLayout(const QPageLayout &pageLayout,
+                                                                 bool useCustomMargins)
 {
     base::DictionaryValue *printSettings = createPrintSettings();
 
     //Set page size attributes, chromium expects these in micrometers
     QRectF pageSizeInMillimeter = pageLayout.pageSize().rect(QPageSize::Millimeter);
-    if (!printToPdf) {
+    if (!useCustomMargins) {
         // QPrinter will extend this size with its margins
         QMarginsF margins = pageLayout.margins(QPageLayout::Millimeter);
         pageSizeInMillimeter = pageSizeInMillimeter.marginsRemoved(margins);
@@ -170,7 +171,7 @@ static base::DictionaryValue *createPrintSettingsFromQPageLayout(const QPageLayo
     sizeDict->SetInteger(printing::kSettingMediaSizeHeightMicrons, pageSizeInMillimeter.height() * kMicronsToMillimeter);
     printSettings->Set(printing::kSettingMediaSize, std::move(sizeDict));
 
-    if (printToPdf) {
+    if (useCustomMargins) {
         // Apply page margins when printing to PDF
         QMargins pageMarginsInPoints = pageLayout.marginsPoints();
         std::unique_ptr<base::DictionaryValue> marginsDict(new base::DictionaryValue);
@@ -201,7 +202,8 @@ PrintViewManagerQt::~PrintViewManagerQt()
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayout,
-                                                    bool printInColor, const QString &filePath,
+                                                    bool printInColor,
+                                                    const QString &filePath,
                                                     const PrintToPDFFileCallback& callback)
 {
     if (callback.is_null())
@@ -226,6 +228,7 @@ void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayou
 
 void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
                                                 bool printInColor,
+                                                bool useCustomMargins,
                                                 const PrintToPDFCallback& callback)
 {
     if (callback.is_null())
@@ -240,7 +243,7 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
     }
 
     m_pdfPrintCallback = callback;
-    if (!PrintToPDFInternal(pageLayout, printInColor)) {
+    if (!PrintToPDFInternal(pageLayout, printInColor, useCustomMargins)) {
         content::BrowserThread::PostTask(content::BrowserThread::UI,
                                          FROM_HERE,
                                          base::Bind(callback, std::vector<char>()));
@@ -249,12 +252,14 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
     }
 }
 
-bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout, bool printInColor)
+bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
+                                            const bool printInColor,
+                                            const bool useCustomMargins)
 {
     if (!pageLayout.isValid())
         return false;
 
-    m_printSettings.reset(createPrintSettingsFromQPageLayout(pageLayout, !m_pdfOutputPath.empty()));
+    m_printSettings.reset(createPrintSettingsFromQPageLayout(pageLayout, useCustomMargins));
     m_printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds
         , web_contents()->GetRenderViewHost()->GetWebkitPreferences().should_print_backgrounds);
     m_printSettings->SetInteger(printing::kSettingColor,

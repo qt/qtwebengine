@@ -58,7 +58,7 @@
     following option when configuring Qt:
 
     \code
-    -proprietary-codecs
+    -webengine-proprietary-codecs
     \endcode
 
     \warning When distributing proprietary codec libraries, you must acquire
@@ -300,7 +300,7 @@
     dictionaries in the specified directory without looking anywere else.
     Otherwise, it uses the \e qtwebengine_dictionaries directory relative to the
     executable if it exists. If it does not exist, it will look in \c
-    QT_INSTALL_PREFIX/qtwebengines_dictionaries.
+    QT_INSTALL_PREFIX/qtwebengine_dictionaries.
 
     On macOS, depending on how Qt WebEngine is configured at build time, there
     are two possibilities how spellchecking data is found:

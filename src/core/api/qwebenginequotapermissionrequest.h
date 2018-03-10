@@ -42,7 +42,7 @@
 
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qurl.h>
-#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 namespace QtWebEngineCore {
     class QuotaPermissionController;
@@ -50,24 +50,23 @@ namespace QtWebEngineCore {
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineQuotaPermissionRequest {
+class QWEBENGINE_EXPORT QWebEngineQuotaPermissionRequest {
     Q_GADGET
     Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
     Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)
 public:
-    explicit QWebEngineQuotaPermissionRequest() { Q_UNREACHABLE(); }
-    explicit QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller);
+    QWebEngineQuotaPermissionRequest() {}
+    QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController>);
     Q_INVOKABLE void accept();
     Q_INVOKABLE void reject();
     QUrl origin() const;
     qint64 requestedSize() const;
-
+    bool operator==(const QWebEngineQuotaPermissionRequest &that) const { return d_ptr == that.d_ptr; }
+    bool operator!=(const QWebEngineQuotaPermissionRequest &that) const { return d_ptr != that.d_ptr; }
 private:
     QSharedPointer<QtWebEngineCore::QuotaPermissionController> d_ptr;
 };
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QWebEngineQuotaPermissionRequest)
 
 #endif // QWEBENGINEQUOTAPERMISSIONREQUEST_H

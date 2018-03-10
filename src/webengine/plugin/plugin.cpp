@@ -52,6 +52,8 @@
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginesingleton_p.h"
 #include "qquickwebengineview_p.h"
+#include "qwebenginequotapermissionrequest.h"
+#include "qwebengineregisterprotocolhandlerpermissionrequest.h"
 #include "qtwebengineversion.h"
 
 QT_BEGIN_NAMESPACE
@@ -137,10 +139,13 @@ public:
                                                                          msgUncreatableType("FileDialogRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineFormValidationMessageRequest>(uri, 1, 4, "FormValidationMessageRequest",
                                                                          msgUncreatableType("FormValidationMessageRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineQuotaPermissionRequest>(uri, 1, 7, "QuotaPermissionRequest",
-            tr("Cannot create a separate instance of QuotaPermissionRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineRegisterProtocolHandlerPermissionRequest>(uri, 1, 7, "RegisterProtocolHandlerPermissionRequest",
-            tr("Cannot create a separate instance of RegisterProtocolHandlerPermissionRequest"));
+        qRegisterMetaType<QWebEngineQuotaPermissionRequest>();
+        qmlRegisterUncreatableType<QWebEngineQuotaPermissionRequest>(uri, 1, 7, "QuotaPermissionRequest",
+                                                                     msgUncreatableType("QuotaPermissionRequest"));
+        qRegisterMetaType<QWebEngineRegisterProtocolHandlerPermissionRequest>();
+        qmlRegisterUncreatableType<QWebEngineRegisterProtocolHandlerPermissionRequest>(uri, 1, 7, "RegisterProtocolHandlerPermissionRequest",
+                                                                                       msgUncreatableType("RegisterProtocolHandlerPermissionRequest"));
+
     }
 
 private:

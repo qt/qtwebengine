@@ -235,6 +235,9 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
 #endif
 {
     memset(actions, 0, sizeof(actions));
+
+    qRegisterMetaType<QWebEngineQuotaPermissionRequest>();
+    qRegisterMetaType<QWebEngineRegisterProtocolHandlerPermissionRequest>();
 }
 
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
@@ -2183,7 +2186,6 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &page
 
 
 /*!
-    \fn void QWebEnginePage::printToPdf(FunctorOrLambda resultCallback, const QPageLayout &pageLayout)
     Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
     as parameter to \a resultCallback.
     The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
@@ -2213,7 +2215,6 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
 }
 
 /*!
-    \fn void QWebEnginePage::print(QPrinter *printer, FunctorOrLambda resultCallback)
     Renders the current content of the page into a temporary PDF document, then prints it using \a printer.
 
     The settings for creating and printing the PDF document will be retrieved from the \a printer
@@ -2237,7 +2238,9 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
     }
     d->currentPrinter = printer;
 #endif // ENABLE_PRINTING
-    quint64 requestId = d->adapter->printToPDFCallbackResult(printer->pageLayout(), printer->colorMode() == QPrinter::Color);
+    quint64 requestId = d->adapter->printToPDFCallbackResult(printer->pageLayout(),
+                                                             printer->colorMode() == QPrinter::Color,
+                                                             false);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 #else // if defined(ENABLE_PDF)
     Q_UNUSED(printer);
