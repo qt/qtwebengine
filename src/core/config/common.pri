@@ -94,3 +94,4 @@ qtConfig(webengine-v8-snapshot) {
     gn_args += v8_use_snapshot=false
 }
 
+!msvc: gn_args += enable_iterator_debugging=false
