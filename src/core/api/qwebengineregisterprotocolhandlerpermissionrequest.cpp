@@ -106,11 +106,13 @@ QString QWebEngineRegisterProtocolHandlerPermissionRequest::scheme() const
 }
 
 /*! \fn bool QWebEngineRegisterProtocolHandlerPermissionRequest::operator==(const QWebEngineRegisterProtocolHandlerPermissionRequest &that) const
-    Returns \c true if the objects are equal.
+    Returns \c true if \a that points to the same object as this protocol
+    handler permission request.
 */
 
 /*! \fn bool QWebEngineRegisterProtocolHandlerPermissionRequest::operator!=(const QWebEngineRegisterProtocolHandlerPermissionRequest &that) const
-    Returns \c true if the objects are not equal.
+    Returns \c true if \a that points to a different object than this protocol
+    handler permission request.
 */
 
 QT_END_NAMESPACE

@@ -101,11 +101,13 @@ qint64 QWebEngineQuotaPermissionRequest::requestedSize() const
 }
 
 /*! \fn bool QWebEngineQuotaPermissionRequest::operator==(const QWebEngineQuotaPermissionRequest &that) const
-    Returns \c true if the objects are equal.
+    Returns \c true if \a that points to the same object as this quota
+    permission request.
 */
 
 /*! \fn bool QWebEngineQuotaPermissionRequest::operator!=(const QWebEngineQuotaPermissionRequest &that) const
-    Returns \c true if the objects are not equal.
+    Returns \c true if \a that points to a different object than this quota
+    permission request.
 */
 
 QT_END_NAMESPACE
