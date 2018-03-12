@@ -470,10 +470,8 @@ WebEngineContext::WebEngineContext()
                     }
                 }
             }
-
-// FIXME:
-//            if (qt_gl_global_share_context()->format().profile() == QSurfaceFormat::CompatibilityProfile)
-//                parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
+            if (qt_gl_global_share_context()->format().profile() == QSurfaceFormat::CompatibilityProfile)
+                parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
         } else {
             qWarning("WebEngineContext used before QtWebEngine::initialize() or OpenGL context creation failed.");
         }
