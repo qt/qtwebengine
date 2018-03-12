@@ -51,7 +51,7 @@
 #include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
-#include "print_view_manager_qt.h"
+#include "printing/print_view_manager_qt.h"
 #include "qwebenginecallback_p.h"
 #include "renderer_host/web_channel_ipc_transport_host.h"
 #include "render_view_observer_host_qt.h"

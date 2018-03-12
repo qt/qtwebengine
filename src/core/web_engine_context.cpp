@@ -89,10 +89,10 @@
 #include "devtools_manager_delegate_qt.h"
 #include "gl_context_qt.h"
 #include "media_capture_devices_dispatcher.h"
+#include "net/webui_controller_factory_qt.h"
 #include "type_conversion.h"
 #include "surface_factory_qt.h"
 #include "web_engine_library_info.h"
-#include "webui/webui_controller_factory_qt.h"
 
 #include <QFileInfo>
 #include <QGuiApplication>

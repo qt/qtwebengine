@@ -47,7 +47,7 @@
 #include "favicon_manager.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
-#include "pdfium_document_wrapper_qt.h"
+#include "printing/pdfium_document_wrapper_qt.h"
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"

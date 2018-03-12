@@ -50,7 +50,7 @@
 #include "favicon_manager_p.h"
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
-#include "network_delegate_qt.h"
+#include "net/network_delegate_qt.h"
 #include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
 #include "visited_links_manager_qt.h"

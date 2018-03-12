@@ -93,11 +93,11 @@
 #include "desktop_screen_qt.h"
 #include "devtools_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
-#include "network_delegate_qt.h"
+#include "net/network_delegate_qt.h"
+#include "net/qrc_protocol_handler_qt.h"
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-#include "printing_message_filter_qt.h"
+#include "printing/printing_message_filter_qt.h"
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
-#include "qrc_protocol_handler_qt.h"
 #include "quota_permission_context_qt.h"
 #include "renderer_host/resource_dispatcher_host_delegate_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
