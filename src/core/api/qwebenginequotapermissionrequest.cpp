@@ -50,8 +50,11 @@ QT_BEGIN_NAMESPACE
     in File System API.
 
     \since 5.11
-
     \inmodule QtWebEngineCore
+
+    This class is used by the QWebEnginePage::quotaPermissionRequested() signal
+    to \l accept() or \l reject() a request for an increase in the persistent
+    storage allocated to the application. The default quota is 0 bytes.
 */
 
 /*! \fn QWebEngineQuotaPermissionRequest::QWebEngineQuotaPermissionRequest()
