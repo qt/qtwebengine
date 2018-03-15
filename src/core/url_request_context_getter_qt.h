@@ -128,6 +128,7 @@ private:
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
     std::unique_ptr<net::HttpNetworkSession> m_httpNetworkSession;
     std::unique_ptr<net::HttpAuthPreferences> m_httpAuthPreferences;
+    proxy_resolver::mojom::ProxyResolverFactoryPtr m_proxyResolverFactory;
 
     QList<QByteArray> m_installedCustomSchemes;
     QWebEngineUrlRequestInterceptor* m_requestInterceptor;

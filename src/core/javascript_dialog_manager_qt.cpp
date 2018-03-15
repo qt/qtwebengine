@@ -71,7 +71,8 @@ void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webCon
     runDialogForContents(webContents, dialogType, toQt(messageText), toQt(defaultPromptText), toQt(originUrl.GetOrigin()), std::move(callback));
 }
 
-void JavaScriptDialogManagerQt::RunBeforeUnloadDialog(content::WebContents *webContents, bool isReload,
+void JavaScriptDialogManagerQt::RunBeforeUnloadDialog(content::WebContents *webContents, content::RenderFrameHost */*render_frame_host*/,
+                                                      bool isReload,
                                                       content::JavaScriptDialogManager::DialogClosedCallback callback) {
     Q_UNUSED(isReload);
     runDialogForContents(webContents, WebContentsAdapterClient::UnloadDialog, QString(), QString(), QUrl(), std::move(callback));

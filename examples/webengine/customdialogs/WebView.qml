@@ -108,28 +108,4 @@ WebEngineView {
                      properties: {"request": request}});
 
     }
-
-    onFormValidationMessageRequested: function(request) {
-        switch (request.type) {
-        case FormValidationMessageRequest.Show:
-            if (useDefaultDialogs)
-                return;
-
-            request.accepted = true;
-            validationMessage.text = request.text;
-            validationMessage.y = request.anchor.y + request.anchor.height + 10;
-            validationMessage.visible = true;
-            break;
-        case FormValidationMessageRequest.Move:
-            break;
-        case FormValidationMessageRequest.Hide:
-            validationMessage.visible = false;
-            break;
-        }
-    }
-
-    MessageRectangle {
-        id: validationMessage
-        z: 1
-    }
 }

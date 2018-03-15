@@ -134,9 +134,6 @@ public:
     QObject *accessibilityParentObject() override;
     QtWebEngineCore::WebEngineSettings *webEngineSettings() const override;
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &controller) override;
-    void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) override;
-    void hideValidationMessage() override;
-    void moveValidationMessage(const QRect &anchor) override;
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) override;
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
     void updateScrollPosition(const QPointF &position) override;

@@ -64,8 +64,10 @@ public:
                              const base::string16 &messageText, const base::string16 &defaultPromptText,
                              DialogClosedCallback callback,
                              bool *didSuppressMessage) override;
-    void RunBeforeUnloadDialog(content::WebContents *, bool isReload,
-                               content::JavaScriptDialogManager::DialogClosedCallback callback) override;
+    void RunBeforeUnloadDialog(content::WebContents *web_contents,
+                               content::RenderFrameHost *render_frame_host,
+                               bool is_reload,
+                               DialogClosedCallback callback) override;
     bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride) override;
     void CancelDialogs(content::WebContents *contents, bool /*reset_state*/) override
     {

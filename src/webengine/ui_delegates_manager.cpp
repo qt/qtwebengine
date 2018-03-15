@@ -129,7 +129,6 @@ MenuItemHandler::MenuItemHandler(QObject *parent)
 
 UIDelegatesManager::UIDelegatesManager(QQuickWebEngineView *view)
     : m_view(view)
-    , m_messageBubbleItem(0)
     , m_toolTip(nullptr)
     FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_INIT, NO_SEPARATOR)
 {
@@ -533,39 +532,6 @@ void UIDelegatesManager::showMenu(QObject *menu)
     // temporarily to the right position.
     TemporaryCursorMove tcm(m_view, menu->property("pos").toPoint());
     QMetaObject::invokeMethod(menu, "popup");
-}
-
-void UIDelegatesManager::showMessageBubble(const QRect &anchor, const QString &mainText, const QString &subText)
-{
-    if (!ensureComponentLoaded(MessageBubble))
-        return;
-
-    Q_ASSERT(m_messageBubbleItem.isNull());
-
-    QQmlContext *context = qmlContext(m_view);
-    m_messageBubbleItem.reset(qobject_cast<QQuickItem *>(messageBubbleComponent->beginCreate(context)));
-    m_messageBubbleItem->setParentItem(m_view);
-    messageBubbleComponent->completeCreate();
-
-    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("maxWidth")).write(anchor.size().width());
-    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("mainText")).write(mainText);
-    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("subText")).write(subText);
-    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("x")).write(anchor.x());
-    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("y")).write(anchor.y() + anchor.size().height());
-}
-
-void UIDelegatesManager::hideMessageBubble()
-{
-    m_messageBubbleItem.reset();
-}
-
-void UIDelegatesManager::moveMessageBubble(const QRect &anchor)
-{
-    if (m_messageBubbleItem.isNull())
-        return;
-
-    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("x")).write(anchor.x());
-    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("y")).write(anchor.y() + anchor.size().height());
 }
 
 void UIDelegatesManager::showToolTip(const QString &text)

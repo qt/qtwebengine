@@ -82,8 +82,9 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     // Initial spellcheck settings
     registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries, base::MakeUnique<base::ListValue>());
+    registry->RegisterListPref(spellcheck::prefs::kSpellCheckForcedDictionaries, base::MakeUnique<base::ListValue>());
     registry->RegisterStringPref(spellcheck::prefs::kSpellCheckDictionary, std::string());
-    registry->RegisterBooleanPref(spellcheck::prefs::kEnableSpellcheck, false);
+    registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckEnable, false);
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
 #endif //ENABLE_SPELLCHECK
     m_prefService = factory.Create(registry);
@@ -242,12 +243,12 @@ QStringList BrowserContextQt::spellCheckLanguages() const
 
 void BrowserContextQt::setSpellCheckEnabled(bool enabled)
 {
-    m_prefService->SetBoolean(spellcheck::prefs::kEnableSpellcheck, enabled);
+    m_prefService->SetBoolean(spellcheck::prefs::kSpellCheckEnable, enabled);
 }
 
 bool BrowserContextQt::isSpellCheckEnabled() const
 {
-    return m_prefService->GetBoolean(spellcheck::prefs::kEnableSpellcheck);
+    return m_prefService->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
 }
 #endif //ENABLE_SPELLCHECK
 } // namespace QtWebEngineCore

@@ -200,7 +200,7 @@ void tst_QWebEngineSpellcheck::spellcheck_data()
     QTest::addColumn<QStringList>("languages");
     QTest::addColumn<QStringList>("suggestions");
     QTest::newRow("en-US") << QStringList({"en-US"}) << QStringList({"low", "love"});
-    QTest::newRow("en-US,de-DE") << QStringList({"en-US", "de-DE"}) << QStringList({"low", "löwe", "love"});
+    QTest::newRow("en-US,de-DE") << QStringList({"en-US", "de-DE"}) << QStringList({"löwe", "low", "love"});
 }
 
 QTEST_MAIN(tst_QWebEngineSpellcheck)

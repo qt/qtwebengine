@@ -47,6 +47,8 @@
 #include "type_conversion.h"
 #include "web_engine_context.h"
 
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -110,80 +112,64 @@ base::string16 PrintViewManagerBaseQt::RenderSourceName()
      return toString16(QLatin1String(""));
 }
 
+bool PrintViewManagerBaseQt::PrintDocument(printing::PrintedDocument *document,
+                                           const scoped_refptr<base::RefCountedBytes> &print_data,
+                                           const gfx::Size &page_size,
+                                           const gfx::Rect &content_area,
+                                           const gfx::Point &offsets)
+{
+    std::unique_ptr<printing::PdfMetafileSkia> metafile =
+            std::make_unique<printing::PdfMetafileSkia>(printing::SkiaDocumentType::PDF);
+    if (!metafile->InitFromData(print_data->front(), print_data->size())) {
+        NOTREACHED() << "Invalid metafile";
+        web_contents()->Stop();
+        return false;
+    }
+
+    // Update the rendered document. It will send notifications to the listener.
+    document->SetDocument(std::move(metafile), page_size, content_area);
+    ShouldQuitFromInnerMessageLoop();
+    return true;
+}
+
+printing::PrintedDocument *PrintViewManagerBaseQt::GetDocument(int cookie)
+{
+    if (!OpportunisticallyCreatePrintJob(cookie))
+        return nullptr;
+
+    printing::PrintedDocument* document = m_printJob->document();
+    if (!document || cookie != document->cookie()) {
+        // Out of sync. It may happen since we are completely asynchronous. Old
+        // spurious messages can be received if one of the processes is overloaded.
+        return nullptr;
+    }
+    return document;
+}
+
 // IPC handlers
-void PrintViewManagerBaseQt::OnDidPrintPage(
-  const PrintHostMsg_DidPrintPage_Params& params) {
-  if (!OpportunisticallyCreatePrintJob(params.document_cookie))
-    return;
+void PrintViewManagerBaseQt::OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params &params)
+{
+    printing::PrintedDocument *document = GetDocument(params.document_cookie);
+    if (!document)
+        return;
 
-  printing::PrintedDocument* document = m_printJob->document();
-  if (!document || params.document_cookie != document->cookie()) {
-    // Out of sync. It may happen since we are completely asynchronous. Old
-    // spurious messages can be received if one of the processes is overloaded.
-    return;
-  }
-
-#if defined(OS_MACOSX)
-  const bool metafile_must_be_valid = true;
-#else
-  const bool metafile_must_be_valid = m_isExpectingFirstPage;
-  m_isExpectingFirstPage = false;
-#endif
-
-  // Only used when |metafile_must_be_valid| is true.
-  std::unique_ptr<base::SharedMemory> shared_buf;
-  if (metafile_must_be_valid) {
     if (!base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
-      NOTREACHED() << "invalid memory handle";
-      web_contents()->Stop();
-      return;
+        NOTREACHED() << "invalid memory handle";
+        web_contents()->Stop();
+        return;
     }
-    shared_buf.reset(new base::SharedMemory(params.metafile_data_handle, true));
+
+    std::unique_ptr<base::SharedMemory> shared_buf =
+            std::make_unique<base::SharedMemory>(params.metafile_data_handle, true);
     if (!shared_buf->Map(params.data_size)) {
-      NOTREACHED() << "couldn't map";
-      web_contents()->Stop();
-      return;
+        NOTREACHED() << "couldn't map";
+        web_contents()->Stop();
+        return;
     }
-  } else {
-    if (base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
-      NOTREACHED() << "unexpected valid memory handle";
-      web_contents()->Stop();
-      base::SharedMemory::CloseHandle(params.metafile_data_handle);
-      return;
-    }
-  }
-
-  std::unique_ptr<printing::PdfMetafileSkia> metafile(new printing::PdfMetafileSkia(printing::SkiaDocumentType::PDF));
-  if (metafile_must_be_valid) {
-    if (!metafile->InitFromData(shared_buf->memory(), params.data_size)) {
-      NOTREACHED() << "Invalid metafile header";
-      web_contents()->Stop();
-      return;
-    }
-  }
-
-#if defined(OS_WIN) && !defined(TOOLKIT_QT)
-  if (metafile_must_be_valid) {
-    scoped_refptr<base::RefCountedBytes> bytes = new base::RefCountedBytes(
-        reinterpret_cast<const unsigned char*>(shared_buf->memory()),
-        params.data_size);
-
-    document->DebugDumpData(bytes.get(), FILE_PATH_LITERAL(".pdf"));
-    m_printJob->StartPdfToEmfConversion(
-        bytes, params.page_size, params.content_area);
-  }
-#else
-  // Update the rendered document. It will send notifications to the listener.
-  document->SetPage(params.page_number,
-                    std::move(metafile),
-#if defined(OS_WIN)
-                    1.0f, // shrink factor, needed on windows.
-#endif // defined(OS_WIN)
-                    params.page_size,
-                    params.content_area);
-
-  ShouldQuitFromInnerMessageLoop();
-#endif // defined (OS_WIN) && !defined(TOOLKIT_QT)
+    scoped_refptr<base::RefCountedBytes> bytes =
+            base::MakeRefCounted<base::RefCountedBytes>(
+                    reinterpret_cast<const unsigned char*>(shared_buf->memory()), params.data_size);
+    PrintDocument(document, bytes, params.page_size, params.content_area, params.physical_offsets);
 }
 
 void PrintViewManagerBaseQt::OnShowInvalidPrinterSettingsError()
@@ -220,9 +206,9 @@ bool PrintViewManagerBaseQt::OnMessageReceived(const IPC::Message& message, cont
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PrintViewManagerBaseQt, message)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError, OnShowInvalidPrinterSettingsError);
-      IPC_MESSAGE_UNHANDLED(handled = false)
+        IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintDocument, OnDidPrintDocument)
+        IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError, OnShowInvalidPrinterSettingsError);
+        IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled || PrintManager::OnMessageReceived(message, render_frame_host);
 }
@@ -254,8 +240,9 @@ void PrintViewManagerBaseQt::OnNotifyPrintJobEvent(const printing::JobEventDetai
     case printing::JobEventDetails::ALL_PAGES_REQUESTED:
         break;
     case printing::JobEventDetails::NEW_DOC:
-    case printing::JobEventDetails::NEW_PAGE:
+#if defined(OS_WIN)
     case printing::JobEventDetails::PAGE_DONE:
+#endif
     case printing::JobEventDetails::DOC_DONE:
         // Don't care about the actual printing process.
         break;

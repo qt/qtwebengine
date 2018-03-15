@@ -1203,15 +1203,13 @@ static WebPointerProperties::PointerType pointerTypeForTabletEvent(const QTablet
 WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
-                              ev->x() / dpiScale,
-                              ev->y() / dpiScale,
-                              ev->globalX(),
-                              ev->globalY(),
+                              WebFloatPoint(ev->x() / dpiScale, ev->y() / dpiScale),
+                              WebFloatPoint(ev->globalX(), ev->globalY()),
+                              mouseButtonForEvent<QMouseEvent>(ev),
+                              0,
                               modifiersForEvent(ev),
                               currentTimeForEvent(ev));
 
-    webKitEvent.button = mouseButtonForEvent<QMouseEvent>(ev);
-    webKitEvent.click_count = 0;
     webKitEvent.pointer_type = WebPointerProperties::PointerType::kMouse;
 
     return webKitEvent;
@@ -1235,10 +1233,10 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
-                              ev->x() / dpiScale,
-                              ev->y() / dpiScale,
-                              ev->globalX(),
-                              ev->globalY(),
+                              WebFloatPoint(ev->x() / dpiScale, ev->y() / dpiScale),
+                              WebFloatPoint(ev->globalX(), ev->globalY()),
+                              mouseButtonForEvent<QTabletEvent>(ev),
+                              0,
                               modifiersForEvent(ev),
                               currentTimeForEvent(ev));
 
@@ -1248,9 +1246,6 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev, double dpiScale
     webKitEvent.tangential_pressure = ev->tangentialPressure();
     webKitEvent.twist = ev->rotation();
     webKitEvent.pointer_type = pointerTypeForTabletEvent(ev);
-
-    webKitEvent.button = mouseButtonForEvent<QTabletEvent>(ev);
-    webKitEvent.click_count = 0;
     return webKitEvent;
 }
 
@@ -1318,6 +1313,21 @@ static void setBlinkWheelEventDelta(blink::WebMouseWheelEvent &webEvent)
     webEvent.delta_y = webEvent.wheel_ticks_y * wheelScrollLines * cDefaultQtScrollStep;
 }
 
+blink::WebMouseWheelEvent::Phase toBlinkPhase(Qt::ScrollPhase phase)
+{
+    switch (phase) {
+    case Qt::NoScrollPhase:
+        return blink::WebMouseWheelEvent::kPhaseNone;
+    case Qt::ScrollBegin:
+        return blink::WebMouseWheelEvent::kPhaseBegan;
+    case Qt::ScrollUpdate:
+        return blink::WebMouseWheelEvent::kPhaseChanged;
+    case Qt::ScrollEnd:
+        return blink::WebMouseWheelEvent::kPhaseEnded;
+    }
+    Q_UNREACHABLE();
+    return blink::WebMouseWheelEvent::kPhaseNone;
+}
 
 blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, double dpiScale)
 {
@@ -1330,6 +1340,8 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
 
     webEvent.wheel_ticks_x = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
     webEvent.wheel_ticks_y = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.phase = toBlinkPhase(ev->phase());
+    webEvent.has_precise_scrolling_deltas = true;
     setBlinkWheelEventDelta(webEvent);
 
     return webEvent;
@@ -1340,6 +1352,8 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
     if (webEventTypeForEvent(ev) != webEvent.GetType())
         return false;
     if (modifiersForEvent(ev) != webEvent.GetModifiers())
+        return false;
+    if (toBlinkPhase(ev->phase()) != webEvent.phase)
         return false;
 
     webEvent.SetTimeStampSeconds(currentTimeForEvent(ev));

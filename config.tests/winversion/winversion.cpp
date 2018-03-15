@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #if !defined(__clang__) && _MSC_FULL_VER < 191125507
-#error VS 2017 Update 3.2 or higher is required
+#error unsupported Visual Studio version
 #endif
 
 int main(int, char **)

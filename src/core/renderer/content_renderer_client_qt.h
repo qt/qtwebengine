@@ -41,8 +41,13 @@
 
 #include "content/public/renderer/content_renderer_client.h"
 #include "components/spellcheck/spellcheck_build_features.h"
+#include "services/service_manager/public/cpp/local_interface_provider.h"
 
 #include <QScopedPointer>
+
+namespace error_page {
+class Error;
+}
 
 namespace visitedlink {
 class VisitedLinkSlave;
@@ -58,7 +63,9 @@ class SpellCheck;
 
 namespace QtWebEngineCore {
 
-class ContentRendererClientQt : public content::ContentRendererClient {
+class ContentRendererClientQt : public content::ContentRendererClient
+                              , public service_manager::LocalInterfaceProvider
+{
 public:
     ContentRendererClientQt();
     ~ContentRendererClientQt();
@@ -67,8 +74,11 @@ public:
     void RenderFrameCreated(content::RenderFrame* render_frame) override;
     bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) override;
     bool HasErrorPage(int http_status_code) override;
-    void GetNavigationErrorStrings(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
-                                   const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) override;
+    void PrepareErrorPage(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
+                          const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) override;
+    void PrepareErrorPageForHttpStatusError(content::RenderFrame* render_frame, const blink::WebURLRequest& failed_request,
+                                            const GURL& unreachable_url, int http_status,
+                                            std::string* error_html, base::string16* error_description) override;
 
     unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) override;
     bool IsLinkVisited(unsigned long long linkHash) override;
@@ -78,6 +88,13 @@ public:
     void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
 
 private:
+    // service_manager::LocalInterfaceProvider:
+    void GetInterface(const std::string& name, mojo::ScopedMessagePipeHandle request_handle) override;
+
+    void GetNavigationErrorStringsInternal(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
+                                           const error_page::Error& error, std::string* errorHtml, base::string16* errorDescription);
+
+
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
     QScopedPointer<web_cache::WebCacheImpl> m_webCacheImpl;
 #if BUILDFLAG(ENABLE_SPELLCHECK)

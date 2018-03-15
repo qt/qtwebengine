@@ -53,10 +53,10 @@
 
 #include "web_contents_adapter.h"
 
-#include <base/callback.h>
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include <ui/gfx/geometry/point.h>
-#include <third_party/WebKit/public/platform/WebDragOperation.h>
+#include "ui/gfx/geometry/point_f.h"
+#include "third_party/WebKit/public/platform/WebDragOperation.h"
 
 #include <QScopedPointer>
 #include <QSharedPointer>
@@ -98,8 +98,8 @@ public:
     std::unique_ptr<content::DropData> currentDropData;
     blink::WebDragOperation currentDropAction;
     bool updateDragActionCalled;
-    gfx::Point lastDragClientPos;
-    gfx::Point lastDragScreenPos;
+    gfx::PointF lastDragClientPos;
+    gfx::PointF lastDragScreenPos;
     std::unique_ptr<QTemporaryDir> dndTmpDir;
     DevToolsFrontendQt *devToolsFrontend;
 };

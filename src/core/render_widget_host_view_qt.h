@@ -125,7 +125,7 @@ public:
     void InitAsChild(gfx::NativeView) override;
     void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) override;
     void InitAsFullscreen(content::RenderWidgetHostView*) override;
-    content::RenderWidgetHost* GetRenderWidgetHost() const override;
+    content::RenderWidgetHostImpl* GetRenderWidgetHostImpl() const override;
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
     gfx::Vector2dF GetLastScrollOffset() const override;
@@ -152,7 +152,7 @@ public:
     void SetTooltipText(const base::string16 &tooltip_text) override;
     bool HasAcceleratedSurface(const gfx::Size&) override;
     void DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
-    void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame) override;
+    void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame, viz::mojom::HitTestRegionListPtr) override;
     void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
 
     void GetScreenInfo(content::ScreenInfo* results);
@@ -160,6 +160,8 @@ public:
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) override;
     void ClearCompositorFrame() override;
     void SetNeedsBeginFrames(bool needs_begin_frames) override;
+    void SetWantsAnimateOnlyBeginFrames() override;
+    viz::SurfaceId GetCurrentSurfaceId() const override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -205,7 +207,6 @@ public:
     void StopSpeaking() override { QT_NOT_YET_IMPLEMENTED }
     bool SupportsSpeech() const override { QT_NOT_YET_IMPLEMENTED; return false; }
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }
-    ui::AcceleratedWidgetMac *GetAcceleratedWidgetMac() const override { QT_NOT_YET_IMPLEMENTED; return nullptr; }
 #endif // defined(OS_MACOSX)
 
 

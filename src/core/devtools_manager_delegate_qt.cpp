@@ -49,7 +49,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/grit/qt_webengine_resources.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
@@ -64,6 +63,8 @@
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#include "qtwebengine/grit/qt_webengine_resources.h"
 
 #include "type_conversion.h"
 
@@ -180,7 +181,7 @@ void DevToolsManagerDelegateQt::Initialized(const net::IPEndPoint *ip_address)
 
 std::string DevToolsManagerDelegateQt::GetDiscoveryPageHTML()
 {
-    return ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
+    return ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
 }
 
 std::string DevToolsManagerDelegateQt::GetFrontendResource(const std::string& path)

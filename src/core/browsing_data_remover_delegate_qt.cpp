@@ -40,6 +40,7 @@
 #include "browsing_data_remover_delegate_qt.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browsing_data_remover.h"
 
@@ -70,7 +71,7 @@ void BrowsingDataRemoverDelegateQt::RemoveEmbedderData(
             int remove_mask,
             const content::BrowsingDataFilterBuilder& filter_builder,
             int origin_type_mask,
-            const base::Closure &callback) {
+            base::OnceClosure callback) {
     Q_UNUSED(delete_begin);
     Q_UNUSED(delete_end);
     Q_UNUSED(filter_builder);
@@ -79,7 +80,7 @@ void BrowsingDataRemoverDelegateQt::RemoveEmbedderData(
     if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_CACHE)
         web_cache::WebCacheManager::GetInstance()->ClearCache();
 
-    callback.Run();
+    std::move(callback).Run();
 }
 
 } // namespace QtWebEngineCore

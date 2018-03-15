@@ -211,6 +211,7 @@ private Q_SLOTS:
     void viewSource();
     void viewSourceURL_data();
     void viewSourceURL();
+    void viewSourceCredentials();
     void proxyConfigWithUnexpectedHostPortPair();
     void registerProtocolHandler_data();
     void registerProtocolHandler();
@@ -4188,6 +4189,39 @@ void tst_QWebEnginePage::viewSourceURL()
     QCOMPARE(page.requestedUrl(), requestedUrl);
     QCOMPARE(page.title(), title);
     QVERIFY(!page.action(QWebEnginePage::ViewSource)->isEnabled());
+}
+
+void tst_QWebEnginePage::viewSourceCredentials()
+{
+    TestPage page;
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy windowCreatedSpy(&page, SIGNAL(windowCreated()));
+    QUrl url("http://user:passwd@httpbin.org/basic-auth/user/passwd");
+
+    // Test explicit view-source URL with credentials
+    page.load(QUrl(QString("view-source:" + url.toString())));
+    if (!loadFinishedSpy.wait(10000) || !loadFinishedSpy.at(0).at(0).toBool())
+        QSKIP("Couldn't load page from network, skipping test.");
+
+    QCOMPARE(page.url().toString(), QString("view-source:" + url.toDisplayString(QUrl::RemoveUserInfo)));
+    QCOMPARE(page.requestedUrl(), url);
+    QCOMPARE(page.title(), QString("view-source:" + url.toDisplayString(QUrl::RemoveScheme | QUrl::RemoveUserInfo).remove(0, 2)));
+    loadFinishedSpy.clear();
+    windowCreatedSpy.clear();
+
+    // Test ViewSource web action on URL with credentials
+    page.load(url);
+    if (!loadFinishedSpy.wait(10000) || !loadFinishedSpy.at(0).at(0).toBool())
+        QSKIP("Couldn't load page from network, skipping test.");
+    QVERIFY(page.action(QWebEnginePage::ViewSource)->isEnabled());
+
+    page.triggerAction(QWebEnginePage::ViewSource);
+    QTRY_COMPARE(windowCreatedSpy.count(), 1);
+    QCOMPARE(page.createdWindows.size(), 1);
+
+    QTRY_COMPARE(page.createdWindows[0]->url().toString(), QString("view-source:" + url.toDisplayString(QUrl::RemoveUserInfo)));
+    QTRY_COMPARE(page.createdWindows[0]->requestedUrl(), url);
+    QTRY_COMPARE(page.createdWindows[0]->title(), QString("view-source:" + url.toDisplayString(QUrl::RemoveScheme | QUrl::RemoveUserInfo).remove(0, 2)));
 }
 
 Q_DECLARE_METATYPE(QNetworkProxy::ProxyType);

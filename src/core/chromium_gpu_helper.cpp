@@ -69,25 +69,25 @@ gpu::SyncPointManager *sync_point_manager()
     return gpuChannelManager->sync_point_manager();
 }
 
-gpu::gles2::MailboxManager *mailbox_manager()
+gpu::MailboxManager *mailbox_manager()
 {
     gpu::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->gpu_channel_manager();
     return gpuChannelManager->mailbox_manager();
 }
 
-gpu::gles2::TextureBase* ConsumeTexture(gpu::gles2::MailboxManager *mailboxManager, unsigned target, const gpu::Mailbox& mailbox)
+gpu::TextureBase* ConsumeTexture(gpu::MailboxManager *mailboxManager, unsigned target, const gpu::Mailbox& mailbox)
 {
     Q_UNUSED(target);
     return mailboxManager->ConsumeTexture(mailbox);
 }
 
-unsigned int service_id(gpu::gles2::TextureBase *tex)
+unsigned int service_id(gpu::TextureBase *tex)
 {
     return tex->service_id();
 }
 
 #ifdef Q_OS_QNX
-EGLStreamData eglstream_connect_consumer(gpu::gles2::Texture *tex)
+EGLStreamData eglstream_connect_consumer(gpu::Texture *tex)
 {
     EGLStreamData egl_stream;
     content::StreamTexture* image = static_cast<content::StreamTexture *>(tex->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0));

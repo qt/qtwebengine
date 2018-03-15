@@ -77,22 +77,13 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "net/base/data_url.h"
+#include "net/base/url_util.h"
 
 #include <QDesktopServices>
 #include <QTimer>
 #include <QWindow>
 
 namespace QtWebEngineCore {
-
-static gfx::Rect rootViewToScreenRect(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view)
-{
-    RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt *>(web_contents->GetRenderWidgetHostView());
-    if (!rwhv)
-        return gfx::Rect();
-    content::ScreenInfo screenInfo;
-    rwhv->GetScreenInfo(&screenInfo);
-    return gfx::ScaleToEnclosingRect(anchor_in_root_view, 1 / screenInfo.device_scale_factor);
-}
 
 // Maps the LogSeverity defines in base/logging.h to the web engines message levels.
 static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32_t messageLevel) {
@@ -153,15 +144,10 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
 
 static bool shouldUseActualURL(const content::NavigationEntry *entry)
 {
-    if (!entry)
-        return false;
+    Q_ASSERT(entry);
 
     // Show actual URL for data URLs only
     if (!entry->GetURL().SchemeIs(url::kDataScheme))
-        return false;
-
-    // Keep view-source: prefix
-    if (entry->IsViewSourceMode())
         return false;
 
     // Do not show data URL of interstitial and error pages
@@ -180,9 +166,24 @@ static bool shouldUseActualURL(const content::NavigationEntry *entry)
 void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags)
 {
     if (changed_flags & content::INVALIDATE_TYPE_URL) {
-        // If there is a visible entry there are special cases when we dont wan't to use the actual URL
         content::NavigationEntry *entry = source->GetController().GetVisibleEntry();
-        QUrl newUrl = shouldUseActualURL(entry) ? toQt(entry->GetURL()) : toQt(source->GetVisibleURL());
+
+        QUrl newUrl;
+        if (source->GetVisibleURL().SchemeIs(content::kViewSourceScheme)) {
+            Q_ASSERT(entry);
+            GURL url = entry->GetURL();
+
+            // Strip user name, password and reference section from view-source URLs
+            if (url.has_password() || url.has_username() || url.has_ref()) {
+                GURL strippedUrl = net::SimplifyUrlForRequest(entry->GetURL());
+                newUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme, QString::fromStdString(strippedUrl.spec())));
+            }
+        }
+
+        // If there is a visible entry there are special cases when we dont wan't to use the actual URL
+        if (entry && newUrl.isEmpty())
+            newUrl = shouldUseActualURL(entry) ? toQt(entry->GetURL()) : toQt(source->GetVisibleURL());
+
         if (m_url != newUrl) {
             m_url = newUrl;
             m_viewClient->urlChanged(m_url);
@@ -388,7 +389,7 @@ void WebContentsDelegateQt::WebContentsCreated(content::WebContents */*source_co
     m_initialTargetUrl = toQt(target_url);
 }
 
-content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion)
+content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<blink::mojom::ColorSuggestionPtr> &suggestion)
 {
     Q_UNUSED(suggestion);
     ColorChooserQt *colorChooser = new ColorChooserQt(source, toQt(color));
@@ -589,28 +590,6 @@ void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransitio
             m_viewClient->webContentsAdapter()->load(toQt(GURL(content::kUnreachableWebDataURL)));
         }
     }
-}
-
-void WebContentsDelegateQt::ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text)
-{
-    gfx::Rect anchor = rootViewToScreenRect(web_contents, anchor_in_root_view);
-    if (anchor.IsEmpty())
-        return;
-    m_viewClient->showValidationMessage(toQt(anchor), toQt(main_text), toQt(sub_text));
-}
-
-void WebContentsDelegateQt::HideValidationMessage(content::WebContents *web_contents)
-{
-    Q_UNUSED(web_contents);
-    m_viewClient->hideValidationMessage();
-}
-
-void WebContentsDelegateQt::MoveValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view)
-{
-    gfx::Rect anchor = rootViewToScreenRect(web_contents, anchor_in_root_view);
-    if (anchor.IsEmpty())
-        return;
-    m_viewClient->moveValidationMessage(toQt(anchor));
 }
 
 void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool proceed, bool *proceed_to_fire_unload)

@@ -53,7 +53,6 @@
         \li JavaScript Alert, Confirm, and Prompt Dialogs
         \li Color Picker Dialog
         \li File Picker Dialog
-        \li Form Validation Message
     \endlist
 
     \section1 Triggering Dialogs
@@ -103,7 +102,6 @@
         \li JavaScriptDialogRequest
         \li ColorDialogRequest
         \li FileDialogRequest
-        \li FormValidationMessageRequest
     \endlist
 
     \section2 Context Menu Requests
@@ -122,9 +120,8 @@
     \printuntil }
     \printuntil }
     \dots 4
-    \skipuntil onFormValidationMessageRequested
-    \skipuntil }
-    \skipuntil }
+    \skipuntil onFileDialogRequested
+    \skipuntil }});
     \skipuntil }
     \skipto }
     \printline }
@@ -158,9 +155,8 @@
     \printuntil }
     \printuntil }
     \dots 4
-    \skipuntil onFormValidationMessageRequested
-    \skipuntil }
-    \skipuntil }
+    \skipuntil onFileDialogRequested
+    \skipuntil }});
     \skipuntil }
     \skipto }
     \printline }
@@ -200,9 +196,8 @@
     \printuntil }
     \printuntil }
     \dots 4
-    \skipuntil onFormValidationMessageRequested
-    \skipuntil }
-    \skipuntil }
+    \skipuntil onFileDialogRequested
+    \skipuntil }});
     \skipuntil }
     \skipto }
     \printline }
@@ -240,9 +235,8 @@
     \printuntil }
     \printuntil }
     \dots 4
-    \skipuntil onFormValidationMessageRequested
-    \skipuntil }
-    \skipuntil }
+    \skipuntil onFileDialogRequested
+    \skipuntil }});
     \skipuntil }
     \skipto }
     \printline }
@@ -281,13 +275,7 @@
     \skipto onFileDialogRequested
     \printuntil }
     \printuntil }
-    \dots 4
-    \skipuntil onFormValidationMessageRequested
-    \skipuntil }
-    \skipuntil }
-    \skipuntil }
-    \skipto }
-    \printline }
+    \printuntil }
 
     We use the \c onFileDialogRequested signal handler to check whether
     we should use the default color picker dialog. If not, we accept the request
@@ -311,28 +299,4 @@
     file and clicks \c OK, we pass the selected file to the \c dialogAccept
     method.
 
-    \section2  Form Validation Message Requests
-
-    \image customdialogs-validation1.png
-
-    \l [QML]{FormValidationMessageRequest} is a request object that is passed as a
-    parameter of the WebEngineView::formValidationMessageRequested signal:
-
-    \quotefromfile webengine/customdialogs/WebView.qml
-    \skipto WebEngineView
-    \printuntil url
-    \dots 4
-    \skipto onFormValidationMessageRequested
-    \printuntil }
-    \printuntil }
-    \printuntil }
-    \skipto }
-    \printline }
-
-    We use the \c onFormValidationMessageRequested signal handler to check
-    whether we should use the default message bubble. If not, we accept the
-    request and customize \c validationMessage. Depending on the type of the
-    request, we show, move, or hide the message.
-
-    \image customdialogs-validation2.png
 */

@@ -75,11 +75,10 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include <content/public/common/drop_data.h>
+#include "content/public/common/drop_data.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
-#include "content/public/common/resource_request_body.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
@@ -119,7 +118,7 @@ static const int kHistoryStreamVersion = 3;
 static QVariant fromJSValue(const base::Value *result)
 {
     QVariant ret;
-    switch (result->GetType()) {
+    switch (result->type()) {
     case base::Value::Type::NONE:
         break;
     case base::Value::Type::BOOLEAN:
@@ -428,7 +427,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     rendererPrefs->use_custom_colors = true;
     // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
     const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
-    rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
+    rendererPrefs->caret_blink_interval = base::TimeDelta::FromMillisecondsD(0.5 * static_cast<double>(qtCursorFlashTime));
     rendererPrefs->user_agent_override = d->browserContextAdapter->httpUserAgent().toStdString();
     rendererPrefs->accept_languages = d->browserContextAdapter->httpAcceptLanguageWithoutQualities().toStdString();
 #if BUILDFLAG(ENABLE_WEBRTC)
@@ -588,7 +587,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         break;
     }
 
-    params.post_data = content::ResourceRequestBody::CreateFromBytes(
+    params.post_data = network::ResourceRequestBody::CreateFromBytes(
                 (const char*)request.postData().constData(),
                 request.postData().length());
 
@@ -1342,8 +1341,8 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
         if (d->webContents) {
             content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
             if (rvh) {
-                rvh->GetWidget()->DragSourceEndedAt(gfx::Point(d->lastDragClientPos.x(), d->lastDragClientPos.y()),
-                                                    gfx::Point(d->lastDragScreenPos.x(), d->lastDragScreenPos.y()),
+                rvh->GetWidget()->DragSourceEndedAt(gfx::PointF(d->lastDragClientPos.x(), d->lastDragClientPos.y()),
+                                                    gfx::PointF(d->lastDragScreenPos.x(), d->lastDragScreenPos.y()),
                                                     d->currentDropAction);
                 rvh->GetWidget()->DragSourceSystemDragEnded();
             }
@@ -1408,7 +1407,7 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
     }
 }
 
-void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPoint &screenPos)
+void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPointF &screenPos)
 {
     Q_D(WebContentsAdapter);
 
@@ -1420,7 +1419,7 @@ void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPoint &screenPos)
 
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     rvh->GetWidget()->FilterDropData(d->currentDropData.get());
-    rvh->GetWidget()->DragTargetDragEnter(*d->currentDropData, toGfx(e->pos()), toGfx(screenPos),
+    rvh->GetWidget()->DragTargetDragEnter(*d->currentDropData, toGfx(e->posF()), toGfx(screenPos),
                                           toWeb(e->possibleActions()),
                                           flagsFromModifiers(e->keyboardModifiers()));
 }
@@ -1462,11 +1461,11 @@ static int toWeb(Qt::KeyboardModifiers modifiers)
     return result;
 }
 
-Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const QPoint &screenPos)
+Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const QPointF &screenPos)
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-    d->lastDragClientPos = toGfx(e->pos());
+    d->lastDragClientPos = toGfx(e->posF());
     d->lastDragScreenPos = toGfx(screenPos);
     rvh->GetWidget()->DragTargetDragOver(d->lastDragClientPos, d->lastDragScreenPos, toWeb(e->possibleActions()),
                                          toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
@@ -1503,7 +1502,7 @@ void WebContentsAdapter::updateDragAction(int action)
     d->currentDropAction = static_cast<blink::WebDragOperation>(action);
 }
 
-void WebContentsAdapter::endDragging(const QPoint &clientPos, const QPoint &screenPos)
+void WebContentsAdapter::endDragging(const QPointF &clientPos, const QPointF &screenPos)
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
@@ -1586,7 +1585,7 @@ FaviconManager *WebContentsAdapter::faviconManager()
 void WebContentsAdapter::viewSource()
 {
     Q_D(WebContentsAdapter);
-    d->webContents->ViewSource();
+    d->webContents->GetMainFrame()->ViewSource();
 }
 
 bool WebContentsAdapter::canViewSource()

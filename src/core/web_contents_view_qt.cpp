@@ -258,5 +258,20 @@ void WebContentsViewQt::GetScreenInfo(content::ScreenInfo* results) const
         rwhv->GetScreenInfo(results);
 }
 
+void WebContentsViewQt::FocusThroughTabTraversal(bool reverse)
+{
+    content::WebContentsImpl *web_contents = static_cast<content::WebContentsImpl*>(m_webContents);
+    if (web_contents->ShowingInterstitialPage()) {
+        web_contents->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
+        return;
+    }
+    content::RenderWidgetHostView *fullscreen_view = web_contents->GetFullscreenRenderWidgetHostView();
+    if (fullscreen_view) {
+        fullscreen_view->Focus();
+        return;
+    }
+    web_contents->GetRenderViewHost()->SetInitialFocus(reverse);
+}
+
 
 } // namespace QtWebEngineCore

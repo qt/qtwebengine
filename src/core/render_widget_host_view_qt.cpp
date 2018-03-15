@@ -316,7 +316,7 @@ bool isAccessibilityEnabled() {
     return accessibility_enabled;
 }
 
-RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
+RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_sendMotionActionDown(false)
@@ -342,7 +342,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
 {
     auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
     m_beginFrameSource.reset(new viz::DelayBasedBeginFrameSource(
-            base::MakeUnique<viz::DelayBasedTimeSource>(task_runner)));
+            base::MakeUnique<viz::DelayBasedTimeSource>(task_runner), 0));
 
     m_host->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
@@ -408,7 +408,7 @@ void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
 {
 }
 
-content::RenderWidgetHost* RenderWidgetHostViewQt::GetRenderWidgetHost() const
+content::RenderWidgetHostImpl* RenderWidgetHostViewQt::GetRenderWidgetHostImpl() const
 {
     return m_host;
 }
@@ -732,7 +732,7 @@ void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom:
     m_rendererCompositorFrameSink = frameSink;
 }
 
-void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame)
+void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, viz::mojom::HitTestRegionListPtr)
 {
     bool scrollOffsetChanged = (m_lastScrollOffset != frame.metadata.root_scroll_offset);
     bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);
@@ -749,6 +749,11 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
     m_chromiumCompositorData->previousFrameData = std::move(m_chromiumCompositorData->frameData);
     m_chromiumCompositorData->frameDevicePixelRatio = frame.metadata.device_scale_factor;
     m_chromiumCompositorData->frameData = std::move(frame);
+
+    // Force to process swap messages
+    uint32_t frame_token = frame.metadata.frame_token;
+    if (frame_token)
+        OnFrameTokenChangedForView(frame_token);
 
     // Support experimental.viewport.devicePixelRatio, see GetScreenInfo implementation below.
     float dpiScale = this->dpiScale();
@@ -1718,5 +1723,13 @@ ui::TextInputType RenderWidgetHostViewQt::getTextInputType() const
     return ui::TEXT_INPUT_TYPE_NONE;
 }
 
+void RenderWidgetHostViewQt::SetWantsAnimateOnlyBeginFrames()
+{
+}
+
+viz::SurfaceId RenderWidgetHostViewQt::GetCurrentSurfaceId() const
+{
+    return viz::SurfaceId();
+}
 
 } // namespace QtWebEngineCore

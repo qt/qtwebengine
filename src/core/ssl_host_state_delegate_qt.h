@@ -54,7 +54,7 @@ public:
     bool HasAllowException() const { return m_allowed.size() > 0; }
 
 private:
-    std::map<net::SHA256HashValue, net::CertStatus, net::SHA256HashValueLessThan> m_allowed;
+    std::map<net::SHA256HashValue, net::CertStatus> m_allowed;
 };
 
 class SSLHostStateDelegateQt : public content::SSLHostStateDelegate {

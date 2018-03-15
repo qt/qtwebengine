@@ -4,11 +4,12 @@
 
 // Multiply-included file, no traditional include guard.
 
+#include "base/optional.h"
 #include "media/media_features.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/features/features.h"
-
 #include "user_script_data.h"
 
 IPC_STRUCT_TRAITS_BEGIN(UserScriptData)
@@ -81,9 +82,7 @@ IPC_MESSAGE_ROUTED1(WebChannelIPCTransportHost_SendMessage, std::vector<char> /*
 // When the returned *|is_available| is true, |additional_param_names| and
 // |additional_param_values| contain the name-value pairs, if any, specified
 // for the *first* non-disabled plugin found that is registered for |mime_type|.
-IPC_SYNC_MESSAGE_CONTROL1_3(QtWebEngineHostMsg_IsInternalPluginAvailableForMimeType,
+IPC_SYNC_MESSAGE_CONTROL1_1(QtWebEngineHostMsg_IsInternalPluginAvailableForMimeType,
                             std::string /* mime_type */,
-                            bool /* is_available */,
-                            std::vector<base::string16> /* additional_param_names */,
-                            std::vector<base::string16> /* additional_param_values */)
+                            base::Optional<std::vector<content::WebPluginMimeType::Param>>)
 #endif

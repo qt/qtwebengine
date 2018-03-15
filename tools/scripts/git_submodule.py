@@ -46,20 +46,36 @@ def subprocessCheckOutput(args):
 class DEPSParser:
     def __init__(self):
         self.global_scope = {
-          'Var': self.Lookup,
+          'Var': lambda var_name: '{%s}' % var_name,
           'deps_os': {},
         }
         self.local_scope = {}
         self.topmost_supermodule_path_prefix = ''
 
-    def Lookup(self, var_name):
-        return self.local_scope["vars"][var_name]
+    def get_vars(self):
+        """Returns a dictionary of effective variable values
+        (DEPS file contents with applied custom_vars overrides)."""
+        result = {}
+        # Variables defined in DEPS file override built-in ones.
+        result.update(self.local_scope["vars"])
+        #result.update(self.custom_vars or {})
+        return result
 
     def createSubmodulesFromScope(self, scope, os):
         submodules = []
         for dep in scope:
+            url = ''
             if (type(scope[dep]) == str):
-                repo_rev = scope[dep].split('@')
+                url = scope[dep]
+            elif (type(scope[dep]) == dict):
+                url = scope[dep]['url']
+
+                if ('condition' in scope[dep]) and (not 'checkout_linux' in scope[dep]['condition']):
+                    url = ''
+
+            if url:
+                url = url.format(**self.get_vars())
+                repo_rev = url.split('@')
                 repo = repo_rev[0]
                 rev = repo_rev[1]
                 subdir = dep
@@ -81,8 +97,10 @@ class DEPSParser:
 
                 if len(rev) == 40: # Length of a git shasum
                     submodule.ref = rev
+                elif len(rev) == 0:
+                    submodule.ref = 'master'
                 else:
-                    sys.exit("Invalid shasum: " + str(rev))
+                    sys.exit("Invalid shasum: " + str(url))
                 submodules.append(submodule)
         return submodules
 

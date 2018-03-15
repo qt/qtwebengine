@@ -79,8 +79,8 @@ def updateLastChange():
     os.chdir(chromium_src)
     print 'updating LASTCHANGE files'
     subprocess.call(['python', 'build/util/lastchange.py', '-o', 'build/util/LASTCHANGE'])
-    subprocess.call(['python', 'build/util/lastchange.py', '-s', 'third_party/WebKit', '-o', 'build/util/LASTCHANGE.blink'])
     subprocess.call(['python', 'build/util/lastchange.py', '-m', 'SKIA_COMMIT_HASH', '-s', 'third_party/skia', '--header', 'skia/ext/skia_commit_hash.h'])
+    subprocess.call(['python', 'build/util/lastchange.py', '-m', 'GPU_LISTS_VERSION', '--revision-id-only', '--header', 'gpu/config/gpu_lists_version.h'])
     os.chdir(currentDir)
 
 def initUpstreamSubmodules():

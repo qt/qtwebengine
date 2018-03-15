@@ -131,7 +131,7 @@ public:
 
     void setHasAlphaChannel(bool hasAlpha) { m_hasAlpha = hasAlpha; }
     gpu::MailboxHolder &mailboxHolder() { return m_mailboxHolder; }
-    void fetchTexture(gpu::gles2::MailboxManager *mailboxManager);
+    void fetchTexture(gpu::MailboxManager *mailboxManager);
     void setTarget(GLenum target);
 
 private:
@@ -196,7 +196,7 @@ public:
     virtual void setupDebugBorderNode(QSGGeometry *, QSGFlatColorMaterial *, QSGNode *) = 0;
     virtual void setupYUVVideoNode(QSGTexture *, QSGTexture *, QSGTexture *, QSGTexture *,
                            const QRectF &, const QRectF &, const QSizeF &, const QSizeF &,
-                           YUVVideoMaterial::ColorSpace, float, float, const QRectF &,
+                           gfx::ColorSpace, float, float, const QRectF &,
                                    QSGNode *) = 0;
 #ifdef GL_OES_EGL_image_external
     virtual void setupStreamVideoNode(MailboxTexture *, const QRectF &,
@@ -283,7 +283,7 @@ public:
 
     void setupYUVVideoNode(QSGTexture *, QSGTexture *, QSGTexture *, QSGTexture *,
                            const QRectF &, const QRectF &, const QSizeF &, const QSizeF &,
-                           YUVVideoMaterial::ColorSpace, float, float, const QRectF &,
+                           gfx::ColorSpace, float, float, const QRectF &,
                            QSGNode *) override
     {
         Q_UNREACHABLE();
@@ -384,7 +384,7 @@ public:
     void setupYUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture,
                            QSGTexture *aTexture, const QRectF &yaTexCoordRect,
                            const QRectF &uvTexCoordRect, const QSizeF &yaTexSize,
-                           const QSizeF &uvTexSize, YUVVideoMaterial::ColorSpace colorspace,
+                           const QSizeF &uvTexSize, gfx::ColorSpace colorspace,
                            float rMul, float rOff, const QRectF &rect,
                            QSGNode *layerChain) override
     {
@@ -618,9 +618,9 @@ void MailboxTexture::setTarget(GLenum target)
     m_target = target;
 }
 
-void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
+void MailboxTexture::fetchTexture(gpu::MailboxManager *mailboxManager)
 {
-    gpu::gles2::TextureBase *tex = ConsumeTexture(mailboxManager, m_target, m_mailboxHolder.mailbox);
+    gpu::TextureBase *tex = ConsumeTexture(mailboxManager, m_target, m_mailboxHolder.mailbox);
 
     // The texture might already have been deleted (e.g. when navigating away from a page).
     if (tex) {
@@ -749,20 +749,6 @@ void DelegatedFrameNode::preprocess()
         // Proceed with the actual update.
         pair.second->updateTexture();
     }
-}
-
-static YUVVideoMaterial::ColorSpace toQt(viz::YUVVideoDrawQuad::ColorSpace color_space)
-{
-    switch (color_space) {
-    case viz::YUVVideoDrawQuad::REC_601:
-        return YUVVideoMaterial::REC_601;
-    case viz::YUVVideoDrawQuad::REC_709:
-        return YUVVideoMaterial::REC_709;
-    case viz::YUVVideoDrawQuad::JPEG:
-        return YUVVideoMaterial::JPEG;
-    }
-    Q_UNREACHABLE();
-    return YUVVideoMaterial::REC_601;
 }
 
 static bool areSharedQuadStatesEqual(const viz::SharedQuadState *layerState,
@@ -1186,7 +1172,7 @@ void DelegatedFrameNode::handleQuad(
             initAndHoldTexture(vResource, quad->ShouldDrawWithBlending()),
             aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending()) : 0,
             toQt(vquad->ya_tex_coord_rect), toQt(vquad->uv_tex_coord_rect),
-            toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size), toQt(vquad->color_space),
+            toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size), vquad->video_color_space,
             vquad->resource_multiplier, vquad->resource_offset, toQt(quad->rect),
             currentLayerChain);
         break;
@@ -1261,7 +1247,7 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         for (MailboxTexture *mailboxTexture : qAsConst(mailboxesToFetch)) {
             gpu::SyncToken &syncToken = mailboxTexture->mailboxHolder().sync_token;
             const auto task = base::Bind(&DelegatedFrameNode::pullTexture, this, mailboxTexture);
-            if (!syncPointManager->WaitOutOfOrderNonThreadSafe(syncToken, gpuMessageLoop->task_runner(), std::move(task)))
+            if (!syncPointManager->WaitOutOfOrder(syncToken, std::move(task)))
                 mailboxesToPull.append(mailboxTexture);
         }
         if (!mailboxesToPull.isEmpty()) {
@@ -1345,7 +1331,7 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
 void DelegatedFrameNode::pullTextures(DelegatedFrameNode *frameNode, const QVector<MailboxTexture *> textures)
 {
 #ifndef QT_NO_OPENGL
-    gpu::gles2::MailboxManager *mailboxManager = mailbox_manager();
+    gpu::MailboxManager *mailboxManager = mailbox_manager();
     for (MailboxTexture *texture : textures) {
         gpu::SyncToken &syncToken = texture->mailboxHolder().sync_token;
         if (syncToken.HasData())
@@ -1364,7 +1350,7 @@ void DelegatedFrameNode::pullTextures(DelegatedFrameNode *frameNode, const QVect
 void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTexture *texture)
 {
 #ifndef QT_NO_OPENGL
-    gpu::gles2::MailboxManager *mailboxManager = mailbox_manager();
+    gpu::MailboxManager *mailboxManager = mailbox_manager();
     gpu::SyncToken &syncToken = texture->mailboxHolder().sync_token;
     if (syncToken.HasData())
         mailboxManager->PullTextureUpdates(syncToken);

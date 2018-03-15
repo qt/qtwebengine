@@ -260,25 +260,33 @@ TestWebEngineView {
 
         function test_stopStatus() {
             var loadRequest = null;
+            var initialUrl = Qt.resolvedUrl("test1.html");
+            var stoppedUrl = Qt.resolvedUrl("test2.html");
 
+            // Warm up phase
+            webEngineView.url = initialUrl;
+            verify(webEngineView.waitForLoadSucceeded());
+            webEngineView.loadStatus = null;
+            loadRequestArray = [];
+
+            // Stop load
             var handleLoadStarted = function(loadRequest) {
                 if (loadRequest.status === WebEngineView.LoadStartedStatus)
                     webEngineView.stop();
             }
             webEngineView.loadingChanged.connect(handleLoadStarted);
-            var url = Qt.resolvedUrl("test1.html");
-            webEngineView.url = url;
+            webEngineView.url = stoppedUrl;
             tryCompare(loadRequestArray, "length", 2);
             webEngineView.loadingChanged.disconnect(handleLoadStarted);
 
             loadRequest = loadRequestArray[0];
             compare(loadRequest.status, WebEngineView.LoadStartedStatus);
-            compare(loadRequest.url, url);
-            compare(loadRequest.activeUrl, url);
+            compare(loadRequest.url, stoppedUrl);
+            compare(loadRequest.activeUrl, stoppedUrl);
             loadRequest = loadRequestArray[1];
             compare(loadRequest.status, WebEngineView.LoadStoppedStatus);
-            compare(loadRequest.url, url);
-            compare(loadRequest.activeUrl, url);
+            compare(loadRequest.url, stoppedUrl);
+            compare(loadRequest.activeUrl, initialUrl);
             webEngineView.clear();
         }
 

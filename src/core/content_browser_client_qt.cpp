@@ -39,12 +39,13 @@
 
 #include "content_browser_client_qt.h"
 
+#include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-#include "chrome/browser/spellchecker/spell_check_host_impl.h"
+#include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "components/spellcheck/browser/spellcheck_message_filter_platform.h"
 #endif
@@ -64,16 +65,17 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
-#include "device/geolocation/geolocation_delegate.h"
-#include "device/geolocation/geolocation_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "printing/features/features.h"
 #include "net/ssl/client_cert_identity.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "third_party/WebKit/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_context.h"
@@ -81,7 +83,8 @@
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gpu_timing.h"
 
-#include "access_token_store_qt.h"
+#include "qtwebengine/grit/qt_webengine_resources.h"
+
 #include "browser_context_adapter.h"
 #include "browser_context_qt.h"
 #include "browser_message_filter_qt.h"
@@ -89,11 +92,6 @@
 #include "certificate_error_controller_p.h"
 #include "desktop_screen_qt.h"
 #include "devtools_manager_delegate_qt.h"
-#ifdef QT_USE_POSITIONING
-#include "location_provider_qt.h"
-#else
-#include "device/geolocation/location_provider.h"
-#endif
 #include "media_capture_devices_dispatcher.h"
 #include "network_delegate_qt.h"
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -249,28 +247,6 @@ std::unique_ptr<base::MessagePump> messagePumpFactory()
     return base::WrapUnique(new MessagePumpForUIQt);
 }
 
-// A provider of services needed by Geolocation.
-class GeolocationDelegateQt : public device::GeolocationDelegate {
-public:
-    GeolocationDelegateQt() {}
-    scoped_refptr<device::AccessTokenStore> CreateAccessTokenStore() final
-    {
-        return scoped_refptr<device::AccessTokenStore>(new AccessTokenStoreQt);
-    }
-
-    std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() final
-    {
-#ifdef QT_USE_POSITIONING
-        return base::WrapUnique(new LocationProviderQt);
-#else
-        return nullptr;
-#endif
-    }
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(GeolocationDelegateQt);
-};
-
 }  // anonymous namespace
 
 class BrowserMainPartsQt : public content::BrowserMainParts
@@ -283,11 +259,6 @@ public:
     void PreMainMessageLoopStart() override
     {
         base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
-    }
-
-    void PreMainMessageLoopRun() override
-    {
-        device::GeolocationProvider::SetGeolocationDelegate(new GeolocationDelegateQt());
     }
 
     void PostMainMessageLoopRun() override
@@ -620,17 +591,70 @@ void ContentBrowserClientQt::BindInterfaceRequestFromFrame(content::RenderFrameH
         m_frameInterfaces->TryBindInterface(interface_name, &interface_pipe);
 }
 
-void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderRegistry *registry,
-                                                        content::AssociatedInterfaceRegistry */*associated_registry*/,
-                                                        content::RenderProcessHost *render_process_host)
+class ServiceQt : public service_manager::Service {
+public:
+    ServiceQt();
+
+    static std::unique_ptr<service_manager::Service> Create()
+    {
+        return base::MakeUnique<ServiceQt>();
+    }
+
+private:
+    // service_manager::Service:
+    void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
+                         const std::string& name,
+                         mojo::ScopedMessagePipeHandle handle) override;
+
+    service_manager::BinderRegistry m_registry;
+    service_manager::BinderRegistryWithArgs<const service_manager::BindSourceInfo&> m_registry_with_source_info;
+
+    DISALLOW_COPY_AND_ASSIGN(ServiceQt);
+};
+
+ServiceQt::ServiceQt()
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-    registry->AddInterface(base::Bind(&SpellCheckHostImpl::Create, render_process_host->GetID()),
-                           content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI));
-#else
-    Q_UNUSED(registry);
-    Q_UNUSED(render_process_host);
+    m_registry_with_source_info.AddInterface(
+            base::Bind(&SpellCheckHostChromeImpl::Create),
+                       content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI));
 #endif
+}
+
+void ServiceQt::OnBindInterface(const service_manager::BindSourceInfo& remote_info,
+                                const std::string& name,
+                                mojo::ScopedMessagePipeHandle handle)
+{
+    content::OverrideOnBindInterface(remote_info, name, &handle);
+    if (!handle.is_valid())
+        return;
+
+    if (!m_registry.TryBindInterface(name, &handle))
+        m_registry_with_source_info.TryBindInterface(name, &handle, remote_info);
+}
+
+void ContentBrowserClientQt::RegisterInProcessServices(StaticServiceMap* services)
+{
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::Bind(&ServiceQt::Create);
+    services->insert(std::make_pair("qtwebengine", info));
+}
+
+std::unique_ptr<base::Value> ContentBrowserClientQt::GetServiceManifestOverlay(base::StringPiece name)
+{
+    ui::ResourceBundle &rb = ui::ResourceBundle::GetSharedInstance();
+    int id = -1;
+    if (name == content::mojom::kPackagedServicesServiceName)
+        id = IDR_QTWEBENGINE_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY;
+    else if (name == content::mojom::kRendererServiceName)
+        id = IDR_QTWEBENGINE_CONTENT_RENDERER_MANIFEST_OVERLAY;
+    if (id == -1)
+        return nullptr;
+
+    base::StringPiece manifest_contents =
+        rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
+    return base::JSONReader::Read(manifest_contents);
 }
 
 bool ContentBrowserClientQt::CanCreateWindow(
@@ -688,14 +712,14 @@ bool ContentBrowserClientQt::AllowGetCookie(const GURL &url,
 
 bool ContentBrowserClientQt::AllowSetCookie(const GURL &url,
                                             const GURL &first_party,
-                                            const std::string &cookie_line,
+                                            const net::CanonicalCookie& /*cookie*/,
                                             content::ResourceContext *context,
                                             int /*render_process_id*/,
                                             int /*render_frame_id*/,
                                             const net::CookieOptions& /*options*/)
 {
     NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
-    return networkDelegate->canSetCookies(first_party, url, cookie_line);
+    return networkDelegate->canSetCookies(first_party, url, std::string());
 }
 
 } // namespace QtWebEngineCore

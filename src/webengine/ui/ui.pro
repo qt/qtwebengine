@@ -13,8 +13,6 @@ QML_FILES += \
     Menu.qml \
     MenuItem.qml \
     MenuSeparator.qml \
-    # Message Bubble
-    MessageBubble.qml \
     ToolTip.qml
 
 load(qml_module)

@@ -137,9 +137,6 @@ public:
     QtWebEngineCore::WebEngineSettings *webEngineSettings() const override;
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) override;
     void runGeolocationPermissionRequest(QUrl const&) override;
-    void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) override;
-    void hideValidationMessage() override;
-    void moveValidationMessage(const QRect &anchor) override;
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) override;
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
     void updateScrollPosition(const QPointF &position) override;
@@ -181,7 +178,6 @@ public:
     bool isLoading;
     bool m_activeFocusOnPress;
     bool m_navigationActionTriggered;
-    bool m_validationShowing;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
     QList<QSharedPointer<CertificateErrorController> > m_certificateErrorControllers;

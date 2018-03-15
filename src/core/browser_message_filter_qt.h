@@ -41,6 +41,7 @@
 #define BROWSER_MESSAGE_FILTER_QT_H
 
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/common/webplugininfo.h"
 #include "media/media_features.h"
 
 namespace QtWebEngineCore {
@@ -62,9 +63,7 @@ private:
     // |mime_type|.
     void OnIsInternalPluginAvailableForMimeType(
         const std::string& mime_type,
-        bool* is_available,
-        std::vector<base::string16>* additional_param_names,
-        std::vector<base::string16>* additional_param_values);
+        base::Optional<std::vector<content::WebPluginMimeType::Param>> *opt_additional_params);
 #endif
 };
 

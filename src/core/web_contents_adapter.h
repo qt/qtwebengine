@@ -173,10 +173,10 @@ public:
 
     void startDragging(QObject *dragSource, const content::DropData &dropData,
                        Qt::DropActions allowedActions, const QPixmap &pixmap, const QPoint &offset);
-    void enterDrag(QDragEnterEvent *e, const QPoint &screenPos);
-    Qt::DropAction updateDragPosition(QDragMoveEvent *e, const QPoint &screenPos);
+    void enterDrag(QDragEnterEvent *e, const QPointF &screenPos);
+    Qt::DropAction updateDragPosition(QDragMoveEvent *e, const QPointF &screenPos);
     void updateDragAction(int action);
-    void endDragging(const QPoint &clientPos, const QPoint &screenPos);
+    void endDragging(const QPointF &clientPos, const QPointF &screenPos);
     void leaveDrag();
     void printToPDF(const QPageLayout&, const QString&);
     quint64 printToPDFCallbackResult(const QPageLayout &,

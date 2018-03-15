@@ -82,9 +82,8 @@ QAccessibleInterface *BrowserAccessibilityManagerQt::rootParentAccessible()
     return QAccessible::queryAccessibleInterface(m_parentObject);
 }
 
-void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(BrowserAccessibilityEvent::Source source,
-                                                             ui::AXEvent event_type,
-                                                             BrowserAccessibility* node)
+void BrowserAccessibilityManagerQt::FireBlinkEvent(ui::AXEvent event_type,
+                                                   BrowserAccessibility* node)
 {
     BrowserAccessibilityQt *iface = static_cast<BrowserAccessibilityQt*>(node);
 
