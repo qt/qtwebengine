@@ -443,6 +443,31 @@ void ContentBrowserClientQt::GetQuotaSettings(content::BrowserContext* context,
     storage::GetNominalDynamicSettings(partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
 }
 
+// Copied from chrome/browser/ssl/ssl_error_handler.cc:
+static int IsCertErrorFatal(int cert_error)
+{
+    switch (cert_error) {
+    case net::ERR_CERT_COMMON_NAME_INVALID:
+    case net::ERR_CERT_DATE_INVALID:
+    case net::ERR_CERT_AUTHORITY_INVALID:
+    case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
+    case net::ERR_CERT_WEAK_KEY:
+    case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
+    case net::ERR_CERT_VALIDITY_TOO_LONG:
+    case net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
+        return false;
+    case net::ERR_CERT_CONTAINS_ERRORS:
+    case net::ERR_CERT_REVOKED:
+    case net::ERR_CERT_INVALID:
+    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
+    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
+        return true;
+    default:
+        NOTREACHED();
+    }
+    return true;
+}
+
 void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webContents,
                                                    int cert_error,
                                                    const net::SSLInfo &ssl_info,
@@ -454,7 +479,16 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
 {
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
-    QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, strict_enforcement, strict_enforcement, callback)));
+    QSharedPointer<CertificateErrorController> errorController(
+            new CertificateErrorController(
+                    new CertificateErrorControllerPrivate(
+                            cert_error,
+                            ssl_info,
+                            request_url,
+                            resource_type,
+                            !IsCertErrorFatal(cert_error),
+                            strict_enforcement,
+                            callback)));
     contentsDelegate->allowCertificateError(errorController);
 }
 
