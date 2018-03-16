@@ -80,9 +80,9 @@ int main(int argc, char **argv)
     Q_ASSERT(index != -1);
     QMetaProperty thirdPartyCookiesProperty = rootMeta->property(index);
     profile->cookieStore()->setCookieFilter(
-            [rootObject,&thirdPartyCookiesProperty](QWebEngineCookieStore::FilterRequest &request)
+            [rootObject,&thirdPartyCookiesProperty](const QWebEngineCookieStore::FilterRequest &request)
             {
-                request.accepted = !request.thirdParty || thirdPartyCookiesProperty.read(rootObject).toBool();
+                return !request.thirdParty || thirdPartyCookiesProperty.read(rootObject).toBool();
             });
 
     index = rootMeta->indexOfProperty("testProfile");

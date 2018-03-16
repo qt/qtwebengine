@@ -41,12 +41,13 @@
 #define QWEBENGINECOOKIESTORE_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
-#include <QtWebEngineCore/qwebenginecallback.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qurl.h>
 #include <QtNetwork/qnetworkcookie.h>
+
+#include <functional>
 
 namespace QtWebEngineCore {
 class BrowserContextAdapter;
@@ -61,15 +62,14 @@ class QWEBENGINE_EXPORT QWebEngineCookieStore : public QObject {
 
 public:
     struct FilterRequest {
-        bool accepted;
-        const bool thirdParty;
-
-        const QUrl firstPartyUrl;
-        const QUrl origin;
+        bool thirdParty;
+        QUrl firstPartyUrl;
+        QUrl origin;
     };
     virtual ~QWebEngineCookieStore();
 
-    void setCookieFilter(const QWebEngineCallback<FilterRequest&> &filterCallback);
+    void setCookieFilter(const std::function<bool(const FilterRequest &)> &filterCallback);
+    void setCookieFilter(std::function<bool(const FilterRequest &)> &&filterCallback);
     void setCookie(const QNetworkCookie &cookie, const QUrl &origin = QUrl());
     void deleteCookie(const QNetworkCookie &cookie, const QUrl &origin = QUrl());
     void deleteSessionCookies();
