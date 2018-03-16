@@ -123,9 +123,13 @@ host_build {
         gn_args += host_pkg_config=\"$$PKG_CONFIG_HOST\"
     }
 
-    qtConfig(webengine-system-zlib): qtConfig(webengine-system-minizip) {
-        gn_args += use_system_zlib=true use_system_minizip=true
+    qtConfig(webengine-system-zlib) {
+        qtConfig(webengine-system-minizip): gn_args += use_system_zlib=true use_system_minizip=true
         qtConfig(webengine-printing-and-pdf): gn_args += pdfium_use_system_zlib=true
+    }
+    qtConfig(webengine-system-png) {
+        gn_args += use_system_libpng=true
+        qtConfig(webengine-printing-and-pdf): gn_args += pdfium_use_system_libpng=true
     }
     qtConfig(webengine-system-png): gn_args += use_system_libpng=true
     qtConfig(webengine-system-jpeg): gn_args += use_system_libjpeg=true
