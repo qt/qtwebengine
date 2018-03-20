@@ -70,7 +70,6 @@ public:
 
     // Must match QWebEngineCore::WebEngineContextMenuData::MediaFlags:
     enum MediaFlag {
-        MediaNone = 0x0,
         MediaInError = 0x1,
         MediaPaused = 0x2,
         MediaMuted = 0x4,
@@ -86,7 +85,6 @@ public:
 
     // Must match QWebEngineCore::WebEngineContextMenuData::EditFlags:
     enum EditFlag {
-        CanDoNone = 0x0,
         CanUndo = 0x1,
         CanRedo = 0x2,
         CanCut = 0x4,

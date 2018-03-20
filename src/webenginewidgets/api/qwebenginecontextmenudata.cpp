@@ -53,7 +53,6 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypeFile,   Q
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypePlugin, QWebEngineContextMenuData::MediaTypePlugin)
 
 // Match MediaFlag enum
-ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaNone,              QWebEngineContextMenuData::MediaNone)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaInError,           QWebEngineContextMenuData::MediaInError)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaPaused,            QWebEngineContextMenuData::MediaPaused)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaMuted,             QWebEngineContextMenuData::MediaMuted)
@@ -66,7 +65,6 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaCanPrint,    
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaCanRotate,         QWebEngineContextMenuData::MediaCanRotate)
 
 // Match EditFlag enum
-ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanDoNone,     QWebEngineContextMenuData::CanDoNone)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanUndo,       QWebEngineContextMenuData::CanUndo)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanRedo,       QWebEngineContextMenuData::CanRedo)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanCut,        QWebEngineContextMenuData::CanCut)
@@ -110,7 +108,6 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanEditRichly, QWe
 
     The available edit operations in the current context.
 
-    \value  CanDoNone Nothing can be done.
     \value  CanUndo Undo is available.
     \value  CanRedo Redo is available.
     \value  CanCut Cut is available.
@@ -130,7 +127,6 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanEditRichly, QWe
     The current media element's status and its available operations.
     \c MediaNone if the selected web page content is not a media element.
 
-    \value  MediaNone Not a media element.
     \value  MediaInError An error occurred.
     \value  MediaPaused Media is paused.
     \value  MediaMuted Media is muted.
@@ -296,9 +292,7 @@ QWebEngineContextMenuData &QWebEngineContextMenuData::operator=(const QWebEngine
 */
 QWebEngineContextMenuData::MediaFlags QWebEngineContextMenuData::mediaFlags() const
 {
-    if (d)
-        return static_cast<QWebEngineContextMenuData::MediaFlags>(d->mediaFlags());
-    return QWebEngineContextMenuData::MediaNone;
+    return static_cast<QWebEngineContextMenuData::MediaFlags>(d->mediaFlags());
 }
 
 /*!
@@ -306,9 +300,7 @@ QWebEngineContextMenuData::MediaFlags QWebEngineContextMenuData::mediaFlags() co
 */
 QWebEngineContextMenuData::EditFlags QWebEngineContextMenuData::editFlags() const
 {
-    if (d)
-        return static_cast<QWebEngineContextMenuData::EditFlags>(d->editFlags());
-    return QWebEngineContextMenuData::CanDoNone;
+    return static_cast<QWebEngineContextMenuData::EditFlags>(d->editFlags());
 }
 
 QT_END_NAMESPACE

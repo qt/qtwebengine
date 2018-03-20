@@ -59,8 +59,6 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypePlugin,
                    QQuickWebEngineContextMenuRequest::MediaTypePlugin)
 
 // Match MediaFlag enum
-ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaNone,
-                   QQuickWebEngineContextMenuRequest::MediaNone)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaInError,
                    QQuickWebEngineContextMenuRequest::MediaInError)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaPaused,
@@ -83,8 +81,6 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaCanRotate,
                    QQuickWebEngineContextMenuRequest::MediaCanRotate)
 
 // Match EditFlag enum
-ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanDoNone,
-                   QQuickWebEngineContextMenuRequest::CanDoNone)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanUndo,
                    QQuickWebEngineContextMenuRequest::CanUndo)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::CanRedo,
@@ -327,8 +323,6 @@ void QQuickWebEngineContextMenuRequest::setAccepted(bool accepted)
     The current media element's status and its available operations.
     \c MediaNone if the selected web page content is not a media element.
 
-    \value  ContextMenuRequest.MediaNone
-            Not a media element.
     \value  ContextMenuRequest.MediaInError
             An error occurred.
     \value  ContextMenuRequest.MediaPaused
@@ -362,8 +356,6 @@ QQuickWebEngineContextMenuRequest::MediaFlags QQuickWebEngineContextMenuRequest:
 
     The available edit operations in the current context or \c CanDoNone if no actions are available.
 
-    \value  ContextMenuRequest.CanDoNone
-            Nothing can be done.
     \value  ContextMenuRequest.CanUndo
             Undo is available.
     \value  ContextMenuRequest.CanRedo

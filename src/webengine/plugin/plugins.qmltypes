@@ -105,7 +105,6 @@ Module {
         Enum {
             name: "MediaFlags"
             values: {
-                "MediaNone": 0,
                 "MediaInError": 1,
                 "MediaPaused": 2,
                 "MediaMuted": 4,
@@ -121,7 +120,6 @@ Module {
         Enum {
             name: "EditFlags"
             values: {
-                "CanDoNone": 0,
                 "CanUndo": 1,
                 "CanRedo": 2,
                 "CanCut": 4,
