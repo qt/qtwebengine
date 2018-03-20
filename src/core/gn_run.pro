@@ -50,7 +50,10 @@ build_pass|!debug_and_release {
         error("GN run error!")
     }
 
-    runninja.commands = $$NINJA \$\(NINJAFLAGS\) -C $$gn_build_root QtWebEngineCore
+    ninjaflags = $$(NINJAFLAGS)
+    isEmpty(ninjaflags):!silent: ninjaflags = "-v"
+
+    runninja.commands = $$NINJA $$ninjaflags -C $$gn_build_root QtWebEngineCore
     QMAKE_EXTRA_TARGETS += runninja
 
     build_pass:build_all: default_target.target = all
