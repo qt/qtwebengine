@@ -342,7 +342,7 @@ void QWebEngineCookieStore::deleteAllCookies()
     The following code snippet illustrates how to set a cookie filter:
 
     \code
-    profile->setCookieFilter(
+    profile->cookieStore()->setCookieFilter(
         [&allowThirdPartyCookies](const QWebEngineCookieStore::FilterRequest &request)
         { return !request.thirdParty || allowThirdPartyCookies; }
     );
@@ -396,7 +396,7 @@ void QWebEngineCookieStore::setCookieFilter(std::function<bool(const FilterReque
 
 /*!
     \variable QWebEngineCookieStore::FilterRequest::origin
-    \brief The URL of the script or content accessing a cookie
+    \brief The URL of the script or content accessing a cookie.
 
     Can be used to white-list or black-list third-party cookie access
     for specific services.
@@ -406,7 +406,7 @@ void QWebEngineCookieStore::setCookieFilter(std::function<bool(const FilterReque
 
 /*!
     \variable QWebEngineCookieStore::FilterRequest::thirdParty
-    \brief Whether this is considered a third-party access
+    \brief Whether this is considered a third-party access.
 
     This is calculated by comparing FilterRequest::origin and FilterRequest::firstPartyUrl and
     checking if they share a common origin that is not a top-domain (like .com or .co.uk),
