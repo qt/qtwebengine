@@ -55,6 +55,7 @@ precompile_header {
 }
 
 CONFIG(release, debug|release) {
+    gn_args += is_debug=false
     force_debug_info {
         # Level 1 is not enough to generate all Chromium debug symbols on Windows
         msvc: gn_args += symbol_level=2
@@ -65,6 +66,7 @@ CONFIG(release, debug|release) {
 }
 
 CONFIG(debug, debug|release) {
+    gn_args += is_debug=true
     gn_args += use_debug_fission=false
 }
 
