@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
     \class QWebEngineRegisterProtocolHandlerPermissionRequest
     \inmodule QtWebEngineCore
     \since 5.11
-    \brief The QWebEngineRegisterProtocolHandlerPermissionRequest type enables
+    \brief The QWebEngineRegisterProtocolHandlerPermissionRequest class enables
     accepting or rejecting requests from the \l registerProtocolHandler API.
 
     \sa QWebEnginePage::registerProtocolHandlerPermissionRequested
