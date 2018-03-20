@@ -1294,49 +1294,49 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::quotaPermissionRequested(QuotaPermissionRequest request)
+    \qmlsignal WebEngineView::quotaRequested(QuotaRequest request)
     \since QtWebEngine 1.7
 
     This signal is emitted when the web page requests larger persistent storage
     than the application's current allocation in File System API. The default quota
     is 0 bytes.
 
-    \sa QuotaPermissionRequest
+    \sa QuotaRequest
 */
 
 /*!
-    \qmltype QuotaPermissionRequest
-    \instantiates QWebEngineQuotaPermissionRequest
+    \qmltype QuotaRequest
+    \instantiates QWebEngineQuotaRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.7
 
-    \brief A utility type for the WebEngineView::quotaPermissionRequested() signal.
+    \brief A utility type for the WebEngineView::quotaRequested() signal.
 
-    \sa WebEngineView::quotaPermissionRequested()
+    \sa WebEngineView::quotaRequested()
 */
 
 /*!
-    \qmlproperty url QuotaPermissionRequest::origin
+    \qmlproperty url QuotaRequest::origin
     \readonly
 
-    The URL of the web page that issued the quota permission request.
+    The URL of the web page that issued the quota request.
 */
 
 /*!
-    \qmlproperty qint64 QuotaPermissionRequest::requestedSize
+    \qmlproperty qint64 QuotaRequest::requestedSize
     \readonly
 
     Contains the size of the requested disk space in bytes.
 */
 
 /*!
-    \qmlmethod void QuotaPermissionRequest::accept()
+    \qmlmethod void QuotaRequest::accept()
 
-    Accepts the quota permission request.
+    Accepts the quota request.
 
     \qml
     WebEngineView {
-        onQuotaPermissionRequested: function(request) {
+        onQuotaRequested: function(request) {
             if (request.requestedSize <= 5 * 1024 * 1024)
                 request.accept();
             else
@@ -1347,54 +1347,54 @@
 */
 
 /*!
-    \qmlmethod void QuotaPermissionRequest::reject()
-    Rejects a quota permission request.
+    \qmlmethod void QuotaRequest::reject()
+    Rejects the quota request.
 */
 
 /*!
-    \qmlsignal WebEngineView::registerProtocolHandlerPermissionRequested(RegisterProtocolHandlerPermissionRequest request)
+    \qmlsignal WebEngineView::registerProtocolHandlerRequested(RegisterProtocolHandlerRequest request)
     \since QtWebEngine 1.7
 
     This signal is emitted when the web page tries to register a custom protocol
     using the \l registerProtocolHandler API.
 
-    \sa RegisterProtocolHandlerPermissionRequest
+    \sa RegisterProtocolHandlerRequest
 */
 
 /*!
-    \qmltype RegisterProtocolHandlerPermissionRequest
-    \instantiates QWebEngineRegisterProtocolHandlerPermissionRequest
+    \qmltype RegisterProtocolHandlerRequest
+    \instantiates QWebEngineRegisterProtocolHandlerRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.7
-    \brief The RegisterProtocolHandlerPermissionRequest type enables accepting
+    \brief The RegisterProtocolHandlerRequest type enables accepting
     or rejecting requests from the \l registerProtocolHandler API.
 
-    \sa WebEngineView::registerProtocolHandlerPermissionRequested()
+    \sa WebEngineView::registerProtocolHandlerRequested()
 */
 
 /*!
-    \qmlproperty url RegisterProtocolHandlerPermissionRequest::origin
+    \qmlproperty url RegisterProtocolHandlerRequest::origin
     \brief The URL template for the protocol handler.
 
     This is the second parameter from the \l registerProtocolHandler call.
 */
 
 /*!
-    \qmlproperty string RegisterProtocolHandlerPermissionRequest::scheme
+    \qmlproperty string RegisterProtocolHandlerRequest::scheme
     \brief The URL scheme for the protocol handler.
 
     This is the first parameter from the \l registerProtocolHandler call.
 */
 
 /*!
-    \qmlmethod void RegisterProtocolHandlerPermissionRequest::accept()
+    \qmlmethod void RegisterProtocolHandlerRequest::accept()
     \brief Accepts the request.
 
     Subsequent calls to accept() and reject() are ignored.
 */
 
 /*!
-    \qmlmethod void RegisterProtocolHandlerPermissionRequest::reject()
+    \qmlmethod void RegisterProtocolHandlerRequest::reject()
     \brief Accepts the request.
 
     Subsequent calls to accept() and reject() are ignored.

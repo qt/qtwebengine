@@ -36,49 +36,43 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef PERMISSION_CONTROLLER_H
-#define PERMISSION_CONTROLLER_H
+#include "register_protocol_handler_request_controller_impl.h"
 
-#include "qtwebenginecoreglobal.h"
-
-#include <QUrl>
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "content/public/browser/web_contents.h"
+#include "type_conversion.h"
 
 namespace QtWebEngineCore {
 
-class QWEBENGINE_EXPORT PermissionController {
-public:
-    PermissionController(QUrl origin)
-        : m_answered(false)
-        , m_origin(std::move(origin))
-    {}
+RegisterProtocolHandlerRequestControllerImpl::RegisterProtocolHandlerRequestControllerImpl(
+    content::WebContents *webContents,
+    ProtocolHandler handler)
+    : RegisterProtocolHandlerRequestController(
+        toQt(handler.url()),
+        toQt(handler.protocol()))
+    , content::WebContentsObserver(webContents)
+    , m_handler(handler)
+{}
 
-    QUrl origin() const { return m_origin; }
+ProtocolHandlerRegistry *RegisterProtocolHandlerRequestControllerImpl::protocolHandlerRegistry()
+{
+    content::WebContents *webContents = web_contents();
+    if (!webContents)
+        return nullptr;
+    content::BrowserContext *context = webContents->GetBrowserContext();
+    return ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
+}
 
-    void accept() {
-        if (!m_answered) {
-            m_answered = true;
-            accepted();
-        }
-    }
+void RegisterProtocolHandlerRequestControllerImpl::accepted()
+{
+    if (ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
+        registry->OnAcceptRegisterProtocolHandler(m_handler);
+}
 
-    void reject() {
-        if (!m_answered) {
-            m_answered = true;
-            rejected();
-        }
-    }
-
-    virtual ~PermissionController() {}
-
-protected:
-    virtual void accepted() = 0;
-    virtual void rejected() = 0;
-
-private:
-    bool m_answered;
-    QUrl m_origin;
-};
+void RegisterProtocolHandlerRequestControllerImpl::rejected()
+{
+    if (ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
+        registry->OnIgnoreRegisterProtocolHandler(m_handler);
+}
 
 } // namespace QtWebEngineCore
-
-#endif // PERMISSION_CONTROLLER_H

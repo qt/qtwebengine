@@ -76,8 +76,8 @@ class QQuickWebEngineProfile;
 class QQuickWebEngineSettings;
 class QQuickWebEngineFormValidationMessageRequest;
 class QQuickWebEngineViewPrivate;
-class QWebEngineQuotaPermissionRequest;
-class QWebEngineRegisterProtocolHandlerPermissionRequest;
+class QWebEngineQuotaRequest;
+class QWebEngineRegisterProtocolHandlerRequest;
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
 class QQuickWebEngineTestSupport;
@@ -541,11 +541,11 @@ Q_SIGNALS:
     Q_REVISION(4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
     Q_REVISION(4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
     Q_REVISION(5) void pdfPrintingFinished(const QString &filePath, bool success);
-    Q_REVISION(7) void quotaPermissionRequested(const QWebEngineQuotaPermissionRequest &request);
+    Q_REVISION(7) void quotaRequested(const QWebEngineQuotaRequest &request);
     Q_REVISION(7) void geometryChangeRequested(const QRect &geometry, const QRect &frameGeometry);
     Q_REVISION(7) void inspectedViewChanged();
     Q_REVISION(7) void devToolsViewChanged();
-    Q_REVISION(7) void registerProtocolHandlerPermissionRequested(const QWebEngineRegisterProtocolHandlerPermissionRequest &request);
+    Q_REVISION(7) void registerProtocolHandlerRequested(const QWebEngineRegisterProtocolHandlerRequest &request);
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     void testSupportChanged();

@@ -37,35 +37,37 @@
 **
 ****************************************************************************/
 
-#ifndef REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_IMPL_H
-#define REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_IMPL_H
+#ifndef QWEBENGINEREGISTERPROTOCOLHANDLERREQUEST_H
+#define QWEBENGINEREGISTERPROTOCOLHANDLERREQUEST_H
 
-#include "register_protocol_handler_permission_controller.h"
-
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/common/custom_handlers/protocol_handler.h"
-#include "content/public/browser/web_contents_observer.h"
-
-class ProtocolHandlerRegistry;
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qurl.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 namespace QtWebEngineCore {
+    class RegisterProtocolHandlerRequestController;
+}
 
-class RegisterProtocolHandlerPermissionControllerImpl final : public RegisterProtocolHandlerPermissionController,
-                                                              private content::WebContentsObserver {
+QT_BEGIN_NAMESPACE
+
+class QWEBENGINE_EXPORT QWebEngineRegisterProtocolHandlerRequest {
+    Q_GADGET
+    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
+    Q_PROPERTY(QString scheme READ scheme CONSTANT FINAL)
 public:
-    RegisterProtocolHandlerPermissionControllerImpl(
-        content::WebContents *webContents,
-        ProtocolHandler handler);
-
-protected:
-    void accepted() override;
-    void rejected() override;
-
+    QWebEngineRegisterProtocolHandlerRequest() {}
+    QWebEngineRegisterProtocolHandlerRequest(
+        QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerRequestController>);
+    Q_INVOKABLE void accept();
+    Q_INVOKABLE void reject();
+    QUrl origin() const;
+    QString scheme() const;
+    bool operator==(const QWebEngineRegisterProtocolHandlerRequest &that) const { return d_ptr == that.d_ptr; }
+    bool operator!=(const QWebEngineRegisterProtocolHandlerRequest &that) const { return d_ptr != that.d_ptr; }
 private:
-    ProtocolHandlerRegistry *protocolHandlerRegistry();
-    ProtocolHandler m_handler;
+    QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerRequestController> d_ptr;
 };
 
-} // namespace QtWebEngineCore
+QT_END_NAMESPACE
 
-#endif // REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_IMPL_H
+#endif // QWEBENGINEREGISTERPROTOCOLHANDLERREQUEST_H

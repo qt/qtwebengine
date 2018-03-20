@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,30 +37,35 @@
 **
 ****************************************************************************/
 
-#ifndef QUOTA_PERMISSION_CONTROLLER_IMPL_H
-#define QUOTA_PERMISSION_CONTROLLER_IMPL_H
+#ifndef REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_IMPL_H
+#define REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_IMPL_H
 
-#include "quota_permission_controller.h"
-#include "quota_permission_context_qt.h"
+#include "register_protocol_handler_request_controller.h"
+
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/common/custom_handlers/protocol_handler.h"
+#include "content/public/browser/web_contents_observer.h"
+
+class ProtocolHandlerRegistry;
 
 namespace QtWebEngineCore {
 
-class QuotaPermissionControllerImpl final : public QuotaPermissionController {
+class RegisterProtocolHandlerRequestControllerImpl final : public RegisterProtocolHandlerRequestController,
+                                                           private content::WebContentsObserver {
 public:
-    QuotaPermissionControllerImpl(
-        QuotaPermissionContextQt *context,
-        const content::StorageQuotaParams &params,
-        const content::QuotaPermissionContext::PermissionCallback &callback);
+    RegisterProtocolHandlerRequestControllerImpl(
+        content::WebContents *webContents,
+        ProtocolHandler handler);
 
 protected:
     void accepted() override;
     void rejected() override;
 
 private:
-    scoped_refptr<QuotaPermissionContextQt> m_context;
-    content::QuotaPermissionContext::PermissionCallback m_callback;
+    ProtocolHandlerRegistry *protocolHandlerRegistry();
+    ProtocolHandler m_handler;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // QUOTA_PERMISSION_CONTROLLER_IMPL_H
+#endif // REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_IMPL_H

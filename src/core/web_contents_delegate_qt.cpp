@@ -58,7 +58,7 @@
 #include "web_contents_adapter_p.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
-#include "register_protocol_handler_permission_controller_impl.h"
+#include "register_protocol_handler_request_controller_impl.h"
 
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "components/web_cache/browser/web_cache_manager.h"
@@ -638,9 +638,9 @@ void WebContentsDelegateQt::RegisterProtocolHandler(content::WebContents *webCon
     if (registry->SilentlyHandleRegisterHandlerRequest(handler))
         return;
 
-    QSharedPointer<RegisterProtocolHandlerPermissionController> controller(
-        new RegisterProtocolHandlerPermissionControllerImpl(webContents, handler));
-    m_viewClient->runRegisterProtocolHandlerPermissionRequest(std::move(controller));
+    QSharedPointer<RegisterProtocolHandlerRequestController> controller(
+        new RegisterProtocolHandlerRequestControllerImpl(webContents, handler));
+    m_viewClient->runRegisterProtocolHandlerRequest(std::move(controller));
 }
 
 void WebContentsDelegateQt::UnregisterProtocolHandler(content::WebContents *webContents, const std::string &protocol, const GURL &url, bool)

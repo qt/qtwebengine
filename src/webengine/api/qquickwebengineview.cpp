@@ -56,8 +56,8 @@
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescript_p.h"
-#include "qwebenginequotapermissionrequest.h"
-#include "qwebengineregisterprotocolhandlerpermissionrequest.h"
+#include "qwebenginequotarequest.h"
+#include "qwebengineregisterprotocolhandlerrequest.h"
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
 #include "qquickwebenginetestsupport_p.h"
@@ -590,18 +590,18 @@ void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &secur
     adapter->grantMouseLockPermission(false);
 }
 
-void QQuickWebEngineViewPrivate::runQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
+void QQuickWebEngineViewPrivate::runQuotaRequest(QSharedPointer<QtWebEngineCore::QuotaRequestController> controller)
 {
     Q_Q(QQuickWebEngineView);
-    QWebEngineQuotaPermissionRequest request(std::move(controller));
-    Q_EMIT q->quotaPermissionRequested(request);
+    QWebEngineQuotaRequest request(std::move(controller));
+    Q_EMIT q->quotaRequested(request);
 }
 
-void QQuickWebEngineViewPrivate::runRegisterProtocolHandlerPermissionRequest(QSharedPointer<RegisterProtocolHandlerPermissionController> controller)
+void QQuickWebEngineViewPrivate::runRegisterProtocolHandlerRequest(QSharedPointer<RegisterProtocolHandlerRequestController> controller)
 {
     Q_Q(QQuickWebEngineView);
-    QWebEngineRegisterProtocolHandlerPermissionRequest request(std::move(controller));
-    Q_EMIT q->registerProtocolHandlerPermissionRequested(request);
+    QWebEngineRegisterProtocolHandlerRequest request(std::move(controller));
+    Q_EMIT q->registerProtocolHandlerRequested(request);
 }
 
 QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()

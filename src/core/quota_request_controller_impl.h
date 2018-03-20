@@ -37,26 +37,30 @@
 **
 ****************************************************************************/
 
-#ifndef QUOTA_PERMISSION_CONTROLLER_H
-#define QUOTA_PERMISSION_CONTROLLER_H
+#ifndef QUOTA_REQUEST_CONTROLLER_IMPL_H
+#define QUOTA_REQUEST_CONTROLLER_IMPL_H
 
-#include "permission_controller.h"
+#include "quota_permission_context_qt.h"
+#include "quota_request_controller.h"
 
 namespace QtWebEngineCore {
 
-class QWEBENGINE_EXPORT QuotaPermissionController : public PermissionController {
+class QuotaRequestControllerImpl final : public QuotaRequestController {
 public:
-    QuotaPermissionController(QUrl origin, qint64 requestedSize)
-        : PermissionController(std::move(origin))
-        , m_requestedSize(requestedSize)
-    {}
+    QuotaRequestControllerImpl(
+        QuotaPermissionContextQt *context,
+        const content::StorageQuotaParams &params,
+        const content::QuotaPermissionContext::PermissionCallback &callback);
 
-    qint64 requestedSize() const { return m_requestedSize; }
+protected:
+    void accepted() override;
+    void rejected() override;
 
 private:
-    qint64 m_requestedSize;
+    scoped_refptr<QuotaPermissionContextQt> m_context;
+    content::QuotaPermissionContext::PermissionCallback m_callback;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // QUOTA_PERMISSION_CONTROLLER_H
+#endif // QUOTA_REQUEST_CONTROLLER_IMPL_H

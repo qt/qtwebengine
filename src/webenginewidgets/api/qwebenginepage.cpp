@@ -53,8 +53,8 @@
 #include "qwebenginehistory_p.h"
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
-#include "qwebenginequotapermissionrequest.h"
-#include "qwebengineregisterprotocolhandlerpermissionrequest.h"
+#include "qwebenginequotarequest.h"
+#include "qwebengineregisterprotocolhandlerrequest.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qwebenginesettings.h"
 #include "qwebengineview.h"
@@ -234,8 +234,8 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
 {
     memset(actions, 0, sizeof(actions));
 
-    qRegisterMetaType<QWebEngineQuotaPermissionRequest>();
-    qRegisterMetaType<QWebEngineRegisterProtocolHandlerPermissionRequest>();
+    qRegisterMetaType<QWebEngineQuotaRequest>();
+    qRegisterMetaType<QWebEngineRegisterProtocolHandlerRequest>();
 
     // See wasShown() and wasHidden().
     wasShownTimer.setSingleShot(true);
@@ -588,18 +588,18 @@ void QWebEnginePagePrivate::runMouseLockPermissionRequest(const QUrl &securityOr
     Q_EMIT q->featurePermissionRequested(securityOrigin, QWebEnginePage::MouseLock);
 }
 
-void QWebEnginePagePrivate::runQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
+void QWebEnginePagePrivate::runQuotaRequest(QSharedPointer<QtWebEngineCore::QuotaRequestController> controller)
 {
     Q_Q(QWebEnginePage);
-    QWebEngineQuotaPermissionRequest request(controller);
-    Q_EMIT q->quotaPermissionRequested(request);
+    QWebEngineQuotaRequest request(controller);
+    Q_EMIT q->quotaRequested(request);
 }
 
-void QWebEnginePagePrivate::runRegisterProtocolHandlerPermissionRequest(QSharedPointer<RegisterProtocolHandlerPermissionController> controller)
+void QWebEnginePagePrivate::runRegisterProtocolHandlerRequest(QSharedPointer<RegisterProtocolHandlerRequestController> controller)
 {
     Q_Q(QWebEnginePage);
-    QWebEngineRegisterProtocolHandlerPermissionRequest request(std::move(controller));
-    Q_EMIT q->registerProtocolHandlerPermissionRequested(request);
+    QWebEngineRegisterProtocolHandlerRequest request(std::move(controller));
+    Q_EMIT q->registerProtocolHandlerRequested(request);
 }
 
 QObject *QWebEnginePagePrivate::accessibilityParentObject()
@@ -773,18 +773,18 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
-    \fn QWebEnginePage::quotaPermissionRequested(QWebEngineQuotaPermissionRequest quotaPermissionRequest)
+    \fn QWebEnginePage::quotaRequested(QWebEngineQuotaRequest quotaRequest)
     \since 5.11
 
     This signal is emitted when the web page requests larger persistent storage
     than the application's current allocation in File System API. The default quota
     is 0 bytes.
 
-    The request object \a quotaPermissionRequest can be used to accept or reject the request.
+    The request object \a quotaRequest can be used to accept or reject the request.
 */
 
 /*!
-    \fn QWebEnginePage::registerProtocolHandlerPermissionRequested(QWebEngineRegisterProtocolHandlerPermissionRequest request)
+    \fn QWebEnginePage::registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request)
     \since 5.11
 
     This signal is emitted when the web page tries to register a custom protocol
@@ -792,7 +792,7 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 
     The request object \a request can be used to accept or reject the request:
 
-    \snippet webenginewidgets/simplebrowser/webpage.cpp registerProtocolHandlerPermissionRequested
+    \snippet webenginewidgets/simplebrowser/webpage.cpp registerProtocolHandlerRequested
 */
 
 /*!

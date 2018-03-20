@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -36,37 +36,49 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef REQUEST_CONTROLLER_H
+#define REQUEST_CONTROLLER_H
 
-#ifndef QWEBENGINEQUOTAPERMISSIONREQUEST_H
-#define QWEBENGINEQUOTAPERMISSIONREQUEST_H
+#include "qtwebenginecoreglobal.h"
 
-#include <QtCore/qsharedpointer.h>
-#include <QtCore/qurl.h>
-#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QUrl>
 
 namespace QtWebEngineCore {
-    class QuotaPermissionController;
-}
 
-QT_BEGIN_NAMESPACE
-
-class QWEBENGINE_EXPORT QWebEngineQuotaPermissionRequest {
-    Q_GADGET
-    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
-    Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)
+class QWEBENGINE_EXPORT RequestController {
 public:
-    QWebEngineQuotaPermissionRequest() {}
-    QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController>);
-    Q_INVOKABLE void accept();
-    Q_INVOKABLE void reject();
-    QUrl origin() const;
-    qint64 requestedSize() const;
-    bool operator==(const QWebEngineQuotaPermissionRequest &that) const { return d_ptr == that.d_ptr; }
-    bool operator!=(const QWebEngineQuotaPermissionRequest &that) const { return d_ptr != that.d_ptr; }
+    RequestController(QUrl origin)
+        : m_answered(false)
+        , m_origin(std::move(origin))
+    {}
+
+    QUrl origin() const { return m_origin; }
+
+    void accept() {
+        if (!m_answered) {
+            m_answered = true;
+            accepted();
+        }
+    }
+
+    void reject() {
+        if (!m_answered) {
+            m_answered = true;
+            rejected();
+        }
+    }
+
+    virtual ~RequestController() {}
+
+protected:
+    virtual void accepted() = 0;
+    virtual void rejected() = 0;
+
 private:
-    QSharedPointer<QtWebEngineCore::QuotaPermissionController> d_ptr;
+    bool m_answered;
+    QUrl m_origin;
 };
 
-QT_END_NAMESPACE
+} // namespace QtWebEngineCore
 
-#endif // QWEBENGINEQUOTAPERMISSIONREQUEST_H
+#endif // !REQUEST_CONTROLLER_H

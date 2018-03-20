@@ -49,8 +49,8 @@
 #include <qwebenginehistory.h>
 #include <qwebenginepage.h>
 #include <qwebengineprofile.h>
-#include <qwebenginequotapermissionrequest.h>
-#include <qwebengineregisterprotocolhandlerpermissionrequest.h>
+#include <qwebenginequotarequest.h>
+#include <qwebengineregisterprotocolhandlerrequest.h>
 #include <qwebenginescript.h>
 #include <qwebenginescriptcollection.h>
 #include <qwebenginesettings.h>
@@ -160,7 +160,7 @@ private Q_SLOTS:
 
     void runJavaScript();
     void fullScreenRequested();
-    void quotaPermissionRequested();
+    void quotaRequested();
 
 
     // Tests from tst_QWebEngineFrame
@@ -2750,7 +2750,7 @@ void tst_QWebEnginePage::fullScreenRequested()
     QVERIFY(watcher.wait());
 }
 
-void tst_QWebEnginePage::quotaPermissionRequested()
+void tst_QWebEnginePage::quotaRequested()
 {
     ConsolePage page;
     QWebEngineView view;
@@ -2759,8 +2759,8 @@ void tst_QWebEnginePage::quotaPermissionRequested()
     page.load(QUrl("qrc:///resources/content.html"));
     QVERIFY(loadFinishedSpy.wait());
 
-    connect(&page, &QWebEnginePage::quotaPermissionRequested,
-            [] (QWebEngineQuotaPermissionRequest request)
+    connect(&page, &QWebEnginePage::quotaRequested,
+            [] (QWebEngineQuotaRequest request)
     {
         if (request.requestedSize() <= 5000)
             request.accept();
@@ -4264,7 +4264,7 @@ void tst_QWebEnginePage::registerProtocolHandler()
 
     QWebEnginePage page;
     QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
-    QSignalSpy permissionSpy(&page, &QWebEnginePage::registerProtocolHandlerPermissionRequested);
+    QSignalSpy permissionSpy(&page, &QWebEnginePage::registerProtocolHandlerRequested);
 
     page.setUrl(server.url("/"));
     QTRY_COMPARE(loadSpy.count(), 1);
@@ -4278,7 +4278,7 @@ void tst_QWebEnginePage::registerProtocolHandler()
     page.runJavaScript(call);
 
     QTRY_COMPARE(permissionSpy.count(), 1);
-    auto request = permissionSpy.takeFirst().value(0).value<QWebEngineRegisterProtocolHandlerPermissionRequest>();
+    auto request = permissionSpy.takeFirst().value(0).value<QWebEngineRegisterProtocolHandlerRequest>();
     QCOMPARE(request.origin(), QUrl(url));
     QCOMPARE(request.scheme(), scheme);
     if (permission)

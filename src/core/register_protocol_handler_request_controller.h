@@ -36,43 +36,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "register_protocol_handler_permission_controller_impl.h"
 
-#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "content/public/browser/web_contents.h"
-#include "type_conversion.h"
+#ifndef REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_H
+#define REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_H
+
+#include "request_controller.h"
 
 namespace QtWebEngineCore {
 
-RegisterProtocolHandlerPermissionControllerImpl::RegisterProtocolHandlerPermissionControllerImpl(
-    content::WebContents *webContents,
-    ProtocolHandler handler)
-    : RegisterProtocolHandlerPermissionController(
-        toQt(handler.url()),
-        toQt(handler.protocol()))
-    , content::WebContentsObserver(webContents)
-    , m_handler(handler)
-{}
+class QWEBENGINE_EXPORT RegisterProtocolHandlerRequestController : public RequestController {
+public:
+    RegisterProtocolHandlerRequestController(QUrl origin, QString scheme)
+        : RequestController(std::move(origin))
+        , m_scheme(std::move(scheme))
+    {}
 
-ProtocolHandlerRegistry *RegisterProtocolHandlerPermissionControllerImpl::protocolHandlerRegistry()
-{
-    content::WebContents *webContents = web_contents();
-    if (!webContents)
-        return nullptr;
-    content::BrowserContext *context = webContents->GetBrowserContext();
-    return ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
-}
+    QString scheme() const { return m_scheme; }
 
-void RegisterProtocolHandlerPermissionControllerImpl::accepted()
-{
-    if (ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
-        registry->OnAcceptRegisterProtocolHandler(m_handler);
-}
-
-void RegisterProtocolHandlerPermissionControllerImpl::rejected()
-{
-    if (ProtocolHandlerRegistry *registry = protocolHandlerRegistry())
-        registry->OnIgnoreRegisterProtocolHandler(m_handler);
-}
+private:
+    QString m_scheme;
+};
 
 } // namespace QtWebEngineCore
+
+#endif // REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_H

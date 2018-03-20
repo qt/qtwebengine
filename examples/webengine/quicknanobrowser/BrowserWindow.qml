@@ -438,15 +438,15 @@ ApplicationWindow {
                     request.accept();
                 }
 
-                onQuotaPermissionRequested: {
+                onQuotaRequested: {
                     if (request.requestedSize <= 5 * 1024 * 1024)
                         request.accept();
                     else
                         request.reject();
                 }
 
-                onRegisterProtocolHandlerPermissionRequested: {
-                    print("accepting registerProtocolHandler permission request for " + request.scheme + " from " + request.origin);
+                onRegisterProtocolHandlerRequested: {
+                    print("accepting registerProtocolHandler request for " + request.scheme + " from " + request.origin);
                     request.accept();
                 }
 

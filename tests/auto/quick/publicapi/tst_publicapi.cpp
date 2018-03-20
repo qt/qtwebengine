@@ -35,8 +35,8 @@
 #include <QtTest/QtTest>
 #include <QtWebEngine/QQuickWebEngineProfile>
 #include <QtWebEngine/QQuickWebEngineScript>
-#include <QtWebEngineCore/QWebEngineQuotaPermissionRequest>
-#include <QtWebEngineCore/QWebEngineRegisterProtocolHandlerPermissionRequest>
+#include <QtWebEngineCore/QWebEngineQuotaRequest>
+#include <QtWebEngineCore/QWebEngineRegisterProtocolHandlerRequest>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebenginecertificateerror_p.h>
 #include <private/qquickwebenginedialogrequests_p.h>
@@ -75,8 +75,8 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineFileDialogRequest::staticMetaObject
     << &QQuickWebEngineFormValidationMessageRequest::staticMetaObject
     << &QQuickWebEngineContextMenuRequest::staticMetaObject
-    << &QWebEngineQuotaPermissionRequest::staticMetaObject
-    << &QWebEngineRegisterProtocolHandlerPermissionRequest::staticMetaObject
+    << &QWebEngineQuotaRequest::staticMetaObject
+    << &QWebEngineRegisterProtocolHandlerRequest::staticMetaObject
     ;
 
 static QList<const char *> knownEnumNames = QList<const char *>();
@@ -649,10 +649,10 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.printToPdf(QString,PrintedPageSizeId,PrintedPageOrientation) --> void"
     << "QQuickWebEngineView.profile --> QQuickWebEngineProfile*"
     << "QQuickWebEngineView.profileChanged() --> void"
-    << "QQuickWebEngineView.quotaPermissionRequested(QWebEngineQuotaPermissionRequest) --> void"
+    << "QQuickWebEngineView.quotaRequested(QWebEngineQuotaRequest) --> void"
     << "QQuickWebEngineView.recentlyAudible --> bool"
     << "QQuickWebEngineView.recentlyAudibleChanged(bool) --> void"
-    << "QQuickWebEngineView.registerProtocolHandlerPermissionRequested(QWebEngineRegisterProtocolHandlerPermissionRequest) --> void"
+    << "QQuickWebEngineView.registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest) --> void"
     << "QQuickWebEngineView.reload() --> void"
     << "QQuickWebEngineView.reloadAndBypassCache() --> void"
     << "QQuickWebEngineView.renderProcessTerminated(RenderProcessTerminationStatus,int) --> void"
@@ -681,14 +681,14 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.windowCloseRequested() --> void"
     << "QQuickWebEngineView.zoomFactor --> double"
     << "QQuickWebEngineView.zoomFactorChanged(double) --> void"
-    << "QWebEngineQuotaPermissionRequest.accept() --> void"
-    << "QWebEngineQuotaPermissionRequest.origin --> QUrl"
-    << "QWebEngineQuotaPermissionRequest.reject() --> void"
-    << "QWebEngineQuotaPermissionRequest.requestedSize --> qlonglong"
-    << "QWebEngineRegisterProtocolHandlerPermissionRequest.accept() --> void"
-    << "QWebEngineRegisterProtocolHandlerPermissionRequest.origin --> QUrl"
-    << "QWebEngineRegisterProtocolHandlerPermissionRequest.reject() --> void"
-    << "QWebEngineRegisterProtocolHandlerPermissionRequest.scheme --> QString"
+    << "QWebEngineQuotaRequest.accept() --> void"
+    << "QWebEngineQuotaRequest.origin --> QUrl"
+    << "QWebEngineQuotaRequest.reject() --> void"
+    << "QWebEngineQuotaRequest.requestedSize --> qlonglong"
+    << "QWebEngineRegisterProtocolHandlerRequest.accept() --> void"
+    << "QWebEngineRegisterProtocolHandlerRequest.origin --> QUrl"
+    << "QWebEngineRegisterProtocolHandlerRequest.reject() --> void"
+    << "QWebEngineRegisterProtocolHandlerRequest.scheme --> QString"
     ;
 
 static bool isCheckedEnum(const QByteArray &typeName)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,26 +37,36 @@
 **
 ****************************************************************************/
 
-#ifndef REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_H
-#define REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_H
+#ifndef QWEBENGINEQUOTAREQUEST_H
+#define QWEBENGINEQUOTAREQUEST_H
 
-#include "permission_controller.h"
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qurl.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 namespace QtWebEngineCore {
+    class QuotaRequestController;
+}
 
-class QWEBENGINE_EXPORT RegisterProtocolHandlerPermissionController : public PermissionController {
+QT_BEGIN_NAMESPACE
+
+class QWEBENGINE_EXPORT QWebEngineQuotaRequest {
+    Q_GADGET
+    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
+    Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)
 public:
-    RegisterProtocolHandlerPermissionController(QUrl origin, QString scheme)
-        : PermissionController(std::move(origin))
-        , m_scheme(std::move(scheme))
-    {}
-
-    QString scheme() const { return m_scheme; }
-
+    QWebEngineQuotaRequest() {}
+    QWebEngineQuotaRequest(QSharedPointer<QtWebEngineCore::QuotaRequestController>);
+    Q_INVOKABLE void accept();
+    Q_INVOKABLE void reject();
+    QUrl origin() const;
+    qint64 requestedSize() const;
+    bool operator==(const QWebEngineQuotaRequest &that) const { return d_ptr == that.d_ptr; }
+    bool operator!=(const QWebEngineQuotaRequest &that) const { return d_ptr != that.d_ptr; }
 private:
-    QString m_scheme;
+    QSharedPointer<QtWebEngineCore::QuotaRequestController> d_ptr;
 };
 
-} // namespace QtWebEngineCore
+QT_END_NAMESPACE
 
-#endif // REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_H
+#endif // QWEBENGINEQUOTAREQUEST_H
