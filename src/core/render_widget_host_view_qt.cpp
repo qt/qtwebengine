@@ -1008,8 +1008,11 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
 
         auto acceptKeyOutOfInputField = [](QKeyEvent *keyEvent) -> bool {
 #ifdef Q_OS_MACOS
-            // Try triggering a registered shortcut
-            if (QGuiApplicationPrivate::instance()->shortcutMap.tryShortcut(keyEvent))
+            // Check if a shortcut is registered for this key sequence.
+            QKeySequence sequence = QKeySequence (
+                         (keyEvent->modifiers() | keyEvent->key()) &
+                         ~(Qt::KeypadModifier | Qt::GroupSwitchModifier));
+            if (QGuiApplicationPrivate::instance()->shortcutMap.hasShortcutForKeySequence(sequence))
                 return false;
 
             // The following shortcuts are handled out of input field too but
