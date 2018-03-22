@@ -219,6 +219,7 @@ public:
     void setupRenderPassNode(QSGTexture *layer, const QRect &rect, QSGNode *) override
     {
         Q_ASSERT(layer);
+        Q_ASSERT(m_nodeIterator != m_sceneGraphNodes->end());
         QSGInternalImageNode *imageNode = static_cast<QSGInternalImageNode*>(*m_nodeIterator++);
         imageNode->setTargetRect(rect);
         imageNode->setInnerTargetRect(rect);
@@ -231,6 +232,7 @@ public:
                                  QSGTextureNode::TextureCoordinatesTransformMode texCoordTransForm,
                                  QSGNode *) override
     {
+        Q_ASSERT(m_nodeIterator != m_sceneGraphNodes->end());
         QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
         if (textureNode->texture() != texture) {
             textureNode->setTexture(texture);
@@ -249,6 +251,7 @@ public:
     void setupTiledContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
                                QSGTexture::Filtering filtering, QSGNode *) override
     {
+        Q_ASSERT(m_nodeIterator != m_sceneGraphNodes->end());
         QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
         if (textureNode->texture() != texture) {
             textureNode->setTexture(texture);
@@ -264,6 +267,7 @@ public:
     }
     void setupSolidColorNode(const QRect &rect, const QColor &color, QSGNode *) override
     {
+        Q_ASSERT(m_nodeIterator != m_sceneGraphNodes->end());
          QSGRectangleNode *rectangleNode = static_cast<QSGRectangleNode*>(*m_nodeIterator++);
 
          if (rectangleNode->rect() != rect)
@@ -275,6 +279,7 @@ public:
     void setupDebugBorderNode(QSGGeometry *geometry, QSGFlatColorMaterial *material,
                               QSGNode *) override
     {
+        Q_ASSERT(m_nodeIterator != m_sceneGraphNodes->end());
         QSGGeometryNode *geometryNode = static_cast<QSGGeometryNode*>(*m_nodeIterator++);
 
         geometryNode->setGeometry(geometry);
@@ -754,6 +759,8 @@ void DelegatedFrameNode::preprocess()
 static bool areSharedQuadStatesEqual(const viz::SharedQuadState *layerState,
                                      const viz::SharedQuadState *prevLayerState)
 {
+    if (layerState->sorting_context_id != 0 || prevLayerState->sorting_context_id != 0)
+        return false;
     if (layerState->is_clipped != prevLayerState->is_clipped
         || layerState->clip_rect != prevLayerState->clip_rect)
         return false;
@@ -791,8 +798,6 @@ static bool areRenderPassStructuresEqual(viz::CompositorFrame *frameData,
         for (; it != end && prevIt != prevEnd; ++it, ++prevIt) {
             const viz::DrawQuad *quad = *it;
             const viz::DrawQuad *prevQuad = *prevIt;
-            if (!areSharedQuadStatesEqual(quad->shared_quad_state, prevQuad->shared_quad_state))
-                return false;
             if (quad->material != prevQuad->material)
                 return false;
 #ifndef QT_NO_OPENGL
@@ -803,7 +808,8 @@ static bool areRenderPassStructuresEqual(viz::CompositorFrame *frameData,
                 return false;
 #endif // GL_OES_EGL_image_external
 #endif // QT_NO_OPENGL
-
+            if (!areSharedQuadStatesEqual(quad->shared_quad_state, prevQuad->shared_quad_state))
+                return false;
         }
     }
     return true;
