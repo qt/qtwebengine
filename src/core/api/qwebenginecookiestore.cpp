@@ -335,7 +335,7 @@ void QWebEngineCookieStore::deleteAllCookies()
     \since 5.11
 
     Installs a cookie filter that can prevent sites and resources from using cookies.
-    The \a filter must be a lambda or functor taking a FilterRequest structure. If the
+    The \a filterCallback must be a lambda or functor taking a FilterRequest structure. If the
     cookie access is to be accepted, the filter function should return \c true; otherwise
     it should return \c false.
 
