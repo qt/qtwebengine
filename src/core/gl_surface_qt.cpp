@@ -60,7 +60,7 @@
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
-#include "ui/gl/gl_surface_wgl.h"
+#include "ozone/gl_surface_wgl_qt.h"
 #include "ui/gl/gl_context_wgl.h"
 #include "ui/gl/vsync_provider_win.h"
 #endif
@@ -84,74 +84,6 @@ const char* GLSurfaceQt::g_extensions = NULL;
 GLSurfaceQt::~GLSurfaceQt()
 {
 }
-
-#if defined(OS_WIN)
-
-class GLSurfaceQtWGL: public GLSurfaceQt {
-public:
-    explicit GLSurfaceQtWGL(const gfx::Size& size);
-
-    static bool InitializeOneOff();
-
-    bool Initialize(GLSurfaceFormat format) override;
-    void Destroy() override;
-    void *GetHandle() override;
-    void *GetDisplay() override;
-    void *GetConfig() override;
-
-protected:
-    ~GLSurfaceQtWGL();
-
-private:
-    scoped_refptr<PbufferGLSurfaceWGL> m_surfaceBuffer;
-    DISALLOW_COPY_AND_ASSIGN(GLSurfaceQtWGL);
-};
-
-GLSurfaceQtWGL::GLSurfaceQtWGL(const gfx::Size& size)
-    : GLSurfaceQt(size),
-      m_surfaceBuffer(0)
-{
-}
-
-GLSurfaceQtWGL::~GLSurfaceQtWGL()
-{
-    Destroy();
-}
-
-bool GLSurfaceQtWGL::InitializeOneOff()
-{
-    return GLSurfaceWGL::InitializeOneOff();
-}
-
-bool GLSurfaceQtWGL::Initialize(GLSurfaceFormat format)
-{
-    m_surfaceBuffer = new PbufferGLSurfaceWGL(m_size);
-    m_format = format;
-
-    return m_surfaceBuffer->Initialize(format);
-}
-
-void GLSurfaceQtWGL::Destroy()
-{
-    m_surfaceBuffer = 0;
-}
-
-void *GLSurfaceQtWGL::GetHandle()
-{
-    return m_surfaceBuffer->GetHandle();
-}
-
-void *GLSurfaceQtWGL::GetDisplay()
-{
-    return m_surfaceBuffer->GetDisplay();
-}
-
-void *GLSurfaceQtWGL::GetConfig()
-{
-    return m_surfaceBuffer->GetConfig();
-}
-
-#endif // defined(OS_WIN)
 
 GLSurfaceQt::GLSurfaceQt()
 {
@@ -219,7 +151,7 @@ bool InitializeGLOneOffPlatform()
 
     if (GetGLImplementation() == kGLImplementationDesktopGL) {
 #if defined(OS_WIN)
-        return GLSurfaceQtWGL::InitializeOneOff();
+        return GLSurfaceWGLQt::InitializeOneOff();
 #elif defined(USE_X11)
         if (GLSurfaceGLXQt::InitializeOneOff())
             return true;
@@ -247,7 +179,7 @@ CreateOffscreenGLSurfaceWithFormat(const gfx::Size& size, GLSurfaceFormat format
     case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationDesktopGL: {
 #if defined(OS_WIN)
-        surface = new GLSurfaceQtWGL(size);
+        surface = new GLSurfaceWGLQt(size);
         if (surface->Initialize(format))
             return surface;
         break;
