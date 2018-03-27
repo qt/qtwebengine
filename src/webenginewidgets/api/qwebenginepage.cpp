@@ -2350,7 +2350,8 @@ void QContextMenuBuilder::addMenuItem(ContextMenuItem menuItem)
         }
         return;
     case ContextMenuItem::Separator:
-        m_menu->addSeparator();
+        if (!m_menu->isEmpty())
+            m_menu->addSeparator();
         return;
     }
     action->setEnabled(isMenuItemEnabled(menuItem));
