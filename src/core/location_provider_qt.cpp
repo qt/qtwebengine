@@ -104,7 +104,8 @@ static bool isHighAccuracySource(const QGeoPositionInfoSource *source)
 void QtPositioningHelper::start(bool highAccuracy)
 {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    m_positionInfoSource = QGeoPositionInfoSource::createDefaultSource(this);
+    if (!m_positionInfoSource)
+        m_positionInfoSource = QGeoPositionInfoSource::createDefaultSource(this);
     if (!m_positionInfoSource) {
         qWarning("Failed to initialize location provider: The system either has no default "
                  "position source, no valid plugins could be found or the user does not have "
