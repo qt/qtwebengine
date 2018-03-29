@@ -112,6 +112,7 @@ void tst_QWebEngineDownloads::initTestCase()
     m_page = new QWebEnginePage(m_profile);
     m_view = new QWebEngineView;
     m_view->setPage(m_page);
+    m_view->resize(640, 480);
     m_view->show();
 }
 

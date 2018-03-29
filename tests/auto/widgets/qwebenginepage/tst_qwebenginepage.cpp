@@ -3312,6 +3312,7 @@ protected:
 void tst_QWebEnginePage::evaluateWillCauseRepaint()
 {
     WebView view;
+    view.resize(640, 480);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
@@ -4052,6 +4053,7 @@ void tst_QWebEnginePage::mouseButtonTranslation()
                       <div style=\"height:600px;\" onmousedown=\"saveLastEvent(event)\">\
                       </div>\
                       </body></html>"));
+    view.resize(640, 480);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(spy.count() == 1);
@@ -4076,6 +4078,7 @@ void tst_QWebEnginePage::mouseMovementProperties()
     QWebEngineView view;
     ConsolePage page;
     view.setPage(&page);
+    view.resize(640, 480);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
