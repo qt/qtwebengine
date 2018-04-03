@@ -43,10 +43,19 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 #include "net/cookie_monster_delegate_qt.h"
-#include "type_conversion.h"
 
 #include <QByteArray>
 #include <QUrl>
+
+
+namespace {
+
+inline GURL toGurl(const QUrl& url)
+{
+    return GURL(url.toString().toStdString());
+}
+
+}
 
 QT_BEGIN_NAMESPACE
 
