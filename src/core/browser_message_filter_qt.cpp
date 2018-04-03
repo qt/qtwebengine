@@ -39,14 +39,20 @@
 
 #include "browser_message_filter_qt.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "common/qt_messages.h"
 #include "content/public/browser/plugin_service.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "type_conversion.h"
+
+#include "net/network_delegate_qt.h"
 
 namespace QtWebEngineCore {
 
-BrowserMessageFilterQt::BrowserMessageFilterQt(int /*render_process_id*/)
+BrowserMessageFilterQt::BrowserMessageFilterQt(int /*render_process_id*/, Profile *profile)
     : BrowserMessageFilter(QtMsgStart)
+    , m_profile(profile)
 {
 }
 
@@ -58,6 +64,13 @@ BrowserMessageFilterQt::BrowserMessageFilterQt(int /*render_process_id*/)
 bool BrowserMessageFilterQt::OnMessageReceived(const IPC::Message& message)
 {
     IPC_BEGIN_MESSAGE_MAP(BrowserMessageFilterQt, message)
+        IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_AllowDatabase, OnAllowDatabase)
+        IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_AllowDOMStorage, OnAllowDOMStorage)
+        IPC_MESSAGE_HANDLER_DELAY_REPLY(QtWebEngineHostMsg_RequestFileSystemAccessSync,
+                                        OnRequestFileSystemAccessSync)
+        IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_RequestFileSystemAccessAsync,
+                            OnRequestFileSystemAccessAsync)
+        IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_AllowIndexedDB, OnAllowIndexedDB)
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
         IPC_MESSAGE_HANDLER(
             QtWebEngineHostMsg_IsInternalPluginAvailableForMimeType,
@@ -89,5 +102,93 @@ void BrowserMessageFilterQt::OnIsInternalPluginAvailableForMimeType(
 }
 
 #endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+
+void BrowserMessageFilterQt::OnAllowDatabase(int /*render_frame_id*/,
+                                             const GURL &origin_url,
+                                             const GURL &top_origin_url,
+                                             const base::string16 &/*name*/,
+                                             const base::string16 &/*display_name*/,
+                                             bool* allowed)
+{
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(m_profile->GetRequestContext()->GetURLRequestContext()->network_delegate());
+    *allowed = networkDelegate->canGetCookies(top_origin_url, origin_url);
+}
+
+void BrowserMessageFilterQt::OnAllowDOMStorage(int /*render_frame_id*/,
+                                               const GURL &origin_url,
+                                               const GURL &top_origin_url,
+                                               bool /*local*/,
+                                               bool *allowed)
+{
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(m_profile->GetRequestContext()->GetURLRequestContext()->network_delegate());
+    *allowed = networkDelegate->canGetCookies(top_origin_url, origin_url);
+}
+
+void BrowserMessageFilterQt::OnAllowIndexedDB(int /*render_frame_id*/,
+                                              const GURL &origin_url,
+                                              const GURL &top_origin_url,
+                                              const base::string16 &/*name*/,
+                                              bool *allowed)
+{
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(m_profile->GetRequestContext()->GetURLRequestContext()->network_delegate());
+    *allowed = networkDelegate->canGetCookies(top_origin_url, origin_url);
+}
+
+void BrowserMessageFilterQt::OnRequestFileSystemAccessSync(int render_frame_id,
+                                                           const GURL& origin_url,
+                                                           const GURL& top_origin_url,
+                                                           IPC::Message* reply_msg)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    base::Callback<void(bool)> callback = base::Bind(
+            &BrowserMessageFilterQt::OnRequestFileSystemAccessSyncResponse,
+            base::WrapRefCounted(this), reply_msg);
+    OnRequestFileSystemAccess(render_frame_id,
+                              origin_url,
+                              top_origin_url,
+                              callback);
+}
+
+void BrowserMessageFilterQt::OnRequestFileSystemAccessSyncResponse(IPC::Message *reply_msg, bool allowed)
+{
+    QtWebEngineHostMsg_RequestFileSystemAccessSync::WriteReplyParams(reply_msg, allowed);
+    Send(reply_msg);
+}
+
+void BrowserMessageFilterQt::OnRequestFileSystemAccessAsync(int render_frame_id,
+                                                            int request_id,
+                                                            const GURL& origin_url,
+                                                            const GURL& top_origin_url)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    base::Callback<void(bool)> callback = base::Bind(
+            &BrowserMessageFilterQt::OnRequestFileSystemAccessAsyncResponse,
+            base::WrapRefCounted(this), render_frame_id, request_id);
+    OnRequestFileSystemAccess(render_frame_id,
+                              origin_url,
+                              top_origin_url,
+                              callback);
+}
+
+void BrowserMessageFilterQt::OnRequestFileSystemAccessAsyncResponse(int render_frame_id,
+                                                                    int request_id,
+                                                                    bool allowed)
+{
+    Send(new QtWebEngineMsg_RequestFileSystemAccessAsyncResponse(render_frame_id, request_id, allowed));
+}
+
+void BrowserMessageFilterQt::OnRequestFileSystemAccess(int /*render_frame_id*/,
+                                                       const GURL &origin_url,
+                                                       const GURL &top_origin_url,
+                                                       base::Callback<void(bool)> callback)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(m_profile->GetRequestContext()->GetURLRequestContext()->network_delegate());
+    bool allowed = networkDelegate->canGetCookies(top_origin_url, origin_url);
+
+    callback.Run(allowed);
+}
 
 } // namespace QtWebEngineCore

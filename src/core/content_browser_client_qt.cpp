@@ -390,13 +390,12 @@ content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const 
 
 void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost* host)
 {
-    // FIXME: Add a settings variable to enable/disable the file scheme.
     const int id = host->GetID();
+    Profile *profile = Profile::FromBrowserContext(host->GetBrowserContext());
+    // FIXME: Add a settings variable to enable/disable the file scheme.
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(id, url::kFileScheme);
     static_cast<BrowserContextQt*>(host->GetBrowserContext())->m_adapter->userResourceController()->renderProcessStartedWithHost(host);
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    host->AddFilter(new BrowserMessageFilterQt(id));
-#endif
+    host->AddFilter(new BrowserMessageFilterQt(id, profile));
 #if defined(Q_OS_MACOS) && BUILDFLAG(ENABLE_SPELLCHECK) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   host->AddFilter(new SpellCheckMessageFilterPlatform(id));
 #endif

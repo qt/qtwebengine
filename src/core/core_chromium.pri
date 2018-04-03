@@ -96,6 +96,7 @@ SOURCES = \
         render_view_observer_host_qt.cpp \
         render_widget_host_view_qt.cpp \
         renderer/content_renderer_client_qt.cpp \
+        renderer/content_settings_observer_qt.cpp \
         renderer/render_frame_observer_qt.cpp \
         renderer/render_view_observer_qt.cpp \
         renderer/user_resource_controller.cpp \
@@ -187,6 +188,7 @@ HEADERS = \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
         renderer/content_renderer_client_qt.h \
+        renderer/content_settings_observer_qt.h \
         renderer/render_frame_observer_qt.h \
         renderer/render_view_observer_qt.h \
         renderer/user_resource_controller.h \

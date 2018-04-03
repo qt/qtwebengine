@@ -54,6 +54,12 @@ IPC_MESSAGE_CONTROL1(UserResourceController_AddScript, UserScriptData /* scriptC
 IPC_MESSAGE_CONTROL1(UserResourceController_RemoveScript, UserScriptData /* scriptContents */)
 IPC_MESSAGE_CONTROL0(UserResourceController_ClearScripts)
 
+// Tells the renderer whether or not a file system access has been allowed.
+IPC_MESSAGE_ROUTED2(QtWebEngineMsg_RequestFileSystemAccessAsyncResponse,
+                    int  /* request_id */,
+                    bool /* allowed */)
+
+
 //-----------------------------------------------------------------------------
 // WebContents messages
 // These are messages sent from the renderer back to the browser process.
@@ -85,3 +91,47 @@ IPC_SYNC_MESSAGE_CONTROL1_1(QtWebEngineHostMsg_IsInternalPluginAvailableForMimeT
                             std::string /* mime_type */,
                             base::Optional<std::vector<content::WebPluginMimeType::Param>>)
 #endif
+
+// Sent by the renderer process to check whether access to web databases is
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL5_1(QtWebEngineHostMsg_AllowDatabase,
+                            int /* render_frame_id */,
+                            GURL /* origin_url */,
+                            GURL /* top origin url */,
+                            base::string16 /* database name */,
+                            base::string16 /* database display name */,
+                            bool /* allowed */)
+
+// Sent by the renderer process to check whether access to DOM Storage is
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL4_1(QtWebEngineHostMsg_AllowDOMStorage,
+                            int /* render_frame_id */,
+                            GURL /* origin_url */,
+                            GURL /* top origin url */,
+                            bool /* if true local storage, otherwise session */,
+                            bool /* allowed */)
+
+// Sent by the renderer process to check whether access to FileSystem is
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL3_1(QtWebEngineHostMsg_RequestFileSystemAccessSync,
+                            int /* render_frame_id */,
+                            GURL /* origin_url */,
+                            GURL /* top origin url */,
+                            bool /* allowed */)
+
+// Sent by the renderer process to check whether access to FileSystem is
+// granted by content settings.
+IPC_MESSAGE_CONTROL4(QtWebEngineHostMsg_RequestFileSystemAccessAsync,
+                     int /* render_frame_id */,
+                     int /* request_id */,
+                     GURL /* origin_url */,
+                     GURL /* top origin url */)
+
+// Sent by the renderer process to check whether access to Indexed DB is
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL4_1(QtWebEngineHostMsg_AllowIndexedDB,
+                            int /* render_frame_id */,
+                            GURL /* origin_url */,
+                            GURL /* top origin url */,
+                            base::string16 /* database name */,
+                            bool /* allowed */)
