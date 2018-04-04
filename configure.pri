@@ -147,7 +147,7 @@ defineTest(qtConfTest_embedded) {
     return(false)
 }
 
-defineTest(qtConfTest_detectIcuuc) {
+defineTest(qtConfTest_detectLibXml2WithIcuuc) {
    pkgConfig = $$qtConfPkgConfig()
    !isEmpty(pkgConfig) {
        qtRunLoggedCommand("$$pkgConfig --libs --static libxml-2.0", xmllibs)
