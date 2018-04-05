@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WebSocket</title>
+        <script>
+         var err;
+         const ws = new WebSocket("ws://example.invalid");
+         ws.addEventListener("close", () => err = event.code);
+        </script>
+    </head>
+    <body></body>
+</html>
