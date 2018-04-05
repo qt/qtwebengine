@@ -42,11 +42,20 @@
 
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
-#include "cookie_monster_delegate_qt.h"
-#include "type_conversion.h"
+#include "net/cookie_monster_delegate_qt.h"
 
 #include <QByteArray>
 #include <QUrl>
+
+
+namespace {
+
+inline GURL toGurl(const QUrl& url)
+{
+    return GURL(url.toString().toStdString());
+}
+
+}
 
 QT_BEGIN_NAMESPACE
 
@@ -192,9 +201,8 @@ bool QWebEngineCookieStorePrivate::canAccessCookies(const QUrl &firstPartyUrl, c
                                                                 toGurl(firstPartyUrl),
                                                                 net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
-    QWebEngineCookieStore::FilterRequest request = { true, thirdParty, firstPartyUrl, url };
-    callbackDirectory.invokeDirectly<QWebEngineCookieStore::FilterRequest&>(filterCallback, request);
-    return request.accepted;
+    QWebEngineCookieStore::FilterRequest request = { thirdParty, firstPartyUrl, url };
+    return filterCallback(request);
 }
 
 /*!
@@ -336,29 +344,44 @@ void QWebEngineCookieStore::deleteAllCookies()
     \since 5.11
 
     Installs a cookie filter that can prevent sites and resources from using cookies.
-    The \a filter must be a lambda or functor taking a FilterRequest structure. If the
-    cookie is to be rejected, the filter can set FilterRequest::accepted to \c false.
+    The \a filterCallback must be a lambda or functor taking a FilterRequest structure. If the
+    cookie access is to be accepted, the filter function should return \c true; otherwise
+    it should return \c false.
 
     The following code snippet illustrates how to set a cookie filter:
 
     \code
-    profile->setCookieFilter(
-        [&allowThirdPartyCookiesSetting](QWebEngineCookieStore::FilterRequest &request)
-        { request.accepted = !request.thirdParty || allowThirdPartyCookiesSetting; }
+    profile->cookieStore()->setCookieFilter(
+        [&allowThirdPartyCookies](const QWebEngineCookieStore::FilterRequest &request)
+        { return !request.thirdParty || allowThirdPartyCookies; }
     );
     \endcode
 
-    You can unset the filter with a nullptr argument.
+    You can unset the filter with a \c nullptr argument.
 
     The callback should not be used to execute heavy tasks since it is running on the
     IO thread and therefore blocks the Chromium networking.
 
+    \note The cookie filter also controls other features with tracking capabilities similar to
+    those of cookies; including IndexedDB, DOM storage, filesystem API, service workers,
+    and AppCache.
+
     \sa deleteAllCookies(), loadAllCookies()
 */
-void QWebEngineCookieStore::setCookieFilter(const QWebEngineCallback<QWebEngineCookieStore::FilterRequest&> &filter)
+void QWebEngineCookieStore::setCookieFilter(const std::function<bool(const FilterRequest &)> &filterCallback)
 {
     Q_D(QWebEngineCookieStore);
-    d->filterCallback = filter;
+    d->filterCallback = filterCallback;
+}
+
+/*!
+    \since 5.11
+    \overload
+*/
+void QWebEngineCookieStore::setCookieFilter(std::function<bool(const FilterRequest &)> &&filterCallback)
+{
+    Q_D(QWebEngineCookieStore);
+    d->filterCallback = std::move(filterCallback);
 }
 
 /*!
@@ -370,13 +393,6 @@ void QWebEngineCookieStore::setCookieFilter(const QWebEngineCallback<QWebEngineC
     the type \a filterCallback operates on.
 
     \sa QWebEngineCookieStore::setCookieFilter()
-*/
-
-/*!
-    \variable QWebEngineCookieStore::FilterRequest::accepted
-    \brief Whether the cookie access should be accepted or not. Defaults to \c true.
-
-    Can be set to \c false by the filter to block the cookie access.
 */
 
 /*!
@@ -393,7 +409,7 @@ void QWebEngineCookieStore::setCookieFilter(const QWebEngineCallback<QWebEngineC
 
 /*!
     \variable QWebEngineCookieStore::FilterRequest::origin
-    \brief The URL of the script or content accessing a cookie
+    \brief The URL of the script or content accessing a cookie.
 
     Can be used to white-list or black-list third-party cookie access
     for specific services.
@@ -403,7 +419,7 @@ void QWebEngineCookieStore::setCookieFilter(const QWebEngineCallback<QWebEngineC
 
 /*!
     \variable QWebEngineCookieStore::FilterRequest::thirdParty
-    \brief Whether this is considered a third-party access
+    \brief Whether this is considered a third-party access.
 
     This is calculated by comparing FilterRequest::origin and FilterRequest::firstPartyUrl and
     checking if they share a common origin that is not a top-domain (like .com or .co.uk),

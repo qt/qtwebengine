@@ -37,8 +37,36 @@
 **
 ****************************************************************************/
 
-// Module header file used for documentation builds only.
-#ifdef Q_CLANG_QDOC
-#include <QtWebEngine>
-#include <QtWebEngineWidgets>
-#endif // Q_CLANG_QDOC
+#ifndef GL_SURFACE_GLX_QT_H_
+#define GL_SURFACE_GLX_QT_H_
+
+#include "gl_surface_qt.h"
+
+extern "C" {
+#include <X11/Xlib.h>
+}
+
+namespace gl {
+
+class GLSurfaceGLXQt: public GLSurfaceQt {
+public:
+    explicit GLSurfaceGLXQt(const gfx::Size& size);
+
+    static bool InitializeOneOff();
+    static bool InitializeExtensionSettingsOneOff();
+
+    bool Initialize(GLSurfaceFormat format) override;
+    void Destroy() override;
+    void* GetHandle() override;
+
+protected:
+    ~GLSurfaceGLXQt();
+
+private:
+    static bool s_initialized;
+    XID m_surfaceBuffer;
+    DISALLOW_COPY_AND_ASSIGN(GLSurfaceGLXQt);
+};
+
+}
+#endif

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,36 +37,56 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CHANNEL_IPC_TRANSPORT_H
-#define WEB_CHANNEL_IPC_TRANSPORT_H
+#if defined(OS_WIN)
 
-#include "content/public/renderer/render_frame_observer.h"
+#include "gl_surface_wgl_qt.h"
+#include "ui/gl/gl_surface_wgl.h"
 
-#include <QtCore/qglobal.h>
+namespace gl {
 
-namespace QtWebEngineCore {
+GLSurfaceWGLQt::GLSurfaceWGLQt(const gfx::Size& size)
+    : GLSurfaceQt(size),
+      m_surfaceBuffer(nullptr)
+{
+}
 
-class WebChannelIPCTransport : private content::RenderFrameObserver {
-public:
-    WebChannelIPCTransport(content::RenderFrame *);
+GLSurfaceWGLQt::~GLSurfaceWGLQt()
+{
+    Destroy();
+}
 
-private:
-    void setWorldId(base::Optional<uint> worldId);
-    void dispatchWebChannelMessage(const std::vector<char> &binaryJson, uint worldId);
+bool GLSurfaceWGLQt::InitializeOneOff()
+{
+    return GLSurfaceWGL::InitializeOneOff();
+}
 
-    // RenderFrameObserver
-    void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;
-    void DidClearWindowObject() override;
-    bool OnMessageReceived(const IPC::Message &message) override;
-    void OnDestruct() override;
+bool GLSurfaceWGLQt::Initialize(GLSurfaceFormat format)
+{
+    m_surfaceBuffer = new PbufferGLSurfaceWGL(m_size);
+    m_format = format;
+    return m_surfaceBuffer->Initialize(format);
+}
 
-    // The worldId from our WebChannelIPCTransportHost or empty when there is no
-    // WebChannelIPCTransportHost.
-    base::Optional<uint> m_worldId;
-    // True means it's currently OK to manipulate the frame's script context.
-    bool m_canUseContext = false;
-};
+void GLSurfaceWGLQt::Destroy()
+{
+    m_surfaceBuffer = nullptr;
+}
 
-} // namespace
+void *GLSurfaceWGLQt::GetHandle()
+{
+    return m_surfaceBuffer->GetHandle();
+}
 
-#endif // WEB_CHANNEL_IPC_TRANSPORT
+void *GLSurfaceWGLQt::GetDisplay()
+{
+    return m_surfaceBuffer->GetDisplay();
+}
+
+void *GLSurfaceWGLQt::GetConfig()
+{
+    return m_surfaceBuffer->GetConfig();
+}
+
+} //namespace gl
+
+#endif // defined(OS_WIN)

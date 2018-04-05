@@ -43,7 +43,6 @@
 #include "printing/features/features.h"
 
 #include "base/strings/string_split.h"
-#include "base/strings/utf_string_conversions.h"
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
@@ -64,7 +63,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -125,13 +123,14 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
 {
     // RenderViewObservers destroy themselves with their RenderView.
     new RenderViewObserverQt(render_view, m_webCacheImpl.data());
-    new WebChannelIPCTransport(render_view);
     UserResourceController::instance()->renderViewCreated(render_view);
 }
 
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)
 {
     new QtWebEngineCore::RenderFrameObserverQt(render_frame);
+    if (render_frame->IsMainFrame())
+        new WebChannelIPCTransport(render_frame);
     UserResourceController::instance()->renderFrameCreated(render_frame);
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -152,8 +151,6 @@ void ContentRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame* re
     if (!render_frame_observer || render_frame_observer->isFrameDetached())
         return; // The frame is invisible to scripts.
 
-    if (WebChannelIPCTransport *transport = WebChannelIPCTransport::Get(render_frame->GetRenderView()))
-        transport->RunScriptsAtDocumentStart(render_frame);
     UserResourceController::instance()->RunScriptsAtDocumentStart(render_frame);
 }
 

@@ -49,476 +49,44 @@
 #include "gl_context_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "web_engine_context.h"
+#include "ozone/gl_surface_egl_qt.h"
 
 #include "base/logging.h"
 #include "gpu/ipc/service/image_transport_surface.h"
-#include "ui/gl/egl_util.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_initializer.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if defined(USE_X11)
-#include "ui/gl/gl_surface_glx.h"
-
-extern "C" {
-#include <X11/Xlib.h>
-}
-#endif
-
 #if defined(OS_WIN)
-#include "ui/gl/gl_surface_wgl.h"
+#include "ozone/gl_surface_wgl_qt.h"
 #include "ui/gl/gl_context_wgl.h"
 #include "ui/gl/vsync_provider_win.h"
 #endif
 
-// From ANGLE's egl/eglext.h.
-#ifndef EGL_ANGLE_surface_d3d_texture_2d_share_handle
-#define EGL_ANGLE_surface_d3d_texture_2d_share_handle 1
-#define EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE 0x3200
+#if defined(USE_X11)
+#include "ozone/gl_surface_glx_qt.h"
 #endif
 
-using ui::GetLastEGLErrorString;
+#include "ozone/gl_surface_egl_qt.h"
 
 namespace gl {
 
 namespace {
-
-void* g_config;
-void* g_display;
-
-const char* g_extensions = NULL;
-
-bool g_egl_surfaceless_context_supported = false;
-
 bool g_initializedEGL = false;
+}
 
-}  // namespace
-
-
-class GLSurfaceQtEGL: public GLSurfaceQt {
-public:
-    explicit GLSurfaceQtEGL(const gfx::Size& size);
-
-    static bool InitializeOneOff();
-    static bool InitializeExtensionSettingsOneOff();
-
-    bool Initialize(GLSurfaceFormat format) override;
-    void Destroy() override;
-    void* GetHandle() override;
-    bool Resize(const gfx::Size& size, float scale_factor, ColorSpace color_space, bool has_alpha) override;
-
-protected:
-    ~GLSurfaceQtEGL();
-
-private:
-    EGLSurface m_surfaceBuffer;
-    static bool s_initialized;
-    DISALLOW_COPY_AND_ASSIGN(GLSurfaceQtEGL);
-};
-
-bool GLSurfaceQtEGL::s_initialized = false;
-
-// The following comment is cited from chromium/ui/gl/gl_surface_egl.cc:
-// SurfacelessEGL is used as Offscreen surface when platform supports
-// KHR_surfaceless_context and GL_OES_surfaceless_context. This would avoid the
-// need to create a dummy EGLsurface in case we render to client API targets.
-class GLSurfacelessQtEGL : public GLSurfaceQt {
-public:
-    explicit GLSurfacelessQtEGL(const gfx::Size& size);
-
- public:
-    bool Initialize(GLSurfaceFormat format) override;
-    void Destroy() override;
-    bool IsSurfaceless() const override;
-    bool Resize(const gfx::Size& size, float scale_factor, ColorSpace color_space, bool has_alpha) override;
-    EGLSurface GetHandle() override;
-    void* GetShareHandle() override;
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(GLSurfacelessQtEGL);
-};
+void* GLSurfaceQt::g_display = NULL;
+void* GLSurfaceQt::g_config = NULL;
+const char* GLSurfaceQt::g_extensions = NULL;
 
 GLSurfaceQt::~GLSurfaceQt()
 {
 }
 
-GLSurfaceQtEGL::~GLSurfaceQtEGL()
-{
-    Destroy();
-}
-
-#if defined(USE_X11)
-class GLSurfaceQtGLX: public GLSurfaceQt {
-public:
-    explicit GLSurfaceQtGLX(const gfx::Size& size);
-
-    static bool InitializeOneOff();
-    static bool InitializeExtensionSettingsOneOff();
-
-    bool Initialize(GLSurfaceFormat format) override;
-    void Destroy() override;
-    void* GetHandle() override;
-
-protected:
-    ~GLSurfaceQtGLX();
-
-private:
-    static bool s_initialized;
-    XID m_surfaceBuffer;
-    DISALLOW_COPY_AND_ASSIGN(GLSurfaceQtGLX);
-};
-
-GLSurfaceQtGLX::~GLSurfaceQtGLX()
-{
-    Destroy();
-}
-
-
-bool GLSurfaceQtGLX::s_initialized = false;
-
-void GLSurfaceGLX::ShutdownOneOff()
-{
-}
-
-bool GLSurfaceGLX::IsCreateContextSupported()
-{
-    return ExtensionsContain(g_extensions, "GLX_ARB_create_context");
-}
-
-bool GLSurfaceGLX::IsCreateContextRobustnessSupported()
-{
-    return false; // ExtensionsContain(g_extensions, "GLX_ARB_create_context_robustness");
-}
-
-bool GLSurfaceGLX::IsEXTSwapControlSupported()
-{
-    return HasGLXExtension("GLX_EXT_swap_control");
-}
-
-bool GLSurfaceGLX::IsMESASwapControlSupported()
-{
-    return HasGLXExtension("GLX_MESA_swap_control");
-}
-
-bool GLSurfaceGLX::IsCreateContextProfileSupported()
-{
-    return false; // ExtensionsContain(g_extensions, "GLX_ARB_create_context_profile");
-}
-
-bool GLSurfaceGLX::IsCreateContextES2ProfileSupported()
-{
-    return ExtensionsContain(g_extensions, "GLX_ARB_create_context_es2_profile");
-}
-
-bool GLSurfaceGLX::IsOMLSyncControlSupported()
-{
-    return false; // ExtensionsContain(g_extensions, "GLX_OML_sync_control");
-}
-
-bool GLSurfaceQtGLX::InitializeExtensionSettingsOneOff()
-{
-    if (!s_initialized)
-        return false;
-
-    Display* display = static_cast<Display*>(g_display);
-    g_extensions = glXQueryExtensionsString(display, 0);
-    g_driver_glx.InitializeExtensionBindings();
-
-    return true;
-}
-
-bool GLSurfaceGLX::InitializeExtensionSettingsOneOff()
-{
-    return GLSurfaceQtGLX::InitializeExtensionSettingsOneOff();
-}
-
-bool GLSurfaceGLX::HasGLXExtension(const char *name)
-{
-    return ExtensionsContain(g_extensions, name);
-}
-
-bool GLSurfaceGLX::IsTextureFromPixmapSupported()
-{
-    return ExtensionsContain(g_extensions, "GLX_EXT_texture_from_pixmap");
-}
-
-const char* GLSurfaceGLX::GetGLXExtensions()
-{
-    return g_extensions;
-}
-
-bool GLSurfaceQtGLX::InitializeOneOff()
-{
-    if (s_initialized)
-        return true;
-
-    XInitThreads();
-
-    g_display = GLContextHelper::getXDisplay();
-    if (!g_display) {
-        LOG(ERROR) << "GLContextHelper::getXDisplay() failed.";
-        return false;
-    }
-
-    g_config = GLContextHelper::getXConfig();
-    if (!g_config) {
-        LOG(ERROR) << "GLContextHelper::getXConfig() failed.";
-        return false;
-    }
-
-    Display* display = static_cast<Display*>(g_display);
-    int major, minor;
-    if (!glXQueryVersion(display, &major, &minor)) {
-        LOG(ERROR) << "glxQueryVersion failed.";
-        return false;
-    }
-
-    if (major == 1 && minor < 3) {
-        LOG(ERROR) << "GLX 1.3 or later is required.";
-        return false;
-    }
-
-    s_initialized = true;
-    return true;
-}
-
-bool GLSurfaceQtGLX::Initialize(GLSurfaceFormat format)
-{
-    Q_ASSERT(!m_surfaceBuffer);
-
-    Display* display = static_cast<Display*>(g_display);
-    const int pbuffer_attributes[] = {
-        GLX_PBUFFER_WIDTH, m_size.width(),
-        GLX_PBUFFER_HEIGHT, m_size.height(),
-        GLX_LARGEST_PBUFFER, x11::False,
-        GLX_PRESERVED_CONTENTS, x11::False,
-        GLX_NONE
-    };
-
-    m_surfaceBuffer = glXCreatePbuffer(display, static_cast<GLXFBConfig>(g_config), pbuffer_attributes);
-    m_format = format;
-
-    if (!m_surfaceBuffer) {
-        Destroy();
-        LOG(ERROR) << "glXCreatePbuffer failed.";
-        return false;
-    }
-    return true;
-}
-
-void GLSurfaceQtGLX::Destroy()
-{
-    if (m_surfaceBuffer) {
-        glXDestroyPbuffer(static_cast<Display*>(g_display), m_surfaceBuffer);
-        m_surfaceBuffer = 0;
-    }
-}
-
-GLSurfaceQtGLX::GLSurfaceQtGLX(const gfx::Size& size)
-    : GLSurfaceQt(size),
-      m_surfaceBuffer(0)
-{
-}
-
-void* GLSurfaceQtGLX::GetHandle()
-{
-    return reinterpret_cast<void*>(m_surfaceBuffer);
-}
-
-#elif defined(OS_WIN)
-
-class GLSurfaceQtWGL: public GLSurfaceQt {
-public:
-    explicit GLSurfaceQtWGL(const gfx::Size& size);
-
-    static bool InitializeOneOff();
-
-    bool Initialize(GLSurfaceFormat format) override;
-    void Destroy() override;
-    void *GetHandle() override;
-    void *GetDisplay() override;
-    void *GetConfig() override;
-
-protected:
-    ~GLSurfaceQtWGL();
-
-private:
-    scoped_refptr<PbufferGLSurfaceWGL> m_surfaceBuffer;
-    DISALLOW_COPY_AND_ASSIGN(GLSurfaceQtWGL);
-};
-
-GLSurfaceQtWGL::GLSurfaceQtWGL(const gfx::Size& size)
-    : GLSurfaceQt(size),
-      m_surfaceBuffer(0)
-{
-}
-
-GLSurfaceQtWGL::~GLSurfaceQtWGL()
-{
-    Destroy();
-}
-
-bool GLSurfaceQtWGL::InitializeOneOff()
-{
-    return GLSurfaceWGL::InitializeOneOff();
-}
-
-bool GLSurfaceQtWGL::Initialize(GLSurfaceFormat format)
-{
-    m_surfaceBuffer = new PbufferGLSurfaceWGL(m_size);
-    m_format = format;
-
-    return m_surfaceBuffer->Initialize(format);
-}
-
-void GLSurfaceQtWGL::Destroy()
-{
-    m_surfaceBuffer = 0;
-}
-
-void *GLSurfaceQtWGL::GetHandle()
-{
-    return m_surfaceBuffer->GetHandle();
-}
-
-void *GLSurfaceQtWGL::GetDisplay()
-{
-    return m_surfaceBuffer->GetDisplay();
-}
-
-void *GLSurfaceQtWGL::GetConfig()
-{
-    return m_surfaceBuffer->GetConfig();
-}
-
-#endif // defined(OS_WIN)
-
 GLSurfaceQt::GLSurfaceQt()
 {
-}
-
-bool GLSurfaceQtEGL::InitializeOneOff()
-{
-    if (s_initialized)
-        return true;
-
-    g_display = GLContextHelper::getEGLDisplay();
-    if (!g_display) {
-        LOG(ERROR) << "GLContextHelper::getEGLDisplay() failed.";
-        return false;
-    }
-
-    g_config = GLContextHelper::getEGLConfig();
-    if (!g_config) {
-        LOG(ERROR) << "GLContextHelper::getEGLConfig() failed.";
-        return false;
-    }
-
-    if (!eglInitialize(g_display, NULL, NULL)) {
-        LOG(ERROR) << "eglInitialize failed with error " << GetLastEGLErrorString();
-        return false;
-    }
-
-    s_initialized = true;
-    return true;
-}
-
-EGLDisplay GLSurfaceEGL::GetHardwareDisplay()
-{
-    return static_cast<EGLDisplay>(g_display);
-}
-
-bool GLSurfaceEGL::IsCreateContextRobustnessSupported()
-{
-    return false;
-}
-
-bool GLSurfaceEGL::IsCreateContextBindGeneratesResourceSupported()
-{
-    return false;
-}
-
-bool GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported()
-{
-    return false;
-}
-
-bool GLSurfaceEGL::IsEGLContextPrioritySupported()
-{
-    return false;
-}
-
-bool GLSurfaceEGL::IsRobustResourceInitSupported()
-{
-    return false;
-}
-
-bool GLSurfaceEGL::IsDisplayTextureShareGroupSupported()
-{
-    return false;
-}
-
-bool GLSurfaceEGL::IsCreateContextClientArraysSupported()
-{
-    return false;
-}
-
-void GLSurfaceEGL::ShutdownOneOff()
-{
-}
-
-bool GLSurfaceQtEGL::InitializeExtensionSettingsOneOff()
-{
-    if (!s_initialized)
-        return false;
-
-    g_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
-    g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions, "EGL_KHR_surfaceless_context");
-    if (g_egl_surfaceless_context_supported) {
-        scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(gfx::Size(1, 1));
-        gl::GLContextAttribs attribs;
-        scoped_refptr<GLContext> context = init::CreateGLContext(
-            NULL, surface.get(), attribs);
-
-        if (!context->MakeCurrent(surface.get()))
-            g_egl_surfaceless_context_supported = false;
-
-        // Ensure context supports GL_OES_surfaceless_context.
-        if (g_egl_surfaceless_context_supported) {
-            g_egl_surfaceless_context_supported = context->HasExtension(
-                "GL_OES_surfaceless_context");
-            context->ReleaseCurrent(surface.get());
-        }
-    }
-
-    return true;
-}
-
-bool GLSurfaceEGL::InitializeExtensionSettingsOneOff()
-{
-    return GLSurfaceQtEGL::InitializeExtensionSettingsOneOff();
-}
-
-const char* GLSurfaceEGL::GetEGLExtensions()
-{
-    return g_extensions;
-}
-
-bool GLSurfaceEGL::HasEGLExtension(const char* name)
-{
-    return ExtensionsContain(GetEGLExtensions(), name);
-}
-
-bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType /*native_display*/)
-{
-    return GLSurfaceQtEGL::InitializeOneOff();
-}
-
-bool GLSurfaceEGL::IsAndroidNativeFenceSyncSupported()
-{
-    return false;
 }
 
 GLSurfaceQt::GLSurfaceQt(const gfx::Size& size)
@@ -533,52 +101,6 @@ GLSurfaceQt::GLSurfaceQt(const gfx::Size& size)
 bool GLSurfaceQt::HasEGLExtension(const char* name)
 {
     return ExtensionsContain(g_extensions, name);
-}
-
-GLSurfaceQtEGL::GLSurfaceQtEGL(const gfx::Size& size)
-    : GLSurfaceQt(size),
-      m_surfaceBuffer(0)
-{
-}
-
-bool GLSurfaceQtEGL::Initialize(GLSurfaceFormat format)
-{
-    Q_ASSERT(!m_surfaceBuffer);
-    m_format = format;
-
-    EGLDisplay display = g_display;
-    if (!display) {
-        LOG(ERROR) << "Trying to create surface with invalid display.";
-        return false;
-    }
-
-    const EGLint pbuffer_attributes[] = {
-        EGL_WIDTH, m_size.width(),
-        EGL_HEIGHT, m_size.height(),
-        EGL_LARGEST_PBUFFER, EGL_FALSE,
-        EGL_NONE
-    };
-
-    m_surfaceBuffer = eglCreatePbufferSurface(display,
-                                        g_config,
-                                        pbuffer_attributes);
-    if (!m_surfaceBuffer) {
-        LOG(ERROR) << "eglCreatePbufferSurface failed with error " << GetLastEGLErrorString();
-        Destroy();
-        return false;
-    }
-
-    return true;
-}
-
-void GLSurfaceQtEGL::Destroy()
-{
-    if (m_surfaceBuffer) {
-        if (!eglDestroySurface(g_display, m_surfaceBuffer))
-            LOG(ERROR) << "eglDestroySurface failed with error " << GetLastEGLErrorString();
-
-        m_surfaceBuffer = 0;
-    }
 }
 
 bool GLSurfaceQt::IsOffscreen()
@@ -598,41 +120,9 @@ gfx::Size GLSurfaceQt::GetSize()
     return m_size;
 }
 
-
 GLSurfaceFormat GLSurfaceQt::GetFormat()
 {
     return m_format;
-}
-
-
-bool GLSurfaceQtEGL::Resize(const gfx::Size& size, float scale_factor, ColorSpace /*color_space*/, bool has_alpha)
-{
-    if (size == m_size)
-        return true;
-
-    GLContext *currentContext = GLContext::GetCurrent();
-    bool wasCurrent = currentContext && currentContext->IsCurrent(this);
-    if (wasCurrent)
-        currentContext->ReleaseCurrent(this);
-
-    Destroy();
-
-    m_size = size;
-
-    if (!Initialize(GetFormat())) {
-        LOG(ERROR) << "Failed to resize pbuffer.";
-        return false;
-    }
-
-    if (wasCurrent)
-        return currentContext->MakeCurrent(this);
-
-    return true;
-}
-
-void* GLSurfaceQtEGL::GetHandle()
-{
-    return reinterpret_cast<void*>(m_surfaceBuffer);
 }
 
 void* GLSurfaceQt::GetDisplay()
@@ -643,42 +133,6 @@ void* GLSurfaceQt::GetDisplay()
 void* GLSurfaceQt::GetConfig()
 {
     return g_config;
-}
-
-GLSurfacelessQtEGL::GLSurfacelessQtEGL(const gfx::Size& size)
-    : GLSurfaceQt(size)
-{
-}
-
-bool GLSurfacelessQtEGL::Initialize(GLSurfaceFormat format)
-{
-    m_format = format;
-    return true;
-}
-
-void GLSurfacelessQtEGL::Destroy()
-{
-}
-
-bool GLSurfacelessQtEGL::IsSurfaceless() const
-{
-    return true;
-}
-
-bool GLSurfacelessQtEGL::Resize(const gfx::Size& size, float scale_factor, ColorSpace color_space, bool has_alpha)
-{
-    m_size = size;
-    return true;
-}
-
-EGLSurface GLSurfacelessQtEGL::GetHandle()
-{
-    return EGL_NO_SURFACE;
-}
-
-void* GLSurfacelessQtEGL::GetShareHandle()
-{
-    return NULL;
 }
 
 namespace init {
@@ -693,17 +147,17 @@ bool InitializeGLOneOffPlatform()
         return false;
 
     if (GetGLImplementation() == kGLImplementationEGLGLES2)
-        return GLSurfaceQtEGL::InitializeOneOff();
+        return GLSurfaceEGLQt::InitializeOneOff();
 
     if (GetGLImplementation() == kGLImplementationDesktopGL) {
 #if defined(OS_WIN)
-        return GLSurfaceQtWGL::InitializeOneOff();
+        return GLSurfaceWGLQt::InitializeOneOff();
 #elif defined(USE_X11)
-        if (GLSurfaceQtGLX::InitializeOneOff())
+        if (GLSurfaceGLXQt::InitializeOneOff())
             return true;
 #endif
         // Fallback to trying EGL with desktop GL.
-        if (GLSurfaceQtEGL::InitializeOneOff()) {
+        if (GLSurfaceEGLQt::InitializeOneOff()) {
             g_initializedEGL = true;
             return true;
         }
@@ -725,13 +179,13 @@ CreateOffscreenGLSurfaceWithFormat(const gfx::Size& size, GLSurfaceFormat format
     case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationDesktopGL: {
 #if defined(OS_WIN)
-        surface = new GLSurfaceQtWGL(size);
+        surface = new GLSurfaceWGLQt(size);
         if (surface->Initialize(format))
             return surface;
         break;
 #elif defined(USE_X11)
         if (!g_initializedEGL) {
-            surface = new GLSurfaceQtGLX(size);
+            surface = new GLSurfaceGLXQt(size);
             if (surface->Initialize(format))
                 return surface;
         }
@@ -739,14 +193,14 @@ CreateOffscreenGLSurfaceWithFormat(const gfx::Size& size, GLSurfaceFormat format
 #endif
     }
     case kGLImplementationEGLGLES2: {
-        surface = new GLSurfaceQtEGL(size);
+        surface = new GLSurfaceEGLQt(size);
         if (surface->Initialize(format))
             return surface;
 
         // Surfaceless context will be used ONLY if pseudo surfaceless context
         // is not available since some implementations of surfaceless context
         // have problems. (e.g. QTBUG-57290)
-        if (g_egl_surfaceless_context_supported) {
+        if (GLSurfaceEGLQt::g_egl_surfaceless_context_supported) {
             surface = new GLSurfacelessQtEGL(size);
             if (surface->Initialize(format))
                 return surface;
@@ -770,18 +224,6 @@ CreateViewGLSurface(gfx::AcceleratedWidget window)
 }
 
 } // namespace init
-
-std::string DriverEGL::GetPlatformExtensions()
-{
-    EGLDisplay display = GLContextHelper::getEGLDisplay();
-    if (display == EGL_NO_DISPLAY)
-        return "";
-
-    DCHECK(g_driver_egl.fn.eglQueryStringFn);
-    const char* str = g_driver_egl.fn.eglQueryStringFn(display, EGL_EXTENSIONS);
-    return str ? std::string(str) : "";
-}
-
 }  // namespace gl
 
 namespace gpu {

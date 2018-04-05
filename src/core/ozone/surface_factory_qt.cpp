@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,36 +37,25 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CHANNEL_IPC_TRANSPORT_H
-#define WEB_CHANNEL_IPC_TRANSPORT_H
+#if defined(USE_OZONE)
 
-#include "content/public/renderer/render_frame_observer.h"
-
-#include <QtCore/qglobal.h>
-
+#include "ozone/gl_ozone_qt.h"
+#include "ozone/surface_factory_qt.h"
+#include "ui/gl/gl_surface.h"
 namespace QtWebEngineCore {
 
-class WebChannelIPCTransport : private content::RenderFrameObserver {
-public:
-    WebChannelIPCTransport(content::RenderFrame *);
+std::vector<gl::GLImplementation> SurfaceFactoryQt::GetAllowedGLImplementations()
+{
+    std::vector<gl::GLImplementation> impls;
+    impls.push_back(gl::kGLImplementationEGLGLES2);
+    return impls;
+}
 
-private:
-    void setWorldId(base::Optional<uint> worldId);
-    void dispatchWebChannelMessage(const std::vector<char> &binaryJson, uint worldId);
+ui::GLOzone* SurfaceFactoryQt::GetGLOzone(gl::GLImplementation implementation)
+{
+    return new GLOzoneQt();
+}
 
-    // RenderFrameObserver
-    void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;
-    void DidClearWindowObject() override;
-    bool OnMessageReceived(const IPC::Message &message) override;
-    void OnDestruct() override;
+} // namespace QtWebEngineCore
+#endif // defined(USE_OZONE)
 
-    // The worldId from our WebChannelIPCTransportHost or empty when there is no
-    // WebChannelIPCTransportHost.
-    base::Optional<uint> m_worldId;
-    // True means it's currently OK to manipulate the frame's script context.
-    bool m_canUseContext = false;
-};
-
-} // namespace
-
-#endif // WEB_CHANNEL_IPC_TRANSPORT

@@ -193,7 +193,7 @@ void tst_QWebEngineCookieStore::basicFilter()
     QWebEngineCookieStore *client = m_profile.cookieStore();
 
     QAtomicInt accessTested = 0;
-    client->setCookieFilter([&](QWebEngineCookieStore::FilterRequest &){ ++accessTested; });
+    client->setCookieFilter([&](const QWebEngineCookieStore::FilterRequest &){ ++accessTested; return true;});
 
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
     QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
@@ -209,7 +209,7 @@ void tst_QWebEngineCookieStore::basicFilter()
     client->deleteAllCookies();
     QTRY_COMPARE(cookieRemovedSpy.count(), 2);
 
-    client->setCookieFilter([&](QWebEngineCookieStore::FilterRequest &request){ ++accessTested; request.accepted = false; });
+    client->setCookieFilter([&](const QWebEngineCookieStore::FilterRequest &){ ++accessTested; return false; });
     page.triggerAction(QWebEnginePage::ReloadAndBypassCache);
     QTRY_COMPARE(loadSpy.count(), 1);
     QVERIFY(loadSpy.takeFirst().takeFirst().toBool());

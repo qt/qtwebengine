@@ -24,9 +24,7 @@ DEFINES += \
 
 CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
 INCLUDEPATH += $$QTWEBENGINE_ROOT/src/core \
-               $$CHROMIUM_SRC_DIR \
-               $$CHROMIUM_SRC_DIR/third_party/skia/include/core \
-               $$CHROMIUM_SRC_DIR/third_party/skia/include/config
+               $$CHROMIUM_SRC_DIR
 
 linux-g++*: QMAKE_CXXFLAGS += -Wno-unused-parameter
 

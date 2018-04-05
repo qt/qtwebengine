@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,36 +37,19 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CHANNEL_IPC_TRANSPORT_H
-#define WEB_CHANNEL_IPC_TRANSPORT_H
+#ifndef OZONE_PLATFORM_QT_H
+#define OZONE_PLATFORM_QT_H
 
-#include "content/public/renderer/render_frame_observer.h"
+#if defined(USE_OZONE)
 
-#include <QtCore/qglobal.h>
+#include "ui/ozone/public/ozone_platform.h"
 
-namespace QtWebEngineCore {
+namespace ui {
 
-class WebChannelIPCTransport : private content::RenderFrameObserver {
-public:
-    WebChannelIPCTransport(content::RenderFrame *);
+// Constructor hook for use in ozone_platform_list.cc
+OzonePlatform* CreateOzonePlatformQt();
 
-private:
-    void setWorldId(base::Optional<uint> worldId);
-    void dispatchWebChannelMessage(const std::vector<char> &binaryJson, uint worldId);
+}  // namespace ui
 
-    // RenderFrameObserver
-    void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;
-    void DidClearWindowObject() override;
-    bool OnMessageReceived(const IPC::Message &message) override;
-    void OnDestruct() override;
-
-    // The worldId from our WebChannelIPCTransportHost or empty when there is no
-    // WebChannelIPCTransportHost.
-    base::Optional<uint> m_worldId;
-    // True means it's currently OK to manipulate the frame's script context.
-    bool m_canUseContext = false;
-};
-
-} // namespace
-
-#endif // WEB_CHANNEL_IPC_TRANSPORT
+#endif // defined(USE_OZONE)
+#endif // OZONE_PLATFORM_QT_H

@@ -41,7 +41,6 @@
 #define CHROMIUM_GPU_HELPER_H
 
 #include <QtGlobal> // We need this for the Q_OS_QNX define.
-#include <QMap>
 
 namespace base {
 class MessageLoop;

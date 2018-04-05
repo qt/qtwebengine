@@ -47,12 +47,12 @@
 #include "browser_context_qt.h"
 #include "content_client_qt.h"
 #include "download_manager_delegate_qt.h"
+#include "net/url_request_context_getter_qt.h"
 #include "permission_manager_qt.h"
+#include "renderer_host/user_resource_controller_host.h"
 #include "type_conversion.h"
 #include "visited_links_manager_qt.h"
 #include "web_engine_context.h"
-#include "url_request_context_getter_qt.h"
-#include "renderer_host/user_resource_controller_host.h"
 
 #include "net/proxy/proxy_service.h"
 

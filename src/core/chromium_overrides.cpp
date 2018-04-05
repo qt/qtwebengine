@@ -82,7 +82,8 @@ namespace QtWebEngineCore {
 void GetScreenInfoFromNativeWindow(QWindow* window, content::ScreenInfo* results)
 {
     QScreen* screen = window->screen();
-
+    if (!screen)
+        return;
     content::ScreenInfo r;
     r.device_scale_factor = screen->devicePixelRatio();
     r.depth_per_component = 8;

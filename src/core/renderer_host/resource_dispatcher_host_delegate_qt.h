@@ -65,11 +65,8 @@ public:
     void sendAuthToRequester(bool success, const QString &user, const QString &password);
 
 private:
-    void triggerDialog();
+    void triggerDialog(const content::ResourceRequestInfo::WebContentsGetter &);
     void destroy();
-
-    int m_renderProcessId;
-    int m_renderFrameId;
 
     scoped_refptr<net::AuthChallengeInfo> m_authInfo;
 

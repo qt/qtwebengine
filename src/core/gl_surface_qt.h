@@ -68,6 +68,11 @@ protected:
     gfx::Size m_size;
     GLSurfaceFormat m_format;
 
+public:
+    static void* g_config;
+    static void* g_display;
+    static const char* g_extensions;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(GLSurfaceQt);
 };

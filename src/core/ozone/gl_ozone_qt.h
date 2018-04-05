@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,36 +37,37 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CHANNEL_IPC_TRANSPORT_H
-#define WEB_CHANNEL_IPC_TRANSPORT_H
+#ifndef GL_OZONE_QT
+#define GL_OZONE_QT
 
-#include "content/public/renderer/render_frame_observer.h"
+#if defined(USE_OZONE)
 
-#include <QtCore/qglobal.h>
+#include "ui/ozone/common/gl_ozone_egl.h"
 
 namespace QtWebEngineCore {
 
-class WebChannelIPCTransport : private content::RenderFrameObserver {
+class GLOzoneQt : public ui::GLOzoneEGL {
 public:
-    WebChannelIPCTransport(content::RenderFrame *);
+    scoped_refptr<gl::GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget /*window*/) override
+    {
+        return nullptr;
+    }
+    scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(const gfx::Size& /*size*/) override
+    {
+        return nullptr;
+    }
 
-private:
-    void setWorldId(base::Optional<uint> worldId);
-    void dispatchWebChannelMessage(const std::vector<char> &binaryJson, uint worldId);
+protected:
+    // Returns native platform display handle. This is used to obtain the EGL
+    // display connection for the native display.
+    intptr_t GetNativeDisplay() override;
 
-    // RenderFrameObserver
-    void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;
-    void DidClearWindowObject() override;
-    bool OnMessageReceived(const IPC::Message &message) override;
-    void OnDestruct() override;
-
-    // The worldId from our WebChannelIPCTransportHost or empty when there is no
-    // WebChannelIPCTransportHost.
-    base::Optional<uint> m_worldId;
-    // True means it's currently OK to manipulate the frame's script context.
-    bool m_canUseContext = false;
+    // Sets up GL bindings for the native surface.
+    bool LoadGLES2Bindings(gl::GLImplementation implementation) override;
 };
 
-} // namespace
+} // namespace QtWebEngineCore
 
-#endif // WEB_CHANNEL_IPC_TRANSPORT
+#endif // defined(USE_OZONE)
+
+#endif // GL_OZONE_QT

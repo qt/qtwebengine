@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,36 +37,59 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CHANNEL_IPC_TRANSPORT_H
-#define WEB_CHANNEL_IPC_TRANSPORT_H
+#if defined(USE_OZONE)
 
-#include "content/public/renderer/render_frame_observer.h"
+#include "base/bind.h"
+#include "ozone/platform_window_qt.h"
+#include "ui/events/ozone/events_ozone.h"
+#include "ui/events/platform/platform_event_source.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
-#include <QtCore/qglobal.h>
+namespace ui {
 
-namespace QtWebEngineCore {
+PlatformWindowQt::PlatformWindowQt(PlatformWindowDelegate* delegate, const gfx::Rect& bounds)
+    : delegate_(delegate)
+    , bounds_(bounds)
+{
+    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+}
 
-class WebChannelIPCTransport : private content::RenderFrameObserver {
-public:
-    WebChannelIPCTransport(content::RenderFrame *);
+PlatformWindowQt::~PlatformWindowQt()
+{
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+}
 
-private:
-    void setWorldId(base::Optional<uint> worldId);
-    void dispatchWebChannelMessage(const std::vector<char> &binaryJson, uint worldId);
+gfx::Rect PlatformWindowQt::GetBounds()
+{
+    return bounds_;
+}
 
-    // RenderFrameObserver
-    void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;
-    void DidClearWindowObject() override;
-    bool OnMessageReceived(const IPC::Message &message) override;
-    void OnDestruct() override;
+void PlatformWindowQt::SetBounds(const gfx::Rect& bounds)
+{
+    if (bounds == bounds_)
+        return;
+    bounds_ = bounds;
+    delegate_->OnBoundsChanged(bounds);
+}
 
-    // The worldId from our WebChannelIPCTransportHost or empty when there is no
-    // WebChannelIPCTransportHost.
-    base::Optional<uint> m_worldId;
-    // True means it's currently OK to manipulate the frame's script context.
-    bool m_canUseContext = false;
-};
+bool PlatformWindowQt::CanDispatchEvent(const ui::PlatformEvent& /*ne*/)
+{
+    return true;
+}
 
-} // namespace
+uint32_t PlatformWindowQt::DispatchEvent(const ui::PlatformEvent& native_event)
+{
+    DispatchEventFromNativeUiEvent(
+                native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
+                                         base::Unretained(delegate_)));
 
-#endif // WEB_CHANNEL_IPC_TRANSPORT
+    return ui::POST_DISPATCH_STOP_PROPAGATION;
+}
+
+void PlatformWindowQt::PrepareForShutdown()
+{
+}
+
+} // namespace ui
+
+#endif // defined(USE_OZONE)

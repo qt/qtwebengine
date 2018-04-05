@@ -29,10 +29,6 @@ build_pass|!debug_and_release {
 
     gn_args = $$gnArgs()
 
-    CONFIG(release, debug|release) {
-        gn_args += is_debug=false
-    }
-
     gn_args += "qtwebengine_target=\"$$system_path($$OUT_PWD/$$getConfigDir()):QtWebEngineCore\""
 
     !qtConfig(webengine-system-gn) {
@@ -50,7 +46,10 @@ build_pass|!debug_and_release {
         error("GN run error!")
     }
 
-    runninja.commands = $$NINJA \$\(NINJAFLAGS\) -C $$gn_build_root QtWebEngineCore
+    ninjaflags = $$(NINJAFLAGS)
+    isEmpty(ninjaflags):!silent: ninjaflags = "-v"
+
+    runninja.commands = $$NINJA $$ninjaflags -C $$gn_build_root QtWebEngineCore
     QMAKE_EXTRA_TARGETS += runninja
 
     build_pass:build_all: default_target.target = all

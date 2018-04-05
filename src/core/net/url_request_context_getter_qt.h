@@ -42,17 +42,14 @@
 
 #include "net/url_request/url_request_context_getter.h"
 
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/content_browser_client.h"
-#include "content/public/common/url_constants.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 
 #include "cookie_monster_delegate_qt.h"
 #include "network_delegate_qt.h"

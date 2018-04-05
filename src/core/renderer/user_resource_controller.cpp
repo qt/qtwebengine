@@ -192,7 +192,7 @@ void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink:
             continue;
         blink::WebScriptSource source(blink::WebString::FromUTF8(script.source), script.url);
         if (script.worldId)
-            frame->ExecuteScriptInIsolatedWorld(script.worldId, &source, /*numSources = */1, /*contentScriptExtentsionGroup = */ 0);
+            frame->ExecuteScriptInIsolatedWorld(script.worldId, &source, /*numSources = */1);
         else
             frame->ExecuteScript(source);
     }

@@ -37,107 +37,24 @@
 **
 ****************************************************************************/
 
-#include "ozone_platform_qt.h"
+#include "ozone/ozone_platform_qt.h"
 
 #if defined(USE_OZONE)
-
-#include "base/bind.h"
-#include "base/memory/ptr_util.h"
+#include "ozone/surface_factory_qt.h"
+#include "ozone/platform_window_qt.h"
 #include "ui/display/types/native_display_delegate.h"
-#include "ui/events/ozone/events_ozone.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/common/stub_client_native_pixmap_factory.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
-#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window_delegate.h"
-
-#include "surface_factory_qt.h"
+#include "ui/platform_window/platform_window.h"
 
 namespace ui {
 
 namespace {
-
-class PlatformWindowQt : public PlatformWindow, public PlatformEventDispatcher
-{
-public:
-    PlatformWindowQt(PlatformWindowDelegate* delegate,
-                     const gfx::Rect& bounds)
-        : delegate_(delegate)
-        , bounds_(bounds)
-    {
-        ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-    }
-
-    ~PlatformWindowQt() override
-    {
-        ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-    }
-
-    // PlatformWindow:
-    gfx::Rect GetBounds() override;
-    void SetBounds(const gfx::Rect& bounds) override;
-    void Show() override { }
-    void Hide() override { }
-    void Close() override { }
-    void SetTitle(const base::string16&) override { }
-    void SetCapture() override { }
-    void ReleaseCapture() override { }
-    void ToggleFullscreen() override { }
-    void Maximize() override { }
-    void Minimize() override { }
-    void Restore() override { }
-    void SetCursor(PlatformCursor) override { }
-    void MoveCursorTo(const gfx::Point&) override { }
-    void ConfineCursorToBounds(const gfx::Rect&) override { }
-    PlatformImeController* GetPlatformImeController() override { return nullptr; }
-    // PlatformEventDispatcher:
-    bool CanDispatchEvent(const PlatformEvent& event) override;
-    uint32_t DispatchEvent(const PlatformEvent& event) override;
-    void PrepareForShutdown() override;
-
-private:
-    PlatformWindowDelegate* delegate_;
-    gfx::Rect bounds_;
-
-    DISALLOW_COPY_AND_ASSIGN(PlatformWindowQt);
-};
-
-gfx::Rect PlatformWindowQt::GetBounds()
-{
-    return bounds_;
-}
-
-void PlatformWindowQt::SetBounds(const gfx::Rect& bounds)
-{
-    if (bounds == bounds_)
-        return;
-    bounds_ = bounds;
-    delegate_->OnBoundsChanged(bounds);
-}
-
-bool PlatformWindowQt::CanDispatchEvent(const ui::PlatformEvent& /*ne*/)
-{
-    return true;
-}
-
-uint32_t PlatformWindowQt::DispatchEvent(const ui::PlatformEvent& native_event)
-{
-    DispatchEventFromNativeUiEvent(
-                native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
-                                         base::Unretained(delegate_)));
-
-    return ui::POST_DISPATCH_STOP_PROPAGATION;
-}
-
-void PlatformWindowQt::PrepareForShutdown()
-{
-}
-
 
 class OzonePlatformQt : public OzonePlatform {
 public:

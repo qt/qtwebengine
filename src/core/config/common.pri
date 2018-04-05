@@ -15,11 +15,10 @@ gn_args += \
     enable_swiftshader=false \
     use_custom_libcxx=false
 
-# Jumbo disabled for now due to OOM issues.
-# !win32: gn_args += \
-#     use_jumbo_build=true \
-#     jumbo_file_merge_limit=20 \
-#     jumbo_build_excluded="[\"browser\"]"
+!win32: gn_args += \
+    use_jumbo_build=true \
+    jumbo_file_merge_limit=8 \
+    jumbo_build_excluded="[\"browser\",\"renderer\"]"
 
 qtConfig(webengine-printing-and-pdf) {
     gn_args += enable_basic_printing=true enable_print_preview=true
@@ -56,6 +55,7 @@ precompile_header {
 }
 
 CONFIG(release, debug|release) {
+    gn_args += is_debug=false
     force_debug_info {
         # Level 1 is not enough to generate all Chromium debug symbols on Windows
         msvc: gn_args += symbol_level=2
@@ -66,6 +66,7 @@ CONFIG(release, debug|release) {
 }
 
 CONFIG(debug, debug|release) {
+    gn_args += is_debug=true
     gn_args += use_debug_fission=false
 }
 

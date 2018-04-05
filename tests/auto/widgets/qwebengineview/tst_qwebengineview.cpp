@@ -2450,7 +2450,7 @@ void tst_QWebEngineView::mouseLeave()
     containerWidget->setLayout(layout);
     containerWidget->show();
     QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
-    QTest::mouseMove(containerWidget->windowHandle(), QPoint(0, 0));
+    QTest::mouseMove(containerWidget->windowHandle(), QPoint(1, 1));
 
     auto innerText = [view]() -> QString {
         return evaluateJavaScriptSync(view->page(), "document.getElementById('testDiv').innerText").toString();

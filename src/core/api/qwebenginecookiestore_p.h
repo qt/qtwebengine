@@ -78,7 +78,7 @@ class QWEBENGINE_PRIVATE_EXPORT QWebEngineCookieStorePrivate
     QWebEngineCookieStore *q_ptr;
 public:
     QtWebEngineCore::CallbackDirectory callbackDirectory;
-    QWebEngineCallback<QWebEngineCookieStore::FilterRequest&> filterCallback;
+    std::function<bool(const QWebEngineCookieStore::FilterRequest&)> filterCallback;
     QVector<CookieData> m_pendingUserCookies;
     quint64 m_nextCallbackId;
     bool m_deleteSessionCookiesPending;

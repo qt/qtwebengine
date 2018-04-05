@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,36 +37,55 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CHANNEL_IPC_TRANSPORT_H
-#define WEB_CHANNEL_IPC_TRANSPORT_H
+#ifndef PLATFORM_WINDOW_QT_H
+#define PLATFORM_WINDOW_QT_H
 
-#include "content/public/renderer/render_frame_observer.h"
+#if defined(USE_OZONE)
 
-#include <QtCore/qglobal.h>
+#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/platform_window/platform_window.h"
 
-namespace QtWebEngineCore {
+namespace ui {
 
-class WebChannelIPCTransport : private content::RenderFrameObserver {
+class PlatformWindowDelegate;
+
+class PlatformWindowQt : public PlatformWindow, public PlatformEventDispatcher
+{
 public:
-    WebChannelIPCTransport(content::RenderFrame *);
+    PlatformWindowQt(PlatformWindowDelegate* delegate, const gfx::Rect& bounds);
+    ~PlatformWindowQt() override;
+    // PlatformWindow:
+    gfx::Rect GetBounds() override;
+    void SetBounds(const gfx::Rect& bounds) override;
+    void Show() override { }
+    void Hide() override { }
+    void Close() override { }
+    void SetTitle(const base::string16&) override { }
+    void SetCapture() override { }
+    void ReleaseCapture() override { }
+    void ToggleFullscreen() override { }
+    void Maximize() override { }
+    void Minimize() override { }
+    void Restore() override { }
+    void SetCursor(PlatformCursor) override { }
+    void MoveCursorTo(const gfx::Point&) override { }
+    void ConfineCursorToBounds(const gfx::Rect&) override { }
+    PlatformImeController* GetPlatformImeController() override { return nullptr; }
+    // PlatformEventDispatcher:
+    bool CanDispatchEvent(const PlatformEvent& event) override;
+    uint32_t DispatchEvent(const PlatformEvent& event) override;
+    void PrepareForShutdown() override;
 
 private:
-    void setWorldId(base::Optional<uint> worldId);
-    void dispatchWebChannelMessage(const std::vector<char> &binaryJson, uint worldId);
+    PlatformWindowDelegate* delegate_;
+    gfx::Rect bounds_;
 
-    // RenderFrameObserver
-    void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;
-    void DidClearWindowObject() override;
-    bool OnMessageReceived(const IPC::Message &message) override;
-    void OnDestruct() override;
-
-    // The worldId from our WebChannelIPCTransportHost or empty when there is no
-    // WebChannelIPCTransportHost.
-    base::Optional<uint> m_worldId;
-    // True means it's currently OK to manipulate the frame's script context.
-    bool m_canUseContext = false;
+    DISALLOW_COPY_AND_ASSIGN(PlatformWindowQt);
 };
 
-} // namespace
+}
 
-#endif // WEB_CHANNEL_IPC_TRANSPORT
+#endif // defined(USE_OZONE)
+#endif //PLATFORM_WINDOW_QT_H

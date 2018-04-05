@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,19 +37,38 @@
 **
 ****************************************************************************/
 
-#ifndef UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_QT_H_
-#define UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_QT_H_
+#ifndef GL_SURFACE_WGL_QT_H
+#define GL_SURFACE_WGL_QT_H
 
-#if defined(USE_OZONE)
+#include "gl_surface_qt.h"
 
-#include "ui/ozone/public/ozone_platform.h"
+#if defined(OS_WIN)
 
-namespace ui {
+namespace gl {
 
-// Constructor hook for use in ozone_platform_list.cc
-OzonePlatform* CreateOzonePlatformQt();
+class PbufferGLSurfaceWGL;
 
-}  // namespace ui
+class GLSurfaceWGLQt: public GLSurfaceQt {
+public:
+    explicit GLSurfaceWGLQt(const gfx::Size& size);
 
-#endif // defined(USE_OZONE)
-#endif // UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_QT_H_
+    static bool InitializeOneOff();
+
+    bool Initialize(GLSurfaceFormat format) override;
+    void Destroy() override;
+    void *GetHandle() override;
+    void *GetDisplay() override;
+    void *GetConfig() override;
+
+protected:
+    ~GLSurfaceWGLQt();
+
+private:
+    scoped_refptr<PbufferGLSurfaceWGL> m_surfaceBuffer;
+    DISALLOW_COPY_AND_ASSIGN(GLSurfaceWGLQt);
+};
+
+}
+#endif // defined(OS_WIN)
+#endif // GL_SURFACE_WGL_QT_H
+

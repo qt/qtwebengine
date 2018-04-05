@@ -87,6 +87,10 @@
             \c info and above are recorded in the log. This is the default for
             debug builds. Other possible log levels are \c 1 for warnings, \c 2
             for errors, and \c 3 for fatal errors.
+        \li \c {--v=1} Increases the logging level beyond what \c {--log-level}
+            can, and enables logging debug messages up to verbosity level \c 1.
+            A higher number further increases verbosity, but may result in a
+            large number of logged messages. Default is \c 0 (no debug messages).
         \li \c {--no-sandbox} disables the sandbox for the renderer and plugin
             processes. Keep in mind that disabling the sandbox might present a
             security risk.

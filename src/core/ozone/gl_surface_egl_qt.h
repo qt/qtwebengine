@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,36 +37,61 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CHANNEL_IPC_TRANSPORT_H
-#define WEB_CHANNEL_IPC_TRANSPORT_H
+#ifndef GL_SURFACE_EGL_QT_H_
+#define GL_SURFACE_EGL_QT_H_
 
-#include "content/public/renderer/render_frame_observer.h"
+#include "gl_surface_qt.h"
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 
-#include <QtCore/qglobal.h>
+namespace gl {
 
-namespace QtWebEngineCore {
-
-class WebChannelIPCTransport : private content::RenderFrameObserver {
+class GLSurfaceEGLQt: public GLSurfaceQt {
 public:
-    WebChannelIPCTransport(content::RenderFrame *);
+    explicit GLSurfaceEGLQt(const gfx::Size& size);
+
+    static bool InitializeOneOff();
+    static bool InitializeExtensionSettingsOneOff();
+
+    bool Initialize(GLSurfaceFormat format) override;
+    void Destroy() override;
+    void* GetHandle() override;
+    bool Resize(const gfx::Size& size, float scale_factor,
+                ColorSpace color_space, bool has_alpha) override;
+
+protected:
+    ~GLSurfaceEGLQt();
+
+public:
+   static bool g_egl_surfaceless_context_supported;
 
 private:
-    void setWorldId(base::Optional<uint> worldId);
-    void dispatchWebChannelMessage(const std::vector<char> &binaryJson, uint worldId);
-
-    // RenderFrameObserver
-    void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;
-    void DidClearWindowObject() override;
-    bool OnMessageReceived(const IPC::Message &message) override;
-    void OnDestruct() override;
-
-    // The worldId from our WebChannelIPCTransportHost or empty when there is no
-    // WebChannelIPCTransportHost.
-    base::Optional<uint> m_worldId;
-    // True means it's currently OK to manipulate the frame's script context.
-    bool m_canUseContext = false;
+   EGLSurface m_surfaceBuffer;
+   static bool s_initialized;
+   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGLQt);
 };
 
-} // namespace
+// The following comment is cited from chromium/ui/gl/gl_surface_egl.cc:
+// SurfacelessEGL is used as Offscreen surface when platform supports
+// KHR_surfaceless_context and GL_OES_surfaceless_context. This would avoid the
+// need to create a dummy EGLsurface in case we render to client API targets.
 
-#endif // WEB_CHANNEL_IPC_TRANSPORT
+class GLSurfacelessQtEGL : public GLSurfaceQt {
+public:
+    explicit GLSurfacelessQtEGL(const gfx::Size& size);
+
+public:
+    bool Initialize(GLSurfaceFormat format) override;
+    void Destroy() override;
+    bool IsSurfaceless() const override;
+    bool Resize(const gfx::Size& size, float scale_factor,
+                ColorSpace color_space, bool has_alpha) override;
+    EGLSurface GetHandle() override;
+    void* GetShareHandle() override;
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(GLSurfacelessQtEGL);
+};
+}
+
+#endif

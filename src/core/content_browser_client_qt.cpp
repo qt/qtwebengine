@@ -93,11 +93,12 @@
 #include "desktop_screen_qt.h"
 #include "devtools_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
-#include "network_delegate_qt.h"
+#include "net/network_delegate_qt.h"
+#include "net/qrc_protocol_handler_qt.h"
+#include "net/url_request_context_getter_qt.h"
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-#include "printing_message_filter_qt.h"
+#include "printing/printing_message_filter_qt.h"
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
-#include "qrc_protocol_handler_qt.h"
 #include "quota_permission_context_qt.h"
 #include "renderer_host/resource_dispatcher_host_delegate_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
@@ -443,6 +444,31 @@ void ContentBrowserClientQt::GetQuotaSettings(content::BrowserContext* context,
     storage::GetNominalDynamicSettings(partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
 }
 
+// Copied from chrome/browser/ssl/ssl_error_handler.cc:
+static int IsCertErrorFatal(int cert_error)
+{
+    switch (cert_error) {
+    case net::ERR_CERT_COMMON_NAME_INVALID:
+    case net::ERR_CERT_DATE_INVALID:
+    case net::ERR_CERT_AUTHORITY_INVALID:
+    case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
+    case net::ERR_CERT_WEAK_KEY:
+    case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
+    case net::ERR_CERT_VALIDITY_TOO_LONG:
+    case net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
+        return false;
+    case net::ERR_CERT_CONTAINS_ERRORS:
+    case net::ERR_CERT_REVOKED:
+    case net::ERR_CERT_INVALID:
+    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
+    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
+        return true;
+    default:
+        NOTREACHED();
+    }
+    return true;
+}
+
 void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webContents,
                                                    int cert_error,
                                                    const net::SSLInfo &ssl_info,
@@ -454,7 +480,16 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
 {
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
-    QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, strict_enforcement, strict_enforcement, callback)));
+    QSharedPointer<CertificateErrorController> errorController(
+            new CertificateErrorController(
+                    new CertificateErrorControllerPrivate(
+                            cert_error,
+                            ssl_info,
+                            request_url,
+                            resource_type,
+                            !IsCertErrorFatal(cert_error),
+                            strict_enforcement,
+                            callback)));
     contentsDelegate->allowCertificateError(errorController);
 }
 
@@ -706,6 +741,7 @@ bool ContentBrowserClientQt::AllowGetCookie(const GURL &url,
                                             int /*render_process_id*/,
                                             int /*render_frame_id*/)
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
     return networkDelegate->canGetCookies(first_party, url);
 }
@@ -718,8 +754,51 @@ bool ContentBrowserClientQt::AllowSetCookie(const GURL &url,
                                             int /*render_frame_id*/,
                                             const net::CookieOptions& /*options*/)
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
     return networkDelegate->canSetCookies(first_party, url, std::string());
+}
+
+bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
+                                           const GURL &first_party,
+                                           content::ResourceContext *context)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
+    return networkDelegate->canGetCookies(first_party, manifest_url);
+}
+
+bool ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
+                                                const GURL &first_party,
+                                                content::ResourceContext *context,
+                                                const base::Callback<content::WebContents*(void)> &/*wc_getter*/)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    // FIXME: Chrome also checks if javascript is enabled here to check if has been disabled since the service worker
+    // was started.
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
+    return networkDelegate->canGetCookies(first_party, scope);
+}
+
+// We control worker access to FS and indexed-db using cookie permissions, this is mirroring Chromium's logic.
+void ContentBrowserClientQt::AllowWorkerFileSystem(const GURL &url,
+                                                   content::ResourceContext *context,
+                                                   const std::vector<std::pair<int, int> > &/*render_frames*/,
+                                                   base::Callback<void(bool)> callback)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
+    callback.Run(networkDelegate->canSetCookies(url, url, std::string()));
+}
+
+bool ContentBrowserClientQt::AllowWorkerIndexedDB(const GURL &url,
+                                                  const base::string16 &/*name*/,
+                                                  content::ResourceContext *context,
+                                                  const std::vector<std::pair<int, int> > &/*render_frames*/)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
+    return networkDelegate->canSetCookies(url, url, std::string());
 }
 
 } // namespace QtWebEngineCore

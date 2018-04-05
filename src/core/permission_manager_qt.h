@@ -45,7 +45,6 @@
 #include "browser_context_adapter.h"
 
 #include <QHash>
-#include <QList>
 
 namespace QtWebEngineCore {
 
