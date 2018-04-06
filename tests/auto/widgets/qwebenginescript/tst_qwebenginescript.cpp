@@ -169,9 +169,9 @@ void tst_QWebEngineScript::loadEvents()
     QCOMPARE(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
 
     // Using window.open from JS
-    QCOMPARE(profile.pages.size(), 1u);
+    QVERIFY(profile.pages.size() == 1);
     page.load(QUrl("qrc:/resources/test_window_open.html"));
-    QTRY_COMPARE(profile.pages.size(), 2u);
+    QTRY_VERIFY(profile.pages.size() == 2);
     QTRY_COMPARE(profile.pages.front().spy.count(), 1);
     QTRY_COMPARE(profile.pages.back().spy.count(), 1);
     QCOMPARE(profile.pages.front().eval("window.log", QWebEngineScript::MainWorld).toStringList(), expected);
