@@ -61,6 +61,8 @@
 
 #if defined(OS_WIN)
 #include "ozone/gl_surface_wgl_qt.h"
+
+#include "gpu/ipc/service/direct_composition_surface_win.h"
 #include "ui/gl/gl_context_wgl.h"
 #include "ui/gl/vsync_provider_win.h"
 #endif
@@ -235,6 +237,12 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(base::We
     QT_NOT_USED
     return scoped_refptr<gl::GLSurface>();
 }
-}
+
+#if defined(OS_WIN)
+bool DirectCompositionSurfaceWin::IsHDRSupported()
+{   return false; }
+#endif
+
+} // namespace gpu
 
 #endif // !defined(OS_MACOSX)
