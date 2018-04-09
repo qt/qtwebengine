@@ -103,6 +103,8 @@ TestWebEngineView {
             if (row.userHandled) {
                 webEngineView.contextMenuRequested.connect(contextMenuHandler);
             }
+            webEngineView.loadHtml("<html></html>");
+            verify(webEngineView.waitForLoadSucceeded());
 
             mouseClick(webEngineView, 20, 20, Qt.RightButton);
             contextMenuRequestedSpy.wait();
