@@ -919,6 +919,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             rpLayer->setRect(toQt(pass->output_rect));
             rpLayer->setSize(toQt(pass->output_rect.size()));
             rpLayer->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
+            rpLayer->setHasMipmaps(pass->generate_mipmap);
             rpLayer->setMirrorVertical(true);
             scissorRect = pass->output_rect;
         } else {
