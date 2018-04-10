@@ -213,7 +213,7 @@ bool GLSurfaceEGLQt::Initialize(GLSurfaceFormat format)
                                         g_config,
                                         pbuffer_attributes);
     if (!m_surfaceBuffer) {
-        LOG(ERROR) << "eglCreatePbufferSurface failed with error " << GetLastEGLErrorString();
+        VLOG(1) << "eglCreatePbufferSurface failed with error " << GetLastEGLErrorString();
         Destroy();
         return false;
     }

@@ -284,6 +284,7 @@ CreateOffscreenGLSurfaceWithFormat(const gfx::Size& size, GLSurfaceFormat format
             if (surface->Initialize(format))
                 return surface;
         }
+        LOG(ERROR) << "eglCreatePbufferSurface failed and surfaceless context not available";
         LOG(WARNING) << "Failed to create offscreen GL surface";
         break;
     }
