@@ -147,16 +147,6 @@ defineTest(qtConfTest_embedded) {
     return(false)
 }
 
-defineTest(qtConfTest_detectLibXml2WithIcuuc) {
-   pkgConfig = $$qtConfPkgConfig()
-   !isEmpty(pkgConfig) {
-       qtRunLoggedCommand("$$pkgConfig --libs --static libxml-2.0", xmllibs)
-       contains(xmllibs,".*-licuuc.*"):return(true)
-       qtLog("System libxml2 is not configured with ICU")
-   }
-   return(false)
-}
-
 defineTest(qtConfTest_detectHostPkgConfig) {
    PKG_CONFIG = $$qtConfPkgConfig(true)
    isEmpty(PKG_CONFIG) {

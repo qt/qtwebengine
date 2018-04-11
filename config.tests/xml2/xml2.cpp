@@ -30,6 +30,9 @@
 #if defined(LIBXML_CATALOG_ENABLED)
 #error "libxml catalog enabled"
 #endif
+#if !defined(LIBXML_ICU_ENABLED)
+#error "libxml icu not enabled"
+#endif
 
 int main(int argc, char **argv)
 {
