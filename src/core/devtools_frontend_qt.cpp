@@ -44,6 +44,7 @@
 
 #include "devtools_frontend_qt.h"
 
+#include "browser_context_adapter.h"
 #include "browser_context_qt.h"
 #include "web_contents_adapter.h"
 
@@ -153,6 +154,12 @@ DevToolsFrontendQt *DevToolsFrontendQt::Show(QSharedPointer<WebContentsAdapter> 
     DCHECK(frontendAdapter);
     DCHECK(inspectedContents);
 
+    if (!frontendAdapter->isInitialized()) {
+        scoped_refptr<content::SiteInstance> site =
+            content::SiteInstance::CreateForURL(frontendAdapter->browserContext(), GURL(GetFrontendURL()));
+        frontendAdapter->initialize(site.get());
+    }
+
     content::WebContents *contents = frontendAdapter->webContents();
     if (contents == inspectedContents) {
         qWarning() << "You can not inspect youself";
@@ -184,7 +191,7 @@ DevToolsFrontendQt::DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webCon
 {
     // We use a separate prefstore than BrowserContextQt, because that one is in-memory only, and this
     // needs to be stored or it will show introduction text on every load.
-    if (web_contents()->GetBrowserContext()->IsOffTheRecord())
+    if (webContentsAdapter->browserContextAdapter()->isOffTheRecord())
         m_prefStore = std::move(scoped_refptr<PersistentPrefStore>(new InMemoryPrefStore()));
     else
         CreateJsonPreferences(false);
