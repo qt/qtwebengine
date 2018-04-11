@@ -270,6 +270,26 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
                             m_weakPtrFactory.GetWeakPtr()));
 }
 
+bool DownloadManagerDelegateQt::IsMostRecentDownloadItemAtFilePath(content::DownloadItem *download)
+{
+    content::BrowserContext *context = download->GetBrowserContext();
+    std::vector<content::DownloadItem*> all_downloads;
+
+    content::DownloadManager* manager =
+            content::BrowserContext::GetDownloadManager(context);
+    if (manager)
+        manager->GetAllDownloads(&all_downloads);
+
+    for (const auto* item : all_downloads) {
+        if (item->GetGuid() == download->GetGuid() ||
+                item->GetTargetFilePath() != download->GetTargetFilePath())
+            continue;
+        if (item->GetState() == content::DownloadItem::IN_PROGRESS)
+            return false;
+    }
+    return true;
+}
+
 void DownloadManagerDelegateQt::savePackageDownloadCreated(content::DownloadItem *item)
 {
     OnDownloadUpdated(item);
