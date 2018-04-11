@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:GPL-EXCEPT$
 ** Commercial License Usage
@@ -31,7 +31,7 @@
 #error "Alsa version found too old, require >= 1.0.10"
 #endif
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
 }
 
