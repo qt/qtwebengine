@@ -68,7 +68,6 @@ public:
     void removeScriptForView(const UserScriptData &, content::RenderView *);
     void clearScriptsForView(content::RenderView *);
 
-    void RunScriptsAtDocumentStart(content::RenderFrame *render_frame);
     void RunScriptsAtDocumentEnd(content::RenderFrame *render_frame);
 
 private:

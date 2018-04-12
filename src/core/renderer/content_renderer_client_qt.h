@@ -84,7 +84,6 @@ public:
     bool IsLinkVisited(unsigned long long linkHash) override;
     void AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) override;
 
-    void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
     void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
 
 private:

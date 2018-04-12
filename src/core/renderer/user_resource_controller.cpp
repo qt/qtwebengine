@@ -60,6 +60,8 @@
 
 #include <QRegularExpression>
 
+#include <bitset>
+
 Q_GLOBAL_STATIC(UserResourceController, qt_webengine_userResourceController)
 
 static content::RenderView * const globalScriptsIndex = 0;
@@ -129,12 +131,11 @@ public:
     RenderFrameObserverHelper(content::RenderFrame* render_frame);
 
 private:
-    ~RenderFrameObserverHelper() override;
-
     // RenderFrameObserver implementation.
+    void DidCommitProvisionalLoad(bool is_new_navigation, bool is_same_document_navigation) override;
+    void DidClearWindowObject() override;
     void DidFinishDocumentLoad() override;
     void DidFinishLoad() override;
-    void DidStartProvisionalLoad(blink::WebDocumentLoader *document_loader) override;
     void FrameDetached() override;
     void OnDestruct() override;
     bool OnMessageReceived(const IPC::Message& message) override;
@@ -143,12 +144,31 @@ private:
     void onUserScriptRemoved(const UserScriptData &);
     void onScriptsCleared();
 
-    void runScripts(UserScriptData::InjectionPoint, blink::WebLocalFrame *);
+    class Runner;
+    QScopedPointer<Runner> m_runner;
+};
 
-    // Set of frames which are pending to get an AfterLoad invocation of runScripts, if they
-    // haven't gotten it already.
-    QSet<blink::WebLocalFrame *> m_pendingFrames;
-    base::WeakPtrFactory<RenderFrameObserverHelper> m_weakPtrFactory;
+// Helper class to create WeakPtrs so the AfterLoad tasks can be canceled and to
+// avoid running scripts more than once per injection point.
+class UserResourceController::RenderFrameObserverHelper::Runner : public base::SupportsWeakPtr<Runner> {
+public:
+    explicit Runner(blink::WebLocalFrame *frame)
+        : m_frame(frame)
+    {
+    }
+
+    void run(UserScriptData::InjectionPoint p)
+    {
+        DCHECK_LT(p, m_ran.size());
+        if (!m_ran[p]) {
+            UserResourceController::instance()->runScripts(p, m_frame);
+            m_ran[p] = true;
+        }
+    }
+
+private:
+    blink::WebLocalFrame *m_frame;
+    std::bitset<3> m_ran;
 };
 
 // Used only for script cleanup on RenderView destruction.
@@ -160,14 +180,6 @@ private:
     // RenderViewObserver implementation.
     void OnDestruct() override;
 };
-
-void UserResourceController::RenderFrameObserverHelper::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
-{
-    if (p == UserScriptData::AfterLoad && !m_pendingFrames.remove(frame))
-        return;
-
-    UserResourceController::instance()->runScripts(p, frame);
-}
 
 void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
 {
@@ -198,24 +210,14 @@ void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink:
     }
 }
 
-void UserResourceController::RunScriptsAtDocumentStart(content::RenderFrame *render_frame)
-{
-    runScripts(UserScriptData::DocumentElementCreation, render_frame->GetWebFrame());
-}
-
 void UserResourceController::RunScriptsAtDocumentEnd(content::RenderFrame *render_frame)
 {
     runScripts(UserScriptData::DocumentLoadFinished, render_frame->GetWebFrame());
 }
 
 UserResourceController::RenderFrameObserverHelper::RenderFrameObserverHelper(content::RenderFrame *render_frame)
-    : content::RenderFrameObserver(render_frame), m_weakPtrFactory(this)
+    : content::RenderFrameObserver(render_frame)
 {
-}
-
-UserResourceController::RenderFrameObserverHelper::~RenderFrameObserverHelper()
-{
-    m_weakPtrFactory.InvalidateWeakPtrs();
 }
 
 UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(content::RenderView *render_view)
@@ -223,35 +225,48 @@ UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(conte
 {
 }
 
+void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad(bool /* is_new_navigation */,
+                                                                                 bool is_same_document_navigation)
+{
+    if (is_same_document_navigation)
+        return;
+
+    // We are almost ready to run scripts. We still have to wait until the host
+    // process has been notified of the DidCommitProvisionalLoad event to ensure
+    // that the WebChannelTransportHost is ready to receive messages.
+
+    m_runner.reset(new Runner(render_frame()->GetWebFrame()));
+}
+
+void UserResourceController::RenderFrameObserverHelper::DidClearWindowObject()
+{
+    // This is called both before and after DidCommitProvisionalLoad, non-null
+    // m_runner means it's after.
+    if (m_runner)
+        m_runner->run(UserScriptData::DocumentElementCreation);
+}
+
 void UserResourceController::RenderFrameObserverHelper::DidFinishDocumentLoad()
 {
-    blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
-    m_pendingFrames.insert(frame);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::Bind(&UserResourceController::RenderFrameObserverHelper::runScripts,
-                                                                               m_weakPtrFactory.GetWeakPtr(), UserScriptData::AfterLoad, frame),
-                                                         base::TimeDelta::FromMilliseconds(afterLoadTimeout));
+    DCHECK(m_runner);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad),
+        base::TimeDelta::FromMilliseconds(afterLoadTimeout));
+
 }
 
 void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
 {
-    blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
-
-    // DidFinishDocumentLoad always comes before this, so frame has already been marked as pending.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&UserResourceController::RenderFrameObserverHelper::runScripts,
-                                                                        m_weakPtrFactory.GetWeakPtr(), UserScriptData::AfterLoad, frame));
-}
-
-void UserResourceController::RenderFrameObserverHelper::DidStartProvisionalLoad(blink::WebDocumentLoader *document_loader)
-{
-    Q_UNUSED(document_loader);
-    blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
-    m_pendingFrames.remove(frame);
+    DCHECK(m_runner);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad));
 }
 
 void UserResourceController::RenderFrameObserverHelper::FrameDetached()
 {
-    blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
-    m_pendingFrames.remove(frame);
+    m_runner.reset();
 }
 
 void UserResourceController::RenderFrameObserverHelper::OnDestruct()
@@ -321,7 +336,7 @@ UserResourceController::UserResourceController()
 {
 #if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
     static bool onlyCalledOnce = true;
-    Q_ASSERT(onlyCalledOnce);
+    DCHECK(onlyCalledOnce);
     onlyCalledOnce = false;
 #endif // !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
 }

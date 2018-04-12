@@ -146,17 +146,6 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_fr
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 }
 
-void ContentRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame* render_frame)
-{
-    // Check whether the render_frame has been created and has not been detached yet.
-    // Otherwise the WebFrame is not available.
-    RenderFrameObserverQt *render_frame_observer = RenderFrameObserverQt::Get(render_frame);
-    if (!render_frame_observer || render_frame_observer->isFrameDetached())
-        return; // The frame is invisible to scripts.
-
-    UserResourceController::instance()->RunScriptsAtDocumentStart(render_frame);
-}
-
 void ContentRendererClientQt::RunScriptsAtDocumentEnd(content::RenderFrame* render_frame)
 {
     // Check whether the render_frame has been created and has not been detached yet.
