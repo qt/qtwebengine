@@ -216,6 +216,7 @@ private Q_SLOTS:
     void registerProtocolHandler_data();
     void registerProtocolHandler();
     void dataURLFragment();
+    void devTools();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4309,6 +4310,48 @@ void tst_QWebEnginePage::dataURLFragment()
     QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, 0, elementCenter(m_page, "link"));
     QVERIFY(urlChangedSpy.wait());
     QCOMPARE(m_page->url().fragment(), QStringLiteral("anchor"));
+}
+
+void tst_QWebEnginePage::devTools()
+{
+    QWebEngineProfile profile;
+    QWebEnginePage inspectedPage1(&profile);
+    QWebEnginePage inspectedPage2(&profile);
+    QWebEnginePage devToolsPage(&profile);
+    QSignalSpy spy(&devToolsPage, &QWebEnginePage::loadFinished);
+
+    inspectedPage1.setDevToolsPage(&devToolsPage);
+
+    QCOMPARE(inspectedPage1.devToolsPage(), &devToolsPage);
+    QCOMPARE(inspectedPage1.inspectedPage(), nullptr);
+    QCOMPARE(inspectedPage2.devToolsPage(), nullptr);
+    QCOMPARE(inspectedPage2.inspectedPage(), nullptr);
+    QCOMPARE(devToolsPage.devToolsPage(), nullptr);
+    QCOMPARE(devToolsPage.inspectedPage(), &inspectedPage1);
+
+    QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(spy.takeFirst().value(0).toBool());
+
+    devToolsPage.setInspectedPage(&inspectedPage2);
+
+    QCOMPARE(inspectedPage1.devToolsPage(), nullptr);
+    QCOMPARE(inspectedPage1.inspectedPage(), nullptr);
+    QCOMPARE(inspectedPage2.devToolsPage(), &devToolsPage);
+    QCOMPARE(inspectedPage2.inspectedPage(), nullptr);
+    QCOMPARE(devToolsPage.devToolsPage(), nullptr);
+    QCOMPARE(devToolsPage.inspectedPage(), &inspectedPage2);
+
+    QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(spy.takeFirst().value(0).toBool());
+
+    devToolsPage.setInspectedPage(nullptr);
+
+    QCOMPARE(inspectedPage1.devToolsPage(), nullptr);
+    QCOMPARE(inspectedPage1.inspectedPage(), nullptr);
+    QCOMPARE(inspectedPage2.devToolsPage(), nullptr);
+    QCOMPARE(inspectedPage2.inspectedPage(), nullptr);
+    QCOMPARE(devToolsPage.devToolsPage(), nullptr);
+    QCOMPARE(devToolsPage.inspectedPage(), nullptr);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
