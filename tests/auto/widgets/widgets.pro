@@ -5,6 +5,7 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     origins \
+    loadsignals \
     qwebenginedefaultsurfaceformat \
     qwebenginedownloads \
     qwebenginefaviconmanager \
@@ -35,4 +36,4 @@ boot2qt: SUBDIRS -= qwebengineaccessibility qwebenginedefaultsurfaceformat \
                     qwebenginefaviconmanager qwebenginepage qwebenginehistory \
                     qwebengineprofile qwebengineschemes qwebenginescript \
                     qwebengineview qwebenginedownloads qwebenginesettings \
-                    origins
+                    origins loadsignals
