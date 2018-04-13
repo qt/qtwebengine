@@ -1663,7 +1663,14 @@ void QWebEnginePagePrivate::startDragging(const content::DropData &dropData,
                                           Qt::DropActions allowedActions, const QPixmap &pixmap,
                                           const QPoint &offset)
 {
+#if !QT_CONFIG(draganddrop)
+    Q_UNUSED(dropData);
+    Q_UNUSED(allowedActions);
+    Q_UNUSED(pixmap);
+    Q_UNUSED(offset);
+#else
     adapter->startDragging(view, dropData, allowedActions, pixmap, offset);
+#endif // QT_CONFIG(draganddrop)
 }
 
 bool QWebEnginePagePrivate::isEnabled() const

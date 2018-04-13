@@ -124,10 +124,12 @@ protected:
     bool event(QEvent*) override;
     void showEvent(QShowEvent *) override;
     void hideEvent(QHideEvent *) override;
+#if QT_CONFIG(draganddrop)
     void dragEnterEvent(QDragEnterEvent *e) override;
     void dragLeaveEvent(QDragLeaveEvent *e) override;
     void dragMoveEvent(QDragMoveEvent *e) override;
     void dropEvent(QDropEvent *e) override;
+#endif // QT_CONFIG(draganddrop)
 
 private:
     Q_DISABLE_COPY(QWebEngineView)

@@ -1002,7 +1002,14 @@ void QQuickWebEngineViewPrivate::startDragging(const content::DropData &dropData
                                                Qt::DropActions allowedActions,
                                                const QPixmap &pixmap, const QPoint &offset)
 {
+#if !QT_CONFIG(draganddrop)
+    Q_UNUSED(dropData);
+    Q_UNUSED(allowedActions);
+    Q_UNUSED(pixmap);
+    Q_UNUSED(offset);
+#else
     adapter->startDragging(q_ptr->window(), dropData, allowedActions, pixmap, offset);
+#endif // QT_CONFIG(draganddrop)
 }
 
 bool QQuickWebEngineViewPrivate::isEnabled() const
@@ -1364,6 +1371,7 @@ void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &va
     QQuickItem::itemChange(change, value);
 }
 
+#if QT_CONFIG(draganddrop)
 static QPoint mapToScreen(const QQuickItem *item, const QPoint &clientPos)
 {
     return item->window()->position() + item->mapToScene(clientPos).toPoint();
@@ -1401,6 +1409,7 @@ void QQuickWebEngineView::dropEvent(QDropEvent *e)
     e->accept();
     d->adapter->endDragging(e->pos(), mapToScreen(this, e->pos()));
 }
+#endif // QT_CONFIG(draganddrop)
 
 void QQuickWebEngineView::triggerWebAction(WebAction action)
 {

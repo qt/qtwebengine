@@ -1375,6 +1375,7 @@ void WebContentsAdapter::setWebChannel(QWebChannel *channel, uint worldId)
     channel->connectTo(d->webChannelTransport.get());
 }
 
+#if QT_CONFIG(draganddrop)
 static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
 {
     QMimeData *mimeData = new QMimeData();
@@ -1635,6 +1636,7 @@ void WebContentsAdapter::leaveDrag()
     rvh->GetWidget()->DragTargetDragLeave(d->lastDragClientPos, d->lastDragScreenPos);
     d->currentDropData.reset();
 }
+#endif // QT_CONFIG(draganddrop)
 
 void WebContentsAdapter::replaceMisspelling(const QString &word)
 {

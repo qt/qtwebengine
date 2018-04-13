@@ -554,10 +554,12 @@ Q_SIGNALS:
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
     void itemChange(ItemChange, const ItemChangeData &) override;
+#if QT_CONFIG(draganddrop)
     void dragEnterEvent(QDragEnterEvent *e) override;
     void dragLeaveEvent(QDragLeaveEvent *e) override;
     void dragMoveEvent(QDragMoveEvent *e) override;
     void dropEvent(QDropEvent *e) override;
+#endif // QT_CONFIG(draganddrop)
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)

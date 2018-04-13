@@ -42,6 +42,7 @@
 
 #include "qtwebenginecoreglobal.h"
 #include "web_contents_adapter_client.h"
+#include <QtGui/qtgui-config.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 
 #include <QScopedPointer>
@@ -181,6 +182,7 @@ public:
     QPointF lastScrollOffset() const;
     QSizeF lastContentsSize() const;
 
+#if QT_CONFIG(draganddrop)
     void startDragging(QObject *dragSource, const content::DropData &dropData,
                        Qt::DropActions allowedActions, const QPixmap &pixmap, const QPoint &offset);
     void enterDrag(QDragEnterEvent *e, const QPointF &screenPos);
@@ -188,6 +190,7 @@ public:
     void updateDragAction(int action);
     void endDragging(const QPointF &clientPos, const QPointF &screenPos);
     void leaveDrag();
+#endif // QT_CONFIG(draganddrop)
     void printToPDF(const QPageLayout&, const QString&);
     quint64 printToPDFCallbackResult(const QPageLayout &,
                                      bool colorMode = true,
