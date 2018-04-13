@@ -117,8 +117,11 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     content::WebContents *target = source;
     if (params.disposition != WindowOpenDisposition::CURRENT_TAB) {
         QSharedPointer<WebContentsAdapter> targetAdapter = createWindow(0, params.disposition, gfx::Rect(), params.user_gesture);
-        if (targetAdapter)
+        if (targetAdapter) {
+            if (!targetAdapter->isInitialized())
+                targetAdapter->initialize(params.source_site_instance.get());
             target = targetAdapter->webContents();
+        }
     }
     Q_ASSERT(target);
 
@@ -211,7 +214,9 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
 {
     Q_UNUSED(source)
-    QWeakPointer<WebContentsAdapter> newAdapter = createWindow(new_contents, disposition, initial_pos, user_gesture);
+    QSharedPointer<WebContentsAdapter> newAdapter = createWindow(new_contents, disposition, initial_pos, user_gesture);
+    if (newAdapter && !newAdapter->isInitialized())
+        newAdapter->loadDefault();
     if (was_blocked)
         *was_blocked = !newAdapter;
 }

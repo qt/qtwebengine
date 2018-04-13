@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef GL_OZONE_QT
-#define GL_OZONE_QT
+#ifndef GL_OZONE_EGL_QT
+#define GL_OZONE_EGL_QT
 
 #if defined(USE_OZONE)
 
@@ -46,7 +46,7 @@
 
 namespace QtWebEngineCore {
 
-class GLOzoneQt : public ui::GLOzoneEGL {
+class GLOzoneEGLQt : public ui::GLOzoneEGL {
 public:
     scoped_refptr<gl::GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget /*window*/) override
     {
@@ -70,4 +70,4 @@ protected:
 
 #endif // defined(USE_OZONE)
 
-#endif // GL_OZONE_QT
+#endif // GL_OZONE_EGL_QT

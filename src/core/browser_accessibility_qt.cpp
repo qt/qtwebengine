@@ -217,6 +217,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ui::AX_ROLE_BUTTON:
         return QAccessible::Button;
     case ui::AX_ROLE_BUTTON_DROP_DOWN:
+        // TODO: Remove this during the next Chromium update: https://chromium-review.googlesource.com/842475
         return QAccessible::ButtonDropDown;
     case ui::AX_ROLE_CANVAS:
         return QAccessible::Canvas;

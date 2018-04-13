@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -26,9 +26,12 @@
 **
 ****************************************************************************/
 
-#include <alsa/asoundlib.h>
-#if SND_LIB_VERSION < 0x1000a  // 1.0.10
-#error "Alsa version found too old, require >= 1.0.10"
+#include <libxml/xmlversion.h>
+#if defined(LIBXML_CATALOG_ENABLED)
+#error "libxml catalog enabled"
+#endif
+#if !defined(LIBXML_ICU_ENABLED)
+#error "libxml icu not enabled"
 #endif
 
 int main(int argc, char **argv)

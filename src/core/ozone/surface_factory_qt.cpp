@@ -39,7 +39,7 @@
 
 #if defined(USE_OZONE)
 
-#include "ozone/gl_ozone_qt.h"
+#include "ozone/gl_ozone_egl_qt.h"
 #include "ozone/surface_factory_qt.h"
 #include "ui/gl/gl_surface.h"
 namespace QtWebEngineCore {
@@ -53,7 +53,7 @@ std::vector<gl::GLImplementation> SurfaceFactoryQt::GetAllowedGLImplementations(
 
 ui::GLOzone* SurfaceFactoryQt::GetGLOzone(gl::GLImplementation implementation)
 {
-    return new GLOzoneQt();
+    return new GLOzoneEGLQt();
 }
 
 } // namespace QtWebEngineCore

@@ -41,6 +41,7 @@
 
 #include "common/qt_messages.h"
 #include "printing/features/features.h"
+#include "renderer/content_settings_observer_qt.h"
 
 #include "base/strings/string_split.h"
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -132,6 +133,8 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_fr
     if (render_frame->IsMainFrame())
         new WebChannelIPCTransport(render_frame);
     UserResourceController::instance()->renderFrameCreated(render_frame);
+
+    new QtWebEngineCore::ContentSettingsObserverQt(render_frame);
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     new SpellCheckProvider(render_frame, m_spellCheck.data(), this);

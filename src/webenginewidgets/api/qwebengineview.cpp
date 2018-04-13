@@ -46,9 +46,8 @@
 #include <QAction>
 #include <QMenu>
 #include <QContextMenuEvent>
-#include <QPageLayout>
-#include <QStackedLayout>
 #include <QToolTip>
+#include <QVBoxLayout>
 
 QT_BEGIN_NAMESPACE
 
@@ -137,8 +136,9 @@ QWebEngineView::QWebEngineView(QWidget *parent)
     d->q_ptr = this;
     setAcceptDrops(true);
 
-    // This causes the child RenderWidgetHostViewQtDelegateWidgets to fill this widget.
-    setLayout(new QStackedLayout);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setContentsMargins(0, 0, 0, 0);
+    setLayout(layout);
 }
 
 QWebEngineView::~QWebEngineView()

@@ -257,12 +257,17 @@ int QWebEngineHistory::currentItemIndex() const
 int QWebEngineHistory::count() const
 {
     Q_D(const QWebEngineHistory);
+    if (!d->page->webContents()->isInitialized())
+        return 0;
     return d->page->webContents()->navigationEntryCount();
 }
 
 QDataStream& operator<<(QDataStream& stream, const QWebEngineHistory& history)
 {
-    history.d_func()->page->webContents()->serializeNavigationHistory(stream);
+    QtWebEngineCore::WebContentsAdapter *adapter = history.d_func()->page->webContents();
+    if (!adapter->isInitialized())
+        adapter->loadDefault();
+    adapter->serializeNavigationHistory(stream);
     return stream;
 }
 

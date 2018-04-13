@@ -266,9 +266,8 @@ void tst_QWebEngineAccessibility::roles_data()
     QTest::newRow("AX_ROLE_AUDIO") << QString("<audio controls><source src='test.mp3' type='audio/mpeg'></audio>") << false << QAccessible::Sound;
     QTest::newRow("AX_ROLE_BANNER") << QString("<header>a</header>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_BLOCKQUOTE") << QString("<blockquote>a</blockquote>") << true << QAccessible::Section;
-    //QTest::newRow("AX_ROLE_BUSY_INDICATOR"); // Deprecated
     QTest::newRow("AX_ROLE_BUTTON") << QString("<button>a</button>") << false << QAccessible::Button;
-    //QTest::newRow("AX_ROLE_BUTTON_DROP_DOWN"); // Not a blink accessibility role
+    //QTest::newRow("AX_ROLE_BUTTON_DROP_DOWN"); // TODO: Remove this during the next Chromium update: https://chromium-review.googlesource.com/842475
     //QTest::newRow("AX_ROLE_CANVAS") << QString("<canvas width='10' height='10'></canvas>") << true << QAccessible::Canvas; // FIXME: The test case might be wrong (see AXLayoutObject.cpp)
     QTest::newRow("AX_ROLE_CAPTION") << QString("<table><caption>a</caption></table>") << false << QAccessible::Heading;
     //QTest::newRow("AX_ROLE_CARET"); // Not a blink accessibility role
@@ -278,7 +277,9 @@ void tst_QWebEngineAccessibility::roles_data()
     QTest::newRow("AX_ROLE_COLOR_WELL") << QString("<input type='color'>a</input>") << false << QAccessible::ColorChooser;
     //QTest::newRow("AX_ROLE_COLUMN") << QString("<table><tr><td>a</td></tr>") << true << QAccessible::Column; // FIXME: The test case might be wrong (see AXTableColumn.h)
     QTest::newRow("AX_ROLE_COLUMN_HEADER") << QString("<div role='columnheader'>a</div>") << true << QAccessible::ColumnHeader;
-    QTest::newRow("AX_ROLE_COMBO_BOX") << QString("<select><option>a</option></select>") << false << QAccessible::ComboBox;
+    QTest::newRow("AX_ROLE_COMBO_BOX_GROUPING") << QString("<div role='combobox'><input></div>") << true << QAccessible::ComboBox;
+    QTest::newRow("AX_ROLE_COMBO_BOX_MENU_BUTTON") << QString("<div tabindex=0 role='combobox'>Select</div>") << true << QAccessible::ComboBox;
+    QTest::newRow("AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX") << QString("<input role='combobox'>") << false << QAccessible::ComboBox;
     QTest::newRow("AX_ROLE_COMPLEMENTARY") << QString("<aside>a</aside>") << true << QAccessible::ComplementaryContent;
     QTest::newRow("AX_ROLE_CONTENT_INFO") << QString("<address>a</address>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_DATE") << QString("<input type='date'></input>") << false << QAccessible::Clock;
@@ -308,7 +309,6 @@ void tst_QWebEngineAccessibility::roles_data()
     //QTest::newRow("AX_ROLE_IGNORED") << QString("<tag>a</tag>") << true << QAccessible::NoRole; // FIXME: The HTML element should not be exposed as an element (see AXNodeObject.cpp)
     QTest::newRow("AX_ROLE_IMAGE") << QString("<img>") << false << QAccessible::Graphic;
     //QTest::newRow("AX_ROLE_IMAGE_MAP") << QString("<map>a</map>") << true << QAccessible::Graphic; // FIXME: The test case might be wrong (see AXLayoutObject.cpp)
-    //QTest::newRow("AX_ROLE_IMAGE_MAP_LINK") << QString("<map>a</map>") << true << QAccessible::Graphic; // FIXME: The test case might be wrong (see AXLayoutObject.cpp)
     QTest::newRow("AX_ROLE_INLINE_TEXT_BOX") << QString("<textarea rows='4' cols='50'></textarea>") << false << QAccessible::EditableText;
     QTest::newRow("AX_ROLE_INPUT_TIME") << QString("<input type='time'></input>") << false << QAccessible::SpinBox;
     QTest::newRow("AX_ROLE_LABEL_TEXT") << QString("<label>a</label>") << false << QAccessible::StaticText;
@@ -316,7 +316,7 @@ void tst_QWebEngineAccessibility::roles_data()
     QTest::newRow("AX_ROLE_LINE_BREAK") << QString("<br>") << false << QAccessible::Separator;
     QTest::newRow("AX_ROLE_LINK") << QString("<a href=''>link</a>") << false << QAccessible::Link;
     QTest::newRow("AX_ROLE_LIST") << QString("<ul></ul>") << true << QAccessible::List;
-    QTest::newRow("AX_ROLE_LIST_BOX") << QString("<select role='listbox'></select>") << false << QAccessible::ComboBox;
+    QTest::newRow("AX_ROLE_LIST_BOX") << QString("<select multiple></select>") << false << QAccessible::ComboBox;
     QTest::newRow("AX_ROLE_LIST_BOX_OPTION") << QString("<option>a</option>") << true << QAccessible::ListItem;
     QTest::newRow("AX_ROLE_LIST_ITEM") << QString("<li>a</li>") << true << QAccessible::ListItem;
     QTest::newRow("AX_ROLE_LIST_MARKER") << QString("<li><ul></ul></li>") << false << QAccessible::StaticText;
@@ -337,10 +337,9 @@ void tst_QWebEngineAccessibility::roles_data()
     QTest::newRow("AX_ROLE_METER") << QString("<meter>a</meter>") << false << QAccessible::Chart;
     QTest::newRow("AX_ROLE_NAVIGATION") << QString("<nav>a</nav>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_NOTE") << QString("<div role='note'>a</div>") << true << QAccessible::Note;
-    //QTest::newRow("AX_ROLE_OUTLINE"); // No mapping to ARIA role
     //QTest::newRow("AX_ROLE_PANE"); // Not a blink accessibility role
     QTest::newRow("AX_ROLE_PARAGRAH") << QString("<p>a</p>") << true << QAccessible::Paragraph;
-    QTest::newRow("AX_ROLE_POP_UP_BUTTON") << QString("<select multiple></select>") << false << QAccessible::ComboBox;
+    QTest::newRow("AX_ROLE_POP_UP_BUTTON") << QString("<select><option>a</option></select>") << false << QAccessible::ComboBox;
     QTest::newRow("AX_ROLE_PRE") << QString("<pre>a</pre>") << true << QAccessible::Section;
     //QTest::newRow("AX_ROLE_PRESENTATIONAL") << QString("<div role='presentation'>a</div>") << true << QAccessible::NoRole; // FIXME: Aria role 'presentation' should work
     QTest::newRow("AX_ROLE_PROGRESS_INDICATOR") << QString("<div role='progressbar' aria-valuenow='77' aria-valuemin='22' aria-valuemax='99'></div>") << true << QAccessible::ProgressBar;
@@ -350,10 +349,7 @@ void tst_QWebEngineAccessibility::roles_data()
     //QTest::newRow("AX_ROLE_ROW") << QString("<tr role='row'>a</tr>") << true << QAccessible::Row; // FIXME: Aria role 'row' should work for <tr>
     //QTest::newRow("AX_ROLE_ROW_HEADER") << QString("<td role='rowheader'>a</td>") << true << QAccessible::RowHeader; // FIXME: Aria role 'rowheader' should work for <td>
     QTest::newRow("AX_ROLE_RUBY") << QString("<ruby>a</ruby>") << false << QAccessible::StaticText;
-    //QTest::newRow("AX_ROLE_RULER"); // No mapping to ARIA role
-    //QTest::newRow("AX_ROLE_SCROLL_AREA"); // No mapping to ARIA role
     QTest::newRow("AX_ROLE_SCROLL_BAR") << QString("<div role='scrollbar'>a</a>") << true << QAccessible::ScrollBar;
-    //QTest::newRow("AX_ROLE_SEAMLESS_WEB_AREA"); // No mapping to ARIA role
     QTest::newRow("AX_ROLE_SEARCH") << QString("<div role='search'>landmark</div>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_SEARCH_BOX") << QString("<input type='search'></input>") << false << QAccessible::EditableText;
     QTest::newRow("AX_ROLE_SLIDER") << QString("<input type='range'></input>") << false << QAccessible::Slider;
@@ -368,7 +364,6 @@ void tst_QWebEngineAccessibility::roles_data()
     //QTest::newRow("AX_ROLE_TABLE") << QString("<table>a</table>") << true << QAccessible::Table; // FIXME: The test case might be wrong (see AXTable.cpp)
     //QTest::newRow("AX_ROLE_TABLE_HEADER_CONTAINER"); // No mapping to ARIA role
     QTest::newRow("AX_ROLE_TAB") << QString("<div role='tab'>a</div>") << true << QAccessible::PageTab;
-    //QTest::newRow("AX_ROLE_TAB_GROUP"); // No mapping to ARIA role
     QTest::newRow("AX_ROLE_TAB_LIST") << QString("<div role='tablist'>a</div>") << true << QAccessible::PageTabList;
     QTest::newRow("AX_ROLE_TAB_PANEL") << QString("<div role='tab'>a</div>") << true << QAccessible::PageTab;
     QTest::newRow("AX_ROLE_TERM") << QString("<div role='term'>a</div>") << true << QAccessible::StaticText;

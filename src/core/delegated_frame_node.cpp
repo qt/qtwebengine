@@ -919,6 +919,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             rpLayer->setRect(toQt(pass->output_rect));
             rpLayer->setSize(toQt(pass->output_rect.size()));
             rpLayer->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
+            rpLayer->setHasMipmaps(pass->generate_mipmap);
             rpLayer->setMirrorVertical(true);
             scissorRect = pass->output_rect;
         } else {
@@ -1086,6 +1087,10 @@ void DelegatedFrameNode::handleQuad(
     switch (quad->material) {
     case viz::DrawQuad::RENDER_PASS: {
         const viz::RenderPassDrawQuad *renderPassQuad = viz::RenderPassDrawQuad::MaterialCast(quad);
+        if (!renderPassQuad->mask_texture_size.IsEmpty()) {
+            ResourceHolder *resource = findAndHoldResource(renderPassQuad->mask_resource_id(), resourceCandidates);
+            Q_UNUSED(resource); // FIXME
+        }
         QSGTexture *layer =
             findRenderPassLayer(renderPassQuad->render_pass_id, m_sgObjects.renderPassLayers).data();
 

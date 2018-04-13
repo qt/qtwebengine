@@ -704,8 +704,11 @@ void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range&, const
 void RenderWidgetHostViewQt::RenderProcessGone(base::TerminationStatus terminationStatus,
                                                int exitCode)
 {
-    m_adapterClient->renderProcessTerminated(
-                m_adapterClient->renderProcessExitStatus(terminationStatus), exitCode);
+    if (m_adapterClient) {
+        m_adapterClient->renderProcessTerminated(
+                    m_adapterClient->renderProcessExitStatus(terminationStatus),
+                    exitCode);
+    }
     Destroy();
 }
 
@@ -716,7 +719,8 @@ void RenderWidgetHostViewQt::Destroy()
 
 void RenderWidgetHostViewQt::SetTooltipText(const base::string16 &tooltip_text)
 {
-    m_adapterClient->setToolTip(toQt(tooltip_text));
+    if (m_adapterClient)
+        m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
 bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)

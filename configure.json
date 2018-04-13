@@ -288,9 +288,10 @@
             "label": "glibc > 2.16",
             "type": "detectGlibc"
         },
-        "webengine-icuuc": {
-            "label" : "libxml2 configured with icuuc",
-            "type": "detectIcuuc"
+        "webengine-libxml2-compatible": {
+            "label" : "compatible system libxml2",
+            "test" : "xml2",
+            "type": "compile"
         },
         "webengine-sanitizer": {
             "label" : "sanitizer support",
@@ -580,7 +581,9 @@
         },
         "webengine-system-libxml2": {
             "label": "libxml2 and libxslt",
-            "condition": "config.unix && libs.webengine-libxml2 && tests.webengine-icuuc",
+            "condition": "config.unix
+                         && libs.webengine-libxml2
+                         && tests.webengine-libxml2-compatible",
             "output": [ "privateFeature" ]
         },
         "webengine-system-lcms2" : {

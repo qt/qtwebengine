@@ -52,6 +52,8 @@ class WebEngineContextMenuData;
 QT_BEGIN_NAMESPACE
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineContextMenuData {
+    Q_GADGET
+
 public:
     QWebEngineContextMenuData();
     QWebEngineContextMenuData(const QWebEngineContextMenuData &other);
@@ -82,6 +84,7 @@ public:
         MediaCanRotate = 0x200,
     };
     Q_DECLARE_FLAGS(MediaFlags, MediaFlag)
+    Q_FLAG(MediaFlags)
 
     // Must match QWebEngineCore::WebEngineContextMenuData::EditFlags:
     enum EditFlag {
@@ -96,6 +99,7 @@ public:
         CanEditRichly = 0x100,
     };
     Q_DECLARE_FLAGS(EditFlags, EditFlag)
+    Q_FLAG(EditFlags)
 
     bool isValid() const;
 
@@ -116,8 +120,6 @@ private:
     typedef QtWebEngineCore::WebEngineContextMenuData QWebEngineContextDataPrivate;
     QWebEngineContextMenuData &operator=(const QWebEngineContextDataPrivate &priv);
     const QWebEngineContextDataPrivate *d;
-    Q_FLAGS(MediaFlags)
-    Q_FLAGS(EditFlags)
 
     friend class QWebEnginePagePrivate;
     friend class QWebEnginePage;

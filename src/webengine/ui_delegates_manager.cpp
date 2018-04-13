@@ -238,7 +238,7 @@ void UIDelegatesManager::addMenuSeparator(QObject *menu)
     sep->setParent(menu);
 
     QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(m_view));
-    if (entries.isValid())
+    if (entries.isValid() && entries.count() > 0)
         entries.append(sep);
 }
 
