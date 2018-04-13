@@ -408,6 +408,10 @@ WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
 
 WebContentsAdapter::~WebContentsAdapter()
 {
+    Q_D(WebContentsAdapter);
+    if (d->devToolsFrontend)
+        closeDevToolsFrontend();
+    Q_ASSERT(!d->devToolsFrontend);
 }
 
 void WebContentsAdapter::setClient(WebContentsAdapterClient *adapterClient)
@@ -1168,7 +1172,7 @@ void WebContentsAdapter::openDevToolsFrontend(QSharedPointer<WebContentsAdapter>
 {
     Q_D(WebContentsAdapter);
     Q_ASSERT(isInitialized());
-    if (d->devToolsFrontend &&
+    if (d->devToolsFrontend && frontendAdapter->webContents() &&
             d->devToolsFrontend->frontendDelegate() == frontendAdapter->webContents()->GetDelegate())
         return;
 
@@ -1183,7 +1187,6 @@ void WebContentsAdapter::openDevToolsFrontend(QSharedPointer<WebContentsAdapter>
 void WebContentsAdapter::closeDevToolsFrontend()
 {
     Q_D(WebContentsAdapter);
-    CHECK_INITIALIZED();
     if (d->devToolsFrontend) {
         d->devToolsFrontend->DisconnectFromTarget();
         d->devToolsFrontend->Close();
@@ -1193,7 +1196,6 @@ void WebContentsAdapter::closeDevToolsFrontend()
 void WebContentsAdapter::devToolsFrontendDestroyed(DevToolsFrontendQt *frontend)
 {
     Q_D(WebContentsAdapter);
-    Q_ASSERT(isInitialized());
     Q_ASSERT(frontend == d->devToolsFrontend);
     Q_UNUSED(frontend);
     d->devToolsFrontend = nullptr;

@@ -755,10 +755,9 @@ void QQuickWebEngineViewPrivate::initializationFinished()
         adapter->setWebChannel(m_webChannel, m_webChannelWorld);
     if (!qFuzzyCompare(adapter->currentZoomFactor(), m_defaultZoomFactor))
         q->setZoomFactor(m_defaultZoomFactor);
+
     if (devToolsView && devToolsView->d_ptr->adapter)
         adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
-    else if (inspectedView && inspectedView->d_ptr->adapter)
-        inspectedView->d_ptr->adapter->openDevToolsFrontend(adapter);
 
     Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
         script->d_func()->bind(browserContextAdapter()->userResourceController(), adapter.data());
@@ -1270,10 +1269,12 @@ void QQuickWebEngineView::setDevToolsView(QQuickWebEngineView *devToolsView)
     d->devToolsView = devToolsView;
     if (devToolsView)
         devToolsView->setInspectedView(this);
-    if (devToolsView)
-        d->adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
-    else
-        d->adapter->closeDevToolsFrontend();
+    if (d->adapter->isInitialized()) {
+        if (devToolsView)
+            d->adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
+        else
+            d->adapter->closeDevToolsFrontend();
+    }
     Q_EMIT devToolsViewChanged();
 }
 
