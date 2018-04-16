@@ -44,6 +44,7 @@
         \li \l{Native Dialogs}
         \li \l{Pepper Plugin API}
         \li \l{Print to PDF}
+        \li \l{Process Models}
         \li \l{Spellchecker}
         \li \l{Touch}
         \li \l{View Source}
@@ -279,6 +280,62 @@
     {Html2Pdf}.
 
     Support for this feature was added in Qt 5.7.0.
+
+    \section1 Process Models
+
+    Qt WebEngine uses multiple OS processes to isolate web sites from each other
+    and from the client application, improving security and robustness. The
+    following process models, or ways to divide web sites between OS processes,
+    are supported:
+
+    \list
+      \li \l{Process per Site Instance}
+      \li \l{Process per Site}
+      \li \l{Single Process}
+    \endlist
+
+    \section2 Process per Site Instance
+
+    This is the default model. Pages from separate sites are put into separate
+    processes and separate visits to the same site are also isolated.
+
+    Two web pages are considered as belonging to the same site if they originate
+    from the same registered domain name (for example, \c wikipedia.org) and
+    scheme (for example, \c https). This is similar to the same-origin policy
+    but subdomains are ignored. For example, both \c{https://en.wikipedia.org/}
+    and \c{https://de.wikipedia.org/} would belong to the same site.
+
+    A site instance is a collection of web pages belonging to the same site.
+    When the application explicitly loads a URL into Qt WebEngine (via \l
+    QWebEnginePage::setUrl, for example), a new site instance is created for the
+    page. However, when the user clicks same-site links on the page, the
+    existing site instance is merely extended with more pages.
+
+    For instance, in the \l{WebEngine Widgets Simple Browser Example}{Simple
+    Browser} example, when a user opens two tabs and explicitly enters
+    \c{https://en.wikipedia.org/} into the URL bars, both tabs will have their
+    own separate OS processes (because explicitly entering a URL creates a new
+    site instance). However, when the user then middle-clicks some same-site
+    links to open more tabs, these new tabs will share the same OS process
+    (because user interaction extends the existing site instance).
+
+    \section2 Process per Site
+
+    Pages from separate sites are put into separate processes. Unlike Process
+    per Site Instance, all visits to the same site will share an OS process.
+
+    The benefit of this model is reduced memory consumption, because more web
+    pages will share processes. The drawbacks include reduced security,
+    robustness, and responsiveness.
+
+    To enable this model, use the command-line argument \c{--process-per-site}.
+    See \l{Using Command-Line Arguments}.
+
+    \section2 Single Process
+
+    For debugging purposes only, a single process mode can be enabled using the
+    command-line argument \c{--single-process}. See \l{Using Command-Line
+    Arguments} and \l{Qt WebEngine Debugging and Profiling}.
 
     \section1 Spellchecker
 
