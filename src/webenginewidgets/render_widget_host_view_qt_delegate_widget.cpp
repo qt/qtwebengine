@@ -269,6 +269,7 @@ void RenderWidgetHostViewQtDelegateWidget::unlockMouse()
 
 void RenderWidgetHostViewQtDelegateWidget::show()
 {
+    m_rootItem->setVisible(true);
     // Check if we're attached to a QWebEngineView, we don't
     // want to show anything else than popups as top-level.
     if (parent() || m_isPopup) {
@@ -278,12 +279,12 @@ void RenderWidgetHostViewQtDelegateWidget::show()
 
 void RenderWidgetHostViewQtDelegateWidget::hide()
 {
-    QQuickWidget::hide();
+    m_rootItem->setVisible(false);
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
 {
-    return QQuickWidget::isVisible();
+    return QQuickWidget::isVisible() && m_rootItem->isVisible();
 }
 
 QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
