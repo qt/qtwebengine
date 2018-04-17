@@ -206,8 +206,12 @@ ApplicationWindow {
                                 enabled: model.offset
                             }
 
-                            onObjectAdded: historyMenu.insertItem(index, object)
-                            onObjectRemoved: historyMenu.removeItem(object)
+                            onObjectAdded: function(index, object) {
+                                historyMenu.insertItem(index, object)
+                            }
+                            onObjectRemoved: function(index, object) {
+                                historyMenu.removeItem(object)
+                            }
                         }
                     }
                 }
@@ -291,14 +295,18 @@ ApplicationWindow {
                             text: "Off The Record"
                             checkable: true
                             checked: currentWebView.profile.offTheRecord
-                            onToggled: currentWebView.profile = checked ? otrProfile : defaultProfile;
+                            onToggled: function(checked) {
+                                currentWebView.profile = checked ? otrProfile : defaultProfile;
+                            }
                         }
                         MenuItem {
                             id: httpDiskCacheEnabled
                             text: "HTTP Disk Cache"
                             checkable: !currentWebView.profile.offTheRecord
                             checked: (currentWebView.profile.httpCacheType === WebEngineProfile.DiskHttpCache)
-                            onToggled: currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache
+                            onToggled: function(checked) {
+                                currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
+                            }
                         }
                         MenuItem {
                             id: autoLoadIconsForPage
@@ -368,7 +376,7 @@ ApplicationWindow {
                 id: webEngineView
                 focus: true
 
-                onLinkHovered: {
+                onLinkHovered: function(hoveredUrl) {
                     if (hoveredUrl == "")
                         resetStatusText.start();
                     else {
@@ -400,12 +408,12 @@ ApplicationWindow {
                 settings.touchIconsEnabled: appSettings.touchIconsEnabled
                 settings.webRTCPublicInterfacesOnly: appSettings.webRTCPublicInterfacesOnly
 
-                onCertificateError: {
+                onCertificateError: function(error) {
                     error.defer();
                     sslDialog.enqueue(error);
                 }
 
-                onNewViewRequested: {
+                onNewViewRequested: function(request) {
                     if (!request.userInitiated)
                         print("Warning: Blocked a popup window.");
                     else if (request.destination == WebEngineView.NewViewInTab) {
@@ -424,7 +432,7 @@ ApplicationWindow {
                     }
                 }
 
-                onFullScreenRequested: {
+                onFullScreenRequested: function(request) {
                     if (request.toggleOn) {
                         webEngineView.state = "FullScreen";
                         browserWindow.previousVisibility = browserWindow.visibility;
@@ -438,19 +446,20 @@ ApplicationWindow {
                     request.accept();
                 }
 
-                onQuotaRequested: {
+                onQuotaRequested: function(request) {
                     if (request.requestedSize <= 5 * 1024 * 1024)
                         request.accept();
                     else
                         request.reject();
                 }
 
-                onRegisterProtocolHandlerRequested: {
-                    print("accepting registerProtocolHandler request for " + request.scheme + " from " + request.origin);
+                onRegisterProtocolHandlerRequested: function(request) {
+                    console.log("accepting registerProtocolHandler request for "
+                                + request.scheme + " from " + request.origin);
                     request.accept();
                 }
 
-                onRenderProcessTerminated: {
+                onRenderProcessTerminated: function(terminationStatus, exitCode) {
                     var status = "";
                     switch (terminationStatus) {
                     case WebEngineView.NormalTerminationStatus:
