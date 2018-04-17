@@ -54,6 +54,11 @@ Item {
         sourceUrl: Qt.resolvedUrl("script-with-metadata.js")
     }
 
+    WebEngineScript {
+        id: scriptWithBadMatchMetadata
+        sourceUrl: Qt.resolvedUrl("script-with-bad-match-metadata.js")
+    }
+
     TestWebEngineView {
         id: webEngineView
         width: 400
@@ -189,6 +194,18 @@ Item {
             webEngineView.url = Qt.resolvedUrl("test-iframe.html");
             webEngineView.waitForLoadSucceeded();
             tryCompare(webEngineView, "title", "Test page with huge link area and iframe");
+        }
+
+        function test_dontInjectBadUrlPatternsEverywhere() {
+            compare(scriptWithBadMatchMetadata.name, "Test bad match script");
+            compare(scriptWithBadMatchMetadata.injectionPoint, WebEngineScript.DocumentReady);
+
+            webEngineView.userScripts = [ scriptWithBadMatchMetadata ];
+
+            // @match some:junk
+            webEngineView.url = Qt.resolvedUrl("test2.html");
+            webEngineView.waitForLoadSucceeded();
+            tryCompare(webEngineView, "title", "Test page with huge link area");
         }
 
         function test_profileWideScript() {
