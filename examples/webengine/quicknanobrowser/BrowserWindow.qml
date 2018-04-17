@@ -377,7 +377,7 @@ ApplicationWindow {
                 focus: true
 
                 onLinkHovered: function(hoveredUrl) {
-                    if (hoveredUrl == "")
+                    if (hoveredUrl === "")
                         resetStatusText.start();
                     else {
                         resetStatusText.stop();
@@ -416,14 +416,14 @@ ApplicationWindow {
                 onNewViewRequested: function(request) {
                     if (!request.userInitiated)
                         print("Warning: Blocked a popup window.");
-                    else if (request.destination == WebEngineView.NewViewInTab) {
+                    else if (request.destination === WebEngineView.NewViewInTab) {
                         var tab = tabs.createEmptyTab(currentWebView.profile);
                         tabs.currentIndex = tabs.count - 1;
                         request.openIn(tab.item);
-                    } else if (request.destination == WebEngineView.NewViewInBackgroundTab) {
+                    } else if (request.destination === WebEngineView.NewViewInBackgroundTab) {
                         var backgroundTab = tabs.createEmptyTab(currentWebView.profile);
                         request.openIn(backgroundTab.item);
-                    } else if (request.destination == WebEngineView.NewViewInDialog) {
+                    } else if (request.destination === WebEngineView.NewViewInDialog) {
                         var dialog = applicationRoot.createDialog(currentWebView.profile);
                         request.openIn(dialog.currentWebView);
                     } else {
