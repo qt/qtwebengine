@@ -186,7 +186,7 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
 
         // If there is a visible entry there are special cases when we dont wan't to use the actual URL
         if (entry && newUrl.isEmpty())
-            newUrl = shouldUseActualURL(entry) ? toQt(entry->GetURL()) : toQt(source->GetVisibleURL());
+            newUrl = shouldUseActualURL(entry) ? toQt(entry->GetURL()) : toQt(entry->GetVirtualURL());
 
         if (m_url != newUrl) {
             m_url = newUrl;

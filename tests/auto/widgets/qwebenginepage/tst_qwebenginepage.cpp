@@ -2877,6 +2877,12 @@ void tst_QWebEnginePage::urlChange()
 
     QTRY_COMPARE(urlSpy.size(), 1);
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), dataUrl2);
+
+    QUrl testUrl("http://test.qt.io/");
+    m_view->setHtml(QStringLiteral("<h1>Test</h1"), testUrl);
+
+    QTRY_COMPARE(urlSpy.size(), 1);
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), testUrl);
 }
 
 class FakeReply : public QNetworkReply {
@@ -4310,6 +4316,16 @@ void tst_QWebEnginePage::dataURLFragment()
     QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, 0, elementCenter(m_page, "link"));
     QVERIFY(urlChangedSpy.wait());
     QCOMPARE(m_page->url().fragment(), QStringLiteral("anchor"));
+
+
+    m_page->setHtml("<html><body>"
+                    "<a id='link' href='#anchor'>anchor</a>"
+                    "</body></html>", QUrl("http://test.qt.io/mytest.html"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 2);
+
+    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, 0, elementCenter(m_page, "link"));
+    QVERIFY(urlChangedSpy.wait());
+    QCOMPARE(m_page->url(), QUrl("http://test.qt.io/mytest.html#anchor"));
 }
 
 void tst_QWebEnginePage::devTools()
