@@ -79,6 +79,7 @@ bool usingSoftwareDynamicGL();
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
     static WebEngineContext *current();
+    static void destroyContextPostRoutine();
 
     BrowserContextAdapter *defaultBrowserContext();
 
@@ -99,12 +100,14 @@ private:
     std::unique_ptr<ContentMainDelegateQt> m_mainDelegate;
     std::unique_ptr<content::ContentMainRunner> m_contentRunner;
     std::unique_ptr<content::BrowserMainRunner> m_browserRunner;
-    QObject* m_globalQObject;
-    QScopedPointer<BrowserContextAdapter> m_defaultBrowserContext;
+    std::unique_ptr<QObject> m_globalQObject;
+    std::unique_ptr<BrowserContextAdapter> m_defaultBrowserContext;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
+    static scoped_refptr<QtWebEngineCore::WebEngineContext> m_handle;
+    static bool m_destroyed;
 };
 
 } // namespace

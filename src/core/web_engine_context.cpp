@@ -117,23 +117,6 @@ QT_END_NAMESPACE
 
 namespace {
 
-scoped_refptr<QtWebEngineCore::WebEngineContext> sContext;
-static bool s_destroyed = false;
-
-void destroyContext()
-{
-    // Destroy WebEngineContext before its static pointer is zeroed and destructor called.
-    // Before destroying MessageLoop via destroying BrowserMainRunner destructor
-    // WebEngineContext's pointer is used.
-    sContext->destroy();
-#if !defined(NDEBUG)
-    if (!sContext->HasOneRef())
-        qWarning("WebEngineContext leaked on exit, likely due to leaked WebEngine View or Page");
-#endif
-    sContext = nullptr;
-    s_destroyed = true;
-}
-
 #ifndef QT_NO_OPENGL
 bool usingANGLE()
 {
@@ -197,6 +180,9 @@ bool usingSoftwareDynamicGL()
 #endif
 }
 
+scoped_refptr<QtWebEngineCore::WebEngineContext> WebEngineContext::m_handle;
+bool WebEngineContext::m_destroyed = false;
+
 void WebEngineContext::destroyBrowserContext()
 {
     if (m_defaultBrowserContext)
@@ -214,9 +200,7 @@ void WebEngineContext::destroy()
 
     // Delete the global object and thus custom profiles
     m_defaultBrowserContext.reset();
-    delete m_globalQObject;
-    m_globalQObject = nullptr;
-
+    m_globalQObject.reset();
 
     // Handle any events posted by browser-context shutdown.
     while (delegate->DoWork()) { }
@@ -231,7 +215,7 @@ void WebEngineContext::destroy()
     m_browserRunner.reset();
 
     // Drop the false reference.
-    sContext->Release();
+    m_handle->Release();
 }
 
 WebEngineContext::~WebEngineContext()
@@ -244,29 +228,43 @@ WebEngineContext::~WebEngineContext()
 
 WebEngineContext *WebEngineContext::current()
 {
-    if (s_destroyed)
+    if (m_destroyed)
         return nullptr;
-    if (!sContext.get()) {
-        sContext = new WebEngineContext();
+    if (!m_handle.get()) {
+        m_handle = new WebEngineContext();
         // Make sure that we ramp down Chromium before QApplication destroys its X connection, etc.
-        qAddPostRoutine(destroyContext);
-        // Add a false reference so there is no race between unreferencing sContext and a global QApplication.
-        sContext->AddRef();
+        qAddPostRoutine(WebEngineContext::destroyContextPostRoutine);
+        // Add a false reference so there is no race between unreferencing m_handle and a global QApplication.
+        m_handle->AddRef();
     }
-    return sContext.get();
+    return m_handle.get();
 }
 
 BrowserContextAdapter *WebEngineContext::defaultBrowserContext()
 {
-    Q_ASSERT(!s_destroyed);
+    Q_ASSERT(!m_destroyed);
     if (!m_defaultBrowserContext)
         m_defaultBrowserContext.reset(new BrowserContextAdapter(QStringLiteral("Default")));
-    return m_defaultBrowserContext.data();
+    return m_defaultBrowserContext.get();
 }
 
 QObject *WebEngineContext::globalQObject()
 {
-    return m_globalQObject;
+    return m_globalQObject.get();
+}
+
+void WebEngineContext::destroyContextPostRoutine()
+{
+    // Destroy WebEngineContext before its static pointer is zeroed and destructor called.
+    // Before destroying MessageLoop via destroying BrowserMainRunner destructor
+    // WebEngineContext's pointer is used.
+   m_handle->destroy();
+#if !defined(NDEBUG)
+    if (!m_handle->HasOneRef())
+        qWarning("WebEngineContext leaked on exit, likely due to leaked WebEngine View or Page");
+#endif
+    m_handle = nullptr;
+    m_destroyed = true;
 }
 
 #ifndef CHROMIUM_VERSION
