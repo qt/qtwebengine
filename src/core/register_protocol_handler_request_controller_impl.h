@@ -57,6 +57,8 @@ public:
         content::WebContents *webContents,
         ProtocolHandler handler);
 
+    ~RegisterProtocolHandlerRequestControllerImpl();
+
 protected:
     void accepted() override;
     void rejected() override;
