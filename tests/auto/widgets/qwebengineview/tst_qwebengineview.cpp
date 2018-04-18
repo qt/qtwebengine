@@ -173,6 +173,7 @@ private Q_SLOTS:
     void imeCompositionQueryEvent_data();
     void imeCompositionQueryEvent();
     void newlineInTextarea();
+    void imeJSInputEvents();
 
     void mouseLeave();
 
@@ -2247,6 +2248,141 @@ void tst_QWebEngineView::newlineInTextarea()
     qApp->processEvents();
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("\n\nthird line"));
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("\n\nthird line"));
+}
+
+void tst_QWebEngineView::imeJSInputEvents()
+{
+    QWebEngineView view;
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+    view.show();
+
+    auto logLines = [&view]() -> QStringList {
+        return evaluateJavaScriptSync(view.page(), "log.textContent").toString().split("\n").filter(QRegExp(".+"));
+    };
+
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.page()->setHtml("<html>"
+                         "<head><script>"
+                         "  var input, log;"
+                         "  function verboseEvent(ev) {"
+                         "      log.textContent += ev + ' ' + ev.type + ' ' + ev.data + '\\n';"
+                         "  }"
+                         "  function clear(ev) {"
+                         "      log.textContent = '';"
+                         "      input.textContent = '';"
+                         "  }"
+                         "  function init() {"
+                         "      input = document.getElementById('input');"
+                         "      log = document.getElementById('log');"
+                         "      events = [ 'textInput', 'beforeinput', 'input', 'compositionstart', 'compositionupdate', 'compositionend' ];"
+                         "      for (var e in events)"
+                         "          input.addEventListener(events[e], verboseEvent);"
+                         "  }"
+                         "</script></head>"
+                         "<body onload='init()'>"
+                         "  <div id='input' contenteditable='true' style='border-style: solid;'></div>"
+                         "  <pre id='log'></pre>"
+                         "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    evaluateJavaScriptSync(view.page(), "document.getElementById('input').focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
+
+    // 1. Commit text (this is how dead keys work on Linux).
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("commit");
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    // Simply committing text should not trigger any JS composition event.
+    QTRY_COMPARE(logLines().count(), 3);
+    QCOMPARE(logLines()[0], "[object InputEvent] beforeinput commit");
+    QCOMPARE(logLines()[1], "[object TextEvent] textInput commit");
+    QCOMPARE(logLines()[2], "[object InputEvent] input commit");
+
+    evaluateJavaScriptSync(view.page(), "clear()");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
+
+    // 2. Start composition then commit text (this is how dead keys work on macOS).
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("preedit", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    QTRY_COMPARE(logLines().count(), 4);
+    QCOMPARE(logLines()[0], "[object CompositionEvent] compositionstart ");
+    QCOMPARE(logLines()[1], "[object InputEvent] beforeinput preedit");
+    QCOMPARE(logLines()[2], "[object CompositionEvent] compositionupdate preedit");
+    QCOMPARE(logLines()[3], "[object InputEvent] input preedit");
+
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("commit");
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    QTRY_COMPARE(logLines().count(), 9);
+    QCOMPARE(logLines()[4], "[object InputEvent] beforeinput commit");
+    QCOMPARE(logLines()[5], "[object CompositionEvent] compositionupdate commit");
+    QCOMPARE(logLines()[6], "[object TextEvent] textInput commit");
+    QCOMPARE(logLines()[7], "[object InputEvent] input commit");
+    QCOMPARE(logLines()[8], "[object CompositionEvent] compositionend commit");
+
+    evaluateJavaScriptSync(view.page(), "clear()");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
+
+    // 3. Start composition then cancel it with an empty IME event.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("preedit", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    QTRY_COMPARE(logLines().count(), 4);
+    QCOMPARE(logLines()[0], "[object CompositionEvent] compositionstart ");
+    QCOMPARE(logLines()[1], "[object InputEvent] beforeinput preedit");
+    QCOMPARE(logLines()[2], "[object CompositionEvent] compositionupdate preedit");
+    QCOMPARE(logLines()[3], "[object InputEvent] input preedit");
+
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    QTRY_COMPARE(logLines().count(), 9);
+    QCOMPARE(logLines()[4], "[object InputEvent] beforeinput ");
+    QCOMPARE(logLines()[5], "[object CompositionEvent] compositionupdate ");
+    QCOMPARE(logLines()[6], "[object TextEvent] textInput ");
+    QCOMPARE(logLines()[7], "[object InputEvent] input null");
+    QCOMPARE(logLines()[8], "[object CompositionEvent] compositionend ");
+
+    evaluateJavaScriptSync(view.page(), "clear()");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
+
+    // 4. Send empty IME event.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    // No JS event is expected.
+    QTest::qWait(100);
+    QVERIFY(logLines().isEmpty());
+
+    evaluateJavaScriptSync(view.page(), "clear()");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
 }
 
 void tst_QWebEngineView::imeCompositionQueryEvent_data()
