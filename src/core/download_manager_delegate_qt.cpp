@@ -52,12 +52,12 @@
 #include <QMimeDatabase>
 #include <QStandardPaths>
 
-#include "browser_context_adapter.h"
 #include "browser_context_adapter_client.h"
-#include "browser_context_qt.h"
+#include "browser_context_adapter.h"
+#include "profile_qt.h"
+#include "qtwebenginecoreglobal.h"
 #include "type_conversion.h"
 #include "web_contents_delegate_qt.h"
-#include "qtwebenginecoreglobal.h"
 
 namespace QtWebEngineCore {
 

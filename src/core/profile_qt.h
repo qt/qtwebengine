@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef BROWSER_CONTEXT_QT_H
-#define BROWSER_CONTEXT_QT_H
+#ifndef PROFILE_QT_H
+#define PROFILE_QT_H
 
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/content_browser_client.h"
@@ -60,48 +60,50 @@ class PermissionManagerQt;
 class SSLHostStateDelegateQt;
 class URLRequestContextGetterQt;
 
-class BrowserContextQt : public Profile
+class ProfileQt : public Profile
 {
 public:
-    explicit BrowserContextQt(BrowserContextAdapter *);
+    explicit ProfileQt(BrowserContextAdapter *);
 
-    virtual ~BrowserContextQt();
+    virtual ~ProfileQt();
 
     // BrowserContext implementation:
     base::FilePath GetPath() const override;
     bool IsOffTheRecord() const override;
 
     net::URLRequestContextGetter *CreateMediaRequestContext() override;
-    net::URLRequestContextGetter *CreateMediaRequestContextForStoragePartition(const base::FilePath& partition_path, bool in_memory) override;
-
+    net::URLRequestContextGetter *CreateMediaRequestContextForStoragePartition(
+            const base::FilePath &partition_path,
+            bool in_memory) override;
     content::ResourceContext *GetResourceContext() override;
     content::DownloadManagerDelegate *GetDownloadManagerDelegate() override;
-    content::BrowserPluginGuestManager* GetGuestManager() override;
+    content::BrowserPluginGuestManager *GetGuestManager() override;
     storage::SpecialStoragePolicy *GetSpecialStoragePolicy() override;
-    content::PushMessagingService* GetPushMessagingService() override;
-    content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
+    content::PushMessagingService *GetPushMessagingService() override;
+    content::SSLHostStateDelegate *GetSSLHostStateDelegate() override;
     net::URLRequestContextGetter *CreateRequestContext(
             content::ProtocolHandlerMap *protocol_handlers,
             content::URLRequestInterceptorScopedVector request_interceptors) override;
-    net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-            const base::FilePath& partition_path, bool in_memory,
-            content::ProtocolHandlerMap* protocol_handlers,
+    net::URLRequestContextGetter *CreateRequestContextForStoragePartition(
+            const base::FilePath &partition_path, bool in_memory,
+            content::ProtocolHandlerMap *protocol_handlers,
             content::URLRequestInterceptorScopedVector request_interceptors) override;
-    std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) override;
+    std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
+            const base::FilePath &partition_path) override;
     content::PermissionManager *GetPermissionManager() override;
-    content::BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
-    content::BackgroundSyncController* GetBackgroundSyncController() override;
+    content::BackgroundFetchDelegate *GetBackgroundFetchDelegate() override;
+    content::BackgroundSyncController *GetBackgroundSyncController() override;
     content::BrowsingDataRemoverDelegate *GetBrowsingDataRemoverDelegate() override;
 
     // Profile implementation:
-    PrefService* GetPrefs() override;
-    const PrefService* GetPrefs() const override;
+    PrefService *GetPrefs() override;
+    const PrefService *GetPrefs() const override;
     net::URLRequestContextGetter *GetRequestContext() override;
 
     BrowserContextAdapter *adapter() { return m_adapter; }
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-    void FailedToLoadDictionary(const std::string& language) override;
+    void FailedToLoadDictionary(const std::string &language) override;
     void setSpellCheckLanguages(const QStringList &languages);
     QStringList spellCheckLanguages() const;
     void setSpellCheckEnabled(bool enabled);
@@ -119,9 +121,9 @@ private:
     std::unique_ptr<PrefService> m_prefService;
     friend class BrowserContextAdapter;
 
-    DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);
+    DISALLOW_COPY_AND_ASSIGN(ProfileQt);
 };
 
 } // namespace QtWebEngineCore
 
-#endif // BROWSER_CONTEXT_QT_H
+#endif // PROFILE_QT_H

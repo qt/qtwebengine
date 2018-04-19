@@ -42,7 +42,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/url_request/url_request_context_getter.h"
 
-#include "browser_context_qt.h"
+#include "profile_qt.h"
 
 namespace QtWebEngineCore {
 

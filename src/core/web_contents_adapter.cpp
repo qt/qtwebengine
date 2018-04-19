@@ -44,13 +44,13 @@
 #include "web_contents_adapter.h"
 
 #include "browser_accessibility_qt.h"
-#include "browser_context_adapter.h"
 #include "browser_context_adapter_client.h"
-#include "browser_context_qt.h"
+#include "browser_context_adapter.h"
 #include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "printing/print_view_manager_qt.h"
+#include "profile_qt.h"
 #include "qwebenginecallback_p.h"
 #include "renderer_host/web_channel_ipc_transport_host.h"
 #include "render_view_observer_host_qt.h"
@@ -884,16 +884,16 @@ qreal WebContentsAdapter::currentZoomFactor() const
     return content::ZoomLevelToZoomFactor(content::HostZoomMap::GetZoomLevel(m_webContents.get()));
 }
 
-BrowserContextQt* WebContentsAdapter::browserContext()
+ProfileQt* WebContentsAdapter::browserContext()
 {
-    return m_browserContextAdapter ? m_browserContextAdapter->browserContext() : m_webContents ? static_cast<BrowserContextQt*>(m_webContents->GetBrowserContext()) : 0;
+    return m_browserContextAdapter ? m_browserContextAdapter->browserContext() : m_webContents ?
+                                         static_cast<ProfileQt*>(m_webContents->GetBrowserContext()) : nullptr;
 }
 
 BrowserContextAdapter* WebContentsAdapter::browserContextAdapter()
 {
-    return m_browserContextAdapter ?
-                m_browserContextAdapter : m_webContents ?
-                    static_cast<BrowserContextQt*>(m_webContents->GetBrowserContext())->adapter() : nullptr;
+    return m_browserContextAdapter ? m_browserContextAdapter : m_webContents ?
+                    static_cast<ProfileQt*>(m_webContents->GetBrowserContext())->adapter() : nullptr;
 }
 
 #ifndef QT_NO_ACCESSIBILITY

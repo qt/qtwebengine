@@ -74,8 +74,9 @@ class GLShareGroup;
 }
 
 namespace QtWebEngineCore {
-class BrowserContextQt;
+
 class BrowserMainPartsQt;
+class ProfileQt;
 class ResourceDispatcherHostDelegateQt;
 class ShareGroupQtQuick;
 

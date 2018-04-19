@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "browser_context_qt.h"
+#include "profile_qt.h"
 
 #include "browser_context_adapter.h"
 #include "browsing_data_remover_delegate_qt.h"
@@ -71,7 +71,7 @@
 
 namespace QtWebEngineCore {
 
-BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
+ProfileQt::ProfileQt(BrowserContextAdapter *adapter)
     : m_adapter(adapter)
 {
     PrefServiceFactory factory;
@@ -91,111 +91,111 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     user_prefs::UserPrefs::Set(this, m_prefService.get());
 }
 
-BrowserContextQt::~BrowserContextQt()
+ProfileQt::~ProfileQt()
 {
     if (resourceContext)
         content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, resourceContext.release());
 }
 
-PrefService* BrowserContextQt::GetPrefs()
+PrefService* ProfileQt::GetPrefs()
 {
     return m_prefService.get();
 }
 
-const PrefService* BrowserContextQt::GetPrefs() const
+const PrefService* ProfileQt::GetPrefs() const
 {
     return m_prefService.get();
 }
 
-base::FilePath BrowserContextQt::GetPath() const
+base::FilePath ProfileQt::GetPath() const
 {
     return toFilePath(m_adapter->dataPath());
 }
 
-bool BrowserContextQt::IsOffTheRecord() const
+bool ProfileQt::IsOffTheRecord() const
 {
     return m_adapter->isOffTheRecord();
 }
 
-net::URLRequestContextGetter *BrowserContextQt::GetRequestContext()
+net::URLRequestContextGetter *ProfileQt::GetRequestContext()
 {
     return url_request_getter_.get();
 }
 
-net::URLRequestContextGetter *BrowserContextQt::CreateMediaRequestContext()
+net::URLRequestContextGetter *ProfileQt::CreateMediaRequestContext()
 {
     return url_request_getter_.get();
 }
 
-net::URLRequestContextGetter *BrowserContextQt::CreateMediaRequestContextForStoragePartition(const base::FilePath&, bool)
+net::URLRequestContextGetter *ProfileQt::CreateMediaRequestContextForStoragePartition(const base::FilePath&, bool)
 {
     Q_UNIMPLEMENTED();
     return nullptr;
 }
 
-content::ResourceContext *BrowserContextQt::GetResourceContext()
+content::ResourceContext *ProfileQt::GetResourceContext()
 {
     if (!resourceContext)
         resourceContext.reset(new ResourceContextQt(this));
     return resourceContext.get();
 }
 
-content::DownloadManagerDelegate *BrowserContextQt::GetDownloadManagerDelegate()
+content::DownloadManagerDelegate *ProfileQt::GetDownloadManagerDelegate()
 {
     return m_adapter->downloadManagerDelegate();
 }
 
-content::BrowserPluginGuestManager *BrowserContextQt::GetGuestManager()
+content::BrowserPluginGuestManager *ProfileQt::GetGuestManager()
 {
     return 0;
 }
 
-storage::SpecialStoragePolicy *BrowserContextQt::GetSpecialStoragePolicy()
+storage::SpecialStoragePolicy *ProfileQt::GetSpecialStoragePolicy()
 {
     QT_NOT_YET_IMPLEMENTED
     return 0;
 }
 
-content::PushMessagingService *BrowserContextQt::GetPushMessagingService()
+content::PushMessagingService *ProfileQt::GetPushMessagingService()
 {
     return 0;
 }
 
-content::SSLHostStateDelegate* BrowserContextQt::GetSSLHostStateDelegate()
+content::SSLHostStateDelegate* ProfileQt::GetSSLHostStateDelegate()
 {
     if (!sslHostStateDelegate)
         sslHostStateDelegate.reset(new SSLHostStateDelegateQt());
     return sslHostStateDelegate.get();
 }
 
-std::unique_ptr<content::ZoomLevelDelegate> BrowserContextQt::CreateZoomLevelDelegate(const base::FilePath&)
+std::unique_ptr<content::ZoomLevelDelegate> ProfileQt::CreateZoomLevelDelegate(const base::FilePath&)
 {
     return nullptr;
 }
 
-content::BackgroundFetchDelegate* BrowserContextQt::GetBackgroundFetchDelegate()
+content::BackgroundFetchDelegate* ProfileQt::GetBackgroundFetchDelegate()
 {
     return nullptr;
 }
 
-content::BackgroundSyncController* BrowserContextQt::GetBackgroundSyncController()
+content::BackgroundSyncController* ProfileQt::GetBackgroundSyncController()
 {
     return nullptr;
 }
 
-content::BrowsingDataRemoverDelegate *BrowserContextQt::GetBrowsingDataRemoverDelegate()
+content::BrowsingDataRemoverDelegate *ProfileQt::GetBrowsingDataRemoverDelegate()
 {
     return new BrowsingDataRemoverDelegateQt;
 }
 
-content::PermissionManager *BrowserContextQt::GetPermissionManager()
+content::PermissionManager *ProfileQt::GetPermissionManager()
 {
     if (!permissionManager)
         permissionManager.reset(new PermissionManagerQt());
     return permissionManager.get();
 }
 
-net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(
+net::URLRequestContextGetter *ProfileQt::CreateRequestContext(
         content::ProtocolHandlerMap *protocol_handlers,
         content::URLRequestInterceptorScopedVector request_interceptors)
 {
@@ -204,7 +204,7 @@ net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(
     return url_request_getter_.get();
 }
 
-net::URLRequestContextGetter *BrowserContextQt::CreateRequestContextForStoragePartition(
+net::URLRequestContextGetter *ProfileQt::CreateRequestContextForStoragePartition(
         const base::FilePath& partition_path, bool in_memory,
         content::ProtocolHandlerMap* protocol_handlers,
         content::URLRequestInterceptorScopedVector request_interceptors)
@@ -214,14 +214,14 @@ net::URLRequestContextGetter *BrowserContextQt::CreateRequestContextForStoragePa
 }
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-void BrowserContextQt::FailedToLoadDictionary(const std::string &language)
+void ProfileQt::FailedToLoadDictionary(const std::string &language)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     qWarning() << "Could not load dictionary for:" << toQt(language) << endl
                << "Make sure that correct bdic file is in:" << toQt(WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES).value());
 }
 
-void BrowserContextQt::setSpellCheckLanguages(const QStringList &languages)
+void ProfileQt::setSpellCheckLanguages(const QStringList &languages)
 {
     StringListPrefMember dictionaries_pref;
     dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries, m_prefService.get());
@@ -232,7 +232,7 @@ void BrowserContextQt::setSpellCheckLanguages(const QStringList &languages)
     dictionaries_pref.SetValue(dictionaries);
 }
 
-QStringList BrowserContextQt::spellCheckLanguages() const
+QStringList ProfileQt::spellCheckLanguages() const
 {
     QStringList spellcheck_dictionaries;
     for (const auto &value : *m_prefService->GetList(spellcheck::prefs::kSpellCheckDictionaries)) {
@@ -244,12 +244,12 @@ QStringList BrowserContextQt::spellCheckLanguages() const
     return spellcheck_dictionaries;
 }
 
-void BrowserContextQt::setSpellCheckEnabled(bool enabled)
+void ProfileQt::setSpellCheckEnabled(bool enabled)
 {
     m_prefService->SetBoolean(spellcheck::prefs::kSpellCheckEnable, enabled);
 }
 
-bool BrowserContextQt::isSpellCheckEnabled() const
+bool ProfileQt::isSpellCheckEnabled() const
 {
     return m_prefService->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
 }

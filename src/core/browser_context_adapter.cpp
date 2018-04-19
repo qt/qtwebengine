@@ -44,11 +44,11 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager.h"
 
-#include "browser_context_qt.h"
 #include "content_client_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "net/url_request_context_getter_qt.h"
 #include "permission_manager_qt.h"
+#include "profile_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "type_conversion.h"
 #include "visited_links_manager_qt.h"
@@ -78,7 +78,7 @@ namespace QtWebEngineCore {
 
 BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord):
       m_offTheRecord(offTheRecord)
-    , m_browserContext(new BrowserContextQt(this))
+    , m_browserContext(new ProfileQt(this))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
@@ -96,7 +96,7 @@ BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord):
 BrowserContextAdapter::BrowserContextAdapter(const QString &storageName):
       m_name(storageName)
     , m_offTheRecord(false)
-    , m_browserContext(new BrowserContextQt(this))
+    , m_browserContext(new ProfileQt(this))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
@@ -146,7 +146,7 @@ void BrowserContextAdapter::setOffTheRecord(bool offTheRecord)
         resetVisitedLinksManager();
 }
 
-BrowserContextQt *BrowserContextAdapter::browserContext()
+ProfileQt *BrowserContextAdapter::browserContext()
 {
     return m_browserContext.data();
 }

@@ -78,8 +78,8 @@
 #include "net/ftp/ftp_network_layer.h"
 
 #include "api/qwebengineurlschemehandler.h"
-#include "browser_context_qt.h"
 #include "custom_protocol_handler.h"
+#include "profile_qt.h"
 #include "proxy_config_service_qt.h"
 #include "qrc_protocol_handler_qt.h"
 #include "qwebenginecookiestore.h"

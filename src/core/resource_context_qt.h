@@ -49,12 +49,12 @@ class URLRequestContextGetter;
 class GURL;
 
 namespace QtWebEngineCore {
-class BrowserContextQt;
+class ProfileQt;
 
 class ResourceContextQt : public content::ResourceContext
 {
 public:
-    ResourceContextQt(BrowserContextQt *ctx)
+    ResourceContextQt(ProfileQt *ctx)
         : context(ctx)
     {}
 
@@ -62,7 +62,7 @@ public:
     net::URLRequestContext *GetRequestContext() override;
 
 private:
-    BrowserContextQt *context;
+    ProfileQt *context;
 
     DISALLOW_COPY_AND_ASSIGN(ResourceContextQt);
 };

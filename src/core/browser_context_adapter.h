@@ -58,8 +58,8 @@ QT_FORWARD_DECLARE_CLASS(QObject)
 namespace QtWebEngineCore {
 
 class BrowserContextAdapterClient;
-class BrowserContextQt;
 class DownloadManagerDelegateQt;
+class ProfileQt;
 class UserResourceControllerHost;
 class VisitedLinksManagerQt;
 
@@ -89,7 +89,7 @@ public:
     void pauseDownload(quint32 downloadId);
     void resumeDownload(quint32 downloadId);
 
-    BrowserContextQt *browserContext();
+    ProfileQt *browserContext();
 
     QString storageName() const { return m_name; }
     void setStorageName(const QString &storageName);
@@ -181,7 +181,7 @@ private:
 
     QString m_name;
     bool m_offTheRecord;
-    QScopedPointer<BrowserContextQt> m_browserContext;
+    QScopedPointer<ProfileQt> m_browserContext;
     QScopedPointer<VisitedLinksManagerQt> m_visitedLinksManager;
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
     QScopedPointer<UserResourceControllerHost> m_userResourceController;

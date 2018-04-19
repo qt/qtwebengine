@@ -45,7 +45,7 @@
 #include "devtools_frontend_qt.h"
 
 #include "browser_context_adapter.h"
-#include "browser_context_qt.h"
+#include "profile_qt.h"
 #include "web_contents_adapter.h"
 
 #include "base/json/json_reader.h"
@@ -189,7 +189,7 @@ DevToolsFrontendQt::DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webCon
     , m_prefStore(nullptr)
     , m_weakFactory(this)
 {
-    // We use a separate prefstore than BrowserContextQt, because that one is in-memory only, and this
+    // We use a separate prefstore than one in ProfileQt, because that one is in-memory only, and this
     // needs to be stored or it will show introduction text on every load.
     if (webContentsAdapter->browserContextAdapter()->isOffTheRecord())
         m_prefStore = std::move(scoped_refptr<PersistentPrefStore>(new InMemoryPrefStore()));

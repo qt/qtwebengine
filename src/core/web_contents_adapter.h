@@ -71,13 +71,13 @@ QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 
-class BrowserContextQt;
 class DevToolsFrontendQt;
-class MessagePassingInterface;
 class FaviconManager;
-class WebEngineContext;
+class MessagePassingInterface;
+class ProfileQt;
 class RenderViewObserverHostQt;
 class WebChannelIPCTransportHost;
+class WebEngineContext;
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QEnableSharedFromThis<WebContentsAdapter> {
 public:
@@ -177,7 +177,7 @@ public:
     void dpiScaleChanged();
     void backgroundColorChanged();
     QAccessibleInterface *browserAccessible();
-    BrowserContextQt* browserContext();
+    ProfileQt* browserContext();
     BrowserContextAdapter* browserContextAdapter();
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *, uint worldId);
