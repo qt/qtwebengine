@@ -73,6 +73,9 @@ private Q_SLOTS:
     void subdirWithoutAccess();
     void mixedSchemes();
     void webSocket();
+    void dedicatedWorker();
+    void sharedWorker();
+    void serviceWorker();
 
 private:
     bool load(const QUrl &url)
@@ -262,6 +265,71 @@ void tst_Origins::webSocket()
     // FIXME(juvaldma): QTBUG-62536
     // QVERIFY(load(QSL("tst:/resources/websocket.html")));
     // QTRY_VERIFY(eval(QSL("err")) == QVariant(expected));
+}
+
+// Create a (Dedicated)Worker. Since dedicated workers can only be accessed from
+// one page, there is not much need for security restrictions.
+void tst_Origins::dedicatedWorker()
+{
+    QVERIFY(load(QSL("file:" THIS_DIR "resources/dedicatedWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QCOMPARE(eval(QSL("result")), QVariant(42));
+
+    QVERIFY(load(QSL("qrc:/resources/dedicatedWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QCOMPARE(eval(QSL("result")), QVariant(42));
+
+    // FIXME(juvaldma): QTBUG-62536
+    // QVERIFY(load(QSL("tst:/resources/dedicatedWorker.html")));
+    // QTRY_VERIFY(eval(QSL("done")).toBool());
+    // QCOMPARE(eval(QSL("result")), QVariant(42));
+}
+
+// Create a SharedWorker. Shared workers can be accessed from multiple pages,
+// and therefore the same-origin policy applies.
+void tst_Origins::sharedWorker()
+{
+    {
+        ScopedAttribute sa(m_page.settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, false);
+        QVERIFY(load(QSL("file:" THIS_DIR "resources/sharedWorker.html")));
+        QTRY_VERIFY(eval(QSL("done")).toBool());
+        QVERIFY(eval(QSL("error")).toString()
+                .contains(QSL("cannot be accessed from origin 'null'")));
+    }
+
+    {
+        ScopedAttribute sa(m_page.settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+        QVERIFY(load(QSL("file:" THIS_DIR "resources/sharedWorker.html")));
+        QTRY_VERIFY(eval(QSL("done")).toBool());
+        QCOMPARE(eval(QSL("result")), QVariant(42));
+    }
+
+    QVERIFY(load(QSL("qrc:/resources/sharedWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QCOMPARE(eval(QSL("result")), QVariant(42));
+
+    QVERIFY(load(QSL("tst:/resources/sharedWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QCOMPARE(eval(QSL("result")), QVariant(42));
+}
+
+// Service workers don't work.
+void tst_Origins::serviceWorker()
+{
+    QVERIFY(load(QSL("file:" THIS_DIR "resources/serviceWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QVERIFY(eval(QSL("error")).toString()
+            .contains(QSL("The URL protocol of the current origin ('file://') is not supported.")));
+
+    QVERIFY(load(QSL("qrc:/resources/serviceWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QVERIFY(eval(QSL("error")).toString()
+            .contains(QSL("The URL protocol of the current origin ('qrc://') is not supported.")));
+
+    QVERIFY(load(QSL("tst:/resources/serviceWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QVERIFY(eval(QSL("error")).toString()
+            .contains(QSL("Only secure origins are allowed")));
 }
 
 QTEST_MAIN(tst_Origins)

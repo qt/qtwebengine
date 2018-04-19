@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>serviceWorker</title>
+        <script>
+         var done = false;
+         var error;
+         navigator.serviceWorker.register("serviceWorker.js")
+         .then((r) => { done = true; })
+         .catch((e) => { done = true; error = e.message; });
+        </script>
+    </head>
+    <body></body>
+</html>

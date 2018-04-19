@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>dedicatedWorker</title>
+        <script>
+         var done = false;
+         var result;
+         let worker = new Worker("dedicatedWorker.js");
+         worker.onmessage = (e) => { done = true; result = e.data; };
+         worker.postMessage(41);
+        </script>
+    </head>
+    <body></body>
+</html>
