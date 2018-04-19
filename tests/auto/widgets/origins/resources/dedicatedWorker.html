@@ -5,9 +5,14 @@
         <script>
          var done = false;
          var result;
-         let worker = new Worker("dedicatedWorker.js");
-         worker.onmessage = (e) => { done = true; result = e.data; };
-         worker.postMessage(41);
+         var error;
+         try {
+             let worker = new Worker("dedicatedWorker.js");
+             worker.onmessage = (e) => { done = true; result = e.data; };
+             worker.postMessage(41);
+         } catch (e) {
+             done = true; error = e.message;
+         }
         </script>
     </head>
     <body></body>

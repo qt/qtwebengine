@@ -262,9 +262,8 @@ void tst_Origins::webSocket()
     QVERIFY(load(QSL("qrc:/resources/websocket.html")));
     QTRY_VERIFY(eval(QSL("err")) == QVariant(expected));
 
-    // FIXME(juvaldma): QTBUG-62536
-    // QVERIFY(load(QSL("tst:/resources/websocket.html")));
-    // QTRY_VERIFY(eval(QSL("err")) == QVariant(expected));
+    QVERIFY(load(QSL("tst:/resources/websocket.html")));
+    QTRY_VERIFY(eval(QSL("err")) == QVariant(expected));
 }
 
 // Create a (Dedicated)Worker. Since dedicated workers can only be accessed from
@@ -280,9 +279,10 @@ void tst_Origins::dedicatedWorker()
     QCOMPARE(eval(QSL("result")), QVariant(42));
 
     // FIXME(juvaldma): QTBUG-62536
-    // QVERIFY(load(QSL("tst:/resources/dedicatedWorker.html")));
-    // QTRY_VERIFY(eval(QSL("done")).toBool());
-    // QCOMPARE(eval(QSL("result")), QVariant(42));
+    QVERIFY(load(QSL("tst:/resources/dedicatedWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QVERIFY(eval(QSL("error")).toString()
+            .contains(QSL("Access to dedicated workers is denied to origin 'tst://'")));
 }
 
 // Create a SharedWorker. Shared workers can be accessed from multiple pages,
