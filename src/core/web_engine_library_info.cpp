@@ -163,9 +163,9 @@ QString subProcessPath()
 #else
             candidatePaths << QLibraryInfo::location(QLibraryInfo::LibraryExecutablesPath)
                               % QLatin1Char('/') % processBinary;
+#endif
             candidatePaths << QCoreApplication::applicationDirPath()
                               % QLatin1Char('/') % processBinary;
-#endif
         }
 
         Q_FOREACH (const QString &candidate, candidatePaths) {
@@ -185,11 +185,13 @@ QString subProcessPath()
 
 QString localesPath()
 {
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
-    return getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_locales");
-#else
     static bool initialized = false;
-    static QString potentialLocalesPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
+    static QString potentialLocalesPath =
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+            getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_locales");
+#else
+            QLibraryInfo::location(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
+#endif
 
     if (!initialized) {
         initialized = true;
@@ -204,7 +206,6 @@ QString localesPath()
     }
 
     return potentialLocalesPath;
-#endif
 }
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -257,11 +258,13 @@ QString dictionariesPath()
 
 QString icuDataPath()
 {
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
-    return getResourcesPath(frameworkBundle());
-#else
     static bool initialized = false;
-    static QString potentialResourcesPath = QLibraryInfo::location(QLibraryInfo::DataPath) % QLatin1String("/resources");
+    static QString potentialResourcesPath =
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+            getResourcesPath(frameworkBundle());
+#else
+            QLibraryInfo::location(QLibraryInfo::DataPath) % QLatin1String("/resources");
+#endif
     if (!initialized) {
         initialized = true;
         if (!QFileInfo::exists(potentialResourcesPath % QLatin1String("/icudtl.dat"))) {
@@ -279,16 +282,17 @@ QString icuDataPath()
     }
 
     return potentialResourcesPath;
-#endif
 }
 
 QString resourcesDataPath()
 {
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
-    return getResourcesPath(frameworkBundle());
-#else
     static bool initialized = false;
-    static QString potentialResourcesPath = QLibraryInfo::location(QLibraryInfo::DataPath) % QLatin1String("/resources");
+    static QString potentialResourcesPath =
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+            getResourcesPath(frameworkBundle());
+#else
+            QLibraryInfo::location(QLibraryInfo::DataPath) % QLatin1String("/resources");
+#endif
     if (!initialized) {
         initialized = true;
         if (!QFileInfo::exists(potentialResourcesPath % QLatin1String("/qtwebengine_resources.pak"))) {
@@ -306,7 +310,6 @@ QString resourcesDataPath()
     }
 
     return potentialResourcesPath;
-#endif
 }
 } // namespace
 

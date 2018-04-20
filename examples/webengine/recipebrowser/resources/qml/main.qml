@@ -99,7 +99,9 @@ ApplicationWindow {
             Layout.fillHeight: true
             focus: true
             KeyNavigation.tab: webView
-            onRecipeSelected: webView.showRecipe(url)
+            onRecipeSelected: function(url) {
+                webView.showRecipe(url)
+            }
         }
 
         WebEngineView {
@@ -118,7 +120,7 @@ ApplicationWindow {
             }
 
             property bool firstLoadComplete: false
-            onLoadingChanged: {
+            onLoadingChanged: function(loadRequest) {
                 if (loadRequest.status === WebEngineView.LoadSucceededStatus
                     && !firstLoadComplete) {
                     // Debounce the showing of the web content, so images are more likely
