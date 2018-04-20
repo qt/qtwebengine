@@ -46,7 +46,6 @@
 #include "net/url_request_context_getter_qt.h"
 #include "permission_manager_qt.h"
 #include "qtwebenginecoreglobal_p.h"
-#include "resource_context_qt.h"
 #include "type_conversion.h"
 #include "web_engine_library_info.h"
 
@@ -56,6 +55,7 @@
 #include "net/proxy/proxy_config_service.h"
 
 #include "base/base_paths.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/in_memory_pref_store.h"
@@ -72,7 +72,8 @@
 namespace QtWebEngineCore {
 
 ProfileQt::ProfileQt(BrowserContextAdapter *adapter)
-    : m_adapter(adapter)
+    : m_profileIOData(new ProfileIODataQt(this)),
+      m_adapter(adapter)
 {
     PrefServiceFactory factory;
     factory.set_user_prefs(new InMemoryPrefStore);
@@ -89,12 +90,22 @@ ProfileQt::ProfileQt(BrowserContextAdapter *adapter)
 #endif //ENABLE_SPELLCHECK
     m_prefService = factory.Create(registry);
     user_prefs::UserPrefs::Set(this, m_prefService.get());
+
+    // Mark the context as live. This prevents the use-after-free DCHECK in
+    // AssertBrowserContextWasntDestroyed from being triggered when a new
+    // ProfileQt object is allocated at the same address as a previously
+    // destroyed one. Needs to be called after WebEngineContext initialization.
+    BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(this);
 }
 
 ProfileQt::~ProfileQt()
 {
-    if (resourceContext)
-        content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, resourceContext.release());
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(this);
+    ShutdownStoragePartitions();
+    m_profileIOData->shutdownOnUIThread();
+    //Should be deleted by IO Thread
+    m_profileIOData.release();
 }
 
 PrefService* ProfileQt::GetPrefs()
@@ -119,12 +130,12 @@ bool ProfileQt::IsOffTheRecord() const
 
 net::URLRequestContextGetter *ProfileQt::GetRequestContext()
 {
-    return url_request_getter_.get();
+    return m_urlRequestContextGetter.get();
 }
 
 net::URLRequestContextGetter *ProfileQt::CreateMediaRequestContext()
 {
-    return url_request_getter_.get();
+    return m_urlRequestContextGetter.get();
 }
 
 net::URLRequestContextGetter *ProfileQt::CreateMediaRequestContextForStoragePartition(const base::FilePath&, bool)
@@ -135,9 +146,7 @@ net::URLRequestContextGetter *ProfileQt::CreateMediaRequestContextForStoragePart
 
 content::ResourceContext *ProfileQt::GetResourceContext()
 {
-    if (!resourceContext)
-        resourceContext.reset(new ResourceContextQt(this));
-    return resourceContext.get();
+    return m_profileIOData->resourceContext();
 }
 
 content::DownloadManagerDelegate *ProfileQt::GetDownloadManagerDelegate()
@@ -147,25 +156,25 @@ content::DownloadManagerDelegate *ProfileQt::GetDownloadManagerDelegate()
 
 content::BrowserPluginGuestManager *ProfileQt::GetGuestManager()
 {
-    return 0;
+    return nullptr;
 }
 
 storage::SpecialStoragePolicy *ProfileQt::GetSpecialStoragePolicy()
 {
     QT_NOT_YET_IMPLEMENTED
-    return 0;
+    return nullptr;
 }
 
 content::PushMessagingService *ProfileQt::GetPushMessagingService()
 {
-    return 0;
+    return nullptr;
 }
 
 content::SSLHostStateDelegate* ProfileQt::GetSSLHostStateDelegate()
 {
-    if (!sslHostStateDelegate)
-        sslHostStateDelegate.reset(new SSLHostStateDelegateQt());
-    return sslHostStateDelegate.get();
+    if (!m_sslHostStateDelegate)
+        m_sslHostStateDelegate.reset(new SSLHostStateDelegateQt());
+    return m_sslHostStateDelegate.get();
 }
 
 std::unique_ptr<content::ZoomLevelDelegate> ProfileQt::CreateZoomLevelDelegate(const base::FilePath&)
@@ -185,23 +194,26 @@ content::BackgroundSyncController* ProfileQt::GetBackgroundSyncController()
 
 content::BrowsingDataRemoverDelegate *ProfileQt::GetBrowsingDataRemoverDelegate()
 {
-    return new BrowsingDataRemoverDelegateQt;
+    return new BrowsingDataRemoverDelegateQt();
 }
 
 content::PermissionManager *ProfileQt::GetPermissionManager()
 {
-    if (!permissionManager)
-        permissionManager.reset(new PermissionManagerQt());
-    return permissionManager.get();
+    if (!m_permissionManager)
+        m_permissionManager.reset(new PermissionManagerQt());
+    return m_permissionManager.get();
 }
 
 net::URLRequestContextGetter *ProfileQt::CreateRequestContext(
         content::ProtocolHandlerMap *protocol_handlers,
         content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers,
-                                                        std::move(request_interceptors));
-    return url_request_getter_.get();
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(!m_urlRequestContextGetter.get());
+    m_profileIOData->setRequestContextData(protocol_handlers, std::move(request_interceptors));
+    m_profileIOData->updateStorageSettings();
+    m_urlRequestContextGetter = new URLRequestContextGetterQt(m_profileIOData.get());
+    return m_urlRequestContextGetter.get();
 }
 
 net::URLRequestContextGetter *ProfileQt::CreateRequestContextForStoragePartition(

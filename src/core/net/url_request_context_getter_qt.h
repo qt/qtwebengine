@@ -42,108 +42,18 @@
 
 #include "net/url_request/url_request_context_getter.h"
 
-#include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "net/http/http_network_session.h"
-#include "net/url_request/url_request_context_storage.h"
-#include "net/url_request/url_request_job_factory_impl.h"
-#include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
-#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
-
-#include "cookie_monster_delegate_qt.h"
-#include "network_delegate_qt.h"
-#include "browser_context_adapter.h"
-
-#include <QtCore/qatomic.h>
-#include <QtCore/qmutex.h>
-#include <QtCore/qsharedpointer.h>
-
-namespace net {
-class HttpAuthPreferences;
-class MappedHostResolver;
-class ProxyConfigService;
-}
-
 namespace QtWebEngineCore {
 
-// FIXME: This class should be split into a URLRequestContextGetter and a ProfileIOData, similar to what chrome does.
+class ProfileIODataQt;
+
 class URLRequestContextGetterQt : public net::URLRequestContextGetter {
 public:
-    URLRequestContextGetterQt(BrowserContextAdapter *browserContext,
-                              content::ProtocolHandlerMap *protocolHandlers,
-                              content::URLRequestInterceptorScopedVector request_interceptors);
-
+    URLRequestContextGetterQt(ProfileIODataQt *data);
     net::URLRequestContext *GetURLRequestContext() override;
     scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const override;
-
-    // Called on the UI thread:
-    void updateStorageSettings();
-    void updateUserAgent();
-    void updateCookieStore();
-    void updateHttpCache();
-    void updateJobFactory();
-    void updateRequestInterceptor();
-    void setFullConfiguration();
-
 private:
     virtual ~URLRequestContextGetterQt();
-
-    // Called on the IO thread:
-    void generateAllStorage();
-    void generateStorage();
-    void generateCookieStore();
-    void generateHttpCache();
-    void generateUserAgent();
-    void generateJobFactory();
-    void regenerateJobFactory();
-    void cancelAllUrlRequests();
-    net::HttpNetworkSession::Params generateNetworkSessionParams();
-    net::HttpNetworkSession::Context generateNetworkSessionContext();
-
-    bool m_ignoreCertificateErrors;
-    QMutex m_mutex;
-    bool m_contextInitialized;
-    bool m_updateAllStorage;
-    bool m_updateCookieStore;
-    bool m_updateHttpCache;
-    bool m_updateJobFactory;
-    bool m_updateUserAgent;
-
-    // m_browserContext is never dereferenced in IO thread and it is passed by
-    // qpointer in generateJobFactory
-    QPointer<BrowserContextAdapter> m_browserContextAdapter;
-    content::ProtocolHandlerMap m_protocolHandlers;
-    QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
-    std::unique_ptr<net::URLRequestContext> m_urlRequestContext;
-    std::unique_ptr<NetworkDelegateQt> m_networkDelegate;
-    std::unique_ptr<net::URLRequestContextStorage> m_storage;
-    std::unique_ptr<net::URLRequestJobFactory> m_jobFactory;
-    std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> m_protocolHandlerInterceptor;
-    net::URLRequestJobFactoryImpl *m_baseJobFactory;
-    std::unique_ptr<net::DhcpProxyScriptFetcherFactory> m_dhcpProxyScriptFetcherFactory;
-    scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
-    content::URLRequestInterceptorScopedVector m_requestInterceptors;
-    std::unique_ptr<net::HttpNetworkSession> m_httpNetworkSession;
-    std::unique_ptr<net::HttpAuthPreferences> m_httpAuthPreferences;
-    proxy_resolver::mojom::ProxyResolverFactoryPtr m_proxyResolverFactory;
-
-    QList<QByteArray> m_installedCustomSchemes;
-    QWebEngineUrlRequestInterceptor* m_requestInterceptor;
-
-    // Configuration values to setup URLRequestContext in IO thread, copied from browserContext
-    // FIXME: Should later be moved to a separate ProfileIOData class.
-    BrowserContextAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;
-    QString m_cookiesPath;
-    QString m_channelIdPath;
-    QString m_httpAcceptLanguage;
-    QString m_httpUserAgent;
-    BrowserContextAdapter::HttpCacheType m_httpCacheType;
-    QString m_httpCachePath;
-    int m_httpCacheMaxSize;
-    QList<QByteArray> m_customUrlSchemes;
-
-    friend class NetworkDelegateQt;
+    ProfileIODataQt *m_profileIOData;
 };
 
 } // namespace QtWebEngineCore

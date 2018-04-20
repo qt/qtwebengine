@@ -89,6 +89,7 @@ SOURCES = \
         permission_manager_qt.cpp \
         process_main.cpp \
         profile_qt.cpp \
+        profile_io_data_qt.cpp \
         quota_permission_context_qt.cpp \
         quota_request_controller_impl.cpp \
         register_protocol_handler_request_controller_impl.cpp \
@@ -175,6 +176,7 @@ HEADERS = \
         permission_manager_qt.h \
         process_main.h \
         profile_qt.h \
+        profile_io_data_qt.h \
         proxy_config_service_qt.h \
         quota_permission_context_qt.h \
         quota_request_controller.h \

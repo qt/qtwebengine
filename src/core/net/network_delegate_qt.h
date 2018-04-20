@@ -52,12 +52,12 @@ class WebContents;
 
 namespace QtWebEngineCore {
 
-class URLRequestContextGetterQt;
+class ProfileIODataQt;
 
 class NetworkDelegateQt : public net::NetworkDelegate {
-    URLRequestContextGetterQt *m_requestContextGetter;
+    ProfileIODataQt *m_profileIOData;
 public:
-    NetworkDelegateQt(URLRequestContextGetterQt *requestContext);
+    NetworkDelegateQt(ProfileIODataQt *data);
 
     // net::NetworkDelegate implementation
     int OnBeforeURLRequest(net::URLRequest* request, const net::CompletionCallback& callback, GURL* newUrl) override;

@@ -45,7 +45,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "cookie_monster_delegate_qt.h"
 #include "ui/base/page_transition_types.h"
-#include "url_request_context_getter_qt.h"
+#include "profile_io_data_qt.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "qwebengineurlrequestinfo.h"
@@ -202,15 +202,15 @@ const char URLRequestNotification::UserData::key[] = "QtWebEngineCore::URLReques
 
 } // namespace
 
-NetworkDelegateQt::NetworkDelegateQt(URLRequestContextGetterQt *requestContext)
-    : m_requestContextGetter(requestContext)
+NetworkDelegateQt::NetworkDelegateQt(ProfileIODataQt *data)
+    : m_profileIOData(data)
 {
 }
 
 int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::CompletionCallback &callback, GURL *newUrl)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    Q_ASSERT(m_requestContextGetter);
+    Q_ASSERT(m_profileIOData);
 
     const content::ResourceRequestInfo *resourceInfo = content::ResourceRequestInfo::ForRequest(request);
 
@@ -224,7 +224,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
 
     const QUrl qUrl = toQt(request->url());
 
-    QWebEngineUrlRequestInterceptor* interceptor = m_requestContextGetter->m_requestInterceptor;
+    QWebEngineUrlRequestInterceptor* interceptor = m_profileIOData->m_requestInterceptor;
     if (interceptor) {
         QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(toQt(resourceType),
                                                                                            toQt(navigationType),
@@ -298,14 +298,14 @@ bool NetworkDelegateQt::OnCanEnablePrivacyMode(const GURL &url, const GURL &site
 
 bool NetworkDelegateQt::canSetCookies(const GURL &first_party, const GURL &url, const std::string &cookie_line) const
 {
-    Q_ASSERT(m_requestContextGetter);
-    return m_requestContextGetter->m_cookieDelegate->canSetCookie(toQt(first_party), QByteArray::fromStdString(cookie_line), toQt(url));
+    Q_ASSERT(m_profileIOData);
+    return m_profileIOData->m_cookieDelegate->canSetCookie(toQt(first_party), QByteArray::fromStdString(cookie_line), toQt(url));
 }
 
 bool NetworkDelegateQt::canGetCookies(const GURL &first_party, const GURL &url) const
 {
-    Q_ASSERT(m_requestContextGetter);
-    return m_requestContextGetter->m_cookieDelegate->canGetCookies(toQt(first_party), toQt(url));
+    Q_ASSERT(m_profileIOData);
+    return m_profileIOData->m_cookieDelegate->canGetCookies(toQt(first_party), toQt(url));
 }
 
 int NetworkDelegateQt::OnBeforeStartTransaction(net::URLRequest *request, const net::CompletionCallback &callback, net::HttpRequestHeaders *headers)

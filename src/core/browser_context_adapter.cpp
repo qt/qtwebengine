@@ -78,48 +78,42 @@ namespace QtWebEngineCore {
 
 BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord):
       m_offTheRecord(offTheRecord)
-    , m_browserContext(new ProfileQt(this))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
 {
     WebEngineContext::current()->addBrowserContext(this);
-    // Mark the context as live. This prevents the use-after-free DCHECK in
-    // AssertBrowserContextWasntDestroyed from being triggered when a new
-    // BrowserContextQt object is allocated at the same address as a previously
-    // destroyed one. Needs to be called after WebEngineContext initialization.
-    BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(m_browserContext.data());
+    // creation of profile requires webengine context
+    m_browserContext.reset(new ProfileQt(this));
     content::BrowserContext::Initialize(m_browserContext.data(), toFilePath(dataPath()));
+    // fixme: this should not be here
+    m_browserContext->m_profileIOData->initializeOnUIThread();
 }
 
 BrowserContextAdapter::BrowserContextAdapter(const QString &storageName):
       m_name(storageName)
     , m_offTheRecord(false)
-    , m_browserContext(new ProfileQt(this))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
 {
     WebEngineContext::current()->addBrowserContext(this);
-    // Mark the context as live. This prevents the use-after-free DCHECK in
-    // AssertBrowserContextWasntDestroyed from being triggered when a new
-    // BrowserContextQt object is allocated at the same address as a previously
-    // destroyed one. Needs to be called after WebEngineContext initialization.
-    BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(m_browserContext.data());
+    // creation of profile requires webengine context
+    m_browserContext.reset(new ProfileQt(this));
     content::BrowserContext::Initialize(m_browserContext.data(), toFilePath(dataPath()));
+    // fixme: this should not be here
+    m_browserContext->m_profileIOData->initializeOnUIThread();
 }
 
 BrowserContextAdapter::~BrowserContextAdapter()
 {
     WebEngineContext::current()->removeBrowserContext(this);
-    m_browserContext->ShutdownStoragePartitions();
     if (m_downloadManagerDelegate) {
         m_browserContext->GetDownloadManager(m_browserContext.data())->Shutdown();
         m_downloadManagerDelegate.reset();
     }
-    BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(m_browserContext.data());
 }
 
 void BrowserContextAdapter::setStorageName(const QString &storageName)
@@ -128,8 +122,8 @@ void BrowserContextAdapter::setStorageName(const QString &storageName)
         return;
     m_name = storageName;
     if (!m_offTheRecord) {
-        if (m_browserContext->url_request_getter_.get())
-            m_browserContext->url_request_getter_->updateStorageSettings();
+        if (m_browserContext->m_urlRequestContextGetter.get())
+            m_browserContext->m_profileIOData->updateStorageSettings();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -140,8 +134,8 @@ void BrowserContextAdapter::setOffTheRecord(bool offTheRecord)
     if (offTheRecord == m_offTheRecord)
         return;
     m_offTheRecord = offTheRecord;
-    if (m_browserContext->url_request_getter_.get())
-        m_browserContext->url_request_getter_->updateStorageSettings();
+    if (m_browserContext->m_urlRequestContextGetter.get())
+        m_browserContext->m_profileIOData->updateStorageSettings();
     if (m_visitedLinksManager)
         resetVisitedLinksManager();
 }
@@ -182,8 +176,8 @@ void BrowserContextAdapter::setRequestInterceptor(QWebEngineUrlRequestIntercepto
     if (m_requestInterceptor == interceptor)
         return;
     m_requestInterceptor = interceptor;
-    if (m_browserContext->url_request_getter_.get())
-        m_browserContext->url_request_getter_->updateRequestInterceptor();
+    if (m_browserContext->m_urlRequestContextGetter.get())
+        m_browserContext->m_profileIOData->updateRequestInterceptor();
 }
 
 void BrowserContextAdapter::addClient(BrowserContextAdapterClient *adapterClient)
@@ -238,8 +232,8 @@ void BrowserContextAdapter::setDataPath(const QString &path)
         return;
     m_dataPath = path;
     if (!m_offTheRecord) {
-        if (m_browserContext->url_request_getter_.get())
-            m_browserContext->url_request_getter_->updateStorageSettings();
+        if (m_browserContext->m_urlRequestContextGetter.get())
+            m_browserContext->m_profileIOData->updateStorageSettings();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -261,8 +255,8 @@ void BrowserContextAdapter::setCachePath(const QString &path)
     if (m_cachePath == path)
         return;
     m_cachePath = path;
-    if (!m_offTheRecord && m_browserContext->url_request_getter_.get())
-        m_browserContext->url_request_getter_->updateHttpCache();
+    if (!m_offTheRecord && m_browserContext->m_urlRequestContextGetter.get())
+        m_browserContext->m_profileIOData->updateHttpCache();
 }
 
 QString BrowserContextAdapter::cookiesPath() const
@@ -318,8 +312,8 @@ void BrowserContextAdapter::setHttpUserAgent(const QString &userAgent)
         if (web_contents->GetBrowserContext() == m_browserContext.data())
             web_contents->SetUserAgentOverride(m_httpUserAgent.toStdString());
 
-    if (m_browserContext->url_request_getter_.get())
-        m_browserContext->url_request_getter_->updateUserAgent();
+    if (m_browserContext->m_urlRequestContextGetter.get())
+        m_browserContext->m_profileIOData->updateUserAgent();
 }
 
 BrowserContextAdapter::HttpCacheType BrowserContextAdapter::httpCacheType() const
@@ -337,8 +331,8 @@ void BrowserContextAdapter::setHttpCacheType(BrowserContextAdapter::HttpCacheTyp
     m_httpCacheType = newhttpCacheType;
     if (oldCacheType == httpCacheType())
         return;
-    if (!m_offTheRecord && m_browserContext->url_request_getter_.get())
-        m_browserContext->url_request_getter_->updateHttpCache();
+    if (!m_offTheRecord && m_browserContext->m_urlRequestContextGetter.get())
+        m_browserContext->m_profileIOData->updateHttpCache();
 }
 
 BrowserContextAdapter::PersistentCookiesPolicy BrowserContextAdapter::persistentCookiesPolicy() const
@@ -354,8 +348,8 @@ void BrowserContextAdapter::setPersistentCookiesPolicy(BrowserContextAdapter::Pe
     m_persistentCookiesPolicy = newPersistentCookiesPolicy;
     if (oldPolicy == persistentCookiesPolicy())
         return;
-    if (!m_offTheRecord && m_browserContext->url_request_getter_.get())
-        m_browserContext->url_request_getter_->updateCookieStore();
+    if (!m_offTheRecord && m_browserContext->m_urlRequestContextGetter.get())
+        m_browserContext->m_profileIOData->updateCookieStore();
 }
 
 BrowserContextAdapter::VisitedLinksPolicy BrowserContextAdapter::visitedLinksPolicy() const
@@ -409,8 +403,8 @@ void BrowserContextAdapter::setHttpCacheMaxSize(int maxSize)
     if (m_httpCacheMaxSize == maxSize)
         return;
     m_httpCacheMaxSize = maxSize;
-    if (!m_offTheRecord && m_browserContext->url_request_getter_.get())
-        m_browserContext->url_request_getter_->updateHttpCache();
+    if (!m_offTheRecord && m_browserContext->m_urlRequestContextGetter.get())
+        m_browserContext->m_profileIOData->updateHttpCache();
 }
 
 const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &BrowserContextAdapter::customUrlSchemeHandlers() const
@@ -425,8 +419,8 @@ const QList<QByteArray> BrowserContextAdapter::customUrlSchemes() const
 
 void BrowserContextAdapter::updateCustomUrlSchemeHandlers()
 {
-    if (m_browserContext->url_request_getter_.get())
-        m_browserContext->url_request_getter_->updateJobFactory();
+    if (m_browserContext->m_urlRequestContextGetter.get())
+        m_browserContext->m_profileIOData->updateJobFactory();
 }
 
 bool BrowserContextAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
@@ -515,8 +509,8 @@ void BrowserContextAdapter::setHttpAcceptLanguage(const QString &httpAcceptLangu
         }
     }
 
-    if (m_browserContext->url_request_getter_.get())
-        m_browserContext->url_request_getter_->updateUserAgent();
+    if (m_browserContext->m_urlRequestContextGetter.get())
+        m_browserContext->m_profileIOData->updateUserAgent();
 }
 
 void BrowserContextAdapter::clearHttpCache()

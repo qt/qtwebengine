@@ -42,28 +42,18 @@
 
 #include "content/public/browser/resource_context.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
-class GURL;
-
 namespace QtWebEngineCore {
-class ProfileQt;
+
+class ProfileIODataQt;
 
 class ResourceContextQt : public content::ResourceContext
 {
 public:
-    ResourceContextQt(ProfileQt *ctx)
-        : context(ctx)
-    {}
-
+    ResourceContextQt(ProfileIODataQt *io_data);
     net::HostResolver *GetHostResolver() override;
     net::URLRequestContext *GetRequestContext() override;
-
 private:
-    ProfileQt *context;
-
+    ProfileIODataQt* m_io_data;
     DISALLOW_COPY_AND_ASSIGN(ResourceContextQt);
 };
 

@@ -44,7 +44,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/url_request_context.h"
-
+#include "profile_io_data_qt.h"
 #include <QtGlobal>
 
 QT_BEGIN_NAMESPACE
@@ -58,7 +58,6 @@ namespace QtWebEngineCore {
 class BrowserContextAdapter;
 class PermissionManagerQt;
 class SSLHostStateDelegateQt;
-class URLRequestContextGetterQt;
 
 class ProfileQt : public Profile
 {
@@ -113,12 +112,12 @@ public:
 private:
     friend class ContentBrowserClientQt;
     friend class WebContentsAdapter;
-    std::unique_ptr<content::ResourceContext> resourceContext;
-    scoped_refptr<URLRequestContextGetterQt> url_request_getter_;
-    std::unique_ptr<PermissionManagerQt> permissionManager;
-    std::unique_ptr<SSLHostStateDelegateQt> sslHostStateDelegate;
-    BrowserContextAdapter *m_adapter;
+    scoped_refptr<net::URLRequestContextGetter> m_urlRequestContextGetter;
+    std::unique_ptr<PermissionManagerQt> m_permissionManager;
+    std::unique_ptr<SSLHostStateDelegateQt> m_sslHostStateDelegate;
     std::unique_ptr<PrefService> m_prefService;
+    std::unique_ptr<ProfileIODataQt> m_profileIOData;
+    BrowserContextAdapter *m_adapter;
     friend class BrowserContextAdapter;
 
     DISALLOW_COPY_AND_ASSIGN(ProfileQt);
