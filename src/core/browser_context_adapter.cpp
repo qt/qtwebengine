@@ -76,24 +76,9 @@ inline QString buildLocationFromStandardPath(const QString &standardPath, const 
 
 namespace QtWebEngineCore {
 
-BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord):
-      m_offTheRecord(offTheRecord)
-    , m_httpCacheType(DiskHttpCache)
-    , m_persistentCookiesPolicy(AllowPersistentCookies)
-    , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
-    , m_httpCacheMaxSize(0)
-{
-    WebEngineContext::current()->addBrowserContext(this);
-    // creation of profile requires webengine context
-    m_browserContext.reset(new ProfileQt(this));
-    content::BrowserContext::Initialize(m_browserContext.data(), toFilePath(dataPath()));
-    // fixme: this should not be here
-    m_browserContext->m_profileIOData->initializeOnUIThread();
-}
-
 BrowserContextAdapter::BrowserContextAdapter(const QString &storageName):
       m_name(storageName)
-    , m_offTheRecord(false)
+    , m_offTheRecord(storageName.isEmpty())
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)

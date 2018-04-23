@@ -66,8 +66,7 @@ class VisitedLinksManagerQt;
 class QWEBENGINE_EXPORT BrowserContextAdapter : public QObject
 {
 public:
-    explicit BrowserContextAdapter(bool offTheRecord = false);
-    explicit BrowserContextAdapter(const QString &storagePrefix);
+    explicit BrowserContextAdapter(const QString &storagePrefix = QString());
     virtual ~BrowserContextAdapter();
 
     static BrowserContextAdapter* defaultContext();

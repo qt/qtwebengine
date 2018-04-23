@@ -73,8 +73,6 @@ class QWebEngineSettings;
 class QWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
 public:
     Q_DECLARE_PUBLIC(QWebEngineProfile)
-    QWebEngineProfilePrivate(const QString &storageName = QString());
-    // This is used only by global profile
     QWebEngineProfilePrivate(QtWebEngineCore::BrowserContextAdapter *browserContextAdapter);
     ~QWebEngineProfilePrivate();
 

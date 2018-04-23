@@ -326,7 +326,7 @@ void QQuickWebEngineProfilePrivate::userScripts_clear(QQmlListProperty<QQuickWeb
 */
 QQuickWebEngineProfile::QQuickWebEngineProfile(QObject *parent)
     : QObject(parent),
-      d_ptr(new QQuickWebEngineProfilePrivate(new QtWebEngineCore::BrowserContextAdapter(true)))
+      d_ptr(new QQuickWebEngineProfilePrivate(new QtWebEngineCore::BrowserContextAdapter()))
 {
     // Sets up the global WebEngineContext
     QQuickWebEngineProfile::defaultProfile();

@@ -147,25 +147,11 @@ using QtWebEngineCore::BrowserContextAdapter;
   \sa QWebEngineDownloadItem, QWebEnginePage::download()
 */
 
-// Fixme: fix storage name setters and unify constructors here and in BrowserContextAdapter
-QWebEngineProfilePrivate::QWebEngineProfilePrivate(const QString &storageName)
-    : m_settings(new QWebEngineSettings())
-    , m_browserContextAdapter(storageName.isEmpty()?
-                                  new QtWebEngineCore::BrowserContextAdapter(true):
-                                  new QtWebEngineCore::BrowserContextAdapter(storageName))
-    , m_scriptCollection(new QWebEngineScriptCollection(
-                             new QWebEngineScriptCollectionPrivate(m_browserContextAdapter->userResourceController())))
-{
-    m_browserContextAdapter->addClient(this);
-    m_settings->d_ptr->initDefaults();
-}
-
-// Fixme: fix storage name setters and unify constructors here and in BrowserContextAdapter
 QWebEngineProfilePrivate::QWebEngineProfilePrivate(BrowserContextAdapter* browserContextAdapter)
     : m_settings(new QWebEngineSettings())
     , m_browserContextAdapter(browserContextAdapter)
     , m_scriptCollection(new QWebEngineScriptCollection(
-                             new QWebEngineScriptCollectionPrivate(m_browserContextAdapter->userResourceController())))
+                             new QWebEngineScriptCollectionPrivate(browserContextAdapter->userResourceController())))
 {
     m_browserContextAdapter->addClient(this);
     m_settings->d_ptr->initDefaults();
@@ -267,7 +253,7 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
 */
 QWebEngineProfile::QWebEngineProfile(QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate())
+    , d_ptr(new QWebEngineProfilePrivate(new QtWebEngineCore::BrowserContextAdapter()))
 {
     d_ptr->q_ptr = this;
 }
@@ -284,7 +270,7 @@ QWebEngineProfile::QWebEngineProfile(QObject *parent)
 */
 QWebEngineProfile::QWebEngineProfile(const QString &storageName, QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate(storageName))
+    , d_ptr(new QWebEngineProfilePrivate(new QtWebEngineCore::BrowserContextAdapter(storageName)))
 {
     d_ptr->q_ptr = this;
 }
