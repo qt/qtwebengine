@@ -232,6 +232,12 @@ void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
 #if QT_CONFIG(draganddrop)
     Q_UNUSED(event_info);
 
+    if (!m_client->supportsDragging()) {
+        if (source_rwh)
+            source_rwh->DragSourceSystemDragEnded();
+        return;
+    }
+
     QPixmap pixmap;
     QPoint hotspot;
     pixmap = QPixmap::fromImage(toQImage(image.GetRepresentation(m_client->dpiScale())));

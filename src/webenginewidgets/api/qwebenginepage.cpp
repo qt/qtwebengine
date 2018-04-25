@@ -1673,6 +1673,11 @@ void QWebEnginePagePrivate::startDragging(const content::DropData &dropData,
 #endif // QT_CONFIG(draganddrop)
 }
 
+bool QWebEnginePagePrivate::supportsDragging() const
+{
+    return true;
+}
+
 bool QWebEnginePagePrivate::isEnabled() const
 {
     const Q_Q(QWebEnginePage);

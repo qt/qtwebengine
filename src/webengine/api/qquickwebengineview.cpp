@@ -1012,6 +1012,13 @@ void QQuickWebEngineViewPrivate::startDragging(const content::DropData &dropData
 #endif // QT_CONFIG(draganddrop)
 }
 
+bool QQuickWebEngineViewPrivate::supportsDragging() const
+{
+    // QTBUG-57516
+    // Fixme: This is just a band-aid workaround.
+    return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows);
+}
+
 bool QQuickWebEngineViewPrivate::isEnabled() const
 {
     const Q_Q(QQuickWebEngineView);
