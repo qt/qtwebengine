@@ -37,10 +37,10 @@
 **
 ****************************************************************************/
 
-#ifndef REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_IMPL_H
-#define REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_IMPL_H
+#ifndef REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_IMPL_H
+#define REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_IMPL_H
 
-#include "register_protocol_handler_permission_controller.h"
+#include "register_protocol_handler_request_controller.h"
 
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
@@ -50,10 +50,10 @@ class ProtocolHandlerRegistry;
 
 namespace QtWebEngineCore {
 
-class RegisterProtocolHandlerPermissionControllerImpl final : public RegisterProtocolHandlerPermissionController,
-                                                              private content::WebContentsObserver {
+class RegisterProtocolHandlerRequestControllerImpl final : public RegisterProtocolHandlerRequestController,
+                                                           private content::WebContentsObserver {
 public:
-    RegisterProtocolHandlerPermissionControllerImpl(
+    RegisterProtocolHandlerRequestControllerImpl(
         content::WebContents *webContents,
         ProtocolHandler handler);
 
@@ -68,4 +68,4 @@ private:
 
 } // namespace QtWebEngineCore
 
-#endif // REGISTER_PROTOCOL_HANDLER_PERMISSION_CONTROLLER_IMPL_H
+#endif // REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_IMPL_H

@@ -132,8 +132,8 @@ public:
     void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) override;
     void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) override;
     void runMouseLockPermissionRequest(const QUrl &securityOrigin) override;
-    void runQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController>) override;
-    void runRegisterProtocolHandlerPermissionRequest(QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerPermissionController>) override;
+    void runQuotaRequest(QWebEngineQuotaRequest) override;
+    void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) override;
     QObject *accessibilityParentObject() override;
     QtWebEngineCore::WebEngineSettings *webEngineSettings() const override;
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) override;

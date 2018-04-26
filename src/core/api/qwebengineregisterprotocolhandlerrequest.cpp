@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,80 +37,80 @@
 **
 ****************************************************************************/
 
-#include "qwebenginequotapermissionrequest.h"
+#include "qwebengineregisterprotocolhandlerrequest.h"
 
-#include "quota_permission_controller.h"
+#include "register_protocol_handler_request_controller.h"
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QWebEngineQuotaPermissionRequest
-    \brief The QWebEngineQuotaPermissionRequest class enables accepting or rejecting
-    requests for larger persistent storage than the application's current allocation
-    in File System API.
-
-    \since 5.11
+    \class QWebEngineRegisterProtocolHandlerRequest
     \inmodule QtWebEngineCore
+    \since 5.11
+    \brief The QWebEngineRegisterProtocolHandlerRequest class enables
+    accepting or rejecting requests from the \l registerProtocolHandler API.
 
-    This class is used by the QWebEnginePage::quotaPermissionRequested() signal
-    to \l accept() or \l reject() a request for an increase in the persistent
-    storage allocated to the application. The default quota is 0 bytes.
+    \sa QWebEnginePage::registerProtocolHandlerRequested
 */
 
-/*! \fn QWebEngineQuotaPermissionRequest::QWebEngineQuotaPermissionRequest()
+/*! \fn QWebEngineRegisterProtocolHandlerRequest::QWebEngineRegisterProtocolHandlerRequest()
     \internal
 */
 
 /*! \internal */
-QWebEngineQuotaPermissionRequest::QWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
-    : d_ptr(controller)
-{
-}
+QWebEngineRegisterProtocolHandlerRequest::QWebEngineRegisterProtocolHandlerRequest(
+    QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerRequestController> d_ptr)
+    : d_ptr(std::move(d_ptr))
+{}
 
 /*!
-    Rejects a request for larger persistent storage.
+    Rejects the request.
+
+    Subsequent calls to accept() and reject() are ignored.
 */
-void QWebEngineQuotaPermissionRequest::reject()
+void QWebEngineRegisterProtocolHandlerRequest::reject()
 {
     d_ptr->reject();
 }
 
 /*!
-    Accepts a request for larger persistent storage.
+    Accepts the request
+
+    Subsequent calls to accept() and reject() are ignored.
 */
-void QWebEngineQuotaPermissionRequest::accept()
+void QWebEngineRegisterProtocolHandlerRequest::accept()
 {
     d_ptr->accept();
 }
 
 /*!
-    \property QWebEngineQuotaPermissionRequest::origin
-    \brief The URL of the web page that issued the quota permission request.
-*/
+    \property QWebEngineRegisterProtocolHandlerRequest::origin
+    \brief The URL template for the protocol handler.
 
-QUrl QWebEngineQuotaPermissionRequest::origin() const
+    This is the second parameter from the \l registerProtocolHandler call.
+*/
+QUrl QWebEngineRegisterProtocolHandlerRequest::origin() const
 {
     return d_ptr->origin();
 }
 
 /*!
-    \property QWebEngineQuotaPermissionRequest::requestedSize
-    \brief Contains the size of the requested disk space in bytes.
-*/
+    \property QWebEngineRegisterProtocolHandlerRequest::scheme
+    \brief The URL scheme for the protocol handler.
 
-qint64 QWebEngineQuotaPermissionRequest::requestedSize() const
+    This is the first parameter from the \l registerProtocolHandler call.
+*/
+QString QWebEngineRegisterProtocolHandlerRequest::scheme() const
 {
-    return d_ptr->requestedSize();
+    return d_ptr->scheme();
 }
 
-/*! \fn bool QWebEngineQuotaPermissionRequest::operator==(const QWebEngineQuotaPermissionRequest &that) const
-    Returns \c true if \a that points to the same object as this quota
-    permission request.
+/*! \fn bool QWebEngineRegisterProtocolHandlerRequest::operator==(const QWebEngineRegisterProtocolHandlerRequest &that) const
+    Returns \c true if \a that points to the same object as this request.
 */
 
-/*! \fn bool QWebEngineQuotaPermissionRequest::operator!=(const QWebEngineQuotaPermissionRequest &that) const
-    Returns \c true if \a that points to a different object than this quota
-    permission request.
+/*! \fn bool QWebEngineRegisterProtocolHandlerRequest::operator!=(const QWebEngineRegisterProtocolHandlerRequest &that) const
+    Returns \c true if \a that points to a different object than this request.
 */
 
 QT_END_NAMESPACE

@@ -90,8 +90,8 @@ SOURCES = \
         permission_manager_qt.cpp \
         process_main.cpp \
         quota_permission_context_qt.cpp \
-        quota_permission_controller_impl.cpp \
-        register_protocol_handler_permission_controller_impl.cpp \
+        quota_request_controller_impl.cpp \
+        register_protocol_handler_request_controller_impl.cpp \
         render_view_context_menu_qt.cpp \
         render_view_observer_host_qt.cpp \
         render_widget_host_view_qt.cpp \
@@ -174,15 +174,14 @@ HEADERS = \
         ozone/ozone_platform_qt.h \
         ozone/platform_window_qt.h \
         ozone/surface_factory_qt.h \
-        permission_controller.h \
         permission_manager_qt.h \
         process_main.h \
         proxy_config_service_qt.h \
         quota_permission_context_qt.h \
-        quota_permission_controller.h \
-        quota_permission_controller_impl.h \
-        register_protocol_handler_permission_controller.h \
-        register_protocol_handler_permission_controller_impl.h \
+        quota_request_controller.h \
+        quota_request_controller_impl.h \
+        register_protocol_handler_request_controller.h \
+        register_protocol_handler_request_controller_impl.h \
         render_view_context_menu_qt.h \
         render_view_observer_host_qt.h \
         render_widget_host_view_qt.h \
@@ -196,6 +195,7 @@ HEADERS = \
         renderer_host/resource_dispatcher_host_delegate_qt.h \
         renderer_host/user_resource_controller_host.h \
         renderer_host/web_channel_ipc_transport_host.h \
+        request_controller.h \
         resource_context_qt.h \
         type_conversion.h \
         user_script.h \

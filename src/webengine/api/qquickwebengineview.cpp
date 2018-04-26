@@ -56,8 +56,8 @@
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescript_p.h"
-#include "qwebenginequotapermissionrequest.h"
-#include "qwebengineregisterprotocolhandlerpermissionrequest.h"
+#include "qwebenginequotarequest.h"
+#include "qwebengineregisterprotocolhandlerrequest.h"
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
 #include "qquickwebenginetestsupport_p.h"
@@ -590,18 +590,16 @@ void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &secur
     adapter->grantMouseLockPermission(false);
 }
 
-void QQuickWebEngineViewPrivate::runQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
+void QQuickWebEngineViewPrivate::runQuotaRequest(QWebEngineQuotaRequest request)
 {
     Q_Q(QQuickWebEngineView);
-    QWebEngineQuotaPermissionRequest request(std::move(controller));
-    Q_EMIT q->quotaPermissionRequested(request);
+    Q_EMIT q->quotaRequested(request);
 }
 
-void QQuickWebEngineViewPrivate::runRegisterProtocolHandlerPermissionRequest(QSharedPointer<RegisterProtocolHandlerPermissionController> controller)
+void QQuickWebEngineViewPrivate::runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest request)
 {
     Q_Q(QQuickWebEngineView);
-    QWebEngineRegisterProtocolHandlerPermissionRequest request(std::move(controller));
-    Q_EMIT q->registerProtocolHandlerPermissionRequested(request);
+    Q_EMIT q->registerProtocolHandlerRequested(request);
 }
 
 QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
@@ -757,10 +755,9 @@ void QQuickWebEngineViewPrivate::initializationFinished()
         adapter->setWebChannel(m_webChannel, m_webChannelWorld);
     if (!qFuzzyCompare(adapter->currentZoomFactor(), m_defaultZoomFactor))
         q->setZoomFactor(m_defaultZoomFactor);
+
     if (devToolsView && devToolsView->d_ptr->adapter)
         adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
-    else if (inspectedView && inspectedView->d_ptr->adapter)
-        inspectedView->d_ptr->adapter->openDevToolsFrontend(adapter);
 
     Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
         script->d_func()->bind(browserContextAdapter()->userResourceController(), adapter.data());
@@ -1005,7 +1002,14 @@ void QQuickWebEngineViewPrivate::startDragging(const content::DropData &dropData
                                                Qt::DropActions allowedActions,
                                                const QPixmap &pixmap, const QPoint &offset)
 {
+#if !QT_CONFIG(draganddrop)
+    Q_UNUSED(dropData);
+    Q_UNUSED(allowedActions);
+    Q_UNUSED(pixmap);
+    Q_UNUSED(offset);
+#else
     adapter->startDragging(q_ptr->window(), dropData, allowedActions, pixmap, offset);
+#endif // QT_CONFIG(draganddrop)
 }
 
 bool QQuickWebEngineViewPrivate::isEnabled() const
@@ -1272,10 +1276,12 @@ void QQuickWebEngineView::setDevToolsView(QQuickWebEngineView *devToolsView)
     d->devToolsView = devToolsView;
     if (devToolsView)
         devToolsView->setInspectedView(this);
-    if (devToolsView)
-        d->adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
-    else
-        d->adapter->closeDevToolsFrontend();
+    if (d->adapter->isInitialized()) {
+        if (devToolsView)
+            d->adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
+        else
+            d->adapter->closeDevToolsFrontend();
+    }
     Q_EMIT devToolsViewChanged();
 }
 
@@ -1365,6 +1371,7 @@ void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &va
     QQuickItem::itemChange(change, value);
 }
 
+#if QT_CONFIG(draganddrop)
 static QPoint mapToScreen(const QQuickItem *item, const QPoint &clientPos)
 {
     return item->window()->position() + item->mapToScene(clientPos).toPoint();
@@ -1402,6 +1409,7 @@ void QQuickWebEngineView::dropEvent(QDropEvent *e)
     e->accept();
     d->adapter->endDragging(e->pos(), mapToScreen(this, e->pos()));
 }
+#endif // QT_CONFIG(draganddrop)
 
 void QQuickWebEngineView::triggerWebAction(WebAction action)
 {

@@ -229,6 +229,7 @@ void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
                                       const content::DragEventSourceInfo &event_info,
                                       content::RenderWidgetHostImpl* source_rwh)
 {
+#if QT_CONFIG(draganddrop)
     Q_UNUSED(event_info);
 
     QPixmap pixmap;
@@ -240,11 +241,14 @@ void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
     }
 
     m_client->startDragging(drop_data, toQtDropActions(allowed_ops), pixmap, hotspot);
+#endif // QT_CONFIG(draganddrop)
 }
 
 void WebContentsViewQt::UpdateDragCursor(blink::WebDragOperation dragOperation)
 {
+#if QT_CONFIG(draganddrop)
     m_client->webContentsAdapter()->updateDragAction(dragOperation);
+#endif // QT_CONFIG(draganddrop)
 }
 
 void WebContentsViewQt::TakeFocus(bool reverse)

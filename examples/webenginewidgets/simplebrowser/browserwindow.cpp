@@ -156,7 +156,10 @@ QMenu *BrowserWindow::createFileMenu(TabWidget *tabWidget)
 
     QAction *newTabAction = new QAction(tr("New &Tab"), this);
     newTabAction->setShortcuts(QKeySequence::AddTab);
-    connect(newTabAction, &QAction::triggered, tabWidget, &TabWidget::createTab);
+    connect(newTabAction, &QAction::triggered, this, [this]() {
+        m_tabWidget->createTab();
+        m_urlLineEdit->setFocus();
+    });
     fileMenu->addAction(newTabAction);
 
     fileMenu->addAction(tr("&Open File..."), this, &BrowserWindow::handleFileOpenTriggered, QKeySequence::Open);
@@ -427,12 +430,14 @@ void BrowserWindow::handleWebViewTitleChanged(const QString &title)
 
 void BrowserWindow::handleNewWindowTriggered()
 {
-    m_browser->createWindow();
+    BrowserWindow *window = m_browser->createWindow();
+    window->m_urlLineEdit->setFocus();
 }
 
 void BrowserWindow::handleNewIncognitoWindowTriggered()
 {
-    m_browser->createWindow(/* offTheRecord: */ true);
+    BrowserWindow *window = m_browser->createWindow(/* offTheRecord: */ true);
+    window->m_urlLineEdit->setFocus();
 }
 
 void BrowserWindow::handleFileOpenTriggered()

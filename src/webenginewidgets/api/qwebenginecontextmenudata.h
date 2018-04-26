@@ -125,6 +125,9 @@ private:
     friend class QWebEnginePage;
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEngineContextMenuData::MediaFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEngineContextMenuData::EditFlags)
+
 QT_END_NAMESPACE
 
 #endif // QWEBENGINECONTEXTDATA_H

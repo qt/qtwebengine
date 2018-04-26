@@ -1,0 +1,12 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource>
+    <file>resources/mixed_frame.html</file>
+    <file>resources/mixed_qrc.html</file>
+    <file>resources/mixed_tst.html</file>
+    <file>resources/subdir/frame2.html</file>
+    <file>resources/subdir/index.html</file>
+    <file>resources/subdir_frame1.html</file>
+    <file>resources/websocket.html</file>
+</qresource>
+</RCC>

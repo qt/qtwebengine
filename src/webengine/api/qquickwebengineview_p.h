@@ -76,8 +76,8 @@ class QQuickWebEngineProfile;
 class QQuickWebEngineSettings;
 class QQuickWebEngineFormValidationMessageRequest;
 class QQuickWebEngineViewPrivate;
-class QWebEngineQuotaPermissionRequest;
-class QWebEngineRegisterProtocolHandlerPermissionRequest;
+class QWebEngineQuotaRequest;
+class QWebEngineRegisterProtocolHandlerRequest;
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
 class QQuickWebEngineTestSupport;
@@ -541,11 +541,11 @@ Q_SIGNALS:
     Q_REVISION(4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
     Q_REVISION(4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
     Q_REVISION(5) void pdfPrintingFinished(const QString &filePath, bool success);
-    Q_REVISION(7) void quotaPermissionRequested(const QWebEngineQuotaPermissionRequest &request);
+    Q_REVISION(7) void quotaRequested(const QWebEngineQuotaRequest &request);
     Q_REVISION(7) void geometryChangeRequested(const QRect &geometry, const QRect &frameGeometry);
     Q_REVISION(7) void inspectedViewChanged();
     Q_REVISION(7) void devToolsViewChanged();
-    Q_REVISION(7) void registerProtocolHandlerPermissionRequested(const QWebEngineRegisterProtocolHandlerPermissionRequest &request);
+    Q_REVISION(7) void registerProtocolHandlerRequested(const QWebEngineRegisterProtocolHandlerRequest &request);
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     void testSupportChanged();
@@ -554,10 +554,12 @@ Q_SIGNALS:
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
     void itemChange(ItemChange, const ItemChangeData &) override;
+#if QT_CONFIG(draganddrop)
     void dragEnterEvent(QDragEnterEvent *e) override;
     void dragLeaveEvent(QDragLeaveEvent *e) override;
     void dragMoveEvent(QDragMoveEvent *e) override;
     void dropEvent(QDropEvent *e) override;
+#endif // QT_CONFIG(draganddrop)
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)

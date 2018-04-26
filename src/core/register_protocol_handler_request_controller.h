@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,30 +37,26 @@
 **
 ****************************************************************************/
 
-#ifndef QUOTA_PERMISSION_CONTROLLER_IMPL_H
-#define QUOTA_PERMISSION_CONTROLLER_IMPL_H
+#ifndef REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_H
+#define REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_H
 
-#include "quota_permission_controller.h"
-#include "quota_permission_context_qt.h"
+#include "request_controller.h"
 
 namespace QtWebEngineCore {
 
-class QuotaPermissionControllerImpl final : public QuotaPermissionController {
+class RegisterProtocolHandlerRequestController : public RequestController {
 public:
-    QuotaPermissionControllerImpl(
-        QuotaPermissionContextQt *context,
-        const content::StorageQuotaParams &params,
-        const content::QuotaPermissionContext::PermissionCallback &callback);
+    RegisterProtocolHandlerRequestController(QUrl origin, QString scheme)
+        : RequestController(std::move(origin))
+        , m_scheme(std::move(scheme))
+    {}
 
-protected:
-    void accepted() override;
-    void rejected() override;
+    QString scheme() const { return m_scheme; }
 
 private:
-    scoped_refptr<QuotaPermissionContextQt> m_context;
-    content::QuotaPermissionContext::PermissionCallback m_callback;
+    QString m_scheme;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // QUOTA_PERMISSION_CONTROLLER_IMPL_H
+#endif // REGISTER_PROTOCOL_HANDLER_REQUEST_CONTROLLER_H

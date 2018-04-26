@@ -63,7 +63,7 @@ WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
 {
     connect(this, &QWebEnginePage::authenticationRequired, this, &WebPage::handleAuthenticationRequired);
     connect(this, &QWebEnginePage::proxyAuthenticationRequired, this, &WebPage::handleProxyAuthenticationRequired);
-    connect(this, &QWebEnginePage::registerProtocolHandlerPermissionRequested, this, &WebPage::handleRegisterProtocolHandlerPermissionRequested);
+    connect(this, &QWebEnginePage::registerProtocolHandlerRequested, this, &WebPage::handleRegisterProtocolHandlerRequested);
 }
 
 bool WebPage::certificateError(const QWebEngineCertificateError &error)
@@ -143,8 +143,8 @@ void WebPage::handleProxyAuthenticationRequired(const QUrl &, QAuthenticator *au
     }
 }
 
-//! [registerProtocolHandlerPermissionRequested]
-void WebPage::handleRegisterProtocolHandlerPermissionRequested(QWebEngineRegisterProtocolHandlerPermissionRequest request)
+//! [registerProtocolHandlerRequested]
+void WebPage::handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request)
 {
     auto answer = QMessageBox::question(
         view()->window(),
@@ -157,4 +157,4 @@ void WebPage::handleRegisterProtocolHandlerPermissionRequested(QWebEngineRegiste
     else
         request.reject();
 }
-//! [registerProtocolHandlerPermissionRequested]
+//! [registerProtocolHandlerRequested]

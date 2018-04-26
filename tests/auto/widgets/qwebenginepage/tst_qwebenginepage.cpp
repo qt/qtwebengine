@@ -49,8 +49,8 @@
 #include <qwebenginehistory.h>
 #include <qwebenginepage.h>
 #include <qwebengineprofile.h>
-#include <qwebenginequotapermissionrequest.h>
-#include <qwebengineregisterprotocolhandlerpermissionrequest.h>
+#include <qwebenginequotarequest.h>
+#include <qwebengineregisterprotocolhandlerrequest.h>
 #include <qwebenginescript.h>
 #include <qwebenginescriptcollection.h>
 #include <qwebenginesettings.h>
@@ -160,7 +160,7 @@ private Q_SLOTS:
 
     void runJavaScript();
     void fullScreenRequested();
-    void quotaPermissionRequested();
+    void quotaRequested();
 
 
     // Tests from tst_QWebEngineFrame
@@ -216,6 +216,7 @@ private Q_SLOTS:
     void registerProtocolHandler_data();
     void registerProtocolHandler();
     void dataURLFragment();
+    void devTools();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -2750,7 +2751,7 @@ void tst_QWebEnginePage::fullScreenRequested()
     QVERIFY(watcher.wait());
 }
 
-void tst_QWebEnginePage::quotaPermissionRequested()
+void tst_QWebEnginePage::quotaRequested()
 {
     ConsolePage page;
     QWebEngineView view;
@@ -2759,8 +2760,8 @@ void tst_QWebEnginePage::quotaPermissionRequested()
     page.load(QUrl("qrc:///resources/content.html"));
     QVERIFY(loadFinishedSpy.wait());
 
-    connect(&page, &QWebEnginePage::quotaPermissionRequested,
-            [] (QWebEngineQuotaPermissionRequest request)
+    connect(&page, &QWebEnginePage::quotaRequested,
+            [] (QWebEngineQuotaRequest request)
     {
         if (request.requestedSize() <= 5000)
             request.accept();
@@ -2876,6 +2877,12 @@ void tst_QWebEnginePage::urlChange()
 
     QTRY_COMPARE(urlSpy.size(), 1);
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), dataUrl2);
+
+    QUrl testUrl("http://test.qt.io/");
+    m_view->setHtml(QStringLiteral("<h1>Test</h1"), testUrl);
+
+    QTRY_COMPARE(urlSpy.size(), 1);
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), testUrl);
 }
 
 class FakeReply : public QNetworkReply {
@@ -4264,7 +4271,7 @@ void tst_QWebEnginePage::registerProtocolHandler()
 
     QWebEnginePage page;
     QSignalSpy loadSpy(&page, &QWebEnginePage::loadFinished);
-    QSignalSpy permissionSpy(&page, &QWebEnginePage::registerProtocolHandlerPermissionRequested);
+    QSignalSpy permissionSpy(&page, &QWebEnginePage::registerProtocolHandlerRequested);
 
     page.setUrl(server.url("/"));
     QTRY_COMPARE(loadSpy.count(), 1);
@@ -4278,7 +4285,7 @@ void tst_QWebEnginePage::registerProtocolHandler()
     page.runJavaScript(call);
 
     QTRY_COMPARE(permissionSpy.count(), 1);
-    auto request = permissionSpy.takeFirst().value(0).value<QWebEngineRegisterProtocolHandlerPermissionRequest>();
+    auto request = permissionSpy.takeFirst().value(0).value<QWebEngineRegisterProtocolHandlerRequest>();
     QCOMPARE(request.origin(), QUrl(url));
     QCOMPARE(request.scheme(), scheme);
     if (permission)
@@ -4309,6 +4316,58 @@ void tst_QWebEnginePage::dataURLFragment()
     QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, 0, elementCenter(m_page, "link"));
     QVERIFY(urlChangedSpy.wait());
     QCOMPARE(m_page->url().fragment(), QStringLiteral("anchor"));
+
+
+    m_page->setHtml("<html><body>"
+                    "<a id='link' href='#anchor'>anchor</a>"
+                    "</body></html>", QUrl("http://test.qt.io/mytest.html"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 2);
+
+    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, 0, elementCenter(m_page, "link"));
+    QVERIFY(urlChangedSpy.wait());
+    QCOMPARE(m_page->url(), QUrl("http://test.qt.io/mytest.html#anchor"));
+}
+
+void tst_QWebEnginePage::devTools()
+{
+    QWebEngineProfile profile;
+    QWebEnginePage inspectedPage1(&profile);
+    QWebEnginePage inspectedPage2(&profile);
+    QWebEnginePage devToolsPage(&profile);
+    QSignalSpy spy(&devToolsPage, &QWebEnginePage::loadFinished);
+
+    inspectedPage1.setDevToolsPage(&devToolsPage);
+
+    QCOMPARE(inspectedPage1.devToolsPage(), &devToolsPage);
+    QCOMPARE(inspectedPage1.inspectedPage(), nullptr);
+    QCOMPARE(inspectedPage2.devToolsPage(), nullptr);
+    QCOMPARE(inspectedPage2.inspectedPage(), nullptr);
+    QCOMPARE(devToolsPage.devToolsPage(), nullptr);
+    QCOMPARE(devToolsPage.inspectedPage(), &inspectedPage1);
+
+    QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(spy.takeFirst().value(0).toBool());
+
+    devToolsPage.setInspectedPage(&inspectedPage2);
+
+    QCOMPARE(inspectedPage1.devToolsPage(), nullptr);
+    QCOMPARE(inspectedPage1.inspectedPage(), nullptr);
+    QCOMPARE(inspectedPage2.devToolsPage(), &devToolsPage);
+    QCOMPARE(inspectedPage2.inspectedPage(), nullptr);
+    QCOMPARE(devToolsPage.devToolsPage(), nullptr);
+    QCOMPARE(devToolsPage.inspectedPage(), &inspectedPage2);
+
+    QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(spy.takeFirst().value(0).toBool());
+
+    devToolsPage.setInspectedPage(nullptr);
+
+    QCOMPARE(inspectedPage1.devToolsPage(), nullptr);
+    QCOMPARE(inspectedPage1.inspectedPage(), nullptr);
+    QCOMPARE(inspectedPage2.devToolsPage(), nullptr);
+    QCOMPARE(inspectedPage2.inspectedPage(), nullptr);
+    QCOMPARE(devToolsPage.devToolsPage(), nullptr);
+    QCOMPARE(devToolsPage.inspectedPage(), nullptr);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

@@ -37,31 +37,30 @@
 **
 ****************************************************************************/
 
-#include "quota_permission_controller_impl.h"
+#ifndef QUOTA_REQUEST_CONTROLLER_IMPL_H
+#define QUOTA_REQUEST_CONTROLLER_IMPL_H
 
-#include "type_conversion.h"
+#include "quota_permission_context_qt.h"
+#include "quota_request_controller.h"
 
 namespace QtWebEngineCore {
 
-QuotaPermissionControllerImpl::QuotaPermissionControllerImpl(
-    QuotaPermissionContextQt *context,
-    const content::StorageQuotaParams &params,
-    const content::QuotaPermissionContext::PermissionCallback &callback)
-    : QuotaPermissionController(
-        toQt(params.origin_url),
-        params.requested_size)
-    , m_context(context)
-    , m_callback(callback)
-{}
+class QuotaRequestControllerImpl final : public QuotaRequestController {
+public:
+    QuotaRequestControllerImpl(
+        QuotaPermissionContextQt *context,
+        const content::StorageQuotaParams &params,
+        const content::QuotaPermissionContext::PermissionCallback &callback);
 
-void QuotaPermissionControllerImpl::accepted()
-{
-    m_context->dispatchCallbackOnIOThread(m_callback, QuotaPermissionContextQt::QUOTA_PERMISSION_RESPONSE_ALLOW);
-}
+protected:
+    void accepted() override;
+    void rejected() override;
 
-void QuotaPermissionControllerImpl::rejected()
-{
-    m_context->dispatchCallbackOnIOThread(m_callback, QuotaPermissionContextQt::QUOTA_PERMISSION_RESPONSE_DISALLOW);
-}
+private:
+    scoped_refptr<QuotaPermissionContextQt> m_context;
+    content::QuotaPermissionContext::PermissionCallback m_callback;
+};
 
 } // namespace QtWebEngineCore
+
+#endif // QUOTA_REQUEST_CONTROLLER_IMPL_H

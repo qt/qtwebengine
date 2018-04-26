@@ -51,6 +51,8 @@
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
 #include "net/network_delegate_qt.h"
+#include "qwebengineregisterprotocolhandlerrequest.h"
+#include "register_protocol_handler_request_controller_impl.h"
 #include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
 #include "visited_links_manager_qt.h"
@@ -58,7 +60,6 @@
 #include "web_contents_adapter_p.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
-#include "register_protocol_handler_permission_controller_impl.h"
 
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "components/web_cache/browser/web_cache_manager.h"
@@ -185,7 +186,7 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
 
         // If there is a visible entry there are special cases when we dont wan't to use the actual URL
         if (entry && newUrl.isEmpty())
-            newUrl = shouldUseActualURL(entry) ? toQt(entry->GetURL()) : toQt(source->GetVisibleURL());
+            newUrl = shouldUseActualURL(entry) ? toQt(entry->GetURL()) : toQt(entry->GetVirtualURL());
 
         if (m_url != newUrl) {
             m_url = newUrl;
@@ -638,9 +639,9 @@ void WebContentsDelegateQt::RegisterProtocolHandler(content::WebContents *webCon
     if (registry->SilentlyHandleRegisterHandlerRequest(handler))
         return;
 
-    QSharedPointer<RegisterProtocolHandlerPermissionController> controller(
-        new RegisterProtocolHandlerPermissionControllerImpl(webContents, handler));
-    m_viewClient->runRegisterProtocolHandlerPermissionRequest(std::move(controller));
+    QWebEngineRegisterProtocolHandlerRequest request(
+        QSharedPointer<RegisterProtocolHandlerRequestControllerImpl>::create(webContents, handler));
+    m_viewClient->runRegisterProtocolHandlerRequest(std::move(request));
 }
 
 void WebContentsDelegateQt::UnregisterProtocolHandler(content::WebContents *webContents, const std::string &protocol, const GURL &url, bool)

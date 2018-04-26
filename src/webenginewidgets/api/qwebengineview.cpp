@@ -362,6 +362,7 @@ void QWebEngineView::hideEvent(QHideEvent *event)
     page()->d_ptr->wasHidden();
 }
 
+#if QT_CONFIG(draganddrop)
 /*!
     \reimp
 */
@@ -418,6 +419,7 @@ void QWebEngineView::dropEvent(QDropEvent *e)
     d->page->d_ptr->adapter->endDragging(e->pos(), mapToGlobal(e->pos()));
     d->m_dragEntered = false;
 }
+#endif // QT_CONFIG(draganddrop)
 
 #ifndef QT_NO_ACCESSIBILITY
 int QWebEngineViewAccessible::childCount() const

@@ -89,15 +89,6 @@ bool GLSurfaceEGLQt::InitializeOneOff()
         return false;
     }
 
-    s_initialized = true;
-    return true;
-}
-
-bool GLSurfaceEGLQt::InitializeExtensionSettingsOneOff()
-{
-    if (!s_initialized)
-        return false;
-
     g_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
     g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions, "EGL_KHR_surfaceless_context");
     if (g_egl_surfaceless_context_supported) {
@@ -116,8 +107,13 @@ bool GLSurfaceEGLQt::InitializeExtensionSettingsOneOff()
             context->ReleaseCurrent(surface.get());
         }
     }
-
+    s_initialized = true;
     return true;
+}
+
+bool GLSurfaceEGLQt::InitializeExtensionSettingsOneOff()
+{
+    return s_initialized;
 }
 
 bool GLSurfaceEGL::InitializeExtensionSettingsOneOff()
@@ -217,7 +213,7 @@ bool GLSurfaceEGLQt::Initialize(GLSurfaceFormat format)
                                         g_config,
                                         pbuffer_attributes);
     if (!m_surfaceBuffer) {
-        LOG(ERROR) << "eglCreatePbufferSurface failed with error " << GetLastEGLErrorString();
+        VLOG(1) << "eglCreatePbufferSurface failed with error " << GetLastEGLErrorString();
         Destroy();
         return false;
     }

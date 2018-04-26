@@ -21,11 +21,6 @@ LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
 QMAKE_LFLAGS += $$NINJA_LFLAGS
 POST_TARGETDEPS += $$NINJA_TARGETDEPS
 
-#ninja compiles with std::__debug
-linux: CONFIG(debug, debug|release) {
-    DEFINES += _GLIBCXX_DEBUG
-}
-
 # Fixme: -Werror=unused-parameter in core
 QMAKE_CXXFLAGS_WARN_ON =
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,26 +37,39 @@
 **
 ****************************************************************************/
 
-#ifndef QUOTA_PERMISSION_CONTROLLER_H
-#define QUOTA_PERMISSION_CONTROLLER_H
+#ifndef QWEBENGINEREGISTERPROTOCOLHANDLERREQUEST_H
+#define QWEBENGINEREGISTERPROTOCOLHANDLERREQUEST_H
 
-#include "permission_controller.h"
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qurl.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 namespace QtWebEngineCore {
+class RegisterProtocolHandlerRequestController;
+class WebContentsDelegateQt;
+}
 
-class QWEBENGINE_EXPORT QuotaPermissionController : public PermissionController {
+QT_BEGIN_NAMESPACE
+
+class QWEBENGINE_EXPORT QWebEngineRegisterProtocolHandlerRequest {
+    Q_GADGET
+    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
+    Q_PROPERTY(QString scheme READ scheme CONSTANT FINAL)
 public:
-    QuotaPermissionController(QUrl origin, qint64 requestedSize)
-        : PermissionController(std::move(origin))
-        , m_requestedSize(requestedSize)
-    {}
-
-    qint64 requestedSize() const { return m_requestedSize; }
-
+    QWebEngineRegisterProtocolHandlerRequest() {}
+    Q_INVOKABLE void accept();
+    Q_INVOKABLE void reject();
+    QUrl origin() const;
+    QString scheme() const;
+    bool operator==(const QWebEngineRegisterProtocolHandlerRequest &that) const { return d_ptr == that.d_ptr; }
+    bool operator!=(const QWebEngineRegisterProtocolHandlerRequest &that) const { return d_ptr != that.d_ptr; }
 private:
-    qint64 m_requestedSize;
+    QWebEngineRegisterProtocolHandlerRequest(
+        QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerRequestController>);
+    friend QtWebEngineCore::WebContentsDelegateQt;
+    QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerRequestController> d_ptr;
 };
 
-} // namespace QtWebEngineCore
+QT_END_NAMESPACE
 
-#endif // QUOTA_PERMISSION_CONTROLLER_H
+#endif // QWEBENGINEREGISTERPROTOCOLHANDLERREQUEST_H

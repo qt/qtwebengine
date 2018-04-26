@@ -71,6 +71,7 @@
 #include "content/utility/in_process_utility_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/host/gpu_switches.h"
+#include "media/audio/audio_manager.h"
 #include "net/base/port_util.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -534,6 +535,10 @@ WebEngineContext::WebEngineContext()
         std::string allowedPorts = parsedCommandLine->GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
         net::SetExplicitlyAllowedPorts(allowedPorts);
     }
+
+#if defined(OS_LINUX)
+    media::AudioManager::SetGlobalAppName(QCoreApplication::applicationName().toStdString());
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     // Creating pepper plugins from the page (which calls PluginService::GetPluginInfoArray)

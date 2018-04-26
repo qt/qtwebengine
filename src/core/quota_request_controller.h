@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -36,49 +36,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef PERMISSION_CONTROLLER_H
-#define PERMISSION_CONTROLLER_H
 
-#include "qtwebenginecoreglobal.h"
+#ifndef QUOTA_REQUEST_CONTROLLER_H
+#define QUOTA_REQUEST_CONTROLLER_H
 
-#include <QUrl>
+#include "request_controller.h"
 
 namespace QtWebEngineCore {
 
-class QWEBENGINE_EXPORT PermissionController {
+class QuotaRequestController : public RequestController {
 public:
-    PermissionController(QUrl origin)
-        : m_answered(false)
-        , m_origin(std::move(origin))
+    QuotaRequestController(QUrl origin, qint64 requestedSize)
+        : RequestController(std::move(origin))
+        , m_requestedSize(requestedSize)
     {}
 
-    QUrl origin() const { return m_origin; }
-
-    void accept() {
-        if (!m_answered) {
-            m_answered = true;
-            accepted();
-        }
-    }
-
-    void reject() {
-        if (!m_answered) {
-            m_answered = true;
-            rejected();
-        }
-    }
-
-    virtual ~PermissionController() {}
-
-protected:
-    virtual void accepted() = 0;
-    virtual void rejected() = 0;
+    qint64 requestedSize() const { return m_requestedSize; }
 
 private:
-    bool m_answered;
-    QUrl m_origin;
+    qint64 m_requestedSize;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // PERMISSION_CONTROLLER_H
+#endif // QUOTA_REQUEST_CONTROLLER_H
