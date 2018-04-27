@@ -64,7 +64,7 @@ public:
     static void Uninstall(blink::WebLocalFrame *frame, uint worldId);
 private:
     WebChannelTransport() {}
-    bool NativeQtSendMessage(gin::Arguments *args);
+    void NativeQtSendMessage(gin::Arguments *args);
 
     // gin::WrappableBase
     gin::ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate *isolate) override;
@@ -118,37 +118,45 @@ void WebChannelTransport::Uninstall(blink::WebLocalFrame *frame, uint worldId)
     qtObject->Delete(gin::StringToV8(isolate, "webChannelTransport"));
 }
 
-bool WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
+void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
 {
     blink::WebLocalFrame *frame = blink::WebLocalFrame::FrameForCurrentContext();
     if (!frame || !frame->View())
-        return false;
+        return;
 
     content::RenderFrame *renderFrame = content::RenderFrame::FromWebFrame(frame);
     if (!renderFrame)
-        return false;
+        return;
 
-    std::string message;
-    if (!args->GetNext(&message))
-        return false;
+    v8::Local<v8::Value> jsonValue;
+    if (!args->GetNext(&jsonValue)) {
+        args->ThrowTypeError("Missing argument");
+        return;
+    }
 
-    QByteArray valueData(message.data(), message.size());
+    if (!jsonValue->IsString()) {
+        args->ThrowTypeError("Expected string");
+        return;
+    }
+    v8::Local<v8::String> jsonString = v8::Local<v8::String>::Cast(jsonValue);
+
+    QByteArray json(jsonString->Utf8Length(), 0);
+    jsonString->WriteUtf8(json.data(), json.size(),
+                         nullptr,
+                         v8::String::REPLACE_INVALID_UTF8);
+
     QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(valueData, &error);
+    QJsonDocument doc = QJsonDocument::fromJson(json, &error);
     if (error.error != QJsonParseError::NoError) {
-        LOG(WARNING) << "Parsing error: " << qPrintable(error.errorString());
-        return false;
+        args->ThrowTypeError("Invalid JSON");
+        return;
     }
 
     int size = 0;
     const char *rawData = doc.rawData(&size);
-    if (size == 0)
-        return false;
-
     renderFrame->Send(new WebChannelIPCTransportHost_SendMessage(
                           renderFrame->GetRoutingID(),
                           std::vector<char>(rawData, rawData + size)));
-    return true;
 }
 
 gin::ObjectTemplateBuilder WebChannelTransport::GetObjectTemplateBuilder(v8::Isolate *isolate)

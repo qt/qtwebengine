@@ -49,6 +49,8 @@
 #include <QJsonObject>
 #include <QLoggingCategory>
 
+#include <QtCore/private/qjson_p.h>
+
 namespace QtWebEngineCore {
 
 Q_LOGGING_CATEGORY(log, "qt.webengine.webchanneltransport");
@@ -108,10 +110,19 @@ void WebChannelIPCTransportHost::setWorldId(content::RenderFrameHost *frame, bas
 
 void WebChannelIPCTransportHost::onWebChannelMessage(const std::vector<char> &message)
 {
-    Q_ASSERT(!message.empty());
-    QJsonDocument doc = QJsonDocument::fromRawData(message.data(), message.size(), QJsonDocument::BypassValidation);
-    Q_ASSERT(doc.isObject());
     content::RenderFrameHost *frame = web_contents()->GetMainFrame();
+
+    QJsonDocument doc;
+    // QJsonDocument::fromRawData does not check the length before it starts
+    // parsing the QJsonPrivate::Header and QJsonPrivate::Base structures.
+    if (message.size() >= sizeof(QJsonPrivate::Header) + sizeof(QJsonPrivate::Base))
+        doc = QJsonDocument::fromRawData(message.data(), message.size());
+
+    if (!doc.isObject()) {
+        qCCritical(log).nospace() << "received invalid webchannel message from " << frame;
+        return;
+    }
+
     qCDebug(log).nospace() << "received webchannel message from " << frame << ": " << doc;
     Q_EMIT messageReceived(doc.object(), this);
 }
