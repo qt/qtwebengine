@@ -65,12 +65,15 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineDownloadItem;
 class QQuickWebEngineSettings;
+class QQuickWebEngineViewPrivate;
 
 class QQuickWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineProfile)
     QQuickWebEngineProfilePrivate(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext);
     ~QQuickWebEngineProfilePrivate();
+    void addWebContentsAdapterClient(QQuickWebEngineViewPrivate *adapter);
+    void removeWebContentsAdapterClient(QQuickWebEngineViewPrivate *adapter);
 
     QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext() const;
     QQuickWebEngineSettings *settings() const { return m_settings.data(); }
@@ -94,6 +97,7 @@ private:
     QPointer<QWebEngineBrowserContext> m_browserContext;
     QMap<quint32, QPointer<QQuickWebEngineDownloadItem> > m_ongoingDownloads;
     QList<QQuickWebEngineScript *> m_userScripts;
+    QVector<QQuickWebEngineViewPrivate *> m_webContentsAdapterClients;
 };
 
 QT_END_NAMESPACE

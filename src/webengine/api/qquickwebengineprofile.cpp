@@ -44,6 +44,7 @@
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginescript_p.h"
 #include "qquickwebenginesettings_p.h"
+#include "qquickwebengineview_p_p.h"
 #include "qwebenginecookiestore.h"
 
 #include <QQmlEngine>
@@ -153,6 +154,10 @@ QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(QSharedPointer<Brow
 
 QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 {
+    while (!m_webContentsAdapterClients.isEmpty()) {
+       m_webContentsAdapterClients.first()->destroy();
+    }
+
     Q_FOREACH (QQuickWebEngineDownloadItem *download, m_ongoingDownloads) {
         if (download)
             download->cancel();
@@ -162,6 +167,16 @@ QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 
     if (m_browserContext)
         m_browserContext->shutdown();
+}
+
+void QQuickWebEngineProfilePrivate::addWebContentsAdapterClient(QQuickWebEngineViewPrivate *adapter)
+{
+    m_webContentsAdapterClients.append(adapter);
+}
+
+void QQuickWebEngineProfilePrivate::removeWebContentsAdapterClient(QQuickWebEngineViewPrivate*adapter)
+{
+    m_webContentsAdapterClients.removeAll(adapter);
 }
 
 QSharedPointer<QtWebEngineCore::BrowserContextAdapter> QQuickWebEngineProfilePrivate::browserContext() const

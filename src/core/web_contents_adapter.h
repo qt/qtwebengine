@@ -215,7 +215,7 @@ private:
     void waitForUpdateDragActionCalled();
     bool handleDropDataFileContents(const content::DropData &dropData, QMimeData *mimeData);
 
-    QSharedPointer<BrowserContextAdapter> m_browserContextAdapter;
+    BrowserContextAdapter *m_browserContextAdapter;
     std::unique_ptr<content::WebContents> m_webContents;
     std::unique_ptr<WebContentsDelegateQt> m_webContentsDelegate;
     std::unique_ptr<RenderViewObserverHostQt> m_renderViewObserverHost;

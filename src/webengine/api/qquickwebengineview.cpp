@@ -125,6 +125,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_defaultZoomFactor(1.0)
     , m_ui2Enabled(false)
 {
+    m_profile->d_ptr->addWebContentsAdapterClient(this);
     QString platform = qApp->platformName().toLower();
     if (platform == QLatin1Literal("eglfs"))
         m_ui2Enabled = true;
@@ -152,6 +153,18 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
 
 QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
 {
+    m_profile->d_ptr->removeWebContentsAdapterClient(this);
+    adapter->stopFinding();
+    if (faviconProvider)
+        faviconProvider->detach(q_ptr);
+}
+
+void QQuickWebEngineViewPrivate::destroy()
+{
+   // the profile for this web contens is about to be
+   // garbage collected, delete WebContent first and
+   // let the QQuickWebEngineView be collected later by gc.
+   delete q_ptr->d_ptr.take();
 }
 
 UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
@@ -729,10 +742,6 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
 
 QQuickWebEngineView::~QQuickWebEngineView()
 {
-    Q_D(QQuickWebEngineView);
-    d->adapter->stopFinding();
-    if (d->faviconProvider)
-        d->faviconProvider->detach(this);
 }
 
 void QQuickWebEngineViewPrivate::ensureContentsAdapter()
@@ -898,7 +907,9 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
 
     if (profile == m_profile)
         return;
+    m_profile->d_ptr->removeWebContentsAdapterClient(this);
     m_profile = profile;
+    m_profile->d_ptr->addWebContentsAdapterClient(this);
     Q_EMIT q->profileChanged();
     m_settings->setParentSettings(profile->settings());
 
@@ -1362,7 +1373,7 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
 void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &value)
 {
     Q_D(QQuickWebEngineView);
-    if (d->adapter->isInitialized() && (change == ItemSceneChange || change == ItemVisibleHasChanged)) {
+    if (d && d->adapter->isInitialized() && (change == ItemSceneChange || change == ItemVisibleHasChanged)) {
         if (window() && isVisible())
             d->adapter->wasShown();
         else

@@ -88,6 +88,7 @@ public:
     QQuickWebEngineView *q_ptr;
     QQuickWebEngineViewPrivate();
     ~QQuickWebEngineViewPrivate();
+    void destroy();
 
     QtWebEngineCore::UIDelegatesManager *ui();
 
