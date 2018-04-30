@@ -294,7 +294,7 @@ ApplicationWindow {
                             id: offTheRecordEnabled
                             text: "Off The Record"
                             checkable: true
-                            checked: currentWebView.profile.offTheRecord
+                            checked: currentWebView.profile === otrProfile
                             onToggled: function(checked) {
                                 currentWebView.profile = checked ? otrProfile : defaultProfile;
                             }
