@@ -143,16 +143,21 @@ UIDelegatesManager::~UIDelegatesManager()
         component = &COMPONENT##Component; \
         break;
 
-bool UIDelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine) {
+bool UIDelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine)
+{
     const QStringList paths = engine->importPathList();
     for (const QString &path : paths) {
-        QFileInfo fi(path % QLatin1String("/QtWebEngine/Controls1Delegates/"));
-        if (fi.exists()) {
+        QString importPath = path % QLatin1String("/QtWebEngine/Controls1Delegates/");
+
+        // resource paths have to be tested using the ":/" prefix
+        if (importPath.startsWith(QLatin1String("qrc:/")))
+            importPath.remove(0, 3);
+
+        QFileInfo fi(importPath);
+        if (fi.exists())
             dirs << fi.absolutePath();
-            return true;
-        }
     }
-    return false;
+    return !dirs.isEmpty();
 }
 
 bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
@@ -179,11 +184,15 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
         return false;
 
     for (const QString &importDir : qAsConst(m_importDirs)) {
-        QFileInfo fi(importDir % QLatin1Char('/') % fileName);
-        if (!fi.exists())
+        const QString componentFilePath = importDir % QLatin1Char('/') % fileName;
+
+        if (!QFileInfo(componentFilePath).exists())
             continue;
+
         // FIXME: handle async loading
-        *component = (new QQmlComponent(engine, QUrl::fromLocalFile(fi.absoluteFilePath()),
+        *component = (new QQmlComponent(engine,
+                                        importDir.startsWith(QLatin1String(":/")) ? QUrl(QLatin1String("qrc") + componentFilePath)
+                                                                                  : QUrl::fromLocalFile(componentFilePath),
                                         QQmlComponent::PreferSynchronous, m_view));
 
         if ((*component)->status() != QQmlComponent::Ready) {
@@ -579,14 +588,24 @@ bool UI2DelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *en
 {
     const QStringList paths = engine->importPathList();
     for (const QString &path : paths) {
-        QFileInfo fi1(path % QLatin1String("/QtWebEngine/Controls1Delegates/"));
-        QFileInfo fi2(path % QLatin1String("/QtWebEngine/Controls2Delegates/"));
-        if (fi1.exists() && fi2.exists()) {
-            dirs << fi2.absolutePath() << fi1.absolutePath();
-            return true;
+        QString controls2ImportPath = path % QLatin1String("/QtWebEngine/Controls2Delegates/");
+        QString controls1ImportPath = path % QLatin1String("/QtWebEngine/Controls1Delegates/");
+
+        // resource paths have to be tested using the ":/" prefix
+        if (controls2ImportPath.startsWith(QLatin1String("qrc:/"))) {
+            controls2ImportPath.remove(0, 3);
+            controls1ImportPath.remove(0, 3);
         }
+
+        QFileInfo fi2(controls2ImportPath);
+        if (fi2.exists())
+            dirs << fi2.absolutePath();
+
+        QFileInfo fi1(controls1ImportPath);
+        if (fi1.exists())
+            dirs << fi1.absolutePath();
     }
-    return false;
+    return !dirs.isEmpty();
 }
 
 QObject *UI2DelegatesManager::addMenu(QObject *parentMenu, const QString &title, const QPoint &pos)
