@@ -33,7 +33,7 @@
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
 #include <QQuickWebEngineProfile>
-#include <private/qquickwebengineview_p.h>
+#include <QtWebEngine/private/qquickwebengineview_p.h>
 
 #define INSPECTOR_SERVER_PORT "23654"
 static const QUrl s_inspectorServerHttpBaseUrl("http://localhost:" INSPECTOR_SERVER_PORT);

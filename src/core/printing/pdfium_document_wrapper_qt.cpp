@@ -36,11 +36,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "pdf/features.h"
 
-#if BUILDFLAG(ENABLE_PDF)
 #include "pdfium_document_wrapper_qt.h"
-
 #include <QtCore/qhash.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qpainter.h>
@@ -165,4 +162,3 @@ PdfiumDocumentWrapperQt::~PdfiumDocumentWrapperQt()
 }
 
 }
-#endif // BUILDFLAG(ENABLE_PDF)

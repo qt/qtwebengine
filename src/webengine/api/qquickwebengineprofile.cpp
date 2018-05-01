@@ -50,7 +50,6 @@
 #include <QQmlEngine>
 
 #include "browser_context_adapter.h"
-#include <qtwebenginecoreglobal.h>
 #include "renderer_host/user_resource_controller_host.h"
 #include "web_engine_settings.h"
 

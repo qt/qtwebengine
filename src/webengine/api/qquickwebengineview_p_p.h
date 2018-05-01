@@ -78,7 +78,7 @@ class QQuickWebEngineProfilePrivate;
 
 QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event);
 
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
 class QQuickWebEngineTestSupport;
 #endif
 
@@ -169,7 +169,7 @@ public:
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
     QScopedPointer<QQuickWebEngineHistory> m_history;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
     QQuickWebEngineTestSupport *m_testSupport;
 #endif
     QQmlComponent *contextMenuExtraItems;

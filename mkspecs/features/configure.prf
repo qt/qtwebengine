@@ -27,8 +27,8 @@ defineTest(runConfigure) {
         return(false)
     }
 
-    include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
-    QT_FOR_CONFIG += webengine-private
+    include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
+    QT_FOR_CONFIG += webenginecore-private
 
     !qtConfig(webengine-v8-snapshot-support):qtConfig(webengine-v8-snapshot) {
         skipBuild("V8 snapshot cannot be built. Most likely, the 32-bit host compiler does not work."\

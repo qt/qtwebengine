@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <qtwebengineglobal.h>
+#include <QtWebEngine/qtwebengineglobal.h>
 #include <QAbstractListModel>
 #include <QtCore/qshareddata.h>
 #include <QQuickItem>

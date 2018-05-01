@@ -39,7 +39,7 @@
 
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
-
+#include "qtwebenginecoreglobal_p.h"
 #include "authentication_dialog_controller.h"
 #include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
@@ -59,7 +59,7 @@
 #include "qwebenginequotarequest.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
 
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
 #include "qquickwebenginetestsupport_p.h"
 #endif
 
@@ -87,8 +87,8 @@
 #include <QScreen>
 #include <QUrl>
 #include <QTimer>
-#include <private/qguiapplication_p.h>
-#include <qpa/qplatformintegration.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
@@ -107,7 +107,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , adapter(QSharedPointer<WebContentsAdapter>::create())
     , m_history(new QQuickWebEngineHistory(this))
     , m_settings(new QQuickWebEngineSettings(m_profile->settings()))
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
     , m_testSupport(0)
 #endif
     , contextMenuExtraItems(0)
@@ -384,7 +384,7 @@ void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl, bool is
 {
     Q_Q(QQuickWebEngineView);
     if (isErrorPage) {
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
         if (m_testSupport)
             m_testSupport->errorPage()->loadStarted(provisionalUrl);
 #endif
@@ -409,7 +409,7 @@ void QQuickWebEngineViewPrivate::loadCommitted()
 
 void QQuickWebEngineViewPrivate::loadVisuallyCommitted()
 {
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
     if (m_testSupport)
         Q_EMIT m_testSupport->loadVisuallyCommitted();
 #endif
@@ -424,7 +424,7 @@ void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, boo
     Q_Q(QQuickWebEngineView);
 
     if (isErrorPage) {
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
         if (m_testSupport)
             m_testSupport->errorPage()->loadFinished(success, url);
 #endif
@@ -517,7 +517,7 @@ void QQuickWebEngineViewPrivate::close()
 
 void QQuickWebEngineViewPrivate::windowCloseRejected()
 {
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
     if (m_testSupport)
         Q_EMIT m_testSupport->windowCloseRejected();
 #endif
@@ -930,7 +930,7 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
     }
 }
 
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
 QQuickWebEngineTestSupport *QQuickWebEngineView::testSupport() const
 {
     Q_D(const QQuickWebEngineView);
@@ -1141,7 +1141,7 @@ bool QQuickWebEngineView::recentlyAudible() const
 
 void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
 {
-#if defined(ENABLE_PDF)
+#if QT_CONFIG(webengine_printing_and_pdf)
     Q_D(QQuickWebEngineView);
     QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
     QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);
@@ -1157,7 +1157,7 @@ void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId 
 
 void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
 {
-#if defined(ENABLE_PDF)
+#if QT_CONFIG(webengine_printing_and_pdf)
     Q_D(QQuickWebEngineView);
     QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
     QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);

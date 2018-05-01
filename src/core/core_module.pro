@@ -1,6 +1,3 @@
-include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
-QT_FOR_CONFIG += webengine-private
-
 MODULE = webenginecore
 
 include(core_common.pri)

@@ -45,8 +45,6 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
-
-#include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_delegate_qt.h"

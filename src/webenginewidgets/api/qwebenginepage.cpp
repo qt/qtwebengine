@@ -47,6 +47,9 @@
 #include "favicon_manager.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
+#if QT_CONFIG(webengine_printing_and_pdf)
+#include "printing/pdfium_document_wrapper_qt.h"
+#endif
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
@@ -78,7 +81,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
-#ifdef ENABLE_PRINTING
+#if QT_CONFIG(webengine_printing_and_pdf)
 #include <QPrinter>
 #endif
 #include <QStandardPaths>
@@ -86,17 +89,13 @@
 #include <QTimer>
 #include <QUrl>
 
-#if defined(ENABLE_PRINTING) && defined(ENABLE_PDF)
-#include "printing/pdfium_document_wrapper_qt.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
 
 static const int MaxTooltipLength = 1024;
 
-#if defined(ENABLE_PRINTING) && defined(ENABLE_PDF)
+#if QT_CONFIG(webengine_printing_and_pdf)
 static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
 {
     if (!data.size()) {
@@ -177,7 +176,7 @@ static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
 
     return true;
 }
-#endif // defined(ENABLE_PRINTING) && defined(ENABLE_PDF)
+#endif // QT_CONFIG(webengine_printing_and_pdf)
 
 static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::WindowOpenDisposition disposition)
 {
@@ -231,7 +230,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , webChannelWorldId(QWebEngineScript::MainWorld)
     , defaultAudioMuted(false)
     , defaultZoomFactor(1.0)
-#if defined(ENABLE_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     , currentPrinter(nullptr)
 #endif
 {
@@ -498,8 +497,7 @@ void QWebEnginePagePrivate::didFindText(quint64 requestId, int matchCount)
 
 void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &result)
 {
-#if defined(ENABLE_PDF)
-#if defined(ENABLE_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     // If no currentPrinter is set that means that were printing to PDF only.
     if (!currentPrinter) {
         m_callbacks.invoke(requestId, result);
@@ -510,14 +508,11 @@ void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &re
 
     m_callbacks.invoke(requestId, printerResult);
     currentPrinter = nullptr;
-#else // If print support is disabled, only PDF printing is available.
-    m_callbacks.invoke(requestId, result);
-#endif // defined(ENABLE_PRINTING)
-#else // defined(ENABLE_PDF)
+#else
     // we should never enter this branch, but just for safe-keeping...
     Q_UNUSED(result);
     m_callbacks.invoke(requestId, QByteArray());
-#endif // defined(ENABLE_PDF)
+#endif
 }
 
 void QWebEnginePagePrivate::passOnFocus(bool reverse)
@@ -2211,20 +2206,18 @@ QSizeF QWebEnginePage::contentsSize() const
 */
 void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &pageLayout)
 {
-#if defined(ENABLE_PDF)
+#if QT_CONFIG(webengine_printing_and_pdf)
     Q_D(const QWebEnginePage);
-#if defined(ENABLE_PRINTING)
     if (d->currentPrinter) {
         qWarning("Cannot print to PDF while at the same time printing on printer %ls", qUtf16Printable(d->currentPrinter->printerName()));
         return;
     }
-#endif // ENABLE_PRINTING
     d->ensureInitialized();
     d->adapter->printToPDF(pageLayout, filePath);
 #else
     Q_UNUSED(filePath);
     Q_UNUSED(pageLayout);
-#endif // if defined(ENABLE_PDF)
+#endif
 }
 
 
@@ -2241,21 +2234,19 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &page
 void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &pageLayout)
 {
     Q_D(QWebEnginePage);
-#if defined(ENABLE_PDF)
-#if defined(ENABLE_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     if (d->currentPrinter) {
         qWarning("Cannot print to PDF while at the same time printing on printer %ls", qUtf16Printable(d->currentPrinter->printerName()));
         d->m_callbacks.invokeEmpty(resultCallback);
         return;
     }
-#endif // ENABLE_PRINTING
     d->ensureInitialized();
     quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
     d->m_callbacks.registerCallback(requestId, resultCallback);
-#else // if defined(ENABLE_PDF)
+#else
     Q_UNUSED(pageLayout);
     d->m_callbacks.invokeEmpty(resultCallback);
-#endif // if defined(ENABLE_PDF)
+#endif
 }
 
 /*!
@@ -2273,24 +2264,22 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
 void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback)
 {
     Q_D(QWebEnginePage);
-#if defined(ENABLE_PDF)
-#if defined(ENABLE_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     if (d->currentPrinter) {
         qWarning("Cannot print page on printer %ls: Already printing on %ls.", qUtf16Printable(printer->printerName()), qUtf16Printable(d->currentPrinter->printerName()));
         d->m_callbacks.invokeDirectly(resultCallback, false);
         return;
     }
     d->currentPrinter = printer;
-#endif // ENABLE_PRINTING
     d->ensureInitialized();
     quint64 requestId = d->adapter->printToPDFCallbackResult(printer->pageLayout(),
                                                              printer->colorMode() == QPrinter::Color,
                                                              false);
     d->m_callbacks.registerCallback(requestId, resultCallback);
-#else // if defined(ENABLE_PDF)
+#else
     Q_UNUSED(printer);
     d->m_callbacks.invokeDirectly(resultCallback, false);
-#endif // if defined(ENABLE_PDF)
+#endif
 }
 
 /*!

@@ -4,7 +4,7 @@ TARGETPATH = QtWebEngine
 IMPORT_VERSION = 1.7
 
 QT += webengine qml quick
-QT_PRIVATE += webengine-private
+QT_PRIVATE += core-private webenginecore-private webengine-private
 
 INCLUDEPATH += $$QTWEBENGINE_ROOT/src/core $$QTWEBENGINE_ROOT/src/core/api $$QTWEBENGINE_ROOT/src/webengine $$QTWEBENGINE_ROOT/src/webengine/api $$QTWEBENGINE_ROOT/include/QtWebEngine
 

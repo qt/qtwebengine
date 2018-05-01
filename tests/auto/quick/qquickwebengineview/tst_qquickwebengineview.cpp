@@ -37,9 +37,9 @@
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
 #include <QtWebEngine/QQuickWebEngineProfile>
-#include <private/qinputmethod_p.h>
-#include <private/qquickwebengineview_p.h>
-#include <private/qquickwebenginesettings_p.h>
+#include <QtGui/private/qinputmethod_p.h>
+#include <QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/private/qquickwebenginesettings_p.h>
 #include <qpa/qplatforminputcontext.h>
 
 #include <functional>
@@ -623,8 +623,8 @@ void tst_QQuickWebEngineView::setZoomFactor()
 
 void tst_QQuickWebEngineView::printToPdf()
 {
-#if !defined(ENABLE_PDF)
-    QSKIP("ENABLE_PDF");
+#if !QT_CONFIG(webengine_printing_and_pdf)
+    QSKIP("no webengine-printing-and-pdf");
 #else
     QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
     QVERIFY(tempDir.isValid());
@@ -650,7 +650,7 @@ void tst_QQuickWebEngineView::printToPdf()
     QList<QVariant> failedArguments = savePdfSpy.takeFirst();
     QVERIFY2(failedArguments.at(0).toString() == path, "File path for second saved PDF does not match arguments");
     QVERIFY2(failedArguments.at(1).toBool() == false, "Printing to PDF file succeeded though it should fail");
-#endif // !defined(ENABLE_PDF)
+#endif // !QT_CONFIG(webengine_printing_and_pdf)
 }
 
 void tst_QQuickWebEngineView::stopSettingFocusWhenDisabled()

@@ -1,5 +1,5 @@
-include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
-QT_FOR_CONFIG += webengine-private
+include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
+QT_FOR_CONFIG += webenginecore-private
 
 defineTest(isQtMinimum) {
     !equals(QT_MAJOR_VERSION, $$1): return(false)

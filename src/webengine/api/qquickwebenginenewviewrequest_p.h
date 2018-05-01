@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include "qtwebengineglobal_p.h"
+#include <QtWebEngine/private/qtwebengineglobal_p.h>
 #include "qquickwebengineview_p.h"
 
 namespace QtWebEngineCore {

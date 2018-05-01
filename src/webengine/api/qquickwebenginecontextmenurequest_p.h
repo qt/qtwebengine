@@ -50,7 +50,7 @@
 //
 // We mean it.
 
-#include <private/qtwebengineglobal_p.h>
+#include <QtWebEngine/private/qtwebengineglobal_p.h>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QObject>
 #include <QtCore/QUrl>

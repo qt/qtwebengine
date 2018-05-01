@@ -51,8 +51,8 @@
 // We mean it.
 //
 
-#include <private/qinputmethod_p.h>
-#include <private/qtwebengineglobal_p.h>
+#include <QtGui/private/qinputmethod_p.h>
+#include <QtWebEngine/private/qtwebengineglobal_p.h>
 
 #include <QEvent>
 #include <QObject>

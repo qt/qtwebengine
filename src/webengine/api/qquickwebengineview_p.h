@@ -51,7 +51,8 @@
 // We mean it.
 //
 
-#include <private/qtwebengineglobal_p.h>
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+#include <QtWebEngine/private/qtwebengineglobal_p.h>
 #include "qquickwebenginescript.h"
 #include <QQuickItem>
 #include <QtGui/qcolor.h>
@@ -79,7 +80,7 @@ class QQuickWebEngineViewPrivate;
 class QWebEngineQuotaRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
 
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
 class QQuickWebEngineTestSupport;
 #endif
 
@@ -130,7 +131,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
 
     Q_PROPERTY(QQuickWebEngineView *inspectedView READ inspectedView WRITE setInspectedView NOTIFY inspectedViewChanged REVISION 7 FINAL)
     Q_PROPERTY(QQuickWebEngineView *devToolsView READ devToolsView WRITE setDevToolsView NOTIFY devToolsViewChanged REVISION 7 FINAL)
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport NOTIFY testSupportChanged FINAL)
 #endif
 
@@ -474,7 +475,7 @@ public:
     void setAudioMuted(bool muted);
     bool recentlyAudible() const;
 
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
     QQuickWebEngineTestSupport *testSupport() const;
     void setTestSupport(QQuickWebEngineTestSupport *testSupport);
 #endif
@@ -547,7 +548,7 @@ Q_SIGNALS:
     Q_REVISION(7) void devToolsViewChanged();
     Q_REVISION(7) void registerProtocolHandlerRequested(const QWebEngineRegisterProtocolHandlerRequest &request);
 
-#ifdef ENABLE_QML_TESTSUPPORT_API
+#if QT_CONFIG(webengine_testsupport)
     void testSupportChanged();
 #endif
 

@@ -1,6 +1,5 @@
 include(common.pri)
-include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
-QT_FOR_CONFIG += gui-private webengine-private
+QT_FOR_CONFIG += gui-private webenginecore-private
 
 gn_args += \
     use_cups=false \

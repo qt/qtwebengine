@@ -1,4 +1,5 @@
-QT_FOR_CONFIG += webengine-private
+include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
+QT_FOR_CONFIG += webenginecore-private
 
 TARGET = QtWebEngineWidgets
 
@@ -6,7 +7,7 @@ TARGET = QtWebEngineWidgets
 DEFINES += QT_BUILD_WEBENGINEWIDGETS_LIB
 
 QT += webenginecore widgets network quick
-QT_PRIVATE += quick-private gui-private core-private widgets-private quickwidgets
+QT_PRIVATE += quick-private gui-private core-private widgets-private quickwidgets webenginecore-private
 
 INCLUDEPATH += $$PWD api ../core ../core/api ../webengine/api
 
@@ -44,13 +45,7 @@ HEADERS = \
         api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h
 
-qtConfig(webengine-spellchecker) {
-    DEFINES += ENABLE_SPELLCHECK
-}
-
 qtConfig(webengine-printing-and-pdf) {
-    DEFINES += ENABLE_PRINTING
-    DEFINES += ENABLE_PDF
     QT += printsupport
 }
 

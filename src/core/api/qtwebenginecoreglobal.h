@@ -41,6 +41,7 @@
 #define QTWEBENGINECOREGLOBAL_H
 
 #include <QtCore/qglobal.h>
+#include <QtWebEngineCore/qtwebenginecore-config.h>
 
 QT_BEGIN_NAMESPACE
 

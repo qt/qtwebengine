@@ -51,7 +51,6 @@
 // We mean it.
 //
 
-#include "qtwebengineglobal_p.h"
 #include "qquickwebengineview_p.h"
 
 #include <QtCore/QObject>

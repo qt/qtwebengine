@@ -1,5 +1,5 @@
-include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
-QT_FOR_CONFIG += webengine-private
+include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri) # workaround for QTBUG-68093
+QT_FOR_CONFIG += webenginecore-private
 
 TEMPLATE = app
 
@@ -18,9 +18,4 @@ QT += testlib network quick webengine
 
 # This define is used by some tests to look up resources in the source tree
 DEFINES += TESTS_SOURCE_DIR=\\\"$$PWD/\\\"
-
-qtConfig(webengine-testsupport) {
-    DEFINES += ENABLE_QML_TESTSUPPORT_API
-}
-
 include(../embed_info_plist.pri)

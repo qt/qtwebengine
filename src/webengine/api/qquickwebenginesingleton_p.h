@@ -51,8 +51,8 @@
 // We mean it.
 //
 
+#include <QtWebEngine/private/qtwebengineglobal_p.h>
 #include <QObject>
-#include "qtwebengineglobal_p.h"
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineProfile;

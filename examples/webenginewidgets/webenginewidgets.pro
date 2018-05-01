@@ -1,4 +1,5 @@
-QT_FOR_CONFIG += webengine
+include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri) # workaround for QTBUG-68093
+QT_FOR_CONFIG += webenginecore
 
 TEMPLATE=subdirs
 

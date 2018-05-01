@@ -187,7 +187,7 @@ public:
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
-#if defined(ENABLE_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     QPrinter *currentPrinter;
 #endif
 };

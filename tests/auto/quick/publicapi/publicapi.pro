@@ -1,3 +1,3 @@
 include(../tests.pri)
 QT += webengine
-QT_PRIVATE += webengine-private
+QT_PRIVATE += core-private webengine-private webenginecore-private

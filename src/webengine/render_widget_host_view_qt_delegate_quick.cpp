@@ -47,7 +47,7 @@
 #include <QSurfaceFormat>
 #include <QVariant>
 #include <QWindow>
-#include <private/qquickwindow_p.h>
+#include <QtQuick/private/qquickwindow_p.h>
 
 namespace QtWebEngineCore {
 
