@@ -37,11 +37,8 @@
 **
 ****************************************************************************/
 #include "pdf/features.h"
-#if BUILDFLAG(ENABLE_PDF)
-#define ENABLE_PDF
-#endif
 
-#if defined(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PDF)
 #include "pdfium_document_wrapper_qt.h"
 
 #include <QtCore/qhash.h>
@@ -168,4 +165,4 @@ PdfiumDocumentWrapperQt::~PdfiumDocumentWrapperQt()
 }
 
 }
-#endif // defined (ENABLE_PDF)
+#endif // BUILDFLAG(ENABLE_PDF)

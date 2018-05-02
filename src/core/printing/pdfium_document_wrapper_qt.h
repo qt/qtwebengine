@@ -40,11 +40,8 @@
 #ifndef PDFIUM_DOCUMENT_WRAPPER_QT_H
 #define PDFIUM_DOCUMENT_WRAPPER_QT_H
 
-#if defined(ENABLE_PDF)
 #include "qtwebenginecoreglobal.h"
 
-#include <QtCore/qglobal.h>
-#include <QtCore/qhash.h>
 #include <QtGui/qimage.h>
 
 namespace QtWebEngineCore {
@@ -67,5 +64,4 @@ private:
 };
 
 } // namespace QtWebEngineCore
-#endif // defined (ENABLE_PDF)
 #endif // PDFIUM_DOCUMENT_WRAPPER_QT_H
