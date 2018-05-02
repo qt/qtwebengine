@@ -59,6 +59,7 @@ StylesheetDialog::StylesheetDialog(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->styleSheetList, &QListWidget::currentItemChanged, this, &StylesheetDialog::currentStyleSheetChanged);
+    connect(ui->styleSheetList, &QListWidget::itemClicked, this, &StylesheetDialog::listItemClicked);
     connect(ui->fileNameEdit, &QLineEdit::textChanged, this, &StylesheetDialog::fileNameChanged);
 
     connect(ui->addButton, &QPushButton::clicked, this, &StylesheetDialog::addButtonClicked);
@@ -66,8 +67,12 @@ StylesheetDialog::StylesheetDialog(QWidget *parent) :
 
     QSettings settings;
     settings.beginGroup("styleSheets");
-    for (auto name : settings.allKeys())
-        new QListWidgetItem(name,  ui->styleSheetList);
+    for (auto name : settings.allKeys()) {
+        QListWidgetItem *listItem = new QListWidgetItem(name,  ui->styleSheetList);
+        listItem->setFlags(listItem->flags() | Qt::ItemIsUserCheckable);
+        bool checked = settings.value(name).value<StyleSheet>().second;
+        listItem->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
+    }
     settings.endGroup();
 }
 
@@ -92,7 +97,33 @@ void StylesheetDialog::currentStyleSheetChanged(QListWidgetItem *current, QListW
     QSettings settings;
     settings.beginGroup("styleSheets");
     ui->fileNameEdit->setText(current->text());
-    ui->sourceCodeEdit->setPlainText(settings.value(current->text(), QString()).toString());
+    const QString source = settings.value(current->text()).value<StyleSheet>().first;
+    ui->sourceCodeEdit->setPlainText(source);
+    settings.endGroup();
+}
+
+void StylesheetDialog::listItemClicked(QListWidgetItem *item)
+{
+    MainWindow *window = static_cast<MainWindow *>(parent());
+    const QString name = item->text();
+    bool checkedStateChanged =
+            (item->checkState() == Qt::Checked && !window->hasStyleSheet(name)) ||
+            (item->checkState() == Qt::Unchecked && window->hasStyleSheet(name));
+    if (!checkedStateChanged)
+        return;
+
+    QSettings settings;
+    settings.beginGroup("styleSheets");
+    const QString source = settings.value(name).value<StyleSheet>().first;
+
+    if (item->checkState() == Qt::Checked) {
+        settings.setValue(name, QVariant::fromValue(qMakePair(source, true)));
+        window->insertStyleSheet(name, source, true);
+    } else {
+        settings.setValue(name, QVariant::fromValue(qMakePair(source, false)));
+        window->removeStyleSheet(name, true);
+    }
+
     settings.endGroup();
 }
 
@@ -107,16 +138,21 @@ void StylesheetDialog::fileNameChanged(const QString &text)
 
 void StylesheetDialog::addButtonClicked()
 {
-    new QListWidgetItem(ui->fileNameEdit->text(),  ui->styleSheetList);
-
-    MainWindow *window = static_cast<MainWindow *>(parent());
     const QString name = ui->fileNameEdit->text();
     const QString source = ui->sourceCodeEdit->toPlainText();
+    if (name.isEmpty() || source.isEmpty())
+        return;
+
+    QListWidgetItem *listItem = new QListWidgetItem(ui->fileNameEdit->text(),  ui->styleSheetList);
+    listItem->setFlags(listItem->flags() | Qt::ItemIsUserCheckable);
+    listItem->setCheckState(Qt::Checked);
+
+    MainWindow *window = static_cast<MainWindow *>(parent());
     window->insertStyleSheet(name, source, true);
 
     QSettings settings;
     settings.beginGroup("styleSheets");
-    settings.setValue(name, source);
+    settings.setValue(name, QVariant::fromValue(qMakePair(source, true)));
     settings.endGroup();
 
     ui->addButton->setEnabled(false);

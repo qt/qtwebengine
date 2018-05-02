@@ -60,6 +60,9 @@ class StylesheetDialog;
 }
 QT_END_NAMESPACE
 
+typedef QPair<QString, bool> StyleSheet; // <source, isEnabled>
+Q_DECLARE_METATYPE(StyleSheet);
+
 class StylesheetDialog : public QDialog
 {
     Q_OBJECT
@@ -70,6 +73,7 @@ public:
 
 private slots:
     void currentStyleSheetChanged(QListWidgetItem *current, QListWidgetItem *previous);
+    void listItemClicked(QListWidgetItem *item);
     void fileNameChanged(const QString &text);
 
     void addButtonClicked();
