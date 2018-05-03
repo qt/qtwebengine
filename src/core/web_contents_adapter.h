@@ -42,6 +42,7 @@
 
 #include "qtwebenginecoreglobal.h"
 #include "web_contents_adapter_client.h"
+#include <memory>
 #include <QtGui/qtgui-config.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 
@@ -64,6 +65,7 @@ class QDragMoveEvent;
 class QMimeData;
 class QPageLayout;
 class QString;
+class QTemporaryDir;
 class QWebChannel;
 QT_END_NAMESPACE
 
@@ -72,8 +74,10 @@ namespace QtWebEngineCore {
 class BrowserContextQt;
 class DevToolsFrontendQt;
 class MessagePassingInterface;
-class WebContentsAdapterPrivate;
 class FaviconManager;
+class WebEngineContext;
+class RenderViewObserverHostQt;
+class WebChannelIPCTransportHost;
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QEnableSharedFromThis<WebContentsAdapter> {
 public:
@@ -208,11 +212,26 @@ public:
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter)
-    Q_DECLARE_PRIVATE(WebContentsAdapter)
     void waitForUpdateDragActionCalled();
     bool handleDropDataFileContents(const content::DropData &dropData, QMimeData *mimeData);
 
-    QScopedPointer<WebContentsAdapterPrivate> d_ptr;
+    QSharedPointer<BrowserContextAdapter> m_browserContextAdapter;
+    std::unique_ptr<content::WebContents> m_webContents;
+    std::unique_ptr<WebContentsDelegateQt> m_webContentsDelegate;
+    std::unique_ptr<RenderViewObserverHostQt> m_renderViewObserverHost;
+    std::unique_ptr<WebChannelIPCTransportHost> m_webChannelTransport;
+    QWebChannel *m_webChannel;
+    unsigned int m_webChannelWorld;
+    WebContentsAdapterClient *m_adapterClient;
+    quint64 m_nextRequestId;
+    int m_lastFindRequestId;
+    std::unique_ptr<content::DropData> m_currentDropData;
+    uint m_currentDropAction;
+    bool m_updateDragActionCalled;
+    QPointF m_lastDragClientPos;
+    QPointF m_lastDragScreenPos;
+    std::unique_ptr<QTemporaryDir> m_dndTmpDir;
+    DevToolsFrontendQt *m_devToolsFrontend;
 };
 
 } // namespace QtWebEngineCore

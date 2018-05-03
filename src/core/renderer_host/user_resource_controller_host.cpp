@@ -42,8 +42,6 @@
 #include "common/qt_messages.h"
 #include "type_conversion.h"
 #include "web_contents_adapter.h"
-#include "web_contents_adapter_p.h"
-
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"

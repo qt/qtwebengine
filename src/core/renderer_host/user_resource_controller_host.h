@@ -54,7 +54,6 @@ class WebContents;
 namespace QtWebEngineCore {
 
 class WebContentsAdapter;
-class WebContentsAdapterPrivate;
 
 class QWEBENGINE_EXPORT UserResourceControllerHost {
 
