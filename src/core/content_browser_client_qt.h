@@ -86,7 +86,8 @@ public:
     ContentBrowserClientQt();
     ~ContentBrowserClientQt();
     content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) override;
-    void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
+    void RenderProcessWillLaunch(content::RenderProcessHost *host,
+                                 service_manager::mojom::ServiceRequest* service_request) override;
     void ResourceDispatcherHostCreated() override;
     gl::GLShareGroup* GetInProcessGpuShareGroup() override;
     content::MediaObserver* GetMediaObserver() override;
@@ -119,6 +120,7 @@ public:
                                        const std::string& interface_name,
                                        mojo::ScopedMessagePipeHandle interface_pipe) override;
     void RegisterInProcessServices(StaticServiceMap* services) override;
+    std::vector<ServiceManifestInfo> GetExtraServiceManifests() override;
     std::unique_ptr<base::Value> GetServiceManifestOverlay(base::StringPiece name) override;
     bool CanCreateWindow(
         content::RenderFrameHost* opener,
@@ -178,6 +180,14 @@ public:
 #if BUILDFLAG(ENABLE_PLUGINS)
     void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
 #endif
+
+    content::ResourceDispatcherHostLoginDelegate *CreateLoginDelegate(
+            net::AuthChallengeInfo *auth_info,
+            content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+            bool is_main_frame,
+            const GURL &url,
+            bool first_auth_attempt,
+            const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&auth_required_callback) override;
 
 private:
     void InitFrameInterfaces();

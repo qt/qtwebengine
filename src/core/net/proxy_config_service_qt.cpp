@@ -124,19 +124,19 @@ net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxy
     switch (qtProxy.type()) {
     case QNetworkProxy::HttpProxy:
     case QNetworkProxy::Socks5Proxy:
-        qtRules.type = net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY;
+        qtRules.type = net::ProxyConfig::ProxyRules::Type::PROXY_LIST;
         qtRules.single_proxies.SetSingleProxyServer(server);
         break;
     case QNetworkProxy::HttpCachingProxy:
-        qtRules.type = net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+        qtRules.type = net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
         qtRules.proxies_for_http.SetSingleProxyServer(server);
         break;
     case QNetworkProxy::FtpCachingProxy:
-        qtRules.type = net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
+        qtRules.type = net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
         qtRules.proxies_for_ftp.SetSingleProxyServer(server);
         break;
     default:
-        qtRules.type = net::ProxyConfig::ProxyRules::TYPE_NO_RULES;
+        qtRules.type = net::ProxyConfig::ProxyRules::Type::EMPTY;
     }
 
     qtRules.bypass_rules.AddRuleToBypassLocal(); // don't use proxy for connections to localhost

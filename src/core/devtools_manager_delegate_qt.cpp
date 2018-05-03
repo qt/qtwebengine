@@ -159,7 +159,7 @@ void DevToolsServerQt::start()
 
     m_isStarted = true;
     DevToolsAgentHost::StartRemoteDebuggingServer(
-        std::move(socketFactory), std::string(),
+        std::move(socketFactory),
         base::FilePath(), base::FilePath());
 }
 
@@ -184,9 +184,9 @@ std::string DevToolsManagerDelegateQt::GetDiscoveryPageHTML()
     return ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
 }
 
-std::string DevToolsManagerDelegateQt::GetFrontendResource(const std::string& path)
+bool DevToolsManagerDelegateQt::HasBundledFrontendResources()
 {
-    return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
+    return true;
 }
 
 } //namespace QtWebEngineCore

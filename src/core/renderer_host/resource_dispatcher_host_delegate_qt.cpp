@@ -56,26 +56,28 @@
 
 namespace QtWebEngineCore {
 
-ResourceDispatcherHostLoginDelegateQt::ResourceDispatcherHostLoginDelegateQt(net::AuthChallengeInfo *authInfo, net::URLRequest *request)
+ResourceDispatcherHostLoginDelegateQt::ResourceDispatcherHostLoginDelegateQt(
+        net::AuthChallengeInfo *authInfo,
+        content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+        GURL url,
+        bool first_auth_attempt,
+        const base::Callback<void(const base::Optional<net::AuthCredentials>&)> &auth_required_callback)
     : m_authInfo(authInfo)
-    , m_request(request)
+    , m_url(url)
+    , m_auth_required_callback(auth_required_callback)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    const content::ResourceRequestInfo *requestInfo = content::ResourceRequestInfo::ForRequest(request);
-    Q_ASSERT(requestInfo);
 
     content::BrowserThread::PostTask(
             content::BrowserThread::UI, FROM_HERE,
             base::Bind(&ResourceDispatcherHostLoginDelegateQt::triggerDialog,
                        this,
-                       requestInfo->GetWebContentsGetterForRequest()));
+                       web_contents_getter));
 }
 
 ResourceDispatcherHostLoginDelegateQt::~ResourceDispatcherHostLoginDelegateQt()
 {
     Q_ASSERT(m_dialogController.isNull());
-    // We must have called ClearLoginDelegateForRequest if we didn't receive an OnRequestCancelled.
-    Q_ASSERT(!m_request);
 }
 
 void ResourceDispatcherHostLoginDelegateQt::OnRequestCancelled()
@@ -85,7 +87,7 @@ void ResourceDispatcherHostLoginDelegateQt::OnRequestCancelled()
 
 QUrl ResourceDispatcherHostLoginDelegateQt::url() const
 {
-    return toQt(m_request->url());
+    return toQt(m_url);
 }
 
 QString ResourceDispatcherHostLoginDelegateQt::realm() const
@@ -120,14 +122,13 @@ void ResourceDispatcherHostLoginDelegateQt::triggerDialog(const content::Resourc
 void ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester(bool success, const QString &user, const QString &password)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    if (!m_request)
-        return;
 
-    if (success)
-        m_request->SetAuth(net::AuthCredentials(toString16(user), toString16(password)));
-    else
-        m_request->CancelAuth();
-    content::ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(m_request);
+    if (!m_auth_required_callback.is_null()) {
+        if (success)
+            std::move(m_auth_required_callback).Run(net::AuthCredentials(toString16(user), toString16(password)));
+        else
+            std::move(m_auth_required_callback).Run(base::nullopt);
+    }
 
     destroy();
 }
@@ -135,7 +136,7 @@ void ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester(bool success, co
 void ResourceDispatcherHostLoginDelegateQt::destroy()
 {
     m_dialogController.reset();
-    m_request = 0;
+    m_auth_required_callback.Reset();
 }
 
 static void LaunchURL(const GURL& url, int render_process_id,
@@ -167,12 +168,6 @@ bool ResourceDispatcherHostDelegateQt::HandleExternalProtocol(const GURL& url, c
                    info->HasUserGesture())
     );
     return true;
-}
-
-content::ResourceDispatcherHostLoginDelegate *ResourceDispatcherHostDelegateQt::CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request)
-{
-    // ResourceDispatcherHostLoginDelegateQt is ref-counted and will be released after we called ClearLoginDelegateForRequest.
-    return new ResourceDispatcherHostLoginDelegateQt(authInfo, request);
 }
 
 } // namespace QtWebEngineCore

@@ -136,7 +136,7 @@ public:
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
     void BeforeUnloadFired(const base::TimeTicks& proceed_time) override;
     void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) override;
-    void WasShown() override;
+    void OnVisibilityChanged(content::Visibility visibility) override;
     void DidFirstVisuallyNonEmptyPaint() override;
     void ActivateContents(content::WebContents* contents) override;
 

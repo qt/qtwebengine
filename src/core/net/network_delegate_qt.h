@@ -82,7 +82,7 @@ public:
     bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const override;
 
     bool OnCanQueueReportingReport(const url::Origin& origin) const override;
-    bool OnCanSendReportingReport(const url::Origin& origin) const override;
+    void OnCanSendReportingReports(std::set<url::Origin> origins, base::OnceCallback<void(std::set<url::Origin>)> result_callback) const override;
     bool OnCanSetReportingClient(const url::Origin& origin, const GURL& endpoint) const override;
     bool OnCanUseReportingClient(const url::Origin& origin, const GURL& endpoint) const override;
 

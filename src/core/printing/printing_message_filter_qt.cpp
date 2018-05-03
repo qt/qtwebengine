@@ -176,7 +176,7 @@ void PrintingMessageFilterQt::OnScriptedPrintReply(
   }
   PrintHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, params);
   Send(reply_msg);
-  if (params.params.dpi && params.params.document_cookie) {
+  if (!params.params.dpi.IsEmpty() && params.params.document_cookie) {
     queue_->QueuePrinterQuery(printer_query.get());
   } else {
     printer_query->StopWorker();

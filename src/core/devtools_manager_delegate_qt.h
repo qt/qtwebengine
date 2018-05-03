@@ -77,7 +77,8 @@ private:
 class DevToolsManagerDelegateQt : public content::DevToolsManagerDelegate {
 public:
     std::string GetDiscoveryPageHTML() override;
-    std::string GetFrontendResource(const std::string& path) override;
+    bool HasBundledFrontendResources() override;
+
     void Initialized(const net::IPEndPoint *ip_address) override;
 };
 

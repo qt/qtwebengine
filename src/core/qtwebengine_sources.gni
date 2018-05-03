@@ -39,8 +39,8 @@ source_set("qtwebengine_sources") {
     "//third_party/skia/include/core"
   ]
   deps = [
-    "//chrome/common:features",
-    "//components/nacl/common:features",
+    "//chrome/common:buildflags",
+    "//components/nacl/common:buildflags",
     "//extensions/features:features",
   ]
   sources = [
@@ -81,6 +81,8 @@ source_set("qtwebengine_sources") {
     "//extensions/common/constants.h",
     "//extensions/common/url_pattern.cc",
     "//extensions/common/url_pattern.h",
+    "//qtwebengine/browser/service_qt.cc",
+    "//qtwebengine/browser/service_qt.h",
   ]
 
   if (is_linux) {

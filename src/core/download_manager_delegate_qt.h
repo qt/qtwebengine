@@ -51,8 +51,11 @@ class FilePath;
 
 namespace content {
 class BrowserContext;
-class DownloadItem;
 class WebContents;
+}
+
+namespace download {
+class DownloadItem;
 }
 
 namespace QtWebEngineCore {
@@ -62,14 +65,14 @@ class DownloadTargetHelper;
 
 class DownloadManagerDelegateQt
         : public content::DownloadManagerDelegate
-        , public content::DownloadItem::Observer
+        , public download::DownloadItem::Observer
 {
 public:
     DownloadManagerDelegateQt(BrowserContextAdapter *contextAdapter);
     ~DownloadManagerDelegateQt();
     void GetNextId(const content::DownloadIdCallback& callback) override;
 
-    bool DetermineDownloadTarget(content::DownloadItem* item,
+    bool DetermineDownloadTarget(download::DownloadItem* item,
                                  const content::DownloadTargetCallback& callback) override;
 
     void GetSaveDir(content::BrowserContext* browser_context,
@@ -81,7 +84,7 @@ public:
                         const base::FilePath::StringType &default_extension,
                         bool can_save_as_complete,
                         const content::SavePackagePathPickedCallback &callback) override;
-    bool IsMostRecentDownloadItemAtFilePath(content::DownloadItem* download) override;
+    bool IsMostRecentDownloadItemAtFilePath(download::DownloadItem* download) override;
 
 
     void cancelDownload(quint32 downloadId);
@@ -91,12 +94,12 @@ public:
     void markNextDownloadAsUserRequested() { m_nextDownloadIsUserRequested = true; }
 
     // Inherited from content::DownloadItem::Observer
-    void OnDownloadUpdated(content::DownloadItem *download) override;
-    void OnDownloadDestroyed(content::DownloadItem *download) override;
+    void OnDownloadUpdated(download::DownloadItem *download) override;
+    void OnDownloadDestroyed(download::DownloadItem *download) override;
 
 private:
     void cancelDownload(const content::DownloadTargetCallback& callback);
-    void savePackageDownloadCreated(content::DownloadItem *download);
+    void savePackageDownloadCreated(download::DownloadItem *download);
     BrowserContextAdapter *m_contextAdapter;
 
     uint64_t m_currentId;

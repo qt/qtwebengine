@@ -49,41 +49,41 @@ struct tm;
 struct stat;
 struct stat64;
 
-// exported in zygote_main_linux.cc
-namespace content {
+// exported in sandbox/linux/services/libc_interceptor.cc
+namespace sandbox {
 struct tm* localtime_override(const time_t* timep);
 struct tm* localtime64_override(const time_t* timep);
 struct tm* localtime_r_override(const time_t* timep, struct tm* result);
 struct tm* localtime64_r_override(const time_t* timep, struct tm* result);
 }
 
-// from zygote_main_linux.cc
+// from sandbox/linux/services/libc_interceptor.cc
 __attribute__ ((__visibility__("default")))
 struct tm* localtime_proxy(const time_t* timep) __asm__ ("localtime");
 struct tm* localtime_proxy(const time_t* timep)
 {
-    return content::localtime_override(timep);
+    return sandbox::localtime_override(timep);
 }
 
 __attribute__ ((__visibility__("default")))
 struct tm* localtime64_proxy(const time_t* timep) __asm__ ("localtime64");
 struct tm* localtime64_proxy(const time_t* timep)
 {
-    return content::localtime64_override(timep);
+    return sandbox::localtime64_override(timep);
 }
 
 __attribute__ ((__visibility__("default")))
 struct tm* localtime_r_proxy(const time_t* timep, struct tm* result) __asm__ ("localtime_r");
 struct tm* localtime_r_proxy(const time_t* timep, struct tm* result)
 {
-    return content::localtime_r_override(timep, result);
+    return sandbox::localtime_r_override(timep, result);
 }
 
 __attribute__ ((__visibility__("default")))
 struct tm* localtime64_r_proxy(const time_t* timep, struct tm* result) __asm__ ("localtime64_r");
 struct tm* localtime64_r_proxy(const time_t* timep, struct tm* result)
 {
-    return content::localtime64_r_override(timep, result);
+    return sandbox::localtime64_r_override(timep, result);
 }
 
 #endif // defined(OS_LINUX)

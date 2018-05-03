@@ -87,7 +87,8 @@
 namespace QtWebEngineCore {
 
 // Maps the LogSeverity defines in base/logging.h to the web engines message levels.
-static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32_t messageLevel) {
+static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32_t messageLevel)
+{
     if (messageLevel < 1)
         return WebContentsAdapterClient::Info;
     else if (messageLevel > 1)
@@ -499,9 +500,10 @@ void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const 
     m_viewClient->didUpdateTargetURL(toQt(url));
 }
 
-void WebContentsDelegateQt::WasShown()
+void WebContentsDelegateQt::OnVisibilityChanged(content::Visibility visibility)
 {
-    web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetMainFrame()->GetProcess()->GetID());
+    if (visibility != content::Visibility::HIDDEN)
+        web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetMainFrame()->GetProcess()->GetID());
 }
 
 void WebContentsDelegateQt::DidFirstVisuallyNonEmptyPaint()

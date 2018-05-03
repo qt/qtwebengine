@@ -64,6 +64,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -100,23 +101,21 @@ ContentRendererClientQt::~ContentRendererClientQt()
 void ContentRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *renderThread = content::RenderThread::Get();
+    (void)GetConnector();
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheImpl.reset(new web_cache::WebCacheImpl());
 
     auto registry = base::MakeUnique<service_manager::BinderRegistry>();
     registry->AddInterface(m_visitedLinkSlave->GetBindCallback(),
                            base::ThreadTaskRunnerHandle::Get());
-    content::ChildThread::Get()
-        ->GetServiceManagerConnection()
-        ->AddConnectionFilter(base::MakeUnique<content::SimpleConnectionFilter>(
-            std::move(registry)));
-
+    content::ChildThread::Get()->GetServiceManagerConnection()->AddConnectionFilter(
+                base::MakeUnique<content::SimpleConnectionFilter>(std::move(registry)));
 
     renderThread->AddObserver(UserResourceController::instance());
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-    m_spellCheck.reset(new SpellCheck(this));
-    renderThread->AddObserver(m_spellCheck.data());
+    if (!m_spellCheck)
+        InitSpellCheck();
 #endif
 }
 
@@ -231,11 +230,26 @@ bool ContentRendererClientQt::IsLinkVisited(unsigned long long linkHash)
     return m_visitedLinkSlave->IsVisited(linkHash);
 }
 
+void ContentRendererClientQt::OnStart()
+{
+    context()->connector()->BindConnectorRequest(std::move(m_connectorRequest));
+}
+
+void ContentRendererClientQt::OnBindInterface(const service_manager::BindSourceInfo &remote_info,
+                                              const std::string& name,
+                                              mojo::ScopedMessagePipeHandle handle)
+{
+    Q_UNUSED(remote_info);
+    m_registry.TryBindInterface(name, &handle);
+}
+
 void ContentRendererClientQt::GetInterface(const std::string &interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {
-    content::RenderThread::Get()->GetConnector()->BindInterface(service_manager::Identity("qtwebengine"),
-                                                                interface_name,
-                                                                std::move(interface_pipe));
+    if (!m_connector)
+        return;
+    m_connector->BindInterface(service_manager::Identity("qtwebengine"),
+                               interface_name,
+                               std::move(interface_pipe));
 }
 
 // The following is based on chrome/renderer/media/chrome_key_systems.cc:
@@ -426,6 +440,27 @@ void ContentRendererClientQt::AddSupportedKeySystems(std::vector<std::unique_ptr
     AddPepperBasedWidevine(key_systems);
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+}
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+void ContentRendererClientQt::InitSpellCheck()
+{
+    m_spellCheck.reset(new SpellCheck(&m_registry, this));
+}
+#endif
+
+void ContentRendererClientQt::CreateRendererService(service_manager::mojom::ServiceRequest service_request)
+{
+    m_serviceContext = std::make_unique<service_manager::ServiceContext>(
+                std::make_unique<service_manager::ForwardingService>(this),
+                std::move(service_request));
+}
+
+service_manager::Connector* ContentRendererClientQt::GetConnector()
+{
+    if (!m_connector)
+        m_connector = service_manager::Connector::Create(&m_connectorRequest);
+    return m_connector.get();
 }
 
 } // namespace

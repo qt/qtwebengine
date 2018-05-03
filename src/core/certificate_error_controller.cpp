@@ -67,6 +67,7 @@ ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakKey, net::ERR_CERT
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNameConstraintViolation, net::ERR_CERT_NAME_CONSTRAINT_VIOLATION)
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateValidityTooLong, net::ERR_CERT_VALIDITY_TOO_LONG)
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateTransparencyRequired, net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateSymantecLegacy, net::ERR_CERT_SYMANTEC_LEGACY)
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateErrorEnd, net::ERR_CERT_END)
 
 void CertificateErrorControllerPrivate::accept(bool accepted)

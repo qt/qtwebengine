@@ -119,7 +119,7 @@ bool PrintViewManagerBaseQt::PrintDocument(printing::PrintedDocument *document,
                                            const gfx::Point &offsets)
 {
     std::unique_ptr<printing::PdfMetafileSkia> metafile =
-            std::make_unique<printing::PdfMetafileSkia>(printing::SkiaDocumentType::PDF);
+            std::make_unique<printing::PdfMetafileSkia>();
     if (!metafile->InitFromData(print_data->front(), print_data->size())) {
         NOTREACHED() << "Invalid metafile";
         web_contents()->Stop();
@@ -153,22 +153,23 @@ void PrintViewManagerBaseQt::OnDidPrintDocument(const PrintHostMsg_DidPrintDocum
     if (!document)
         return;
 
-    if (!base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
+    const PrintHostMsg_DidPrintContent_Params &content = params.content;
+    if (!base::SharedMemory::IsHandleValid(content.metafile_data_handle)) {
         NOTREACHED() << "invalid memory handle";
         web_contents()->Stop();
         return;
     }
 
     std::unique_ptr<base::SharedMemory> shared_buf =
-            std::make_unique<base::SharedMemory>(params.metafile_data_handle, true);
-    if (!shared_buf->Map(params.data_size)) {
+            std::make_unique<base::SharedMemory>(content.metafile_data_handle, true);
+    if (!shared_buf->Map(content.data_size)) {
         NOTREACHED() << "couldn't map";
         web_contents()->Stop();
         return;
     }
     scoped_refptr<base::RefCountedBytes> bytes =
             base::MakeRefCounted<base::RefCountedBytes>(
-                    reinterpret_cast<const unsigned char*>(shared_buf->memory()), params.data_size);
+                    reinterpret_cast<const unsigned char*>(shared_buf->memory()), content.data_size);
     PrintDocument(document, bytes, params.page_size, params.content_area, params.physical_offsets);
 }
 

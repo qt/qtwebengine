@@ -60,7 +60,7 @@ public:
     // For use with the Singleton helper class from chromium
     static JavaScriptDialogManagerQt *GetInstance();
 
-    void RunJavaScriptDialog(content::WebContents *, const GURL &, content::JavaScriptDialogType dialog_type,
+    void RunJavaScriptDialog(content::WebContents *, content::RenderFrameHost *, content::JavaScriptDialogType dialog_type,
                              const base::string16 &messageText, const base::string16 &defaultPromptText,
                              DialogClosedCallback callback,
                              bool *didSuppressMessage) override;

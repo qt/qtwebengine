@@ -54,8 +54,6 @@
 #include "visited_links_manager_qt.h"
 #include "web_engine_context.h"
 
-#include "net/proxy/proxy_service.h"
-
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 #include <QCoreApplication>

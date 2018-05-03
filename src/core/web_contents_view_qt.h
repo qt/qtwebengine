@@ -116,8 +116,6 @@ public:
 
     void TakeFocus(bool reverse) override;
 
-    void GetScreenInfo(content::ScreenInfo* results) const override;
-
     void FocusThroughTabTraversal(bool reverse) override;
 
 

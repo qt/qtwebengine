@@ -51,6 +51,7 @@
 
 #include "base/values.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print_messages.h"
@@ -102,10 +103,10 @@ static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
                         const QtWebEngineCore::PrintViewManagerQt::PrintToPDFFileCallback
                                 &saveCallback)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+    base::AssertBlockingAllowed();
     DCHECK_GT(data->size(), 0U);
 
-    printing::PdfMetafileSkia metafile(printing::SkiaDocumentType::PDF);
+    printing::PdfMetafileSkia metafile;
     metafile.InitFromData(static_cast<const void*>(data->front()), data->size());
 
     base::File file(path,
@@ -326,17 +327,16 @@ void PrintViewManagerQt::OnMetafileReadyForPrinting(
     resetPdfState();
 
     if (!pdf_print_callback.is_null()) {
-        std::vector<char> data_vector = GetStdVectorFromHandle(params.metafile_data_handle,
-                                                               params.data_size);
+        std::vector<char> data_vector = GetStdVectorFromHandle(params.content.metafile_data_handle,
+                                                               params.content.data_size);
         content::BrowserThread::PostTask(content::BrowserThread::UI,
                                          FROM_HERE,
                                          base::Bind(pdf_print_callback, data_vector));
     } else {
         scoped_refptr<base::RefCountedBytes> data_bytes
-                = GetBytesFromHandle(params.metafile_data_handle, params.data_size);
-        content::BrowserThread::PostTask(content::BrowserThread::FILE,
-               FROM_HERE,
-               base::Bind(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
+                = GetBytesFromHandle(params.content.metafile_data_handle, params.content.data_size);
+        base::PostTaskWithTraits(FROM_HERE, {base::MayBlock()},
+                                 base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
     }
 }
 

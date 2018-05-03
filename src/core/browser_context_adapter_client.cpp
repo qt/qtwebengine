@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "browser_context_adapter_client.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/save_page_type.h"
 
 #include <QCoreApplication>
@@ -46,43 +46,43 @@
 
 namespace QtWebEngineCore {
 
-ASSERT_ENUMS_MATCH(content::DownloadItem::IN_PROGRESS, BrowserContextAdapterClient::DownloadInProgress)
-ASSERT_ENUMS_MATCH(content::DownloadItem::COMPLETE, BrowserContextAdapterClient::DownloadCompleted)
-ASSERT_ENUMS_MATCH(content::DownloadItem::CANCELLED, BrowserContextAdapterClient::DownloadCancelled)
-ASSERT_ENUMS_MATCH(content::DownloadItem::INTERRUPTED, BrowserContextAdapterClient::DownloadInterrupted)
+ASSERT_ENUMS_MATCH(download::DownloadItem::IN_PROGRESS, BrowserContextAdapterClient::DownloadInProgress)
+ASSERT_ENUMS_MATCH(download::DownloadItem::COMPLETE, BrowserContextAdapterClient::DownloadCompleted)
+ASSERT_ENUMS_MATCH(download::DownloadItem::CANCELLED, BrowserContextAdapterClient::DownloadCancelled)
+ASSERT_ENUMS_MATCH(download::DownloadItem::INTERRUPTED, BrowserContextAdapterClient::DownloadInterrupted)
 
 ASSERT_ENUMS_MATCH(content::SAVE_PAGE_TYPE_UNKNOWN, BrowserContextAdapterClient::UnknownSavePageFormat)
 ASSERT_ENUMS_MATCH(content::SAVE_PAGE_TYPE_AS_ONLY_HTML, BrowserContextAdapterClient::SingleHtmlSaveFormat)
 ASSERT_ENUMS_MATCH(content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML, BrowserContextAdapterClient::CompleteHtmlSaveFormat)
 ASSERT_ENUMS_MATCH(content::SAVE_PAGE_TYPE_AS_MHTML, BrowserContextAdapterClient::MimeHtmlSaveFormat)
 
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_NONE, BrowserContextAdapterClient::NoReason)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, BrowserContextAdapterClient::FileFailed)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED, BrowserContextAdapterClient::FileAccessDenied)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, BrowserContextAdapterClient::FileNoSpace)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG, BrowserContextAdapterClient::FileNameTooLong)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE, BrowserContextAdapterClient::FileTooLarge)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED, BrowserContextAdapterClient::FileVirusInfected)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR, BrowserContextAdapterClient::FileTransientError)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED, BrowserContextAdapterClient::FileBlocked)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED, BrowserContextAdapterClient::FileSecurityCheckFailed)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT, BrowserContextAdapterClient::FileTooShort)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH, BrowserContextAdapterClient::FileHashMismatch)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, BrowserContextAdapterClient::NetworkFailed)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT, BrowserContextAdapterClient::NetworkTimeout)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED, BrowserContextAdapterClient::NetworkDisconnected)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN, BrowserContextAdapterClient::NetworkServerDown)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST, BrowserContextAdapterClient::NetworkInvalidRequest)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, BrowserContextAdapterClient::ServerFailed)
-//ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE, BrowserContextAdapterClient::ServerNoRange)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, BrowserContextAdapterClient::ServerBadContent)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED, BrowserContextAdapterClient::ServerUnauthorized)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM, BrowserContextAdapterClient::ServerCertProblem)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN, BrowserContextAdapterClient::ServerForbidden)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE, BrowserContextAdapterClient::ServerUnreachable)
-ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED, BrowserContextAdapterClient::UserCanceled)
-//ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN, BrowserContextAdapterClient::UserShutdown)
-//ASSERT_ENUMS_MATCH(content::DOWNLOAD_INTERRUPT_REASON_CRASH, BrowserContextAdapterClient::Crash)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_NONE, BrowserContextAdapterClient::NoReason)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, BrowserContextAdapterClient::FileFailed)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED, BrowserContextAdapterClient::FileAccessDenied)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, BrowserContextAdapterClient::FileNoSpace)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG, BrowserContextAdapterClient::FileNameTooLong)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE, BrowserContextAdapterClient::FileTooLarge)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED, BrowserContextAdapterClient::FileVirusInfected)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR, BrowserContextAdapterClient::FileTransientError)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED, BrowserContextAdapterClient::FileBlocked)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED, BrowserContextAdapterClient::FileSecurityCheckFailed)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT, BrowserContextAdapterClient::FileTooShort)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH, BrowserContextAdapterClient::FileHashMismatch)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, BrowserContextAdapterClient::NetworkFailed)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT, BrowserContextAdapterClient::NetworkTimeout)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED, BrowserContextAdapterClient::NetworkDisconnected)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN, BrowserContextAdapterClient::NetworkServerDown)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST, BrowserContextAdapterClient::NetworkInvalidRequest)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, BrowserContextAdapterClient::ServerFailed)
+//ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE, BrowserContextAdapterClient::ServerNoRange)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, BrowserContextAdapterClient::ServerBadContent)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED, BrowserContextAdapterClient::ServerUnauthorized)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM, BrowserContextAdapterClient::ServerCertProblem)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN, BrowserContextAdapterClient::ServerForbidden)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE, BrowserContextAdapterClient::ServerUnreachable)
+ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED, BrowserContextAdapterClient::UserCanceled)
+//ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN, BrowserContextAdapterClient::UserShutdown)
+//ASSERT_ENUMS_MATCH(download::DOWNLOAD_INTERRUPT_REASON_CRASH, BrowserContextAdapterClient::Crash)
 
 QString BrowserContextAdapterClient::downloadInterruptReasonToString(DownloadInterruptReason reason)
 {

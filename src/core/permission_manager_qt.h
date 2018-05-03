@@ -66,8 +66,6 @@ public:
         bool user_gesture,
         const base::Callback<void(blink::mojom::PermissionStatus)>& callback) override;
 
-    void CancelPermissionRequest(int request_id) override;
-
     blink::mojom::PermissionStatus GetPermissionStatus(
         content::PermissionType permission,
         const GURL& requesting_origin,

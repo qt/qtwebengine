@@ -253,7 +253,7 @@ public:
         , dpiScale(dpiScale)
     {
         // ACTION_DOWN and ACTION_UP must be accesssed through pointer_index 0
-        Q_ASSERT((action != ACTION_DOWN && action != ACTION_UP) || index == 0);
+        Q_ASSERT((action != Action::DOWN && action != Action::UP) || index == 0);
     }
 
     uint32_t GetUniqueEventId() const override { return eventId; }
@@ -290,7 +290,7 @@ public:
     float GetHistoricalTouchMajor(size_t pointer_index, size_t historical_index) const override { return 0; }
     float GetHistoricalX(size_t pointer_index, size_t historical_index) const override { return 0; }
     float GetHistoricalY(size_t pointer_index, size_t historical_index) const override { return 0; }
-    ToolType GetToolType(size_t pointer_index) const override { return ui::MotionEvent::TOOL_TYPE_FINGER; }
+    ToolType GetToolType(size_t pointer_index) const override { return ui::MotionEvent::ToolType::FINGER; }
     int GetButtonState() const override { return 0; }
 
 private:
@@ -433,7 +433,12 @@ gfx::Vector2dF RenderWidgetHostViewQt::GetLastScrollOffset() const {
     return m_lastScrollOffset;
 }
 
-gfx::Size RenderWidgetHostViewQt::GetPhysicalBackingSize() const
+gfx::Vector2d RenderWidgetHostViewQt::GetOffsetFromRootSurface()
+{
+    return gfx::Vector2d();
+}
+
+gfx::Size RenderWidgetHostViewQt::GetCompositorViewportPixelSize() const
 {
     if (!m_delegate || !m_delegate->window() || !m_delegate->window()->screen())
         return gfx::Size();
@@ -721,11 +726,6 @@ void RenderWidgetHostViewQt::SetTooltipText(const base::string16 &tooltip_text)
         m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
-bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
-{
-    return false;
-}
-
 void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient *frameSink)
 {
     // Accumulated resources belong to the old RendererCompositorFrameSink and
@@ -777,9 +777,9 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
 }
 
-void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo* results)
+void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo *results) const
 {
-    QWindow* window = m_delegate->window();
+    QWindow *window = m_delegate->window();
     if (!window)
         return;
     GetScreenInfoFromNativeWindow(window, results);
@@ -1168,7 +1168,8 @@ void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEve
         return;
 
     blink::WebTouchEvent touchEvent = ui::CreateWebTouchEventFromMotionEvent(motionEvent,
-                                                                             result.moved_beyond_slop_region);
+                                                                             result.moved_beyond_slop_region,
+                                                                             false /*hovering, FIXME ?*/);
     m_host->ForwardTouchEventWithLatencyInfo(touchEvent, CreateLatencyInfo(touchEvent));
 }
 
@@ -1531,7 +1532,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         if (touchPoints.isEmpty())
             touchPoints = m_previousTouchPoints;
         clearPreviousTouchMotionState();
-        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::ACTION_CANCEL,
+        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::Action::CANCEL,
                                   ev->modifiers(), dpiScale());
         processMotionEvent(cancelEvent);
         return;
@@ -1566,18 +1567,18 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         switch (touchPoints[i].state()) {
         case Qt::TouchPointPressed:
             if (m_sendMotionActionDown) {
-                action = ui::MotionEvent::ACTION_DOWN;
+                action = ui::MotionEvent::Action::DOWN;
                 m_sendMotionActionDown = false;
             } else {
-                action = ui::MotionEvent::ACTION_POINTER_DOWN;
+                action = ui::MotionEvent::Action::POINTER_DOWN;
             }
             break;
         case Qt::TouchPointMoved:
-            action = ui::MotionEvent::ACTION_MOVE;
+            action = ui::MotionEvent::Action::MOVE;
             break;
         case Qt::TouchPointReleased:
-            action = touchPoints.size() > 1 ? ui::MotionEvent::ACTION_POINTER_UP :
-                                              ui::MotionEvent::ACTION_UP;
+            action = touchPoints.size() > 1 ? ui::MotionEvent::Action::POINTER_UP :
+                                              ui::MotionEvent::Action::UP;
             break;
         default:
             // Ignore Qt::TouchPointStationary
@@ -1693,8 +1694,6 @@ bool RenderWidgetHostViewQt::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& 
     m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
     if (m_rendererCompositorFrameSink)
         m_rendererCompositorFrameSink->OnBeginFrame(args);
-    else // FIXME: is this else part ever needed?
-        m_host->Send(new ViewMsg_BeginFrame(m_host->GetRoutingID(), args));
     return true;
 }
 

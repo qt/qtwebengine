@@ -43,8 +43,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/proxy_resolution/proxy_config_service.h"
 
 #include <QNetworkProxy>
 

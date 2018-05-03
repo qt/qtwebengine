@@ -128,7 +128,8 @@ public:
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
     gfx::Vector2dF GetLastScrollOffset() const override;
-    gfx::Size GetPhysicalBackingSize() const override;
+    gfx::Vector2d GetOffsetFromRootSurface() override;
+    gfx::Size GetCompositorViewportPixelSize() const override;
     gfx::NativeView GetNativeView() const override;
     gfx::NativeViewAccessible GetNativeViewAccessible() override;
     void Focus() override;
@@ -149,12 +150,11 @@ public:
     void RenderProcessGone(base::TerminationStatus, int) override;
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
-    bool HasAcceleratedSurface(const gfx::Size&) override;
     void DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
     void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame, viz::mojom::HitTestRegionListPtr) override;
     void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
 
-    void GetScreenInfo(content::ScreenInfo* results);
+    void GetScreenInfo(content::ScreenInfo* results) const override;
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) override;
     void ClearCompositorFrame() override;

@@ -52,7 +52,6 @@
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/proxy/proxy_config_service.h"
 
 #include "base/base_paths.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"

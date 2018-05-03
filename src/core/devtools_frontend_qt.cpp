@@ -171,7 +171,7 @@ DevToolsFrontendQt *DevToolsFrontendQt::Show(QSharedPointer<WebContentsAdapter> 
     if (contents->GetURL() == GURL(GetFrontendURL())) {
         contents->GetController().Reload(content::ReloadType::ORIGINAL_REQUEST_URL, false);
     }  else {
-        content::NavigationController::LoadURLParams loadParams = content::NavigationController::LoadURLParams(GURL(GetFrontendURL()));
+        content::NavigationController::LoadURLParams loadParams((GURL(GetFrontendURL())));
         loadParams.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_AUTO_TOPLEVEL | ui::PAGE_TRANSITION_FROM_API);
         contents->GetController().LoadURLWithParams(loadParams);
     }
@@ -219,7 +219,7 @@ void DevToolsFrontendQt::Focus()
 void DevToolsFrontendQt::InspectElementAt(int x, int y)
 {
     if (m_agentHost)
-        m_agentHost->InspectElement(this, x, y);
+        m_agentHost->InspectElement(m_inspectedContents->GetFocusedFrame(), x, y);
     else {
         m_inspect_element_at_x = x;
         m_inspect_element_at_y = y;
@@ -271,7 +271,7 @@ void DevToolsFrontendQt::DocumentAvailableInMainFrame()
         m_agentHost = agent_host;
         m_agentHost->AttachClient(this);
         if (m_inspect_element_at_x != -1) {
-            m_agentHost->InspectElement(this, m_inspect_element_at_x, m_inspect_element_at_y);
+            m_agentHost->InspectElement(m_inspectedContents->GetFocusedFrame(), m_inspect_element_at_x, m_inspect_element_at_y);
             m_inspect_element_at_x = -1;
             m_inspect_element_at_y = -1;
         }

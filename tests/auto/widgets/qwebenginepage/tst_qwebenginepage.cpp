@@ -3005,7 +3005,7 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
 
     const QUrl first("http://abcdef.abcdef/");
     page.setUrl(first);
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 20000);
     QCOMPARE(page.url(), first);
     QCOMPARE(page.requestedUrl(), first);
     QVERIFY(!spy.at(0).first().toBool());
@@ -3014,7 +3014,7 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
     QVERIFY(first != second);
 
     page.load(second);
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 20000);
     QCOMPARE(page.url(), second);
     QCOMPARE(page.requestedUrl(), second);
     QVERIFY(!spy.at(1).first().toBool());
@@ -3548,7 +3548,7 @@ void tst_QWebEnginePage::setUrlToBadDomain()
     page.setUrl(url1);
 
     QTRY_COMPARE(urlSpy.count(), 1);
-    QTRY_COMPARE_WITH_TIMEOUT(titleSpy.count(), 1, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(titleSpy.count(), 1, 20000);
     QTRY_COMPARE(loadSpy.count(), 1);
 
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url1);
@@ -3561,7 +3561,7 @@ void tst_QWebEnginePage::setUrlToBadDomain()
     page.setUrl(url2);
 
     QTRY_COMPARE(urlSpy.count(), 1);
-    QTRY_COMPARE_WITH_TIMEOUT(titleSpy.count(), 1, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(titleSpy.count(), 1, 20000);
     QTRY_COMPARE(loadSpy.count(), 1);
 
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), url2);
@@ -3805,11 +3805,11 @@ void tst_QWebEnginePage::loadFinishedAfterNotFoundError()
 
     page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     page.setUrl(QUrl("http://non.existent/url"));
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 20000);
 
     page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
     page.setUrl(QUrl("http://another.non.existent/url"));
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 20000);
 }
 
 class URLSetter : public QObject {
@@ -3984,7 +3984,7 @@ void tst_QWebEnginePage::toPlainTextLoadFinishedRace()
     QCOMPARE(toPlainTextSync(page.data()), QString("foobarbaz"));
 
     page->load(QUrl("http://fail.invalid/"));
-    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 20000);
     QString s = toPlainTextSync(page.data());
     QVERIFY(s.contains("foobarbaz") == !enableErrorPage);
 

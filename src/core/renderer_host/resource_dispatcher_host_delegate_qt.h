@@ -42,16 +42,28 @@
 
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "url/gurl.h"
 
 #include "web_contents_adapter_client.h"
+
+namespace net {
+class AuthChallengeInfo;
+class AuthCredentials;
+}
 
 namespace QtWebEngineCore {
 
 class AuthenticationDialogController;
 
+// FIXME: move to separate file
 class ResourceDispatcherHostLoginDelegateQt : public content::ResourceDispatcherHostLoginDelegate {
 public:
-    ResourceDispatcherHostLoginDelegateQt(net::AuthChallengeInfo *authInfo, net::URLRequest *request);
+    ResourceDispatcherHostLoginDelegateQt(net::AuthChallengeInfo *authInfo,
+                                          content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+                                          GURL url,
+                                          bool first_auth_attempt,
+                                          const base::Callback<void(const base::Optional<net::AuthCredentials>&)> &auth_required_callback);
+
     ~ResourceDispatcherHostLoginDelegateQt();
 
     // ResourceDispatcherHostLoginDelegate implementation
@@ -70,9 +82,8 @@ private:
 
     scoped_refptr<net::AuthChallengeInfo> m_authInfo;
 
-    // The request that wants login data.
-    // Must only be accessed on the IO thread.
-    net::URLRequest *m_request;
+    GURL m_url;
+    base::Callback<void(const base::Optional<net::AuthCredentials>&)> m_auth_required_callback;
 
     // This member is used to keep authentication dialog controller alive until
     // authorization is sent or cancelled.
@@ -83,8 +94,6 @@ class ResourceDispatcherHostDelegateQt : public content::ResourceDispatcherHostD
 public:
     bool HandleExternalProtocol(const GURL& url,
                                 content::ResourceRequestInfo* info) override;
-
-    content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request) override;
 };
 
 } // namespace QtWebEngineCore

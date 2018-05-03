@@ -58,6 +58,7 @@ QT_WARNING_PUSH
 // effect with clang, so use a pragma for these dirty chromium headers
 QT_WARNING_DISABLE_CLANG("-Wunused-parameter")
 #include "base/memory/ref_counted.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_monster.h"
 QT_WARNING_POP
 
@@ -78,7 +79,7 @@ static const char* const kCookieableSchemes[] =
 class QWEBENGINECORE_PRIVATE_EXPORT CookieMonsterDelegateQt : public base::RefCountedThreadSafe<CookieMonsterDelegateQt> {
     QPointer<QWebEngineCookieStore> m_client;
     net::CookieMonster *m_cookieMonster;
-    std::vector<std::unique_ptr<net::CookieStore::CookieChangedSubscription>> m_subscriptions;
+    std::vector<std::unique_ptr<net::CookieChangeSubscription>> m_subscriptions;
 public:
     CookieMonsterDelegateQt();
     ~CookieMonsterDelegateQt();
@@ -98,7 +99,7 @@ public:
     bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url);
 
     void AddStore(net::CookieStore *store);
-    void OnCookieChanged(const net::CanonicalCookie &cookie, net::CookieStore::ChangeCause cause);
+    void OnCookieChanged(const net::CanonicalCookie &cookie, net::CookieChangeCause cause);
 
 private:
     void GetAllCookiesOnIOThread(net::CookieMonster::GetCookieListCallback callback);

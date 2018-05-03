@@ -66,7 +66,8 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include <content/public/browser/download_manager.h>
+#include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -628,8 +629,8 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         }
     }
 
-    auto navigate = [this, params]() {
-        webContents()->GetController().LoadURLWithParams(params);
+    auto navigate = [this, loadParams = std::move(params)]() {
+        webContents()->GetController().LoadURLWithParams(loadParams);
         // Follow chrome::Navigate and invalidate the URL immediately.
         m_webContentsDelegate->NavigationStateChanged(webContents(), content::INVALIDATE_TYPE_URL);
         focusIfNecessary();
@@ -637,7 +638,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
 
     if (resizeNeeded) {
         // Schedule navigation on the event loop.
-        QTimer::singleShot(0, navigate);
+        QTimer::singleShot(0, std::move(navigate));
     } else {
         navigate();
     }
@@ -1033,17 +1034,19 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
                 "It's possible not to use this feature."
             })");
     GURL gurl = toGurl(url);
-    std::unique_ptr<content::DownloadUrlParameters> params(
-        content::DownloadUrlParameters::CreateForWebContentsMainFrame(webContents(), gurl, traffic_annotation));
+    std::unique_ptr<download::DownloadUrlParameters> params(
+        content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(webContents(), gurl, traffic_annotation));
 
     params->set_suggested_name(toString16(suggestedFileName));
 
     // referrer logic based on chrome/browser/renderer_context_menu/render_view_context_menu.cc:
-    params->set_referrer(
-        content::Referrer::SanitizeForRequest(
-            gurl,
-            content::Referrer(toGurl(referrerUrl).GetAsReferrer(),
-                              static_cast<blink::WebReferrerPolicy>(referrerPolicy))));
+    content::Referrer referrer = content::Referrer::SanitizeForRequest(
+                gurl,
+                content::Referrer(toGurl(referrerUrl).GetAsReferrer(),
+                                  static_cast<blink::WebReferrerPolicy>(referrerPolicy)));
+
+    params->set_referrer(referrer.url);
+    params->set_referrer_policy(content::Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
 
     dlm->DownloadUrl(std::move(params));
 }

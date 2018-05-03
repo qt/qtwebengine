@@ -372,9 +372,9 @@ bool NetworkDelegateQt::OnCanQueueReportingReport(const url::Origin& origin) con
     return false;
 }
 
-bool NetworkDelegateQt::OnCanSendReportingReport(const url::Origin& origin) const
+void NetworkDelegateQt::OnCanSendReportingReports(std::set<url::Origin> origins, base::OnceCallback<void(std::set<url::Origin>)> result_callback) const
 {
-    return false;
+    std::move(result_callback).Run(std::set<url::Origin>());
 }
 
 bool NetworkDelegateQt::OnCanSetReportingClient(const url::Origin& origin, const GURL& endpoint) const

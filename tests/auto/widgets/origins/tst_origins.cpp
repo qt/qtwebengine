@@ -257,10 +257,10 @@ void tst_Origins::webSocket()
     const int expected = 1006;
 
     QVERIFY(load(QSL("file:" THIS_DIR "resources/websocket.html")));
-    QTRY_VERIFY(eval(QSL("err")) == QVariant(expected));
+    QTRY_COMPARE_WITH_TIMEOUT(eval(QSL("err")), QVariant(expected), 10000);
 
     QVERIFY(load(QSL("qrc:/resources/websocket.html")));
-    QTRY_VERIFY(eval(QSL("err")) == QVariant(expected));
+    QTRY_COMPARE_WITH_TIMEOUT(eval(QSL("err")), QVariant(expected), 10000);
 
     QVERIFY(load(QSL("tst:/resources/websocket.html")));
     QTRY_VERIFY(eval(QSL("err")) == QVariant(expected));

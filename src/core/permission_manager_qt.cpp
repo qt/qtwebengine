@@ -70,6 +70,7 @@ BrowserContextAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::ACCESSIBILITY_EVENTS:
     case content::PermissionType::CLIPBOARD_READ:
     case content::PermissionType::CLIPBOARD_WRITE:
+    case content::PermissionType::PAYMENT_HANDLER:
     case content::PermissionType::NUM:
         break;
     }
@@ -214,13 +215,6 @@ int PermissionManagerQt::RequestPermissions(const std::vector<content::Permissio
             contentsDelegate->requestGeolocationPermission(request.origin);
     }
     return request_id;
-}
-
-void PermissionManagerQt::CancelPermissionRequest(int request_id)
-{
-    // Should we add API to cancel permissions in the UI level?
-    m_requests.remove(request_id);
-    m_multiRequests.remove(request_id);
 }
 
 blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(
