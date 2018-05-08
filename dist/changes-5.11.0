@@ -23,13 +23,14 @@ Chromium Snapshot
 -----------------
 
 - Updated the Chromium version to 65.0.3325.151.
-- Applied security fixes from Chrome up to version 66.0.3359.117.
+- Applied security fixes from Chrome up to version 66.0.3359.139.
   * Including: CVE-2018-6085, CVE-2018-6086, CVE-2018-6087, CVE-2018-6088,
     CVE-2018-6089, CVE-2018-6090, CVE-2018-6091, CVE-2018-6092,
     CVE-2018-6093, CVE-2018-6094, CVE-2018-6096, CVE-2018-6099,
     CVE-2018-6100, CVE-2018-6101, CVE-2018-6102, CVE-2018-6103,
     CVE-2018-6104, CVE-2018-6105, CVE-2018-6106, CVE-2018-6108,
-    CVE-2018-6110, CVE-2018-6111, CVE-2018-6115 and CVE-2018-6116,
+    CVE-2018-6110, CVE-2018-6111, CVE-2018-6115, CVE-2018-6116 and
+    CVE-2018-6118
 
 Behavioral Changes
 ------------------
