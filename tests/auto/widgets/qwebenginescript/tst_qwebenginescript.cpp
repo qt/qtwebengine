@@ -264,9 +264,8 @@ static QString readFile(const QString &path)
 
 static QWebEngineScript webChannelScript()
 {
-    QString sourceCode = readFile(QStringLiteral(":/qwebchannel.js"));
-    if (sourceCode.isEmpty())
-        return {};
+    QString sourceCode = readFile(QStringLiteral(":/qtwebchannel/qwebchannel.js"));
+    Q_ASSERT(!sourceCode.isEmpty());
 
     QWebEngineScript script;
     script.setSourceCode(sourceCode);
