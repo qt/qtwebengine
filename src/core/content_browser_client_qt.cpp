@@ -68,6 +68,7 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
+#include "device/geolocation/public/cpp/location_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "printing/features/features.h"
@@ -121,6 +122,10 @@
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "renderer_host/pepper/pepper_host_factory_qt.h"
+#endif
+
+#if defined(QT_USE_POSITIONING)
+#include "location_provider_qt.h"
 #endif
 
 #include <QGuiApplication>
@@ -737,7 +742,11 @@ bool ContentBrowserClientQt::CanCreateWindow(
 
 std::unique_ptr<device::LocationProvider> ContentBrowserClientQt::OverrideSystemLocationProvider()
 {
+#if defined(QT_USE_POSITIONING)
     return base::WrapUnique(new LocationProviderQt());
+#else
+    return nullptr;
+#endif
 }
 
 scoped_refptr<net::URLRequestContextGetter> GetSystemRequestContextOnUIThread()
