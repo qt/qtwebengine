@@ -169,6 +169,8 @@ public:
                               content::ResourceContext *context,
                               const std::vector<std::pair<int, int> > &render_frames) override;
 
+    std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() override;
+    void GetGeolocationRequestContext(base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)> callback) override;
 #if defined(Q_OS_LINUX)
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;
 #endif

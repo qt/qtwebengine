@@ -70,10 +70,7 @@ public:
         }
     }
 
-    virtual ~RequestController()
-    {
-        reject();
-    }
+    virtual ~RequestController() {}
 
 protected:
     virtual void accepted() = 0;

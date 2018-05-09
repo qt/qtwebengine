@@ -53,6 +53,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/media_observer.h"
@@ -92,6 +93,7 @@
 #include "certificate_error_controller_p.h"
 #include "desktop_screen_qt.h"
 #include "devtools_manager_delegate_qt.h"
+#include "location_provider_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "net/network_delegate_qt.h"
 #include "net/qrc_protocol_handler_qt.h"
@@ -731,6 +733,26 @@ bool ContentBrowserClientQt::CanCreateWindow(
     }
 
     return (settings && settings->getJavaScriptCanOpenWindowsAutomatically()) || user_gesture;
+}
+
+std::unique_ptr<device::LocationProvider> ContentBrowserClientQt::OverrideSystemLocationProvider()
+{
+    return base::WrapUnique(new LocationProviderQt());
+}
+
+scoped_refptr<net::URLRequestContextGetter> GetSystemRequestContextOnUIThread()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    return scoped_refptr<net::URLRequestContextGetter>(
+                BrowserContextAdapter::defaultContext()->browserContext()->GetRequestContext());
+}
+
+void ContentBrowserClientQt::GetGeolocationRequestContext(
+        base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)> callback)
+{
+    content::BrowserThread::PostTaskAndReplyWithResult(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&GetSystemRequestContextOnUIThread), std::move(callback));
 }
 
 bool ContentBrowserClientQt::AllowGetCookie(const GURL &url,

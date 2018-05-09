@@ -44,6 +44,7 @@
 #include "web_contents_delegate_qt.h"
 
 #include "browser_context_adapter.h"
+#include "browser_context_qt.h"
 #include "color_chooser_qt.h"
 #include "color_chooser_controller.h"
 #include "favicon_manager.h"
@@ -116,19 +117,25 @@ WebContentsDelegateQt::~WebContentsDelegateQt()
 content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params)
 {
     content::WebContents *target = source;
+    content::SiteInstance *target_site_instance = params.source_site_instance.get();
+    content::Referrer referrer = params.referrer;
     if (params.disposition != WindowOpenDisposition::CURRENT_TAB) {
         QSharedPointer<WebContentsAdapter> targetAdapter = createWindow(0, params.disposition, gfx::Rect(), params.user_gesture);
         if (targetAdapter) {
+            if (targetAdapter->browserContext() != source->GetBrowserContext()) {
+                target_site_instance = nullptr;
+                referrer = content::Referrer();
+            }
             if (!targetAdapter->isInitialized())
-                targetAdapter->initialize(params.source_site_instance.get());
+                targetAdapter->initialize(target_site_instance);
             target = targetAdapter->webContents();
         }
     }
     Q_ASSERT(target);
 
     content::NavigationController::LoadURLParams load_url_params(params.url);
-    load_url_params.source_site_instance = params.source_site_instance;
-    load_url_params.referrer = params.referrer;
+    load_url_params.source_site_instance = target_site_instance;
+    load_url_params.referrer = referrer;
     load_url_params.frame_tree_node_id = params.frame_tree_node_id;
     load_url_params.redirect_chain = params.redirect_chain;
     load_url_params.transition_type = params.transition;

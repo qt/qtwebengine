@@ -201,7 +201,7 @@ bool QWebEngineCookieStorePrivate::canAccessCookies(const QUrl &firstPartyUrl, c
                                                                 toGurl(firstPartyUrl),
                                                                 net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
-    QWebEngineCookieStore::FilterRequest request = { thirdParty, firstPartyUrl, url };
+    QWebEngineCookieStore::FilterRequest request = { firstPartyUrl, url, thirdParty, false, 0};
     return filterCallback(request);
 }
 
@@ -405,6 +405,16 @@ void QWebEngineCookieStore::setCookieFilter(std::function<bool(const FilterReque
     for specific sites visited.
 
     \sa origin, thirdParty
+*/
+
+/*!
+    \variable QWebEngineCookieStore::FilterRequest::_reservedFlag
+    \internal
+*/
+
+/*!
+    \variable QWebEngineCookieStore::FilterRequest::_reservedType
+    \internal
 */
 
 /*!

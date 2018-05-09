@@ -62,9 +62,11 @@ class QWEBENGINE_EXPORT QWebEngineCookieStore : public QObject {
 
 public:
     struct FilterRequest {
-        bool thirdParty;
         QUrl firstPartyUrl;
         QUrl origin;
+        bool thirdParty;
+        bool _reservedFlag;
+        ushort _reservedType;
     };
     virtual ~QWebEngineCookieStore();
 

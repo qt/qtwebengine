@@ -54,6 +54,11 @@ QuotaRequestControllerImpl::QuotaRequestControllerImpl(
     , m_callback(callback)
 {}
 
+QuotaRequestControllerImpl::~QuotaRequestControllerImpl()
+{
+    reject();
+}
+
 void QuotaRequestControllerImpl::accepted()
 {
     m_context->dispatchCallbackOnIOThread(m_callback, QuotaPermissionContextQt::QUOTA_PERMISSION_RESPONSE_ALLOW);
