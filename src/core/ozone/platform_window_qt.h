@@ -65,6 +65,7 @@ public:
     void SetTitle(const base::string16&) override { }
     void SetCapture() override { }
     void ReleaseCapture() override { }
+    bool HasCapture() const override { return false; }
     void ToggleFullscreen() override { }
     void Maximize() override { }
     void Minimize() override { }

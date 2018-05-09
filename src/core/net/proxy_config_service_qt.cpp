@@ -91,14 +91,14 @@ void ProxyConfigServiceQt::RemoveObserver(net::ProxyConfigService::Observer *obs
     m_observers.RemoveObserver(observer);
 }
 
-net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxyConfig(net::ProxyConfig *config)
+net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxyConfig(net::ProxyConfigWithAnnotation *config)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
     m_usesSystemConfiguration = QNetworkProxyFactory::usesSystemConfiguration();
 #endif
     if (m_usesSystemConfiguration) {
         // Use Chromium's base service to retrieve system settings
-        net::ProxyConfig systemConfig;
+        net::ProxyConfigWithAnnotation systemConfig;
         ConfigAvailability systemAvailability = net::ProxyConfigService::CONFIG_UNSET;
         if (m_baseService.get())
             systemAvailability = m_baseService->GetLatestProxyConfig(&systemConfig);
@@ -112,7 +112,7 @@ net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxy
     const QNetworkProxy &qtProxy = QNetworkProxy::applicationProxy();
     if (qtProxy == m_qtApplicationProxy && !m_qtProxyConfig.proxy_rules().empty()) {
         // no changes
-        *config = m_qtProxyConfig;
+        *config = net::ProxyConfigWithAnnotation(m_qtProxyConfig, config->traffic_annotation());
         return CONFIG_VALID;
     }
 
@@ -141,7 +141,7 @@ net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxy
 
     qtRules.bypass_rules.AddRuleToBypassLocal(); // don't use proxy for connections to localhost
     m_qtProxyConfig.proxy_rules() = qtRules;
-    *config = m_qtProxyConfig;
+    *config = net::ProxyConfigWithAnnotation(m_qtProxyConfig, config->traffic_annotation());
     return CONFIG_VALID;
 }
 
@@ -167,7 +167,7 @@ void ProxyConfigServiceQt::OnLazyPoll()
 }
 
 // Called when the base service changed
-void ProxyConfigServiceQt::OnProxyConfigChanged(const net::ProxyConfig &config, ConfigAvailability availability)
+void ProxyConfigServiceQt::OnProxyConfigChanged(const net::ProxyConfigWithAnnotation &config, ConfigAvailability availability)
 {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     Q_UNUSED(config);
@@ -181,7 +181,7 @@ void ProxyConfigServiceQt::OnProxyConfigChanged(const net::ProxyConfig &config, 
 // Update our observers
 void ProxyConfigServiceQt::Update()
 {
-    net::ProxyConfig actual_config;
+    net::ProxyConfigWithAnnotation actual_config;
     ConfigAvailability availability = GetLatestProxyConfig(&actual_config);
     if (availability == CONFIG_PENDING)
         return;

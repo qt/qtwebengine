@@ -44,7 +44,7 @@
 
 namespace QtWebEngineCore {
 
-AuthenticationDialogControllerPrivate::AuthenticationDialogControllerPrivate(ResourceDispatcherHostLoginDelegateQt *loginDelegate)
+AuthenticationDialogControllerPrivate::AuthenticationDialogControllerPrivate(LoginDelegateQt *loginDelegate)
     : loginDelegate(loginDelegate)
 {
 }
@@ -53,7 +53,7 @@ void AuthenticationDialogControllerPrivate::dialogFinished(bool accepted, const 
 {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester, loginDelegate, accepted, user, password));
+        base::Bind(&LoginDelegateQt::sendAuthToRequester, loginDelegate, accepted, user, password));
 }
 
 AuthenticationDialogController::AuthenticationDialogController(AuthenticationDialogControllerPrivate *dd)

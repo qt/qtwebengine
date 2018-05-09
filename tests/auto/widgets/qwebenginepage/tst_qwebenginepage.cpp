@@ -2395,6 +2395,15 @@ void tst_QWebEnginePage::getUserMediaRequest()
     QFETCH(QWebEnginePage::Feature, feature);
 
     GetUserMediaTestPage page;
+    if (feature == QWebEnginePage::DesktopVideoCapture || feature == QWebEnginePage::DesktopAudioVideoCapture) {
+        // Desktop capture needs to be on a desktop.
+        QWebEngineView view;
+        view.setPage(&page);
+        view.resize(640, 480);
+        view.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&view));
+    }
+
     QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
 

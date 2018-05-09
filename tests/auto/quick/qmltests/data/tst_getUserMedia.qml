@@ -32,11 +32,14 @@ import QtWebEngine 1.6
 
 TestWebEngineView {
     id: webEngineView
+    width: 400
+    height: 400
 
     settings.screenCaptureEnabled: true
 
     TestCase {
         name: "GetUserMedia"
+        when: windowShown
 
         function init_data() {
             return [

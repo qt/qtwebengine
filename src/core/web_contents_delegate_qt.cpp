@@ -340,7 +340,7 @@ void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QS
 
 void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description)
 {
-    if (render_frame_host->GetParent())
+    if (render_frame_host != web_contents()->GetMainFrame())
         return;
 
     if (validated_url.spec() == content::kUnreachableWebDataURL) {
@@ -619,7 +619,7 @@ void WebContentsDelegateQt::BeforeUnloadFired(const base::TimeTicks &proceed_tim
     Q_UNUSED(proceed_time);
 }
 
-bool WebContentsDelegateQt::CheckMediaAccessPermission(content::WebContents *web_contents, const GURL& security_origin, content::MediaStreamType type)
+bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *, const GURL& security_origin, content::MediaStreamType type)
 {
     switch (type) {
     case content::MEDIA_DEVICE_AUDIO_CAPTURE:

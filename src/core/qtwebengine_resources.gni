@@ -16,13 +16,13 @@ group("qtwebengine_resources") {
 
 repack("qtwebengine_repack_resources") {
   sources = [
-    "$root_gen_dir/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/qtwebengine/qt_webengine_resources.pak",
     "$root_gen_dir/chrome/quota_internals_resources.pak",
     "$root_gen_dir/chrome/task_scheduler_internals_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
+    "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
   output = "$root_out_dir/qtwebengine_resources.pak"
@@ -33,43 +33,43 @@ repack("qtwebengine_repack_resources") {
      "//components/resources:components_resources_grit",
      "//content:resources_grit",
      "//net:net_resources_grit",
-     "//third_party/WebKit/public:resources_grit",
+     "//third_party/blink/public:resources_grit",
      "//ui/resources:webui_resources_grd_grit",
   ]
 }
 
 repack("qtwebengine_repack_resources_100") {
   sources = [
-    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/components/components_resources_100_percent.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/chrome/renderer_resources_100_percent.pak",
-    "$root_gen_dir/blink/public/resources/blink_scaled_resources_100_percent.pak",
+    "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
   ]
   output = "$root_out_dir/qtwebengine_resources_100p.pak"
   deps = [
-    "//third_party/WebKit/public:scaled_resources_100_percent",
     "//chrome/renderer:resources_grit",
     "//components/resources:components_scaled_resources_grit",
     "//content/app/resources:resources_grit",
+    "//third_party/blink/public:scaled_resources_100_percent",
     "//ui/resources:ui_resources_grd_grit"
   ]
 }
 
 repack("qtwebengine_repack_resources_200") {
   sources = [
-    "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
     "$root_gen_dir/components/components_resources_200_percent.pak",
     "$root_gen_dir/content/app/resources/content_resources_200_percent.pak",
     "$root_gen_dir/chrome/renderer_resources_200_percent.pak",
-    "$root_gen_dir/blink/public/resources/blink_scaled_resources_200_percent.pak",
+    "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_200_percent.pak",
+    "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
   ]
   output = "$root_out_dir/qtwebengine_resources_200p.pak"
   deps = [
-    "//third_party/WebKit/public:scaled_resources_200_percent",
     "//chrome/renderer:resources_grit",
     "//components/resources:components_scaled_resources_grit",
     "//content/app/resources:resources_grit",
+    "//third_party/blink/public:scaled_resources_200_percent",
     "//ui/resources:ui_resources_grd_grit"
   ]
 }

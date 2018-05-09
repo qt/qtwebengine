@@ -284,7 +284,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDeclared       */ << QByteArrayLiteral("text/plain")
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("")
-        /* fileHasReferer             */ << true
+        /* fileHasReferer             */ << false // crbug.com/455987
         /* fileAction                 */ << FileIsDownloaded;
 
     // ... same with the content disposition header save for the download type.
@@ -308,7 +308,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileMimeTypeDeclared       */ << QByteArrayLiteral("text/plain")
         /* fileMimeTypeDetected       */ << QByteArrayLiteral("text/plain")
         /* fileDisposition            */ << QByteArrayLiteral("attachment")
-        /* fileHasReferer             */ << true
+        /* fileHasReferer             */ << false // crbug.com/455987
         /* fileAction                 */ << FileIsDownloaded;
 
     // The file's extension has no effect.

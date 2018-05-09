@@ -479,7 +479,7 @@
         },
         "webengine-pepper-plugins": {
             "label": "Pepper Plugins",
-            "purpose": "Enables use of Pepper Flash and Widevine plugins.",
+            "purpose": "Enables use of Pepper Flash plugins.",
             "section": "WebEngine",
             "autoDetect": "!features.webengine-embedded-build",
             "output": [ "privateFeature" ]

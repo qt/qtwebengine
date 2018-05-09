@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,11 +37,11 @@
 **
 ****************************************************************************/
 
-#ifndef RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
-#define RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
+#ifndef LOGIN_DELEGATE_QT_H
+#define LOGIN_DELEGATE_QT_H
 
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
-#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/browser/login_delegate.h"
+#include "content/public/browser/resource_request_info.h"
 #include "url/gurl.h"
 
 #include "web_contents_adapter_client.h"
@@ -55,19 +55,18 @@ namespace QtWebEngineCore {
 
 class AuthenticationDialogController;
 
-// FIXME: move to separate file
-class ResourceDispatcherHostLoginDelegateQt : public content::ResourceDispatcherHostLoginDelegate {
+class LoginDelegateQt : public content::LoginDelegate {
 public:
-    ResourceDispatcherHostLoginDelegateQt(net::AuthChallengeInfo *authInfo,
-                                          content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-                                          GURL url,
-                                          bool first_auth_attempt,
-                                          const base::Callback<void(const base::Optional<net::AuthCredentials>&)> &auth_required_callback);
+    LoginDelegateQt(net::AuthChallengeInfo *authInfo,
+                    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+                    GURL url,
+                    bool first_auth_attempt,
+                    const base::Callback<void(const base::Optional<net::AuthCredentials>&)> &auth_required_callback);
 
-    ~ResourceDispatcherHostLoginDelegateQt();
+    ~LoginDelegateQt();
 
-    // ResourceDispatcherHostLoginDelegate implementation
-    virtual void OnRequestCancelled();
+    // LoginDelegate implementation
+    void OnRequestCancelled() override;
 
     QUrl url() const;
     QString realm() const;
@@ -90,12 +89,6 @@ private:
     QSharedPointer<AuthenticationDialogController> m_dialogController;
 };
 
-class ResourceDispatcherHostDelegateQt : public content::ResourceDispatcherHostDelegate {
-public:
-    bool HandleExternalProtocol(const GURL& url,
-                                content::ResourceRequestInfo* info) override;
-};
-
 } // namespace QtWebEngineCore
 
-#endif // RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
+#endif // LOGIN_DELEGATE_QT_H

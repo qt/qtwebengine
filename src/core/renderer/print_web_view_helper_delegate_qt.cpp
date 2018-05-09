@@ -42,7 +42,7 @@
 // found in the LICENSE.Chromium file.
 
 #include "print_web_view_helper_delegate_qt.h"
-#include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/blink/public/web/web_element.h"
 #include "web_engine_library_info.h"
 
 namespace QtWebEngineCore {

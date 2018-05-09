@@ -1069,7 +1069,7 @@ void tst_QWebEngineView::changeLocale()
     QWebEngineView viewDE;
     QSignalSpy loadFinishedSpyDE(&viewDE, SIGNAL(loadFinished(bool)));
     viewDE.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
     errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
@@ -1079,7 +1079,7 @@ void tst_QWebEngineView::changeLocale()
     QWebEngineView viewEN;
     QSignalSpy loadFinishedSpyEN(&viewEN, SIGNAL(loadFinished(bool)));
     viewEN.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyEN.count(), 1, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyEN.count(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewEN.page()).isEmpty());
     errorLines = toPlainTextSync(viewEN.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
@@ -1092,7 +1092,7 @@ void tst_QWebEngineView::changeLocale()
 
     // Check whether an existing QWebEngineView keeps the language settings after changing the default locale
     viewDE.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 12000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
     errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
@@ -2724,7 +2724,6 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("usb-internals") << QUrl("chrome://usb-internals") << false;
     QTest::newRow("user-actions") << QUrl("chrome://user-actions") << false;
     QTest::newRow("version") << QUrl("chrome://version") << false;
-    QTest::newRow("view-http-cache") << QUrl("chrome://view-http-cache") << true;
     QTest::newRow("webrtc-internals") << QUrl("chrome://webrtc-internals") << true;
     QTest::newRow("webrtc-logs") << QUrl("chrome://webrtc-logs") << false;
 }

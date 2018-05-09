@@ -46,7 +46,7 @@
 #include "web_contents_adapter.h"
 #include "web_engine_context.h"
 
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/common/context_menu_params.h"
 #include <ui/gfx/image/image_skia.h>

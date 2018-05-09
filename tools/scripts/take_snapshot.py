@@ -242,6 +242,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('ui/events/ozone/chromeos')
         or file_path.startswith('ui/file_manager')
         or file_path.startswith('ui/gfx/chromeos')
+        or file_path.startswith('v8/third_party/antlr4')
 
         ):
             return True

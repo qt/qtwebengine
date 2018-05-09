@@ -68,6 +68,7 @@ SOURCES = \
         gl_surface_qt.cpp \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
+        login_delegate_qt.cpp \
         media_capture_devices_dispatcher.cpp \
         native_web_keyboard_event_qt.cpp \
         net/cookie_monster_delegate_qt.cpp \
@@ -105,7 +106,6 @@ SOURCES = \
         renderer/render_view_observer_qt.cpp \
         renderer/user_resource_controller.cpp \
         renderer/web_channel_ipc_transport.cpp \
-        renderer_host/resource_dispatcher_host_delegate_qt.cpp \
         renderer_host/user_resource_controller_host.cpp \
         renderer_host/web_channel_ipc_transport_host.cpp \
         resource_bundle_qt.cpp \
@@ -157,6 +157,7 @@ HEADERS = \
         javascript_dialog_controller_p.h \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
+        login_delegate_qt.h \
         media_capture_devices_dispatcher.h \
         net/cookie_monster_delegate_qt.h \
         net/custom_protocol_handler.h \
@@ -196,7 +197,6 @@ HEADERS = \
         renderer/render_view_observer_qt.h \
         renderer/user_resource_controller.h \
         renderer/web_channel_ipc_transport.h \
-        renderer_host/resource_dispatcher_host_delegate_qt.h \
         renderer_host/user_resource_controller_host.h \
         renderer_host/web_channel_ipc_transport_host.h \
         request_controller.h \

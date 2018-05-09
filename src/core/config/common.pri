@@ -10,6 +10,7 @@ gn_args += \
     enable_remoting=false \
     enable_reporting=false \
     enable_web_speech=false \
+    enable_widevine=true \
     use_allocator_shim=false \
     use_allocator=\"none\" \
     v8_use_external_startup_data=false \
@@ -31,9 +32,9 @@ qtConfig(webengine-printing-and-pdf) {
 }
 
 qtConfig(webengine-pepper-plugins) {
-    gn_args += enable_plugins=true enable_widevine=true
+    gn_args += enable_plugins=true
 } else {
-    gn_args += enable_plugins=false enable_widevine=false
+    gn_args += enable_plugins=false
 }
 
 qtConfig(webengine-spellchecker) {

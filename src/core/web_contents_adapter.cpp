@@ -81,8 +81,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
-#include "third_party/WebKit/public/web/WebFindOptions.h"
-#include "printing/features/features.h"
+#include "third_party/blink/public/web/web_find_options.h"
+#include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/font_render_params.h"
@@ -1096,7 +1096,8 @@ void WebContentsAdapter::inspectElementAt(const QPoint &location)
         return;
     }
     if (content::DevToolsAgentHost::HasFor(m_webContents.get()))
-        content::DevToolsAgentHost::GetOrCreateFor(m_webContents.get())->InspectElement(nullptr, location.x(), location.y());
+        content::DevToolsAgentHost::GetOrCreateFor(m_webContents.get())->InspectElement(
+                    m_webContents->GetFocusedFrame(), location.x(), location.y());
 }
 
 bool WebContentsAdapter::hasInspector() const
@@ -1201,8 +1202,8 @@ quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayo
 QPointF WebContentsAdapter::lastScrollOffset() const
 {
     CHECK_INITIALIZED(QPointF());
-    if (content::RenderWidgetHostView *rwhv = m_webContents->GetRenderWidgetHostView())
-        return toQt(rwhv->GetLastScrollOffset());
+    if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView()))
+        return toQt(rwhv->lastScrollOffset());
     return QPointF();
 }
 

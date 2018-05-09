@@ -234,6 +234,17 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(
     return blink::mojom::PermissionStatus::DENIED;
 }
 
+blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForFrame(
+        content::PermissionType permission,
+        content::RenderFrameHost *render_frame_host,
+        const GURL &requesting_origin)
+{
+    return GetPermissionStatus(
+                permission,
+                requesting_origin,
+                content::WebContents::FromRenderFrameHost(render_frame_host)->GetLastCommittedURL().GetOrigin());
+}
+
 void PermissionManagerQt::ResetPermission(
     content::PermissionType permission,
     const GURL& requesting_origin,

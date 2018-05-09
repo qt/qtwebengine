@@ -140,7 +140,10 @@ bool GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported()
 {
     return false;
 }
-
+bool GLSurfaceEGL::IsEGLSurfacelessContextSupported()
+{
+    return GLSurfaceEGLQt::g_egl_surfaceless_context_supported;
+}
 bool GLSurfaceEGL::IsEGLContextPrioritySupported()
 {
     return false;

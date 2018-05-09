@@ -67,7 +67,7 @@ class DEPSParser:
             url = ''
             if (type(scope[dep]) == str):
                 url = scope[dep]
-            elif (type(scope[dep]) == dict):
+            elif (type(scope[dep]) == dict and 'url' in scope[dep]):
                 url = scope[dep]['url']
 
                 if ('condition' in scope[dep]) and (not 'checkout_linux' in scope[dep]['condition']):

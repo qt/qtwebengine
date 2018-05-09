@@ -2,8 +2,8 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//pdf/features.gni")
-import("//ppapi/features/features.gni")
-import("//printing/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
+import("//printing/buildflags/buildflags.gni")
 
 source_set("qtwebengine_spellcheck_sources") {
   sources = [
@@ -22,7 +22,7 @@ source_set("qtwebengine_spellcheck_sources") {
     "//components/spellcheck/browser",
     "//components/spellcheck/renderer",
     "//third_party/boringssl",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//third_party/hunspell",
   ]
   if (is_mac && use_browser_spellchecker) {
@@ -41,7 +41,7 @@ source_set("qtwebengine_sources") {
   deps = [
     "//chrome/common:buildflags",
     "//components/nacl/common:buildflags",
-    "//extensions/features:features",
+    "//extensions/buildflags:buildflags",
   ]
   sources = [
     "//chrome/common/custom_handlers/protocol_handler.cc",
@@ -129,14 +129,14 @@ source_set("qtwebengine_sources") {
       "//chrome/browser/printing/print_job_worker_owner.h",
     ]
     deps += [
-      "//printing/features:features",
+      "//printing/buildflags:buildflags",
     ]
   }
 
   if (enable_pdf) {
       deps += [
          "//pdf",
-         "//pdf:features",
+         "//pdf:buildflags",
          "//components/printing/browser",
          "//components/printing/renderer",
       ]

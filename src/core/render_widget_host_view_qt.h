@@ -124,10 +124,8 @@ public:
     void InitAsChild(gfx::NativeView) override;
     void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) override;
     void InitAsFullscreen(content::RenderWidgetHostView*) override;
-    content::RenderWidgetHostImpl* GetRenderWidgetHostImpl() const override;
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
-    gfx::Vector2dF GetLastScrollOffset() const override;
     gfx::Vector2d GetOffsetFromRootSurface() override;
     gfx::Size GetCompositorViewportPixelSize() const override;
     gfx::NativeView GetNativeView() const override;
@@ -150,6 +148,7 @@ public:
     void RenderProcessGone(base::TerminationStatus, int) override;
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
+    void DisplayTooltipText(const base::string16& tooltip_text) override;
     void DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
     void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame, viz::mojom::HitTestRegionListPtr) override;
     void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
@@ -161,6 +160,7 @@ public:
     void SetNeedsBeginFrames(bool needs_begin_frames) override;
     void SetWantsAnimateOnlyBeginFrames() override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
+    void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -201,10 +201,7 @@ public:
 
 #if defined(OS_MACOSX)
     void SetActive(bool active) override { QT_NOT_YET_IMPLEMENTED }
-    bool IsSpeaking() const override { QT_NOT_YET_IMPLEMENTED; return false; }
     void SpeakSelection() override { QT_NOT_YET_IMPLEMENTED }
-    void StopSpeaking() override { QT_NOT_YET_IMPLEMENTED }
-    bool SupportsSpeech() const override { QT_NOT_YET_IMPLEMENTED; return false; }
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_MACOSX)
 
@@ -218,6 +215,7 @@ public:
     void setLoadVisuallyCommittedState(LoadVisuallyCommittedState state) { m_loadVisuallyCommittedState = state; }
 
     gfx::SizeF lastContentsSize() const { return m_lastContentsSize; }
+    gfx::Vector2dF lastScrollOffset() const { return m_lastScrollOffset; }
 
 private:
     void sendDelegatedFrameAck();

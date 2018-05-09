@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "ipc/ipc_features.h" // Generated buildflag header
+#include "ipc/ipc_buildflags.h" // Generated buildflag header
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 #define IPC_MESSAGE_MACROS_LOG_ENABLED

@@ -43,14 +43,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 
-#include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_config_with_annotation.h"
 
 #include <QNetworkProxy>
 
 class ProxyConfigServiceQt
-        : public net::ProxyConfigService,
-        public net::ProxyConfigService::Observer {
+        : public net::ProxyConfigService
+        , public net::ProxyConfigService::Observer {
 public:
 
     static net::ProxyServer fromQNetworkProxy(const QNetworkProxy &);
@@ -61,12 +61,12 @@ public:
     // ProxyConfigService implementation:
     void AddObserver(net::ProxyConfigService::Observer *observer) override;
     void RemoveObserver(net::ProxyConfigService::Observer *observer) override;
-    ConfigAvailability GetLatestProxyConfig(net::ProxyConfig *config) override;
+    ConfigAvailability GetLatestProxyConfig(net::ProxyConfigWithAnnotation *config) override;
     void OnLazyPoll() override;
 
 private:
     // ProxyConfigService::Observer implementation:
-    void OnProxyConfigChanged(const net::ProxyConfig& config,
+    void OnProxyConfigChanged(const net::ProxyConfigWithAnnotation &config,
                               ConfigAvailability availability) override;
 
     // Retrieve new proxy settings and notify observers.

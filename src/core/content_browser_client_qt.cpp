@@ -43,7 +43,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
@@ -61,6 +61,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -70,13 +71,14 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "device/geolocation/public/cpp/location_provider.h"
+#include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 #include "net/ssl/client_cert_identity.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "third_party/WebKit/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
+#include "third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
@@ -94,6 +96,7 @@
 #include "certificate_error_controller_p.h"
 #include "desktop_screen_qt.h"
 #include "devtools_manager_delegate_qt.h"
+#include "login_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "net/network_delegate_qt.h"
 #include "net/qrc_protocol_handler_qt.h"
@@ -103,8 +106,8 @@
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "profile_qt.h"
 #include "quota_permission_context_qt.h"
-#include "renderer_host/resource_dispatcher_host_delegate_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
+#include "type_conversion.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
@@ -420,7 +423,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()
 {
-    m_resourceDispatcherHostDelegate.reset(new ResourceDispatcherHostDelegateQt);
+    m_resourceDispatcherHostDelegate.reset(new content::ResourceDispatcherHostDelegate);
     content::ResourceDispatcherHost::Get()->SetDelegate(m_resourceDispatcherHostDelegate.get());
 }
 
@@ -624,8 +627,8 @@ private:
 
 void ContentBrowserClientQt::InitFrameInterfaces()
 {
-    m_frameInterfaces = base::MakeUnique<service_manager::BinderRegistry>();
-    m_frameInterfacesParameterized = base::MakeUnique<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
+    m_frameInterfaces = std::make_unique<service_manager::BinderRegistry>();
+    m_frameInterfacesParameterized = std::make_unique<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
     m_frameInterfacesParameterized->AddInterface(base::Bind(&ServiceDriver::BindInsecureInputService));
 }
 
@@ -803,7 +806,45 @@ bool ContentBrowserClientQt::AllowWorkerIndexedDB(const GURL &url,
     return networkDelegate->canSetCookies(url, url, std::string());
 }
 
-content::ResourceDispatcherHostLoginDelegate *ContentBrowserClientQt::CreateLoginDelegate(
+static void LaunchURL(const GURL& url,
+                      const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+                      ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture)
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    content::WebContents* webContents = web_contents_getter.Run();
+    if (!webContents)
+        return;
+    WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+    contentsDelegate->launchExternalURL(toQt(url), page_transition, is_main_frame, has_user_gesture);
+}
+
+
+bool ContentBrowserClientQt::HandleExternalProtocol(
+        const GURL &url,
+        content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+        int child_id,
+        content::NavigationUIData *navigation_data,
+        bool is_main_frame,
+        ui::PageTransition page_transition,
+        bool has_user_gesture)
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    Q_UNUSED(child_id);
+    Q_UNUSED(navigation_data);
+
+    content::BrowserThread::PostTask(
+            content::BrowserThread::UI,
+            FROM_HERE,
+            base::BindOnce(&LaunchURL,
+                           url,
+                           web_contents_getter,
+                           page_transition,
+                           is_main_frame,
+                           has_user_gesture));
+    return true;
+}
+
+scoped_refptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegate(
         net::AuthChallengeInfo *authInfo,
         content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
         bool /*is_main_frame*/,
@@ -811,7 +852,7 @@ content::ResourceDispatcherHostLoginDelegate *ContentBrowserClientQt::CreateLogi
         bool first_auth_attempt,
         const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&auth_required_callback)
 {
-    return new ResourceDispatcherHostLoginDelegateQt(authInfo, web_contents_getter, url, first_auth_attempt, auth_required_callback);
+    return base::MakeRefCounted<LoginDelegateQt>(authInfo, web_contents_getter, url, first_auth_attempt, auth_required_callback);
 }
 
 } // namespace QtWebEngineCore

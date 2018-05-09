@@ -40,7 +40,7 @@
 #define CONTENT_RENDERER_CLIENT_QT_H
 
 #include "content/public/renderer/content_renderer_client.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"

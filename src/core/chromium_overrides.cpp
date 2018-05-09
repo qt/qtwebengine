@@ -51,7 +51,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 #include <QGuiApplication>
 #include <QScreen>
@@ -111,7 +111,7 @@ public:
 };
 
 std::unique_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
-  return base::MakeUnique<DummyPlatformEventSource>();
+  return std::make_unique<DummyPlatformEventSource>();
 }
 } // namespace ui
 #endif // defined(USE_X11)
@@ -196,14 +196,3 @@ std::unique_ptr<ui::OSExchangeData::Provider>
 ui::OSExchangeDataProviderFactory::CreateProvider() {
     return nullptr;
 }
-
-#if defined(USE_OPENSSL_CERTS)
-namespace net {
-
-scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(const X509Certificate* certificate)
-{
-    return OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(certificate);
-}
-
-}  // namespace net
-#endif

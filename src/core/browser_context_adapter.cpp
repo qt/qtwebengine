@@ -293,7 +293,7 @@ void BrowserContextAdapter::setHttpUserAgent(const QString &userAgent)
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     for (content::WebContentsImpl *web_contents : list)
         if (web_contents->GetBrowserContext() == m_browserContext.data())
-            web_contents->SetUserAgentOverride(m_httpUserAgent.toStdString());
+            web_contents->SetUserAgentOverride(m_httpUserAgent.toStdString(), true);
 
     if (m_browserContext->m_urlRequestContextGetter.get())
         m_browserContext->m_profileIOData->updateUserAgent();

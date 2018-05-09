@@ -81,8 +81,8 @@ ProfileQt::ProfileQt(BrowserContextAdapter *adapter)
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     // Initial spellcheck settings
     registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
-    registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries, base::MakeUnique<base::ListValue>());
-    registry->RegisterListPref(spellcheck::prefs::kSpellCheckForcedDictionaries, base::MakeUnique<base::ListValue>());
+    registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries, std::make_unique<base::ListValue>());
+    registry->RegisterListPref(spellcheck::prefs::kSpellCheckForcedDictionaries, std::make_unique<base::ListValue>());
     registry->RegisterStringPref(spellcheck::prefs::kSpellCheckDictionary, std::string());
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckEnable, false);
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
@@ -100,6 +100,7 @@ ProfileQt::ProfileQt(BrowserContextAdapter *adapter)
 ProfileQt::~ProfileQt()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    content::BrowserContext::NotifyWillBeDestroyed(this);
     BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(this);
     ShutdownStoragePartitions();
     m_profileIOData->shutdownOnUIThread();

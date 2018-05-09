@@ -42,7 +42,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/content_browser_client.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 #include <QtGlobal>
 
@@ -63,6 +63,7 @@ class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHostDelegateView;
 class ResourceContext;
+class ResourceDispatcherHostDelegate;
 class WebContentsViewPort;
 class WebContents;
 struct MainFunctionParams;
@@ -77,7 +78,6 @@ namespace QtWebEngineCore {
 
 class BrowserMainPartsQt;
 class ProfileQt;
-class ResourceDispatcherHostDelegateQt;
 class ShareGroupQtQuick;
 
 class ContentBrowserClientQt : public content::ContentBrowserClient {
@@ -181,18 +181,26 @@ public:
     void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
 #endif
 
-    content::ResourceDispatcherHostLoginDelegate *CreateLoginDelegate(
+    scoped_refptr<content::LoginDelegate> CreateLoginDelegate(
             net::AuthChallengeInfo *auth_info,
             content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
             bool is_main_frame,
             const GURL &url,
             bool first_auth_attempt,
             const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&auth_required_callback) override;
+    bool HandleExternalProtocol(
+            const GURL &url,
+            content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+            int child_id,
+            content::NavigationUIData  *navigation_data,
+            bool is_main_frame,
+            ui::PageTransition page_transition,
+            bool has_user_gesture) override;
 
 private:
     void InitFrameInterfaces();
     BrowserMainPartsQt* m_browserMainParts;
-    std::unique_ptr<ResourceDispatcherHostDelegateQt> m_resourceDispatcherHostDelegate;
+    std::unique_ptr<content::ResourceDispatcherHostDelegate> m_resourceDispatcherHostDelegate;
     scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
     std::unique_ptr<service_manager::BinderRegistry> m_frameInterfaces;
     std::unique_ptr<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>> m_frameInterfacesParameterized;

@@ -10,8 +10,6 @@ gn_args += \
     use_udev=true \
     use_bundled_fontconfig=false
 
-gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): gn_args += no_delete_null_pointer_checks=true
-
 clang {
     clang_full_path = $$which($${QMAKE_CXX})
     # Remove the "/bin/clang++" part.

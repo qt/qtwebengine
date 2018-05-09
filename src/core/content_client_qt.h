@@ -42,7 +42,7 @@
 
 #include "base/strings/string_piece.h"
 #include "content/public/common/content_client.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "ui/base/layout.h"
 
 namespace QtWebEngineCore {
@@ -55,6 +55,8 @@ public:
     void AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins) override;
 #endif
     void AddAdditionalSchemes(Schemes* schemes) override;
+    void AddContentDecryptionModules(std::vector<content::CdmInfo> *cdms,
+                                     std::vector<media::CdmHostFilePath> *cdm_host_file_paths) override;
 
     base::StringPiece GetDataResource(int, ui::ScaleFactor) const override;
     base::RefCountedMemory* GetDataResourceBytes(int resource_id) const  override;

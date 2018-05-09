@@ -42,8 +42,6 @@ private Q_SLOTS:
 
 void tst_QWebEngineSettings::resetAttributes()
 {
-    // QT_TODO_FIXME_ADAPT
-    QSKIP("The application deadlocks and hangs without exiting.");
     QWebEngineProfile profile;
     QWebEngineSettings *settings = profile.settings();
 
@@ -85,8 +83,6 @@ void tst_QWebEngineSettings::defaultFontFamily_data()
 
 void tst_QWebEngineSettings::defaultFontFamily()
 {
-    // QT_TODO_FIXME_ADAPT
-    QSKIP("The application deadlocks and hangs without exiting.");
     QWebEngineProfile profile;
     QWebEngineSettings *settings = profile.settings();
 
@@ -151,8 +147,8 @@ void tst_QWebEngineSettings::javascriptClipboard()
     QCOMPARE(evaluateJavaScriptSync(&page, "document.queryCommandEnabled('copy')").toBool(),
              copyResult);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.execCommand('copy')").toBool(), copyResult);
-    QCOMPARE(QApplication::clipboard()->text(),
-             (copyResult ? QString("OriginalText") : QString()));
+    QTRY_COMPARE(QApplication::clipboard()->text(),
+                 (copyResult ? QString("OriginalText") : QString()));
 
 
     QGuiApplication::clipboard()->setText("AnotherText");

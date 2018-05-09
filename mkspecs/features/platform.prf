@@ -38,8 +38,9 @@ defineTest(isPlatformSupported) {
          return(false)
     }
   } else:osx {
-    lessThan(QMAKE_XCODE_VERSION, 7.3) {
-      skipBuild("Using Xcode version $$QMAKE_XCODE_VERSION, but at least version 7.3 is required to build Qt WebEngine.")
+    # FIXME: Try to get it back down to 8.2 for building on OS X 10.11
+    lessThan(QMAKE_XCODE_VERSION, 9.0) {
+      skipBuild("Using Xcode version $$QMAKE_XCODE_VERSION, but at least version 9.0 is required to build Qt WebEngine.")
       return(false)
     }
     !clang|intel_icc {

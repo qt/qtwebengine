@@ -204,7 +204,7 @@ TestWebEngineView {
             // Test loadHtml after a failed load
             var aboutBlank = "about:blank";
             webEngineView.url = aboutBlank; // Reset from previous test
-            verify(webEngineView.waitForLoadSucceeded());
+            tryCompare(loadRequestArray, "length", 2);
             webEngineView.clear();
 
             var bogusSite = "http://www.somesitethatdoesnotexist.abc/";
@@ -217,7 +217,7 @@ TestWebEngineView {
             }
             webEngineView.loadingChanged.connect(handleLoadFailed);
             webEngineView.url = bogusSite
-            tryCompare(loadRequestArray, "length", 4, 12000);
+            tryCompare(loadRequestArray, "length", 4, 30000);
             webEngineView.loadingChanged.disconnect(handleLoadFailed);
 
             loadRequest = loadRequestArray[0];

@@ -58,6 +58,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/input_messages.h"
@@ -65,8 +66,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/WebKit/public/platform/WebColor.h"
-#include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "third_party/blink/public/platform/web_color.h"
+#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
@@ -317,7 +318,8 @@ bool isAccessibilityEnabled() {
 }
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
-    : m_host(content::RenderWidgetHostImpl::From(widget))
+    : content::RenderWidgetHostViewBase::RenderWidgetHostViewBase(widget)
+    , m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_sendMotionActionDown(false)
     , m_touchMotionStarted(false)
@@ -342,7 +344,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
 {
     auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
     m_beginFrameSource.reset(new viz::DelayBasedBeginFrameSource(
-            base::MakeUnique<viz::DelayBasedTimeSource>(task_runner), 0));
+            std::make_unique<viz::DelayBasedTimeSource>(task_runner), 0));
 
     m_host->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
@@ -408,11 +410,6 @@ void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
 {
 }
 
-content::RenderWidgetHostImpl* RenderWidgetHostViewQt::GetRenderWidgetHostImpl() const
-{
-    return m_host;
-}
-
 void RenderWidgetHostViewQt::SetSize(const gfx::Size& size)
 {
     int width = size.width();
@@ -427,10 +424,6 @@ void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& screenRect)
     if (IsPopup())
         m_delegate->move(toQt(screenRect.origin()));
     SetSize(screenRect.size());
-}
-
-gfx::Vector2dF RenderWidgetHostViewQt::GetLastScrollOffset() const {
-    return m_lastScrollOffset;
 }
 
 gfx::Vector2d RenderWidgetHostViewQt::GetOffsetFromRootSurface()
@@ -721,6 +714,12 @@ void RenderWidgetHostViewQt::Destroy()
 }
 
 void RenderWidgetHostViewQt::SetTooltipText(const base::string16 &tooltip_text)
+{
+    if (GetCursorManager())
+        GetCursorManager()->SetTooltipTextForView(this, tooltip_text);
+}
+
+void RenderWidgetHostViewQt::DisplayTooltipText(const base::string16 &tooltip_text)
 {
     if (m_adapterClient)
         m_adapterClient->setToolTip(toQt(tooltip_text));
@@ -1303,7 +1302,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             if (format.underlineStyle() != QTextCharFormat::NoUnderline)
                 underlineColor = format.underlineColor();
 
-            underlines.push_back(ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, start, end, toSk(underlineColor), /*thick*/ false, SK_ColorTRANSPARENT));
+            underlines.push_back(ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, start, end, ui::ImeTextSpan::Thickness::kThin, toSk(underlineColor), SK_ColorTRANSPARENT));
             break;
         }
         case QInputMethodEvent::Cursor:
@@ -1732,6 +1731,13 @@ void RenderWidgetHostViewQt::SetWantsAnimateOnlyBeginFrames()
 viz::SurfaceId RenderWidgetHostViewQt::GetCurrentSurfaceId() const
 {
     return viz::SurfaceId();
+}
+
+void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostView *view)
+{
+    DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)->IsRenderWidgetHostViewChildFrame());
+    DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)->IsRenderWidgetHostViewGuest());
+    SetBackgroundColor(view->background_color());
 }
 
 } // namespace QtWebEngineCore

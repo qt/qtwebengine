@@ -77,7 +77,7 @@ private:
     AuthenticationDialogController(AuthenticationDialogControllerPrivate *);
 
     QScopedPointer<AuthenticationDialogControllerPrivate> d;
-    friend class ResourceDispatcherHostLoginDelegateQt;
+    friend class LoginDelegateQt;
 };
 
 } // namespace QtWebEngineCore

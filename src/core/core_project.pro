@@ -11,7 +11,7 @@ linking_pri = $$OUT_PWD/$$getConfigDir()/$${TARGET}.pri
 
 CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
 INCLUDEPATH += $$CHROMIUM_SRC_DIR \
-               $$CHROMIUM_SRC_DIR/third_party/WebKit/Source \
+               $$CHROMIUM_SRC_DIR/third_party/blink/public \
                $$OUT_PWD/$$getConfigDir()/gen
 
 SOURCES += $$NINJA_SOURCES

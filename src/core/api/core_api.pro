@@ -22,7 +22,9 @@ DEFINES += \
     NOMINMAX
 
 CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
+CHROMIUM_GEN_DIR = $$OUT_PWD/../$$getConfigDir()/gen
 INCLUDEPATH += $$QTWEBENGINE_ROOT/src/core \
+               $$CHROMIUM_GEN_DIR \
                $$CHROMIUM_SRC_DIR
 
 linux-g++*: QMAKE_CXXFLAGS += -Wno-unused-parameter

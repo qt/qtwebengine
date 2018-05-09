@@ -42,17 +42,17 @@
 
 #include "base/memory/ref_counted.h"
 
-#include "renderer_host/resource_dispatcher_host_delegate_qt.h"
+#include "login_delegate_qt.h"
 
 namespace QtWebEngineCore {
 
 class AuthenticationDialogControllerPrivate {
 
 public:
-    AuthenticationDialogControllerPrivate(ResourceDispatcherHostLoginDelegateQt *loginDelegate);
+    AuthenticationDialogControllerPrivate(LoginDelegateQt *loginDelegate);
     void dialogFinished(bool accepted, const QString &user = QString(), const QString &password = QString());
 
-    scoped_refptr<ResourceDispatcherHostLoginDelegateQt> loginDelegate;
+    scoped_refptr<LoginDelegateQt> loginDelegate;
 };
 
 } // namespace QtWebEngineCore

@@ -41,7 +41,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE.Chromium file.
 
-#include "resource_dispatcher_host_delegate_qt.h"
+#include "login_delegate_qt.h"
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -56,7 +56,7 @@
 
 namespace QtWebEngineCore {
 
-ResourceDispatcherHostLoginDelegateQt::ResourceDispatcherHostLoginDelegateQt(
+LoginDelegateQt::LoginDelegateQt(
         net::AuthChallengeInfo *authInfo,
         content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
         GURL url,
@@ -70,42 +70,42 @@ ResourceDispatcherHostLoginDelegateQt::ResourceDispatcherHostLoginDelegateQt(
 
     content::BrowserThread::PostTask(
             content::BrowserThread::UI, FROM_HERE,
-            base::Bind(&ResourceDispatcherHostLoginDelegateQt::triggerDialog,
+            base::Bind(&LoginDelegateQt::triggerDialog,
                        this,
                        web_contents_getter));
 }
 
-ResourceDispatcherHostLoginDelegateQt::~ResourceDispatcherHostLoginDelegateQt()
+LoginDelegateQt::~LoginDelegateQt()
 {
     Q_ASSERT(m_dialogController.isNull());
 }
 
-void ResourceDispatcherHostLoginDelegateQt::OnRequestCancelled()
+void LoginDelegateQt::OnRequestCancelled()
 {
     destroy();
 }
 
-QUrl ResourceDispatcherHostLoginDelegateQt::url() const
+QUrl LoginDelegateQt::url() const
 {
     return toQt(m_url);
 }
 
-QString ResourceDispatcherHostLoginDelegateQt::realm() const
+QString LoginDelegateQt::realm() const
 {
     return QString::fromStdString(m_authInfo->realm);
 }
 
-QString ResourceDispatcherHostLoginDelegateQt::host() const
+QString LoginDelegateQt::host() const
 {
     return QString::fromStdString(m_authInfo->challenger.host());
 }
 
-bool ResourceDispatcherHostLoginDelegateQt::isProxy() const
+bool LoginDelegateQt::isProxy() const
 {
     return m_authInfo->is_proxy;
 }
 
-void ResourceDispatcherHostLoginDelegateQt::triggerDialog(const content::ResourceRequestInfo::WebContentsGetter &webContentsGetter)
+void LoginDelegateQt::triggerDialog(const content::ResourceRequestInfo::WebContentsGetter &webContentsGetter)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     content::WebContentsImpl *webContents =
@@ -119,7 +119,7 @@ void ResourceDispatcherHostLoginDelegateQt::triggerDialog(const content::Resourc
     client->authenticationRequired(m_dialogController);
 }
 
-void ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester(bool success, const QString &user, const QString &password)
+void LoginDelegateQt::sendAuthToRequester(bool success, const QString &user, const QString &password)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
@@ -133,41 +133,10 @@ void ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester(bool success, co
     destroy();
 }
 
-void ResourceDispatcherHostLoginDelegateQt::destroy()
+void LoginDelegateQt::destroy()
 {
     m_dialogController.reset();
     m_auth_required_callback.Reset();
-}
-
-static void LaunchURL(const GURL& url, int render_process_id,
-                      const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-                      ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture)
-{
-    Q_UNUSED(render_process_id);
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    content::WebContents* webContents = web_contents_getter.Run();
-    if (!webContents)
-        return;
-    WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
-    contentsDelegate->launchExternalURL(toQt(url), page_transition, is_main_frame, has_user_gesture);
-}
-
-
-bool ResourceDispatcherHostDelegateQt::HandleExternalProtocol(const GURL& url, content::ResourceRequestInfo* info)
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&LaunchURL, url,
-                   info->GetChildID(),
-                   info->GetWebContentsGetterForRequest(),
-                   info->GetPageTransition(),
-                   info->IsMainFrame(),
-                   info->HasUserGesture())
-    );
-    return true;
 }
 
 } // namespace QtWebEngineCore

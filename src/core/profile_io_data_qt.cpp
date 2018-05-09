@@ -38,20 +38,18 @@
 ****************************************************************************/
 
 #include "profile_io_data_qt.h"
+
 #include "base/task_scheduler/post_task.h"
-#include "content/network/proxy_service_mojo.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_features.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
-#include "net/cookie_monster_delegate_qt.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
-#include "net/custom_protocol_handler.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_scheme.h"
@@ -59,14 +57,12 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_network_session.h"
-#include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
-#include "net/proxy/proxy_script_fetcher_impl.h"
-#include "net/proxy/proxy_service.h"
-#include "net/proxy_config_service_qt.h"
+#include "net/proxy_resolution/dhcp_pac_file_fetcher_factory.h"
+#include "net/proxy_resolution/pac_file_fetcher_impl.h"
+#include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/network_delegate_qt.h"
-#include "net/url_request_context_getter_qt.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
@@ -74,10 +70,18 @@
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
+#include "services/network/proxy_service_mojo.h"
+
+#include "net/cookie_monster_delegate_qt.h"
+#include "net/custom_protocol_handler.h"
+#include "net/network_delegate_qt.h"
+#include "net/proxy_config_service_qt.h"
 #include "net/qrc_protocol_handler_qt.h"
+#include "net/url_request_context_getter_qt.h"
 #include "profile_qt.h"
 #include "resource_context_qt.h"
 #include "type_conversion.h"
+
 namespace QtWebEngineCore {
 
 static const char* const kDefaultAuthSchemes[] = { net::kBasicAuthScheme,
@@ -104,7 +108,7 @@ static bool doNetworkSessionContextMatch(const net::HttpNetworkSession::Context 
         return false;
     if (first.channel_id_service != second.channel_id_service)
         return false;
-    if (first.proxy_service != second.proxy_service)
+    if (first.proxy_resolution_service != second.proxy_resolution_service)
         return false;
     if (first.ssl_config_service != second.ssl_config_service)
         return false;
@@ -127,7 +131,7 @@ static net::HttpNetworkSession::Context generateNetworkSessionContext(net::URLRe
     network_session_context.transport_security_state = urlRequestContext->transport_security_state();
     network_session_context.cert_verifier = urlRequestContext->cert_verifier();
     network_session_context.channel_id_service = urlRequestContext->channel_id_service();
-    network_session_context.proxy_service = urlRequestContext->proxy_service();
+    network_session_context.proxy_resolution_service = urlRequestContext->proxy_resolution_service();
     network_session_context.ssl_config_service = urlRequestContext->ssl_config_service();
     network_session_context.http_auth_handler_factory = urlRequestContext->http_auth_handler_factory();
     network_session_context.http_server_properties = urlRequestContext->http_server_properties();
@@ -149,13 +153,13 @@ ProfileIODataQt::ProfileIODataQt(ProfileQt *profile)
       m_mutex(QMutex::Recursive),
       m_weakPtrFactory(this)
 {
-    if (content::BrowserThread::IsMessageLoopValid(content::BrowserThread::UI))
+    if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI))
         DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 ProfileIODataQt::~ProfileIODataQt()
 {
-    if (content::BrowserThread::IsMessageLoopValid(content::BrowserThread::IO))
+    if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::IO))
         DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     m_resourceContext.reset();
     if (m_cookieDelegate)
@@ -271,17 +275,17 @@ void ProfileIODataQt::generateStorage()
 
     // The System Proxy Resolver has issues on Windows with unconfigured network cards,
     // which is why we want to use the v8 one
-    if (!m_dhcpProxyScriptFetcherFactory)
-        m_dhcpProxyScriptFetcherFactory.reset(new net::DhcpProxyScriptFetcherFactory);
+    if (!m_dhcpPacFileFetcherFactory)
+        m_dhcpPacFileFetcherFactory.reset(new net::DhcpPacFileFetcherFactory);
 
-    m_storage->set_proxy_service(content::CreateProxyServiceUsingMojoFactory(
-                                     std::move(m_proxyResolverFactory),
-                                     std::unique_ptr<net::ProxyConfigService>(proxyConfigService),
-                                     std::make_unique<net::ProxyScriptFetcherImpl>(m_urlRequestContext.get()),
-                                     m_dhcpProxyScriptFetcherFactory->Create(m_urlRequestContext.get()),
-                                     host_resolver.get(),
-                                     nullptr /* NetLog */,
-                                     m_networkDelegate.get()));
+    m_storage->set_proxy_resolution_service(network::CreateProxyResolutionServiceUsingMojoFactory(
+                                                std::move(m_proxyResolverFactory),
+                                                std::unique_ptr<net::ProxyConfigService>(proxyConfigService),
+                                                std::make_unique<net::PacFileFetcherImpl>(m_urlRequestContext.get()),
+                                                m_dhcpPacFileFetcherFactory->Create(m_urlRequestContext.get()),
+                                                host_resolver.get(),
+                                                nullptr /* NetLog */,
+                                                m_networkDelegate.get()));
 
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     m_storage->set_transport_security_state(std::unique_ptr<net::TransportSecurityState>(
@@ -570,7 +574,7 @@ void ProfileIODataQt::updateStorageSettings()
         Q_ASSERT(m_proxyConfigService == 0);
         m_proxyConfigService =
                 new ProxyConfigServiceQt(
-                    net::ProxyService::CreateSystemProxyConfigService(
+                    net::ProxyResolutionService::CreateSystemProxyConfigService(
                         content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)));
         m_proxyResolverFactory = ChromeMojoProxyResolverFactory::CreateWithStrongBinding();
 

@@ -43,7 +43,6 @@
 #include "base/callback.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/webplugininfo.h"
-#include "media/media_features.h"
 
 class GURL;
 class Profile;
@@ -57,18 +56,6 @@ public:
 
 private:
     bool OnMessageReceived(const IPC::Message& message) override;
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    // Returns whether any internal plugin supporting |mime_type| is registered
-    // and enabled. Does not determine whether the plugin can actually be
-    // instantiated (e.g. whether it has all its dependencies).
-    // When the returned *|is_available| is true, |additional_param_names| and
-    // |additional_param_values| contain the name-value pairs, if any, specified
-    // for the *first* non-disabled plugin found that is registered for
-    // |mime_type|.
-    void OnIsInternalPluginAvailableForMimeType(
-        const std::string& mime_type,
-        base::Optional<std::vector<content::WebPluginMimeType::Param>> *opt_additional_params);
-#endif
 
     void OnAllowDatabase(int render_frame_id,
                          const GURL &origin_url,

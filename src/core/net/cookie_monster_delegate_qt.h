@@ -58,7 +58,6 @@ QT_WARNING_PUSH
 // effect with clang, so use a pragma for these dirty chromium headers
 QT_WARNING_DISABLE_CLANG("-Wunused-parameter")
 #include "base/memory/ref_counted.h"
-#include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_monster.h"
 QT_WARNING_POP
 

@@ -43,7 +43,7 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/common/content_paths.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"

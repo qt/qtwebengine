@@ -478,10 +478,6 @@ QAccessible::State BrowserAccessibilityQt::state() const
     {} // FIXME
     if (HasState(ax::mojom::State::kRichlyEditable))
     {} // FIXME
-    if (HasState(ax::mojom::State::kSelectable))
-        state.selectable = true;
-    if (HasState(ax::mojom::State::kSelected))
-        state.selected = true;
     if (HasState(ax::mojom::State::kVertical))
     {} // FIXME
     if (HasState(ax::mojom::State::kVisited))
@@ -493,6 +489,10 @@ QAccessible::State BrowserAccessibilityQt::state() const
         state.focused = true;
     if (GetBoolAttribute(ax::mojom::BoolAttribute::kBusy))
         state.busy = true;
+    if (HasBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+        state.selectable = true;
+        state.selected = GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+    }
     if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState)) {
         const ax::mojom::CheckedState checkedState =
                 static_cast<ax::mojom::CheckedState>(GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));

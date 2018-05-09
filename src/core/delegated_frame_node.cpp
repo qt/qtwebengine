@@ -651,7 +651,10 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
     if (!texture) {
         if (m_resource.is_software) {
             Q_ASSERT(apiDelegate);
-            std::unique_ptr<viz::SharedBitmap> sharedBitmap = viz::ServerSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size, m_resource.mailbox_holder.mailbox);
+            std::unique_ptr<viz::SharedBitmap> sharedBitmap =
+                    viz::ServerSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size,
+                                                                                     viz::BGRA_8888,
+                                                                                     m_resource.mailbox_holder.mailbox);
             // QSG interprets QImage::hasAlphaChannel meaning that a node should enable blending
             // to draw it but Chromium keeps this information in the quads.
             // The input format is currently always Format_ARGB32_Premultiplied, so assume that all
@@ -659,7 +662,9 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
             // from Format_ARGB32_Premultiplied to Format_RGB32 just to get hasAlphaChannel to
             // return false.
             QImage::Format format = quadNeedsBlending ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
-            QImage image(sharedBitmap->pixels(), m_resource.size.width(), m_resource.size.height(), format);
+            QImage image = sharedBitmap
+                         ? QImage(sharedBitmap->pixels(), m_resource.size.width(), m_resource.size.height(), format)
+                         : QImage(m_resource.size.width(), m_resource.size.height(), format);
             texture.reset(apiDelegate->createTextureFromImage(image.copy()));
         } else {
 #ifndef QT_NO_OPENGL

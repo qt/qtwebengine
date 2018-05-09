@@ -71,38 +71,10 @@ bool BrowserMessageFilterQt::OnMessageReceived(const IPC::Message& message)
         IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_RequestFileSystemAccessAsync,
                             OnRequestFileSystemAccessAsync)
         IPC_MESSAGE_HANDLER(QtWebEngineHostMsg_AllowIndexedDB, OnAllowIndexedDB)
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-        IPC_MESSAGE_HANDLER(
-            QtWebEngineHostMsg_IsInternalPluginAvailableForMimeType,
-            OnIsInternalPluginAvailableForMimeType)
-#endif
         IPC_MESSAGE_UNHANDLED(return false)
     IPC_END_MESSAGE_MAP()
     return true;
 }
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-void BrowserMessageFilterQt::OnIsInternalPluginAvailableForMimeType(
-    const std::string& mime_type,
-    base::Optional<std::vector<content::WebPluginMimeType::Param>> *opt_additional_params)
-{
-    std::vector<content::WebPluginInfo> plugins;
-    content::PluginService::GetInstance()->GetInternalPlugins(&plugins);
-
-    for (size_t i = 0; i < plugins.size(); ++i) {
-        const content::WebPluginInfo& plugin = plugins[i];
-        const std::vector<content::WebPluginMimeType>& mime_types = plugin.mime_types;
-        for (size_t j = 0; j < mime_types.size(); ++j) {
-            if (mime_types[j].mime_type == mime_type) {
-                *opt_additional_params = base::make_optional(mime_types[j].additional_params);
-                return;
-            }
-        }
-    }
-}
-
-#endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
 
 void BrowserMessageFilterQt::OnAllowDatabase(int /*render_frame_id*/,
                                              const GURL &origin_url,

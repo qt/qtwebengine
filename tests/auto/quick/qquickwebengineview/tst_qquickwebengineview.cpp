@@ -364,7 +364,7 @@ void tst_QQuickWebEngineView::basicRenderingSanity()
 {
     showWebEngineView();
 
-    webEngineView()->setUrl(QUrl(QString::fromUtf8("data:text/html,<html><body bgcolor=\"#00ff00\"></body></html>")));
+    webEngineView()->setUrl(QUrl(QString::fromUtf8("data:text/html,<html><body bgcolor=\"%2300ff00\"></body></html>")));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
 
     // This should not crash.

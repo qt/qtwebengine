@@ -41,15 +41,17 @@
 #define PROFILE_IO_DATA_QT_H
 
 #include "browser_context_adapter.h"
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
+#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
+
 #include <QtCore/QString>
 #include <QtCore/QPointer>
 #include <QtCore/QMutex>
 
 namespace net {
-class DhcpProxyScriptFetcherFactory;
+class DhcpPacFileFetcherFactory;
 class HttpAuthPreferences;
 class HttpNetworkSession;
 class NetworkDelegate;
@@ -106,7 +108,7 @@ private:
     std::unique_ptr<net::URLRequestContext> m_urlRequestContext;
     std::unique_ptr<net::HttpNetworkSession> m_httpNetworkSession;
     std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> m_protocolHandlerInterceptor;
-    std::unique_ptr<net::DhcpProxyScriptFetcherFactory> m_dhcpProxyScriptFetcherFactory;
+    std::unique_ptr<net::DhcpPacFileFetcherFactory> m_dhcpPacFileFetcherFactory;
     std::unique_ptr<net::HttpAuthPreferences> m_httpAuthPreferences;
     std::unique_ptr<net::URLRequestJobFactory> m_jobFactory;
     base::WeakPtr<ProfileIODataQt> m_weakPtr;

@@ -13,31 +13,28 @@ include_dirs = [
 
 deps = [
   "//base",
+  "//components/cdm/renderer",
   "//components/error_page/common",
   "//components/keyed_service/content",
   "//components/visitedlink/browser",
   "//components/visitedlink/renderer",
   "//components/web_cache/browser",
   "//components/web_cache/renderer",
-  "//components/spellcheck:build_features",
+  "//components/spellcheck:buildflags",
   "//content/public/app:browser",
   "//content/public/browser",
   "//content/public/common",
   "//content/public/renderer",
-  "//media:media_features",
+  "//media:media_buildflags",
   "//net:net_browser_services",
   "//net:net_with_v8",
   "//skia",
-  "//third_party/WebKit/public:blink",
-  "//ui/accessibility",
+  "//third_party/blink/public:blink",
   "//third_party/mesa:mesa_headers",
+  "//ui/accessibility",
   ":qtwebengine_sources",
   ":qtwebengine_resources"
 ]
-
-if (enable_widevine) {
-  deps += [ "//components/cdm/renderer"]
-}
 
 if (enable_webrtc) {
   deps += [ "//third_party/webrtc_overrides" ]

@@ -62,7 +62,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_WEBRTC)

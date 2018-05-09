@@ -46,7 +46,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
+
 #include <QVector>
 
 namespace base {

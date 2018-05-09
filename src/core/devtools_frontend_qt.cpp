@@ -83,6 +83,24 @@ using namespace QtWebEngineCore;
 
 namespace {
 
+std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(const net::HttpResponseHeaders *rh)
+{
+    auto response = std::make_unique<base::DictionaryValue>();
+    response->SetInteger("statusCode", rh ? rh->response_code() : 200);
+
+    auto headers = std::make_unique<base::DictionaryValue>();
+    size_t iterator = 0;
+    std::string name;
+    std::string value;
+    // TODO(caseq): this probably needs to handle duplicate header names
+    // correctly by folding them.
+    while (rh && rh->EnumerateHeaderLines(&iterator, &name, &value))
+        headers->SetString(name, value);
+
+    response->Set("headers", std::move(headers));
+    return response;
+}
+
 // ResponseWriter -------------------------------------------------------------
 
 class ResponseWriter : public net::URLFetcherResponseWriter {
@@ -137,7 +155,7 @@ int ResponseWriter::Finish(int net_error, const net::CompletionCallback &callbac
 
 static std::string GetFrontendURL()
 {
-    return chrome::kChromeUIDevToolsURL;
+    return "chrome-devtools://devtools/bundled/devtools_app.html";
 }
 
 }  // namespace
@@ -471,19 +489,9 @@ void DevToolsFrontendQt::OnURLFetchComplete(const net::URLFetcher *source)
     PendingRequestsMap::iterator it = m_pendingRequests.find(source);
     DCHECK(it != m_pendingRequests.end());
 
-    base::DictionaryValue response;
-    auto headers = base::MakeUnique<base::DictionaryValue>();
-    net::HttpResponseHeaders* rh = source->GetResponseHeaders();
-    response.SetInteger("statusCode", rh ? rh->response_code() : 200);
+    auto response = BuildObjectForResponse(source->GetResponseHeaders());
 
-    size_t iterator = 0;
-    std::string name;
-    std::string value;
-    while (rh && rh->EnumerateHeaderLines(&iterator, &name, &value))
-        headers->SetString(name, value);
-    response.Set("headers", std::move(headers));
-
-    SendMessageAck(it->second, &response);
+    SendMessageAck(it->second, response.get());
     m_pendingRequests.erase(it);
     delete source;
 }

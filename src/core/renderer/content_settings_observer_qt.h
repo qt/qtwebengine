@@ -47,7 +47,7 @@
 #include "base/containers/flat_map.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "url/gurl.h"
 
 namespace blink {

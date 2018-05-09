@@ -65,7 +65,7 @@
  */
 
 #include "web_event_factory.h"
-#include "third_party/WebKit/Source/platform/WindowsKeyboardCodes.h"
+#include "third_party/blink/renderer/platform/windows_keyboard_codes.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -1266,13 +1266,13 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, doub
     webKitEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
     webKitEvent.SetModifiers(modifiersForEvent(ev));
 
-    webKitEvent.x = static_cast<int>(ev->localPos().x() / dpiScale);
-    webKitEvent.y = static_cast<int>(ev->localPos().y() / dpiScale);
+    webKitEvent.SetPositionInWidget(WebFloatPoint(ev->localPos().x() / dpiScale,
+                                                  ev->localPos().y() / dpiScale));
 
-    webKitEvent.global_x = static_cast<int>(ev->screenPos().x() / dpiScale);
-    webKitEvent.global_y = static_cast<int>(ev->screenPos().y() / dpiScale);
+    webKitEvent.SetPositionInScreen(WebFloatPoint(ev->screenPos().x() / dpiScale,
+                                                  ev->screenPos().y() / dpiScale));
 
-    webKitEvent.source_device = blink::kWebGestureDeviceTouchpad;
+    webKitEvent.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
 
     Qt::NativeGestureType gestureType = ev->gestureType();
     switch (gestureType) {

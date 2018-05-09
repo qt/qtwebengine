@@ -54,7 +54,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "printing/features/features.h"
+#include "printing/buildflags/buildflags.h"
 
 struct PrintHostMsg_RequestPrintPreview_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
