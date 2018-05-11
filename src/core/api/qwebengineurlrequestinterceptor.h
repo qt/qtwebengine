@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINE_EXPORT QWebEngineUrlRequestInterceptor : public QObject
+class QWEBENGINECORE_EXPORT QWebEngineUrlRequestInterceptor : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(QWebEngineUrlRequestInterceptor)

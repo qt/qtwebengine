@@ -37,17 +37,28 @@
 **
 ****************************************************************************/
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #ifndef PDFIUM_DOCUMENT_WRAPPER_QT_H
 #define PDFIUM_DOCUMENT_WRAPPER_QT_H
 
-#include "qtwebenginecoreglobal.h"
+#include "qtwebenginecoreglobal_p.h"
 
 #include <QtGui/qimage.h>
 
 namespace QtWebEngineCore {
 class PdfiumPageWrapperQt;
 
-class QWEBENGINE_EXPORT PdfiumDocumentWrapperQt
+class QWEBENGINECORE_PRIVATE_EXPORT PdfiumDocumentWrapperQt
 {
 public:
     PdfiumDocumentWrapperQt(const void *pdfData, size_t size, const QSize &imageSize,

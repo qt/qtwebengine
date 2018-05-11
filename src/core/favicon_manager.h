@@ -37,10 +37,21 @@
 **
 ****************************************************************************/
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #ifndef FAVICON_MANAGER_H
 #define FAVICON_MANAGER_H
 
-#include "qtwebenginecoreglobal.h"
+#include "qtwebenginecoreglobal_p.h"
 #include <memory>
 #include <QtCore/QMap>
 #include <QtCore/QObject>
@@ -71,7 +82,7 @@ namespace QtWebEngineCore {
 class WebContentsAdapterClient;
 
 // Based on src/3rdparty/chromium/content/public/common/favicon_url.h
-class QWEBENGINE_EXPORT FaviconInfo {
+class QWEBENGINECORE_PRIVATE_EXPORT FaviconInfo {
 public:
     enum FaviconType {
         InvalidIcon,
@@ -97,7 +108,7 @@ public:
 };
 
 
-class QWEBENGINE_EXPORT FaviconManager {
+class QWEBENGINECORE_PRIVATE_EXPORT FaviconManager {
 
 public:
     FaviconManager(content::WebContents *, WebContentsAdapterClient *);

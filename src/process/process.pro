@@ -3,7 +3,7 @@ TARGET = $$QTWEBENGINEPROCESS_NAME
 # Needed to set LSUIElement=1
 QMAKE_INFO_PLIST = Info_mac.plist
 
-QT += webenginecore
+QT_PRIVATE += core-private webenginecore-private
 
 INCLUDEPATH += ../core
 

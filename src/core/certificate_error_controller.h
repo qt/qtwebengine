@@ -37,10 +37,21 @@
 **
 ****************************************************************************/
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #ifndef CERTIFICATE_ERROR_CONTROLLER_H
 #define CERTIFICATE_ERROR_CONTROLLER_H
 
-#include "qtwebenginecoreglobal.h"
+#include "qtwebenginecoreglobal_p.h"
 
 #include <QtCore/QDateTime>
 #include <QtCore/QUrl>
@@ -49,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class CertificateErrorControllerPrivate;
 
-class QWEBENGINE_EXPORT CertificateErrorController {
+class QWEBENGINECORE_PRIVATE_EXPORT CertificateErrorController {
 public:
     CertificateErrorController(CertificateErrorControllerPrivate *p);
     ~CertificateErrorController();

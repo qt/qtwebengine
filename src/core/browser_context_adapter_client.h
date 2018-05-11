@@ -37,16 +37,27 @@
 **
 ****************************************************************************/
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #ifndef BROWSER_CONTEXT_ADAPTER_CLIENT_H
 #define BROWSER_CONTEXT_ADAPTER_CLIENT_H
 
-#include "qtwebenginecoreglobal.h"
+#include "qtwebenginecoreglobal_p.h"
 #include <QString>
 #include <QUrl>
 
 namespace QtWebEngineCore {
 
-class QWEBENGINE_EXPORT BrowserContextAdapterClient
+class QWEBENGINECORE_PRIVATE_EXPORT BrowserContextAdapterClient
 {
 public:
     // Keep in sync with content::DownloadItem::DownloadState

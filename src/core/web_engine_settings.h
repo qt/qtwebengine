@@ -37,10 +37,21 @@
 **
 ****************************************************************************/
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #ifndef WEB_ENGINE_SETTINGS_H
 #define WEB_ENGINE_SETTINGS_H
 
-#include "qtwebenginecoreglobal.h"
+#include "qtwebenginecoreglobal_p.h"
 
 #include <QScopedPointer>
 #include <QHash>
@@ -57,7 +68,7 @@ namespace QtWebEngineCore {
 class BatchTimer;
 class WebContentsAdapter;
 
-class QWEBENGINE_EXPORT WebEngineSettings {
+class QWEBENGINECORE_PRIVATE_EXPORT WebEngineSettings {
 public:
     // Attributes. Names match the ones from the public widgets API.
     enum Attribute {

@@ -51,7 +51,7 @@ class WebContentsDelegateQt;
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINE_EXPORT QWebEngineRegisterProtocolHandlerRequest {
+class QWEBENGINECORE_EXPORT QWebEngineRegisterProtocolHandlerRequest {
     Q_GADGET
     Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
     Q_PROPERTY(QString scheme READ scheme CONSTANT FINAL)

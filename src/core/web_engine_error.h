@@ -37,12 +37,23 @@
 **
 ****************************************************************************/
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #ifndef WEB_ENGINE_ERROR_H
 #define WEB_ENGINE_ERROR_H
 
-#include "qtwebenginecoreglobal.h"
+#include "qtwebenginecoreglobal_p.h"
 
-class QWEBENGINE_EXPORT WebEngineError
+class QWEBENGINECORE_PRIVATE_EXPORT WebEngineError
 {
 
 public:

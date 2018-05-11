@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 class QWebEngineUrlRequestInfoPrivate;
 
-class QWEBENGINE_EXPORT QWebEngineUrlRequestInfo {
+class QWEBENGINECORE_EXPORT QWebEngineUrlRequestInfo {
 public:
     enum ResourceType {
         ResourceTypeMainFrame = 0,  // top level page

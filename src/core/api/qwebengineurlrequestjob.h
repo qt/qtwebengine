@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 class QIODevice;
 
-class QWEBENGINE_EXPORT QWebEngineUrlRequestJob : public QObject {
+class QWEBENGINECORE_EXPORT QWebEngineUrlRequestJob : public QObject {
     Q_OBJECT
 public:
     ~QWebEngineUrlRequestJob();

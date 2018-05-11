@@ -37,10 +37,21 @@
 **
 ****************************************************************************/
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #ifndef CUSTOM_PROTOCOL_HANDLER_H_
 #define CUSTOM_PROTOCOL_HANDLER_H_
 
-#include "qtwebenginecoreglobal.h"
+#include "qtwebenginecoreglobal_p.h"
 #include "net/url_request/url_request_job_factory.h"
 
 #include <QtCore/QByteArray>
@@ -60,7 +71,7 @@ class BrowserContextAdapter;
 
 // Implements a ProtocolHandler for custom URL schemes.
 // If |network_delegate_| is NULL then all file requests will fail with ERR_ACCESS_DENIED.
-class QWEBENGINE_EXPORT CustomProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
+class QWEBENGINECORE_PRIVATE_EXPORT CustomProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 
 public:
     CustomProtocolHandler(QPointer<BrowserContextAdapter> adapter);
