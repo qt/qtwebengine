@@ -146,7 +146,6 @@ HEADERS = \
         devtools_manager_delegate_qt.h \
         download_manager_delegate_qt.h \
         chromium_gpu_helper.h \
-        favicon_manager_p.h \
         favicon_manager.h \
         file_picker_controller.h \
         gl_context_qt.h \

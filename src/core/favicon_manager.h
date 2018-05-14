@@ -41,7 +41,7 @@
 #define FAVICON_MANAGER_H
 
 #include "qtwebenginecoreglobal.h"
-
+#include <memory>
 #include <QtCore/QMap>
 #include <QtCore/QObject>
 #include <QtCore/QSize>
@@ -50,9 +50,25 @@
 
 #include "web_engine_settings.h"
 
+class GURL;
+class SkBitmap;
+
+namespace gfx {
+class Size;
+}
+
+namespace content {
+class WebContents;
+}
+
+namespace base {
+template<class T>
+class WeakPtrFactory;
+}
+
 namespace QtWebEngineCore {
 
-class FaviconManagerPrivate;
+class WebContentsAdapterClient;
 
 // Based on src/3rdparty/chromium/content/public/common/favicon_url.h
 class QWEBENGINE_EXPORT FaviconInfo {
@@ -81,9 +97,10 @@ public:
 };
 
 
-class QWEBENGINE_EXPORT FaviconManager : public QObject {
-    Q_OBJECT
+class QWEBENGINE_EXPORT FaviconManager {
+
 public:
+    FaviconManager(content::WebContents *, WebContentsAdapterClient *);
     ~FaviconManager();
 
     QIcon getIcon(const QUrl &url = QUrl()) const;
@@ -91,24 +108,28 @@ public:
     QList<FaviconInfo> getFaviconInfoList(bool) const;
 
 private:
-    FaviconManager(FaviconManagerPrivate *);
-
     void update(const QList<FaviconInfo> &);
     void updateCandidates(const QList<FaviconInfo> &);
     void resetCandidates();
     bool hasCandidate() const;
-
     QUrl candidateIconUrl(bool touchIconsEnabled) const;
     void generateCandidateIcon(bool touchIconsEnabled);
+    int downloadIcon(const QUrl &);
+    void iconDownloadFinished(int, int, const GURL &, const std::vector<SkBitmap> &, const std::vector<gfx::Size> &);
+    void storeIcon(int, const QIcon &);
+    void downloadPendingRequests();
+    void propagateIcon(const QUrl &) const;
 
+private:
+    content::WebContents *m_webContents;
+    WebContentsAdapterClient *m_viewClient;
     QMap<QUrl, FaviconInfo> m_faviconInfoMap;
     int m_candidateCount;
     QIcon m_candidateIcon;
-
-    Q_DISABLE_COPY(FaviconManager)
-    Q_DECLARE_PRIVATE(FaviconManager)
-    QScopedPointer<FaviconManagerPrivate> d_ptr;
-
+    QMap<QUrl, QIcon> m_icons;
+    QMap<int, QUrl> m_inProgressRequests;
+    QMap<int, QUrl> m_pendingRequests;
+    std::unique_ptr<base::WeakPtrFactory<FaviconManager>> m_weakFactory;
     friend class WebContentsDelegateQt;
 };
 

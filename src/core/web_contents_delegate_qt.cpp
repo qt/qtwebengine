@@ -47,7 +47,6 @@
 #include "color_chooser_qt.h"
 #include "color_chooser_controller.h"
 #include "favicon_manager.h"
-#include "favicon_manager_p.h"
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
 #include "net/network_delegate_qt.h"
@@ -99,7 +98,7 @@ static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptCo
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
     , m_lastReceivedFindReply(0)
-    , m_faviconManager(new FaviconManager(new FaviconManagerPrivate(webContents, adapterClient)))
+    , m_faviconManager(new FaviconManager(webContents, adapterClient))
     , m_lastLoadProgress(-1)
 {
     webContents->SetDelegate(this);

@@ -38,8 +38,6 @@
 ****************************************************************************/
 
 #include "favicon_manager.h"
-#include "favicon_manager_p.h"
-
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_engine_settings.h"
@@ -72,18 +70,19 @@ static inline unsigned area(const QSize &size)
 }
 
 
-FaviconManagerPrivate::FaviconManagerPrivate(content::WebContents *webContents, WebContentsAdapterClient *viewClient)
+FaviconManager::FaviconManager(content::WebContents *webContents, WebContentsAdapterClient *viewClient)
     : m_webContents(webContents)
     , m_viewClient(viewClient)
-    , m_weakFactory(this)
+    , m_candidateCount(0)
+    , m_weakFactory(new base::WeakPtrFactory<FaviconManager>(this))
 {
 }
 
-FaviconManagerPrivate::~FaviconManagerPrivate()
+FaviconManager::~FaviconManager()
 {
 }
 
-int FaviconManagerPrivate::downloadIcon(const QUrl &url)
+int FaviconManager::downloadIcon(const QUrl &url)
 {
     static int fakeId = 0;
     int id;
@@ -98,7 +97,7 @@ int FaviconManagerPrivate::downloadIcon(const QUrl &url)
              true, // is_favicon
              0,    // no max size
              false, // normal cache policy
-             base::Bind(&FaviconManagerPrivate::iconDownloadFinished, m_weakFactory.GetWeakPtr()));
+             base::Bind(&FaviconManager::iconDownloadFinished, m_weakFactory->GetWeakPtr()));
     }
 
     Q_ASSERT(!m_inProgressRequests.contains(id));
@@ -107,7 +106,7 @@ int FaviconManagerPrivate::downloadIcon(const QUrl &url)
     return id;
 }
 
-void FaviconManagerPrivate::iconDownloadFinished(int id,
+void FaviconManager::iconDownloadFinished(int id,
                                                  int status,
                                                  const GURL &url,
                                                  const std::vector<SkBitmap> &bitmaps,
@@ -125,7 +124,7 @@ void FaviconManagerPrivate::iconDownloadFinished(int id,
  * icons are stored in m_icons explicitly by this function. It is necessary to avoid
  * m_inProgressRequests being emptied right before the next icon is added by a downloadIcon() call.
  */
-void FaviconManagerPrivate::downloadPendingRequests()
+void FaviconManager::downloadPendingRequests()
 {
     for (auto it = m_pendingRequests.cbegin(), end = m_pendingRequests.cend(); it != end; ++it) {
         QIcon icon;
@@ -150,16 +149,15 @@ void FaviconManagerPrivate::downloadPendingRequests()
     m_pendingRequests.clear();
 }
 
-void FaviconManagerPrivate::storeIcon(int id, const QIcon &icon)
+void FaviconManager::storeIcon(int id, const QIcon &icon)
 {
-    Q_Q(FaviconManager);
 
     // Icon download has been interrupted
     if (!m_inProgressRequests.contains(id))
         return;
 
     QUrl requestUrl = m_inProgressRequests[id];
-    FaviconInfo &faviconInfo = q->m_faviconInfoMap[requestUrl];
+    FaviconInfo &faviconInfo = m_faviconInfoMap[requestUrl];
 
     unsigned iconCount = 0;
     if (!icon.isNull())
@@ -190,13 +188,13 @@ void FaviconManagerPrivate::storeIcon(int id, const QIcon &icon)
         WebEngineSettings *settings = m_viewClient->webEngineSettings();
         bool touchIconsEnabled = settings->testAttribute(WebEngineSettings::TouchIconsEnabled);
 
-        q->generateCandidateIcon(touchIconsEnabled);
-        const QUrl &iconUrl = q->candidateIconUrl(touchIconsEnabled);
+        generateCandidateIcon(touchIconsEnabled);
+        const QUrl &iconUrl = candidateIconUrl(touchIconsEnabled);
         propagateIcon(iconUrl);
     }
 }
 
-void FaviconManagerPrivate::propagateIcon(const QUrl &iconUrl) const
+void FaviconManager::propagateIcon(const QUrl &iconUrl) const
 {
     content::NavigationEntry *entry = m_webContents->GetController().GetVisibleEntry();
     if (entry) {
@@ -208,30 +206,15 @@ void FaviconManagerPrivate::propagateIcon(const QUrl &iconUrl) const
     m_viewClient->iconChanged(iconUrl);
 }
 
-FaviconManager::FaviconManager(FaviconManagerPrivate *d)
-    : m_candidateCount(0)
-{
-    Q_ASSERT(d);
-    d_ptr.reset(d);
-
-    d->q_ptr = this;
-}
-
-FaviconManager::~FaviconManager()
-{
-}
-
 QIcon FaviconManager::getIcon(const QUrl &url) const
 {
-    Q_D(const FaviconManager);
-
     if (url.isEmpty())
         return m_candidateIcon;
 
-    if (!d->m_icons.contains(url))
+    if (!m_icons.contains(url))
         return QIcon();
 
-    return d->m_icons[url];
+    return m_icons[url];
 }
 
 FaviconInfo FaviconManager::getFaviconInfo(const QUrl &url) const
@@ -257,12 +240,11 @@ QList<FaviconInfo> FaviconManager::getFaviconInfoList(bool candidatesOnly) const
 
 void FaviconManager::update(const QList<FaviconInfo> &candidates)
 {
-    Q_D(FaviconManager);
     updateCandidates(candidates);
 
-    WebEngineSettings *settings = d->m_viewClient->webEngineSettings();
+    WebEngineSettings *settings = m_viewClient->webEngineSettings();
     if (!settings->testAttribute(WebEngineSettings::AutoLoadIconsForPage)) {
-        d->m_viewClient->iconChanged(QUrl());
+        m_viewClient->iconChanged(QUrl());
         return;
     }
 
@@ -274,16 +256,16 @@ void FaviconManager::update(const QList<FaviconInfo> &candidates)
             continue;
 
         if (it->isValid())
-            d->downloadIcon(it->url);
+            downloadIcon(it->url);
     }
 
-    d->downloadPendingRequests();
+    downloadPendingRequests();
 
     // Reset icon if nothing was downloaded
-    if (d->m_inProgressRequests.isEmpty()) {
-        content::NavigationEntry *entry = d->m_webContents->GetController().GetVisibleEntry();
+    if (m_inProgressRequests.isEmpty()) {
+        content::NavigationEntry *entry = m_webContents->GetController().GetVisibleEntry();
         if (entry && !entry->GetFavicon().valid)
-            d->m_viewClient->iconChanged(QUrl());
+            m_viewClient->iconChanged(QUrl());
     }
 }
 
@@ -306,11 +288,9 @@ void FaviconManager::updateCandidates(const QList<FaviconInfo> &candidates)
 
 void FaviconManager::resetCandidates()
 {
-    Q_D(FaviconManager);
-
     // Interrupt in progress icon downloads
-    d->m_pendingRequests.clear();
-    d->m_inProgressRequests.clear();
+    m_pendingRequests.clear();
+    m_inProgressRequests.clear();
 
     m_candidateCount = 0;
     m_candidateIcon = QIcon();
