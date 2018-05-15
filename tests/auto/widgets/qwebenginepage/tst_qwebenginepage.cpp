@@ -4386,6 +4386,7 @@ void tst_QWebEnginePage::openLinkInDifferentProfile()
     QWebEngineProfile profile1, profile2;
     Page page1(&profile1), page2(&profile2);
     QWebEngineView view;
+    view.resize(500, 500);
     view.setPage(&page1);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
