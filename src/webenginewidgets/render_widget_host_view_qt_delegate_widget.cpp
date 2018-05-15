@@ -253,6 +253,7 @@ void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
         QGuiApplication::sync();
 
     m_rootItem->forceActiveFocus();
+    setFocus();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()

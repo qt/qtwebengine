@@ -50,7 +50,7 @@
 
 #include "browser.h"
 #include "browserwindow.h"
-#include "webview.h"
+#include "tabwidget.h"
 #include <QApplication>
 #include <QWebEngineSettings>
 
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
     Browser browser;
     BrowserWindow *window = browser.createWindow();
-    window->currentTab()->setUrl(url);
+    window->tabWidget()->setUrl(url);
 
     return app.exec();
 }
