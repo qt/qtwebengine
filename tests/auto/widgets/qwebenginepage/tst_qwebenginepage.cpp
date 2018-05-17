@@ -159,6 +159,7 @@ private Q_SLOTS:
 #endif
 
     void runJavaScript();
+    void runJavaScriptDisabled();
     void fullScreenRequested();
     void quotaRequested();
 
@@ -2712,6 +2713,21 @@ void tst_QWebEnginePage::runJavaScript()
     page.runJavaScript("undefined", QWebEngineCallback<const QVariant&>(callbackUndefined));
 
     QVERIFY(watcher.wait());
+}
+
+void tst_QWebEnginePage::runJavaScriptDisabled()
+{
+    QWebEnginePage page;
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, false);
+    // Settings changes take effect asynchronously. The load and wait ensure
+    // that the settings are applied by the time we start to execute JavaScript.
+    page.load(QStringLiteral("about:blank"));
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, QStringLiteral("1+1"), QWebEngineScript::MainWorld),
+             QVariant());
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, QStringLiteral("1+1"), QWebEngineScript::ApplicationWorld),
+             QVariant(2));
 }
 
 void tst_QWebEnginePage::fullScreenRequested()

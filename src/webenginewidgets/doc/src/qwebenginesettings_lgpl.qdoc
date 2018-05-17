@@ -87,7 +87,8 @@
             Automatically dowloads images for web pages. When this setting is
             disabled, images are loaded from the cache. Enabled by default.
     \value  JavascriptEnabled
-            Enables the running of JavaScript programs. Enabled by default.
+            Enables the running of JavaScript programs in the
+            \l{QWebEngineScript::MainWorld}{MainWorld}. Enabled by default.
     \value  JavascriptCanOpenWindows
             Allows JavaScript programs to open popup windows without user
             interaction. Enabled by default.
