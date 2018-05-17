@@ -268,6 +268,7 @@ void AddPepperWidevine(std::vector<content::PepperPluginInfo>* plugins)
             widevine_cdm.mime_types.push_back(widevine_cdm_mime_type);
             widevine_cdm.permissions = kWidevineCdmPluginPermissions;
             plugins->push_back(widevine_cdm);
+            break;
         }
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && BUILDFLAG(ENABLE_PEPPER_CDMS) &&
