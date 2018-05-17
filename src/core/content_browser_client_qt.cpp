@@ -94,7 +94,6 @@
 #include "certificate_error_controller_p.h"
 #include "desktop_screen_qt.h"
 #include "devtools_manager_delegate_qt.h"
-#include "location_provider_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "net/network_delegate_qt.h"
 #include "net/qrc_protocol_handler_qt.h"
