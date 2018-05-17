@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 import QtQuick 2.2
+import QtQuick.Window 2.0
 import QtTest 1.0
 import QtWebEngine 1.3
 
@@ -60,7 +61,7 @@ TestWebEngineView {
 
             tryCompare(scrollPositionSpy, "count", 1);
             compare(webEngineView.scrollPosition.x, 0);
-            compare(webEngineView.scrollPosition.y, 600);
+            compare(webEngineView.scrollPosition.y, 600 * Screen.devicePixelRatio);
         }
 
         function test_scrollPositionAfterReload() {
@@ -73,13 +74,13 @@ TestWebEngineView {
             // Wait for proper scroll position change otherwise we cannot expect
             // the new y position after reload.
             tryCompare(webEngineView.scrollPosition, "x", 0);
-            tryCompare(webEngineView.scrollPosition, "y", 600);
+            tryCompare(webEngineView.scrollPosition, "y", 600 * Screen.devicePixelRatio);
 
             webEngineView.reload();
             verify(webEngineView.waitForLoadSucceeded());
 
             tryCompare(webEngineView.scrollPosition, "x", 0);
-            tryCompare(webEngineView.scrollPosition, "y", 600);
+            tryCompare(webEngineView.scrollPosition, "y", 600 * Screen.devicePixelRatio);
         }
     }
 }

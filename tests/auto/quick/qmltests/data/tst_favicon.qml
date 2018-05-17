@@ -30,6 +30,7 @@ import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.3
 import QtWebEngine.testsupport 1.0
+import QtQuick.Window 2.0
 
 TestWebEngineView {
     id: webEngineView
@@ -323,8 +324,8 @@ TestWebEngineView {
             iconChangedSpy.wait()
             compare(iconChangedSpy.count, 1)
 
-            faviconImage.width = row.size
-            faviconImage.height = row.size
+            faviconImage.width = row.size / Screen.devicePixelRatio
+            faviconImage.height = row.size  / Screen.devicePixelRatio
             faviconImage.source = webEngineView.icon
 
             var pixel = getFaviconPixel(faviconImage);

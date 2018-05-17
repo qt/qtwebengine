@@ -3264,8 +3264,8 @@ void tst_QWebEnginePage::scrollPosition()
 
     // try to set the scroll offset programmatically
     view.page()->runJavaScript("window.scrollTo(23, 29);");
-    QTRY_COMPARE(view.page()->scrollPosition().x(), qreal(23));
-    QCOMPARE(view.page()->scrollPosition().y(), qreal(29));
+    QTRY_COMPARE(view.page()->scrollPosition().x(), 23 * view.windowHandle()->devicePixelRatio());
+    QCOMPARE(view.page()->scrollPosition().y(), 29 * view.windowHandle()->devicePixelRatio());
 
     int x = evaluateJavaScriptSync(view.page(), "window.scrollX").toInt();
     int y = evaluateJavaScriptSync(view.page(), "window.scrollY").toInt();
