@@ -54,6 +54,11 @@ RegisterProtocolHandlerRequestControllerImpl::RegisterProtocolHandlerRequestCont
     , m_handler(handler)
 {}
 
+RegisterProtocolHandlerRequestControllerImpl::~RegisterProtocolHandlerRequestControllerImpl()
+{
+    reject();
+}
+
 ProtocolHandlerRegistry *RegisterProtocolHandlerRequestControllerImpl::protocolHandlerRegistry()
 {
     content::WebContents *webContents = web_contents();

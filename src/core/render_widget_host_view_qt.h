@@ -253,7 +253,7 @@ private:
     viz::mojom::CompositorFrameSinkClient *m_rendererCompositorFrameSink;
 
     bool m_imeInProgress;
-    bool m_receivedEmptyImeText;
+    bool m_receivedEmptyImeEvent;
     QPoint m_previousMousePosition;
 
     bool m_initPending;

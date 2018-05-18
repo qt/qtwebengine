@@ -42,6 +42,7 @@ private Q_SLOTS:
     void webChannelResettingAndUnsetting();
     void webChannelWithExistingQtObject();
     void navigation();
+    void webChannelWithBadString();
 };
 
 void tst_QWebEngineScript::domEditing()
@@ -263,9 +264,8 @@ static QString readFile(const QString &path)
 
 static QWebEngineScript webChannelScript()
 {
-    QString sourceCode = readFile(QStringLiteral(":/qwebchannel.js"));
-    if (sourceCode.isEmpty())
-        return {};
+    QString sourceCode = readFile(QStringLiteral(":/qtwebchannel/qwebchannel.js"));
+    Q_ASSERT(!sourceCode.isEmpty());
 
     QWebEngineScript script;
     script.setSourceCode(sourceCode);
@@ -468,6 +468,22 @@ void tst_QWebEngineScript::navigation()
     page.setUrl(url3);
     QTRY_COMPARE(spyTextChanged.count(), 3);
     QCOMPARE(testObject.text(), url3);
+}
+
+// Try to set TestObject::text to an invalid UTF-16 string.
+//
+// See QTBUG-61969.
+void tst_QWebEngineScript::webChannelWithBadString()
+{
+    QWebEnginePage page;
+    TestObject host;
+    QSignalSpy hostSpy(&host, &TestObject::textChanged);
+    QWebChannel channel;
+    channel.registerObject(QStringLiteral("host"), &host);
+    page.setWebChannel(&channel);
+    page.setUrl(QStringLiteral("qrc:/resources/webChannelWithBadString.html"));
+    QVERIFY(hostSpy.wait(20000));
+    QCOMPARE(host.text(), QString(QChar(QChar::ReplacementCharacter)));
 }
 
 QTEST_MAIN(tst_QWebEngineScript)

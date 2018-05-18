@@ -259,7 +259,8 @@ void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlag
  */
 QSize QWebEngineView::sizeHint() const
 {
-    return QSize(800, 600);
+    // TODO: Remove this override for Qt 6
+    return QWidget::sizeHint();
 }
 
 QWebEngineSettings *QWebEngineView::settings() const

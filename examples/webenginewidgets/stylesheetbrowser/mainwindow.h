@@ -71,6 +71,8 @@ public:
 
     void insertStyleSheet(const QString &name, const QString &source, bool immediately);
     void removeStyleSheet(const QString &name, bool immediately);
+    bool hasStyleSheet(const QString &name);
+    void loadDefaultStyleSheets();
 
 private slots:
     void urlEntered();

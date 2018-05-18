@@ -63,6 +63,7 @@ int main(int argc, char * argv[])
     else
         url = QUrl("http://www.google.com/ncr");
     MainWindow *browser = new MainWindow(url);
+    browser->resize(1024, 768);
     browser->show();
     return app.exec();
 }

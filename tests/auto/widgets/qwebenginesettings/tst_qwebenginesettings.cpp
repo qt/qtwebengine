@@ -37,6 +37,7 @@ private Q_SLOTS:
     void defaultFontFamily();
     void javascriptClipboard_data();
     void javascriptClipboard();
+    void setInAcceptNavigationRequest();
 };
 
 void tst_QWebEngineSettings::resetAttributes()
@@ -160,6 +161,40 @@ void tst_QWebEngineSettings::javascriptClipboard()
     QCOMPARE(evaluateJavaScriptSync(&page, "document.execCommand('paste')").toBool(), pasteResult);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.getElementById('myInput').value").toString(),
                            (pasteResult ? QString("AnotherText") : QString("OriginalText")));
+}
+
+class NavigationRequestOverride : public QWebEnginePage
+{
+protected:
+    virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
+    {
+        Q_UNUSED(type);
+
+        if (isMainFrame && url.scheme().startsWith("data"))
+            settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+
+        return true;
+    }
+};
+
+void tst_QWebEngineSettings::setInAcceptNavigationRequest()
+{
+    NavigationRequestOverride page;
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::JavascriptEnabled, false);
+    QVERIFY(!page.settings()->testAttribute(QWebEngineSettings::JavascriptEnabled));
+
+    page.load(QUrl("about:blank"));
+    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(!page.settings()->testAttribute(QWebEngineSettings::JavascriptEnabled));
+
+    page.setHtml("<html><body>"
+                 "<script>document.write('PASS')</script>"
+                 "<noscript>FAIL</noscript>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(page.settings()->testAttribute(QWebEngineSettings::JavascriptEnabled));
+    QCOMPARE(toPlainTextSync(&page), QStringLiteral("PASS"));
 }
 
 QTEST_MAIN(tst_QWebEngineSettings)

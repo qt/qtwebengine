@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "common/user_script_data.h"
-#include "extensions/common/url_pattern.h"
 #include "user_script.h"
 #include "type_conversion.h"
 
@@ -65,11 +64,6 @@ bool GetDeclarationValue(const base::StringPiece& line,
 }  // namespace
 
 namespace QtWebEngineCore {
-
-int UserScript::validUserScriptSchemes()
-{
-    return URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS | URLPattern::SCHEME_FILE;
-}
 
 ASSERT_ENUMS_MATCH(UserScript::AfterLoad, UserScriptData::AfterLoad)
 ASSERT_ENUMS_MATCH(UserScript::DocumentLoadFinished, UserScriptData::DocumentLoadFinished)
@@ -222,8 +216,6 @@ void UserScript::parseMetadataHeader()
     // support @noframes rule, we have to change the current default behavior.
     // static const base::StringPiece kNoFramesDeclaration("// @noframes");
 
-    static URLPattern urlPatternParser(validUserScriptSchemes());
-
     while (line_start < script_text.length()) {
         line_end = script_text.find('\n', line_start);
 
@@ -260,8 +252,7 @@ void UserScript::parseMetadataHeader()
                 }
                 scriptData->excludeGlobs.push_back(value);
             } else if (GetDeclarationValue(line, kMatchDeclaration, &value)) {
-                if (URLPattern::PARSE_SUCCESS == urlPatternParser.Parse(value))
-                    scriptData->urlPatterns.push_back(value);
+                scriptData->urlPatterns.push_back(value);
             } else if (GetDeclarationValue(line, kRunAtDeclaration, &value)) {
                 if (value == kRunAtDocumentStartValue)
                     scriptData->injectionPoint = DocumentElementCreation;

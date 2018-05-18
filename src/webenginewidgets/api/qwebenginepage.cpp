@@ -47,7 +47,6 @@
 #include "favicon_manager.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
-#include "printing/pdfium_document_wrapper_qt.h"
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
@@ -86,6 +85,10 @@
 #include <QStyle>
 #include <QTimer>
 #include <QUrl>
+
+#if defined(ENABLE_PRINTING) && defined(ENABLE_PDF)
+#include "printing/pdfium_document_wrapper_qt.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1671,6 +1674,11 @@ void QWebEnginePagePrivate::startDragging(const content::DropData &dropData,
 #else
     adapter->startDragging(view, dropData, allowedActions, pixmap, offset);
 #endif // QT_CONFIG(draganddrop)
+}
+
+bool QWebEnginePagePrivate::supportsDragging() const
+{
+    return true;
 }
 
 bool QWebEnginePagePrivate::isEnabled() const

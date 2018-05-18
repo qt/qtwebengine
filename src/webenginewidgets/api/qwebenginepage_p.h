@@ -142,6 +142,7 @@ public:
     void updateContentsSize(const QSizeF &size) override;
     void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
                        const QPixmap &pixmap, const QPoint &offset) override;
+    bool supportsDragging() const override;
     bool isEnabled() const override;
     void setToolTip(const QString &toolTipText) override;
     const QObject *holdingQObject() const override;

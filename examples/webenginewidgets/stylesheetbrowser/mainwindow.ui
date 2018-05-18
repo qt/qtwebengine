@@ -18,11 +18,47 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item>
      <widget class="QWidget" name="webContentsWidget" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QWidget" name="urlBarWidget" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <widget class="QLineEdit" name="urlBar"/>
@@ -32,12 +68,12 @@
             <property name="text">
              <string/>
             </property>
-            <property name="shortcut">
-             <string>Ctrl+R</string>
-            </property>
             <property name="icon">
              <iconset resource="stylesheetbrowser.qrc">
               <normaloff>:/view-refresh.png</normaloff>:/view-refresh.png</iconset>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+R</string>
             </property>
            </widget>
           </item>
@@ -52,8 +88,14 @@
         </widget>
        </item>
        <item>
-        <widget class="QWebEngineView" name="webEngineView">
-         <property name="url">
+        <widget class="QWebEngineView" name="webEngineView" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="url" stdset="0">
           <url>
            <string>about:blank</string>
           </url>
@@ -84,6 +126,8 @@
    <header location="global">QtWebEngineWidgets/QWebEngineView</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="stylesheetbrowser.qrc"/>
+ </resources>
  <connections/>
 </ui>
