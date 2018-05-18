@@ -617,11 +617,6 @@ void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
     if (!a)
         return;
 
-    if (!adapter->isInitialized()) {
-        a->setEnabled(false);
-        return;
-    }
-
     bool enabled = true;
 
     switch (action) {
