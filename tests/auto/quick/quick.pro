@@ -3,6 +3,7 @@ QT_FOR_CONFIG += webengine-private
 TEMPLATE = subdirs
 
 SUBDIRS += \
+    dialogs \
     inspectorserver \
     publicapi \
     qquickwebenginedefaultsurfaceformat \
@@ -15,4 +16,4 @@ qtConfig(webengine-testsupport) {
 }
 
 # QTBUG-66055
-boot2qt: SUBDIRS -= inspectorserver qquickwebenginedefaultsurfaceformat qquickwebengineview qmltests
+boot2qt: SUBDIRS -= inspectorserver qquickwebenginedefaultsurfaceformat qquickwebengineview qmltests dialogs
