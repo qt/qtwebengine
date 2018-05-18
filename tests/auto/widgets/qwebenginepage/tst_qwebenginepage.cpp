@@ -217,6 +217,7 @@ private Q_SLOTS:
     void registerProtocolHandler();
     void dataURLFragment();
     void devTools();
+    void openLinkInDifferentProfile();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -3312,6 +3313,7 @@ protected:
 void tst_QWebEnginePage::evaluateWillCauseRepaint()
 {
     WebView view;
+    view.resize(640, 480);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
@@ -4052,6 +4054,7 @@ void tst_QWebEnginePage::mouseButtonTranslation()
                       <div style=\"height:600px;\" onmousedown=\"saveLastEvent(event)\">\
                       </div>\
                       </body></html>"));
+    view.resize(640, 480);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(spy.count() == 1);
@@ -4076,6 +4079,7 @@ void tst_QWebEnginePage::mouseMovementProperties()
     QWebEngineView view;
     ConsolePage page;
     view.setPage(&page);
+    view.resize(640, 480);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
@@ -4368,6 +4372,34 @@ void tst_QWebEnginePage::devTools()
     QCOMPARE(inspectedPage2.inspectedPage(), nullptr);
     QCOMPARE(devToolsPage.devToolsPage(), nullptr);
     QCOMPARE(devToolsPage.inspectedPage(), nullptr);
+}
+
+void tst_QWebEnginePage::openLinkInDifferentProfile()
+{
+    class Page : public QWebEnginePage {
+    public:
+        QWebEnginePage *targetPage = nullptr;
+        Page(QWebEngineProfile *profile) : QWebEnginePage(profile) {}
+    private:
+        QWebEnginePage *createWindow(WebWindowType) override { return targetPage; }
+    };
+    QWebEngineProfile profile1, profile2;
+    Page page1(&profile1), page2(&profile2);
+    QWebEngineView view;
+    view.resize(500, 500);
+    view.setPage(&page1);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QSignalSpy spy1(&page1, &QWebEnginePage::loadFinished), spy2(&page2, &QWebEnginePage::loadFinished);
+    page1.setHtml("<html><body>"
+                  "<a id='link' href='data:,hello'>link</a>"
+                  "</body></html>");
+    QTRY_COMPARE(spy1.count(), 1);
+    QVERIFY(spy1.takeFirst().value(0).toBool());
+    page1.targetPage = &page2;
+    QTest::mouseClick(view.focusProxy(), Qt::MiddleButton, 0, elementCenter(&page1, "link"));
+    QTRY_COMPARE(spy2.count(), 1);
+    QVERIFY(spy2.takeFirst().value(0).toBool());
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

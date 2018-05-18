@@ -198,6 +198,9 @@ void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient*
             disconnect(parentWidget(), &QObject::destroyed,
                 this, &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
         pagePrivate->view->layout()->addWidget(this);
+        if (QWidget *focusProxy = pagePrivate->view->focusProxy())
+            if (focusProxy != this)
+                pagePrivate->view->layout()->removeWidget(focusProxy);
         pagePrivate->view->setFocusProxy(this);
         show();
     } else
@@ -250,6 +253,7 @@ void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
         QGuiApplication::sync();
 
     m_rootItem->forceActiveFocus();
+    setFocus();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()

@@ -153,6 +153,7 @@ private Q_SLOTS:
     void focusOnNavigation_data();
     void focusOnNavigation();
     void focusInternalRenderWidgetHostViewQuickItem();
+    void doNotBreakLayout();
 
     void changeLocale();
     void inputMethodsTextFormat_data();
@@ -173,6 +174,7 @@ private Q_SLOTS:
     void imeCompositionQueryEvent_data();
     void imeCompositionQueryEvent();
     void newlineInTextarea();
+    void imeJSInputEvents();
 
     void mouseLeave();
 
@@ -344,6 +346,7 @@ void tst_QWebEngineView::crashTests()
 void tst_QWebEngineView::microFocusCoordinates()
 {
     QWebEngineView webView;
+    webView.resize(640, 480);
     webView.show();
     QVERIFY(QTest::qWaitForWindowExposed(&webView));
 
@@ -378,6 +381,7 @@ void tst_QWebEngineView::focusInputTypes()
     bool imeHasHiddenTextCapability = context && context->hasCapability(QPlatformInputContext::HiddenTextCapability);
 
     QWebEngineView webView;
+    webView.resize(640, 480);
     webView.show();
     QVERIFY(QTest::qWaitForWindowExposed(&webView));
 
@@ -481,6 +485,7 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
 {
     KeyEventRecordingWidget parentWidget;
     QWebEngineView webView(&parentWidget);
+    webView.resize(640, 480);
     parentWidget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&webView));
 
@@ -824,6 +829,7 @@ void tst_QWebEngineView::doNotSendMouseKeyboardEventsWhenDisabled()
     QFETCH(int, resultEventCount);
 
     KeyboardAndMouseEventRecordingWidget parentWidget;
+    parentWidget.resize(640, 480);
     QWebEngineView webView(&parentWidget);
     webView.setEnabled(viewEnabled);
     parentWidget.setLayout(new QStackedLayout);
@@ -1027,6 +1033,31 @@ void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
             renderWidgetHostViewQtDelegateWidget->rootObject();
     QVERIFY(renderWidgetHostViewQuickItem);
     QTRY_COMPARE(renderWidgetHostViewQuickItem->hasFocus(), true);
+}
+
+void tst_QWebEngineView::doNotBreakLayout()
+{
+    QScopedPointer<QWidget> containerWidget(new QWidget);
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(new QWidget);
+    layout->addWidget(new QWidget);
+    layout->addWidget(new QWidget);
+    layout->addWidget(new QWebEngineView);
+
+    containerWidget->setLayout(layout);
+    containerWidget->setGeometry(50, 50, 800, 600);
+    containerWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
+
+    QSize previousSize = static_cast<QWidgetItem *>(layout->itemAt(0))->widget()->size();
+    for (int i = 1; i < layout->count(); i++) {
+        QSize actualSize = static_cast<QWidgetItem *>(layout->itemAt(i))->widget()->size();
+        // There could be smaller differences on some platforms
+        QVERIFY(qAbs(previousSize.width() - actualSize.width()) <= 2);
+        QVERIFY(qAbs(previousSize.height() - actualSize.height()) <= 2);
+        previousSize = actualSize;
+    }
 }
 
 void tst_QWebEngineView::changeLocale()
@@ -1592,6 +1623,7 @@ void tst_QWebEngineView::softwareInputPanel()
 {
     TestInputContext testContext;
     QWebEngineView view;
+    view.resize(640, 480);
     view.show();
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
@@ -1648,6 +1680,7 @@ void tst_QWebEngineView::softwareInputPanel()
 void tst_QWebEngineView::inputMethods()
 {
     QWebEngineView view;
+    view.resize(640, 480);
     view.show();
 
     QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
@@ -1744,6 +1777,7 @@ void tst_QWebEngineView::inputMethods()
 void tst_QWebEngineView::textSelectionInInputField()
 {
     QWebEngineView view;
+    view.resize(640, 480);
     view.show();
 
     QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
@@ -1825,6 +1859,7 @@ void tst_QWebEngineView::textSelectionInInputField()
 void tst_QWebEngineView::textSelectionOutOfInputField()
 {
     QWebEngineView view;
+    view.resize(640, 480);
     view.show();
 
     QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
@@ -1908,6 +1943,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
 void tst_QWebEngineView::hiddenText()
 {
     QWebEngineView view;
+    view.resize(640, 480);
     view.show();
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
@@ -1933,6 +1969,7 @@ void tst_QWebEngineView::hiddenText()
 void tst_QWebEngineView::emptyInputMethodEvent()
 {
     QWebEngineView view;
+    view.resize(640, 480);
     view.show();
 
     QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
@@ -1979,6 +2016,7 @@ void tst_QWebEngineView::emptyInputMethodEvent()
 void tst_QWebEngineView::imeComposition()
 {
     QWebEngineView view;
+    view.resize(640, 480);
     view.show();
 
     QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
@@ -2153,6 +2191,7 @@ void tst_QWebEngineView::imeComposition()
 void tst_QWebEngineView::newlineInTextarea()
 {
     QWebEngineView view;
+    view.resize(640, 480);
     view.show();
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
@@ -2249,6 +2288,142 @@ void tst_QWebEngineView::newlineInTextarea()
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("\n\nthird line"));
 }
 
+void tst_QWebEngineView::imeJSInputEvents()
+{
+    QWebEngineView view;
+    view.resize(640, 480);
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+    view.show();
+
+    auto logLines = [&view]() -> QStringList {
+        return evaluateJavaScriptSync(view.page(), "log.textContent").toString().split("\n").filter(QRegExp(".+"));
+    };
+
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.page()->setHtml("<html>"
+                         "<head><script>"
+                         "  var input, log;"
+                         "  function verboseEvent(ev) {"
+                         "      log.textContent += ev + ' ' + ev.type + ' ' + ev.data + '\\n';"
+                         "  }"
+                         "  function clear(ev) {"
+                         "      log.textContent = '';"
+                         "      input.textContent = '';"
+                         "  }"
+                         "  function init() {"
+                         "      input = document.getElementById('input');"
+                         "      log = document.getElementById('log');"
+                         "      events = [ 'textInput', 'beforeinput', 'input', 'compositionstart', 'compositionupdate', 'compositionend' ];"
+                         "      for (var e in events)"
+                         "          input.addEventListener(events[e], verboseEvent);"
+                         "  }"
+                         "</script></head>"
+                         "<body onload='init()'>"
+                         "  <div id='input' contenteditable='true' style='border-style: solid;'></div>"
+                         "  <pre id='log'></pre>"
+                         "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    evaluateJavaScriptSync(view.page(), "document.getElementById('input').focus()");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
+
+    // 1. Commit text (this is how dead keys work on Linux).
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("commit");
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    // Simply committing text should not trigger any JS composition event.
+    QTRY_COMPARE(logLines().count(), 3);
+    QCOMPARE(logLines()[0], "[object InputEvent] beforeinput commit");
+    QCOMPARE(logLines()[1], "[object TextEvent] textInput commit");
+    QCOMPARE(logLines()[2], "[object InputEvent] input commit");
+
+    evaluateJavaScriptSync(view.page(), "clear()");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
+
+    // 2. Start composition then commit text (this is how dead keys work on macOS).
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("preedit", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    QTRY_COMPARE(logLines().count(), 4);
+    QCOMPARE(logLines()[0], "[object CompositionEvent] compositionstart ");
+    QCOMPARE(logLines()[1], "[object InputEvent] beforeinput preedit");
+    QCOMPARE(logLines()[2], "[object CompositionEvent] compositionupdate preedit");
+    QCOMPARE(logLines()[3], "[object InputEvent] input preedit");
+
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("commit");
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    QTRY_COMPARE(logLines().count(), 9);
+    QCOMPARE(logLines()[4], "[object InputEvent] beforeinput commit");
+    QCOMPARE(logLines()[5], "[object CompositionEvent] compositionupdate commit");
+    QCOMPARE(logLines()[6], "[object TextEvent] textInput commit");
+    QCOMPARE(logLines()[7], "[object InputEvent] input commit");
+    QCOMPARE(logLines()[8], "[object CompositionEvent] compositionend commit");
+
+    evaluateJavaScriptSync(view.page(), "clear()");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
+
+    // 3. Start composition then cancel it with an empty IME event.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("preedit", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    QTRY_COMPARE(logLines().count(), 4);
+    QCOMPARE(logLines()[0], "[object CompositionEvent] compositionstart ");
+    QCOMPARE(logLines()[1], "[object InputEvent] beforeinput preedit");
+    QCOMPARE(logLines()[2], "[object CompositionEvent] compositionupdate preedit");
+    QCOMPARE(logLines()[3], "[object InputEvent] input preedit");
+
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    QTRY_COMPARE(logLines().count(), 9);
+    QCOMPARE(logLines()[4], "[object InputEvent] beforeinput ");
+    QCOMPARE(logLines()[5], "[object CompositionEvent] compositionupdate ");
+    QCOMPARE(logLines()[6], "[object TextEvent] textInput ");
+    QCOMPARE(logLines()[7], "[object InputEvent] input null");
+    QCOMPARE(logLines()[8], "[object CompositionEvent] compositionend ");
+
+    evaluateJavaScriptSync(view.page(), "clear()");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
+
+    // 4. Send empty IME event.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+        qApp->processEvents();
+    }
+
+    // No JS event is expected.
+    QTest::qWait(100);
+    QVERIFY(logLines().isEmpty());
+
+    evaluateJavaScriptSync(view.page(), "clear()");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
+}
+
 void tst_QWebEngineView::imeCompositionQueryEvent_data()
 {
     QTest::addColumn<QString>("receiverObjectName");
@@ -2260,6 +2435,7 @@ void tst_QWebEngineView::imeCompositionQueryEvent_data()
 void tst_QWebEngineView::imeCompositionQueryEvent()
 {
     QWebEngineView view;
+    view.resize(640, 480);
     view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
 
     view.show();
@@ -2341,6 +2517,7 @@ void tst_QWebEngineView::globalMouseSelection()
 
     QApplication::clipboard()->clear(QClipboard::Selection);
     QWebEngineView view;
+    view.resize(640, 480);
     view.show();
 
     QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
@@ -2421,6 +2598,7 @@ void tst_QWebEngineView::contextMenu()
     }
 
     view.setContextMenuPolicy(contextMenuPolicy);
+    view.resize(640, 480);
     view.show();
 
     QVERIFY(view.findChildren<QMenu *>().isEmpty());

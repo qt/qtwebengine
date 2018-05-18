@@ -214,6 +214,7 @@
         "webengine-host-compiler": {
             "label": "host compiler",
             "test": "hostcompiler",
+            "host": "true",
             "type": "compile"
         },
         "webengine-khr": {

@@ -52,6 +52,8 @@ public:
         const content::StorageQuotaParams &params,
         const content::QuotaPermissionContext::PermissionCallback &callback);
 
+    ~QuotaRequestControllerImpl();
+
 protected:
     void accepted() override;
     void rejected() override;

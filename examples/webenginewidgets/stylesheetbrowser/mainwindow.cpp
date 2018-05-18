@@ -49,9 +49,12 @@
 ****************************************************************************/
 
 #include "mainwindow.h"
+#include "stylesheetdialog.h"
 #include "ui_mainwindow.h"
 
-#include "stylesheetdialog.h"
+static QMap<QString, QString> defaultStyleSheets = {
+    {"Upside down", "body { -webkit-transform: rotate(180deg); }"}
+};
 
 MainWindow::MainWindow(const QUrl &url) :
     QMainWindow(),
@@ -67,8 +70,16 @@ MainWindow::MainWindow(const QUrl &url) :
     QSettings settings;
     settings.beginGroup("styleSheets");
     QStringList styleSheets = settings.allKeys();
-    for (auto name : qAsConst(styleSheets))
-        insertStyleSheet(name, settings.value(name, QString()).toString(), false);
+    if (styleSheets.empty()) {
+        // Add back default style sheets if the user cleared them out
+        loadDefaultStyleSheets();
+    } else {
+        for (auto name : qAsConst(styleSheets)) {
+            StyleSheet styleSheet = settings.value(name).value<StyleSheet>();
+            if (styleSheet.second)
+                insertStyleSheet(name, styleSheet.first, false);
+        }
+    }
     settings.endGroup();
 
     ui->webEngineView->setUrl(url);
@@ -112,6 +123,27 @@ void MainWindow::removeStyleSheet(const QString &name, bool immediately)
 
     QWebEngineScript script = ui->webEngineView->page()->scripts().findScript(name);
     ui->webEngineView->page()->scripts().remove(script);
+}
+
+bool MainWindow::hasStyleSheet(const QString &name)
+{
+    QWebEngineScript script = ui->webEngineView->page()->scripts().findScript(name);
+    return !script.isNull();
+}
+
+void MainWindow::loadDefaultStyleSheets()
+{
+    QSettings settings;
+    settings.beginGroup("styleSheets");
+
+    auto it = defaultStyleSheets.constBegin();
+    while (it != defaultStyleSheets.constEnd()) {
+        settings.setValue(it.key(), QVariant::fromValue(qMakePair(it.value(), true)));
+        insertStyleSheet(it.key(), it.value(), false);
+        ++it;
+    }
+
+    settings.endGroup();
 }
 
 void MainWindow::urlEntered()

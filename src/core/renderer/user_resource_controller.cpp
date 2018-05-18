@@ -69,6 +69,11 @@ static content::RenderView * const globalScriptsIndex = 0;
 // Scripts meant to run after the load event will be run 500ms after DOMContentLoaded if the load event doesn't come within that delay.
 static const int afterLoadTimeout = 500;
 
+static int validUserScriptSchemes()
+{
+    return URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS | URLPattern::SCHEME_FILE;
+}
+
 static bool regexMatchesURL(const std::string &pat, const GURL &url) {
     QRegularExpression qre(QtWebEngineCore::toQt(pat));
     qre.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
@@ -97,8 +102,8 @@ static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url) 
     if (!scriptData.urlPatterns.empty()) {
         matchFound = false;
         for (auto it = scriptData.urlPatterns.begin(), end = scriptData.urlPatterns.end(); it != end; ++it) {
-            URLPattern urlPattern(QtWebEngineCore::UserScript::validUserScriptSchemes(), *it);
-            if (urlPattern.MatchesURL(url))
+            URLPattern urlPattern(validUserScriptSchemes());
+            if (urlPattern.Parse(*it) == URLPattern::PARSE_SUCCESS && urlPattern.MatchesURL(url))
                 matchFound = true;
         }
         if (!matchFound)

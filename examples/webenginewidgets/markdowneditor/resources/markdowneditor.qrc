@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>index.html</file>
-        <file>qwebchannel.js</file>
         <file>3rdparty/marked.min.js</file>
         <file>default.md</file>
         <file>3rdparty/markdown.css</file>

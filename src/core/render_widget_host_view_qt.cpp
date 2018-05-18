@@ -327,7 +327,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_adapterClient(0)
     , m_rendererCompositorFrameSink(0)
     , m_imeInProgress(false)
-    , m_receivedEmptyImeText(false)
+    , m_receivedEmptyImeEvent(false)
     , m_initPending(false)
     , m_beginFrameSource(nullptr)
     , m_needsBeginFrames(false)
@@ -1219,22 +1219,20 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
     if (IsMouseLocked() && ev->key() == Qt::Key_Escape && ev->type() == QEvent::KeyRelease)
         UnlockMouse();
 
-    if (m_receivedEmptyImeText) {
+    if (m_receivedEmptyImeEvent) {
         // IME composition was not finished with a valid commit string.
         // We're getting the composition result in a key event.
         if (ev->key() != 0) {
             // The key event is not a result of an IME composition. Cancel IME.
             m_host->ImeCancelComposition();
-            m_receivedEmptyImeText = false;
+            m_receivedEmptyImeEvent = false;
         } else {
             if (ev->type() == QEvent::KeyRelease) {
-                m_receivedEmptyImeText = false;
-                m_host->ImeSetComposition(toString16(ev->text()),
-                                          std::vector<ui::ImeTextSpan>(),
-                                          gfx::Range::InvalidRange(),
-                                          gfx::Range::InvalidRange().start(),
-                                          gfx::Range::InvalidRange().end());
-                m_host->ImeFinishComposingText(false);
+                m_host->ImeCommitText(toString16(ev->text()),
+                                      std::vector<ui::ImeTextSpan>(),
+                                      gfx::Range::InvalidRange(),
+                                      0);
+                m_receivedEmptyImeEvent = false;
                 m_imeInProgress = false;
             }
             return;
@@ -1365,54 +1363,54 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         }
     }
 
-    auto setCompositionString = [&](const QString &compositionString){
-        m_host->ImeSetComposition(toString16(compositionString),
-                                  underlines,
-                                  replacementRange,
-                                  selectionRange.start(),
-                                  selectionRange.end());
-    };
-
-    if (!commitString.isEmpty() || replacementLength > 0) {
-        setCompositionString(commitString);
-        m_host->ImeFinishComposingText(false);
-
-        // We might get a commit string and a pre-edit string in a single event, which means
-        // we need to confirm the　last composition, and start a new composition.
-        if (!preeditString.isEmpty()) {
-            setCompositionString(preeditString);
-            m_imeInProgress = true;
-        } else {
-            m_imeInProgress = false;
-        }
-        m_receivedEmptyImeText = commitString.isEmpty();
-    } else if (!preeditString.isEmpty()) {
-        setCompositionString(preeditString);
-        m_imeInProgress = true;
-        m_receivedEmptyImeText = false;
-    } else {
-        // There are so-far two known cases, when an empty QInputMethodEvent is received.
-        // First one happens when backspace is used to remove the last character in the pre-edit
-        // string, thus signaling the end of the composition.
-        // The second one happens (on Windows) when a Korean char gets composed, but instead of
-        // the event having a commit string, both strings are empty, and the actual char is received
-        // as a QKeyEvent after the QInputMethodEvent is processed.
-        // In lieu of the second case, we can't simply cancel the composition on an empty event,
-        // and then add the Korean char when QKeyEvent is received, because that leads to text
-        // flickering in the textarea (or any other element).
-        // Instead we postpone the processing of the empty QInputMethodEvent by posting it
-        // to the same focused object, and cancelling the composition on the next event loop tick.
-        if (!m_receivedEmptyImeText && m_imeInProgress && !hasSelection) {
-            m_receivedEmptyImeText = true;
+    // There are so-far two known cases, when an empty QInputMethodEvent is received.
+    // First one happens when backspace is used to remove the last character in the pre-edit
+    // string, thus signaling the end of the composition.
+    // The second one happens (on Windows) when a Korean char gets composed, but instead of
+    // the event having a commit string, both strings are empty, and the actual char is received
+    // as a QKeyEvent after the QInputMethodEvent is processed.
+    // In lieu of the second case, we can't simply cancel the composition on an empty event,
+    // and then add the Korean char when QKeyEvent is received, because that leads to text
+    // flickering in the textarea (or any other element).
+    // Instead we postpone the processing of the empty QInputMethodEvent by posting it
+    // to the same focused object, and cancelling the composition on the next event loop tick.
+    if (commitString.isEmpty() && preeditString.isEmpty() && replacementLength == 0) {
+        if (!m_receivedEmptyImeEvent && m_imeInProgress && !hasSelection) {
+            m_receivedEmptyImeEvent = true;
             QInputMethodEvent *eventCopy = new QInputMethodEvent(*ev);
             QGuiApplication::postEvent(qApp->focusObject(), eventCopy);
         } else {
-            m_receivedEmptyImeText = false;
+            m_receivedEmptyImeEvent = false;
             if (m_imeInProgress) {
                 m_imeInProgress = false;
                 m_host->ImeCancelComposition();
             }
         }
+
+        return;
+    }
+
+    m_receivedEmptyImeEvent = false;
+
+    // Finish compostion: insert or erase text.
+    if (!commitString.isEmpty() || replacementLength > 0) {
+        m_host->ImeCommitText(toString16(commitString),
+                              underlines,
+                              replacementRange,
+                              0);
+        m_imeInProgress = false;
+    }
+
+    // Update or start new composition.
+    // Be aware of that, we might get a commit string and a pre-edit string in a single event and
+    // this means a new composition.
+    if (!preeditString.isEmpty()) {
+        m_host->ImeSetComposition(toString16(preeditString),
+                                  underlines,
+                                  replacementRange,
+                                  selectionRange.start(),
+                                  selectionRange.end());
+        m_imeInProgress = true;
     }
 }
 
