@@ -1,8 +1,8 @@
 <RCC>
     <qresource prefix="/">
-        <file>index.html</file>
-        <file>3rdparty/marked.min.js</file>
         <file>default.md</file>
+        <file>index.html</file>
         <file>3rdparty/markdown.css</file>
+        <file>3rdparty/marked.js</file>
     </qresource>
 </RCC>
