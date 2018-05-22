@@ -68,12 +68,14 @@
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/image/image_skia.h"
 
 #if defined(USE_AURA)
 #include "ui/base/cursor/cursor.h"
@@ -674,11 +676,30 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
     }
 #if defined(USE_AURA)
     if (auraType != ui::CursorType::kNull) {
-        SkBitmap bitmap;
+        QWindow *window = m_delegate->window();
+        qreal windowDpr = window ? window->devicePixelRatio() : 1.0f;
+        int resourceId;
         gfx::Point hotspot;
-        if (ui::GetCursorBitmap(auraType, &bitmap, &hotspot)) {
-            m_delegate->updateCursor(QCursor(QPixmap::fromImage(toQImage(bitmap)), hotspot.x(), hotspot.y()));
-            return;
+        // GetCursorDataFor only knows hotspots for 1x and 2x cursor images, in physical pixels.
+        qreal hotspotDpr = windowDpr <= 1.0f ? 1.0f : 2.0f;
+        if (ui::GetCursorDataFor(ui::CursorSize::kNormal, auraType, hotspotDpr, &resourceId, &hotspot)) {
+            if (const gfx::ImageSkia *imageSkia = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resourceId)) {
+                QImage imageQt = toQImage(imageSkia->GetRepresentation(windowDpr));
+
+                // Convert hotspot coordinates into device-independent pixels.
+                qreal hotX = hotspot.x() / hotspotDpr;
+                qreal hotY = hotspot.y() / hotspotDpr;
+
+#if defined(Q_OS_LINUX)
+                // QTBUG-68571: On Linux (xcb, wayland, eglfs), hotspot coordinates must be in physical pixels.
+                qreal imageDpr = imageQt.devicePixelRatio();
+                hotX *= imageDpr;
+                hotY *= imageDpr;
+#endif
+
+                m_delegate->updateCursor(QCursor(QPixmap::fromImage(std::move(imageQt)), qRound(hotX), qRound(hotY)));
+                return;
+            }
         }
     }
 #endif
