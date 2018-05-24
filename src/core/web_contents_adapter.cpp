@@ -1052,6 +1052,15 @@ void WebContentsAdapter::updateWebPreferences(const content::WebPreferences & we
     Q_D(WebContentsAdapter);
     CHECK_INITIALIZED();
     d->webContents->GetRenderViewHost()->UpdateWebkitPreferences(webPreferences);
+
+    // In case of updating preferences during navigation, there might be a pending RVH what will
+    // be active on successful navigation.
+    content::RenderFrameHost *pendingRFH = (static_cast<content::WebContentsImpl*>(d->webContents.get()))->GetPendingMainFrame();
+    if (pendingRFH) {
+        content::RenderViewHost *pendingRVH = pendingRFH->GetRenderViewHost();
+        Q_ASSERT(pendingRVH);
+        pendingRVH->UpdateWebkitPreferences(webPreferences);
+    }
 }
 
 void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileName,
