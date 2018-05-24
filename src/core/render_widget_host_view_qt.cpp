@@ -1140,10 +1140,12 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
     case Qt::ImCursorRectangle: {
         if (text_input_manager_) {
             if (auto *region = text_input_manager_->GetSelectionRegion()) {
-                gfx::Rect caretRect = gfx::RectBetweenSelectionBounds(region->anchor, region->focus);
-                if (caretRect.width() == 0)
-                    caretRect.set_width(1); // IME API on Windows expects a width > 0
-                return toQt(caretRect);
+                if (region->focus.GetHeight() > 0) {
+                    gfx::Rect caretRect = gfx::RectBetweenSelectionBounds(region->anchor, region->focus);
+                    if (caretRect.width() == 0)
+                        caretRect.set_width(1); // IME API on Windows expects a width > 0
+                    return toQt(caretRect);
+                }
             }
         }
         return QVariant();
