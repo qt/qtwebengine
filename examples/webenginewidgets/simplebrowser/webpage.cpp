@@ -62,6 +62,7 @@ WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
     : QWebEnginePage(profile, parent)
 {
     connect(this, &QWebEnginePage::authenticationRequired, this, &WebPage::handleAuthenticationRequired);
+    connect(this, &QWebEnginePage::featurePermissionRequested, this, &WebPage::handleFeaturePermissionRequested);
     connect(this, &QWebEnginePage::proxyAuthenticationRequired, this, &WebPage::handleProxyAuthenticationRequired);
     connect(this, &QWebEnginePage::registerProtocolHandlerRequested, this, &WebPage::handleRegisterProtocolHandlerRequested);
 }
@@ -113,6 +114,39 @@ void WebPage::handleAuthenticationRequired(const QUrl &requestUrl, QAuthenticato
         // Set authenticator null if dialog is cancelled
         *auth = QAuthenticator();
     }
+}
+
+inline QString questionForFeature(QWebEnginePage::Feature feature)
+{
+    switch (feature) {
+    case QWebEnginePage::Geolocation:
+        return WebPage::tr("Allow %1 to access your location information?");
+    case QWebEnginePage::MediaAudioCapture:
+        return WebPage::tr("Allow %1 to access your microphone?");
+    case QWebEnginePage::MediaVideoCapture:
+        return WebPage::tr("Allow %1 to access your webcam?");
+    case QWebEnginePage::MediaAudioVideoCapture:
+        return WebPage::tr("Allow %1 to access your microphone and webcam?");
+    case QWebEnginePage::MouseLock:
+        return WebPage::tr("Allow %1 to lock your mouse cursor?");
+    case QWebEnginePage::DesktopVideoCapture:
+        return WebPage::tr("Allow %1 to capture video of your desktop?");
+    case QWebEnginePage::DesktopAudioVideoCapture:
+        return WebPage::tr("Allow %1 to capture audio and video of your desktop?");
+    case QWebEnginePage::Notifications:
+        return QString();
+    }
+    return QString();
+}
+
+void WebPage::handleFeaturePermissionRequested(const QUrl &securityOrigin, Feature feature)
+{
+    QString title = tr("Permission Request");
+    QString question = questionForFeature(feature).arg(securityOrigin.host());
+    if (!question.isEmpty() && QMessageBox::question(view()->window(), title, question) == QMessageBox::Yes)
+        setFeaturePermission(securityOrigin, feature, PermissionGrantedByUser);
+    else
+        setFeaturePermission(securityOrigin, feature, PermissionDeniedByUser);
 }
 
 void WebPage::handleProxyAuthenticationRequired(const QUrl &, QAuthenticator *auth, const QString &proxyHost)
