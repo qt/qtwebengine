@@ -322,7 +322,7 @@ void QPdfView::setDocument(QPdfDocument *document)
     emit documentChanged(d->m_document);
 
     if (d->m_document)
-        d->m_documentStatusChangedConnection = connect(d->m_document, &QPdfDocument::statusChanged, this, [d](){ d->documentStatusChanged(); });
+        d->m_documentStatusChangedConnection = connect(d->m_document.data(), &QPdfDocument::statusChanged, this, [d](){ d->documentStatusChanged(); });
 
     d->m_pageNavigation->setDocument(d->m_document);
     d->m_pageRenderer->setDocument(d->m_document);
