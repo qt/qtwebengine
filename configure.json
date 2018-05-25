@@ -202,6 +202,12 @@
             "sources": [
                 { "type": "pkgConfig", "args": "lcms2" }
             ]
+        },
+        "webengine-freetype": {
+            "label": "freetype >= 2.4.2",
+            "sources": [
+                { "type": "pkgConfig", "args": "freetype2 >= 2.4.2" }
+            ]
         }
     },
 
@@ -384,6 +390,11 @@
         "webengine-system-jpeg" : {
             "label": "JPEG",
             "condition": "config.unix && features.system-jpeg && libs.webengine-jpeglib",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-freetype" : {
+            "label": "freetype",
+            "condition": "config.unix && features.system-freetype && libs.webengine-freetype",
             "output": [ "privateFeature" ]
         },
         "webengine-python2": {
@@ -690,7 +701,8 @@
                         "webengine-system-lcms2",
                         "webengine-system-png",
                         "webengine-system-jpeg",
-                        "webengine-system-harfbuzz"
+                        "webengine-system-harfbuzz",
+                        "webengine-system-freetype"
                     ]
                 },
                 {
