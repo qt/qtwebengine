@@ -526,17 +526,6 @@ void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)
         contents->Focus();
 }
 
-void WebContentsDelegateQt::RenderViewHostChanged(content::RenderViewHost *old_host, content::RenderViewHost *new_host)
-{
-    Q_ASSERT(new_host);
-
-    // The old RVH can be nullptr if it was shut down.
-    if (!old_host)
-        return;
-
-    new_host->UpdateWebkitPreferences(old_host->GetWebkitPreferences());
-}
-
 void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target)
 {
     Q_UNUSED(user_gesture);

@@ -197,5 +197,5 @@ void MainWindow::handleNewClicked()
 
 void MainWindow::handleUrlClicked()
 {
-    m_webview->load(QUrl(m_urlLineEdit->text()));
+    m_webview->load(QUrl::fromUserInput(m_urlLineEdit->text()));
 }
