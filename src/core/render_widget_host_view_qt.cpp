@@ -618,6 +618,12 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
     case blink::WebCursorInfo::kTypeProgress:
         shape = Qt::BusyCursor;
         break;
+    case blink::WebCursorInfo::kTypeCopy:
+        shape = Qt::DragCopyCursor;
+        break;
+    case blink::WebCursorInfo::kTypeAlias:
+        shape = Qt::DragLinkCursor;
+        break;
 #if defined(USE_AURA)
     case blink::WebCursorInfo::kTypeVerticalText:
         auraType = ui::CursorType::kVerticalText;
@@ -627,12 +633,6 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
         break;
     case blink::WebCursorInfo::kTypeContextMenu:
         auraType = ui::CursorType::kContextMenu;
-        break;
-    case blink::WebCursorInfo::kTypeAlias:
-        auraType = ui::CursorType::kAlias;
-        break;
-    case blink::WebCursorInfo::kTypeCopy:
-        auraType = ui::CursorType::kCopy;
         break;
     case blink::WebCursorInfo::kTypeZoomIn:
         auraType = ui::CursorType::kZoomIn;
@@ -644,8 +644,6 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
     case blink::WebCursorInfo::kTypeVerticalText:
     case blink::WebCursorInfo::kTypeCell:
     case blink::WebCursorInfo::kTypeContextMenu:
-    case blink::WebCursorInfo::kTypeAlias:
-    case blink::WebCursorInfo::kTypeCopy:
     case blink::WebCursorInfo::kTypeZoomIn:
     case blink::WebCursorInfo::kTypeZoomOut:
         // FIXME: Support on OS X
