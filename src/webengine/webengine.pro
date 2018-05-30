@@ -14,6 +14,7 @@ QMAKE_DOCS = $$PWD/doc/qtwebengine.qdocconf
 INCLUDEPATH += $$PWD api ../core ../core/api
 
 SOURCES = \
+        api/qquickwebengineaction.cpp \
         api/qquickwebenginecertificateerror.cpp \
         api/qquickwebenginecontextmenurequest.cpp \
         api/qquickwebenginedialogrequests.cpp \
@@ -36,6 +37,8 @@ SOURCES = \
 HEADERS = \
         api/qtwebengineglobal.h \
         api/qtwebengineglobal_p.h \
+        api/qquickwebengineaction_p.h \
+        api/qquickwebengineaction_p_p.h \
         api/qquickwebenginecertificateerror_p.h \
         api/qquickwebenginecontextmenurequest_p.h \
         api/qquickwebenginedialogrequests_p.h \

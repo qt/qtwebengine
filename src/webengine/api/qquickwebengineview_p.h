@@ -62,6 +62,7 @@ QT_BEGIN_NAMESPACE
 
 class QQmlWebChannel;
 class QQuickContextMenuBuilder;
+class QQuickWebEngineAction;
 class QQuickWebEngineAuthenticationDialogRequest;
 class QQuickWebEngineCertificateError;
 class QQuickWebEngineColorDialogRequest;
@@ -470,6 +471,7 @@ public:
     QQuickWebEngineHistory *navigationHistory() const;
     uint webChannelWorld() const;
     void setWebChannelWorld(uint);
+    Q_REVISION(8) Q_INVOKABLE QQuickWebEngineAction *action(WebAction action);
 
     bool isAudioMuted() const;
     void setAudioMuted(bool muted);

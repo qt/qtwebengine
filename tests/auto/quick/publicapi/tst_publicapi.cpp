@@ -38,6 +38,7 @@
 #include <QtWebEngineCore/QWebEngineQuotaRequest>
 #include <QtWebEngineCore/QWebEngineRegisterProtocolHandlerRequest>
 #include <private/qquickwebengineview_p.h>
+#include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebenginecertificateerror_p.h>
 #include <private/qquickwebenginedialogrequests_p.h>
 #include <private/qquickwebenginedownloaditem_p.h>
@@ -57,6 +58,7 @@ private Q_SLOTS:
 
 static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineView::staticMetaObject
+    << &QQuickWebEngineAction::staticMetaObject
     << &QQuickWebEngineCertificateError::staticMetaObject
     << &QQuickWebEngineDownloadItem::staticMetaObject
     << &QQuickWebEngineHistory::staticMetaObject
@@ -93,6 +95,13 @@ static const QStringList hardcodedTypes = QStringList()
     ;
 
 static const QStringList expectedAPI = QStringList()
+    << "QQuickWebEngineAction.text --> QString"
+    << "QQuickWebEngineAction.iconText --> QString"
+    << "QQuickWebEngineAction.enabled --> bool"
+    << "QQuickWebEngineAction.toggled() --> void"
+    << "QQuickWebEngineAction.triggered() --> void"
+    << "QQuickWebEngineAction.enabledChanged(bool) --> void"
+    << "QQuickWebEngineAction.trigger() --> void"
     << "QQuickWebEngineAuthenticationDialogRequest.AuthenticationTypeHTTP --> AuthenticationType"
     << "QQuickWebEngineAuthenticationDialogRequest.AuthenticationTypeProxy --> AuthenticationType"
     << "QQuickWebEngineAuthenticationDialogRequest.accepted --> bool"
@@ -380,6 +389,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.webRTCPublicInterfacesOnlyChanged() --> void"
     << "QQuickWebEngineSingleton.defaultProfile --> QQuickWebEngineProfile*"
     << "QQuickWebEngineSingleton.settings --> QQuickWebEngineSettings*"
+    << "QQuickWebEngineView.action(WebAction) --> QQuickWebEngineAction*"
     << "QQuickWebEngineView.A0 --> PrintedPageSizeId"
     << "QQuickWebEngineView.A1 --> PrintedPageSizeId"
     << "QQuickWebEngineView.A10 --> PrintedPageSizeId"

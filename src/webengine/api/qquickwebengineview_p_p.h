@@ -155,6 +155,7 @@ public:
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
 
+    void updateAction(QQuickWebEngineView::WebAction) const;
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     void setProfile(QQuickWebEngineProfile *profile);
     void ensureContentsAdapter();
@@ -191,6 +192,7 @@ public:
     QPointer<QQuickWebEngineView> devToolsView;
     uint m_webChannelWorld;
     bool m_isBeingAdopted;
+    mutable QQuickWebEngineAction *actions[QQuickWebEngineView::WebActionCount];
 
 private:
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;

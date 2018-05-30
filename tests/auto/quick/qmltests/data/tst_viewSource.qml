@@ -77,8 +77,7 @@ TestWebEngineView {
             webEngineView.url = Qt.resolvedUrl("test1.html");
             verify(webEngineView.waitForLoadSucceeded());
             tryCompare(webEngineView, "title", "Test page 1");
-            // FIXME(pvarga): Reintroduce this check in the fix for QTBUG-56117
-            //verify(webEngineView.canViewSource, true);
+            verify(webEngineView.action(WebEngineView.ViewSource).enabled);
 
             titleChangedSpy.clear();
             webEngineView.triggerWebAction(WebEngineView.ViewSource);
@@ -89,8 +88,7 @@ TestWebEngineView {
 
             compare(viewRequest.destination, WebEngineView.NewViewInTab);
             verify(viewRequest.userInitiated);
-            // FIXME(pvarga): Reintroduce this check in the fix for QTBUG-56117
-            //verify(!webEngineView.canViewSource);
+            verify(!webEngineView.action(WebEngineView.ViewSource).enabled);
 
             tryCompare(webEngineView, "title", "test1.html");
             compare(webEngineView.url, "view-source:" + Qt.resolvedUrl("test1.html"));
@@ -123,8 +121,7 @@ TestWebEngineView {
 
             compare(webEngineView.url, row.url);
             tryCompare(webEngineView, "title", row.title);
-            // FIXME(pvarga): Reintroduce this check in the fix for QTBUG-56117
-            //verify(!webEngineView.canViewSource);
+            verify(!webEngineView.action(WebEngineView.ViewSource).enabled);
         }
 
         function test_viewSourceCredentials() {

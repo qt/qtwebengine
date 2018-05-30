@@ -119,11 +119,6 @@ const char *defaultPropertyName(QObject *obj)
     return info.value();
 }
 
-MenuItemHandler::MenuItemHandler(QObject *parent)
-    : QObject(parent)
-{
-}
-
 #define COMPONENT_MEMBER_INIT(TYPE, COMPONENT) \
     , COMPONENT##Component(0)
 
@@ -212,26 +207,25 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     if (!prop.isSignalProperty()) \
         qWarning("%s is missing %s signal property.\n", qPrintable(location.toString()), qPrintable(prop.name()));
 
-void UIDelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QString &text, const QString &iconName, bool enabled,
-                                     bool checkable, bool checked)
+void UIDelegatesManager::addMenuItem(QQuickWebEngineAction *action, QObject *menu, bool checkable, bool checked)
 {
-    Q_ASSERT(menuItemHandler);
+    Q_ASSERT(action);
     if (!ensureComponentLoaded(MenuItem))
         return;
     QObject *it = menuItemComponent->beginCreate(qmlContext(m_view));
 
-    QQmlProperty(it, QStringLiteral("text")).write(text);
-    QQmlProperty(it, QStringLiteral("iconName")).write(iconName);
-    QQmlProperty(it, QStringLiteral("enabled")).write(enabled);
+    QQmlProperty(it, QStringLiteral("text")).write(action->text());
+    QQmlProperty(it, QStringLiteral("iconName")).write(action->iconText());
+    QQmlProperty(it, QStringLiteral("enabled")).write(action->isEnabled());
     QQmlProperty(it, QStringLiteral("checkable")).write(checkable);
     QQmlProperty(it, QStringLiteral("checked")).write(checked);
 
     QQmlProperty signal(it, QStringLiteral("onTriggered"));
     CHECK_QML_SIGNAL_PROPERTY(signal, menuItemComponent->url());
-    QObject::connect(it, signal.method(), menuItemHandler, QMetaMethod::fromSignal(&MenuItemHandler::triggered));
+    const QMetaObject *actionMeta = action->metaObject();
+    QObject::connect(it, signal.method(), action, actionMeta->method(actionMeta->indexOfSlot("trigger()")));
     menuItemComponent->completeCreate();
 
-    QObject *menu = menuItemHandler->parent();
     it->setParent(menu);
 
     QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(m_view));
@@ -636,28 +630,25 @@ QObject *UI2DelegatesManager::addMenu(QObject *parentMenu, const QString &title,
     return menu;
 }
 
-void UI2DelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QString &text,
-                                      const QString &/*iconName*/, bool enabled,
-                                      bool checkable, bool checked)
+void UI2DelegatesManager::addMenuItem(QQuickWebEngineAction *action, QObject *menu, bool checkable, bool checked)
 {
-    Q_ASSERT(menuItemHandler);
+    Q_ASSERT(action);
     if (!ensureComponentLoaded(MenuItem))
         return;
 
     QObject *it = menuItemComponent->beginCreate(qmlContext(m_view));
 
-    it->setProperty("text", text);
-    it->setProperty("enabled", enabled);
+    it->setProperty("text", action->text());
+    it->setProperty("enabled", action->isEnabled());
     it->setProperty("checked", checked);
     it->setProperty("checkable", checkable);
 
     QQmlProperty signal(it, QStringLiteral("onTriggered"));
     CHECK_QML_SIGNAL_PROPERTY(signal, menuItemComponent->url());
-    QObject::connect(it, signal.method(), menuItemHandler,
-                     QMetaMethod::fromSignal(&MenuItemHandler::triggered));
+    const QMetaObject *actionMeta = action->metaObject();
+    QObject::connect(it, signal.method(), action, actionMeta->method(actionMeta->indexOfSlot("trigger()")));
     menuItemComponent->completeCreate();
 
-    QObject *menu = menuItemHandler->parent();
     it->setParent(menu);
 
     QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(m_view));

@@ -52,6 +52,7 @@
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginesingleton_p.h"
 #include "qquickwebengineview_p.h"
+#include "qquickwebengineaction_p.h"
 #include "qwebenginequotarequest.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
 #include "qtwebengineversion.h"
@@ -89,6 +90,7 @@ public:
         qmlRegisterType<QQuickWebEngineView, 5>(uri, 1, 5, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 6>(uri, 1, 6, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 7>(uri, 1, 7, "WebEngineView");
+        qmlRegisterType<QQuickWebEngineView, 8>(uri, 1, 8, "WebEngineView");
         qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 1>(uri, 1, 2, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 2>(uri, 1, 3, "WebEngineProfile");
@@ -148,7 +150,7 @@ public:
         qRegisterMetaType<QWebEngineRegisterProtocolHandlerRequest>();
         qmlRegisterUncreatableType<QWebEngineRegisterProtocolHandlerRequest>(uri, 1, 7, "RegisterProtocolHandlerRequest",
                                                                              msgUncreatableType("RegisterProtocolHandlerRequest"));
-
+        qmlRegisterUncreatableType<QQuickWebEngineAction>(uri, 1, 8, "WebEngineAction", msgUncreatableType("WebEngineAction"));
     }
 
 private:

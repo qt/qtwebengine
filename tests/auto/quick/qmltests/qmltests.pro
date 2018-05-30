@@ -42,6 +42,7 @@ OTHER_FILES += \
     $$PWD/data/keyboardModifierMapping.html \
     $$PWD/data/keyboardEvents.html \
     $$PWD/data/titleupdate.js \
+    $$PWD/data/tst_action.qml \
     $$PWD/data/tst_activeFocusOnPress.qml \
     $$PWD/data/tst_contextMenu.qml \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \

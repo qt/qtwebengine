@@ -1447,3 +1447,18 @@
 
     \sa inspectedView
 */
+
+/*!
+    \qmlmethod WebEngineAction WebEngineView::action(WebAction action)
+    \since 5.12
+
+    Returns a \l WebEngineAction for the specified \l WebAction action.
+    WebEngineView also takes care of implementing the action,
+    so that upon triggering the corresponding action is performed on the view.
+
+    \code
+    var copyAction = webEngineView.action(WebEngineView.Copy);
+    \endcode
+
+    \sa WebEngineAction
+*/

@@ -144,6 +144,11 @@ TestWebEngineView {
             compare(mediaType, ContextMenuRequest.MediaTypeNone);
             compare(selectedText, "");
 
+            verify(webEngineView.action(WebEngineView.OpenLinkInNewTab).enabled);
+            verify(webEngineView.action(WebEngineView.OpenLinkInNewWindow).enabled);
+            verify(webEngineView.action(WebEngineView.DownloadLinkToDisk).enabled);
+            verify(webEngineView.action(WebEngineView.CopyLinkToClipboard).enabled);
+
             contextMenuRequestedSpy.clear();
             // FIXME: Sometimes the keyPress(Qt.Key_Escape) event isn't caught so we keep trying
             tryVerify(destroyContextMenu);
