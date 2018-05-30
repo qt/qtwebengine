@@ -1258,60 +1258,55 @@ void tst_QWebEngineView::keyboardEvents()
     QVERIFY(loadFinishedSpy.wait());
 }
 
+class WebViewWithUrlBar : public QWidget {
+public:
+    QLineEdit *lineEdit = new QLineEdit;
+    QCompleter *urlCompleter = new QCompleter({ QStringLiteral("test") }, lineEdit);
+    QWebEngineView *webView = new QWebEngineView;
+    QVBoxLayout *layout = new QVBoxLayout;
+
+    WebViewWithUrlBar()
+    {
+        resize(500, 500);
+        setLayout(layout);
+        layout->addWidget(lineEdit);
+        layout->addWidget(webView);
+        lineEdit->setCompleter(urlCompleter);
+        lineEdit->setFocus();
+    }
+};
+
 void tst_QWebEngineView::keyboardFocusAfterPopup()
 {
-    QScopedPointer<QWidget> containerWidget(new QWidget);
+    const QString html = QStringLiteral(
+        "<html>"
+        "  <body onload=\"document.getElementById('input1').focus()\">"
+        "    <input id=input1 type=text/>"
+        "  </body>"
+        "</html>");
+    WebViewWithUrlBar window;
+    QSignalSpy loadFinishedSpy(window.webView, &QWebEngineView::loadFinished);
+    connect(window.lineEdit, &QLineEdit::editingFinished, [&] { window.webView->setHtml(html); });
+    window.webView->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+    window.show();
 
-    QLineEdit *urlLine = new QLineEdit(containerWidget.data());
-    QStringList urlList;
-    urlList << "test";
-    QCompleter *completer = new QCompleter(urlList, urlLine);
-    completer->setCompletionMode(QCompleter::PopupCompletion);
-    urlLine->setCompleter(completer);
-    urlLine->setFocus();
+    // Focus will initially go to the QLineEdit.
+    QTRY_COMPARE(QApplication::focusWidget(), window.lineEdit);
 
-    QWebEngineView *webView = new QWebEngineView(containerWidget.data());
-    webView->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
-    QSignalSpy loadFinishedSpy(webView, SIGNAL(loadFinished(bool)));
+    // Trigger QCompleter's popup and select the first suggestion.
+    QTest::keyClick(QApplication::focusWindow(), Qt::Key_T);
+    QTRY_VERIFY(QApplication::activePopupWidget());
+    QTest::keyClick(QApplication::focusWindow(), Qt::Key_Down);
+    QTest::keyClick(QApplication::focusWindow(), Qt::Key_Enter);
 
-    connect(urlLine, &QLineEdit::editingFinished, [=] {
-        webView->setHtml("<html><body onload=\"document.getElementById('input1').focus()\">"
-                         " <input type='text' id='input1' />"
-                         "</body></html>");
+    // Due to FocusOnNavigationEnabled, focus should now move to the webView.
+    QTRY_COMPARE(QApplication::focusWidget(), window.webView->focusProxy());
 
-        // Check whether the RenderWidgetHostView has the keyboard focus
-        QQuickWidget *rwhv = qobject_cast<QQuickWidget *>(webView->focusProxy());
-        QVERIFY(rwhv);
-        QVERIFY(rwhv->hasFocus());
-        QVERIFY(rwhv->rootObject()->hasFocus());
-        QVERIFY(rwhv->window()->windowHandle()->isActive());
-        QVERIFY(rwhv->rootObject()->hasActiveFocus());
-    });
-
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(urlLine);
-    layout->addWidget(webView);
-
-    containerWidget->setLayout(layout);
-    containerWidget->show();
-    QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
-
-    // Trigger completer's popup and select the first suggestion
-    QTest::keyClick(urlLine, Qt::Key_T);
-    qApp->processEvents();
-    QTRY_VERIFY(qApp->activePopupWidget());
-    QTest::keyClick(qApp->activePopupWidget(), Qt::Key_Down);
-    qApp->processEvents();
-    QTest::keyClick(qApp->activePopupWidget(), Qt::Key_Enter);
-    qApp->processEvents();
-
-    // After the load the focused window should forward the keyboard events to the webView
-    QVERIFY(loadFinishedSpy.wait());
-    // Wait for active focus on the input field
-    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
-    QTest::keyClick(qApp->focusWindow(), Qt::Key_X);
-    qApp->processEvents();
-    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(), "document.getElementById('input1').value").toString(), QStringLiteral("x"));
+    // Keyboard events sent to the window should go to the <input> element.
+    QVERIFY(loadFinishedSpy.count() || loadFinishedSpy.wait());
+    QTest::keyClick(QApplication::focusWindow(), Qt::Key_X);
+    QTRY_COMPARE(evaluateJavaScriptSync(window.webView->page(), "document.getElementById('input1').value").toString(),
+                 QStringLiteral("x"));
 }
 
 void tst_QWebEngineView::mouseClick()

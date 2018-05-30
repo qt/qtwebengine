@@ -245,20 +245,18 @@ QRectF RenderWidgetHostViewQtDelegateWidget::contentsRect() const
 
 void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
 {
-    // If the corresponding window is inactive (for example, because of a popup),
-    // the active focus cannot be set. Sync up with the Window System to try to
-    // reactivate the window in time if the other window (possibly popup) which took
-    // the focus is already closed.
-    if (window() && !window()->isActive())
-        QGuiApplication::sync();
+    // The root item always has focus within the root focus scope:
+    Q_ASSERT(m_rootItem->hasFocus());
 
-    m_rootItem->forceActiveFocus();
     setFocus();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()
 {
-    return m_rootItem->hasActiveFocus();
+    // The root item always has focus within the root focus scope:
+    Q_ASSERT(m_rootItem->hasFocus());
+
+    return hasFocus();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::lockMouse()
