@@ -56,7 +56,7 @@ namespace QtWebEngineCore {
 class YUVVideoMaterialShader : public QSGMaterialShader
 {
 public:
-    YUVVideoMaterialShader(const gfx::ColorSpace &colorSpace) : m_colorSpace(colorSpace)
+    YUVVideoMaterialShader(const gfx::ColorSpace &colorSpace)
     {
         static const char *shaderHead =
             "varying mediump vec2 v_yaTexCoord;\n"
@@ -80,9 +80,11 @@ public:
             "  mediump vec3 rgb = DoColorConversion(yuv);\n"
             "  gl_FragColor = vec4(rgb, 1.0) * alpha;\n"
             "}";
+        // Invalid or unspecified color spaces should be treated as REC709.
+        gfx::ColorSpace src = colorSpace.IsValid() ? colorSpace : gfx::ColorSpace::CreateREC709();
         gfx::ColorSpace dst = gfx::ColorSpace::CreateSRGB();
         std::unique_ptr<gfx::ColorTransform> transform =
-                gfx::ColorTransform::NewColorTransform(m_colorSpace, dst, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+                gfx::ColorTransform::NewColorTransform(src, dst, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
 
         QByteArray header(shaderHead);
         if (QOpenGLContext::currentContext()->isOpenGLES())
@@ -143,7 +145,6 @@ protected:
         m_id_opacity = program()->uniformLocation("alpha");
     }
 
-    gfx::ColorSpace m_colorSpace;
     int m_id_matrix;
     int m_id_yaTexScale;
     int m_id_uvTexScale;

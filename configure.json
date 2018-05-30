@@ -432,7 +432,7 @@
         },
         "webengine-v8-snapshot": {
             "label" : "Use v8 snapshot",
-            "purpuse": "Enables the v8 snapshot, for fast v8 context creation",
+            "purpose": "Enables the v8 snapshot, for fast v8 context creation",
             "output": [ "privateFeature" ]
         },
         "webengine-v8-snapshot-support": {
