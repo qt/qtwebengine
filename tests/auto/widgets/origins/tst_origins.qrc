@@ -3,9 +3,8 @@
 <qresource>
     <file>resources/dedicatedWorker.html</file>
     <file>resources/dedicatedWorker.js</file>
+    <file>resources/mixed.html</file>
     <file>resources/mixed_frame.html</file>
-    <file>resources/mixed_qrc.html</file>
-    <file>resources/mixed_tst.html</file>
     <file>resources/serviceWorker.html</file>
     <file>resources/serviceWorker.js</file>
     <file>resources/sharedWorker.html</file>

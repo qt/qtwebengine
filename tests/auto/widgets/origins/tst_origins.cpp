@@ -226,24 +226,38 @@ void tst_Origins::subdirWithoutAccess()
     QCOMPARE(eval(QSL("msg[1]")), QVariant(QSL("world")));
 }
 
-// Try to mix schemes, for example by loading the main page over file with an
-// iframe over qrc. This should be forbidden.
+// Load the main page over one scheme with an iframe over another scheme.
+//
+// For file and qrc schemes, the iframe should load but it should not be
+// possible for scripts in different frames to interact.
+//
+// Additionally for custom schemes access to local content is forbidden, so it
+// should not be possible to load an iframe over the file: scheme.
 void tst_Origins::mixedSchemes()
 {
-    QVERIFY(load(QSL("file:" THIS_DIR "resources/mixed_qrc.html")));
-    QCOMPARE(eval(QSL("msg")), QVariant());
-    QVERIFY(load(QSL("file:" THIS_DIR "resources/mixed_tst.html")));
-    QCOMPARE(eval(QSL("msg")), QVariant());
+    QVERIFY(load(QSL("file:" THIS_DIR "resources/mixed.html")));
+    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixed_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    eval(QSL("setIFrameUrl('qrc:/resources/mixed_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    eval(QSL("setIFrameUrl('tst:/resources/mixed_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
-    QVERIFY(load(QSL("qrc:/resources/mixed_qrc.html")));
-    QCOMPARE(eval(QSL("msg")), QVariant(QSL("mixed")));
-    QVERIFY(load(QSL("qrc:/resources/mixed_tst.html")));
-    QCOMPARE(eval(QSL("msg")), QVariant());
+    QVERIFY(load(QSL("qrc:/resources/mixed.html")));
+    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixed_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    eval(QSL("setIFrameUrl('qrc:/resources/mixed_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    eval(QSL("setIFrameUrl('tst:/resources/mixed_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
-    QVERIFY(load(QSL("tst:/resources/mixed_qrc.html")));
-    QCOMPARE(eval(QSL("msg")), QVariant());
-    QVERIFY(load(QSL("tst:/resources/mixed_tst.html")));
-    QCOMPARE(eval(QSL("msg")), QVariant(QSL("mixed")));
+    QVERIFY(load(QSL("tst:/resources/mixed.html")));
+    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixed_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
+    eval(QSL("setIFrameUrl('qrc:/resources/mixed_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    eval(QSL("setIFrameUrl('tst:/resources/mixed_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
 }
 
 // Try opening a WebSocket from pages loaded over various URL schemes.
