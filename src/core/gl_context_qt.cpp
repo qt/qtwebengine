@@ -144,6 +144,17 @@ void* GLContextHelper::getNativeDisplay()
     return resourceForIntegration(QByteArrayLiteral("nativedisplay"));
 }
 
+QFunctionPointer GLContextHelper::getGlXGetProcAddress()
+{
+     QFunctionPointer get_proc_address = nullptr;
+#ifndef QT_NO_OPENGL
+    if (QOpenGLContext *context = qt_gl_global_share_context()) {
+        get_proc_address = context->getProcAddress("glXGetProcAddress");
+    }
+#endif
+    return get_proc_address;
+}
+
 QT_END_NAMESPACE
 
 #if defined(USE_OZONE) || defined(OS_WIN)
