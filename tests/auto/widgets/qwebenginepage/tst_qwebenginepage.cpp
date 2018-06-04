@@ -219,6 +219,7 @@ private Q_SLOTS:
     void dataURLFragment();
     void devTools();
     void openLinkInDifferentProfile();
+    void dynamicFrame();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4416,6 +4417,15 @@ void tst_QWebEnginePage::openLinkInDifferentProfile()
     QTest::mouseClick(view.focusProxy(), Qt::MiddleButton, 0, elementCenter(&page1, "link"));
     QTRY_COMPARE(spy2.count(), 1);
     QVERIFY(spy2.takeFirst().value(0).toBool());
+}
+
+void tst_QWebEnginePage::dynamicFrame()
+{
+    QWebEnginePage page;
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+    page.load(QStringLiteral("qrc:/resources/dynamicFrame.html"));
+    QVERIFY(spy.wait());
+    QCOMPARE(toPlainTextSync(&page).trimmed(), QStringLiteral("foo"));
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

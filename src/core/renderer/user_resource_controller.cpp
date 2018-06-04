@@ -253,20 +253,22 @@ void UserResourceController::RenderFrameObserverHelper::DidClearWindowObject()
 
 void UserResourceController::RenderFrameObserverHelper::DidFinishDocumentLoad()
 {
-    DCHECK(m_runner);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad),
-        base::TimeDelta::FromMilliseconds(afterLoadTimeout));
+    // Don't run scripts if provisional load failed (DidFailProvisionalLoad
+    // called instead of DidCommitProvisionalLoad).
+    if (m_runner)
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE,
+            base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad),
+            base::TimeDelta::FromMilliseconds(afterLoadTimeout));
 
 }
 
 void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
 {
-    DCHECK(m_runner);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad));
+    if (m_runner)
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad));
 }
 
 void UserResourceController::RenderFrameObserverHelper::FrameDetached()
