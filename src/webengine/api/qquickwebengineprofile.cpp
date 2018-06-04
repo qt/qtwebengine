@@ -167,7 +167,7 @@ QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
         m_browserContextAdapter->removeClient(this);
     }
 
-    Q_FOREACH (QQuickWebEngineDownloadItem *download, m_ongoingDownloads) {
+    for (QQuickWebEngineDownloadItem *download : qAsConst(m_ongoingDownloads)) {
         if (download)
             download->cancel();
     }

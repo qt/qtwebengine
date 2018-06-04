@@ -168,7 +168,7 @@ QString subProcessPath()
                               % QLatin1Char('/') % processBinary;
         }
 
-        Q_FOREACH (const QString &candidate, candidatePaths) {
+        for (const QString &candidate : qAsConst(candidatePaths)) {
             if (QFileInfo::exists(candidate)) {
                 processPath = candidate;
                 break;
@@ -244,7 +244,7 @@ QString dictionariesPath()
             candidatePaths << libraryDictionariesPath;
         }
 
-        Q_FOREACH (const QString &candidate, candidatePaths) {
+        for (const QString &candidate : qAsConst(candidatePaths)) {
             if (QFileInfo::exists(candidate)) {
                 potentialDictionariesPath = candidate;
                 break;

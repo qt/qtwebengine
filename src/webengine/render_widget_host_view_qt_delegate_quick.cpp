@@ -351,7 +351,7 @@ void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const It
 {
     QQuickItem::itemChange(change, value);
     if (change == QQuickItem::ItemSceneChange) {
-        foreach (const QMetaObject::Connection &c, m_windowConnections)
+        for (const QMetaObject::Connection &c : qAsConst(m_windowConnections))
             disconnect(c);
         m_windowConnections.clear();
         if (value.window) {

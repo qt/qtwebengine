@@ -184,7 +184,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
             item->GetLastReason()
         };
 
-        Q_FOREACH (BrowserContextAdapterClient *client, clients) {
+        for (BrowserContextAdapterClient *client : qAsConst(clients)) {
             client->downloadRequested(info);
             if (info.accepted)
                 break;
@@ -279,7 +279,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         BrowserContextAdapterClient::NoReason
     };
 
-    Q_FOREACH (BrowserContextAdapterClient *client, clients) {
+    for (BrowserContextAdapterClient *client : qAsConst(clients)) {
         client->downloadRequested(info);
         if (info.accepted)
             break;
@@ -339,7 +339,7 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *downloa
             download->GetLastReason()
         };
 
-        Q_FOREACH (BrowserContextAdapterClient *client, clients) {
+        for (BrowserContextAdapterClient *client : qAsConst(clients)) {
             client->downloadUpdated(info);
         }
     }

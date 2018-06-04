@@ -293,7 +293,7 @@ void BrowserContextAdapter::setHttpUserAgent(const QString &userAgent)
     m_httpUserAgent = userAgent.simplified();
 
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
-    Q_FOREACH (content::WebContentsImpl *web_contents, list)
+    for (content::WebContentsImpl *web_contents : list)
         if (web_contents->GetBrowserContext() == m_browserContext.data())
             web_contents->SetUserAgentOverride(m_httpUserAgent.toStdString());
 
@@ -466,7 +466,7 @@ QString BrowserContextAdapter::httpAcceptLanguageWithoutQualities() const
 {
     const QStringList list = m_httpAcceptLanguage.split(QLatin1Char(','));
     QString out;
-    Q_FOREACH (const QString& str, list) {
+    for (const QString &str : list) {
         if (!out.isEmpty())
             out.append(QLatin1Char(','));
         out.append(str.split(QLatin1Char(';')).first());
@@ -486,7 +486,7 @@ void BrowserContextAdapter::setHttpAcceptLanguage(const QString &httpAcceptLangu
     m_httpAcceptLanguage = httpAcceptLanguage;
 
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
-    Q_FOREACH (content::WebContentsImpl *web_contents, list) {
+    for (content::WebContentsImpl *web_contents : list) {
         if (web_contents->GetBrowserContext() == m_browserContext.data()) {
             content::RendererPreferences* rendererPrefs = web_contents->GetMutableRendererPrefs();
             rendererPrefs->accept_languages = httpAcceptLanguageWithoutQualities().toStdString();

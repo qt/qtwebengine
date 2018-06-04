@@ -431,7 +431,7 @@ private:
 static inline QSharedPointer<QSGLayer> findRenderPassLayer(const int &id, const QVector<QPair<int, QSharedPointer<QSGLayer> > > &list)
 {
     typedef QPair<int, QSharedPointer<QSGLayer> > Pair;
-    Q_FOREACH (const Pair &pair, list)
+    for (const Pair &pair : list)
         if (pair.first == id)
             return pair.second;
     return QSharedPointer<QSGLayer>();
@@ -748,7 +748,7 @@ void DelegatedFrameNode::preprocess()
 
     // Then render any intermediate RenderPass in order.
     typedef QPair<int, QSharedPointer<QSGLayer> > Pair;
-    Q_FOREACH (const Pair &pair, m_sgObjects.renderPassLayers) {
+    for (const Pair &pair : qAsConst(m_sgObjects.renderPassLayers)) {
         // The layer is non-live, request a one-time update here.
         pair.second->scheduleUpdate();
         // Proceed with the actual update.
@@ -1270,7 +1270,7 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         m_textureFences.swap(transferredFences);
     }
 
-    Q_FOREACH (gl::TransferableFence sync, transferredFences) {
+    for (gl::TransferableFence sync : qAsConst(transferredFences)) {
         // We need to wait on the fences on the Qt current context, and
         // can therefore not use GLFence routines that uses a different
         // concept of current context.
@@ -1293,7 +1293,7 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         GLuint fbo = 0;
         funcs->glGenFramebuffers(1, &fbo);
 
-        Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
+        for (MailboxTexture *mailboxTexture : qAsConst(mailboxesToFetch)) {
             // Read texture into QImage from shared context.
             // Switch to shared context.
             sharedContext->makeCurrent(m_offsurface.data());

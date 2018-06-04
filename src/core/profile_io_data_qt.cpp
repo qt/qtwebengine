@@ -478,7 +478,7 @@ void ProfileIODataQt::generateJobFactory()
             net::FtpProtocolHandler::Create(m_urlRequestContext->host_resolver()));
 
     m_installedCustomSchemes = m_customUrlSchemes;
-    Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
+    for (const QByteArray &scheme : qAsConst(m_installedCustomSchemes)) {
         jobFactory->SetProtocolHandler(scheme.toStdString(),
                                        std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(
                                            new CustomProtocolHandler(m_browserContextAdapter)));
@@ -519,12 +519,12 @@ void ProfileIODataQt::regenerateJobFactory()
     if (m_customUrlSchemes == m_installedCustomSchemes)
         return;
 
-    Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
+    for (const QByteArray &scheme : qAsConst(m_installedCustomSchemes)) {
         m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), nullptr);
     }
 
     m_installedCustomSchemes = m_customUrlSchemes;
-    Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
+    for (const QByteArray &scheme : qAsConst(m_installedCustomSchemes)) {
         m_baseJobFactory->SetProtocolHandler(scheme.toStdString(),
                                              std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(
                                                  new CustomProtocolHandler(m_browserContextAdapter)));

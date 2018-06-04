@@ -55,7 +55,7 @@ private Q_SLOTS:
     void publicAPI();
 };
 
-static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
+static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineView::staticMetaObject
     << &QQuickWebEngineCertificateError::staticMetaObject
     << &QQuickWebEngineDownloadItem::staticMetaObject
@@ -81,7 +81,7 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
 
 static QList<const char *> knownEnumNames = QList<const char *>();
 
-static QStringList hardcodedTypes = QStringList()
+static const QStringList hardcodedTypes = QStringList()
     << "QJSValue"
     << "QQmlListProperty<QQuickWebEngineScript>"
     << "QQmlWebChannel*"
@@ -92,7 +92,7 @@ static QStringList hardcodedTypes = QStringList()
     << "QWebEngineCookieStore*"
     ;
 
-static QStringList expectedAPI = QStringList()
+static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineAuthenticationDialogRequest.AuthenticationTypeHTTP --> AuthenticationType"
     << "QQuickWebEngineAuthenticationDialogRequest.AuthenticationTypeProxy --> AuthenticationType"
     << "QQuickWebEngineAuthenticationDialogRequest.accepted --> bool"
@@ -697,7 +697,7 @@ static bool isCheckedEnum(const QByteArray &typeName)
     if (tokens.size() == 3) {
         QByteArray &enumClass = tokens[0];
         QByteArray &enumName = tokens[2];
-        foreach (const QMetaObject *mo, typesToCheck) {
+        for (const QMetaObject *mo : typesToCheck) {
             if (mo->className() != enumClass)
                 continue;
             for (int i = mo->enumeratorOffset(); i < mo->enumeratorCount(); ++i)
@@ -706,7 +706,7 @@ static bool isCheckedEnum(const QByteArray &typeName)
         }
     } else if (tokens.size() == 1) {
         QByteArray &enumName = tokens[0];
-        foreach (const char *knownEnumName, knownEnumNames) {
+        for (const char *knownEnumName : qAsConst(knownEnumNames)) {
             if (enumName == knownEnumName)
                 return true;
         }
@@ -716,7 +716,7 @@ static bool isCheckedEnum(const QByteArray &typeName)
 
 static bool isCheckedClass(const QByteArray &typeName)
 {
-    foreach (const QMetaObject *mo, typesToCheck) {
+    for (const QMetaObject *mo : typesToCheck) {
         QByteArray moTypeName(mo->className());
         if (moTypeName == typeName || moTypeName + "*" == typeName)
             return true;
@@ -752,7 +752,8 @@ static void gatherAPI(const QString &prefix, const QMetaMethod &method, QStringL
         *output << QString::fromLatin1("%1%2 --> %3").arg(prefix).arg(QString::fromLatin1(method.methodSignature())).arg(QString::fromLatin1(methodTypeName));
 
         checkKnownType(methodTypeName);
-        foreach (QByteArray paramType, method.parameterTypes())
+        const QList<QByteArray> paramTypes = method.parameterTypes();
+        for (const QByteArray &paramType : paramTypes)
             checkKnownType(paramType);
     }
 }
@@ -773,23 +774,23 @@ static void gatherAPI(const QString &prefix, const QMetaObject *meta, QStringLis
 void tst_publicapi::publicAPI()
 {
     QStringList actualAPI;
-    foreach (const QMetaObject *meta, typesToCheck)
+    for (const QMetaObject *meta : typesToCheck)
         gatherAPI(QString::fromLatin1(meta->className()) + ".", meta, &actualAPI);
 
     // Uncomment to print the actual API.
     // QStringList sortedAPI(actualAPI);
     // std::sort(sortedAPI.begin(), sortedAPI.end());
-    // foreach (QString actual, sortedAPI)
+    // for (const QString &actual : qAsConst(sortedAPI))
     //     printf("    << \"%s\"\n", qPrintable(actual));
 
     // Make sure that nothing slips in the public API unintentionally.
-    foreach (QString actual, actualAPI) {
+    for (const QString &actual : qAsConst(actualAPI)) {
         if (!expectedAPI.contains(actual))
             QEXPECT_FAIL("", qPrintable("Expected list is not up-to-date: " + actual), Continue);
         QVERIFY2(expectedAPI.contains(actual), qPrintable(actual));
     }
     // Make sure that the expected list is up-to-date with intentionally added APIs.
-    foreach (QString expected, expectedAPI) {
+    for (const QString &expected : expectedAPI) {
         if (!actualAPI.contains(expected))
             QEXPECT_FAIL("", qPrintable("Not implemented: " + expected), Continue);
         QVERIFY2(actualAPI.contains(expected), qPrintable(expected));

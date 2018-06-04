@@ -94,7 +94,7 @@ void QWebEngineCookieStorePrivate::processPendingUserCookies()
     if (m_pendingUserCookies.isEmpty())
         return;
 
-    Q_FOREACH (const auto &cookieData, m_pendingUserCookies) {
+    for (const CookieData &cookieData : qAsConst(m_pendingUserCookies)) {
         if (cookieData.callbackId == CallbackDirectory::DeleteCookieCallbackId)
             delegate->deleteCookie(cookieData.cookie, cookieData.origin);
         else

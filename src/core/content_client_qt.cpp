@@ -165,7 +165,8 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
         winDir = QString::fromLatin1("C:/Windows");
     QDir pluginDir(winDir + "/System32/Macromed/Flash");
     pluginDir.setFilter(QDir::Files);
-    Q_FOREACH (const QFileInfo &info, pluginDir.entryInfoList(QStringList("pepflashplayer*.dll")))
+    const QFileInfoList infos = pluginDir.entryInfoList(QStringList("pepflashplayer*.dll"));
+    for (const QFileInfo &info : infos)
         pluginPaths << info.absoluteFilePath();
     pluginPaths << ppapiPluginsPath() + QStringLiteral("/pepflashplayer.dll");
 #endif
@@ -248,7 +249,7 @@ void AddPepperWidevine(std::vector<content::PepperPluginInfo>* plugins)
 #endif
     }
 
-    Q_FOREACH (const QString &pluginPath, pluginPaths) {
+    for (const QString &pluginPath : qAsConst(pluginPaths)) {
         base::FilePath path = QtWebEngineCore::toFilePath(pluginPath);
         if (base::PathExists(path)) {
             content::PepperPluginInfo widevine_cdm;

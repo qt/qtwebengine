@@ -200,7 +200,7 @@ void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink:
     QList<uint64_t> scriptsToRun = m_viewUserScriptMap.value(0).toList();
     scriptsToRun.append(m_viewUserScriptMap.value(renderView).toList());
 
-    Q_FOREACH (uint64_t id, scriptsToRun) {
+    for (uint64_t id : qAsConst(scriptsToRun)) {
         const UserScriptData &script = m_scripts.value(id);
         if (script.injectionPoint != p
                 || (!script.injectForSubframes && !isMainFrame))
@@ -365,7 +365,7 @@ void UserResourceController::renderViewDestroyed(content::RenderView *renderView
     ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(renderView);
     if (it == m_viewUserScriptMap.end()) // ASSERT maybe?
         return;
-    Q_FOREACH (uint64_t id, it.value()) {
+    for (uint64_t id : qAsConst(it.value())) {
         m_scripts.remove(id);
     }
     m_viewUserScriptMap.remove(renderView);
@@ -396,7 +396,7 @@ void UserResourceController::clearScriptsForView(content::RenderView *view)
     ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(view);
     if (it == m_viewUserScriptMap.end())
         return;
-    Q_FOREACH (uint64_t id, it.value())
+    for (uint64_t id : qAsConst(it.value()))
         m_scripts.remove(id);
 
     m_viewUserScriptMap.remove(view);

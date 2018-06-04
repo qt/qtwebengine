@@ -768,7 +768,7 @@ void QQuickWebEngineViewPrivate::initializationFinished()
     if (devToolsView && devToolsView->d_ptr->adapter)
         adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
 
-    Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
+    for (QQuickWebEngineScript *script : qAsConst(m_userScripts))
         script->d_func()->bind(browserContextAdapter()->userResourceController(), adapter.data());
 
     if (!m_isBeingAdopted)
@@ -1371,7 +1371,8 @@ void QQuickWebEngineView::fullScreenCancelled()
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
-    Q_FOREACH(QQuickItem *child, childItems()) {
+    const QList<QQuickItem *> children = childItems();
+    for (QQuickItem *child : children) {
         if (qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child))
             child->setSize(newGeometry.size());
     }

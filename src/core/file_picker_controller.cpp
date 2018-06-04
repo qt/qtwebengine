@@ -70,7 +70,8 @@ void FilePickerController::accepted(const QVariant &files)
     if (files.canConvert(QVariant::StringList)) {
         stringList = files.toStringList();
     } else if (files.canConvert<QList<QUrl> >()) {
-        Q_FOREACH (const QUrl &url, files.value<QList<QUrl> >())
+        const QList<QUrl> urls = files.value<QList<QUrl>>();
+        for (const QUrl &url : urls)
             stringList.append(url.toLocalFile());
     } else {
         qWarning("An unhandled type '%s' was provided in FilePickerController::accepted(QVariant)", files.typeName());
@@ -87,8 +88,8 @@ void FilePickerController::rejected()
 static QStringList listRecursively(const QDir &dir)
 {
     QStringList ret;
-    QFileInfoList infoList(dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden));
-    Q_FOREACH (const QFileInfo &fileInfo, infoList) {
+    const QFileInfoList infoList(dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden));
+    for (const QFileInfo &fileInfo : infoList) {
         if (fileInfo.isDir()) {
             ret.append(fileInfo.absolutePath() + QStringLiteral("/.")); // Match chromium's behavior. See chrome/browser/file_select_helper.cc
             ret.append(listRecursively(QDir(fileInfo.absoluteFilePath())));

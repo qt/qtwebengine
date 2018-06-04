@@ -89,7 +89,8 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
 
     if (profile->isSpellCheckEnabled()) {
         QMenu *subMenu = menu->addMenu(tr("Select Language"));
-        foreach (const QString &str, m_spellCheckLanguages.keys()) {
+        const QStringList keys = m_spellCheckLanguages.keys();
+        for (const QString &str : keys) {
             QAction *action = subMenu->addAction(str);
             action->setCheckable(true);
             QString lang = m_spellCheckLanguages[str];

@@ -1415,7 +1415,8 @@ bool WebContentsAdapter::handleDropDataFileContents(const content::DropData &dro
 static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeData *mimeData)
 {
     Q_ASSERT(dropData->filenames.empty());
-    Q_FOREACH (const QUrl &url, mimeData->urls()) {
+    const QList<QUrl> urls = mimeData->urls();
+    for (const QUrl &url : urls) {
         if (url.isLocalFile()) {
             ui::FileInfo uifi;
             uifi.path = toFilePath(url.toLocalFile());

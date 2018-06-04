@@ -126,7 +126,7 @@ WebEngineSettings::~WebEngineSettings()
     if (parentSettings)
         parentSettings->childSettings.remove(this);
     // In QML the profile and its settings may be garbage collected before the page and its settings.
-    Q_FOREACH (WebEngineSettings *settings, childSettings) {
+    for (WebEngineSettings *settings : qAsConst(childSettings)) {
         settings->parentSettings = 0;
     }
 }
@@ -426,7 +426,7 @@ bool WebEngineSettings::applySettingsToRendererPreferences(content::RendererPref
 void WebEngineSettings::scheduleApplyRecursively()
 {
     scheduleApply();
-    Q_FOREACH (WebEngineSettings *settings, childSettings) {
+    for (WebEngineSettings *settings : qAsConst(childSettings)) {
         settings->scheduleApply();
     }
 }

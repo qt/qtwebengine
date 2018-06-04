@@ -101,7 +101,7 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &origin, BrowserCont
                 ++it;
         }
     }
-    Q_FOREACH (const RequestOrSubscription &subscriber, m_subscribers) {
+    for (const RequestOrSubscription &subscriber : qAsConst(m_subscribers)) {
         if (subscriber.origin == origin && subscriber.type == type)
             subscriber.callback.Run(status);
     }

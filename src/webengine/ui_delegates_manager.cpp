@@ -84,8 +84,8 @@ static QString fileNameForComponent(UIDelegatesManager::ComponentType type)
 
 static QPoint calculateToolTipPosition(QPoint &position, QSize &toolTip) {
     QRect screen;
-    QList<QScreen *> screens = QGuiApplication::screens();
-    Q_FOREACH (const QScreen *src, screens)
+    const QList<QScreen *> screens = QGuiApplication::screens();
+    for (const QScreen *src : screens)
         if (src->availableGeometry().contains(position))
             screen = src->availableGeometry();
 
@@ -144,7 +144,8 @@ UIDelegatesManager::~UIDelegatesManager()
         break;
 
 bool UIDelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine) {
-    foreach (const QString &path, engine->importPathList()) {
+    const QStringList paths = engine->importPathList();
+    for (const QString &path : paths) {
         QFileInfo fi(path % QLatin1String("/QtWebEngine/Controls1Delegates/"));
         if (fi.exists()) {
             dirs << fi.absolutePath();
@@ -177,7 +178,7 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     if (!engine)
         return false;
 
-    foreach (const QString &importDir, m_importDirs) {
+    for (const QString &importDir : qAsConst(m_importDirs)) {
         QFileInfo fi(importDir % QLatin1Char('/') % fileName);
         if (!fi.exists())
             continue;
@@ -186,7 +187,8 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
                                         QQmlComponent::PreferSynchronous, m_view));
 
         if ((*component)->status() != QQmlComponent::Ready) {
-            foreach (const QQmlError &err, (*component)->errors())
+            const QList<QQmlError> errs = (*component)->errors();
+            for (const QQmlError &err : errs)
                 qWarning("QtWebEngine: component error: %s\n", qPrintable(err.toString()));
             delete *component;
             *component = nullptr;
@@ -575,7 +577,8 @@ UI2DelegatesManager::UI2DelegatesManager(QQuickWebEngineView *view) : UIDelegate
 
 bool UI2DelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine)
 {
-    foreach (const QString &path, engine->importPathList()) {
+    const QStringList paths = engine->importPathList();
+    for (const QString &path : paths) {
         QFileInfo fi1(path % QLatin1String("/QtWebEngine/Controls1Delegates/"));
         QFileInfo fi2(path % QLatin1String("/QtWebEngine/Controls2Delegates/"));
         if (fi1.exists() && fi2.exists()) {

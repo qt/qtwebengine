@@ -397,7 +397,7 @@ void RenderWidgetHostViewQtDelegateWidget::showEvent(QShowEvent *event)
     // We don't have a way to catch a top-level window change with QWidget
     // but a widget will most likely be shown again if it changes, so do
     // the reconnection at this point.
-    foreach (const QMetaObject::Connection &c, m_windowConnections)
+    for (const QMetaObject::Connection &c : qAsConst(m_windowConnections))
         disconnect(c);
     m_windowConnections.clear();
     if (QWindow *w = window()) {

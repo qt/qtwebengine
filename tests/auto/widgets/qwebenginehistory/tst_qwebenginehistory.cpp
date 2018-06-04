@@ -485,11 +485,11 @@ void tst_QWebEngineHistory::clear()
 
 void tst_QWebEngineHistory::historyItemFromDeletedPage()
 {
-    QList<QWebEngineHistoryItem> items = page->history()->items();
+    const QList<QWebEngineHistoryItem> items = page->history()->items();
     delete page;
     page = 0;
 
-    foreach (QWebEngineHistoryItem item, items) {
+    for (const QWebEngineHistoryItem &item : items) {
         QVERIFY(!item.isValid());
         QTRY_COMPARE(item.originalUrl(), QUrl());
         QTRY_COMPARE(item.url(), QUrl());

@@ -116,7 +116,8 @@ void QtPositioningHelper::start(bool highAccuracy)
 
     // Find high accuracy source if the default source is not already one.
     if (highAccuracy && !isHighAccuracySource(m_positionInfoSource)) {
-        Q_FOREACH (const QString &name, QGeoPositionInfoSource::availableSources()) {
+        const QStringList availableSources = QGeoPositionInfoSource::availableSources();
+        for (const QString &name : availableSources) {
             if (name == m_positionInfoSource->sourceName())
                 continue;
             QGeoPositionInfoSource *source = QGeoPositionInfoSource::createSource(name, this);

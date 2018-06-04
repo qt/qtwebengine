@@ -772,7 +772,8 @@ void tst_QWebEnginePage::updatePositionDependentActionsCrash()
     QPoint pos(0, 0);
     view.page()->updatePositionDependentActions(pos);
     QMenu* contextMenu = 0;
-    foreach (QObject* child, view.children()) {
+    const QList<QObject *> children = view.children();
+    for (QObject *child : children) {
         contextMenu = qobject_cast<QMenu*>(child);
         if (contextMenu)
             break;
@@ -794,7 +795,8 @@ void tst_QWebEnginePage::contextMenuCrash()
     view.page()->swallowContextMenuEvent(&event);
     view.page()->updatePositionDependentActions(pos);
     QMenu* contextMenu = 0;
-    foreach (QObject* child, view.children()) {
+    const QList<QObject *> children = view.children();
+    for (QObject *child : children) {
         contextMenu = qobject_cast<QMenu*>(child);
         if (contextMenu)
             break;
@@ -1838,8 +1840,8 @@ void tst_QWebEnginePage::findTextResult()
 
     QCOMPARE(findTextSync(m_page, ""), false);
 
-    QStringList words = (QStringList() << "foo" << "bar");
-    foreach (QString subString, words) {
+    const QStringList words = { "foo", "bar" };
+    for (const QString &subString : words) {
         QCOMPARE(findTextSync(m_page, subString), true);
         QCOMPARE(findTextSync(m_page, ""), false);
     }
@@ -1899,7 +1901,8 @@ void tst_QWebEnginePage::supportedContentType()
 #endif
 
     // Add supported image types...
-    Q_FOREACH (const QByteArray& imageType, QImageWriter::supportedImageFormats()) {
+    const QList<QByteArray> supportedImageFormats = QImageWriter::supportedImageFormats();
+    for (const QByteArray &imageType : supportedImageFormats) {
         const QString mimeType = getMimeTypeForExtension(imageType);
         if (!mimeType.isEmpty())
             contentTypes << mimeType;
@@ -1908,10 +1911,10 @@ void tst_QWebEnginePage::supportedContentType()
     // Get the mime types supported by webengine...
     const QStringList supportedContentTypes = m_page->supportedContentTypes();
 
-    Q_FOREACH (const QString& mimeType, contentTypes)
+    for (const QString &mimeType : qAsConst(contentTypes))
         QVERIFY2(supportedContentTypes.contains(mimeType), QString("'%1' is not a supported content type!").arg(mimeType).toLatin1());
 
-    Q_FOREACH (const QString& mimeType, contentTypes)
+    for (const QString &mimeType : qAsConst(contentTypes))
         QVERIFY2(m_page->supportsContentType(mimeType), QString("Cannot handle content types '%1'!").arg(mimeType).toLatin1());
 #endif
 }
@@ -2282,7 +2285,8 @@ void tst_QWebEnginePage::renderWidgetHostViewNotShowTopLevel()
 
     // Make sure that RenderWidgetHostViewQtDelegateWidgets are not shown as top-level.
     // They should only be made visible when parented to a QWebEngineView.
-    foreach (QWidget *widget, QApplication::topLevelWidgets())
+    const QList<QWidget *> widgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : widgets)
         QCOMPARE(widget->isVisible(), false);
 }
 
@@ -3612,7 +3616,8 @@ void tst_QWebEnginePage::setUrlToBadPort()
 static QStringList collectHistoryUrls(QWebEngineHistory *history)
 {
     QStringList urls;
-    foreach (const QWebEngineHistoryItem &i, history->items())
+    const QList<QWebEngineHistoryItem> items = history->items();
+    for (const QWebEngineHistoryItem &i : items)
         urls << i.url().toString();
     return urls;
 }

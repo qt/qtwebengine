@@ -265,7 +265,7 @@ inline std::vector<T> toVector(const QStringList &fileList)
 {
     std::vector<T> selectedFiles;
     selectedFiles.reserve(fileList.size());
-    Q_FOREACH (const QString &file, fileList)
+    for (const QString &file : fileList)
         selectedFiles.push_back(fileListingHelper<T>(file));
     return selectedFiles;
 }

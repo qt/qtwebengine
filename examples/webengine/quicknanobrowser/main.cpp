@@ -66,7 +66,7 @@ static QUrl startupUrl()
     QUrl ret;
     QStringList args(qApp->arguments());
     args.takeFirst();
-    Q_FOREACH (const QString& arg, args) {
+    for (const QString &arg : qAsConst(args)) {
         if (arg.startsWith(QLatin1Char('-')))
              continue;
         ret = Utils::fromUserInput(arg);
