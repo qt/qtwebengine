@@ -584,26 +584,10 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
     simulateUserAction(QPoint(10, 30), action2);
 
     // Wait for downloads
-    if (action1 == action2 && action1 == ClickLink) {
-        // With two clicks, sometimes both files get downloaded, sometimes only
-        // the second file, depending on the timing. This is expected and
-        // follows Chromium's behavior. We check here only that the second file
-        // is downloaded correctly (and that we do not crash).
-        //
-        // The first download may be aborted before or after the HTTP request is
-        // made. In the latter case we will have both a file1 and a file2
-        // request, but still only one accepted download.
-        QTRY_COMPARE(file2RequestCount, 1);
-        QTRY_VERIFY(acceptedCount >= 1);
-        QTRY_VERIFY(finishedCount >= 1);
-        QTRY_COMPARE(m_downloads.count(), 0);
-    } else {
-        // Otherwise both files should always be downloaded correctly.
-        QTRY_COMPARE(file1RequestCount, 1);
-        QTRY_COMPARE(file2RequestCount, 1);
-        QTRY_COMPARE(acceptedCount, 2);
-        QTRY_COMPARE(finishedCount, 2);
-    }
+    QTRY_COMPARE(file1RequestCount, 1);
+    QTRY_COMPARE(file2RequestCount, 1);
+    QTRY_COMPARE(acceptedCount, 2);
+    QTRY_COMPARE(finishedCount, 2);
 }
 
 void tst_QWebEngineDownloads::downloadPage_data()
