@@ -95,6 +95,14 @@ private:
     void DeleteCookieOnIOThread(const GURL& url, const std::string& cookie_name);
     void DeleteSessionCookiesOnIOThread(net::CookieMonster::DeleteCallback callback);
     void DeleteAllOnIOThread(net::CookieMonster::DeleteCallback callback);
+
+    void GetAllCookiesCallbackOnIOThread(qint64 callbackId, const net::CookieList &cookies);
+    void SetCookieCallbackOnIOThread(qint64 callbackId, bool success);
+    void DeleteCookiesCallbackOnIOThread(qint64 callbackId, uint numCookies);
+
+    void GetAllCookiesCallbackOnUIThread(qint64 callbackId, const QByteArray &cookies);
+    void SetCookieCallbackOnUIThread(qint64 callbackId, bool success);
+    void DeleteCookiesCallbackOnUIThread(qint64 callbackId, uint numCookies);
 };
 
 }
