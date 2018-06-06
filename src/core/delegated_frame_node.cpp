@@ -852,7 +852,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     QScopedPointer<DelegatedNodeTreeHandler> nodeHandler;
 
     const QSizeF viewportSizeInPt = apiDelegate->screenRect().size();
-    const QSize viewportSize = (viewportSizeInPt * devicePixelRatio).toSize();
+    const QSizeF viewportSizeF = viewportSizeInPt * devicePixelRatio;
+    const QSize viewportSize(std::ceil(viewportSizeF.width()), std::ceil(viewportSizeF.height()));
 
     // We first compare if the render passes from the previous frame data are structurally
     // equivalent to the render passes in the current frame data. If they are, we are going
