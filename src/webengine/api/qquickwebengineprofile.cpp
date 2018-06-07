@@ -836,22 +836,26 @@ static bool checkInternalScheme(const QByteArray &scheme)
 
 /*!
     Registers a handler \a handler for custom URL scheme \a scheme in the profile.
+
+    It is recommended to first register the scheme with \l
+    QWebEngineUrlScheme::addScheme at application startup.
 */
 void QQuickWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
 {
     Q_D(QQuickWebEngineProfile);
     Q_ASSERT(handler);
-    if (checkInternalScheme(scheme)) {
+    QByteArray canonicalScheme = scheme.toLower();
+    if (checkInternalScheme(canonicalScheme)) {
         qWarning("Cannot install a URL scheme handler overriding internal scheme: %s", scheme.constData());
         return;
     }
 
-    if (d->profileAdapter()->customUrlSchemeHandlers().contains(scheme)) {
-        if (d->profileAdapter()->customUrlSchemeHandlers().value(scheme) != handler)
+    if (d->profileAdapter()->customUrlSchemeHandlers().contains(canonicalScheme)) {
+        if (d->profileAdapter()->customUrlSchemeHandlers().value(canonicalScheme) != handler)
             qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
         return;
     }
-    d->profileAdapter()->addCustomUrlSchemeHandler(scheme, handler);
+    d->profileAdapter()->addCustomUrlSchemeHandler(canonicalScheme, handler);
     connect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
 }
 

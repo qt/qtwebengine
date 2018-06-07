@@ -83,6 +83,7 @@
 #include "content/public/app/sandbox_helper_win.h"
 #endif // OS_WIN
 
+#include "api/qwebengineurlscheme.h"
 #include "profile_adapter.h"
 #include "content_browser_client_qt.h"
 #include "content_client_qt.h"
@@ -321,6 +322,12 @@ WebEngineContext::WebEngineContext()
     // http://crbug.com/245466
     qputenv("force_s3tc_enable", "true");
 #endif
+
+    QWebEngineUrlScheme qrcScheme(QByteArrayLiteral("qrc"));
+    qrcScheme.setFlags(QWebEngineUrlScheme::Secure
+                       | QWebEngineUrlScheme::LocalAccessAllowed
+                       | QWebEngineUrlScheme::ViewSourceAllowed);
+    QWebEngineUrlScheme::addScheme(qrcScheme);
 
     // Allow us to inject javascript like any webview toolkit.
     content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();

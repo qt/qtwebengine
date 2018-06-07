@@ -31,14 +31,97 @@
 #include <QtCore/qfile.h>
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
+#include <QtWebEngineCore/qwebengineurlscheme.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginesettings.h>
+#include <QtWebChannel/qwebchannel.h>
+#include <QtWebSockets/qwebsocket.h>
+#include <QtWebSockets/qwebsocketserver.h>
+#include <QtWidgets/qaction.h>
 
 #define QSL QStringLiteral
 #define QBAL QByteArrayLiteral
 #define THIS_DIR TESTS_SOURCE_DIR "origins/"
+
+void registerSchemes()
+{
+    {
+        QWebEngineUrlScheme scheme(QBAL("PathSyntax"));
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("PathSyntax-Secure"));
+        scheme.setFlags(QWebEngineUrlScheme::Secure);
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("PathSyntax-Secure-ServiceWorkersAllowed"));
+        scheme.setFlags(QWebEngineUrlScheme::Secure | QWebEngineUrlScheme::ServiceWorkersAllowed);
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("PathSyntax-Local"));
+        scheme.setFlags(QWebEngineUrlScheme::Local);
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("PathSyntax-LocalAccessAllowed"));
+        scheme.setFlags(QWebEngineUrlScheme::LocalAccessAllowed);
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("PathSyntax-NoAccessAllowed"));
+        scheme.setFlags(QWebEngineUrlScheme::NoAccessAllowed);
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("PathSyntax-ServiceWorkersAllowed"));
+        scheme.setFlags(QWebEngineUrlScheme::ServiceWorkersAllowed);
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("PathSyntax-ViewSourceAllowed"));
+        scheme.setFlags(QWebEngineUrlScheme::ViewSourceAllowed);
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("HostSyntax"));
+        scheme.setSyntax(QWebEngineUrlScheme::HostSyntax);
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("HostSyntax-ContentSecurityPolicyIgnored"));
+        scheme.setSyntax(QWebEngineUrlScheme::HostSyntax);
+        scheme.setFlags(QWebEngineUrlScheme::ContentSecurityPolicyIgnored);
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("HostAndPortSyntax"));
+        scheme.setSyntax(QWebEngineUrlScheme::HostAndPortSyntax);
+        scheme.setDefaultPort(42);
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("HostPortAndUserInformationSyntax"));
+        scheme.setSyntax(QWebEngineUrlScheme::HostPortAndUserInformationSyntax);
+        scheme.setDefaultPort(42);
+        QWebEngineUrlScheme::addScheme(scheme);
+    }
+}
+Q_CONSTRUCTOR_FUNCTION(registerSchemes)
 
 class TstUrlSchemeHandler final : public QWebEngineUrlSchemeHandler {
     Q_OBJECT
@@ -47,6 +130,19 @@ public:
     TstUrlSchemeHandler(QWebEngineProfile *profile)
     {
         profile->installUrlSchemeHandler(QBAL("tst"), this);
+
+        profile->installUrlSchemeHandler(QBAL("PathSyntax"), this);
+        profile->installUrlSchemeHandler(QBAL("PathSyntax-Secure"), this);
+        profile->installUrlSchemeHandler(QBAL("PathSyntax-Secure-ServiceWorkersAllowed"), this);
+        profile->installUrlSchemeHandler(QBAL("PathSyntax-Local"), this);
+        profile->installUrlSchemeHandler(QBAL("PathSyntax-LocalAccessAllowed"), this);
+        profile->installUrlSchemeHandler(QBAL("PathSyntax-NoAccessAllowed"), this);
+        profile->installUrlSchemeHandler(QBAL("PathSyntax-ServiceWorkersAllowed"), this);
+        profile->installUrlSchemeHandler(QBAL("PathSyntax-ViewSourceAllowed"), this);
+        profile->installUrlSchemeHandler(QBAL("HostSyntax"), this);
+        profile->installUrlSchemeHandler(QBAL("HostSyntax-ContentSecurityPolicyIgnored"), this);
+        profile->installUrlSchemeHandler(QBAL("HostAndPortSyntax"), this);
+        profile->installUrlSchemeHandler(QBAL("HostPortAndUserInformationSyntax"), this);
     }
 
 private:
@@ -59,7 +155,10 @@ private:
             job->fail(QWebEngineUrlRequestJob::RequestFailed);
             return;
         }
-        job->reply(QBAL("text/html"), file);
+        QByteArray mimeType = QBAL("text/html");
+        if (pathSuffix.endsWith(QSL(".js")))
+            mimeType = QBAL("application/javascript");
+        job->reply(mimeType, file);
     }
 };
 
@@ -75,10 +174,12 @@ private Q_SLOTS:
     void subdirWithAccess();
     void subdirWithoutAccess();
     void mixedSchemes();
+    void mixedSchemesWithCsp();
     void webSocket();
     void dedicatedWorker();
     void sharedWorker();
     void serviceWorker();
+    void viewSource();
 
 private:
     bool load(const QUrl &url)
@@ -136,17 +237,42 @@ void tst_Origins::jsUrlCanon()
     QCOMPARE(eval(QSL("new URL(\"file:///foo/bar\").href")), QVariant(QSL("file:///foo/bar")));
 #endif
 
-    // The qrc scheme is a 'dumb' URL, having only a path and nothing else.
+    // The qrc scheme is a PathSyntax scheme, having only a path and nothing else.
     QCOMPARE(eval(QSL("new URL(\"qrc:foo/bar\").href")),    QVariant(QSL("qrc:foo/bar")));
     QCOMPARE(eval(QSL("new URL(\"qrc:/foo/bar\").href")),   QVariant(QSL("qrc:/foo/bar")));
     QCOMPARE(eval(QSL("new URL(\"qrc://foo/bar\").href")),  QVariant(QSL("qrc://foo/bar")));
     QCOMPARE(eval(QSL("new URL(\"qrc:///foo/bar\").href")), QVariant(QSL("qrc:///foo/bar")));
 
-    // Same for custom schemes.
+    // Same for unregistered schemes.
     QCOMPARE(eval(QSL("new URL(\"tst:foo/bar\").href")),    QVariant(QSL("tst:foo/bar")));
     QCOMPARE(eval(QSL("new URL(\"tst:/foo/bar\").href")),   QVariant(QSL("tst:/foo/bar")));
     QCOMPARE(eval(QSL("new URL(\"tst://foo/bar\").href")),  QVariant(QSL("tst://foo/bar")));
     QCOMPARE(eval(QSL("new URL(\"tst:///foo/bar\").href")), QVariant(QSL("tst:///foo/bar")));
+
+    // A HostSyntax scheme is like http without the port & user information.
+    QCOMPARE(eval(QSL("new URL(\"HostSyntax:foo/bar\").href")),     QVariant(QSL("hostsyntax://foo/bar")));
+    QCOMPARE(eval(QSL("new URL(\"HostSyntax:foo:42/bar\").href")),  QVariant(QSL("hostsyntax://foo/bar")));
+    QCOMPARE(eval(QSL("new URL(\"HostSyntax:a:b@foo/bar\").href")), QVariant(QSL("hostsyntax://foo/bar")));
+
+    // A HostAndPortSyntax scheme is like http without the user information.
+    QCOMPARE(eval(QSL("new URL(\"HostAndPortSyntax:foo/bar\").href")),
+             QVariant(QSL("hostandportsyntax://foo/bar")));
+    QCOMPARE(eval(QSL("new URL(\"HostAndPortSyntax:foo:41/bar\").href")),
+             QVariant(QSL("hostandportsyntax://foo:41/bar")));
+    QCOMPARE(eval(QSL("new URL(\"HostAndPortSyntax:foo:42/bar\").href")),
+             QVariant(QSL("hostandportsyntax://foo/bar")));
+    QCOMPARE(eval(QSL("new URL(\"HostAndPortSyntax:a:b@foo/bar\").href")),
+             QVariant(QSL("hostandportsyntax://foo/bar")));
+
+    // A HostPortAndUserInformationSyntax scheme is exactly like http.
+    QCOMPARE(eval(QSL("new URL(\"HostPortAndUserInformationSyntax:foo/bar\").href")),
+             QVariant(QSL("hostportanduserinformationsyntax://foo/bar")));
+    QCOMPARE(eval(QSL("new URL(\"HostPortAndUserInformationSyntax:foo:41/bar\").href")),
+             QVariant(QSL("hostportanduserinformationsyntax://foo:41/bar")));
+    QCOMPARE(eval(QSL("new URL(\"HostPortAndUserInformationSyntax:foo:42/bar\").href")),
+             QVariant(QSL("hostportanduserinformationsyntax://foo/bar")));
+    QCOMPARE(eval(QSL("new URL(\"HostPortAndUserInformationSyntax:a:b@foo/bar\").href")),
+             QVariant(QSL("hostportanduserinformationsyntax://a:b@foo/bar")));
 }
 
 // Test origin serialization in Blink, implemented by blink::KURL and
@@ -169,9 +295,29 @@ void tst_Origins::jsUrlOrigin()
     QCOMPARE(eval(QSL("new URL(\"qrc:/crysis.css\").origin")), QVariant(QSL("qrc://")));
     QCOMPARE(eval(QSL("new URL(\"qrc://foo.com/crysis.css\").origin")), QVariant(QSL("qrc://")));
 
-    // Same with custom schemes.
+    // Same with unregistered schemes.
     QCOMPARE(eval(QSL("new URL(\"tst:/banana\").origin")), QVariant(QSL("tst://")));
     QCOMPARE(eval(QSL("new URL(\"tst://foo.com/banana\").origin")), QVariant(QSL("tst://")));
+
+    // The non-PathSyntax schemes should have hosts and potentially ports.
+    QCOMPARE(eval(QSL("new URL(\"HostSyntax:foo:41/bar\").origin")),
+             QVariant(QSL("hostsyntax://foo")));
+    QCOMPARE(eval(QSL("new URL(\"HostAndPortSyntax:foo:41/bar\").origin")),
+             QVariant(QSL("hostandportsyntax://foo:41")));
+    QCOMPARE(eval(QSL("new URL(\"HostAndPortSyntax:foo:42/bar\").origin")),
+             QVariant(QSL("hostandportsyntax://foo")));
+    QCOMPARE(eval(QSL("new URL(\"HostPortAndUserInformationSyntax:foo:41/bar\").origin")),
+             QVariant(QSL("hostportanduserinformationsyntax://foo:41")));
+    QCOMPARE(eval(QSL("new URL(\"HostPortAndUserInformationSyntax:foo:42/bar\").origin")),
+             QVariant(QSL("hostportanduserinformationsyntax://foo")));
+
+    // A PathSyntax scheme should have a 'universal' origin.
+    QCOMPARE(eval(QSL("new URL(\"PathSyntax:foo\").origin")),
+             QVariant(QSL("pathsyntax://")));
+
+    // The NoAccessAllowed flag forces opaque origins.
+    QCOMPARE(eval(QSL("new URL(\"PathSyntax-NoAccessAllowed:foo\").origin")),
+             QVariant(QSL("null")));
 }
 
 class ScopedAttribute {
@@ -246,53 +392,155 @@ void tst_Origins::subdirWithoutAccess()
 // For file and qrc schemes, the iframe should load but it should not be
 // possible for scripts in different frames to interact.
 //
-// Additionally for custom schemes access to local content is forbidden, so it
-// should not be possible to load an iframe over the file: scheme.
+// Additionally for unregistered custom schemes and custom schemes without
+// LocalAccessAllowed it should not be possible to load an iframe over the
+// file: scheme.
 void tst_Origins::mixedSchemes()
 {
-    QVERIFY(load(QSL("file:" THIS_DIR "resources/mixed.html")));
-    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixed_frame.html')"));
+    QVERIFY(load(QSL("file:" THIS_DIR "resources/mixedSchemes.html")));
+    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
-    eval(QSL("setIFrameUrl('qrc:/resources/mixed_frame.html')"));
+    eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
-    eval(QSL("setIFrameUrl('tst:/resources/mixed_frame.html')"));
+    eval(QSL("setIFrameUrl('tst:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
-    QVERIFY(load(QSL("qrc:/resources/mixed.html")));
-    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixed_frame.html')"));
+    QVERIFY(load(QSL("qrc:/resources/mixedSchemes.html")));
+    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
-    eval(QSL("setIFrameUrl('qrc:/resources/mixed_frame.html')"));
+    eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
-    eval(QSL("setIFrameUrl('tst:/resources/mixed_frame.html')"));
+    eval(QSL("setIFrameUrl('tst:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
-    QVERIFY(load(QSL("tst:/resources/mixed.html")));
-    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixed_frame.html')"));
+    QVERIFY(load(QSL("tst:/resources/mixedSchemes.html")));
+    eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
-    eval(QSL("setIFrameUrl('qrc:/resources/mixed_frame.html')"));
+    eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
-    eval(QSL("setIFrameUrl('tst:/resources/mixed_frame.html')"));
+    eval(QSL("setIFrameUrl('tst:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+
+    QVERIFY(load(QSL("PathSyntax:/resources/mixedSchemes.html")));
+    eval(QSL("setIFrameUrl('PathSyntax:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    eval(QSL("setIFrameUrl('PathSyntax-Local:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
+    eval(QSL("setIFrameUrl('PathSyntax-LocalAccessAllowed:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    eval(QSL("setIFrameUrl('PathSyntax-NoAccessAllowed:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+
+    QVERIFY(load(QSL("PathSyntax-LocalAccessAllowed:/resources/mixedSchemes.html")));
+    eval(QSL("setIFrameUrl('PathSyntax:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    eval(QSL("setIFrameUrl('PathSyntax-Local:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    eval(QSL("setIFrameUrl('PathSyntax-LocalAccessAllowed:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    eval(QSL("setIFrameUrl('PathSyntax-NoAccessAllowed:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+
+    QVERIFY(load(QSL("PathSyntax-NoAccessAllowed:/resources/mixedSchemes.html")));
+    eval(QSL("setIFrameUrl('PathSyntax:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    eval(QSL("setIFrameUrl('PathSyntax-Local:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
+    eval(QSL("setIFrameUrl('PathSyntax-LocalAccessAllowed:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    eval(QSL("setIFrameUrl('PathSyntax-NoAccessAllowed:/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+
+    QVERIFY(load(QSL("HostSyntax://a/resources/mixedSchemes.html")));
+    eval(QSL("setIFrameUrl('HostSyntax://a/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    eval(QSL("setIFrameUrl('HostSyntax://b/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 }
+
+// Like mixedSchemes but adds a Content-Security-Policy: frame-src 'none' header.
+void tst_Origins::mixedSchemesWithCsp()
+{
+    QVERIFY(load(QSL("HostSyntax://a/resources/mixedSchemesWithCsp.html")));
+    eval(QSL("setIFrameUrl('HostSyntax://a/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    eval(QSL("setIFrameUrl('HostSyntax://b/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+
+    QVERIFY(load(QSL("HostSyntax-ContentSecurityPolicyIgnored://a/resources/mixedSchemesWithCsp.html")));
+    eval(QSL("setIFrameUrl('HostSyntax-ContentSecurityPolicyIgnored://a/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    eval(QSL("setIFrameUrl('HostSyntax-ContentSecurityPolicyIgnored://b/resources/mixedSchemes_frame.html')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+}
+
+class EchoServer : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QUrl url READ url NOTIFY urlChanged)
+public:
+    EchoServer() : webSocketServer(QSL("EchoServer"), QWebSocketServer::NonSecureMode)
+    {
+        connect(&webSocketServer, &QWebSocketServer::newConnection, this, &EchoServer::onNewConnection);
+    }
+
+    bool listen()
+    {
+        if (webSocketServer.listen(QHostAddress::Any)) {
+            Q_EMIT urlChanged();
+            return true;
+        }
+        return false;
+    }
+
+    QUrl url() const
+    {
+        return webSocketServer.serverUrl();
+    }
+
+Q_SIGNALS:
+    void urlChanged();
+
+private:
+    void onNewConnection()
+    {
+        QWebSocket *socket = webSocketServer.nextPendingConnection();
+        connect(socket, &QWebSocket::textMessageReceived, this, &EchoServer::onTextMessageReceived);
+        connect(socket, &QWebSocket::disconnected, socket, &QObject::deleteLater);
+    }
+
+    void onTextMessageReceived(const QString &message)
+    {
+        QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
+        socket->sendTextMessage(message);
+    }
+
+    QWebSocketServer webSocketServer;
+};
 
 // Try opening a WebSocket from pages loaded over various URL schemes.
 void tst_Origins::webSocket()
 {
-    // 1006 indicates 'Abnormal Closure'.
-    //
-    // The example page is passing a URL with a non-existent domain to the
-    // WebSocket constructor, so we expect the connection to fail. This is
-    // enough though to trigger the origin checks.
-    const int expected = 1006;
+    const int kAbnormalClosure = 1006;
+
+    EchoServer echoServer;
+    QWebChannel channel;
+    channel.registerObject(QSL("echoServer"), &echoServer);
+    m_page->setWebChannel(&channel);
+    QVERIFY(echoServer.listen());
 
     QVERIFY(load(QSL("file:" THIS_DIR "resources/websocket.html")));
-    QTRY_COMPARE_WITH_TIMEOUT(eval(QSL("err")), QVariant(expected), 20000);
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 
     QVERIFY(load(QSL("qrc:/resources/websocket.html")));
-    QTRY_COMPARE_WITH_TIMEOUT(eval(QSL("err")), QVariant(expected), 20000);
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 
+    // Only registered schemes can open WebSockets.
     QVERIFY(load(QSL("tst:/resources/websocket.html")));
-    QTRY_VERIFY(eval(QSL("err")) == QVariant(expected));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(kAbnormalClosure));
+
+    // Even an insecure registered scheme can open WebSockets.
+    QVERIFY(load(QSL("PathSyntax:/resources/websocket.html")));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 }
 
 // Create a (Dedicated)Worker. Since dedicated workers can only be accessed from
@@ -307,11 +555,22 @@ void tst_Origins::dedicatedWorker()
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QCOMPARE(eval(QSL("result")), QVariant(42));
 
-    // FIXME(juvaldma): QTBUG-62536
+    // Unregistered schemes cannot create Workers.
     QVERIFY(load(QSL("tst:/resources/dedicatedWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
             .contains(QSL("Access to dedicated workers is denied to origin 'tst://'")));
+
+    // Even an insecure registered scheme can create Workers.
+    QVERIFY(load(QSL("PathSyntax:/resources/dedicatedWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QCOMPARE(eval(QSL("result")), QVariant(42));
+
+    // But not if the NoAccessAllowed flag is set.
+    QVERIFY(load(QSL("PathSyntax-NoAccessAllowed:/resources/dedicatedWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QVERIFY(eval(QSL("error")).toString()
+            .contains(QSL("cannot be accessed from origin 'null'")));
 }
 
 // Create a SharedWorker. Shared workers can be accessed from multiple pages,
@@ -337,12 +596,22 @@ void tst_Origins::sharedWorker()
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QCOMPARE(eval(QSL("result")), QVariant(42));
 
+    // Even unregistered schemes can create SharedWorkers.
     QVERIFY(load(QSL("tst:/resources/sharedWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QCOMPARE(eval(QSL("result")), QVariant(42));
+
+    QVERIFY(load(QSL("PathSyntax:/resources/sharedWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QCOMPARE(eval(QSL("result")), QVariant(42));
+
+    QVERIFY(load(QSL("PathSyntax-NoAccessAllowed:/resources/sharedWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QVERIFY(eval(QSL("error")).toString()
+            .contains(QSL("denied to origin 'null'")));
 }
 
-// Service workers don't work.
+// Service workers have to be explicitly enabled for a scheme.
 void tst_Origins::serviceWorker()
 {
     QVERIFY(load(QSL("file:" THIS_DIR "resources/serviceWorker.html")));
@@ -359,6 +628,53 @@ void tst_Origins::serviceWorker()
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
             .contains(QSL("Only secure origins are allowed")));
+
+    QVERIFY(load(QSL("PathSyntax:/resources/serviceWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QVERIFY(eval(QSL("error")).toString()
+            .contains(QSL("Only secure origins are allowed")));
+
+    QVERIFY(load(QSL("PathSyntax-Secure:/resources/serviceWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QVERIFY(eval(QSL("error")).toString()
+            .contains(QSL("The URL protocol of the current origin ('pathsyntax-secure://') is not supported.")));
+
+    QVERIFY(load(QSL("PathSyntax-ServiceWorkersAllowed:/resources/serviceWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QVERIFY(eval(QSL("error")).toString()
+            .contains(QSL("Only secure origins are allowed")));
+
+    QVERIFY(load(QSL("PathSyntax-Secure-ServiceWorkersAllowed:/resources/serviceWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QCOMPARE(eval(QSL("error")), QVariant());
+
+    QVERIFY(load(QSL("PathSyntax-NoAccessAllowed:/resources/serviceWorker.html")));
+    QTRY_VERIFY(eval(QSL("done")).toBool());
+    QVERIFY(eval(QSL("error")).toString()
+            .contains(QSL("denied in this document origin")));
+}
+
+// Support for view-source must be enabled explicitly.
+void tst_Origins::viewSource()
+{
+    QVERIFY(load(QSL("view-source:file:" THIS_DIR "resources/viewSource.html")));
+#ifdef Q_OS_WIN
+    QCOMPARE(m_page->requestedUrl(), QSL("file:///" THIS_DIR "resources/viewSource.html"));
+#else
+    QCOMPARE(m_page->requestedUrl(), QSL("file:" THIS_DIR "resources/viewSource.html"));
+#endif
+
+    QVERIFY(load(QSL("view-source:qrc:/resources/viewSource.html")));
+    QCOMPARE(m_page->requestedUrl(), QSL("qrc:/resources/viewSource.html"));
+
+    QVERIFY(load(QSL("view-source:tst:/resources/viewSource.html")));
+    QCOMPARE(m_page->requestedUrl(), QSL("about:blank"));
+
+    QVERIFY(load(QSL("view-source:PathSyntax:/resources/viewSource.html")));
+    QCOMPARE(m_page->requestedUrl(), QSL("about:blank"));
+
+    QVERIFY(load(QSL("view-source:PathSyntax-ViewSourceAllowed:/resources/viewSource.html")));
+    QCOMPARE(m_page->requestedUrl(), QSL("pathsyntax-viewsourceallowed:/resources/viewSource.html"));
 }
 
 QTEST_MAIN(tst_Origins)

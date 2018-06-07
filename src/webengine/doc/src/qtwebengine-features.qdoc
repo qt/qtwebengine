@@ -111,6 +111,19 @@
 
     For more information, see \l {Qt WebEngine Debugging and Profiling}.
 
+    \section1 Custom Schemes
+
+    Qt WebEngine makes it possible for the application to define its own custom
+    URL schemes with specialized security policies and transport mechanisms.
+
+    Custom schemes can be used to implement alternative network protocols with
+    all the usual web security policies, privileged internal schemes for
+    displaying user interface compoments or debugging information, sandboxed
+    schemes with extra restrictions, and so on.
+
+    For more information, see \l QWebEngineUrlScheme and \l
+    QWebEngineUrlSchemeHandler.
+
     \section1 Drag and Drop
 
     Qt WebEngine supports HTML5 drag and drop.

@@ -86,6 +86,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gpu_timing.h"
+#include "url/url_util_qt.h"
 
 #include "service/service_qt.h"
 #include "qtwebengine/grit/qt_webengine_resources.h"
@@ -575,6 +576,8 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
 {
     Q_UNUSED(child_process_id);
 
+    url::CustomScheme::SaveSchemes(command_line);
+
     std::string processType = command_line->GetSwitchValueASCII(switches::kProcessType);
     if (processType == switches::kZygoteProcess)
         command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
@@ -583,12 +586,6 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
 void ContentBrowserClientQt::GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes)
 {
     additional_schemes->push_back(content::kChromeDevToolsScheme);
-}
-
-void ContentBrowserClientQt::GetAdditionalViewSourceSchemes(std::vector<std::string>* additional_schemes)
-{
-    GetAdditionalWebUISchemes(additional_schemes);
-    additional_schemes->push_back(kQrcSchemeQt);
 }
 
 #if defined(Q_OS_LINUX)

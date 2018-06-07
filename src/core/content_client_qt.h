@@ -54,7 +54,6 @@ public:
 #if QT_CONFIG(webengine_pepper_plugins)
     void AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins) override;
 #endif
-    void AddAdditionalSchemes(Schemes* schemes) override;
     void AddContentDecryptionModules(std::vector<content::CdmInfo> *cdms,
                                      std::vector<media::CdmHostFilePath> *cdm_host_file_paths) override;
 

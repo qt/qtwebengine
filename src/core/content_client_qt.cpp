@@ -393,9 +393,4 @@ std::string ContentClientQt::GetProduct() const
     return productName.toStdString();
 }
 
-void ContentClientQt::AddAdditionalSchemes(Schemes* schemes)
-{
-    schemes->secure_schemes.push_back(kQrcSchemeQt);
-}
-
 } // namespace QtWebEngineCore

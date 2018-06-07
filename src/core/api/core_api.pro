@@ -43,6 +43,7 @@ HEADERS = \
     qwebengineurlrequestinfo.h \
     qwebengineurlrequestinfo_p.h \
     qwebengineurlrequestjob.h \
+    qwebengineurlscheme.h \
     qwebengineurlschemehandler.h
 
 SOURCES = \
@@ -53,6 +54,7 @@ SOURCES = \
     qwebengineregisterprotocolhandlerrequest.cpp \
     qwebengineurlrequestinfo.cpp \
     qwebengineurlrequestjob.cpp \
+    qwebengineurlscheme.cpp \
     qwebengineurlschemehandler.cpp
 
 ### Qt6 Remove this workaround

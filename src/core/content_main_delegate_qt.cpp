@@ -53,6 +53,7 @@
 #include <ui/base/webui/jstemplate_builder.h>
 #include "net/grit/net_resources.h"
 #include "net/base/net_module.h"
+#include "url/url_util_qt.h"
 
 #include "content_client_qt.h"
 #include "renderer/content_renderer_client_qt.h"
@@ -214,6 +215,9 @@ bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
     SafeOverridePath(base::DIR_APP_DICTIONARIES, WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES));
 #endif
     SetContentClient(new ContentClientQt);
+
+    url::CustomScheme::LoadSchemes(base::CommandLine::ForCurrentProcess());
+
     return false;
 }
 
