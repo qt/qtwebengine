@@ -44,6 +44,7 @@
 #include "render_widget_host_view_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "render_widget_host_view_qt.h"
+#include "touch_selection_controller_client_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_adapter.h"
@@ -189,6 +190,11 @@ static inline WebEngineContextMenuData fromParams(const content::ContextMenuPara
 
 void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params)
 {
+    if (auto rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
+        if (rwhv && rwhv->getTouchSelectionControllerClient()->handleContextMenu(params))
+            return;
+    }
+
     WebEngineContextMenuData contextMenuData(fromParams(params));
 #if QT_CONFIG(webengine_spellchecker)
     // Do not use params.spellcheck_enabled, since it is never

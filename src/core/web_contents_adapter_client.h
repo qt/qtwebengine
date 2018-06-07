@@ -82,6 +82,8 @@ class JavaScriptDialogController;
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
+class TouchHandleDrawableClient;
+class TouchSelectionMenuController;
 class WebContentsAdapter;
 class WebContentsDelegateQt;
 class WebEngineSettings;
@@ -477,6 +479,9 @@ public:
     virtual void printRequested() = 0;
     virtual void widgetChanged(RenderWidgetHostViewQtDelegate *newWidget) = 0;
     virtual void interceptRequest(QWebEngineUrlRequestInfo &) { }
+    virtual TouchHandleDrawableClient *createTouchHandle(const QMap<int, QImage> &images) = 0;
+    virtual void showTouchSelectionMenu(TouchSelectionMenuController *menuController, const QRect &bounds, const QSize &handleSize) = 0;
+    virtual void hideTouchSelectionMenu() = 0;
 
     virtual ProfileAdapter *profileAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;

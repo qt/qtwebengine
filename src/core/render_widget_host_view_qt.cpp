@@ -44,6 +44,9 @@
 #include "compositor/compositor.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
+#include "touch_handle_drawable_client.h"
+#include "touch_selection_controller_client_qt.h"
+#include "touch_selection_menu_controller.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_event_factory.h"
@@ -61,10 +64,13 @@
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/touch_selection/touch_selection_controller.h"
+
 #if defined(USE_OZONE)
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #endif
@@ -278,6 +284,13 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
 
     if (host()->delegate() && host()->delegate()->GetInputEventRouter())
         host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(GetFrameSinkId(), this);
+
+    m_touchSelectionControllerClient.reset(new TouchSelectionControllerClientQt(this));
+    ui::TouchSelectionController::Config config;
+    config.max_tap_duration = base::TimeDelta::FromMilliseconds(ui::GestureConfiguration::GetInstance()->long_press_time_in_ms());
+    config.tap_slop = ui::GestureConfiguration::GetInstance()->max_touch_move_in_pixels_for_click();
+    config.enable_longpress_drag_selection = false;
+    m_touchSelectionController.reset(new ui::TouchSelectionController(m_touchSelectionControllerClient.get(), config));
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
@@ -286,6 +299,9 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 
     if (text_input_manager_)
         text_input_manager_->RemoveObserver(this);
+
+    m_touchSelectionController.reset();
+    m_touchSelectionControllerClient.reset();
 }
 
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
@@ -880,7 +896,33 @@ void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
         return;
     }
 
-    host()->ForwardGestureEvent(ui::CreateWebGestureEventFromGestureEventData(gesture));
+    blink::WebGestureEvent event = ui::CreateWebGestureEventFromGestureEventData(gesture);
+
+    if (m_touchSelectionController && m_touchSelectionControllerClient) {
+        switch (event.GetType()) {
+        case blink::WebInputEvent::kGestureLongPress:
+            m_touchSelectionController->HandleLongPressEvent(event.TimeStamp(), event.PositionInWidget());
+            break;
+        case blink::WebInputEvent::kGestureTap:
+            m_touchSelectionController->HandleTapEvent(event.PositionInWidget(), event.data.tap.tap_count);
+            break;
+        case blink::WebInputEvent::kGestureScrollBegin:
+            m_touchSelectionControllerClient->onScrollBegin();
+            break;
+        case blink::WebInputEvent::kGestureScrollEnd:
+            m_touchSelectionControllerClient->onScrollEnd();
+            break;
+        default:
+            break;
+        }
+    }
+
+    host()->ForwardGestureEvent(event);
+}
+
+void RenderWidgetHostViewQt::DidStopFlinging()
+{
+    m_touchSelectionControllerClient->DidStopFlinging();
 }
 
 viz::ScopedSurfaceIdAllocator RenderWidgetHostViewQt::DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata)
@@ -1291,9 +1333,9 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     }
 
     if (hasSelection) {
-        content::RenderFrameHostImpl *frameHost = static_cast<content::RenderFrameHostImpl *>(getFocusedFrameHost());
-        if (frameHost)
-            frameHost->GetFrameInputHandler()->SetEditableSelectionOffsets(selectionRange.start(), selectionRange.end());
+        content::mojom::FrameInputHandler *frameInputHandler = getFrameInputHandler();
+        if (frameInputHandler)
+            frameInputHandler->SetEditableSelectionOffsets(selectionRange.start(), selectionRange.end());
     }
 
     int replacementLength = ev->replacementLength();
@@ -1451,11 +1493,35 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
     eventTimestamp += m_eventsToNowDelta;
 
     QList<QTouchEvent::TouchPoint> touchPoints = mapTouchPointIds(ev->touchPoints());
+    {
+        ui::MotionEvent::Action action;
+        switch (touchPoints[0].state()) {
+        case Qt::TouchPointPressed:
+            action = ui::MotionEvent::Action::DOWN;
+            break;
+        case Qt::TouchPointMoved:
+            action = ui::MotionEvent::Action::MOVE;
+            break;
+        case Qt::TouchPointReleased:
+            action = ui::MotionEvent::Action::UP;
+            break;
+        default:
+            action = ui::MotionEvent::Action::NONE;
+            break;
+        }
+
+        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), dpiScale(), 0);
+        if (m_touchSelectionController->WillHandleTouchEvent(motionEvent)) {
+            ev->accept();
+            return;
+        }
+    }
 
     switch (ev->type()) {
     case QEvent::TouchBegin:
         m_sendMotionActionDown = true;
         m_touchMotionStarted = true;
+        m_touchSelectionControllerClient->onTouchDown();
         break;
     case QEvent::TouchUpdate:
         m_touchMotionStarted = true;
@@ -1482,6 +1548,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
     }
     case QEvent::TouchEnd:
         clearPreviousTouchMotionState();
+        m_touchSelectionControllerClient->onTouchUp();
         break;
     default:
         break;
@@ -1632,6 +1699,15 @@ content::RenderFrameHost *RenderWidgetHostViewQt::getFocusedFrameHost()
     return focusedFrame->current_frame_host();
 }
 
+content::mojom::FrameInputHandler *RenderWidgetHostViewQt::getFrameInputHandler()
+{
+    content::RenderFrameHostImpl *frameHost = static_cast<content::RenderFrameHostImpl *>(getFocusedFrameHost());
+    if (!frameHost)
+        return nullptr;
+
+    return frameHost->GetFrameInputHandler();
+}
+
 ui::TextInputType RenderWidgetHostViewQt::getTextInputType() const
 {
     if (text_input_manager_ && text_input_manager_->GetTextInputState())
@@ -1683,6 +1759,18 @@ uint32_t RenderWidgetHostViewQt::GetCaptureSequenceNumber() const
 void RenderWidgetHostViewQt::ResetFallbackToFirstNavigationSurface()
 {
     Q_UNIMPLEMENTED();
+}
+
+void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation()
+{
+    content::RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation();
+
+    const cc::RenderFrameMetadata &metadata = host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
+    if (metadata.selection.start != m_selectionStart || metadata.selection.end != m_selectionEnd) {
+        m_selectionStart = metadata.selection.start;
+        m_selectionEnd = metadata.selection.end;
+        m_touchSelectionControllerClient->UpdateClientSelectionBounds(m_selectionStart, m_selectionEnd);
+    }
 }
 
 } // namespace QtWebEngineCore

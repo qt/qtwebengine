@@ -30,6 +30,7 @@ SOURCES = \
         api/qquickwebenginescript.cpp \
         api/qquickwebenginesettings.cpp \
         api/qquickwebenginesingleton.cpp \
+        api/qquickwebenginetouchhandleprovider.cpp \
         api/qquickwebengineview.cpp \
         api/qtwebengineglobal.cpp \
         render_widget_host_view_qt_delegate_quick.cpp \
@@ -58,6 +59,7 @@ HEADERS = \
         api/qquickwebenginescript_p.h \
         api/qquickwebenginesettings_p.h \
         api/qquickwebenginesingleton_p.h \
+        api/qquickwebenginetouchhandleprovider_p_p.h \
         api/qquickwebengineview_p.h \
         api/qquickwebengineview_p_p.h \
         render_widget_host_view_qt_delegate_quick.h \

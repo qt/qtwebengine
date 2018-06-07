@@ -52,6 +52,7 @@
 #include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
 #include <QtWebEngine/private/qquickwebenginesettings_p.h>
 #include <QtWebEngine/private/qquickwebenginesingleton_p.h>
+#include <QtWebEngine/private/qquickwebenginetouchhandleprovider_p_p.h>
 #include <QtWebEngine/private/qquickwebengineview_p.h>
 #include <QtWebEngine/private/qquickwebengineaction_p.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
@@ -73,6 +74,7 @@ public:
     {
         Q_UNUSED(uri);
         engine->addImageProvider(QQuickWebEngineFaviconProvider::identifier(), new QQuickWebEngineFaviconProvider);
+        engine->addImageProvider(QQuickWebEngineTouchHandleProvider::identifier(), new QQuickWebEngineTouchHandleProvider);
     }
 
     void registerTypes(const char *uri) override

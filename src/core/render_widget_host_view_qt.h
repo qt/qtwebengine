@@ -65,11 +65,21 @@ QT_END_NAMESPACE
 namespace content {
 class RenderFrameHost;
 class RenderWidgetHostImpl;
+namespace mojom {
+class FrameInputHandler;
+}
+}
+
+namespace ui {
+class TouchSelectionController;
 }
 
 namespace QtWebEngineCore {
 
 class Compositor;
+class TouchHandleDrawableClient;
+class TouchSelectionControllerClientQt;
+class TouchSelectionMenuController;
 
 struct MultipleMouseClickHelper
 {
@@ -106,6 +116,7 @@ public:
 
     RenderWidgetHostViewQtDelegate *delegate() { return m_delegate.get(); }
     void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
+    WebContentsAdapterClient *adapterClient() { return m_adapterClient; }
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
 
     void InitAsChild(gfx::NativeView) override;
@@ -158,6 +169,7 @@ public:
     void EnsureSurfaceSynchronizedForLayoutTest() override;
     uint32_t GetCaptureSequenceNumber() const override;
     void ResetFallbackToFirstNavigationSurface() override;
+    void DidStopFlinging() override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -207,8 +219,16 @@ public:
     LoadVisuallyCommittedState getLoadVisuallyCommittedState() const { return m_loadVisuallyCommittedState; }
     void setLoadVisuallyCommittedState(LoadVisuallyCommittedState state) { m_loadVisuallyCommittedState = state; }
 
+    // Overridden from content::RenderFrameMetadataProvider::Observer
+    void OnRenderFrameMetadataChangedAfterActivation() override;
+
     gfx::SizeF lastContentsSize() const { return m_lastContentsSize; }
     gfx::Vector2dF lastScrollOffset() const { return m_lastScrollOffset; }
+
+    ui::TouchSelectionController *getTouchSelectionController() const { return m_touchSelectionController.get(); }
+    TouchSelectionControllerClientQt *getTouchSelectionControllerClient() const { return m_touchSelectionControllerClient.get(); }
+    content::mojom::FrameInputHandler *getFrameInputHandler();
+    ui::TextInputType getTextInputType() const;
 
 private:
     void processMotionEvent(const ui::MotionEvent &motionEvent);
@@ -221,7 +241,6 @@ private:
 
     void selectionChanged();
     content::RenderFrameHost *getFocusedFrameHost();
-    ui::TextInputType getTextInputType() const;
 
     ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
@@ -264,6 +283,11 @@ private:
 
     uint32_t m_latestCaptureSequenceNumber = 0u;
     std::string m_editCommand;
+
+    std::unique_ptr<TouchSelectionControllerClientQt> m_touchSelectionControllerClient;
+    std::unique_ptr<ui::TouchSelectionController> m_touchSelectionController;
+    gfx::SelectionBound m_selectionStart;
+    gfx::SelectionBound m_selectionEnd;
 };
 
 } // namespace QtWebEngineCore

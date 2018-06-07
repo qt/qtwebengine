@@ -44,6 +44,7 @@
 #include <color_chooser_controller.h>
 #include <file_picker_controller.h>
 #include <javascript_dialog_controller.h>
+#include <touch_selection_menu_controller.h>
 #include <web_contents_adapter_client.h>
 
 #include <QFileInfo>
@@ -54,6 +55,7 @@
 #include <QCursor>
 #include <QList>
 #include <QScreen>
+#include <QTimer>
 #include <QGuiApplication>
 
 // Uncomment for QML debugging
@@ -125,6 +127,7 @@ const char *defaultPropertyName(QObject *obj)
 UIDelegatesManager::UIDelegatesManager(QQuickWebEngineView *view)
     : m_view(view)
     , m_toolTip(nullptr)
+    , m_touchSelectionMenu(nullptr)
     FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_INIT, NO_SEPARATOR)
 {
 }
@@ -566,6 +569,82 @@ void UIDelegatesManager::showToolTip(const QString &text)
     QQmlProperty(m_toolTip.data(), QStringLiteral("y")).write(position.y());
 
     QMetaObject::invokeMethod(m_toolTip.data(), "open");
+}
+
+QQuickItem *UIDelegatesManager::createTouchHandle()
+{
+    if (!ensureComponentLoaded(TouchHandle))
+        return nullptr;
+
+    QQmlContext *context = qmlContext(m_view);
+    QObject *touchHandle = touchHandleComponent->beginCreate(context);
+    QQuickItem *item = qobject_cast<QQuickItem *>(touchHandle);
+    Q_ASSERT(item);
+    item->setParentItem(m_view);
+    touchHandleComponent->completeCreate();
+
+    return item;
+}
+
+void UIDelegatesManager::showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *menuController, const QRect &bounds, const int spacing)
+{
+    if (!ensureComponentLoaded(TouchSelectionMenu))
+        return;
+
+    QQmlContext *context = qmlContext(m_view);
+    m_touchSelectionMenu.reset(touchSelectionMenuComponent->beginCreate(context));
+    if (QQuickItem *item = qobject_cast<QQuickItem *>(m_touchSelectionMenu.data()))
+        item->setParentItem(m_view);
+    m_touchSelectionMenu->setParent(m_view);
+
+    QQmlProperty(m_touchSelectionMenu.data(), QStringLiteral("width")).write(bounds.width());
+    QQmlProperty(m_touchSelectionMenu.data(), QStringLiteral("height")).write(bounds.height());
+    QQmlProperty(m_touchSelectionMenu.data(), QStringLiteral("x")).write(bounds.x());
+    QQmlProperty(m_touchSelectionMenu.data(), QStringLiteral("y")).write(bounds.y());
+    QQmlProperty(m_touchSelectionMenu.data(), QStringLiteral("border.width")).write(spacing);
+
+    // Cut button
+    bool cutEnabled = menuController->isCommandEnabled(TouchSelectionMenuController::Cut);
+    QQmlProperty(m_touchSelectionMenu.data(), QStringLiteral("isCutEnabled")).write(cutEnabled);
+    if (cutEnabled) {
+        QQmlProperty cutSignal(m_touchSelectionMenu.data(), QStringLiteral("onCutTriggered"));
+        CHECK_QML_SIGNAL_PROPERTY(cutSignal, touchSelectionMenuComponent->url());
+        int cutIndex = menuController->metaObject()->indexOfSlot("cut()");
+        QObject::connect(m_touchSelectionMenu.data(), cutSignal.method(), menuController, menuController->metaObject()->method(cutIndex));
+    }
+
+    // Copy button
+    bool copyEnabled = menuController->isCommandEnabled(TouchSelectionMenuController::Copy);
+    QQmlProperty(m_touchSelectionMenu.data(), QStringLiteral("isCopyEnabled")).write(copyEnabled);
+    if (copyEnabled) {
+        QQmlProperty copySignal(m_touchSelectionMenu.data(), QStringLiteral("onCopyTriggered"));
+        CHECK_QML_SIGNAL_PROPERTY(copySignal, touchSelectionMenuComponent->url());
+        int copyIndex = menuController->metaObject()->indexOfSlot("copy()");
+        QObject::connect(m_touchSelectionMenu.data(), copySignal.method(), menuController, menuController->metaObject()->method(copyIndex));
+    }
+
+    // Paste button
+    bool pasteEnabled = menuController->isCommandEnabled(TouchSelectionMenuController::Paste);
+    QQmlProperty(m_touchSelectionMenu.data(), QStringLiteral("isPasteEnabled")).write(pasteEnabled);
+    if (pasteEnabled) {
+        QQmlProperty pasteSignal(m_touchSelectionMenu.data(), QStringLiteral("onPasteTriggered"));
+        CHECK_QML_SIGNAL_PROPERTY(pasteSignal, touchSelectionMenuComponent->url());
+        int pasteIndex = menuController->metaObject()->indexOfSlot("paste()");
+        QObject::connect(m_touchSelectionMenu.data(), pasteSignal.method(), menuController, menuController->metaObject()->method(pasteIndex));
+    }
+
+    // Context menu button
+    QQmlProperty contextMenuSignal(m_touchSelectionMenu.data(), QStringLiteral("onContextMenuTriggered"));
+    CHECK_QML_SIGNAL_PROPERTY(contextMenuSignal, touchSelectionMenuComponent->url());
+    int contextMenuIndex = menuController->metaObject()->indexOfSlot("runContextMenu()");
+    QObject::connect(m_touchSelectionMenu.data(), contextMenuSignal.method(), menuController, menuController->metaObject()->method(contextMenuIndex));
+
+    touchSelectionMenuComponent->completeCreate();
+}
+
+void UIDelegatesManager::hideTouchSelectionMenu()
+{
+    QTimer::singleShot(0, m_view, [this] { m_touchSelectionMenu.reset(); });
 }
 
 UI2DelegatesManager::UI2DelegatesManager(QQuickWebEngineView *view) : UIDelegatesManager(view)

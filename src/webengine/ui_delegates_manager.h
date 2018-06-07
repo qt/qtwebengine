@@ -61,6 +61,8 @@
     F(FilePicker, filePicker) SEPARATOR \
     F(AuthenticationDialog, authenticationDialog) SEPARATOR \
     F(ToolTip, toolTip) SEPARATOR \
+    F(TouchHandle, touchHandle) SEPARATOR \
+    F(TouchSelectionMenu, touchSelectionMenu) SEPARATOR \
 
 #define COMMA_SEPARATOR ,
 #define SEMICOLON_SEPARATOR ;
@@ -81,6 +83,7 @@ namespace QtWebEngineCore {
 class AuthenticationDialogController;
 class JavaScriptDialogController;
 class FilePickerController;
+class TouchSelectionMenuController;
 
 const char *defaultPropertyName(QObject *obj);
 
@@ -110,6 +113,9 @@ public:
     void showFilePicker(QSharedPointer<FilePickerController>);
     virtual void showMenu(QObject *menu);
     void showToolTip(const QString &text);
+    QQuickItem *createTouchHandle();
+    void showTouchSelectionMenu(TouchSelectionMenuController *, const QRect &, const int spacing);
+    void hideTouchSelectionMenu();
 
 protected:
     bool ensureComponentLoaded(ComponentType);
@@ -117,6 +123,7 @@ protected:
     QQuickWebEngineView *m_view;
     QScopedPointer<QObject> m_toolTip;
     QStringList m_importDirs;
+    QScopedPointer<QObject> m_touchSelectionMenu;
 
     FOR_EACH_COMPONENT_TYPE(MEMBER_DECLARATION, SEMICOLON_SEPARATOR)
 

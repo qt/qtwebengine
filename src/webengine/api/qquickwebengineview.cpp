@@ -44,6 +44,7 @@
 #include "certificate_error_controller.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
+#include "touch_selection_menu_controller.h"
 
 #include "qquickwebengineaction_p.h"
 #include "qquickwebengineaction_p_p.h"
@@ -59,6 +60,7 @@
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescript_p.h"
+#include "qquickwebenginetouchhandleprovider_p_p.h"
 #include "qwebenginequotarequest.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
 
@@ -1211,6 +1213,39 @@ void QQuickWebEngineViewPrivate::setToolTip(const QString &toolTipText)
     ui()->showToolTip(toolTipText);
 }
 
+QtWebEngineCore::TouchHandleDrawableClient *QQuickWebEngineViewPrivate::createTouchHandle(const QMap<int, QImage> &images)
+{
+    return new QQuickWebEngineTouchHandle(ui(), images);
+}
+
+void QQuickWebEngineViewPrivate::showTouchSelectionMenu(QtWebEngineCore::TouchSelectionMenuController *menuController, const QRect &selectionBounds, const QSize &handleSize)
+{
+    Q_UNUSED(handleSize);
+
+    const int kSpacingBetweenButtons = 2;
+    const int kMenuButtonMinWidth = 63;
+    const int kMenuButtonMinHeight = 38;
+
+    int buttonCount = menuController->buttonCount();
+    if (buttonCount == 1) {
+        menuController->runContextMenu();
+        return;
+    }
+
+    int width = (kSpacingBetweenButtons * (buttonCount + 1)) + (kMenuButtonMinWidth * buttonCount);
+    int height = kMenuButtonMinHeight + kSpacingBetweenButtons;
+    int x = (selectionBounds.x() + selectionBounds.x() + selectionBounds.width() - width) / 2;
+    int y = selectionBounds.y() - height - 2;
+
+    QRect bounds(x, y, width, height);
+    ui()->showTouchSelectionMenu(menuController, bounds, kSpacingBetweenButtons);
+}
+
+void QQuickWebEngineViewPrivate::hideTouchSelectionMenu()
+{
+    ui()->hideTouchSelectionMenu();
+}
+
 bool QQuickWebEngineView::isLoading() const
 {
     Q_D(const QQuickWebEngineView);
@@ -2283,6 +2318,44 @@ bool QQuickContextMenuBuilder::isMenuItemEnabled(ContextMenuItem menuItem)
         return true;
     }
     Q_UNREACHABLE();
+}
+
+
+QQuickWebEngineTouchHandle::QQuickWebEngineTouchHandle(QtWebEngineCore::UIDelegatesManager *ui, const QMap<int, QImage> &images)
+{
+    Q_ASSERT(ui);
+    m_item.reset(ui->createTouchHandle());
+
+    QQmlEngine *engine = qmlEngine(m_item.data());
+    Q_ASSERT(engine);
+    QQuickWebEngineTouchHandleProvider *touchHandleProvider =
+            static_cast<QQuickWebEngineTouchHandleProvider *>(engine->imageProvider(QQuickWebEngineTouchHandleProvider::identifier()));
+    Q_ASSERT(touchHandleProvider);
+    touchHandleProvider->init(images);
+}
+
+void QQuickWebEngineTouchHandle::setImage(int orientation)
+{
+    QUrl url = QQuickWebEngineTouchHandleProvider::url(orientation);
+    m_item->setProperty("source", url);
+}
+
+void QQuickWebEngineTouchHandle::setBounds(const QRect &bounds)
+{
+    m_item->setProperty("x", bounds.x());
+    m_item->setProperty("y", bounds.y());
+    m_item->setProperty("width", bounds.width());
+    m_item->setProperty("height", bounds.height());
+}
+
+void QQuickWebEngineTouchHandle::setVisible(bool visible)
+{
+    m_item->setProperty("visible", visible);
+}
+
+void QQuickWebEngineTouchHandle::setOpacity(float opacity)
+{
+    m_item->setProperty("opacity", opacity);
 }
 
 QT_END_NAMESPACE
