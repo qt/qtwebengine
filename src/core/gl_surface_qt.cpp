@@ -227,6 +227,10 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
               base::GetFunctionPointerFromNativeLibrary(library,
                                                         "eglGetProcAddress"));
       if (!get_proc_address) {
+          QFunctionPointer address = GLContextHelper::getEglGetProcAddress();
+          get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(address);
+      }
+      if (!get_proc_address) {
         LOG(ERROR) << "eglGetProcAddress not found.";
         base::UnloadNativeLibrary(library);
         return false;

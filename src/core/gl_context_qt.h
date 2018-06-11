@@ -63,6 +63,7 @@ public:
     static void* getXDisplay();
     static void* getNativeDisplay();
     static QFunctionPointer getGlXGetProcAddress();
+    static QFunctionPointer getEglGetProcAddress();
 private:
     Q_INVOKABLE bool initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs);
 
