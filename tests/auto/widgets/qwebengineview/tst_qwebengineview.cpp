@@ -1675,6 +1675,7 @@ void tst_QWebEngineView::softwareInputPanel()
 void tst_QWebEngineView::inputMethods()
 {
     QWebEngineView view;
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     view.resize(640, 480);
     view.show();
 
@@ -1772,6 +1773,7 @@ void tst_QWebEngineView::inputMethods()
 void tst_QWebEngineView::textSelectionInInputField()
 {
     QWebEngineView view;
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     view.resize(640, 480);
     view.show();
 
@@ -1964,6 +1966,7 @@ void tst_QWebEngineView::hiddenText()
 void tst_QWebEngineView::emptyInputMethodEvent()
 {
     QWebEngineView view;
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     view.resize(640, 480);
     view.show();
 
@@ -2011,6 +2014,7 @@ void tst_QWebEngineView::emptyInputMethodEvent()
 void tst_QWebEngineView::imeComposition()
 {
     QWebEngineView view;
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     view.resize(640, 480);
     view.show();
 
@@ -2186,6 +2190,7 @@ void tst_QWebEngineView::imeComposition()
 void tst_QWebEngineView::newlineInTextarea()
 {
     QWebEngineView view;
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     view.resize(640, 480);
     view.show();
 
