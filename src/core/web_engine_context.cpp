@@ -467,7 +467,7 @@ WebEngineContext::WebEngineContext()
                     QOpenGLContext context;
                     QSurfaceFormat format;
 
-                    format.setRenderableType(QSurfaceFormat::OpenGLES);
+                    format.setRenderableType(QSurfaceFormat::OpenGL);
                     format.setVersion(2, 0);
 
                     context.setFormat(format);
