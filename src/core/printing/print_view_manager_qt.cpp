@@ -201,7 +201,7 @@ PrintViewManagerQt::~PrintViewManagerQt()
 {
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
 void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayout,
                                                     bool printInColor,
                                                     const QString &filePath,
@@ -269,7 +269,7 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
                 new PrintMsg_InitiatePrintPreview(web_contents()->GetMainFrame()->GetRoutingID(), false));
 }
 
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif // QT_CONFIG(webengine_printing_and_pdf)
 
 // PrintedPagesSource implementation.
 base::string16 PrintViewManagerQt::RenderSourceName()

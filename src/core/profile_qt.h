@@ -101,7 +101,7 @@ public:
 
     BrowserContextAdapter *adapter() { return m_adapter; }
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     void FailedToLoadDictionary(const std::string &language) override;
     void setSpellCheckLanguages(const QStringList &languages);
     QStringList spellCheckLanguages() const;

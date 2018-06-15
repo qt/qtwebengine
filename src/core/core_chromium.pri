@@ -125,6 +125,7 @@ SOURCES = \
 HEADERS = \
         authentication_dialog_controller_p.h \
         authentication_dialog_controller.h \
+        build_config_qt.h \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
         browser_context_adapter.h \

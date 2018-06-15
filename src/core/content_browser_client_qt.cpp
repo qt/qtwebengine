@@ -43,10 +43,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
-#include "components/spellcheck/spellcheck_buildflags.h"
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if QT_CONFIG(webengine_native_spellchecker)
 #include "components/spellcheck/browser/spellcheck_message_filter_platform.h"
 #endif
 #endif
@@ -101,9 +100,9 @@
 #include "net/network_delegate_qt.h"
 #include "net/qrc_protocol_handler_qt.h"
 #include "net/url_request_context_getter_qt.h"
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
 #include "printing/printing_message_filter_qt.h"
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif
 #include "profile_qt.h"
 #include "quota_permission_context_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
@@ -121,7 +120,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if QT_CONFIG(webengine_pepper_plugins)
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "renderer_host/pepper/pepper_host_factory_qt.h"
@@ -402,12 +401,12 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(id, url::kFileScheme);
     static_cast<ProfileQt*>(host->GetBrowserContext())->m_adapter->userResourceController()->renderProcessStartedWithHost(host);
     host->AddFilter(new BrowserMessageFilterQt(id, profile));
-#if defined(Q_OS_MACOS) && BUILDFLAG(ENABLE_SPELLCHECK) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if defined(Q_OS_MACOS) && QT_CONFIG(webengine_spellchecker) && QT_CONFIG(webengine_native_spellchecker)
   host->AddFilter(new SpellCheckMessageFilterPlatform(id));
 #endif
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     host->AddFilter(new PrintingMessageFilterQt(host->GetID()));
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif
 
     service_manager::mojom::ServicePtr service;
     *service_request = mojo::MakeRequest(&service);
@@ -418,7 +417,6 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
                                           renderer_identity.user_id(),
                                           renderer_identity.instance()),
                 std::move(service), mojo::MakeRequest(&pid_receiver));
-
 }
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()
@@ -564,7 +562,7 @@ void ContentBrowserClientQt::GetAdditionalMappedFilesForChildProcess(const base:
 }
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if QT_CONFIG(webengine_pepper_plugins)
 void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host)
 {
     browser_host->GetPpapiHost()->AddHostFactoryFilter(

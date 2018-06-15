@@ -46,7 +46,7 @@
 
 #include "print_view_manager_base_qt.h"
 
-#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include "qtwebenginecoreglobal_p.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/prefs/pref_member.h"
@@ -54,7 +54,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "printing/buildflags/buildflags.h"
 
 struct PrintHostMsg_RequestPrintPreview_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
@@ -85,7 +84,7 @@ public:
     ~PrintViewManagerQt() override;
     typedef base::Callback<void(const std::vector<char> &result)> PrintToPDFCallback;
     typedef base::Callback<void(bool success)> PrintToPDFFileCallback;
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     // Method to print a page to a Pdf document with page size \a pageSize in location \a filePath.
     void PrintToPDFFileWithCallback(const QPageLayout &pageLayout,
                                     bool printInColor,
@@ -95,7 +94,7 @@ public:
                                 bool printInColor,
                                 bool useCustomMargins,
                                 const PrintToPDFCallback &callback);
-#endif  // ENABLE_BASIC_PRINTING
+#endif // QT_CONFIG(webengine_printing_and_pdf)
 
     base::string16 RenderSourceName() override;
 
@@ -118,9 +117,9 @@ protected:
     void OnRequestPrintPreview(const PrintHostMsg_RequestPrintPreview_Params&);
     void OnMetafileReadyForPrinting(const PrintHostMsg_DidPreviewDocument_Params& params);
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     bool PrintToPDFInternal(const QPageLayout &, bool printInColor, bool useCustomMargins = true);
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif
 
     base::FilePath m_pdfOutputPath;
     PrintToPDFCallback m_pdfPrintCallback;

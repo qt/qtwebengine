@@ -112,7 +112,7 @@ static QString getLocalAppDataDir()
 }
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if QT_CONFIG(webengine_pepper_plugins)
 
 // The plugin logic is based on chrome/common/chrome_content_client.cc:
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
@@ -244,7 +244,7 @@ void ContentClientQt::AddPepperPlugins(std::vector<content::PepperPluginInfo>* p
 }
 
 } // namespace QtWebEngineCore
-#endif // BUILDFLAG(ENABLE_PLUGINS)
+#endif // QT_CONFIG(webengine_pepper_plugins)
 
 namespace QtWebEngineCore {
 
@@ -259,7 +259,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         pluginPaths << QtWebEngineCore::toQt(widevine_argument);
     else {
         pluginPaths << webenginePluginsPath() + QStringLiteral("/") + QString::fromLatin1(kWidevineCdmFileName);
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if QT_CONFIG(webengine_pepper_plugins)
         pluginPaths << ppapiPluginsPath() + QStringLiteral("/") + QString::fromLatin1(kWidevineCdmFileName);
 #endif
 #if defined(Q_OS_OSX)

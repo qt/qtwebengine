@@ -200,7 +200,7 @@ static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint6
         adapterClient->didRunJavaScript(requestId, fromJSValue(result));
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
 static void callbackOnPrintingFinished(WebContentsAdapterClient *adapterClient,
                                        int requestId,
                                        const std::vector<char>& result)
@@ -440,7 +440,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     rendererPrefs->caret_blink_interval = base::TimeDelta::FromMillisecondsD(0.5 * static_cast<double>(qtCursorFlashTime));
     rendererPrefs->user_agent_override = m_browserContextAdapter->httpUserAgent().toStdString();
     rendererPrefs->accept_languages = m_browserContextAdapter->httpAcceptLanguageWithoutQualities().toStdString();
-#if BUILDFLAG(ENABLE_WEBRTC)
+#if QT_CONFIG(webengine_webrtc)
     base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
     if (commandLine->HasSwitch(switches::kForceWebRtcIPHandlingPolicy))
         rendererPrefs->webrtc_ip_handling_policy = commandLine->GetSwitchValueASCII(switches::kForceWebRtcIPHandlingPolicy);
@@ -471,9 +471,9 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     // This should only be necessary after having restored the history to a new WebContentsAdapter.
     m_webContents->GetController().LoadIfNecessary();
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     PrintViewManagerQt::CreateForWebContents(webContents());
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif
 
     // Create an instance of WebEngineVisitedLinksManager to catch the first
     // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
@@ -1166,7 +1166,7 @@ void WebContentsAdapter::wasHidden()
 
 void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString &filePath)
 {
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     CHECK_INITIALIZED();
     PrintViewManagerQt::PrintToPDFFileCallback callback = base::Bind(&callbackOnPdfSavingFinished,
                                                                 m_adapterClient,
@@ -1175,14 +1175,14 @@ void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString
                                                                                    true,
                                                                                    filePath,
                                                                                    callback);
-#endif // if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif // QT_CONFIG(webengine_printing_and_pdf)
 }
 
 quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayout,
                                                      bool colorMode,
                                                      bool useCustomMargins)
 {
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     CHECK_INITIALIZED(0);
     PrintViewManagerQt::PrintToPDFCallback callback = base::Bind(&callbackOnPrintingFinished,
                                                                  m_adapterClient,
@@ -1196,7 +1196,7 @@ quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayo
     Q_UNUSED(pageLayout);
     Q_UNUSED(colorMode);
     return 0;
-#endif // if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif // QT_CONFIG(webengine_printing_and_pdf)
 }
 
 QPointF WebContentsAdapter::lastScrollOffset() const
@@ -1556,7 +1556,7 @@ void WebContentsAdapter::leaveDrag()
 
 void WebContentsAdapter::replaceMisspelling(const QString &word)
 {
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     CHECK_INITIALIZED();
     m_webContents->ReplaceMisspelling(toString16(word));
 #endif

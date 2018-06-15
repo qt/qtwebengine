@@ -39,6 +39,7 @@
 #ifndef CONTENT_RENDERER_CLIENT_QT_H
 #define CONTENT_RENDERER_CLIENT_QT_H
 
+#include "qtwebenginecoreglobal_p.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -60,7 +61,7 @@ namespace web_cache {
 class WebCacheImpl;
 }
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
 class SpellCheck;
 #endif
 
@@ -114,7 +115,7 @@ private:
 
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
     QScopedPointer<web_cache::WebCacheImpl> m_webCacheImpl;
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     QScopedPointer<SpellCheck> m_spellCheck;
 #endif
 

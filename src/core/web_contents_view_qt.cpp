@@ -184,7 +184,7 @@ static inline WebEngineContextMenuData fromParams(const content::ContextMenuPara
     ret.setEditFlags((WebEngineContextMenuData::EditFlags)params.edit_flags);
     ret.setSuggestedFileName(toQt(params.suggested_filename.data()));
     ret.setIsEditable(params.is_editable);
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     ret.setMisspelledWord(toQt(params.misspelled_word));
     ret.setSpellCheckerSuggestions(fromVector(params.dictionary_suggestions));
 #endif
@@ -197,7 +197,7 @@ static inline WebEngineContextMenuData fromParams(const content::ContextMenuPara
 void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params)
 {
     WebEngineContextMenuData contextMenuData(fromParams(params));
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     // Do not use params.spellcheck_enabled, since it is never
     // correctly initialized for chrome asynchronous spellchecking.
     // Even fixing the initialization in ContextMenuClientImpl::showContextMenu

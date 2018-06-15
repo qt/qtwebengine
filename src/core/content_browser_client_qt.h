@@ -40,11 +40,9 @@
 #ifndef CONTENT_BROWSER_CLIENT_QT_H
 #define CONTENT_BROWSER_CLIENT_QT_H
 
+#include "qtwebenginecoreglobal_p.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/content_browser_client.h"
-#include "ppapi/buildflags/buildflags.h"
-
-#include <QtGlobal>
 
 namespace net {
 class URLRequestContextGetter;
@@ -54,7 +52,7 @@ namespace content {
 class BrowserContext;
 class BrowserMainParts;
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if QT_CONFIG(webengine_pepper_plugins)
 class BrowserPpapiHost;
 #endif
 
@@ -177,7 +175,7 @@ public:
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if QT_CONFIG(webengine_pepper_plugins)
     void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
 #endif
 

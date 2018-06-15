@@ -208,7 +208,7 @@ QString localesPath()
     return potentialLocalesPath;
 }
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
 QString dictionariesPath()
 {
     static QString potentialDictionariesPath;
@@ -254,7 +254,7 @@ QString dictionariesPath()
 
     return potentialDictionariesPath;
 }
-#endif // ENABLE_SPELLCHECK
+#endif // QT_CONFIG(webengine_spellchecker)
 
 QString icuDataPath()
 {
@@ -343,7 +343,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         return toFilePath(icuDataPath());
     case ui::DIR_LOCALES:
         return toFilePath(localesPath());
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     case base::DIR_APP_DICTIONARIES:
         return toFilePath(dictionariesPath());
 #endif

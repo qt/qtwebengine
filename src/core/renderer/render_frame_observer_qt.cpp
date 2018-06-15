@@ -68,7 +68,7 @@ void RenderFrameObserverQt::OnDestruct() {
     delete this;
 }
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if QT_CONFIG(webengine_pepper_plugins)
 void RenderFrameObserverQt::DidCreatePepperPlugin(content::RendererPpapiHost* host)
 {
     host->GetPpapiHost()->AddHostFactoryFilter(

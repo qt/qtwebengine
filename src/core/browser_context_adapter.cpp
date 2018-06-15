@@ -506,14 +506,14 @@ void BrowserContextAdapter::clearHttpCache()
 
 void BrowserContextAdapter::setSpellCheckLanguages(const QStringList &languages)
 {
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     m_browserContext->setSpellCheckLanguages(languages);
 #endif
 }
 
 QStringList BrowserContextAdapter::spellCheckLanguages() const
 {
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     return m_browserContext->spellCheckLanguages();
 #else
     return QStringList();
@@ -522,14 +522,14 @@ QStringList BrowserContextAdapter::spellCheckLanguages() const
 
 void BrowserContextAdapter::setSpellCheckEnabled(bool enabled)
 {
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     m_browserContext->setSpellCheckEnabled(enabled);
 #endif
 }
 
 bool BrowserContextAdapter::isSpellCheckEnabled() const
 {
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     return m_browserContext->isSpellCheckEnabled();
 #else
     return false;

@@ -409,7 +409,7 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
 bool WebEngineSettings::applySettingsToRendererPreferences(content::RendererPreferences *prefs)
 {
     bool changed = false;
-#if BUILDFLAG(ENABLE_WEBRTC)
+#if QT_CONFIG(webengine_webrtc)
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceWebRtcIPHandlingPolicy)) {
         std::string webrtc_ip_handling_policy = testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly)
                                               ? content::kWebRTCIPHandlingDefaultPublicInterfaceOnly

@@ -62,7 +62,7 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/user_prefs/user_prefs.h"
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/spellcheck/browser/pref_names.h"
@@ -78,7 +78,7 @@ ProfileQt::ProfileQt(BrowserContextAdapter *adapter)
     factory.set_user_prefs(new InMemoryPrefStore);
     PrefRegistrySimple *registry = new PrefRegistrySimple();
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     // Initial spellcheck settings
     registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries, std::make_unique<base::ListValue>());
@@ -86,7 +86,7 @@ ProfileQt::ProfileQt(BrowserContextAdapter *adapter)
     registry->RegisterStringPref(spellcheck::prefs::kSpellCheckDictionary, std::string());
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckEnable, false);
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
-#endif //ENABLE_SPELLCHECK
+#endif // QT_CONFIG(webengine_spellchecker)
     m_prefService = factory.Create(registry);
     user_prefs::UserPrefs::Set(this, m_prefService.get());
 
@@ -225,7 +225,7 @@ net::URLRequestContextGetter *ProfileQt::CreateRequestContextForStoragePartition
     return nullptr;
 }
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
 void ProfileQt::FailedToLoadDictionary(const std::string &language)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -265,5 +265,5 @@ bool ProfileQt::isSpellCheckEnabled() const
 {
     return m_prefService->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
 }
-#endif //ENABLE_SPELLCHECK
+#endif // QT_CONFIG(webengine_spellchecker)
 } // namespace QtWebEngineCore

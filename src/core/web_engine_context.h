@@ -40,14 +40,9 @@
 #ifndef WEB_ENGINE_CONTEXT_H
 #define WEB_ENGINE_CONTEXT_H
 
-#include "qtwebenginecoreglobal.h"
-
-#include "build/build_config.h"
-
+#include "build_config_qt.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "printing/buildflags/buildflags.h"
-
 #include <QVector>
 
 namespace base {
@@ -59,11 +54,11 @@ class BrowserMainRunner;
 class ContentMainRunner;
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
 namespace printing {
 class PrintJobManager;
 }
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif
 
 QT_FORWARD_DECLARE_CLASS(QObject)
 
@@ -84,9 +79,9 @@ public:
     BrowserContextAdapter *defaultBrowserContext();
 
     QObject *globalQObject();
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     printing::PrintJobManager* getPrintJobManager();
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif
     void destroyBrowserContext();
     void addBrowserContext(BrowserContextAdapter*);
     void removeBrowserContext(BrowserContextAdapter*);
@@ -107,9 +102,9 @@ private:
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
     QVector<BrowserContextAdapter*> m_browserContextAdapters;
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif
     static scoped_refptr<QtWebEngineCore::WebEngineContext> m_handle;
     static bool m_destroyed;
 };

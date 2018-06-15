@@ -62,10 +62,9 @@
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/media_buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if BUILDFLAG(ENABLE_WEBRTC)
+#if QT_CONFIG(webengine_webrtc)
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #endif
@@ -123,7 +122,7 @@ std::unique_ptr<content::MediaStreamUI> getDevicesForDesktopCapture(content::Med
 
 content::DesktopMediaID getDefaultScreenId()
 {
-#if BUILDFLAG(ENABLE_WEBRTC)
+#if QT_CONFIG(webengine_webrtc)
     // Source id patterns are different across platforms.
     // On Linux, the hardcoded value "0" is used.
     // On Windows, the screens are enumerated consecutively in increasing order from 0.

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,34 +37,67 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_CLIENT_QT_H
-#define CONTENT_CLIENT_QT_H
+#ifndef BUILD_CONFIG_QT
+#define BUILD_CONFIG_QT
 
-#include "qtwebenginecoreglobal_p.h"
-#include "base/strings/string_piece.h"
-#include "content/public/common/content_client.h"
-#include "ui/base/layout.h"
+#include <QtCore/qglobal.h>
+#include <QtWebEngineCore/qtwebenginecore-config.h>
+#include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 
-namespace QtWebEngineCore {
+#include "printing/buildflags/buildflags.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
+#include "media/media_buildflags.h"
+#include "ppapi/buildflags/buildflags.h"
 
-class ContentClientQt : public content::ContentClient {
-public:
-    static std::string getUserAgent();
+// This is just config sanity check
+#if QT_CONFIG(webengine_printing_and_pdf)
+#if !BUILDFLAG(ENABLE_BASIC_PRINTING) || !BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#error Config sanity check for webengine_printing_and_pdf failed
+#endif
+#else
+#if BUILDFLAG(ENABLE_BASIC_PRINTING) || BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#error Config sanity check for ENABLE_BASIC_PRINTING, ENABLE_PRINT_PREVIEW failed
+#endif
+#endif
+
+#if QT_CONFIG(webengine_spellchecker)
+#if !BUILDFLAG(ENABLE_SPELLCHECK)
+#error Config sanity check for webengine_spellchecker failed
+#endif
+#else
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+#error Config sanity check for ENABLE_SPELLCHECK failed
+#endif
+#endif
 
 #if QT_CONFIG(webengine_pepper_plugins)
-    void AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins) override;
+#if !BUILDFLAG(ENABLE_PLUGINS)
+#error Config sanity check for webengine_pepper_plugins failed
 #endif
-    void AddAdditionalSchemes(Schemes* schemes) override;
-    void AddContentDecryptionModules(std::vector<content::CdmInfo> *cdms,
-                                     std::vector<media::CdmHostFilePath> *cdm_host_file_paths) override;
+#else
+#if BUILDFLAG(ENABLE_PLUGINS)
+#error Config sanity check for ENABLE_PLUGINS failed
+#endif
+#endif
 
-    base::StringPiece GetDataResource(int, ui::ScaleFactor) const override;
-    base::RefCountedMemory* GetDataResourceBytes(int resource_id) const  override;
-    std::string GetUserAgent() const override { return getUserAgent(); }
-    base::string16 GetLocalizedString(int message_id) const override;
-    std::string GetProduct() const override;
-};
+#if QT_CONFIG(webengine_webrtc)
+#if !BUILDFLAG(ENABLE_WEBRTC)
+#error Config sanity check for webengine_webrtc failed
+#endif
+#else
+#if BUILDFLAG(ENABLE_WEBRTC)
+#error Config sanity check for ENABLE_WEBRTC failed
+#endif
+#endif
 
-} // namespace QtWebEngineCore
+#if QT_CONFIG(webengine_native_spellchecker)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#error Config sanity check for webengine_native_spellchecker failed
+#endif
+#else
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#error Config sanity check for USE_BROWSER_SPELLCHECKER failed
+#endif
+#endif
 
-#endif // CONTENT_CLIENT_QT_H
+#endif

@@ -159,7 +159,7 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking()
     return std::move(font_list);
 }
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if QT_CONFIG(webengine_pepper_plugins)
 // content/browser/renderer_host/pepper/pepper_truetype_font_list.h
 void GetFontFamilies_SlowBlocking(std::vector<std::string> *font_families)
 {
@@ -173,7 +173,7 @@ void GetFontsInFamily_SlowBlocking(const std::string &, std::vector<ppapi::proxy
 {
     QT_NOT_USED
 }
-#endif // BUILDFLAG(ENABLE_PLUGINS)
+#endif // QT_CONFIG(webengine_pepper_plugins)
 
 } // namespace content
 

@@ -40,11 +40,9 @@
 #include "renderer/content_renderer_client_qt.h"
 
 #include "common/qt_messages.h"
-#include "printing/buildflags/buildflags.h"
 #include "renderer/content_settings_observer_qt.h"
-
 #include "base/strings/string_split.h"
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #endif
@@ -53,9 +51,9 @@
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
 #include "components/printing/renderer/print_render_frame_helper.h"
-#endif // if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/renderer/render_frame.h"
@@ -74,9 +72,9 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "content/public/common/web_preferences.h"
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
 #include "renderer/print_web_view_helper_delegate_qt.h"
-#endif // if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif
 
 #include "renderer/render_frame_observer_qt.h"
 #include "renderer/render_view_observer_qt.h"
@@ -124,7 +122,7 @@ void ContentRendererClientQt::RenderThreadStarted()
 
     renderThread->AddObserver(UserResourceController::instance());
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     if (!m_spellCheck)
         InitSpellCheck();
 #endif
@@ -146,14 +144,14 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_fr
 
     new QtWebEngineCore::ContentSettingsObserverQt(render_frame);
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
     new SpellCheckProvider(render_frame, m_spellCheck.data(), this);
 #endif
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     new printing::PrintRenderFrameHelper(
                 render_frame,
                 base::WrapUnique(new PrintWebViewHelperDelegateQt()));
-#endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
+#endif // QT_CONFIG(webengine_printing_and_pdf)
 }
 
 void ContentRendererClientQt::RunScriptsAtDocumentEnd(content::RenderFrame* render_frame)
@@ -432,7 +430,7 @@ void ContentRendererClientQt::AddSupportedKeySystems(std::vector<std::unique_ptr
 #endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
+#if QT_CONFIG(webengine_spellchecker)
 void ContentRendererClientQt::InitSpellCheck()
 {
     m_spellCheck.reset(new SpellCheck(&m_registry, this));

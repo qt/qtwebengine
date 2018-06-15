@@ -48,9 +48,9 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
 #include "chrome/browser/printing/print_job_manager.h"
-#endif // defined(ENABLE_BASIC_PRINTING)
+#endif
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/devtools/devtools_http_handler.h"
@@ -155,7 +155,7 @@ bool usingQtQuick2DRenderer()
     return device != QLatin1String("default");
 }
 #endif //QT_NO_OPENGL
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if QT_CONFIG(webengine_pepper_plugins)
 void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 {
 }
@@ -562,7 +562,7 @@ WebEngineContext::WebEngineContext()
     media::AudioManager::SetGlobalAppName(QCoreApplication::applicationName().toStdString());
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if QT_CONFIG(webengine_pepper_plugins)
     // Creating pepper plugins from the page (which calls PluginService::GetPluginInfoArray)
     // might fail unless the page queried the list of available plugins at least once
     // (which ends up calling PluginService::GetPlugins). Since the plugins list can only
@@ -572,17 +572,17 @@ WebEngineContext::WebEngineContext()
     content::PluginService::GetInstance()->GetPlugins(base::Bind(&dummyGetPluginCallback));
 #endif
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     m_printJobManager.reset(new printing::PrintJobManager());
-#endif // defined(ENABLE_BASIC_PRINTING)
+#endif
 
     content::WebUIControllerFactory::RegisterFactory(WebUIControllerFactoryQt::GetInstance());
 }
 
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
 printing::PrintJobManager* WebEngineContext::getPrintJobManager()
 {
     return m_printJobManager.get();
 }
-#endif // defined(ENABLE_BASIC_PRINTING)
+#endif
 } // namespace

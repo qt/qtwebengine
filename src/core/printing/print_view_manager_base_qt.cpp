@@ -93,7 +93,7 @@ PrintViewManagerBaseQt::~PrintViewManagerBaseQt()
 void PrintViewManagerBaseQt::UpdatePrintingEnabled()
 {
     bool enabled = false;
-#if BUILDFLAG(ENABLE_BASIC_PRINTING)
+#if QT_CONFIG(webengine_printing_and_pdf)
     enabled = true;
 #endif
     web_contents()->ForEachFrame(
