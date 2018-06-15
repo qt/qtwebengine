@@ -122,7 +122,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     if (params.disposition != WindowOpenDisposition::CURRENT_TAB) {
         QSharedPointer<WebContentsAdapter> targetAdapter = createWindow(0, params.disposition, gfx::Rect(), params.user_gesture);
         if (targetAdapter) {
-            if (targetAdapter->browserContext() != source->GetBrowserContext()) {
+            if (targetAdapter->profile() != source->GetBrowserContext()) {
                 target_site_instance = nullptr;
                 referrer = content::Referrer();
             }

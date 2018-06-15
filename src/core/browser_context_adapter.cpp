@@ -84,17 +84,17 @@ BrowserContextAdapter::BrowserContextAdapter(const QString &storageName):
 {
     WebEngineContext::current()->addBrowserContext(this);
     // creation of profile requires webengine context
-    m_browserContext.reset(new ProfileQt(this));
-    content::BrowserContext::Initialize(m_browserContext.data(), toFilePath(dataPath()));
+    m_profile.reset(new ProfileQt(this));
+    content::BrowserContext::Initialize(m_profile.data(), toFilePath(dataPath()));
     // fixme: this should not be here
-    m_browserContext->m_profileIOData->initializeOnUIThread();
+    m_profile->m_profileIOData->initializeOnUIThread();
 }
 
 BrowserContextAdapter::~BrowserContextAdapter()
 {
     WebEngineContext::current()->removeBrowserContext(this);
     if (m_downloadManagerDelegate) {
-        m_browserContext->GetDownloadManager(m_browserContext.data())->Shutdown();
+        m_profile->GetDownloadManager(m_profile.data())->Shutdown();
         m_downloadManagerDelegate.reset();
     }
 }
@@ -105,8 +105,8 @@ void BrowserContextAdapter::setStorageName(const QString &storageName)
         return;
     m_name = storageName;
     if (!m_offTheRecord) {
-        if (m_browserContext->m_urlRequestContextGetter.get())
-            m_browserContext->m_profileIOData->updateStorageSettings();
+        if (m_profile->m_urlRequestContextGetter.get())
+            m_profile->m_profileIOData->updateStorageSettings();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -117,15 +117,15 @@ void BrowserContextAdapter::setOffTheRecord(bool offTheRecord)
     if (offTheRecord == m_offTheRecord)
         return;
     m_offTheRecord = offTheRecord;
-    if (m_browserContext->m_urlRequestContextGetter.get())
-        m_browserContext->m_profileIOData->updateStorageSettings();
+    if (m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateStorageSettings();
     if (m_visitedLinksManager)
         resetVisitedLinksManager();
 }
 
-ProfileQt *BrowserContextAdapter::browserContext()
+ProfileQt *BrowserContextAdapter::profile()
 {
-    return m_browserContext.data();
+    return m_profile.data();
 }
 
 VisitedLinksManagerQt *BrowserContextAdapter::visitedLinksManager()
@@ -159,8 +159,8 @@ void BrowserContextAdapter::setRequestInterceptor(QWebEngineUrlRequestIntercepto
     if (m_requestInterceptor == interceptor)
         return;
     m_requestInterceptor = interceptor;
-    if (m_browserContext->m_urlRequestContextGetter.get())
-        m_browserContext->m_profileIOData->updateRequestInterceptor();
+    if (m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateRequestInterceptor();
 }
 
 void BrowserContextAdapter::addClient(BrowserContextAdapterClient *adapterClient)
@@ -215,8 +215,8 @@ void BrowserContextAdapter::setDataPath(const QString &path)
         return;
     m_dataPath = path;
     if (!m_offTheRecord) {
-        if (m_browserContext->m_urlRequestContextGetter.get())
-            m_browserContext->m_profileIOData->updateStorageSettings();
+        if (m_profile->m_urlRequestContextGetter.get())
+            m_profile->m_profileIOData->updateStorageSettings();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -238,8 +238,8 @@ void BrowserContextAdapter::setCachePath(const QString &path)
     if (m_cachePath == path)
         return;
     m_cachePath = path;
-    if (!m_offTheRecord && m_browserContext->m_urlRequestContextGetter.get())
-        m_browserContext->m_profileIOData->updateHttpCache();
+    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateHttpCache();
 }
 
 QString BrowserContextAdapter::cookiesPath() const
@@ -292,11 +292,11 @@ void BrowserContextAdapter::setHttpUserAgent(const QString &userAgent)
 
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     for (content::WebContentsImpl *web_contents : list)
-        if (web_contents->GetBrowserContext() == m_browserContext.data())
+        if (web_contents->GetBrowserContext() == m_profile.data())
             web_contents->SetUserAgentOverride(m_httpUserAgent.toStdString(), true);
 
-    if (m_browserContext->m_urlRequestContextGetter.get())
-        m_browserContext->m_profileIOData->updateUserAgent();
+    if (m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateUserAgent();
 }
 
 BrowserContextAdapter::HttpCacheType BrowserContextAdapter::httpCacheType() const
@@ -314,8 +314,8 @@ void BrowserContextAdapter::setHttpCacheType(BrowserContextAdapter::HttpCacheTyp
     m_httpCacheType = newhttpCacheType;
     if (oldCacheType == httpCacheType())
         return;
-    if (!m_offTheRecord && m_browserContext->m_urlRequestContextGetter.get())
-        m_browserContext->m_profileIOData->updateHttpCache();
+    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateHttpCache();
 }
 
 BrowserContextAdapter::PersistentCookiesPolicy BrowserContextAdapter::persistentCookiesPolicy() const
@@ -331,8 +331,8 @@ void BrowserContextAdapter::setPersistentCookiesPolicy(BrowserContextAdapter::Pe
     m_persistentCookiesPolicy = newPersistentCookiesPolicy;
     if (oldPolicy == persistentCookiesPolicy())
         return;
-    if (!m_offTheRecord && m_browserContext->m_urlRequestContextGetter.get())
-        m_browserContext->m_profileIOData->updateCookieStore();
+    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateCookieStore();
 }
 
 BrowserContextAdapter::VisitedLinksPolicy BrowserContextAdapter::visitedLinksPolicy() const
@@ -386,8 +386,8 @@ void BrowserContextAdapter::setHttpCacheMaxSize(int maxSize)
     if (m_httpCacheMaxSize == maxSize)
         return;
     m_httpCacheMaxSize = maxSize;
-    if (!m_offTheRecord && m_browserContext->m_urlRequestContextGetter.get())
-        m_browserContext->m_profileIOData->updateHttpCache();
+    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateHttpCache();
 }
 
 const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &BrowserContextAdapter::customUrlSchemeHandlers() const
@@ -402,8 +402,8 @@ const QList<QByteArray> BrowserContextAdapter::customUrlSchemes() const
 
 void BrowserContextAdapter::updateCustomUrlSchemeHandlers()
 {
-    if (m_browserContext->m_urlRequestContextGetter.get())
-        m_browserContext->m_profileIOData->updateJobFactory();
+    if (m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateJobFactory();
 }
 
 bool BrowserContextAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
@@ -452,12 +452,12 @@ UserResourceControllerHost *BrowserContextAdapter::userResourceController()
 
 void BrowserContextAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, bool reply)
 {
-    static_cast<PermissionManagerQt*>(browserContext()->GetPermissionManager())->permissionRequestReply(origin, type, reply);
+    static_cast<PermissionManagerQt*>(profile()->GetPermissionManager())->permissionRequestReply(origin, type, reply);
 }
 
 bool BrowserContextAdapter::checkPermission(const QUrl &origin, PermissionType type)
 {
-    return static_cast<PermissionManagerQt*>(browserContext()->GetPermissionManager())->checkPermission(origin, type);
+    return static_cast<PermissionManagerQt*>(profile()->GetPermissionManager())->checkPermission(origin, type);
 }
 
 QString BrowserContextAdapter::httpAcceptLanguageWithoutQualities() const
@@ -485,20 +485,20 @@ void BrowserContextAdapter::setHttpAcceptLanguage(const QString &httpAcceptLangu
 
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     for (content::WebContentsImpl *web_contents : list) {
-        if (web_contents->GetBrowserContext() == m_browserContext.data()) {
+        if (web_contents->GetBrowserContext() == m_profile.data()) {
             content::RendererPreferences* rendererPrefs = web_contents->GetMutableRendererPrefs();
             rendererPrefs->accept_languages = httpAcceptLanguageWithoutQualities().toStdString();
             web_contents->GetRenderViewHost()->SyncRendererPrefs();
         }
     }
 
-    if (m_browserContext->m_urlRequestContextGetter.get())
-        m_browserContext->m_profileIOData->updateUserAgent();
+    if (m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateUserAgent();
 }
 
 void BrowserContextAdapter::clearHttpCache()
 {
-    content::BrowsingDataRemover *remover = content::BrowserContext::GetBrowsingDataRemover(m_browserContext.data());
+    content::BrowsingDataRemover *remover = content::BrowserContext::GetBrowsingDataRemover(m_profile.data());
     remover->Remove(base::Time(), base::Time::Max(),
         content::BrowsingDataRemover::DATA_TYPE_CACHE,
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB | content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB);
@@ -507,14 +507,14 @@ void BrowserContextAdapter::clearHttpCache()
 void BrowserContextAdapter::setSpellCheckLanguages(const QStringList &languages)
 {
 #if QT_CONFIG(webengine_spellchecker)
-    m_browserContext->setSpellCheckLanguages(languages);
+    m_profile->setSpellCheckLanguages(languages);
 #endif
 }
 
 QStringList BrowserContextAdapter::spellCheckLanguages() const
 {
 #if QT_CONFIG(webengine_spellchecker)
-    return m_browserContext->spellCheckLanguages();
+    return m_profile->spellCheckLanguages();
 #else
     return QStringList();
 #endif
@@ -523,14 +523,14 @@ QStringList BrowserContextAdapter::spellCheckLanguages() const
 void BrowserContextAdapter::setSpellCheckEnabled(bool enabled)
 {
 #if QT_CONFIG(webengine_spellchecker)
-    m_browserContext->setSpellCheckEnabled(enabled);
+    m_profile->setSpellCheckEnabled(enabled);
 #endif
 }
 
 bool BrowserContextAdapter::isSpellCheckEnabled() const
 {
 #if QT_CONFIG(webengine_spellchecker)
-    return m_browserContext->isSpellCheckEnabled();
+    return m_profile->isSpellCheckEnabled();
 #else
     return false;
 #endif

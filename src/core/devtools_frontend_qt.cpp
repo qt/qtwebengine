@@ -174,7 +174,7 @@ DevToolsFrontendQt *DevToolsFrontendQt::Show(QSharedPointer<WebContentsAdapter> 
 
     if (!frontendAdapter->isInitialized()) {
         scoped_refptr<content::SiteInstance> site =
-            content::SiteInstance::CreateForURL(frontendAdapter->browserContext(), GURL(GetFrontendURL()));
+            content::SiteInstance::CreateForURL(frontendAdapter->profile(), GURL(GetFrontendURL()));
         frontendAdapter->initialize(site.get());
     }
 

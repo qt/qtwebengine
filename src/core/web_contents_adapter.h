@@ -188,7 +188,7 @@ public:
     void dpiScaleChanged();
     void backgroundColorChanged();
     QAccessibleInterface *browserAccessible();
-    ProfileQt* browserContext();
+    ProfileQt* profile();
     BrowserContextAdapter* browserContextAdapter();
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *, uint worldId);

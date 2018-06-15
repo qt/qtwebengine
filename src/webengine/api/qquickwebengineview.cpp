@@ -913,7 +913,7 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
     Q_EMIT q->profileChanged();
     m_settings->setParentSettings(profile->settings());
 
-    if (adapter->browserContext() != browserContextAdapter()->browserContext()) {
+    if (adapter->profile() != browserContextAdapter()->profile()) {
         // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
         bool wasInitialized = adapter->isInitialized();
         QUrl activeUrl = adapter->activeUrl();

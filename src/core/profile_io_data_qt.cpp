@@ -624,7 +624,7 @@ void ProfileIODataQt::updateHttpCache()
 
     if (m_httpCacheType == BrowserContextAdapter::NoCache) {
         content::BrowsingDataRemover *remover =
-                content::BrowserContext::GetBrowsingDataRemover(m_browserContextAdapter->browserContext());
+                content::BrowserContext::GetBrowsingDataRemover(m_browserContextAdapter->profile());
         remover->Remove(base::Time(), base::Time::Max(),
             content::BrowsingDataRemover::DATA_TYPE_CACHE,
             content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |

@@ -358,13 +358,13 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
 {
     int currentIndex;
     std::vector<std::unique_ptr<content::NavigationEntry>> entries;
-    deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->browserContextAdapter()->browserContext());
+    deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->browserContextAdapter()->profile());
 
     if (currentIndex == -1)
         return QSharedPointer<WebContentsAdapter>();
 
     // Unlike WebCore, Chromium only supports Restoring to a new WebContents instance.
-    content::WebContents* newWebContents = createBlankWebContents(adapterClient, adapterClient->browserContextAdapter()->browserContext());
+    content::WebContents* newWebContents = createBlankWebContents(adapterClient, adapterClient->browserContextAdapter()->profile());
     content::NavigationController &controller = newWebContents->GetController();
     controller.Restore(currentIndex, content::RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
 
@@ -427,7 +427,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
 
     // Create our own if a WebContents wasn't provided at construction.
     if (!m_webContents) {
-        content::WebContents::CreateParams create_params(m_browserContextAdapter->browserContext(), site);
+        content::WebContents::CreateParams create_params(m_browserContextAdapter->profile(), site);
         create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
         create_params.context = reinterpret_cast<gfx::NativeView>(m_adapterClient);
         m_webContents.reset(content::WebContents::Create(create_params));
@@ -555,7 +555,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
     GURL gurl = toGurl(request.url());
     if (!isInitialized()) {
         scoped_refptr<content::SiteInstance> site =
-            content::SiteInstance::CreateForURL(m_browserContextAdapter->browserContext(), gurl);
+            content::SiteInstance::CreateForURL(m_browserContextAdapter->profile(), gurl);
         initialize(site.get());
     }
 
@@ -885,9 +885,9 @@ qreal WebContentsAdapter::currentZoomFactor() const
     return content::ZoomLevelToZoomFactor(content::HostZoomMap::GetZoomLevel(m_webContents.get()));
 }
 
-ProfileQt* WebContentsAdapter::browserContext()
+ProfileQt* WebContentsAdapter::profile()
 {
-    return m_browserContextAdapter ? m_browserContextAdapter->browserContext() : m_webContents ?
+    return m_browserContextAdapter ? m_browserContextAdapter->profile() : m_webContents ?
                                          static_cast<ProfileQt*>(m_webContents->GetBrowserContext()) : nullptr;
 }
 

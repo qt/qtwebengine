@@ -86,7 +86,7 @@ void DownloadManagerDelegateQt::cancelDownload(const content::DownloadTargetCall
 
 void DownloadManagerDelegateQt::cancelDownload(quint32 downloadId)
 {
-    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_contextAdapter->browserContext());
+    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_contextAdapter->profile());
     download::DownloadItem *download = dlm->GetDownload(downloadId);
     if (download)
         download->Cancel(/* user_cancel */ true);
@@ -94,7 +94,7 @@ void DownloadManagerDelegateQt::cancelDownload(quint32 downloadId)
 
 void DownloadManagerDelegateQt::pauseDownload(quint32 downloadId)
 {
-    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_contextAdapter->browserContext());
+    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_contextAdapter->profile());
     download::DownloadItem *download = dlm->GetDownload(downloadId);
     if (download)
         download->Pause();
@@ -102,7 +102,7 @@ void DownloadManagerDelegateQt::pauseDownload(quint32 downloadId)
 
 void DownloadManagerDelegateQt::resumeDownload(quint32 downloadId)
 {
-    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_contextAdapter->browserContext());
+    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_contextAdapter->profile());
     download::DownloadItem *download = dlm->GetDownload(downloadId);
     if (download)
         download->Resume();

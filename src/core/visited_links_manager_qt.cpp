@@ -109,11 +109,11 @@ static void ensureDirectoryExists(const base::FilePath &path)
 VisitedLinksManagerQt::VisitedLinksManagerQt(BrowserContextAdapter *adapter)
     : m_delegate(new VisitedLinkDelegateQt)
 {
-    Q_ASSERT(adapter && adapter->browserContext());
-    ProfileQt *browserContext = adapter->browserContext();
+    Q_ASSERT(adapter && adapter->profile());
+    ProfileQt *profile = adapter->profile();
     if (adapter->persistVisitedLinks())
-        ensureDirectoryExists(browserContext->GetPath());
-    m_visitedLinkMaster.reset(new visitedlink::VisitedLinkMaster(browserContext, m_delegate.data(), adapter->persistVisitedLinks()));
+        ensureDirectoryExists(profile->GetPath());
+    m_visitedLinkMaster.reset(new visitedlink::VisitedLinkMaster(profile, m_delegate.data(), adapter->persistVisitedLinks()));
     m_visitedLinkMaster->Init();
 }
 
