@@ -68,7 +68,7 @@ QT_FORWARD_DECLARE_CLASS(QObject)
 
 namespace QtWebEngineCore {
 
-class BrowserContextAdapterClient;
+class ProfileAdapterClient;
 class DownloadManagerDelegateQt;
 class ProfileQt;
 class UserResourceControllerHost;
@@ -91,9 +91,9 @@ public:
     QWebEngineUrlRequestInterceptor* requestInterceptor();
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
-    QList<BrowserContextAdapterClient*> clients() { return m_clients; }
-    void addClient(BrowserContextAdapterClient *adapterClient);
-    void removeClient(BrowserContextAdapterClient *adapterClient);
+    QList<ProfileAdapterClient*> clients() { return m_clients; }
+    void addClient(ProfileAdapterClient *adapterClient);
+    void removeClient(ProfileAdapterClient *adapterClient);
 
     void cancelDownload(quint32 downloadId);
     void pauseDownload(quint32 downloadId);
@@ -206,7 +206,7 @@ private:
     PersistentCookiesPolicy m_persistentCookiesPolicy;
     VisitedLinksPolicy m_visitedLinksPolicy;
     QHash<QByteArray, QWebEngineUrlSchemeHandler *> m_customUrlSchemeHandlers;
-    QList<BrowserContextAdapterClient*> m_clients;
+    QList<ProfileAdapterClient*> m_clients;
     int m_httpCacheMaxSize;
 
     Q_DISABLE_COPY(ProfileAdapter)

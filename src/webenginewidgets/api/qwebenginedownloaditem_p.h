@@ -82,7 +82,7 @@ public:
     qint64 totalBytes;
     qint64 receivedBytes;
 
-    void update(const QtWebEngineCore::BrowserContextAdapterClient::DownloadItemInfo &info);
+    void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
 };
 
 QT_END_NAMESPACE

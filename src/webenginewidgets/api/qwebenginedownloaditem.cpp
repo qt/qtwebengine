@@ -46,46 +46,46 @@
 
 QT_BEGIN_NAMESPACE
 
-using QtWebEngineCore::BrowserContextAdapterClient;
+using QtWebEngineCore::ProfileAdapterClient;
 
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NoReason, QWebEngineDownloadItem::NoReason)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileFailed, QWebEngineDownloadItem::FileFailed)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileAccessDenied, QWebEngineDownloadItem::FileAccessDenied)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileNoSpace, QWebEngineDownloadItem::FileNoSpace)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileNameTooLong, QWebEngineDownloadItem::FileNameTooLong)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileTooLarge, QWebEngineDownloadItem::FileTooLarge)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileVirusInfected, QWebEngineDownloadItem::FileVirusInfected)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileTransientError, QWebEngineDownloadItem::FileTransientError)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileBlocked, QWebEngineDownloadItem::FileBlocked)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileSecurityCheckFailed, QWebEngineDownloadItem::FileSecurityCheckFailed)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileTooShort, QWebEngineDownloadItem::FileTooShort)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileHashMismatch, QWebEngineDownloadItem::FileHashMismatch)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NetworkFailed, QWebEngineDownloadItem::NetworkFailed)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NetworkTimeout, QWebEngineDownloadItem::NetworkTimeout)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NetworkDisconnected, QWebEngineDownloadItem::NetworkDisconnected)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NetworkServerDown, QWebEngineDownloadItem::NetworkServerDown)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NetworkInvalidRequest, QWebEngineDownloadItem::NetworkInvalidRequest)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerFailed, QWebEngineDownloadItem::ServerFailed)
-//ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerNoRange, QWebEngineDownloadItem::ServerNoRange)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerBadContent, QWebEngineDownloadItem::ServerBadContent)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerUnauthorized, QWebEngineDownloadItem::ServerUnauthorized)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerCertProblem, QWebEngineDownloadItem::ServerCertProblem)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerForbidden, QWebEngineDownloadItem::ServerForbidden)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerUnreachable, QWebEngineDownloadItem::ServerUnreachable)
-ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::UserCanceled, QWebEngineDownloadItem::UserCanceled)
-//ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::UserShutdown, QWebEngineDownloadItem::UserShutdown)
-//ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::Crash, QWebEngineDownloadItem::Crash)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::NoReason, QWebEngineDownloadItem::NoReason)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::FileFailed, QWebEngineDownloadItem::FileFailed)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::FileAccessDenied, QWebEngineDownloadItem::FileAccessDenied)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::FileNoSpace, QWebEngineDownloadItem::FileNoSpace)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::FileNameTooLong, QWebEngineDownloadItem::FileNameTooLong)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::FileTooLarge, QWebEngineDownloadItem::FileTooLarge)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::FileVirusInfected, QWebEngineDownloadItem::FileVirusInfected)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::FileTransientError, QWebEngineDownloadItem::FileTransientError)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::FileBlocked, QWebEngineDownloadItem::FileBlocked)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::FileSecurityCheckFailed, QWebEngineDownloadItem::FileSecurityCheckFailed)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::FileTooShort, QWebEngineDownloadItem::FileTooShort)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::FileHashMismatch, QWebEngineDownloadItem::FileHashMismatch)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::NetworkFailed, QWebEngineDownloadItem::NetworkFailed)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::NetworkTimeout, QWebEngineDownloadItem::NetworkTimeout)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::NetworkDisconnected, QWebEngineDownloadItem::NetworkDisconnected)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::NetworkServerDown, QWebEngineDownloadItem::NetworkServerDown)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::NetworkInvalidRequest, QWebEngineDownloadItem::NetworkInvalidRequest)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::ServerFailed, QWebEngineDownloadItem::ServerFailed)
+//ASSERT_ENUMS_MATCH(ProfileAdapterClient::ServerNoRange, QWebEngineDownloadItem::ServerNoRange)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::ServerBadContent, QWebEngineDownloadItem::ServerBadContent)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::ServerUnauthorized, QWebEngineDownloadItem::ServerUnauthorized)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::ServerCertProblem, QWebEngineDownloadItem::ServerCertProblem)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::ServerForbidden, QWebEngineDownloadItem::ServerForbidden)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::ServerUnreachable, QWebEngineDownloadItem::ServerUnreachable)
+ASSERT_ENUMS_MATCH(ProfileAdapterClient::UserCanceled, QWebEngineDownloadItem::UserCanceled)
+//ASSERT_ENUMS_MATCH(ProfileAdapterClient::UserShutdown, QWebEngineDownloadItem::UserShutdown)
+//ASSERT_ENUMS_MATCH(ProfileAdapterClient::Crash, QWebEngineDownloadItem::Crash)
 
 static inline QWebEngineDownloadItem::DownloadState toDownloadState(int state)
 {
     switch (state) {
-    case BrowserContextAdapterClient::DownloadInProgress:
+    case ProfileAdapterClient::DownloadInProgress:
         return QWebEngineDownloadItem::DownloadInProgress;
-    case BrowserContextAdapterClient::DownloadCompleted:
+    case ProfileAdapterClient::DownloadCompleted:
         return QWebEngineDownloadItem::DownloadCompleted;
-    case BrowserContextAdapterClient::DownloadCancelled:
+    case ProfileAdapterClient::DownloadCancelled:
         return QWebEngineDownloadItem::DownloadCancelled;
-    case BrowserContextAdapterClient::DownloadInterrupted:
+    case ProfileAdapterClient::DownloadInterrupted:
         return QWebEngineDownloadItem::DownloadInterrupted;
     default:
         Q_UNREACHABLE();
@@ -176,7 +176,7 @@ QWebEngineDownloadItemPrivate::~QWebEngineDownloadItemPrivate()
 {
 }
 
-void QWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClient::DownloadItemInfo &info)
+void QWebEngineDownloadItemPrivate::update(const ProfileAdapterClient::DownloadItemInfo &info)
 {
     Q_Q(QWebEngineDownloadItem);
 
@@ -626,8 +626,8 @@ QWebEngineDownloadItem::DownloadInterruptReason QWebEngineDownloadItem::interrup
 
 QString QWebEngineDownloadItem::interruptReasonString() const
 {
-    return BrowserContextAdapterClient::downloadInterruptReasonToString(
-              static_cast<BrowserContextAdapterClient::DownloadInterruptReason>(interruptReason()));
+    return ProfileAdapterClient::downloadInterruptReasonToString(
+              static_cast<ProfileAdapterClient::DownloadInterruptReason>(interruptReason()));
 }
 
 QWebEngineDownloadItem::QWebEngineDownloadItem(QWebEngineDownloadItemPrivate *p, QObject *parent)

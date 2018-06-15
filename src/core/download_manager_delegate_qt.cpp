@@ -52,7 +52,7 @@
 #include <QMimeDatabase>
 #include <QStandardPaths>
 
-#include "browser_context_adapter_client.h"
+#include "profile_adapter_client.h"
 #include "profile_adapter.h"
 #include "profile_qt.h"
 #include "qtwebenginecoreglobal.h"
@@ -125,14 +125,14 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
 
     int downloadType = 0;
     if (m_nextDownloadIsUserRequested) {
-        downloadType = BrowserContextAdapterClient::UserRequested;
+        downloadType = ProfileAdapterClient::UserRequested;
         m_nextDownloadIsUserRequested = false;
     } else {
         bool isAttachment = net::HttpContentDisposition(item->GetContentDisposition(), std::string()).is_attachment();
         if (isAttachment)
-            downloadType = BrowserContextAdapterClient::Attachment;
+            downloadType = ProfileAdapterClient::Attachment;
         else
-            downloadType = BrowserContextAdapterClient::DownloadAttribute;
+            downloadType = ProfileAdapterClient::DownloadAttribute;
     }
 
     if (suggestedFilename.isEmpty())
@@ -166,9 +166,9 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
     }
 
     item->AddObserver(this);
-    QList<BrowserContextAdapterClient*> clients = m_profileAdapter->clients();
+    QList<ProfileAdapterClient*> clients = m_profileAdapter->clients();
     if (!clients.isEmpty()) {
-        BrowserContextAdapterClient::DownloadItemInfo info = {
+        ProfileAdapterClient::DownloadItemInfo info = {
             item->GetId(),
             toQt(item->GetURL()),
             item->GetState(),
@@ -176,7 +176,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
             item->GetReceivedBytes(),
             mimeTypeString,
             suggestedFilePath,
-            BrowserContextAdapterClient::UnknownSavePageFormat,
+            ProfileAdapterClient::UnknownSavePageFormat,
             false /* accepted */,
             false /* paused */,
             false /* done */,
@@ -184,7 +184,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
             item->GetLastReason()
         };
 
-        for (BrowserContextAdapterClient *client : qAsConst(clients)) {
+        for (ProfileAdapterClient *client : qAsConst(clients)) {
             client->downloadRequested(info);
             if (info.accepted)
                 break;
@@ -234,7 +234,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
     Q_UNUSED(default_extension);
     Q_UNUSED(can_save_as_complete);
 
-    QList<BrowserContextAdapterClient*> clients = m_profileAdapter->clients();
+    QList<ProfileAdapterClient*> clients = m_profileAdapter->clients();
     if (clients.isEmpty())
         return;
 
@@ -255,15 +255,15 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         suggestedFilePath = downloadDir.absoluteFilePath(suggestedFilePath);
     }
 
-    BrowserContextAdapterClient::SavePageFormat suggestedSaveFormat
-            = static_cast<BrowserContextAdapterClient::SavePageFormat>(spi.requestedFormat);
-    if (suggestedSaveFormat == BrowserContextAdapterClient::UnknownSavePageFormat)
-        suggestedSaveFormat = BrowserContextAdapterClient::MimeHtmlSaveFormat;
+    ProfileAdapterClient::SavePageFormat suggestedSaveFormat
+            = static_cast<ProfileAdapterClient::SavePageFormat>(spi.requestedFormat);
+    if (suggestedSaveFormat == ProfileAdapterClient::UnknownSavePageFormat)
+        suggestedSaveFormat = ProfileAdapterClient::MimeHtmlSaveFormat;
 
     // Clear the delegate's SavePageInfo. It's only valid for the page currently being saved.
     contentsDelegate->setSavePageInfo(SavePageInfo());
 
-    BrowserContextAdapterClient::DownloadItemInfo info = {
+    ProfileAdapterClient::DownloadItemInfo info = {
         m_currentId + 1,
         toQt(web_contents->GetURL()),
         download::DownloadItem::IN_PROGRESS,
@@ -275,11 +275,11 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         acceptedByDefault,
         false, /* paused */
         false, /* done */
-        BrowserContextAdapterClient::SavePage,
-        BrowserContextAdapterClient::NoReason
+        ProfileAdapterClient::SavePage,
+        ProfileAdapterClient::NoReason
     };
 
-    for (BrowserContextAdapterClient *client : qAsConst(clients)) {
+    for (ProfileAdapterClient *client : qAsConst(clients)) {
         client->downloadRequested(info);
         if (info.accepted)
             break;
@@ -321,9 +321,9 @@ void DownloadManagerDelegateQt::savePackageDownloadCreated(download::DownloadIte
 
 void DownloadManagerDelegateQt::OnDownloadUpdated(download::DownloadItem *download)
 {
-    QList<BrowserContextAdapterClient*> clients = m_profileAdapter->clients();
+    QList<ProfileAdapterClient*> clients = m_profileAdapter->clients();
     if (!clients.isEmpty()) {
-        BrowserContextAdapterClient::DownloadItemInfo info = {
+        ProfileAdapterClient::DownloadItemInfo info = {
             download->GetId(),
             toQt(download->GetURL()),
             download->GetState(),
@@ -331,7 +331,7 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(download::DownloadItem *downlo
             download->GetReceivedBytes(),
             toQt(download->GetMimeType()),
             QString(),
-            BrowserContextAdapterClient::UnknownSavePageFormat,
+            ProfileAdapterClient::UnknownSavePageFormat,
             true /* accepted */,
             download->IsPaused(),
             download->IsDone(),
@@ -339,7 +339,7 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(download::DownloadItem *downlo
             download->GetLastReason()
         };
 
-        for (BrowserContextAdapterClient *client : qAsConst(clients)) {
+        for (ProfileAdapterClient *client : qAsConst(clients)) {
             client->downloadUpdated(info);
         }
     }

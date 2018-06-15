@@ -44,7 +44,7 @@
 #include "web_contents_adapter.h"
 
 #include "browser_accessibility_qt.h"
-#include "browser_context_adapter_client.h"
+#include "profile_adapter_client.h"
 #include "profile_adapter.h"
 #include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"

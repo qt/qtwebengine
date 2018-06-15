@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include "browser_context_adapter_client.h"
+#include "profile_adapter_client.h"
 #include "profile_adapter.h"
 #include "qquickwebengineprofile_p.h"
 
@@ -66,7 +66,7 @@ class QQuickWebEngineDownloadItem;
 class QQuickWebEngineSettings;
 class QQuickWebEngineViewPrivate;
 
-class QQuickWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
+class QQuickWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineProfile)
     QQuickWebEngineProfilePrivate(QtWebEngineCore::ProfileAdapter *profileAdapter);

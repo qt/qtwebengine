@@ -41,7 +41,6 @@ SOURCES = \
         authentication_dialog_controller.cpp \
         browser_accessibility_manager_qt.cpp \
         browser_accessibility_qt.cpp \
-        browser_context_adapter_client.cpp \
         browsing_data_remover_delegate_qt.cpp \
         browser_message_filter_qt.cpp \
         certificate_error_controller.cpp \
@@ -93,6 +92,7 @@ SOURCES = \
         permission_manager_qt.cpp \
         process_main.cpp \
         profile_adapter.cpp \
+        profile_adapter_client.cpp \
         profile_qt.cpp \
         profile_io_data_qt.cpp \
         quota_permission_context_qt.cpp \
@@ -130,7 +130,6 @@ HEADERS = \
         build_config_qt.h \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
-        browser_context_adapter_client.h \
         browsing_data_remover_delegate_qt.h \
         browser_message_filter_qt.h \
         certificate_error_controller_p.h \
@@ -183,6 +182,7 @@ HEADERS = \
         permission_manager_qt.h \
         process_main.h \
         profile_adapter.h \
+        profile_adapter_client.h \
         profile_qt.h \
         profile_io_data_qt.h \
         proxy_config_service_qt.h \

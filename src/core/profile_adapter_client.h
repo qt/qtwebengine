@@ -48,8 +48,8 @@
 // We mean it.
 //
 
-#ifndef BROWSER_CONTEXT_ADAPTER_CLIENT_H
-#define BROWSER_CONTEXT_ADAPTER_CLIENT_H
+#ifndef PROFILE_ADAPTER_CLIENT_H
+#define PROFILE_ADAPTER_CLIENT_H
 
 #include "qtwebenginecoreglobal_p.h"
 #include <QString>
@@ -57,7 +57,7 @@
 
 namespace QtWebEngineCore {
 
-class QWEBENGINECORE_PRIVATE_EXPORT BrowserContextAdapterClient
+class QWEBENGINECORE_PRIVATE_EXPORT ProfileAdapterClient
 {
 public:
     // Keep in sync with content::DownloadItem::DownloadState
@@ -135,7 +135,7 @@ public:
         int downloadInterruptReason;
     };
 
-    virtual ~BrowserContextAdapterClient() { }
+    virtual ~ProfileAdapterClient() { }
 
     virtual void downloadRequested(DownloadItemInfo &info) = 0;
     virtual void downloadUpdated(const DownloadItemInfo &info) = 0;
@@ -144,4 +144,4 @@ public:
 
 } // namespace
 
-#endif // BROWSER_CONTEXT_ADAPTER_CLIENT_H
+#endif // PROFILE_ADAPTER_CLIENT_H

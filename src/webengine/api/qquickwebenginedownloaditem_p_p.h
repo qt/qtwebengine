@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include "browser_context_adapter_client.h"
+#include "profile_adapter_client.h"
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebengineprofile.h"
 #include <QString>
@@ -81,7 +81,7 @@ public:
     bool downloadFinished;
     bool downloadPaused;
 
-    void update(const QtWebEngineCore::BrowserContextAdapterClient::DownloadItemInfo &info);
+    void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
     void updateState(QQuickWebEngineDownloadItem::DownloadState newState);
 };
 

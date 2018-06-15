@@ -163,12 +163,12 @@ void ProfileAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *inte
         m_profile->m_profileIOData->updateRequestInterceptor();
 }
 
-void ProfileAdapter::addClient(BrowserContextAdapterClient *adapterClient)
+void ProfileAdapter::addClient(ProfileAdapterClient *adapterClient)
 {
     m_clients.append(adapterClient);
 }
 
-void ProfileAdapter::removeClient(BrowserContextAdapterClient *adapterClient)
+void ProfileAdapter::removeClient(ProfileAdapterClient *adapterClient)
 {
     m_clients.removeOne(adapterClient);
 }
