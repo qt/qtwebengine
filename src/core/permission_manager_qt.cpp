@@ -50,15 +50,15 @@
 
 namespace QtWebEngineCore {
 
-BrowserContextAdapter::PermissionType toQt(content::PermissionType type)
+ProfileAdapter::PermissionType toQt(content::PermissionType type)
 {
     switch (type) {
     case content::PermissionType::GEOLOCATION:
-        return BrowserContextAdapter::GeolocationPermission;
+        return ProfileAdapter::GeolocationPermission;
     case content::PermissionType::AUDIO_CAPTURE:
-        return BrowserContextAdapter::AudioCapturePermission;
+        return ProfileAdapter::AudioCapturePermission;
     case content::PermissionType::VIDEO_CAPTURE:
-        return BrowserContextAdapter::VideoCapturePermission;
+        return ProfileAdapter::VideoCapturePermission;
     case content::PermissionType::FLASH:
     case content::PermissionType::NOTIFICATIONS:
     case content::PermissionType::MIDI_SYSEX:
@@ -74,7 +74,7 @@ BrowserContextAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::NUM:
         break;
     }
-    return BrowserContextAdapter::UnsupportedPermission;
+    return ProfileAdapter::UnsupportedPermission;
 }
 
 PermissionManagerQt::PermissionManagerQt()
@@ -87,9 +87,9 @@ PermissionManagerQt::~PermissionManagerQt()
 {
 }
 
-void PermissionManagerQt::permissionRequestReply(const QUrl &origin, BrowserContextAdapter::PermissionType type, bool reply)
+void PermissionManagerQt::permissionRequestReply(const QUrl &origin, ProfileAdapter::PermissionType type, bool reply)
 {
-    QPair<QUrl, BrowserContextAdapter::PermissionType> key(origin, type);
+    QPair<QUrl, ProfileAdapter::PermissionType> key(origin, type);
     m_permissions[key] = reply;
     blink::mojom::PermissionStatus status = reply ? blink::mojom::PermissionStatus::GRANTED : blink::mojom::PermissionStatus::DENIED;
     {
@@ -114,13 +114,13 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &origin, BrowserCont
             std::vector<blink::mojom::PermissionStatus> result;
             result.reserve(it->types.size());
             for (content::PermissionType permission : it->types) {
-                const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
-                if (permissionType == BrowserContextAdapter::UnsupportedPermission) {
+                const ProfileAdapter::PermissionType permissionType = toQt(permission);
+                if (permissionType == ProfileAdapter::UnsupportedPermission) {
                     result.push_back(blink::mojom::PermissionStatus::DENIED);
                     continue;
                 }
 
-                QPair<QUrl, BrowserContextAdapter::PermissionType> key(origin, permissionType);
+                QPair<QUrl, ProfileAdapter::PermissionType> key(origin, permissionType);
                 if (!m_permissions.contains(key)) {
                     answerable = false;
                     break;
@@ -140,9 +140,9 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &origin, BrowserCont
     }
 }
 
-bool PermissionManagerQt::checkPermission(const QUrl &origin, BrowserContextAdapter::PermissionType type)
+bool PermissionManagerQt::checkPermission(const QUrl &origin, ProfileAdapter::PermissionType type)
 {
-    QPair<QUrl, BrowserContextAdapter::PermissionType> key(origin, type);
+    QPair<QUrl, ProfileAdapter::PermissionType> key(origin, type);
     return m_permissions.contains(key) && m_permissions[key];
 }
 
@@ -153,14 +153,14 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
                                             const base::Callback<void(blink::mojom::PermissionStatus)>& callback)
 {
     int request_id = ++m_requestIdCount;
-    BrowserContextAdapter::PermissionType permissionType = toQt(permission);
-    if (permissionType == BrowserContextAdapter::UnsupportedPermission) {
+    ProfileAdapter::PermissionType permissionType = toQt(permission);
+    if (permissionType == ProfileAdapter::UnsupportedPermission) {
         callback.Run(blink::mojom::PermissionStatus::DENIED);
         return kNoPendingOperation;
     }
     // Audio and video-capture should not come this way currently
-    Q_ASSERT(permissionType != BrowserContextAdapter::AudioCapturePermission
-          && permissionType != BrowserContextAdapter::VideoCapturePermission);
+    Q_ASSERT(permissionType != ProfileAdapter::AudioCapturePermission
+          && permissionType != ProfileAdapter::VideoCapturePermission);
 
     content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents();
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
@@ -171,7 +171,7 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
         callback
     };
     m_requests.insert(request_id, request);
-    if (permissionType == BrowserContextAdapter::GeolocationPermission)
+    if (permissionType == ProfileAdapter::GeolocationPermission)
         contentsDelegate->requestGeolocationPermission(request.origin);
     return request_id;
 }
@@ -186,8 +186,8 @@ int PermissionManagerQt::RequestPermissions(const std::vector<content::Permissio
     std::vector<blink::mojom::PermissionStatus> result;
     result.reserve(permissions.size());
     for (content::PermissionType permission : permissions) {
-        const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
-        if (permissionType == BrowserContextAdapter::UnsupportedPermission)
+        const ProfileAdapter::PermissionType permissionType = toQt(permission);
+        if (permissionType == ProfileAdapter::UnsupportedPermission)
             result.push_back(blink::mojom::PermissionStatus::DENIED);
         else {
             answerable = false;
@@ -210,8 +210,8 @@ int PermissionManagerQt::RequestPermissions(const std::vector<content::Permissio
     };
     m_multiRequests.insert(request_id, request);
     for (content::PermissionType permission : permissions) {
-        const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
-        if (permissionType == BrowserContextAdapter::GeolocationPermission)
+        const ProfileAdapter::PermissionType permissionType = toQt(permission);
+        if (permissionType == ProfileAdapter::GeolocationPermission)
             contentsDelegate->requestGeolocationPermission(request.origin);
     }
     return request_id;
@@ -222,11 +222,11 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& /*embedding_origin*/)
 {
-    const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
-    if (permissionType == BrowserContextAdapter::UnsupportedPermission)
+    const ProfileAdapter::PermissionType permissionType = toQt(permission);
+    if (permissionType == ProfileAdapter::UnsupportedPermission)
         return blink::mojom::PermissionStatus::DENIED;
 
-    QPair<QUrl, BrowserContextAdapter::PermissionType> key(toQt(requesting_origin), permissionType);
+    QPair<QUrl, ProfileAdapter::PermissionType> key(toQt(requesting_origin), permissionType);
     if (!m_permissions.contains(key))
         return blink::mojom::PermissionStatus::ASK;
     if (m_permissions[key])
@@ -250,11 +250,11 @@ void PermissionManagerQt::ResetPermission(
     const GURL& requesting_origin,
     const GURL& /*embedding_origin*/)
 {
-    const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
-    if (permissionType == BrowserContextAdapter::UnsupportedPermission)
+    const ProfileAdapter::PermissionType permissionType = toQt(permission);
+    if (permissionType == ProfileAdapter::UnsupportedPermission)
         return;
 
-    QPair<QUrl, BrowserContextAdapter::PermissionType> key(toQt(requesting_origin), permissionType);
+    QPair<QUrl, ProfileAdapter::PermissionType> key(toQt(requesting_origin), permissionType);
     m_permissions.remove(key);
 }
 

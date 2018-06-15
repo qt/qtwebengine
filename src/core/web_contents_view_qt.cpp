@@ -39,7 +39,7 @@
 
 #include "web_contents_view_qt.h"
 
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
@@ -205,7 +205,7 @@ void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const conten
     // must be initialized to true due to the way how the initialization sequence
     // in SpellCheck works ie. typing the first word triggers the creation
     // of the SpellcheckService. Use user preference store instead.
-    contextMenuData.setIsSpellCheckerEnabled(m_client->browserContextAdapter()->isSpellCheckEnabled());
+    contextMenuData.setIsSpellCheckerEnabled(m_client->profileAdapter()->isSpellCheckEnabled());
 #endif
     m_client->contextMenuRequested(contextMenuData);
 }

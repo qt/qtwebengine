@@ -39,7 +39,7 @@
 
 #include "visited_links_manager_qt.h"
 
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "content_browser_client_qt.h"
 #include "profile_qt.h"
 #include "type_conversion.h"
@@ -106,7 +106,7 @@ static void ensureDirectoryExists(const base::FilePath &path)
              errorstr.c_str());
 }
 
-VisitedLinksManagerQt::VisitedLinksManagerQt(BrowserContextAdapter *adapter)
+VisitedLinksManagerQt::VisitedLinksManagerQt(ProfileAdapter *adapter)
     : m_delegate(new VisitedLinkDelegateQt)
 {
     Q_ASSERT(adapter && adapter->profile());

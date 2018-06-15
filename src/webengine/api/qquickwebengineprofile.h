@@ -48,10 +48,6 @@
 #include <QtCore/QString>
 #include <QtQml/QQmlListProperty>
 
-namespace QtWebEngineCore {
-class BrowserContextAdapter;
-}
-
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineDownloadItem;

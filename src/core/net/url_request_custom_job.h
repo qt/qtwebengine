@@ -48,7 +48,7 @@ QT_FORWARD_DECLARE_CLASS(QIODevice)
 
 namespace QtWebEngineCore {
 
-class BrowserContextAdapter;
+class ProfileAdapter;
 class URLRequestCustomJobDelegate;
 class URLRequestCustomJobProxy;
 
@@ -58,7 +58,7 @@ public:
     URLRequestCustomJob(net::URLRequest *request,
                         net::NetworkDelegate *networkDelegate,
                         const std::string &scheme,
-                        QPointer<BrowserContextAdapter> adapter);
+                        QPointer<ProfileAdapter> profileAdapter);
     void Start() override;
     void Kill() override;
     int ReadRawData(net::IOBuffer *buf, int buf_size)  override;

@@ -45,7 +45,7 @@
 
 #include "browser_accessibility_qt.h"
 #include "browser_context_adapter_client.h"
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
@@ -358,13 +358,13 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
 {
     int currentIndex;
     std::vector<std::unique_ptr<content::NavigationEntry>> entries;
-    deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->browserContextAdapter()->profile());
+    deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->profileAdapter()->profile());
 
     if (currentIndex == -1)
         return QSharedPointer<WebContentsAdapter>();
 
     // Unlike WebCore, Chromium only supports Restoring to a new WebContents instance.
-    content::WebContents* newWebContents = createBlankWebContents(adapterClient, adapterClient->browserContextAdapter()->profile());
+    content::WebContents* newWebContents = createBlankWebContents(adapterClient, adapterClient->profileAdapter()->profile());
     content::NavigationController &controller = newWebContents->GetController();
     controller.Restore(currentIndex, content::RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
 
@@ -383,7 +383,7 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
 }
 
 WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
-  : m_browserContextAdapter(nullptr)
+  : m_profileAdapter(nullptr)
   , m_webContents(webContents)
   , m_webChannel(nullptr)
   , m_webChannelWorld(0)
@@ -408,8 +408,8 @@ void WebContentsAdapter::setClient(WebContentsAdapterClient *adapterClient)
 {
     Q_ASSERT(!isInitialized());
     m_adapterClient = adapterClient;
-    m_browserContextAdapter = adapterClient->browserContextAdapter();
-    Q_ASSERT(m_browserContextAdapter);
+    m_profileAdapter = adapterClient->profileAdapter();
+    Q_ASSERT(m_profileAdapter);
 
     // This might replace any adapter that has been initialized with this WebEngineSettings.
     adapterClient->webEngineSettings()->setWebContentsAdapter(this);
@@ -427,7 +427,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
 
     // Create our own if a WebContents wasn't provided at construction.
     if (!m_webContents) {
-        content::WebContents::CreateParams create_params(m_browserContextAdapter->profile(), site);
+        content::WebContents::CreateParams create_params(m_profileAdapter->profile(), site);
         create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
         create_params.context = reinterpret_cast<gfx::NativeView>(m_adapterClient);
         m_webContents.reset(content::WebContents::Create(create_params));
@@ -438,8 +438,8 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
     const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
     rendererPrefs->caret_blink_interval = base::TimeDelta::FromMillisecondsD(0.5 * static_cast<double>(qtCursorFlashTime));
-    rendererPrefs->user_agent_override = m_browserContextAdapter->httpUserAgent().toStdString();
-    rendererPrefs->accept_languages = m_browserContextAdapter->httpAcceptLanguageWithoutQualities().toStdString();
+    rendererPrefs->user_agent_override = m_profileAdapter->httpUserAgent().toStdString();
+    rendererPrefs->accept_languages = m_profileAdapter->httpAcceptLanguageWithoutQualities().toStdString();
 #if QT_CONFIG(webengine_webrtc)
     base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
     if (commandLine->HasSwitch(switches::kForceWebRtcIPHandlingPolicy))
@@ -479,7 +479,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
     // force to initialize visited links in VisitedLinkSlave.
     // It must be done before creating a RenderView.
-    m_browserContextAdapter->visitedLinksManager();
+    m_profileAdapter->visitedLinksManager();
 
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
@@ -555,7 +555,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
     GURL gurl = toGurl(request.url());
     if (!isInitialized()) {
         scoped_refptr<content::SiteInstance> site =
-            content::SiteInstance::CreateForURL(m_browserContextAdapter->profile(), gurl);
+            content::SiteInstance::CreateForURL(m_profileAdapter->profile(), gurl);
         initialize(site.get());
     }
 
@@ -887,14 +887,14 @@ qreal WebContentsAdapter::currentZoomFactor() const
 
 ProfileQt* WebContentsAdapter::profile()
 {
-    return m_browserContextAdapter ? m_browserContextAdapter->profile() : m_webContents ?
+    return m_profileAdapter ? m_profileAdapter->profile() : m_webContents ?
                                          static_cast<ProfileQt*>(m_webContents->GetBrowserContext()) : nullptr;
 }
 
-BrowserContextAdapter* WebContentsAdapter::browserContextAdapter()
+ProfileAdapter* WebContentsAdapter::profileAdapter()
 {
-    return m_browserContextAdapter ? m_browserContextAdapter : m_webContents ?
-                    static_cast<ProfileQt*>(m_webContents->GetBrowserContext())->adapter() : nullptr;
+    return m_profileAdapter ? m_profileAdapter : m_webContents ?
+                    static_cast<ProfileQt*>(m_webContents->GetBrowserContext())->profileAdapter() : nullptr;
 }
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -1008,7 +1008,7 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     CHECK_INITIALIZED();
     content::BrowserContext *bctx = m_webContents->GetBrowserContext();
     content::DownloadManager *dlm =  content::BrowserContext::GetDownloadManager(bctx);
-    DownloadManagerDelegateQt *dlmd = m_browserContextAdapter->downloadManagerDelegate();
+    DownloadManagerDelegateQt *dlmd = m_profileAdapter->downloadManagerDelegate();
 
     if (!dlm)
         return;
@@ -1220,16 +1220,16 @@ void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, 
     CHECK_INITIALIZED();
     // Let the permission manager remember the reply.
     if (flags & WebContentsAdapterClient::MediaAudioCapture)
-        m_browserContextAdapter->permissionRequestReply(securityOrigin, BrowserContextAdapter::AudioCapturePermission, true);
+        m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::AudioCapturePermission, true);
     if (flags & WebContentsAdapterClient::MediaVideoCapture)
-        m_browserContextAdapter->permissionRequestReply(securityOrigin, BrowserContextAdapter::VideoCapturePermission, true);
+        m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::VideoCapturePermission, true);
     MediaCaptureDevicesDispatcher::GetInstance()->handleMediaAccessPermissionResponse(m_webContents.get(), securityOrigin, flags);
 }
 
 void WebContentsAdapter::runGeolocationRequestCallback(const QUrl &securityOrigin, bool allowed)
 {
     CHECK_INITIALIZED();
-    m_browserContextAdapter->permissionRequestReply(securityOrigin, BrowserContextAdapter::GeolocationPermission, allowed);
+    m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::GeolocationPermission, allowed);
 }
 
 void WebContentsAdapter::grantMouseLockPermission(bool granted)

@@ -51,9 +51,9 @@ namespace QtWebEngineCore {
 URLRequestCustomJob::URLRequestCustomJob(URLRequest *request,
                                          NetworkDelegate *networkDelegate,
                                          const std::string &scheme,
-                                         QPointer<BrowserContextAdapter> adapter)
+                                         QPointer<ProfileAdapter> profileAdapter)
     : URLRequestJob(request, networkDelegate)
-    , m_proxy(new URLRequestCustomJobProxy(this, scheme, adapter))
+    , m_proxy(new URLRequestCustomJobProxy(this, scheme, profileAdapter))
     , m_device(nullptr)
     , m_error(0)
     , m_pendingReadSize(0)

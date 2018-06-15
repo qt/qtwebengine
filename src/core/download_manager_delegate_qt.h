@@ -59,7 +59,7 @@ class DownloadItem;
 }
 
 namespace QtWebEngineCore {
-class BrowserContextAdapter;
+class ProfileAdapter;
 class DownloadManagerDelegateInstance;
 class DownloadTargetHelper;
 
@@ -68,7 +68,7 @@ class DownloadManagerDelegateQt
         , public download::DownloadItem::Observer
 {
 public:
-    DownloadManagerDelegateQt(BrowserContextAdapter *contextAdapter);
+    DownloadManagerDelegateQt(ProfileAdapter *profileAdapter);
     ~DownloadManagerDelegateQt();
     void GetNextId(const content::DownloadIdCallback& callback) override;
 
@@ -100,7 +100,7 @@ public:
 private:
     void cancelDownload(const content::DownloadTargetCallback& callback);
     void savePackageDownloadCreated(download::DownloadItem *download);
-    BrowserContextAdapter *m_contextAdapter;
+    ProfileAdapter *m_profileAdapter;
 
     uint64_t m_currentId;
     base::WeakPtrFactory<DownloadManagerDelegateQt> m_weakPtrFactory;

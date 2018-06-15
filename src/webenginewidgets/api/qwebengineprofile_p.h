@@ -61,7 +61,7 @@
 #include <QSharedPointer>
 
 namespace QtWebEngineCore {
-class BrowserContextAdapter;
+class ProfileAdapter;
 }
 
 QT_BEGIN_NAMESPACE
@@ -73,10 +73,10 @@ class QWebEngineSettings;
 class QWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
 public:
     Q_DECLARE_PUBLIC(QWebEngineProfile)
-    QWebEngineProfilePrivate(QtWebEngineCore::BrowserContextAdapter *browserContextAdapter);
+    QWebEngineProfilePrivate(QtWebEngineCore::ProfileAdapter *profileAdapter);
     ~QWebEngineProfilePrivate();
 
-    QtWebEngineCore::BrowserContextAdapter* browserContext() const;
+    QtWebEngineCore::ProfileAdapter* profileAdapter() const;
     QWebEngineSettings *settings() const { return m_settings; }
 
     void downloadDestroyed(quint32 downloadId);
@@ -87,7 +87,7 @@ public:
 private:
     QWebEngineProfile *q_ptr;
     QWebEngineSettings *m_settings;
-    QPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextAdapter;
+    QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
     QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
     QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
 };

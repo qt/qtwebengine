@@ -53,7 +53,7 @@
 #include <QStandardPaths>
 
 #include "browser_context_adapter_client.h"
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "profile_qt.h"
 #include "qtwebenginecoreglobal.h"
 #include "type_conversion.h"
@@ -61,13 +61,13 @@
 
 namespace QtWebEngineCore {
 
-DownloadManagerDelegateQt::DownloadManagerDelegateQt(BrowserContextAdapter *contextAdapter)
-    : m_contextAdapter(contextAdapter)
+DownloadManagerDelegateQt::DownloadManagerDelegateQt(ProfileAdapter *profileAdapter)
+    : m_profileAdapter(profileAdapter)
     , m_currentId(0)
     , m_weakPtrFactory(this)
     , m_nextDownloadIsUserRequested(false)
 {
-    Q_ASSERT(m_contextAdapter);
+    Q_ASSERT(m_profileAdapter);
 }
 
 DownloadManagerDelegateQt::~DownloadManagerDelegateQt()
@@ -86,7 +86,7 @@ void DownloadManagerDelegateQt::cancelDownload(const content::DownloadTargetCall
 
 void DownloadManagerDelegateQt::cancelDownload(quint32 downloadId)
 {
-    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_contextAdapter->profile());
+    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_profileAdapter->profile());
     download::DownloadItem *download = dlm->GetDownload(downloadId);
     if (download)
         download->Cancel(/* user_cancel */ true);
@@ -94,7 +94,7 @@ void DownloadManagerDelegateQt::cancelDownload(quint32 downloadId)
 
 void DownloadManagerDelegateQt::pauseDownload(quint32 downloadId)
 {
-    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_contextAdapter->profile());
+    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_profileAdapter->profile());
     download::DownloadItem *download = dlm->GetDownload(downloadId);
     if (download)
         download->Pause();
@@ -102,7 +102,7 @@ void DownloadManagerDelegateQt::pauseDownload(quint32 downloadId)
 
 void DownloadManagerDelegateQt::resumeDownload(quint32 downloadId)
 {
-    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_contextAdapter->profile());
+    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_profileAdapter->profile());
     download::DownloadItem *download = dlm->GetDownload(downloadId);
     if (download)
         download->Resume();
@@ -166,7 +166,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
     }
 
     item->AddObserver(this);
-    QList<BrowserContextAdapterClient*> clients = m_contextAdapter->clients();
+    QList<BrowserContextAdapterClient*> clients = m_profileAdapter->clients();
     if (!clients.isEmpty()) {
         BrowserContextAdapterClient::DownloadItemInfo info = {
             item->GetId(),
@@ -234,7 +234,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
     Q_UNUSED(default_extension);
     Q_UNUSED(can_save_as_complete);
 
-    QList<BrowserContextAdapterClient*> clients = m_contextAdapter->clients();
+    QList<BrowserContextAdapterClient*> clients = m_profileAdapter->clients();
     if (clients.isEmpty())
         return;
 
@@ -321,7 +321,7 @@ void DownloadManagerDelegateQt::savePackageDownloadCreated(download::DownloadIte
 
 void DownloadManagerDelegateQt::OnDownloadUpdated(download::DownloadItem *download)
 {
-    QList<BrowserContextAdapterClient*> clients = m_contextAdapter->clients();
+    QList<BrowserContextAdapterClient*> clients = m_profileAdapter->clients();
     if (!clients.isEmpty()) {
         BrowserContextAdapterClient::DownloadItemInfo info = {
             download->GetId(),

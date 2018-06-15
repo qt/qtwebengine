@@ -39,7 +39,7 @@
 
 #include "network_delegate_qt.h"
 
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"

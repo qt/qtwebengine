@@ -64,7 +64,7 @@ QT_FORWARD_DECLARE_CLASS(QObject)
 
 namespace QtWebEngineCore {
 
-class BrowserContextAdapter;
+class ProfileAdapter;
 class ContentMainDelegateQt;
 class DevToolsServerQt;
 class SurfaceFactoryQt;
@@ -76,20 +76,20 @@ public:
     static WebEngineContext *current();
     static void destroyContextPostRoutine();
 
-    BrowserContextAdapter *defaultBrowserContext();
+    ProfileAdapter *defaultProfileAdapter();
 
     QObject *globalQObject();
 #if QT_CONFIG(webengine_printing_and_pdf)
     printing::PrintJobManager* getPrintJobManager();
 #endif
     void destroyBrowserContext();
-    void addBrowserContext(BrowserContextAdapter*);
-    void removeBrowserContext(BrowserContextAdapter*);
+    void addBrowserContext(ProfileAdapter *profileAdapter);
+    void removeBrowserContext(ProfileAdapter *profileAdapter);
     void destroy();
 
 private:
     friend class base::RefCounted<WebEngineContext>;
-    friend class BrowserContextAdapter;
+    friend class ProfileAdapter;
     WebEngineContext();
     ~WebEngineContext();
 
@@ -98,9 +98,9 @@ private:
     std::unique_ptr<content::ContentMainRunner> m_contentRunner;
     std::unique_ptr<content::BrowserMainRunner> m_browserRunner;
     std::unique_ptr<QObject> m_globalQObject;
-    std::unique_ptr<BrowserContextAdapter> m_defaultBrowserContext;
+    std::unique_ptr<ProfileAdapter> m_defaultProfileAdapter;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
-    QVector<BrowserContextAdapter*> m_browserContextAdapters;
+    QVector<ProfileAdapter*> m_profileAdapters;
 
 #if QT_CONFIG(webengine_printing_and_pdf)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;

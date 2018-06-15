@@ -47,7 +47,7 @@
 #include "qwebenginesettings.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qtwebenginecoreglobal.h"
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "visited_links_manager_qt.h"
 #include "web_engine_settings.h"
 
@@ -59,7 +59,7 @@ ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::SingleHtmlSaveFormat, QtWebEngineCore
 ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::CompleteHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::CompleteHtmlSaveFormat)
 ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::MimeHtmlSaveFormat)
 
-using QtWebEngineCore::BrowserContextAdapter;
+using QtWebEngineCore::ProfileAdapter;
 
 /*!
     \class QWebEngineProfile
@@ -147,23 +147,23 @@ using QtWebEngineCore::BrowserContextAdapter;
   \sa QWebEngineDownloadItem, QWebEnginePage::download()
 */
 
-QWebEngineProfilePrivate::QWebEngineProfilePrivate(BrowserContextAdapter* browserContextAdapter)
+QWebEngineProfilePrivate::QWebEngineProfilePrivate(ProfileAdapter* profileAdapter)
     : m_settings(new QWebEngineSettings())
-    , m_browserContextAdapter(browserContextAdapter)
+    , m_profileAdapter(profileAdapter)
     , m_scriptCollection(new QWebEngineScriptCollection(
-                             new QWebEngineScriptCollectionPrivate(browserContextAdapter->userResourceController())))
+                             new QWebEngineScriptCollectionPrivate(profileAdapter->userResourceController())))
 {
-    m_browserContextAdapter->addClient(this);
+    m_profileAdapter->addClient(this);
     m_settings->d_ptr->initDefaults();
 }
 
 QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
 {
-    if (m_browserContextAdapter) {
+    if (m_profileAdapter) {
         // In the case the user sets this profile as the parent of the interceptor
         // it can be deleted before the browser-context still referencing it is.
-        m_browserContextAdapter->setRequestInterceptor(nullptr);
-        m_browserContextAdapter->removeClient(this);
+        m_profileAdapter->setRequestInterceptor(nullptr);
+        m_profileAdapter->removeClient(this);
     }
 
     for (QWebEngineDownloadItem *download : qAsConst(m_ongoingDownloads)) {
@@ -174,14 +174,14 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
     m_ongoingDownloads.clear();
 
     if (q_ptr != QWebEngineProfile::defaultProfile())
-        delete m_browserContextAdapter;
+        delete m_profileAdapter;
 
     delete m_settings;
 }
 
-BrowserContextAdapter* QWebEngineProfilePrivate::browserContext() const
+ProfileAdapter* QWebEngineProfilePrivate::profileAdapter() const
 {
-    return m_browserContextAdapter;
+    return m_profileAdapter;
 }
 
 void QWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
@@ -253,7 +253,7 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
 */
 QWebEngineProfile::QWebEngineProfile(QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate(new QtWebEngineCore::BrowserContextAdapter()))
+    , d_ptr(new QWebEngineProfilePrivate(new QtWebEngineCore::ProfileAdapter()))
 {
     d_ptr->q_ptr = this;
 }
@@ -270,7 +270,7 @@ QWebEngineProfile::QWebEngineProfile(QObject *parent)
 */
 QWebEngineProfile::QWebEngineProfile(const QString &storageName, QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate(new QtWebEngineCore::BrowserContextAdapter(storageName)))
+    , d_ptr(new QWebEngineProfilePrivate(new QtWebEngineCore::ProfileAdapter(storageName)))
 {
     d_ptr->q_ptr = this;
 }
@@ -298,7 +298,7 @@ QWebEngineProfile::~QWebEngineProfile()
 QString QWebEngineProfile::storageName() const
 {
     const Q_D(QWebEngineProfile);
-    return d->browserContext()->storageName();
+    return d->profileAdapter()->storageName();
 }
 
 /*!
@@ -310,7 +310,7 @@ QString QWebEngineProfile::storageName() const
 bool QWebEngineProfile::isOffTheRecord() const
 {
     const Q_D(QWebEngineProfile);
-    return d->browserContext()->isOffTheRecord();
+    return d->profileAdapter()->isOffTheRecord();
 }
 
 /*!
@@ -329,7 +329,7 @@ bool QWebEngineProfile::isOffTheRecord() const
 QString QWebEngineProfile::persistentStoragePath() const
 {
     const Q_D(QWebEngineProfile);
-    return d->browserContext()->dataPath();
+    return d->profileAdapter()->dataPath();
 }
 
 /*!
@@ -342,7 +342,7 @@ QString QWebEngineProfile::persistentStoragePath() const
 void QWebEngineProfile::setPersistentStoragePath(const QString &path)
 {
     const Q_D(QWebEngineProfile);
-    d->browserContext()->setDataPath(path);
+    d->profileAdapter()->setDataPath(path);
 }
 
 /*!
@@ -359,7 +359,7 @@ void QWebEngineProfile::setPersistentStoragePath(const QString &path)
 QString QWebEngineProfile::cachePath() const
 {
     const Q_D(QWebEngineProfile);
-    return d->browserContext()->cachePath();
+    return d->profileAdapter()->cachePath();
 }
 
 /*!
@@ -372,7 +372,7 @@ QString QWebEngineProfile::cachePath() const
 void QWebEngineProfile::setCachePath(const QString &path)
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->setCachePath(path);
+    d->profileAdapter()->setCachePath(path);
 }
 
 /*!
@@ -387,7 +387,7 @@ void QWebEngineProfile::setCachePath(const QString &path)
 QString QWebEngineProfile::httpUserAgent() const
 {
     const Q_D(QWebEngineProfile);
-    return d->browserContext()->httpUserAgent();
+    return d->profileAdapter()->httpUserAgent();
 }
 
 /*!
@@ -398,7 +398,7 @@ QString QWebEngineProfile::httpUserAgent() const
 void QWebEngineProfile::setHttpUserAgent(const QString &userAgent)
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->setHttpUserAgent(userAgent);
+    d->profileAdapter()->setHttpUserAgent(userAgent);
 }
 
 /*!
@@ -411,7 +411,7 @@ void QWebEngineProfile::setHttpUserAgent(const QString &userAgent)
 QWebEngineProfile::HttpCacheType QWebEngineProfile::httpCacheType() const
 {
     const Q_D(QWebEngineProfile);
-    return QWebEngineProfile::HttpCacheType(d->browserContext()->httpCacheType());
+    return QWebEngineProfile::HttpCacheType(d->profileAdapter()->httpCacheType());
 }
 
 /*!
@@ -422,7 +422,7 @@ QWebEngineProfile::HttpCacheType QWebEngineProfile::httpCacheType() const
 void QWebEngineProfile::setHttpCacheType(QWebEngineProfile::HttpCacheType httpCacheType)
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->setHttpCacheType(BrowserContextAdapter::HttpCacheType(httpCacheType));
+    d->profileAdapter()->setHttpCacheType(ProfileAdapter::HttpCacheType(httpCacheType));
 }
 
 /*!
@@ -433,7 +433,7 @@ void QWebEngineProfile::setHttpCacheType(QWebEngineProfile::HttpCacheType httpCa
 void QWebEngineProfile::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->setHttpAcceptLanguage(httpAcceptLanguage);
+    d->profileAdapter()->setHttpAcceptLanguage(httpAcceptLanguage);
 }
 
 /*!
@@ -444,7 +444,7 @@ void QWebEngineProfile::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
 QString QWebEngineProfile::httpAcceptLanguage() const
 {
     Q_D(const QWebEngineProfile);
-    return d->browserContext()->httpAcceptLanguage();
+    return d->profileAdapter()->httpAcceptLanguage();
 }
 
 /*!
@@ -457,7 +457,7 @@ QString QWebEngineProfile::httpAcceptLanguage() const
 QWebEngineProfile::PersistentCookiesPolicy QWebEngineProfile::persistentCookiesPolicy() const
 {
     const Q_D(QWebEngineProfile);
-    return QWebEngineProfile::PersistentCookiesPolicy(d->browserContext()->persistentCookiesPolicy());
+    return QWebEngineProfile::PersistentCookiesPolicy(d->profileAdapter()->persistentCookiesPolicy());
 }
 
 /*!
@@ -468,7 +468,7 @@ QWebEngineProfile::PersistentCookiesPolicy QWebEngineProfile::persistentCookiesP
 void QWebEngineProfile::setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy newPersistentCookiesPolicy)
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->setPersistentCookiesPolicy(BrowserContextAdapter::PersistentCookiesPolicy(newPersistentCookiesPolicy));
+    d->profileAdapter()->setPersistentCookiesPolicy(ProfileAdapter::PersistentCookiesPolicy(newPersistentCookiesPolicy));
 }
 
 /*!
@@ -481,7 +481,7 @@ void QWebEngineProfile::setPersistentCookiesPolicy(QWebEngineProfile::Persistent
 int QWebEngineProfile::httpCacheMaximumSize() const
 {
     const Q_D(QWebEngineProfile);
-    return d->browserContext()->httpCacheMaxSize();
+    return d->profileAdapter()->httpCacheMaxSize();
 }
 
 /*!
@@ -494,7 +494,7 @@ int QWebEngineProfile::httpCacheMaximumSize() const
 void QWebEngineProfile::setHttpCacheMaximumSize(int maxSize)
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->setHttpCacheMaxSize(maxSize);
+    d->profileAdapter()->setHttpCacheMaxSize(maxSize);
 }
 
 /*!
@@ -506,7 +506,7 @@ void QWebEngineProfile::setHttpCacheMaximumSize(int maxSize)
 QWebEngineCookieStore* QWebEngineProfile::cookieStore()
 {
     Q_D(QWebEngineProfile);
-    return d->browserContext()->cookieStore();
+    return d->profileAdapter()->cookieStore();
 }
 
 
@@ -522,7 +522,7 @@ QWebEngineCookieStore* QWebEngineProfile::cookieStore()
 void QWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->setRequestInterceptor(interceptor);
+    d->profileAdapter()->setRequestInterceptor(interceptor);
 }
 
 /*!
@@ -533,7 +533,7 @@ void QWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *i
 void QWebEngineProfile::clearAllVisitedLinks()
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->visitedLinksManager()->deleteAllVisitedLinkData();
+    d->profileAdapter()->visitedLinksManager()->deleteAllVisitedLinkData();
 }
 
 /*!
@@ -544,7 +544,7 @@ void QWebEngineProfile::clearAllVisitedLinks()
 void QWebEngineProfile::clearVisitedLinks(const QList<QUrl> &urls)
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->visitedLinksManager()->deleteVisitedLinkDataForUrls(urls);
+    d->profileAdapter()->visitedLinksManager()->deleteVisitedLinkDataForUrls(urls);
 }
 
 /*!
@@ -553,7 +553,7 @@ void QWebEngineProfile::clearVisitedLinks(const QList<QUrl> &urls)
 bool QWebEngineProfile::visitedLinksContainsUrl(const QUrl &url) const
 {
     Q_D(const QWebEngineProfile);
-    return d->browserContext()->visitedLinksManager()->containsUrl(url);
+    return d->profileAdapter()->visitedLinksManager()->containsUrl(url);
 }
 
 /*!
@@ -578,8 +578,8 @@ QWebEngineScriptCollection *QWebEngineProfile::scripts() const
 QWebEngineProfile *QWebEngineProfile::defaultProfile()
 {
     static QWebEngineProfile* profile = new QWebEngineProfile(
-                new QWebEngineProfilePrivate(BrowserContextAdapter::defaultContext()),
-                BrowserContextAdapter::globalQObjectRoot());
+                new QWebEngineProfilePrivate(ProfileAdapter::defaultProfileAdapter()),
+                ProfileAdapter::globalQObjectRoot());
     return profile;
 }
 
@@ -601,7 +601,7 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
 void QWebEngineProfile::setSpellCheckLanguages(const QStringList &languages)
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->setSpellCheckLanguages(languages);
+    d->profileAdapter()->setSpellCheckLanguages(languages);
 }
 
 /*!
@@ -612,7 +612,7 @@ void QWebEngineProfile::setSpellCheckLanguages(const QStringList &languages)
 QStringList QWebEngineProfile::spellCheckLanguages() const
 {
     const Q_D(QWebEngineProfile);
-    return d->browserContext()->spellCheckLanguages();
+    return d->profileAdapter()->spellCheckLanguages();
 }
 
 /*!
@@ -624,7 +624,7 @@ QStringList QWebEngineProfile::spellCheckLanguages() const
 void QWebEngineProfile::setSpellCheckEnabled(bool enable)
 {
      Q_D(QWebEngineProfile);
-     d->browserContext()->setSpellCheckEnabled(enable);
+     d->profileAdapter()->setSpellCheckEnabled(enable);
 }
 /*!
     \since 5.8
@@ -635,7 +635,7 @@ void QWebEngineProfile::setSpellCheckEnabled(bool enable)
 bool QWebEngineProfile::isSpellCheckEnabled() const
 {
      const Q_D(QWebEngineProfile);
-     return d->browserContext()->isSpellCheckEnabled();
+     return d->profileAdapter()->isSpellCheckEnabled();
 }
 
 /*!
@@ -655,8 +655,8 @@ QWebEngineSettings *QWebEngineProfile::settings() const
 const QWebEngineUrlSchemeHandler *QWebEngineProfile::urlSchemeHandler(const QByteArray &scheme) const
 {
     const Q_D(QWebEngineProfile);
-    if (d->browserContext()->customUrlSchemeHandlers().contains(scheme))
-        return d->browserContext()->customUrlSchemeHandlers().value(scheme);
+    if (d->profileAdapter()->customUrlSchemeHandlers().contains(scheme))
+        return d->profileAdapter()->customUrlSchemeHandlers().value(scheme);
     return 0;
 }
 
@@ -685,12 +685,12 @@ void QWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEn
         return;
     }
 
-    if (d->browserContext()->customUrlSchemeHandlers().contains(scheme)) {
-        if (d->browserContext()->customUrlSchemeHandlers().value(scheme) != handler)
+    if (d->profileAdapter()->customUrlSchemeHandlers().contains(scheme)) {
+        if (d->profileAdapter()->customUrlSchemeHandlers().value(scheme) != handler)
             qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
         return;
     }
-    d->browserContext()->addCustomUrlSchemeHandler(scheme, handler);
+    d->profileAdapter()->addCustomUrlSchemeHandler(scheme, handler);
     connect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
 }
 
@@ -705,7 +705,7 @@ void QWebEngineProfile::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handl
 {
     Q_D(QWebEngineProfile);
     Q_ASSERT(handler);
-    if (!d->browserContext()->removeCustomUrlSchemeHandler(handler))
+    if (!d->profileAdapter()->removeCustomUrlSchemeHandler(handler))
         return;
     disconnect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
 }
@@ -720,7 +720,7 @@ void QWebEngineProfile::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handl
 void QWebEngineProfile::removeUrlScheme(const QByteArray &scheme)
 {
     Q_D(QWebEngineProfile);
-    QWebEngineUrlSchemeHandler *handler = d->browserContext()->takeCustomUrlSchemeHandler(scheme);
+    QWebEngineUrlSchemeHandler *handler = d->profileAdapter()->takeCustomUrlSchemeHandler(scheme);
     if (!handler)
         return;
     disconnect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
@@ -734,7 +734,7 @@ void QWebEngineProfile::removeUrlScheme(const QByteArray &scheme)
 void QWebEngineProfile::removeAllUrlSchemeHandlers()
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->clearCustomUrlSchemeHandlers();
+    d->profileAdapter()->clearCustomUrlSchemeHandlers();
 }
 
 void QWebEngineProfile::destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *obj)
@@ -750,7 +750,7 @@ void QWebEngineProfile::destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *ob
 void QWebEngineProfile::clearHttpCache()
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->clearHttpCache();
+    d->profileAdapter()->clearHttpCache();
 }
 
 QT_END_NAMESPACE

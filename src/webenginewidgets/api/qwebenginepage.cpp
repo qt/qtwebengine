@@ -41,7 +41,7 @@
 #include "qwebenginepage_p.h"
 
 #include "authentication_dialog_controller.h"
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "certificate_error_controller.h"
 #include "color_chooser_controller.h"
 #include "favicon_manager.h"
@@ -223,7 +223,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , settings(new QWebEngineSettings(profile->settings()))
     , view(0)
     , isLoading(false)
-    , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userResourceController(), adapter))
+    , scriptCollection(new QWebEngineScriptCollectionPrivate(profileAdapter()->userResourceController(), adapter))
     , m_isBeingAdopted(false)
     , m_backgroundColor(Qt::white)
     , fullscreenMode(false)
@@ -692,9 +692,9 @@ void QWebEnginePagePrivate::setFullScreenMode(bool fullscreen)
     }
 }
 
-BrowserContextAdapter* QWebEnginePagePrivate::browserContextAdapter()
+ProfileAdapter* QWebEnginePagePrivate::profileAdapter()
 {
-    return profile->d_ptr->browserContext();
+    return profile->d_ptr->profileAdapter();
 }
 
 WebContentsAdapter *QWebEnginePagePrivate::webContentsAdapter()

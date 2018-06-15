@@ -40,7 +40,7 @@
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginedownloaditem_p_p.h"
 
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "qquickwebengineprofile_p.h"
 
 using QtWebEngineCore::BrowserContextAdapterClient;
@@ -286,7 +286,7 @@ void QQuickWebEngineDownloadItem::pause()
         return;
 
     if (d->profile)
-        d->profile->d_ptr->browserContext()->pauseDownload(d->downloadId);
+        d->profile->d_ptr->profileAdapter()->pauseDownload(d->downloadId);
 }
 
 /*!
@@ -310,7 +310,7 @@ void QQuickWebEngineDownloadItem::resume()
         return;
 
     if (d->profile)
-        d->profile->d_ptr->browserContext()->resumeDownload(d->downloadId);
+        d->profile->d_ptr->profileAdapter()->resumeDownload(d->downloadId);
 }
 
 /*!

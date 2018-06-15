@@ -83,7 +83,7 @@
 #include "content/public/app/sandbox_helper_win.h"
 #endif // OS_WIN
 
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "content_browser_client_qt.h"
 #include "content_client_qt.h"
 #include "content_main_delegate_qt.h"
@@ -185,29 +185,29 @@ bool WebEngineContext::m_destroyed = false;
 
 void WebEngineContext::destroyBrowserContext()
 {
-    if (m_defaultBrowserContext)
+    if (m_defaultProfileAdapter)
         qWarning("PostMainMessageLoopRun is done, but global profile still exists !");
 }
 
-void WebEngineContext::addBrowserContext(BrowserContextAdapter *contextAdapter)
+void WebEngineContext::addBrowserContext(ProfileAdapter *profileAdapter)
 {
-    Q_ASSERT(!m_browserContextAdapters.contains(contextAdapter));
-    const QString path = contextAdapter->dataPath();
+    Q_ASSERT(!m_profileAdapters.contains(profileAdapter));
+    const QString path = profileAdapter->dataPath();
     if (!path.isEmpty()) {
-        for (auto browserContextAdapter : m_browserContextAdapters) {
-            if (browserContextAdapter->dataPath() == path) {
+        for (auto profileAdapter : m_profileAdapters) {
+            if (profileAdapter->dataPath() == path) {
                 // QTBUG-66068
                 qWarning("Using the same data path for profile, may corrupt the data.");
                 break;
             }
         }
     }
-    m_browserContextAdapters.append(contextAdapter);
+    m_profileAdapters.append(profileAdapter);
 }
 
-void WebEngineContext::removeBrowserContext(BrowserContextAdapter *contextAdapter)
+void WebEngineContext::removeBrowserContext(ProfileAdapter *profileAdapter)
 {
-    m_browserContextAdapters.removeAll(contextAdapter);
+    m_profileAdapters.removeAll(profileAdapter);
 }
 
 void WebEngineContext::destroy()
@@ -220,10 +220,10 @@ void WebEngineContext::destroy()
     while (delegate->DoWork()) { }
 
     // Delete the global object and thus custom profiles
-    m_defaultBrowserContext.reset();
+    m_defaultProfileAdapter.reset();
     m_globalQObject.reset();
-    while (m_browserContextAdapters.count())
-        delete m_browserContextAdapters.first();
+    while (m_profileAdapters.count())
+        delete m_profileAdapters.first();
 
     // Handle any events posted by browser-context shutdown.
     while (delegate->DoWork()) { }
@@ -247,7 +247,7 @@ WebEngineContext::~WebEngineContext()
     Q_ASSERT(!m_globalQObject);
     Q_ASSERT(!m_devtoolsServer);
     Q_ASSERT(!m_browserRunner);
-    Q_ASSERT(m_browserContextAdapters.isEmpty());
+    Q_ASSERT(m_profileAdapters.isEmpty());
 }
 
 WebEngineContext *WebEngineContext::current()
@@ -264,12 +264,12 @@ WebEngineContext *WebEngineContext::current()
     return m_handle.get();
 }
 
-BrowserContextAdapter *WebEngineContext::defaultBrowserContext()
+ProfileAdapter *WebEngineContext::defaultProfileAdapter()
 {
     Q_ASSERT(!m_destroyed);
-    if (!m_defaultBrowserContext)
-        m_defaultBrowserContext.reset(new BrowserContextAdapter(QStringLiteral("Default")));
-    return m_defaultBrowserContext.get();
+    if (!m_defaultProfileAdapter)
+        m_defaultProfileAdapter.reset(new ProfileAdapter(QStringLiteral("Default")));
+    return m_defaultProfileAdapter.get();
 }
 
 QObject *WebEngineContext::globalQObject()

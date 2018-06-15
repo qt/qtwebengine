@@ -67,14 +67,14 @@ class GURL;
 
 namespace QtWebEngineCore {
 
-class BrowserContextAdapter;
+class ProfileAdapter;
 class VisitedLinkDelegateQt;
 
 class QWEBENGINECORE_PRIVATE_EXPORT VisitedLinksManagerQt {
 
 public:
     virtual~VisitedLinksManagerQt();
-    VisitedLinksManagerQt(BrowserContextAdapter*);
+    VisitedLinksManagerQt(ProfileAdapter *profileAdapter);
 
     void deleteAllVisitedLinkData();
     void deleteVisitedLinkDataForUrls(const QList<QUrl> &);

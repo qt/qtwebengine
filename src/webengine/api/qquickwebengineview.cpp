@@ -41,7 +41,7 @@
 #include "qquickwebengineview_p_p.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "authentication_dialog_controller.h"
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "certificate_error_controller.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
@@ -626,9 +626,9 @@ QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
     return q;
 }
 
-BrowserContextAdapter *QQuickWebEngineViewPrivate::browserContextAdapter()
+ProfileAdapter *QQuickWebEngineViewPrivate::profileAdapter()
 {
-    return m_profile->d_ptr->browserContext();
+    return m_profile->d_ptr->profileAdapter();
 }
 
 WebContentsAdapter *QQuickWebEngineViewPrivate::webContentsAdapter()
@@ -717,7 +717,7 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
         return;
     }
 
-    if (webContents->browserContextAdapter() && browserContextAdapter() != webContents->browserContextAdapter()) {
+    if (webContents->profileAdapter() && profileAdapter() != webContents->profileAdapter()) {
         qWarning("Can not adopt content from a different WebEngineProfile.");
         return;
     }
@@ -774,7 +774,7 @@ void QQuickWebEngineViewPrivate::initializationFinished()
         adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
 
     for (QQuickWebEngineScript *script : qAsConst(m_userScripts))
-        script->d_func()->bind(browserContextAdapter()->userResourceController(), adapter.data());
+        script->d_func()->bind(profileAdapter()->userResourceController(), adapter.data());
 
     if (!m_isBeingAdopted)
         return;
@@ -918,7 +918,7 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
     Q_EMIT q->profileChanged();
     m_settings->setParentSettings(profile->settings());
 
-    if (adapter->profile() != browserContextAdapter()->profile()) {
+    if (adapter->profile() != profileAdapter()->profile()) {
         // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
         bool wasInitialized = adapter->isInitialized();
         QUrl activeUrl = adapter->activeUrl();
@@ -1667,7 +1667,7 @@ void QQuickWebEngineViewPrivate::userScripts_append(QQmlListProperty<QQuickWebEn
     // If the adapter hasn't been initialized, we'll bind the scripts in initializationFinished()
     if (!d->adapter->isInitialized())
         return;
-    UserResourceControllerHost *resourceController = d->browserContextAdapter()->userResourceController();
+    UserResourceControllerHost *resourceController = d->profileAdapter()->userResourceController();
     script->d_func()->bind(resourceController, d->adapter.data());
 }
 
@@ -1692,7 +1692,7 @@ void QQuickWebEngineViewPrivate::userScripts_clear(QQmlListProperty<QQuickWebEng
     d->m_userScripts.clear();
     if (!d->adapter->isInitialized())
         return;
-    UserResourceControllerHost *resourceController = d->browserContextAdapter()->userResourceController();
+    UserResourceControllerHost *resourceController = d->profileAdapter()->userResourceController();
     resourceController->clearAllScripts(d->adapter.data());
 }
 

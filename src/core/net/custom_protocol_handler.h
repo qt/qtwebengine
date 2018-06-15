@@ -67,20 +67,20 @@ class URLRequestJob;
 
 namespace QtWebEngineCore {
 
-class BrowserContextAdapter;
+class ProfileAdapter;
 
 // Implements a ProtocolHandler for custom URL schemes.
 // If |network_delegate_| is NULL then all file requests will fail with ERR_ACCESS_DENIED.
 class QWEBENGINECORE_PRIVATE_EXPORT CustomProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 
 public:
-    CustomProtocolHandler(QPointer<BrowserContextAdapter> adapter);
+    CustomProtocolHandler(QPointer<ProfileAdapter> profileAdapter);
 
     net::URLRequestJob *MaybeCreateJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate) const override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CustomProtocolHandler);
-    QPointer<BrowserContextAdapter> m_adapter;
+    QPointer<ProfileAdapter> m_profileAdapter;
 };
 
 } // namespace

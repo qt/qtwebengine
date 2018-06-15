@@ -189,7 +189,7 @@ public:
     void backgroundColorChanged();
     QAccessibleInterface *browserAccessible();
     ProfileQt* profile();
-    BrowserContextAdapter* browserContextAdapter();
+    ProfileAdapter* profileAdapter();
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *, uint worldId);
     FaviconManager *faviconManager();
@@ -226,7 +226,7 @@ private:
     void waitForUpdateDragActionCalled();
     bool handleDropDataFileContents(const content::DropData &dropData, QMimeData *mimeData);
 
-    BrowserContextAdapter *m_browserContextAdapter;
+    ProfileAdapter *m_profileAdapter;
     std::unique_ptr<content::WebContents> m_webContents;
     std::unique_ptr<WebContentsDelegateQt> m_webContentsDelegate;
     std::unique_ptr<RenderViewObserverHostQt> m_renderViewObserverHost;

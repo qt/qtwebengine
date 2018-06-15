@@ -41,7 +41,7 @@
 #define SSL_HOST_STATE_DELEGATE_QT_H
 
 #include "content/public/browser/ssl_host_state_delegate.h"
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 
 namespace QtWebEngineCore {
 

@@ -55,14 +55,14 @@ class PrefService;
 
 namespace QtWebEngineCore {
 
-class BrowserContextAdapter;
+class ProfileAdapter;
 class PermissionManagerQt;
 class SSLHostStateDelegateQt;
 
 class ProfileQt : public Profile
 {
 public:
-    explicit ProfileQt(BrowserContextAdapter *);
+    explicit ProfileQt(ProfileAdapter *profileAdapter);
 
     virtual ~ProfileQt();
 
@@ -99,7 +99,7 @@ public:
     const PrefService *GetPrefs() const override;
     net::URLRequestContextGetter *GetRequestContext() override;
 
-    BrowserContextAdapter *adapter() { return m_adapter; }
+    ProfileAdapter *profileAdapter() { return m_profileAdapter; }
 
 #if QT_CONFIG(webengine_spellchecker)
     void FailedToLoadDictionary(const std::string &language) override;
@@ -117,8 +117,8 @@ private:
     std::unique_ptr<SSLHostStateDelegateQt> m_sslHostStateDelegate;
     std::unique_ptr<PrefService> m_prefService;
     std::unique_ptr<ProfileIODataQt> m_profileIOData;
-    BrowserContextAdapter *m_adapter;
-    friend class BrowserContextAdapter;
+    ProfileAdapter *m_profileAdapter;
+    friend class ProfileAdapter;
 
     DISALLOW_COPY_AND_ASSIGN(ProfileQt);
 };

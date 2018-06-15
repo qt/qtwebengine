@@ -40,7 +40,7 @@
 #include "qwebenginedownloaditem.h"
 #include "qwebenginedownloaditem_p.h"
 
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "qwebengineprofile_p.h"
 
 
@@ -256,8 +256,8 @@ void QWebEngineDownloadItem::cancel()
     // We directly cancel the download request if the user cancels
     // before it even started, so no need to notify the profile here.
     if (state == QWebEngineDownloadItem::DownloadInProgress) {
-        if (auto browserContext = d->profile->browserContext())
-            browserContext->cancelDownload(d->downloadId);
+        if (auto profileAdapter = d->profile->profileAdapter())
+            profileAdapter->cancelDownload(d->downloadId);
     } else {
         d->downloadState = QWebEngineDownloadItem::DownloadCancelled;
         Q_EMIT stateChanged(d->downloadState);
@@ -283,7 +283,7 @@ void QWebEngineDownloadItem::pause()
     if (state != QWebEngineDownloadItem::DownloadInProgress)
         return;
 
-    d->profile->browserContext()->pauseDownload(d->downloadId);
+    d->profile->profileAdapter()->pauseDownload(d->downloadId);
 }
 
 /*!
@@ -303,7 +303,7 @@ void QWebEngineDownloadItem::resume()
 
     if (d->downloadFinished || (state != QWebEngineDownloadItem::DownloadInProgress && state != QWebEngineDownloadItem::DownloadInterrupted))
         return;
-    d->profile->browserContext()->resumeDownload(d->downloadId);
+    d->profile->profileAdapter()->resumeDownload(d->downloadId);
 }
 
 /*!

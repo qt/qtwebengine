@@ -42,7 +42,7 @@
 
 #include "base/callback.h"
 #include "content/public/browser/permission_manager.h"
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 
 #include <QHash>
 
@@ -53,7 +53,7 @@ class PermissionManagerQt : public content::PermissionManager {
 public:
     PermissionManagerQt();
     ~PermissionManagerQt();
-    typedef BrowserContextAdapter::PermissionType PermissionType;
+    typedef ProfileAdapter::PermissionType PermissionType;
 
     void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
     bool checkPermission(const QUrl &origin, PermissionType type);

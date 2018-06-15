@@ -74,7 +74,7 @@ struct DropData;
 namespace QtWebEngineCore {
 
 class AuthenticationDialogController;
-class BrowserContextAdapter;
+class ProfileAdapter;
 class ColorChooserController;
 class FilePickerController;
 class JavaScriptDialogController;
@@ -467,7 +467,7 @@ public:
     virtual const QObject *holdingQObject() const = 0;
     virtual void setToolTip(const QString& toolTipText) = 0;
 
-    virtual BrowserContextAdapter *browserContextAdapter() = 0;
+    virtual ProfileAdapter *profileAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;
 
 };

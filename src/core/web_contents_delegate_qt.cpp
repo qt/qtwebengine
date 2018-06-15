@@ -43,7 +43,7 @@
 
 #include "web_contents_delegate_qt.h"
 
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "color_chooser_controller.h"
 #include "color_chooser_qt.h"
 #include "favicon_manager.h"
@@ -295,11 +295,11 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
         return;
 
     if (navigation_handle->HasCommitted() && !navigation_handle->IsErrorPage()) {
-        BrowserContextAdapter *browserContextAdapter = m_viewClient->browserContextAdapter();
+        ProfileAdapter *profileAdapter = m_viewClient->profileAdapter();
         // VisistedLinksMaster asserts !IsOffTheRecord().
-        if (navigation_handle->ShouldUpdateHistory() && browserContextAdapter->trackVisitedLinks()) {
+        if (navigation_handle->ShouldUpdateHistory() && profileAdapter->trackVisitedLinks()) {
             for (const GURL &url : navigation_handle->GetRedirectChain())
-                browserContextAdapter->visitedLinksManager()->addUrl(url);
+                profileAdapter->visitedLinksManager()->addUrl(url);
         }
 
         // Make sure that we don't set the findNext WebFindOptions on a new frame.
@@ -628,9 +628,9 @@ bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost 
 {
     switch (type) {
     case content::MEDIA_DEVICE_AUDIO_CAPTURE:
-        return m_viewClient->browserContextAdapter()->checkPermission(toQt(security_origin), BrowserContextAdapter::AudioCapturePermission);
+        return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::AudioCapturePermission);
     case content::MEDIA_DEVICE_VIDEO_CAPTURE:
-        return m_viewClient->browserContextAdapter()->checkPermission(toQt(security_origin), BrowserContextAdapter::VideoCapturePermission);
+        return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::VideoCapturePermission);
     default:
         LOG(INFO) << "WebContentsDelegateQt::CheckMediaAccessPermission: "
                   << "Unsupported media stream type checked" << type;

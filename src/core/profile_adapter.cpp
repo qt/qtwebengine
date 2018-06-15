@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -74,7 +74,7 @@ inline QString buildLocationFromStandardPath(const QString &standardPath, const 
 
 namespace QtWebEngineCore {
 
-BrowserContextAdapter::BrowserContextAdapter(const QString &storageName):
+ProfileAdapter::ProfileAdapter(const QString &storageName):
       m_name(storageName)
     , m_offTheRecord(storageName.isEmpty())
     , m_httpCacheType(DiskHttpCache)
@@ -90,7 +90,7 @@ BrowserContextAdapter::BrowserContextAdapter(const QString &storageName):
     m_profile->m_profileIOData->initializeOnUIThread();
 }
 
-BrowserContextAdapter::~BrowserContextAdapter()
+ProfileAdapter::~ProfileAdapter()
 {
     WebEngineContext::current()->removeBrowserContext(this);
     if (m_downloadManagerDelegate) {
@@ -99,7 +99,7 @@ BrowserContextAdapter::~BrowserContextAdapter()
     }
 }
 
-void BrowserContextAdapter::setStorageName(const QString &storageName)
+void ProfileAdapter::setStorageName(const QString &storageName)
 {
     if (storageName == m_name)
         return;
@@ -112,7 +112,7 @@ void BrowserContextAdapter::setStorageName(const QString &storageName)
     }
 }
 
-void BrowserContextAdapter::setOffTheRecord(bool offTheRecord)
+void ProfileAdapter::setOffTheRecord(bool offTheRecord)
 {
     if (offTheRecord == m_offTheRecord)
         return;
@@ -123,38 +123,38 @@ void BrowserContextAdapter::setOffTheRecord(bool offTheRecord)
         resetVisitedLinksManager();
 }
 
-ProfileQt *BrowserContextAdapter::profile()
+ProfileQt *ProfileAdapter::profile()
 {
     return m_profile.data();
 }
 
-VisitedLinksManagerQt *BrowserContextAdapter::visitedLinksManager()
+VisitedLinksManagerQt *ProfileAdapter::visitedLinksManager()
 {
     if (!m_visitedLinksManager)
         resetVisitedLinksManager();
     return m_visitedLinksManager.data();
 }
 
-DownloadManagerDelegateQt *BrowserContextAdapter::downloadManagerDelegate()
+DownloadManagerDelegateQt *ProfileAdapter::downloadManagerDelegate()
 {
     if (!m_downloadManagerDelegate)
         m_downloadManagerDelegate.reset(new DownloadManagerDelegateQt(this));
     return m_downloadManagerDelegate.data();
 }
 
-QWebEngineCookieStore *BrowserContextAdapter::cookieStore()
+QWebEngineCookieStore *ProfileAdapter::cookieStore()
 {
     if (!m_cookieStore)
         m_cookieStore.reset(new QWebEngineCookieStore);
     return m_cookieStore.data();
 }
 
-QWebEngineUrlRequestInterceptor *BrowserContextAdapter::requestInterceptor()
+QWebEngineUrlRequestInterceptor *ProfileAdapter::requestInterceptor()
 {
     return m_requestInterceptor.data();
 }
 
-void BrowserContextAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+void ProfileAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     if (m_requestInterceptor == interceptor)
         return;
@@ -163,42 +163,42 @@ void BrowserContextAdapter::setRequestInterceptor(QWebEngineUrlRequestIntercepto
         m_profile->m_profileIOData->updateRequestInterceptor();
 }
 
-void BrowserContextAdapter::addClient(BrowserContextAdapterClient *adapterClient)
+void ProfileAdapter::addClient(BrowserContextAdapterClient *adapterClient)
 {
     m_clients.append(adapterClient);
 }
 
-void BrowserContextAdapter::removeClient(BrowserContextAdapterClient *adapterClient)
+void ProfileAdapter::removeClient(BrowserContextAdapterClient *adapterClient)
 {
     m_clients.removeOne(adapterClient);
 }
 
-void BrowserContextAdapter::cancelDownload(quint32 downloadId)
+void ProfileAdapter::cancelDownload(quint32 downloadId)
 {
     downloadManagerDelegate()->cancelDownload(downloadId);
 }
 
-void BrowserContextAdapter::pauseDownload(quint32 downloadId)
+void ProfileAdapter::pauseDownload(quint32 downloadId)
 {
     downloadManagerDelegate()->pauseDownload(downloadId);
 }
 
-void BrowserContextAdapter::resumeDownload(quint32 downloadId)
+void ProfileAdapter::resumeDownload(quint32 downloadId)
 {
     downloadManagerDelegate()->resumeDownload(downloadId);
 }
 
-BrowserContextAdapter *BrowserContextAdapter::defaultContext()
+ProfileAdapter *ProfileAdapter::defaultProfileAdapter()
 {
-    return WebEngineContext::current()->defaultBrowserContext();
+    return WebEngineContext::current()->defaultProfileAdapter();
 }
 
-QObject* BrowserContextAdapter::globalQObjectRoot()
+QObject* ProfileAdapter::globalQObjectRoot()
 {
     return WebEngineContext::current()->globalQObject();
 }
 
-QString BrowserContextAdapter::dataPath() const
+QString ProfileAdapter::dataPath() const
 {
     if (m_offTheRecord)
         return QString();
@@ -209,7 +209,7 @@ QString BrowserContextAdapter::dataPath() const
     return QString();
 }
 
-void BrowserContextAdapter::setDataPath(const QString &path)
+void ProfileAdapter::setDataPath(const QString &path)
 {
     if (m_dataPath == path)
         return;
@@ -222,7 +222,7 @@ void BrowserContextAdapter::setDataPath(const QString &path)
     }
 }
 
-QString BrowserContextAdapter::cachePath() const
+QString ProfileAdapter::cachePath() const
 {
     if (m_offTheRecord)
         return QString();
@@ -233,7 +233,7 @@ QString BrowserContextAdapter::cachePath() const
     return QString();
 }
 
-void BrowserContextAdapter::setCachePath(const QString &path)
+void ProfileAdapter::setCachePath(const QString &path)
 {
     if (m_cachePath == path)
         return;
@@ -242,7 +242,7 @@ void BrowserContextAdapter::setCachePath(const QString &path)
         m_profile->m_profileIOData->updateHttpCache();
 }
 
-QString BrowserContextAdapter::cookiesPath() const
+QString ProfileAdapter::cookiesPath() const
 {
     if (m_offTheRecord)
         return QString();
@@ -257,7 +257,7 @@ QString BrowserContextAdapter::cookiesPath() const
     return QString();
 }
 
-QString BrowserContextAdapter::channelIdPath() const
+QString ProfileAdapter::channelIdPath() const
 {
     if (m_offTheRecord)
         return QString();
@@ -267,7 +267,7 @@ QString BrowserContextAdapter::channelIdPath() const
     return QString();
 }
 
-QString BrowserContextAdapter::httpCachePath() const
+QString ProfileAdapter::httpCachePath() const
 {
     if (m_offTheRecord)
         return QString();
@@ -277,14 +277,14 @@ QString BrowserContextAdapter::httpCachePath() const
     return QString();
 }
 
-QString BrowserContextAdapter::httpUserAgent() const
+QString ProfileAdapter::httpUserAgent() const
 {
     if (m_httpUserAgent.isNull())
         return QString::fromStdString(ContentClientQt::getUserAgent());
     return m_httpUserAgent;
 }
 
-void BrowserContextAdapter::setHttpUserAgent(const QString &userAgent)
+void ProfileAdapter::setHttpUserAgent(const QString &userAgent)
 {
     if (m_httpUserAgent == userAgent)
         return;
@@ -299,7 +299,7 @@ void BrowserContextAdapter::setHttpUserAgent(const QString &userAgent)
         m_profile->m_profileIOData->updateUserAgent();
 }
 
-BrowserContextAdapter::HttpCacheType BrowserContextAdapter::httpCacheType() const
+ProfileAdapter::HttpCacheType ProfileAdapter::httpCacheType() const
 {
     if (m_httpCacheType == NoCache)
         return NoCache;
@@ -308,9 +308,9 @@ BrowserContextAdapter::HttpCacheType BrowserContextAdapter::httpCacheType() cons
     return m_httpCacheType;
 }
 
-void BrowserContextAdapter::setHttpCacheType(BrowserContextAdapter::HttpCacheType newhttpCacheType)
+void ProfileAdapter::setHttpCacheType(ProfileAdapter::HttpCacheType newhttpCacheType)
 {
-    BrowserContextAdapter::HttpCacheType oldCacheType = httpCacheType();
+    ProfileAdapter::HttpCacheType oldCacheType = httpCacheType();
     m_httpCacheType = newhttpCacheType;
     if (oldCacheType == httpCacheType())
         return;
@@ -318,16 +318,16 @@ void BrowserContextAdapter::setHttpCacheType(BrowserContextAdapter::HttpCacheTyp
         m_profile->m_profileIOData->updateHttpCache();
 }
 
-BrowserContextAdapter::PersistentCookiesPolicy BrowserContextAdapter::persistentCookiesPolicy() const
+ProfileAdapter::PersistentCookiesPolicy ProfileAdapter::persistentCookiesPolicy() const
 {
     if (isOffTheRecord() || cookiesPath().isEmpty())
         return NoPersistentCookies;
     return m_persistentCookiesPolicy;
 }
 
-void BrowserContextAdapter::setPersistentCookiesPolicy(BrowserContextAdapter::PersistentCookiesPolicy newPersistentCookiesPolicy)
+void ProfileAdapter::setPersistentCookiesPolicy(ProfileAdapter::PersistentCookiesPolicy newPersistentCookiesPolicy)
 {
-    BrowserContextAdapter::PersistentCookiesPolicy oldPolicy = persistentCookiesPolicy();
+    ProfileAdapter::PersistentCookiesPolicy oldPolicy = persistentCookiesPolicy();
     m_persistentCookiesPolicy = newPersistentCookiesPolicy;
     if (oldPolicy == persistentCookiesPolicy())
         return;
@@ -335,7 +335,7 @@ void BrowserContextAdapter::setPersistentCookiesPolicy(BrowserContextAdapter::Pe
         m_profile->m_profileIOData->updateCookieStore();
 }
 
-BrowserContextAdapter::VisitedLinksPolicy BrowserContextAdapter::visitedLinksPolicy() const
+ProfileAdapter::VisitedLinksPolicy ProfileAdapter::visitedLinksPolicy() const
 {
     if (isOffTheRecord() || m_visitedLinksPolicy == DoNotTrackVisitedLinks)
         return DoNotTrackVisitedLinks;
@@ -344,7 +344,7 @@ BrowserContextAdapter::VisitedLinksPolicy BrowserContextAdapter::visitedLinksPol
     return m_visitedLinksPolicy;
 }
 
-bool BrowserContextAdapter::trackVisitedLinks() const
+bool ProfileAdapter::trackVisitedLinks() const
 {
     switch (visitedLinksPolicy()) {
     case DoNotTrackVisitedLinks:
@@ -355,7 +355,7 @@ bool BrowserContextAdapter::trackVisitedLinks() const
     return true;
 }
 
-bool BrowserContextAdapter::persistVisitedLinks() const
+bool ProfileAdapter::persistVisitedLinks() const
 {
     switch (visitedLinksPolicy()) {
     case DoNotTrackVisitedLinks:
@@ -367,7 +367,7 @@ bool BrowserContextAdapter::persistVisitedLinks() const
     return true;
 }
 
-void BrowserContextAdapter::setVisitedLinksPolicy(BrowserContextAdapter::VisitedLinksPolicy visitedLinksPolicy)
+void ProfileAdapter::setVisitedLinksPolicy(ProfileAdapter::VisitedLinksPolicy visitedLinksPolicy)
 {
     if (m_visitedLinksPolicy == visitedLinksPolicy)
         return;
@@ -376,12 +376,12 @@ void BrowserContextAdapter::setVisitedLinksPolicy(BrowserContextAdapter::Visited
         resetVisitedLinksManager();
 }
 
-int BrowserContextAdapter::httpCacheMaxSize() const
+int ProfileAdapter::httpCacheMaxSize() const
 {
     return m_httpCacheMaxSize;
 }
 
-void BrowserContextAdapter::setHttpCacheMaxSize(int maxSize)
+void ProfileAdapter::setHttpCacheMaxSize(int maxSize)
 {
     if (m_httpCacheMaxSize == maxSize)
         return;
@@ -390,23 +390,23 @@ void BrowserContextAdapter::setHttpCacheMaxSize(int maxSize)
         m_profile->m_profileIOData->updateHttpCache();
 }
 
-const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &BrowserContextAdapter::customUrlSchemeHandlers() const
+const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &ProfileAdapter::customUrlSchemeHandlers() const
 {
     return m_customUrlSchemeHandlers;
 }
 
-const QList<QByteArray> BrowserContextAdapter::customUrlSchemes() const
+const QList<QByteArray> ProfileAdapter::customUrlSchemes() const
 {
     return m_customUrlSchemeHandlers.keys();
 }
 
-void BrowserContextAdapter::updateCustomUrlSchemeHandlers()
+void ProfileAdapter::updateCustomUrlSchemeHandlers()
 {
     if (m_profile->m_urlRequestContextGetter.get())
         m_profile->m_profileIOData->updateJobFactory();
 }
 
-bool BrowserContextAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+bool ProfileAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 {
     bool removedOneOrMore = false;
     auto it = m_customUrlSchemeHandlers.begin();
@@ -423,7 +423,7 @@ bool BrowserContextAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHand
     return removedOneOrMore;
 }
 
-QWebEngineUrlSchemeHandler *BrowserContextAdapter::takeCustomUrlSchemeHandler(const QByteArray &scheme)
+QWebEngineUrlSchemeHandler *ProfileAdapter::takeCustomUrlSchemeHandler(const QByteArray &scheme)
 {
     QWebEngineUrlSchemeHandler *handler = m_customUrlSchemeHandlers.take(scheme);
     if (handler)
@@ -431,36 +431,36 @@ QWebEngineUrlSchemeHandler *BrowserContextAdapter::takeCustomUrlSchemeHandler(co
     return handler;
 }
 
-void BrowserContextAdapter::addCustomUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
+void ProfileAdapter::addCustomUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
 {
     m_customUrlSchemeHandlers.insert(scheme, handler);
     updateCustomUrlSchemeHandlers();
 }
 
-void BrowserContextAdapter::clearCustomUrlSchemeHandlers()
+void ProfileAdapter::clearCustomUrlSchemeHandlers()
 {
     m_customUrlSchemeHandlers.clear();
     updateCustomUrlSchemeHandlers();
 }
 
-UserResourceControllerHost *BrowserContextAdapter::userResourceController()
+UserResourceControllerHost *ProfileAdapter::userResourceController()
 {
     if (!m_userResourceController)
         m_userResourceController.reset(new UserResourceControllerHost);
     return m_userResourceController.data();
 }
 
-void BrowserContextAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, bool reply)
+void ProfileAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, bool reply)
 {
     static_cast<PermissionManagerQt*>(profile()->GetPermissionManager())->permissionRequestReply(origin, type, reply);
 }
 
-bool BrowserContextAdapter::checkPermission(const QUrl &origin, PermissionType type)
+bool ProfileAdapter::checkPermission(const QUrl &origin, PermissionType type)
 {
     return static_cast<PermissionManagerQt*>(profile()->GetPermissionManager())->checkPermission(origin, type);
 }
 
-QString BrowserContextAdapter::httpAcceptLanguageWithoutQualities() const
+QString ProfileAdapter::httpAcceptLanguageWithoutQualities() const
 {
     const QStringList list = m_httpAcceptLanguage.split(QLatin1Char(','));
     QString out;
@@ -472,12 +472,12 @@ QString BrowserContextAdapter::httpAcceptLanguageWithoutQualities() const
     return out;
 }
 
-QString BrowserContextAdapter::httpAcceptLanguage() const
+QString ProfileAdapter::httpAcceptLanguage() const
 {
     return m_httpAcceptLanguage;
 }
 
-void BrowserContextAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
+void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
 {
     if (m_httpAcceptLanguage == httpAcceptLanguage)
         return;
@@ -496,7 +496,7 @@ void BrowserContextAdapter::setHttpAcceptLanguage(const QString &httpAcceptLangu
         m_profile->m_profileIOData->updateUserAgent();
 }
 
-void BrowserContextAdapter::clearHttpCache()
+void ProfileAdapter::clearHttpCache()
 {
     content::BrowsingDataRemover *remover = content::BrowserContext::GetBrowsingDataRemover(m_profile.data());
     remover->Remove(base::Time(), base::Time::Max(),
@@ -504,14 +504,14 @@ void BrowserContextAdapter::clearHttpCache()
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB | content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB);
 }
 
-void BrowserContextAdapter::setSpellCheckLanguages(const QStringList &languages)
+void ProfileAdapter::setSpellCheckLanguages(const QStringList &languages)
 {
 #if QT_CONFIG(webengine_spellchecker)
     m_profile->setSpellCheckLanguages(languages);
 #endif
 }
 
-QStringList BrowserContextAdapter::spellCheckLanguages() const
+QStringList ProfileAdapter::spellCheckLanguages() const
 {
 #if QT_CONFIG(webengine_spellchecker)
     return m_profile->spellCheckLanguages();
@@ -520,14 +520,14 @@ QStringList BrowserContextAdapter::spellCheckLanguages() const
 #endif
 }
 
-void BrowserContextAdapter::setSpellCheckEnabled(bool enabled)
+void ProfileAdapter::setSpellCheckEnabled(bool enabled)
 {
 #if QT_CONFIG(webengine_spellchecker)
     m_profile->setSpellCheckEnabled(enabled);
 #endif
 }
 
-bool BrowserContextAdapter::isSpellCheckEnabled() const
+bool ProfileAdapter::isSpellCheckEnabled() const
 {
 #if QT_CONFIG(webengine_spellchecker)
     return m_profile->isSpellCheckEnabled();
@@ -536,7 +536,7 @@ bool BrowserContextAdapter::isSpellCheckEnabled() const
 #endif
 }
 
-void BrowserContextAdapter::resetVisitedLinksManager()
+void ProfileAdapter::resetVisitedLinksManager()
 {
     m_visitedLinksManager.reset(new VisitedLinksManagerQt(this));
 }

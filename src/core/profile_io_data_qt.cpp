@@ -207,7 +207,7 @@ void ProfileIODataQt::initializeOnIOThread()
 
 void ProfileIODataQt::initializeOnUIThread()
 {
-    m_browserContextAdapter = m_profile->adapter();
+    m_profileAdapter = m_profile->profileAdapter();
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     m_resourceContext.reset(new ResourceContextQt(this));
     ProtocolHandlerRegistry* protocolHandlerRegistry =
@@ -216,7 +216,7 @@ void ProfileIODataQt::initializeOnUIThread()
     m_protocolHandlerInterceptor =
         protocolHandlerRegistry->CreateJobInterceptorFactory();
     m_cookieDelegate = new CookieMonsterDelegateQt();
-    m_cookieDelegate->setClient(m_profile->adapter()->cookieStore());
+    m_cookieDelegate->setClient(m_profile->profileAdapter()->cookieStore());
 }
 
 void ProfileIODataQt::cancelAllUrlRequests()
@@ -320,7 +320,7 @@ void ProfileIODataQt::generateCookieStore()
     m_updateCookieStore = false;
 
     scoped_refptr<net::SQLiteChannelIDStore> channel_id_db;
-    if (!m_channelIdPath.isEmpty() && m_persistentCookiesPolicy != BrowserContextAdapter::NoPersistentCookies) {
+    if (!m_channelIdPath.isEmpty() && m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies) {
         channel_id_db = new net::SQLiteChannelIDStore(
                 toFilePath(m_channelIdPath),
                 base::CreateSequencedTaskRunnerWithTraits(
@@ -338,7 +338,7 @@ void ProfileIODataQt::generateCookieStore()
 
     std::unique_ptr<net::CookieStore> cookieStore;
     switch (m_persistentCookiesPolicy) {
-    case BrowserContextAdapter::NoPersistentCookies:
+    case ProfileAdapter::NoPersistentCookies:
         cookieStore = content::CreateCookieStore(
             content::CookieStoreConfig(
                 base::FilePath(),
@@ -347,7 +347,7 @@ void ProfileIODataQt::generateCookieStore()
                 nullptr)
         );
         break;
-    case BrowserContextAdapter::AllowPersistentCookies:
+    case ProfileAdapter::AllowPersistentCookies:
         cookieStore = content::CreateCookieStore(
             content::CookieStoreConfig(
                 toFilePath(m_cookiesPath),
@@ -356,7 +356,7 @@ void ProfileIODataQt::generateCookieStore()
                 nullptr)
             );
         break;
-    case BrowserContextAdapter::ForcePersistentCookies:
+    case ProfileAdapter::ForcePersistentCookies:
         cookieStore = content::CreateCookieStore(
             content::CookieStoreConfig(
                 toFilePath(m_cookiesPath),
@@ -410,7 +410,7 @@ void ProfileIODataQt::generateHttpCache()
 
     net::HttpCache::DefaultBackend* main_backend = 0;
     switch (m_httpCacheType) {
-    case BrowserContextAdapter::MemoryHttpCache:
+    case ProfileAdapter::MemoryHttpCache:
         main_backend =
             new net::HttpCache::DefaultBackend(
                 net::MEMORY_CACHE,
@@ -419,7 +419,7 @@ void ProfileIODataQt::generateHttpCache()
                 m_httpCacheMaxSize
             );
         break;
-    case BrowserContextAdapter::DiskHttpCache:
+    case ProfileAdapter::DiskHttpCache:
         main_backend =
             new net::HttpCache::DefaultBackend(
                 net::DISK_CACHE,
@@ -428,7 +428,7 @@ void ProfileIODataQt::generateHttpCache()
                 m_httpCacheMaxSize
             );
         break;
-    case BrowserContextAdapter::NoCache:
+    case ProfileAdapter::NoCache:
         // It's safe to not create BackendFactory.
         break;
     }
@@ -485,7 +485,7 @@ void ProfileIODataQt::generateJobFactory()
     for (const QByteArray &scheme : qAsConst(m_installedCustomSchemes)) {
         jobFactory->SetProtocolHandler(scheme.toStdString(),
                                        std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-                                           new CustomProtocolHandler(m_browserContextAdapter)));
+                                           new CustomProtocolHandler(m_profileAdapter)));
     }
 
     m_baseJobFactory = jobFactory.get();
@@ -531,7 +531,7 @@ void ProfileIODataQt::regenerateJobFactory()
     for (const QByteArray &scheme : qAsConst(m_installedCustomSchemes)) {
         m_baseJobFactory->SetProtocolHandler(scheme.toStdString(),
                                              std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-                                                 new CustomProtocolHandler(m_browserContextAdapter)));
+                                                 new CustomProtocolHandler(m_profileAdapter)));
     }
 }
 
@@ -547,16 +547,16 @@ void ProfileIODataQt::setRequestContextData(content::ProtocolHandlerMap *protoco
 void ProfileIODataQt::setFullConfiguration()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    m_requestInterceptor = m_browserContextAdapter->requestInterceptor();
-    m_persistentCookiesPolicy = m_browserContextAdapter->persistentCookiesPolicy();
-    m_cookiesPath = m_browserContextAdapter->cookiesPath();
-    m_channelIdPath = m_browserContextAdapter->channelIdPath();
-    m_httpAcceptLanguage = m_browserContextAdapter->httpAcceptLanguage();
-    m_httpUserAgent = m_browserContextAdapter->httpUserAgent();
-    m_httpCacheType = m_browserContextAdapter->httpCacheType();
-    m_httpCachePath = m_browserContextAdapter->httpCachePath();
-    m_httpCacheMaxSize = m_browserContextAdapter->httpCacheMaxSize();
-    m_customUrlSchemes = m_browserContextAdapter->customUrlSchemes();
+    m_requestInterceptor = m_profileAdapter->requestInterceptor();
+    m_persistentCookiesPolicy = m_profileAdapter->persistentCookiesPolicy();
+    m_cookiesPath = m_profileAdapter->cookiesPath();
+    m_channelIdPath = m_profileAdapter->channelIdPath();
+    m_httpAcceptLanguage = m_profileAdapter->httpAcceptLanguage();
+    m_httpUserAgent = m_profileAdapter->httpUserAgent();
+    m_httpCacheType = m_profileAdapter->httpCacheType();
+    m_httpCachePath = m_profileAdapter->httpCachePath();
+    m_httpCacheMaxSize = m_profileAdapter->httpCacheMaxSize();
+    m_customUrlSchemes = m_profileAdapter->customUrlSchemes();
 }
 
 void ProfileIODataQt::updateStorageSettings()
@@ -588,9 +588,9 @@ void ProfileIODataQt::updateCookieStore()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     QMutexLocker lock(&m_mutex);
-    m_persistentCookiesPolicy = m_browserContextAdapter->persistentCookiesPolicy();
-    m_cookiesPath = m_browserContextAdapter->cookiesPath();
-    m_channelIdPath = m_browserContextAdapter->channelIdPath();
+    m_persistentCookiesPolicy = m_profileAdapter->persistentCookiesPolicy();
+    m_cookiesPath = m_profileAdapter->cookiesPath();
+    m_channelIdPath = m_profileAdapter->channelIdPath();
 
     if (m_initialized && !m_updateAllStorage && !m_updateCookieStore) {
         m_updateCookieStore = true;
@@ -604,8 +604,8 @@ void ProfileIODataQt::updateUserAgent()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     QMutexLocker lock(&m_mutex);
-    m_httpAcceptLanguage = m_browserContextAdapter->httpAcceptLanguage();
-    m_httpUserAgent = m_browserContextAdapter->httpUserAgent();
+    m_httpAcceptLanguage = m_profileAdapter->httpAcceptLanguage();
+    m_httpUserAgent = m_profileAdapter->httpUserAgent();
 
     if (m_initialized && !m_updateAllStorage && !m_updateUserAgent) {
         m_updateUserAgent = true;
@@ -618,13 +618,13 @@ void ProfileIODataQt::updateHttpCache()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     QMutexLocker lock(&m_mutex);
-    m_httpCacheType = m_browserContextAdapter->httpCacheType();
-    m_httpCachePath = m_browserContextAdapter->httpCachePath();
-    m_httpCacheMaxSize = m_browserContextAdapter->httpCacheMaxSize();
+    m_httpCacheType = m_profileAdapter->httpCacheType();
+    m_httpCachePath = m_profileAdapter->httpCachePath();
+    m_httpCacheMaxSize = m_profileAdapter->httpCacheMaxSize();
 
-    if (m_httpCacheType == BrowserContextAdapter::NoCache) {
+    if (m_httpCacheType == ProfileAdapter::NoCache) {
         content::BrowsingDataRemover *remover =
-                content::BrowserContext::GetBrowsingDataRemover(m_browserContextAdapter->profile());
+                content::BrowserContext::GetBrowsingDataRemover(m_profileAdapter->profile());
         remover->Remove(base::Time(), base::Time::Max(),
             content::BrowsingDataRemover::DATA_TYPE_CACHE,
             content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
@@ -643,7 +643,7 @@ void ProfileIODataQt::updateJobFactory()
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     QMutexLocker lock(&m_mutex);
 
-    m_customUrlSchemes = m_browserContextAdapter->customUrlSchemes();
+    m_customUrlSchemes = m_profileAdapter->customUrlSchemes();
 
     if (m_initialized && !m_updateJobFactory) {
         m_updateJobFactory = true;
@@ -656,7 +656,7 @@ void ProfileIODataQt::updateRequestInterceptor()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     QMutexLocker lock(&m_mutex);
-    m_requestInterceptor = m_browserContextAdapter->requestInterceptor();
+    m_requestInterceptor = m_profileAdapter->requestInterceptor();
     // We in this case do not need to regenerate any Chromium classes.
 }
 } // namespace QtWebEngineCore

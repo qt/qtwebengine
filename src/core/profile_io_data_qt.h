@@ -40,8 +40,7 @@
 #ifndef PROFILE_IO_DATA_QT_H
 #define PROFILE_IO_DATA_QT_H
 
-#include "browser_context_adapter.h"
-
+#include "profile_adapter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
@@ -118,13 +117,13 @@ private:
     proxy_resolver::mojom::ProxyResolverFactoryPtr m_proxyResolverFactory;
     net::URLRequestJobFactoryImpl *m_baseJobFactory = nullptr;
     QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
-    QPointer<BrowserContextAdapter> m_browserContextAdapter; // never dereferenced in IO thread and it is passed by qpointer
-    BrowserContextAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;
+    QPointer<ProfileAdapter> m_profileAdapter; // never dereferenced in IO thread and it is passed by qpointer
+    ProfileAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;
     QString m_cookiesPath;
     QString m_channelIdPath;
     QString m_httpAcceptLanguage;
     QString m_httpUserAgent;
-    BrowserContextAdapter::HttpCacheType m_httpCacheType;
+    ProfileAdapter::HttpCacheType m_httpCacheType;
     QString m_httpCachePath;
     QList<QByteArray> m_customUrlSchemes;
     QList<QByteArray> m_installedCustomSchemes;

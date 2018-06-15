@@ -48,8 +48,8 @@
 // We mean it.
 //
 
-#ifndef BROWSER_CONTEXT_ADAPTER_H
-#define BROWSER_CONTEXT_ADAPTER_H
+#ifndef PROFILE_ADAPTER_H
+#define PROFILE_ADAPTER_H
 
 #include "qtwebenginecoreglobal_p.h"
 
@@ -74,13 +74,13 @@ class ProfileQt;
 class UserResourceControllerHost;
 class VisitedLinksManagerQt;
 
-class QWEBENGINECORE_PRIVATE_EXPORT BrowserContextAdapter : public QObject
+class QWEBENGINECORE_PRIVATE_EXPORT ProfileAdapter : public QObject
 {
 public:
-    explicit BrowserContextAdapter(const QString &storagePrefix = QString());
-    virtual ~BrowserContextAdapter();
+    explicit ProfileAdapter(const QString &storagePrefix = QString());
+    virtual ~ProfileAdapter();
 
-    static BrowserContextAdapter* defaultContext();
+    static ProfileAdapter* defaultProfileAdapter();
     static QObject* globalQObjectRoot();
 
     VisitedLinksManagerQt *visitedLinksManager();
@@ -154,13 +154,13 @@ public:
     };
 
     HttpCacheType httpCacheType() const;
-    void setHttpCacheType(BrowserContextAdapter::HttpCacheType);
+    void setHttpCacheType(ProfileAdapter::HttpCacheType);
 
     PersistentCookiesPolicy persistentCookiesPolicy() const;
-    void setPersistentCookiesPolicy(BrowserContextAdapter::PersistentCookiesPolicy);
+    void setPersistentCookiesPolicy(ProfileAdapter::PersistentCookiesPolicy);
 
     VisitedLinksPolicy visitedLinksPolicy() const;
-    void setVisitedLinksPolicy(BrowserContextAdapter::VisitedLinksPolicy);
+    void setVisitedLinksPolicy(ProfileAdapter::VisitedLinksPolicy);
 
     int httpCacheMaxSize() const;
     void setHttpCacheMaxSize(int maxSize);
@@ -209,9 +209,9 @@ private:
     QList<BrowserContextAdapterClient*> m_clients;
     int m_httpCacheMaxSize;
 
-    Q_DISABLE_COPY(BrowserContextAdapter)
+    Q_DISABLE_COPY(ProfileAdapter)
 };
 
 } // namespace QtWebEngineCore
 
-#endif // BROWSER_CONTEXT_ADAPTER_H
+#endif // PROFILE_ADAPTER_H

@@ -89,7 +89,7 @@
 #include "service/service_qt.h"
 #include "qtwebengine/grit/qt_webengine_resources.h"
 
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "browser_message_filter_qt.h"
 #include "certificate_error_controller.h"
 #include "certificate_error_controller_p.h"
@@ -412,7 +412,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     Profile *profile = Profile::FromBrowserContext(host->GetBrowserContext());
     // FIXME: Add a settings variable to enable/disable the file scheme.
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(id, url::kFileScheme);
-    static_cast<ProfileQt*>(host->GetBrowserContext())->m_adapter->userResourceController()->renderProcessStartedWithHost(host);
+    static_cast<ProfileQt*>(host->GetBrowserContext())->m_profileAdapter->userResourceController()->renderProcessStartedWithHost(host);
     host->AddFilter(new BrowserMessageFilterQt(id, profile));
 #if defined(Q_OS_MACOS) && QT_CONFIG(webengine_spellchecker) && QT_CONFIG(webengine_native_spellchecker)
   host->AddFilter(new SpellCheckMessageFilterPlatform(id));
@@ -562,7 +562,7 @@ std::string ContentBrowserClientQt::GetApplicationLocale()
 
 std::string ContentBrowserClientQt::GetAcceptLangs(content::BrowserContext *context)
 {
-    return static_cast<ProfileQt*>(context)->adapter()->httpAcceptLanguage().toStdString();
+    return static_cast<ProfileQt*>(context)->profileAdapter()->httpAcceptLanguage().toStdString();
 }
 
 void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id)
@@ -765,7 +765,7 @@ scoped_refptr<net::URLRequestContextGetter> GetSystemRequestContextOnUIThread()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return scoped_refptr<net::URLRequestContextGetter>(
-                BrowserContextAdapter::defaultContext()->profile()->GetRequestContext());
+                ProfileAdapter::defaultProfileAdapter()->profile()->GetRequestContext());
 }
 
 void ContentBrowserClientQt::GetGeolocationRequestContext(

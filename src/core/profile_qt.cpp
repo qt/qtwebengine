@@ -39,7 +39,7 @@
 
 #include "profile_qt.h"
 
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "browsing_data_remover_delegate_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "net/ssl_host_state_delegate_qt.h"
@@ -70,9 +70,9 @@
 
 namespace QtWebEngineCore {
 
-ProfileQt::ProfileQt(BrowserContextAdapter *adapter)
+ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     : m_profileIOData(new ProfileIODataQt(this)),
-      m_adapter(adapter)
+      m_profileAdapter(profileAdapter)
 {
     PrefServiceFactory factory;
     factory.set_user_prefs(new InMemoryPrefStore);
@@ -120,12 +120,12 @@ const PrefService* ProfileQt::GetPrefs() const
 
 base::FilePath ProfileQt::GetPath() const
 {
-    return toFilePath(m_adapter->dataPath());
+    return toFilePath(m_profileAdapter->dataPath());
 }
 
 bool ProfileQt::IsOffTheRecord() const
 {
-    return m_adapter->isOffTheRecord();
+    return m_profileAdapter->isOffTheRecord();
 }
 
 net::URLRequestContextGetter *ProfileQt::GetRequestContext()
@@ -151,7 +151,7 @@ content::ResourceContext *ProfileQt::GetResourceContext()
 
 content::DownloadManagerDelegate *ProfileQt::GetDownloadManagerDelegate()
 {
-    return m_adapter->downloadManagerDelegate();
+    return m_profileAdapter->downloadManagerDelegate();
 }
 
 content::BrowserPluginGuestManager *ProfileQt::GetGuestManager()

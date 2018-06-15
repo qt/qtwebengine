@@ -46,8 +46,8 @@
 
 namespace QtWebEngineCore {
 
-CustomProtocolHandler::CustomProtocolHandler(QPointer<BrowserContextAdapter> adapter)
-    : m_adapter(adapter)
+CustomProtocolHandler::CustomProtocolHandler(QPointer<ProfileAdapter> profileAdapter)
+    : m_profileAdapter(profileAdapter)
 {
 }
 
@@ -56,7 +56,7 @@ net::URLRequestJob *CustomProtocolHandler::MaybeCreateJob(net::URLRequest *reque
     if (!networkDelegate)
         return new net::URLRequestErrorJob(request, Q_NULLPTR, net::ERR_ACCESS_DENIED);
 
-    return new URLRequestCustomJob(request, networkDelegate, request->url().scheme(), m_adapter);
+    return new URLRequestCustomJob(request, networkDelegate, request->url().scheme(), m_profileAdapter);
 }
 
 } // namespace

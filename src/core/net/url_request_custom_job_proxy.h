@@ -52,7 +52,7 @@ namespace QtWebEngineCore {
 
 class URLRequestCustomJob;
 class URLRequestCustomJobDelegate;
-class BrowserContextAdapter;
+class ProfileAdapter;
 
 // Used to comunicate between URLRequestCustomJob living on the IO thread
 // and URLRequestCustomJobDelegate living on the UI thread.
@@ -62,7 +62,7 @@ class URLRequestCustomJobProxy
 public:
     URLRequestCustomJobProxy(URLRequestCustomJob *job,
                              const std::string &scheme,
-                             QPointer<BrowserContextAdapter> adapter);
+                             QPointer<ProfileAdapter> profileAdapter);
     ~URLRequestCustomJobProxy();
 
     // Called from URLRequestCustomJobDelegate via post:
@@ -82,7 +82,7 @@ public:
     // UI thread owned:
     std::string m_scheme;
     URLRequestCustomJobDelegate *m_delegate;
-    QPointer<BrowserContextAdapter> m_adapter;
+    QPointer<ProfileAdapter> m_profileAdapter;
 };
 
 } // namespace QtWebEngineCore

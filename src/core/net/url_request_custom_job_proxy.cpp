@@ -41,7 +41,7 @@
 #include "url_request_custom_job.h"
 #include "url_request_custom_job_delegate.h"
 #include "api/qwebengineurlrequestjob.h"
-#include "browser_context_adapter.h"
+#include "profile_adapter.h"
 #include "type_conversion.h"
 #include "content/public/browser/browser_thread.h"
 #include "web_engine_context.h"
@@ -52,12 +52,12 @@ namespace QtWebEngineCore {
 
 URLRequestCustomJobProxy::URLRequestCustomJobProxy(URLRequestCustomJob *job,
                                                    const std::string &scheme,
-                                                   QPointer<BrowserContextAdapter> adapter)
+                                                   QPointer<ProfileAdapter> profileAdapter)
     : m_job(job)
     , m_started(false)
     , m_scheme(scheme)
     , m_delegate(nullptr)
-    , m_adapter(adapter)
+    , m_profileAdapter(profileAdapter)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
@@ -163,8 +163,8 @@ void URLRequestCustomJobProxy::initialize(GURL url, std::string method, base::Op
 
     QWebEngineUrlSchemeHandler *schemeHandler = nullptr;
 
-    if (m_adapter)
-        schemeHandler = m_adapter->customUrlSchemeHandlers()[toQByteArray(m_scheme)];
+    if (m_profileAdapter)
+        schemeHandler = m_profileAdapter->customUrlSchemeHandlers()[toQByteArray(m_scheme)];
 
     if (schemeHandler) {
         m_delegate = new URLRequestCustomJobDelegate(this, toQt(url),
