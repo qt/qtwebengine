@@ -13,7 +13,7 @@ SUBDIRS += \
     stylesheetbrowser \
     videoplayer
 
-qtHaveModule(positioning): SUBDIRS += maps
+qtConfig(webengine-geolocation): SUBDIRS += maps
 
 qtConfig(webengine-spellchecker):!qtConfig(webengine-native-spellchecker):!cross_compile {
     SUBDIRS += spellchecker

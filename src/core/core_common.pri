@@ -5,4 +5,4 @@ TARGET = QtWebEngineCore
 QT += qml quick webchannel
 QT_PRIVATE += quick-private gui-private core-private webenginecoreheaders-private
 
-qtHaveModule(positioning):QT += positioning
+qtConfig(webengine-geolocation): QT += positioning

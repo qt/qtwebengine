@@ -123,7 +123,7 @@
 #include "renderer_host/pepper/pepper_host_factory_qt.h"
 #endif
 
-#if defined(QT_USE_POSITIONING)
+#if QT_CONFIG(webengine_geolocation)
 #include "location_provider_qt.h"
 #endif
 
@@ -731,7 +731,7 @@ bool ContentBrowserClientQt::CanCreateWindow(
 
 std::unique_ptr<device::LocationProvider> ContentBrowserClientQt::OverrideSystemLocationProvider()
 {
-#if defined(QT_USE_POSITIONING)
+#if QT_CONFIG(webengine_geolocation)
     return base::WrapUnique(new LocationProviderQt());
 #else
     return nullptr;

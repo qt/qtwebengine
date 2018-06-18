@@ -76,8 +76,6 @@ private:
     LocationProviderUpdateCallback m_callback;
     QtPositioningHelper *m_positioningHelper;
 };
-//#define QT_USE_POSITIONING 1
-
 } // namespace QtWebEngineCore
 
 #endif // LOCATION_PROVIDER_QT_H

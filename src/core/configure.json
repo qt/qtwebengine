@@ -469,7 +469,7 @@
         "webengine-geolocation": {
             "label": "Geolocation",
             "condition": "module.positioning",
-            "output": [ "privateFeature" ]
+            "output": [ "publicFeature" ]
         },
         "webengine-pulseaudio": {
             "label": "Use PulseAudio",

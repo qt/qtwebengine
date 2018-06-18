@@ -1,5 +1,5 @@
 include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-QT_FOR_CONFIG += webenginecore-private
+QT_FOR_CONFIG += webenginecore webenginecore-private
 
 qtConfig(debug_and_release): CONFIG += debug_and_release
 
@@ -260,8 +260,7 @@ contains(QT_CONFIG, opengl) {
         stream_video_node.h
 }
 
-qtHaveModule(positioning) {
+qtConfig(webengine-geolocation) {
     SOURCES += location_provider_qt.cpp
     HEADERS += location_provider_qt.h
-    DEFINES += QT_USE_POSITIONING=1
 }
