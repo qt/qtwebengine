@@ -29,7 +29,7 @@
     \example webenginewidgets/html2pdf
     \title WebEngine Widgets Html2Pdf Example
     \ingroup webengine-widgetexamples
-    \brief Converts web pages to PDF documents using Qt WebEngine
+    \brief Converts web pages to PDF documents using Qt WebEngine.
 
     \image html2pdf-example.png
 

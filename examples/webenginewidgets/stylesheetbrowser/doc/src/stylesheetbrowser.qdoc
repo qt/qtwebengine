@@ -29,7 +29,7 @@
     \example webenginewidgets/stylesheetbrowser
     \title WebEngine StyleSheet Browser Example
     \ingroup webengine-widgetexamples
-    \brief Demonstrates how to inject CSS into web pages using user scripts
+    \brief Demonstrates how to inject CSS into web pages using user scripts.
 
     \image stylesheetbrowser.png
 
