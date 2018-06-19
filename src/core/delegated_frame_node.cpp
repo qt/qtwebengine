@@ -810,6 +810,16 @@ static bool areRenderPassStructuresEqual(viz::CompositorFrame *frameData,
 #endif // QT_NO_OPENGL
             if (!areSharedQuadStatesEqual(quad->shared_quad_state, prevQuad->shared_quad_state))
                 return false;
+            if (quad->shared_quad_state->is_clipped && quad->visible_rect != prevQuad->visible_rect) {
+                gfx::Rect targetRect1 =
+                        cc::MathUtil::MapEnclosingClippedRect(quad->shared_quad_state->quad_to_target_transform, quad->visible_rect);
+                gfx::Rect targetRect2 =
+                        cc::MathUtil::MapEnclosingClippedRect(quad->shared_quad_state->quad_to_target_transform, prevQuad->visible_rect);
+                targetRect1.Intersect(quad->shared_quad_state->clip_rect);
+                targetRect2.Intersect(quad->shared_quad_state->clip_rect);
+                if (targetRect1.IsEmpty() != targetRect2.IsEmpty())
+                    return false;
+            }
         }
     }
     return true;
