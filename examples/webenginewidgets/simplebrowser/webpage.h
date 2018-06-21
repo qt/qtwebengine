@@ -69,6 +69,7 @@ private slots:
     void handleFeaturePermissionRequested(const QUrl &securityOrigin, Feature feature);
     void handleProxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
     void handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
+    void handleSelectClientCertificate(QWebEngineClientCertSelection clientCertSelection);
 };
 
 #endif // WEBPAGE_H

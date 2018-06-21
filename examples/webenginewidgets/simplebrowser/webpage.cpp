@@ -57,6 +57,7 @@
 #include <QAuthenticator>
 #include <QMessageBox>
 #include <QStyle>
+#include <QWebEngineCertificateError>
 
 WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
     : QWebEnginePage(profile, parent)
@@ -65,6 +66,7 @@ WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
     connect(this, &QWebEnginePage::featurePermissionRequested, this, &WebPage::handleFeaturePermissionRequested);
     connect(this, &QWebEnginePage::proxyAuthenticationRequired, this, &WebPage::handleProxyAuthenticationRequired);
     connect(this, &QWebEnginePage::registerProtocolHandlerRequested, this, &WebPage::handleRegisterProtocolHandlerRequested);
+    connect(this, &QWebEnginePage::selectClientCertificate, this, &WebPage::handleSelectClientCertificate);
 }
 
 bool WebPage::certificateError(const QWebEngineCertificateError &error)
@@ -192,3 +194,9 @@ void WebPage::handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolH
         request.reject();
 }
 //! [registerProtocolHandlerRequested]
+
+void WebPage::handleSelectClientCertificate(QWebEngineClientCertSelection selection)
+{
+    // Just select one.
+    selection.select(selection.certificates().at(0));
+}

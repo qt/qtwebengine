@@ -139,6 +139,7 @@ public:
     QObject *accessibilityParentObject() override;
     QtWebEngineCore::WebEngineSettings *webEngineSettings() const override;
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) override;
+    void selectClientCert(const QSharedPointer<ClientCertSelectController> &selectController) override;
     void runGeolocationPermissionRequest(QUrl const&) override;
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) override;
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;

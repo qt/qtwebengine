@@ -48,6 +48,7 @@ SOURCES = \
         certificate_error_controller.cpp \
         chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
+        client_cert_select_controller.cpp \
         clipboard_qt.cpp \
         color_chooser_qt.cpp \
         color_chooser_controller.cpp \
@@ -136,6 +137,7 @@ HEADERS = \
         certificate_error_controller_p.h \
         certificate_error_controller.h \
         chromium_overrides.h \
+        client_cert_select_controller.h \
         clipboard_qt.h \
         color_chooser_qt.h \
         color_chooser_controller_p.h \

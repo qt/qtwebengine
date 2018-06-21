@@ -61,6 +61,7 @@
 #include <QUrl>
 
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
+QT_FORWARD_DECLARE_CLASS(ClientCertSelectController)
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(QWebEngineQuotaRequest)
@@ -456,6 +457,7 @@ public:
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;
     virtual void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) = 0;
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
+    virtual void selectClientCert(const QSharedPointer<ClientCertSelectController> &selectController) = 0;
     virtual void updateScrollPosition(const QPointF &position) = 0;
     virtual void updateContentsSize(const QSizeF &size) = 0;
     virtual void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,

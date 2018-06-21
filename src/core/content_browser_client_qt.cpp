@@ -93,6 +93,7 @@
 #include "browser_message_filter_qt.h"
 #include "certificate_error_controller.h"
 #include "certificate_error_controller_p.h"
+#include "client_cert_select_controller.h"
 #include "desktop_screen_qt.h"
 #include "devtools_manager_delegate_qt.h"
 #include "login_delegate_qt.h"
@@ -118,6 +119,18 @@
 #if defined(Q_OS_LINUX)
 #include "global_descriptors_qt.h"
 #include "ui/base/resource/resource_bundle.h"
+#endif
+
+#if defined(USE_NSS_CERTS)
+#include "net/ssl/client_cert_store_nss.h"
+#endif
+
+#if defined(OS_WIN)
+#include "net/ssl/client_cert_store_win.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "net/ssl/client_cert_store_mac.h"
 #endif
 
 #if QT_CONFIG(webengine_pepper_plugins)
@@ -508,12 +521,38 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
     contentsDelegate->allowCertificateError(errorController);
 }
 
-void ContentBrowserClientQt::SelectClientCertificate(content::WebContents * /*webContents*/,
-                                                     net::SSLCertRequestInfo * /*certRequestInfo*/,
-                                                     net::ClientCertIdentityList /*client_certs*/,
+void ContentBrowserClientQt::SelectClientCertificate(content::WebContents *webContents,
+                                                     net::SSLCertRequestInfo *certRequestInfo,
+                                                     net::ClientCertIdentityList clientCerts,
                                                      std::unique_ptr<content::ClientCertificateDelegate> delegate)
 {
-    delegate->ContinueWithCertificate(nullptr, nullptr);
+    if (!clientCerts.empty()) {
+        WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+
+        QSharedPointer<ClientCertSelectController> certSelectController(
+                new ClientCertSelectController(certRequestInfo, std::move(clientCerts), std::move(delegate)));
+
+        contentsDelegate->selectClientCert(certSelectController);
+    } else {
+        delegate->ContinueWithCertificate(nullptr, nullptr);
+    }
+}
+
+std::unique_ptr<net::ClientCertStore> ContentBrowserClientQt::CreateClientCertStore(content::ResourceContext *resource_context)
+{
+    if (!resource_context)
+        return nullptr;
+#if defined(USE_NSS_CERTS)
+    // FIXME: Give it a proper callback for a password delegate.
+    return std::unique_ptr<net::ClientCertStore>(
+                new net::ClientCertStoreNSS(net::ClientCertStoreNSS::PasswordDelegateFactory()));
+#elif defined(OS_WIN)
+    return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
+#elif defined(OS_MACOSX)
+    return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreMac());
+#else
+    return nullptr;
+#endif
 }
 
 std::string ContentBrowserClientQt::GetApplicationLocale()

@@ -106,6 +106,7 @@ public:
                                          net::SSLCertRequestInfo* cert_request_info,
                                          net::ClientCertIdentityList client_certs,
                                          std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
+    std::unique_ptr<net::ClientCertStore> CreateClientCertStore(content::ResourceContext *resource_context) override;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() override;
 
     std::string GetApplicationLocale() override;

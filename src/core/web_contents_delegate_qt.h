@@ -53,6 +53,7 @@
 #include <QtCore/qvector.h>
 
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
+QT_FORWARD_DECLARE_CLASS(ClientCertSelectController)
 
 namespace content {
     class BrowserContext;
@@ -142,7 +143,8 @@ public:
 
     void didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription);
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
-    void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;
+    void allowCertificateError(const QSharedPointer<CertificateErrorController> &);
+    void selectClientCert(const QSharedPointer<ClientCertSelectController> &);
     void requestGeolocationPermission(const QUrl &requestingOrigin);
     void launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture);
     FaviconManager *faviconManager();

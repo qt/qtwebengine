@@ -269,6 +269,11 @@ void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<Cert
         m_certificateErrorControllers.append(errorController);
 }
 
+void QQuickWebEngineViewPrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &)
+{
+    // Doing nothing will free the select-controller and perform default continue.
+}
+
 void QQuickWebEngineViewPrivate::runGeolocationPermissionRequest(const QUrl &url)
 {
     Q_Q(QQuickWebEngineView);

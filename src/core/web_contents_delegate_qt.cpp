@@ -558,6 +558,11 @@ void WebContentsDelegateQt::allowCertificateError(const QSharedPointer<Certifica
     m_viewClient->allowCertificateError(errorController);
 }
 
+void WebContentsDelegateQt::selectClientCert(const QSharedPointer<ClientCertSelectController> &selectController)
+{
+    m_viewClient->selectClientCert(selectController);
+}
+
 void WebContentsDelegateQt::requestGeolocationPermission(const QUrl &requestingOrigin)
 {
     m_viewClient->runGeolocationPermissionRequest(requestingOrigin);
