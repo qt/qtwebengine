@@ -5,6 +5,7 @@ GN_FIND_MOCABLES_SCRIPT = $$shell_path($$QTWEBENGINE_ROOT/tools/scripts/gn_find_
 GN_RUN_BINARY_SCRIPT = $$shell_path($$QTWEBENGINE_ROOT/tools/scripts/gn_run_binary.py)
 GN_IMPORTS =  $$PWD/qtwebengine.gni
 GN_INCLUDES = $$PWD/qtwebengine_sources.gni $$PWD/qtwebengine_resources.gni
+GN_CORE_INCLUDE_DIRS = $$PWD/service
 GN_CREATE_PRI = true
 QMAKE_INTERNAL_INCLUDED_FILES = $$GN_IMPORTS $$GN_INCLUDES $$GN_FILE
 

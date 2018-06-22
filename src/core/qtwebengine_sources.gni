@@ -6,6 +6,7 @@ import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 
 source_set("qtwebengine_spellcheck_sources") {
+  include_dirs = core_include_dirs
   sources = [
     "//chrome/browser/spellchecker/spell_check_host_chrome_impl.cc",
     "//chrome/browser/spellchecker/spell_check_host_chrome_impl.h",
@@ -81,8 +82,6 @@ source_set("qtwebengine_sources") {
     "//extensions/common/constants.h",
     "//extensions/common/url_pattern.cc",
     "//extensions/common/url_pattern.h",
-    "//qtwebengine/browser/service_qt.cc",
-    "//qtwebengine/browser/service_qt.h",
   ]
 
   if (is_linux) {

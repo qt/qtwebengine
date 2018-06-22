@@ -86,7 +86,7 @@
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gpu_timing.h"
 
-#include "qtwebengine/browser/service_qt.h"
+#include "service/service_qt.h"
 #include "qtwebengine/grit/qt_webengine_resources.h"
 
 #include "browser_context_adapter.h"

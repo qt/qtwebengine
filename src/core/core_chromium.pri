@@ -110,6 +110,7 @@ SOURCES = \
         renderer_host/web_channel_ipc_transport_host.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
+        service/service_qt.cpp \
         type_conversion.cpp \
         user_script.cpp \
         visited_links_manager_qt.cpp \
@@ -202,6 +203,7 @@ HEADERS = \
         renderer_host/web_channel_ipc_transport_host.h \
         request_controller.h \
         resource_context_qt.h \
+        service/service_qt.h \
         type_conversion.h \
         user_script.h \
         visited_links_manager_qt.h \

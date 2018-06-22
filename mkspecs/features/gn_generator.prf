@@ -222,6 +222,14 @@ GN_CONTENTS += "        \":generate_cpp_mocs\","
 GN_CONTENTS += "    ]"
 GN_CONTENTS += "  }"
 GN_CONTENTS += "}"
+GN_CONTENTS += "  if (!defined(core_include_dirs)) {"\
+               "    core_include_dirs = []"\
+               "  }"
+!isEmpty(GN_CORE_INCLUDE_DIRS) {
+   GN_CONTENTS += "core_include_dirs += ["
+   for (inc, GN_CORE_INCLUDE_DIRS): GN_CONTENTS += "    \"$$inc\","
+   GN_CONTENTS += "]"
+}
 !isEmpty(GN_INCLUDES) {
     for (inc, GN_INCLUDES): GN_CONTENTS += $$cat($$inc,lines)
 }
