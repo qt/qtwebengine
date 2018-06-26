@@ -51,7 +51,11 @@
 #include "gin/wrappable.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "v8/include/v8.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "qtwebengine/browser/qtwebchannel.mojom.h"
 
 #include <QJsonDocument>
 
@@ -154,9 +158,9 @@ void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
 
     int size = 0;
     const char *rawData = doc.rawData(&size);
-    renderFrame->Send(new WebChannelIPCTransportHost_SendMessage(
-                          renderFrame->GetRoutingID(),
-                          std::vector<char>(rawData, rawData + size)));
+    qtwebchannel::mojom::WebChannelTransportHostAssociatedPtr webChannelTransport;
+    renderFrame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
+    webChannelTransport->DispatchWebChannelMessage(std::vector<uint8_t>(rawData, rawData + size));
 }
 
 gin::ObjectTemplateBuilder WebChannelTransport::GetObjectTemplateBuilder(v8::Isolate *isolate)
@@ -167,29 +171,50 @@ gin::ObjectTemplateBuilder WebChannelTransport::GetObjectTemplateBuilder(v8::Iso
 
 WebChannelIPCTransport::WebChannelIPCTransport(content::RenderFrame *renderFrame)
     : content::RenderFrameObserver(renderFrame)
+    , m_worldId(0)
+    , m_worldInitialized(false)
 {
+    renderFrame->GetAssociatedInterfaceRegistry()->AddInterface(
+                base::Bind(&WebChannelIPCTransport::BindRequest, base::Unretained(this)));
 }
 
-void WebChannelIPCTransport::setWorldId(base::Optional<uint> worldId)
+void WebChannelIPCTransport::BindRequest(
+        qtwebchannel::mojom::WebChannelTransportRenderAssociatedRequest request) {
+
+    m_binding.AddBinding(this, std::move(request));
+}
+
+void WebChannelIPCTransport::SetWorldId(uint32_t worldId)
 {
-    if (m_worldId == worldId)
+    if (m_worldInitialized && m_worldId == worldId)
         return;
 
-    if (m_worldId && m_canUseContext)
-        WebChannelTransport::Uninstall(render_frame()->GetWebFrame(), *m_worldId);
+    if (m_worldInitialized && m_canUseContext)
+        WebChannelTransport::Uninstall(render_frame()->GetWebFrame(), m_worldId);
 
+    m_worldInitialized = true;
     m_worldId = worldId;
 
-    if (m_worldId && m_canUseContext)
-        WebChannelTransport::Install(render_frame()->GetWebFrame(), *m_worldId);
+    if (m_canUseContext)
+        WebChannelTransport::Install(render_frame()->GetWebFrame(), m_worldId);
 }
 
-void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &binaryJson, uint worldId)
+void WebChannelIPCTransport::ResetWorldId()
+{
+   if (m_worldInitialized && m_canUseContext)
+        WebChannelTransport::Uninstall(render_frame()->GetWebFrame(), m_worldId);
+
+    m_worldInitialized = false;
+    m_worldId = 0;
+}
+
+void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t> &binaryJson, uint32_t worldId)
 {
     DCHECK(m_canUseContext);
     DCHECK(m_worldId == worldId);
 
-    QJsonDocument doc = QJsonDocument::fromRawData(binaryJson.data(), binaryJson.size(), QJsonDocument::BypassValidation);
+    QJsonDocument doc = QJsonDocument::fromRawData(reinterpret_cast<const char *>(binaryJson.data()),
+                                                   binaryJson.size(), QJsonDocument::BypassValidation);
     DCHECK(doc.isObject());
     QByteArray json = doc.toJson(QJsonDocument::Compact);
 
@@ -241,20 +266,9 @@ void WebChannelIPCTransport::DidClearWindowObject()
 {
     if (!m_canUseContext) {
         m_canUseContext = true;
-        if (m_worldId)
-            WebChannelTransport::Install(render_frame()->GetWebFrame(), *m_worldId);
+        if (m_worldInitialized)
+            WebChannelTransport::Install(render_frame()->GetWebFrame(), m_worldId);
     }
-}
-
-bool WebChannelIPCTransport::OnMessageReceived(const IPC::Message &message)
-{
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(WebChannelIPCTransport, message)
-        IPC_MESSAGE_HANDLER(WebChannelIPCTransport_SetWorldId, setWorldId)
-        IPC_MESSAGE_HANDLER(WebChannelIPCTransport_Message, dispatchWebChannelMessage)
-        IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
 }
 
 void WebChannelIPCTransport::OnDestruct()

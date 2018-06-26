@@ -43,6 +43,9 @@
 #include "qtwebenginecoreglobal.h"
 
 #include "content/public/browser/web_contents_observer.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
+#include "content/public/browser/web_contents_binding_set.h"
+#include "qtwebengine/browser/qtwebchannel.mojom.h"
 
 #include <QWebChannelAbstractTransport>
 
@@ -51,29 +54,33 @@ QT_FORWARD_DECLARE_CLASS(QString)
 namespace QtWebEngineCore {
 
 class WebChannelIPCTransportHost : public QWebChannelAbstractTransport
-                                 , private content::WebContentsObserver {
+        , private content::WebContentsObserver
+        , qtwebchannel::mojom::WebChannelTransportHost {
 public:
-    WebChannelIPCTransportHost(content::WebContents *webContents, uint worldId = 0, QObject *parent = nullptr);
-    virtual ~WebChannelIPCTransportHost();
+    WebChannelIPCTransportHost(content::WebContents *webContents, uint32_t worldId = 0, QObject *parent = nullptr);
+    ~WebChannelIPCTransportHost() override;
 
-    void setWorldId(uint worldId) { setWorldId(base::Optional<uint>(worldId)); }
-    uint worldId() const { return *m_worldId; }
+    void setWorldId(uint32_t worldId);
+    uint32_t worldId() const;
 
     // QWebChannelAbstractTransport
     void sendMessage(const QJsonObject &message) override;
 
 private:
-    void setWorldId(base::Optional<uint> worldId);
-    void setWorldId(content::RenderFrameHost *frame, base::Optional<uint> worldId);
+    void setWorldId(content::RenderFrameHost *frame, uint32_t worldId);
+    void resetWorldId();
     void onWebChannelMessage(const std::vector<char> &message);
 
     // WebContentsObserver
     void RenderFrameCreated(content::RenderFrameHost *frame) override;
-    bool OnMessageReceived(const IPC::Message& message, content::RenderFrameHost *receiver) override;
+
+    // qtwebchannel::mojom::WebChannelTransportHost
+    void DispatchWebChannelMessage(const std::vector<uint8_t> &binaryJson) override;
 
     // Empty only during construction/destruction. Synchronized to all the
     // WebChannelIPCTransports/RenderFrames in the observed WebContents.
-    base::Optional<uint> m_worldId;
+    uint32_t m_worldId;
+    content::WebContentsFrameBindingSet<qtwebchannel::mojom::WebChannelTransportHost> m_binding;
 };
 
 } // namespace

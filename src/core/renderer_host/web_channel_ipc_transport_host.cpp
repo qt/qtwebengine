@@ -42,7 +42,10 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "qtwebengine/browser/qtwebchannel.mojom.h"
 #include "common/qt_messages.h"
 
 #include <QJsonDocument>
@@ -72,13 +75,21 @@ inline QDebug operator<<(QDebug stream, const base::Optional<T> &opt)
 WebChannelIPCTransportHost::WebChannelIPCTransportHost(content::WebContents *contents, uint worldId, QObject *parent)
     : QWebChannelAbstractTransport(parent)
     , content::WebContentsObserver(contents)
+    , m_worldId(worldId)
+    , m_binding(contents, this)
 {
-    setWorldId(worldId);
+    for (content::RenderFrameHost *frame : contents->GetAllFrames())
+        setWorldId(frame, worldId);
 }
 
 WebChannelIPCTransportHost::~WebChannelIPCTransportHost()
 {
-    setWorldId(base::nullopt);
+    resetWorldId();
+}
+
+uint WebChannelIPCTransportHost::worldId() const
+{
+    return m_worldId;
 }
 
 void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
@@ -87,11 +98,13 @@ void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
     int size = 0;
     const char *rawData = doc.rawData(&size);
     content::RenderFrameHost *frame = web_contents()->GetMainFrame();
+    qtwebchannel::mojom::WebChannelTransportRenderAssociatedPtr webChannelTransport;
+    frame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
     qCDebug(log).nospace() << "sending webchannel message to " << frame << ": " << doc;
-    frame->Send(new WebChannelIPCTransport_Message(frame->GetRoutingID(), std::vector<char>(rawData, rawData + size), *m_worldId));
+    webChannelTransport->DispatchWebChannelMessage(std::vector<uint8_t>(rawData, rawData + size), m_worldId);
 }
 
-void WebChannelIPCTransportHost::setWorldId(base::Optional<uint> worldId)
+void WebChannelIPCTransportHost::setWorldId(uint32_t worldId)
 {
     if (m_worldId == worldId)
         return;
@@ -100,23 +113,41 @@ void WebChannelIPCTransportHost::setWorldId(base::Optional<uint> worldId)
     m_worldId = worldId;
 }
 
-void WebChannelIPCTransportHost::setWorldId(content::RenderFrameHost *frame, base::Optional<uint> worldId)
+void WebChannelIPCTransportHost::setWorldId(content::RenderFrameHost *frame, uint32_t worldId)
 {
     if (!frame->IsRenderFrameLive())
         return;
     qCDebug(log).nospace() << "sending setWorldId(" << worldId << ") message to " << frame;
-    frame->Send(new WebChannelIPCTransport_SetWorldId(frame->GetRoutingID(), worldId));
+    qtwebchannel::mojom::WebChannelTransportRenderAssociatedPtr webChannelTransport;
+    frame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
+    webChannelTransport->SetWorldId(worldId);
 }
 
-void WebChannelIPCTransportHost::onWebChannelMessage(const std::vector<char> &message)
+void WebChannelIPCTransportHost::resetWorldId()
+{
+    for (content::RenderFrameHost *frame : web_contents()->GetAllFrames()) {
+        if (!frame->IsRenderFrameLive())
+            return;
+        qtwebchannel::mojom::WebChannelTransportRenderAssociatedPtr webChannelTransport;
+        frame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
+        webChannelTransport->ResetWorldId();
+    }
+}
+
+void WebChannelIPCTransportHost::DispatchWebChannelMessage(const std::vector<uint8_t> &binaryJson)
 {
     content::RenderFrameHost *frame = web_contents()->GetMainFrame();
+
+    if (m_binding.GetCurrentTargetFrame() != frame) {
+        return;
+    }
 
     QJsonDocument doc;
     // QJsonDocument::fromRawData does not check the length before it starts
     // parsing the QJsonPrivate::Header and QJsonPrivate::Base structures.
-    if (message.size() >= sizeof(QJsonPrivate::Header) + sizeof(QJsonPrivate::Base))
-        doc = QJsonDocument::fromRawData(message.data(), message.size());
+    if (binaryJson.size() >= sizeof(QJsonPrivate::Header) + sizeof(QJsonPrivate::Base))
+        doc = QJsonDocument::fromRawData(reinterpret_cast<const char *>(binaryJson.data()),
+                                                                        binaryJson.size());
 
     if (!doc.isObject()) {
         qCCritical(log).nospace() << "received invalid webchannel message from " << frame;
@@ -130,19 +161,6 @@ void WebChannelIPCTransportHost::onWebChannelMessage(const std::vector<char> &me
 void WebChannelIPCTransportHost::RenderFrameCreated(content::RenderFrameHost *frame)
 {
     setWorldId(frame, m_worldId);
-}
-
-bool WebChannelIPCTransportHost::OnMessageReceived(const IPC::Message& message, content::RenderFrameHost *receiver)
-{
-    if (receiver != web_contents()->GetMainFrame())
-        return false;
-
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(WebChannelIPCTransportHost, message)
-        IPC_MESSAGE_HANDLER(WebChannelIPCTransportHost_SendMessage, onWebChannelMessage)
-        IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
 }
 
 } // namespace QtWebEngineCore

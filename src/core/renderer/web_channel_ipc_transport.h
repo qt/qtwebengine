@@ -41,30 +41,39 @@
 #define WEB_CHANNEL_IPC_TRANSPORT_H
 
 #include "content/public/renderer/render_frame_observer.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "qtwebengine/browser/qtwebchannel.mojom.h"
 
 #include <QtCore/qglobal.h>
 
 namespace QtWebEngineCore {
 
-class WebChannelIPCTransport : private content::RenderFrameObserver {
+class WebChannelIPCTransport: private content::RenderFrameObserver,
+        public qtwebchannel::mojom::WebChannelTransportRender {
 public:
     WebChannelIPCTransport(content::RenderFrame *);
 
 private:
-    void setWorldId(base::Optional<uint> worldId);
-    void dispatchWebChannelMessage(const std::vector<char> &binaryJson, uint worldId);
+    // qtwebchannel::mojom::WebChannelTransportRender
+    void SetWorldId(uint32_t worldId) override;
+    void ResetWorldId() override;
+    void DispatchWebChannelMessage(const std::vector<uint8_t>& binaryJson, uint32_t worldId) override;
 
     // RenderFrameObserver
     void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;
     void DidClearWindowObject() override;
-    bool OnMessageReceived(const IPC::Message &message) override;
     void OnDestruct() override;
+    void BindRequest(qtwebchannel::mojom::WebChannelTransportRenderAssociatedRequest request);
 
+private:
     // The worldId from our WebChannelIPCTransportHost or empty when there is no
     // WebChannelIPCTransportHost.
-    base::Optional<uint> m_worldId;
+    uint32_t m_worldId;
+    bool m_worldInitialized;
     // True means it's currently OK to manipulate the frame's script context.
     bool m_canUseContext = false;
+    mojo::AssociatedBindingSet<qtwebchannel::mojom::WebChannelTransportRender> m_binding;
 };
 
 } // namespace
