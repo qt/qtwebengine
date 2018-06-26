@@ -219,6 +219,7 @@ private Q_SLOTS:
     void dataURLFragment();
     void devTools();
     void openLinkInDifferentProfile();
+    void triggerActionWithoutMenu();
     void dynamicFrame();
 
 private:
@@ -4431,6 +4432,15 @@ void tst_QWebEnginePage::openLinkInDifferentProfile()
     QTest::mouseClick(view.focusProxy(), Qt::MiddleButton, 0, elementCenter(&page1, "link"));
     QTRY_COMPARE(spy2.count(), 1);
     QVERIFY(spy2.takeFirst().value(0).toBool());
+}
+
+void tst_QWebEnginePage::triggerActionWithoutMenu()
+{
+    // Calling triggerAction should not crash even when for
+    // context-menu-specific actions without a context menu.
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    page.triggerAction(QWebEnginePage::DownloadLinkToDisk);
 }
 
 void tst_QWebEnginePage::dynamicFrame()

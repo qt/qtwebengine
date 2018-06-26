@@ -29,7 +29,7 @@
     \example webenginewidgets/minimal
     \title WebEngine Widgets Minimal Example
     \ingroup webengine-widgetexamples
-    \brief Displays a web page using Qt WebEngine Widgets
+    \brief Displays a web page using Qt WebEngine Widgets.
 
     \image minimal-example.png
 

@@ -54,7 +54,7 @@ namespace QtWebEngine {
     \ingroup qtwebengine-namespaces
     \keyword QtWebEngine Namespace
 
-    \brief Helper functions for the Qt WebEngine (Qt Quick) module
+    \brief Helper functions for the Qt WebEngine (Qt Quick) module.
 
     The \l[CPP]{QtWebEngine} namespace is part of the Qt WebEngine module.
 */

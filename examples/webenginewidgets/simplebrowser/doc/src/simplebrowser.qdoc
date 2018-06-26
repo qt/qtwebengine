@@ -29,7 +29,7 @@
     \example webenginewidgets/simplebrowser
     \title WebEngine Widgets Simple Browser Example
     \ingroup webengine-widgetexamples
-    \brief A simple browser based on Qt WebEngine Widgets
+    \brief A simple browser based on Qt WebEngine Widgets.
 
     \image simplebrowser.png
 

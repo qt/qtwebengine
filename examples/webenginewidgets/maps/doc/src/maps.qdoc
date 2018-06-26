@@ -29,7 +29,7 @@
     \example webenginewidgets/maps
     \title WebEngine Widgets Maps Example
     \ingroup webengine-widgetexamples
-    \brief Demonstrates how to handle geolocation requests
+    \brief Demonstrates how to handle geolocation requests.
 
     \image maps-example.png
 

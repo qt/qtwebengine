@@ -29,7 +29,7 @@
 /*!
     \module QtWebEngineCore
     \title Qt WebEngine Core C++ Classes
-    \brief Provides public API shared by both QtWebEngine and QtWebEngineWidgets
+    \brief Provides public API shared by both QtWebEngine and QtWebEngineWidgets.
     \since 5.6
     \ingroup qtwebengine-modules
     \ingroup modules
