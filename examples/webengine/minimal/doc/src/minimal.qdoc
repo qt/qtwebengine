@@ -29,7 +29,7 @@
     \example webengine/minimal
     \title WebEngine Qt Quick Minimal Example
     \ingroup webengine-examples
-    \brief Displays a web page using the Qt Quick integration of Qt WebEngine
+    \brief Displays a web page using the Qt Quick integration of Qt WebEngine.
 
     \image minimal-example.png
 

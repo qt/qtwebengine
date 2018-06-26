@@ -73,13 +73,6 @@
 #include "ui/gl/gl_glx_api_implementation.h"
 #include <dlfcn.h>
 
-#ifndef QT_NO_OPENGL
-#include <QOpenGLContext>
-QT_BEGIN_NAMESPACE
-Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
-QT_END_NAMESPACE
-#endif
-
 #endif
 
 #include "ozone/gl_surface_egl_qt.h"
@@ -203,16 +196,10 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
           reinterpret_cast<GLGetProcAddressProc>(
               base::GetFunctionPointerFromNativeLibrary(library,
                                                         "glXGetProcAddress"));
-
-#ifndef QT_NO_OPENGL
       if (!get_proc_address) {
-          // glx handle not loaded , fallback to qpa
-          if (QOpenGLContext *context = qt_gl_global_share_context()) {
-              get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(
-                          context->getProcAddress("glXGetProcAddress"));
-          }
+          QFunctionPointer address = GLContextHelper::getGlXGetProcAddress();
+          get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(address);
       }
-#endif
       if (!get_proc_address) {
           LOG(ERROR) << "glxGetProcAddress not found.";
           base::UnloadNativeLibrary(library);
@@ -239,6 +226,10 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
           reinterpret_cast<GLGetProcAddressProc>(
               base::GetFunctionPointerFromNativeLibrary(library,
                                                         "eglGetProcAddress"));
+      if (!get_proc_address) {
+          QFunctionPointer address = GLContextHelper::getEglGetProcAddress();
+          get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(address);
+      }
       if (!get_proc_address) {
         LOG(ERROR) << "eglGetProcAddress not found.";
         base::UnloadNativeLibrary(library);

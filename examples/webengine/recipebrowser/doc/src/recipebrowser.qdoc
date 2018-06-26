@@ -77,7 +77,7 @@
 
     \printuntil RecipeList
     \dots 16
-    \skipuntil onRecipeSelected
+    \skipuntil webView.showRecipe
     \printline }
     \printuntil WebEngineView
     \dots 16

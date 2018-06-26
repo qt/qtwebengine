@@ -48,7 +48,7 @@
 // GL typedefs cascading through content header includes.
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/command_buffer/service/texture_base.h"
 
 #include "content/gpu/gpu_child_thread.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
