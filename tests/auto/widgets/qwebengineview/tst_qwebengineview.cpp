@@ -367,7 +367,7 @@ void tst_QWebEngineView::microFocusCoordinates()
     QVariant initialMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus);
 
     evaluateJavaScriptSync(webView.page(), "window.scrollBy(0, 50)");
-    QVERIFY(scrollSpy.wait());
+    QTRY_VERIFY(scrollSpy.count() > 0);
 
     QTRY_VERIFY(webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus).isValid());
     QVariant currentMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus);
