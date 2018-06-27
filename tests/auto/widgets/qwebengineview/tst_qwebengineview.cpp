@@ -306,11 +306,13 @@ class WebViewCrashTest : public QObject {
     QWebEngineView* m_view;
 public:
     bool m_invokedStop;
+    bool m_stopBypassed;
 
 
     WebViewCrashTest(QWebEngineView* view)
       : m_view(view)
       , m_invokedStop(false)
+      , m_stopBypassed(false)
     {
         view->connect(view, SIGNAL(loadProgress(int)), this, SLOT(loading(int)));
     }
@@ -323,6 +325,8 @@ private Q_SLOTS:
             QVERIFY(!m_invokedStop);
             m_view->stop();
             m_invokedStop = true;
+        } else if (!m_invokedStop && progress == 100) {
+            m_stopBypassed = true;
         }
     }
 };
@@ -340,7 +344,10 @@ void tst_QWebEngineView::crashTests()
 
     // If the verification fails, it means that either stopping doesn't work, or the hardware is
     // too slow to load the page and thus to slow to issue the first loadProgress > 0 signal.
-    QTRY_VERIFY_WITH_TIMEOUT(tester.m_invokedStop, 10000);
+    QTRY_VERIFY_WITH_TIMEOUT(tester.m_invokedStop || tester.m_stopBypassed, 10000);
+    if (tester.m_stopBypassed)
+        QEXPECT_FAIL("", "Loading was too fast to stop", Continue);
+    QVERIFY(tester.m_invokedStop);
 }
 
 void tst_QWebEngineView::microFocusCoordinates()
