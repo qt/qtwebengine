@@ -71,8 +71,6 @@ class QWheelEvent;
 class QAccessibleInterface;
 QT_END_NAMESPACE
 
-class WebContentsAdapterClient;
-
 namespace content {
 class RenderFrameHost;
 class RenderWidgetHostImpl;
