@@ -76,7 +76,9 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QStyleHints>
+#if QT_CONFIG(tabletevent)
 #include <QTabletEvent>
+#endif
 #include <QWheelEvent>
 
 using namespace blink;
@@ -1186,6 +1188,7 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
     }
 }
 
+#if QT_CONFIG(tabletevent)
 static WebPointerProperties::PointerType pointerTypeForTabletEvent(const QTabletEvent *ev)
 {
     switch (ev->pointerType()) {
@@ -1199,6 +1202,7 @@ static WebPointerProperties::PointerType pointerTypeForTabletEvent(const QTablet
         return WebPointerProperties::PointerType::kMouse;
     }
 }
+#endif
 
 WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 {
@@ -1230,6 +1234,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
     return webKitEvent;
 }
 
+#if QT_CONFIG(tabletevent)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
@@ -1248,6 +1253,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev, double dpiScale
     webKitEvent.pointer_type = pointerTypeForTabletEvent(ev);
     return webKitEvent;
 }
+#endif
 
 WebMouseEvent WebEventFactory::toWebMouseEvent(QEvent *ev)
 {

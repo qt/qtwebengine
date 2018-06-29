@@ -188,7 +188,9 @@ public:
     void handleKeyEvent(QKeyEvent*);
     void handleWheelEvent(QWheelEvent*);
     void handleTouchEvent(QTouchEvent*);
+#if QT_CONFIG(tabletevent)
     void handleTabletEvent(QTabletEvent *ev);
+#endif
 #ifndef QT_NO_GESTURES
     void handleGestureEvent(QNativeGestureEvent *);
 #endif

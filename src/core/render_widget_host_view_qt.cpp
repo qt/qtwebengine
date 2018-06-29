@@ -1090,12 +1090,14 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::TouchCancel:
         handleTouchEvent(static_cast<QTouchEvent*>(event));
         break;
+#if QT_CONFIG(tabletevent)
     case QEvent::TabletPress:
         Focus(); // Fall through.
     case QEvent::TabletRelease:
     case QEvent::TabletMove:
         handleTabletEvent(static_cast<QTabletEvent*>(event));
         break;
+#endif
 #ifndef QT_NO_GESTURES
     case QEvent::NativeGesture:
         handleGestureEvent(static_cast<QNativeGestureEvent *>(event));
@@ -1613,10 +1615,12 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
     }
 }
 
+#if QT_CONFIG(tabletevent)
 void RenderWidgetHostViewQt::handleTabletEvent(QTabletEvent *event)
 {
     handlePointerEvent<QTabletEvent>(event);
 }
+#endif
 
 template<class T>
 void RenderWidgetHostViewQt::handlePointerEvent(T *event)
