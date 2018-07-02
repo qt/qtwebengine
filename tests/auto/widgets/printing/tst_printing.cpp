@@ -26,30 +26,38 @@
 **
 ****************************************************************************/
 
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QWebEnginePage>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QSignalSpy>
 #include <util.h>
 
+#if QT_CONFIG(webengine_poppler_cpp)
+#include <poppler-document.h>
+#include <poppler-page.h>
+#endif
+
 class tst_Printing : public QObject
 {
     Q_OBJECT
 private slots:
-    void printToPdf();
+    void printToPdfBasic();
+#if QT_CONFIG(webengine_poppler_cpp)
+    void printToPdfPoppler();
+#endif
 };
 
-
-void tst_Printing::printToPdf()
+void tst_Printing::printToPdfBasic()
 {
     QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
     QVERIFY(tempDir.isValid());
     QWebEnginePage page;
-    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
     page.load(QUrl("qrc:///resources/basic_printing_page.html"));
     QTRY_VERIFY(spy.count() == 1);
 
-    QSignalSpy savePdfSpy(&page, SIGNAL(pdfPrintingFinished(const QString&, bool)));
+    QSignalSpy savePdfSpy(&page, &QWebEnginePage::pdfPrintingFinished);
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
     QString path = tempDir.path() + "/print_1_success.pdf";
     page.printToPdf(path, layout);
@@ -79,6 +87,38 @@ void tst_Printing::printToPdf()
     page.printToPdf(failedInvalidLayoutSpy.ref(), QPageLayout());
     QCOMPARE(failedInvalidLayoutSpy.waitForResult().length(), 0);
 }
+
+#if QT_CONFIG(webengine_poppler_cpp)
+void tst_Printing::printToPdfPoppler()
+{
+    // check if generated pdf is correct by searching for a know string on the page
+    using namespace poppler;
+    QWebEnginePage webPage;
+    QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
+
+    QSignalSpy spy(&webPage, &QWebEnginePage::loadFinished);
+    QSignalSpy savePdfSpy(&webPage, &QWebEnginePage::pdfPrintingFinished);
+    CallbackSpy<QByteArray> resultSpy;
+
+    webPage.load(QUrl("qrc:///resources/basic_printing_page.html"));
+    QTRY_VERIFY(spy.count() == 1);
+    webPage.printToPdf(resultSpy.ref(), layout);
+    const QByteArray data = resultSpy.waitForResult();
+    QVERIFY(data.length() > 0);
+
+    QScopedPointer<document> pdf(document::load_from_raw_data(data.constData(), data.length()));
+    QVERIFY(pdf);
+
+    const int pages = pdf->pages();
+    QVERIFY(pages == 1);
+
+    QScopedPointer<page> pdfPage(pdf->create_page(0));
+    rectf rect;
+    QVERIFY2(pdfPage->search(ustring::from_latin1("Hello Paper World"), rect, page::search_from_top,
+                     case_sensitive ), "Could not find text");
+}
+#endif
+
 
 QTEST_MAIN(tst_Printing)
 #include "tst_printing.moc"

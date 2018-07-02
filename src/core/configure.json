@@ -133,6 +133,12 @@
                 { "type": "pkgConfig", "args": "protobuf" }
             ]
         },
+        "webengine-poppler-cpp": {
+            "label": "poppler-cpp",
+            "sources": [
+                { "type": "pkgConfig", "args": "poppler-cpp" }
+            ]
+        },
         "pulseaudio": {
             "label": "pulseaudio >= 0.9.10",
             "sources": [
@@ -618,6 +624,12 @@
             "label": "Sanitizer",
             "autoDetect": "config.sanitizer && tests.webengine-sanitizer",
             "condition": "config.sanitizer",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-poppler-cpp": {
+            "label": "poppler-cpp",
+            "autoDetect": "config.unix",
+            "condition": "libs.webengine-poppler-cpp",
             "output": [ "privateFeature" ]
         }
     },
