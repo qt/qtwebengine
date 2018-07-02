@@ -1,5 +1,5 @@
 include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri) # workaround for QTBUG-68093
-QT_FOR_CONFIG += webenginecore
+QT_FOR_CONFIG += webenginecore webenginecore-private
 
 TEMPLATE = subdirs
 
@@ -21,6 +21,10 @@ SUBDIRS += \
 
 qtConfig(accessibility) {
     SUBDIRS += qwebengineaccessibility
+}
+
+qtConfig(webengine-printing-and-pdf) {
+    SUBDIRS += printing
 }
 
 qtConfig(webengine-spellchecker):!cross_compile {
