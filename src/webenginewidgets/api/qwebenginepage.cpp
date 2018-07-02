@@ -506,8 +506,8 @@ void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &re
 
     bool printerResult = printPdfDataOnPrinter(result, *currentPrinter);
 
-    m_callbacks.invoke(requestId, printerResult);
     currentPrinter = nullptr;
+    m_callbacks.invoke(requestId, printerResult);
 #else
     // we should never enter this branch, but just for safe-keeping...
     Q_UNUSED(result);
