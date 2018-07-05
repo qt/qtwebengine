@@ -343,6 +343,7 @@ Q_SIGNALS:
     void recentlyAudibleChanged(bool recentlyAudible);
 
     void pdfPrintingFinished(const QString &filePath, bool success);
+    void printRequested();
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);

@@ -549,6 +549,7 @@ Q_SIGNALS:
     Q_REVISION(7) void inspectedViewChanged();
     Q_REVISION(7) void devToolsViewChanged();
     Q_REVISION(7) void registerProtocolHandlerRequested(const QWebEngineRegisterProtocolHandlerRequest &request);
+    Q_REVISION(8) void printRequested();
 
 #if QT_CONFIG(webengine_testsupport)
     void testSupportChanged();

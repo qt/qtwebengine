@@ -155,6 +155,7 @@ public:
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
+    void printRequested() override;
 
     void updateAction(QQuickWebEngineView::WebAction) const;
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);

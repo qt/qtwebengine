@@ -640,6 +640,14 @@ WebContentsAdapter *QQuickWebEngineViewPrivate::webContentsAdapter()
     return adapter.data();
 }
 
+void QQuickWebEngineViewPrivate::printRequested()
+{
+    Q_Q(QQuickWebEngineView);
+    QTimer::singleShot(0, q, [q]() {
+        Q_EMIT q->printRequested();
+    });
+}
+
 WebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const
 {
     return m_settings->d_ptr.data();

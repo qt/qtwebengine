@@ -44,7 +44,7 @@
 #ifndef PRINT_VIEW_MANAGER_BASE_QT_H
 #define PRINT_VIEW_MANAGER_BASE_QT_H
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
 #include "components/prefs/pref_member.h"
 #include "components/printing/browser/print_manager.h"
@@ -87,6 +87,8 @@ public:
 protected:
     explicit PrintViewManagerBaseQt(content::WebContents*);
 
+    void SetPrintingRFH(content::RenderFrameHost* rfh);
+
     // content::WebContentsObserver implementation.
     // Cancels the print job.
     void NavigationStopped() override;
@@ -97,15 +99,12 @@ protected:
                            content::RenderFrameHost* render_frame_host) override;
 
     // IPC Message handlers.
-    void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params);
+    void OnDidPrintDocument(content::RenderFrameHost* render_frame_host,
+                            const PrintHostMsg_DidPrintDocument_Params& params);
     void OnShowInvalidPrinterSettingsError();
 
     // Processes a NOTIFY_PRINT_JOB_EVENT notification.
     void OnNotifyPrintJobEvent(const printing::JobEventDetails& event_details);
-
-    int number_pages_;  // Number of pages to print in the print job.
-    int cookie_;
-    std::unique_ptr<base::DictionaryValue> m_printSettings;
 
     // content::NotificationObserver implementation.
     void Observe(int,
@@ -130,8 +129,8 @@ protected:
     // Starts printing a document with data given in |print_data|. |print_data|
     // must successfully initialize a metafile. |document| is the printed
     // document associated with the print job. Returns true if successful.
-    bool PrintDocument(printing::PrintedDocument *document,
-                       const scoped_refptr<base::RefCountedBytes> &print_data,
+    void PrintDocument(printing::PrintedDocument *document,
+                       const scoped_refptr<base::RefCountedMemory> &print_data,
                        const gfx::Size &page_size,
                        const gfx::Rect &content_area,
                        const gfx::Point &offsets);
@@ -155,21 +154,17 @@ protected:
 private:
     // Helper method for UpdatePrintingEnabled().
     void SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh);
-
-    content::NotificationRegistrar m_registrar;
-    scoped_refptr<printing::PrintJob> m_printJob;
-    // Closure for quitting nested message loop.
-    base::Closure m_quitClosure;
-
-    bool m_isInsideInnerMessageLoop;
-#if !defined(OS_MACOSX)
-    bool m_isExpectingFirstPage;
-#endif
-    bool m_didPrintingSucceed;
-    scoped_refptr<printing::PrintQueriesQueue> m_printerQueriesQueue;
     // content::WebContentsObserver implementation.
     void DidStartLoading() override;
 
+private:
+    content::NotificationRegistrar m_registrar;
+    scoped_refptr<printing::PrintJob> m_printJob;
+    bool m_isInsideInnerMessageLoop;
+    bool m_didPrintingSucceed;
+    scoped_refptr<printing::PrintQueriesQueue> m_printerQueriesQueue;
+    // The current RFH that is printing with a system printing dialog.
+    content::RenderFrameHost* m_printingRFH;
     DISALLOW_COPY_AND_ASSIGN(PrintViewManagerBaseQt);
 };
 

@@ -146,6 +146,7 @@ public:
     bool supportsDragging() const override;
     bool isEnabled() const override;
     void setToolTip(const QString &toolTipText) override;
+    void printRequested() override;
     const QObject *holdingQObject() const override;
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
 

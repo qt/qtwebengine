@@ -53,7 +53,7 @@ PrintWebViewHelperDelegateQt::~PrintWebViewHelperDelegateQt()
 
 bool PrintWebViewHelperDelegateQt::CancelPrerender(content::RenderFrame *)
 {
-    return true;
+    return false;
 }
 
 blink::WebElement PrintWebViewHelperDelegateQt::GetPdfElement(blink::WebLocalFrame* frame)
@@ -63,7 +63,7 @@ blink::WebElement PrintWebViewHelperDelegateQt::GetPdfElement(blink::WebLocalFra
 
 bool PrintWebViewHelperDelegateQt::IsPrintPreviewEnabled()
 {
-    return false;
+    return true;
 }
 
 bool PrintWebViewHelperDelegateQt::OverridePrint(blink::WebLocalFrame* frame)

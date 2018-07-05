@@ -43,6 +43,7 @@ class tst_Printing : public QObject
     Q_OBJECT
 private slots:
     void printToPdfBasic();
+    void printRequest();
 #if QT_CONFIG(webengine_poppler_cpp)
     void printToPdfPoppler();
 #endif
@@ -86,6 +87,25 @@ void tst_Printing::printToPdfBasic()
     CallbackSpy<QByteArray> failedInvalidLayoutSpy;
     page.printToPdf(failedInvalidLayoutSpy.ref(), QPageLayout());
     QCOMPARE(failedInvalidLayoutSpy.waitForResult().length(), 0);
+}
+
+void tst_Printing::printRequest()
+{
+     QWebEnginePage webPage;
+     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
+     QSignalSpy loadFinishedSpy(&webPage, &QWebEnginePage::loadFinished);
+     QSignalSpy printRequestedSpy(&webPage, &QWebEnginePage::printRequested);
+     QSignalSpy savePdfSpy(&webPage, &QWebEnginePage::pdfPrintingFinished);
+     CallbackSpy<QByteArray> resultSpy;
+
+     webPage.load(QUrl("qrc:///resources/basic_printing_page.html"));
+     QTRY_VERIFY(loadFinishedSpy.count() == 1);
+     webPage.runJavaScript("window.print()");
+     QTRY_VERIFY(printRequestedSpy.count() == 1);
+     //check if printing still works
+     webPage.printToPdf(resultSpy.ref(), layout);
+     const QByteArray data = resultSpy.waitForResult();
+     QVERIFY(data.length() > 0);
 }
 
 #if QT_CONFIG(webengine_poppler_cpp)

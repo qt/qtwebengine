@@ -1462,3 +1462,13 @@
 
     \sa WebEngineAction
 */
+
+/*!
+    \qmlsignal WebEngineView::printRequest
+    \since QtWebEngine 1.8
+
+    This signal is emitted when the JavaScript \c{window.print()} method is called.
+    Typically, the signal handler can simply call printToPdf().
+
+    \sa printToPdf
+*/

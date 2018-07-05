@@ -739,6 +739,16 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 }
 
 /*!
+    \fn void QWebEnginePage::printRequested()
+    \since 5.12
+
+    This signal is emitted when the JavaScript \c{window.print()} method is called.
+    Typically, the signal handler can simply call printToPdf().
+
+    \sa printToPdf()
+*/
+
+/*!
     \enum QWebEnginePage::RenderProcessTerminationStatus
     \since 5.6
 
@@ -1749,6 +1759,14 @@ void QWebEnginePagePrivate::setToolTip(const QString &toolTipText)
     QString wrappedTip = QLatin1String("<p>") % toolTipText.toHtmlEscaped().left(MaxTooltipLength) % QLatin1String("</p>");
     if (view->toolTip() != wrappedTip)
         view->setToolTip(wrappedTip);
+}
+
+void QWebEnginePagePrivate::printRequested()
+{
+    Q_Q(QWebEnginePage);
+    QTimer::singleShot(0, q, [q](){
+        Q_EMIT q->printRequested();
+    });
 }
 
 #if QT_CONFIG(menu)

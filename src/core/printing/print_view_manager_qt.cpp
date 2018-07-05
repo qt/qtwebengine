@@ -45,6 +45,7 @@
 
 #include "type_conversion.h"
 #include "web_engine_context.h"
+#include "web_contents_view_qt.h"
 
 #include <QtGui/qpagelayout.h>
 #include <QtGui/qpagesize.h>
@@ -66,6 +67,7 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(QtWebEngineCore::PrintViewManagerQt);
 
 namespace {
+
 static const qreal kMicronsToMillimeter = 1000.0f;
 
 static std::vector<char>
@@ -85,11 +87,10 @@ GetStdVectorFromHandle(base::SharedMemoryHandle handle, uint32_t data_size)
 static scoped_refptr<base::RefCountedBytes>
 GetBytesFromHandle(base::SharedMemoryHandle handle, uint32_t data_size)
 {
-     std::unique_ptr<base::SharedMemory> shared_buf(
-                 new base::SharedMemory(handle, true));
+    std::unique_ptr<base::SharedMemory> shared_buf(new base::SharedMemory(handle, true));
 
     if (!shared_buf->Map(data_size)) {
-       return NULL;
+        return nullptr;
     }
 
     unsigned char* data = static_cast<unsigned char*>(shared_buf->memory());
@@ -99,9 +100,8 @@ GetBytesFromHandle(base::SharedMemoryHandle handle, uint32_t data_size)
 
 // Write the PDF file to disk.
 static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
-                        const base::FilePath& path,
-                        const QtWebEngineCore::PrintViewManagerQt::PrintToPDFFileCallback
-                                &saveCallback)
+                        const base::FilePath &path,
+                        const QtWebEngineCore::PrintViewManagerQt::PrintToPDFFileCallback &saveCallback)
 {
     base::AssertBlockingAllowed();
     DCHECK_GT(data->size(), 0U);
@@ -197,6 +197,19 @@ static base::DictionaryValue *createPrintSettingsFromQPageLayout(const QPageLayo
 
 namespace QtWebEngineCore {
 
+struct PrintViewManagerQt::FrameDispatchHelper {
+    PrintViewManagerQt* m_manager;
+    content::RenderFrameHost* m_renderFrameHost;
+
+    bool Send(IPC::Message* msg) {
+        return m_renderFrameHost->Send(msg);
+    }
+
+    void OnSetupScriptedPrintPreview(IPC::Message* reply_msg) {
+        m_manager->OnSetupScriptedPrintPreview(m_renderFrameHost, reply_msg);
+    }
+};
+
 PrintViewManagerQt::~PrintViewManagerQt()
 {
 }
@@ -211,8 +224,7 @@ void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayou
         return;
 
     if (m_printSettings || !filePath.length()) {
-                content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                         FROM_HERE,
+        content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                          base::Bind(callback, false));
         return;
     }
@@ -220,8 +232,7 @@ void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayou
     m_pdfOutputPath = toFilePath(filePath);
     m_pdfSaveCallback = callback;
     if (!PrintToPDFInternal(pageLayout, printInColor)) {
-        content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                         FROM_HERE,
+        content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                          base::Bind(callback, false));
         resetPdfState();
     }
@@ -237,9 +248,8 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
 
     // If there already is a pending print in progress, don't try starting another one.
     if (m_printSettings) {
-            content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                             FROM_HERE,
-                                             base::Bind(callback, std::vector<char>()));
+        content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                         base::Bind(callback, std::vector<char>()));
         return;
     }
 
@@ -261,12 +271,27 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
         return false;
 
     m_printSettings.reset(createPrintSettingsFromQPageLayout(pageLayout, useCustomMargins));
-    m_printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds
-        , web_contents()->GetRenderViewHost()->GetWebkitPreferences().should_print_backgrounds);
+    m_printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds,
+                                web_contents()->GetRenderViewHost()->
+                                GetWebkitPreferences().should_print_backgrounds);
     m_printSettings->SetInteger(printing::kSettingColor,
                                 printInColor ? printing::COLOR : printing::GRAYSCALE);
-    return web_contents()->GetMainFrame()->Send(
-                new PrintMsg_InitiatePrintPreview(web_contents()->GetMainFrame()->GetRoutingID(), false));
+
+    if (web_contents()->ShowingInterstitialPage() || web_contents()->IsCrashed())
+        return false;
+
+    content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
+    auto message = std::make_unique<PrintMsg_InitiatePrintPreview>(
+                rfh->GetRoutingID(), false);
+
+    DCHECK(!m_printPreviewRfh);
+
+    if (!rfh->Send(message.release())) {
+        return false;
+    }
+
+    m_printPreviewRfh = rfh;
+    return true;
 }
 
 #endif // QT_CONFIG(webengine_printing_and_pdf)
@@ -274,26 +299,42 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
 // PrintedPagesSource implementation.
 base::string16 PrintViewManagerQt::RenderSourceName()
 {
-     return toString16(QLatin1String(""));
+    return base::string16();
 }
 
 PrintViewManagerQt::PrintViewManagerQt(content::WebContents *contents)
     : PrintViewManagerBaseQt(contents)
+    , m_printPreviewRfh(nullptr)
 {
 
 }
 
 // content::WebContentsObserver implementation.
-bool PrintViewManagerQt::OnMessageReceived(const IPC::Message& message, content::RenderFrameHost* render_frame_host)
+bool PrintViewManagerQt::OnMessageReceived(const IPC::Message& message,
+                                           content::RenderFrameHost* render_frame_host)
 {
+    FrameDispatchHelper helper = {this, render_frame_host};
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(PrintViewManagerQt, message)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview, OnRequestPrintPreview)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_MetafileReadyForPrinting, OnMetafileReadyForPrinting);
-      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintViewManagerQt, message, render_frame_host);
+        IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
+        IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview, OnRequestPrintPreview)
+        IPC_MESSAGE_HANDLER(PrintHostMsg_MetafileReadyForPrinting, OnMetafileReadyForPrinting);
+        IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage, OnDidPreviewPage)
+        IPC_MESSAGE_FORWARD_DELAY_REPLY(
+                PrintHostMsg_SetupScriptedPrintPreview, &helper,
+                FrameDispatchHelper::OnSetupScriptedPrintPreview)
+        IPC_MESSAGE_HANDLER(PrintHostMsg_ShowScriptedPrintPreview,
+                                       OnShowScriptedPrintPreview)
+        IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
-    return handled || PrintManager::OnMessageReceived(message, render_frame_host);
+    return handled || PrintViewManagerBaseQt::OnMessageReceived(message, render_frame_host);
+}
+
+void PrintViewManagerQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
+{
+    if (render_frame_host == m_printPreviewRfh)
+        PrintPreviewDone();
+    PrintViewManagerBaseQt::RenderFrameDeleted(render_frame_host);
 }
 
 void PrintViewManagerQt::resetPdfState()
@@ -309,9 +350,9 @@ void PrintViewManagerQt::resetPdfState()
 void PrintViewManagerQt::OnRequestPrintPreview(
     const PrintHostMsg_RequestPrintPreview_Params &/*params*/)
 {
-    auto *rfh = web_contents()->GetMainFrame();
-    rfh->Send(new PrintMsg_PrintPreview(rfh->GetRoutingID(), *m_printSettings));
-    rfh->Send(new PrintMsg_ClosePrintPreviewDialog(rfh->GetRoutingID()));
+    m_printPreviewRfh->Send(new PrintMsg_PrintPreview(m_printPreviewRfh->GetRoutingID(),
+                                                      *m_printSettings));
+    PrintPreviewDone();
 }
 
 void PrintViewManagerQt::OnMetafileReadyForPrinting(
@@ -359,6 +400,7 @@ void PrintViewManagerQt::NavigationStopped()
                                          base::Bind(m_pdfPrintCallback, std::vector<char>()));
     }
     resetPdfState();
+    PrintViewManagerBaseQt::NavigationStopped();
 }
 
 void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
@@ -372,5 +414,39 @@ void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
     resetPdfState();
 }
 
+void PrintViewManagerQt::OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params &params)
+{
+    // just consume the message, this is just for sending 'page-preview-ready' for webui
+}
+
+void PrintViewManagerQt::OnSetupScriptedPrintPreview(content::RenderFrameHost* rfh,
+                                                     IPC::Message* reply_msg)
+{
+    // ignore the scripted print
+    rfh->Send(reply_msg);
+
+    content::WebContentsView *view = static_cast<content::WebContentsImpl*>(web_contents())->GetView();
+    WebContentsAdapterClient *client = WebContentsViewQt::from(view)->client();
+
+    if (!client)
+        return;
+
+    // close preview
+    rfh->Send(new PrintMsg_ClosePrintPreviewDialog(rfh->GetRoutingID()));
+
+    client->printRequested();
+}
+
+void PrintViewManagerQt::OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
+                                                    bool source_is_modifiable)
+{
+    // ignore for now
+}
+
+void PrintViewManagerQt::PrintPreviewDone() {
+    m_printPreviewRfh->Send(new PrintMsg_ClosePrintPreviewDialog(
+                                m_printPreviewRfh->GetRoutingID()));
+    m_printPreviewRfh = nullptr;
+}
 
 } // namespace QtWebEngineCore

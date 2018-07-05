@@ -51,6 +51,7 @@
 #include "base/strings/string16.h"
 #include "components/prefs/pref_member.h"
 #include "components/printing/browser/print_manager.h"
+#include "components/printing/common/print_messages.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -77,7 +78,7 @@ QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 class PrintViewManagerQt
-        : PrintViewManagerBaseQt
+        : public PrintViewManagerBaseQt
         , public content::WebContentsUserData<PrintViewManagerQt>
 {
 public:
@@ -111,28 +112,38 @@ protected:
     // content::WebContentsObserver implementation.
     bool OnMessageReceived(const IPC::Message& message,
                            content::RenderFrameHost* render_frame_host) override;
+    void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
     // IPC handlers
     void OnDidShowPrintDialog();
     void OnRequestPrintPreview(const PrintHostMsg_RequestPrintPreview_Params&);
     void OnMetafileReadyForPrinting(const PrintHostMsg_DidPreviewDocument_Params& params);
+    void OnSetupScriptedPrintPreview(content::RenderFrameHost* rfh,
+                                      IPC::Message* reply_msg);
+    void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
+    void OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
+                                    bool source_is_modifiable);
+
 
 #if QT_CONFIG(webengine_printing_and_pdf)
     bool PrintToPDFInternal(const QPageLayout &, bool printInColor, bool useCustomMargins = true);
 #endif
 
+private:
+    void resetPdfState();
+    // content::WebContentsObserver implementation.
+    void DidStartLoading() override;
+    void PrintPreviewDone();
+
+private:
+    content::RenderFrameHost *m_printPreviewRfh;
     base::FilePath m_pdfOutputPath;
     PrintToPDFCallback m_pdfPrintCallback;
     PrintToPDFFileCallback m_pdfSaveCallback;
-
-private:
+    std::unique_ptr<base::DictionaryValue> m_printSettings;
     friend class content::WebContentsUserData<PrintViewManagerQt>;
-
-    void resetPdfState();
-
-    // content::WebContentsObserver implementation.
-    void DidStartLoading() override;
     DISALLOW_COPY_AND_ASSIGN(PrintViewManagerQt);
+    struct FrameDispatchHelper;
 };
 
 } // namespace QtWebEngineCore
