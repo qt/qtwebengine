@@ -104,9 +104,9 @@
     On \macos, the following are required:
 
     \list
-        \li \macos 10.9 or later
-        \li Xcode 5.1 or later
-        \li \macos 10.10 SDK or later
+        \li \macos 10.12 or later
+        \li Xcode 8.3.3 or later
+        \li \macos 10.12 SDK or later
     \endlist
 
     \note Qt WebEngine cannot be built for the 32-bit mode of \macos (using the
