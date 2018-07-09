@@ -398,6 +398,11 @@ void tst_QWebEnginePage::geolocationRequestJS()
     QSignalSpy spyLoadFinished(newPage, SIGNAL(loadFinished(bool)));
     newPage->setHtml(QString("<html><body>test</body></html>"), QUrl("qrc://secure/origin"));
     QTRY_COMPARE(spyLoadFinished.count(), 1);
+
+    // Geolocation is only enabled for visible WebContents.
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
     if (evaluateJavaScriptSync(newPage, QLatin1String("!navigator.geolocation")).toBool())
         W_QSKIP("Geolocation is not supported.", SkipSingle);
 

@@ -186,6 +186,7 @@ private Q_SLOTS:
     void contextMenu();
     void webUIURLs_data();
     void webUIURLs();
+    void visibilityState();
 };
 
 // This will be called before the first test function is executed.
@@ -2751,6 +2752,19 @@ void tst_QWebEngineView::webUIURLs()
     view.load(url);
     QVERIFY(loadFinishedSpy.wait());
     QCOMPARE(loadFinishedSpy.takeFirst().at(0).toBool(), supported);
+}
+
+void tst_QWebEngineView::visibilityState()
+{
+    QWebEngineView view;
+    QSignalSpy spy(&view, &QWebEngineView::loadFinished);
+    view.load(QStringLiteral("about:blank"));
+    QVERIFY(spy.count() || spy.wait());
+    QVERIFY(spy.takeFirst().takeFirst().toBool());
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.visibilityState").toString(), QStringLiteral("hidden"));
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.visibilityState").toString(), QStringLiteral("visible"));
 }
 
 QTEST_MAIN(tst_QWebEngineView)

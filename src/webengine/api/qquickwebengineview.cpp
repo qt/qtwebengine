@@ -776,6 +776,9 @@ void QQuickWebEngineViewPrivate::initializationFinished()
     for (QQuickWebEngineScript *script : qAsConst(m_userScripts))
         script->d_func()->bind(profileAdapter()->userResourceController(), adapter.data());
 
+    if (q->window() && q->isVisible())
+        adapter->wasShown();
+
     if (!m_isBeingAdopted)
         return;
 

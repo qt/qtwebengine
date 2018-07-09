@@ -223,6 +223,7 @@ static content::WebContents *createBlankWebContents(WebContentsAdapterClient *ad
     create_params.routing_id = MSG_ROUTING_NONE;
     create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
     create_params.context = reinterpret_cast<gfx::NativeView>(adapterClient);
+    create_params.initially_hidden = true;
     return content::WebContents::Create(create_params);
 }
 
@@ -430,6 +431,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
         content::WebContents::CreateParams create_params(m_profileAdapter->profile(), site);
         create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
         create_params.context = reinterpret_cast<gfx::NativeView>(m_adapterClient);
+        create_params.initially_hidden = true;
         m_webContents.reset(content::WebContents::Create(create_params));
     }
 

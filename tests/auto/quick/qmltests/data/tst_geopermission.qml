@@ -70,6 +70,7 @@ TestWebEngineView {
 
     TestCase {
         name: "WebViewGeopermission"
+        when: windowShown
 
         function init() {
             deniedGeolocation = false
