@@ -428,7 +428,16 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
                                           WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                           ui::PAGE_TRANSITION_LINK,
                                           false);
-        m_frontendDelegate->OpenURLFromTab(nullptr, openParams);
+        // OpenURL will (via WebContentsDelegateQt::OpenURLFromTab) call
+        // application code, which may decide to close this devtools view (see
+        // quicknanobrowser for example).
+        //
+        // Chromium always calls SendMessageAck through a callback bound to a
+        // WeakPtr, we do the same here, except without the callback.
+        base::WeakPtr<DevToolsFrontendQt> weakThis = m_weakFactory.GetWeakPtr();
+        web_contents()->OpenURL(openParams);
+        if (!weakThis)
+            return;
     } else if (method == "bringToFront") {
         Activate();
     } else {
