@@ -680,6 +680,36 @@
                     "condition": "config.sanitizer"
                 },
                 {
+                    "message": "macOS version",
+                    "type": "macosToolchainVersion",
+                    "args": "macosVersion",
+                    "condition": "config.macos"
+                },
+                {
+                    "message": "Xcode version",
+                    "type": "macosToolchainVersion",
+                    "args": "xcodeVersion",
+                    "condition": "config.macos"
+                },
+                {
+                    "message": "Clang version",
+                    "type": "macosToolchainVersion",
+                    "args": "clangVersion",
+                    "condition": "config.macos"
+                },
+                {
+                    "message": "macOS SDK version",
+                    "type": "macosToolchainVersion",
+                    "args": "sdkVersion",
+                    "condition": "config.macos"
+                },
+                {
+                    "message": "macOS minimum deployment target",
+                    "type": "macosToolchainVersion",
+                    "args": "deploymentTarget",
+                    "condition": "config.macos"
+                },
+                {
                    "section": "Optional system libraries used",
                    "condition": "config.unix",
                    "entries": [
