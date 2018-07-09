@@ -154,7 +154,7 @@
     In the \e index.html, we load a custom stylesheet and two JavaScript
     libraries. \l{http://kevinburke.bitbucket.org/markdowncss/}{markdown.css} is
     a markdown-friendly stylesheet created by Kevin Burke.
-    \l{https://github.com/chjj/marked}{marked.min.js} is a markdown parser and
+    \l{https://github.com/chjj/marked}{marked.js} is a markdown parser and
     compiler designed for speed written by Christopher Jeffrey and
     \e qwebchannel.js is part of the \l{QWebChannel} module.
 
