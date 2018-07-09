@@ -39,6 +39,8 @@
 
 #include "public/fpdf_doc.h"
 
+#include <QDateTime>
+#include <QDebug>
 #include <QFile>
 #include <QMutex>
 
