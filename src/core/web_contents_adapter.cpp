@@ -1625,15 +1625,16 @@ void WebContentsAdapter::updateDragAction(int action)
     d->currentDropAction = static_cast<blink::WebDragOperation>(action);
 }
 
-void WebContentsAdapter::endDragging(const QPointF &clientPos, const QPointF &screenPos)
+void WebContentsAdapter::endDragging(QDropEvent *e, const QPointF &screenPos)
 {
     Q_D(WebContentsAdapter);
     CHECK_INITIALIZED();
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     rvh->GetWidget()->FilterDropData(d->currentDropData.get());
-    d->lastDragClientPos = toGfx(clientPos);
+    d->lastDragClientPos = toGfx(e->posF());
     d->lastDragScreenPos = toGfx(screenPos);
-    rvh->GetWidget()->DragTargetDrop(*d->currentDropData, d->lastDragClientPos, d->lastDragScreenPos, 0);
+    rvh->GetWidget()->DragTargetDrop(*d->currentDropData, d->lastDragClientPos, d->lastDragScreenPos,
+                                     toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
     d->currentDropData.reset();
 }
 

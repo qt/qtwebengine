@@ -417,7 +417,7 @@ void QWebEngineView::dropEvent(QDropEvent *e)
     if (!d->m_dragEntered)
         return;
     e->accept();
-    d->page->d_ptr->adapter->endDragging(e->pos(), mapToGlobal(e->pos()));
+    d->page->d_ptr->adapter->endDragging(e, mapToGlobal(e->pos()));
     d->m_dragEntered = false;
 }
 #endif // QT_CONFIG(draganddrop)
