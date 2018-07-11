@@ -104,14 +104,7 @@ private:
         bitmap = nullptr;
 
         // Map BGRA to RGBA as PDFium currently does not support RGBA bitmaps directly
-        for (int i = 0; i < image.height(); i++) {
-            uchar *pixels = image.scanLine(i);
-            for (int j = 0; j < image.width(); j++) {
-                qSwap(pixels[0], pixels[2]);
-                pixels += 4;
-            }
-        }
-        return image;
+        return std::move(image).rgbSwapped();
     }
 
 private:
