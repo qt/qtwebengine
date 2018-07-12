@@ -1526,24 +1526,6 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
     }
 }
 
-void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPointF &screenPos)
-{
-    Q_D(WebContentsAdapter);
-    CHECK_INITIALIZED();
-
-    if (!d->currentDropData) {
-        // The drag originated outside the WebEngineView.
-        d->currentDropData.reset(new content::DropData);
-        fillDropDataFromMimeData(d->currentDropData.get(), e->mimeData());
-    }
-
-    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-    rvh->GetWidget()->FilterDropData(d->currentDropData.get());
-    rvh->GetWidget()->DragTargetDragEnter(*d->currentDropData, toGfx(e->posF()), toGfx(screenPos),
-                                          toWeb(e->possibleActions()),
-                                          flagsFromModifiers(e->keyboardModifiers()));
-}
-
 Qt::DropAction toQt(blink::WebDragOperation op)
 {
     if (op & blink::kWebDragOperationCopy)
@@ -1579,6 +1561,24 @@ static int toWeb(Qt::KeyboardModifiers modifiers)
     if (modifiers & Qt::MetaModifier)
         result |= blink::WebInputEvent::kMetaKey;
     return result;
+}
+
+void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPointF &screenPos)
+{
+    Q_D(WebContentsAdapter);
+    CHECK_INITIALIZED();
+
+    if (!d->currentDropData) {
+        // The drag originated outside the WebEngineView.
+        d->currentDropData.reset(new content::DropData);
+        fillDropDataFromMimeData(d->currentDropData.get(), e->mimeData());
+    }
+
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->GetWidget()->FilterDropData(d->currentDropData.get());
+    rvh->GetWidget()->DragTargetDragEnter(*d->currentDropData, toGfx(e->posF()), toGfx(screenPos),
+                                          toWeb(e->possibleActions()),
+                                          toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
 }
 
 Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const QPointF &screenPos)
