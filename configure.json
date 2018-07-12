@@ -166,7 +166,7 @@
         "webengine-nss": {
             "label": "nss",
             "sources": [
-                { "type": "pkgConfig", "args": "nss" }
+                { "type": "pkgConfig", "args": "nss >= 3.14.3" }
             ]
         },
         "webengine-png": {
