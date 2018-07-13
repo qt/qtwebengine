@@ -43,8 +43,12 @@
 #include "qwebenginepage_p.h"
 #include "web_contents_adapter.h"
 
+#if QT_CONFIG(action)
 #include <QAction>
+#endif
+#if QT_CONFIG(menu)
 #include <QMenu>
+#endif
 #include <QContextMenuEvent>
 #include <QToolTip>
 #include <QVBoxLayout>
@@ -339,11 +343,13 @@ bool QWebEngineView::event(QEvent *ev)
 /*!
  * \reimp
  */
+#if QT_CONFIG(contextmenu)
 void QWebEngineView::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu *menu = page()->createStandardContextMenu();
     menu->popup(event->globalPos());
 }
+#endif // QT_CONFIG(contextmenu)
 
 /*!
  * \reimp

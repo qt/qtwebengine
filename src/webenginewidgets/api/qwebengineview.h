@@ -120,7 +120,9 @@ Q_SIGNALS:
 
 protected:
     virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);
+#if QT_CONFIG(contextmenu)
     void contextMenuEvent(QContextMenuEvent*) override;
+#endif // QT_CONFIG(contextmenu)
     bool event(QEvent*) override;
     void showEvent(QShowEvent *) override;
     void hideEvent(QHideEvent *) override;

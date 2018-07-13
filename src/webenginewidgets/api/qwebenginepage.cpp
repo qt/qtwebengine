@@ -71,16 +71,26 @@
 #include <QApplication>
 #include <QAuthenticator>
 #include <QClipboard>
+#if QT_CONFIG(colordialog)
 #include <QColorDialog>
+#endif
 #include <QContextMenuEvent>
+#if QT_CONFIG(filedialog)
 #include <QFileDialog>
+#endif
 #include <QKeyEvent>
 #include <QIcon>
+#if QT_CONFIG(inputdialog)
 #include <QInputDialog>
+#endif
 #include <QLayout>
 #include <QLoggingCategory>
+#if QT_CONFIG(menu)
 #include <QMenu>
+#endif
+#if QT_CONFIG(messagebox)
 #include <QMessageBox>
+#endif
 #include <QMimeData>
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include <QPrinter>
@@ -544,6 +554,7 @@ void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<Authentication
 
 void QWebEnginePagePrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
 {
+#if QT_CONFIG(colordialog)
     QColorDialog *dialog = new QColorDialog(controller.data()->initialColor(), view);
 
     QColorDialog::connect(dialog, SIGNAL(colorSelected(QColor)), controller.data(), SLOT(accept(QColor)));
@@ -554,6 +565,9 @@ void QWebEnginePagePrivate::showColorDialog(QSharedPointer<ColorChooserControlle
     QColorDialog::connect(dialog, SIGNAL(rejected()), dialog, SLOT(deleteLater()));
 
     dialog->open();
+#else
+    Q_UNUSED(controller);
+#endif
 }
 
 void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
@@ -1539,6 +1553,7 @@ void QWebEnginePagePrivate::wasHidden()
 
 void QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
+#if QT_CONFIG(action)
     if (!view)
         return;
 
@@ -1567,6 +1582,9 @@ void QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
     }
 
     Q_UNREACHABLE();
+#else
+    Q_UNUSED(data);
+#endif // QT_CONFIG(action)
 }
 
 void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)
@@ -1612,7 +1630,9 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
         accepted = q->javaScriptConfirm(controller->securityOrigin(), QCoreApplication::translate("QWebEnginePage", "Are you sure you want to leave this page? Changes that you made may not be saved."));
         break;
     case InternalAuthorizationDialog:
+#if QT_CONFIG(messagebox)
         accepted = (QMessageBox::question(view, controller->title(), controller->message(), QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes);
+#endif // QT_CONFIG(messagebox)
         break;
     }
     if (accepted)
@@ -1731,6 +1751,7 @@ void QWebEnginePagePrivate::setToolTip(const QString &toolTipText)
         view->setToolTip(wrappedTip);
 }
 
+#if QT_CONFIG(menu)
 QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);
@@ -1749,6 +1770,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
 
     return menu;
 }
+#endif // QT_CONFIG(menu)
 
 void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEnginePage::Feature feature, QWebEnginePage::PermissionPolicy policy)
 {
@@ -2124,6 +2146,7 @@ ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, QWebEnginePage::FileSelec
 
 QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes)
 {
+#if QT_CONFIG(filedialog)
     // FIXME: Should we expose this in QWebPage's API ? Right now it is very open and can contain a mix and match of file extensions (which QFileDialog
     // can work with) and mimetypes ranging from text/plain or images/* to application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
     Q_UNUSED(acceptedMimeTypes);
@@ -2151,27 +2174,50 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
         break;
     }
     return ret;
+#else
+    Q_UNUSED(mode);
+    Q_UNUSED(oldFiles);
+    Q_UNUSED(acceptedMimeTypes);
+
+    return QStringList();
+#endif // QT_CONFIG(filedialog)
 }
 
 void QWebEnginePage::javaScriptAlert(const QUrl &securityOrigin, const QString &msg)
 {
     Q_UNUSED(securityOrigin);
+#if QT_CONFIG(messagebox)
     QMessageBox::information(view(), QStringLiteral("Javascript Alert - %1").arg(url().toString()), msg);
+#else
+    Q_UNUSED(msg);
+#endif // QT_CONFIG(messagebox)
 }
 
 bool QWebEnginePage::javaScriptConfirm(const QUrl &securityOrigin, const QString &msg)
 {
     Q_UNUSED(securityOrigin);
+#if QT_CONFIG(messagebox)
     return (QMessageBox::information(view(), QStringLiteral("Javascript Confirm - %1").arg(url().toString()), msg, QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Ok);
+#else
+    Q_UNUSED(msg);
+    return false;
+#endif // QT_CONFIG(messagebox)
 }
 
 bool QWebEnginePage::javaScriptPrompt(const QUrl &securityOrigin, const QString &msg, const QString &defaultValue, QString *result)
 {
     Q_UNUSED(securityOrigin);
+#if QT_CONFIG(inputdialog)
     bool ret = false;
     if (result)
         *result = QInputDialog::getText(view(), QStringLiteral("Javascript Prompt - %1").arg(url().toString()), msg, QLineEdit::Normal, defaultValue, &ret);
     return ret;
+#else
+    Q_UNUSED(msg);
+    Q_UNUSED(defaultValue);
+    Q_UNUSED(result);
+    return false;
+#endif // QT_CONFIG(inputdialog)
 }
 
 void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID)
@@ -2328,6 +2374,7 @@ const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
     return d->contextData;
 }
 
+#if QT_CONFIG(action)
 QContextMenuBuilder::QContextMenuBuilder(const QtWebEngineCore::WebEngineContextMenuData &data,
                                          QWebEnginePage *page,
                                          QMenu *menu)
@@ -2495,6 +2542,7 @@ bool QContextMenuBuilder::isMenuItemEnabled(ContextMenuItem menuItem)
     }
     Q_UNREACHABLE();
 }
+#endif // QT_CONFIG(action)
 
 QT_END_NAMESPACE
 

@@ -248,7 +248,9 @@ public:
 
     void findText(const QString &subString, FindFlags options = FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
 
+#if QT_CONFIG(menu)
     QMenu *createStandardContextMenu();
+#endif
 
     void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy);
 
