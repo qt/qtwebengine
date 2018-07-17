@@ -164,7 +164,7 @@
             ]
         },
         "webengine-nss": {
-            "label": "nss",
+            "label": "nss >= 3.26",
             "sources": [
                 { "type": "pkgConfig", "args": "nss >= 3.26" }
             ]
