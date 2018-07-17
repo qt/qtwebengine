@@ -56,6 +56,7 @@ QtObject {
 
     property QtObject defaultProfile: WebEngineProfile {
         storageName: "Profile"
+        offTheRecord: false
     }
 
     property QtObject otrProfile: WebEngineProfile {

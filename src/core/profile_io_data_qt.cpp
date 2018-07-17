@@ -70,6 +70,7 @@
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
+#include "services/file/user_id_map.h"
 #include "services/network/proxy_service_mojo.h"
 
 #include "net/cookie_monster_delegate_qt.h"
@@ -565,6 +566,12 @@ void ProfileIODataQt::updateStorageSettings()
 
     QMutexLocker lock(&m_mutex);
     setFullConfiguration();
+
+    std::string userId = content::BrowserContext::GetServiceUserIdFor(m_profile);
+    if (file::GetUserDirForUserId(userId) != toFilePath(m_profileAdapter->dataPath())) {
+        file::ForgetServiceUserIdUserDirAssociation(userId);
+        file::AssociateServiceUserIdWithUserDir(userId, toFilePath(m_profileAdapter->dataPath()));
+    }
 
     if (!m_updateAllStorage) {
         m_updateAllStorage = true;
