@@ -262,7 +262,7 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(LinksIncludedInFocusChain, true);
         s_defaultAttributes.insert(LocalStorageEnabled, true);
         s_defaultAttributes.insert(LocalContentCanAccessRemoteUrls, false);
-        s_defaultAttributes.insert(XSSAuditingEnabled, false);
+        s_defaultAttributes.insert(XSSAuditingEnabled, true);
         s_defaultAttributes.insert(SpatialNavigationEnabled, false);
         s_defaultAttributes.insert(LocalContentCanAccessFileUrls, true);
         s_defaultAttributes.insert(HyperlinkAuditingEnabled, false);
