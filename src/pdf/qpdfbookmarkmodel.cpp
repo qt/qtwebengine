@@ -39,8 +39,8 @@
 #include "qpdfdocument.h"
 #include "qpdfdocument_p.h"
 
-#include "public/fpdf_doc.h"
-#include "public/fpdfview.h"
+#include "third_party/pdfium/public/fpdf_doc.h"
+#include "third_party/pdfium/public/fpdfview.h"
 
 #include <QPointer>
 #include <QScopedPointer>
@@ -193,7 +193,7 @@ public:
             FPDFBookmark_GetTitle(bookmark, titleBuffer.data(), titleBuffer.length());
 
             const FPDF_DEST dest = FPDFBookmark_GetDest(document, bookmark);
-            const int pageNumber = FPDFDest_GetPageIndex(document, dest);
+            const int pageNumber = FPDFDest_GetDestPageIndex(document, dest);
 
             childBookmarkNode->setTitle(QString::fromUtf16(titleBuffer.data()));
             childBookmarkNode->setLevel(level);

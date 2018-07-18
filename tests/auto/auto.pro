@@ -7,3 +7,8 @@ qtHaveModule(webengine) {
 qtHaveModule(webenginewidgets) {
     SUBDIRS += core widgets
 }
+
+qtHaveModule(pdf) {
+    SUBDIRS += pdf
+}
+

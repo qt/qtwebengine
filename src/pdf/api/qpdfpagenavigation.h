@@ -34,57 +34,58 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFDOCUMENTRENDEROPTIONS_H
-#define QPDFDOCUMENTRENDEROPTIONS_H
+#ifndef QPDFPAGENAVIGATION_H
+#define QPDFPAGENAVIGATION_H
 
-#include "qpdfnamespace.h"
-
-#include <QtCore/QObject>
+#include <QtPdf/qtpdfglobal.h>
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfDocumentRenderOptions
+class QPdfDocument;
+class QPdfPageNavigationPrivate;
+
+class Q_PDF_EXPORT QPdfPageNavigation : public QObject
 {
+    Q_OBJECT
+
+    Q_PROPERTY(QPdfDocument* document READ document WRITE setDocument NOTIFY documentChanged)
+
+    Q_PROPERTY(int currentPage READ currentPage WRITE setCurrentPage NOTIFY currentPageChanged)
+    Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged)
+    Q_PROPERTY(bool canGoToPreviousPage READ canGoToPreviousPage NOTIFY canGoToPreviousPageChanged)
+    Q_PROPERTY(bool canGoToNextPage READ canGoToNextPage NOTIFY canGoToNextPageChanged)
+
 public:
-    Q_DECL_CONSTEXPR QPdfDocumentRenderOptions() Q_DECL_NOTHROW : data(0) {}
+    explicit QPdfPageNavigation(QObject *parent = nullptr);
+    ~QPdfPageNavigation();
 
-    Q_DECL_CONSTEXPR QPdf::Rotation rotation() const Q_DECL_NOTHROW { return static_cast<QPdf::Rotation>(bits.rotation); }
-    Q_DECL_RELAXED_CONSTEXPR void setRotation(QPdf::Rotation _rotation) Q_DECL_NOTHROW { bits.rotation = _rotation; }
+    QPdfDocument* document() const;
+    void setDocument(QPdfDocument *document);
 
-    Q_DECL_CONSTEXPR QPdf::RenderFlags renderFlags() const Q_DECL_NOTHROW { return static_cast<QPdf::RenderFlags>(bits.renderFlags); }
-    Q_DECL_RELAXED_CONSTEXPR void setRenderFlags(QPdf::RenderFlags _renderFlags) Q_DECL_NOTHROW { bits.renderFlags = _renderFlags; }
+    int currentPage() const;
+    void setCurrentPage(int currentPage);
+
+    int pageCount() const;
+
+    bool canGoToPreviousPage() const;
+    bool canGoToNextPage() const;
+
+public Q_SLOTS:
+    void goToPreviousPage();
+    void goToNextPage();
+
+Q_SIGNALS:
+    void documentChanged(QPdfDocument *document);
+    void currentPageChanged(int currentPage);
+    void pageCountChanged(int pageCount);
+    void canGoToPreviousPageChanged(bool canGo);
+    void canGoToNextPageChanged(bool canGo);
 
 private:
-    friend Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW;
-
-
-    struct Bits {
-        quint32 renderFlags : 8;
-        quint32 rotation    : 3;
-        quint32 reserved    : 21;
-        quint32 reserved2   : 32;
-    };
-
-    union {
-        Bits bits;
-        quint64 data;
-    };
+    Q_DECLARE_PRIVATE(QPdfPageNavigation)
 };
-
-Q_DECLARE_TYPEINFO(QPdfDocumentRenderOptions, Q_PRIMITIVE_TYPE);
-
-Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW
-{
-    return lhs.data == rhs.data;
-}
-
-Q_DECL_CONSTEXPR inline bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW
-{
-    return !operator==(lhs, rhs);
-}
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QPdfDocumentRenderOptions)
-
-#endif // QPDFDOCUMENTRENDEROPTIONS_H
+#endif

@@ -183,7 +183,7 @@ GN_CONTENTS += "$${TARGET_TYPE}(\"$$TARGET\") {"
 }
 
 GN_CONTENTS += "  configs += [ \":$${TARGET}_config\" ]"
-GN_CONTENTS += "  configs += [ \"//build/config:precompiled_headers\" ]"
+!isEmpty(GN_PRECOMPILED_HEADERS): GN_CONTENTS += "  configs += [ \"//build/config:precompiled_headers\" ]"
 
 # Source files to compile
 GN_CONTENTS += "  sources = ["
@@ -239,11 +239,10 @@ GN_CONTENTS += "        \":generate_cpp_mocs\","
 GN_CONTENTS += "    ]"
 GN_CONTENTS += "  }"
 GN_CONTENTS += "}"
-GN_CONTENTS += ""
-GN_CONTENTS += "if (!defined(core_include_dirs)) {"\
-               "  core_include_dirs = []"\
-               "}"
 !isEmpty(GN_CORE_INCLUDE_DIRS) {
+   GN_CONTENTS += "  if (!defined(core_include_dirs)) {"\
+                  "    core_include_dirs = []"\
+                  "  }"
    GN_CONTENTS += "core_include_dirs += ["
    for (inc, GN_CORE_INCLUDE_DIRS): GN_CONTENTS += "    \"$$inc\","
    GN_CONTENTS += "]"

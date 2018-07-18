@@ -5,7 +5,7 @@ defineReplace(extractCFlag) {
     return($$qtwebengine_extractCFlag($$1))
 }
 
-QT_FOR_CONFIG += gui-private webenginecore-private
+QT_FOR_CONFIG += gui-private webenginecore-private pdf-private
 
 gn_args += \
     use_cups=false \
@@ -26,7 +26,7 @@ gn_args += \
     ozone_platform=\"qt\" \
     ozone_extra_path=\"$$QTWEBENGINE_ROOT/src/core/ozone/ozone_extra.gni\"
 
-qtConfig(webengine-embedded-build) {
+qtConfig(build-qtwebengine-core):qtConfig(webengine-embedded-build) {
     gn_args += is_desktop_linux=false
 }
 
@@ -92,7 +92,7 @@ contains(QT_ARCH, "arm") {
         }
     }
 
-    qtConfig(webengine-arm-thumb) {
+    qtConfig(build-qtwebengine-core):qtConfig(webengine-arm-thumb) {
         gn_args += arm_use_thumb=true # this adds -mthumb
     } else {
         gn_args += arm_use_thumb=false
@@ -158,11 +158,15 @@ host_build {
 
     qtConfig(webengine-system-zlib) {
         qtConfig(webengine-system-minizip): gn_args += use_system_zlib=true use_system_minizip=true
-        qtConfig(webengine-printing-and-pdf): gn_args += pdfium_use_system_zlib=true
+        qtConfig(build-qtpdf) || qtConfig(webengine-printing-and-pdf) {
+            gn_args += pdfium_use_system_zlib=true
+        }
     }
     qtConfig(webengine-system-png) {
         gn_args += use_system_libpng=true
-        qtConfig(webengine-printing-and-pdf): gn_args += pdfium_use_system_libpng=true
+        qtConfig(build-qtpdf) || qtConfig(webengine-printing-and-pdf) {
+            gn_args += pdfium_use_system_libpng=true
+        }
     }
     qtConfig(webengine-system-jpeg) {
         gn_args += use_system_libjpeg=true
@@ -180,12 +184,12 @@ host_build {
         gn_args += use_system_harfbuzz=false
     }
     gn_args += use_glib=false
-    qtConfig(webengine-pulseaudio) {
+    qtConfig(build-qtwebengine-core):qtConfig(webengine-pulseaudio) {
         gn_args += use_pulseaudio=true
     } else {
         gn_args += use_pulseaudio=false
     }
-    qtConfig(webengine-alsa) {
+    qtConfig(build-qtwebengine-core):qtConfig(webengine-alsa) {
         gn_args += use_alsa=true
     } else {
         gn_args += use_alsa=false

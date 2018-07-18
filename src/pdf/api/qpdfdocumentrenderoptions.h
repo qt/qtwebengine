@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -34,67 +34,56 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFDOCUMENT_P_H
-#define QPDFDOCUMENT_P_H
+#ifndef QPDFDOCUMENTRENDEROPTIONS_H
+#define QPDFDOCUMENTRENDEROPTIONS_H
 
-#include "qpdfdocument.h"
-
-#include "public/fpdfview.h"
-#include "public/fpdf_dataavail.h"
-
-#include <qbuffer.h>
-#include <qmutex.h>
-#include <qnetworkreply.h>
-#include <qpointer.h>
+#include <QtPdf/qpdfnamespace.h>
+#include <QtCore/QObject>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfMutexLocker : public QMutexLocker
+class QPdfDocumentRenderOptions
 {
 public:
-    QPdfMutexLocker();
+    Q_DECL_CONSTEXPR QPdfDocumentRenderOptions() Q_DECL_NOTHROW : data(0) {}
+
+    Q_DECL_CONSTEXPR QPdf::Rotation rotation() const Q_DECL_NOTHROW { return static_cast<QPdf::Rotation>(bits.rotation); }
+    Q_DECL_RELAXED_CONSTEXPR void setRotation(QPdf::Rotation _rotation) Q_DECL_NOTHROW { bits.rotation = _rotation; }
+
+    Q_DECL_CONSTEXPR QPdf::RenderFlags renderFlags() const Q_DECL_NOTHROW { return static_cast<QPdf::RenderFlags>(bits.renderFlags); }
+    Q_DECL_RELAXED_CONSTEXPR void setRenderFlags(QPdf::RenderFlags _renderFlags) Q_DECL_NOTHROW { bits.renderFlags = _renderFlags; }
+
+private:
+    friend Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW;
+
+
+    struct Bits {
+        quint32 renderFlags : 8;
+        quint32 rotation    : 3;
+        quint32 reserved    : 21;
+        quint32 reserved2   : 32;
+    };
+
+    union {
+        Bits bits;
+        quint64 data;
+    };
 };
 
-class QPdfDocumentPrivate: public FPDF_FILEACCESS, public FX_FILEAVAIL, public FX_DOWNLOADHINTS
+Q_DECLARE_TYPEINFO(QPdfDocumentRenderOptions, Q_PRIMITIVE_TYPE);
+
+Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW
 {
-public:
-    QPdfDocumentPrivate();
-    ~QPdfDocumentPrivate();
+    return lhs.data == rhs.data;
+}
 
-    QPdfDocument *q;
-
-    FPDF_AVAIL avail;
-    FPDF_DOCUMENT doc;
-    bool loadComplete;
-
-    QPointer<QIODevice> device;
-    QScopedPointer<QIODevice> ownDevice;
-    QBuffer asyncBuffer;
-    QPointer<QIODevice> sequentialSourceDevice;
-    QByteArray password;
-
-    QPdfDocument::Status status;
-    QPdfDocument::DocumentError lastError;
-    int pageCount;
-
-    void clear();
-
-    void load(QIODevice *device, bool ownDevice);
-    void loadAsync(QIODevice *device);
-
-    void _q_tryLoadingWithSizeFromContentHeader();
-    void initiateAsyncLoadWithTotalSizeKnown(quint64 totalSize);
-    void _q_copyFromSequentialSourceDevice();
-    void tryLoadDocument();
-    void checkComplete();
-    void setStatus(QPdfDocument::Status status);
-
-    static FPDF_BOOL fpdf_IsDataAvail(struct _FX_FILEAVAIL* pThis, size_t offset, size_t size);
-    static int fpdf_GetBlock(void* param, unsigned long position, unsigned char* pBuf, unsigned long size);
-    static void fpdf_AddSegment(struct _FX_DOWNLOADHINTS* pThis, size_t offset, size_t size);
-    void updateLastError();
-};
+Q_DECL_CONSTEXPR inline bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW
+{
+    return !operator==(lhs, rhs);
+}
 
 QT_END_NAMESPACE
 
-#endif // QPDFDOCUMENT_P_H
+Q_DECLARE_METATYPE(QPdfDocumentRenderOptions)
+
+#endif // QPDFDOCUMENTRENDEROPTIONS_H

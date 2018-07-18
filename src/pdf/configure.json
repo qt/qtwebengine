@@ -1,0 +1,27 @@
+{
+    "module": "pdf",
+    "depends" : [ "buildtools-private" ],
+    "testDir": "../../config.tests",
+    "condition": "features.build-qtpdf",
+    "libraries": {
+    },
+    "tests": {
+    },
+    "features": {
+         "pdf-info": {
+             "label": "Support Qt PDF rendering module",
+             "purpose": "Enables building the Qt PDF rendering module.",
+             "output": ["privateFeature" ]
+          }
+    },
+    "report": [
+    ],
+    "summary": [
+        {
+            "section": "Qt PDF",
+            "entries": [
+                "pdf-info"
+            ]
+        }
+    ]
+}

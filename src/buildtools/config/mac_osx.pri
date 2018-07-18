@@ -31,7 +31,7 @@ gn_args += \
     mac_sdk_min=\"$${QMAKE_MAC_SDK_VERSION}\" \
     use_external_popup_menu=false
 
-qtConfig(webengine-spellchecker) {
+qtConfig(build-qtwebengine-core):qtConfig(webengine-spellchecker) {
     qtConfig(webengine-native-spellchecker): gn_args += use_browser_spellchecker=true
     else: gn_args += use_browser_spellchecker=false
 } else {

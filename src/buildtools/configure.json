@@ -8,6 +8,7 @@
     "commandline": {
         "options": {
             "build-qtwebengine-core": "boolean",
+            "build-qtpdf": "boolean",
             "webengine-jumbo-build": { "type": "optionalString", "name": "merge_limit"}
         }
     },
@@ -391,11 +392,28 @@
         "build-qtwebengine-core": {
             "label": "Build Qt WebEngine Core",
             "purpose": "Provides WebEngine Core support.",
+            "autoDetect": "false",
             "output": [ "privateFeature" ]
         },
         "build-qtpdf": {
              "label": "Support Qt PDF rendering module",
              "purpose": "Enables building the Qt PDF rendering module.",
+             "output": [ "privateFeature" ]
+        },
+        "webengine-developer-build": {
+            "label": "Developer build",
+            "purpose": "Enables the developer build configuration.",
+            "autoDetect": "features.private_tests",
+            "output": [ "privateFeature" ]
+        },
+        "build-qtpdf": {
+             "label": "Support Qt PDF rendering module",
+             "purpose": "Enables building the Qt PDF rendering module.",
+             "condition": "module.gui
+                            && features.webengine-python2
+                            && features.webengine-gperf
+                            && features.webengine-bison
+                            && features.webengine-flex",
              "output": [ "privateFeature" ]
         },
         "webengine-developer-build": {
@@ -710,7 +728,7 @@
             "entries": [
                 "webengine-system-ninja",
                 "webengine-system-gn",
-                 {
+                {
                     "message": "Jumbo Build Merge Limit",
                     "type": "jumboBuild"
                 },

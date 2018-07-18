@@ -1,7 +1,8 @@
 # Shared configuration for all our supported platforms
 include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
 include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-QT_FOR_CONFIG += buildtools-private webenginecore webenginecore-private
+include($$QTWEBENGINE_OUT_ROOT/src/pdf/qtpdf-config.pri)
+QT_FOR_CONFIG += buildtools-private webenginecore webenginecore-private pdf-private
 
 gn_args += \
     use_qt=true \
@@ -39,7 +40,7 @@ greaterThan(QMAKE_JUMBO_MERGE_LIMIT,0) {
     gn_args += jumbo_build_excluded="[\"browser\"]"
 }
 
-qtConfig(webengine-printing-and-pdf) {
+qtConfig(build-qtwebengine-core):qtConfig(webengine-printing-and-pdf) {
     gn_args += enable_basic_printing=true enable_print_preview=true
     gn_args += enable_pdf=true
 } else {
@@ -47,27 +48,31 @@ qtConfig(webengine-printing-and-pdf) {
     gn_args += enable_pdf=false
 }
 
-qtConfig(webengine-pepper-plugins) {
+qtConfig(build-qtwebengine-core):qtConfig(webengine-pepper-plugins) {
     gn_args += enable_plugins=true
 } else {
     gn_args += enable_plugins=false
 }
 
-qtConfig(webengine-spellchecker) {
+qtConfig(build-qtwebengine-core):qtConfig(webengine-spellchecker) {
     gn_args += enable_spellcheck=true
 } else {
     gn_args += enable_spellcheck=false
 }
 
-qtConfig(webengine-webrtc) {
+qtConfig(build-qtwebengine-core):qtConfig(webengine-webrtc) {
     gn_args += enable_webrtc=true
 } else {
     gn_args += enable_webrtc=false audio_processing_in_audio_service_supported=false
 }
 
-qtConfig(webengine-proprietary-codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
+qtConfig(build-qtwebengine-core):qtConfig(webengine-proprietary-codecs) {
+    gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
+} else {
+    gn_args += proprietary_codecs=false
+}
 
-qtConfig(webengine-extensions) {
+qtConfig(build-qtwebengine-core):qtConfig(webengine-extensions) {
     gn_args += enable_extensions=true
 } else {
     gn_args += enable_extensions=false
@@ -122,13 +127,13 @@ optimize_size: gn_args += optimize_for_size=true
     sanitize_undefined: gn_args += is_ubsan=true is_ubsan_vptr=true
 }
 
-qtConfig(webengine-v8-snapshot):qtConfig(webengine-v8-snapshot-support) {
+qtConfig(build-qtwebengine-core):qtConfig(webengine-v8-snapshot):qtConfig(webengine-v8-snapshot-support) {
     gn_args += v8_use_snapshot=true
 } else {
     gn_args += v8_use_snapshot=false
 }
 
-qtConfig(webengine-kerberos) {
+qtConfig(build-qtwebengine-core):qtConfig(webengine-kerberos) {
     gn_args += use_kerberos=true
 } else {
     gn_args += use_kerberos=false

@@ -37,10 +37,8 @@
 #include "qpdfdocument.h"
 #include "qpdfdocument_p.h"
 
-#include "public/fpdf_doc.h"
+#include "third_party/pdfium/public/fpdf_doc.h"
 
-#include <QDateTime>
-#include <QDebug>
 #include <QFile>
 #include <QMutex>
 

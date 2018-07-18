@@ -19,5 +19,5 @@ FORMS += \
 RESOURCES += \
     resources.qrc
 
-target.path = $$[QT_INSTALL_EXAMPLES]/pdf/pdfviewer
+target.path = $$[QT_INSTALL_EXAMPLES]/pdfwidgets/pdfviewer
 INSTALLS += target

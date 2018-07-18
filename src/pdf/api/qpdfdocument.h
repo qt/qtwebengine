@@ -37,11 +37,10 @@
 #ifndef QPDFDOCUMENT_H
 #define QPDFDOCUMENT_H
 
-#include "qtpdfglobal.h"
-
+#include <QtPdf/qtpdfglobal.h>
 #include <QImage>
 #include <QObject>
-#include <QPdfDocumentRenderOptions>
+#include <QtPdf/QPdfDocumentRenderOptions>
 
 QT_BEGIN_NAMESPACE
 

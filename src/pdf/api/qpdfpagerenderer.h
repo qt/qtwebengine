@@ -34,36 +34,57 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFNAMESPACE_H
-#define QPDFNAMESPACE_H
+#ifndef QPDFPAGERENDERER_H
+#define QPDFPAGERENDERER_H
 
+#include <QtPdf/qtpdfglobal.h>
 #include <QObject>
+#include <QtPdf/QPdfDocumentRenderOptions>
+#include <QSize>
 
-namespace QPdf {
-    Q_NAMESPACE
+QT_BEGIN_NAMESPACE
 
-    enum Rotation {
-        Rotate0,
-        Rotate90,
-        Rotate180,
-        Rotate270
+class QPdfDocument;
+class QPdfPageRendererPrivate;
+
+class Q_PDF_EXPORT QPdfPageRenderer : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QPdfDocument* document READ document WRITE setDocument NOTIFY documentChanged)
+    Q_PROPERTY(RenderMode renderMode READ renderMode WRITE setRenderMode NOTIFY renderModeChanged)
+
+public:
+    enum RenderMode
+    {
+        MultiThreadedRenderMode,
+        SingleThreadedRenderMode
     };
-    Q_ENUM_NS(Rotation)
+    Q_ENUM(RenderMode)
 
-    enum RenderFlag {
-        NoRenderFlags = 0x000,
-        RenderAnnotations = 0x001,
-        RenderOptimizedForLcd = 0x002,
-        RenderGrayscale = 0x004,
-        RenderForceHalftone = 0x008,
-        RenderTextAliased = 0x010,
-        RenderImageAliased = 0x020,
-        RenderPathAliased = 0x040
-    };
-    Q_FLAG_NS(RenderFlag)
-    Q_DECLARE_FLAGS(RenderFlags, RenderFlag)
-}
+    explicit QPdfPageRenderer(QObject *parent = nullptr);
+    ~QPdfPageRenderer();
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QPdf::RenderFlags)
+    RenderMode renderMode() const;
+    void setRenderMode(RenderMode mode);
+
+    QPdfDocument* document() const;
+    void setDocument(QPdfDocument *document);
+
+    quint64 requestPage(int pageNumber, QSize imageSize,
+                        QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
+
+Q_SIGNALS:
+    void documentChanged(QPdfDocument *document);
+    void renderModeChanged(RenderMode renderMode);
+
+    void pageRendered(int pageNumber, QSize imageSize, const QImage &image,
+                      QPdfDocumentRenderOptions options, quint64 requestId);
+
+private:
+    Q_DECLARE_PRIVATE(QPdfPageRenderer)
+};
+
+QT_END_NAMESPACE
 
 #endif

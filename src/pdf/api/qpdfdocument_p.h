@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -34,59 +34,67 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFPAGENAVIGATION_H
-#define QPDFPAGENAVIGATION_H
+#ifndef QPDFDOCUMENT_P_H
+#define QPDFDOCUMENT_P_H
 
-#include "qtpdfglobal.h"
+#include "qpdfdocument.h"
 
-#include <QObject>
+#include "third_party/pdfium/public/fpdfview.h"
+#include "third_party/pdfium/public/fpdf_dataavail.h"
+
+#include <qbuffer.h>
+#include <qmutex.h>
+#include <qnetworkreply.h>
+#include <qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfDocument;
-class QPdfPageNavigationPrivate;
-
-class Q_PDF_EXPORT QPdfPageNavigation : public QObject
+class QPdfMutexLocker : public QMutexLocker
 {
-    Q_OBJECT
-
-    Q_PROPERTY(QPdfDocument* document READ document WRITE setDocument NOTIFY documentChanged)
-
-    Q_PROPERTY(int currentPage READ currentPage WRITE setCurrentPage NOTIFY currentPageChanged)
-    Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged)
-    Q_PROPERTY(bool canGoToPreviousPage READ canGoToPreviousPage NOTIFY canGoToPreviousPageChanged)
-    Q_PROPERTY(bool canGoToNextPage READ canGoToNextPage NOTIFY canGoToNextPageChanged)
-
 public:
-    explicit QPdfPageNavigation(QObject *parent = nullptr);
-    ~QPdfPageNavigation();
+    QPdfMutexLocker();
+};
 
-    QPdfDocument* document() const;
-    void setDocument(QPdfDocument *document);
+class QPdfDocumentPrivate: public FPDF_FILEACCESS, public FX_FILEAVAIL, public FX_DOWNLOADHINTS
+{
+public:
+    QPdfDocumentPrivate();
+    ~QPdfDocumentPrivate();
 
-    int currentPage() const;
-    void setCurrentPage(int currentPage);
+    QPdfDocument *q;
 
-    int pageCount() const;
+    FPDF_AVAIL avail;
+    FPDF_DOCUMENT doc;
+    bool loadComplete;
 
-    bool canGoToPreviousPage() const;
-    bool canGoToNextPage() const;
+    QPointer<QIODevice> device;
+    QScopedPointer<QIODevice> ownDevice;
+    QBuffer asyncBuffer;
+    QPointer<QIODevice> sequentialSourceDevice;
+    QByteArray password;
 
-public Q_SLOTS:
-    void goToPreviousPage();
-    void goToNextPage();
+    QPdfDocument::Status status;
+    QPdfDocument::DocumentError lastError;
+    int pageCount;
 
-Q_SIGNALS:
-    void documentChanged(QPdfDocument *document);
-    void currentPageChanged(int currentPage);
-    void pageCountChanged(int pageCount);
-    void canGoToPreviousPageChanged(bool canGo);
-    void canGoToNextPageChanged(bool canGo);
+    void clear();
 
-private:
-    Q_DECLARE_PRIVATE(QPdfPageNavigation)
+    void load(QIODevice *device, bool ownDevice);
+    void loadAsync(QIODevice *device);
+
+    void _q_tryLoadingWithSizeFromContentHeader();
+    void initiateAsyncLoadWithTotalSizeKnown(quint64 totalSize);
+    void _q_copyFromSequentialSourceDevice();
+    void tryLoadDocument();
+    void checkComplete();
+    void setStatus(QPdfDocument::Status status);
+
+    static FPDF_BOOL fpdf_IsDataAvail(struct _FX_FILEAVAIL* pThis, size_t offset, size_t size);
+    static int fpdf_GetBlock(void* param, unsigned long position, unsigned char* pBuf, unsigned long size);
+    static void fpdf_AddSegment(struct _FX_DOWNLOADHINTS* pThis, size_t offset, size_t size);
+    void updateLastError();
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QPDFDOCUMENT_P_H

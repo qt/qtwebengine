@@ -37,8 +37,7 @@
 #ifndef QPDFBOOKMARKMODEL_H
 #define QPDFBOOKMARKMODEL_H
 
-#include "qtpdfglobal.h"
-
+#include <QtPdf/qtpdfglobal.h>
 #include <QAbstractItemModel>
 
 QT_BEGIN_NAMESPACE
