@@ -5,6 +5,7 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     defaultsurfaceformat \
+    devtools \
     faviconmanager \
     loadsignals \
     origins \
@@ -13,7 +14,6 @@ SUBDIRS += \
     qwebenginedownloaditem \
     qwebenginepage \
     qwebenginehistory \
-    qwebengineinspector \
     qwebengineprofile \
     qwebenginescript \
     qwebenginesettings \
@@ -36,7 +36,7 @@ qtConfig(webengine-spellchecker):!cross_compile {
 }
 
 # QTBUG-60268
-boot2qt: SUBDIRS -= accessibility defaultsurfaceformat \
+boot2qt: SUBDIRS -= accessibility defaultsurfaceformat devtools \
                     faviconmanager qwebenginepage qwebenginehistory \
                     qwebengineprofile qwebenginescript \
                     qwebengineview qwebenginedownloaditem qwebenginesettings \

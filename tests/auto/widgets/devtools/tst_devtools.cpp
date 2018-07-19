@@ -28,73 +28,60 @@
 
 #include <QtTest/QtTest>
 
-#include <qdir.h>
-#if defined(QWEBENGINEINSPECTOR)
-#include <qwebengineinspector.h>
-#endif
 #include <qwebenginepage.h>
-#if defined(QWEBENGINESETTINGS)
-#include <qwebenginesettings.h>
-#endif
 
-class tst_QWebEngineInspector : public QObject {
+class tst_DevTools : public QObject {
     Q_OBJECT
 
 private Q_SLOTS:
     void attachAndDestroyPageFirst();
     void attachAndDestroyInspectorFirst();
-    void attachAndDestroyInternalInspector();
 };
 
-void tst_QWebEngineInspector::attachAndDestroyPageFirst()
+void tst_DevTools::attachAndDestroyPageFirst()
 {
-#if !defined(QWEBENGINEINSPECTOR)
-    QSKIP("QWEBENGINEINSPECTOR");
-#else
     // External inspector + manual destruction of page first
     QWebEnginePage* page = new QWebEnginePage();
-    page->settings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, true);
-    QWebEngineInspector* inspector = new QWebEngineInspector();
-    inspector->setPage(page);
-    page->updatePositionDependentActions(QPoint(0, 0));
+    QWebEnginePage* inspector = new QWebEnginePage();
+
+    QSignalSpy spy(page, &QWebEnginePage::loadFinished);
+    page->load(QUrl("data:text/plain,foobarbaz"));
+    QTRY_COMPARE(spy.count(),  1);
+
+    inspector->setInspectedPage(page);
     page->triggerAction(QWebEnginePage::InspectElement);
+
+    // This is deliberately racy:
+    QTest::qWait(10);
 
     delete page;
     delete inspector;
-#endif
 }
 
-void tst_QWebEngineInspector::attachAndDestroyInspectorFirst()
+void tst_DevTools::attachAndDestroyInspectorFirst()
 {
-#if !defined(QWEBENGINEINSPECTOR)
-    QSKIP("QWEBENGINEINSPECTOR");
-#else
     // External inspector + manual destruction of inspector first
     QWebEnginePage* page = new QWebEnginePage();
-    page->settings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, true);
-    QWebEngineInspector* inspector = new QWebEngineInspector();
-    inspector->setPage(page);
-    page->updatePositionDependentActions(QPoint(0, 0));
+    QWebEnginePage* inspector = new QWebEnginePage();
+    inspector->setInspectedPage(page);
+
+    QSignalSpy spy(page, &QWebEnginePage::loadFinished);
+    page->setHtml(QStringLiteral("<body><h1>FOO BAR!</h1></body>"));
+    QTRY_COMPARE(spy.count(),  1);
+
     page->triggerAction(QWebEnginePage::InspectElement);
 
     delete inspector;
+
+    page->triggerAction(QWebEnginePage::InspectElement);
+
+    // This is deliberately racy:
+    QTest::qWait(10);
+
     delete page;
-#endif
 }
 
-void tst_QWebEngineInspector::attachAndDestroyInternalInspector()
-{
-#if !defined(QWEBENGINEINSPECTOR)
-    QSKIP("QWEBENGINEINSPECTOR");
-#else
-    // Internal inspector
-    QWebEnginePage page;
-    page.settings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, true);
-    page.updatePositionDependentActions(QPoint(0, 0));
-    page.triggerAction(QWebEnginePage::InspectElement);
-#endif
-}
 
-QTEST_MAIN(tst_QWebEngineInspector)
+QTEST_MAIN(tst_DevTools)
 
-#include "tst_qwebengineinspector.moc"
+#include "tst_devtools.moc"
