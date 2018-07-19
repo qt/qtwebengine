@@ -4,7 +4,7 @@ QT_FOR_CONFIG += webenginecore-private
 TEMPLATE = app
 
 CONFIG += testcase
-CONFIG += c++11
+CONFIG += c++14
 
 VPATH += $$_PRO_FILE_PWD_
 TARGET = tst_$$TARGET

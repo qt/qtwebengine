@@ -25,7 +25,7 @@
 #include <qwebenginepage.h>
 #include <qwidget.h>
 
-class tst_QWebEngineAccessibility : public QObject
+class tst_Accessibility : public QObject
 {
     Q_OBJECT
 
@@ -46,27 +46,27 @@ private Q_SLOTS:
 
 // This will be called before the first test function is executed.
 // It is only called once.
-void tst_QWebEngineAccessibility::initTestCase()
+void tst_Accessibility::initTestCase()
 {
 }
 
 // This will be called after the last test function is executed.
 // It is only called once.
-void tst_QWebEngineAccessibility::cleanupTestCase()
+void tst_Accessibility::cleanupTestCase()
 {
 }
 
 // This will be called before each test function is executed.
-void tst_QWebEngineAccessibility::init()
+void tst_Accessibility::init()
 {
 }
 
 // This will be called after every test function.
-void tst_QWebEngineAccessibility::cleanup()
+void tst_Accessibility::cleanup()
 {
 }
 
-void tst_QWebEngineAccessibility::noPage()
+void tst_Accessibility::noPage()
 {
     QWebEngineView webView;
     webView.show();
@@ -82,7 +82,7 @@ void tst_QWebEngineAccessibility::noPage()
     QCOMPARE(document->childCount(), 0);
 }
 
-void tst_QWebEngineAccessibility::hierarchy()
+void tst_Accessibility::hierarchy()
 {
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
@@ -142,7 +142,7 @@ void tst_QWebEngineAccessibility::hierarchy()
     QCOMPARE(input, child);
 }
 
-void tst_QWebEngineAccessibility::text()
+void tst_Accessibility::text()
 {
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
@@ -211,7 +211,7 @@ void tst_QWebEngineAccessibility::text()
     QCOMPARE(input3->text(QAccessible::Value), QStringLiteral("Good day!"));
 }
 
-void tst_QWebEngineAccessibility::value()
+void tst_Accessibility::value()
 {
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
@@ -250,7 +250,7 @@ void tst_QWebEngineAccessibility::value()
     QCOMPARE(progressBarValueInterface->maximumValue().toInt(), 99);
 }
 
-void tst_QWebEngineAccessibility::roles_data()
+void tst_Accessibility::roles_data()
 {
     QTest::addColumn<QString>("html");
     QTest::addColumn<bool>("isSection");
@@ -381,7 +381,7 @@ void tst_QWebEngineAccessibility::roles_data()
     //QTest::newRow("AX_ROLE_WINDOW"); // No mapping to ARIA role
 }
 
-void tst_QWebEngineAccessibility::roles()
+void tst_Accessibility::roles()
 {
     QFETCH(QString, html);
     QFETCH(bool, isSection);
@@ -417,5 +417,5 @@ void tst_QWebEngineAccessibility::roles()
 static QByteArrayList params = QByteArrayList()
     << "--force-renderer-accessibility";
 
-W_QTEST_MAIN(tst_QWebEngineAccessibility, params)
-#include "tst_qwebengineaccessibility.moc"
+W_QTEST_MAIN(tst_Accessibility, params)
+#include "tst_accessibility.moc"

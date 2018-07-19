@@ -4,23 +4,23 @@ QT_FOR_CONFIG += webenginecore webenginecore-private
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    origins \
+    defaultsurfaceformat \
+    faviconmanager \
     loadsignals \
-    qwebenginedefaultsurfaceformat \
-    qwebenginedownloads \
-    qwebenginefaviconmanager \
+    origins \
+    schemes \
+    shutdown \
+    qwebenginedownloaditem \
     qwebenginepage \
     qwebenginehistory \
     qwebengineinspector \
     qwebengineprofile \
-    qwebengineschemes \
     qwebenginescript \
     qwebenginesettings \
-    qwebengineshutdown \
     qwebengineview
 
 qtConfig(accessibility) {
-    SUBDIRS += qwebengineaccessibility
+    SUBDIRS += accessibility
 }
 
 qtConfig(webengine-printing-and-pdf) {
@@ -29,15 +29,15 @@ qtConfig(webengine-printing-and-pdf) {
 
 qtConfig(webengine-spellchecker):!cross_compile {
     !qtConfig(webengine-native-spellchecker) {
-        SUBDIRS += qwebenginespellcheck
+        SUBDIRS += spellchecking
     } else {
         message("Spellcheck test will not be built because it depends on usage of Hunspell dictionaries.")
     }
 }
 
 # QTBUG-60268
-boot2qt: SUBDIRS -= qwebengineaccessibility qwebenginedefaultsurfaceformat \
-                    qwebenginefaviconmanager qwebenginepage qwebenginehistory \
-                    qwebengineprofile qwebengineschemes qwebenginescript \
-                    qwebengineview qwebenginedownloads qwebenginesettings \
-                    origins loadsignals
+boot2qt: SUBDIRS -= accessibility defaultsurfaceformat \
+                    faviconmanager qwebenginepage qwebenginehistory \
+                    qwebengineprofile qwebenginescript \
+                    qwebengineview qwebenginedownloaditem qwebenginesettings \
+                    schemes origins loadsignals

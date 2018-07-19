@@ -33,7 +33,7 @@
 #include <qwebengineprofile.h>
 #include <qwebenginesettings.h>
 
-class tst_QWebEngineSchemes : public QObject
+class tst_Schemes : public QObject
 {
     Q_OBJECT
 
@@ -58,7 +58,7 @@ public:
     }
 };
 
-void tst_QWebEngineSchemes::unknownUrlSchemePolicy()
+void tst_Schemes::unknownUrlSchemePolicy()
 {
     QWebEngineView view;
     AcceptNavigationRequestHandler page;
@@ -109,5 +109,5 @@ void tst_QWebEngineSchemes::unknownUrlSchemePolicy()
     }
 }
 
-QTEST_MAIN(tst_QWebEngineSchemes)
-#include "tst_qwebengineschemes.moc"
+QTEST_MAIN(tst_Schemes)
+#include "tst_schemes.moc"

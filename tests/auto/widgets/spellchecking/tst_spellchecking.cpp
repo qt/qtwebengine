@@ -65,7 +65,7 @@ private:
     QWebEngineContextMenuData m_data;
 };
 
-class tst_QWebEngineSpellcheck : public QObject
+class tst_Spellchecking : public QObject
 {
     Q_OBJECT
 
@@ -84,7 +84,7 @@ private:
     WebView *m_view;
 };
 
-void tst_QWebEngineSpellcheck::initTestCase()
+void tst_Spellchecking::initTestCase()
 {
     QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
     QVERIFY(profile);
@@ -92,7 +92,7 @@ void tst_QWebEngineSpellcheck::initTestCase()
     QVERIFY(profile->spellCheckLanguages().isEmpty());
 }
 
-void tst_QWebEngineSpellcheck::init()
+void tst_Spellchecking::init()
 {
     QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
     profile->setSpellCheckEnabled(false);
@@ -100,7 +100,7 @@ void tst_QWebEngineSpellcheck::init()
     m_view = new WebView();
 }
 
-void tst_QWebEngineSpellcheck::load()
+void tst_Spellchecking::load()
 {
     m_view->page()->load(QUrl("qrc:///resources/index.html"));
     m_view->show();
@@ -109,12 +109,12 @@ void tst_QWebEngineSpellcheck::load()
 
 }
 
-void tst_QWebEngineSpellcheck::cleanup()
+void tst_Spellchecking::cleanup()
 {
     delete m_view;
 }
 
-void tst_QWebEngineSpellcheck::spellCheckLanguage()
+void tst_Spellchecking::spellCheckLanguage()
 {
     QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
     QVERIFY(profile);
@@ -122,7 +122,7 @@ void tst_QWebEngineSpellcheck::spellCheckLanguage()
     QVERIFY(profile->spellCheckLanguages() == QStringList({"en-US"}));
 }
 
-void tst_QWebEngineSpellcheck::spellCheckLanguages()
+void tst_Spellchecking::spellCheckLanguages()
 {
     QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
     QVERIFY(profile);
@@ -131,7 +131,7 @@ void tst_QWebEngineSpellcheck::spellCheckLanguages()
 }
 
 
-void tst_QWebEngineSpellcheck::spellCheckEnabled()
+void tst_Spellchecking::spellCheckEnabled()
 {
     QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
     QVERIFY(profile);
@@ -139,7 +139,7 @@ void tst_QWebEngineSpellcheck::spellCheckEnabled()
     QVERIFY(profile->isSpellCheckEnabled());
 }
 
-void tst_QWebEngineSpellcheck::spellcheck()
+void tst_Spellchecking::spellcheck()
 {
     QFETCH(QStringList, languages);
     QFETCH(QStringList, suggestions);
@@ -195,7 +195,7 @@ void tst_QWebEngineSpellcheck::spellcheck()
     QTRY_VERIFY(evaluateJavaScriptSync(m_view->page(), "text();").toString() == text);
 }
 
-void tst_QWebEngineSpellcheck::spellcheck_data()
+void tst_Spellchecking::spellcheck_data()
 {
     QTest::addColumn<QStringList>("languages");
     QTest::addColumn<QStringList>("suggestions");
@@ -203,5 +203,5 @@ void tst_QWebEngineSpellcheck::spellcheck_data()
     QTest::newRow("en-US,de-DE") << QStringList({"en-US", "de-DE"}) << QStringList({"löwe", "low", "love"});
 }
 
-QTEST_MAIN(tst_QWebEngineSpellcheck)
-#include "tst_qwebenginespellcheck.moc"
+QTEST_MAIN(tst_Spellchecking)
+#include "tst_spellchecking.moc"

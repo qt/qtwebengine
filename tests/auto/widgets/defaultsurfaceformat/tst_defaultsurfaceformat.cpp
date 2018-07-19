@@ -69,4 +69,4 @@ void tst_QWebEngineDefaultSurfaceFormat::customDefaultSurfaceFormat()
 }
 
 QTEST_APPLESS_MAIN(tst_QWebEngineDefaultSurfaceFormat)
-#include "tst_qwebenginedefaultsurfaceformat.moc"
+#include "tst_defaultsurfaceformat.moc"

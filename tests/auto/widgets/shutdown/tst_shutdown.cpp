@@ -44,13 +44,13 @@
 #include <qwebengineview.h>
 #include <QDebug>
 
-class tst_QWebEngineShutdown : public QObject
+class tst_Shutdown : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QWebEngineShutdown();
-    virtual ~tst_QWebEngineShutdown();
+    tst_Shutdown();
+    virtual ~tst_Shutdown();
 
 public Q_SLOTS:
     void init();
@@ -67,29 +67,29 @@ private:
     QWebEnginePage* m_page;
 };
 
-tst_QWebEngineShutdown::tst_QWebEngineShutdown()
+tst_Shutdown::tst_Shutdown()
 {
 }
 
-tst_QWebEngineShutdown::~tst_QWebEngineShutdown()
+tst_Shutdown::~tst_Shutdown()
 {
 }
 
-void tst_QWebEngineShutdown::init()
+void tst_Shutdown::init()
 {
     m_view = new QWebEngineView();
     m_page = m_view->page();
 }
 
-void tst_QWebEngineShutdown::cleanup()
+void tst_Shutdown::cleanup()
 {
     delete m_view;
 }
 
-void tst_QWebEngineShutdown::dummyTest()
+void tst_Shutdown::dummyTest()
 {
     QVERIFY(m_view);
 }
 
-QTEST_MAIN(tst_QWebEngineShutdown)
-#include "tst_qwebengineshutdown.moc"
+QTEST_MAIN(tst_Shutdown)
+#include "tst_shutdown.moc"

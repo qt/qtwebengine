@@ -37,7 +37,7 @@
 #include <QWebEngineView>
 #include <httpserver.h>
 
-class tst_QWebEngineDownloads : public QObject
+class tst_QWebEngineDownloadItem : public QObject
 {
     Q_OBJECT
 
@@ -92,10 +92,10 @@ private:
     QMetaObject::Connection m_connection;
 };
 
-Q_DECLARE_METATYPE(tst_QWebEngineDownloads::UserAction)
-Q_DECLARE_METATYPE(tst_QWebEngineDownloads::FileAction)
+Q_DECLARE_METATYPE(tst_QWebEngineDownloadItem::UserAction)
+Q_DECLARE_METATYPE(tst_QWebEngineDownloadItem::FileAction)
 
-void tst_QWebEngineDownloads::initTestCase()
+void tst_QWebEngineDownloadItem::initTestCase()
 {
     m_server = new HttpServer();
     m_profile = new QWebEngineProfile;
@@ -116,18 +116,18 @@ void tst_QWebEngineDownloads::initTestCase()
     m_view->show();
 }
 
-void tst_QWebEngineDownloads::init()
+void tst_QWebEngineDownloadItem::init()
 {
     QVERIFY(m_server->start());
 }
 
-void tst_QWebEngineDownloads::cleanup()
+void tst_QWebEngineDownloadItem::cleanup()
 {
     QCOMPARE(m_downloads.count(), 0);
     QVERIFY(m_server->stop());
 }
 
-void tst_QWebEngineDownloads::cleanupTestCase()
+void tst_QWebEngineDownloadItem::cleanupTestCase()
 {
     delete m_view;
     delete m_page;
@@ -135,7 +135,7 @@ void tst_QWebEngineDownloads::cleanupTestCase()
     delete m_server;
 }
 
-void tst_QWebEngineDownloads::saveLink(QPoint linkPos)
+void tst_QWebEngineDownloadItem::saveLink(QPoint linkPos)
 {
     // Simulate right-clicking on link and choosing "save link as" from menu.
     QSignalSpy menuSpy(m_view, &QWebEngineView::customContextMenuRequested);
@@ -152,7 +152,7 @@ void tst_QWebEngineDownloads::saveLink(QPoint linkPos)
     m_page->triggerAction(QWebEnginePage::DownloadLinkToDisk);
 }
 
-void tst_QWebEngineDownloads::clickLink(QPoint linkPos)
+void tst_QWebEngineDownloadItem::clickLink(QPoint linkPos)
 {
     // Simulate left-clicking on link.
     QTRY_VERIFY(m_view->focusWidget());
@@ -160,7 +160,7 @@ void tst_QWebEngineDownloads::clickLink(QPoint linkPos)
     QTest::mouseClick(renderWidget, Qt::LeftButton, {}, linkPos);
 }
 
-void tst_QWebEngineDownloads::simulateUserAction(QPoint linkPos, UserAction action)
+void tst_QWebEngineDownloadItem::simulateUserAction(QPoint linkPos, UserAction action)
 {
     switch (action) {
     case SaveLink: return saveLink(linkPos);
@@ -168,7 +168,7 @@ void tst_QWebEngineDownloads::simulateUserAction(QPoint linkPos, UserAction acti
     }
 }
 
-QWebEngineDownloadItem::DownloadType tst_QWebEngineDownloads::expectedDownloadType(
+QWebEngineDownloadItem::DownloadType tst_QWebEngineDownloadItem::expectedDownloadType(
     UserAction userAction, const QByteArray &contentDisposition)
 {
     if (userAction == SaveLink)
@@ -178,7 +178,7 @@ QWebEngineDownloadItem::DownloadType tst_QWebEngineDownloads::expectedDownloadTy
     return QWebEngineDownloadItem::DownloadAttribute;
 }
 
-void tst_QWebEngineDownloads::downloadLink_data()
+void tst_QWebEngineDownloadItem::downloadLink_data()
 {
     QTest::addColumn<UserAction>("userAction");
     QTest::addColumn<bool>("anchorHasDownloadAttribute");
@@ -375,7 +375,7 @@ void tst_QWebEngineDownloads::downloadLink_data()
         /* fileAction                 */ << FileIsDownloaded;
 }
 
-void tst_QWebEngineDownloads::downloadLink()
+void tst_QWebEngineDownloadItem::downloadLink()
 {
     QFETCH(UserAction, userAction);
     QFETCH(bool, anchorHasDownloadAttribute);
@@ -498,7 +498,7 @@ void tst_QWebEngineDownloads::downloadLink()
     QCOMPARE(file.readAll(), fileContents);
 }
 
-void tst_QWebEngineDownloads::downloadTwoLinks_data()
+void tst_QWebEngineDownloadItem::downloadTwoLinks_data()
 {
     QTest::addColumn<UserAction>("action1");
     QTest::addColumn<UserAction>("action2");
@@ -508,7 +508,7 @@ void tst_QWebEngineDownloads::downloadTwoLinks_data()
     QTest::newRow("Click+Click") << ClickLink << ClickLink;
 }
 
-void tst_QWebEngineDownloads::downloadTwoLinks()
+void tst_QWebEngineDownloadItem::downloadTwoLinks()
 {
     QFETCH(UserAction, action1);
     QFETCH(UserAction, action2);
@@ -590,7 +590,7 @@ void tst_QWebEngineDownloads::downloadTwoLinks()
     QTRY_COMPARE(finishedCount, 2);
 }
 
-void tst_QWebEngineDownloads::downloadPage_data()
+void tst_QWebEngineDownloadItem::downloadPage_data()
 {
     QTest::addColumn<QWebEngineDownloadItem::SavePageFormat>("savePageFormat");
     QTest::newRow("SingleHtmlSaveFormat") << QWebEngineDownloadItem::SingleHtmlSaveFormat;
@@ -598,7 +598,7 @@ void tst_QWebEngineDownloads::downloadPage_data()
     QTest::newRow("MimeHtmlSaveFormat") << QWebEngineDownloadItem::MimeHtmlSaveFormat;
 }
 
-void tst_QWebEngineDownloads::downloadPage()
+void tst_QWebEngineDownloadItem::downloadPage()
 {
     QFETCH(QWebEngineDownloadItem::SavePageFormat, savePageFormat);
 
@@ -672,7 +672,7 @@ void tst_QWebEngineDownloads::downloadPage()
     QVERIFY(file.exists());
 }
 
-void tst_QWebEngineDownloads::downloadViaSetUrl()
+void tst_QWebEngineDownloadItem::downloadViaSetUrl()
 {
     // Reproduce the scenario described in QTBUG-63388 by triggering downloads
     // of the same file multiple times via QWebEnginePage::setUrl
@@ -726,7 +726,7 @@ void tst_QWebEngineDownloads::downloadViaSetUrl()
     }
 }
 
-void tst_QWebEngineDownloads::downloadFileNot1()
+void tst_QWebEngineDownloadItem::downloadFileNot1()
 {
     // Trigger file download via download() but don't accept().
 
@@ -749,7 +749,7 @@ void tst_QWebEngineDownloads::downloadFileNot1()
     QVERIFY(!downloadItem);
 }
 
-void tst_QWebEngineDownloads::downloadFileNot2()
+void tst_QWebEngineDownloadItem::downloadFileNot2()
 {
     // Trigger file download via download() but call cancel() instead of accept().
 
@@ -774,5 +774,5 @@ void tst_QWebEngineDownloads::downloadFileNot2()
     QCOMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCancelled);
 }
 
-QTEST_MAIN(tst_QWebEngineDownloads)
-#include "tst_qwebenginedownloads.moc"
+QTEST_MAIN(tst_QWebEngineDownloadItem)
+#include "tst_qwebenginedownloaditem.moc"
