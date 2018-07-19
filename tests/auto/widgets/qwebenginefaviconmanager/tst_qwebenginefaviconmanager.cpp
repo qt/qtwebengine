@@ -30,6 +30,7 @@
 #include "../util.h"
 
 #include <qwebenginepage.h>
+#include <qwebengineprofile.h>
 #include <qwebenginesettings.h>
 #include <qwebengineview.h>
 
@@ -65,13 +66,16 @@ private Q_SLOTS:
 private:
     QWebEngineView *m_view;
     QWebEnginePage *m_page;
+    QWebEngineProfile *m_profile;
 };
 
 
 void tst_QWebEngineFaviconManager::init()
 {
+    m_profile = new QWebEngineProfile(this);
     m_view = new QWebEngineView();
-    m_page = m_view->page();
+    m_page = new QWebEnginePage(m_profile, m_view);
+    m_view->setPage(m_page);
 }
 
 
@@ -87,6 +91,7 @@ void tst_QWebEngineFaviconManager::cleanupTestCase()
 void tst_QWebEngineFaviconManager::cleanup()
 {
     delete m_view;
+    delete m_profile;
 }
 
 void tst_QWebEngineFaviconManager::faviconLoad()
