@@ -115,9 +115,24 @@ QByteArray QWebEngineUrlRequestJob::requestMethod() const
 
 /*!
     \since 5.11
-    Returns the origin URL of the content that initiated the request. If the
-    request was not initiated by web content the function will return an
-    empty QUrl.
+    Returns the serialized origin of the content that initiated the request.
+
+    Generally, the origin consists of a scheme, hostname, and port. For example,
+    \c "http://localhost:8080" would be a valid origin. The port is omitted if
+    it is the scheme's default port (80 for \c http, 443 for \c https). The
+    hostname is omitted for non-network schemes such as \c file and \c qrc.
+
+    However, there is also the special value \c "null" representing a unique
+    origin. It is, for example, the origin of a sandboxed iframe. The purpose of
+    this special origin is to be always different from all other origins in the
+    same-origin check. In other words, content with a unique origin should never
+    have privileged access to any other content.
+
+    Finally, if the request was not initiated by web content, the function will
+    return an empty QUrl. This happens, for example, when you call \l
+    QWebEnginePage::setUrl().
+
+    This value can be used for implementing secure cross-origin checks.
 */
 QUrl QWebEngineUrlRequestJob::initiator() const
 {
