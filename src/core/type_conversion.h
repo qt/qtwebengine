@@ -83,7 +83,7 @@ inline QString toQt(const base::string16 &string)
 #endif
 }
 
-inline QString toQt(const std::string &string)
+inline QString toQString(const std::string &string)
 {
     return QString::fromStdString(string);
 }
@@ -91,6 +91,12 @@ inline QString toQt(const std::string &string)
 inline QByteArray toQByteArray(const std::string &string)
 {
     return QByteArray::fromStdString(string);
+}
+
+// ### should probably be toQByteArray
+inline QString toQt(const std::string &string)
+{
+    return toQString(string);
 }
 
 inline base::string16 toString16(const QString &qString)
@@ -109,12 +115,15 @@ inline base::NullableString16 toNullableString16(const QString &qString)
 
 inline QUrl toQt(const GURL &url)
 {
-    return QUrl(QString::fromStdString(url.spec()));
+    if (url.is_valid())
+        return QUrl::fromEncoded(toQByteArray(url.spec()));
+
+    return QUrl(toQString(url.possibly_invalid_spec()));
 }
 
 inline GURL toGurl(const QUrl& url)
 {
-    return GURL(url.toString().toStdString());
+    return GURL(url.toEncoded().toStdString());
 }
 
 inline QPoint toQt(const gfx::Point &point)
