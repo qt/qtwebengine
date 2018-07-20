@@ -88,7 +88,7 @@ private:
         if (targetHeight <= 0)
             targetHeight = m_height;
 
-        QImage image(targetWidth, targetHeight, QImage::Format_RGBA8888);
+        QImage image(targetWidth, targetHeight, QImage::Format_ARGB32);
         Q_ASSERT(!image.isNull());
         image.fill(0xFFFFFFFF);
 
@@ -102,9 +102,7 @@ private:
                               0, 0);
         FPDFBitmap_Destroy(bitmap);
         bitmap = nullptr;
-
-        // Map BGRA to RGBA as PDFium currently does not support RGBA bitmaps directly
-        return std::move(image).rgbSwapped();
+        return std::move(image);
     }
 
 private:
