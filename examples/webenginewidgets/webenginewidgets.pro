@@ -10,7 +10,8 @@ SUBDIRS += \
     html2pdf \
     simplebrowser \
     stylesheetbrowser \
-    videoplayer
+    videoplayer \
+    webui
 
 qtConfig(webengine-geolocation): SUBDIRS += maps
 qtConfig(webengine-webchannel): SUBDIRS += markdowneditor
