@@ -88,6 +88,7 @@ defineTest(isArchSupported) {
 }
 
 defineTest(isGCCVersionSupported) {
+  # Keep in sync with src/webengine/doc/src/qtwebengine-platform-notes.qdoc
   greaterThan(QT_GCC_MAJOR_VERSION, 4):return(true)
 
   skipBuild("Using gcc version "$$QT_GCC_MAJOR_VERSION"."$$QT_GCC_MINOR_VERSION", but at least gcc version 5 is required to build Qt WebEngine.")
