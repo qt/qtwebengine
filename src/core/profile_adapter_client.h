@@ -57,6 +57,8 @@
 
 namespace QtWebEngineCore {
 
+class WebContentsAdapterClient;
+
 class QWEBENGINECORE_PRIVATE_EXPORT ProfileAdapterClient
 {
 public:
@@ -133,6 +135,7 @@ public:
         bool done;
         int downloadType;
         int downloadInterruptReason;
+        WebContentsAdapterClient *page;
     };
 
     virtual ~ProfileAdapterClient() { }

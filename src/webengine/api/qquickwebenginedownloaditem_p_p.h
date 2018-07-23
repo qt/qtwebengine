@@ -59,6 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineProfilePrivate;
+class QQuickWebEngineView;
 
 class QQuickWebEngineDownloadItemPrivate {
     QQuickWebEngineDownloadItem *q_ptr;
@@ -80,6 +81,7 @@ public:
     QString downloadPath;
     bool downloadFinished;
     bool downloadPaused;
+    QQuickWebEngineView *view;
 
     void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
     void updateState(QQuickWebEngineDownloadItem::DownloadState newState);

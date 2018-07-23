@@ -443,6 +443,7 @@ void tst_QWebEngineDownloadItem::downloadLink()
         QCOMPARE(item->path(), suggestedPath);
         QCOMPARE(item->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
         QCOMPARE(item->url(), downloadUrl);
+        QCOMPARE(item->page(), m_page);
 
         connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
@@ -456,6 +457,7 @@ void tst_QWebEngineDownloadItem::downloadLink()
             QCOMPARE(item->path(), downloadPath);
             QCOMPARE(item->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
             QCOMPARE(item->url(), downloadUrl);
+            QCOMPARE(item->page(), m_page);
 
             finishedCount++;
         });
@@ -636,6 +638,7 @@ void tst_QWebEngineDownloadItem::downloadPage()
         QCOMPARE(item->path(), downloadPath);
         QCOMPARE(item->savePageFormat(), savePageFormat);
         QCOMPARE(item->url(), downloadUrl);
+        QCOMPARE(item->page(), m_page);
         // no need to call item->accept()
 
         connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
@@ -650,6 +653,7 @@ void tst_QWebEngineDownloadItem::downloadPage()
             QCOMPARE(item->path(), downloadPath);
             QCOMPARE(item->savePageFormat(), savePageFormat);
             QCOMPARE(item->url(), downloadUrl);
+            QCOMPARE(item->page(), m_page);
 
             finishedCount++;
         });

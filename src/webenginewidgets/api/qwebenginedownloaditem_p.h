@@ -81,6 +81,7 @@ public:
 
     qint64 totalBytes;
     qint64 receivedBytes;
+    QWebEnginePage *page;
 
     void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
 };

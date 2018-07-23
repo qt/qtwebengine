@@ -154,6 +154,7 @@ public:
 
     WebEngineSettings *webEngineSettings() const;
     WebContentsAdapter *webContentsAdapter() const;
+    WebContentsAdapterClient *adapterClient() const { return m_viewClient; }
 
 private:
     QWeakPointer<WebContentsAdapter> createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);

@@ -38,12 +38,13 @@
 ****************************************************************************/
 
 #include "qwebengineprofile.h"
+#include "qwebengineprofile_p.h"
 
 #include "qwebenginecookiestore.h"
 #include "qwebenginedownloaditem.h"
 #include "qwebenginedownloaditem_p.h"
 #include "qwebenginepage.h"
-#include "qwebengineprofile_p.h"
+#include "qwebenginepage_p.h"
 #include "qwebenginesettings.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qtwebenginecoreglobal.h"
@@ -202,6 +203,10 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->mimeType = info.mimeType;
     itemPrivate->savePageFormat = static_cast<QWebEngineDownloadItem::SavePageFormat>(info.savePageFormat);
     itemPrivate->type = static_cast<QWebEngineDownloadItem::DownloadType>(info.downloadType);
+    if (info.page && info.page->clientType() == QtWebEngineCore::WebContentsAdapterClient::WidgetsClient)
+        itemPrivate->page = static_cast<QWebEnginePagePrivate *>(info.page)->q_ptr;
+    else
+        itemPrivate->page = nullptr;
 
     QWebEngineDownloadItem *download = new QWebEngineDownloadItem(itemPrivate, q);
 

@@ -168,6 +168,11 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
     item->AddObserver(this);
     QList<ProfileAdapterClient*> clients = m_profileAdapter->clients();
     if (!clients.isEmpty()) {
+        content::WebContents *webContents = content::DownloadItemUtils::GetWebContents(item);
+        WebContentsAdapterClient *adapterClient = nullptr;
+        if (webContents)
+            adapterClient = static_cast<WebContentsDelegateQt *>(webContents->GetDelegate())->adapterClient();
+
         ProfileAdapterClient::DownloadItemInfo info = {
             item->GetId(),
             toQt(item->GetURL()),
@@ -181,7 +186,8 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
             false /* paused */,
             false /* done */,
             downloadType,
-            item->GetLastReason()
+            item->GetLastReason(),
+            adapterClient
         };
 
         for (ProfileAdapterClient *client : qAsConst(clients)) {
@@ -263,6 +269,10 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
     // Clear the delegate's SavePageInfo. It's only valid for the page currently being saved.
     contentsDelegate->setSavePageInfo(SavePageInfo());
 
+    WebContentsAdapterClient *adapterClient = nullptr;
+    if (web_contents)
+        adapterClient = static_cast<WebContentsDelegateQt *>(web_contents->GetDelegate())->adapterClient();
+
     ProfileAdapterClient::DownloadItemInfo info = {
         m_currentId + 1,
         toQt(web_contents->GetURL()),
@@ -276,7 +286,8 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         false, /* paused */
         false, /* done */
         ProfileAdapterClient::SavePage,
-        ProfileAdapterClient::NoReason
+        ProfileAdapterClient::NoReason,
+        adapterClient
     };
 
     for (ProfileAdapterClient *client : qAsConst(clients)) {
@@ -323,6 +334,11 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(download::DownloadItem *downlo
 {
     QList<ProfileAdapterClient*> clients = m_profileAdapter->clients();
     if (!clients.isEmpty()) {
+        WebContentsAdapterClient *adapterClient = nullptr;
+        content::WebContents *webContents = content::DownloadItemUtils::GetWebContents(download);
+        if (webContents)
+            adapterClient = static_cast<WebContentsDelegateQt *>(webContents->GetDelegate())->adapterClient();
+
         ProfileAdapterClient::DownloadItemInfo info = {
             download->GetId(),
             toQt(download->GetURL()),
@@ -336,7 +352,8 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(download::DownloadItem *downlo
             download->IsPaused(),
             download->IsDone(),
             0 /* downloadType (unused) */,
-            download->GetLastReason()
+            download->GetLastReason(),
+            adapterClient
         };
 
         for (ProfileAdapterClient *client : qAsConst(clients)) {

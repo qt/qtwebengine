@@ -222,6 +222,10 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->savePageFormat = static_cast<QQuickWebEngineDownloadItem::SavePageFormat>(
                 info.savePageFormat);
     itemPrivate->type = static_cast<QQuickWebEngineDownloadItem::DownloadType>(info.downloadType);
+    if (info.page && info.page->clientType() == QtWebEngineCore::WebContentsAdapterClient::QmlClient)
+        itemPrivate->view = static_cast<QQuickWebEngineViewPrivate *>(info.page)->q_ptr;
+    else
+        itemPrivate->view = nullptr;
 
     QQuickWebEngineDownloadItem *download = new QQuickWebEngineDownloadItem(itemPrivate, q);
 

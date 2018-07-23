@@ -394,6 +394,11 @@ public:
         KilledTerminationStatus
     };
 
+    enum ClientType {
+        QmlClient,
+        WidgetsClient
+    };
+
     enum MediaRequestFlag {
         MediaNone = 0,
         MediaAudioCapture = 0x01,
@@ -466,6 +471,7 @@ public:
     virtual bool isEnabled() const = 0;
     virtual const QObject *holdingQObject() const = 0;
     virtual void setToolTip(const QString& toolTipText) = 0;
+    virtual ClientType clientType() = 0;
 
     virtual ProfileAdapter *profileAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;

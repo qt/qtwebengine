@@ -151,6 +151,7 @@ public:
     bool isEnabled() const override;
     void setToolTip(const QString &toolTipText) override;
     const QObject *holdingQObject() const override;
+    ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::QmlClient; }
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;

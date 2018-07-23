@@ -107,6 +107,7 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
     , receivedBytes(0)
     , downloadFinished(false)
     , downloadPaused(false)
+    , view(nullptr)
 {
 }
 
@@ -589,6 +590,20 @@ bool QQuickWebEngineDownloadItem::isPaused() const
 {
     Q_D(const QQuickWebEngineDownloadItem);
     return d->downloadPaused;
+}
+
+/*!
+    \qmlproperty bool WebEngineDownloadItem::view
+    \readonly
+    \since QtWebEngine 1.8
+
+    Returns the view the download was requested on. If the download was not triggered by content in a view,
+    \c nullptr is returned.
+*/
+QQuickWebEngineView *QQuickWebEngineDownloadItem::view() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->view;
 }
 
 QQuickWebEngineDownloadItem::QQuickWebEngineDownloadItem(QQuickWebEngineDownloadItemPrivate *p, QObject *parent)

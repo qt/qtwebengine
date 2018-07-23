@@ -169,6 +169,7 @@ QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QWebEngineProfilePr
     , downloadPaused(false)
     , totalBytes(-1)
     , receivedBytes(0)
+    , page(0)
 {
 }
 
@@ -628,6 +629,17 @@ QString QWebEngineDownloadItem::interruptReasonString() const
 {
     return ProfileAdapterClient::downloadInterruptReasonToString(
               static_cast<ProfileAdapterClient::DownloadInterruptReason>(interruptReason()));
+}
+
+/*!
+    \since 5.12
+    Returns the page the download was requested on. If the download was not triggered by content in a page,
+    \c nullptr is returned.
+*/
+QWebEnginePage *QWebEngineDownloadItem::page() const
+{
+    Q_D(const QWebEngineDownloadItem);
+    return d->page;
 }
 
 QWebEngineDownloadItem::QWebEngineDownloadItem(QWebEngineDownloadItemPrivate *p, QObject *parent)
