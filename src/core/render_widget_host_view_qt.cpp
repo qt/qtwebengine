@@ -552,6 +552,11 @@ void RenderWidgetHostViewQt::UnlockMouse()
 
 void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
 {
+    DisplayCursor(webCursor);
+}
+
+void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
+{
     content::CursorInfo cursorInfo;
     webCursor.GetCursorInfo(&cursorInfo);
     Qt::CursorShape shape = Qt::ArrowCursor;

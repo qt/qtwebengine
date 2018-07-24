@@ -140,6 +140,7 @@ public:
     bool LockMouse() override;
     void UnlockMouse() override;
     void UpdateCursor(const content::WebCursor&) override;
+    void DisplayCursor(const content::WebCursor&) override;
     void SetIsLoading(bool) override;
     void ImeCancelComposition() override;
     void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) override;
