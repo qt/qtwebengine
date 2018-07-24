@@ -185,6 +185,10 @@
             local network IP addresses, but remote hosts can also see your local network
             IP address.
             Disabled by default. (Added in Qt 5.11)
+    \value DnsPrefetchEnabled Specifies whether WebEngine will try to pre-fetch DNS entries to
+            speed up browsing.
+            Disabled by default. (Added in Qt 5.12)
+
 */
 
 /*!

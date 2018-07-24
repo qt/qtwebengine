@@ -51,6 +51,7 @@
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
+#include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "components/printing/renderer/print_render_frame_helper.h"
 #endif
@@ -113,6 +114,8 @@ void ContentRendererClientQt::RenderThreadStarted()
     (void)GetConnector();
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheImpl.reset(new web_cache::WebCacheImpl());
+
+    m_prescientNetworkingDispatcher.reset(new network_hints::PrescientNetworkingDispatcher());
 
     auto registry = std::make_unique<service_manager::BinderRegistry>();
     registry->AddInterface(m_visitedLinkSlave->GetBindCallback(),
@@ -237,6 +240,11 @@ unsigned long long ContentRendererClientQt::VisitedLinkHash(const char *canonica
 bool ContentRendererClientQt::IsLinkVisited(unsigned long long linkHash)
 {
     return m_visitedLinkSlave->IsVisited(linkHash);
+}
+
+blink::WebPrescientNetworking *ContentRendererClientQt::GetPrescientNetworking()
+{
+    return m_prescientNetworkingDispatcher.get();
 }
 
 void ContentRendererClientQt::OnStart()

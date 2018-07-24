@@ -107,6 +107,8 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::WebRTCPublicInterfacesOnly;
     case QWebEngineSettings::JavascriptCanPaste:
         return WebEngineSettings::JavascriptCanPaste;
+    case QWebEngineSettings::DnsPrefetchEnabled:
+        return WebEngineSettings::DnsPrefetchEnabled;
 
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;

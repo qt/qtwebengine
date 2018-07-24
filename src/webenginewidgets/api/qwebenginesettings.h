@@ -95,6 +95,7 @@ public:
         PlaybackRequiresUserGesture,
         WebRTCPublicInterfacesOnly,
         JavascriptCanPaste,
+        DnsPrefetchEnabled,
     };
 
     enum FontSize {

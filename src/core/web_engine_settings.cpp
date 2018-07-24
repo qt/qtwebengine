@@ -298,6 +298,7 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(PlaybackRequiresUserGesture, playbackRequiresUserGesture);
         s_defaultAttributes.insert(WebRTCPublicInterfacesOnly, false);
         s_defaultAttributes.insert(JavascriptCanPaste, false);
+        s_defaultAttributes.insert(DnsPrefetchEnabled, false);
     }
 
     if (s_defaultFontFamilies.isEmpty()) {
@@ -390,6 +391,7 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
                                : content::AutoplayPolicy::kNoUserGestureRequired;
     }
     prefs->dom_paste_enabled = testAttribute(JavascriptCanPaste);
+    prefs->dns_prefetching_enabled = testAttribute(DnsPrefetchEnabled);
 
     // Fonts settings.
     prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));

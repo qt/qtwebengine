@@ -102,6 +102,7 @@ public:
         PlaybackRequiresUserGesture,
         WebRTCPublicInterfacesOnly,
         JavascriptCanPaste,
+        DnsPrefetchEnabled,
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

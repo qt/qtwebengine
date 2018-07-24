@@ -92,6 +92,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool playbackRequiresUserGesture READ playbackRequiresUserGesture WRITE setPlaybackRequiresUserGesture NOTIFY playbackRequiresUserGestureChanged REVISION 6 FINAL)
     Q_PROPERTY(bool webRTCPublicInterfacesOnly READ webRTCPublicInterfacesOnly WRITE setWebRTCPublicInterfacesOnly NOTIFY webRTCPublicInterfacesOnlyChanged REVISION 6 FINAL)
     Q_PROPERTY(bool javascriptCanPaste READ javascriptCanPaste WRITE setJavascriptCanPaste NOTIFY javascriptCanPasteChanged REVISION 6 FINAL)
+    Q_PROPERTY(bool dnsPrefetchEnabled READ dnsPrefetchEnabled WRITE setDnsPrefetchEnabled NOTIFY dnsPrefetchEnabledChanged REVISION 7 FINAL)
 
 public:
     enum UnknownUrlSchemePolicy {
@@ -133,6 +134,7 @@ public:
     bool playbackRequiresUserGesture() const;
     bool webRTCPublicInterfacesOnly() const;
     bool javascriptCanPaste() const;
+    bool dnsPrefetchEnabled() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -163,6 +165,7 @@ public:
     void setPlaybackRequiresUserGesture(bool on);
     void setWebRTCPublicInterfacesOnly(bool on);
     void setJavascriptCanPaste(bool on);
+    void setDnsPrefetchEnabled(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -194,6 +197,7 @@ signals:
     Q_REVISION(6) void playbackRequiresUserGestureChanged();
     Q_REVISION(6) void webRTCPublicInterfacesOnlyChanged();
     Q_REVISION(6) void javascriptCanPasteChanged();
+    Q_REVISION(7) void dnsPrefetchEnabledChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);

@@ -53,6 +53,10 @@ namespace error_page {
 class Error;
 }
 
+namespace network_hints {
+class PrescientNetworkingDispatcher;
+}
+
 namespace visitedlink {
 class VisitedLinkSlave;
 }
@@ -89,6 +93,7 @@ public:
 
     unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) override;
     bool IsLinkVisited(unsigned long long linkHash) override;
+    blink::WebPrescientNetworking* GetPrescientNetworking() override;
     void AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) override;
 
     void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
@@ -123,6 +128,7 @@ private:
     service_manager::mojom::ConnectorRequest m_connectorRequest;
     std::unique_ptr<service_manager::ServiceContext> m_serviceContext;
     service_manager::BinderRegistry m_registry;
+    std::unique_ptr<network_hints::PrescientNetworkingDispatcher> m_prescientNetworkingDispatcher;
 
     DISALLOW_COPY_AND_ASSIGN(ContentRendererClientQt);
 };

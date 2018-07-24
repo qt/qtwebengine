@@ -443,6 +443,20 @@ bool QQuickWebEngineSettings::javascriptCanPaste() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::dnsPrefetchEnabled
+    \since QtWebEngine 1.8
+
+    Enables speculative prefetching of DNS records for HTML links before
+    they are activated.
+
+    Disabled by default.
+*/
+bool QQuickWebEngineSettings::dnsPrefetchEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::DnsPrefetchEnabled);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -690,6 +704,14 @@ void QQuickWebEngineSettings::setJavascriptCanPaste(bool on)
     d_ptr->setAttribute(WebEngineSettings::JavascriptCanPaste, on);
     if (wasOn != on)
         Q_EMIT javascriptCanPasteChanged();
+}
+
+void QQuickWebEngineSettings::setDnsPrefetchEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::DnsPrefetchEnabled);
+    d_ptr->setAttribute(WebEngineSettings::DnsPrefetchEnabled, on);
+    if (wasOn != on)
+        Q_EMIT dnsPrefetchEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)

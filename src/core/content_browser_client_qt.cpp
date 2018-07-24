@@ -49,6 +49,7 @@
 #include "components/spellcheck/browser/spellcheck_message_filter_platform.h"
 #endif
 #endif
+#include "components/network_hints/browser/network_hints_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -410,6 +411,11 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 {
     const int id = host->GetID();
     Profile *profile = Profile::FromBrowserContext(host->GetBrowserContext());
+    content::BrowserThread::PostTaskAndReplyWithResult(
+            content::BrowserThread::IO, FROM_HERE,
+            base::Bind(&net::URLRequestContextGetter::GetURLRequestContext, base::Unretained(profile->GetRequestContext())),
+            base::Bind(&ContentBrowserClientQt::AddNetworkHintsMessageFilter, base::Unretained(this), id));
+
     // FIXME: Add a settings variable to enable/disable the file scheme.
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(id, url::kFileScheme);
     static_cast<ProfileQt*>(host->GetBrowserContext())->m_profileAdapter->userResourceController()->renderProcessStartedWithHost(host);
@@ -774,6 +780,19 @@ void ContentBrowserClientQt::GetGeolocationRequestContext(
     content::BrowserThread::PostTaskAndReplyWithResult(
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(&GetSystemRequestContextOnUIThread), std::move(callback));
+}
+
+void ContentBrowserClientQt::AddNetworkHintsMessageFilter(int render_process_id, net::URLRequestContext *context)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    content::RenderProcessHost* host = content::RenderProcessHost::FromID(render_process_id);
+    if (!host)
+        return;
+
+    content::BrowserMessageFilter *network_hints_message_filter(
+                new network_hints::NetworkHintsMessageFilter(context->host_resolver()));
+    host->AddFilter(network_hints_message_filter);
 }
 
 bool ContentBrowserClientQt::AllowGetCookie(const GURL &url,
