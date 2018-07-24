@@ -736,8 +736,7 @@ void RenderWidgetHostViewQt::Destroy()
 
 void RenderWidgetHostViewQt::SetTooltipText(const base::string16 &tooltip_text)
 {
-    if (GetCursorManager())
-        GetCursorManager()->SetTooltipTextForView(this, tooltip_text);
+    DisplayTooltipText(tooltip_text);
 }
 
 void RenderWidgetHostViewQt::DisplayTooltipText(const base::string16 &tooltip_text)
