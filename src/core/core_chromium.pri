@@ -63,8 +63,6 @@ SOURCES = \
         download_manager_delegate_qt.cpp \
         favicon_manager.cpp \
         file_picker_controller.cpp \
-        gl_context_qt.cpp \
-        gl_surface_qt.cpp \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
         login_delegate_qt.cpp \
@@ -82,7 +80,9 @@ SOURCES = \
         net/url_request_custom_job_proxy.cpp \
         net/url_request_qrc_job_qt.cpp \
         net/webui_controller_factory_qt.cpp \
+        ozone/gl_context_qt.cpp \
         ozone/gl_ozone_egl_qt.cpp \
+        ozone/gl_surface_qt.cpp \
         ozone/gl_surface_egl_qt.cpp \
         ozone/gl_surface_wgl_qt.cpp \
         ozone/ozone_platform_qt.cpp \
@@ -152,8 +152,6 @@ HEADERS = \
         chromium_gpu_helper.h \
         favicon_manager.h \
         file_picker_controller.h \
-        gl_context_qt.h \
-        gl_surface_qt.h \
         global_descriptors_qt.h \
         javascript_dialog_controller_p.h \
         javascript_dialog_controller.h \
@@ -171,7 +169,9 @@ HEADERS = \
         net/url_request_custom_job_proxy.h \
         net/url_request_qrc_job_qt.h \
         net/webui_controller_factory_qt.h \
+        ozone/gl_context_qt.h \
         ozone/gl_ozone_egl_qt.h \
+        ozone/gl_surface_qt.h \
         ozone/gl_surface_egl_qt.h \
         ozone/gl_surface_wgl_qt.h \
         ozone/ozone_platform_qt.h \

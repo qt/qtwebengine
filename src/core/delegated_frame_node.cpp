@@ -49,7 +49,7 @@
 #include "delegated_frame_node.h"
 
 #include "chromium_gpu_helper.h"
-#include "gl_surface_qt.h"
+#include "ozone/gl_surface_qt.h"
 #include "stream_video_node.h"
 #include "type_conversion.h"
 #include "yuv_video_node.h"

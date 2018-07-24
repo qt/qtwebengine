@@ -39,7 +39,7 @@
 
 #include "chromium_overrides.h"
 
-#include "gl_context_qt.h"
+#include "ozone/gl_context_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "web_contents_view_qt.h"
 
