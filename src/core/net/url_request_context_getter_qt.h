@@ -63,6 +63,7 @@ namespace net {
 class HttpAuthPreferences;
 class MappedHostResolver;
 class ProxyConfigService;
+class TransportSecurityPersister;
 }
 
 namespace QtWebEngineCore {
@@ -126,6 +127,7 @@ private:
     std::unique_ptr<net::HttpNetworkSession> m_httpNetworkSession;
     std::unique_ptr<net::HttpAuthPreferences> m_httpAuthPreferences;
     proxy_resolver::mojom::ProxyResolverFactoryPtr m_proxyResolverFactory;
+    std::unique_ptr<net::TransportSecurityPersister> m_transportSecurityPersister;
 
     QList<QByteArray> m_installedCustomSchemes;
     QWebEngineUrlRequestInterceptor* m_requestInterceptor;
@@ -141,6 +143,7 @@ private:
     QString m_httpCachePath;
     int m_httpCacheMaxSize;
     QList<QByteArray> m_customUrlSchemes;
+    QString m_dataPath;
 
     friend class NetworkDelegateQt;
 };

@@ -64,6 +64,7 @@
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/transport_security_persister.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/channel_id_service.h"
@@ -142,6 +143,7 @@ void URLRequestContextGetterQt::setFullConfiguration(QSharedPointer<BrowserConte
     m_httpCachePath = browserContext->httpCachePath();
     m_httpCacheMaxSize = browserContext->httpCacheMaxSize();
     m_customUrlSchemes = browserContext->customUrlSchemes();
+    m_dataPath = browserContext->dataPath();
 }
 
 net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
@@ -235,6 +237,7 @@ void URLRequestContextGetterQt::generateStorage()
         // we need to get rid of dangling pointer due to coming storage deletion
         m_urlRequestContext->set_http_transaction_factory(0);
         m_httpNetworkSession.reset();
+        m_transportSecurityPersister.reset();
     }
 
 
@@ -266,7 +269,20 @@ void URLRequestContextGetterQt::generateStorage()
                                      m_networkDelegate.get()));
 
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
-    m_storage->set_transport_security_state(std::unique_ptr<net::TransportSecurityState>(new net::TransportSecurityState()));
+    m_storage->set_transport_security_state(std::make_unique<net::TransportSecurityState>());
+
+    if (!m_dataPath.isEmpty()) {
+        scoped_refptr<base::SequencedTaskRunner> background_task_runner(
+            base::CreateSequencedTaskRunnerWithTraits(
+                {base::MayBlock(),
+                 base::TaskPriority::BACKGROUND,
+                 base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
+        m_transportSecurityPersister =
+            std::make_unique<net::TransportSecurityPersister>(
+                m_urlRequestContext->transport_security_state(),
+                toFilePath(m_dataPath),
+                background_task_runner);
+    }
 
     if (!m_httpAuthPreferences) {
         std::vector<std::string> auth_types(std::begin(kDefaultAuthSchemes), std::end(kDefaultAuthSchemes));
