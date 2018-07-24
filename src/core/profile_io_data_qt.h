@@ -103,6 +103,7 @@ public:
     void updateJobFactory(); // runs on ui thread
     void updateRequestInterceptor(); // runs on ui thread
     void updateUsedForGlobalCertificateVerification(); // runs on ui thread
+    bool hasPageInterceptors();
 
 private:
     ProfileQt *m_profile;
@@ -143,6 +144,7 @@ private:
     bool m_updateUserAgent = false;
     bool m_ignoreCertificateErrors = false;
     bool m_useForGlobalCertificateVerification = false;
+    bool m_hasPageInterceptors = false;
     base::WeakPtrFactory<ProfileIODataQt> m_weakPtrFactory; // this should be always the last member
     DISALLOW_COPY_AND_ASSIGN(ProfileIODataQt);
 };

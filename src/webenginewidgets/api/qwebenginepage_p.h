@@ -149,6 +149,7 @@ public:
     void printRequested() override;
     const QObject *holdingQObject() const override;
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
+    void interceptRequest(QWebEngineUrlRequestInfo &) override;
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
@@ -187,6 +188,7 @@ public:
     bool defaultAudioMuted;
     qreal defaultZoomFactor;
     QTimer wasShownTimer;
+    QWebEngineUrlRequestInterceptor *requestInterceptor;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

@@ -66,6 +66,7 @@ QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(QWebEngineQuotaRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineRegisterProtocolHandlerRequest)
+QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInfo)
 
 namespace content {
 struct DropData;
@@ -473,6 +474,7 @@ public:
     virtual void setToolTip(const QString& toolTipText) = 0;
     virtual ClientType clientType() = 0;
     virtual void printRequested() = 0;
+    virtual void interceptRequest(QWebEngineUrlRequestInfo &) { }
 
     virtual ProfileAdapter *profileAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;

@@ -241,6 +241,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , webChannelWorldId(QWebEngineScript::MainWorld)
     , defaultAudioMuted(false)
     , defaultZoomFactor(1.0)
+    , requestInterceptor(nullptr)
 #if QT_CONFIG(webengine_printing_and_pdf)
     , currentPrinter(nullptr)
 #endif
@@ -260,6 +261,8 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
 
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
 {
+    if (requestInterceptor)
+        profile->d_ptr->profileAdapter()->removePageRequestInterceptor();
     delete history;
     delete settings;
 }
@@ -1779,6 +1782,40 @@ void QWebEnginePagePrivate::printRequested()
     QTimer::singleShot(0, q, [q](){
         Q_EMIT q->printRequested();
     });
+}
+
+/*!
+    \since 5.13
+
+    Registers the request interceptor \a interceptor to intercept URL requests.
+
+    The page does not take ownership of the pointer. This interceptor is called
+    after any interceptors on the profile, and unlike profile interceptors, is run
+    on the UI thread, making it thread-safer. Only URL requests from this page are
+    intercepted.
+
+    To unset the request interceptor, set a \c nullptr.
+
+    \sa QWebEngineUrlRequestInfo, QWebEngineProfile::setRequestInterceptor()
+*/
+
+void QWebEnginePage::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+{
+    Q_D(QWebEnginePage);
+    bool hadInterceptorChanged = bool(d->requestInterceptor) != bool(interceptor);
+    d->requestInterceptor = interceptor;
+    if (hadInterceptorChanged) {
+        if (interceptor)
+            d->profile->d_ptr->profileAdapter()->addPageRequestInterceptor();
+        else
+            d->profile->d_ptr->profileAdapter()->removePageRequestInterceptor();
+    }
+}
+
+void QWebEnginePagePrivate::interceptRequest(QWebEngineUrlRequestInfo &info)
+{
+    if (requestInterceptor)
+        requestInterceptor->interceptRequest(info);
 }
 
 #if QT_CONFIG(menu)

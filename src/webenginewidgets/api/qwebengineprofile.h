@@ -144,6 +144,7 @@ private:
     Q_DECLARE_PRIVATE(QWebEngineProfile)
     QWebEngineProfile(QWebEngineProfilePrivate *, QObject *parent = Q_NULLPTR);
 
+    friend class QWebEnginePage;
     friend class QWebEnginePagePrivate;
     friend class QWebEngineUrlSchemeHandler;
     QScopedPointer<QWebEngineProfilePrivate> d_ptr;

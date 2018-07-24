@@ -71,6 +71,7 @@ class QWebEngineQuotaRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
 class QWebEngineScriptCollection;
 class QWebEngineSettings;
+class QWebEngineUrlRequestInterceptor;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_OBJECT
@@ -304,6 +305,8 @@ public:
     QWebEnginePage *inspectedPage() const;
     void setDevToolsPage(QWebEnginePage *page);
     QWebEnginePage *devToolsPage() const;
+
+    void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     const QWebEngineContextMenuData &contextMenuData() const;
 

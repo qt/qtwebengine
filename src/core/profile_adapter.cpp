@@ -82,6 +82,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
+    , m_pageRequestInterceptors(0)
 {
     WebEngineContext::current()->addBrowserContext(this);
     // creation of profile requires webengine context
@@ -98,6 +99,7 @@ ProfileAdapter::~ProfileAdapter()
         m_profile->GetDownloadManager(m_profile.data())->Shutdown();
         m_downloadManagerDelegate.reset();
     }
+    Q_ASSERT(m_pageRequestInterceptors == 0);
 }
 
 void ProfileAdapter::setStorageName(const QString &storageName)
@@ -173,6 +175,22 @@ void ProfileAdapter::removeClient(ProfileAdapterClient *adapterClient)
 {
     m_clients.removeOne(adapterClient);
 }
+
+void ProfileAdapter::addPageRequestInterceptor()
+{
+    ++m_pageRequestInterceptors;
+    if (m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateRequestInterceptor();
+}
+
+void ProfileAdapter::removePageRequestInterceptor()
+{
+    Q_ASSERT(m_pageRequestInterceptors > 0);
+    --m_pageRequestInterceptors;
+    if (m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateRequestInterceptor();
+}
+
 
 void ProfileAdapter::cancelDownload(quint32 downloadId)
 {

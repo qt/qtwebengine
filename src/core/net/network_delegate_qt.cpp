@@ -40,6 +40,7 @@
 #include "network_delegate_qt.h"
 
 #include "profile_adapter.h"
+
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
@@ -80,16 +81,19 @@ WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::Page
     }
 }
 
-namespace {
-
-QWebEngineUrlRequestInfo::ResourceType toQt(content::ResourceType resourceType)
+static QWebEngineUrlRequestInfo::ResourceType toQt(content::ResourceType resourceType)
 {
     if (resourceType >= 0 && resourceType < content::ResourceType(QWebEngineUrlRequestInfo::ResourceTypeLast))
         return static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType);
     return QWebEngineUrlRequestInfo::ResourceTypeUnknown;
 }
 
-QWebEngineUrlRequestInfo::NavigationType toQt(WebContentsAdapterClient::NavigationType navigationType)
+static content::ResourceType fromQt(QWebEngineUrlRequestInfo::ResourceType resourceType)
+{
+    return static_cast<content::ResourceType>(resourceType);
+}
+
+static QWebEngineUrlRequestInfo::NavigationType toQt(WebContentsAdapterClient::NavigationType navigationType)
 {
     return static_cast<QWebEngineUrlRequestInfo::NavigationType>(navigationType);
 }
@@ -98,16 +102,17 @@ QWebEngineUrlRequestInfo::NavigationType toQt(WebContentsAdapterClient::Navigati
 class URLRequestNotification {
 public:
     URLRequestNotification(net::URLRequest *request,
-                           const QUrl &url,
                            bool isMainFrameRequest,
-                           int navigationType,
-                           int frameTreeNodeId,
+                           GURL *newUrl,
+                           QWebEngineUrlRequestInfo &&requestInfo,
+                           content::ResourceRequestInfo::WebContentsGetter webContentsGetter,
                            net::CompletionOnceCallback callback)
         : m_request(request)
-        , m_url(url)
         , m_isMainFrameRequest(isMainFrameRequest)
-        , m_navigationType(navigationType)
-        , m_frameTreeNodeId(frameTreeNodeId)
+        , m_newUrl(newUrl)
+        , m_originalUrl(requestInfo.requestUrl())
+        , m_requestInfo(std::move(requestInfo))
+        , m_webContentsGetter(webContentsGetter)
         , m_callback(std::move(callback))
     {
         DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -147,25 +152,36 @@ private:
         // May run concurrently with cancel() so no peeking at m_request here.
 
         int error = net::OK;
-        content::WebContents *webContents = content::WebContents::FromFrameTreeNodeId(m_frameTreeNodeId);
+        content::WebContents *webContents = m_webContentsGetter.Run();
+
         if (webContents) {
-            int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
             WebContentsAdapterClient *client =
-                WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
-            client->navigationRequested(m_navigationType,
-                                        m_url,
-                                        navigationRequestAction,
-                                        m_isMainFrameRequest);
-            error = net::ERR_FAILED;
-            switch (static_cast<WebContentsAdapterClient::NavigationRequestAction>(navigationRequestAction)) {
-            case WebContentsAdapterClient::AcceptRequest:
-                error = net::OK;
-                break;
-            case WebContentsAdapterClient::IgnoreRequest:
-                error = net::ERR_ABORTED;
-                break;
+                    WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
+
+            client->interceptRequest(m_requestInfo);
+            if (m_requestInfo.changed()) {
+                error = m_requestInfo.d_ptr->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
+                // We handle the rest of the changes later when we are back in I/O thread
             }
-            DCHECK(error != net::ERR_FAILED);
+
+            // Only do navigationRequested on MAIN_FRAME and SUB_FRAME resources
+            if (error == net::OK && content::IsResourceTypeFrame(fromQt(m_requestInfo.resourceType()))) {
+                int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
+                client->navigationRequested(m_requestInfo.navigationType(),
+                                            m_requestInfo.requestUrl(),
+                                            navigationRequestAction,
+                                            m_isMainFrameRequest);
+                error = net::ERR_FAILED;
+                switch (static_cast<WebContentsAdapterClient::NavigationRequestAction>(navigationRequestAction)) {
+                case WebContentsAdapterClient::AcceptRequest:
+                    error = net::OK;
+                    break;
+                case WebContentsAdapterClient::IgnoreRequest:
+                    error = net::ERR_ABORTED;
+                    break;
+                }
+                DCHECK(error != net::ERR_FAILED);
+            }
         }
 
         // Run the callback on the IO thread.
@@ -180,6 +196,17 @@ private:
         DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
         if (m_request) {
+            if (m_requestInfo.changed()) {
+                if (m_originalUrl != m_requestInfo.d_ptr->url)
+                    *m_newUrl = toGurl(m_requestInfo.d_ptr->url);
+
+                if (!m_requestInfo.d_ptr->extraHeaders.isEmpty()) {
+                    auto end = m_requestInfo.d_ptr->extraHeaders.constEnd();
+                    for (auto header = m_requestInfo.d_ptr->extraHeaders.constBegin(); header != end; ++header)
+                        m_request->SetExtraRequestHeaderByName(header.key().toStdString(), header.value().toStdString(), /* overwrite */ true);
+                }
+            }
+
             if (m_request->status().status() != net::URLRequestStatus::CANCELED)
                 std::move(m_callback).Run(error);
             m_request->RemoveUserData(UserData::key);
@@ -191,16 +218,15 @@ private:
     ~URLRequestNotification() {}
 
     net::URLRequest *m_request;
-    QUrl m_url;
     bool m_isMainFrameRequest;
-    int m_navigationType;
-    int m_frameTreeNodeId;
+    GURL *m_newUrl;
+    const QUrl m_originalUrl;
+    QWebEngineUrlRequestInfo m_requestInfo;
+    content::ResourceRequestInfo::WebContentsGetter m_webContentsGetter;
     net::CompletionOnceCallback m_callback;
 };
 
 const char URLRequestNotification::UserData::key[] = "QtWebEngineCore::URLRequestNotification";
-
-} // namespace
 
 NetworkDelegateQt::NetworkDelegateQt(ProfileIODataQt *data)
     : m_profileIOData(data)
@@ -211,7 +237,6 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_profileIOData);
-
     const content::ResourceRequestInfo *resourceInfo = content::ResourceRequestInfo::ForRequest(request);
 
     content::ResourceType resourceType = content::RESOURCE_TYPE_LAST_TYPE;
@@ -224,14 +249,14 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
 
     const QUrl qUrl = toQt(request->url());
 
-    QWebEngineUrlRequestInterceptor* interceptor = m_profileIOData->requestInterceptor();
-    if (interceptor) {
-        QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(toQt(resourceType),
-                                                                                           toQt(navigationType),
-                                                                                           qUrl,
-                                                                                           toQt(request->site_for_cookies()),
-                                                                                           QByteArray::fromStdString(request->method()));
-        QWebEngineUrlRequestInfo requestInfo(infoPrivate);
+    QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(toQt(resourceType),
+                                                                                       toQt(navigationType),
+                                                                                       qUrl,
+                                                                                       toQt(request->site_for_cookies()),
+                                                                                       QByteArray::fromStdString(request->method()));
+    QWebEngineUrlRequestInfo requestInfo(infoPrivate);
+
+    if (QWebEngineUrlRequestInterceptor *interceptor = m_profileIOData->requestInterceptor()) {
         interceptor->interceptRequest(requestInfo);
         if (requestInfo.changed()) {
             int result = infoPrivate->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
@@ -247,23 +272,24 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
 
             if (result != net::OK)
                 return result;
+
+            requestInfo.resetChanged();
         }
     }
 
     if (!resourceInfo)
         return net::OK;
 
-    int frameTreeNodeId = resourceInfo->GetFrameTreeNodeId();
-    // Only intercept MAIN_FRAME and SUB_FRAME with an associated render frame.
-    if (!content::IsResourceTypeFrame(resourceType) || frameTreeNodeId == -1)
+    if (!m_profileIOData->hasPageInterceptors() && !content::IsResourceTypeFrame(resourceType))
         return net::OK;
 
+    auto webContentsGetter = resourceInfo->GetWebContentsGetterForRequest();
     new URLRequestNotification(
         request,
-        qUrl,
         resourceInfo->IsMainFrame(),
-        navigationType,
-        frameTreeNodeId,
+        newUrl,
+        std::move(requestInfo),
+        webContentsGetter,
         std::move(callback)
     );
 

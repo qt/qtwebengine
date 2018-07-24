@@ -115,8 +115,11 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
     \fn void QWebEngineUrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
 
     Reimplementing this virtual function makes it possible to intercept URL
-    requests. This function is executed on the IO thread, and therefore running
-    long tasks here will block networking.
+    requests. For interceptors installed on a QWebEngineProfile, the function is executed
+    on the I/O thread, and thus it may not be thread-safe to interact with pages. If the
+    interceptor was installed on a QWebEnginePage, the function is executed on the main
+    application thread, and can safely interact with other user classes. Both versions will
+    be stalling the URL request until handled.
 
     \a info contains the information about the URL request and will track internally
     whether its members have been altered.
@@ -137,10 +140,17 @@ QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRe
 /*!
     \internal
 */
+QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfo &&p)
+    : d_ptr(p.d_ptr.take())
+{
+}
+
+/*!
+    \internal
+*/
 
 QWebEngineUrlRequestInfo::~QWebEngineUrlRequestInfo()
 {
-
 }
 
 /*!
@@ -254,6 +264,14 @@ QByteArray QWebEngineUrlRequestInfo::requestMethod() const
 bool QWebEngineUrlRequestInfo::changed() const
 {
     return d_ptr->changed;
+}
+
+/*!
+    \internal
+*/
+void QWebEngineUrlRequestInfo::resetChanged()
+{
+    d_ptr->changed = false;
 }
 
 /*!

@@ -189,6 +189,10 @@ public:
     void setUseForGlobalCertificateVerification(bool enable = true);
     bool isUsedForGlobalCertificateVerification() const;
 
+    void addPageRequestInterceptor();
+    void removePageRequestInterceptor();
+    bool hasPageRequestInterceptor() const { return m_pageRequestInterceptors > 0; }
+
 private:
     void updateCustomUrlSchemeHandlers();
     void resetVisitedLinksManager();
@@ -213,6 +217,7 @@ private:
     QHash<QByteArray, QWebEngineUrlSchemeHandler *> m_customUrlSchemeHandlers;
     QList<ProfileAdapterClient*> m_clients;
     int m_httpCacheMaxSize;
+    int m_pageRequestInterceptors;
 
     Q_DISABLE_COPY(ProfileAdapter)
 };

@@ -47,6 +47,7 @@
 
 namespace QtWebEngineCore {
 class NetworkDelegateQt;
+class URLRequestNotification;
 }
 
 QT_BEGIN_NAMESPACE
@@ -104,10 +105,14 @@ public:
 
 private:
     friend class QtWebEngineCore::NetworkDelegateQt;
+    friend class QtWebEngineCore::URLRequestNotification;
     Q_DISABLE_COPY(QWebEngineUrlRequestInfo)
     Q_DECLARE_PRIVATE(QWebEngineUrlRequestInfo)
 
+    void resetChanged();
+
     QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPrivate *p);
+    QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfo &&p);
     ~QWebEngineUrlRequestInfo();
     QScopedPointer<QWebEngineUrlRequestInfoPrivate> d_ptr;
 };
