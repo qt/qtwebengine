@@ -226,12 +226,6 @@ public:
         setOpenMode(QIODevice::ReadOnly);
         m_timer.start(100, this);
     }
-    void close() override
-    {
-        QMutexLocker lock(&m_mutex);
-        QIODevice::close();
-        deleteLater();
-    }
     bool isSequential() const override { return true; }
     qint64 bytesAvailable() const override
     {
@@ -292,7 +286,7 @@ public:
 
     void requestStarted(QWebEngineUrlRequestJob *job)
     {
-        job->reply("text/plain;charset=utf-8", new StreamingIODevice(this));
+        job->reply("text/plain;charset=utf-8", new StreamingIODevice(job));
     }
 };
 
