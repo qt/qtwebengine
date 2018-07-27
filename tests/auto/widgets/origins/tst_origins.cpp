@@ -67,6 +67,9 @@ class tst_Origins final : public QObject {
     Q_OBJECT
 
 private Q_SLOTS:
+    void initTestCase();
+    void cleanupTestCase();
+
     void jsUrlCanon();
     void jsUrlOrigin();
     void subdirWithAccess();
@@ -80,21 +83,33 @@ private Q_SLOTS:
 private:
     bool load(const QUrl &url)
     {
-        QSignalSpy spy(&m_page, &QWebEnginePage::loadFinished);
-        m_page.load(url);
+        QSignalSpy spy(m_page, &QWebEnginePage::loadFinished);
+        m_page->load(url);
         return (!spy.empty() || spy.wait())
             && spy.front().value(0).toBool();
     }
 
     QVariant eval(const QString &code)
     {
-        return evaluateJavaScriptSync(&m_page, code);
+        return evaluateJavaScriptSync(m_page, code);
     }
 
     QWebEngineProfile m_profile;
-    QWebEnginePage m_page{&m_profile};
-    TstUrlSchemeHandler m_handler{&m_profile};
+    QWebEnginePage *m_page = nullptr;
+    TstUrlSchemeHandler *m_handler = nullptr;
 };
+
+void tst_Origins::initTestCase()
+{
+    m_page = new QWebEnginePage(&m_profile, nullptr);
+    m_handler = new TstUrlSchemeHandler(&m_profile);
+}
+
+void tst_Origins::cleanupTestCase()
+{
+    delete m_handler;
+    delete m_page;
+}
 
 // Test URL parsing and canonicalization in Blink. The implementation of this
 // part is mostly shared between Blink and Chromium proper.
@@ -185,7 +200,7 @@ private:
 // demonstrate the difference with Firefox where such access is not allowed.
 void tst_Origins::subdirWithAccess()
 {
-    ScopedAttribute sa(m_page.settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+    ScopedAttribute sa(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, true);
 
     QVERIFY(load(QSL("file:" THIS_DIR "resources/subdir/index.html")));
     QCOMPARE(eval(QSL("msg[0]")), QVariant(QSL("hello")));
@@ -211,7 +226,7 @@ void tst_Origins::subdirWithAccess()
 //   - the blink::SecurityOrigin::BlockLocalAccessFromLocalOrigin() method.
 void tst_Origins::subdirWithoutAccess()
 {
-    ScopedAttribute sa(m_page.settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, false);
+    ScopedAttribute sa(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, false);
 
     QVERIFY(load(QSL("file:" THIS_DIR "resources/subdir/index.html")));
     QCOMPARE(eval(QSL("msg[0]")), QVariant());
@@ -304,7 +319,7 @@ void tst_Origins::dedicatedWorker()
 void tst_Origins::sharedWorker()
 {
     {
-        ScopedAttribute sa(m_page.settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, false);
+        ScopedAttribute sa(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, false);
         QVERIFY(load(QSL("file:" THIS_DIR "resources/sharedWorker.html")));
         QTRY_VERIFY(eval(QSL("done")).toBool());
         QVERIFY(eval(QSL("error")).toString()
@@ -312,7 +327,7 @@ void tst_Origins::sharedWorker()
     }
 
     {
-        ScopedAttribute sa(m_page.settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+        ScopedAttribute sa(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, true);
         QVERIFY(load(QSL("file:" THIS_DIR "resources/sharedWorker.html")));
         QTRY_VERIFY(eval(QSL("done")).toBool());
         QCOMPARE(eval(QSL("result")), QVariant(42));
