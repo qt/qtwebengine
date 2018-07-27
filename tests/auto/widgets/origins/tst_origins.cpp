@@ -85,7 +85,7 @@ private:
     {
         QSignalSpy spy(m_page, &QWebEnginePage::loadFinished);
         m_page->load(url);
-        return (!spy.empty() || spy.wait())
+        return (!spy.empty() || spy.wait(20000))
             && spy.front().value(0).toBool();
     }
 
