@@ -1459,11 +1459,14 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
     webKitEvent.windows_key_code = windowsKeyCodeForKeyEvent(qtKeyForKeyEvent(ev), ev->modifiers() & Qt::KeypadModifier);
     webKitEvent.dom_key = getDomKeyFromQKeyEvent(ev);
 
-    ui::DomCode domCode = ui::DomCode::NONE;
-    int scanCode = ev->nativeScanCode();
-    if (scanCode)
-        domCode = ui::KeycodeConverter::NativeKeycodeToDomCode(scanCode);
-    webKitEvent.dom_code = static_cast<int>(domCode);
+    // The dom_code field should contain the USB keycode of the *physical* key
+    // that was pressed. Physical meaning independent of layout and modifiers.
+    //
+    // Since this information is not available from QKeyEvent in portable form,
+    // we try to compute it from the native key code.
+    if (webKitEvent.native_key_code)
+        webKitEvent.dom_code = static_cast<int>(
+            ui::KeycodeConverter::NativeKeycodeToDomCode(webKitEvent.native_key_code));
 
     const ushort* text = ev->text().utf16();
     memcpy(&webKitEvent.text, text, std::min(sizeof(webKitEvent.text), size_t(ev->text().length() * 2)));
