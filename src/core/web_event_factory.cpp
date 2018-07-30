@@ -69,6 +69,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 
 #include <QtGui/private/qtgui-config_p.h>
 
@@ -1463,10 +1464,15 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
     // that was pressed. Physical meaning independent of layout and modifiers.
     //
     // Since this information is not available from QKeyEvent in portable form,
-    // we try to compute it from the native key code.
+    // we try to compute it from the native key code. If there's no native key
+    // code available either, then we assume a US layout and convert it from
+    // windows_key_code. The result will be incorrect on non-US layouts.
     if (webKitEvent.native_key_code)
         webKitEvent.dom_code = static_cast<int>(
             ui::KeycodeConverter::NativeKeycodeToDomCode(webKitEvent.native_key_code));
+    else
+        webKitEvent.dom_code = static_cast<int>(
+            ui::UsLayoutKeyboardCodeToDomCode(static_cast<ui::KeyboardCode>(webKitEvent.windows_key_code)));
 
     const ushort* text = ev->text().utf16();
     memcpy(&webKitEvent.text, text, std::min(sizeof(webKitEvent.text), size_t(ev->text().length() * 2)));

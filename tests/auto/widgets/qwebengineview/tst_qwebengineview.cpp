@@ -187,6 +187,7 @@ private Q_SLOTS:
     void webUIURLs_data();
     void webUIURLs();
     void visibilityState();
+    void jsKeyboardEvent();
 };
 
 // This will be called before the first test function is executed.
@@ -2765,6 +2766,31 @@ void tst_QWebEngineView::visibilityState()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.visibilityState").toString(), QStringLiteral("visible"));
+}
+
+void tst_QWebEngineView::jsKeyboardEvent()
+{
+    QWebEngineView view;
+    evaluateJavaScriptSync(
+        view.page(),
+        "var log = '';"
+        "addEventListener('keydown', (ev) => {"
+        "  log += [ev.keyCode, ev.code, ev.key, ev.ctrlKey, ev.shiftKey, ev.altKey].join(',') + ';';"
+        "});");
+    // Note that this only tests the fallback code path where native scan codes are not used.
+#if defined(Q_OS_MACOS)
+    // See Qt::AA_MacDontSwapCtrlAndMeta
+    QTest::keyClick(view.focusProxy(), 'A', Qt::MetaModifier | Qt::ShiftModifier);
+#else
+    QTest::keyClick(view.focusProxy(), 'A', Qt::ControlModifier | Qt::ShiftModifier);
+#endif
+    QString expected = QStringLiteral(
+        "16,ShiftLeft,Shift,false,true,false;"
+        "17,ControlLeft,Control,true,true,false;"
+        "65,KeyA,A,true,true,false;"
+    );
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log") != QVariant(QString()));
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "log"), expected);
 }
 
 QTEST_MAIN(tst_QWebEngineView)
