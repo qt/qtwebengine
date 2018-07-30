@@ -152,6 +152,30 @@ static Qt::KeyboardModifiers qtModifiersForEvent(const QInputEvent *ev)
     return modifiers;
 }
 
+// The 'native key code' in Chromium refers to
+//
+//   - On Windows: the Windows OEM scancode.
+//   - On macOS: the NSEvent's keyCode.
+//   - On Linux: The XKB keycode.
+static quint32 nativeKeyCodeForKeyEvent(const QKeyEvent *ev)
+{
+    // Ifdefs here should match <ui/events/keycodes/dom/keycode_converter.cc>,
+    // since that is where the native key code is eventually used.
+    //
+    // Note that Xkb key codes are only supported under Linux (no BSDs,
+    // Cygwin/X, etc). Also evdev key codes are *not* supported for the same
+    // reason.
+#if defined(Q_OS_WINDOWS)
+    return keyboardDriver() == KeyboardDriver::Windows ? ev->nativeScanCode() : 0;
+#elif defined(Q_OS_MACOS)
+    return keyboardDriver() == KeyboardDriver::Cocoa ? ev->nativeVirtualKey() : 0;
+#elif defined(Q_OS_LINUX)
+    return keyboardDriver() == KeyboardDriver::Xkb ? ev->nativeScanCode() : 0;
+#else
+    return 0; // 0 means unknown, KeyboardEvent.code will be empty string.
+#endif
+}
+
 static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
 {
     // Determine wheter the event comes from the keypad
@@ -1431,7 +1455,7 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
     webKitEvent.SetModifiers(modifiersForEvent(ev));
     webKitEvent.SetType(webEventTypeForEvent(ev));
 
-    webKitEvent.native_key_code = ev->nativeVirtualKey();
+    webKitEvent.native_key_code = nativeKeyCodeForKeyEvent(ev);
     webKitEvent.windows_key_code = windowsKeyCodeForKeyEvent(qtKeyForKeyEvent(ev), ev->modifiers() & Qt::KeypadModifier);
     webKitEvent.dom_key = getDomKeyFromQKeyEvent(ev);
 
