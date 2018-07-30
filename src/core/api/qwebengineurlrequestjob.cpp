@@ -151,9 +151,10 @@ QUrl QWebEngineUrlRequestJob::initiator() const
 
     The device should remain available at least as long as the job exists.
     When calling this method with a newly constructed device, one solution is to
-    make the device delete itself when closed, like this:
+    make the device as a child of the job or delete itself when job is deleted,
+    like this:
     \code
-    connect(device, &QIODevice::aboutToClose, device, &QObject::deleteLater);
+    connect(job, &QObject::destroyed, device, &QObject::deleteLater);
     \endcode
  */
 void QWebEngineUrlRequestJob::reply(const QByteArray &contentType, QIODevice *device)
