@@ -55,6 +55,8 @@
 #include <EGL/egl.h>
 #include <dlfcn.h>
 
+#include <QtGui/qtgui-config.h> // for QT_NO_OPENGL
+
 #ifndef QT_NO_OPENGL
 #include <QOpenGLContext>
 QT_BEGIN_NAMESPACE
