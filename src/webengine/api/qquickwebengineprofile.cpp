@@ -277,6 +277,12 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
     }
 }
 
+void QQuickWebEngineProfilePrivate::useForGlobalCertificateVerificationChanged()
+{
+    Q_Q(QQuickWebEngineProfile);
+    Q_EMIT q->useForGlobalCertificateVerificationChanged();
+}
+
 void QQuickWebEngineProfilePrivate::userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script)
 {
     Q_ASSERT(p && p->data);
@@ -784,6 +790,60 @@ bool QQuickWebEngineProfile::isSpellCheckEnabled() const
 {
      const Q_D(QQuickWebEngineProfile);
      return d->profileAdapter()->isSpellCheckEnabled();
+}
+
+/*!
+    \qmlproperty bool WebEngineProfile::useForGlobalCertificateVerification
+    \since QtWebEngine 1.9
+
+    This property controls if this profile is used for global certificate verification.
+    Only one profile may have that role at any time.
+
+    Current only offect Linux/NSS installation where having a profile with this role
+    enables OCSP.
+
+    By default no profile has this enabled.
+
+    \sa QQuickWebEngineProfile::setUseForGlobalCertificateVerification()
+*/
+
+/*!
+    \since 5.13
+
+    If enabled set this profile to be used for downloading and caching when needed
+    during certificate verification, for instance for OCSP, CRLs, and AIA.
+
+    Only one profile can do this at a time, and it is recommended that the profile
+    fullfilling this role has a disk HTTP cache to avoid needlessly re-downloading.
+
+    Currently only affects Linux/NSS installations where it enables OCSP.
+
+    As long as one profile has this option enabled, all other profiles will be
+    able to use it for their certificate verification.
+
+    \sa isUsedForGlobalCertificateVerification()
+*/
+void QQuickWebEngineProfile::setUseForGlobalCertificateVerification(bool enable)
+{
+    Q_D(QQuickWebEngineProfile);
+    if (enable != d->profileAdapter()->isUsedForGlobalCertificateVerification()) {
+        d->profileAdapter()->setUseForGlobalCertificateVerification(enable);
+        emit useForGlobalCertificateVerificationChanged();
+    }
+}
+
+/*!
+    \since 5.13
+
+    Returns \c true if this profile is currently being used for global
+    certificate verification.
+
+    \sa setUseForGlobalCertificateVerification()
+*/
+bool QQuickWebEngineProfile::isUsedForGlobalCertificateVerification() const
+{
+     const Q_D(QQuickWebEngineProfile);
+     return d->profileAdapter()->isUsedForGlobalCertificateVerification();
 }
 
 /*!

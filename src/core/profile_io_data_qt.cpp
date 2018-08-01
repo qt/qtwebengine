@@ -85,6 +85,15 @@
 #include "resource_context_qt.h"
 #include "type_conversion.h"
 
+#if defined(USE_NSS_CERTS)
+#include "net/cert_net/nss_ocsp.h"
+#endif
+
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#include "net/cert/cert_net_fetcher.h"
+#include "net/cert_net/cert_net_fetcher_impl.h"
+#endif
+
 namespace QtWebEngineCore {
 
 static const char* const kDefaultAuthSchemes[] = { net::kBasicAuthScheme,
@@ -170,6 +179,16 @@ ProfileIODataQt::~ProfileIODataQt()
 {
     if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::IO))
         DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    if (m_useForGlobalCertificateVerification) {
+#if defined(USE_NSS_CERTS)
+        net::SetURLRequestContextForNSSHttpIO(nullptr);
+#endif
+#if defined(OS_LINUX) ||defined(OS_MACOSX)
+        net::ShutdownGlobalCertNetFetcher();
+#endif
+    }
+
     m_resourceContext.reset();
     if (m_cookieDelegate)
         m_cookieDelegate->setCookieMonster(0); // this will let CookieMonsterDelegateQt be deleted
@@ -212,6 +231,7 @@ void ProfileIODataQt::initializeOnIOThread()
     m_initialized = true;
     generateAllStorage();
     generateJobFactory();
+    setGlobalCertificateVerification();
 }
 
 void ProfileIODataQt::initializeOnUIThread()
@@ -253,6 +273,26 @@ void ProfileIODataQt::generateAllStorage()
     generateHttpCache();
     m_updateAllStorage = false;
 }
+
+class SSLConfigServiceQt : public net::SSLConfigService {
+public:
+    SSLConfigServiceQt()
+    {
+        // Enable revocation checking:
+        m_defaultConfig.rev_checking_enabled = true;
+        // Mirroring Android WebView (we have no beef with Symantec, and our users might use them):
+        m_defaultConfig.symantec_enforcement_disabled = true;
+    }
+    ~SSLConfigServiceQt() override = default;
+
+    void GetSSLConfig(net::SSLConfig* config) override
+    {
+        *config = m_defaultConfig;
+    }
+
+private:
+    net::SSLConfig m_defaultConfig;
+};
 
 void ProfileIODataQt::generateStorage()
 {
@@ -297,7 +337,7 @@ void ProfileIODataQt::generateStorage()
                                                 nullptr /* NetLog */,
                                                 m_networkDelegate.get()));
 
-    m_storage->set_ssl_config_service(std::make_unique<net::SSLConfigServiceDefaults>());
+    m_storage->set_ssl_config_service(std::make_unique<SSLConfigServiceQt>());
     m_storage->set_transport_security_state(std::unique_ptr<net::TransportSecurityState>(
                                                 new net::TransportSecurityState()));
 
@@ -543,6 +583,21 @@ void ProfileIODataQt::regenerateJobFactory()
     }
 }
 
+void ProfileIODataQt::setGlobalCertificateVerification()
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    QMutexLocker lock(&m_mutex);
+    if (m_useForGlobalCertificateVerification) {
+#if defined(USE_NSS_CERTS)
+        // Set request context used by NSS for OCSP requests.
+        net::SetURLRequestContextForNSSHttpIO(m_urlRequestContext.get());
+#endif
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+        net::SetGlobalCertNetFetcher(net::CreateCertNetFetcher(m_urlRequestContext.get()));
+#endif
+    }
+}
+
 void ProfileIODataQt::setRequestContextData(content::ProtocolHandlerMap *protocolHandlers,
                                             content::URLRequestInterceptorScopedVector request_interceptors)
 {
@@ -565,6 +620,7 @@ void ProfileIODataQt::setFullConfiguration()
     m_httpCachePath = m_profileAdapter->httpCachePath();
     m_httpCacheMaxSize = m_profileAdapter->httpCacheMaxSize();
     m_customUrlSchemes = m_profileAdapter->customUrlSchemes();
+    m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
 }
 
 void ProfileIODataQt::updateStorageSettings()
@@ -690,6 +746,17 @@ bool ProfileIODataQt::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &
 bool ProfileIODataQt::canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const
 {
     return m_cookieDelegate->canGetCookies(firstPartyUrl, url);
+}
+
+void ProfileIODataQt::updateUsedForGlobalCertificateVerification()
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    QMutexLocker lock(&m_mutex);
+    m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
+
+    if (m_useForGlobalCertificateVerification)
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                         base::Bind(&ProfileIODataQt::setGlobalCertificateVerification, m_weakPtr));
 }
 
 } // namespace QtWebEngineCore

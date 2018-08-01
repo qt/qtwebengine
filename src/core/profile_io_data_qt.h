@@ -91,6 +91,7 @@ public:
     QWebEngineUrlRequestInterceptor *requestInterceptor();
     bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url) const;
     bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const;
+    void setGlobalCertificateVerification();
 
     void setRequestContextData(content::ProtocolHandlerMap *protocolHandlers,
                                content::URLRequestInterceptorScopedVector request_interceptors);
@@ -101,6 +102,7 @@ public:
     void updateHttpCache(); // runs on ui thread
     void updateJobFactory(); // runs on ui thread
     void updateRequestInterceptor(); // runs on ui thread
+    void updateUsedForGlobalCertificateVerification(); // runs on ui thread
 
 private:
     ProfileQt *m_profile;
@@ -140,6 +142,7 @@ private:
     bool m_updateJobFactory = false;
     bool m_updateUserAgent = false;
     bool m_ignoreCertificateErrors = false;
+    bool m_useForGlobalCertificateVerification = false;
     base::WeakPtrFactory<ProfileIODataQt> m_weakPtrFactory; // this should be always the last member
     DISALLOW_COPY_AND_ASSIGN(ProfileIODataQt);
 };

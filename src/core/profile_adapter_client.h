@@ -142,6 +142,7 @@ public:
 
     virtual void downloadRequested(DownloadItemInfo &info) = 0;
     virtual void downloadUpdated(const DownloadItemInfo &info) = 0;
+    virtual void useForGlobalCertificateVerificationChanged() {}
     static QString downloadInterruptReasonToString(DownloadInterruptReason reason);
 };
 

@@ -96,6 +96,7 @@ public:
         qmlRegisterType<QQuickWebEngineProfile, 2>(uri, 1, 3, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 3>(uri, 1, 4, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 4>(uri, 1, 5, "WebEngineProfile");
+        qmlRegisterType<QQuickWebEngineProfile, 5>(uri, 1, 9, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineScript>(uri, 1, 1, "WebEngineScript");
         qmlRegisterUncreatableType<QQuickWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", msgUncreatableType("WebEngineCertificateError"));
         qmlRegisterUncreatableType<QQuickWebEngineDownloadItem>(uri, 1, 1, "WebEngineDownloadItem",

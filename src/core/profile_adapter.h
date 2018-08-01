@@ -186,12 +186,16 @@ public:
 
     void clearHttpCache();
 
+    void setUseForGlobalCertificateVerification(bool enable = true);
+    bool isUsedForGlobalCertificateVerification() const;
+
 private:
     void updateCustomUrlSchemeHandlers();
     void resetVisitedLinksManager();
 
     QString m_name;
     bool m_offTheRecord;
+    bool m_usedForGlobalCertificateVerification = false;
     QScopedPointer<ProfileQt> m_profile;
     QScopedPointer<VisitedLinksManagerQt> m_visitedLinksManager;
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;

@@ -72,6 +72,11 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(QStringList spellCheckLanguages READ spellCheckLanguages WRITE setSpellCheckLanguages NOTIFY spellCheckLanguagesChanged FINAL REVISION 3)
     Q_PROPERTY(bool spellCheckEnabled READ isSpellCheckEnabled WRITE setSpellCheckEnabled NOTIFY spellCheckEnabledChanged FINAL REVISION 3)
     Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL REVISION 4)
+    Q_PROPERTY(bool useForGlobalCertificateVerification
+               READ isUsedForGlobalCertificateVerification
+               WRITE setUseForGlobalCertificateVerification
+               NOTIFY useForGlobalCertificateVerificationChanged
+               FINAL REVISION 5)
 
 public:
     QQuickWebEngineProfile(QObject *parent = Q_NULLPTR);
@@ -137,6 +142,9 @@ public:
 
     QQmlListProperty<QQuickWebEngineScript> userScripts();
 
+    void setUseForGlobalCertificateVerification(bool b);
+    bool isUsedForGlobalCertificateVerification() const;
+
     static QQuickWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:
@@ -151,6 +159,7 @@ Q_SIGNALS:
     Q_REVISION(1) void httpAcceptLanguageChanged();
     Q_REVISION(3) void spellCheckLanguagesChanged();
     Q_REVISION(3) void spellCheckEnabledChanged();
+    Q_REVISION(5) void useForGlobalCertificateVerificationChanged();
 
     void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);

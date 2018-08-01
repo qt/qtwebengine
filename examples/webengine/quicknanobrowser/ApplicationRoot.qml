@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 import QtQuick 2.1
-import QtWebEngine 1.2
+import QtWebEngine 1.9
 
 QtObject {
     id: root
@@ -57,6 +57,7 @@ QtObject {
     property QtObject defaultProfile: WebEngineProfile {
         storageName: "Profile"
         offTheRecord: false
+        useForGlobalCertificateVerification: true
     }
 
     property QtObject otrProfile: WebEngineProfile {

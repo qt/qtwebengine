@@ -48,6 +48,7 @@
 #include "download_manager_delegate_qt.h"
 #include "net/url_request_context_getter_qt.h"
 #include "permission_manager_qt.h"
+#include "profile_adapter_client.h"
 #include "profile_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "type_conversion.h"
@@ -544,6 +545,36 @@ bool ProfileAdapter::isSpellCheckEnabled() const
 void ProfileAdapter::resetVisitedLinksManager()
 {
     m_visitedLinksManager.reset(new VisitedLinksManagerQt(this));
+}
+
+void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
+{
+    if (m_usedForGlobalCertificateVerification == enable)
+        return;
+
+    static QPointer<ProfileAdapter> profileForglobalCertificateVerification;
+
+    m_usedForGlobalCertificateVerification = enable;
+    if (enable) {
+        if (profileForglobalCertificateVerification) {
+            profileForglobalCertificateVerification->m_usedForGlobalCertificateVerification = false;
+            for (auto *client : qAsConst(profileForglobalCertificateVerification->m_clients))
+                client->useForGlobalCertificateVerificationChanged();
+        }
+        profileForglobalCertificateVerification = this;
+    } else {
+        Q_ASSERT(profileForglobalCertificateVerification);
+        Q_ASSERT(profileForglobalCertificateVerification == this);
+        profileForglobalCertificateVerification = nullptr;
+    }
+
+    if (m_profile->m_urlRequestContextGetter.get())
+        m_profile->m_profileIOData->updateUsedForGlobalCertificateVerification();
+}
+
+bool ProfileAdapter::isUsedForGlobalCertificateVerification() const
+{
+    return m_usedForGlobalCertificateVerification;
 }
 
 } // namespace QtWebEngineCore

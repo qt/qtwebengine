@@ -759,6 +759,41 @@ void QWebEngineProfile::destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *ob
 }
 
 /*!
+    \since 5.13
+
+    Sets this profile to be used for downloading and caching when needed during
+    certificate verification, for instance for OCSP, CRLs, and AIA.
+
+    Only one QWebEngineProfile can do this at a time, and it is recommended
+    that the profile fullfilling this role has a disk HTTP cache to avoid
+    needlessly re-downloading.
+
+    Currently only affects Linux/NSS installations where it enables OCSP.
+
+    As long as one profile has this option enabled, all other profiles will be
+    able to use it for their certificate verification.
+
+    \sa isUsedForGlobalCertificateVerification(), httpCacheType()
+*/
+void QWebEngineProfile::setUseForGlobalCertificateVerification()
+{
+    Q_D(QWebEngineProfile);
+    d->profileAdapter()->setUseForGlobalCertificateVerification();
+}
+
+/*!
+    \since 5.13
+
+    Returns \c true if this profile is currently being used for global
+    certificate verification.
+*/
+bool QWebEngineProfile::isUsedForGlobalCertificateVerification() const
+{
+    Q_D(const QWebEngineProfile);
+    return d->profileAdapter()->isUsedForGlobalCertificateVerification();
+}
+
+/*!
     \since 5.7
 
     Removes the profile's cache entries.

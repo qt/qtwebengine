@@ -128,6 +128,9 @@ public:
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
 
+    void setUseForGlobalCertificateVerification();
+    bool isUsedForGlobalCertificateVerification() const;
+
     static QWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:

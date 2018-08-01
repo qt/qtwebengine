@@ -52,6 +52,7 @@
 #include "browserwindow.h"
 #include "tabwidget.h"
 #include <QApplication>
+#include <QWebEngineProfile>
 #include <QWebEngineSettings>
 
 QUrl commandLineUrlArgument()
@@ -73,6 +74,8 @@ int main(int argc, char **argv)
     app.setWindowIcon(QIcon(QStringLiteral(":AppLogoColor.png")));
 
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
+    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
+    QWebEngineProfile::defaultProfile()->setUseForGlobalCertificateVerification();
 
     QUrl url = commandLineUrlArgument();
 
