@@ -153,6 +153,38 @@ static Qt::KeyboardModifiers qtModifiersForEvent(const QInputEvent *ev)
     return modifiers;
 }
 
+// QKeyEvent::text() has some limits that we need to work around.
+//
+// On Linux, the Control modifier transformation is applied [1]. For example,
+// pressing Ctrl+@ generates the text "\u0000". We would like "@" instead.
+//
+// [1]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
+//
+// On macOS, if the Control modifier is used, then no text is generated at all.
+// We need some text.
+//
+// The workaround is to use QKeyEvent::key() instead, when needed. Contrary to
+// the documentation, QKeyEvent::key() is not at all limited to the values
+// listed in the Qt::Key enum: it can actually contain any Unicode codepoint.
+// The only drawback is that letters are always upper cased.
+static QString qtTextForKeyEvent(const QKeyEvent *ev, int qtKey, Qt::KeyboardModifiers qtModifiers)
+{
+    QString text = ev->text();
+
+    if ((qtModifiers & Qt::ControlModifier) && keyboardDriver() == KeyboardDriver::Xkb)
+        text.clear();
+
+    if (!text.isEmpty() || qtKey >= Qt::Key_Escape)
+        return text;
+
+    QChar ch(qtKey);
+    if (!(qtModifiers & Qt::ShiftModifier)) // No way to check for caps lock
+        ch = ch.toLower();
+
+    text.append(ch);
+    return text;
+}
+
 // The 'native key code' in Chromium refers to
 //
 //   - On Windows: the Windows OEM scancode.
@@ -177,11 +209,11 @@ static quint32 nativeKeyCodeForKeyEvent(const QKeyEvent *ev)
 #endif
 }
 
-static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
+static int windowsKeyCodeForQtKey(int qtKey, bool isKeypad)
 {
     // Determine wheter the event comes from the keypad
     if (isKeypad) {
-        switch (keycode) {
+        switch (qtKey) {
         case Qt::Key_0:
             return VK_NUMPAD0; // (60) Numeric keypad 0 key
         case Qt::Key_1:
@@ -248,7 +280,7 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
         }
 
     } else {
-        switch (keycode) {
+        switch (qtKey) {
         case Qt::Key_Backspace:
             return VK_BACK; // (08) BACKSPACE key
         case Qt::Key_Backtab:
@@ -741,12 +773,10 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
  *      - ui::DomKey::VIDEO_MODE_NEXT
  *      - ui::DomKey::WINK
  */
-static ui::DomKey getDomKeyFromQKeyEvent(QKeyEvent *ev)
+static ui::DomKey domKeyForQtKey(int qtKey)
 {
-    if (!ev->text().isEmpty())
-        return ui::DomKey::FromCharacter(ev->text().toUcs4().first());
-
-    switch (qtKeyForKeyEvent(ev)) {
+    Q_ASSERT(qtKey >= Qt::Key_Escape);
+    switch (qtKey) {
     case Qt::Key_Backspace:
         return ui::DomKey::BACKSPACE;
     case Qt::Key_Tab:
@@ -1456,9 +1486,17 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
     webKitEvent.SetModifiers(modifiersForEvent(ev));
     webKitEvent.SetType(webEventTypeForEvent(ev));
 
+    int qtKey = qtKeyForKeyEvent(ev);
+    Qt::KeyboardModifiers qtModifiers = qtModifiersForEvent(ev);
+    QString qtText = qtTextForKeyEvent(ev, qtKey, qtModifiers);
+
     webKitEvent.native_key_code = nativeKeyCodeForKeyEvent(ev);
-    webKitEvent.windows_key_code = windowsKeyCodeForKeyEvent(qtKeyForKeyEvent(ev), ev->modifiers() & Qt::KeypadModifier);
-    webKitEvent.dom_key = getDomKeyFromQKeyEvent(ev);
+    webKitEvent.windows_key_code = windowsKeyCodeForQtKey(qtKey, qtModifiers & Qt::KeypadModifier);
+
+    if (qtKey >= Qt::Key_Escape)
+        webKitEvent.dom_key = domKeyForQtKey(qtKey);
+    else if (!qtText.isEmpty())
+        webKitEvent.dom_key = ui::DomKey::FromCharacter(qtText.toUcs4().first());
 
     // The dom_code field should contain the USB keycode of the *physical* key
     // that was pressed. Physical meaning independent of layout and modifiers.
@@ -1474,9 +1512,10 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
         webKitEvent.dom_code = static_cast<int>(
             ui::UsLayoutKeyboardCodeToDomCode(static_cast<ui::KeyboardCode>(webKitEvent.windows_key_code)));
 
-    const ushort* text = ev->text().utf16();
-    memcpy(&webKitEvent.text, text, std::min(sizeof(webKitEvent.text), size_t(ev->text().length() * 2)));
-    memcpy(&webKitEvent.unmodified_text, text, std::min(sizeof(webKitEvent.unmodified_text), size_t(ev->text().length() * 2)));
+    const ushort* text = qtText.utf16();
+    size_t textSize = std::min(sizeof(webKitEvent.text), size_t(qtText.length() * 2));
+    memcpy(&webKitEvent.text, text, textSize);
+    memcpy(&webKitEvent.unmodified_text, text, textSize);
 
     if (webKitEvent.windows_key_code == VK_RETURN) {
         // This is the same behavior as GTK:
