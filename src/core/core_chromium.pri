@@ -105,9 +105,7 @@ SOURCES = \
         renderer/render_frame_observer_qt.cpp \
         renderer/render_view_observer_qt.cpp \
         renderer/user_resource_controller.cpp \
-        renderer/web_channel_ipc_transport.cpp \
         renderer_host/user_resource_controller_host.cpp \
-        renderer_host/web_channel_ipc_transport_host.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
         service/service_qt.cpp \
@@ -198,9 +196,7 @@ HEADERS = \
         renderer/render_frame_observer_qt.h \
         renderer/render_view_observer_qt.h \
         renderer/user_resource_controller.h \
-        renderer/web_channel_ipc_transport.h \
         renderer_host/user_resource_controller_host.h \
-        renderer_host/web_channel_ipc_transport_host.h \
         request_controller.h \
         resource_context_qt.h \
         service/service_qt.h \
@@ -274,4 +270,12 @@ contains(QT_CONFIG, opengl) {
 qtConfig(webengine-geolocation) {
     SOURCES += location_provider_qt.cpp
     HEADERS += location_provider_qt.h
+}
+
+qtConfig(webengine-webchannel) {
+    HEADERS += renderer/web_channel_ipc_transport.h \
+               renderer_host/web_channel_ipc_transport_host.h
+
+    SOURCES += renderer/web_channel_ipc_transport.cpp \
+               renderer_host/web_channel_ipc_transport_host.cpp
 }

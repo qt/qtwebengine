@@ -8,12 +8,12 @@ SUBDIRS += \
     contentmanipulation \
     cookiebrowser \
     html2pdf \
-    markdowneditor \
     simplebrowser \
     stylesheetbrowser \
     videoplayer
 
 qtConfig(webengine-geolocation): SUBDIRS += maps
+qtCondif(webengine-webchannel): SUBDIRS += markdowneditor
 
 qtConfig(webengine-spellchecker):!qtConfig(webengine-native-spellchecker):!cross_compile {
     SUBDIRS += spellchecker

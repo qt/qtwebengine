@@ -1,6 +1,6 @@
 include(../tests.pri)
 CONFIG += c++14
-qtHaveModule(websockets) {
+qtConfig(webengine-webchannel):qtHaveModule(websockets) {
     QT += websockets
     DEFINES += WEBSOCKETS
 }

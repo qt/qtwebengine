@@ -80,7 +80,9 @@
 #include "renderer/render_frame_observer_qt.h"
 #include "renderer/render_view_observer_qt.h"
 #include "renderer/user_resource_controller.h"
+#if QT_CONFIG(webengine_webchannel)
 #include "renderer/web_channel_ipc_transport.h"
+#endif
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -141,8 +143,10 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)
 {
     new QtWebEngineCore::RenderFrameObserverQt(render_frame);
+#if QT_CONFIG(webengine_webchannel)
     if (render_frame->IsMainFrame())
         new WebChannelIPCTransport(render_frame);
+#endif
     UserResourceController::instance()->renderFrameCreated(render_frame);
 
     new QtWebEngineCore::ContentSettingsObserverQt(render_frame);

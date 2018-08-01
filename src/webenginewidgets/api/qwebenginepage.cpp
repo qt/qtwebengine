@@ -282,8 +282,10 @@ void QWebEnginePagePrivate::initializationFinished()
 {
     if (m_backgroundColor != Qt::white)
         adapter->backgroundColorChanged();
+#if QT_CONFIG(webengine_webchannel)
     if (webChannel)
         adapter->setWebChannel(webChannel, webChannelWorldId);
+#endif
     if (defaultAudioMuted != adapter->isAudioMuted())
         adapter->setAudioMuted(defaultAudioMuted);
     if (!qFuzzyCompare(adapter->currentZoomFactor(), defaultZoomFactor))
@@ -925,8 +927,12 @@ QWebEngineSettings *QWebEnginePage::settings() const
  */
 QWebChannel *QWebEnginePage::webChannel() const
 {
+#if QT_CONFIG(webengine_webchannel)
     Q_D(const QWebEnginePage);
     return d->webChannel;
+#endif
+    qWarning("WebEngine compiled without webchannel support");
+    return nullptr;
 }
 
 /*!
@@ -963,12 +969,18 @@ void QWebEnginePage::setWebChannel(QWebChannel *channel)
  */
 void QWebEnginePage::setWebChannel(QWebChannel *channel, uint worldId)
 {
+#if QT_CONFIG(webengine_webchannel)
     Q_D(QWebEnginePage);
     if (d->webChannel != channel || d->webChannelWorldId != worldId) {
         d->webChannel = channel;
         d->webChannelWorldId = worldId;
         d->adapter->setWebChannel(channel, worldId);
     }
+#else
+    Q_UNUSED(channel)
+    Q_UNUSED(worldId)
+    qWarning("WebEngine compiled without webchannel support");
+#endif
 }
 
 /*!

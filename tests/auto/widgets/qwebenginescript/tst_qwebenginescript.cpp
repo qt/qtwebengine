@@ -18,14 +18,16 @@
 */
 
 #include <QtTest/QtTest>
-
+#include <QtWebEngineCore/qtwebenginecore-config.h>
 #include <qwebenginepage.h>
 #include <qwebengineprofile.h>
 #include <qwebenginescript.h>
 #include <qwebenginescriptcollection.h>
 #include <qwebengineview.h>
 #include "../util.h"
+#if QT_CONFIG(webengine_webchannel)
 #include <QWebChannel>
+#endif
 
 class tst_QWebEngineScript: public QObject {
     Q_OBJECT
@@ -35,14 +37,16 @@ private Q_SLOTS:
     void loadEvents();
     void scriptWorld();
     void scriptModifications();
+#if QT_CONFIG(webengine_webchannel)
     void webChannel_data();
     void webChannel();
-    void noTransportWithoutWebChannel();
-    void scriptsInNestedIframes();
     void webChannelResettingAndUnsetting();
     void webChannelWithExistingQtObject();
     void navigation();
     void webChannelWithBadString();
+#endif
+    void noTransportWithoutWebChannel();
+    void scriptsInNestedIframes();
 };
 
 void tst_QWebEngineScript::domEditing()
@@ -273,7 +277,7 @@ static QWebEngineScript webChannelScript()
     script.setWorldId(QWebEngineScript::MainWorld);
     return script;
 }
-
+#if QT_CONFIG(webengine_webchannel)
 void tst_QWebEngineScript::webChannel_data()
 {
     QTest::addColumn<int>("worldId");
@@ -318,7 +322,7 @@ void tst_QWebEngineScript::webChannel()
     if (worldId != QWebEngineScript::MainWorld)
         QCOMPARE(evaluateJavaScriptSync(&page, "qt.webChannelTransport"), QVariant(QVariant::Invalid));
 }
-
+#endif
 void tst_QWebEngineScript::noTransportWithoutWebChannel()
 {
     QWebEnginePage page;
@@ -382,7 +386,7 @@ void tst_QWebEngineScript::scriptsInNestedIframes()
                                       QWebEngineScript::ApplicationWorld),
                 QVariant::fromValue(QStringLiteral("Modified Inner text")));
 }
-
+#if QT_CONFIG(webengine_webchannel)
 void tst_QWebEngineScript::webChannelResettingAndUnsetting()
 {
     QWebEnginePage page;
@@ -485,7 +489,7 @@ void tst_QWebEngineScript::webChannelWithBadString()
     QVERIFY(hostSpy.wait(20000));
     QCOMPARE(host.text(), QString(QChar(QChar::ReplacementCharacter)));
 }
-
+#endif
 QTEST_MAIN(tst_QWebEngineScript)
 
 #include "tst_qwebenginescript.moc"

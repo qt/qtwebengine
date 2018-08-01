@@ -190,8 +190,10 @@ public:
     QAccessibleInterface *browserAccessible();
     ProfileQt* profile();
     ProfileAdapter* profileAdapter();
+#if QT_CONFIG(webengine_webchannel)
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *, uint worldId);
+#endif
     FaviconManager *faviconManager();
 
     QPointF lastScrollOffset() const;
@@ -230,9 +232,11 @@ private:
     std::unique_ptr<content::WebContents> m_webContents;
     std::unique_ptr<WebContentsDelegateQt> m_webContentsDelegate;
     std::unique_ptr<RenderViewObserverHostQt> m_renderViewObserverHost;
+#if QT_CONFIG(webengine_webchannel)
     std::unique_ptr<WebChannelIPCTransportHost> m_webChannelTransport;
     QWebChannel *m_webChannel;
     unsigned int m_webChannelWorld;
+#endif
     WebContentsAdapterClient *m_adapterClient;
     quint64 m_nextRequestId;
     int m_lastFindRequestId;

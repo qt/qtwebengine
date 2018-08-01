@@ -20,6 +20,7 @@
 */
 
 #include "../util.h"
+#include <QtWebEngineCore/qtwebenginecore-config.h>
 #include <QByteArray>
 #include <QClipboard>
 #include <QDir>
@@ -39,7 +40,9 @@
 #include <QtGui/QClipboard>
 #include <QtTest/QtTest>
 #include <QTextCharFormat>
+#if QT_CONFIG(webengine_webchannel)
 #include <QWebChannel>
+#endif
 #include <httpserver.h>
 #include <qnetworkcookiejar.h>
 #include <qnetworkreply.h>
@@ -200,8 +203,9 @@ private Q_SLOTS:
     void loadInSignalHandlers_data();
     void loadInSignalHandlers();
     void loadFromQrc();
-
+#if QT_CONFIG(webengine_webchannel)
     void restoreHistory();
+#endif
     void toPlainTextLoadFinishedRace_data();
     void toPlainTextLoadFinishedRace();
     void setZoomFactor();
@@ -3950,6 +3954,7 @@ void tst_QWebEnginePage::loadFromQrc()
     QCOMPARE(spy.takeFirst().value(0).toBool(), false);
 }
 
+#if QT_CONFIG(webengine_webchannel)
 void tst_QWebEnginePage::restoreHistory()
 {
     QWebChannel channel;
@@ -3977,6 +3982,7 @@ void tst_QWebEnginePage::restoreHistory()
     QCOMPARE(page.webChannel(), &channel);
     QVERIFY(page.scripts().contains(script));
 }
+#endif
 
 void tst_QWebEnginePage::toPlainTextLoadFinishedRace_data()
 {

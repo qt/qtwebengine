@@ -36,10 +36,10 @@
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginesettings.h>
-#include <QtWebChannel/qwebchannel.h>
 #if defined(WEBSOCKETS)
 #include <QtWebSockets/qwebsocket.h>
 #include <QtWebSockets/qwebsocketserver.h>
+#include <QtWebChannel/qwebchannel.h>
 #endif
 #include <QtWidgets/qaction.h>
 

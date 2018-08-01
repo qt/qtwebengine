@@ -85,7 +85,9 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQmlProperty>
+#if QT_CONFIG(webengine_webchannel)
 #include <QQmlWebChannel>
+#endif
 #include <QQuickWebEngineProfile>
 #include <QScreen>
 #include <QUrl>
@@ -777,8 +779,10 @@ void QQuickWebEngineViewPrivate::initializationFinished()
 
     if (m_backgroundColor != Qt::white)
         adapter->backgroundColorChanged();
+#if QT_CONFIG(webengine_webchannel)
     if (m_webChannel)
         adapter->setWebChannel(m_webChannel, m_webChannelWorld);
+#endif
     if (!qFuzzyCompare(adapter->currentZoomFactor(), m_defaultZoomFactor))
         q->setZoomFactor(m_defaultZoomFactor);
 
@@ -1273,6 +1277,7 @@ QQuickWebEngineHistory *QQuickWebEngineView::navigationHistory() const
 
 QQmlWebChannel *QQuickWebEngineView::webChannel()
 {
+#if QT_CONFIG(webengine_webchannel)
     Q_D(QQuickWebEngineView);
     if (!d->m_webChannel) {
         d->m_webChannel = new QQmlWebChannel(this);
@@ -1280,16 +1285,24 @@ QQmlWebChannel *QQuickWebEngineView::webChannel()
     }
 
     return d->m_webChannel;
+#endif
+    qWarning("WebEngine compiled without webchannel support");
+    return nullptr;
 }
 
 void QQuickWebEngineView::setWebChannel(QQmlWebChannel *webChannel)
 {
+#if QT_CONFIG(webengine_webchannel)
     Q_D(QQuickWebEngineView);
     if (d->m_webChannel == webChannel)
         return;
     d->m_webChannel = webChannel;
     d->adapter->setWebChannel(webChannel, d->m_webChannelWorld);
     Q_EMIT webChannelChanged();
+#else
+    Q_UNUSED(webChannel)
+    qWarning("WebEngine compiled without webchannel support");
+#endif
 }
 
 uint QQuickWebEngineView::webChannelWorld() const
@@ -1300,12 +1313,17 @@ uint QQuickWebEngineView::webChannelWorld() const
 
 void QQuickWebEngineView::setWebChannelWorld(uint webChannelWorld)
 {
+#if QT_CONFIG(webengine_webchannel)
     Q_D(QQuickWebEngineView);
     if (d->m_webChannelWorld == webChannelWorld)
         return;
     d->m_webChannelWorld = webChannelWorld;
     d->adapter->setWebChannel(d->m_webChannel, d->m_webChannelWorld);
     Q_EMIT webChannelWorldChanged(webChannelWorld);
+#else
+    Q_UNUSED(webChannelWorld)
+    qWarning("WebEngine compiled without webchannel support");
+#endif
 }
 
 QQuickWebEngineView *QQuickWebEngineView::inspectedView() const

@@ -52,7 +52,6 @@
 #include "printing/print_view_manager_qt.h"
 #include "profile_qt.h"
 #include "qwebenginecallback_p.h"
-#include "renderer_host/web_channel_ipc_transport_host.h"
 #include "render_view_observer_host_qt.h"
 #include "type_conversion.h"
 #include "web_contents_view_qt.h"
@@ -87,6 +86,11 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/font_render_params.h"
 
+#if QT_CONFIG(webengine_webchannel)
+#include "renderer_host/web_channel_ipc_transport_host.h"
+#include <QtWebChannel/QWebChannel>
+#endif
+
 #include <QDir>
 #include <QGuiApplication>
 #include <QPageLayout>
@@ -100,7 +104,6 @@
 #include <QtGui/qaccessible.h>
 #include <QtGui/qdrag.h>
 #include <QtGui/qpixmap.h>
-#include <QtWebChannel/QWebChannel>
 
 namespace QtWebEngineCore {
 
@@ -386,8 +389,10 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
 WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
   : m_profileAdapter(nullptr)
   , m_webContents(webContents)
+#if QT_CONFIG(webengine_webchannel)
   , m_webChannel(nullptr)
   , m_webChannelWorld(0)
+#endif
   , m_adapterClient(nullptr)
   , m_nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
   , m_lastFindRequestId(0)
@@ -1270,6 +1275,7 @@ content::WebContents *WebContentsAdapter::webContents() const
     return m_webContents.get();
 }
 
+#if QT_CONFIG(webengine_webchannel)
 QWebChannel *WebContentsAdapter::webChannel() const
 {
     return m_webChannel;
@@ -1299,6 +1305,7 @@ void WebContentsAdapter::setWebChannel(QWebChannel *channel, uint worldId)
     }
     channel->connectTo(m_webChannelTransport.get());
 }
+#endif
 
 #if QT_CONFIG(draganddrop)
 static QMimeData *mimeDataFromDropData(const content::DropData &dropData)

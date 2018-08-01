@@ -23,6 +23,7 @@
             "webengine-webrtc": "boolean",
             "webengine-geolocation": "boolean",
             "webengine-v8-snapshot": "boolean",
+            "webengine-webchannel": "boolean",
             "alsa": { "type": "boolean", "name": "webengine-alsa" },
             "pulseaudio": { "type": "boolean", "name": "webengine-pulseaudio" },
             "ffmpeg": { "type": "enum", "name": "webengine-system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
@@ -509,6 +510,13 @@
             "autoDetect": "!features.webengine-embedded-build",
             "output": [ "privateFeature" ]
         },
+        "webengine-webchannel": {
+            "label": "WebChannel support",
+            "purpose": "Provides QtWebChannel integration.",
+            "section": "WebEngine",
+            "condition": "module.webchannel",
+            "output": [ "publicFeature" ]
+        },
         "webengine-proprietary-codecs": {
             "label": "Proprietary Codecs",
             "purpose": "Enables the use of proprietary codecs such as h.264/h.265 and MP3.",
@@ -680,6 +688,7 @@
                 "webengine-webrtc",
                 "webengine-system-ninja",
                 "webengine-geolocation",
+                "webengine-webchannel",
                 "webengine-v8-snapshot",
                 {
                     "type": "feature",
