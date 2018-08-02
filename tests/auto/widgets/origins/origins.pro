@@ -1,3 +1,7 @@
 include(../tests.pri)
 CONFIG += c++14
-QT += websockets
+qtHaveModule(websockets) {
+    QT += websockets
+    DEFINES += WEBSOCKETS
+}
+

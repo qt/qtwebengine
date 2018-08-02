@@ -37,8 +37,10 @@
 #include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginesettings.h>
 #include <QtWebChannel/qwebchannel.h>
+#if defined(WEBSOCKETS)
 #include <QtWebSockets/qwebsocket.h>
 #include <QtWebSockets/qwebsocketserver.h>
+#endif
 #include <QtWidgets/qaction.h>
 
 #define QSL QStringLiteral
@@ -175,7 +177,9 @@ private Q_SLOTS:
     void subdirWithoutAccess();
     void mixedSchemes();
     void mixedSchemesWithCsp();
+#if defined(WEBSOCKETS)
     void webSocket();
+#endif
     void dedicatedWorker();
     void sharedWorker();
     void serviceWorker();
@@ -474,6 +478,7 @@ void tst_Origins::mixedSchemesWithCsp()
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 }
 
+#if defined(WEBSOCKETS)
 class EchoServer : public QObject {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url NOTIFY urlChanged)
@@ -542,7 +547,7 @@ void tst_Origins::webSocket()
     QVERIFY(load(QSL("PathSyntax:/resources/websocket.html")));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 }
-
+#endif
 // Create a (Dedicated)Worker. Since dedicated workers can only be accessed from
 // one page, there is not much need for security restrictions.
 void tst_Origins::dedicatedWorker()
