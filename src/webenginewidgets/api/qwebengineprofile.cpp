@@ -174,7 +174,7 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
 
     m_ongoingDownloads.clear();
 
-    if (q_ptr != QWebEngineProfile::defaultProfile())
+    if (m_profileAdapter != QtWebEngineCore::ProfileAdapter::defaultProfileAdapter())
         delete m_profileAdapter;
 
     delete m_settings;
@@ -583,7 +583,7 @@ QWebEngineScriptCollection *QWebEngineProfile::scripts() const
 QWebEngineProfile *QWebEngineProfile::defaultProfile()
 {
     static QWebEngineProfile* profile = new QWebEngineProfile(
-                new QWebEngineProfilePrivate(ProfileAdapter::defaultProfileAdapter()),
+                new QWebEngineProfilePrivate(ProfileAdapter::createDefaultProfileAdapter()),
                 ProfileAdapter::globalQObjectRoot());
     return profile;
 }

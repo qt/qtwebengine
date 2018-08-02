@@ -768,7 +768,7 @@ scoped_refptr<net::URLRequestContextGetter> GetSystemRequestContextOnUIThread()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return scoped_refptr<net::URLRequestContextGetter>(
-                ProfileAdapter::defaultProfileAdapter()->profile()->GetRequestContext());
+                ProfileAdapter::createDefaultProfileAdapter()->profile()->GetRequestContext());
 }
 
 void ContentBrowserClientQt::GetGeolocationRequestContext(

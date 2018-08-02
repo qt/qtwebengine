@@ -188,6 +188,11 @@ void ProfileAdapter::resumeDownload(quint32 downloadId)
     downloadManagerDelegate()->resumeDownload(downloadId);
 }
 
+ProfileAdapter *ProfileAdapter::createDefaultProfileAdapter()
+{
+    return WebEngineContext::current()->createDefaultProfileAdapter();
+}
+
 ProfileAdapter *ProfileAdapter::defaultProfileAdapter()
 {
     return WebEngineContext::current()->defaultProfileAdapter();

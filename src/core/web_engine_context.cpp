@@ -265,11 +265,16 @@ WebEngineContext *WebEngineContext::current()
     return m_handle.get();
 }
 
-ProfileAdapter *WebEngineContext::defaultProfileAdapter()
+ProfileAdapter *WebEngineContext::createDefaultProfileAdapter()
 {
     Q_ASSERT(!m_destroyed);
     if (!m_defaultProfileAdapter)
         m_defaultProfileAdapter.reset(new ProfileAdapter(QStringLiteral("Default")));
+    return m_defaultProfileAdapter.get();
+}
+
+ProfileAdapter *WebEngineContext::defaultProfileAdapter()
+{
     return m_defaultProfileAdapter.get();
 }
 

@@ -76,6 +76,7 @@ public:
     static WebEngineContext *current();
     static void destroyContextPostRoutine();
 
+    ProfileAdapter *createDefaultProfileAdapter();
     ProfileAdapter *defaultProfileAdapter();
 
     QObject *globalQObject();

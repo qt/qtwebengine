@@ -689,7 +689,7 @@ void QQuickWebEngineProfile::setHttpAcceptLanguage(const QString &httpAcceptLang
 QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
 {
     static QQuickWebEngineProfile *profile = new QQuickWebEngineProfile(
-                new QQuickWebEngineProfilePrivate(ProfileAdapter::defaultProfileAdapter()),
+                new QQuickWebEngineProfilePrivate(ProfileAdapter::createDefaultProfileAdapter()),
                 ProfileAdapter::globalQObjectRoot());
     return profile;
 }

@@ -80,6 +80,7 @@ public:
     explicit ProfileAdapter(const QString &storagePrefix = QString());
     virtual ~ProfileAdapter();
 
+    static ProfileAdapter* createDefaultProfileAdapter();
     static ProfileAdapter* defaultProfileAdapter();
     static QObject* globalQObjectRoot();
 
