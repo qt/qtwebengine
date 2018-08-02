@@ -4081,6 +4081,7 @@ void tst_QWebEnginePage::mouseMovementProperties()
     ConsolePage page;
     view.setPage(&page);
     view.resize(640, 480);
+    QTest::mouseMove(&view, QPoint(10, 10));
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
