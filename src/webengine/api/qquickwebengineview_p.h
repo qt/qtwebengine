@@ -461,11 +461,11 @@ public:
     // QmlParserStatus
     void componentComplete() override;
 
-    QQuickWebEngineProfile *profile() const;
+    QQuickWebEngineProfile *profile();
     void setProfile(QQuickWebEngineProfile *);
     QQmlListProperty<QQuickWebEngineScript> userScripts();
 
-    QQuickWebEngineSettings *settings() const;
+    QQuickWebEngineSettings *settings();
     QQmlWebChannel *webChannel();
     void setWebChannel(QQmlWebChannel *);
     QQuickWebEngineHistory *navigationHistory() const;

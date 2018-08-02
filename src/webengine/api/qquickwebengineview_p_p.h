@@ -90,7 +90,7 @@ public:
     QQuickWebEngineViewPrivate();
     ~QQuickWebEngineViewPrivate();
     void destroy();
-
+    void initializeProfile();
     QtWebEngineCore::UIDelegatesManager *ui();
 
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
@@ -196,6 +196,8 @@ public:
     bool m_isBeingAdopted;
     mutable QQuickWebEngineAction *actions[QQuickWebEngineView::WebActionCount];
 
+    bool profileInitialized() const;
+
 private:
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;
     QList<QQuickWebEngineScript *> m_userScripts;
@@ -203,6 +205,7 @@ private:
     QColor m_backgroundColor;
     qreal m_defaultZoomFactor;
     bool m_ui2Enabled;
+    bool m_profileInitialized;
 };
 
 #ifndef QT_NO_ACCESSIBILITY

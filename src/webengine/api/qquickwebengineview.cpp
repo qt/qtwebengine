@@ -108,10 +108,8 @@ static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *obje
 #endif // QT_NO_ACCESSIBILITY
 
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
-    : m_profile(QQuickWebEngineProfile::defaultProfile())
-    , adapter(QSharedPointer<WebContentsAdapter>::create())
+    : m_profile(nullptr)
     , m_history(new QQuickWebEngineHistory(this))
-    , m_settings(new QQuickWebEngineSettings(m_profile->settings()))
 #if QT_CONFIG(webengine_testsupport)
     , m_testSupport(0)
 #endif
@@ -129,9 +127,10 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_backgroundColor(Qt::white)
     , m_defaultZoomFactor(1.0)
     , m_ui2Enabled(false)
+    , m_profileInitialized(false)
 {
-    m_profile->d_ptr->addWebContentsAdapterClient(this);
     memset(actions, 0, sizeof(actions));
+
     QString platform = qApp->platformName().toLower();
     if (platform == QLatin1Literal("eglfs"))
         m_ui2Enabled = true;
@@ -159,10 +158,30 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
 
 QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
 {
+    Q_ASSERT(m_profileInitialized);
     m_profile->d_ptr->removeWebContentsAdapterClient(this);
     adapter->stopFinding();
     if (faviconProvider)
         faviconProvider->detach(q_ptr);
+}
+
+void QQuickWebEngineViewPrivate::initializeProfile()
+{
+    if (!m_profileInitialized) {
+        m_profileInitialized = true;
+        if (!m_profile)
+            m_profile = QQuickWebEngineProfile::defaultProfile();
+        m_profile->d_ptr->addWebContentsAdapterClient(this);
+        adapter = QSharedPointer<WebContentsAdapter>::create();
+        m_settings.reset(new QQuickWebEngineSettings(m_profile->settings()));
+        if (m_webChannel)
+            adapter->setWebChannel(m_webChannel, m_webChannelWorld);
+    }
+}
+
+bool QQuickWebEngineViewPrivate::profileInitialized() const
+{
+    return m_profileInitialized;
 }
 
 void QQuickWebEngineViewPrivate::destroy()
@@ -753,8 +772,6 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
 {
     Q_D(QQuickWebEngineView);
     d->q_ptr = this;
-    d->adapter->setClient(d);
-
     this->setActiveFocusOnTab(true);
     this->setFlags(QQuickItem::ItemIsFocusScope | QQuickItem::ItemAcceptsDrops);
 }
@@ -865,7 +882,7 @@ void QQuickWebEngineView::setUrl(const QUrl& url)
 
     Q_D(QQuickWebEngineView);
     d->explicitUrl = url;
-    if (d->adapter->isInitialized())
+    if (d->profileInitialized() && d->adapter->isInitialized())
         d->adapter->load(url);
     if (!qmlEngine(this) || isComponentComplete())
         d->ensureContentsAdapter();
@@ -930,9 +947,11 @@ void QQuickWebEngineView::setZoomFactor(qreal arg)
     emit zoomFactorChanged(arg);
 }
 
-QQuickWebEngineProfile *QQuickWebEngineView::profile() const
+QQuickWebEngineProfile *QQuickWebEngineView::profile()
 {
-    Q_D(const QQuickWebEngineView);
+    Q_D(QQuickWebEngineView);
+    // this can be called before onComplete for group properties
+    d->initializeProfile();
     return d->m_profile;
 }
 
@@ -942,9 +961,10 @@ void QQuickWebEngineView::setProfile(QQuickWebEngineProfile *profile)
     d->setProfile(profile);
 }
 
-QQuickWebEngineSettings *QQuickWebEngineView::settings() const
+QQuickWebEngineSettings *QQuickWebEngineView::settings()
 {
-    Q_D(const QQuickWebEngineView);
+    Q_D(QQuickWebEngineView);
+    d->initializeProfile();
     return d->m_settings.data();
 }
 
@@ -964,7 +984,15 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
 
     if (profile == m_profile)
         return;
-    m_profile->d_ptr->removeWebContentsAdapterClient(this);
+
+    if (!m_profileInitialized) {
+        m_profile = profile;
+        return;
+    }
+
+    if (m_profile)
+        m_profile->d_ptr->removeWebContentsAdapterClient(this);
+
     m_profile = profile;
     m_profile->d_ptr->addWebContentsAdapterClient(this);
     Q_EMIT q->profileChanged();
@@ -1281,9 +1309,7 @@ QQmlWebChannel *QQuickWebEngineView::webChannel()
     Q_D(QQuickWebEngineView);
     if (!d->m_webChannel) {
         d->m_webChannel = new QQmlWebChannel(this);
-        d->adapter->setWebChannel(d->m_webChannel, d->m_webChannelWorld);
     }
-
     return d->m_webChannel;
 #endif
     qWarning("WebEngine compiled without webchannel support");
@@ -1297,7 +1323,8 @@ void QQuickWebEngineView::setWebChannel(QQmlWebChannel *webChannel)
     if (d->m_webChannel == webChannel)
         return;
     d->m_webChannel = webChannel;
-    d->adapter->setWebChannel(webChannel, d->m_webChannelWorld);
+    if (d->profileInitialized())
+        d->adapter->setWebChannel(webChannel, d->m_webChannelWorld);
     Q_EMIT webChannelChanged();
 #else
     Q_UNUSED(webChannel)
@@ -1318,7 +1345,8 @@ void QQuickWebEngineView::setWebChannelWorld(uint webChannelWorld)
     if (d->m_webChannelWorld == webChannelWorld)
         return;
     d->m_webChannelWorld = webChannelWorld;
-    d->adapter->setWebChannel(d->m_webChannel, d->m_webChannelWorld);
+    if (d->profileInitialized())
+        d->adapter->setWebChannel(d->m_webChannel, d->m_webChannelWorld);
     Q_EMIT webChannelWorldChanged(webChannelWorld);
 #else
     Q_UNUSED(webChannelWorld)
@@ -1353,6 +1381,7 @@ QQuickWebEngineView *QQuickWebEngineView::devToolsView() const
     return d->devToolsView;
 }
 
+
 void QQuickWebEngineView::setDevToolsView(QQuickWebEngineView *devToolsView)
 {
     Q_D(QQuickWebEngineView);
@@ -1365,7 +1394,7 @@ void QQuickWebEngineView::setDevToolsView(QQuickWebEngineView *devToolsView)
     d->devToolsView = devToolsView;
     if (devToolsView)
         devToolsView->setInspectedView(this);
-    if (d->adapter->isInitialized()) {
+    if (d->profileInitialized() && d->adapter->isInitialized()) {
         if (devToolsView)
             d->adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
         else
@@ -1452,7 +1481,8 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
 void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &value)
 {
     Q_D(QQuickWebEngineView);
-    if (d && d->adapter->isInitialized() && (change == ItemSceneChange || change == ItemVisibleHasChanged)) {
+    if (d && d->profileInitialized() && d->adapter->isInitialized()
+            && (change == ItemSceneChange || change == ItemVisibleHasChanged)) {
         if (window() && isVisible())
             d->adapter->wasShown();
         else
@@ -1929,7 +1959,9 @@ void QQuickWebEngineViewPrivate::userScripts_clear(QQmlListProperty<QQuickWebEng
 void QQuickWebEngineView::componentComplete()
 {
     QQuickItem::componentComplete();
-
+    Q_D(QQuickWebEngineView);
+    d->initializeProfile();
+    d->adapter->setClient(d);
 #ifndef QT_NO_ACCESSIBILITY
     // Enable accessibility via a dynamic QQmlProperty, instead of using private API call
     // QQuickAccessibleAttached::qmlAttachedProperties(this). The qmlContext is required, otherwise

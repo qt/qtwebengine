@@ -173,7 +173,7 @@ QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 
     m_ongoingDownloads.clear();
 
-    if (q_ptr != QQuickWebEngineProfile::defaultProfile())
+    if (m_profileAdapter != QtWebEngineCore::ProfileAdapter::defaultProfileAdapter())
         delete m_profileAdapter;
 }
 
@@ -341,8 +341,6 @@ QQuickWebEngineProfile::QQuickWebEngineProfile(QObject *parent)
     : QObject(parent),
       d_ptr(new QQuickWebEngineProfilePrivate(new QtWebEngineCore::ProfileAdapter()))
 {
-    // Sets up the global WebEngineContext
-    QQuickWebEngineProfile::defaultProfile();
     d_ptr->q_ptr = this;
 }
 
