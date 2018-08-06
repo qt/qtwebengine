@@ -95,11 +95,11 @@ base::string16 getContentsUrl(content::WebContents *webContents)
 }
 
 // Based on chrome/browser/media/desktop_capture_access_handler.cc:
-std::unique_ptr<content::MediaStreamUI> getDevicesForDesktopCapture(content::MediaStreamDevices *devices, content::DesktopMediaID mediaId
-                                                               , bool captureAudio, bool /*display_notification*/, base::string16 /*application_title*/)
+void getDevicesForDesktopCapture(
+    content::MediaStreamDevices *devices, content::DesktopMediaID mediaId,
+    bool captureAudio, bool /*display_notification*/, base::string16 /*application_title*/)
 {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    std::unique_ptr<content::MediaStreamUI> ui;
 
     // Add selected desktop source to the list.
     devices->push_back(content::MediaStreamDevice(content::MEDIA_DESKTOP_VIDEO_CAPTURE, mediaId.ToString(), "Screen"));
@@ -116,8 +116,6 @@ std::unique_ptr<content::MediaStreamUI> getDevicesForDesktopCapture(content::Med
                                  "System Audio"));
         }
     }
-
-    return std::move(ui);
 }
 
 content::DesktopMediaID getDefaultScreenId()
@@ -187,7 +185,6 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
 {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    std::unique_ptr<content::MediaStreamUI> ui;
     content::MediaStreamDevices devices;
     std::map<content::WebContents*, RequestsQueue>::iterator it = m_pendingRequests.find(webContents);
 
@@ -232,7 +229,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
                 break;
             }
         } else if (desktopVideoRequested) {
-            ui = getDevicesForDesktopCapture(
+            getDevicesForDesktopCapture(
                 &devices,
                 getDefaultScreenId(),
                 desktopAudioRequested,
@@ -252,7 +249,8 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
                     BrowserThread::UI, FROM_HERE, base::Bind(&MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest, base::Unretained(this), webContents));
     }
 
-    callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, std::move(ui));
+    callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK,
+                 std::unique_ptr<content::MediaStreamUI>());
 }
 
 
@@ -324,11 +322,10 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
                                                                        , const content::MediaResponseCallback &callback)
 {
   content::MediaStreamDevices devices;
-  std::unique_ptr<content::MediaStreamUI> ui;
 
   if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE ||
       request.requested_video_device_id.empty()) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
     return;
   }
 
@@ -349,7 +346,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
 
   // Received invalid device id.
   if (mediaId.type == content::DesktopMediaID::TYPE_NONE) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
     return;
   }
 
@@ -357,11 +354,12 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
   bool capture_audio = (mediaId.type == content::DesktopMediaID::TYPE_SCREEN &&
        request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE);
 
-  ui = getDevicesForDesktopCapture(
+  getDevicesForDesktopCapture(
               &devices, mediaId, capture_audio, true,
               getContentsUrl(webContents));
 
-  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, std::move(ui));
+  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK,
+               std::unique_ptr<content::MediaStreamUI>());
 }
 
 void MediaCaptureDevicesDispatcher::enqueueMediaAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request
