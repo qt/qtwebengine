@@ -89,17 +89,11 @@ const content::MediaStreamDevice *findDeviceWithId(const content::MediaStreamDev
   return 0;
 }
 
-base::string16 getContentsUrl(content::WebContents *webContents)
-{
-  return base::UTF8ToUTF16(webContents->GetURL().GetOrigin().spec());
-}
-
 // Based on chrome/browser/media/desktop_capture_access_handler.cc:
 void getDevicesForDesktopCapture(
-    content::MediaStreamDevices *devices, content::DesktopMediaID mediaId,
-    bool captureAudio, bool /*display_notification*/, base::string16 /*application_title*/)
+    content::MediaStreamDevices *devices, content::DesktopMediaID mediaId, bool captureAudio)
 {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Add selected desktop source to the list.
     devices->push_back(content::MediaStreamDevice(content::MEDIA_DESKTOP_VIDEO_CAPTURE, mediaId.ToString(), "Screen"));
@@ -183,19 +177,14 @@ MediaCaptureDevicesDispatcher::PendingAccessRequest::~PendingAccessRequest()
 void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content::WebContents *webContents, const QUrl &securityOrigin
                                                                         , WebContentsAdapterClient::MediaRequestFlags authorizationFlags)
 {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     content::MediaStreamDevices devices;
-    std::map<content::WebContents*, RequestsQueue>::iterator it = m_pendingRequests.find(webContents);
-
-    if (it == m_pendingRequests.end())
-        // WebContents has been destroyed. Don't need to do anything.
+    auto it = m_pendingRequests.find(webContents);
+    if (it == m_pendingRequests.end() || it->second.empty())
         return;
 
     RequestsQueue &queue(it->second);
-    if (queue.empty())
-        return;
-
     content::MediaStreamRequest &request = queue.front().request;
 
     const QUrl requestSecurityOrigin(toQt(request.security_origin));
@@ -229,12 +218,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
                 break;
             }
         } else if (desktopVideoRequested) {
-            getDevicesForDesktopCapture(
-                &devices,
-                getDefaultScreenId(),
-                desktopAudioRequested,
-                /* display_notification: */ false,
-                getContentsUrl(webContents));
+            getDevicesForDesktopCapture(&devices, getDefaultScreenId(), desktopAudioRequested);
         }
     }
 
@@ -266,7 +250,7 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
   // UI thread. Otherwise, it will not receive
   // content::NOTIFICATION_WEB_CONTENTS_DESTROYED, and that will result in
   // possible use after free.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   m_notificationsRegistrar.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                                content::NotificationService::AllSources());
 }
@@ -277,7 +261,7 @@ MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher()
 
 void MediaCaptureDevicesDispatcher::Observe(int type, const content::NotificationSource &source, const content::NotificationDetails &details)
 {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
     content::WebContents *webContents = content::Source<content::WebContents>(source).ptr();
     m_pendingRequests.erase(webContents);
@@ -288,7 +272,7 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(WebContentsAdapter
                                                               , const content::MediaStreamRequest &request
                                                               , const content::MediaResponseCallback &callback)
 {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Let's not support tab capture for now.
     if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE || request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE) {
@@ -354,9 +338,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
   bool capture_audio = (mediaId.type == content::DesktopMediaID::TYPE_SCREEN &&
        request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE);
 
-  getDevicesForDesktopCapture(
-              &devices, mediaId, capture_audio, true,
-              getContentsUrl(webContents));
+  getDevicesForDesktopCapture(&devices, mediaId, capture_audio);
 
   callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK,
                std::unique_ptr<content::MediaStreamUI>());
@@ -365,28 +347,22 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
 void MediaCaptureDevicesDispatcher::enqueueMediaAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request
                                                                      ,const content::MediaResponseCallback &callback)
 {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RequestsQueue &queue = m_pendingRequests[webContents];
   queue.push_back(PendingAccessRequest(request, callback));
 }
 
 void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(content::WebContents *webContents) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::map<content::WebContents*, RequestsQueue>::iterator it =
-      m_pendingRequests.find(webContents);
-
+  auto it = m_pendingRequests.find(webContents);
   if (it == m_pendingRequests.end() || it->second.empty())
     return;
 
   RequestsQueue &queue(it->second);
-  if (queue.empty())
-    return;
-
   content::MediaStreamRequest &request = queue.front().request;
 
-  DCHECK(!it->second.empty());
   WebContentsAdapterClient *adapterClient = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
   adapterClient->runMediaAccessPermissionRequest(toQt(request.security_origin), mediaRequestFlagsForRequest(request));
 }
@@ -394,14 +370,14 @@ void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(content::WebConte
 void MediaCaptureDevicesDispatcher::getDefaultDevices(const std::string &audioDeviceId, const std::string &videoDeviceId, bool audio, bool video
                                                       , content::MediaStreamDevices *devices)
 {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(audio || video);
 
   if (audio) {
     const content::MediaStreamDevices &audioDevices = content::MediaCaptureDevices::GetInstance()->GetAudioCaptureDevices();
     const content::MediaStreamDevice *device = findDeviceWithId(audioDevices, audioDeviceId);
     if (!device && !audioDevices.empty())
-        device = &(*audioDevices.begin());
+        device = &audioDevices.front();
     if (device)
       devices->push_back(*device);
   }
@@ -410,7 +386,7 @@ void MediaCaptureDevicesDispatcher::getDefaultDevices(const std::string &audioDe
     const content::MediaStreamDevices &videoDevices = content::MediaCaptureDevices::GetInstance()->GetVideoCaptureDevices();
     const content::MediaStreamDevice *device = findDeviceWithId(videoDevices, videoDeviceId);
     if (!device && !videoDevices.empty())
-      device = &(*videoDevices.begin());
+      device = &videoDevices.front();
     if (device)
       devices->push_back(*device);
   }
@@ -425,7 +401,7 @@ DesktopStreamsRegistry *MediaCaptureDevicesDispatcher::getDesktopStreamsRegistry
 
 void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(int render_process_id, int render_frame_id, int page_request_id, const GURL& security_origin, content::MediaStreamType stream_type, content::MediaRequestState state)
 {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
@@ -437,30 +413,24 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(int render_proces
 void MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread(int render_process_id,
                                                                       int render_frame_id,
                                                                       int page_request_id,
-                                                                      const GURL& security_origin,
-                                                                      content::MediaStreamType stream_type,
+                                                                      const GURL& /*security_origin*/,
+                                                                      content::MediaStreamType /*stream_type*/,
                                                                       content::MediaRequestState state)
 {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Cancel the request.
   if (state == content::MEDIA_REQUEST_STATE_CLOSING) {
-    bool found = false;
-    for (RequestsQueues::iterator rqs_it = m_pendingRequests.begin();
-         rqs_it != m_pendingRequests.end(); ++rqs_it) {
-      RequestsQueue &queue = rqs_it->second;
-      for (RequestsQueue::iterator it = queue.begin();
-           it != queue.end(); ++it) {
+    for (auto &pair : m_pendingRequests) {
+      RequestsQueue &queue = pair.second;
+      for (auto it = queue.begin(); it != queue.end(); ++it) {
         if (it->request.render_process_id == render_process_id &&
             it->request.render_frame_id == render_frame_id &&
             it->request.page_request_id == page_request_id) {
           queue.erase(it);
-          found = true;
-          break;
+          return;
         }
       }
-      if (found)
-        break;
     }
   }
 }

@@ -73,6 +73,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   // Called back from our WebContentsAdapter to grant the requested permission.
   void handleMediaAccessPermissionResponse(content::WebContents *, const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags);
 
+ private:
   void getDefaultDevices(const std::string &audioDeviceId, const std::string &videoDeviceId, bool audio, bool video, content::MediaStreamDevices *);
 
   // Overridden from content::MediaObserver:
@@ -94,7 +95,6 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
 
   DesktopStreamsRegistry *getDesktopStreamsRegistry();
 
- private:
   friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
   struct PendingAccessRequest {
