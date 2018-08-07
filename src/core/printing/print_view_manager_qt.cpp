@@ -214,7 +214,6 @@ PrintViewManagerQt::~PrintViewManagerQt()
 {
 }
 
-#if QT_CONFIG(webengine_printing_and_pdf)
 void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayout,
                                                     bool printInColor,
                                                     const QString &filePath,
@@ -293,8 +292,6 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
     m_printPreviewRfh = rfh;
     return true;
 }
-
-#endif // QT_CONFIG(webengine_printing_and_pdf)
 
 // PrintedPagesSource implementation.
 base::string16 PrintViewManagerQt::RenderSourceName()

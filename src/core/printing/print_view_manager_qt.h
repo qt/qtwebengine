@@ -85,7 +85,7 @@ public:
     ~PrintViewManagerQt() override;
     typedef base::Callback<void(const std::vector<char> &result)> PrintToPDFCallback;
     typedef base::Callback<void(bool success)> PrintToPDFFileCallback;
-#if QT_CONFIG(webengine_printing_and_pdf)
+
     // Method to print a page to a Pdf document with page size \a pageSize in location \a filePath.
     void PrintToPDFFileWithCallback(const QPageLayout &pageLayout,
                                     bool printInColor,
@@ -95,7 +95,6 @@ public:
                                 bool printInColor,
                                 bool useCustomMargins,
                                 const PrintToPDFCallback &callback);
-#endif // QT_CONFIG(webengine_printing_and_pdf)
 
     base::string16 RenderSourceName() override;
 
@@ -123,11 +122,7 @@ protected:
     void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
     void OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
                                     bool source_is_modifiable);
-
-
-#if QT_CONFIG(webengine_printing_and_pdf)
     bool PrintToPDFInternal(const QPageLayout &, bool printInColor, bool useCustomMargins = true);
-#endif
 
 private:
     void resetPdfState();

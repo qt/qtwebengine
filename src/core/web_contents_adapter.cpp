@@ -49,7 +49,9 @@
 #include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
+#if QT_CONFIG(webengine_printing_and_pdf)
 #include "printing/print_view_manager_qt.h"
+#endif
 #include "profile_qt.h"
 #include "qwebenginecallback_p.h"
 #include "render_view_observer_host_qt.h"
