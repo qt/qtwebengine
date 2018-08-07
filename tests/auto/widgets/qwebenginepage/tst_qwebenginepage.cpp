@@ -125,6 +125,8 @@ private Q_SLOTS:
     void getUserMediaRequest();
     void getUserMediaRequestDesktopAudio();
     void getUserMediaRequestSettingDisabled();
+    void getUserMediaRequestDesktopVideoManyPages();
+    void getUserMediaRequestDesktopVideoManyRequests();
     void savePage();
 
     void crashTests_LazyInitializationOfMainFrame();
@@ -2445,6 +2447,44 @@ void tst_QWebEnginePage::getUserMediaRequestSettingDisabled()
 
     page.jsGetUserMedia(QStringLiteral("{video: { mandatory: { chromeMediaSource: 'desktop' }}}"));
     QTRY_VERIFY(!page.jsPromiseFulfilled() && page.jsPromiseRejected());
+}
+
+// Try to trigger any possible race condition between the UI thread (permission
+// management) and the audio/device thread (desktop capture initialization).
+void tst_QWebEnginePage::getUserMediaRequestDesktopVideoManyPages()
+{
+    const QString constraints = QStringLiteral("{video: { mandatory: { chromeMediaSource: 'desktop' }}}");
+    const QWebEnginePage::Feature feature = QWebEnginePage::DesktopVideoCapture;
+    std::vector<GetUserMediaTestPage> pages(10);
+    for (GetUserMediaTestPage &page : pages)
+        QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
+    for (GetUserMediaTestPage &page : pages)
+        page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
+    for (GetUserMediaTestPage &page : pages)
+        page.jsGetUserMedia(constraints);
+    for (GetUserMediaTestPage &page : pages)
+        QTRY_VERIFY(page.gotFeatureRequest(feature));
+    for (GetUserMediaTestPage &page : pages)
+        page.acceptPendingRequest();
+    for (GetUserMediaTestPage &page : pages)
+        QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
+}
+
+// Try to trigger any possible race condition between the UI or audio/device
+// threads and the desktop capture thread, where the capture actually happens.
+void tst_QWebEnginePage::getUserMediaRequestDesktopVideoManyRequests()
+{
+    const QString constraints = QStringLiteral("{video: { mandatory: { chromeMediaSource: 'desktop' }}}");
+    const QWebEnginePage::Feature feature = QWebEnginePage::DesktopVideoCapture;
+    GetUserMediaTestPage page;
+    QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
+    page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
+    for (int i = 0; i != 100; ++i) {
+        page.jsGetUserMedia(constraints);
+        QTRY_VERIFY(page.gotFeatureRequest(feature));
+        page.acceptPendingRequest();
+        QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
+    }
 }
 
 void tst_QWebEnginePage::savePage()
