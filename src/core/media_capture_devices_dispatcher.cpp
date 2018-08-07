@@ -443,29 +443,6 @@ void MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread(int render
 {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Track desktop capture sessions.  Tracking is necessary to avoid unbalanced
-  // session counts since not all requests will reach MEDIA_REQUEST_STATE_DONE,
-  // but they will all reach MEDIA_REQUEST_STATE_CLOSING.
-  if (stream_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE || stream_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
-    if (state == content::MEDIA_REQUEST_STATE_DONE) {
-      DesktopCaptureSession session = { render_process_id, render_frame_id,
-                                        page_request_id };
-      m_desktopCaptureSessions.push_back(session);
-    } else if (state == content::MEDIA_REQUEST_STATE_CLOSING) {
-      for (DesktopCaptureSessions::iterator it =
-               m_desktopCaptureSessions.begin();
-           it != m_desktopCaptureSessions.end();
-           ++it) {
-        if (it->render_process_id == render_process_id &&
-            it->render_view_id == render_frame_id &&
-            it->page_request_id == page_request_id) {
-          m_desktopCaptureSessions.erase(it);
-          break;
-        }
-      }
-    }
-  }
-
   // Cancel the request.
   if (state == content::MEDIA_REQUEST_STATE_CLOSING) {
     bool found = false;

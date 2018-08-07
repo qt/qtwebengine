@@ -128,17 +128,6 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
 
   content::NotificationRegistrar m_notificationsRegistrar;
 
-  // Tracks MEDIA_DESKTOP_VIDEO_CAPTURE sessions which reach the
-  // MEDIA_REQUEST_STATE_DONE state.  Sessions are remove when
-  // MEDIA_REQUEST_STATE_CLOSING is encountered.
-  struct DesktopCaptureSession {
-    int render_process_id;
-    int render_view_id;
-    int page_request_id;
-  };
-  typedef std::list<DesktopCaptureSession> DesktopCaptureSessions;
-  DesktopCaptureSessions m_desktopCaptureSessions;
-
   DISALLOW_COPY_AND_ASSIGN(MediaCaptureDevicesDispatcher);
 };
 
