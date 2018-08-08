@@ -224,7 +224,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
 
     const QUrl qUrl = toQt(request->url());
 
-    QWebEngineUrlRequestInterceptor* interceptor = m_profileIOData->m_requestInterceptor;
+    QWebEngineUrlRequestInterceptor* interceptor = m_profileIOData->requestInterceptor();
     if (interceptor) {
         QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(toQt(resourceType),
                                                                                            toQt(navigationType),
@@ -299,13 +299,13 @@ bool NetworkDelegateQt::OnCanEnablePrivacyMode(const GURL &url, const GURL &site
 bool NetworkDelegateQt::canSetCookies(const GURL &first_party, const GURL &url, const std::string &cookie_line) const
 {
     Q_ASSERT(m_profileIOData);
-    return m_profileIOData->m_cookieDelegate->canSetCookie(toQt(first_party), QByteArray::fromStdString(cookie_line), toQt(url));
+    return m_profileIOData->canSetCookie(toQt(first_party), QByteArray::fromStdString(cookie_line), toQt(url));
 }
 
 bool NetworkDelegateQt::canGetCookies(const GURL &first_party, const GURL &url) const
 {
     Q_ASSERT(m_profileIOData);
-    return m_profileIOData->m_cookieDelegate->canGetCookies(toQt(first_party), toQt(url));
+    return m_profileIOData->canGetCookies(toQt(first_party), toQt(url));
 }
 
 int NetworkDelegateQt::OnBeforeStartTransaction(net::URLRequest *request, const net::CompletionCallback &callback, net::HttpRequestHeaders *headers)

@@ -209,7 +209,7 @@ void CookieMonsterDelegateQt::setClient(QWebEngineCookieStore *client)
         m_client->d_func()->processPendingUserCookies();
 }
 
-bool CookieMonsterDelegateQt::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &/*cookieLine*/, const QUrl &url)
+bool CookieMonsterDelegateQt::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &/*cookieLine*/, const QUrl &url) const
 {
     if (!m_client)
         return true;
@@ -217,7 +217,7 @@ bool CookieMonsterDelegateQt::canSetCookie(const QUrl &firstPartyUrl, const QByt
     return m_client->d_func()->canAccessCookies(firstPartyUrl, url);
 }
 
-bool CookieMonsterDelegateQt::canGetCookies(const QUrl &firstPartyUrl, const QUrl &url)
+bool CookieMonsterDelegateQt::canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const
 {
     if (!m_client)
         return true;

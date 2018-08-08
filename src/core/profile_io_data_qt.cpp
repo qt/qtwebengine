@@ -666,4 +666,23 @@ void ProfileIODataQt::updateRequestInterceptor()
     m_requestInterceptor = m_profileAdapter->requestInterceptor();
     // We in this case do not need to regenerate any Chromium classes.
 }
+
+QWebEngineUrlRequestInterceptor *ProfileIODataQt::requestInterceptor()
+{
+    // used in NetworkDelegateQt::OnBeforeURLRequest
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    QMutexLocker lock(&m_mutex);
+    return m_requestInterceptor;
+}
+
+bool ProfileIODataQt::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url) const
+{
+    return m_cookieDelegate->canSetCookie(firstPartyUrl,cookieLine, url);
+}
+
+bool ProfileIODataQt::canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const
+{
+    return m_cookieDelegate->canGetCookies(firstPartyUrl, url);
+}
+
 } // namespace QtWebEngineCore

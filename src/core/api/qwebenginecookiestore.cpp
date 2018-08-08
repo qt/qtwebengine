@@ -190,7 +190,7 @@ void QWebEngineCookieStorePrivate::onCookieChanged(const QNetworkCookie &cookie,
         Q_EMIT q_ptr->cookieAdded(cookie);
 }
 
-bool QWebEngineCookieStorePrivate::canAccessCookies(const QUrl &firstPartyUrl, const QUrl &url)
+bool QWebEngineCookieStorePrivate::canAccessCookies(const QUrl &firstPartyUrl, const QUrl &url) const
 {
     if (!filterCallback)
         return true;

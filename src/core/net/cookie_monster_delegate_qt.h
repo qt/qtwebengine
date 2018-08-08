@@ -94,8 +94,8 @@ public:
     void setCookieMonster(net::CookieMonster* monster);
     void setClient(QWebEngineCookieStore *client);
 
-    bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url);
-    bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url);
+    bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url) const;
+    bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const;
 
     void AddStore(net::CookieStore *store);
     void OnCookieChanged(const net::CanonicalCookie &cookie, net::CookieChangeCause cause);

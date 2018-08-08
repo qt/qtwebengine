@@ -97,7 +97,7 @@ public:
     void deleteAllCookies();
     void getAllCookies();
 
-    bool canAccessCookies(const QUrl &firstPartyUrl, const QUrl &url);
+    bool canAccessCookies(const QUrl &firstPartyUrl, const QUrl &url) const;
 
     void onGetAllCallbackResult(qint64 callbackId, const QByteArray &cookieList);
     void onSetCallbackResult(qint64 callbackId, bool success);

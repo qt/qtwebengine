@@ -88,6 +88,9 @@ public:
     void generateUserAgent();
     void generateJobFactory();
     void regenerateJobFactory();
+    QWebEngineUrlRequestInterceptor *requestInterceptor();
+    bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url) const;
+    bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const;
 
     void setRequestContextData(content::ProtocolHandlerMap *protocolHandlers,
                                content::URLRequestInterceptorScopedVector request_interceptors);
@@ -138,7 +141,6 @@ private:
     bool m_updateUserAgent = false;
     bool m_ignoreCertificateErrors = false;
     base::WeakPtrFactory<ProfileIODataQt> m_weakPtrFactory; // this should be always the last member
-    friend class NetworkDelegateQt;
     DISALLOW_COPY_AND_ASSIGN(ProfileIODataQt);
 };
 } // namespace QtWebEngineCore
