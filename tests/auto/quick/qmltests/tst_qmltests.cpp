@@ -128,7 +128,6 @@ int main(int argc, char **argv)
     QtWebEngine::initialize();
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
 
-    QTEST_ADD_GPU_BLACKLIST_SUPPORT_DEFS
     QTEST_SET_MAIN_SOURCE_PATH
 
     int i = quick_test_main(argc, argv, "qmltests", QUICK_TEST_SOURCE_DIR);
