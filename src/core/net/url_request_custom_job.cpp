@@ -39,13 +39,10 @@
 
 #include "url_request_custom_job.h"
 #include "url_request_custom_job_proxy.h"
-#include "../type_conversion.h"
-
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 
 #include <QIODevice>
-#include <QMap>
 
 using namespace net;
 
@@ -79,22 +76,9 @@ URLRequestCustomJob::~URLRequestCustomJob()
 void URLRequestCustomJob::Start()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    HttpRequestHeaders requestHeaders = request()->extra_request_headers();
-    QMap<QByteArray, QByteArray> headers;
-    net::HttpRequestHeaders::Iterator it(requestHeaders);
-    while (it.GetNext())
-        headers.insert(toQByteArray(it.name()), toQByteArray(it.value()));
-    if (!request()->referrer().empty())
-        headers.insert(QByteArray("Referer"), toQByteArray(request()->referrer()));
-
-    // TODO: handle UploadDataStream, for instance using a QIODevice wrapper.
-
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&URLRequestCustomJobProxy::initialize, m_proxy,
-                                                request()->url(),
-                                                request()->method(),
-                                                request()->initiator(),
-                                                headers));
+                                     base::Bind(&URLRequestCustomJobProxy::initialize,
+                                     m_proxy, request()->url(), request()->method(), request()->initiator()));
 }
 
 void URLRequestCustomJob::Kill()

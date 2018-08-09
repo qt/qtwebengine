@@ -29,7 +29,6 @@
 #include "../util.h"
 #include <QtCore/qbuffer.h>
 #include <QtTest/QtTest>
-#include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
@@ -53,7 +52,6 @@ private Q_SLOTS:
     void urlSchemeHandlerFailRequest();
     void urlSchemeHandlerFailOnRead();
     void urlSchemeHandlerStreaming();
-    void urlSchemeHandlerRequestHeaders();
     void customUserAgent();
     void httpAcceptLanguage();
     void downloadItem();
@@ -444,65 +442,6 @@ void tst_QWebEngineProfile::urlSchemeHandlerStreaming()
     result.append(1000, 'c');
     QCOMPARE(toPlainTextSync(view.page()), QString::fromLatin1(result));
 }
-
-class ExtraHeaderInterceptor : public QWebEngineUrlRequestInterceptor
-{
-public:
-    ExtraHeaderInterceptor() { }
-
-    void setExtraHeader(const QByteArray &key, const QByteArray &value)
-    {
-        m_extraKey = key;
-        m_extraValue = value;
-    }
-
-    void interceptRequest(QWebEngineUrlRequestInfo &info) override
-    {
-        info.setHttpHeader(m_extraKey, m_extraValue);
-    }
-
-    QByteArray m_extraKey;
-    QByteArray m_extraValue;
-};
-
-class RequestHeadersUrlSchemeHandler : public ReplyingUrlSchemeHandler
-{
-public:
-    void setExpectedHeader(const QByteArray &key, const QByteArray &value)
-    {
-        m_expectedKey = key;
-        m_expectedValue = value;
-    }
-    void requestStarted(QWebEngineUrlRequestJob *job) override
-    {
-        const auto requestHeaders = job->requestHeaders();
-        QVERIFY(requestHeaders.contains(m_expectedKey));
-        QCOMPARE(requestHeaders.value(m_expectedKey), m_expectedValue);
-        ReplyingUrlSchemeHandler::requestStarted(job);
-    }
-    QByteArray m_expectedKey;
-    QByteArray m_expectedValue;
-};
-
-void tst_QWebEngineProfile::urlSchemeHandlerRequestHeaders()
-{
-    RequestHeadersUrlSchemeHandler handler;
-    ExtraHeaderInterceptor interceptor;
-
-    interceptor.setExtraHeader("Hello", "World");
-    handler.setExpectedHeader("Hello", "World");
-
-    QWebEngineProfile profile;
-    profile.setRequestInterceptor(&interceptor);
-    profile.installUrlSchemeHandler("myscheme", &handler);
-
-    QWebEngineView view;
-    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
-    view.setPage(new QWebEnginePage(&profile, &view));
-    view.load(QUrl(QStringLiteral("myscheme://whatever")));
-    QVERIFY(loadFinishedSpy.wait());
-}
-
 
 void tst_QWebEngineProfile::customUserAgent()
 {

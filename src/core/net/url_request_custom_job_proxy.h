@@ -72,7 +72,7 @@ public:
     void abort();
     void fail(int error);
     void release();
-    void initialize(GURL url, std::string method, base::Optional<url::Origin> initiatorOrigin, QMap<QByteArray, QByteArray> headers);
+    void initialize(GURL url, std::string method, base::Optional<url::Origin> initiatorOrigin);
     void readyRead();
 
     // IO thread owned:

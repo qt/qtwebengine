@@ -125,15 +125,6 @@ QUrl QWebEngineUrlRequestJob::initiator() const
 }
 
 /*!
-    \since 5.12
-    Returns any HTTP headers added to the request.
-*/
-const QMap<QByteArray, QByteArray> &QWebEngineUrlRequestJob::requestHeaders() const
-{
-    return d_ptr->requestHeaders();
-}
-
-/*!
     Replies to the request with \a device and the MIME type \a contentType.
 
     The user has to be aware that \a device will be used on another thread

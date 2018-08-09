@@ -54,7 +54,6 @@
 #include "base/memory/ref_counted.h"
 #include "qtwebenginecoreglobal_p.h"
 
-#include <QMap>
 #include <QObject>
 #include <QUrl>
 
@@ -81,7 +80,6 @@ public:
     QUrl url() const;
     QByteArray method() const;
     QUrl initiator() const;
-    const QMap<QByteArray, QByteArray> &requestHeaders() const;
 
     void reply(const QByteArray &contentType, QIODevice *device);
     void redirect(const QUrl& url);
@@ -95,15 +93,13 @@ private:
     URLRequestCustomJobDelegate(URLRequestCustomJobProxy *proxy,
                                 const QUrl &url,
                                 const QByteArray &method,
-                                const QUrl &initiatorOrigin,
-                                const QMap<QByteArray, QByteArray> &requestHeaders);
+                                const QUrl &initiatorOrigin);
 
     friend class URLRequestCustomJobProxy;
     scoped_refptr<URLRequestCustomJobProxy> m_proxy;
     QUrl m_request;
     QByteArray m_method;
     QUrl m_initiatorOrigin;
-    const QMap<QByteArray, QByteArray> m_requestHeaders;
 };
 
 } // namespace
