@@ -43,7 +43,7 @@
 #include "browser_accessibility_manager_qt.h"
 #include "browser_accessibility_qt.h"
 #include "chromium_overrides.h"
-#include "delegated_frame_node.h"
+#include "compositor.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
@@ -324,17 +324,12 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_sendMotionActionDown(false)
     , m_touchMotionStarted(false)
-    , m_chromiumCompositorData(new ChromiumCompositorData)
-    , m_needsDelegatedFrameAck(false)
+    , m_compositor(new Compositor)
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
-    , m_rendererCompositorFrameSink(0)
     , m_imeInProgress(false)
     , m_receivedEmptyImeEvent(false)
     , m_initPending(false)
-    , m_beginFrameSource(nullptr)
-    , m_needsBeginFrames(false)
-    , m_addedFrameObserver(false)
     , m_backgroundColor(SK_ColorWHITE)
     , m_imState(0)
     , m_anchorPositionWithinSelection(-1)
@@ -343,10 +338,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_emptyPreviousSelection(true)
     , m_wheelAckPending(false)
 {
-    auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
-    m_beginFrameSource.reset(new viz::DelayBasedBeginFrameSource(
-            std::make_unique<viz::DelayBasedTimeSource>(task_runner), 0));
-
     host()->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
     if (isAccessibilityEnabled()) {
@@ -377,6 +368,7 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
 {
     m_delegate.reset(delegate);
+    m_compositor->setViewDelegate(delegate);
 }
 
 void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterClient)
@@ -751,10 +743,7 @@ void RenderWidgetHostViewQt::DisplayTooltipText(const base::string16 &tooltip_te
 
 void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient *frameSink)
 {
-    // Accumulated resources belong to the old RendererCompositorFrameSink and
-    // should not be returned.
-    m_resourcesToRelease.clear();
-    m_rendererCompositorFrameSink = frameSink;
+    m_compositor->setFrameSinkClient(frameSink);
 }
 
 void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, viz::mojom::HitTestRegionListPtr)
@@ -769,11 +758,6 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
         // FIXME: update frame_size and device_scale_factor?
         // FIXME: showPrimarySurface()?
     }
-    Q_ASSERT(!m_needsDelegatedFrameAck);
-    m_needsDelegatedFrameAck = true;
-    m_chromiumCompositorData->previousFrameData = std::move(m_chromiumCompositorData->frameData);
-    m_chromiumCompositorData->frameDevicePixelRatio = frame.metadata.device_scale_factor;
-    m_chromiumCompositorData->frameData = std::move(frame);
 
     // Force to process swap messages
     uint32_t frame_token = frame.metadata.frame_token;
@@ -783,9 +767,9 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
     // Support experimental.viewport.devicePixelRatio, see GetScreenInfo implementation below.
     float dpiScale = this->dpiScale();
     if (dpiScale != 0 && dpiScale != 1)
-        m_chromiumCompositorData->frameDevicePixelRatio /= dpiScale;
+        frame.metadata.device_scale_factor /= dpiScale;
 
-    m_delegate->update();
+    m_compositor->submitFrame(std::move(frame));
 
     if (m_loadVisuallyCommittedState == NotCommitted) {
         m_loadVisuallyCommittedState = DidFirstCompositorFrameSwap;
@@ -977,21 +961,7 @@ void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 {
-    DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
-    if (!frameNode)
-        frameNode = new DelegatedFrameNode;
-
-    frameNode->commit(m_chromiumCompositorData.data(), &m_resourcesToRelease, m_delegate.get());
-
-    // This is possibly called from the Qt render thread, post the ack back to the UI
-    // to tell the child compositors to release resources and trigger a new frame.
-    if (m_needsDelegatedFrameAck) {
-        m_needsDelegatedFrameAck = false;
-        content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-            base::Bind(&RenderWidgetHostViewQt::sendDelegatedFrameAck, AsWeakPtr()));
-    }
-
-    return frameNode;
+    return m_compositor->updatePaintNode(oldNode);
 }
 
 void RenderWidgetHostViewQt::notifyResize()
@@ -1190,15 +1160,6 @@ void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWit
     Q_UNUSED(touch);
     const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
     m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, /*fixme: ?? */false);
-}
-
-void RenderWidgetHostViewQt::sendDelegatedFrameAck()
-{
-    m_beginFrameSource->DidFinishFrame(this);
-    std::vector<viz::ReturnedResource> resources;
-    m_resourcesToRelease.swap(resources);
-    if (m_rendererCompositorFrameSink)
-        m_rendererCompositorFrameSink->DidReceiveCompositorFrameAck(resources);
 }
 
 void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)
@@ -1713,37 +1674,7 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
 
 void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
 {
-    m_needsBeginFrames = needs_begin_frames;
-    updateNeedsBeginFramesInternal();
-}
-
-void RenderWidgetHostViewQt::updateNeedsBeginFramesInternal()
-{
-    Q_ASSERT(m_beginFrameSource);
-
-    if (m_addedFrameObserver == m_needsBeginFrames)
-        return;
-
-    if (m_needsBeginFrames)
-        m_beginFrameSource->AddObserver(this);
-    else
-        m_beginFrameSource->RemoveObserver(this);
-    m_addedFrameObserver = m_needsBeginFrames;
-}
-
-bool RenderWidgetHostViewQt::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args)
-{
-    m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
-    if (m_rendererCompositorFrameSink)
-        m_rendererCompositorFrameSink->OnBeginFrame(args);
-    return true;
-}
-
-void RenderWidgetHostViewQt::OnBeginFrameSourcePausedChanged(bool paused)
-{
-    // Ignored for now.  If the begin frame source is paused, the renderer
-    // doesn't need to be informed about it and will just not receive more
-    // begin frames.
+    m_compositor->setNeedsBeginFrames(needs_begin_frames);
 }
 
 content::RenderFrameHost *RenderWidgetHostViewQt::getFocusedFrameHost()
