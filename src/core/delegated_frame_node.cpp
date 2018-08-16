@@ -154,7 +154,6 @@ public:
     ResourceHolder(const viz::TransferableResource &resource);
     QSharedPointer<QSGTexture> initTexture(bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate = 0);
     QSGTexture *texture() const { return m_texture.data(); }
-    viz::TransferableResource &transferableResource() { return m_resource; }
     viz::ReturnedResource returnResource();
     void incImportCount() { ++m_importCount; }
     bool needsToFetch() const { return !m_resource.is_software && m_texture && !m_texture.data()->textureId(); }
@@ -185,11 +184,10 @@ public:
 
     virtual void setupRenderPassNode(QSGTexture *, const QRect &, QSGNode *) = 0;
     virtual void setupTextureContentNode(QSGTexture *, const QRect &, const QRectF &,
-                                         QSGTexture::Filtering,
                                          QSGTextureNode::TextureCoordinatesTransformMode,
                                          QSGNode *) = 0;
     virtual void setupTiledContentNode(QSGTexture *, const QRect &, const QRectF &,
-                                       QSGTexture::Filtering, QSGNode *) = 0;
+                                       QSGNode *) = 0;
     virtual void setupSolidColorNode(const QRect &, const QColor &, QSGNode *) = 0;
 
 #ifndef QT_NO_OPENGL
@@ -228,7 +226,6 @@ public:
     }
 
     void setupTextureContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
-                                 QSGTexture::Filtering filtering,
                                  QSGTextureNode::TextureCoordinatesTransformMode texCoordTransForm,
                                  QSGNode *) override
     {
@@ -245,11 +242,11 @@ public:
             textureNode->setRect(rect);
         if (textureNode->sourceRect() != sourceRect)
             textureNode->setSourceRect(sourceRect);
-        if (textureNode->filtering() != filtering)
-            textureNode->setFiltering(filtering);
+        if (textureNode->filtering() != texture->filtering())
+            textureNode->setFiltering(texture->filtering());
     }
     void setupTiledContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
-                               QSGTexture::Filtering filtering, QSGNode *) override
+                               QSGNode *) override
     {
         Q_ASSERT(m_nodeIterator != m_sceneGraphNodes->end());
         QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
@@ -262,8 +259,8 @@ public:
             textureNode->setRect(rect);
         if (textureNode->sourceRect() != sourceRect)
             textureNode->setSourceRect(sourceRect);
-        if (textureNode->filtering() != filtering)
-            textureNode->setFiltering(filtering);
+        if (textureNode->filtering() != texture->filtering())
+            textureNode->setFiltering(texture->filtering());
     }
     void setupSolidColorNode(const QRect &rect, const QColor &color, QSGNode *) override
     {
@@ -332,7 +329,6 @@ public:
     }
 
     void setupTextureContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
-                                 QSGTexture::Filtering filtering,
                                  QSGTextureNode::TextureCoordinatesTransformMode texCoordTransForm,
                                  QSGNode *layerChain) override
     {
@@ -341,20 +337,19 @@ public:
         textureNode->setRect(rect);
         textureNode->setSourceRect(sourceRect);
         textureNode->setTexture(texture);
-        textureNode->setFiltering(filtering);
+        textureNode->setFiltering(texture->filtering());
 
         layerChain->appendChildNode(textureNode);
         m_sceneGraphNodes->append(textureNode);
     }
 
     void setupTiledContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
-                               QSGTexture::Filtering filtering,
                                QSGNode *layerChain) override
     {
         QSGTextureNode *textureNode = m_apiDelegate->createTextureNode();
         textureNode->setRect(rect);
         textureNode->setSourceRect(sourceRect);
-        textureNode->setFiltering(filtering);
+        textureNode->setFiltering(texture->filtering());
         textureNode->setTexture(texture);
 
         layerChain->appendChildNode(textureNode);
@@ -674,6 +669,7 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
             Q_UNREACHABLE();
 #endif
         }
+        texture->setFiltering(m_resource.filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
         m_texture = texture;
     }
     // All quads using a resource should request the same blending state.
@@ -1128,8 +1124,6 @@ void DelegatedFrameNode::handleQuad(
 
         nodeHandler->setupTextureContentNode(
             texture, toQt(quad->rect), toQt(uv_rect),
-            resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear
-                                                                 : QSGTexture::Nearest,
             tquad->y_flipped ? QSGTextureNode::MirrorVertically : QSGTextureNode::NoTransform,
             currentLayerChain);
         break;
@@ -1173,8 +1167,6 @@ void DelegatedFrameNode::handleQuad(
         nodeHandler->setupTiledContentNode(
             initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate),
             toQt(quad->rect), toQt(tquad->tex_coord_rect),
-            resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear
-                                                                 : QSGTexture::Nearest,
             currentLayerChain);
         break;
 #ifndef QT_NO_OPENGL
