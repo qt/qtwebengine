@@ -368,7 +368,6 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
 {
     m_delegate.reset(delegate);
-    m_compositor->setViewDelegate(delegate);
 }
 
 void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterClient)
@@ -747,7 +746,9 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
     if (dpiScale != 0 && dpiScale != 1)
         frame.metadata.device_scale_factor /= dpiScale;
 
-    m_compositor->submitFrame(std::move(frame));
+    m_compositor->submitFrame(
+        std::move(frame),
+        base::BindOnce(&RenderWidgetHostViewQtDelegate::update, base::Unretained(m_delegate.get())));
 
     if (m_loadVisuallyCommittedState == NotCommitted) {
         m_loadVisuallyCommittedState = DidFirstCompositorFrameSwap;
@@ -964,7 +965,7 @@ QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
         if (host()->SynchronizeVisualProperties())
             m_pendingResize = false;
     }
-    return m_compositor->updatePaintNode(oldNode);
+    return m_compositor->updatePaintNode(oldNode, m_delegate.get());
 }
 
 void RenderWidgetHostViewQt::notifyResize()

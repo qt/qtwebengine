@@ -43,14 +43,8 @@
 #include "base/containers/circular_deque.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass.h"
-#include "components/viz/common/resources/transferable_resource.h"
-#include "gpu/command_buffer/service/sync_point_manager.h"
-#include "ui/gl/gl_fence.h"
-#include <QMutex>
 #include <QSGNode>
-#include <QSharedData>
 #include <QSharedPointer>
-#include <QWaitCondition>
 #include <QtGui/QOffscreenSurface>
 
 #include "chromium_gpu_helper.h"
@@ -72,77 +66,60 @@ class DrawPolygon;
 
 namespace QtWebEngineCore {
 
+class CompositorResource;
+class CompositorResourceTracker;
 class DelegatedNodeTreeHandler;
 class MailboxTexture;
-class ResourceHolder;
-
-// Separating this data allows another DelegatedFrameNode to reconstruct the QSGNode tree from the mailbox textures
-// and render pass information.
-class ChromiumCompositorData : public QSharedData {
-public:
-    ChromiumCompositorData() : frameDevicePixelRatio(1) { }
-    QHash<unsigned, QSharedPointer<ResourceHolder> > resourceHolders;
-    viz::CompositorFrame frameData;
-    viz::CompositorFrame previousFrameData;
-    qreal frameDevicePixelRatio;
-};
 
 class DelegatedFrameNode : public QSGTransformNode {
 public:
     DelegatedFrameNode();
     ~DelegatedFrameNode();
-    void preprocess();
-    void commit(ChromiumCompositorData *chromiumCompositorData, std::vector<viz::ReturnedResource> *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
+    void preprocess() override;
+    void commit(const viz::CompositorFrame &pendingFrame, const viz::CompositorFrame &committedFrame, const CompositorResourceTracker *resourceTracker, RenderWidgetHostViewQtDelegate *apiDelegate);
 
 private:
     void flushPolygons(base::circular_deque<std::unique_ptr<viz::DrawPolygon> > *polygonQueue,
         QSGNode *renderPassChain,
         DelegatedNodeTreeHandler *nodeHandler,
-        QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+        const CompositorResourceTracker *resourceTracker,
         RenderWidgetHostViewQtDelegate *apiDelegate);
     void handlePolygon(
         const viz::DrawPolygon *polygon,
         QSGNode *currentLayerChain,
         DelegatedNodeTreeHandler *nodeHandler,
-        QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+        const CompositorResourceTracker *resourceTracker,
         RenderWidgetHostViewQtDelegate *apiDelegate);
     void handleClippedQuad(
         const viz::DrawQuad *quad,
         const gfx::QuadF &clipRegion,
         QSGNode *currentLayerChain,
         DelegatedNodeTreeHandler *nodeHandler,
-        QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+        const CompositorResourceTracker *resourceTracker,
         RenderWidgetHostViewQtDelegate *apiDelegate);
     void handleQuad(
         const viz::DrawQuad *quad,
         QSGNode *currentLayerChain,
         DelegatedNodeTreeHandler *nodeHandler,
-        QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+        const CompositorResourceTracker *resourceTracker,
         RenderWidgetHostViewQtDelegate *apiDelegate);
-    void fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxesToFetch);
-    // Making those callbacks static bypasses base::Bind's ref-counting requirement
-    // of the this pointer when the callback is a method.
-    static void pullTexture(DelegatedFrameNode *frameNode, MailboxTexture *mailbox);
-    static void pullTextures(DelegatedFrameNode *frameNode, const QVector<MailboxTexture *> mailboxes);
-    static void fenceAndUnlockQt(DelegatedFrameNode *frameNode);
-    static void unlockQt(DelegatedFrameNode *frameNode);
 
-    ResourceHolder *findAndHoldResource(unsigned resourceId, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
-    void holdResources(const viz::DrawQuad *quad, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
-    void holdResources(const viz::RenderPass *pass, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
-    QSGTexture *initAndHoldTexture(ResourceHolder *resource, bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate = 0);
+    const CompositorResource *findAndHoldResource(unsigned resourceId, const CompositorResourceTracker *resourceTracker);
+    void holdResources(const viz::DrawQuad *quad, const CompositorResourceTracker *resourceTracker);
+    void holdResources(const viz::RenderPass *pass, const CompositorResourceTracker *resourceTracker);
+    QSGTexture *initAndHoldTexture(const CompositorResource *resource, bool hasAlphaChannel, RenderWidgetHostViewQtDelegate *apiDelegate = 0, int target = -1);
+    QSharedPointer<QSGTexture> createBitmapTexture(const CompositorResource *resource, bool hasAlphaChannel, RenderWidgetHostViewQtDelegate *apiDelegate);
+    QSharedPointer<MailboxTexture> createMailboxTexture(const CompositorResource *resource, bool hasAlphaChannel, int target);
 
-    QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
+    void copyMailboxTextures();
+
     struct SGObjects {
         QVector<QPair<int, QSharedPointer<QSGLayer> > > renderPassLayers;
         QVector<QSharedPointer<QSGRootNode> > renderPassRootNodes;
-        QVector<QSharedPointer<QSGTexture> > textureStrongRefs;
-    } m_sgObjects;
+        QHash<unsigned, QSharedPointer<QSGTexture> > bitmapTextures;
+        QHash<unsigned, QSharedPointer<MailboxTexture> > mailboxTextures;
+    } m_sgObjects, m_previousSGObjects;
     QVector<QSGNode*> m_sceneGraphNodes;
-    int m_numPendingSyncPoints;
-    QWaitCondition m_mailboxesFetchedWaitCond;
-    QMutex m_mutex;
-    QList<gl::TransferableFence> m_textureFences;
 #if defined(USE_OZONE)
     bool m_contextShared;
     QScopedPointer<QOffscreenSurface> m_offsurface;

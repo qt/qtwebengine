@@ -49,17 +49,14 @@
 #include "delegated_frame_node.h"
 
 #include "chromium_gpu_helper.h"
-#include "ozone/gl_surface_qt.h"
 #include "stream_video_node.h"
 #include "type_conversion.h"
 #include "yuv_video_node.h"
+#include "compositor_resource_tracker.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -68,14 +65,8 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
-#include "components/viz/common/resources/returned_resource.h"
-#include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
-#include "content/browser/browser_main_loop.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_fence.h"
 
 #ifndef QT_NO_OPENGL
 # include <QOpenGLContext>
@@ -121,7 +112,7 @@ namespace QtWebEngineCore {
 #ifndef QT_NO_OPENGL
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
 public:
-    MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QSize textureSize);
+    MailboxTexture(const CompositorResource *resource, bool hasAlphaChannel, int target = -1);
     ~MailboxTexture();
     // QSGTexture:
     int textureId() const override { return m_textureId; }
@@ -130,14 +121,9 @@ public:
     bool hasMipmaps() const override { return false; }
     void bind() override;
 
-    void setHasAlphaChannel(bool hasAlpha) { m_hasAlpha = hasAlpha; }
-    gpu::MailboxHolder &mailboxHolder() { return m_mailboxHolder; }
-    void fetchTexture(gpu::MailboxManager *mailboxManager);
-    void setTarget(GLenum target);
-
 private:
-    gpu::MailboxHolder m_mailboxHolder;
     int m_textureId;
+    scoped_refptr<CompositorResourceFence> m_fence;
     QSize m_textureSize;
     bool m_hasAlpha;
     GLenum m_target;
@@ -150,20 +136,6 @@ private:
     friend class DelegatedFrameNode;
 };
 #endif // QT_NO_OPENGL
-class ResourceHolder {
-public:
-    ResourceHolder(const viz::TransferableResource &resource);
-    QSharedPointer<QSGTexture> initTexture(bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate = 0);
-    QSGTexture *texture() const { return m_texture.data(); }
-    viz::ReturnedResource returnResource();
-    void incImportCount() { ++m_importCount; }
-    bool needsToFetch() const { return !m_resource.is_software && m_texture && !m_texture.data()->textureId(); }
-
-private:
-    QWeakPointer<QSGTexture> m_texture;
-    viz::TransferableResource m_resource;
-    int m_importCount;
-};
 
 class RectClipNode : public QSGClipNode
 {
@@ -447,99 +419,12 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const viz::SharedQuadState
 }
 
 #ifndef QT_NO_OPENGL
-static void waitChromiumSync(gl::TransferableFence *sync)
-{
-    // Chromium uses its own GL bindings and stores in in thread local storage.
-    // For that reason, let chromium_gpu_helper.cpp contain the producing code that will run in the Chromium
-    // GPU thread, and put the sync consuming code here that will run in the QtQuick SG or GUI thread.
-    switch (sync->type) {
-    case gl::TransferableFence::NoSync:
-        break;
-    case gl::TransferableFence::EglSync:
-#ifdef EGL_KHR_reusable_sync
-    {
-        static bool resolved = false;
-        static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR = 0;
-
-        if (!resolved) {
-            if (gl::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
-                QOpenGLContext *context = QOpenGLContext::currentContext();
-                eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC)context->getProcAddress("eglClientWaitSyncKHR");
-            }
-            resolved = true;
-        }
-
-        if (eglClientWaitSyncKHR)
-            // FIXME: Use the less wasteful eglWaitSyncKHR once we have a device that supports EGL_KHR_wait_sync.
-            eglClientWaitSyncKHR(sync->egl.display, sync->egl.sync, 0, EGL_FOREVER_KHR);
-    }
-#endif
-        break;
-    case gl::TransferableFence::ArbSync:
-        typedef void (QOPENGLF_APIENTRYP WaitSyncPtr)(GLsync sync, GLbitfield flags, GLuint64 timeout);
-        static WaitSyncPtr glWaitSync_ = 0;
-        if (!glWaitSync_) {
-            QOpenGLContext *context = QOpenGLContext::currentContext();
-            glWaitSync_ = (WaitSyncPtr)context->getProcAddress("glWaitSync");
-            Q_ASSERT(glWaitSync_);
-        }
-        glWaitSync_(sync->arb.sync, 0, GL_TIMEOUT_IGNORED);
-        break;
-    }
-}
-
-static void deleteChromiumSync(gl::TransferableFence *sync)
-{
-    // Chromium uses its own GL bindings and stores in in thread local storage.
-    // For that reason, let chromium_gpu_helper.cpp contain the producing code that will run in the Chromium
-    // GPU thread, and put the sync consuming code here that will run in the QtQuick SG or GUI thread.
-    switch (sync->type) {
-    case gl::TransferableFence::NoSync:
-        break;
-    case gl::TransferableFence::EglSync:
-#ifdef EGL_KHR_reusable_sync
-    {
-        static bool resolved = false;
-        static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR = 0;
-
-        if (!resolved) {
-            if (gl::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
-                QOpenGLContext *context = QOpenGLContext::currentContext();
-                eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC)context->getProcAddress("eglDestroySyncKHR");
-            }
-            resolved = true;
-        }
-
-        if (eglDestroySyncKHR) {
-            // FIXME: Use the less wasteful eglWaitSyncKHR once we have a device that supports EGL_KHR_wait_sync.
-            eglDestroySyncKHR(sync->egl.display, sync->egl.sync);
-            sync->reset();
-        }
-    }
-#endif
-        break;
-    case gl::TransferableFence::ArbSync:
-        typedef void (QOPENGLF_APIENTRYP DeleteSyncPtr)(GLsync sync);
-        static DeleteSyncPtr glDeleteSync_ = 0;
-        if (!glDeleteSync_) {
-            QOpenGLContext *context = QOpenGLContext::currentContext();
-            glDeleteSync_ = (DeleteSyncPtr)context->getProcAddress("glDeleteSync");
-            Q_ASSERT(glDeleteSync_);
-        }
-        glDeleteSync_(sync->arb.sync);
-        sync->reset();
-        break;
-    }
-    // If Chromium was able to create a sync, we should have been able to handle its type here too.
-    Q_ASSERT(!*sync);
-}
-
-MailboxTexture::MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QSize textureSize)
-    : m_mailboxHolder(mailboxHolder)
-    , m_textureId(0)
-    , m_textureSize(textureSize)
-    , m_hasAlpha(false)
-    , m_target(GL_TEXTURE_2D)
+MailboxTexture::MailboxTexture(const CompositorResource *resource, bool hasAlphaChannel, int target)
+    : m_textureId(resource->texture_id)
+    , m_fence(resource->texture_fence)
+    , m_textureSize(toQt(resource->size))
+    , m_hasAlpha(hasAlphaChannel)
+    , m_target(target >= 0 ? target : GL_TEXTURE_2D)
 #if defined(USE_OZONE)
     , m_ownsTexture(false)
 #endif
@@ -570,6 +455,8 @@ MailboxTexture::~MailboxTexture()
 
 void MailboxTexture::bind()
 {
+    if (m_fence)
+        m_fence->wait();
     glBindTexture(m_target, m_textureId);
 #ifdef Q_OS_QNX
     if (m_target == GL_TEXTURE_EXTERNAL_OES) {
@@ -586,85 +473,7 @@ void MailboxTexture::bind()
     }
 #endif
 }
-
-void MailboxTexture::setTarget(GLenum target)
-{
-    m_target = target;
-}
-
-void MailboxTexture::fetchTexture(gpu::MailboxManager *mailboxManager)
-{
-    gpu::TextureBase *tex = ConsumeTexture(mailboxManager, m_target, m_mailboxHolder.mailbox);
-
-    // The texture might already have been deleted (e.g. when navigating away from a page).
-    if (tex) {
-        m_textureId = service_id(tex);
-#ifdef Q_OS_QNX
-        if (m_target == GL_TEXTURE_EXTERNAL_OES) {
-            m_eglStreamData = eglstream_connect_consumer(tex);
-        }
-#endif
-    }
-}
-#endif //QT_NO_OPENGL
-
-ResourceHolder::ResourceHolder(const viz::TransferableResource &resource)
-    : m_resource(resource)
-    , m_importCount(1)
-{
-}
-
-QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, RenderWidgetHostViewQtDelegate *apiDelegate)
-{
-    QSharedPointer<QSGTexture> texture = m_texture.toStrongRef();
-    if (!texture) {
-        if (m_resource.is_software) {
-            Q_ASSERT(apiDelegate);
-            std::unique_ptr<viz::SharedBitmap> sharedBitmap =
-                    content::BrowserMainLoop::GetInstance()->GetServerSharedBitmapManager()->GetSharedBitmapFromId(
-                        m_resource.size, viz::BGRA_8888, m_resource.mailbox_holder.mailbox);
-            // QSG interprets QImage::hasAlphaChannel meaning that a node should enable blending
-            // to draw it but Chromium keeps this information in the quads.
-            // The input format is currently always Format_ARGB32_Premultiplied, so assume that all
-            // alpha bytes are 0xff if quads aren't requesting blending and avoid the conversion
-            // from Format_ARGB32_Premultiplied to Format_RGB32 just to get hasAlphaChannel to
-            // return false.
-            QImage::Format format = quadNeedsBlending ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
-            QImage image = sharedBitmap
-                         ? QImage(sharedBitmap->pixels(), m_resource.size.width(), m_resource.size.height(), format)
-                         : QImage(m_resource.size.width(), m_resource.size.height(), format);
-            texture.reset(apiDelegate->createTextureFromImage(image.copy()));
-        } else {
-#ifndef QT_NO_OPENGL
-            texture.reset(new MailboxTexture(m_resource.mailbox_holder, toQt(m_resource.size)));
-            static_cast<MailboxTexture *>(texture.data())->setHasAlphaChannel(quadNeedsBlending);
-#else
-            Q_UNREACHABLE();
-#endif
-        }
-        texture->setFiltering(m_resource.filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
-        m_texture = texture;
-    }
-    // All quads using a resource should request the same blending state.
-    Q_ASSERT(texture->hasAlphaChannel() || !quadNeedsBlending);
-    return texture;
-}
-
-viz::ReturnedResource ResourceHolder::returnResource()
-{
-    viz::ReturnedResource returned;
-    // The ResourceProvider ensures that the resource isn't used by the parent compositor's GL
-    // context in the GPU process by inserting a sync point to be waited for by the child
-    // compositor's GL context. We don't need this since we are triggering the delegated frame
-    // ack directly from our rendering thread. At this point (in updatePaintNode) we know that
-    // a frame that was compositing any of those resources has already been swapped and we thus
-    // don't need to use this mechanism.
-    returned.id = m_resource.id;
-    returned.count = m_importCount;
-    m_importCount = 0;
-    return returned;
-}
-
+#endif // !QT_NO_OPENGL
 
 RectClipNode::RectClipNode(const QRectF &rect)
     : m_geometry(QSGGeometry::defaultAttributes_Point2D(), 4)
@@ -676,9 +485,8 @@ RectClipNode::RectClipNode(const QRectF &rect)
 }
 
 DelegatedFrameNode::DelegatedFrameNode()
-    : m_numPendingSyncPoints(0)
 #if defined(USE_OZONE) && !defined(QT_NO_OPENGL)
-    , m_contextShared(true)
+    : m_contextShared(true)
 #endif
 {
     setFlag(UsePreprocess);
@@ -704,22 +512,6 @@ DelegatedFrameNode::~DelegatedFrameNode()
 
 void DelegatedFrameNode::preprocess()
 {
-#ifndef QT_NO_OPENGL
-    // With the threaded render loop the GUI thread has been unlocked at this point.
-    // We can now wait for the Chromium GPU thread to produce textures that will be
-    // rendered on our quads and fetch the IDs from the mailboxes we were given.
-    QList<MailboxTexture *> mailboxesToFetch;
-    typedef QHash<unsigned, QSharedPointer<ResourceHolder> >::const_iterator ResourceHolderIterator;
-    ResourceHolderIterator end = m_chromiumCompositorData->resourceHolders.constEnd();
-    for (ResourceHolderIterator it = m_chromiumCompositorData->resourceHolders.constBegin(); it != end ; ++it) {
-        if ((*it)->needsToFetch())
-            mailboxesToFetch.append(static_cast<MailboxTexture *>((*it)->texture()));
-    }
-
-    if (!mailboxesToFetch.isEmpty())
-        fetchAndSyncMailboxes(mailboxesToFetch);
-#endif
-
     // Then render any intermediate RenderPass in order.
     typedef QPair<int, QSharedPointer<QSGLayer> > Pair;
     for (const Pair &pair : qAsConst(m_sgObjects.renderPassLayers)) {
@@ -746,8 +538,8 @@ static bool areSharedQuadStatesEqual(const viz::SharedQuadState *layerState,
 // Compares if the frame data that we got from the Chromium Compositor is
 // *structurally* equivalent to the one of the previous frame.
 // If it is, we will just reuse and update the old nodes where necessary.
-static bool areRenderPassStructuresEqual(viz::CompositorFrame *frameData,
-                                         viz::CompositorFrame *previousFrameData)
+static bool areRenderPassStructuresEqual(const viz::CompositorFrame *frameData,
+                                         const viz::CompositorFrame *previousFrameData)
 {
     if (!previousFrameData)
         return false;
@@ -799,12 +591,12 @@ static bool areRenderPassStructuresEqual(viz::CompositorFrame *frameData,
     return true;
 }
 
-void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
-                                std::vector<viz::ReturnedResource> *resourcesToRelease,
+void DelegatedFrameNode::commit(const viz::CompositorFrame &pendingFrame,
+                                const viz::CompositorFrame &committedFrame,
+                                const CompositorResourceTracker *resourceTracker,
                                 RenderWidgetHostViewQtDelegate *apiDelegate)
 {
-    m_chromiumCompositorData = chromiumCompositorData;
-    viz::CompositorFrame* frameData = &m_chromiumCompositorData->frameData;
+    const viz::CompositorFrame* frameData = &pendingFrame;
     if (frameData->render_pass_list.empty())
         return;
 
@@ -812,27 +604,11 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // countering the scale of devicePixel-scaled tiles when rendering them
     // to the final surface.
     QMatrix4x4 matrix;
-    const float devicePixelRatio = m_chromiumCompositorData->frameDevicePixelRatio;
+    const float devicePixelRatio = frameData->metadata.device_scale_factor;
     matrix.scale(1 / devicePixelRatio, 1 / devicePixelRatio);
     if (QSGTransformNode::matrix() != matrix)
         setMatrix(matrix);
 
-    QHash<unsigned, QSharedPointer<ResourceHolder> > resourceCandidates;
-    qSwap(m_chromiumCompositorData->resourceHolders, resourceCandidates);
-
-    // A frame's resource_list only contains the new resources to be added to the scene. Quads can
-    // still reference resources that were added in previous frames. Add them to the list of
-    // candidates to be picked up by quads, it's then our responsibility to return unused resources
-    // to the producing child compositor.
-    for (unsigned i = 0; i < frameData->resource_list.size(); ++i) {
-        const viz::TransferableResource &res = frameData->resource_list.at(i);
-        if (QSharedPointer<ResourceHolder> resource = resourceCandidates.value(res.id))
-            resource->incImportCount();
-        else
-            resourceCandidates[res.id] = QSharedPointer<ResourceHolder>(new ResourceHolder(res));
-    }
-
-    frameData->resource_list.clear();
     QScopedPointer<DelegatedNodeTreeHandler> nodeHandler;
 
     const QSizeF viewportSizeInPt = apiDelegate->screenRect().size();
@@ -846,26 +622,22 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
     // Additionally, because we clip (i.e. don't build scene graph nodes for) quads outside
     // of the visible area, we also have to rebuild the tree whenever the window is resized.
     const bool buildNewTree =
-        !areRenderPassStructuresEqual(frameData, &m_chromiumCompositorData->previousFrameData) ||
+        !areRenderPassStructuresEqual(frameData, &committedFrame) ||
         m_sceneGraphNodes.empty() ||
         viewportSize != m_previousViewportSize;
 
-    m_chromiumCompositorData->previousFrameData = viz::CompositorFrame();
-    SGObjects previousSGObjects;
-    QVector<QSharedPointer<QSGTexture> > textureStrongRefs;
     if (buildNewTree) {
         // Keep the old objects in scope to hold a ref on layers, resources and textures
         // that we can re-use. Destroy the remaining objects before returning.
-        qSwap(m_sgObjects, previousSGObjects);
+        qSwap(m_sgObjects, m_previousSGObjects);
         // Discard the scene graph nodes from the previous frame.
         while (QSGNode *oldChain = firstChild())
             delete oldChain;
         m_sceneGraphNodes.clear();
         nodeHandler.reset(new DelegatedNodeTreeCreator(&m_sceneGraphNodes, apiDelegate));
     } else {
-        // Save the texture strong refs so they only go out of scope when the method returns and
-        // the new vector of texture strong refs has been filled.
-        qSwap(m_sgObjects.textureStrongRefs, textureStrongRefs);
+        qSwap(m_sgObjects.bitmapTextures, m_previousSGObjects.bitmapTextures);
+        qSwap(m_sgObjects.mailboxTextures, m_previousSGObjects.mailboxTextures);
         nodeHandler.reset(new DelegatedNodeTreeUpdater(&m_sceneGraphNodes));
     }
     // The RenderPasses list is actually a tree where a parent RenderPass is connected
@@ -885,7 +657,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
         if (pass != rootRenderPass) {
             QSharedPointer<QSGLayer> rpLayer;
             if (buildNewTree) {
-                rpLayer = findRenderPassLayer(pass->id, previousSGObjects.renderPassLayers);
+                rpLayer = findRenderPassLayer(pass->id, m_previousSGObjects.renderPassLayers);
                 if (!rpLayer) {
                     rpLayer = QSharedPointer<QSGLayer>(apiDelegate->createLayer());
                     // Avoid any premature texture update since we need to wait
@@ -914,7 +686,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
         }
 
         if (scissorRect.IsEmpty()) {
-            holdResources(pass, resourceCandidates);
+            holdResources(pass, resourceTracker);
             continue;
         }
 
@@ -940,13 +712,13 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
                 targetRect.Intersect(quadState->clip_rect);
             targetRect.Intersect(scissorRect);
             if (targetRect.IsEmpty()) {
-                holdResources(quad, resourceCandidates);
+                holdResources(quad, resourceTracker);
                 continue;
             }
 
             if (quadState->sorting_context_id != currentSortingContextId) {
                 flushPolygons(&polygonQueue, renderPassChain,
-                              nodeHandler.data(), resourceCandidates, apiDelegate);
+                              nodeHandler.data(), resourceTracker, apiDelegate);
                 currentSortingContextId = quadState->sorting_context_id;
             }
 
@@ -968,28 +740,23 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
             }
 
             handleQuad(quad, currentLayerChain,
-                       nodeHandler.data(), resourceCandidates, apiDelegate);
+                       nodeHandler.data(), resourceTracker, apiDelegate);
         }
         flushPolygons(&polygonQueue, renderPassChain,
-                      nodeHandler.data(), resourceCandidates, apiDelegate);
+                      nodeHandler.data(), resourceTracker, apiDelegate);
     }
-    // Send resources of remaining candidates back to the child compositors so that
-    // they can be freed or reused.
-    typedef QHash<unsigned, QSharedPointer<ResourceHolder> >::const_iterator
-            ResourceHolderIterator;
 
-    ResourceHolderIterator end = resourceCandidates.constEnd();
-    for (ResourceHolderIterator it = resourceCandidates.constBegin(); it != end ; ++it)
-        resourcesToRelease->push_back((*it)->returnResource());
+    copyMailboxTextures();
 
     m_previousViewportSize = viewportSize;
+    m_previousSGObjects = SGObjects();
 }
 
 void DelegatedFrameNode::flushPolygons(
     base::circular_deque<std::unique_ptr<viz::DrawPolygon>> *polygonQueue,
     QSGNode *renderPassChain,
     DelegatedNodeTreeHandler *nodeHandler,
-    QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+    const CompositorResourceTracker *resourceTracker,
     RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     if (polygonQueue->empty())
@@ -1009,7 +776,7 @@ void DelegatedFrameNode::flushPolygons(
         polygon->TransformToLayerSpace(inverseTransform);
 
         handlePolygon(polygon, currentLayerChain,
-                      nodeHandler, resourceCandidates, apiDelegate);
+                      nodeHandler, resourceTracker, apiDelegate);
     };
 
     viz::BspTree(polygonQueue).TraverseWithActionHandler(&actionHandler);
@@ -1019,20 +786,20 @@ void DelegatedFrameNode::handlePolygon(
     const viz::DrawPolygon *polygon,
     QSGNode *currentLayerChain,
     DelegatedNodeTreeHandler *nodeHandler,
-    QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+    const CompositorResourceTracker *resourceTracker,
     RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     const viz::DrawQuad *quad = polygon->original_ref();
 
     if (!polygon->is_split()) {
         handleQuad(quad, currentLayerChain,
-                   nodeHandler, resourceCandidates, apiDelegate);
+                   nodeHandler, resourceTracker, apiDelegate);
     } else {
         std::vector<gfx::QuadF> clipRegionList;
         polygon->ToQuads2D(&clipRegionList);
         for (const auto & clipRegion : clipRegionList)
             handleClippedQuad(quad, clipRegion, currentLayerChain,
-                              nodeHandler, resourceCandidates, apiDelegate);
+                              nodeHandler, resourceTracker, apiDelegate);
     }
 }
 
@@ -1041,7 +808,7 @@ void DelegatedFrameNode::handleClippedQuad(
     const gfx::QuadF &clipRegion,
     QSGNode *currentLayerChain,
     DelegatedNodeTreeHandler *nodeHandler,
-    QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+    const CompositorResourceTracker *resourceTracker,
     RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     if (currentLayerChain) {
@@ -1059,21 +826,21 @@ void DelegatedFrameNode::handleClippedQuad(
         currentLayerChain = clipNode;
     }
     handleQuad(quad, currentLayerChain,
-               nodeHandler, resourceCandidates, apiDelegate);
+               nodeHandler, resourceTracker, apiDelegate);
 }
 
 void DelegatedFrameNode::handleQuad(
     const viz::DrawQuad *quad,
     QSGNode *currentLayerChain,
     DelegatedNodeTreeHandler *nodeHandler,
-    QHash<unsigned, QSharedPointer<ResourceHolder> > &resourceCandidates,
+    const CompositorResourceTracker *resourceTracker,
     RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     switch (quad->material) {
     case viz::DrawQuad::RENDER_PASS: {
         const viz::RenderPassDrawQuad *renderPassQuad = viz::RenderPassDrawQuad::MaterialCast(quad);
         if (!renderPassQuad->mask_texture_size.IsEmpty()) {
-            ResourceHolder *resource = findAndHoldResource(renderPassQuad->mask_resource_id(), resourceCandidates);
+            const CompositorResource *resource = findAndHoldResource(renderPassQuad->mask_resource_id(), resourceTracker);
             Q_UNUSED(resource); // FIXME: QTBUG-67652
         }
         QSGLayer *layer =
@@ -1086,7 +853,7 @@ void DelegatedFrameNode::handleQuad(
     }
     case viz::DrawQuad::TEXTURE_CONTENT: {
         const viz::TextureDrawQuad *tquad = viz::TextureDrawQuad::MaterialCast(quad);
-        ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
+        const CompositorResource *resource = findAndHoldResource(tquad->resource_id(), resourceTracker);
         QSGTexture *texture =
             initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate);
         QSizeF textureSize;
@@ -1137,7 +904,7 @@ void DelegatedFrameNode::handleQuad(
     }
     case viz::DrawQuad::TILED_CONTENT: {
         const viz::TileDrawQuad *tquad = viz::TileDrawQuad::MaterialCast(quad);
-        ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
+        const CompositorResource *resource = findAndHoldResource(tquad->resource_id(), resourceTracker);
         nodeHandler->setupTextureContentNode(
             initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate),
             toQt(quad->rect), toQt(tquad->tex_coord_rect),
@@ -1147,17 +914,17 @@ void DelegatedFrameNode::handleQuad(
     }
     case viz::DrawQuad::YUV_VIDEO_CONTENT: {
         const viz::YUVVideoDrawQuad *vquad = viz::YUVVideoDrawQuad::MaterialCast(quad);
-        ResourceHolder *yResource =
-            findAndHoldResource(vquad->y_plane_resource_id(), resourceCandidates);
-        ResourceHolder *uResource =
-            findAndHoldResource(vquad->u_plane_resource_id(), resourceCandidates);
-        ResourceHolder *vResource =
-            findAndHoldResource(vquad->v_plane_resource_id(), resourceCandidates);
-        ResourceHolder *aResource = 0;
+        const CompositorResource *yResource =
+            findAndHoldResource(vquad->y_plane_resource_id(), resourceTracker);
+        const CompositorResource *uResource =
+            findAndHoldResource(vquad->u_plane_resource_id(), resourceTracker);
+        const CompositorResource *vResource =
+            findAndHoldResource(vquad->v_plane_resource_id(), resourceTracker);
+        const CompositorResource *aResource = nullptr;
         // This currently requires --enable-vp8-alpha-playback and
         // needs a video with alpha data to be triggered.
         if (vquad->a_plane_resource_id())
-            aResource = findAndHoldResource(vquad->a_plane_resource_id(), resourceCandidates);
+            aResource = findAndHoldResource(vquad->a_plane_resource_id(), resourceTracker);
 
         nodeHandler->setupYUVVideoNode(
             initAndHoldTexture(yResource, quad->ShouldDrawWithBlending()),
@@ -1173,11 +940,9 @@ void DelegatedFrameNode::handleQuad(
     }
     case viz::DrawQuad::STREAM_VIDEO_CONTENT: {
         const viz::StreamVideoDrawQuad *squad = viz::StreamVideoDrawQuad::MaterialCast(quad);
-        ResourceHolder *resource = findAndHoldResource(squad->resource_id(), resourceCandidates);
+        const CompositorResource *resource = findAndHoldResource(squad->resource_id(), resourceTracker);
         MailboxTexture *texture = static_cast<MailboxTexture *>(
-            initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
-        // since this is not default TEXTURE_2D type
-        texture->setTarget(GL_TEXTURE_EXTERNAL_OES);
+            initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate, GL_TEXTURE_EXTERNAL_OES));
 
         nodeHandler->setupStreamVideoNode(texture, toQt(squad->rect), toQt(squad->matrix.matrix()),
                                           currentLayerChain);
@@ -1192,75 +957,87 @@ void DelegatedFrameNode::handleQuad(
     }
 }
 
-ResourceHolder *DelegatedFrameNode::findAndHoldResource(unsigned resourceId, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
+const CompositorResource *DelegatedFrameNode::findAndHoldResource(unsigned resourceId, const CompositorResourceTracker *resourceTracker)
 {
-    // ResourceHolders must survive when the scene graph destroys our node branch
-    QSharedPointer<ResourceHolder> &resource = m_chromiumCompositorData->resourceHolders[resourceId];
-    if (!resource)
-        resource = candidates.take(resourceId);
-    Q_ASSERT(resource);
-    return resource.data();
+    return resourceTracker->findResource(resourceId);
 }
 
-void DelegatedFrameNode::holdResources(const viz::DrawQuad *quad, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
+void DelegatedFrameNode::holdResources(const viz::DrawQuad *quad, const CompositorResourceTracker *resourceTracker)
 {
     for (auto resource : quad->resources)
-        findAndHoldResource(resource, candidates);
+        findAndHoldResource(resource, resourceTracker);
 }
 
-void DelegatedFrameNode::holdResources(const viz::RenderPass *pass, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
+void DelegatedFrameNode::holdResources(const viz::RenderPass *pass, const CompositorResourceTracker *resourceTracker)
 {
     for (const auto &quad : pass->quad_list)
-        holdResources(quad, candidates);
+        holdResources(quad, resourceTracker);
 }
 
-QSGTexture *DelegatedFrameNode::initAndHoldTexture(ResourceHolder *resource, bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate)
+template<class Container, class Key>
+inline auto &findTexture(Container &map, Container &previousMap, const Key &key)
 {
-    // QSGTextures must be destroyed in the scene graph thread as part of the QSGNode tree,
-    // so we can't store them with the ResourceHolder in m_chromiumCompositorData.
-    // Hold them through a QSharedPointer solely on the root DelegatedFrameNode of the web view
-    // and access them through a QWeakPointer from the resource holder to find them later.
-    m_sgObjects.textureStrongRefs.append(resource->initTexture(quadIsAllOpaque, apiDelegate));
-    return m_sgObjects.textureStrongRefs.last().data();
+    auto &value = map[key];
+    if (value)
+        return value;
+    value = previousMap[key];
+    return value;
 }
 
-void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxesToFetch)
+QSGTexture *DelegatedFrameNode::initAndHoldTexture(const CompositorResource *resource, bool hasAlphaChannel, RenderWidgetHostViewQtDelegate *apiDelegate, int target)
+{
+    QSGTexture::Filtering filtering = resource->filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest;
+
+    if (resource->is_software) {
+        QSharedPointer<QSGTexture> &texture =
+            findTexture(m_sgObjects.bitmapTextures, m_previousSGObjects.bitmapTextures, resource->id);
+        if (texture)
+            return texture.data();
+        texture = createBitmapTexture(resource, hasAlphaChannel, apiDelegate);
+        texture->setFiltering(filtering);
+        return texture.data();
+    } else {
+        QSharedPointer<MailboxTexture> &texture =
+            findTexture(m_sgObjects.mailboxTextures, m_previousSGObjects.mailboxTextures, resource->id);
+        if (texture)
+            return texture.data();
+        texture = createMailboxTexture(resource, hasAlphaChannel, target);
+        texture->setFiltering(filtering);
+        return texture.data();
+    }
+}
+
+QSharedPointer<QSGTexture> DelegatedFrameNode::createBitmapTexture(const CompositorResource *resource, bool hasAlphaChannel, RenderWidgetHostViewQtDelegate *apiDelegate)
+{
+    Q_ASSERT(apiDelegate);
+    viz::SharedBitmap *sharedBitmap = resource->bitmap.get();
+    gfx::Size size = resource->size;
+
+    // QSG interprets QImage::hasAlphaChannel meaning that a node should enable blending
+    // to draw it but Chromium keeps this information in the quads.
+    // The input format is currently always Format_ARGB32_Premultiplied, so assume that all
+    // alpha bytes are 0xff if quads aren't requesting blending and avoid the conversion
+    // from Format_ARGB32_Premultiplied to Format_RGB32 just to get hasAlphaChannel to
+    // return false.
+    QImage::Format format = hasAlphaChannel ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+    QImage image = sharedBitmap
+        ? QImage(sharedBitmap->pixels(), size.width(), size.height(), format)
+        : QImage(size.width(), size.height(), format);
+    return QSharedPointer<QSGTexture>(apiDelegate->createTextureFromImage(image.copy()));
+}
+
+QSharedPointer<MailboxTexture> DelegatedFrameNode::createMailboxTexture(const CompositorResource *resource, bool hasAlphaChannel, int target)
 {
 #ifndef QT_NO_OPENGL
-    QList<gl::TransferableFence> transferredFences;
-    {
-        QMutexLocker lock(&m_mutex);
-        QVector<MailboxTexture *> mailboxesToPull;
-        mailboxesToPull.reserve(mailboxesToFetch.size());
+    return QSharedPointer<MailboxTexture>::create(resource, hasAlphaChannel, target);
+#else
+    Q_UNREACHABLE();
+#endif
+}
 
-        gpu::SyncPointManager *syncPointManager = sync_point_manager();
-        scoped_refptr<base::SingleThreadTaskRunner> gpuTaskRunner = gpu_task_runner();
-        Q_ASSERT(m_numPendingSyncPoints == 0);
-        m_numPendingSyncPoints = mailboxesToFetch.count();
-        for (MailboxTexture *mailboxTexture : qAsConst(mailboxesToFetch)) {
-            gpu::SyncToken &syncToken = mailboxTexture->mailboxHolder().sync_token;
-            const auto task = base::Bind(&DelegatedFrameNode::pullTexture, this, mailboxTexture);
-            if (!syncPointManager->WaitOutOfOrder(syncToken, std::move(task)))
-                mailboxesToPull.append(mailboxTexture);
-        }
-        if (!mailboxesToPull.isEmpty()) {
-            auto task = base::BindOnce(&DelegatedFrameNode::pullTextures, this, std::move(mailboxesToPull));
-            gpuTaskRunner->PostTask(FROM_HERE, std::move(task));
-        }
-
-        m_mailboxesFetchedWaitCond.wait(&m_mutex);
-        m_textureFences.swap(transferredFences);
-    }
-
-    for (gl::TransferableFence sync : qAsConst(transferredFences)) {
-        // We need to wait on the fences on the Qt current context, and
-        // can therefore not use GLFence routines that uses a different
-        // concept of current context.
-        waitChromiumSync(&sync);
-        deleteChromiumSync(&sync);
-    }
-
-#if defined(USE_OZONE)
+void DelegatedFrameNode::copyMailboxTextures()
+{
+#if !defined(QT_NO_OPENGL) && defined(USE_OZONE)
     // Workaround when context is not shared QTBUG-48969
     // Make slow copy between two contexts.
     if (!m_contextShared) {
@@ -1275,13 +1052,17 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         GLuint fbo = 0;
         funcs->glGenFramebuffers(1, &fbo);
 
-        for (MailboxTexture *mailboxTexture : qAsConst(mailboxesToFetch)) {
+        for (const QSharedPointer<MailboxTexture> &mailboxTexture : qAsConst(m_sgObjects.mailboxTextures)) {
+            if (mailboxTexture->m_ownsTexture)
+                continue;
+
             // Read texture into QImage from shared context.
             // Switch to shared context.
             sharedContext->makeCurrent(m_offsurface.data());
             funcs = sharedContext->functions();
             QImage img(mailboxTexture->textureSize(), QImage::Format_RGBA8888_Premultiplied);
             funcs->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+            mailboxTexture->m_fence->wait();
             funcs->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mailboxTexture->m_textureId, 0);
             GLenum status = funcs->glCheckFramebufferStatus(GL_FRAMEBUFFER);
             if (status != GL_FRAMEBUFFER_COMPLETE) {
@@ -1315,69 +1096,6 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         currentContext->makeCurrent(surface);
     }
 #endif
-#else
-    Q_UNUSED(mailboxesToFetch)
-#endif //QT_NO_OPENGL
-}
-
-
-void DelegatedFrameNode::pullTextures(DelegatedFrameNode *frameNode, const QVector<MailboxTexture *> textures)
-{
-#ifndef QT_NO_OPENGL
-    gpu::MailboxManager *mailboxManager = mailbox_manager();
-    for (MailboxTexture *texture : textures) {
-        gpu::SyncToken &syncToken = texture->mailboxHolder().sync_token;
-        if (syncToken.HasData())
-            mailboxManager->PullTextureUpdates(syncToken);
-        texture->fetchTexture(mailboxManager);
-        --frameNode->m_numPendingSyncPoints;
-    }
-
-    fenceAndUnlockQt(frameNode);
-#else
-    Q_UNUSED(frameNode)
-    Q_UNUSED(textures)
-#endif
-}
-
-void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTexture *texture)
-{
-#ifndef QT_NO_OPENGL
-    gpu::MailboxManager *mailboxManager = mailbox_manager();
-    gpu::SyncToken &syncToken = texture->mailboxHolder().sync_token;
-    if (syncToken.HasData())
-        mailboxManager->PullTextureUpdates(syncToken);
-    texture->fetchTexture(mailboxManager);
-    --frameNode->m_numPendingSyncPoints;
-
-    fenceAndUnlockQt(frameNode);
-#else
-    Q_UNUSED(frameNode)
-    Q_UNUSED(texture)
-#endif
-}
-
-void DelegatedFrameNode::fenceAndUnlockQt(DelegatedFrameNode *frameNode)
-{
-#ifndef QT_NO_OPENGL
-    if (!!gl::GLContext::GetCurrent() && gl::GLFence::IsSupported()) {
-        // Create a fence on the Chromium GPU-thread and context
-        std::unique_ptr<gl::GLFence> fence = gl::GLFence::Create();
-        // But transfer it to something generic since we need to read it using Qt's OpenGL.
-        frameNode->m_textureFences.append(fence->Transfer());
-    }
-    if (frameNode->m_numPendingSyncPoints == 0)
-        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::unlockQt, frameNode));
-#else
-    Q_UNUSED(frameNode)
-#endif
-}
-
-void DelegatedFrameNode::unlockQt(DelegatedFrameNode *frameNode)
-{
-    QMutexLocker lock(&frameNode->m_mutex);
-    // Signal preprocess() the textures are ready
-    frameNode->m_mailboxesFetchedWaitCond.wakeOne();
 }
 
 } // namespace QtWebEngineCore

@@ -42,6 +42,10 @@
 
 #include <base/memory/weak_ptr.h>
 #include <components/viz/common/frame_sinks/begin_frame_source.h>
+#include <components/viz/common/quads/compositor_frame.h>
+
+#include <QtCore/qglobal.h>
+#include <QtCore/qshareddata.h>
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qshareddata.h>
@@ -51,7 +55,6 @@ class QSGNode;
 QT_END_NAMESPACE
 
 namespace viz {
-class CompositorFrame;
 struct ReturnedResource;
 namespace mojom {
 class CompositorFrameSinkClient;
@@ -60,8 +63,8 @@ class CompositorFrameSinkClient;
 
 namespace QtWebEngineCore {
 
+class CompositorResourceTracker;
 class RenderWidgetHostViewQtDelegate;
-class ChromiumCompositorData;
 
 // Receives viz::CompositorFrames from child compositors and provides QSGNodes
 // to the Qt Quick renderer.
@@ -71,10 +74,10 @@ class ChromiumCompositorData;
 //   Step 1. A new CompositorFrame is received from child compositors and handed
 //   off to submitFrame(). The new frame will start off in a pending state.
 //
-//   Step 2. Once the new frame is ready to be rendered, Compositor will call
-//   update() on the delegate.
+//   Step 2. Once the new frame is ready to be rendered, Compositor will notify
+//   the client by running the callback given to submitFrame().
 //
-//   Step 3. Once the delegate is ready to render, updatePaintNode() should be
+//   Step 3. Once the client is ready to render, updatePaintNode() should be
 //   called to receive the scene graph for the new frame. This call will commit
 //   the pending frame. Until the next frame is ready, all subsequent calls to
 //   updatePaintNode() will keep using this same committed frame.
@@ -87,15 +90,14 @@ public:
     explicit Compositor();
     ~Compositor() override;
 
-    void setViewDelegate(RenderWidgetHostViewQtDelegate *viewDelegate);
     void setFrameSinkClient(viz::mojom::CompositorFrameSinkClient *frameSinkClient);
     void setNeedsBeginFrames(bool needsBeginFrames);
 
-    void submitFrame(viz::CompositorFrame frame);
-
-    QSGNode *updatePaintNode(QSGNode *oldNode);
+    void submitFrame(viz::CompositorFrame frame, base::OnceClosure callback);
+    QSGNode *updatePaintNode(QSGNode *oldNode, RenderWidgetHostViewQtDelegate *viewDelegate);
 
 private:
+    void runSubmitCallback();
     void notifyFrameCommitted();
     void sendPresentationFeedback(uint frame_token);
 
@@ -103,12 +105,13 @@ private:
     bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs &args) override;
     void OnBeginFrameSourcePausedChanged(bool paused) override;
 
-    std::vector<viz::ReturnedResource> m_resourcesToRelease;
-    QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
-    RenderWidgetHostViewQtDelegate *m_viewDelegate = nullptr;
+    viz::CompositorFrame m_committedFrame;
+    viz::CompositorFrame m_pendingFrame;
+    base::OnceClosure m_submitCallback;
+    std::unique_ptr<CompositorResourceTracker> m_resourceTracker;
     std::unique_ptr<viz::SyntheticBeginFrameSource> m_beginFrameSource;
     viz::mojom::CompositorFrameSinkClient *m_frameSinkClient = nullptr;
-    bool m_havePendingFrame = false;
+    bool m_updatePaintNodeShouldCommit = false;
     bool m_needsBeginFrames = false;
 
     base::WeakPtrFactory<Compositor> m_weakPtrFactory{this};

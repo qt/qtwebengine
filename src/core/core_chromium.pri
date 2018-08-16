@@ -55,6 +55,7 @@ SOURCES = \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
         compositor.cpp \
+        compositor_resource_tracker.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
@@ -142,6 +143,8 @@ HEADERS = \
         common/qt_messages.h \
         common/user_script_data.h \
         compositor.h \
+        compositor_resource.h \
+        compositor_resource_tracker.h \
         content_client_qt.h \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \
@@ -262,10 +265,12 @@ qtConfig(webengine-printing-and-pdf) {
 
 contains(QT_CONFIG, opengl) {
     SOURCES += \
+        compositor_resource_fence.cpp \
         yuv_video_node.cpp \
         stream_video_node.cpp
 
     HEADERS += \
+        compositor_resource_fence.h \
         yuv_video_node.h \
         stream_video_node.h
 }

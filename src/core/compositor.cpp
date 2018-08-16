@@ -39,6 +39,7 @@
 
 #include "compositor.h"
 
+#include "compositor_resource_tracker.h"
 #include "delegated_frame_node.h"
 
 #include <components/viz/common/resources/returned_resource.h>
@@ -48,7 +49,7 @@
 namespace QtWebEngineCore {
 
 Compositor::Compositor()
-    : m_chromiumCompositorData(new ChromiumCompositorData)
+    : m_resourceTracker(new CompositorResourceTracker)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -65,13 +66,6 @@ Compositor::~Compositor()
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void Compositor::setViewDelegate(RenderWidgetHostViewQtDelegate *viewDelegate)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    m_viewDelegate = viewDelegate;
-}
-
 void Compositor::setFrameSinkClient(viz::mojom::CompositorFrameSinkClient *frameSinkClient)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -83,7 +77,7 @@ void Compositor::setFrameSinkClient(viz::mojom::CompositorFrameSinkClient *frame
     // should not be returned.
     //
     // TODO(juvaldma): Can there be a pending frame from the old client?
-    m_resourcesToRelease.clear();
+    m_resourceTracker->returnResources();
     m_frameSinkClient = frameSinkClient;
 }
 
@@ -102,21 +96,19 @@ void Compositor::setNeedsBeginFrames(bool needsBeginFrames)
     m_needsBeginFrames = needsBeginFrames;
 }
 
-void Compositor::submitFrame(viz::CompositorFrame frame)
+void Compositor::submitFrame(viz::CompositorFrame frame, base::OnceClosure callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(!m_havePendingFrame);
+    DCHECK(!m_submitCallback);
 
-    m_chromiumCompositorData->frameDevicePixelRatio = frame.metadata.device_scale_factor;
-    m_chromiumCompositorData->previousFrameData = std::move(m_chromiumCompositorData->frameData);
-    m_chromiumCompositorData->frameData = std::move(frame);
-    m_havePendingFrame = true;
-
-    // Tell viewDelegate to call updatePaintNode() soon.
-    m_viewDelegate->update();
+    m_pendingFrame = std::move(frame);
+    m_submitCallback = std::move(callback);
+    m_resourceTracker->submitResources(
+        m_pendingFrame,
+        base::BindOnce(&Compositor::runSubmitCallback, base::Unretained(this)));
 }
 
-QSGNode *Compositor::updatePaintNode(QSGNode *oldNode)
+QSGNode *Compositor::updatePaintNode(QSGNode *oldNode, RenderWidgetHostViewQtDelegate *viewDelegate)
 {
     // DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     //
@@ -127,20 +119,35 @@ QSGNode *Compositor::updatePaintNode(QSGNode *oldNode)
     if (!frameNode)
         frameNode = new DelegatedFrameNode;
 
-    frameNode->commit(m_chromiumCompositorData.data(), &m_resourcesToRelease, m_viewDelegate);
-
-    if (m_havePendingFrame) {
-        m_havePendingFrame = false;
-        content::BrowserThread::PostTask(
-            content::BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&Compositor::notifyFrameCommitted, m_weakPtrFactory.GetWeakPtr()));
+    if (!m_updatePaintNodeShouldCommit) {
+        frameNode->commit(m_committedFrame, viz::CompositorFrame(), m_resourceTracker.get(), viewDelegate);
+        return frameNode;
     }
-    if (m_chromiumCompositorData->frameData.metadata.request_presentation_feedback)
+    m_updatePaintNodeShouldCommit = false;
+
+    if (m_committedFrame.metadata.request_presentation_feedback)
         content::BrowserThread::PostTask(
             content::BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&Compositor::sendPresentationFeedback, m_weakPtrFactory.GetWeakPtr(), m_chromiumCompositorData->frameData.metadata.frame_token));
+            base::BindOnce(&Compositor::sendPresentationFeedback, m_weakPtrFactory.GetWeakPtr(), m_committedFrame.metadata.frame_token));
+
+    m_resourceTracker->commitResources();
+    frameNode->commit(m_pendingFrame, m_committedFrame, m_resourceTracker.get(), viewDelegate);
+    m_committedFrame = std::move(m_pendingFrame);
+    m_pendingFrame = viz::CompositorFrame();
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&Compositor::notifyFrameCommitted, m_weakPtrFactory.GetWeakPtr()));
 
     return frameNode;
+}
+
+void Compositor::runSubmitCallback()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    m_updatePaintNodeShouldCommit = true;
+    std::move(m_submitCallback).Run();
 }
 
 void Compositor::notifyFrameCommitted()
@@ -149,8 +156,7 @@ void Compositor::notifyFrameCommitted()
 
     m_beginFrameSource->DidFinishFrame(this);
     if (m_frameSinkClient)
-        m_frameSinkClient->DidReceiveCompositorFrameAck(m_resourcesToRelease);
-    m_resourcesToRelease.clear();
+        m_frameSinkClient->DidReceiveCompositorFrameAck(m_resourceTracker->returnResources());
 }
 
 void Compositor::sendPresentationFeedback(uint frame_token)
