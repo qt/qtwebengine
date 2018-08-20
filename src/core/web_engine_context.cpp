@@ -57,6 +57,8 @@
 #include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/utility_process_host.h"
+#include "content/gpu/gpu_child_thread.h"
+#include "content/gpu/gpu_process.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
@@ -216,6 +218,12 @@ void WebEngineContext::destroy()
 {
     if (m_devtoolsServer)
         m_devtoolsServer->stop();
+
+    // Normally the GPU thread is shut down when the GpuProcessHost is destroyed
+    // on IO thread (triggered by ~BrowserMainRunner). But by that time the UI
+    // task runner is not working anymore so we need to do this earlier.
+    destroyGpuProcess();
+
     base::MessagePump::Delegate *delegate =
             static_cast<base::MessageLoop *>(m_runLoop->delegate_);
     // Flush the UI message loop before quitting.
@@ -539,6 +547,10 @@ WebEngineContext::WebEngineContext()
     content::UtilityProcessHost::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
     content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
     content::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
+#ifndef QT_NO_OPENGL
+    if (!QOpenGLContext::supportsThreadedOpenGL())
+        content::RegisterGpuMainThreadFactory(createGpuThreadController);
+#endif
 
     mojo::core::Init();
 
@@ -599,4 +611,60 @@ printing::PrintJobManager* WebEngineContext::getPrintJobManager()
     return m_printJobManager.get();
 }
 #endif
+
+// static
+std::unique_ptr<content::GpuThreadController> WebEngineContext::createGpuThreadController(
+    const content::InProcessChildThreadParams &params, const gpu::GpuPreferences &gpuPreferences)
+{
+    struct Controller : content::GpuThreadController
+    {
+        Controller(const content::InProcessChildThreadParams &params, const gpu::GpuPreferences &gpuPreferences)
+        {
+            content::BrowserThread::PostTask(
+                content::BrowserThread::UI, FROM_HERE,
+                base::BindOnce(&WebEngineContext::createGpuProcess, params, gpuPreferences));
+        }
+        ~Controller()
+        {
+            content::BrowserThread::PostTask(
+                content::BrowserThread::UI, FROM_HERE,
+                base::BindOnce(&WebEngineContext::destroyGpuProcess));
+        }
+    };
+    return std::make_unique<Controller>(params, gpuPreferences);
+}
+
+// static
+void WebEngineContext::createGpuProcess(
+    const content::InProcessChildThreadParams &params, const gpu::GpuPreferences &gpuPreferences)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    WebEngineContext *context = current();
+    if (!context || context->m_gpuProcessDestroyed)
+        return;
+
+    context->m_gpuProcess = std::make_unique<content::GpuProcess>(base::ThreadPriority::NORMAL);
+    auto gpuInit = std::make_unique<gpu::GpuInit>();
+    gpuInit->InitializeInProcess(base::CommandLine::ForCurrentProcess(), gpuPreferences);
+    auto childThread = new content::GpuChildThread(params, std::move(gpuInit));
+    childThread->Init(base::Time::Now());
+    context->m_gpuProcess->set_main_thread(childThread);
+}
+
+// static
+void WebEngineContext::destroyGpuProcess()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    WebEngineContext *context = current();
+    if (!context)
+        return;
+
+    // viz::GpuServiceImpl::~GpuServiceImpl waits for io task.
+    base::ScopedAllowBaseSyncPrimitivesForTesting allow;
+    context->m_gpuProcess.reset();
+    context->m_gpuProcessDestroyed = true;
+}
+
 } // namespace
