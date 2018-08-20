@@ -41,10 +41,10 @@
 #define COMPOSITOR_RESOURCE_TRACKER_H
 
 #include "compositor_resource.h"
+#include "locked_ptr.h"
 
 #include <base/callback.h>
 #include <base/containers/flat_set.h>
-#include <base/memory/weak_ptr.h>
 
 #include <atomic>
 #include <vector>
@@ -116,7 +116,7 @@ private:
     std::atomic<size_t> m_pendingResourceUpdates{0};
     quint32 m_committedFrameId = 0;
 
-    base::WeakPtrFactory<CompositorResourceTracker> m_weakPtrFactory{this};
+    base::LockedPtrFactory<CompositorResourceTracker> m_weakPtrFactory{this};
 
     DISALLOW_COPY_AND_ASSIGN(CompositorResourceTracker);
 };

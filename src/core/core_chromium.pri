@@ -160,6 +160,7 @@ HEADERS = \
         javascript_dialog_controller_p.h \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
+        locked_ptr.h \
         login_delegate_qt.h \
         media_capture_devices_dispatcher.h \
         net/cookie_monster_delegate_qt.h \

@@ -238,7 +238,7 @@ void CompositorResourceTracker::scheduleRunSubmitCallback()
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(&CompositorResourceTracker::runSubmitCallback,
-                       base::Unretained(this))); // FIXME(juvaldma)
+                       m_weakPtrFactory.GetWeakPtr()));
 }
 
 void CompositorResourceTracker::runSubmitCallback()
