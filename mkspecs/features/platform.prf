@@ -89,6 +89,7 @@ defineTest(isArchSupported) {
 }
 
 defineTest(isGCCVersionSupported) {
+  # Keep in sync with src/webengine/doc/src/qtwebengine-platform-notes.qdoc
   greaterThan(QT_GCC_MAJOR_VERSION, 4):return(true)
 
   skipBuild("Using gcc version "$$QT_GCC_MAJOR_VERSION"."$$QT_GCC_MINOR_VERSION", but at least gcc version 5 is required to build Qt WebEngine.")
@@ -118,6 +119,26 @@ defineTest(isMinOSXSDKVersion) {
     major_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 0, 0)
     minor_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 1, 1)
     patch_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 2, 2)
+    isEmpty(patch_version): patch_version = 0
+
+    greaterThan(major_version, $$requested_major):return(true)
+    equals(major_version, $$requested_major):greaterThan(minor_version, $$requested_minor):return(true)
+    equals(major_version, $$requested_major):equals(minor_version, $$requested_minor):!lessThan(patch_version, $$requested_patch):return(true)
+
+    return(false)
+}
+
+defineTest(isMinXcodeVersion) {
+    requested_major = $$1
+    requested_minor = $$2
+    requested_patch = $$3
+    isEmpty(requested_minor): requested_minor = 0
+    isEmpty(requested_patch): requested_patch = 0
+    target_var = QMAKE_XCODE_VERSION
+    major_version = $$section($$target_var, ., 0, 0)
+    minor_version = $$section($$target_var, ., 1, 1)
+    patch_version = $$section($$target_var, ., 2, 2)
+    isEmpty(minor_version): minor_version = 0
     isEmpty(patch_version): patch_version = 0
 
     greaterThan(major_version, $$requested_major):return(true)

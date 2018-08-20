@@ -1497,7 +1497,7 @@ void QQuickWebEngineView::dropEvent(QDropEvent *e)
 {
     Q_D(QQuickWebEngineView);
     e->accept();
-    d->adapter->endDragging(e->pos(), mapToScreen(this, e->pos()));
+    d->adapter->endDragging(e, mapToScreen(this, e->pos()));
 }
 #endif // QT_CONFIG(draganddrop)
 

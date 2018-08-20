@@ -516,8 +516,10 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
         parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
 #ifdef Q_OS_WIN
-        if (enableWebGLSoftwareRendering)
+        if (enableWebGLSoftwareRendering) {
             parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
+            parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlacklist);
+        }
 #endif
     } else {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);

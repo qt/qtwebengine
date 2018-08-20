@@ -56,6 +56,7 @@ private Q_SLOTS:
     void httpAcceptLanguage();
     void downloadItem();
     void changePersistentPath();
+    void initiator();
 };
 
 void tst_QWebEngineProfile::init()
@@ -526,6 +527,45 @@ void tst_QWebEngineProfile::changePersistentPath()
     testProfile.setPersistentStoragePath(oldPath + QLatin1Char('2'));
     const QString newPath = testProfile.persistentStoragePath();
     QVERIFY(newPath.endsWith(QStringLiteral("Test2")));
+}
+
+class InitiatorSpy : public QWebEngineUrlSchemeHandler
+{
+public:
+    QUrl initiator;
+    void requestStarted(QWebEngineUrlRequestJob *job) override
+    {
+        initiator = job->initiator();
+        job->fail(QWebEngineUrlRequestJob::RequestDenied);
+    }
+};
+
+void tst_QWebEngineProfile::initiator()
+{
+    InitiatorSpy handler;
+    QWebEngineProfile profile;
+    profile.installUrlSchemeHandler("foo", &handler);
+    QWebEnginePage page(&profile);
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+
+    // about:blank has a unique origin, so initiator should be QUrl("null")
+    evaluateJavaScriptSync(&page, "window.location = 'foo:bar'");
+    QVERIFY(loadFinishedSpy.wait());
+    QCOMPARE(handler.initiator, QUrl("null"));
+
+    page.setHtml("", QUrl("http://test:123/foo%20bar"));
+    QVERIFY(loadFinishedSpy.wait());
+
+    // baseUrl determines the origin, so QUrl("http://test:123")
+    evaluateJavaScriptSync(&page, "window.location = 'foo:bar'");
+    QVERIFY(loadFinishedSpy.wait());
+    QCOMPARE(handler.initiator, QUrl("http://test:123"));
+
+    // Directly calling load/setUrl should have initiator QUrl(), meaning
+    // browser-initiated, trusted.
+    page.load(QUrl("foo:bar"));
+    QVERIFY(loadFinishedSpy.wait());
+    QCOMPARE(handler.initiator, QUrl());
 }
 
 QTEST_MAIN(tst_QWebEngineProfile)

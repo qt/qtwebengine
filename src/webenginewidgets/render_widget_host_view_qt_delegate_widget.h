@@ -48,6 +48,12 @@
 
 namespace QtWebEngineCore {
 
+// Useful information keyboard and mouse QEvent propagation.
+// A RenderWidgetHostViewQtDelegateWidget instance initialized as a popup will receive
+// no keyboard focus (so all keyboard QEvents will be sent to the parent RWHVQD instance),
+// but will still receive mouse input (all mouse QEvent moves and clicks will be given to the popup
+// RWHVQD instance, and the mouse interaction area covers the surface of the whole parent
+// QWebEngineView, and not only the smaller surface that an HTML select popup would occupy).
 class RenderWidgetHostViewQtDelegateWidget : public QQuickWidget, public RenderWidgetHostViewQtDelegate {
     Q_OBJECT
 public:
@@ -83,6 +89,7 @@ protected:
     void resizeEvent(QResizeEvent *resizeEvent) override;
     void showEvent(QShowEvent *) override;
     void hideEvent(QHideEvent *) override;
+    void closeEvent(QCloseEvent *event) override;
 
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
 

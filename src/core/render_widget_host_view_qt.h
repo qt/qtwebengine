@@ -173,6 +173,7 @@ public:
     void windowChanged() override;
     bool forwardEvent(QEvent *) override;
     QVariant inputMethodQuery(Qt::InputMethodQuery query) override;
+    void closePopup() override;
 
     // Overridden from content::TextInputManager::Observer
     void OnUpdateTextInputStateCalled(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view, bool did_update_state) override;
@@ -187,7 +188,9 @@ public:
     void handleKeyEvent(QKeyEvent*);
     void handleWheelEvent(QWheelEvent*);
     void handleTouchEvent(QTouchEvent*);
+#if QT_CONFIG(tabletevent)
     void handleTabletEvent(QTabletEvent *ev);
+#endif
 #ifndef QT_NO_GESTURES
     void handleGestureEvent(QNativeGestureEvent *);
 #endif
