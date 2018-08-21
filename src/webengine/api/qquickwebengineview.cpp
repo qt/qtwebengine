@@ -474,8 +474,8 @@ void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, boo
     }
     if (success) {
         explicitUrl = QUrl();
-        QTimer::singleShot(0, q, [q, url]() {
-            QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus);
+        QTimer::singleShot(0, q, [q, url, errorDescription, errorCode]() {
+            QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus, errorDescription, errorCode);
             emit q->loadingChanged(&loadRequest);
         });
         return;
