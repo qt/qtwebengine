@@ -664,22 +664,22 @@ void tst_Origins::viewSource()
 {
     QVERIFY(load(QSL("view-source:file:" THIS_DIR "resources/viewSource.html")));
 #ifdef Q_OS_WIN
-    QCOMPARE(m_page->requestedUrl(), QSL("file:///" THIS_DIR "resources/viewSource.html"));
+    QCOMPARE(m_page->requestedUrl().toString(), QSL("file:///" THIS_DIR "resources/viewSource.html"));
 #else
-    QCOMPARE(m_page->requestedUrl(), QSL("file:" THIS_DIR "resources/viewSource.html"));
+    QCOMPARE(m_page->requestedUrl().toString(), QSL("file://" THIS_DIR "resources/viewSource.html"));
 #endif
 
     QVERIFY(load(QSL("view-source:qrc:/resources/viewSource.html")));
-    QCOMPARE(m_page->requestedUrl(), QSL("qrc:/resources/viewSource.html"));
+    QCOMPARE(m_page->requestedUrl().toString(), QSL("qrc:/resources/viewSource.html"));
 
     QVERIFY(load(QSL("view-source:tst:/resources/viewSource.html")));
-    QCOMPARE(m_page->requestedUrl(), QSL("about:blank"));
+    QCOMPARE(m_page->requestedUrl().toString(), QSL("about:blank"));
 
     QVERIFY(load(QSL("view-source:PathSyntax:/resources/viewSource.html")));
-    QCOMPARE(m_page->requestedUrl(), QSL("about:blank"));
+    QCOMPARE(m_page->requestedUrl().toString(), QSL("about:blank"));
 
     QVERIFY(load(QSL("view-source:PathSyntax-ViewSourceAllowed:/resources/viewSource.html")));
-    QCOMPARE(m_page->requestedUrl(), QSL("pathsyntax-viewsourceallowed:/resources/viewSource.html"));
+    QCOMPARE(m_page->requestedUrl().toString(), QSL("pathsyntax-viewsourceallowed:/resources/viewSource.html"));
 }
 
 QTEST_MAIN(tst_Origins)
