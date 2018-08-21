@@ -54,11 +54,13 @@ namespace QtWebEngineCore {
 URLRequestCustomJobDelegate::URLRequestCustomJobDelegate(URLRequestCustomJobProxy *proxy,
                                                          const QUrl &url,
                                                          const QByteArray &method,
-                                                         const QUrl &initiatorOrigin)
+                                                         const QUrl &initiatorOrigin,
+                                                         const QMap<QByteArray, QByteArray> &headers)
     : m_proxy(proxy),
       m_request(url),
       m_method(method),
-      m_initiatorOrigin(initiatorOrigin)
+      m_initiatorOrigin(initiatorOrigin),
+      m_requestHeaders(headers)
 {
 }
 
@@ -79,6 +81,11 @@ QByteArray URLRequestCustomJobDelegate::method() const
 QUrl URLRequestCustomJobDelegate::initiator() const
 {
     return m_initiatorOrigin;
+}
+
+const QMap<QByteArray, QByteArray> &URLRequestCustomJobDelegate::requestHeaders() const
+{
+    return m_requestHeaders;
 }
 
 void URLRequestCustomJobDelegate::reply(const QByteArray &contentType, QIODevice *device)

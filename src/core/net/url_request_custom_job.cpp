@@ -78,9 +78,23 @@ URLRequestCustomJob::~URLRequestCustomJob()
 void URLRequestCustomJob::Start()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    HttpRequestHeaders requestHeaders = request()->extra_request_headers();
+    std::map<std::string, std::string> headers;
+    net::HttpRequestHeaders::Iterator it(requestHeaders);
+    while (it.GetNext())
+        headers.emplace(it.name(), it.value());
+    if (!request()->referrer().empty())
+        headers.emplace("Referer", request()->referrer());
+
+    // TODO: handle UploadDataStream, for instance using a QIODevice wrapper.
+
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                              base::BindOnce(&URLRequestCustomJobProxy::initialize,
-                                            m_proxy, request()->url(), request()->method(), request()->initiator()));
+                                            m_proxy,
+                                            request()->url(),
+                                            request()->method(),
+                                            request()->initiator(),
+                                            std::move(headers)));
 }
 
 void URLRequestCustomJob::Kill()

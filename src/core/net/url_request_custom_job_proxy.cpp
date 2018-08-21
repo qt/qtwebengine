@@ -152,7 +152,9 @@ void URLRequestCustomJobProxy::readyRead()
         m_job->notifyReadyRead();
 }
 
-void URLRequestCustomJobProxy::initialize(GURL url, std::string method, base::Optional<url::Origin> initiator)
+void URLRequestCustomJobProxy::initialize(GURL url, std::string method,
+                                          base::Optional<url::Origin> initiator,
+                                          std::map<std::string, std::string> headers)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     Q_ASSERT(!m_delegate);
@@ -165,11 +167,15 @@ void URLRequestCustomJobProxy::initialize(GURL url, std::string method, base::Op
 
     if (m_profileAdapter)
         schemeHandler = m_profileAdapter->urlSchemeHandler(toQByteArray(m_scheme));
+    QMap<QByteArray, QByteArray> qHeaders;
+    for (auto it = headers.cbegin(); it != headers.cend(); ++it)
+        qHeaders.insert(toQByteArray(it->first), toQByteArray(it->second));
 
     if (schemeHandler) {
         m_delegate = new URLRequestCustomJobDelegate(this, toQt(url),
                                                      QByteArray::fromStdString(method),
-                                                     initiatorOrigin);
+                                                     initiatorOrigin,
+                                                     qHeaders);
         QWebEngineUrlRequestJob *requestJob = new QWebEngineUrlRequestJob(m_delegate);
         schemeHandler->requestStarted(requestJob);
     }
