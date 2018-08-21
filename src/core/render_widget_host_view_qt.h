@@ -226,7 +226,6 @@ private:
     content::RenderFrameHost *getFocusedFrameHost();
     ui::TextInputType getTextInputType() const;
 
-    content::RenderWidgetHostImpl *m_host;
     ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
     bool m_sendMotionActionDown;
