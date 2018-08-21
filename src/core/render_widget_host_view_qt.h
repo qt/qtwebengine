@@ -61,13 +61,6 @@
 #include "delegated_frame_node.h"
 
 QT_BEGIN_NAMESPACE
-class QEvent;
-class QFocusEvent;
-class QHoverEvent;
-class QKeyEvent;
-class QMouseEvent;
-class QVariant;
-class QWheelEvent;
 class QAccessibleInterface;
 QT_END_NAMESPACE
 
