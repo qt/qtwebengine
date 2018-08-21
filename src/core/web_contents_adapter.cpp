@@ -638,18 +638,19 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         }
     }
 
-    auto navigate = [this, loadParams = std::move(params)]() {
-        webContents()->GetController().LoadURLWithParams(loadParams);
+    auto navigate = [](WebContentsAdapter *adapter, const content::NavigationController::LoadURLParams &params) {
+        adapter->webContents()->GetController().LoadURLWithParams(params);
         // Follow chrome::Navigate and invalidate the URL immediately.
-        m_webContentsDelegate->NavigationStateChanged(webContents(), content::INVALIDATE_TYPE_URL);
-        focusIfNecessary();
+        adapter->m_webContentsDelegate->NavigationStateChanged(adapter->webContents(), content::INVALIDATE_TYPE_URL);
+        adapter->focusIfNecessary();
     };
 
     if (resizeNeeded) {
         // Schedule navigation on the event loop.
-        QTimer::singleShot(0, std::move(navigate));
+        content::BrowserThread::PostTask(
+            content::BrowserThread::UI, FROM_HERE, base::BindOnce(navigate, this, std::move(params)));
     } else {
-        navigate();
+        navigate(this, params);
     }
 }
 
