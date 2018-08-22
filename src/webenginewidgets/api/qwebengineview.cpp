@@ -55,7 +55,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
+void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page, bool pageBeingDeleted)
 {
     if (view && page == view->d_func()->page)
         return;
@@ -64,20 +64,22 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
         // Un-bind page from its current view.
         if (QWebEngineView *oldView = page->d_func()->view) {
             page->disconnect(oldView);
-            oldView->d_func()->page = 0;
+            oldView->d_func()->page = nullptr;
         }
         page->d_func()->view = view;
-        page->d_func()->adapter->reattachRWHV();
+        if (!pageBeingDeleted)
+            page->d_func()->adapter->reattachRWHV();
     }
 
     if (view) {
         // Un-bind view from its current page.
         if (QWebEnginePage *oldPage = view->d_func()->page) {
             oldPage->disconnect(view);
-            oldPage->d_func()->view = 0;
-            oldPage->d_func()->adapter->reattachRWHV();
+            oldPage->d_func()->view = nullptr;
             if (oldPage->parent() == view)
                 delete oldPage;
+            else
+                oldPage->d_func()->adapter->reattachRWHV();
         }
         view->d_func()->page = page;
     }
@@ -147,8 +149,7 @@ QWebEngineView::QWebEngineView(QWidget *parent)
 
 QWebEngineView::~QWebEngineView()
 {
-    Q_D(QWebEngineView);
-    QWebEngineViewPrivate::bind(0, d->page);
+    QWebEngineViewPrivate::bind(this, nullptr);
 }
 
 QWebEnginePage* QWebEngineView::page() const

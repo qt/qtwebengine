@@ -188,6 +188,7 @@ private Q_SLOTS:
     void webUIURLs();
     void visibilityState();
     void jsKeyboardEvent();
+    void deletePage();
 };
 
 // This will be called before the first test function is executed.
@@ -2791,6 +2792,20 @@ void tst_QWebEngineView::jsKeyboardEvent()
     );
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log") != QVariant(QString()));
     QCOMPARE(evaluateJavaScriptSync(view.page(), "log"), expected);
+}
+
+void tst_QWebEngineView::deletePage()
+{
+    QWebEngineView view;
+    QWebEnginePage *page = view.page();
+    QVERIFY(page);
+    QCOMPARE(page->parent(), &view);
+    delete page;
+    // Test that a new page is created and that it is useful:
+    QVERIFY(view.page());
+    QSignalSpy spy(view.page(), &QWebEnginePage::loadFinished);
+    view.page()->load(QStringLiteral("about:blank"));
+    QTRY_VERIFY(spy.count());
 }
 
 QTEST_MAIN(tst_QWebEngineView)
