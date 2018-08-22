@@ -134,6 +134,8 @@ private Q_SLOTS:
     void renderHints();
     void getWebKitVersion();
 
+    void changePage_data();
+    void changePage();
     void reusePage_data();
     void reusePage();
     void microFocusCoordinates();
@@ -258,6 +260,100 @@ void tst_QWebEngineView::getWebKitVersion()
 #else
     QVERIFY(qWebKitVersion().toDouble() > 0);
 #endif
+}
+
+void tst_QWebEngineView::changePage_data()
+{
+    QString html = "<html><head><title>%1</title>"
+                   "<link rel='icon' href='file://" TESTS_SOURCE_DIR "/resources/image2.png'></head></html>";
+    QUrl urlFrom("data:text/html," + html.arg("TitleFrom"));
+    QUrl urlTo("data:text/html," + html.arg("TitleTo"));
+    QUrl nullPage("data:text/html,<html/>");
+    QTest::addColumn<QUrl>("urlFrom");
+    QTest::addColumn<QUrl>("urlTo");
+    QTest::addColumn<bool>("fromIsNullPage");
+    QTest::addColumn<bool>("toIsNullPage");
+    QTest::newRow("From empty page to url") << nullPage << urlTo << true << false;
+    QTest::newRow("From url to empty content page") << urlFrom << nullPage << false << true;
+    QTest::newRow("From one content to another") << urlFrom << urlTo << false << false;
+}
+
+void tst_QWebEngineView::changePage()
+{
+    QScopedPointer<QWebEngineView> view(new QWebEngineView); view->resize(640, 480); view->show();
+
+    QFETCH(QUrl, urlFrom);
+    QFETCH(QUrl, urlTo);
+    QFETCH(bool, fromIsNullPage);
+    QFETCH(bool, toIsNullPage);
+
+    QSignalSpy spyUrl(view.get(), &QWebEngineView::urlChanged);
+    QSignalSpy spyTitle(view.get(), &QWebEngineView::titleChanged);
+    QSignalSpy spyIconUrl(view.get(), &QWebEngineView::iconUrlChanged);
+    QSignalSpy spyIcon(view.get(), &QWebEngineView::iconChanged);
+
+    QScopedPointer<QWebEnginePage> pageFrom(new QWebEnginePage);
+    QSignalSpy pageFromLoadSpy(pageFrom.get(), &QWebEnginePage::loadFinished);
+    QSignalSpy pageFromIconLoadSpy(pageFrom.get(), &QWebEnginePage::iconChanged);
+    pageFrom->load(urlFrom);
+    QTRY_COMPARE(pageFromLoadSpy.count(), 1);
+    QCOMPARE(pageFromLoadSpy.last().value(0).toBool(), true);
+    if (!fromIsNullPage) {
+        QTRY_COMPARE(pageFromIconLoadSpy.count(), 1);
+        QVERIFY(!pageFromIconLoadSpy.last().value(0).isNull());
+    }
+
+    view->setPage(pageFrom.get());
+
+    QTRY_COMPARE(spyUrl.count(), 1);
+    QCOMPARE(spyUrl.last().value(0).toUrl(), pageFrom->url());
+    QTRY_COMPARE(spyTitle.count(), 1);
+    QCOMPARE(spyTitle.last().value(0).toString(), pageFrom->title());
+
+    QTRY_COMPARE(spyIconUrl.count(), fromIsNullPage ? 0 : 1);
+    QTRY_COMPARE(spyIcon.count(), fromIsNullPage ? 0 : 1);
+    if (!fromIsNullPage) {
+        QVERIFY(!pageFrom->iconUrl().isEmpty());
+        QCOMPARE(spyIconUrl.last().value(0).toUrl(), pageFrom->iconUrl());
+        QCOMPARE(spyIcon.last().value(0), QVariant::fromValue(pageFrom->icon()));
+    }
+
+    QScopedPointer<QWebEnginePage> pageTo(new QWebEnginePage);
+    QSignalSpy pageToLoadSpy(pageTo.get(), &QWebEnginePage::loadFinished);
+    QSignalSpy pageToIconLoadSpy(pageTo.get(), &QWebEnginePage::iconChanged);
+    pageTo->load(urlTo);
+    QTRY_COMPARE(pageToLoadSpy.count(), 1);
+    QCOMPARE(pageToLoadSpy.last().value(0).toBool(), true);
+    if (!toIsNullPage) {
+        QTRY_COMPARE(pageToIconLoadSpy.count(), 1);
+        QVERIFY(!pageToIconLoadSpy.last().value(0).isNull());
+    }
+
+    view->setPage(pageTo.get());
+
+    QTRY_COMPARE(spyUrl.count(), 2);
+    QCOMPARE(spyUrl.last().value(0).toUrl(), pageTo->url());
+    QTRY_COMPARE(spyTitle.count(), 2);
+    QCOMPARE(spyTitle.last().value(0).toString(), pageTo->title());
+
+    bool iconIsSame = fromIsNullPage == toIsNullPage;
+    int iconChangeNotifyCount = fromIsNullPage ? (iconIsSame ? 0 : 1) : (iconIsSame ? 1 : 2);
+
+    QTRY_COMPARE(spyIconUrl.count(), iconChangeNotifyCount);
+    QTRY_COMPARE(spyIcon.count(), iconChangeNotifyCount);
+    QCOMPARE(pageFrom->iconUrl() == pageTo->iconUrl(), iconIsSame);
+    if (!iconIsSame) {
+        QCOMPARE(spyIconUrl.last().value(0).toUrl(), pageTo->iconUrl());
+        QCOMPARE(spyIcon.last().value(0), QVariant::fromValue(pageTo->icon()));
+    }
+
+    // verify no emits on destroy with the same number of signals in spy
+    view.reset();
+    qApp->processEvents();
+    QTRY_COMPARE(spyUrl.count(), 2);
+    QTRY_COMPARE(spyTitle.count(), 2);
+    QTRY_COMPARE(spyIconUrl.count(), iconChangeNotifyCount);
+    QTRY_COMPARE(spyIcon.count(), iconChangeNotifyCount);
 }
 
 void tst_QWebEngineView::reusePage_data()

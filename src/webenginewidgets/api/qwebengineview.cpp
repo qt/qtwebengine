@@ -55,33 +55,77 @@
 
 QT_BEGIN_NAMESPACE
 
-void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page, bool pageBeingDeleted)
+void QWebEngineViewPrivate::notify(QWebEngineView *view, QWebEnginePage *oldPage, QWebEnginePage *newPage)
+{
+    Q_ASSERT(view);
+
+    auto oldUrl = oldPage ? oldPage->url() : QUrl();
+    auto newUrl = newPage ? newPage->url() : QUrl();
+    if (oldUrl != newUrl)
+        Q_EMIT view->urlChanged(newUrl);
+
+    auto oldTitle = oldPage ? oldPage->title() : QString();
+    auto newTitle = newPage ? newPage->title() : QString();
+    if (oldTitle != newTitle)
+        Q_EMIT view->titleChanged(newTitle);
+
+    auto oldIcon = oldPage ? oldPage->iconUrl() : QUrl();
+    auto newIcon = newPage ? newPage->iconUrl() : QUrl();
+    if (oldIcon != newIcon) {
+        Q_EMIT view->iconUrlChanged(newIcon);
+        Q_EMIT view->iconChanged(newPage ? newPage->icon() : QIcon());
+    }
+
+    if ((oldPage && oldPage->hasSelection()) || (newPage && newPage->hasSelection()))
+        Q_EMIT view->selectionChanged();
+}
+
+QWebEnginePage* QWebEngineViewPrivate::removeViewFromPage(QWebEngineView *view)
+{
+    Q_ASSERT(view);
+    QWebEnginePage *oldPage = view->d_func()->page;
+
+    if (oldPage) {
+        oldPage->disconnect(view);
+        oldPage->d_func()->view = nullptr;
+        if (oldPage->parent() != view)
+            oldPage->d_func()->adapter->reattachRWHV();
+    }
+    return oldPage;
+}
+
+void QWebEngineViewPrivate::removePageFromView(QWebEnginePage *page)
+{
+    Q_ASSERT(page);
+    if (QWebEngineView *oldView = page->d_func()->view) {
+        page->disconnect(oldView);
+        page->d_func()->view = nullptr;
+        oldView->d_func()->page = nullptr;
+        notify(oldView, page, nullptr);
+    }
+}
+
+void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
 {
     if (view && page == view->d_func()->page)
         return;
 
     if (page) {
         // Un-bind page from its current view.
-        if (QWebEngineView *oldView = page->d_func()->view) {
-            page->disconnect(oldView);
-            oldView->d_func()->page = nullptr;
-        }
+        removePageFromView(page);
         page->d_func()->view = view;
-        if (!pageBeingDeleted)
-            page->d_func()->adapter->reattachRWHV();
+        page->d_func()->adapter->reattachRWHV();
     }
 
     if (view) {
         // Un-bind view from its current page.
-        if (QWebEnginePage *oldPage = view->d_func()->page) {
-            oldPage->disconnect(view);
-            oldPage->d_func()->view = nullptr;
-            if (oldPage->parent() == view)
-                delete oldPage;
-            else
-                oldPage->d_func()->adapter->reattachRWHV();
-        }
+        QWebEnginePage *oldPage = removeViewFromPage(view);
+
         view->d_func()->page = page;
+        notify(view, oldPage, page);
+
+        if (oldPage && oldPage->parent() == view)
+            delete oldPage;
     }
 
     if (view && page) {
@@ -149,7 +193,7 @@ QWebEngineView::QWebEngineView(QWidget *parent)
 
 QWebEngineView::~QWebEngineView()
 {
-    QWebEngineViewPrivate::bind(this, nullptr);
+    QWebEngineViewPrivate::removeViewFromPage(this);
 }
 
 QWebEnginePage* QWebEngineView::page() const
