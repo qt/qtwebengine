@@ -159,7 +159,7 @@ void URLRequestCustomJobProxy::initialize(GURL url, std::string method, base::Op
 
     QUrl initiatorOrigin;
     if (initiator.has_value())
-        initiatorOrigin = toQt(initiator.value().GetURL());
+        initiatorOrigin = QUrl::fromEncoded(QByteArray::fromStdString(initiator.value().Serialize()));
 
     QWebEngineUrlSchemeHandler *schemeHandler = nullptr;
 

@@ -2365,6 +2365,11 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
     It is the users responsibility to ensure the \a printer remains valid until \a resultCallback
     has been called.
 
+    \note The rendering of the current content into a temporary PDF document is asynchronous and does
+    not block the main thread. However, the subsequent rendering of PDF into \a printer runs on the
+    main thread and will therefore block the event loop. Moreover, printing runs on the browser
+    process, which is by default not sandboxed.
+
     The \a resultCallback must take a boolean as parameter. If printing was successful, this
     boolean will have the value \c true, otherwise, its value will be \c false.
     \since 5.8

@@ -73,6 +73,7 @@ QT_BEGIN_NAMESPACE
 class QAccessibleInterface;
 class QDragEnterEvent;
 class QDragMoveEvent;
+class QDropEvent;
 class QMimeData;
 class QPageLayout;
 class QString;
@@ -205,7 +206,7 @@ public:
     void enterDrag(QDragEnterEvent *e, const QPointF &screenPos);
     Qt::DropAction updateDragPosition(QDragMoveEvent *e, const QPointF &screenPos);
     void updateDragAction(int action);
-    void endDragging(const QPointF &clientPos, const QPointF &screenPos);
+    void endDragging(QDropEvent *e, const QPointF &screenPos);
     void leaveDrag();
 #endif // QT_CONFIG(draganddrop)
     void printToPDF(const QPageLayout&, const QString&);

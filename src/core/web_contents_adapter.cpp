@@ -1450,23 +1450,6 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
     }
 }
 
-void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPointF &screenPos)
-{
-    CHECK_INITIALIZED();
-
-    if (!m_currentDropData) {
-        // The drag originated outside the WebEngineView.
-        m_currentDropData.reset(new content::DropData);
-        fillDropDataFromMimeData(m_currentDropData.get(), e->mimeData());
-    }
-
-    content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
-    rvh->GetWidget()->FilterDropData(m_currentDropData.get());
-    rvh->GetWidget()->DragTargetDragEnter(*m_currentDropData, toGfx(e->posF()), toGfx(screenPos),
-                                          toWeb(e->possibleActions()),
-                                          flagsFromModifiers(e->keyboardModifiers()));
-}
-
 Qt::DropAction toQt(blink::WebDragOperation op)
 {
     if (op & blink::kWebDragOperationCopy)
@@ -1502,6 +1485,23 @@ static int toWeb(Qt::KeyboardModifiers modifiers)
     if (modifiers & Qt::MetaModifier)
         result |= blink::WebInputEvent::kMetaKey;
     return result;
+}
+
+void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPointF &screenPos)
+{
+    CHECK_INITIALIZED();
+
+    if (!m_currentDropData) {
+        // The drag originated outside the WebEngineView.
+        m_currentDropData.reset(new content::DropData);
+        fillDropDataFromMimeData(m_currentDropData.get(), e->mimeData());
+    }
+
+    content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
+    rvh->GetWidget()->FilterDropData(m_currentDropData.get());
+    rvh->GetWidget()->DragTargetDragEnter(*m_currentDropData, toGfx(e->posF()), toGfx(screenPos),
+                                          toWeb(e->possibleActions()),
+                                          toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
 }
 
 Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const QPointF &screenPos)
@@ -1545,14 +1545,16 @@ void WebContentsAdapter::updateDragAction(int action)
     m_currentDropAction = static_cast<blink::WebDragOperation>(action);
 }
 
-void WebContentsAdapter::endDragging(const QPointF &clientPos, const QPointF &screenPos)
+void WebContentsAdapter::endDragging(QDropEvent *e, const QPointF &screenPos)
 {
     CHECK_INITIALIZED();
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     rvh->GetWidget()->FilterDropData(m_currentDropData.get());
-    m_lastDragClientPos = clientPos;
+    m_lastDragClientPos = e->posF();
     m_lastDragScreenPos = screenPos;
-    rvh->GetWidget()->DragTargetDrop(*m_currentDropData, toGfx(m_lastDragClientPos), toGfx(m_lastDragScreenPos), 0);
+    rvh->GetWidget()->DragTargetDrop(*m_currentDropData, toGfx(m_lastDragClientPos), toGfx(m_lastDragScreenPos),
+                                     toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
+
     m_currentDropData.reset();
 }
 

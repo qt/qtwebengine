@@ -11,7 +11,7 @@
         <file>pages/skewers.html</file>
         <file>pages/cupcakes.html</file>
 
-        <file>pages/assets/3rdparty/marked.min.js</file>
+        <file>pages/assets/3rdparty/marked.js</file>
         <file>pages/assets/3rdparty/markdown.css</file>
         <file>pages/assets/custom.css</file>
         <file>pages/assets/custom.js</file>

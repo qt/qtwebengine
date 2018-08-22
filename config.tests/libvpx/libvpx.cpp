@@ -26,8 +26,8 @@
 **
 ****************************************************************************/
 
-#include <vpx/svc_context.h>
 #include <vpx/vpx_frame_buffer.h>
+#include <vpx/vp8cx.h>
 #include <vpx/vp8dx.h>
 
 #ifndef VPX_CTRL_VPXD_GET_LAST_QUANTIZER

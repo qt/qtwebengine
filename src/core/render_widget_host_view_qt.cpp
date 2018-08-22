@@ -1073,7 +1073,11 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::MouseMove:
         // Skip second MouseMove event when a window is being adopted, so that Chromium
         // can properly handle further move events.
-        if (m_adapterClient->isBeingAdopted())
+        // Also make sure the adapter client exists to prevent a null pointer dereference,
+        // because it's possible for a QWebEnginePagePrivate (adapter) instance to be destroyed,
+        // and then the OS (observed on Windows) might still send mouse move events to a still
+        // existing popup RWHVQDW instance.
+        if (m_adapterClient && m_adapterClient->isBeingAdopted())
             return false;
         handleMouseEvent(static_cast<QMouseEvent*>(event));
         break;
@@ -1091,12 +1095,14 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::TouchCancel:
         handleTouchEvent(static_cast<QTouchEvent*>(event));
         break;
+#if QT_CONFIG(tabletevent)
     case QEvent::TabletPress:
         Focus(); // Fall through.
     case QEvent::TabletRelease:
     case QEvent::TabletMove:
         handleTabletEvent(static_cast<QTabletEvent*>(event));
         break;
+#endif
 #ifndef QT_NO_GESTURES
     case QEvent::NativeGesture:
         handleGestureEvent(static_cast<QNativeGestureEvent *>(event));
@@ -1170,6 +1176,15 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
     default:
         return QVariant();
     }
+}
+
+void RenderWidgetHostViewQt::closePopup()
+{
+    // We notify the popup to be closed by telling it that it lost focus. WebKit does the rest
+    // (hiding the widget and automatic memory cleanup via
+    // RenderWidget::CloseWidgetSoon() -> RenderWidgetHostImpl::ShutdownAndDestroyWidget(true).
+    m_host->SetActive(false);
+    m_host->Blur();
 }
 
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
@@ -1617,10 +1632,12 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
     }
 }
 
+#if QT_CONFIG(tabletevent)
 void RenderWidgetHostViewQt::handleTabletEvent(QTabletEvent *event)
 {
     handlePointerEvent<QTabletEvent>(event);
 }
+#endif
 
 template<class T>
 void RenderWidgetHostViewQt::handlePointerEvent(T *event)
