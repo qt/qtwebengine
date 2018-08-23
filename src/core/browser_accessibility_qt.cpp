@@ -382,6 +382,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::StaticText;
     case ax::mojom::Role::kScrollBar:
         return QAccessible::ScrollBar;
+    case ax::mojom::Role::kScrollView:
+        return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kSearch:
         return QAccessible::Section;
     case ax::mojom::Role::kSearchBox:
@@ -392,8 +394,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kSpinButton:
         return QAccessible::SpinBox;
-    case ax::mojom::Role::kSpinButtonPart:
-        return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kSplitter:
         return QAccessible::Splitter;
     case ax::mojom::Role::kStaticText:
@@ -456,7 +456,7 @@ QAccessible::State BrowserAccessibilityQt::state() const
         state.expanded = true;
     if (HasState(ax::mojom::State::kFocusable))
         state.focusable = true;
-    if (HasState(ax::mojom::State::kHaspopup))
+    if (HasState(ax::mojom::State::kHasPopup))
         state.hasPopup = true;
     if (HasState(ax::mojom::State::kHorizontal))
     {} // FIXME
@@ -711,10 +711,7 @@ QAccessibleInterface *BrowserAccessibilityQt::cellAt(int row, int column) const
     if (row < 0 || row >= rows || column < 0 || column >= columns)
       return 0;
 
-    const std::vector<int32_t>& cell_ids = GetIntListAttribute(ax::mojom::IntListAttribute::kCellIds);
-    DCHECK_EQ(columns * rows, static_cast<int>(cell_ids.size()));
-
-    int cell_id = cell_ids[row * columns + column];
+    int cell_id = GetCellId(row, column);
     BrowserAccessibility* cell = manager()->GetFromID(cell_id);
     if (cell) {
       QAccessibleInterface *iface = static_cast<BrowserAccessibilityQt*>(cell);

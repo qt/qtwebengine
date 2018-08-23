@@ -116,7 +116,6 @@ public:
     void InitAsFullscreen(content::RenderWidgetHostView*) override;
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
-    gfx::Vector2d GetOffsetFromRootSurface() override;
     gfx::Size GetCompositorViewportPixelSize() const override;
     gfx::NativeView GetNativeView() const override;
     gfx::NativeViewAccessible GetNativeViewAccessible() override;
@@ -127,8 +126,7 @@ public:
     void Hide() override;
     bool IsShowing() override;
     gfx::Rect GetViewBounds() const override;
-    SkColor background_color() const override;
-    void SetBackgroundColor(SkColor color) override;
+    void UpdateBackgroundColor() override;
     bool LockMouse() override;
     void UnlockMouse() override;
     void UpdateCursor(const content::WebCursor&) override;
@@ -141,7 +139,7 @@ public:
     void SetTooltipText(const base::string16 &tooltip_text) override;
     void DisplayTooltipText(const base::string16& tooltip_text) override;
     void DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
-    void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame, viz::mojom::HitTestRegionListPtr) override;
+    void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame, base::Optional<viz::HitTestRegionList>) override;
     void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
 
     void GetScreenInfo(content::ScreenInfo* results) const override;
@@ -152,6 +150,7 @@ public:
     void SetWantsAnimateOnlyBeginFrames() override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
     void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
+    void EnsureSurfaceSynchronizedForLayoutTest() override { QT_NOT_USED }
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -243,7 +242,6 @@ private:
 
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
-    SkColor m_backgroundColor;
     viz::LocalSurfaceId m_localSurfaceId;
 
     uint m_imState;

@@ -61,10 +61,10 @@ LoginDelegateQt::LoginDelegateQt(
         content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
         GURL url,
         bool first_auth_attempt,
-        const base::Callback<void(const base::Optional<net::AuthCredentials>&)> &auth_required_callback)
+        LoginAuthRequiredCallback auth_required_callback)
     : m_authInfo(authInfo)
     , m_url(url)
-    , m_auth_required_callback(auth_required_callback)
+    , m_auth_required_callback(std::move(auth_required_callback))
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 

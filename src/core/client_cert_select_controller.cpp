@@ -94,7 +94,7 @@ void ClientCertSelectController::select(const QSslCertificate &certificate)
             net::X509Certificate::CreateFromBytes(derCertificate.constData(), derCertificate.length());
     for (auto &certInfo : m_clientCerts) {
         scoped_refptr<net::X509Certificate> cert = certInfo->certificate();
-        if (cert->Equals(selectedCert.get())) {
+        if (cert->EqualsExcludingChain(selectedCert.get())) {
             m_selected = true;
             net::ClientCertIdentity::SelfOwningAcquirePrivateKey(
                         std::move(certInfo),

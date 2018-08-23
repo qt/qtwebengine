@@ -117,7 +117,7 @@ public:
     void BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,
                                        const std::string& interface_name,
                                        mojo::ScopedMessagePipeHandle interface_pipe) override;
-    void RegisterInProcessServices(StaticServiceMap* services) override;
+    void RegisterInProcessServices(StaticServiceMap* services, content::ServiceManagerConnection* connection) override;
     std::vector<ServiceManifestInfo> GetExtraServiceManifests() override;
     std::unique_ptr<base::Value> GetServiceManifestOverlay(base::StringPiece name) override;
     bool CanCreateWindow(
@@ -185,7 +185,7 @@ public:
             bool is_main_frame,
             const GURL &url,
             bool first_auth_attempt,
-            const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&auth_required_callback) override;
+            LoginAuthRequiredCallback auth_required_callback) override;
     bool HandleExternalProtocol(
             const GURL &url,
             content::ResourceRequestInfo::WebContentsGetter web_contents_getter,

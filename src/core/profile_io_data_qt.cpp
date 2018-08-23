@@ -40,6 +40,7 @@
 #include "profile_io_data_qt.h"
 
 #include "base/task_scheduler/post_task.h"
+#include "components/certificate_transparency/ct_known_logs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -47,8 +48,8 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_log_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -268,9 +269,10 @@ void ProfileIODataQt::generateStorage()
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
     std::unique_ptr<net::MultiLogCTVerifier> ct_verifier(new net::MultiLogCTVerifier());
-    ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
+//    FIXME:
+//    ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
     m_storage->set_cert_transparency_verifier(std::move(ct_verifier));
-    m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::CTPolicyEnforcer));
+    m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::DefaultCTPolicyEnforcer()));
 
     std::unique_ptr<net::HostResolver> host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
 
@@ -282,7 +284,7 @@ void ProfileIODataQt::generateStorage()
     m_storage->set_proxy_resolution_service(network::CreateProxyResolutionServiceUsingMojoFactory(
                                                 std::move(m_proxyResolverFactory),
                                                 std::unique_ptr<net::ProxyConfigService>(proxyConfigService),
-                                                std::make_unique<net::PacFileFetcherImpl>(m_urlRequestContext.get()),
+                                                net::PacFileFetcherImpl::Create(m_urlRequestContext.get()),
                                                 m_dhcpPacFileFetcherFactory->Create(m_urlRequestContext.get()),
                                                 host_resolver.get(),
                                                 nullptr /* NetLog */,

@@ -70,6 +70,7 @@ public:
     void Maximize() override { }
     void Minimize() override { }
     void Restore() override { }
+    PlatformWindowState GetPlatformWindowState() const override { return PLATFORM_WINDOW_STATE_UNKNOWN; }
     void SetCursor(PlatformCursor) override { }
     void MoveCursorTo(const gfx::Point&) override { }
     void ConfineCursorToBounds(const gfx::Rect&) override { }

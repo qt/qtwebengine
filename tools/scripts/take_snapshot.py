@@ -70,6 +70,7 @@ def isInChromiumBlacklist(file_path):
             not file_path.startswith('net/test/') and
             not file_path.endswith('mock_chrome_application_mac.h') and
             not file_path.endswith('perftimer.h') and
+            not file_path.endswith('test-torque.tq') and
             not 'ozone' in file_path and
             not 'core/mojo/test/' in file_path and
             not file_path.startswith('extensions/browser/'))
@@ -165,6 +166,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/ashmem')
         or file_path.startswith('third_party/binutils')
         or file_path.startswith('third_party/bison')
+        or file_path.startswith('third_party/blink/perf_tests/')
         or file_path.startswith('third_party/breakpad/src/processor/testdata/')
         or file_path.startswith('third_party/boringssl/crypto_test_data.cc')
         or file_path.startswith('third_party/boringssl/src/fuzz')
@@ -229,6 +231,8 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/wayland/src')
         or file_path.startswith('third_party/webgl')
         or file_path.startswith('third_party/webrtc/resources/')
+        or file_path.startswith('third_party/webrtc/third_party/boringssl/crypto_test_data.cc')
+        or file_path.startswith('third_party/webrtc/third_party/boringssl/src/fuzz')
         or file_path.startswith('tools/android')
         or file_path.startswith('tools/luci_go')
         or file_path.startswith('tools/memory_inspector')
@@ -242,7 +246,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('ui/events/ozone/chromeos')
         or file_path.startswith('ui/file_manager')
         or file_path.startswith('ui/gfx/chromeos')
-        or file_path.startswith('v8/third_party/antlr4')
 
         ):
             return True

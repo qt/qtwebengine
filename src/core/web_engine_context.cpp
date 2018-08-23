@@ -373,12 +373,12 @@ WebEngineContext::WebEngineContext()
     bool disable_sandbox = qEnvironmentVariableIsSet(kDisableSandboxEnv);
     if (!disable_sandbox) {
 #if defined(Q_OS_WIN)
-        parsedCommandLine->AppendSwitch(switches::kNoSandbox);
+        parsedCommandLine->AppendSwitch(service_manager::switches::kNoSandbox);
 #elif defined(Q_OS_LINUX)
         parsedCommandLine->AppendSwitch(service_manager::switches::kDisableSetuidSandbox);
 #endif
     } else {
-        parsedCommandLine->AppendSwitch(switches::kNoSandbox);
+        parsedCommandLine->AppendSwitch(service_manager::switches::kNoSandbox);
         qInfo() << "Sandboxing disabled by user.";
     }
 

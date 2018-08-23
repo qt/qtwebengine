@@ -36,9 +36,6 @@ IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentMarkup,
 IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentInnerText,
                     uint64_t /* requestId */)
 
-IPC_MESSAGE_ROUTED1(RenderViewObserverQt_SetBackgroundColor,
-                    uint32_t /* color */)
-
 // User scripts messages
 IPC_MESSAGE_ROUTED1(RenderFrameObserverHelper_AddScript,
                     UserScriptData /* script */)

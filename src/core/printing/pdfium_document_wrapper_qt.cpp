@@ -50,7 +50,7 @@ int PdfiumDocumentWrapperQt::m_libraryUsers = 0;
 
 class QWEBENGINECORE_PRIVATE_EXPORT PdfiumPageWrapperQt {
 public:
-    PdfiumPageWrapperQt(void *data, int pageIndex, int targetWidth, int targetHeight)
+    PdfiumPageWrapperQt(FPDF_DOCUMENT data, int pageIndex, int targetWidth, int targetHeight)
         : m_pageData(FPDF_LoadPage(data, pageIndex))
         , m_width(FPDF_GetPageWidth(m_pageData))
         , m_height(FPDF_GetPageHeight(m_pageData))
@@ -106,7 +106,7 @@ private:
     }
 
 private:
-    void *m_pageData;
+    FPDF_PAGE m_pageData;
     int m_width;
     int m_height;
     int m_index;
@@ -124,8 +124,8 @@ PdfiumDocumentWrapperQt::PdfiumDocumentWrapperQt(const void *pdfData, size_t siz
     if (m_libraryUsers++ == 0)
         FPDF_InitLibrary();
 
-    m_documentHandle = FPDF_LoadMemDocument(pdfData, static_cast<int>(size), password);
-    m_pageCount = FPDF_GetPageCount(m_documentHandle);
+    m_documentHandle = (void *)FPDF_LoadMemDocument(pdfData, static_cast<int>(size), password);
+    m_pageCount = FPDF_GetPageCount((FPDF_DOCUMENT)m_documentHandle);
 }
 
 QImage PdfiumDocumentWrapperQt::pageAsQImage(size_t index)
@@ -140,14 +140,14 @@ QImage PdfiumDocumentWrapperQt::pageAsQImage(size_t index)
         return QImage();
     }
 
-    PdfiumPageWrapperQt pageWrapper(m_documentHandle, index,
+    PdfiumPageWrapperQt pageWrapper((FPDF_DOCUMENT)m_documentHandle, index,
                                     m_imageSize.width(), m_imageSize.height());
     return pageWrapper.image();
 }
 
 PdfiumDocumentWrapperQt::~PdfiumDocumentWrapperQt()
 {
-    FPDF_CloseDocument(m_documentHandle);
+    FPDF_CloseDocument((FPDF_DOCUMENT)m_documentHandle);
     if (--m_libraryUsers == 0)
         FPDF_DestroyLibrary();
 }

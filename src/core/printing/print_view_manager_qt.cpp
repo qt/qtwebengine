@@ -132,16 +132,13 @@ static base::DictionaryValue *createPrintSettings()
     printSettings->SetBoolean(printing::kSettingPrintWithPrivet, false);
     printSettings->SetBoolean(printing::kSettingPrintWithExtension, false);
 
-    printSettings->SetBoolean(printing::kSettingGenerateDraftData, false);
-    printSettings->SetBoolean(printing::kSettingPreviewModifiable, false);
-
     printSettings->SetInteger(printing::kSettingDpiHorizontal, printing::kPointsPerInch);
     printSettings->SetInteger(printing::kSettingDpiVertical, printing::kPointsPerInch);
 
     printSettings->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
     printSettings->SetInteger(printing::kSettingCopies, 1);
     printSettings->SetBoolean(printing::kSettingCollate, false);
-    printSettings->SetBoolean(printing::kSettingGenerateDraftData, false);
+//    printSettings->SetBoolean(printing::kSettingGenerateDraftData, false);
     printSettings->SetBoolean(printing::kSettingPreviewModifiable, false);
 
     printSettings->SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);

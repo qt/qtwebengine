@@ -66,7 +66,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/blink/public/platform/web_color.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -118,14 +117,11 @@ enum ImStateFlags {
 static inline ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
   ui::LatencyInfo latency_info;
   // The latency number should only be added if the timestamp is valid.
-  if (event.TimeStampSeconds()) {
-    const int64_t time_micros = static_cast<int64_t>(
-        event.TimeStampSeconds() * base::Time::kMicrosecondsPerSecond);
+  if (!event.TimeStamp().is_null()) {
     latency_info.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
         0,
-        0,
-        base::TimeTicks() + base::TimeDelta::FromMicroseconds(time_micros),
+        event.TimeStamp(),
         1);
   }
   return latency_info;
@@ -330,7 +326,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_imeInProgress(false)
     , m_receivedEmptyImeEvent(false)
     , m_initPending(false)
-    , m_backgroundColor(SK_ColorWHITE)
     , m_imState(0)
     , m_anchorPositionWithinSelection(-1)
     , m_cursorPositionWithinSelection(-1)
@@ -419,11 +414,6 @@ void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& screenRect)
     SetSize(screenRect.size());
 }
 
-gfx::Vector2d RenderWidgetHostViewQt::GetOffsetFromRootSurface()
-{
-    return gfx::Vector2d();
-}
-
 gfx::Size RenderWidgetHostViewQt::GetCompositorViewportPixelSize() const
 {
     if (!m_delegate || !m_delegate->window() || !m_delegate->window()->screen())
@@ -506,21 +496,12 @@ gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
     return gfx::BoundingRect(p1, p2);
 }
 
-SkColor RenderWidgetHostViewQt::background_color() const
+void RenderWidgetHostViewQt::UpdateBackgroundColor()
 {
-    return m_backgroundColor;
-}
-
-void RenderWidgetHostViewQt::SetBackgroundColor(SkColor color)
-{
-    if (m_backgroundColor == color)
-        return;
-    m_backgroundColor = color;
-    // Set the background of the compositor if necessary
-    m_delegate->setClearColor(toQt(color));
-    // Set the background of the blink::FrameView
-    host()->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
-    host()->Send(new RenderViewObserverQt_SetBackgroundColor(host()->GetRoutingID(), color));
+    auto color = GetBackgroundColor();
+    if (color) {
+        m_delegate->setClearColor(toQt(*color));
+    }
 }
 
 // Return value indicates whether the mouse is locked successfully or not.
@@ -746,13 +727,12 @@ void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom:
     m_compositor->setFrameSinkClient(frameSink);
 }
 
-void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, viz::mojom::HitTestRegionListPtr)
+void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, base::Optional<viz::HitTestRegionList>)
 {
     bool scrollOffsetChanged = (m_lastScrollOffset != frame.metadata.root_scroll_offset);
     bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);
     m_lastScrollOffset = frame.metadata.root_scroll_offset;
     m_lastContentsSize = frame.metadata.root_layer_size;
-    m_backgroundColor = frame.metadata.root_background_color;
     if (m_localSurfaceId != local_surface_id) {
         m_localSurfaceId = local_surface_id;
         // FIXME: update frame_size and device_scale_factor?
@@ -966,7 +946,7 @@ QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 
 void RenderWidgetHostViewQt::notifyResize()
 {
-    host()->WasResized();
+    host()->SynchronizeVisualProperties();
     host()->SendScreenRects();
 }
 
@@ -1711,7 +1691,9 @@ void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostVi
 {
     DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)->IsRenderWidgetHostViewChildFrame());
     DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)->IsRenderWidgetHostViewGuest());
-    SetBackgroundColor(view->background_color());
+    base::Optional<SkColor> color = view->GetBackgroundColor();
+    if (color)
+        SetBackgroundColor(*color);
 }
 
 } // namespace QtWebEngineCore

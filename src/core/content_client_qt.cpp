@@ -251,7 +251,8 @@ namespace QtWebEngineCore {
 #if defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 static bool IsWidevineAvailable(base::FilePath *cdm_path,
                                 std::vector<media::VideoCodec> *codecs_supported,
-                                bool *supports_persistent_license)
+                                bool *supports_persistent_license,
+                                base::flat_set<media::EncryptionMode>* modes_supported)
 {
     QStringList pluginPaths;
     const base::CommandLine::StringType widevine_argument = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kCdmWidevinePath);
@@ -307,6 +308,8 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
 
             *supports_persistent_license = false;
 
+            modes_supported->insert(media::EncryptionMode::kCenc);
+
             return true;
         }
     }
@@ -324,12 +327,15 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
         base::FilePath cdm_path;
         std::vector<media::VideoCodec> video_codecs_supported;
         bool supports_persistent_license = false;
+        base::flat_set<media::EncryptionMode> encryption_modes_supported;
         if (IsWidevineAvailable(&cdm_path, &video_codecs_supported,
-                                &supports_persistent_license)) {
+                                &supports_persistent_license,
+                                &encryption_modes_supported)) {
             const base::Version version;
             cdms->push_back(content::CdmInfo(kWidevineCdmDisplayName, kWidevineCdmGuid, version, cdm_path,
                                              kWidevineCdmFileSystemId, video_codecs_supported,
-                                             supports_persistent_license, kWidevineKeySystem, false));
+                                             supports_persistent_license, encryption_modes_supported,
+                                             kWidevineKeySystem, false));
         }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 
@@ -355,12 +361,14 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
             cdms->push_back(content::CdmInfo(media::kClearKeyCdmDisplayName, media::kClearKeyCdmDifferentGuid,
                                              base::Version("0.1.0.0"), clear_key_cdm_path,
                                              media::kClearKeyCdmFileSystemId, {}, supports_persistent_license,
+                                             {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
                                              kExternalClearKeyDifferentGuidTestKeySystem, false));
 
             // Supported codecs are hard-coded in ExternalClearKeyProperties.
             cdms->push_back(content::CdmInfo(media::kClearKeyCdmDisplayName, media::kClearKeyCdmGuid,
                                              base::Version("0.1.0.0"), clear_key_cdm_path,
                                              media::kClearKeyCdmFileSystemId, {}, supports_persistent_license,
+                                             {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
                                              kExternalClearKeyKeySystem, true));
         }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

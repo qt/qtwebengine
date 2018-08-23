@@ -103,7 +103,7 @@ public:
     // WebContentsDelegate overrides
     content::WebContents *OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params) override;
     void NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags) override;
-    void AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked) override;
+    void AddNewContents(content::WebContents *source, std::unique_ptr<content::WebContents> new_contents, WindowOpenDisposition disposition, const gfx::Rect &initial_pos, bool user_gesture, bool *was_blocked) override;
     void CloseContents(content::WebContents *source) override;
     void LoadProgressChanged(content::WebContents* source, double progress) override;
     void HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) override;
@@ -111,7 +111,7 @@ public:
     void WebContentsCreated(content::WebContents *source_contents, int opener_render_process_id, int opener_render_frame_id,
                             const std::string &frame_name, const GURL &target_url, content::WebContents *new_contents) override;
     content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) override;
-    void EnterFullscreenModeForTab(content::WebContents* web_contents, const GURL& origin) override;
+    void EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL &origin, const blink::WebFullscreenOptions &) override;
     void ExitFullscreenModeForTab(content::WebContents*) override;
     bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const override;
     void RunFileChooser(content::RenderFrameHost* render_frame_host, const content::FileChooserParams& params) override;
@@ -155,7 +155,7 @@ public:
     WebContentsAdapterClient *adapterClient() const { return m_viewClient; }
 
 private:
-    QWeakPointer<WebContentsAdapter> createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
+    QWeakPointer<WebContentsAdapter> createWindow(std::unique_ptr<content::WebContents> new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
     void EmitLoadStarted(const QUrl &url, bool isErrorPage = false);
     void EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString());
 

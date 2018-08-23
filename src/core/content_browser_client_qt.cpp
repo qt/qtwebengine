@@ -78,6 +78,7 @@
 #include "net/ssl/client_cert_identity.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -181,9 +182,7 @@ class MessagePumpForUIQt : public QObject,
 {
 public:
     MessagePumpForUIQt()
-        // Usually this gets passed through Run, but since we have
-        // our own event loop, attach it explicitly ourselves.
-        : m_delegate(base::MessageLoopForUI::current())
+        : m_delegate(nullptr)
         , m_explicitLoop(0)
         , m_timerId(0)
     {
@@ -191,7 +190,10 @@ public:
 
     void Run(Delegate *delegate) override
     {
-        Q_ASSERT(delegate == m_delegate);
+        if (!m_delegate)
+            m_delegate = delegate;
+        else
+            Q_ASSERT(delegate == m_delegate);
         // This is used only when MessagePumpForUIQt is used outside of the GUI thread.
         QEventLoop loop;
         m_explicitLoop = &loop;
@@ -207,11 +209,15 @@ public:
 
     void ScheduleWork() override
     {
+        if (!m_delegate)
+            m_delegate = base::MessageLoopForUI::current();
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
 
     void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) override
     {
+        if (!m_delegate)
+            m_delegate = base::MessageLoopForUI::current();
         if (delayed_work_time.is_null()) {
             killTimer(m_timerId);
             m_timerId = 0;
@@ -353,7 +359,6 @@ public:
     bool MakeCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); return false; }
     void ReleaseCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); }
     bool IsCurrent(gl::GLSurface *) override { Q_UNREACHABLE(); return false; }
-    void OnSetSwapInterval(int) override { Q_UNREACHABLE(); }
     scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() override
     {
         return nullptr;
@@ -579,7 +584,7 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
     url::CustomScheme::SaveSchemes(command_line);
 
     std::string processType = command_line->GetSwitchValueASCII(switches::kProcessType);
-    if (processType == switches::kZygoteProcess)
+    if (processType == service_manager::switches::kZygoteProcess)
         command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
 }
 
@@ -683,7 +688,7 @@ void ContentBrowserClientQt::BindInterfaceRequestFromFrame(content::RenderFrameH
         m_frameInterfaces->TryBindInterface(interface_name, &interface_pipe);
 }
 
-void ContentBrowserClientQt::RegisterInProcessServices(StaticServiceMap* services)
+void ContentBrowserClientQt::RegisterInProcessServices(StaticServiceMap* services, content::ServiceManagerConnection* connection)
 {
     service_manager::EmbeddedServiceInfo info;
     info.factory = ServiceQt::GetInstance()->CreateServiceQtFactory();
@@ -903,9 +908,9 @@ scoped_refptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegat
         bool /*is_main_frame*/,
         const GURL &url,
         bool first_auth_attempt,
-        const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&auth_required_callback)
+        LoginAuthRequiredCallback auth_required_callback)
 {
-    return base::MakeRefCounted<LoginDelegateQt>(authInfo, web_contents_getter, url, first_auth_attempt, auth_required_callback);
+    return base::MakeRefCounted<LoginDelegateQt>(authInfo, web_contents_getter, url, first_auth_attempt, std::move(auth_required_callback));
 }
 
 } // namespace QtWebEngineCore

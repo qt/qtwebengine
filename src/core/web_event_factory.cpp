@@ -1146,20 +1146,17 @@ static ui::DomKey domKeyForQtKey(int qtKey)
     }
 }
 
-static inline double currentTimeForEvent(const QEvent *event)
+static inline base::TimeTicks currentTimeForEvent(const QEvent *event)
 {
     Q_ASSERT(event);
 
     if (event->type() != QEvent::Leave) {
         const QInputEvent *inputEvent = static_cast<const QInputEvent *>(event);
         if (inputEvent->timestamp())
-            return static_cast<double>(inputEvent->timestamp()) / 1000;
+            return base::TimeTicks::FromInternalValue(inputEvent->timestamp() * 1000);
     }
 
-    static QElapsedTimer timer;
-    if (!timer.isValid())
-        timer.start();
-    return static_cast<double>(timer.elapsed()) / 1000;
+    return base::TimeTicks::Now();
 }
 
 template<class T>
@@ -1328,7 +1325,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent;
-    webKitEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
     webKitEvent.SetModifiers(modifiersForEvent(ev));
     webKitEvent.SetType(webEventTypeForEvent(ev));
 
@@ -1366,7 +1363,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QEvent *ev)
     Q_ASSERT(ev->type() == QEvent::Leave || ev->type() == QEvent::HoverLeave);
 
     WebMouseEvent webKitEvent;
-    webKitEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
     webKitEvent.SetType(WebInputEvent::kMouseLeave);
     return webKitEvent;
 }
@@ -1375,7 +1372,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QEvent *ev)
 WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, double dpiScale)
 {
     WebGestureEvent webKitEvent;
-    webKitEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
     webKitEvent.SetModifiers(modifiersForEvent(ev));
 
     webKitEvent.SetPositionInWidget(WebFloatPoint(ev->localPos().x() / dpiScale,
@@ -1446,7 +1443,7 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
     WebMouseWheelEvent webEvent;
     webEvent.SetType(webEventTypeForEvent(ev));
     webEvent.SetModifiers(modifiersForEvent(ev));
-    webEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
+    webEvent.SetTimeStamp(currentTimeForEvent(ev));
     webEvent.SetPositionInWidget(ev->x() / dpiScale, ev->y() / dpiScale);
     webEvent.SetPositionInScreen(ev->globalX(), ev->globalY());
 
@@ -1468,7 +1465,7 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
     if (toBlinkPhase(ev->phase()) != webEvent.phase)
         return false;
 
-    webEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
+    webEvent.SetTimeStamp(currentTimeForEvent(ev));
     webEvent.SetPositionInWidget(ev->x() / dpiScale, ev->y() / dpiScale);
     webEvent.SetPositionInScreen(ev->globalX(), ev->globalY());
 
@@ -1482,7 +1479,7 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
 content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *ev)
 {
     content::NativeWebKeyboardEvent webKitEvent(reinterpret_cast<gfx::NativeEvent>(ev));
-    webKitEvent.SetTimeStampSeconds(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
     webKitEvent.SetModifiers(modifiersForEvent(ev));
     webKitEvent.SetType(webEventTypeForEvent(ev));
 

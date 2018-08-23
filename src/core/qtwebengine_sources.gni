@@ -124,8 +124,6 @@ source_set("qtwebengine_sources") {
       "//chrome/browser/printing/print_job_manager.h",
       "//chrome/browser/printing/print_job_worker.cc",
       "//chrome/browser/printing/print_job_worker.h",
-      "//chrome/browser/printing/print_job_worker_owner.cc",
-      "//chrome/browser/printing/print_job_worker_owner.h",
     ]
     deps += [
       "//printing/buildflags:buildflags",

@@ -311,9 +311,11 @@ static void AddExternalClearKey(std::vector<std::unique_ptr<media::KeySystemProp
 
     std::vector<media::VideoCodec> supported_video_codecs;
     bool supports_persistent_license;
+    std::vector<media::EncryptionMode> supported_encryption_schemes;
     if (!content::IsKeySystemSupported(kExternalClearKeyKeySystem,
                                        &supported_video_codecs,
-                                       &supports_persistent_license)) {
+                                       &supports_persistent_license,
+                                       &supported_encryption_schemes)) {
         return;
     }
 
@@ -373,9 +375,11 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
 {
     std::vector<media::VideoCodec> supported_video_codecs;
     bool supports_persistent_license = false;
+    std::vector<media::EncryptionMode> supported_encryption_schemes;
     if (!content::IsKeySystemSupported(kWidevineKeySystem,
                                        &supported_video_codecs,
-                                       &supports_persistent_license)) {
+                                       &supports_persistent_license,
+                                       &supported_encryption_schemes)) {
         DVLOG(1) << "Widevine CDM is not currently available.";
         return;
     }
@@ -417,7 +421,7 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
     using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
     concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
-                                           supported_codecs,
+                                           supported_encryption_schemes, supported_codecs,
                                            Robustness::SW_SECURE_CRYPTO,          // Maximum audio robustness.
                                            Robustness::SW_SECURE_DECODE,          // Maximum video robustness.
                                            persistent_license_support,            // persistent-license.

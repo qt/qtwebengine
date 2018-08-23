@@ -94,8 +94,8 @@ class WebEngineContext;
 class QWEBENGINECORE_PRIVATE_EXPORT WebContentsAdapter : public QEnableSharedFromThis<WebContentsAdapter> {
 public:
     static QSharedPointer<WebContentsAdapter> createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient);
-    // Takes ownership of the WebContents.
-    WebContentsAdapter(content::WebContents *webContents = 0);
+    WebContentsAdapter();
+    WebContentsAdapter(std::unique_ptr<content::WebContents> webContents);
     ~WebContentsAdapter();
 
     void setClient(WebContentsAdapterClient *adapterClient);

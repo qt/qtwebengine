@@ -1260,7 +1260,7 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         mailboxesToPull.reserve(mailboxesToFetch.size());
 
         gpu::SyncPointManager *syncPointManager = sync_point_manager();
-        base::MessageLoop *gpuMessageLoop = gpu_message_loop();
+        scoped_refptr<base::SingleThreadTaskRunner> gpuTaskRunner = gpu_task_runner();
         Q_ASSERT(m_numPendingSyncPoints == 0);
         m_numPendingSyncPoints = mailboxesToFetch.count();
         for (MailboxTexture *mailboxTexture : qAsConst(mailboxesToFetch)) {
@@ -1271,7 +1271,7 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         }
         if (!mailboxesToPull.isEmpty()) {
             auto task = base::BindOnce(&DelegatedFrameNode::pullTextures, this, std::move(mailboxesToPull));
-            gpuMessageLoop->task_runner()->PostTask(FROM_HERE, std::move(task));
+            gpuTaskRunner->PostTask(FROM_HERE, std::move(task));
         }
 
         m_mailboxesFetchedWaitCond.wait(&m_mutex);
