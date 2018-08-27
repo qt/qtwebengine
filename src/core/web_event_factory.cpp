@@ -70,6 +70,8 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
+#include <QtGui/private/qtgui-config_p.h>
+
 #include <QCoreApplication>
 #include <QElapsedTimer>
 #include <QGuiApplication>
@@ -83,6 +85,42 @@
 
 using namespace blink;
 
+enum class KeyboardDriver { Unknown, Windows, Cocoa, Xkb, Evdev };
+
+static KeyboardDriver keyboardDriverImpl()
+{
+    QString platformName = QGuiApplication::platformName();
+
+    if (platformName == QLatin1Literal("windows"))
+        return KeyboardDriver::Windows;
+
+    if (platformName == QLatin1Literal("cocoa"))
+        return KeyboardDriver::Cocoa;
+
+    if (platformName == QLatin1Literal("xcb") || platformName == QLatin1Literal("wayland"))
+        return KeyboardDriver::Xkb;
+
+#if QT_CONFIG(libinput) && QT_CONFIG(xkbcommon_evdev)
+    // Based on QEglFSIntegration::createInputHandlers and QLibInputKeyboard::processKey.
+    if (platformName == QLatin1Literal("eglfs") && !qEnvironmentVariableIntValue("QT_QPA_EGLFS_NO_LIBINPUT"))
+        return KeyboardDriver::Xkb;
+#endif
+
+#if QT_CONFIG(evdev)
+    // Based on QEglFSIntegration::createInputHandlers.
+    if (platformName == QLatin1Literal("eglfs"))
+        return KeyboardDriver::Evdev;
+#endif
+
+    return KeyboardDriver::Unknown;
+}
+
+static KeyboardDriver keyboardDriver()
+{
+    static KeyboardDriver cached = keyboardDriverImpl();
+    return cached;
+}
+
 // Qt swaps the Control and Meta keys on macOS (unless the attribute
 // AA_MacDontSwapCtrlAndMeta is set). To preserve compatibility with Chromium we
 // want to unswap them when forwarding events. The following two functions,
@@ -92,14 +130,12 @@ using namespace blink;
 static int qtKeyForKeyEvent(const QKeyEvent *ev)
 {
     int key = ev->key();
-#ifdef Q_OS_MACOS
-    if (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+    if (keyboardDriver() == KeyboardDriver::Cocoa && !qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
         if (key == Qt::Key_Control)
             return Qt::Key_Meta;
         if (key == Qt::Key_Meta)
             return Qt::Key_Control;
     }
-#endif
     return key;
 }
 
@@ -107,14 +143,12 @@ static int qtKeyForKeyEvent(const QKeyEvent *ev)
 static Qt::KeyboardModifiers qtModifiersForEvent(const QInputEvent *ev)
 {
     Qt::KeyboardModifiers modifiers = ev->modifiers();
-#ifdef Q_OS_MACOS
-    if (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+    if (keyboardDriver() == KeyboardDriver::Cocoa && !qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
         bool controlModifier = modifiers.testFlag(Qt::ControlModifier);
         bool metaModifier = modifiers.testFlag(Qt::MetaModifier);
         modifiers.setFlag(Qt::ControlModifier, metaModifier);
         modifiers.setFlag(Qt::MetaModifier, controlModifier);
     }
-#endif
     return modifiers;
 }
 
