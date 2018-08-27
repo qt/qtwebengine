@@ -14,7 +14,7 @@ gn_args += \
     toolkit_views=false \
     use_ozone=true \
     ozone_auto_platforms=false \
-    ozone_platform_headless=true \
+    ozone_platform_headless=false \
     ozone_platform_external=true \
     ozone_platform=\"qt\"
 

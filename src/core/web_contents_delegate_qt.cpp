@@ -215,7 +215,7 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
     // Make sure to only emit the signal when loading isn't in progress, because it causes multiple
     // false signals to be emitted.
     if ((changed_flags & content::INVALIDATE_TYPE_TAB) && !(changed_flags & content::INVALIDATE_TYPE_LOAD)) {
-        m_viewClient->recentlyAudibleChanged(source->WasRecentlyAudible());
+        m_viewClient->recentlyAudibleChanged(source->IsCurrentlyAudible());
     }
 }
 
@@ -477,25 +477,23 @@ void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_
     }
 }
 
-void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request, const content::MediaResponseCallback &callback)
+void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request,  content::MediaResponseCallback callback)
 {
-    MediaCaptureDevicesDispatcher::GetInstance()->processMediaAccessRequest(m_viewClient, web_contents, request, callback);
+    MediaCaptureDevicesDispatcher::GetInstance()->processMediaAccessRequest(m_viewClient, web_contents, request, std::move(callback));
 }
 
-void WebContentsDelegateQt::MoveContents(content::WebContents *source, const gfx::Rect &pos)
+void WebContentsDelegateQt::SetContentsBounds(content::WebContents *source, const gfx::Rect &bounds)
 {
-    QRect frameGeometry(toQt(pos));
+    if (!source->HasOpener()) // is popup
+        return;
+
+    QRect frameGeometry(toQt(bounds));
     QRect geometry;
     if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(web_contents()->GetRenderWidgetHostView())) {
         if (rwhv->delegate() && rwhv->delegate()->window())
             geometry = frameGeometry.marginsRemoved(rwhv->delegate()->window()->frameMargins());
     }
     m_viewClient->requestGeometryChange(geometry, frameGeometry);
-}
-
-bool WebContentsDelegateQt::IsPopupOrPanel(const content::WebContents *source) const
-{
-    return source->HasOpener();
 }
 
 void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const GURL& url)

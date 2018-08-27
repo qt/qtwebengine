@@ -197,7 +197,7 @@ content::BrowsingDataRemoverDelegate *ProfileQt::GetBrowsingDataRemoverDelegate(
     return new BrowsingDataRemoverDelegateQt();
 }
 
-content::PermissionManager *ProfileQt::GetPermissionManager()
+content::PermissionControllerDelegate *ProfileQt::GetPermissionControllerDelegate()
 {
     if (!m_permissionManager)
         m_permissionManager.reset(new PermissionManagerQt());

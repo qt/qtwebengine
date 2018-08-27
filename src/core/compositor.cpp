@@ -135,6 +135,10 @@ QSGNode *Compositor::updatePaintNode(QSGNode *oldNode)
             content::BrowserThread::UI, FROM_HERE,
             base::BindOnce(&Compositor::notifyFrameCommitted, m_weakPtrFactory.GetWeakPtr()));
     }
+    if (m_chromiumCompositorData->frameData.metadata.request_presentation_feedback)
+        content::BrowserThread::PostTask(
+            content::BrowserThread::UI, FROM_HERE,
+            base::BindOnce(&Compositor::sendPresentationFeedback, m_weakPtrFactory.GetWeakPtr(), m_chromiumCompositorData->frameData.metadata.frame_token));
 
     return frameNode;
 }
@@ -147,6 +151,12 @@ void Compositor::notifyFrameCommitted()
     if (m_frameSinkClient)
         m_frameSinkClient->DidReceiveCompositorFrameAck(m_resourcesToRelease);
     m_resourcesToRelease.clear();
+}
+
+void Compositor::sendPresentationFeedback(uint frame_token)
+{
+    gfx::PresentationFeedback dummyFeedback(base::TimeTicks::Now(), base::TimeDelta(), gfx::PresentationFeedback::Flags::kVSync);
+    m_frameSinkClient->DidPresentCompositorFrame(frame_token, dummyFeedback);
 }
 
 bool Compositor::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs &args)

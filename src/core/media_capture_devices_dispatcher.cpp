@@ -171,8 +171,8 @@ WebContentsAdapterClient::MediaRequestFlags mediaRequestFlagsForRequest(const co
 
 }  // namespace
 
-MediaCaptureDevicesDispatcher::PendingAccessRequest::PendingAccessRequest(const content::MediaStreamRequest &request
-                                                                          , const content::MediaResponseCallback &callback)
+MediaCaptureDevicesDispatcher::PendingAccessRequest::PendingAccessRequest(const content::MediaStreamRequest &request,
+                                                                          const RepeatingMediaResponseCallback &callback)
     : request(request)
     , callback(callback)
 {
@@ -231,7 +231,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
         }
     }
 
-    content::MediaResponseCallback callback = queue.front().callback;
+    content::MediaResponseCallback callback = std::move(queue.front().callback);
     queue.pop_front();
 
     if (!queue.empty()) {
@@ -239,11 +239,11 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
         // asynchronously to make sure that calling infobar is not destroyed until
         // after this function returns.
         BrowserThread::PostTask(
-                    BrowserThread::UI, FROM_HERE, base::Bind(&MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest, base::Unretained(this), webContents));
+                    BrowserThread::UI, FROM_HERE, base::BindOnce(&MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest, base::Unretained(this), webContents));
     }
 
-    callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK,
-                 std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK,
+                            std::unique_ptr<content::MediaStreamUI>());
 }
 
 
@@ -279,13 +279,13 @@ void MediaCaptureDevicesDispatcher::Observe(int type, const content::Notificatio
 
 void MediaCaptureDevicesDispatcher::processMediaAccessRequest(WebContentsAdapterClient *adapterClient, content::WebContents *webContents
                                                               , const content::MediaStreamRequest &request
-                                                              , const content::MediaResponseCallback &callback)
+                                                              , content::MediaResponseCallback callback)
 {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Let's not support tab capture for now.
     if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE || request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE) {
-        callback.Run(content::MediaStreamDevices(), content::MEDIA_DEVICE_NOT_SUPPORTED, std::unique_ptr<content::MediaStreamUI>());
+        std::move(callback).Run(content::MediaStreamDevices(), content::MEDIA_DEVICE_NOT_SUPPORTED, std::unique_ptr<content::MediaStreamUI>());
         return;
     }
 
@@ -295,30 +295,30 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(WebContentsAdapter
             adapterClient->webEngineSettings()->testAttribute(WebEngineSettings::ScreenCaptureEnabled);
         const bool originIsSecure = content::IsOriginSecure(request.security_origin);
         if (!screenCaptureEnabled || !originIsSecure) {
-            callback.Run(content::MediaStreamDevices(), content::MEDIA_DEVICE_INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
+            std::move(callback).Run(content::MediaStreamDevices(), content::MEDIA_DEVICE_INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
             return;
         }
 
         if (!request.requested_video_device_id.empty()) {
             // Non-empty device id from the chooseDesktopMedia() extension API.
-            processDesktopCaptureAccessRequest(webContents, request, callback);
+            processDesktopCaptureAccessRequest(webContents, request, std::move(callback));
             return;
         }
     }
 
-    enqueueMediaAccessRequest(webContents, request, callback);
+    enqueueMediaAccessRequest(webContents, request, std::move(callback));
     // We might not require this approval for pepper requests.
     adapterClient->runMediaAccessPermissionRequest(toQt(request.security_origin), mediaRequestFlagsForRequest(request));
 }
 
 void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request
-                                                                       , const content::MediaResponseCallback &callback)
+                                                                       , content::MediaResponseCallback callback)
 {
   content::MediaStreamDevices devices;
 
   if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE ||
       request.requested_video_device_id.empty()) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
     return;
   }
 
@@ -339,7 +339,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
 
   // Received invalid device id.
   if (mediaId.type == content::DesktopMediaID::TYPE_NONE) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
     return;
   }
 
@@ -349,17 +349,18 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
 
   getDevicesForDesktopCapture(&devices, mediaId, capture_audio);
 
-  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK,
-               std::unique_ptr<content::MediaStreamUI>());
+  std::move(callback).Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK,
+                          std::unique_ptr<content::MediaStreamUI>());
 }
 
-void MediaCaptureDevicesDispatcher::enqueueMediaAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request
-                                                                     ,const content::MediaResponseCallback &callback)
+void MediaCaptureDevicesDispatcher::enqueueMediaAccessRequest(content::WebContents *webContents,
+                                                              const content::MediaStreamRequest &request,
+                                                              content::MediaResponseCallback callback)
 {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RequestsQueue &queue = m_pendingRequests[webContents];
-  queue.push_back(PendingAccessRequest(request, callback));
+  queue.push_back(PendingAccessRequest(request, base::AdaptCallbackForRepeating(std::move(callback))));
 }
 
 void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(content::WebContents *webContents) {

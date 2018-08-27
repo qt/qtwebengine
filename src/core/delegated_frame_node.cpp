@@ -72,6 +72,7 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
+#include "content/browser/browser_main_loop.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
@@ -647,9 +648,8 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
         if (m_resource.is_software) {
             Q_ASSERT(apiDelegate);
             std::unique_ptr<viz::SharedBitmap> sharedBitmap =
-                    viz::ServerSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size,
-                                                                                     viz::BGRA_8888,
-                                                                                     m_resource.mailbox_holder.mailbox);
+                    content::BrowserMainLoop::GetInstance()->GetServerSharedBitmapManager()->GetSharedBitmapFromId(
+                        m_resource.size, viz::BGRA_8888, m_resource.mailbox_holder.mailbox);
             // QSG interprets QImage::hasAlphaChannel meaning that a node should enable blending
             // to draw it but Chromium keeps this information in the quads.
             // The input format is currently always Format_ARGB32_Premultiplied, so assume that all
@@ -1388,10 +1388,9 @@ void DelegatedFrameNode::fenceAndUnlockQt(DelegatedFrameNode *frameNode)
 #ifndef QT_NO_OPENGL
     if (!!gl::GLContext::GetCurrent() && gl::GLFence::IsSupported()) {
         // Create a fence on the Chromium GPU-thread and context
-        gl::GLFence *fence = gl::GLFence::Create();
+        std::unique_ptr<gl::GLFence> fence = gl::GLFence::Create();
         // But transfer it to something generic since we need to read it using Qt's OpenGL.
         frameNode->m_textureFences.append(fence->Transfer());
-        delete fence;
     }
     if (frameNode->m_numPendingSyncPoints == 0)
         base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::unlockQt, frameNode));

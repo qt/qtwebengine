@@ -117,9 +117,10 @@ public:
     void RunFileChooser(content::RenderFrameHost* render_frame_host, const content::FileChooserParams& params) override;
     bool DidAddMessageToConsole(content::WebContents* source, int32_t level, const base::string16& message, int32_t line_no, const base::string16& source_id) override;
     void FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update) override;
-    void RequestMediaAccessPermission(content::WebContents* web_contents, const content::MediaStreamRequest& request, const content::MediaResponseCallback& callback) override;
-    void MoveContents(content::WebContents *source, const gfx::Rect &pos) override;
-    bool IsPopupOrPanel(const content::WebContents *source) const override;
+    void RequestMediaAccessPermission(content::WebContents *web_contents,
+                                      const content::MediaStreamRequest &request,
+                                      content::MediaResponseCallback callback) override;
+    void SetContentsBounds(content::WebContents *source, const gfx::Rect &bounds) override;
     void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
     void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) override;
     void BeforeUnloadFired(content::WebContents* tab, bool proceed, bool* proceed_to_fire_unload) override;

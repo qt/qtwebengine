@@ -309,13 +309,9 @@ static void AddExternalClearKey(std::vector<std::unique_ptr<media::KeySystemProp
     static const char kExternalClearKeyCdmProxyTestKeySystem[] =
             "org.chromium.externalclearkey.cdmproxytest";
 
-    std::vector<media::VideoCodec> supported_video_codecs;
-    bool supports_persistent_license;
-    std::vector<media::EncryptionMode> supported_encryption_schemes;
-    if (!content::IsKeySystemSupported(kExternalClearKeyKeySystem,
-                                       &supported_video_codecs,
-                                       &supports_persistent_license,
-                                       &supported_encryption_schemes)) {
+    media::mojom::KeySystemCapabilityPtr capability;
+    if (!content::IsKeySystemSupported(kExternalClearKeyKeySystem, &capability)) {
+        DVLOG(1) << "External Clear Key not supported";
         return;
     }
 
@@ -370,33 +366,27 @@ static void AddExternalClearKey(std::vector<std::unique_ptr<media::KeySystemProp
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
-
-static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>> *concrete_key_systems)
+static media::SupportedCodecs GetSupportedCodecs(const std::vector<media::VideoCodec> &supported_video_codecs, bool is_secure)
 {
-    std::vector<media::VideoCodec> supported_video_codecs;
-    bool supports_persistent_license = false;
-    std::vector<media::EncryptionMode> supported_encryption_schemes;
-    if (!content::IsKeySystemSupported(kWidevineKeySystem,
-                                       &supported_video_codecs,
-                                       &supports_persistent_license,
-                                       &supported_encryption_schemes)) {
-        DVLOG(1) << "Widevine CDM is not currently available.";
-        return;
-    }
-
     media::SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
 
-    // Audio codecs are always supported.
+    // Audio codecs are always supported because the CDM only does decrypt-only
+    // for audio. The only exception is when |is_secure| is true and there's no
+    // secure video decoder available, which is a signal that secure hardware
+    // decryption is not available either.
     // TODO(sandersd): Distinguish these from those that are directly supported,
     // as those may offer a higher level of protection.
-    supported_codecs |= media::EME_CODEC_WEBM_OPUS;
-    supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
+    if (!supported_video_codecs.empty() || !is_secure) {
+        supported_codecs |= media::EME_CODEC_WEBM_OPUS;
+        supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
+        supported_codecs |= media::EME_CODEC_MP4_FLAC;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    supported_codecs |= media::EME_CODEC_MP4_AAC;
+        supported_codecs |= media::EME_CODEC_MP4_AAC;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+    }
 
     // Video codecs are determined by what was registered for the CDM.
-    for (const auto& codec : supported_video_codecs) {
+    for (const auto &codec : supported_video_codecs) {
         switch (codec) {
         case media::VideoCodec::kCodecVP8:
             supported_codecs |= media::EME_CODEC_WEBM_VP8;
@@ -416,19 +406,59 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
         }
     }
 
-    media::EmeSessionTypeSupport persistent_license_support = media::EmeSessionTypeSupport::NOT_SUPPORTED;
+    return supported_codecs;
+}
 
+static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>> *concrete_key_systems)
+{
+    media::mojom::KeySystemCapabilityPtr capability;
+    if (!content::IsKeySystemSupported(kWidevineKeySystem, &capability)) {
+        DVLOG(1) << "Widevine CDM is not currently available.";
+        return;
+    }
+
+    media::SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
+
+    // Codecs and encryption schemes.
+    auto codecs =
+        GetSupportedCodecs(capability->video_codecs, /*is_secure=*/false);
+    const auto& encryption_schemes = capability->encryption_schemes;
+    auto hw_secure_codecs = GetSupportedCodecs(capability->hw_secure_video_codecs,
+                                               /*is_secure=*/true);
+    const auto& hw_secure_encryption_schemes =
+        capability->hw_secure_encryption_schemes;
+
+    // Robustness.
     using Robustness = cdm::WidevineKeySystemProperties::Robustness;
+    auto max_audio_robustness = Robustness::SW_SECURE_CRYPTO;
+    auto max_video_robustness = Robustness::SW_SECURE_DECODE;
+
+    if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
+        max_audio_robustness = Robustness::HW_SECURE_CRYPTO;
+        max_video_robustness = Robustness::HW_SECURE_ALL;
+    }
+
+    // Session types.
+    bool cdm_supports_temporary_session = base::ContainsValue(capability->session_types, media::CdmSessionType::kTemporary);
+    if (!cdm_supports_temporary_session) {
+        DVLOG(1) << "Temporary session must be supported.";
+        return;
+    }
+
+    bool cdm_supports_persistent_license =
+            base::ContainsValue(capability->session_types, media::CdmSessionType::kPersistentLicense);
+    auto persistent_license_support = media::EmeSessionTypeSupport::NOT_SUPPORTED;
+    auto persistent_usage_record_support = media::EmeSessionTypeSupport::NOT_SUPPORTED;
+
+    // Others.
+    auto persistent_state_support = media::EmeFeatureSupport::REQUESTABLE;
+    auto distinctive_identifier_support = media::EmeFeatureSupport::NOT_SUPPORTED;
 
     concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
-                                           supported_encryption_schemes, supported_codecs,
-                                           Robustness::SW_SECURE_CRYPTO,          // Maximum audio robustness.
-                                           Robustness::SW_SECURE_DECODE,          // Maximum video robustness.
-                                           persistent_license_support,            // persistent-license.
-                                           media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
-                                           media::EmeFeatureSupport::REQUESTABLE,        // Persistent state.
-                                           media::EmeFeatureSupport::NOT_SUPPORTED));    // Distinctive identifier.
-
+                                           codecs, encryption_schemes, hw_secure_codecs,
+                                           hw_secure_encryption_schemes, max_audio_robustness, max_video_robustness,
+                                           persistent_license_support, persistent_usage_record_support,
+                                           persistent_state_support, distinctive_identifier_support));
 }
 #endif // defined(WIDEVINE_CDM_AVAILABLE)
 #endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)

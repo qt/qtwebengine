@@ -70,12 +70,14 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
-#include "device/geolocation/public/cpp/location_provider.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "printing/buildflags/buildflags.h"
 #include "net/ssl/client_cert_identity.h"
+#include "services/device/public/cpp/geolocation/location_provider.h"
+#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -285,9 +287,14 @@ public:
         : content::BrowserMainParts()
     { }
 
-    void PreMainMessageLoopStart() override
+    int PreEarlyInitialization() override
     {
         base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
+        return 0;
+    }
+
+    void PreMainMessageLoopStart() override
+    {
     }
 
     void PostMainMessageLoopRun() override
@@ -312,10 +319,16 @@ public:
     {
         ServiceQt::GetInstance()->InitConnector();
         connection->GetConnector()->StartService(service_manager::Identity("qtwebengine"));
+        if (resource_coordinator::IsResourceCoordinatorEnabled()) {
+            m_processResourceCoordinator = std::make_unique<resource_coordinator::ProcessResourceCoordinator>(connection->GetConnector());
+            m_processResourceCoordinator->SetLaunchTime(base::Time::Now());
+            m_processResourceCoordinator->SetPID(base::Process::Current().Pid());
+        }
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
+    std::unique_ptr<resource_coordinator::ProcessResourceCoordinator> m_processResourceCoordinator;
 };
 
 class QtShareGLContext : public gl::GLContext {
@@ -363,9 +376,9 @@ public:
     {
         return nullptr;
     }
-    const gl::ExtensionSet& GetExtensions() override
+    const gfx::ExtensionSet& GetExtensions() override
     {
-        static const gl::ExtensionSet s_emptySet;
+        static const gfx::ExtensionSet s_emptySet;
         return s_emptySet;
     }
     void ResetExtensions() override
@@ -423,7 +436,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
             base::Bind(&ContentBrowserClientQt::AddNetworkHintsMessageFilter, base::Unretained(this), id));
 
     // FIXME: Add a settings variable to enable/disable the file scheme.
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(id, url::kFileScheme);
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantRequestScheme(id, url::kFileScheme);
     static_cast<ProfileQt*>(host->GetBrowserContext())->m_profileAdapter->userResourceController()->renderProcessStartedWithHost(host);
     host->AddFilter(new BrowserMessageFilterQt(id, profile));
 #if defined(Q_OS_MACOS) && QT_CONFIG(webengine_spellchecker) && QT_CONFIG(webengine_native_spellchecker)
@@ -776,14 +789,6 @@ scoped_refptr<net::URLRequestContextGetter> GetSystemRequestContextOnUIThread()
                 ProfileAdapter::createDefaultProfileAdapter()->profile()->GetRequestContext());
 }
 
-void ContentBrowserClientQt::GetGeolocationRequestContext(
-        base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)> callback)
-{
-    content::BrowserThread::PostTaskAndReplyWithResult(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&GetSystemRequestContextOnUIThread), std::move(callback));
-}
-
 void ContentBrowserClientQt::AddNetworkHintsMessageFilter(int render_process_id, net::URLRequestContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -814,8 +819,7 @@ bool ContentBrowserClientQt::AllowSetCookie(const GURL &url,
                                             const net::CanonicalCookie& /*cookie*/,
                                             content::ResourceContext *context,
                                             int /*render_process_id*/,
-                                            int /*render_frame_id*/,
-                                            const net::CookieOptions& /*options*/)
+                                            int /*render_frame_id*/)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
@@ -905,8 +909,10 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
 scoped_refptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegate(
         net::AuthChallengeInfo *authInfo,
         content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+        const content::GlobalRequestID &request_id,
         bool /*is_main_frame*/,
         const GURL &url,
+        scoped_refptr<net::HttpResponseHeaders> response_headers,
         bool first_auth_attempt,
         LoginAuthRequiredCallback auth_required_callback)
 {

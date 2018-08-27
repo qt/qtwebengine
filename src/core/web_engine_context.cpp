@@ -53,6 +53,7 @@
 #endif
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/app/content_service_manager_main_delegate.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -72,9 +73,11 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/host/gpu_switches.h"
 #include "media/audio/audio_manager.h"
+#include "mojo/core/embedder/embedder.h"
 #include "net/base/port_util.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 #include "ui/gl/gl_switches.h"
@@ -318,10 +321,11 @@ static void appendToFeatureSwitch(base::CommandLine *commandLine, const char *fe
 
 WebEngineContext::WebEngineContext()
     : m_mainDelegate(new ContentMainDelegateQt)
-    , m_contentRunner(content::ContentMainRunner::Create())
-    , m_browserRunner(content::BrowserMainRunner::Create())
     , m_globalQObject(new QObject())
 {
+    base::TaskScheduler::Create("Browser");
+    m_contentRunner.reset(content::ContentMainRunner::Create());
+    m_browserRunner.reset(content::BrowserMainRunner::Create());
 #ifdef Q_OS_LINUX
     // Call qputenv before BrowserMainRunnerImpl::Initialize is called.
     // http://crbug.com/245466
@@ -398,6 +402,8 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kDisablePepper3DImageChromium);
     // Same problem with select popups.
     parsedCommandLine->AppendSwitch(switches::kDisableNativeGpuMemoryBuffers);
+    // SandboxV2 doesn't currently work for us
+    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kMacV2Sandbox.name);
 #endif
 
 #if defined(Q_OS_WIN)
@@ -417,6 +423,8 @@ WebEngineContext::WebEngineContext()
     appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kAllowContentInitiatedDataUrlNavigations.name);
     // Surface synchronization breaks our current graphics integration (since 65)
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kEnableSurfaceSynchronization.name);
+    // The video-capture service is not functioning at this moment (since 69)
+    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kMojoVideoCapture.name);
 
     if (useEmbeddedSwitches) {
         appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kOverlayScrollbar.name);
@@ -527,7 +535,7 @@ WebEngineContext::WebEngineContext()
     content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
     content::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
 
-    mojo::edk::Init();
+    mojo::core::Init();
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
 #if defined(OS_WIN)

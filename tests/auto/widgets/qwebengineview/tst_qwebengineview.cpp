@@ -1083,7 +1083,7 @@ void tst_QWebEngineView::changeLocale()
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
     errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Diese Website ist nicht erreichbar"));
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 
     QLocale::setDefault(QLocale("en"));
     QWebEngineView viewEN;
@@ -1106,7 +1106,7 @@ void tst_QWebEngineView::changeLocale()
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
     errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Diese Website ist nicht erreichbar"));
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 }
 
 void tst_QWebEngineView::inputMethodsTextFormat_data()

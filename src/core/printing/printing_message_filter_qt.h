@@ -54,6 +54,7 @@
 #include "base/memory/shared_memory.h"
 #endif
 
+struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_ScriptedPrint_Params;
 
 namespace base {
@@ -66,7 +67,6 @@ class WebContents;
 }
 
 namespace printing {
-
 class PrintJobManager;
 class PrintQueriesQueue;
 class PrinterQuery;
@@ -116,9 +116,7 @@ class PrintingMessageFilterQt : public content::BrowserMessageFilter {
                                   IPC::Message* reply_msg);
 
   // Check to see if print preview has been cancelled.
-  void OnCheckForCancel(int32_t preview_ui_id,
-                        int preview_request_id,
-                        bool* cancel);
+  void OnCheckForCancel(const PrintHostMsg_PreviewIds& ids, bool* cancel);
 
   const int render_process_id_;
 

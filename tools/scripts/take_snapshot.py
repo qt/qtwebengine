@@ -72,6 +72,7 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('perftimer.h') and
             not file_path.endswith('test-torque.tq') and
             not 'ozone' in file_path and
+            not 'fontconfig_util_linux' in file_path and
             not 'core/mojo/test/' in file_path and
             not file_path.startswith('extensions/browser/'))
         or file_path.endswith('.java')

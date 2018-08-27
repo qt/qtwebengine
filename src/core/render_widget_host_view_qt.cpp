@@ -52,6 +52,8 @@
 #include "web_event_factory.h"
 
 #include "base/command_line.h"
+#include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -120,7 +122,6 @@ static inline ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& even
   if (!event.TimeStamp().is_null()) {
     latency_info.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-        0,
         event.TimeStamp(),
         1);
   }
@@ -511,7 +512,6 @@ void RenderWidgetHostViewQt::UpdateBackgroundColor()
 // Return value indicates whether the mouse is locked successfully or not.
 bool RenderWidgetHostViewQt::LockMouse()
 {
-    mouse_locked_ = true;
     m_previousMousePosition = QCursor::pos();
     m_delegate->lockMouse();
     qApp->setOverrideCursor(Qt::BlankCursor);
@@ -520,7 +520,6 @@ bool RenderWidgetHostViewQt::LockMouse()
 
 void RenderWidgetHostViewQt::UnlockMouse()
 {
-    mouse_locked_ = false;
     m_delegate->unlockMouse();
     qApp->restoreOverrideCursor();
     host()->LostMouseLock();
@@ -977,7 +976,7 @@ void RenderWidgetHostViewQt::notifyResize()
 
 void RenderWidgetHostViewQt::notifyShown()
 {
-    host()->WasShown(ui::LatencyInfo());
+    host()->WasShown(false);
 }
 
 void RenderWidgetHostViewQt::notifyHidden()
@@ -1724,6 +1723,16 @@ viz::SurfaceId RenderWidgetHostViewQt::GetCurrentSurfaceId() const
     return viz::SurfaceId();
 }
 
+const viz::FrameSinkId &RenderWidgetHostViewQt::GetFrameSinkId() const
+{
+    return viz::FrameSinkIdAllocator::InvalidFrameSinkId();
+}
+
+const viz::LocalSurfaceId &RenderWidgetHostViewQt::GetLocalSurfaceId() const
+{
+    return m_localSurfaceId;
+}
+
 void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostView *view)
 {
     DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)->IsRenderWidgetHostViewChildFrame());
@@ -1731,6 +1740,18 @@ void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostVi
     base::Optional<SkColor> color = view->GetBackgroundColor();
     if (color)
         SetBackgroundColor(*color);
+}
+
+void RenderWidgetHostViewQt::EnsureSurfaceSynchronizedForLayoutTest()
+{
+    ++m_latestCaptureSequenceNumber;
+    if (host())
+        host()->SynchronizeVisualProperties();
+}
+
+uint32_t RenderWidgetHostViewQt::GetCaptureSequenceNumber() const
+{
+    return m_latestCaptureSequenceNumber;
 }
 
 } // namespace QtWebEngineCore

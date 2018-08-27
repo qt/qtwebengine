@@ -92,17 +92,6 @@ content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForPopupWidget(c
     return view;
 }
 
-void WebContentsViewQt::RenderViewCreated(content::RenderViewHost* host)
-{
-    // The render process is done creating the RenderView and it's ready to be routed
-    // messages at this point.
-    if (m_client && m_webContents) {
-        content::RenderWidgetHostView* rwhv = m_webContents->GetRenderWidgetHostView();
-        if (rwhv)
-            rwhv->SetBackgroundColor(toSk(m_client->backgroundColor()));
-    }
-}
-
 void WebContentsViewQt::CreateView(const gfx::Size& initial_size, gfx::NativeView context)
 {
     // This is passed through content::WebContents::CreateParams::context either as the native view's client

@@ -50,7 +50,6 @@ class ResourceContextQt : public content::ResourceContext
 {
 public:
     ResourceContextQt(ProfileIODataQt *io_data);
-    net::HostResolver *GetHostResolver() override;
     net::URLRequestContext *GetRequestContext() override;
 private:
     ProfileIODataQt* m_io_data;

@@ -290,22 +290,20 @@ void ProfileIODataQt::generateStorage()
                                                 nullptr /* NetLog */,
                                                 m_networkDelegate.get()));
 
-    m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
+    m_storage->set_ssl_config_service(std::make_unique<net::SSLConfigServiceDefaults>());
     m_storage->set_transport_security_state(std::unique_ptr<net::TransportSecurityState>(
                                                 new net::TransportSecurityState()));
 
-    if (!m_httpAuthPreferences) {
-        std::vector<std::string> auth_types(std::begin(kDefaultAuthSchemes),
-                                            std::end(kDefaultAuthSchemes));
-        m_httpAuthPreferences.reset(new net::HttpAuthPreferences(auth_types
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-                                                                , std::string() /* gssapi library name */
+    if (!m_httpAuthPreferences)
+        m_httpAuthPreferences.reset(new net::HttpAuthPreferences());
+
+    m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(
+                                                 host_resolver.get(),
+                                                 m_httpAuthPreferences.get()
+#if (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+                                                 , std::string() /* gssapi library name */
 #endif
-                                   ));
-    }
-    m_storage->set_http_auth_handler_factory(
-                net::HttpAuthHandlerRegistryFactory::Create(m_httpAuthPreferences.get(),
-                                                            host_resolver.get()));
+                                            ));
     m_storage->set_http_server_properties(std::unique_ptr<net::HttpServerProperties>(
                                               new net::HttpServerPropertiesImpl));
      // Give |m_storage| ownership at the end in case it's |mapped_host_resolver|.

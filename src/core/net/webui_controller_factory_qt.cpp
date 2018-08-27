@@ -105,13 +105,13 @@ namespace {
 
 // A function for creating a new WebUI. The caller owns the return value, which
 // may be NULL (for example, if the URL refers to an non-existent extension).
-typedef WebUIController* (*WebUIFactoryFunction)(WebUI *web_ui, const GURL &url);
+typedef std::unique_ptr<WebUIController> (*WebUIFactoryFunction)(WebUI *web_ui, const GURL &url);
 
 // Template for defining WebUIFactoryFunction.
 template<class T>
-WebUIController *NewWebUI(WebUI *web_ui, const GURL &/*url*/)
+std::unique_ptr<WebUIController> NewWebUI(WebUI *web_ui, const GURL &/*url*/)
 {
-    return new T(web_ui);
+    return std::unique_ptr<WebUIController>(new T(web_ui));
 }
 
 // Returns a function that can be used to create the right type of WebUI for a
@@ -192,7 +192,7 @@ bool WebUIControllerFactoryQt::UseWebUIBindingsForURL(content::BrowserContext *b
     return UseWebUIForURL(browser_context, url);
 }
 
-WebUIController *WebUIControllerFactoryQt::CreateWebUIControllerForURL(WebUI *web_ui, const GURL &url) const
+std::unique_ptr<WebUIController> WebUIControllerFactoryQt::CreateWebUIControllerForURL(WebUI *web_ui, const GURL &url) const
 {
     Profile *profile = Profile::FromWebUI(web_ui);
     WebUIFactoryFunction function = GetWebUIFactoryFunction(web_ui, profile, url);

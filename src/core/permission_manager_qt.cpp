@@ -40,6 +40,7 @@
 #include "permission_manager_qt.h"
 
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -156,7 +157,7 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
     ProfileAdapter::PermissionType permissionType = toQt(permission);
     if (permissionType == ProfileAdapter::UnsupportedPermission) {
         callback.Run(blink::mojom::PermissionStatus::DENIED);
-        return kNoPendingOperation;
+        return content::PermissionController::kNoPendingOperation;
     }
     // Audio and video-capture should not come this way currently
     Q_ASSERT(permissionType != ProfileAdapter::AudioCapturePermission
@@ -196,7 +197,7 @@ int PermissionManagerQt::RequestPermissions(const std::vector<content::Permissio
     }
     if (answerable) {
         callback.Run(result);
-        return kNoPendingOperation;
+        return content::PermissionController::kNoPendingOperation;
     }
 
     int request_id = ++m_requestIdCount;

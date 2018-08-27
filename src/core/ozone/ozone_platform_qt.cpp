@@ -50,6 +50,7 @@
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/platform_window.h"
 
 namespace ui {
@@ -64,7 +65,7 @@ public:
     ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override;
     ui::CursorFactoryOzone* GetCursorFactoryOzone() override;
     GpuPlatformSupportHost* GetGpuPlatformSupportHost() override;
-    std::unique_ptr<PlatformWindow> CreatePlatformWindow(PlatformWindowDelegate* delegate, const gfx::Rect& bounds) override;
+    std::unique_ptr<PlatformWindow> CreatePlatformWindow(PlatformWindowDelegate* delegate, PlatformWindowInitProperties properties) override;
     std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
     ui::InputController* GetInputController() override;
     std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
@@ -104,9 +105,9 @@ GpuPlatformSupportHost* OzonePlatformQt::GetGpuPlatformSupportHost()
     return gpu_platform_support_host_.get();
 }
 
-std::unique_ptr<PlatformWindow> OzonePlatformQt::CreatePlatformWindow(PlatformWindowDelegate* delegate, const gfx::Rect& bounds)
+std::unique_ptr<PlatformWindow> OzonePlatformQt::CreatePlatformWindow(PlatformWindowDelegate* delegate, PlatformWindowInitProperties properties)
 {
-    return base::WrapUnique(new PlatformWindowQt(delegate, bounds));
+    return base::WrapUnique(new PlatformWindowQt(delegate, properties.bounds));
 }
 
 ui::InputController* OzonePlatformQt::GetInputController()

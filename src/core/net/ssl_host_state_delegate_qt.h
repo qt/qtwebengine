@@ -49,12 +49,12 @@ class CertPolicy {
 public:
     CertPolicy();
     ~CertPolicy();
-    bool Check(const net::X509Certificate& cert, net::CertStatus error) const;
-    void Allow(const net::X509Certificate& cert, net::CertStatus error);
+    bool Check(const net::X509Certificate& cert, int error) const;
+    void Allow(const net::X509Certificate& cert, int error);
     bool HasAllowException() const { return m_allowed.size() > 0; }
 
 private:
-    std::map<net::SHA256HashValue, net::CertStatus> m_allowed;
+    std::map<net::SHA256HashValue, int> m_allowed;
 };
 
 class SSLHostStateDelegateQt : public content::SSLHostStateDelegate {
@@ -64,10 +64,10 @@ public:
     ~SSLHostStateDelegateQt();
 
     // content::SSLHostStateDelegate implementation:
-    void AllowCert(const std::string &, const net::X509Certificate &cert, net::CertStatus error) override;
+    void AllowCert(const std::string &, const net::X509Certificate &cert, int error) override;
     void Clear(const base::Callback<bool(const std::string&)>& host_filter) override;
-    virtual CertJudgment QueryPolicy(const std::string &host, const net::X509Certificate &cert,
-                                     net::CertStatus error,bool *expired_previous_decision) override;
+    CertJudgment QueryPolicy(const std::string &host, const net::X509Certificate &cert,
+                             int error, bool *expired_previous_decision) override;
     void HostRanInsecureContent(const std::string& host, int child_id, InsecureContentType content_type) override;
     bool DidHostRunInsecureContent(const std::string& host, int child_id, InsecureContentType content_type) const override;
     void RevokeUserAllowExceptions(const std::string &host) override;

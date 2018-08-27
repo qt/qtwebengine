@@ -457,12 +457,12 @@ UserResourceControllerHost *ProfileAdapter::userResourceController()
 
 void ProfileAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, bool reply)
 {
-    static_cast<PermissionManagerQt*>(profile()->GetPermissionManager())->permissionRequestReply(origin, type, reply);
+    static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->permissionRequestReply(origin, type, reply);
 }
 
 bool ProfileAdapter::checkPermission(const QUrl &origin, PermissionType type)
 {
-    return static_cast<PermissionManagerQt*>(profile()->GetPermissionManager())->checkPermission(origin, type);
+    return static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->checkPermission(origin, type);
 }
 
 QString ProfileAdapter::httpAcceptLanguageWithoutQualities() const

@@ -83,6 +83,7 @@
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "third_party/blink/public/web/web_find_options.h"
+#include "third_party/blink/public/web/web_media_player_action.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -1094,7 +1095,7 @@ void WebContentsAdapter::setAudioMuted(bool muted)
 bool WebContentsAdapter::recentlyAudible()
 {
     CHECK_INITIALIZED(false);
-    return m_webContents->WasRecentlyAudible();
+    return m_webContents->IsCurrentlyAudible();
 }
 
 void WebContentsAdapter::copyImageAt(const QPoint &location)
@@ -1113,7 +1114,7 @@ void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, Medi
 {
     CHECK_INITIALIZED();
     blink::WebMediaPlayerAction blinkAction((blink::WebMediaPlayerAction::Type)action, enable);
-    m_webContents->GetRenderViewHost()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
+    m_webContents->GetRenderViewHost()->GetMainFrame()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
 }
 
 void WebContentsAdapter::inspectElementAt(const QPoint &location)

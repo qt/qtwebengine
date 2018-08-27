@@ -147,8 +147,7 @@ public:
                         const net::CanonicalCookie& cookie,
                         content::ResourceContext* context,
                         int render_process_id,
-                        int render_frame_id,
-                        const net::CookieOptions& options) override;
+                        int render_frame_id) override;
 
     bool AllowAppCache(const GURL& manifest_url,
                        const GURL& first_party,
@@ -170,7 +169,6 @@ public:
                               const std::vector<std::pair<int, int> > &render_frames) override;
 
     std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() override;
-    void GetGeolocationRequestContext(base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)> callback) override;
 #if defined(Q_OS_LINUX)
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;
 #endif
@@ -182,8 +180,10 @@ public:
     scoped_refptr<content::LoginDelegate> CreateLoginDelegate(
             net::AuthChallengeInfo *auth_info,
             content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+            const content::GlobalRequestID &request_id,
             bool is_main_frame,
             const GURL &url,
+            scoped_refptr<net::HttpResponseHeaders> response_headers,
             bool first_auth_attempt,
             LoginAuthRequiredCallback auth_required_callback) override;
     bool HandleExternalProtocol(

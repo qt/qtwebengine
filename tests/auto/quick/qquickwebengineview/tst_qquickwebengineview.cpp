@@ -817,7 +817,7 @@ void tst_QQuickWebEngineView::changeLocale()
 
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
     errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Diese Website ist nicht erreichbar"));
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 
     QLocale::setDefault(QLocale("en"));
     QScopedPointer<QQuickWebEngineView> viewEN(newWebEngineView());
@@ -838,7 +838,7 @@ void tst_QQuickWebEngineView::changeLocale()
 
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
     errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Diese Website ist nicht erreichbar"));
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 }
 
 void tst_QQuickWebEngineView::userScripts()

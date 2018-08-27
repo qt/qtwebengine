@@ -154,8 +154,11 @@ public:
     void SetNeedsBeginFrames(bool needs_begin_frames) override;
     void SetWantsAnimateOnlyBeginFrames() override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
+    const viz::FrameSinkId &GetFrameSinkId() const override;
+    const viz::LocalSurfaceId &GetLocalSurfaceId() const override;
     void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
-    void EnsureSurfaceSynchronizedForLayoutTest() override { QT_NOT_USED }
+    void EnsureSurfaceSynchronizedForLayoutTest() override;
+    uint32_t GetCaptureSequenceNumber() const override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -264,6 +267,7 @@ private:
     QList<blink::WebMouseWheelEvent> m_pendingWheelEvents;
     content::MouseWheelPhaseHandler m_mouseWheelPhaseHandler;
 
+    uint32_t m_latestCaptureSequenceNumber = 0u;
     std::string m_editCommand;
 };
 

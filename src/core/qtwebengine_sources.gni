@@ -37,7 +37,8 @@ source_set("qtwebengine_sources") {
   include_dirs = [
     "//skia/config",
     "//third_party/boringssl/src/include",
-    "//third_party/skia/include/core"
+    "//third_party/skia/include/core",
+    "//third_party/skia/include/gpu"
   ]
   deps = [
     "//chrome/common:buildflags",

@@ -239,6 +239,9 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::ComboBox;
     case ax::mojom::Role::kComplementary:
         return QAccessible::ComplementaryContent;
+    case ax::mojom::Role::kContentDeletion:
+    case ax::mojom::Role::kContentInsertion:
+        return QAccessible::Grouping;
     case ax::mojom::Role::kContentInfo:
         return QAccessible::Section;
     case ax::mojom::Role::kDate:
@@ -264,6 +267,50 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kGenericContainer:
         return QAccessible::Section;
+    case ax::mojom::Role::kDocCover:
+      return QAccessible::Graphic;
+    case ax::mojom::Role::kDocBackLink:
+    case ax::mojom::Role::kDocBiblioRef:
+    case ax::mojom::Role::kDocGlossRef:
+    case ax::mojom::Role::kDocNoteRef:
+        return QAccessible::Link;
+    case ax::mojom::Role::kDocBiblioEntry:
+    case ax::mojom::Role::kDocEndnote:
+    case ax::mojom::Role::kDocFootnote:
+        return QAccessible::ListItem;
+    case ax::mojom::Role::kDocPageBreak:
+        return QAccessible::Separator;
+    case ax::mojom::Role::kDocAbstract:
+    case ax::mojom::Role::kDocAcknowledgments:
+    case ax::mojom::Role::kDocAfterword:
+    case ax::mojom::Role::kDocAppendix:
+    case ax::mojom::Role::kDocBibliography:
+    case ax::mojom::Role::kDocChapter:
+    case ax::mojom::Role::kDocColophon:
+    case ax::mojom::Role::kDocConclusion:
+    case ax::mojom::Role::kDocCredit:
+    case ax::mojom::Role::kDocCredits:
+    case ax::mojom::Role::kDocDedication:
+    case ax::mojom::Role::kDocEndnotes:
+    case ax::mojom::Role::kDocEpigraph:
+    case ax::mojom::Role::kDocEpilogue:
+    case ax::mojom::Role::kDocErrata:
+    case ax::mojom::Role::kDocExample:
+    case ax::mojom::Role::kDocForeword:
+    case ax::mojom::Role::kDocGlossary:
+    case ax::mojom::Role::kDocIndex:
+    case ax::mojom::Role::kDocIntroduction:
+    case ax::mojom::Role::kDocNotice:
+    case ax::mojom::Role::kDocPageList:
+    case ax::mojom::Role::kDocPart:
+    case ax::mojom::Role::kDocPreface:
+    case ax::mojom::Role::kDocPrologue:
+    case ax::mojom::Role::kDocPullquote:
+    case ax::mojom::Role::kDocQna:
+    case ax::mojom::Role::kDocSubtitle:
+    case ax::mojom::Role::kDocTip:
+    case ax::mojom::Role::kDocToc:
+        return QAccessible::Section;
     case ax::mojom::Role::kDocument:
         return QAccessible::Document;
     case ax::mojom::Role::kEmbeddedObject:
@@ -278,6 +325,12 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Footer;
     case ax::mojom::Role::kForm:
         return QAccessible::Form;
+    case ax::mojom::Role::kGraphicsDocument:
+        return QAccessible::Document;
+    case ax::mojom::Role::kGraphicsObject:
+        return QAccessible::Pane;
+    case ax::mojom::Role::kGraphicsSymbol:
+        return QAccessible::Graphic;
     case ax::mojom::Role::kGrid:
         return QAccessible::Table;
     case ax::mojom::Role::kGroup:
@@ -322,8 +375,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::ListItem;
     case ax::mojom::Role::kListMarker:
         return QAccessible::StaticText;
-    case ax::mojom::Role::kLocationBar:
-        return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kLog:
         return QAccessible::Section;
     case ax::mojom::Role::kMain:
@@ -456,8 +507,6 @@ QAccessible::State BrowserAccessibilityQt::state() const
         state.expanded = true;
     if (HasState(ax::mojom::State::kFocusable))
         state.focusable = true;
-    if (HasState(ax::mojom::State::kHasPopup))
-        state.hasPopup = true;
     if (HasState(ax::mojom::State::kHorizontal))
     {} // FIXME
     if (HasState(ax::mojom::State::kHovered))
@@ -524,7 +573,21 @@ QAccessible::State BrowserAccessibilityQt::state() const
             break;
         }
     }
-
+    if (HasIntAttribute(ax::mojom::IntAttribute::kHasPopup)) {
+        const ax::mojom::HasPopup hasPopup = static_cast<ax::mojom::HasPopup>(GetIntAttribute(ax::mojom::IntAttribute::kHasPopup));
+        switch (hasPopup) {
+        case ax::mojom::HasPopup::kFalse:
+            break;
+        case ax::mojom::HasPopup::kTrue:
+        case ax::mojom::HasPopup::kMenu:
+        case ax::mojom::HasPopup::kListbox:
+        case ax::mojom::HasPopup::kTree:
+        case ax::mojom::HasPopup::kGrid:
+        case ax::mojom::HasPopup::kDialog:
+            state.hasPopup = true;
+            break;
+        }
+    }
     return state;
 }
 

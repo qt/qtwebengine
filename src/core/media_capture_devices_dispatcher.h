@@ -48,6 +48,7 @@
 #include "web_contents_adapter_client.h"
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "content/public/browser/media_observer.h"
@@ -68,7 +69,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
 
   static MediaCaptureDevicesDispatcher *GetInstance();
 
-  void processMediaAccessRequest(WebContentsAdapterClient *, content::WebContents *, const content::MediaStreamRequest &, const content::MediaResponseCallback &);
+  void processMediaAccessRequest(WebContentsAdapterClient *, content::WebContents *, const content::MediaStreamRequest &, content::MediaResponseCallback);
 
   // Called back from our WebContentsAdapter to grant the requested permission.
   void handleMediaAccessPermissionResponse(content::WebContents *, const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags);
@@ -97,15 +98,18 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
 
   friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
+  typedef base::RepeatingCallback<void(const content::MediaStreamDevices& devices,
+                                       content::MediaStreamRequestResult result,
+                                       std::unique_ptr<content::MediaStreamUI> ui)> RepeatingMediaResponseCallback;
+
   struct PendingAccessRequest {
-    PendingAccessRequest(const content::MediaStreamRequest &request,
-                         const content::MediaResponseCallback &callback);
+    PendingAccessRequest(const content::MediaStreamRequest &request, const RepeatingMediaResponseCallback &callback);
     ~PendingAccessRequest();
 
     content::MediaStreamRequest request;
-    content::MediaResponseCallback callback;
+    RepeatingMediaResponseCallback callback;
   };
-  typedef std::deque<PendingAccessRequest> RequestsQueue;
+  typedef base::circular_deque<PendingAccessRequest> RequestsQueue;
   typedef std::map<content::WebContents *, RequestsQueue> RequestsQueues;
 
   MediaCaptureDevicesDispatcher();
@@ -115,8 +119,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void Observe(int type, const content::NotificationSource &source, const content::NotificationDetails &details) override;
 
   // Helpers for ProcessMediaAccessRequest().
-  void processDesktopCaptureAccessRequest(content::WebContents *, const content::MediaStreamRequest &, const content::MediaResponseCallback &);
-  void enqueueMediaAccessRequest(content::WebContents *, const content::MediaStreamRequest &, const content::MediaResponseCallback &);
+  void processDesktopCaptureAccessRequest(content::WebContents *, const content::MediaStreamRequest &, content::MediaResponseCallback);
+  void enqueueMediaAccessRequest(content::WebContents *, const content::MediaStreamRequest &, content::MediaResponseCallback);
   void ProcessQueuedAccessRequest(content::WebContents *);
 
   // Called by the MediaObserver() functions, executed on UI thread.

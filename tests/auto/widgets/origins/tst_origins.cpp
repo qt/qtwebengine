@@ -632,12 +632,12 @@ void tst_Origins::serviceWorker()
     QVERIFY(load(QSL("tst:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("Only secure origins are allowed")));
+            .contains(QSL("Cannot read property 'register' of undefined")));
 
     QVERIFY(load(QSL("PathSyntax:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("Only secure origins are allowed")));
+            .contains(QSL("Cannot read property 'register' of undefined")));
 
     QVERIFY(load(QSL("PathSyntax-Secure:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
@@ -647,7 +647,7 @@ void tst_Origins::serviceWorker()
     QVERIFY(load(QSL("PathSyntax-ServiceWorkersAllowed:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("Only secure origins are allowed")));
+            .contains(QSL("Cannot read property 'register' of undefined")));
 
     QVERIFY(load(QSL("PathSyntax-Secure-ServiceWorkersAllowed:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
@@ -656,7 +656,7 @@ void tst_Origins::serviceWorker()
     QVERIFY(load(QSL("PathSyntax-NoAccessAllowed:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("denied in this document origin")));
+            .contains(QSL("Cannot read property 'register' of undefined")));
 }
 
 // Support for view-source must be enabled explicitly.

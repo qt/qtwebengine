@@ -349,8 +349,9 @@ void PrintViewManagerQt::OnRequestPrintPreview(
     PrintPreviewDone();
 }
 
-void PrintViewManagerQt::OnMetafileReadyForPrinting(
-    const PrintHostMsg_DidPreviewDocument_Params& params)
+void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rfh,
+                                                    const PrintHostMsg_DidPreviewDocument_Params& params,
+                                                    const PrintHostMsg_PreviewIds &ids)
 {
     StopWorker(params.document_cookie);
 
@@ -408,7 +409,9 @@ void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
     resetPdfState();
 }
 
-void PrintViewManagerQt::OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params &params)
+void PrintViewManagerQt::OnDidPreviewPage(content::RenderFrameHost* rfh,
+                                          const PrintHostMsg_DidPreviewPage_Params& params,
+                                          const PrintHostMsg_PreviewIds& ids)
 {
     // just consume the message, this is just for sending 'page-preview-ready' for webui
 }

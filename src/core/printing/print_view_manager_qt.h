@@ -116,10 +116,14 @@ protected:
     // IPC handlers
     void OnDidShowPrintDialog();
     void OnRequestPrintPreview(const PrintHostMsg_RequestPrintPreview_Params&);
-    void OnMetafileReadyForPrinting(const PrintHostMsg_DidPreviewDocument_Params& params);
+    void OnMetafileReadyForPrinting(content::RenderFrameHost* rfh,
+                                    const PrintHostMsg_DidPreviewDocument_Params& params,
+                                    const PrintHostMsg_PreviewIds &ids);
     void OnSetupScriptedPrintPreview(content::RenderFrameHost* rfh,
                                       IPC::Message* reply_msg);
-    void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
+    void OnDidPreviewPage(content::RenderFrameHost* rfh,
+                          const PrintHostMsg_DidPreviewPage_Params& params,
+                          const PrintHostMsg_PreviewIds& ids);
     void OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
                                     bool source_is_modifiable);
     bool PrintToPDFInternal(const QPageLayout &, bool printInColor, bool useCustomMargins = true);

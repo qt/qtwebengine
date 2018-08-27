@@ -229,9 +229,8 @@ void PrintingMessageFilterQt::OnUpdatePrintSettingsReply(
   }
 }
 
-void PrintingMessageFilterQt::OnCheckForCancel(int32_t preview_ui_id,
-                                             int preview_request_id,
-                                             bool* cancel) {
+void PrintingMessageFilterQt::OnCheckForCancel(const PrintHostMsg_PreviewIds& ids,
+                                               bool* cancel) {
   *cancel = false;
 }
 
