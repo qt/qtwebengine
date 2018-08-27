@@ -73,7 +73,7 @@ static QUrl startupUrl()
         if (ret.isValid())
             return ret;
     }
-    return QUrl(QStringLiteral("http://qt.io/"));
+    return QUrl(QStringLiteral("https://www.qt.io"));
 }
 
 int main(int argc, char **argv)
