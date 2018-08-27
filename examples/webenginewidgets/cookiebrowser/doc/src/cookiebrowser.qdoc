@@ -38,4 +38,14 @@
     well as delete cookies and add new cookies.
 
     \include examples-run.qdocinc
+
+    \section1 Files and Attributions
+
+    The example uses icons from the Tango Icon Library:
+
+    \table
+    \row
+        \li \l{cookiebrowser-tango}{Tango Icon Library}
+        \li Public Domain
+    \endtable
 */
