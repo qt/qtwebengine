@@ -174,8 +174,10 @@ void QQuickWebEngineViewPrivate::initializeProfile()
         m_profile->d_ptr->addWebContentsAdapterClient(this);
         adapter = QSharedPointer<WebContentsAdapter>::create();
         m_settings.reset(new QQuickWebEngineSettings(m_profile->settings()));
+#if QT_CONFIG(webengine_webchannel)
         if (m_webChannel)
             adapter->setWebChannel(m_webChannel, m_webChannelWorld);
+#endif
     }
 }
 
