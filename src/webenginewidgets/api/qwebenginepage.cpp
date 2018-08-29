@@ -322,7 +322,7 @@ void QWebEnginePagePrivate::iconChanged(const QUrl &url)
 void QWebEnginePagePrivate::loadProgressChanged(int progress)
 {
     Q_Q(QWebEnginePage);
-    Q_EMIT q->loadProgress(progress);
+    QTimer::singleShot(0, q, [q, progress] () { Q_EMIT q->loadProgress(progress); });
 }
 
 void QWebEnginePagePrivate::didUpdateTargetURL(const QUrl &hoveredUrl)

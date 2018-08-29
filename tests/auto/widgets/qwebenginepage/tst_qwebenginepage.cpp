@@ -2216,11 +2216,13 @@ public:
         connect(page, SIGNAL(loadProgress(int)), SLOT(onLoadProgress(int)));
 
         QState* waitingForLoadStarted = new QState(this);
+        QState* waitingForFirstLoadProgress = new QState(this);
         QState* waitingForLastLoadProgress = new QState(this);
         QState* waitingForLoadFinished = new QState(this);
         QFinalState* final = new QFinalState(this);
 
-        waitingForLoadStarted->addTransition(page, SIGNAL(loadStarted()), waitingForLastLoadProgress);
+        waitingForLoadStarted->addTransition(page, SIGNAL(loadStarted()), waitingForFirstLoadProgress);
+        waitingForFirstLoadProgress->addTransition(this, SIGNAL(firstLoadProgress()), waitingForLastLoadProgress);
         waitingForLastLoadProgress->addTransition(this, SIGNAL(lastLoadProgress()), waitingForLoadFinished);
         waitingForLoadFinished->addTransition(page, SIGNAL(loadFinished(bool)), final);
 
@@ -2234,10 +2236,13 @@ public:
 public Q_SLOTS:
     void onLoadProgress(int progress)
     {
-        if (progress == 100)
+        if (progress == 0)
+            emit firstLoadProgress();
+        else if (progress == 100)
             emit lastLoadProgress();
     }
 Q_SIGNALS:
+    void firstLoadProgress();
     void lastLoadProgress();
 };
 
