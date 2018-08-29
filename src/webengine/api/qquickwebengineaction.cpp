@@ -134,7 +134,7 @@ QString QQuickWebEngineAction::text() const
 /*!
     \qmlproperty string WebEngineAction::iconText
 
-    This property holds the action's descriptive icon text
+    This property holds the action's descriptive icon text.
 */
 QString QQuickWebEngineAction::iconText() const
 {
