@@ -62,6 +62,9 @@ public:
     void requestStarted(QWebEngineUrlRequestJob *job) override;
 
     static void registerUrlScheme();
+
+    const static QByteArray schemeName;
+    const static QUrl aboutUrl;
 };
 
 #endif // !WEBUIHANDLER_H

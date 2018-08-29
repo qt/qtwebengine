@@ -58,6 +58,7 @@
 int main(int argc, char *argv[])
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
     WebUiHandler::registerUrlScheme();
 
     QApplication app(argc, argv);
@@ -65,10 +66,10 @@ int main(int argc, char *argv[])
     QWebEngineProfile profile;
 
     WebUiHandler handler;
-    profile.installUrlSchemeHandler(QByteArrayLiteral("webui"), &handler);
+    profile.installUrlSchemeHandler(WebUiHandler::schemeName, &handler);
 
     QWebEnginePage page(&profile);
-    page.load(QStringLiteral("webui:about"));
+    page.load(WebUiHandler::aboutUrl);
 
     QWebEngineView view;
     view.setPage(&page);

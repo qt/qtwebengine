@@ -55,6 +55,11 @@
 #include <QWebEngineUrlRequestJob>
 #include <QWebEngineUrlScheme>
 
+#define SCHEMENAME "webui"
+
+const QByteArray WebUiHandler::schemeName = QByteArrayLiteral(SCHEMENAME);
+const QUrl WebUiHandler::aboutUrl = QUrl(QStringLiteral(SCHEMENAME ":about"));
+
 WebUiHandler::WebUiHandler(QObject *parent)
     : QWebEngineUrlSchemeHandler(parent)
 {
@@ -62,8 +67,7 @@ WebUiHandler::WebUiHandler(QObject *parent)
 
 void WebUiHandler::requestStarted(QWebEngineUrlRequestJob *job)
 {
-    static const QUrl webuiAboutUrl(QStringLiteral("webui:about"));
-    static const QUrl webUiOrigin(QStringLiteral("webui:"));
+    static const QUrl webUiOrigin(QStringLiteral(SCHEMENAME ":"));
     static const QByteArray GET(QByteArrayLiteral("GET"));
     static const QByteArray POST(QByteArrayLiteral("POST"));
 
@@ -71,11 +75,11 @@ void WebUiHandler::requestStarted(QWebEngineUrlRequestJob *job)
     QUrl url = job->requestUrl();
     QUrl initiator = job->initiator();
 
-    if (method == GET && url == webuiAboutUrl) {
+    if (method == GET && url == aboutUrl) {
         QFile *file = new QFile(QStringLiteral(":/about.html"), job);
         file->open(QIODevice::ReadOnly);
         job->reply(QByteArrayLiteral("text/html"), file);
-    } else if (method == POST && url == webuiAboutUrl && initiator == webUiOrigin) {
+    } else if (method == POST && url == aboutUrl && initiator == webUiOrigin) {
         job->fail(QWebEngineUrlRequestJob::RequestAborted);
         QApplication::exit();
     } else {
@@ -86,7 +90,7 @@ void WebUiHandler::requestStarted(QWebEngineUrlRequestJob *job)
 // static
 void WebUiHandler::registerUrlScheme()
 {
-    QWebEngineUrlScheme webUiScheme(QByteArrayLiteral("webui"));
+    QWebEngineUrlScheme webUiScheme(schemeName);
     webUiScheme.setFlags(QWebEngineUrlScheme::Secure |
                          QWebEngineUrlScheme::Local |
                          QWebEngineUrlScheme::LocalAccessAllowed);
