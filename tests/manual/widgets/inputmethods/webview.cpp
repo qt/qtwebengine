@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include "webview.h"
+#include <QWebEngineSettings>
 
 WebView::WebView(QWidget *parent)
     : QWebEngineView(parent)
@@ -46,5 +47,6 @@ WebView::WebView(QWidget *parent)
             "   <input type='text' id='input1' />"
             "</body></html>");
 
+    settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     setHtml(html);
 }
