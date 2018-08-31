@@ -299,6 +299,21 @@ def listFilesInCurrentRepository():
             files.append(os.path.join(submodule.pathRelativeToTopMostSupermodule(), submodule_file))
     return files
 
+def exportGn():
+    third_party_upstream_gn = os.path.join(third_party_upstream, 'gn')
+    third_party_gn = os.path.join(third_party, 'gn')
+    os.makedirs(third_party_gn);
+    print 'exporting contents of:' + third_party_upstream_gn
+    os.chdir(third_party_upstream_gn)
+    files = listFilesInCurrentRepository()
+    print 'copying files to ' + third_party_gn
+    for i in xrange(len(files)):
+        printProgress(i+1, len(files))
+        f = files[i]
+        if not isInGitBlacklist(f):
+            copyFile(f, os.path.join(third_party_gn, f))
+    print("")
+
 def exportNinja():
     third_party_upstream_ninja = os.path.join(third_party_upstream, 'ninja')
     third_party_ninja = os.path.join(third_party, 'ninja')
@@ -352,6 +367,7 @@ if 'true' in ignore_case_setting:
 
 clearDirectory(third_party)
 
+exportGn()
 exportNinja()
 exportChromium()
 
