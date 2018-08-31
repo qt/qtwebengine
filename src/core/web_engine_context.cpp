@@ -417,8 +417,6 @@ WebEngineContext::WebEngineContext()
     appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kAllowContentInitiatedDataUrlNavigations.name);
     // Surface synchronization breaks our current graphics integration (since 65)
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kEnableSurfaceSynchronization.name);
-    // Scroll latching expects phases on all wheel events when it really only makes sense for simulated ones.
-    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kTouchpadAndWheelScrollLatching.name);
 
     if (useEmbeddedSwitches) {
         appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kOverlayScrollbar.name);

@@ -332,6 +332,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_cursorPosition(0)
     , m_emptyPreviousSelection(true)
     , m_wheelAckPending(false)
+    , m_mouseWheelPhaseHandler(this)
 {
     host()->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
@@ -1421,8 +1422,10 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {
     if (!m_wheelAckPending) {
         Q_ASSERT(m_pendingWheelEvents.isEmpty());
-        m_wheelAckPending = true;
-        host()->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev, dpiScale()));
+        blink::WebMouseWheelEvent webEvent = WebEventFactory::toWebWheelEvent(ev, dpiScale());
+        m_wheelAckPending = (webEvent.phase != blink::WebMouseWheelEvent::kPhaseEnded);
+        m_mouseWheelPhaseHandler.AddPhaseIfNeededAndScheduleEndEvent(webEvent, false);
+        host()->ForwardWheelEvent(webEvent);
         return;
     }
     if (!m_pendingWheelEvents.isEmpty()) {
@@ -1433,14 +1436,24 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
     m_pendingWheelEvents.append(WebEventFactory::toWebWheelEvent(ev, dpiScale()));
 }
 
-void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &/*event*/, content::InputEventAckState /*ack_result*/)
+void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState /*ack_result*/)
 {
+    if (event.phase == blink::WebMouseWheelEvent::kPhaseEnded)
+        return;
+    Q_ASSERT(m_wheelAckPending);
     m_wheelAckPending = false;
-    if (!m_pendingWheelEvents.isEmpty()) {
-        m_wheelAckPending = true;
-        host()->ForwardWheelEvent(m_pendingWheelEvents.takeFirst());
+    while (!m_pendingWheelEvents.isEmpty() && !m_wheelAckPending) {
+        blink::WebMouseWheelEvent webEvent = m_pendingWheelEvents.takeFirst();
+        m_wheelAckPending = (webEvent.phase != blink::WebMouseWheelEvent::kPhaseEnded);
+        m_mouseWheelPhaseHandler.AddPhaseIfNeededAndScheduleEndEvent(webEvent, false);
+        host()->ForwardWheelEvent(webEvent);
     }
     // TODO: We could forward unhandled wheelevents to our parent.
+}
+
+content::MouseWheelPhaseHandler *RenderWidgetHostViewQt::GetMouseWheelPhaseHandler()
+{
+    return &m_mouseWheelPhaseHandler;
 }
 
 void RenderWidgetHostViewQt::clearPreviousTouchMotionState()

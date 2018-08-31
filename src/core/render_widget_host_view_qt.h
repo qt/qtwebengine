@@ -46,6 +46,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/view_messages.h"
@@ -141,6 +142,7 @@ public:
     void DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
     void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame, base::Optional<viz::HitTestRegionList>) override;
     void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
+    content::MouseWheelPhaseHandler *GetMouseWheelPhaseHandler() override;
 
     void GetScreenInfo(content::ScreenInfo* results) const override;
     gfx::Rect GetBoundsInRootWindow() override;
@@ -255,6 +257,7 @@ private:
 
     bool m_wheelAckPending;
     QList<blink::WebMouseWheelEvent> m_pendingWheelEvents;
+    content::MouseWheelPhaseHandler m_mouseWheelPhaseHandler;
 
     std::string m_editCommand;
 };
