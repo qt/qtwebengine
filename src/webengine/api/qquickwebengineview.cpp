@@ -107,8 +107,11 @@ static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *obje
 }
 #endif // QT_NO_ACCESSIBILITY
 
+static QLatin1String defaultMimeType("text/html;charset=UTF-8");
+
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : m_profile(nullptr)
+    , adapter(QSharedPointer<WebContentsAdapter>::create())
     , m_history(new QQuickWebEngineHistory(this))
 #if QT_CONFIG(webengine_testsupport)
     , m_testSupport(0)
@@ -125,7 +128,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_isBeingAdopted(false)
     , m_dpiScale(1.0)
     , m_backgroundColor(Qt::white)
-    , m_defaultZoomFactor(1.0)
+    , m_zoomFactor(1.0)
     , m_ui2Enabled(false)
     , m_profileInitialized(false)
 {
@@ -168,16 +171,13 @@ QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
 void QQuickWebEngineViewPrivate::initializeProfile()
 {
     if (!m_profileInitialized) {
+        Q_ASSERT(!adapter->isInitialized());
         m_profileInitialized = true;
         if (!m_profile)
             m_profile = QQuickWebEngineProfile::defaultProfile();
         m_profile->d_ptr->addWebContentsAdapterClient(this);
-        adapter = QSharedPointer<WebContentsAdapter>::create();
         m_settings.reset(new QQuickWebEngineSettings(m_profile->settings()));
-#if QT_CONFIG(webengine_webchannel)
-        if (m_webChannel)
-            adapter->setWebChannel(m_webChannel, m_webChannelWorld);
-#endif
+        adapter->setClient(this);
     }
 }
 
@@ -348,7 +348,6 @@ void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
 {
     Q_Q(QQuickWebEngineView);
     Q_UNUSED(url);
-    explicitUrl = QUrl();
     Q_EMIT q->urlChanged();
 }
 
@@ -473,7 +472,6 @@ void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, boo
         return;
     }
     if (success) {
-        explicitUrl = QUrl();
         QTimer::singleShot(0, q, [q, url, errorDescription, errorCode]() {
             QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus, errorDescription, errorCode);
             emit q->loadingChanged(&loadRequest);
@@ -784,9 +782,12 @@ QQuickWebEngineView::~QQuickWebEngineView()
 
 void QQuickWebEngineViewPrivate::ensureContentsAdapter()
 {
+    initializeProfile();
     if (!adapter->isInitialized()) {
-        if (explicitUrl.isValid())
-            adapter->load(explicitUrl);
+        if (!m_html.isEmpty())
+            adapter->setContent(m_html.toUtf8(), defaultMimeType, m_url);
+        else if (m_url.isValid())
+            adapter->load(m_url);
         else
             adapter->loadDefault();
     }
@@ -796,14 +797,21 @@ void QQuickWebEngineViewPrivate::initializationFinished()
 {
     Q_Q(QQuickWebEngineView);
 
-    if (m_backgroundColor != Qt::white)
-        adapter->backgroundColorChanged();
+    Q_ASSERT(m_profileInitialized);
+    if (m_backgroundColor != Qt::white) {
+        adapter->setBackgroundColor(m_backgroundColor);
+        emit q->backgroundColorChanged();
+    }
+
+    if (!qFuzzyCompare(adapter->currentZoomFactor(), m_zoomFactor)) {
+        adapter->setZoomFactor(m_zoomFactor);
+        emit q->zoomFactorChanged(m_zoomFactor);
+    }
+
 #if QT_CONFIG(webengine_webchannel)
     if (m_webChannel)
         adapter->setWebChannel(m_webChannel, m_webChannelWorld);
 #endif
-    if (!qFuzzyCompare(adapter->currentZoomFactor(), m_defaultZoomFactor))
-        q->setZoomFactor(m_defaultZoomFactor);
 
     if (devToolsView && devToolsView->d_ptr->adapter)
         adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
@@ -874,20 +882,25 @@ void QQuickWebEngineViewPrivate::updateAction(QQuickWebEngineView::WebAction act
 QUrl QQuickWebEngineView::url() const
 {
     Q_D(const QQuickWebEngineView);
-    return d->explicitUrl.isValid() ? d->explicitUrl : d->adapter->activeUrl();
+    if (d->adapter->isInitialized())
+        return d->adapter->activeUrl();
+    else
+        return d->m_url;
 }
 
 void QQuickWebEngineView::setUrl(const QUrl& url)
 {
+    Q_D(QQuickWebEngineView);
     if (url.isEmpty())
         return;
 
-    Q_D(QQuickWebEngineView);
-    d->explicitUrl = url;
-    if (d->profileInitialized() && d->adapter->isInitialized())
+    if (d->adapter->isInitialized()) {
         d->adapter->load(url);
-    if (!qmlEngine(this) || isComponentComplete())
-        d->ensureContentsAdapter();
+        return;
+    }
+
+    d->m_url = url;
+    d->m_html.clear();
 }
 
 QUrl QQuickWebEngineView::icon() const
@@ -899,11 +912,12 @@ QUrl QQuickWebEngineView::icon() const
 void QQuickWebEngineView::loadHtml(const QString &html, const QUrl &baseUrl)
 {
     Q_D(QQuickWebEngineView);
-    d->explicitUrl = QUrl();
-    if (!qmlEngine(this) || isComponentComplete())
-        d->ensureContentsAdapter();
-    if (d->adapter->isInitialized())
-        d->adapter->setContent(html.toUtf8(), QStringLiteral("text/html;charset=UTF-8"), baseUrl);
+    d->m_url = baseUrl;
+    d->m_html = html;
+    if (d->adapter->isInitialized()) {
+        d->adapter->setContent(html.toUtf8(), defaultMimeType, baseUrl);
+        return;
+    }
 }
 
 void QQuickWebEngineView::goBack()
@@ -939,20 +953,17 @@ void QQuickWebEngineView::stop()
 void QQuickWebEngineView::setZoomFactor(qreal arg)
 {
     Q_D(QQuickWebEngineView);
-    d->m_defaultZoomFactor = arg;
-
-    qreal oldFactor = d->adapter->currentZoomFactor();
-    d->adapter->setZoomFactor(arg);
-    if (qFuzzyCompare(oldFactor, d->adapter->currentZoomFactor()))
-        return;
-
-    emit zoomFactorChanged(arg);
+    if (d->adapter->isInitialized() &&  !qFuzzyCompare(d->m_zoomFactor, d->adapter->currentZoomFactor())) {
+        d->adapter->setZoomFactor(arg);
+        emit zoomFactorChanged(arg);
+    } else {
+        d->m_zoomFactor = arg;
+    }
 }
 
 QQuickWebEngineProfile *QQuickWebEngineView::profile()
 {
     Q_D(QQuickWebEngineView);
-    // this can be called before onComplete for group properties
     d->initializeProfile();
     return d->m_profile;
 }
@@ -960,7 +971,24 @@ QQuickWebEngineProfile *QQuickWebEngineView::profile()
 void QQuickWebEngineView::setProfile(QQuickWebEngineProfile *profile)
 {
     Q_D(QQuickWebEngineView);
-    d->setProfile(profile);
+
+    if (d->m_profile == profile)
+        return;
+
+    if (!d->profileInitialized()) {
+        d->m_profile = profile;
+        return;
+    }
+
+    if (d->m_profile)
+        d->m_profile->d_ptr->removeWebContentsAdapterClient(d);
+
+    d->m_profile = profile;
+    d->m_profile->d_ptr->addWebContentsAdapterClient(d);
+    d->m_settings->setParentSettings(profile->settings());
+
+    d->updateAdapter();
+    Q_EMIT profileChanged();
 }
 
 QQuickWebEngineSettings *QQuickWebEngineView::settings()
@@ -980,40 +1008,22 @@ QQmlListProperty<QQuickWebEngineScript> QQuickWebEngineView::userScripts()
                                                    d->userScripts_clear);
 }
 
-void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
+void QQuickWebEngineViewPrivate::updateAdapter()
 {
-    Q_Q(QQuickWebEngineView);
-
-    if (profile == m_profile)
-        return;
-
-    if (!m_profileInitialized) {
-        m_profile = profile;
-        return;
-    }
-
-    if (m_profile)
-        m_profile->d_ptr->removeWebContentsAdapterClient(this);
-
-    m_profile = profile;
-    m_profile->d_ptr->addWebContentsAdapterClient(this);
-    Q_EMIT q->profileChanged();
-    m_settings->setParentSettings(profile->settings());
-
-    if (adapter->profile() != profileAdapter()->profile()) {
-        // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
-        bool wasInitialized = adapter->isInitialized();
-        QUrl activeUrl = adapter->activeUrl();
-        adapter = QSharedPointer<WebContentsAdapter>::create();
-        adapter->setClient(this);
-        if (wasInitialized) {
-            if (explicitUrl.isValid())
-                adapter->load(explicitUrl);
-            else if (activeUrl.isValid())
-                adapter->load(activeUrl);
-            else
-                adapter->loadDefault();
-        }
+    // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
+    bool wasInitialized = adapter->isInitialized();
+    QUrl activeUrl = adapter->activeUrl();
+    adapter = QSharedPointer<WebContentsAdapter>::create();
+    adapter->setClient(this);
+    if (wasInitialized) {
+        if (!m_html.isEmpty())
+            adapter->setContent(m_html.toUtf8(), defaultMimeType, m_url);
+        else if (m_url.isValid())
+            adapter->load(m_url);
+        else if (activeUrl.isValid())
+            adapter->load(activeUrl);
+        else
+            adapter->loadDefault();
     }
 }
 
@@ -1178,7 +1188,7 @@ qreal QQuickWebEngineView::zoomFactor() const
 {
     Q_D(const QQuickWebEngineView);
     if (!d->adapter->isInitialized())
-        return d->m_defaultZoomFactor;
+        return d->m_zoomFactor;
     return d->adapter->currentZoomFactor();
 }
 
@@ -1194,8 +1204,10 @@ void QQuickWebEngineView::setBackgroundColor(const QColor &color)
     if (color == d->m_backgroundColor)
         return;
     d->m_backgroundColor = color;
-    d->adapter->backgroundColorChanged();
-    emit backgroundColorChanged();
+    if (d->adapter->isInitialized()) {
+        d->adapter->setBackgroundColor(color);
+        emit backgroundColorChanged();
+    }
 }
 
 /*!
@@ -1963,7 +1975,6 @@ void QQuickWebEngineView::componentComplete()
     QQuickItem::componentComplete();
     Q_D(QQuickWebEngineView);
     d->initializeProfile();
-    d->adapter->setClient(d);
 #ifndef QT_NO_ACCESSIBILITY
     // Enable accessibility via a dynamic QQmlProperty, instead of using private API call
     // QQuickAccessibleAttached::qmlAttachedProperties(this). The qmlContext is required, otherwise

@@ -187,7 +187,7 @@ public:
     void grantMouseLockPermission(bool granted);
 
     void dpiScaleChanged();
-    void backgroundColorChanged();
+    void setBackgroundColor(const QColor &color);
     QAccessibleInterface *browserAccessible();
     ProfileQt* profile();
     ProfileAdapter* profileAdapter();

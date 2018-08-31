@@ -160,6 +160,7 @@ public:
     void updateAction(QQuickWebEngineView::WebAction) const;
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     void setProfile(QQuickWebEngineProfile *profile);
+    void updateAdapter();
     void ensureContentsAdapter();
     void setFullScreenMode(bool);
 
@@ -178,7 +179,8 @@ public:
 #endif
     QQmlComponent *contextMenuExtraItems;
     QtWebEngineCore::WebEngineContextMenuData m_contextMenuData;
-    QUrl explicitUrl;
+    QUrl m_url;
+    QString m_html;
     QUrl iconUrl;
     QQuickWebEngineFaviconProvider *faviconProvider;
     int loadProgress;
@@ -203,7 +205,7 @@ private:
     QList<QQuickWebEngineScript *> m_userScripts;
     qreal m_dpiScale;
     QColor m_backgroundColor;
-    qreal m_defaultZoomFactor;
+    qreal m_zoomFactor;
     bool m_ui2Enabled;
     bool m_profileInitialized;
 };

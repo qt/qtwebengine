@@ -281,7 +281,7 @@ RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostVie
 void QWebEnginePagePrivate::initializationFinished()
 {
     if (m_backgroundColor != Qt::white)
-        adapter->backgroundColorChanged();
+        adapter->setBackgroundColor(m_backgroundColor);
 #if QT_CONFIG(webengine_webchannel)
     if (webChannel)
         adapter->setWebChannel(webChannel, webChannelWorldId);
@@ -1007,7 +1007,7 @@ void QWebEnginePage::setBackgroundColor(const QColor &color)
     if (d->m_backgroundColor == color)
         return;
     d->m_backgroundColor = color;
-    d->adapter->backgroundColorChanged();
+    d->adapter->setBackgroundColor(color);
 }
 
 /*!

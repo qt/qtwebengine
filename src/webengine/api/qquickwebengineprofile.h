@@ -168,6 +168,7 @@ private:
     friend class QQuickWebEngineViewPrivate;
     friend class QQuickWebEngineDownloadItem;
     friend class QQuickWebEngineDownloadItemPrivate;
+    friend class QQuickWebEngineView;
     QScopedPointer<QQuickWebEngineProfilePrivate> d_ptr;
 };
 

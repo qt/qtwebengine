@@ -1266,11 +1266,11 @@ void WebContentsAdapter::dpiScaleChanged()
         impl->NotifyScreenInfoChanged();
 }
 
-void WebContentsAdapter::backgroundColorChanged()
+void WebContentsAdapter::setBackgroundColor(const QColor &color)
 {
     CHECK_INITIALIZED();
     if (content::RenderWidgetHostView *rwhv = m_webContents->GetRenderWidgetHostView())
-        rwhv->SetBackgroundColor(toSk(m_adapterClient->backgroundColor()));
+        rwhv->SetBackgroundColor(toSk(color));
 }
 
 content::WebContents *WebContentsAdapter::webContents() const
