@@ -55,6 +55,7 @@ General
 -------
 
     * [QTBUG-59891] Popups are now closed when parent window is moved.
+    * [QTBUG-67801] Fixed assert with some AMD CPUs on Windows.
     * [QTBUG-68699] Fixed another crash with non-integer Qt scaling.
     * [QTBUG-69231] Fixed keyboard modifiers on drop events.
     * [QTBUG-69236] Fixed --enable-webgl-software-rendering to ignore blacklist
@@ -63,10 +64,15 @@ General
     * [QTBUG-69372] QWebEngineUrlRequestJob::initiator() now differs
       between unique origins and unknown origins.
     * [QTBUG-69605] HSTS state is now persistent with appropriate profiles.
+    * [QTBUG-69639] Work around MSVC compiler error affecting printing on
+      32-bit Windows.
     * [QTBUG-69904] JavaScript worldID can now be up to 256 (up from 11),
       and the limit is now documented.
+    * [QTBUG-70034] Fixed qtwebengine_convert_dict failing on certain
+      dictionaries.
 
 Build
 -----
 
     * [QTBUG-50554] Update libvpx check to match standard versions.
+    * [QTBUG-69121] Fixed shadow builds on read-only sources.
