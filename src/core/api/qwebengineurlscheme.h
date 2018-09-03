@@ -84,8 +84,8 @@ public:
 
     ~QWebEngineUrlScheme();
 
-    bool operator==(const QWebEngineUrlScheme &that);
-    bool operator!=(const QWebEngineUrlScheme &that) { return !(*this == that); }
+    bool operator==(const QWebEngineUrlScheme &that) const;
+    bool operator!=(const QWebEngineUrlScheme &that) const { return !(*this == that); }
 
     QByteArray name() const;
     void setName(const QByteArray &newValue);

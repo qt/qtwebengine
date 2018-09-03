@@ -237,7 +237,7 @@ QWebEngineUrlScheme::~QWebEngineUrlScheme() = default;
 /*!
   Returns \c true if this and \a that object are equal.
 */
-bool QWebEngineUrlScheme::operator==(const QWebEngineUrlScheme &that)
+bool QWebEngineUrlScheme::operator==(const QWebEngineUrlScheme &that) const
 {
     return (d == that.d)
         || (d->name == that.d->name
@@ -247,7 +247,7 @@ bool QWebEngineUrlScheme::operator==(const QWebEngineUrlScheme &that)
 }
 
 /*!
-  \fn bool QWebEngineUrlScheme::operator!=(const QWebEngineUrlScheme &that)
+  \fn bool QWebEngineUrlScheme::operator!=(const QWebEngineUrlScheme &that) const
 
   Returns \c true if this and \a that object are not equal.
 */
