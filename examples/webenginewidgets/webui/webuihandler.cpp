@@ -91,8 +91,8 @@ void WebUiHandler::requestStarted(QWebEngineUrlRequestJob *job)
 void WebUiHandler::registerUrlScheme()
 {
     QWebEngineUrlScheme webUiScheme(schemeName);
-    webUiScheme.setFlags(QWebEngineUrlScheme::Secure |
-                         QWebEngineUrlScheme::Local |
+    webUiScheme.setFlags(QWebEngineUrlScheme::SecureScheme |
+                         QWebEngineUrlScheme::LocalScheme |
                          QWebEngineUrlScheme::LocalAccessAllowed);
-    QWebEngineUrlScheme::addScheme(webUiScheme);
+    QWebEngineUrlScheme::registerScheme(webUiScheme);
 }

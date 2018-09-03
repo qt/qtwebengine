@@ -329,10 +329,10 @@ WebEngineContext::WebEngineContext()
 #endif
 
     QWebEngineUrlScheme qrcScheme(QByteArrayLiteral("qrc"));
-    qrcScheme.setFlags(QWebEngineUrlScheme::Secure
+    qrcScheme.setFlags(QWebEngineUrlScheme::SecureScheme
                        | QWebEngineUrlScheme::LocalAccessAllowed
                        | QWebEngineUrlScheme::ViewSourceAllowed);
-    QWebEngineUrlScheme::addScheme(qrcScheme);
+    QWebEngineUrlScheme::registerScheme(qrcScheme);
 
     // Allow us to inject javascript like any webview toolkit.
     content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();

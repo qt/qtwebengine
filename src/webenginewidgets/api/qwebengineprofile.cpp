@@ -682,7 +682,7 @@ static bool checkInternalScheme(const QByteArray &scheme)
     Registers a handler \a handler for custom URL scheme \a scheme in the profile.
 
     It is recommended to first register the scheme with \l
-    QWebEngineUrlScheme::addScheme at application startup.
+    QWebEngineUrlScheme::registerScheme at application startup.
 */
 void QWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
 {

@@ -51,76 +51,76 @@ void registerSchemes()
 {
     {
         QWebEngineUrlScheme scheme(QBAL("PathSyntax"));
-        QWebEngineUrlScheme::addScheme(scheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("PathSyntax-Secure"));
-        scheme.setFlags(QWebEngineUrlScheme::Secure);
-        QWebEngineUrlScheme::addScheme(scheme);
+        scheme.setFlags(QWebEngineUrlScheme::SecureScheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("PathSyntax-Secure-ServiceWorkersAllowed"));
-        scheme.setFlags(QWebEngineUrlScheme::Secure | QWebEngineUrlScheme::ServiceWorkersAllowed);
-        QWebEngineUrlScheme::addScheme(scheme);
+        scheme.setFlags(QWebEngineUrlScheme::SecureScheme | QWebEngineUrlScheme::ServiceWorkersAllowed);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("PathSyntax-Local"));
-        scheme.setFlags(QWebEngineUrlScheme::Local);
-        QWebEngineUrlScheme::addScheme(scheme);
+        scheme.setFlags(QWebEngineUrlScheme::LocalScheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("PathSyntax-LocalAccessAllowed"));
         scheme.setFlags(QWebEngineUrlScheme::LocalAccessAllowed);
-        QWebEngineUrlScheme::addScheme(scheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("PathSyntax-NoAccessAllowed"));
         scheme.setFlags(QWebEngineUrlScheme::NoAccessAllowed);
-        QWebEngineUrlScheme::addScheme(scheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("PathSyntax-ServiceWorkersAllowed"));
         scheme.setFlags(QWebEngineUrlScheme::ServiceWorkersAllowed);
-        QWebEngineUrlScheme::addScheme(scheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("PathSyntax-ViewSourceAllowed"));
         scheme.setFlags(QWebEngineUrlScheme::ViewSourceAllowed);
-        QWebEngineUrlScheme::addScheme(scheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("HostSyntax"));
-        scheme.setSyntax(QWebEngineUrlScheme::HostSyntax);
-        QWebEngineUrlScheme::addScheme(scheme);
+        scheme.setSyntax(QWebEngineUrlScheme::Syntax::Host);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("HostSyntax-ContentSecurityPolicyIgnored"));
-        scheme.setSyntax(QWebEngineUrlScheme::HostSyntax);
+        scheme.setSyntax(QWebEngineUrlScheme::Syntax::Host);
         scheme.setFlags(QWebEngineUrlScheme::ContentSecurityPolicyIgnored);
-        QWebEngineUrlScheme::addScheme(scheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("HostAndPortSyntax"));
-        scheme.setSyntax(QWebEngineUrlScheme::HostAndPortSyntax);
+        scheme.setSyntax(QWebEngineUrlScheme::Syntax::HostAndPort);
         scheme.setDefaultPort(42);
-        QWebEngineUrlScheme::addScheme(scheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 
     {
         QWebEngineUrlScheme scheme(QBAL("HostPortAndUserInformationSyntax"));
-        scheme.setSyntax(QWebEngineUrlScheme::HostPortAndUserInformationSyntax);
+        scheme.setSyntax(QWebEngineUrlScheme::Syntax::HostPortAndUserInformation);
         scheme.setDefaultPort(42);
-        QWebEngineUrlScheme::addScheme(scheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
     }
 }
 Q_CONSTRUCTOR_FUNCTION(registerSchemes)

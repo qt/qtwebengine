@@ -84,7 +84,7 @@
     In order to take advantage of these possibilities, the custom scheme must
     first be registered. This means creating and configuring a \l
     {QWebEngineUrlScheme} object and then handing it over to \l
-    {QWebEngineUrlScheme::addScheme()}. The example program does exactly this in
+    {QWebEngineUrlScheme::registerScheme()}. The example program does exactly this in
     the static method \c {WebUiHandler::registerUrlScheme()}:
 
     \quotefromfile webenginewidgets/webui/webuihandler.cpp
@@ -95,11 +95,11 @@
     the constructor of \c {QWebEngineUrlScheme} or by calling \l
     {QWebEngineUrlScheme::setName}. In the above, the name \c {webui} is set
     through the constructor. Additionally, we activate the flags \l
-    {QWebEngineUrlScheme::Secure}{Secure}, \l
-    {QWebEngineUrlScheme::Local}{Local} and \l
+    {QWebEngineUrlScheme::SecureScheme}{SecureScheme}, \l
+    {QWebEngineUrlScheme::LocalScheme}{LocalScheme} and \l
     {QWebEngineUrlScheme::LocalAccessAllowed}{LocalAccessAllowed}. Since our
     custom scheme handler will not deliver resources received from insecure
-    network connections, we can safely mark it as \c {Secure}. The \c {Local}
+    network connections, we can safely mark it as a \c {SecureScheme}. The \c {LocalScheme}
     flag prevents content from non-local schemes (such as \c {http}) from
     interacting with our custom scheme. Without this flag it would be possible,
     for example, to embed the \c {webui:about} page in an \c <iframe> element on
