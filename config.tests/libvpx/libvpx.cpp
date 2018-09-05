@@ -34,7 +34,7 @@ int main(int, char **)
     // Members added (as ints) by
     // https://chromium-review.googlesource.com/c/webm/libvpx/+/798222
     // And changed to int arrays by
-    /  https://chromium-review.googlesource.com/c/webm/libvpx/+/879089
+    //  https://chromium-review.googlesource.com/c/webm/libvpx/+/879089
     pkt.data.frame.width[0] = 0u;
     pkt.data.frame.height[0] = 0u;
     return 0;
