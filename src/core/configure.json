@@ -250,11 +250,6 @@
             "test": "snappy",
             "type": "compile"
         },
-        "webengine-srtp": {
-            "label": "srtp",
-            "test": "srtp",
-            "type": "compile"
-        },
         "webengine-winversion": {
             "label": "winversion",
             "test": "winversion",
@@ -472,11 +467,6 @@
         "webengine-system-snappy" : {
             "label": "snappy",
             "condition": "config.unix && tests.webengine-snappy",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-libsrtp" : {
-            "label": "libsrtp",
-            "condition": "config.unix && tests.webengine-srtp",
             "output": [ "privateFeature" ]
         },
         "webengine-winversion" : {
@@ -751,7 +741,6 @@
                         "webengine-system-ffmpeg",
                         "webengine-system-libvpx",
                         "webengine-system-snappy",
-                        "webengine-system-libsrtp",
                         "webengine-system-glib",
                         "webengine-system-zlib",
                         "webengine-system-minizip",
