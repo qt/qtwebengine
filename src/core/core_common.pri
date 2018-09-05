@@ -6,3 +6,6 @@ QT += qml quick webchannel
 QT_PRIVATE += quick-private gui-private core-private webenginecoreheaders-private
 
 qtHaveModule(positioning):QT += positioning
+
+# LTO does not work for Chromium at the moment, so disable it completely for core.
+CONFIG -= ltcg
