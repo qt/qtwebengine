@@ -224,6 +224,8 @@ quint32 QWebEngineScript::worldId() const
 
 /*!
     Sets the world ID of the isolated world to \a id when running this script.
+
+    Must be between \c 0 and \c 256.
  */
 void QWebEngineScript::setWorldId(quint32 id)
 {

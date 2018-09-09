@@ -2338,9 +2338,9 @@ void tst_QWebEngineView::imeJSInputEvents()
 
     // Simply committing text should not trigger any JS composition event.
     QTRY_COMPARE(logLines().count(), 3);
-    QCOMPARE(logLines()[0], "[object InputEvent] beforeinput commit");
-    QCOMPARE(logLines()[1], "[object TextEvent] textInput commit");
-    QCOMPARE(logLines()[2], "[object InputEvent] input commit");
+    QCOMPARE(logLines()[0], QStringLiteral("[object InputEvent] beforeinput commit"));
+    QCOMPARE(logLines()[1], QStringLiteral("[object TextEvent] textInput commit"));
+    QCOMPARE(logLines()[2], QStringLiteral("[object InputEvent] input commit"));
 
     evaluateJavaScriptSync(view.page(), "clear()");
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
@@ -2354,10 +2354,10 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().count(), 4);
-    QCOMPARE(logLines()[0], "[object CompositionEvent] compositionstart ");
-    QCOMPARE(logLines()[1], "[object InputEvent] beforeinput preedit");
-    QCOMPARE(logLines()[2], "[object CompositionEvent] compositionupdate preedit");
-    QCOMPARE(logLines()[3], "[object InputEvent] input preedit");
+    QCOMPARE(logLines()[0], QStringLiteral("[object CompositionEvent] compositionstart "));
+    QCOMPARE(logLines()[1], QStringLiteral("[object InputEvent] beforeinput preedit"));
+    QCOMPARE(logLines()[2], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[3], QStringLiteral("[object InputEvent] input preedit"));
 
     {
         QList<QInputMethodEvent::Attribute> attributes;
@@ -2368,11 +2368,11 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().count(), 9);
-    QCOMPARE(logLines()[4], "[object InputEvent] beforeinput commit");
-    QCOMPARE(logLines()[5], "[object CompositionEvent] compositionupdate commit");
-    QCOMPARE(logLines()[6], "[object TextEvent] textInput commit");
-    QCOMPARE(logLines()[7], "[object InputEvent] input commit");
-    QCOMPARE(logLines()[8], "[object CompositionEvent] compositionend commit");
+    QCOMPARE(logLines()[4], QStringLiteral("[object InputEvent] beforeinput commit"));
+    QCOMPARE(logLines()[5], QStringLiteral("[object CompositionEvent] compositionupdate commit"));
+    QCOMPARE(logLines()[6], QStringLiteral("[object TextEvent] textInput commit"));
+    QCOMPARE(logLines()[7], QStringLiteral("[object InputEvent] input commit"));
+    QCOMPARE(logLines()[8], QStringLiteral("[object CompositionEvent] compositionend commit"));
 
     evaluateJavaScriptSync(view.page(), "clear()");
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
@@ -2386,10 +2386,10 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().count(), 4);
-    QCOMPARE(logLines()[0], "[object CompositionEvent] compositionstart ");
-    QCOMPARE(logLines()[1], "[object InputEvent] beforeinput preedit");
-    QCOMPARE(logLines()[2], "[object CompositionEvent] compositionupdate preedit");
-    QCOMPARE(logLines()[3], "[object InputEvent] input preedit");
+    QCOMPARE(logLines()[0], QStringLiteral("[object CompositionEvent] compositionstart "));
+    QCOMPARE(logLines()[1], QStringLiteral("[object InputEvent] beforeinput preedit"));
+    QCOMPARE(logLines()[2], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[3], QStringLiteral("[object InputEvent] input preedit"));
 
     {
         QList<QInputMethodEvent::Attribute> attributes;
@@ -2399,11 +2399,11 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().count(), 9);
-    QCOMPARE(logLines()[4], "[object InputEvent] beforeinput ");
-    QCOMPARE(logLines()[5], "[object CompositionEvent] compositionupdate ");
-    QCOMPARE(logLines()[6], "[object TextEvent] textInput ");
-    QCOMPARE(logLines()[7], "[object InputEvent] input null");
-    QCOMPARE(logLines()[8], "[object CompositionEvent] compositionend ");
+    QCOMPARE(logLines()[4], QStringLiteral("[object InputEvent] beforeinput "));
+    QCOMPARE(logLines()[5], QStringLiteral("[object CompositionEvent] compositionupdate "));
+    QCOMPARE(logLines()[6], QStringLiteral("[object TextEvent] textInput "));
+    QCOMPARE(logLines()[7], QStringLiteral("[object InputEvent] input null"));
+    QCOMPARE(logLines()[8], QStringLiteral("[object CompositionEvent] compositionend "));
 
     evaluateJavaScriptSync(view.page(), "clear()");
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());

@@ -186,7 +186,7 @@ bool usingSoftwareDynamicGL()
 {
     if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
         return true;
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(QT_NO_OPENGL)
     HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
     wchar_t path[MAX_PATH];
     DWORD size = GetModuleFileName(handle, path, MAX_PATH);
