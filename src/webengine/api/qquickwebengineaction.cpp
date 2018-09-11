@@ -68,10 +68,10 @@ QT_BEGIN_NAMESPACE
     \endcode
 */
 
-QQuickWebEngineActionPrivate::QQuickWebEngineActionPrivate(const QVariant &data, const QString &text, const QString &iconText, bool enabled)
+QQuickWebEngineActionPrivate::QQuickWebEngineActionPrivate(const QVariant &data, const QString &text, const QString &iconName, bool enabled)
     : m_data(data)
     , m_text(text)
-    , m_iconText(iconText)
+    , m_iconName(iconName)
     , m_enabled(enabled)
 {
 }
@@ -86,7 +86,7 @@ void QQuickWebEngineActionPrivate::setEnabled(bool enabled)
     if (m_enabled == enabled)
         return;
     m_enabled = enabled;
-    emit q->enabledChanged(enabled);
+    emit q->enabledChanged();
 }
 
 QVariant QQuickWebEngineActionPrivate::data() const
@@ -102,9 +102,9 @@ void QQuickWebEngineActionPrivate::trigger()
     }
 }
 
-QQuickWebEngineAction::QQuickWebEngineAction(const QVariant &data, const QString &text, const QString &iconText, bool enabled, QObject *parent)
+QQuickWebEngineAction::QQuickWebEngineAction(const QVariant &data, const QString &text, const QString &iconName, bool enabled, QObject *parent)
     : QObject(parent)
-    , d_ptr(new QQuickWebEngineActionPrivate(data, text, iconText, enabled))
+    , d_ptr(new QQuickWebEngineActionPrivate(data, text, iconName, enabled))
 {
     d_ptr->q_ptr = this;
 }
@@ -132,14 +132,15 @@ QString QQuickWebEngineAction::text() const
 }
 
 /*!
-    \qmlproperty string WebEngineAction::iconText
+    \qmlproperty string WebEngineAction::iconName
 
-    This property holds the action's descriptive icon text.
+    This property holds the name of the icon for the action. This name
+    can be used to pick the icon from a theme.
 */
-QString QQuickWebEngineAction::iconText() const
+QString QQuickWebEngineAction::iconName() const
 {
     Q_D(const QQuickWebEngineAction);
-    return d->m_iconText;
+    return d->m_iconName;
 }
 
 /*!

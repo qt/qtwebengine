@@ -96,11 +96,10 @@ static const QStringList hardcodedTypes = QStringList()
 
 static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineAction.text --> QString"
-    << "QQuickWebEngineAction.iconText --> QString"
+    << "QQuickWebEngineAction.iconName --> QString"
     << "QQuickWebEngineAction.enabled --> bool"
-    << "QQuickWebEngineAction.toggled() --> void"
     << "QQuickWebEngineAction.triggered() --> void"
-    << "QQuickWebEngineAction.enabledChanged(bool) --> void"
+    << "QQuickWebEngineAction.enabledChanged() --> void"
     << "QQuickWebEngineAction.trigger() --> void"
     << "QQuickWebEngineAuthenticationDialogRequest.AuthenticationTypeHTTP --> AuthenticationType"
     << "QQuickWebEngineAuthenticationDialogRequest.AuthenticationTypeProxy --> AuthenticationType"

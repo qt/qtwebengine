@@ -1768,30 +1768,30 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
     }
 
     QString text;
-    QString iconText;
+    QString iconName;
 
     switch (action) {
     case Back:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Back);
-        iconText = QStringLiteral("go-previous");
+        iconName = QStringLiteral("go-previous");
         break;
     case Forward:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Forward);
-        iconText = QStringLiteral("go-next");
+        iconName = QStringLiteral("go-next");
         break;
     case Stop:
         text = tr("Stop");
         break;
     case Reload:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Reload);
-        iconText = QStringLiteral("view-refresh");
+        iconName = QStringLiteral("view-refresh");
         break;
     case ReloadAndBypassCache:
         text = tr("Reload and Bypass Cache");
         break;
     case Cut:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Cut);
-        iconText = QStringLiteral("Cut");
+        iconName = QStringLiteral("Cut");
         break;
     case Copy:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Copy);
@@ -1870,7 +1870,7 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
         break;
     case ViewSource:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ViewSource);
-        iconText = QStringLiteral("view-source");
+        iconName = QStringLiteral("view-source");
         break;
     case ToggleBold:
         text = tr("&Bold");
@@ -1914,7 +1914,7 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
         break;
     }
 
-    QQuickWebEngineAction *retVal = new QQuickWebEngineAction(action, text, iconText, false, this);
+    QQuickWebEngineAction *retVal = new QQuickWebEngineAction(action, text, iconName, false, this);
 
     d->actions[action] = retVal;
     d->updateAction(action);

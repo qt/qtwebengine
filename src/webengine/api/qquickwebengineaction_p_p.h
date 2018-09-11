@@ -63,7 +63,7 @@ class QQuickWebEngineActionPrivate
 {
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineAction)
-    QQuickWebEngineActionPrivate(const QVariant &data, const QString &text, const QString &iconText, bool enabled);
+    QQuickWebEngineActionPrivate(const QVariant &data, const QString &text, const QString &iconName, bool enabled);
     ~QQuickWebEngineActionPrivate();
 
     void setEnabled(bool enabled);
@@ -77,7 +77,7 @@ private:
 
     QVariant m_data;
     QString m_text;
-    QString m_iconText;
+    QString m_iconName;
     bool m_enabled;
 };
 
