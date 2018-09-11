@@ -69,11 +69,18 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
 
     \inmodule QtWebEngine
 
-    A web engine profile contains properties and functionality shared by a group of web engine
-    pages.
+    A web engine profile contains settings, scripts, persistent cookie policy, and the list of
+    visited links shared by all web engine pages that belong to the profile.
 
-    Information about visited links is stored together with persistent cookies and other persistent
-    data in a storage described by the persistentStoragePath property.
+    Information about visited links is stored together with persistent cookies
+    and other persistent data in a storage determined by the storageName
+    property. Persistent data is stored in a subdirectory determined by the
+    persistentStoragePath property and the cache in a subdirectory determined by
+    the cachePath property. The httpCacheType property describes the type of the
+    cache: \e in-memory or \e on-disk. If only the storageName property is set,
+    the other values are generated automatically based on it. If you specify
+    any of the values manually, you should do it before creating any pages that
+    belong to the profile.
 
     Profiles can be used to isolate pages from each other. A typical use case is a dedicated
     \e {off-the-record profile} for a \e {private browsing} mode. An off-the-record profile forces
@@ -278,8 +285,23 @@ void QQuickWebEngineProfilePrivate::userScripts_clear(QQmlListProperty<QQuickWeb
     \brief Contains settings, scripts, and visited links common to multiple web engine views.
 
     WebEngineProfile contains settings, scripts, and the list of visited links shared by all
-    views that belong to the profile. As such, profiles can be used to isolate views
-    from each other. A typical use case is a dedicated profile for a 'private browsing' mode.
+    views that belong to the profile.
+
+    Information about visited links is stored together with persistent cookies
+    and other persistent data in a storage determined by the storageName
+    property. Persistent data is stored in a subdirectory determined by the
+    persistentStoragePath property and the cache in a subdirectory determined by
+    the cachePath property. The httpCacheType property describes the type of the
+    cache: \e in-memory or \e on-disk. If only the storageName property is set,
+    the other values are generated automatically based on it. If you specify
+    any of the values manually, you should do it before creating any pages that
+    belong to the profile.
+
+    Profiles can be used to isolate pages from each other. A typical use case is
+    a dedicated \e {off-the-record profile} for a \e {private browsing} mode. An
+    off-the-record profile forces cookies, the HTTP cache, and other normally
+    persistent data to be stored only in memory. The offTheRecord property holds
+    whether a profile is off-the-record.
 
     Each web engine view has an associated profile. Views that do not have a specific profile set
     share a common default one.
