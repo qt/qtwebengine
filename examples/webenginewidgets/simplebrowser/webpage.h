@@ -70,7 +70,7 @@ private slots:
     void handleProxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
     void handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
 #if QT_CONFIG(ssl)
-    void handleSelectClientCertificate(QWebEngineClientCertSelection clientCertSelection);
+    void handleSelectClientCertificate(QWebEngineClientCertificateSelection clientCertSelection);
 #endif
 };
 

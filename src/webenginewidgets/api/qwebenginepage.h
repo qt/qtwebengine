@@ -41,7 +41,7 @@
 #define QWEBENGINEPAGE_H
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
-#include <QtWebEngineWidgets/qwebengineclientcertselection.h>
+#include <QtWebEngineWidgets/qwebengineclientcertificateselection.h>
 #include <QtWebEngineWidgets/qwebenginedownloaditem.h>
 #include <QtWebEngineCore/qwebenginecallback.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
@@ -60,7 +60,7 @@ class QPrinter;
 class QContextMenuBuilder;
 class QWebChannel;
 class QWebEngineCertificateError;
-class QWebEngineClientCertSelection;
+class QWebEngineClientCertificateSelection;
 class QWebEngineContextMenuData;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
@@ -323,7 +323,7 @@ Q_SIGNALS:
     void quotaRequested(QWebEngineQuotaRequest quotaRequest);
     void registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest request);
 #if QT_CONFIG(ssl)
-    void selectClientCertificate(QWebEngineClientCertSelection clientCertSelection);
+    void selectClientCertificate(QWebEngineClientCertificateSelection clientCertSelection);
 #endif
 
     void authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator);

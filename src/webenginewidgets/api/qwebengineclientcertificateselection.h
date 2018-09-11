@@ -45,19 +45,19 @@
 
 #if QT_CONFIG(ssl)
 
-#include <QtCore/QScopedPointer>
-#include <QtCore/QVector>
-#include <QtNetwork/QSslCertificate>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qvector.h>
+#include <QtNetwork/qsslcertificate.h>
 
 QT_BEGIN_NAMESPACE
 class ClientCertSelectController;
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineClientCertSelection {
+class QWEBENGINEWIDGETS_EXPORT QWebEngineClientCertificateSelection {
 public:
-    QWebEngineClientCertSelection(const QWebEngineClientCertSelection &);
-    ~QWebEngineClientCertSelection();
+    QWebEngineClientCertificateSelection(const QWebEngineClientCertificateSelection &);
+    ~QWebEngineClientCertificateSelection();
 
-    QWebEngineClientCertSelection &operator=(const QWebEngineClientCertSelection &);
+    QWebEngineClientCertificateSelection &operator=(const QWebEngineClientCertificateSelection &);
 
     QUrl host() const;
 
@@ -68,7 +68,7 @@ public:
 private:
     friend class QWebEnginePagePrivate;
 
-    QWebEngineClientCertSelection(QSharedPointer<ClientCertSelectController>);
+    QWebEngineClientCertificateSelection(QSharedPointer<ClientCertSelectController>);
 
     QSharedPointer<ClientCertSelectController> d_ptr;
 };

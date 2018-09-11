@@ -1679,7 +1679,7 @@ void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSele
 {
 #if QT_CONFIG(ssl)
     Q_Q(QWebEnginePage);
-    QWebEngineClientCertSelection certSelection(controller);
+    QWebEngineClientCertificateSelection certSelection(controller);
 
     Q_EMIT q->selectClientCertificate(certSelection);
 #else
@@ -1689,19 +1689,19 @@ void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSele
 
 #if QT_CONFIG(ssl)
 /*!
-    \fn void QWebEnginePage::selectClientCertificate(QWebEngineClientCertSelection clientCertSelection)
+    \fn void QWebEnginePage::selectClientCertificate(QWebEngineClientCertificateSelection clientCertificateSelection)
     \since 5.12
 
     This signal is emitted when a web site requests an SSL client certificate, and one or more were
     found in system's client certificate store.
 
     Handling the signal is asynchronous, and loading will be waiting until a certificate is selected,
-    or the last copy of \a clientCertSelection is destroyed.
+    or the last copy of \a clientCertificateSelection is destroyed.
 
-    If the signal is not handled, \a clientCertSelection is automatically destroyed, and loading
+    If the signal is not handled, \a clientCertificateSelection is automatically destroyed, and loading
     will continue without a client certificate.
 
-    \sa QWebEngineClientCertSelection
+    \sa QWebEngineClientCertificateSelection
 */
 #endif
 

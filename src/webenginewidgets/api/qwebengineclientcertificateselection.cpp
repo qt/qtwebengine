@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qwebengineclientcertselection.h"
+#include "qwebengineclientcertificateselection.h"
 
 #if QT_CONFIG(ssl)
 
@@ -46,12 +46,12 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QWebEngineClientCertSelection
+    \class QWebEngineClientCertificateSelection
     \brief The QWebEngineClientCertSelection class wraps a client certificate selection.
     \since 5.12
     \inmodule QtWebEngineWidgets
 
-    Provides access to the certicates to choose from, and a method for selecting one.
+    Provides access to the certificates to choose from, and a method for selecting one.
 
     The selection is asynchronous. If no certificate is selected and no copy of the
     object is kept alive, loading will continue without a certificate.
@@ -59,21 +59,21 @@ QT_BEGIN_NAMESPACE
 
 /*! \internal
 */
-QWebEngineClientCertSelection::QWebEngineClientCertSelection(QSharedPointer<ClientCertSelectController> selectController)
+QWebEngineClientCertificateSelection::QWebEngineClientCertificateSelection(QSharedPointer<ClientCertSelectController> selectController)
         : d_ptr(selectController)
 {}
 
-QWebEngineClientCertSelection::QWebEngineClientCertSelection(const QWebEngineClientCertSelection &other)
+QWebEngineClientCertificateSelection::QWebEngineClientCertificateSelection(const QWebEngineClientCertificateSelection &other)
         : d_ptr(other.d_ptr)
 {}
 
-QWebEngineClientCertSelection &QWebEngineClientCertSelection::operator=(const QWebEngineClientCertSelection &other)
+QWebEngineClientCertificateSelection &QWebEngineClientCertificateSelection::operator=(const QWebEngineClientCertificateSelection &other)
 {
     d_ptr = other.d_ptr;
     return *this;
 }
 
-QWebEngineClientCertSelection::~QWebEngineClientCertSelection()
+QWebEngineClientCertificateSelection::~QWebEngineClientCertificateSelection()
 {
 }
 
@@ -82,7 +82,7 @@ QWebEngineClientCertSelection::~QWebEngineClientCertSelection()
 
     \sa select()
 */
-QVector<QSslCertificate> QWebEngineClientCertSelection::certificates() const
+QVector<QSslCertificate> QWebEngineClientCertificateSelection::certificates() const
 {
     return d_ptr->certificates();
 }
@@ -93,7 +93,7 @@ QVector<QSslCertificate> QWebEngineClientCertSelection::certificates() const
 
     \sa certificates(), selectNone()
 */
-void QWebEngineClientCertSelection::select(const QSslCertificate &certificate)
+void QWebEngineClientCertificateSelection::select(const QSslCertificate &certificate)
 {
     d_ptr->select(certificate);
 }
@@ -105,7 +105,7 @@ void QWebEngineClientCertSelection::select(const QSslCertificate &certificate)
 
     \sa select()
 */
-void QWebEngineClientCertSelection::selectNone()
+void QWebEngineClientCertificateSelection::selectNone()
 {
     d_ptr->selectNone();
 }
@@ -113,7 +113,7 @@ void QWebEngineClientCertSelection::selectNone()
 /*!
     Returns the host and port of the server requesting the client certificate.
 */
-QUrl QWebEngineClientCertSelection::host() const
+QUrl QWebEngineClientCertificateSelection::host() const
 {
     return d_ptr->hostAndPort();
 }
