@@ -163,7 +163,7 @@ public:
     {
         QString platform = qApp->platformName().toLower();
         QPlatformNativeInterface *pni = QGuiApplication::platformNativeInterface();
-        if (platform == QLatin1String("xcb")) {
+        if (platform == QLatin1String("xcb") || platform == QLatin1String("offscreen")) {
             if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2)
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
             else
