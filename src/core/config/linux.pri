@@ -5,7 +5,6 @@ gn_args += \
     use_cups=false \
     use_gio=false \
     use_gnome_keyring=false \
-    use_kerberos=false \
     linux_use_bundled_binutils=false \
     use_udev=true \
     use_bundled_fontconfig=false \

@@ -89,7 +89,7 @@ namespace QtWebEngineCore {
 
 static const char* const kDefaultAuthSchemes[] = { net::kBasicAuthScheme,
                                                    net::kDigestAuthScheme,
-#if defined(USE_KERBEROS) && !defined(OS_ANDROID)
+#if QT_CONFIG(webengine_kerberos)
                                                    net::kNegotiateAuthScheme,
 #endif
                                                    net::kNtlmAuthScheme };
