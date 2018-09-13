@@ -113,8 +113,9 @@
 #include <QStringList>
 #include <QSurfaceFormat>
 #include <QVector>
-#include <qpa/qplatformnativeinterface.h>
 #include <QNetworkProxy>
+#include <QtGui/qpa/qplatformintegration.h>
+#include <QtGui/private/qguiapplication_p.h>
 
 using namespace QtWebEngineCore;
 
@@ -138,10 +139,13 @@ bool usingANGLE()
 #endif
 }
 
-bool usingQtQuick2DRenderer()
+bool usingDefaultSGBackend()
 {
     const QStringList args = QGuiApplication::arguments();
-    QString device;
+
+    //folow logic from contextFactory in src/quick/scenegraph/qsgcontextplugin.cpp
+    QString device = QQuickWindow::sceneGraphBackend();
+
     for (int index = 0; index < args.count(); ++index) {
         if (args.at(index).startsWith(QLatin1String("--device="))) {
             device = args.at(index).mid(9);
@@ -150,16 +154,11 @@ bool usingQtQuick2DRenderer()
     }
 
     if (device.isEmpty())
-        device = QQuickWindow::sceneGraphBackend();
-    if (device.isEmpty())
         device = QString::fromLocal8Bit(qgetenv("QT_QUICK_BACKEND"));
     if (device.isEmpty())
         device = QString::fromLocal8Bit(qgetenv("QMLSCENE_DEVICE"));
-    if (device.isEmpty())
-        device = QLatin1String("default");
 
-    // Anything other than the default OpenGL device will need to render in 2D mode.
-    return device != QLatin1String("default");
+    return device.isEmpty();
 }
 #endif //QT_NO_OPENGL
 #if QT_CONFIG(webengine_pepper_plugins)
@@ -397,7 +396,11 @@ WebEngineContext::WebEngineContext()
 
     QStringList appArgs = QCoreApplication::arguments();
 
-    bool enableWebGLSoftwareRendering = appArgs.contains(QStringLiteral("--enable-webgl-software-rendering"));
+    // If user requested GL support instead of using Skia rendering to
+    // bitmaps, use software rendering via software OpenGL. This might be less
+    // performant, but at least provides WebGL support.
+    // TODO(miklocek), check if this still works with latest chromium
+    bool enableGLSoftwareRendering = appArgs.contains(QStringLiteral("--enable-webgl-software-rendering"));
 
     bool useEmbeddedSwitches = false;
 #if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
@@ -498,15 +501,9 @@ WebEngineContext::WebEngineContext()
     const char *glType = 0;
 #ifndef QT_NO_OPENGL
 
-    bool tryGL =
-            (!usingSoftwareDynamicGL()
-                // If user requested WebGL support instead of using Skia rendering to
-                // bitmaps, use software rendering via software OpenGL. This might be less
-                // performant, but at least provides WebGL support.
-                || enableWebGLSoftwareRendering
-                )
-            && !usingQtQuick2DRenderer();
-
+    const bool tryGL = (usingDefaultSGBackend() && !usingSoftwareDynamicGL() &&
+                        QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
+                        || enableGLSoftwareRendering;
     if (tryGL) {
         if (qt_gl_global_share_context() && qt_gl_global_share_context()->isValid()) {
             // If the native handle is QEGLNativeContext try to use GL ES/2.
@@ -573,7 +570,7 @@ WebEngineContext::WebEngineContext()
     if (glType) {
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
         parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
-        if (enableWebGLSoftwareRendering) {
+        if (enableGLSoftwareRendering) {
             parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
             parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlacklist);
         }
