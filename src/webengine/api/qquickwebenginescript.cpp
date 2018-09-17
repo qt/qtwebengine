@@ -86,7 +86,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QQuickWebEngineScript::ScriptWorldId
 
-    The world ID defining which isolated world the script is executed in.
+    The world ID defining which isolated world the script is executed in. Besides these predefined
+    IDs custom IDs can be used, but must be integers between \c 0 and \c 256.
 
     \value MainWorld
            The world used by the page's web contents. It can be useful in order to expose custom

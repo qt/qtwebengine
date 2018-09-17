@@ -55,4 +55,14 @@
     \quotefromfile webenginewidgets/stylesheetbrowser/mainwindow.cpp
     \skipto MainWindow::removeStyleSheet
     \printuntil /^\}/
+
+    \section1 Files and Attributions
+
+    The example uses icons from the Tango Icon Library:
+
+    \table
+    \row
+        \li \l{stylesheetbrowser-tango}{Tango Icon Library}
+        \li Public Domain
+    \endtable
 */

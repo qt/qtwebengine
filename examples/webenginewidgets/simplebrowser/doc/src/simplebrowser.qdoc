@@ -327,9 +327,13 @@
     finished or when an error occurs. See \c downloadmanagerwidget.cpp for an
     example of how these signals can be handled.
 
-    \section1 Licensing
+    \section1 Files and Attributions
 
-    All icons used in the example, with the exception of \c{AppLogoColor.png},
-    originate from the public domain
-    \l{http://tango.freedesktop.org/Tango_Icon_Library}{Tango Icon Library}.
+    The example uses icons from the Tango Icon Library:
+
+    \table
+    \row
+        \li \l{simplebrowser-tango}{Tango Icon Library}
+        \li Public Domain
+    \endtable
 */

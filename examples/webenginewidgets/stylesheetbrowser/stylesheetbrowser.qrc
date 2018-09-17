@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>view-refresh.png</file>
+        <file alias="view-refresh.png">3rdparty/view-refresh.png</file>
     </qresource>
 </RCC>

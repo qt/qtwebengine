@@ -7,3 +7,6 @@ QT_PRIVATE += quick-private gui-private core-private webenginecoreheaders-privat
 
 qtConfig(webengine-geolocation): QT += positioning
 qtConfig(webengine-webchannel): QT += webchannel
+
+# LTO does not work for Chromium at the moment, so disable it completely for core.
+CONFIG -= ltcg
