@@ -144,7 +144,9 @@ public:
     void modelChange(QAccessibleTableModelChangeEvent *event) override;
 };
 
-}
+const BrowserAccessibilityQt *ToBrowserAccessibilityQt(const BrowserAccessibility *obj);
+
+} // namespace content
 
 #endif // QT_NO_ACCESSIBILITY
 #endif

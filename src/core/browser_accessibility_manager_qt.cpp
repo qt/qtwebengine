@@ -52,18 +52,19 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
       BrowserAccessibilityFactory* factory)
 {
 #ifndef QT_NO_ACCESSIBILITY
-        return new BrowserAccessibilityManagerQt(0, initialTree, delegate);
+    return new BrowserAccessibilityManagerQt(nullptr, initialTree, delegate, factory);
 #else
-        return 0;
+    delete factory;
+    return nullptr;
 #endif // QT_NO_ACCESSIBILITY
 }
 
-BrowserAccessibility *BrowserAccessibilityFactoryQt::Create()
+BrowserAccessibility *BrowserAccessibility::Create()
 {
 #ifndef QT_NO_ACCESSIBILITY
     return new BrowserAccessibilityQt();
 #else
-    return 0;
+    return nullptr;
 #endif // QT_NO_ACCESSIBILITY
 }
 

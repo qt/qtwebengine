@@ -56,6 +56,11 @@ using QtWebEngineCore::toQt;
 
 namespace content {
 
+const BrowserAccessibilityQt *ToBrowserAccessibilityQt(const BrowserAccessibility *obj)
+{
+    return static_cast<const BrowserAccessibilityQt *>(obj);
+}
+
 BrowserAccessibilityQt::BrowserAccessibilityQt()
 {
     QAccessible::registerAccessibleInterface(this);
@@ -518,11 +523,11 @@ QAccessible::State BrowserAccessibilityQt::state() const
     if (HasState(ax::mojom::State::kLinked))
         state.linked = true;
     if (HasState(ax::mojom::State::kMultiline))
-    {} // FIXME:    state.multiLine = true;
+        state.multiLine = true;
     if (HasState(ax::mojom::State::kMultiselectable))
         state.multiSelectable = true;
     if (HasState(ax::mojom::State::kProtected))
-    {} // FIXME
+        state.passwordEdit = true;
     if (HasState(ax::mojom::State::kRequired))
     {} // FIXME
     if (HasState(ax::mojom::State::kRichlyEditable))
@@ -530,7 +535,7 @@ QAccessible::State BrowserAccessibilityQt::state() const
     if (HasState(ax::mojom::State::kVertical))
     {} // FIXME
     if (HasState(ax::mojom::State::kVisited))
-    {} // FIXME
+        state.traversed = true;
 
     if (IsOffscreen())
         state.offscreen = true;
@@ -538,11 +543,14 @@ QAccessible::State BrowserAccessibilityQt::state() const
         state.focused = true;
     if (GetBoolAttribute(ax::mojom::BoolAttribute::kBusy))
         state.busy = true;
+    if (GetBoolAttribute(ax::mojom::BoolAttribute::kModal))
+        state.modal = true;
     if (HasBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
         state.selectable = true;
         state.selected = GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
     }
     if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState)) {
+        state.checkable = true;
         const ax::mojom::CheckedState checkedState =
                 static_cast<ax::mojom::CheckedState>(GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
         switch (checkedState) {
