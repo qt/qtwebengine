@@ -53,6 +53,7 @@ SOURCES = \
         common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
+        compositor.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
@@ -139,6 +140,7 @@ HEADERS = \
         color_chooser_controller.h \
         common/qt_messages.h \
         common/user_script_data.h \
+        compositor.h \
         content_client_qt.h \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \

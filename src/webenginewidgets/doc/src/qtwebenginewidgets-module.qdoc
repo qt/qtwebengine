@@ -41,7 +41,9 @@
 
     \snippet qtwebenginewidgets_build_snippet.qdoc 1
 
+    \if !defined(qtforpython)
     To link against the module, add the following to your qmake project file:
 
     \snippet qtwebenginewidgets_build_snippet.qdoc 0
+    \endif
 */

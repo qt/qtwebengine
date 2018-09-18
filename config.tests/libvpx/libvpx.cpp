@@ -26,15 +26,16 @@
 **
 ****************************************************************************/
 
-#include <vpx/svc_context.h>
-#include <vpx/vpx_frame_buffer.h>
-#include <vpx/vp8dx.h>
-
-#ifndef VPX_CTRL_VPXD_GET_LAST_QUANTIZER
-#error "This version of libvpx is too old, it is missing VPX_CTRL_VPXD_GET_LAST_QUANTIZER define"
-#endif
+#include <vpx/vpx_encoder.h>
 
 int main(int, char **)
 {
+    vpx_codec_cx_pkt pkt;
+    // Members added (as ints) by
+    // https://chromium-review.googlesource.com/c/webm/libvpx/+/798222
+    // And changed to int arrays by
+    //  https://chromium-review.googlesource.com/c/webm/libvpx/+/879089
+    pkt.data.frame.width[0] = 0u;
+    pkt.data.frame.height[0] = 0u;
     return 0;
 }

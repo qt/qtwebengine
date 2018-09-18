@@ -20,14 +20,6 @@ Module {
         Signal { name: "toggled" }
         Signal { name: "triggered" }
         Signal {
-            name: "textChanged"
-            Parameter { name: "text"; type: "string" }
-        }
-        Signal {
-            name: "iconTextChanged"
-            Parameter { name: "iconText"; type: "string" }
-        }
-        Signal {
             name: "enabledChanged"
             Parameter { name: "enabled"; type: "bool" }
         }
@@ -180,10 +172,11 @@ Module {
             "QtWebEngine/WebEngineDownloadItem 1.4",
             "QtWebEngine/WebEngineDownloadItem 1.5",
             "QtWebEngine/WebEngineDownloadItem 1.6",
-            "QtWebEngine/WebEngineDownloadItem 1.7"
+            "QtWebEngine/WebEngineDownloadItem 1.7",
+            "QtWebEngine/WebEngineDownloadItem 1.8"
         ]
         isCreatable: false
-        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5, 6]
+        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5, 6, 7]
         Enum {
             name: "DownloadState"
             values: {
@@ -259,6 +252,13 @@ Module {
         Property { name: "isFinished"; revision: 5; type: "bool"; isReadonly: true }
         Property { name: "isPaused"; revision: 5; type: "bool"; isReadonly: true }
         Property { name: "isSavePageDownload"; revision: 6; type: "bool"; isReadonly: true }
+        Property {
+            name: "view"
+            revision: 7
+            type: "QQuickWebEngineView"
+            isReadonly: true
+            isPointer: true
+        }
         Signal { name: "savePageFormatChanged"; revision: 2 }
         Signal { name: "mimeTypeChanged"; revision: 1 }
         Signal { name: "typeChanged"; revision: 3 }
@@ -579,10 +579,11 @@ Module {
             "QtWebEngine/WebEngineSettings 1.4",
             "QtWebEngine/WebEngineSettings 1.5",
             "QtWebEngine/WebEngineSettings 1.6",
-            "QtWebEngine/WebEngineSettings 1.7"
+            "QtWebEngine/WebEngineSettings 1.7",
+            "QtWebEngine/WebEngineSettings 1.8"
         ]
         isCreatable: false
-        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5, 6]
+        exportMetaObjectRevisions: [0, 1, 2, 3, 4, 5, 6, 7]
         Enum {
             name: "UnknownUrlSchemePolicy"
             values: {
@@ -620,6 +621,7 @@ Module {
         Property { name: "playbackRequiresUserGesture"; revision: 6; type: "bool" }
         Property { name: "webRTCPublicInterfacesOnly"; revision: 6; type: "bool" }
         Property { name: "javascriptCanPaste"; revision: 6; type: "bool" }
+        Property { name: "dnsPrefetchEnabled"; revision: 7; type: "bool" }
         Signal { name: "fullScreenSupportEnabledChanged"; revision: 1 }
         Signal { name: "screenCaptureEnabledChanged"; revision: 2 }
         Signal { name: "webGLEnabledChanged"; revision: 2 }
@@ -636,6 +638,7 @@ Module {
         Signal { name: "playbackRequiresUserGestureChanged"; revision: 6 }
         Signal { name: "webRTCPublicInterfacesOnlyChanged"; revision: 6 }
         Signal { name: "javascriptCanPasteChanged"; revision: 6 }
+        Signal { name: "dnsPrefetchEnabledChanged"; revision: 7 }
     }
     Component {
         name: "QQuickWebEngineSingleton"
@@ -1132,6 +1135,7 @@ Module {
             revision: 7
             Parameter { name: "request"; type: "QWebEngineRegisterProtocolHandlerRequest" }
         }
+        Signal { name: "printRequested"; revision: 8 }
         Method {
             name: "runJavaScript"
             Parameter { type: "string" }

@@ -198,7 +198,7 @@ void WebPage::handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolH
 //! [registerProtocolHandlerRequested]
 
 #if QT_CONFIG(ssl)
-void WebPage::handleSelectClientCertificate(QWebEngineClientCertSelection selection)
+void WebPage::handleSelectClientCertificate(QWebEngineClientCertificateSelection selection)
 {
     // Just select one.
     selection.select(selection.certificates().at(0));

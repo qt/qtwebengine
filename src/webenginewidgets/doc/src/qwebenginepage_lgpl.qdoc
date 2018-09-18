@@ -718,9 +718,9 @@
     \since 5.7
 
     Runs the JavaScript code contained in \a scriptSource in the world specified by \a worldId.
-    The world ID values are the same as provided by QWebEngineScript::ScriptWorldId. Using the
-    \e runJavaScript() versions without the world ID is the same as running the script in the
-    \c MainWorld.
+    The world ID values are the same as provided by QWebEngineScript::ScriptWorldId, and between \c 0
+    and \c 256. Using the \e runJavaScript() versions without the world ID is the same as running the
+    script in the \c MainWorld.
 
     When the script has been executed, \a resultCallback is called with the result of the last
     executed statement. \c resultCallback can be any of a function pointer, a functor or a lambda,

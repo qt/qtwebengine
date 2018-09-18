@@ -43,16 +43,16 @@
 
 QT_BEGIN_NAMESPACE
 
-ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::PathSyntax, url::SCHEME_WITHOUT_AUTHORITY)
-ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::HostSyntax, url::SCHEME_WITH_HOST)
-ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::HostAndPortSyntax, url::SCHEME_WITH_HOST_AND_PORT)
-ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::HostPortAndUserInformationSyntax,
+ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::Syntax::Path, url::SCHEME_WITHOUT_AUTHORITY)
+ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::Syntax::Host, url::SCHEME_WITH_HOST)
+ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::Syntax::HostAndPort, url::SCHEME_WITH_HOST_AND_PORT)
+ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::Syntax::HostPortAndUserInformation,
                    url::SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION)
 
-ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::PortUnspecified, url::PORT_UNSPECIFIED);
+ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::PortUnspecified, url::PORT_UNSPECIFIED)
 
-ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::Secure, url::CustomScheme::Secure)
-ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::Local, url::CustomScheme::Local)
+ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::SecureScheme, url::CustomScheme::Secure)
+ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::LocalScheme, url::CustomScheme::Local)
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::LocalAccessAllowed, url::CustomScheme::LocalAccessAllowed)
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::NoAccessAllowed, url::CustomScheme::NoAccessAllowed)
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::ServiceWorkersAllowed, url::CustomScheme::ServiceWorkersAllowed)
@@ -91,10 +91,10 @@ public:
   int main(int argc, char **argv)
   {
       QWebEngineUrlScheme scheme("myscheme");
-      scheme.setSyntax(QWebEngineUrlScheme::HostAndPortSyntax);
+      scheme.setSyntax(QWebEngineUrlScheme::Syntax::HostAndPort);
       scheme.setDefaultPort(2345);
-      scheme.setFlags(QWebEngineUrlScheme::Secure);
-      QWebEngineUrlScheme::addScheme(scheme);
+      scheme.setFlags(QWebEngineUrlScheme::SecureScheme);
+      QWebEngineUrlScheme::registerScheme(scheme);
       ...
   }
   \endcode
@@ -113,25 +113,25 @@ public:
   To apply the same-origin policy to a custom URL scheme, WebEngine must be able
   to compute the origin (host and port combination) of a URL. The \c {Host...}
   options indicate that the URL scheme conforms to the standard URL syntax (like
-  \c http) and automatically enable the same-origin policy. The \c {PathSyntax}
+  \c http) and automatically enable the same-origin policy. The \c {Path}
   option indicates that the URL scheme uses a non-standard syntax and that the
   same-origin policy cannot be applied.
 
-  \value HostPortAndUserInformationSyntax
+  \value HostPortAndUserInformation
   The authority component of a URL of this type has all of the standard
   elements: host, port, user name, and password. A URL without a port will use
   the \l defaultPort (which \e must not be \l PortUnspecified).
 
-  \value HostAndPortSyntax
+  \value HostAndPort
   The authority component of a URL of this type has only the host and port
   elements. A URL without a port will use the \l defaultPort (which \e must not
   be \l PortUnspecified).
 
-  \value HostSyntax
+  \value Host
   The authority component of a URL of this type has only the host part and no
   port. The \l defaultPort \e must be set to \l PortUnspecified.
 
-  \value PathSyntax
+  \value Path
   A URL of this type has no authority component at all. Everything after scheme
   name and separator character (:) will be preserved as is without validation
   or canonicalization. All URLs of such a scheme will be considered as having
@@ -152,7 +152,7 @@ public:
 
   This enum type specifies security options that should apply to a URL scheme.
 
-  \value Secure
+  \value SecureScheme
   Indicates that the URL scheme is
   \l{https://www.w3.org/TR/powerful-features/#is-origin-trustworthy}{potentially
   trustworthy}. This flag should only be applied to URL schemes which ensure
@@ -161,7 +161,7 @@ public:
   (authenticated and encrypted) and \c qrc (local resources only), whereas \c
   http is an example of an insecure scheme.
 
-  \value Local
+  \value LocalScheme
   Indicates that the URL scheme provides access to local resources. The purpose
   of this flag is to prevent network content from accessing local resources.
   Only schemes with the \c LocalAccessAllowed flag may load resources from a
@@ -237,7 +237,7 @@ QWebEngineUrlScheme::~QWebEngineUrlScheme() = default;
 /*!
   Returns \c true if this and \a that object are equal.
 */
-bool QWebEngineUrlScheme::operator==(const QWebEngineUrlScheme &that)
+bool QWebEngineUrlScheme::operator==(const QWebEngineUrlScheme &that) const
 {
     return (d == that.d)
         || (d->name == that.d->name
@@ -247,7 +247,7 @@ bool QWebEngineUrlScheme::operator==(const QWebEngineUrlScheme &that)
 }
 
 /*!
-  \fn bool QWebEngineUrlScheme::operator!=(const QWebEngineUrlScheme &that)
+  \fn bool QWebEngineUrlScheme::operator!=(const QWebEngineUrlScheme &that) const
 
   Returns \c true if this and \a that object are not equal.
 */
@@ -279,7 +279,7 @@ void QWebEngineUrlScheme::setName(const QByteArray &newValue)
 /*!
   Returns the syntax type of this URL scheme.
 
-  The default value is \c PathSyntax.
+  The default value is \c Path.
 
   \sa Syntax, setSyntax()
 */
@@ -351,9 +351,9 @@ void QWebEngineUrlScheme::setFlags(Flags newValue)
   \warning This function must be called early at application startup, before
   creating any WebEngine classes. Late calls will be ignored.
 
-  \sa findScheme()
+  \sa schemeByName()
 */
-void QWebEngineUrlScheme::addScheme(const QWebEngineUrlScheme &scheme)
+void QWebEngineUrlScheme::registerScheme(const QWebEngineUrlScheme &scheme)
 {
     url::CustomScheme::AddScheme(*scheme.d);
 }
@@ -362,9 +362,9 @@ void QWebEngineUrlScheme::addScheme(const QWebEngineUrlScheme &scheme)
   Returns the web engine URL scheme with the given \a name or the
   default-constructed scheme.
 
-  \sa addScheme()
+  \sa registerScheme()
 */
-QWebEngineUrlScheme QWebEngineUrlScheme::findScheme(const QByteArray &name)
+QWebEngineUrlScheme QWebEngineUrlScheme::schemeByName(const QByteArray &name)
 {
     base::StringPiece namePiece{name.data(), static_cast<size_t>(name.size())};
     if (const url::CustomScheme *cs = url::CustomScheme::FindScheme(namePiece))

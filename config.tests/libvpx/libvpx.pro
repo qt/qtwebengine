@@ -1,3 +1,4 @@
 SOURCES += libvpx.cpp
-PKGCONFIG += libvpx
+CONFIG += link_pkgconfig
+PKGCONFIG += vpx
 CONFIG -= qt

@@ -170,7 +170,7 @@ bool usingSoftwareDynamicGL()
 {
     if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
         return true;
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(QT_NO_OPENGL)
     HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
     wchar_t path[MAX_PATH];
     DWORD size = GetModuleFileName(handle, path, MAX_PATH);
@@ -329,10 +329,10 @@ WebEngineContext::WebEngineContext()
 #endif
 
     QWebEngineUrlScheme qrcScheme(QByteArrayLiteral("qrc"));
-    qrcScheme.setFlags(QWebEngineUrlScheme::Secure
+    qrcScheme.setFlags(QWebEngineUrlScheme::SecureScheme
                        | QWebEngineUrlScheme::LocalAccessAllowed
                        | QWebEngineUrlScheme::ViewSourceAllowed);
-    QWebEngineUrlScheme::addScheme(qrcScheme);
+    QWebEngineUrlScheme::registerScheme(qrcScheme);
 
     // Allow us to inject javascript like any webview toolkit.
     content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
@@ -516,8 +516,10 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
         parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
 #ifdef Q_OS_WIN
-        if (enableWebGLSoftwareRendering)
+        if (enableWebGLSoftwareRendering) {
             parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
+            parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlacklist);
+        }
 #endif
     } else {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);

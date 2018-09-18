@@ -57,7 +57,7 @@ msvc {
     equals(MSVC_VER, 15.0) {
         MSVS_VERSION = 2017
     } else {
-        fatal("Visual Studio compiler version \"$$MSVC_VER\" is not supported by Qt WebEngine")
+        error("Visual Studio compiler version \"$$MSVC_VER\" is not supported by Qt WebEngine")
     }
 
     gn_args += visual_studio_version=$$MSVS_VERSION
@@ -71,5 +71,5 @@ msvc {
     gn_args += target_cpu=\"$$GN_TARGET_CPU\"
 
 } else {
-    fatal("Qt WebEngine for Windows can only be built with the Microsoft Visual Studio C++ compiler")
+    error("Qt WebEngine for Windows can only be built with the Microsoft Visual Studio C++ compiler")
 }

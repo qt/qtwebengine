@@ -58,16 +58,7 @@
 #include <QtGui/qaccessible.h>
 #include <QtGui/QTouchEvent>
 
-#include "delegated_frame_node.h"
-
 QT_BEGIN_NAMESPACE
-class QEvent;
-class QFocusEvent;
-class QHoverEvent;
-class QKeyEvent;
-class QMouseEvent;
-class QVariant;
-class QWheelEvent;
 class QAccessibleInterface;
 QT_END_NAMESPACE
 
@@ -77,6 +68,8 @@ class RenderWidgetHostImpl;
 }
 
 namespace QtWebEngineCore {
+
+class Compositor;
 
 struct MultipleMouseClickHelper
 {
@@ -99,7 +92,6 @@ class RenderWidgetHostViewQt
     , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
-    , public viz::BeginFrameObserverBase
 #ifndef QT_NO_ACCESSIBILITY
     , public QAccessible::ActivationObserver
 #endif // QT_NO_ACCESSIBILITY
@@ -173,21 +165,20 @@ public:
     void windowChanged() override;
     bool forwardEvent(QEvent *) override;
     QVariant inputMethodQuery(Qt::InputMethodQuery query) override;
+    void closePopup() override;
 
     // Overridden from content::TextInputManager::Observer
     void OnUpdateTextInputStateCalled(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view, bool did_update_state) override;
     void OnSelectionBoundsChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view) override;
     void OnTextSelectionChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view) override;
 
-    // cc::BeginFrameObserverBase implementation.
-    bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;
-    void OnBeginFrameSourcePausedChanged(bool paused) override;
-
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
     void handleWheelEvent(QWheelEvent*);
     void handleTouchEvent(QTouchEvent*);
+#if QT_CONFIG(tabletevent)
     void handleTabletEvent(QTabletEvent *ev);
+#endif
 #ifndef QT_NO_GESTURES
     void handleGestureEvent(QNativeGestureEvent *);
 #endif
@@ -217,7 +208,6 @@ public:
     gfx::Vector2dF lastScrollOffset() const { return m_lastScrollOffset; }
 
 private:
-    void sendDelegatedFrameAck();
     void processMotionEvent(const ui::MotionEvent &motionEvent);
     void clearPreviousTouchMotionState();
     QList<QTouchEvent::TouchPoint> mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints);
@@ -230,7 +220,6 @@ private:
     content::RenderFrameHost *getFocusedFrameHost();
     ui::TextInputType getTextInputType() const;
 
-    content::RenderWidgetHostImpl *m_host;
     ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
     bool m_sendMotionActionDown;
@@ -239,25 +228,18 @@ private:
     QList<QTouchEvent::TouchPoint> m_previousTouchPoints;
     std::unique_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
-    QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
-    std::vector<viz::ReturnedResource> m_resourcesToRelease;
-    bool m_needsDelegatedFrameAck;
+    std::unique_ptr<Compositor> m_compositor;
     LoadVisuallyCommittedState m_loadVisuallyCommittedState;
 
     QMetaObject::Connection m_adapterClientDestroyedConnection;
     WebContentsAdapterClient *m_adapterClient;
     MultipleMouseClickHelper m_clickHelper;
-    viz::mojom::CompositorFrameSinkClient *m_rendererCompositorFrameSink;
 
     bool m_imeInProgress;
     bool m_receivedEmptyImeEvent;
     QPoint m_previousMousePosition;
 
     bool m_initPending;
-
-    std::unique_ptr<viz::SyntheticBeginFrameSource> m_beginFrameSource;
-    bool m_needsBeginFrames;
-    bool m_addedFrameObserver;
 
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;

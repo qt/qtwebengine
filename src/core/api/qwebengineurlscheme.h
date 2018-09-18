@@ -43,6 +43,7 @@
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
@@ -50,12 +51,13 @@ QT_BEGIN_NAMESPACE
 class QWebEngineUrlSchemePrivate;
 
 class QWEBENGINECORE_EXPORT QWebEngineUrlScheme {
+    Q_GADGET
 public:
-    enum Syntax {
-        HostPortAndUserInformationSyntax,
-        HostAndPortSyntax,
-        HostSyntax,
-        PathSyntax,
+    enum class Syntax {
+        HostPortAndUserInformation,
+        HostAndPort,
+        Host,
+        Path,
     };
 
     enum SpecialPort {
@@ -63,8 +65,8 @@ public:
     };
 
     enum Flag {
-        Secure = 0x1,
-        Local = 0x2,
+        SecureScheme = 0x1,
+        LocalScheme = 0x2,
         LocalAccessAllowed = 0x4,
         NoAccessAllowed = 0x8,
         ServiceWorkersAllowed = 0x10,
@@ -72,9 +74,10 @@ public:
         ContentSecurityPolicyIgnored = 0x40,
     };
     Q_DECLARE_FLAGS(Flags, Flag)
+    Q_FLAG(Flags)
 
     QWebEngineUrlScheme();
-    QWebEngineUrlScheme(const QByteArray &name);
+    explicit QWebEngineUrlScheme(const QByteArray &name);
 
     QWebEngineUrlScheme(const QWebEngineUrlScheme &that);
     QWebEngineUrlScheme &operator=(const QWebEngineUrlScheme &that);
@@ -84,8 +87,8 @@ public:
 
     ~QWebEngineUrlScheme();
 
-    bool operator==(const QWebEngineUrlScheme &that);
-    bool operator!=(const QWebEngineUrlScheme &that) { return !(*this == that); }
+    bool operator==(const QWebEngineUrlScheme &that) const;
+    bool operator!=(const QWebEngineUrlScheme &that) const { return !(*this == that); }
 
     QByteArray name() const;
     void setName(const QByteArray &newValue);
@@ -99,8 +102,8 @@ public:
     Flags flags() const;
     void setFlags(Flags newValue);
 
-    static void addScheme(const QWebEngineUrlScheme &scheme);
-    static QWebEngineUrlScheme findScheme(const QByteArray &name);
+    static void registerScheme(const QWebEngineUrlScheme &scheme);
+    static QWebEngineUrlScheme schemeByName(const QByteArray &name);
 
 private:
     QWebEngineUrlScheme(QWebEngineUrlSchemePrivate *d);

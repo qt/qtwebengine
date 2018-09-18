@@ -53,7 +53,6 @@
 
 #include "qtwebenginecoreglobal_p.h"
 
-#include <QtCore/QAtomicInt>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QSharedData>
 #include <QtCore/QString>

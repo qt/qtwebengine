@@ -376,7 +376,11 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     if (!m_faviconManager->hasCandidate())
         m_viewClient->iconChanged(QUrl());
 
-    EmitLoadFinished(true, toQt(validated_url));
+    content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
+    int http_statuscode = 0;
+    if (entry)
+       http_statuscode = entry->GetHttpStatusCode();
+    EmitLoadFinished(true /* success */ , toQt(validated_url), false /* isErrorPage */, http_statuscode);
 }
 
 void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates)

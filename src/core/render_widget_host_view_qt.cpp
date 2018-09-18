@@ -43,7 +43,7 @@
 #include "browser_accessibility_manager_qt.h"
 #include "browser_accessibility_qt.h"
 #include "chromium_overrides.h"
-#include "delegated_frame_node.h"
+#include "compositor.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
@@ -321,21 +321,15 @@ bool isAccessibilityEnabled() {
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
     : content::RenderWidgetHostViewBase::RenderWidgetHostViewBase(widget)
-    , m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_sendMotionActionDown(false)
     , m_touchMotionStarted(false)
-    , m_chromiumCompositorData(new ChromiumCompositorData)
-    , m_needsDelegatedFrameAck(false)
+    , m_compositor(new Compositor)
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
-    , m_rendererCompositorFrameSink(0)
     , m_imeInProgress(false)
     , m_receivedEmptyImeEvent(false)
     , m_initPending(false)
-    , m_beginFrameSource(nullptr)
-    , m_needsBeginFrames(false)
-    , m_addedFrameObserver(false)
     , m_backgroundColor(SK_ColorWHITE)
     , m_imState(0)
     , m_anchorPositionWithinSelection(-1)
@@ -344,11 +338,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_emptyPreviousSelection(true)
     , m_wheelAckPending(false)
 {
-    auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
-    m_beginFrameSource.reset(new viz::DelayBasedBeginFrameSource(
-            std::make_unique<viz::DelayBasedTimeSource>(task_runner), 0));
-
-    m_host->SetView(this);
+    host()->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
     if (isAccessibilityEnabled()) {
         QAccessible::installActivationObserver(this);
@@ -378,6 +368,7 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
 {
     m_delegate.reset(delegate);
+    m_compositor->setViewDelegate(delegate);
 }
 
 void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterClient)
@@ -477,7 +468,7 @@ void RenderWidgetHostViewQt::Focus()
 {
     if (!IsPopup())
         m_delegate->setKeyboardFocus();
-    m_host->Focus();
+    host()->Focus();
 }
 
 bool RenderWidgetHostViewQt::HasFocus() const
@@ -528,8 +519,8 @@ void RenderWidgetHostViewQt::SetBackgroundColor(SkColor color)
     // Set the background of the compositor if necessary
     m_delegate->setClearColor(toQt(color));
     // Set the background of the blink::FrameView
-    m_host->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
-    m_host->Send(new RenderViewObserverQt_SetBackgroundColor(m_host->GetRoutingID(), color));
+    host()->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
+    host()->Send(new RenderViewObserverQt_SetBackgroundColor(host()->GetRoutingID(), color));
 }
 
 // Return value indicates whether the mouse is locked successfully or not.
@@ -547,7 +538,7 @@ void RenderWidgetHostViewQt::UnlockMouse()
     mouse_locked_ = false;
     m_delegate->unlockMouse();
     qApp->restoreOverrideCursor();
-    m_host->LostMouseLock();
+    host()->LostMouseLock();
 }
 
 void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
@@ -752,10 +743,7 @@ void RenderWidgetHostViewQt::DisplayTooltipText(const base::string16 &tooltip_te
 
 void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient *frameSink)
 {
-    // Accumulated resources belong to the old RendererCompositorFrameSink and
-    // should not be returned.
-    m_resourcesToRelease.clear();
-    m_rendererCompositorFrameSink = frameSink;
+    m_compositor->setFrameSinkClient(frameSink);
 }
 
 void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, viz::mojom::HitTestRegionListPtr)
@@ -770,11 +758,6 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
         // FIXME: update frame_size and device_scale_factor?
         // FIXME: showPrimarySurface()?
     }
-    Q_ASSERT(!m_needsDelegatedFrameAck);
-    m_needsDelegatedFrameAck = true;
-    m_chromiumCompositorData->previousFrameData = std::move(m_chromiumCompositorData->frameData);
-    m_chromiumCompositorData->frameDevicePixelRatio = frame.metadata.device_scale_factor;
-    m_chromiumCompositorData->frameData = std::move(frame);
 
     // Force to process swap messages
     uint32_t frame_token = frame.metadata.frame_token;
@@ -784,9 +767,9 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
     // Support experimental.viewport.devicePixelRatio, see GetScreenInfo implementation below.
     float dpiScale = this->dpiScale();
     if (dpiScale != 0 && dpiScale != 1)
-        m_chromiumCompositorData->frameDevicePixelRatio /= dpiScale;
+        frame.metadata.device_scale_factor /= dpiScale;
 
-    m_delegate->update();
+    m_compositor->submitFrame(std::move(frame));
 
     if (m_loadVisuallyCommittedState == NotCommitted) {
         m_loadVisuallyCommittedState = DidFirstCompositorFrameSwap;
@@ -973,60 +956,46 @@ void RenderWidgetHostViewQt::selectionChanged()
 
 void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
 {
-    m_host->ForwardGestureEvent(ui::CreateWebGestureEventFromGestureEventData(gesture));
+    host()->ForwardGestureEvent(ui::CreateWebGestureEventFromGestureEventData(gesture));
 }
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 {
-    DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
-    if (!frameNode)
-        frameNode = new DelegatedFrameNode;
-
-    frameNode->commit(m_chromiumCompositorData.data(), &m_resourcesToRelease, m_delegate.get());
-
-    // This is possibly called from the Qt render thread, post the ack back to the UI
-    // to tell the child compositors to release resources and trigger a new frame.
-    if (m_needsDelegatedFrameAck) {
-        m_needsDelegatedFrameAck = false;
-        content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-            base::Bind(&RenderWidgetHostViewQt::sendDelegatedFrameAck, AsWeakPtr()));
-    }
-
-    return frameNode;
+    return m_compositor->updatePaintNode(oldNode);
 }
 
 void RenderWidgetHostViewQt::notifyResize()
 {
-    m_host->WasResized();
-    m_host->SendScreenRects();
+    host()->WasResized();
+    host()->SendScreenRects();
 }
 
 void RenderWidgetHostViewQt::notifyShown()
 {
-    m_host->WasShown(ui::LatencyInfo());
+    host()->WasShown(ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewQt::notifyHidden()
 {
-    m_host->WasHidden();
+    host()->WasHidden();
 }
 
 void RenderWidgetHostViewQt::windowBoundsChanged()
 {
-    m_host->SendScreenRects();
+    host()->SendScreenRects();
     if (m_delegate->window())
-        m_host->NotifyScreenInfoChanged();
+        host()->NotifyScreenInfoChanged();
 }
 
 void RenderWidgetHostViewQt::windowChanged()
 {
     if (m_delegate->window())
-        m_host->NotifyScreenInfoChanged();
+        host()->NotifyScreenInfoChanged();
 }
 
 bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
 {
-    Q_ASSERT(m_host->GetView());
+    Q_ASSERT(host()->GetView());
 
     switch (event->type()) {
     case QEvent::ShortcutOverride: {
@@ -1073,7 +1042,11 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::MouseMove:
         // Skip second MouseMove event when a window is being adopted, so that Chromium
         // can properly handle further move events.
-        if (m_adapterClient->isBeingAdopted())
+        // Also make sure the adapter client exists to prevent a null pointer dereference,
+        // because it's possible for a QWebEnginePagePrivate (adapter) instance to be destroyed,
+        // and then the OS (observed on Windows) might still send mouse move events to a still
+        // existing popup RWHVQDW instance.
+        if (m_adapterClient && m_adapterClient->isBeingAdopted())
             return false;
         handleMouseEvent(static_cast<QMouseEvent*>(event));
         break;
@@ -1091,12 +1064,14 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::TouchCancel:
         handleTouchEvent(static_cast<QTouchEvent*>(event));
         break;
+#if QT_CONFIG(tabletevent)
     case QEvent::TabletPress:
         Focus(); // Fall through.
     case QEvent::TabletRelease:
     case QEvent::TabletMove:
         handleTabletEvent(static_cast<QTabletEvent*>(event));
         break;
+#endif
 #ifndef QT_NO_GESTURES
     case QEvent::NativeGesture:
         handleGestureEvent(static_cast<QNativeGestureEvent *>(event));
@@ -1117,7 +1092,7 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
         break;
     case QEvent::HoverLeave:
     case QEvent::Leave:
-        m_host->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(event));
+        host()->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(event));
         break;
     default:
         return false;
@@ -1172,19 +1147,19 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
     }
 }
 
+void RenderWidgetHostViewQt::closePopup()
+{
+    // We notify the popup to be closed by telling it that it lost focus. WebKit does the rest
+    // (hiding the widget and automatic memory cleanup via
+    // RenderWidget::CloseWidgetSoon() -> RenderWidgetHostImpl::ShutdownAndDestroyWidget(true).
+    host()->SetActive(false);
+    host()->Blur();
+}
+
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
     Q_UNUSED(touch);
     const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
     m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, /*fixme: ?? */false);
-}
-
-void RenderWidgetHostViewQt::sendDelegatedFrameAck()
-{
-    m_beginFrameSource->DidFinishFrame(this);
-    std::vector<viz::ReturnedResource> resources;
-    m_resourcesToRelease.swap(resources);
-    if (m_rendererCompositorFrameSink)
-        m_rendererCompositorFrameSink->DidReceiveCompositorFrameAck(resources);
 }
 
 void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)
@@ -1196,7 +1171,7 @@ void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEve
     blink::WebTouchEvent touchEvent = ui::CreateWebTouchEventFromMotionEvent(motionEvent,
                                                                              result.moved_beyond_slop_region,
                                                                              false /*hovering, FIXME ?*/);
-    m_host->ForwardTouchEventWithLatencyInfo(touchEvent, CreateLatencyInfo(touchEvent));
+    host()->ForwardTouchEventWithLatencyInfo(touchEvent, CreateLatencyInfo(touchEvent));
 }
 
 QList<QTouchEvent::TouchPoint> RenderWidgetHostViewQt::mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints)
@@ -1249,11 +1224,11 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         // We're getting the composition result in a key event.
         if (ev->key() != 0) {
             // The key event is not a result of an IME composition. Cancel IME.
-            m_host->ImeCancelComposition();
+            host()->ImeCancelComposition();
             m_receivedEmptyImeEvent = false;
         } else {
             if (ev->type() == QEvent::KeyRelease) {
-                m_host->ImeCommitText(toString16(ev->text()),
+                host()->ImeCommitText(toString16(ev->text()),
                                       std::vector<ui::ImeTextSpan>(),
                                       gfx::Range::InvalidRange(),
                                       0);
@@ -1271,13 +1246,13 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         content::EditCommands commands;
         commands.emplace_back(m_editCommand, "");
         m_editCommand.clear();
-        m_host->ForwardKeyboardEventWithCommands(webEvent, latency, &commands, nullptr);
+        host()->ForwardKeyboardEventWithCommands(webEvent, latency, &commands, nullptr);
         return;
     }
 
     bool keyDownTextInsertion = webEvent.GetType() == blink::WebInputEvent::kRawKeyDown && webEvent.text[0];
     webEvent.skip_in_browser = keyDownTextInsertion;
-    m_host->ForwardKeyboardEvent(webEvent);
+    host()->ForwardKeyboardEvent(webEvent);
 
     if (keyDownTextInsertion) {
         // Blink won't consume the RawKeyDown, but rather the Char event in this case.
@@ -1285,7 +1260,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         // The same os_event will be set on both NativeWebKeyboardEvents.
         webEvent.skip_in_browser = false;
         webEvent.SetType(blink::WebInputEvent::kChar);
-        m_host->ForwardKeyboardEvent(webEvent);
+        host()->ForwardKeyboardEvent(webEvent);
     }
 }
 
@@ -1294,7 +1269,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     // Reset input manager state
     m_imState = 0;
 
-    if (!m_host)
+    if (!host())
         return;
 
     QString commitString = ev->commitString();
@@ -1408,7 +1383,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             m_receivedEmptyImeEvent = false;
             if (m_imeInProgress) {
                 m_imeInProgress = false;
-                m_host->ImeCancelComposition();
+                host()->ImeCancelComposition();
             }
         }
 
@@ -1419,7 +1394,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
     // Finish compostion: insert or erase text.
     if (!commitString.isEmpty() || replacementLength > 0) {
-        m_host->ImeCommitText(toString16(commitString),
+        host()->ImeCommitText(toString16(commitString),
                               underlines,
                               replacementRange,
                               0);
@@ -1430,7 +1405,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     // Be aware of that, we might get a commit string and a pre-edit string in a single event and
     // this means a new composition.
     if (!preeditString.isEmpty()) {
-        m_host->ImeSetComposition(toString16(preeditString),
+        host()->ImeSetComposition(toString16(preeditString),
                                   underlines,
                                   replacementRange,
                                   selectionRange.start(),
@@ -1467,7 +1442,7 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
     if (!m_wheelAckPending) {
         Q_ASSERT(m_pendingWheelEvents.isEmpty());
         m_wheelAckPending = true;
-        m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev, dpiScale()));
+        host()->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev, dpiScale()));
         return;
     }
     if (!m_pendingWheelEvents.isEmpty()) {
@@ -1483,7 +1458,7 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &/*ev
     m_wheelAckPending = false;
     if (!m_pendingWheelEvents.isEmpty()) {
         m_wheelAckPending = true;
-        m_host->ForwardWheelEvent(m_pendingWheelEvents.takeFirst());
+        host()->ForwardWheelEvent(m_pendingWheelEvents.takeFirst());
     }
     // TODO: We could forward unhandled wheelevents to our parent.
 }
@@ -1500,7 +1475,7 @@ void RenderWidgetHostViewQt::handleGestureEvent(QNativeGestureEvent *ev)
     const Qt::NativeGestureType type = ev->gestureType();
     // These are the only supported gestures by Chromium so far.
     if (type == Qt::ZoomNativeGesture || type == Qt::SmartZoomNativeGesture) {
-        m_host->ForwardGestureEvent(WebEventFactory::toWebGestureEvent(
+        host()->ForwardGestureEvent(WebEventFactory::toWebGestureEvent(
                                         ev,
                                         static_cast<double>(dpiScale())));
     }
@@ -1617,10 +1592,12 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
     }
 }
 
+#if QT_CONFIG(tabletevent)
 void RenderWidgetHostViewQt::handleTabletEvent(QTabletEvent *event)
 {
     handlePointerEvent<QTabletEvent>(event);
 }
+#endif
 
 template<class T>
 void RenderWidgetHostViewQt::handlePointerEvent(T *event)
@@ -1668,20 +1645,20 @@ void RenderWidgetHostViewQt::handlePointerEvent(T *event)
 #endif
     }
 
-    m_host->ForwardMouseEvent(webEvent);
+    host()->ForwardMouseEvent(webEvent);
 }
 
 void RenderWidgetHostViewQt::handleHoverEvent(QHoverEvent *ev)
 {
-    m_host->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev, dpiScale()));
+    host()->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev, dpiScale()));
 }
 
 void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
 {
     if (ev->gotFocus()) {
-        m_host->GotFocus();
-        m_host->SetActive(true);
-        content::RenderViewHostImpl *viewHost = content::RenderViewHostImpl::From(m_host);
+        host()->GotFocus();
+        host()->SetActive(true);
+        content::RenderViewHostImpl *viewHost = content::RenderViewHostImpl::From(host());
         Q_ASSERT(viewHost);
         if (ev->reason() == Qt::TabFocusReason)
             viewHost->SetInitialFocus(false);
@@ -1689,50 +1666,20 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
             viewHost->SetInitialFocus(true);
         ev->accept();
     } else if (ev->lostFocus()) {
-        m_host->SetActive(false);
-        m_host->Blur();
+        host()->SetActive(false);
+        host()->Blur();
         ev->accept();
     }
 }
 
 void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
 {
-    m_needsBeginFrames = needs_begin_frames;
-    updateNeedsBeginFramesInternal();
-}
-
-void RenderWidgetHostViewQt::updateNeedsBeginFramesInternal()
-{
-    Q_ASSERT(m_beginFrameSource);
-
-    if (m_addedFrameObserver == m_needsBeginFrames)
-        return;
-
-    if (m_needsBeginFrames)
-        m_beginFrameSource->AddObserver(this);
-    else
-        m_beginFrameSource->RemoveObserver(this);
-    m_addedFrameObserver = m_needsBeginFrames;
-}
-
-bool RenderWidgetHostViewQt::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args)
-{
-    m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
-    if (m_rendererCompositorFrameSink)
-        m_rendererCompositorFrameSink->OnBeginFrame(args);
-    return true;
-}
-
-void RenderWidgetHostViewQt::OnBeginFrameSourcePausedChanged(bool paused)
-{
-    // Ignored for now.  If the begin frame source is paused, the renderer
-    // doesn't need to be informed about it and will just not receive more
-    // begin frames.
+    m_compositor->setNeedsBeginFrames(needs_begin_frames);
 }
 
 content::RenderFrameHost *RenderWidgetHostViewQt::getFocusedFrameHost()
 {
-    content::RenderViewHostImpl *viewHost = content::RenderViewHostImpl::From(m_host);
+    content::RenderViewHostImpl *viewHost = content::RenderViewHostImpl::From(host());
     if (!viewHost)
         return nullptr;
 

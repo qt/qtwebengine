@@ -8,7 +8,8 @@ SUBDIRS += \
     inspectorserver \
     publicapi \
     qquickwebenginedefaultsurfaceformat \
-    qquickwebengineview
+    qquickwebengineview \
+    qtbug-70248
 
 qtConfig(webengine-testsupport) {
     SUBDIRS += \
@@ -17,4 +18,4 @@ qtConfig(webengine-testsupport) {
 }
 
 # QTBUG-66055
-boot2qt: SUBDIRS -= inspectorserver qquickwebenginedefaultsurfaceformat qquickwebengineview qmltests dialogs
+boot2qt: SUBDIRS -= inspectorserver qquickwebenginedefaultsurfaceformat qquickwebengineview qmltests dialogs qtbug-70248

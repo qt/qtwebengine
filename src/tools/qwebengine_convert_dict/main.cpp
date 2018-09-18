@@ -17,6 +17,7 @@
 ******************************************************************************/
 
 #include <base/at_exit.h>
+#include <base/containers/span.h>
 #include <base/files/file_path.h>
 #include <base/files/file_util.h>
 #include <base/i18n/icu_util.h>
@@ -61,6 +62,20 @@ inline QString toQt(const std::string &string)
     return QString::fromStdString(string);
 }
 
+template<class T>
+QTextStream &operator<<(QTextStream &out, base::span<T> span)
+{
+    out << '[';
+    QString prefix;
+    for (const auto &element : span) {
+        out << prefix;
+        out << element;
+        prefix = QStringLiteral(",");
+    }
+    out << ']';
+    return out;
+}
+
 // Compares the given word list with the serialized trie to make sure they
 // are the same.
 inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
@@ -86,22 +101,23 @@ inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
         }
 
         if (org_words[i].first != buf) {
-            out << "Word doesn't match, word #" << buf << endl;
+            out << "Word does not match!\n"
+                << "  Index:    " << i << "\n"
+                << "  Expected: " << QString::fromStdString(org_words[i].first) << "\n"
+                << "  Actual:   " << QString::fromUtf8(buf) << endl;
             return false;
         }
 
-        if (affix_matches != static_cast<int>(org_words[i].second.size())) {
-            out << "Different number of affix indices, word #" << buf << endl;
-            return false;
-        }
+        base::span<const int> expectedAffixes(org_words[i].second);
+        base::span<const int> actualAffixes(affix_ids, affix_matches);
 
-        // Check the individual affix indices.
-        for (size_t affix_index = 0; affix_index < org_words[i].second.size();
-             affix_index++) {
-            if (affix_ids[affix_index] != org_words[i].second[affix_index]) {
-                out <<  "Index doesn't match, word #" <<  buf << endl;
-                return false;
-            }
+        if (expectedAffixes != actualAffixes) {
+            out << "Affixes do not match!\n"
+                << "  Index:    " << i << "\n"
+                << "  Word:     " << QString::fromUtf8(buf) << "\n"
+                << "  Expected: " << expectedAffixes << "\n"
+                << "  Actual:   " << actualAffixes << endl;
+            return false;
         }
     }
 

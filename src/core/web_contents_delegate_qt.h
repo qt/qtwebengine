@@ -56,10 +56,8 @@ QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 QT_FORWARD_DECLARE_CLASS(ClientCertSelectController)
 
 namespace content {
-    class BrowserContext;
     class ColorChooser;
     class SiteInstance;
-    class RenderViewHost;
     class JavaScriptDialogManager;
     class WebContents;
     struct WebPreferences;

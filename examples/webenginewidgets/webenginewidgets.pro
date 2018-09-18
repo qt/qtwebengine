@@ -10,10 +10,11 @@ SUBDIRS += \
     html2pdf \
     simplebrowser \
     stylesheetbrowser \
-    videoplayer
+    videoplayer \
+    webui
 
 qtConfig(webengine-geolocation): SUBDIRS += maps
-qtCondif(webengine-webchannel): SUBDIRS += markdowneditor
+qtConfig(webengine-webchannel): SUBDIRS += markdowneditor
 
 qtConfig(webengine-spellchecker):!qtConfig(webengine-native-spellchecker):!cross_compile {
     SUBDIRS += spellchecker

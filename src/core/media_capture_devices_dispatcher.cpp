@@ -114,7 +114,16 @@ void getDevicesForDesktopCapture(
 
 content::DesktopMediaID getDefaultScreenId()
 {
-#if QT_CONFIG(webengine_webrtc)
+    // While this function is executing another thread may also want to create a
+    // DesktopCapturer [1]. Unfortunately, creating a DesktopCapturer is not
+    // thread safe on X11 due to the use of webrtc::XErrorTrap. It's safe to
+    // disable this code on X11 since we don't actually need to create a
+    // DesktopCapturer to get the screen id anyway
+    // (ScreenCapturerLinux::GetSourceList always returns 0 as the id).
+    //
+    // [1]: webrtc::InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread
+
+#if QT_CONFIG(webengine_webrtc) && !defined(USE_X11)
     // Source id patterns are different across platforms.
     // On Linux, the hardcoded value "0" is used.
     // On Windows, the screens are enumerated consecutively in increasing order from 0.

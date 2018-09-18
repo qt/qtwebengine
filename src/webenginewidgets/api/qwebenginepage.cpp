@@ -281,7 +281,7 @@ RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostVie
 void QWebEnginePagePrivate::initializationFinished()
 {
     if (m_backgroundColor != Qt::white)
-        adapter->backgroundColorChanged();
+        adapter->setBackgroundColor(m_backgroundColor);
 #if QT_CONFIG(webengine_webchannel)
     if (webChannel)
         adapter->setWebChannel(webChannel, webChannelWorldId);
@@ -902,7 +902,7 @@ QWebEnginePage::~QWebEnginePage()
     Q_D(QWebEnginePage);
     setDevToolsPage(nullptr);
     d->adapter->stopFinding();
-    QWebEngineViewPrivate::bind(d->view, 0);
+    QWebEngineViewPrivate::bind(nullptr, this, true);
 }
 
 QWebEngineHistory *QWebEnginePage::history() const
@@ -1007,7 +1007,7 @@ void QWebEnginePage::setBackgroundColor(const QColor &color)
     if (d->m_backgroundColor == color)
         return;
     d->m_backgroundColor = color;
-    d->adapter->backgroundColorChanged();
+    d->adapter->setBackgroundColor(color);
 }
 
 /*!
@@ -1679,7 +1679,7 @@ void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSele
 {
 #if QT_CONFIG(ssl)
     Q_Q(QWebEnginePage);
-    QWebEngineClientCertSelection certSelection(controller);
+    QWebEngineClientCertificateSelection certSelection(controller);
 
     Q_EMIT q->selectClientCertificate(certSelection);
 #else
@@ -1689,19 +1689,19 @@ void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSele
 
 #if QT_CONFIG(ssl)
 /*!
-    \fn void QWebEnginePage::selectClientCertificate(QWebEngineClientCertSelection clientCertSelection)
+    \fn void QWebEnginePage::selectClientCertificate(QWebEngineClientCertificateSelection clientCertificateSelection)
     \since 5.12
 
     This signal is emitted when a web site requests an SSL client certificate, and one or more were
     found in system's client certificate store.
 
     Handling the signal is asynchronous, and loading will be waiting until a certificate is selected,
-    or the last copy of \a clientCertSelection is destroyed.
+    or the last copy of \a clientCertificateSelection is destroyed.
 
-    If the signal is not handled, \a clientCertSelection is automatically destroyed, and loading
+    If the signal is not handled, \a clientCertificateSelection is automatically destroyed, and loading
     will continue without a client certificate.
 
-    \sa QWebEngineClientCertSelection
+    \sa QWebEngineClientCertificateSelection
 */
 #endif
 
@@ -2364,6 +2364,11 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
     object.
     It is the users responsibility to ensure the \a printer remains valid until \a resultCallback
     has been called.
+
+    \note The rendering of the current content into a temporary PDF document is asynchronous and does
+    not block the main thread. However, the subsequent rendering of PDF into \a printer runs on the
+    main thread and will therefore block the event loop. Moreover, printing runs on the browser
+    process, which is by default not sandboxed.
 
     The \a resultCallback must take a boolean as parameter. If printing was successful, this
     boolean will have the value \c true, otherwise, its value will be \c false.

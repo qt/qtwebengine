@@ -175,7 +175,7 @@ void tst_Dialogs::authenticationDialogRequested()
     QCOMPARE(dialog->type(), type);
     QCOMPARE(dialog->realm(),realm);
     QCOMPARE(dialog->url(), url);
-    QCOMPARE(dialog->proxyHost(), "localhost");
+    QCOMPARE(dialog->proxyHost(), QStringLiteral("localhost"));
 }
 
 void tst_Dialogs::javaScriptDialogRequested_data()

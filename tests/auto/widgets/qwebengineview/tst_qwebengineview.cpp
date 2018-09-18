@@ -187,6 +187,8 @@ private Q_SLOTS:
     void webUIURLs_data();
     void webUIURLs();
     void visibilityState();
+    void jsKeyboardEvent();
+    void deletePage();
 };
 
 // This will be called before the first test function is executed.
@@ -375,7 +377,7 @@ void tst_QWebEngineView::microFocusCoordinates()
     QVariant initialMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus);
 
     evaluateJavaScriptSync(webView.page(), "window.scrollBy(0, 50)");
-    QVERIFY(scrollSpy.wait());
+    QTRY_VERIFY(scrollSpy.count() > 0);
 
     QTRY_VERIFY(webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus).isValid());
     QVariant currentMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus);
@@ -2346,9 +2348,9 @@ void tst_QWebEngineView::imeJSInputEvents()
 
     // Simply committing text should not trigger any JS composition event.
     QTRY_COMPARE(logLines().count(), 3);
-    QCOMPARE(logLines()[0], "[object InputEvent] beforeinput commit");
-    QCOMPARE(logLines()[1], "[object TextEvent] textInput commit");
-    QCOMPARE(logLines()[2], "[object InputEvent] input commit");
+    QCOMPARE(logLines()[0], QStringLiteral("[object InputEvent] beforeinput commit"));
+    QCOMPARE(logLines()[1], QStringLiteral("[object TextEvent] textInput commit"));
+    QCOMPARE(logLines()[2], QStringLiteral("[object InputEvent] input commit"));
 
     evaluateJavaScriptSync(view.page(), "clear()");
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
@@ -2362,10 +2364,10 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().count(), 4);
-    QCOMPARE(logLines()[0], "[object CompositionEvent] compositionstart ");
-    QCOMPARE(logLines()[1], "[object InputEvent] beforeinput preedit");
-    QCOMPARE(logLines()[2], "[object CompositionEvent] compositionupdate preedit");
-    QCOMPARE(logLines()[3], "[object InputEvent] input preedit");
+    QCOMPARE(logLines()[0], QStringLiteral("[object CompositionEvent] compositionstart "));
+    QCOMPARE(logLines()[1], QStringLiteral("[object InputEvent] beforeinput preedit"));
+    QCOMPARE(logLines()[2], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[3], QStringLiteral("[object InputEvent] input preedit"));
 
     {
         QList<QInputMethodEvent::Attribute> attributes;
@@ -2376,11 +2378,11 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().count(), 9);
-    QCOMPARE(logLines()[4], "[object InputEvent] beforeinput commit");
-    QCOMPARE(logLines()[5], "[object CompositionEvent] compositionupdate commit");
-    QCOMPARE(logLines()[6], "[object TextEvent] textInput commit");
-    QCOMPARE(logLines()[7], "[object InputEvent] input commit");
-    QCOMPARE(logLines()[8], "[object CompositionEvent] compositionend commit");
+    QCOMPARE(logLines()[4], QStringLiteral("[object InputEvent] beforeinput commit"));
+    QCOMPARE(logLines()[5], QStringLiteral("[object CompositionEvent] compositionupdate commit"));
+    QCOMPARE(logLines()[6], QStringLiteral("[object TextEvent] textInput commit"));
+    QCOMPARE(logLines()[7], QStringLiteral("[object InputEvent] input commit"));
+    QCOMPARE(logLines()[8], QStringLiteral("[object CompositionEvent] compositionend commit"));
 
     evaluateJavaScriptSync(view.page(), "clear()");
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
@@ -2394,10 +2396,10 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().count(), 4);
-    QCOMPARE(logLines()[0], "[object CompositionEvent] compositionstart ");
-    QCOMPARE(logLines()[1], "[object InputEvent] beforeinput preedit");
-    QCOMPARE(logLines()[2], "[object CompositionEvent] compositionupdate preedit");
-    QCOMPARE(logLines()[3], "[object InputEvent] input preedit");
+    QCOMPARE(logLines()[0], QStringLiteral("[object CompositionEvent] compositionstart "));
+    QCOMPARE(logLines()[1], QStringLiteral("[object InputEvent] beforeinput preedit"));
+    QCOMPARE(logLines()[2], QStringLiteral("[object CompositionEvent] compositionupdate preedit"));
+    QCOMPARE(logLines()[3], QStringLiteral("[object InputEvent] input preedit"));
 
     {
         QList<QInputMethodEvent::Attribute> attributes;
@@ -2407,11 +2409,11 @@ void tst_QWebEngineView::imeJSInputEvents()
     }
 
     QTRY_COMPARE(logLines().count(), 9);
-    QCOMPARE(logLines()[4], "[object InputEvent] beforeinput ");
-    QCOMPARE(logLines()[5], "[object CompositionEvent] compositionupdate ");
-    QCOMPARE(logLines()[6], "[object TextEvent] textInput ");
-    QCOMPARE(logLines()[7], "[object InputEvent] input null");
-    QCOMPARE(logLines()[8], "[object CompositionEvent] compositionend ");
+    QCOMPARE(logLines()[4], QStringLiteral("[object InputEvent] beforeinput "));
+    QCOMPARE(logLines()[5], QStringLiteral("[object CompositionEvent] compositionupdate "));
+    QCOMPARE(logLines()[6], QStringLiteral("[object TextEvent] textInput "));
+    QCOMPARE(logLines()[7], QStringLiteral("[object InputEvent] input null"));
+    QCOMPARE(logLines()[8], QStringLiteral("[object CompositionEvent] compositionend "));
 
     evaluateJavaScriptSync(view.page(), "clear()");
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log.textContent + input.textContent").toString().isEmpty());
@@ -2765,6 +2767,45 @@ void tst_QWebEngineView::visibilityState()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.visibilityState").toString(), QStringLiteral("visible"));
+}
+
+void tst_QWebEngineView::jsKeyboardEvent()
+{
+    QWebEngineView view;
+    evaluateJavaScriptSync(
+        view.page(),
+        "var log = '';"
+        "addEventListener('keydown', (ev) => {"
+        "  log += [ev.keyCode, ev.code, ev.key, ev.ctrlKey, ev.shiftKey, ev.altKey].join(',') + ';';"
+        "});");
+    // Note that this only tests the fallback code path where native scan codes are not used.
+#if defined(Q_OS_MACOS)
+    // See Qt::AA_MacDontSwapCtrlAndMeta
+    QTest::keyClick(view.focusProxy(), 'A', Qt::MetaModifier | Qt::ShiftModifier);
+#else
+    QTest::keyClick(view.focusProxy(), 'A', Qt::ControlModifier | Qt::ShiftModifier);
+#endif
+    QString expected = QStringLiteral(
+        "16,ShiftLeft,Shift,false,true,false;"
+        "17,ControlLeft,Control,true,true,false;"
+        "65,KeyA,A,true,true,false;"
+    );
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log") != QVariant(QString()));
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "log"), expected);
+}
+
+void tst_QWebEngineView::deletePage()
+{
+    QWebEngineView view;
+    QWebEnginePage *page = view.page();
+    QVERIFY(page);
+    QCOMPARE(page->parent(), &view);
+    delete page;
+    // Test that a new page is created and that it is useful:
+    QVERIFY(view.page());
+    QSignalSpy spy(view.page(), &QWebEnginePage::loadFinished);
+    view.page()->load(QStringLiteral("about:blank"));
+    QTRY_VERIFY(spy.count());
 }
 
 QTEST_MAIN(tst_QWebEngineView)

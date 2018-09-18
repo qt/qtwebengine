@@ -204,7 +204,7 @@ private:
     Q_DISABLE_COPY(QQuickWebEngineSettings)
     friend class QQuickWebEngineProfilePrivate;
     friend class QQuickWebEngineViewPrivate;
-
+    friend class QQuickWebEngineView;
     void setParentSettings(QQuickWebEngineSettings *parentSettings);
 
     QScopedPointer<QtWebEngineCore::WebEngineSettings> d_ptr;

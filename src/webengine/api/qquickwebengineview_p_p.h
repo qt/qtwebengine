@@ -90,7 +90,7 @@ public:
     QQuickWebEngineViewPrivate();
     ~QQuickWebEngineViewPrivate();
     void destroy();
-
+    void initializeProfile();
     QtWebEngineCore::UIDelegatesManager *ui();
 
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
@@ -160,6 +160,7 @@ public:
     void updateAction(QQuickWebEngineView::WebAction) const;
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     void setProfile(QQuickWebEngineProfile *profile);
+    void updateAdapter();
     void ensureContentsAdapter();
     void setFullScreenMode(bool);
 
@@ -178,7 +179,8 @@ public:
 #endif
     QQmlComponent *contextMenuExtraItems;
     QtWebEngineCore::WebEngineContextMenuData m_contextMenuData;
-    QUrl explicitUrl;
+    QUrl m_url;
+    QString m_html;
     QUrl iconUrl;
     QQuickWebEngineFaviconProvider *faviconProvider;
     int loadProgress;
@@ -196,13 +198,16 @@ public:
     bool m_isBeingAdopted;
     mutable QQuickWebEngineAction *actions[QQuickWebEngineView::WebActionCount];
 
+    bool profileInitialized() const;
+
 private:
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;
     QList<QQuickWebEngineScript *> m_userScripts;
     qreal m_dpiScale;
     QColor m_backgroundColor;
-    qreal m_defaultZoomFactor;
+    qreal m_zoomFactor;
     bool m_ui2Enabled;
+    bool m_profileInitialized;
 };
 
 #ifndef QT_NO_ACCESSIBILITY

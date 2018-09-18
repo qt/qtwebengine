@@ -54,7 +54,9 @@ class QEvent;
 class QHoverEvent;
 class QKeyEvent;
 class QMouseEvent;
+#ifndef QT_NO_TABLETEVENT
 class QTabletEvent;
+#endif
 class QWheelEvent;
 #ifndef QT_NO_GESTURES
 class QNativeGestureEvent;
@@ -66,7 +68,9 @@ class WebEventFactory {
 public:
     static blink::WebMouseEvent toWebMouseEvent(QMouseEvent*, double dpiScale);
     static blink::WebMouseEvent toWebMouseEvent(QHoverEvent*, double dpiScale);
+#ifndef QT_NO_TABLETEVENT
     static blink::WebMouseEvent toWebMouseEvent(QTabletEvent*, double dpiScale);
+#endif
     static blink::WebMouseEvent toWebMouseEvent(QEvent *);
 #ifndef QT_NO_GESTURES
     static blink::WebGestureEvent toWebGestureEvent(QNativeGestureEvent *, double dpiScale);

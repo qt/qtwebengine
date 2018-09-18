@@ -57,15 +57,12 @@
 #include <QtGui/qwindowdefs.h>
 
 QT_BEGIN_NAMESPACE
-class QCursor;
 class QEvent;
-class QPainter;
 class QSGLayer;
 class QSGNode;
 class QSGRectangleNode;
 class QSGTexture;
 class QVariant;
-class QWindow;
 class QInputMethodEvent;
 
 class QSGInternalImageNode;
@@ -89,6 +86,7 @@ public:
     virtual void windowChanged() = 0;
     virtual bool forwardEvent(QEvent *) = 0;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) = 0;
+    virtual void closePopup() = 0;
 };
 
 class QWEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegate {

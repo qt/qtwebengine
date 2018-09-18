@@ -505,6 +505,11 @@ ApplicationWindow {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
+        onNewViewRequested: function(request) {
+            var tab = tabs.createEmptyTab(currentWebView.profile);
+            tabs.currentIndex = tabs.count - 1;
+            request.openIn(tab.item);
+        }
     }
     MessageDialog {
         id: sslDialog

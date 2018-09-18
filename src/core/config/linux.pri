@@ -60,6 +60,7 @@ contains(QT_ARCH, "arm") {
     !isEmpty(MFLOAT): gn_args += arm_float_abi=\"$$MFLOAT\"
 
     MARCH = $$extractCFlag("-march=.*")
+    !isEmpty(MARCH): gn_args += arm_arch=\"$$MARCH\"
 
     MARMV = $$replace(MARCH, "armv",)
     !isEmpty(MARMV) {

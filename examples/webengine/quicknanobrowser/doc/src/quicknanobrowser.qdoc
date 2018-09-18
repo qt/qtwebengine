@@ -136,4 +136,14 @@
     \printuntil Action
     \skipto Escape
     \printuntil /^\ {4}\}/
+
+    \section1 Files and Attributions
+
+    The example uses icons from the Tango Icon Library:
+
+    \table
+    \row
+        \li \l{quicknanobrowser-tango}{Tango Icon Library}
+        \li Public Domain
+    \endtable
 */

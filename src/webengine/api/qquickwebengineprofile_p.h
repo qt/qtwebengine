@@ -90,7 +90,7 @@ public:
     static void userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p);
 
 private:
-    friend class QQuickWebEngineViewPrivate;
+    friend class QQuickWebEngineView;
     QQuickWebEngineProfile *q_ptr;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
