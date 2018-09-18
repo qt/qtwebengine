@@ -127,3 +127,12 @@ defineReplace(pkgConfigHostExecutable) {
     export(QMAKE_DISTCLEAN)
     return($$system_quote($$system_path($$wrapper_name)))
 }
+
+defineTest(hasX11Dependencies) {
+    for(package, $$list("libdrm xcomposite xcursor xi xrandr xtst")) {
+        !qtConfig(webengine-system-$$package) {
+            return(false)
+        }
+    }
+    return(true)
+}
