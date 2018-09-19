@@ -332,6 +332,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_cursorPosition(0)
     , m_emptyPreviousSelection(true)
     , m_wheelAckPending(false)
+    , m_pendingResize(false)
     , m_mouseWheelPhaseHandler(this)
 {
     host()->SetView(this);
@@ -348,6 +349,8 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
 
     const QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
     m_imeHasHiddenTextCapability = context && context->hasCapability(QPlatformInputContext::HiddenTextCapability);
+
+    m_localSurfaceId = m_localSurfaceIdAllocator.GenerateId();
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
@@ -734,11 +737,6 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
     bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);
     m_lastScrollOffset = frame.metadata.root_scroll_offset;
     m_lastContentsSize = frame.metadata.root_layer_size;
-    if (m_localSurfaceId != local_surface_id) {
-        m_localSurfaceId = local_surface_id;
-        // FIXME: update frame_size and device_scale_factor?
-        // FIXME: showPrimarySurface()?
-    }
 
     // Force to process swap messages
     uint32_t frame_token = frame.metadata.frame_token;
@@ -940,15 +938,41 @@ void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
     host()->ForwardGestureEvent(ui::CreateWebGestureEventFromGestureEventData(gesture));
 }
 
+viz::ScopedSurfaceIdAllocator RenderWidgetHostViewQt::DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata)
+{
+    base::OnceCallback<void()> allocation_task =
+        base::BindOnce(&RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete,
+                       base::Unretained(this), metadata);
+    return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
+}
+
+void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata)
+{
+    if (metadata.local_surface_id)
+        m_localSurfaceIdAllocator.UpdateFromChild(*metadata.local_surface_id);
+
+    m_localSurfaceId = m_localSurfaceIdAllocator.GenerateId();
+    host()->SendScreenRects();
+    if (m_pendingResize) {
+        if (host()->SynchronizeVisualProperties())
+            m_pendingResize = false;
+    }
+}
+
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 {
+    if (m_pendingResize && host()) {
+        if (host()->SynchronizeVisualProperties())
+            m_pendingResize = false;
+    }
     return m_compositor->updatePaintNode(oldNode);
 }
 
 void RenderWidgetHostViewQt::notifyResize()
 {
-    host()->SynchronizeVisualProperties();
-    host()->SendScreenRects();
+    m_pendingResize = true;
+    if (host()->SynchronizeVisualProperties())
+        m_pendingResize = false;
 }
 
 void RenderWidgetHostViewQt::notifyShown()
