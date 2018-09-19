@@ -45,9 +45,6 @@
 #include "base/threading/thread_restrictions.h"
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
-#if QT_CONFIG(webengine_native_spellchecker)
-#include "components/spellcheck/browser/spellcheck_message_filter_platform.h"
-#endif
 #endif
 #include "components/network_hints/browser/network_hints_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -439,9 +436,6 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     content::ChildProcessSecurityPolicy::GetInstance()->GrantRequestScheme(id, url::kFileScheme);
     static_cast<ProfileQt*>(host->GetBrowserContext())->m_profileAdapter->userResourceController()->renderProcessStartedWithHost(host);
     host->AddFilter(new BrowserMessageFilterQt(id, profile));
-#if defined(Q_OS_MACOS) && QT_CONFIG(webengine_spellchecker) && QT_CONFIG(webengine_native_spellchecker)
-  host->AddFilter(new SpellCheckMessageFilterPlatform(id));
-#endif
 #if QT_CONFIG(webengine_printing_and_pdf)
     host->AddFilter(new PrintingMessageFilterQt(host->GetID()));
 #endif

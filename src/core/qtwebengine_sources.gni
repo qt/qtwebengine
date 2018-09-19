@@ -28,7 +28,7 @@ source_set("qtwebengine_spellcheck_sources") {
   ]
   if (is_mac && use_browser_spellchecker) {
     sources += [
-        "//chrome/browser/spellchecker/spellcheck_message_filter_platform_mac.cc",
+        "//chrome/browser/spellchecker/spell_check_host_chrome_impl_mac.cc",
     ]
   }
 }
