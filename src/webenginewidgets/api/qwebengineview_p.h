@@ -55,6 +55,10 @@
 
 #include <QtWidgets/qaccessiblewidget.h>
 
+namespace QtWebEngineCore {
+class RenderWidgetHostViewQtDelegateWidget;
+}
+
 QT_BEGIN_NAMESPACE
 
 class QWebEngineView;
@@ -65,10 +69,9 @@ public:
     Q_DECLARE_PUBLIC(QWebEngineView)
     QWebEngineView *q_ptr;
 
-    static void notify(QWebEngineView *view, QWebEnginePage *oldPage, QWebEnginePage *newPage);
-    static QWebEnginePage* removeViewFromPage(QWebEngineView *view);
-    static void removePageFromView(QWebEnginePage *page);
-    static void bind(QWebEngineView *view, QWebEnginePage *page);
+    void pageChanged(QWebEnginePage *oldPage, QWebEnginePage *newPage);
+    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *oldWidget,
+                       QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *newWidget);
 
     QWebEngineViewPrivate();
 

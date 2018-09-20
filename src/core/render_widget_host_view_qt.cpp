@@ -265,7 +265,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_adapterClient(0)
     , m_imeInProgress(false)
     , m_receivedEmptyImeEvent(false)
-    , m_initPending(false)
     , m_imState(0)
     , m_anchorPositionWithinSelection(-1)
     , m_cursorPositionWithinSelection(-1)
@@ -319,18 +318,10 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
     m_adapterClientDestroyedConnection = QObject::connect(adapterClient->holdingQObject(),
                                                           &QObject::destroyed, [this] {
                                                             m_adapterClient = nullptr; });
-    if (m_initPending)
-        InitAsChild(0);
 }
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
 {
-    if (!m_adapterClient) {
-        m_initPending = true;
-        return;
-    }
-    m_initPending = false;
-    m_delegate->initAsChild(m_adapterClient);
 }
 
 void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect& rect)
@@ -926,13 +917,13 @@ void RenderWidgetHostViewQt::notifyHidden()
 void RenderWidgetHostViewQt::windowBoundsChanged()
 {
     host()->SendScreenRects();
-    if (m_delegate->window())
+    if (m_delegate && m_delegate->window())
         host()->NotifyScreenInfoChanged();
 }
 
 void RenderWidgetHostViewQt::windowChanged()
 {
-    if (m_delegate->window())
+    if (m_delegate && m_delegate->window())
         host()->NotifyScreenInfoChanged();
 }
 

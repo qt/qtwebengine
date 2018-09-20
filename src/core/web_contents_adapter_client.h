@@ -474,6 +474,7 @@ public:
     virtual void setToolTip(const QString& toolTipText) = 0;
     virtual ClientType clientType() = 0;
     virtual void printRequested() = 0;
+    virtual void widgetChanged(RenderWidgetHostViewQtDelegate *newWidget) = 0;
 
     virtual ProfileAdapter *profileAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;

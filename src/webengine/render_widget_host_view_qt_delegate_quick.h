@@ -44,6 +44,11 @@
 
 #include <QQuickItem>
 
+QT_BEGIN_NAMESPACE
+class QQuickWebEngineView;
+class QQuickWebEngineViewPrivate;
+QT_END_NAMESPACE
+
 namespace QtWebEngineCore {
 
 class RenderWidgetHostViewQtDelegateQuick : public QQuickItem, public RenderWidgetHostViewQtDelegate
@@ -51,8 +56,8 @@ class RenderWidgetHostViewQtDelegateQuick : public QQuickItem, public RenderWidg
     Q_OBJECT
 public:
     RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup);
+    ~RenderWidgetHostViewQtDelegateQuick();
 
-    void initAsChild(WebContentsAdapterClient* container) override;
     void initAsPopup(const QRect&) override;
     QRectF screenRect() const override;
     QRectF contentsRect() const override;
@@ -102,12 +107,14 @@ private slots:
     void onHide();
 
 private:
+    friend QQuickWebEngineViewPrivate;
+
     RenderWidgetHostViewQtDelegateClient *m_client;
     QList<QMetaObject::Connection> m_windowConnections;
     bool m_isPopup;
     bool m_isPasswordInput;
-    bool m_initialized;
     QPoint m_lastGlobalPos;
+    QQuickWebEngineView *m_view = nullptr;
 };
 
 } // namespace QtWebEngineCore

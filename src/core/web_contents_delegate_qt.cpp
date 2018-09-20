@@ -258,6 +258,14 @@ void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_
     m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
 }
 
+void WebContentsDelegateQt::RenderViewHostChanged(content::RenderViewHost *, content::RenderViewHost *newHost)
+{
+    if (newHost && newHost->GetWidget() && newHost->GetWidget()->GetView()) {
+        auto rwhv = static_cast<RenderWidgetHostViewQt *>(newHost->GetWidget()->GetView());
+        m_viewClient->widgetChanged(rwhv->delegate());
+    }
+}
+
 void WebContentsDelegateQt::EmitLoadStarted(const QUrl &url, bool isErrorPage)
 {
     if (m_lastLoadProgress >= 0 && m_lastLoadProgress < 100) // already running

@@ -55,7 +55,6 @@ public:
     RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate);
     ~RenderWidgetHostViewQtDelegateQuickWindow();
 
-    void initAsChild(WebContentsAdapterClient* container) override;
     void initAsPopup(const QRect&) override;
     QRectF screenRect() const override;
     QRectF contentsRect() const override;

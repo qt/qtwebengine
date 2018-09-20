@@ -246,8 +246,6 @@ private:
     bool m_receivedEmptyImeEvent;
     QPoint m_previousMousePosition;
 
-    bool m_initPending;
-
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
     viz::LocalSurfaceId m_localSurfaceId;

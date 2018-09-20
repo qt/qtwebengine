@@ -46,6 +46,11 @@
 #include <QQuickItem>
 #include <QQuickWidget>
 
+QT_BEGIN_NAMESPACE
+class QWebEnginePage;
+class QWebEnginePagePrivate;
+QT_END_NAMESPACE
+
 namespace QtWebEngineCore {
 
 // Useful information keyboard and mouse QEvent propagation.
@@ -58,8 +63,8 @@ class RenderWidgetHostViewQtDelegateWidget : public QQuickWidget, public RenderW
     Q_OBJECT
 public:
     RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent = 0);
+    ~RenderWidgetHostViewQtDelegateWidget();
 
-    void initAsChild(WebContentsAdapterClient* container) override;
     void initAsPopup(const QRect&) override;
     QRectF screenRect() const override;
     QRectF contentsRect() const override;
@@ -95,9 +100,13 @@ protected:
 
 private slots:
     void onWindowPosChanged();
+    void connectRemoveParentBeforeParentDelete();
+    void disconnectRemoveParentBeforeParentDelete();
     void removeParentBeforeParentDelete();
 
 private:
+    friend QWebEnginePagePrivate;
+
     RenderWidgetHostViewQtDelegateClient *m_client;
     QScopedPointer<QQuickItem> m_rootItem;
     bool m_isPopup;
@@ -105,6 +114,7 @@ private:
     QColor m_clearColor;
     QPoint m_lastGlobalPos;
     QList<QMetaObject::Connection> m_windowConnections;
+    QWebEnginePage *m_page = nullptr;
 };
 
 } // namespace QtWebEngineCore

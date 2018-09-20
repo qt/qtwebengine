@@ -165,15 +165,28 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_AlwaysShowToolTips);
 
-    if (parent) {
-        // Unset the popup parent if the parent is being destroyed, thus making sure a double
-        // delete does not happen.
-        // Also in case the delegate is destroyed before its parent (when a popup is simply
-        // dismissed), this connection will automatically be removed by ~QObject(), preventing
-        // a use-after-free.
+    setContent(QUrl(), nullptr, m_rootItem.data());
+
+    connectRemoveParentBeforeParentDelete();
+}
+
+RenderWidgetHostViewQtDelegateWidget::~RenderWidgetHostViewQtDelegateWidget()
+{
+    QWebEnginePagePrivate::bindPageAndWidget(nullptr, this);
+}
+
+void RenderWidgetHostViewQtDelegateWidget::connectRemoveParentBeforeParentDelete()
+{
+    if (QWidget *parent = parentWidget())
         connect(parent, &QObject::destroyed,
                 this, &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
-    }
+}
+
+void RenderWidgetHostViewQtDelegateWidget::disconnectRemoveParentBeforeParentDelete()
+{
+    if (QWidget *parent = parentWidget())
+        disconnect(parent, &QObject::destroyed,
+                   this, &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete()
@@ -188,29 +201,9 @@ void RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete()
         close();
 }
 
-void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient* container)
-{
-    setContent(QUrl(), nullptr, m_rootItem.data());
-
-    QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(container);
-    if (pagePrivate->view) {
-        if (parentWidget())
-            disconnect(parentWidget(), &QObject::destroyed,
-                this, &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
-        pagePrivate->view->layout()->addWidget(this);
-        if (QWidget *focusProxy = pagePrivate->view->focusProxy())
-            if (focusProxy != this)
-                pagePrivate->view->layout()->removeWidget(focusProxy);
-        pagePrivate->view->setFocusProxy(this);
-        show();
-    } else
-        setParent(0);
-}
-
 void RenderWidgetHostViewQtDelegateWidget::initAsPopup(const QRect& screenRect)
 {
     m_isPopup = true;
-    setContent(QUrl(), nullptr, m_rootItem.data());
 
     // The keyboard events are supposed to go to the parent RenderHostView
     // so the WebUI popups should never have focus. Besides, if the parent view
@@ -421,6 +414,18 @@ void RenderWidgetHostViewQtDelegateWidget::hideEvent(QHideEvent *event)
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
     bool handled = false;
+
+    // Track parent to make sure we don't get deleted.
+    switch (event->type()) {
+    case QEvent::ParentAboutToChange:
+        disconnectRemoveParentBeforeParentDelete();
+        break;
+    case QEvent::ParentChange:
+        connectRemoveParentBeforeParentDelete();
+        break;
+    default:
+        break;
+    }
 
     // Mimic QWidget::event() by ignoring mouse, keyboard, touch and tablet events if the widget is
     // disabled.

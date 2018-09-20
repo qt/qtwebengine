@@ -65,6 +65,7 @@
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegate;
+class RenderWidgetHostViewQtDelegateWidget;
 class WebContentsAdapter;
 }
 
@@ -150,6 +151,7 @@ public:
     void printRequested() override;
     const QObject *holdingQObject() const override;
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
+    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegate *newWidget) override;
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
@@ -165,6 +167,10 @@ public:
 
     void setFullScreenMode(bool);
     void ensureInitialized() const;
+
+    static void bindPageAndView(QWebEnginePage *page, QWebEngineView *view);
+    static void bindPageAndWidget(QWebEnginePage *page,
+                                  QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget);
 
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
     QWebEngineHistory *history;
@@ -187,6 +193,7 @@ public:
     bool defaultAudioMuted;
     qreal defaultZoomFactor;
     QTimer wasShownTimer;
+    QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget = nullptr;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

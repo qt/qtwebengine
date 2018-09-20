@@ -55,7 +55,6 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
     : m_client(client)
     , m_isPopup(isPopup)
     , m_isPasswordInput(false)
-    , m_initialized(false)
 {
     setFlag(ItemHasContents);
     setAcceptedMouseButtons(Qt::AllButtons);
@@ -85,16 +84,9 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
 
 }
 
-void RenderWidgetHostViewQtDelegateQuick::initAsChild(WebContentsAdapterClient* container)
+RenderWidgetHostViewQtDelegateQuick::~RenderWidgetHostViewQtDelegateQuick()
 {
-    QQuickWebEngineView *view = static_cast<QQuickWebEngineViewPrivate *>(container)->q_func();
-    setParentItem(view);
-    setSize(view->boundingRect().size());
-    // Focus on creation if the view accepts it
-    if (view->activeFocusOnPress())
-        setFocus(true);
-    m_initialized = true;
-
+    QQuickWebEngineViewPrivate::bindViewAndWidget(nullptr, this);
 }
 
 void RenderWidgetHostViewQtDelegateQuick::initAsPopup(const QRect &r)
@@ -106,7 +98,6 @@ void RenderWidgetHostViewQtDelegateQuick::initAsPopup(const QRect &r)
     setWidth(rect.width());
     setHeight(rect.height());
     setVisible(true);
-    m_initialized = true;
 }
 
 QRectF RenderWidgetHostViewQtDelegateQuick::screenRect() const
@@ -361,8 +352,7 @@ void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const It
                 m_windowConnections.append(connect(value.window, SIGNAL(closing(QQuickCloseEvent *)), SLOT(onHide())));
         }
 
-        if (m_initialized)
-            m_client->windowChanged();
+        m_client->windowChanged();
     } else if (change == QQuickItem::ItemVisibleHasChanged) {
         if (!m_isPopup && !value.boolValue)
             onHide();
