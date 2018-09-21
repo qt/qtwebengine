@@ -119,7 +119,13 @@ void* GLContextHelper::getGlXConfig()
 
 void* GLContextHelper::getEGLDisplay()
 {
+#ifdef Q_OS_WIN
+    // Windows QPA plugin does not implement resourceForIntegration for "egldisplay".
+    // Use resourceForContext instead.
+    return resourceForContext(QByteArrayLiteral("egldisplay"));
+#else
     return resourceForIntegration(QByteArrayLiteral("egldisplay"));
+#endif
 }
 
 void* GLContextHelper::getXDisplay()

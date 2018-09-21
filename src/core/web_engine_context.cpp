@@ -422,10 +422,23 @@ WebEngineContext::WebEngineContext()
     // an OpenGL Core Profile context. If the switch is not set, it would always try to create a
     // Core Profile context, even if Qt uses a legacy profile, which causes
     // "Could not share GL contexts" warnings, because it's not possible to share between Core and
-    // legacy profiles.
-    // Given that Core profile is not currently supported on Windows anyway, pass this switch to
-    // get rid of the warnings.
-    parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
+    // legacy profiles. See GLContextWGL::Initialize().
+    // Given that Desktop GL Core profile is not currently supported on Windows anyway, pass this
+    // switch to get rid of the warnings.
+    //
+    // The switch is also used to determine which version of OpenGL ES to use (2 or 3) when using
+    // ANGLE.
+    // If the switch is not set, Chromium will always try to create an ES3 context, even if Qt uses
+    // an ES2 context, which causes resource sharing issues (black screen),
+    // see gpu::gles2::GenerateGLContextAttribs().
+    // Make sure to disable ES3 context creation when using ES2.
+    const bool isGLES2Context = qt_gl_global_share_context()
+            && qt_gl_global_share_context()->isOpenGLES()
+            && qt_gl_global_share_context()->format().majorVersion() == 2;
+    const bool isDesktopGLOrSoftware = !usingANGLE();
+
+    if (isDesktopGLOrSoftware || isGLES2Context)
+        parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
     // Needed to allow navigations within pages that were set using setHtml(). One example is
     // tst_QWebEnginePage::acceptNavigationRequest.
@@ -456,8 +469,7 @@ WebEngineContext::WebEngineContext()
 #ifndef QT_NO_OPENGL
 
     bool tryGL =
-            !usingANGLE()
-            && (!usingSoftwareDynamicGL()
+            (!usingSoftwareDynamicGL()
                 // If user requested WebGL support instead of using Skia rendering to
                 // bitmaps, use software rendering via software OpenGL. This might be less
                 // performant, but at least provides WebGL support.
@@ -467,10 +479,13 @@ WebEngineContext::WebEngineContext()
 
     if (tryGL) {
         if (qt_gl_global_share_context() && qt_gl_global_share_context()->isValid()) {
-            // If the native handle is QEGLNativeContext try to use GL ES/2, if there is no native handle
-            // assume we are using wayland and try GL ES/2, and finally Ozone demands GL ES/2 too.
+            // If the native handle is QEGLNativeContext try to use GL ES/2.
+            // If there is no native handle, assume we are using wayland and try GL ES/2.
+            // If we are using ANGLE on Windows, use OpenGL ES (2 or 3).
             if (qt_gl_global_share_context()->nativeHandle().isNull()
-                || !strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext"))
+                || !strcmp(qt_gl_global_share_context()->nativeHandle().typeName(),
+                           "QEGLNativeContext")
+                || usingANGLE())
             {
                 if (qt_gl_global_share_context()->isOpenGLES()) {
                     glType = gl::kGLImplementationEGLName;
