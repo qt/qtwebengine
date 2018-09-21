@@ -71,6 +71,12 @@
 
     On Windows, Visual Studio 2017 and Windows 10 SDK are required.
 
+    Qt WebEngine can only be built on 64-bit Windows, with a x64-bit toolchain.
+    For building Qt WebEngine for x86 applications, you need to configure
+    and compile Qt with the Visual Studio 2017 x64 to x86 cross-compile
+    toolchain. This toolchain can be set up on the command line by running
+    \c{vcvarsall.bat amd64_x86}.
+
     \section2 Linux
 
     On Linux, Clang or GCC version 5 or later is required.
