@@ -41,6 +41,7 @@
 
 #include "base/task_scheduler/post_task.h"
 #include "components/certificate_transparency/ct_known_logs.h"
+#include "components/network_session_configurator/common/network_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -98,6 +99,10 @@ static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &f
 {
     if (first.ignore_certificate_errors != second.ignore_certificate_errors)
         return false;
+    if (first.enable_channel_id != second.enable_channel_id)
+        return false;
+    if (first.enable_token_binding != second.enable_token_binding)
+        return false;
     return true;
 }
 
@@ -147,6 +152,8 @@ static net::HttpNetworkSession::Params generateNetworkSessionParams(bool ignoreC
 {
     net::HttpNetworkSession::Params network_session_params;
     network_session_params.ignore_certificate_errors = ignoreCertificateErrors;
+    network_session_params.enable_token_binding = base::FeatureList::IsEnabled(features::kTokenBinding);
+    network_session_params.enable_channel_id = base::FeatureList::IsEnabled(features::kChannelID);
     return network_session_params;
 }
 
