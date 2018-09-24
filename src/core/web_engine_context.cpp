@@ -223,6 +223,11 @@ void WebEngineContext::destroy()
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
 
+#if QT_CONFIG(webengine_printing_and_pdf)
+    // Kill print job manager early as it has a content::NotificationRegistrar
+    m_printJobManager.reset();
+#endif
+
     // Delete the global object and thus custom profiles
     m_defaultProfileAdapter.reset();
     m_globalQObject.reset();
@@ -240,6 +245,10 @@ void WebEngineContext::destroy()
     // RenderProcessHostImpl should be destroyed before WebEngineContext since
     // default BrowserContext might be used by the RenderprocessHostImpl's destructor.
     m_browserRunner.reset();
+
+    // Destroying content-runner will force Chromium at_exit calls to run, and
+    // reap child processes.
+    m_contentRunner.reset();
 
     // Drop the false reference.
     m_handle->Release();
