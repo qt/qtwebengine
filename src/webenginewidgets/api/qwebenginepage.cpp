@@ -368,12 +368,6 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isError
 
     isLoading = true;
     QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
-    updateNavigationActions();
-}
-
-void QWebEnginePagePrivate::loadCommitted()
-{
-    updateNavigationActions();
 }
 
 void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
@@ -401,7 +395,6 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
             emit q->loadFinished(success);
         });
     }
-    updateNavigationActions();
 }
 
 void QWebEnginePagePrivate::didPrintPageToPdf(const QString &filePath, bool success)

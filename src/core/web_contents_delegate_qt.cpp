@@ -263,6 +263,7 @@ void WebContentsDelegateQt::EmitLoadStarted(const QUrl &url, bool isErrorPage)
     if (m_lastLoadProgress >= 0 && m_lastLoadProgress < 100) // already running
         return;
     m_viewClient->loadStarted(url, isErrorPage);
+    m_viewClient->updateNavigationActions();
     m_viewClient->loadProgressChanged(0);
     m_lastLoadProgress = 0;
 }
@@ -287,6 +288,16 @@ void WebContentsDelegateQt::EmitLoadFinished(bool success, const QUrl &url, bool
     m_lastLoadProgress = -1;
     m_viewClient->loadProgressChanged(100);
     m_viewClient->loadFinished(success, url, isErrorPage, errorCode, errorDescription);
+    m_viewClient->updateNavigationActions();
+}
+
+void WebContentsDelegateQt::EmitLoadCommitted()
+{
+    // Make sure that we don't set the findNext WebFindOptions on a new frame.
+    m_lastSearchedString = QString();
+
+    m_viewClient->loadCommitted();
+    m_viewClient->updateNavigationActions();
 }
 
 void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navigation_handle)
@@ -302,11 +313,7 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
                 profileAdapter->visitedLinksManager()->addUrl(url);
         }
 
-        // Make sure that we don't set the findNext WebFindOptions on a new frame.
-        m_lastSearchedString = QString();
-
-        // This is currently used for canGoBack/Forward values, which is flattened across frames. For other purposes we might have to pass is_main_frame.
-        m_viewClient->loadCommitted();
+        EmitLoadCommitted();
     }
     // Success is reported by DidFinishLoad, but DidFailLoad is now dead code and needs to be handled below
     if (navigation_handle->GetNetErrorCode() == net::OK)
@@ -325,10 +332,8 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
         EmitLoadStarted(toQt(GURL(content::kUnreachableWebDataURL)), true);
 
         // If it is already committed we will not see another DidFinishNavigation call or a DidFinishLoad call.
-        if (navigation_handle->HasCommitted()) {
-            m_lastSearchedString = QString();
-            m_viewClient->loadCommitted();
-        }
+        if (navigation_handle->HasCommitted())
+            EmitLoadCommitted();
     }
 }
 

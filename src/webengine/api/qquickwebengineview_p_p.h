@@ -145,6 +145,7 @@ public:
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
     void updateScrollPosition(const QPointF &position) override;
     void updateContentsSize(const QSizeF &size) override;
+    void updateNavigationActions() override;
     void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
                        const QPixmap &pixmap, const QPoint &offset) override;
     bool supportsDragging() const override;

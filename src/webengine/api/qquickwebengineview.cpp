@@ -878,6 +878,15 @@ void QQuickWebEngineViewPrivate::updateAction(QQuickWebEngineView::WebAction act
     a->d_ptr->setEnabled(enabled);
 }
 
+void QQuickWebEngineViewPrivate::updateNavigationActions()
+{
+    updateAction(QQuickWebEngineView::Back);
+    updateAction(QQuickWebEngineView::Forward);
+    updateAction(QQuickWebEngineView::Stop);
+    updateAction(QQuickWebEngineView::Reload);
+    updateAction(QQuickWebEngineView::ReloadAndBypassCache);
+    updateAction(QQuickWebEngineView::ViewSource);
+}
 
 QUrl QQuickWebEngineView::url() const
 {

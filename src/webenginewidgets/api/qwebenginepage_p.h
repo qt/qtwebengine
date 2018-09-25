@@ -100,7 +100,7 @@ public:
     qreal dpiScale() const override;
     QColor backgroundColor() const override;
     void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) override;
-    void loadCommitted() override;
+    void loadCommitted() override { }
     void loadVisuallyCommitted() override { }
     void loadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString()) override;
     void focusContainer() override;
@@ -141,6 +141,7 @@ public:
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
     void updateScrollPosition(const QPointF &position) override;
     void updateContentsSize(const QSizeF &size) override;
+    void updateNavigationActions() override;
     void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
                        const QPixmap &pixmap, const QPoint &offset) override;
     bool supportsDragging() const override;
@@ -154,7 +155,6 @@ public:
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
 
     void updateAction(QWebEnginePage::WebAction) const;
-    void updateNavigationActions();
     void _q_webActionTriggered(bool checked);
 
     void wasShown();
