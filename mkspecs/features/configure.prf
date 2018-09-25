@@ -37,6 +37,11 @@ defineTest(runConfigure) {
         return(false)
     }
 
+    win32:!qtConfig(webengine-win-compiler64) {
+        skipBuild("Required 64-bit cross-building or native toolchain could not be found.")
+        return(false)
+    }
+
     !qtConfig(webengine-gperf) {
         skipBuild("Required gperf could not be found.")
         return(false)
