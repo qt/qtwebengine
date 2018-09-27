@@ -182,7 +182,8 @@ void URLRequestContextGetterQt::updateStorageSettings()
                 new ProxyConfigServiceQt(
                     net::ProxyService::CreateSystemProxyConfigService(
                         content::BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
-        m_proxyResolverFactory = ChromeMojoProxyResolverFactory::CreateWithStrongBinding();
+        //pass interface to io thread
+        m_proxyResolverFactoryInterface = ChromeMojoProxyResolverFactory::CreateWithStrongBinding().PassInterface();
 
         if (m_contextInitialized)
             content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
@@ -259,8 +260,9 @@ void URLRequestContextGetterQt::generateStorage()
     if (!m_dhcpProxyScriptFetcherFactory)
         m_dhcpProxyScriptFetcherFactory.reset(new net::DhcpProxyScriptFetcherFactory);
 
+    proxy_resolver::mojom::ProxyResolverFactoryPtr proxyResolver(std::move(m_proxyResolverFactoryInterface));
     m_storage->set_proxy_service(content::CreateProxyServiceUsingMojoFactory(
-                                     std::move(m_proxyResolverFactory),
+                                     std::move(proxyResolver),
                                      std::unique_ptr<net::ProxyConfigService>(proxyConfigService),
                                      std::make_unique<net::ProxyScriptFetcherImpl>(m_urlRequestContext.get()),
                                      m_dhcpProxyScriptFetcherFactory->Create(m_urlRequestContext.get()),

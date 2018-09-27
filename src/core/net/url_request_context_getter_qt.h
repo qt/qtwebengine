@@ -126,7 +126,7 @@ private:
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
     std::unique_ptr<net::HttpNetworkSession> m_httpNetworkSession;
     std::unique_ptr<net::HttpAuthPreferences> m_httpAuthPreferences;
-    proxy_resolver::mojom::ProxyResolverFactoryPtr m_proxyResolverFactory;
+    mojo::InterfacePtrInfo<proxy_resolver::mojom::ProxyResolverFactory> m_proxyResolverFactoryInterface;
     std::unique_ptr<net::TransportSecurityPersister> m_transportSecurityPersister;
 
     QList<QByteArray> m_installedCustomSchemes;
