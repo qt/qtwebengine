@@ -310,6 +310,10 @@
         "webengine-sanitizer": {
             "label" : "sanitizer support",
             "type": "isSanitizerSupported"
+        },
+        "webengine-win-compiler64": {
+            "label": "64bit compiler",
+            "type": "isWindowsHostCompiler64"
         }
     },
 
@@ -629,6 +633,12 @@
             "autoDetect": "config.unix",
             "condition": "libs.webengine-poppler-cpp",
             "output": [ "privateFeature" ]
+        },
+        "webengine-win-compiler64": {
+            "label": "64bit compiler",
+            "condition": "config.win32 && tests.webengine-win-compiler64",
+            "type": "isWindowsHostCompiler64",
+            "output": [ "privateFeature" ]
         }
     },
 
@@ -662,6 +672,11 @@
             "type": "warning",
             "condition": "config.unix && !features.webengine-host-pkg-config",
             "message": "host pkg-config not found"
+        },
+        {
+            "type": "warning",
+            "condition": "config.win32 && !features.webengine-win-compiler64",
+            "message": "64-bit cross-building or native toolchain is required to build QtWebEngine."
         }
     ],
 
