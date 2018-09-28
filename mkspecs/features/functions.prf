@@ -70,7 +70,7 @@ defineReplace(ninjaPath) {
 
 defineReplace(gnPath) {
     src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
-    out = $$shadowed($$absolute_path(chromium/tools/gn/out/Release/gn, $$src_3rd_party_dir))
+    out = $$shadowed($$absolute_path(gn/out/Release/gn, $$src_3rd_party_dir))
 
     win32: out = $${out}.exe
     return($$out)

@@ -42,8 +42,8 @@
 
 #include <QtCore/qcompilerdetection.h>
 
-#include "device/geolocation/public/cpp/geoposition.h"
-#include "device/geolocation/public/cpp/location_provider.h"
+#include "services/device/public/cpp/geolocation/geoposition.h"
+#include "services/device/public/cpp/geolocation/location_provider.h"
 
 QT_FORWARD_DECLARE_CLASS(QThread)
 

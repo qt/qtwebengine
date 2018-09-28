@@ -343,7 +343,7 @@ void PrintViewManagerBaseQt::ShouldQuitFromInnerMessageLoop()
     }
 }
 
-bool PrintViewManagerBaseQt::CreateNewPrintJob(printing::PrintJobWorkerOwner* job)
+bool PrintViewManagerBaseQt::CreateNewPrintJob(printing::PrinterQuery *job)
 {
     DCHECK(!m_isInsideInnerMessageLoop);
 
@@ -455,8 +455,7 @@ bool PrintViewManagerBaseQt::RunInnerMessageLoop() {
 
   // Need to enable recursive task.
   {
-      base::MessageLoop::ScopedNestableTaskAllower allow(
-             base::MessageLoop::current());
+      base::MessageLoop::ScopedNestableTaskAllower allow;
       run_loop.Run();
   }
 

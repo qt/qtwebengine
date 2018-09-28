@@ -58,7 +58,7 @@ CertPolicy::~CertPolicy()
 // For an allowance, we consider a given |cert| to be a match to a saved
 // allowed cert if the |error| is an exact match to or subset of the errors
 // in the saved CertStatus.
-bool CertPolicy::Check(const net::X509Certificate &cert, net::CertStatus error) const
+bool CertPolicy::Check(const net::X509Certificate &cert, int error) const
 {
     net::SHA256HashValue fingerprint = cert.CalculateChainFingerprint256();
     auto allowed_iter = m_allowed.find(fingerprint);
@@ -67,7 +67,7 @@ bool CertPolicy::Check(const net::X509Certificate &cert, net::CertStatus error) 
     return false;
 }
 
-void CertPolicy::Allow(const net::X509Certificate& cert, net::CertStatus error)
+void CertPolicy::Allow(const net::X509Certificate& cert, int error)
 {
     net::SHA256HashValue fingerprint = cert.CalculateChainFingerprint256();
     m_allowed[fingerprint] |= error;
@@ -81,7 +81,7 @@ SSLHostStateDelegateQt::~SSLHostStateDelegateQt()
 {
 }
 
-void SSLHostStateDelegateQt::AllowCert(const std::string &host, const net::X509Certificate &cert, net::CertStatus error)
+void SSLHostStateDelegateQt::AllowCert(const std::string &host, const net::X509Certificate &cert, int error)
 {
     m_certPolicyforHost[host].Allow(cert, error);
 }
@@ -109,7 +109,7 @@ void SSLHostStateDelegateQt::Clear(const base::Callback<bool(const std::string&)
 // prior to this query, otherwise false.
 content::SSLHostStateDelegate::CertJudgment SSLHostStateDelegateQt::QueryPolicy(
                                                        const std::string &host, const net::X509Certificate &cert,
-                                                       net::CertStatus error,bool *expired_previous_decision)
+                                                       int error, bool */*expired_previous_decision*/)
 {
     return m_certPolicyforHost[host].Check(cert, error) ? SSLHostStateDelegate::ALLOWED : SSLHostStateDelegate::DENIED;
 }

@@ -83,6 +83,7 @@
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "third_party/blink/public/web/web_find_options.h"
+#include "third_party/blink/public/web/web_media_player_action.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -222,7 +223,7 @@ static void callbackOnPdfSavingFinished(WebContentsAdapterClient *adapterClient,
 }
 #endif
 
-static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
+static std::unique_ptr<content::WebContents> createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
 {
     content::WebContents::CreateParams create_params(browserContext, NULL);
     create_params.routing_id = MSG_ROUTING_NONE;
@@ -323,7 +324,8 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
             false,
             // The extra headers are not sync'ed across sessions.
             std::string(),
-            browserContext);
+            browserContext,
+            nullptr);
 
         entry->SetTitle(toString16(title));
         entry->SetPageState(content::PageState::CreateFromEncodedData(std::string(pageState.data(), pageState.size())));
@@ -370,7 +372,7 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
         return QSharedPointer<WebContentsAdapter>();
 
     // Unlike WebCore, Chromium only supports Restoring to a new WebContents instance.
-    content::WebContents* newWebContents = createBlankWebContents(adapterClient, adapterClient->profileAdapter()->profile());
+    std::unique_ptr<content::WebContents> newWebContents = createBlankWebContents(adapterClient, adapterClient->profileAdapter()->profile());
     content::NavigationController &controller = newWebContents->GetController();
     controller.Restore(currentIndex, content::RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
 
@@ -385,12 +387,29 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
             content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(id, *file);
     }
 
-    return QSharedPointer<WebContentsAdapter>::create(newWebContents);
+    return QSharedPointer<WebContentsAdapter>::create(std::move(newWebContents));
 }
 
-WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
+WebContentsAdapter::WebContentsAdapter()
   : m_profileAdapter(nullptr)
-  , m_webContents(webContents)
+  , m_webContents(nullptr)
+#if QT_CONFIG(webengine_webchannel)
+  , m_webChannel(nullptr)
+  , m_webChannelWorld(0)
+#endif
+  , m_adapterClient(nullptr)
+  , m_nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
+  , m_lastFindRequestId(0)
+  , m_currentDropAction(blink::kWebDragOperationNone)
+  , m_devToolsFrontend(nullptr)
+{
+    // This has to be the first thing we create, and the last we destroy.
+    WebEngineContext::current();
+}
+
+WebContentsAdapter::WebContentsAdapter(std::unique_ptr<content::WebContents> webContents)
+  : m_profileAdapter(nullptr)
+  , m_webContents(std::move(webContents))
 #if QT_CONFIG(webengine_webchannel)
   , m_webChannel(nullptr)
   , m_webChannelWorld(0)
@@ -439,7 +458,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
         create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
         create_params.context = reinterpret_cast<gfx::NativeView>(m_adapterClient);
         create_params.initially_hidden = true;
-        m_webContents.reset(content::WebContents::Create(create_params));
+        m_webContents = content::WebContents::Create(create_params);
     }
 
     content::RendererPreferences* rendererPrefs = m_webContents->GetMutableRendererPrefs();
@@ -1076,7 +1095,7 @@ void WebContentsAdapter::setAudioMuted(bool muted)
 bool WebContentsAdapter::recentlyAudible()
 {
     CHECK_INITIALIZED(false);
-    return m_webContents->WasRecentlyAudible();
+    return m_webContents->IsCurrentlyAudible();
 }
 
 void WebContentsAdapter::copyImageAt(const QPoint &location)
@@ -1095,7 +1114,7 @@ void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, Medi
 {
     CHECK_INITIALIZED();
     blink::WebMediaPlayerAction blinkAction((blink::WebMediaPlayerAction::Type)action, enable);
-    m_webContents->GetRenderViewHost()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
+    m_webContents->GetRenderViewHost()->GetMainFrame()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
 }
 
 void WebContentsAdapter::inspectElementAt(const QPoint &location)
@@ -1375,7 +1394,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     }
 
     {
-        base::MessageLoop::ScopedNestableTaskAllower allow(base::MessageLoop::current());
+        base::MessageLoop::ScopedNestableTaskAllower allow;
         drag->exec(allowedActions);
     }
 

@@ -60,7 +60,7 @@ public:
     content::WebUI::TypeID GetWebUIType(content::BrowserContext *browserContext, const GURL &url) const override;
     bool UseWebUIForURL(content::BrowserContext *browserContext, const GURL &url) const override;
     bool UseWebUIBindingsForURL(content::BrowserContext *browserContext, const GURL &url) const override;
-    content::WebUIController *CreateWebUIControllerForURL(content::WebUI *webUi, const GURL &url) const override;
+    std::unique_ptr<content::WebUIController> CreateWebUIControllerForURL(content::WebUI *webUi, const GURL &url) const override;
 
     static WebUIControllerFactoryQt *GetInstance();
 

@@ -215,7 +215,7 @@ void UIDelegatesManager::addMenuItem(QQuickWebEngineAction *action, QObject *men
     QObject *it = menuItemComponent->beginCreate(qmlContext(m_view));
 
     QQmlProperty(it, QStringLiteral("text")).write(action->text());
-    QQmlProperty(it, QStringLiteral("iconName")).write(action->iconText());
+    QQmlProperty(it, QStringLiteral("iconName")).write(action->iconName());
     QQmlProperty(it, QStringLiteral("enabled")).write(action->isEnabled());
     QQmlProperty(it, QStringLiteral("checkable")).write(checkable);
     QQmlProperty(it, QStringLiteral("checked")).write(checked);

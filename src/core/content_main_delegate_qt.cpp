@@ -53,6 +53,7 @@
 #include <ui/base/webui/jstemplate_builder.h>
 #include "net/grit/net_resources.h"
 #include "net/base/net_module.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "url/url_util_qt.h"
 
 #include "content_client_qt.h"
@@ -171,7 +172,7 @@ content::ContentRendererClient *ContentMainDelegateQt::CreateContentRendererClie
 #if defined(OS_LINUX)
     base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
     std::string process_type = parsedCommandLine->GetSwitchValueASCII(switches::kProcessType);
-    bool no_sandbox = parsedCommandLine->HasSwitch(switches::kNoSandbox);
+    bool no_sandbox = parsedCommandLine->HasSwitch(service_manager::switches::kNoSandbox);
 
     // Reload locale if the renderer process is sandboxed
     if (process_type == switches::kRendererProcess && !no_sandbox) {
@@ -196,7 +197,7 @@ static void SafeOverridePathImpl(const char *keyName, int key, const base::FileP
         return;
 
     // Do not create directories for overridden paths.
-    if (PathService::OverrideAndCreateIfNeeded(key, path, false, false))
+    if (base::PathService::OverrideAndCreateIfNeeded(key, path, false, false))
         return;
 
     qWarning("Path override failed for key %s and path '%s'", keyName, path.value().c_str());

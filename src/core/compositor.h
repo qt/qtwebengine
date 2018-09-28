@@ -97,6 +97,7 @@ public:
 
 private:
     void notifyFrameCommitted();
+    void sendPresentationFeedback(uint frame_token);
 
     // viz::BeginFrameObserverBase
     bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs &args) override;

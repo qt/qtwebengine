@@ -77,7 +77,14 @@ using QtWebEngineCore::ProfileAdapter;
     to a common QWebEngineScriptCollection instance.
 
     Information about visited links is stored together with persistent cookies and other persistent
-    data in a storage returned by persistentStoragePath(). The cache can be cleared of links by
+    data in a storage returned by storageName(). Persistent data is stored in a subdirectory set by
+    calling setPersistentStoragePath(), and the cache is located in a subdirectory set by calling
+    setCachePath(). The cache type can be set to \e in-memory or \e on-disk by calling
+    setHttpCacheType(). If only the storage name is set, the subdirectories are created and named
+    automatically. If you set any of the values manually, you should do it before creating any
+    pages that belong to the profile.
+
+    The cache can be cleared of links by calling
     clearVisitedLinks() or clearAllVisitedLinks(). PersistentCookiesPolicy describes whether
     session and persistent cookies are saved to and restored from memory or disk.
 

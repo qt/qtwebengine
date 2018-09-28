@@ -57,10 +57,9 @@
 #include "content/common/gpu/stream_texture_qnx.h"
 #endif
 
-// FIXME: Try using content::GpuChildThread::current()
-base::MessageLoop *gpu_message_loop()
+scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner()
 {
-    return content::GpuChildThread::instance()->message_loop();
+    return content::GpuChildThread::instance()->main_thread_runner();
 }
 
 gpu::SyncPointManager *sync_point_manager()

@@ -29,8 +29,8 @@ defineTest(isPlatformSupported) {
       skipBuild("Qt WebEngine on Windows requires MSVC.")
       return(false)
     }
-    !isMinWinSDKVersion(10, 10586): {
-      skipBuild("Qt WebEngine on Windows requires a Windows SDK version 10.0.10586 or newer.")
+    !isMinWinSDKVersion(10, 16299): {
+      skipBuild("Qt WebEngine on Windows requires a Windows SDK version 10.0.16299 or newer.")
       return(false)
     }
     !qtConfig(webengine-winversion) {

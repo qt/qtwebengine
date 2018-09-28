@@ -40,6 +40,7 @@
 #ifndef LOGIN_DELEGATE_QT_H
 #define LOGIN_DELEGATE_QT_H
 
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "url/gurl.h"
@@ -61,7 +62,7 @@ public:
                     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
                     GURL url,
                     bool first_auth_attempt,
-                    const base::Callback<void(const base::Optional<net::AuthCredentials>&)> &auth_required_callback);
+                    LoginAuthRequiredCallback auth_required_callback);
 
     ~LoginDelegateQt();
 
@@ -82,7 +83,7 @@ private:
     scoped_refptr<net::AuthChallengeInfo> m_authInfo;
 
     GURL m_url;
-    base::Callback<void(const base::Optional<net::AuthCredentials>&)> m_auth_required_callback;
+    LoginAuthRequiredCallback m_auth_required_callback;
 
     // This member is used to keep authentication dialog controller alive until
     // authorization is sent or cancelled.

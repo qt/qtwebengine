@@ -56,6 +56,11 @@ using QtWebEngineCore::toQt;
 
 namespace content {
 
+const BrowserAccessibilityQt *ToBrowserAccessibilityQt(const BrowserAccessibility *obj)
+{
+    return static_cast<const BrowserAccessibilityQt *>(obj);
+}
+
 BrowserAccessibilityQt::BrowserAccessibilityQt()
 {
     QAccessible::registerAccessibleInterface(this);
@@ -239,6 +244,9 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::ComboBox;
     case ax::mojom::Role::kComplementary:
         return QAccessible::ComplementaryContent;
+    case ax::mojom::Role::kContentDeletion:
+    case ax::mojom::Role::kContentInsertion:
+        return QAccessible::Grouping;
     case ax::mojom::Role::kContentInfo:
         return QAccessible::Section;
     case ax::mojom::Role::kDate:
@@ -264,6 +272,50 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kGenericContainer:
         return QAccessible::Section;
+    case ax::mojom::Role::kDocCover:
+      return QAccessible::Graphic;
+    case ax::mojom::Role::kDocBackLink:
+    case ax::mojom::Role::kDocBiblioRef:
+    case ax::mojom::Role::kDocGlossRef:
+    case ax::mojom::Role::kDocNoteRef:
+        return QAccessible::Link;
+    case ax::mojom::Role::kDocBiblioEntry:
+    case ax::mojom::Role::kDocEndnote:
+    case ax::mojom::Role::kDocFootnote:
+        return QAccessible::ListItem;
+    case ax::mojom::Role::kDocPageBreak:
+        return QAccessible::Separator;
+    case ax::mojom::Role::kDocAbstract:
+    case ax::mojom::Role::kDocAcknowledgments:
+    case ax::mojom::Role::kDocAfterword:
+    case ax::mojom::Role::kDocAppendix:
+    case ax::mojom::Role::kDocBibliography:
+    case ax::mojom::Role::kDocChapter:
+    case ax::mojom::Role::kDocColophon:
+    case ax::mojom::Role::kDocConclusion:
+    case ax::mojom::Role::kDocCredit:
+    case ax::mojom::Role::kDocCredits:
+    case ax::mojom::Role::kDocDedication:
+    case ax::mojom::Role::kDocEndnotes:
+    case ax::mojom::Role::kDocEpigraph:
+    case ax::mojom::Role::kDocEpilogue:
+    case ax::mojom::Role::kDocErrata:
+    case ax::mojom::Role::kDocExample:
+    case ax::mojom::Role::kDocForeword:
+    case ax::mojom::Role::kDocGlossary:
+    case ax::mojom::Role::kDocIndex:
+    case ax::mojom::Role::kDocIntroduction:
+    case ax::mojom::Role::kDocNotice:
+    case ax::mojom::Role::kDocPageList:
+    case ax::mojom::Role::kDocPart:
+    case ax::mojom::Role::kDocPreface:
+    case ax::mojom::Role::kDocPrologue:
+    case ax::mojom::Role::kDocPullquote:
+    case ax::mojom::Role::kDocQna:
+    case ax::mojom::Role::kDocSubtitle:
+    case ax::mojom::Role::kDocTip:
+    case ax::mojom::Role::kDocToc:
+        return QAccessible::Section;
     case ax::mojom::Role::kDocument:
         return QAccessible::Document;
     case ax::mojom::Role::kEmbeddedObject:
@@ -278,6 +330,12 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Footer;
     case ax::mojom::Role::kForm:
         return QAccessible::Form;
+    case ax::mojom::Role::kGraphicsDocument:
+        return QAccessible::Document;
+    case ax::mojom::Role::kGraphicsObject:
+        return QAccessible::Pane;
+    case ax::mojom::Role::kGraphicsSymbol:
+        return QAccessible::Graphic;
     case ax::mojom::Role::kGrid:
         return QAccessible::Table;
     case ax::mojom::Role::kGroup:
@@ -322,8 +380,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::ListItem;
     case ax::mojom::Role::kListMarker:
         return QAccessible::StaticText;
-    case ax::mojom::Role::kLocationBar:
-        return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kLog:
         return QAccessible::Section;
     case ax::mojom::Role::kMain:
@@ -382,6 +438,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::StaticText;
     case ax::mojom::Role::kScrollBar:
         return QAccessible::ScrollBar;
+    case ax::mojom::Role::kScrollView:
+        return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kSearch:
         return QAccessible::Section;
     case ax::mojom::Role::kSearchBox:
@@ -392,8 +450,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kSpinButton:
         return QAccessible::SpinBox;
-    case ax::mojom::Role::kSpinButtonPart:
-        return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kSplitter:
         return QAccessible::Splitter;
     case ax::mojom::Role::kStaticText:
@@ -456,8 +512,6 @@ QAccessible::State BrowserAccessibilityQt::state() const
         state.expanded = true;
     if (HasState(ax::mojom::State::kFocusable))
         state.focusable = true;
-    if (HasState(ax::mojom::State::kHaspopup))
-        state.hasPopup = true;
     if (HasState(ax::mojom::State::kHorizontal))
     {} // FIXME
     if (HasState(ax::mojom::State::kHovered))
@@ -469,11 +523,11 @@ QAccessible::State BrowserAccessibilityQt::state() const
     if (HasState(ax::mojom::State::kLinked))
         state.linked = true;
     if (HasState(ax::mojom::State::kMultiline))
-    {} // FIXME:    state.multiLine = true;
+        state.multiLine = true;
     if (HasState(ax::mojom::State::kMultiselectable))
         state.multiSelectable = true;
     if (HasState(ax::mojom::State::kProtected))
-    {} // FIXME
+        state.passwordEdit = true;
     if (HasState(ax::mojom::State::kRequired))
     {} // FIXME
     if (HasState(ax::mojom::State::kRichlyEditable))
@@ -481,7 +535,7 @@ QAccessible::State BrowserAccessibilityQt::state() const
     if (HasState(ax::mojom::State::kVertical))
     {} // FIXME
     if (HasState(ax::mojom::State::kVisited))
-    {} // FIXME
+        state.traversed = true;
 
     if (IsOffscreen())
         state.offscreen = true;
@@ -489,11 +543,14 @@ QAccessible::State BrowserAccessibilityQt::state() const
         state.focused = true;
     if (GetBoolAttribute(ax::mojom::BoolAttribute::kBusy))
         state.busy = true;
+    if (GetBoolAttribute(ax::mojom::BoolAttribute::kModal))
+        state.modal = true;
     if (HasBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
         state.selectable = true;
         state.selected = GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
     }
     if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState)) {
+        state.checkable = true;
         const ax::mojom::CheckedState checkedState =
                 static_cast<ax::mojom::CheckedState>(GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
         switch (checkedState) {
@@ -524,7 +581,21 @@ QAccessible::State BrowserAccessibilityQt::state() const
             break;
         }
     }
-
+    if (HasIntAttribute(ax::mojom::IntAttribute::kHasPopup)) {
+        const ax::mojom::HasPopup hasPopup = static_cast<ax::mojom::HasPopup>(GetIntAttribute(ax::mojom::IntAttribute::kHasPopup));
+        switch (hasPopup) {
+        case ax::mojom::HasPopup::kFalse:
+            break;
+        case ax::mojom::HasPopup::kTrue:
+        case ax::mojom::HasPopup::kMenu:
+        case ax::mojom::HasPopup::kListbox:
+        case ax::mojom::HasPopup::kTree:
+        case ax::mojom::HasPopup::kGrid:
+        case ax::mojom::HasPopup::kDialog:
+            state.hasPopup = true;
+            break;
+        }
+    }
     return state;
 }
 
@@ -711,10 +782,7 @@ QAccessibleInterface *BrowserAccessibilityQt::cellAt(int row, int column) const
     if (row < 0 || row >= rows || column < 0 || column >= columns)
       return 0;
 
-    const std::vector<int32_t>& cell_ids = GetIntListAttribute(ax::mojom::IntListAttribute::kCellIds);
-    DCHECK_EQ(columns * rows, static_cast<int>(cell_ids.size()));
-
-    int cell_id = cell_ids[row * columns + column];
+    int cell_id = GetCellId(row, column);
     BrowserAccessibility* cell = manager()->GetFromID(cell_id);
     if (cell) {
       QAccessibleInterface *iface = static_cast<BrowserAccessibilityQt*>(cell);

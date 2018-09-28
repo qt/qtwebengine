@@ -215,14 +215,14 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
     // Make sure to only emit the signal when loading isn't in progress, because it causes multiple
     // false signals to be emitted.
     if ((changed_flags & content::INVALIDATE_TYPE_TAB) && !(changed_flags & content::INVALIDATE_TYPE_LOAD)) {
-        m_viewClient->recentlyAudibleChanged(source->WasRecentlyAudible());
+        m_viewClient->recentlyAudibleChanged(source->IsCurrentlyAudible());
     }
 }
 
-void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
+void WebContentsDelegateQt::AddNewContents(content::WebContents* source, std::unique_ptr<content::WebContents> new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
 {
     Q_UNUSED(source)
-    QSharedPointer<WebContentsAdapter> newAdapter = createWindow(new_contents, disposition, initial_pos, user_gesture);
+    QSharedPointer<WebContentsAdapter> newAdapter = createWindow(std::move(new_contents), disposition, initial_pos, user_gesture);
     if (newAdapter && !newAdapter->isInitialized())
         newAdapter->loadDefault();
     if (was_blocked)
@@ -419,7 +419,7 @@ content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogMana
     return JavaScriptDialogManagerQt::GetInstance();
 }
 
-void WebContentsDelegateQt::EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL& origin)
+void WebContentsDelegateQt::EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL& origin, const blink::WebFullscreenOptions &)
 {
     Q_UNUSED(web_contents);
     if (!m_viewClient->isFullScreenMode())
@@ -477,25 +477,23 @@ void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_
     }
 }
 
-void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request, const content::MediaResponseCallback &callback)
+void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request,  content::MediaResponseCallback callback)
 {
-    MediaCaptureDevicesDispatcher::GetInstance()->processMediaAccessRequest(m_viewClient, web_contents, request, callback);
+    MediaCaptureDevicesDispatcher::GetInstance()->processMediaAccessRequest(m_viewClient, web_contents, request, std::move(callback));
 }
 
-void WebContentsDelegateQt::MoveContents(content::WebContents *source, const gfx::Rect &pos)
+void WebContentsDelegateQt::SetContentsBounds(content::WebContents *source, const gfx::Rect &bounds)
 {
-    QRect frameGeometry(toQt(pos));
+    if (!source->HasOpener()) // is popup
+        return;
+
+    QRect frameGeometry(toQt(bounds));
     QRect geometry;
     if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(web_contents()->GetRenderWidgetHostView())) {
         if (rwhv->delegate() && rwhv->delegate()->window())
             geometry = frameGeometry.marginsRemoved(rwhv->delegate()->window()->frameMargins());
     }
     m_viewClient->requestGeometryChange(geometry, frameGeometry);
-}
-
-bool WebContentsDelegateQt::IsPopupOrPanel(const content::WebContents *source) const
-{
-    return source->HasOpener();
 }
 
 void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const GURL& url)
@@ -547,9 +545,9 @@ void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *webCont
     m_viewClient->webEngineSettings()->overrideWebPreferences(webContents, webPreferences);
 }
 
-QWeakPointer<WebContentsAdapter> WebContentsDelegateQt::createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture)
+QWeakPointer<WebContentsAdapter> WebContentsDelegateQt::createWindow(std::unique_ptr<content::WebContents> new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture)
 {
-    QSharedPointer<WebContentsAdapter> newAdapter = QSharedPointer<WebContentsAdapter>::create(new_contents);
+    QSharedPointer<WebContentsAdapter> newAdapter = QSharedPointer<WebContentsAdapter>::create(std::move(new_contents));
 
     m_viewClient->adoptNewWindow(newAdapter, static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition), user_gesture, toQt(initial_pos), m_initialTargetUrl);
 

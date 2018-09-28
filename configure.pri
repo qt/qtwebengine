@@ -286,3 +286,11 @@ defineTest(qtConfReport_macosToolchainVersion) {
     contains(arg, "deploymentTarget"): report_message = "$$QMAKE_MACOSX_DEPLOYMENT_TARGET"
     !isEmpty(report_message): qtConfReportPadded($$1, $$report_message)
 }
+
+defineTest(qtConfTest_isWindowsHostCompiler64) {
+    win_host_arch = $$(VSCMD_ARG_HOST_ARCH)
+    isEmpty(win_host_arch): return(true)
+    contains(win_host_arch,"x64"): return(true)
+    qtLog("Required 64-bit cross-building or native toolchain was not detected.")
+    return(false)
+}

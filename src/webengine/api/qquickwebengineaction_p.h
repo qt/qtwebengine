@@ -69,25 +69,24 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineAction : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString text READ text CONSTANT FINAL)
-    Q_PROPERTY(QString iconText READ iconText CONSTANT FINAL)
+    Q_PROPERTY(QString iconName READ iconName CONSTANT FINAL)
     Q_PROPERTY(bool enabled READ isEnabled NOTIFY enabledChanged FINAL)
 
 public:
-    QQuickWebEngineAction(const QVariant &data, const QString &text, const QString &iconText, bool enabled, QObject *parent);
+    QQuickWebEngineAction(const QVariant &data, const QString &text, const QString &iconName, bool enabled, QObject *parent);
     QQuickWebEngineAction(QObject *parent);
     ~QQuickWebEngineAction();
 
     QString text() const;
-    QString iconText() const;
+    QString iconName() const;
     bool isEnabled() const;
 
 public Q_SLOTS:
     Q_INVOKABLE void trigger();
 
 Q_SIGNALS:
-    void toggled();
     void triggered();
-    void enabledChanged(const bool enabled);
+    void enabledChanged();
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineAction)

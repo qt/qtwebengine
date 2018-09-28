@@ -51,12 +51,12 @@
 
 // This is just config sanity check
 #if QT_CONFIG(webengine_printing_and_pdf)
-#if !BUILDFLAG(ENABLE_BASIC_PRINTING) || !BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if !BUILDFLAG(ENABLE_PRINTING) || !BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #error Config sanity check for webengine_printing_and_pdf failed
 #endif
 #else
-#if BUILDFLAG(ENABLE_BASIC_PRINTING) || BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#error Config sanity check for ENABLE_BASIC_PRINTING, ENABLE_PRINT_PREVIEW failed
+#if BUILDFLAG(ENABLE_PRINTING) || BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#error Config sanity check for ENABLE_PRINTING, ENABLE_PRINT_PREVIEW failed
 #endif
 #endif
 

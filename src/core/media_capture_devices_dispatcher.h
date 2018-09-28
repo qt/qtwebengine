@@ -48,6 +48,7 @@
 #include "web_contents_adapter_client.h"
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "content/public/browser/media_observer.h"
@@ -63,74 +64,78 @@ namespace QtWebEngineCore {
 // This singleton is used to receive updates about media events from the content
 // layer. Based on Chrome's implementation.
 class MediaCaptureDevicesDispatcher : public content::MediaObserver,
-                                      public content::NotificationObserver {
- public:
+                                      public content::NotificationObserver
+{
+public:
+    static MediaCaptureDevicesDispatcher *GetInstance();
 
-  static MediaCaptureDevicesDispatcher *GetInstance();
+    void processMediaAccessRequest(WebContentsAdapterClient *, content::WebContents *, const content::MediaStreamRequest &, content::MediaResponseCallback);
 
-  void processMediaAccessRequest(WebContentsAdapterClient *, content::WebContents *, const content::MediaStreamRequest &, const content::MediaResponseCallback &);
+    // Called back from our WebContentsAdapter to grant the requested permission.
+    void handleMediaAccessPermissionResponse(content::WebContents *, const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags);
 
-  // Called back from our WebContentsAdapter to grant the requested permission.
-  void handleMediaAccessPermissionResponse(content::WebContents *, const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags);
+private:
+    void getDefaultDevices(const std::string &audioDeviceId, const std::string &videoDeviceId, bool audio, bool video, content::MediaStreamDevices *);
 
- private:
-  void getDefaultDevices(const std::string &audioDeviceId, const std::string &videoDeviceId, bool audio, bool video, content::MediaStreamDevices *);
+    // Overridden from content::MediaObserver:
+    void OnAudioCaptureDevicesChanged() override {}
+    void OnVideoCaptureDevicesChanged() override {}
+    void OnMediaRequestStateChanged(int render_process_id,
+                                    int render_frame_id,
+                                    int page_request_id,
+                                    const GURL &security_origin,
+                                    content::MediaStreamType stream_type,
+                                    content::MediaRequestState state) override;
 
-  // Overridden from content::MediaObserver:
-  void OnAudioCaptureDevicesChanged() override { }
-  void OnVideoCaptureDevicesChanged() override { }
-  void OnMediaRequestStateChanged(int render_process_id,
-                                  int render_frame_id,
-                                  int page_request_id,
-                                  const GURL& security_origin,
-                                  content::MediaStreamType stream_type,
-                                  content::MediaRequestState state) override;
+    void OnCreatingAudioStream(int /*render_process_id*/, int /*render_frame_id*/) override {}
+    void OnSetCapturingLinkSecured(int /*render_process_id*/,
+                                   int /*render_frame_id*/,
+                                   int /*page_request_id*/,
+                                   content::MediaStreamType /*stream_type*/,
+                                   bool /*is_secure*/) override {}
 
-  void OnCreatingAudioStream(int /*render_process_id*/, int /*render_frame_id*/) override { }
-  void OnSetCapturingLinkSecured(int /*render_process_id*/,
-                                 int /*render_frame_id*/,
-                                 int /*page_request_id*/,
-                                 content::MediaStreamType /*stream_type*/,
-                                 bool /*is_secure*/) override { }
+    DesktopStreamsRegistry *getDesktopStreamsRegistry();
 
-  DesktopStreamsRegistry *getDesktopStreamsRegistry();
+    friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
-  friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
+    typedef base::RepeatingCallback<void(const content::MediaStreamDevices &devices,
+                                         content::MediaStreamRequestResult result,
+                                         std::unique_ptr<content::MediaStreamUI> ui)>
+            RepeatingMediaResponseCallback;
 
-  struct PendingAccessRequest {
-    PendingAccessRequest(const content::MediaStreamRequest &request,
-                         const content::MediaResponseCallback &callback);
-    ~PendingAccessRequest();
+    struct PendingAccessRequest {
+        PendingAccessRequest(const content::MediaStreamRequest &request, const RepeatingMediaResponseCallback &callback);
+        ~PendingAccessRequest();
 
-    content::MediaStreamRequest request;
-    content::MediaResponseCallback callback;
-  };
-  typedef std::deque<PendingAccessRequest> RequestsQueue;
-  typedef std::map<content::WebContents *, RequestsQueue> RequestsQueues;
+        content::MediaStreamRequest request;
+        RepeatingMediaResponseCallback callback;
+    };
+    typedef base::circular_deque<PendingAccessRequest> RequestsQueue;
+    typedef std::map<content::WebContents *, RequestsQueue> RequestsQueues;
 
-  MediaCaptureDevicesDispatcher();
-  virtual ~MediaCaptureDevicesDispatcher();
+    MediaCaptureDevicesDispatcher();
+    virtual ~MediaCaptureDevicesDispatcher();
 
-  // content::NotificationObserver implementation.
-  void Observe(int type, const content::NotificationSource &source, const content::NotificationDetails &details) override;
+    // content::NotificationObserver implementation.
+    void Observe(int type, const content::NotificationSource &source, const content::NotificationDetails &details) override;
 
-  // Helpers for ProcessMediaAccessRequest().
-  void processDesktopCaptureAccessRequest(content::WebContents *, const content::MediaStreamRequest &, const content::MediaResponseCallback &);
-  void enqueueMediaAccessRequest(content::WebContents *, const content::MediaStreamRequest &, const content::MediaResponseCallback &);
-  void ProcessQueuedAccessRequest(content::WebContents *);
+    // Helpers for ProcessMediaAccessRequest().
+    void processDesktopCaptureAccessRequest(content::WebContents *, const content::MediaStreamRequest &, content::MediaResponseCallback);
+    void enqueueMediaAccessRequest(content::WebContents *, const content::MediaStreamRequest &, content::MediaResponseCallback);
+    void ProcessQueuedAccessRequest(content::WebContents *);
 
-  // Called by the MediaObserver() functions, executed on UI thread.
-  void updateMediaRequestStateOnUIThread(int render_process_id, int render_frame_id, int page_request_id, const GURL& security_origin, content::MediaStreamType stream_type, content::MediaRequestState state);
+    // Called by the MediaObserver() functions, executed on UI thread.
+    void updateMediaRequestStateOnUIThread(int render_process_id, int render_frame_id, int page_request_id, const GURL &security_origin, content::MediaStreamType stream_type, content::MediaRequestState state);
 
-  RequestsQueues m_pendingRequests;
+    RequestsQueues m_pendingRequests;
 
-  std::unique_ptr<DesktopStreamsRegistry> m_desktopStreamsRegistry;
+    std::unique_ptr<DesktopStreamsRegistry> m_desktopStreamsRegistry;
 
-  content::NotificationRegistrar m_notificationsRegistrar;
+    content::NotificationRegistrar m_notificationsRegistrar;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaCaptureDevicesDispatcher);
+    DISALLOW_COPY_AND_ASSIGN(MediaCaptureDevicesDispatcher);
 };
 
 } // namespace QtWebEngineCore
 
-#endif  // MEDIA_CAPTURE_DEVICES_DISPATCHER_H
+#endif // MEDIA_CAPTURE_DEVICES_DISPATCHER_H

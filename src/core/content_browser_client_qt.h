@@ -117,7 +117,7 @@ public:
     void BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,
                                        const std::string& interface_name,
                                        mojo::ScopedMessagePipeHandle interface_pipe) override;
-    void RegisterInProcessServices(StaticServiceMap* services) override;
+    void RegisterInProcessServices(StaticServiceMap* services, content::ServiceManagerConnection* connection) override;
     std::vector<ServiceManifestInfo> GetExtraServiceManifests() override;
     std::unique_ptr<base::Value> GetServiceManifestOverlay(base::StringPiece name) override;
     bool CanCreateWindow(
@@ -147,8 +147,7 @@ public:
                         const net::CanonicalCookie& cookie,
                         content::ResourceContext* context,
                         int render_process_id,
-                        int render_frame_id,
-                        const net::CookieOptions& options) override;
+                        int render_frame_id) override;
 
     bool AllowAppCache(const GURL& manifest_url,
                        const GURL& first_party,
@@ -170,7 +169,6 @@ public:
                               const std::vector<std::pair<int, int> > &render_frames) override;
 
     std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() override;
-    void GetGeolocationRequestContext(base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)> callback) override;
 #if defined(Q_OS_LINUX)
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;
 #endif
@@ -182,10 +180,12 @@ public:
     scoped_refptr<content::LoginDelegate> CreateLoginDelegate(
             net::AuthChallengeInfo *auth_info,
             content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+            const content::GlobalRequestID &request_id,
             bool is_main_frame,
             const GURL &url,
+            scoped_refptr<net::HttpResponseHeaders> response_headers,
             bool first_auth_attempt,
-            const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&auth_required_callback) override;
+            LoginAuthRequiredCallback auth_required_callback) override;
     bool HandleExternalProtocol(
             const GURL &url,
             content::ResourceRequestInfo::WebContentsGetter web_contents_getter,

@@ -50,19 +50,13 @@ QT_END_NAMESPACE
 
 namespace content {
 
-class BrowserAccessibilityFactoryQt : public BrowserAccessibilityFactory
-{
-public:
-    BrowserAccessibility* Create() override;
-};
-
 class BrowserAccessibilityManagerQt : public BrowserAccessibilityManager
 {
 public:
     BrowserAccessibilityManagerQt(QObject* parentObject,
                                   const ui::AXTreeUpdate& initialTree,
                                   BrowserAccessibilityDelegate* delegate,
-                                  BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactoryQt());
+                                  BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
     void FireBlinkEvent(ax::mojom::Event event_type,
                         BrowserAccessibility* node) override;
 

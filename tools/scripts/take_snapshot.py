@@ -70,7 +70,9 @@ def isInChromiumBlacklist(file_path):
             not file_path.startswith('net/test/') and
             not file_path.endswith('mock_chrome_application_mac.h') and
             not file_path.endswith('perftimer.h') and
+            not file_path.endswith('test-torque.tq') and
             not 'ozone' in file_path and
+            not 'fontconfig_util_linux' in file_path and
             not 'core/mojo/test/' in file_path and
             not file_path.startswith('extensions/browser/'))
         or file_path.endswith('.java')
@@ -165,6 +167,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/ashmem')
         or file_path.startswith('third_party/binutils')
         or file_path.startswith('third_party/bison')
+        or file_path.startswith('third_party/blink/perf_tests/')
         or file_path.startswith('third_party/breakpad/src/processor/testdata/')
         or file_path.startswith('third_party/boringssl/crypto_test_data.cc')
         or file_path.startswith('third_party/boringssl/src/fuzz')
@@ -229,6 +232,8 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/wayland/src')
         or file_path.startswith('third_party/webgl')
         or file_path.startswith('third_party/webrtc/resources/')
+        or file_path.startswith('third_party/webrtc/third_party/boringssl/crypto_test_data.cc')
+        or file_path.startswith('third_party/webrtc/third_party/boringssl/src/fuzz')
         or file_path.startswith('tools/android')
         or file_path.startswith('tools/luci_go')
         or file_path.startswith('tools/memory_inspector')
@@ -242,7 +247,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('ui/events/ozone/chromeos')
         or file_path.startswith('ui/file_manager')
         or file_path.startswith('ui/gfx/chromeos')
-        or file_path.startswith('v8/third_party/antlr4')
 
         ):
             return True
@@ -295,6 +299,21 @@ def listFilesInCurrentRepository():
         for submodule_file in submodule_files:
             files.append(os.path.join(submodule.pathRelativeToTopMostSupermodule(), submodule_file))
     return files
+
+def exportGn():
+    third_party_upstream_gn = os.path.join(third_party_upstream, 'gn')
+    third_party_gn = os.path.join(third_party, 'gn')
+    os.makedirs(third_party_gn);
+    print 'exporting contents of:' + third_party_upstream_gn
+    os.chdir(third_party_upstream_gn)
+    files = listFilesInCurrentRepository()
+    print 'copying files to ' + third_party_gn
+    for i in xrange(len(files)):
+        printProgress(i+1, len(files))
+        f = files[i]
+        if not isInGitBlacklist(f):
+            copyFile(f, os.path.join(third_party_gn, f))
+    print("")
 
 def exportNinja():
     third_party_upstream_ninja = os.path.join(third_party_upstream, 'ninja')
@@ -349,6 +368,7 @@ if 'true' in ignore_case_setting:
 
 clearDirectory(third_party)
 
+exportGn()
 exportNinja()
 exportChromium()
 

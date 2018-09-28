@@ -1083,7 +1083,7 @@ void tst_QWebEngineView::changeLocale()
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
     errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Diese Website ist nicht erreichbar"));
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 
     QLocale::setDefault(QLocale("en"));
     QWebEngineView viewEN;
@@ -1106,7 +1106,7 @@ void tst_QWebEngineView::changeLocale()
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
     errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Diese Website ist nicht erreichbar"));
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 }
 
 void tst_QWebEngineView::inputMethodsTextFormat_data()
@@ -2674,7 +2674,7 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::addColumn<QUrl>("url");
     QTest::addColumn<bool>("supported");
     QTest::newRow("about") << QUrl("chrome://about") << false;
-    QTest::newRow("accessibility") << QUrl("chrome://accessibility") << false;
+    QTest::newRow("accessibility") << QUrl("chrome://accessibility") << true;
     QTest::newRow("appcache-internals") << QUrl("chrome://appcache-internals") << true;
     QTest::newRow("apps") << QUrl("chrome://apps") << false;
     QTest::newRow("blob-internals") << QUrl("chrome://blob-internals") << true;

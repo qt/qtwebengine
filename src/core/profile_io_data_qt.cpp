@@ -40,6 +40,8 @@
 #include "profile_io_data_qt.h"
 
 #include "base/task_scheduler/post_task.h"
+#include "components/certificate_transparency/ct_known_logs.h"
+#include "components/network_session_configurator/common/network_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -47,8 +49,8 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_log_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -96,6 +98,10 @@ static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &f
                                         const net::HttpNetworkSession::Params &second)
 {
     if (first.ignore_certificate_errors != second.ignore_certificate_errors)
+        return false;
+    if (first.enable_channel_id != second.enable_channel_id)
+        return false;
+    if (first.enable_token_binding != second.enable_token_binding)
         return false;
     return true;
 }
@@ -146,6 +152,8 @@ static net::HttpNetworkSession::Params generateNetworkSessionParams(bool ignoreC
 {
     net::HttpNetworkSession::Params network_session_params;
     network_session_params.ignore_certificate_errors = ignoreCertificateErrors;
+    network_session_params.enable_token_binding = base::FeatureList::IsEnabled(features::kTokenBinding);
+    network_session_params.enable_channel_id = base::FeatureList::IsEnabled(features::kChannelID);
     return network_session_params;
 }
 
@@ -268,9 +276,10 @@ void ProfileIODataQt::generateStorage()
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
     std::unique_ptr<net::MultiLogCTVerifier> ct_verifier(new net::MultiLogCTVerifier());
-    ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
+//    FIXME:
+//    ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
     m_storage->set_cert_transparency_verifier(std::move(ct_verifier));
-    m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::CTPolicyEnforcer));
+    m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::DefaultCTPolicyEnforcer()));
 
     std::unique_ptr<net::HostResolver> host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
 
@@ -282,28 +291,26 @@ void ProfileIODataQt::generateStorage()
     m_storage->set_proxy_resolution_service(network::CreateProxyResolutionServiceUsingMojoFactory(
                                                 std::move(m_proxyResolverFactory),
                                                 std::unique_ptr<net::ProxyConfigService>(proxyConfigService),
-                                                std::make_unique<net::PacFileFetcherImpl>(m_urlRequestContext.get()),
+                                                net::PacFileFetcherImpl::Create(m_urlRequestContext.get()),
                                                 m_dhcpPacFileFetcherFactory->Create(m_urlRequestContext.get()),
                                                 host_resolver.get(),
                                                 nullptr /* NetLog */,
                                                 m_networkDelegate.get()));
 
-    m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
+    m_storage->set_ssl_config_service(std::make_unique<net::SSLConfigServiceDefaults>());
     m_storage->set_transport_security_state(std::unique_ptr<net::TransportSecurityState>(
                                                 new net::TransportSecurityState()));
 
-    if (!m_httpAuthPreferences) {
-        std::vector<std::string> auth_types(std::begin(kDefaultAuthSchemes),
-                                            std::end(kDefaultAuthSchemes));
-        m_httpAuthPreferences.reset(new net::HttpAuthPreferences(auth_types
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-                                                                , std::string() /* gssapi library name */
+    if (!m_httpAuthPreferences)
+        m_httpAuthPreferences.reset(new net::HttpAuthPreferences());
+
+    m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(
+                                                 host_resolver.get(),
+                                                 m_httpAuthPreferences.get()
+#if (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+                                                 , std::string() /* gssapi library name */
 #endif
-                                   ));
-    }
-    m_storage->set_http_auth_handler_factory(
-                net::HttpAuthHandlerRegistryFactory::Create(m_httpAuthPreferences.get(),
-                                                            host_resolver.get()));
+                                            ));
     m_storage->set_http_server_properties(std::unique_ptr<net::HttpServerProperties>(
                                               new net::HttpServerPropertiesImpl));
      // Give |m_storage| ownership at the end in case it's |mapped_host_resolver|.

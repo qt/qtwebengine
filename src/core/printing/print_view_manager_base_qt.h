@@ -147,7 +147,7 @@ protected:
     void TerminatePrintJob(bool cancel);
     void DisconnectFromCurrentPrintJob();
 
-    bool CreateNewPrintJob(printing::PrintJobWorkerOwner* job);
+    bool CreateNewPrintJob(printing::PrinterQuery *job);
     void ReleasePrintJob();
     void ReleasePrinterQuery();
 

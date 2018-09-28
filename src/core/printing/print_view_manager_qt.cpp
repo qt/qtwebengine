@@ -132,16 +132,13 @@ static base::DictionaryValue *createPrintSettings()
     printSettings->SetBoolean(printing::kSettingPrintWithPrivet, false);
     printSettings->SetBoolean(printing::kSettingPrintWithExtension, false);
 
-    printSettings->SetBoolean(printing::kSettingGenerateDraftData, false);
-    printSettings->SetBoolean(printing::kSettingPreviewModifiable, false);
-
     printSettings->SetInteger(printing::kSettingDpiHorizontal, printing::kPointsPerInch);
     printSettings->SetInteger(printing::kSettingDpiVertical, printing::kPointsPerInch);
 
     printSettings->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
     printSettings->SetInteger(printing::kSettingCopies, 1);
     printSettings->SetBoolean(printing::kSettingCollate, false);
-    printSettings->SetBoolean(printing::kSettingGenerateDraftData, false);
+//    printSettings->SetBoolean(printing::kSettingGenerateDraftData, false);
     printSettings->SetBoolean(printing::kSettingPreviewModifiable, false);
 
     printSettings->SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);
@@ -352,8 +349,9 @@ void PrintViewManagerQt::OnRequestPrintPreview(
     PrintPreviewDone();
 }
 
-void PrintViewManagerQt::OnMetafileReadyForPrinting(
-    const PrintHostMsg_DidPreviewDocument_Params& params)
+void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rfh,
+                                                    const PrintHostMsg_DidPreviewDocument_Params& params,
+                                                    const PrintHostMsg_PreviewIds &ids)
 {
     StopWorker(params.document_cookie);
 
@@ -411,7 +409,9 @@ void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
     resetPdfState();
 }
 
-void PrintViewManagerQt::OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params &params)
+void PrintViewManagerQt::OnDidPreviewPage(content::RenderFrameHost* rfh,
+                                          const PrintHostMsg_DidPreviewPage_Params& params,
+                                          const PrintHostMsg_PreviewIds& ids)
 {
     // just consume the message, this is just for sending 'page-preview-ready' for webui
 }

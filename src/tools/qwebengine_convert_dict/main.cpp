@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
     }
 
     if (icuDataDirFound) {
-        PathService::Override(base::DIR_QT_LIBRARY_DATA, toFilePath(icuDataDir));
+        base::PathService::Override(base::DIR_QT_LIBRARY_DATA, toFilePath(icuDataDir));
     } else {
         QTextStream out(stdout);
         out << "Couldn't find ICU data directory. Please check that the following path exists: "

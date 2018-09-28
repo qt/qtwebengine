@@ -42,8 +42,10 @@
 
 #include <QtGlobal> // We need this for the Q_OS_QNX define.
 
+#include "base/memory/scoped_refptr.h"
+
 namespace base {
-class MessageLoop;
+class SingleThreadTaskRunner;
 }
 
 namespace gpu {
@@ -58,7 +60,7 @@ class TextureBase;
 // From the outside, types from incompatible headers referenced in these
 // functions should only be forward-declared and considered as opaque types.
 
-base::MessageLoop *gpu_message_loop();
+scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner();
 gpu::SyncPointManager *sync_point_manager();
 gpu::MailboxManager *mailbox_manager();
 

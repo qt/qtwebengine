@@ -119,7 +119,7 @@ bool URLRequestCustomJob::GetCharset(std::string* charset)
     return false;
 }
 
-bool URLRequestCustomJob::IsRedirectResponse(GURL* location, int* http_status_code)
+bool URLRequestCustomJob::IsRedirectResponse(GURL* location, int* http_status_code, bool* /*insecure_scheme_was_upgraded*/)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (m_redirect.is_valid()) {

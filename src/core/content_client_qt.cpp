@@ -250,8 +250,7 @@ namespace QtWebEngineCore {
 
 #if defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 static bool IsWidevineAvailable(base::FilePath *cdm_path,
-                                std::vector<media::VideoCodec> *codecs_supported,
-                                bool *supports_persistent_license)
+                                content::CdmCapability *capability)
 {
     QStringList pluginPaths;
     const base::CommandLine::StringType widevine_argument = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kCdmWidevinePath);
@@ -299,13 +298,20 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         if (base::PathExists(*cdm_path)) {
             // Add the supported codecs as if they came from the component manifest.
             // This list must match the CDM that is being bundled with Chrome.
-            codecs_supported->push_back(media::VideoCodec::kCodecVP8);
-            codecs_supported->push_back(media::VideoCodec::kCodecVP9);
+            capability->video_codecs.push_back(media::VideoCodec::kCodecVP8);
+            capability->video_codecs.push_back(media::VideoCodec::kCodecVP9);
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-            codecs_supported->push_back(media::VideoCodec::kCodecH264);
+            capability->video_codecs.push_back(media::VideoCodec::kCodecH264);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
-            *supports_persistent_license = false;
+            // Add the supported encryption schemes as if they came from the
+            // component manifest. This list must match the CDM that is being
+            // bundled with Chrome.
+            capability->encryption_schemes.insert(media::EncryptionMode::kCenc);
+            capability->encryption_schemes.insert(media::EncryptionMode::kCbcs);
+
+            // Temporary session is always supported.
+            capability->session_types.insert(media::CdmSessionType::kTemporary);
 
             return true;
         }
@@ -322,14 +328,12 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
     if (cdms) {
 #if defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
         base::FilePath cdm_path;
-        std::vector<media::VideoCodec> video_codecs_supported;
-        bool supports_persistent_license = false;
-        if (IsWidevineAvailable(&cdm_path, &video_codecs_supported,
-                                &supports_persistent_license)) {
+        content::CdmCapability capability;
+        if (IsWidevineAvailable(&cdm_path, &capability)) {
             const base::Version version;
             cdms->push_back(content::CdmInfo(kWidevineCdmDisplayName, kWidevineCdmGuid, version, cdm_path,
-                                             kWidevineCdmFileSystemId, video_codecs_supported,
-                                             supports_persistent_license, kWidevineKeySystem, false));
+                                             kWidevineCdmFileSystemId, std::move(capability),
+                                             kWidevineKeySystem, false));
         }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 
@@ -345,8 +349,13 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
             // A variant of ECK key system that has a different GUID.
             const char kExternalClearKeyDifferentGuidTestKeySystem[] =
                     "org.chromium.externalclearkey.differentguid";
-            // ECK implementation supports persistent licenses.
-            constexpr bool supports_persistent_license = true;
+
+            // Supported codecs are hard-coded in ExternalClearKeyProperties.
+            content::CdmCapability capability(
+                {}, {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
+                {media::CdmSessionType::kTemporary,
+                 media::CdmSessionType::kPersistentLicense},
+                {});
 
             // Register kExternalClearKeyDifferentGuidTestKeySystem first separately.
             // Otherwise, it'll be treated as a sub-key-system of normal
@@ -354,13 +363,13 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
             // ECKEncryptedMediaTest.
             cdms->push_back(content::CdmInfo(media::kClearKeyCdmDisplayName, media::kClearKeyCdmDifferentGuid,
                                              base::Version("0.1.0.0"), clear_key_cdm_path,
-                                             media::kClearKeyCdmFileSystemId, {}, supports_persistent_license,
+                                             media::kClearKeyCdmFileSystemId, capability,
                                              kExternalClearKeyDifferentGuidTestKeySystem, false));
 
             // Supported codecs are hard-coded in ExternalClearKeyProperties.
             cdms->push_back(content::CdmInfo(media::kClearKeyCdmDisplayName, media::kClearKeyCdmGuid,
                                              base::Version("0.1.0.0"), clear_key_cdm_path,
-                                             media::kClearKeyCdmFileSystemId, {}, supports_persistent_license,
+                                             media::kClearKeyCdmFileSystemId, capability,
                                              kExternalClearKeyKeySystem, true));
         }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

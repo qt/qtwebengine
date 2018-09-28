@@ -53,13 +53,6 @@ namespace QtWebEngineCore {
 ResourceContextQt::ResourceContextQt(ProfileIODataQt *io_data)
     : m_io_data(io_data)
 {
-
-}
-
-net::HostResolver *ResourceContextQt::GetHostResolver()
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    return GetRequestContext()->host_resolver();
 }
 
 net::URLRequestContext* ResourceContextQt::GetRequestContext()

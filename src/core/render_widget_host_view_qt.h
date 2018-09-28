@@ -45,7 +45,9 @@
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/view_messages.h"
@@ -116,7 +118,6 @@ public:
     void InitAsFullscreen(content::RenderWidgetHostView*) override;
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
-    gfx::Vector2d GetOffsetFromRootSurface() override;
     gfx::Size GetCompositorViewportPixelSize() const override;
     gfx::NativeView GetNativeView() const override;
     gfx::NativeViewAccessible GetNativeViewAccessible() override;
@@ -127,8 +128,7 @@ public:
     void Hide() override;
     bool IsShowing() override;
     gfx::Rect GetViewBounds() const override;
-    SkColor background_color() const override;
-    void SetBackgroundColor(SkColor color) override;
+    void UpdateBackgroundColor() override;
     bool LockMouse() override;
     void UnlockMouse() override;
     void UpdateCursor(const content::WebCursor&) override;
@@ -141,8 +141,11 @@ public:
     void SetTooltipText(const base::string16 &tooltip_text) override;
     void DisplayTooltipText(const base::string16& tooltip_text) override;
     void DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
-    void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame, viz::mojom::HitTestRegionListPtr) override;
+    void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame, base::Optional<viz::HitTestRegionList>) override;
     void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
+    content::MouseWheelPhaseHandler *GetMouseWheelPhaseHandler() override;
+    viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata) override;
+    void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);
 
     void GetScreenInfo(content::ScreenInfo* results) const override;
     gfx::Rect GetBoundsInRootWindow() override;
@@ -151,7 +154,11 @@ public:
     void SetNeedsBeginFrames(bool needs_begin_frames) override;
     void SetWantsAnimateOnlyBeginFrames() override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
+    const viz::FrameSinkId &GetFrameSinkId() const override;
+    const viz::LocalSurfaceId &GetLocalSurfaceId() const override;
     void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
+    void EnsureSurfaceSynchronizedForLayoutTest() override;
+    uint32_t GetCaptureSequenceNumber() const override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -243,8 +250,8 @@ private:
 
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
-    SkColor m_backgroundColor;
     viz::LocalSurfaceId m_localSurfaceId;
+    viz::ParentLocalSurfaceIdAllocator m_localSurfaceIdAllocator;
 
     uint m_imState;
     int m_anchorPositionWithinSelection;
@@ -256,8 +263,11 @@ private:
     bool m_imeHasHiddenTextCapability;
 
     bool m_wheelAckPending;
+    bool m_pendingResize;
     QList<blink::WebMouseWheelEvent> m_pendingWheelEvents;
+    content::MouseWheelPhaseHandler m_mouseWheelPhaseHandler;
 
+    uint32_t m_latestCaptureSequenceNumber = 0u;
     std::string m_editCommand;
 };
 

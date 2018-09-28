@@ -84,6 +84,7 @@ FaviconManager::~FaviconManager()
 
 int FaviconManager::downloadIcon(const QUrl &url)
 {
+    static const uint32_t maxSize = 256;
     static int fakeId = 0;
     int id;
 
@@ -95,7 +96,7 @@ int FaviconManager::downloadIcon(const QUrl &url)
         id = m_webContents->DownloadImage(
              toGurl(url),
              true, // is_favicon
-             0,    // no max size
+             maxSize,
              false, // normal cache policy
              base::Bind(&FaviconManager::iconDownloadFinished, m_weakFactory->GetWeakPtr()));
     }

@@ -15,14 +15,9 @@ Module {
         isCreatable: false
         exportMetaObjectRevisions: [0]
         Property { name: "text"; type: "string"; isReadonly: true }
-        Property { name: "iconText"; type: "string"; isReadonly: true }
+        Property { name: "iconName"; type: "string"; isReadonly: true }
         Property { name: "enabled"; type: "bool"; isReadonly: true }
-        Signal { name: "toggled" }
         Signal { name: "triggered" }
-        Signal {
-            name: "enabledChanged"
-            Parameter { name: "enabled"; type: "bool" }
-        }
         Method { name: "trigger" }
     }
     Component {

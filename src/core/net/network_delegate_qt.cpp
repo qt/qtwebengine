@@ -102,13 +102,13 @@ public:
                            bool isMainFrameRequest,
                            int navigationType,
                            int frameTreeNodeId,
-                           const net::CompletionCallback &callback)
+                           net::CompletionOnceCallback callback)
         : m_request(request)
         , m_url(url)
         , m_isMainFrameRequest(isMainFrameRequest)
         , m_navigationType(navigationType)
         , m_frameTreeNodeId(frameTreeNodeId)
-        , m_callback(callback)
+        , m_callback(std::move(callback))
     {
         DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -172,7 +172,7 @@ private:
         content::BrowserThread::PostTask(
             content::BrowserThread::IO,
             FROM_HERE,
-            base::Bind(&URLRequestNotification::complete, base::Unretained(this), error));
+            base::BindOnce(&URLRequestNotification::complete, base::Unretained(this), error));
     }
 
     void complete(int error)
@@ -181,7 +181,7 @@ private:
 
         if (m_request) {
             if (m_request->status().status() != net::URLRequestStatus::CANCELED)
-                m_callback.Run(error);
+                std::move(m_callback).Run(error);
             m_request->RemoveUserData(UserData::key);
         }
 
@@ -195,7 +195,7 @@ private:
     bool m_isMainFrameRequest;
     int m_navigationType;
     int m_frameTreeNodeId;
-    net::CompletionCallback m_callback;
+    net::CompletionOnceCallback m_callback;
 };
 
 const char URLRequestNotification::UserData::key[] = "QtWebEngineCore::URLRequestNotification";
@@ -207,7 +207,7 @@ NetworkDelegateQt::NetworkDelegateQt(ProfileIODataQt *data)
 {
 }
 
-int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::CompletionCallback &callback, GURL *newUrl)
+int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::CompletionOnceCallback callback, GURL *newUrl)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_profileIOData);
@@ -264,7 +264,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
         resourceInfo->IsMainFrame(),
         navigationType,
         frameTreeNodeId,
-        callback
+        std::move(callback)
     );
 
     // We'll run the callback after we notified the UI thread.
@@ -281,12 +281,13 @@ void NetworkDelegateQt::OnCompleted(net::URLRequest */*request*/, bool /*started
 
 bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
                                        const net::CanonicalCookie & /*cookie*/,
-                                       net::CookieOptions*)
+                                       net::CookieOptions*,
+                                       bool /*allowed_from_caller*/)
 {
     return canSetCookies(request.site_for_cookies(), request.url(), std::string());
 }
 
-bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const net::CookieList&)
+bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const net::CookieList&, bool /*allowed_from_caller*/)
 {
     return canGetCookies(request.site_for_cookies(), request.url());
 }
@@ -308,7 +309,7 @@ bool NetworkDelegateQt::canGetCookies(const GURL &first_party, const GURL &url) 
     return m_profileIOData->canGetCookies(toQt(first_party), toQt(url));
 }
 
-int NetworkDelegateQt::OnBeforeStartTransaction(net::URLRequest *request, const net::CompletionCallback &callback, net::HttpRequestHeaders *headers)
+int NetworkDelegateQt::OnBeforeStartTransaction(net::URLRequest *, net::CompletionOnceCallback, net::HttpRequestHeaders *)
 {
     return net::OK;
 }
@@ -322,7 +323,7 @@ void NetworkDelegateQt::OnStartTransaction(net::URLRequest *request, const net::
 {
 }
 
-int NetworkDelegateQt::OnHeadersReceived(net::URLRequest*, const net::CompletionCallback&, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*)
+int NetworkDelegateQt::OnHeadersReceived(net::URLRequest*, net::CompletionOnceCallback, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*)
 {
     return net::OK;
 }
@@ -347,7 +348,7 @@ void NetworkDelegateQt::OnPACScriptError(int, const base::string16&)
 {
 }
 
-net::NetworkDelegate::AuthRequiredResponse NetworkDelegateQt::OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, const AuthCallback&, net::AuthCredentials*)
+net::NetworkDelegate::AuthRequiredResponse NetworkDelegateQt::OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, AuthCallback, net::AuthCredentials*)
 {
     return AUTH_REQUIRED_RESPONSE_NO_ACTION;
 }
