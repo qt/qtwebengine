@@ -183,7 +183,7 @@ public:
 
     virtual ~DelegatedNodeTreeHandler(){}
 
-    virtual void setupRenderPassNode(QSGTexture *, const QRect &, QSGNode *) = 0;
+    virtual void setupRenderPassNode(QSGTexture *, const QRect &, const QRectF &, QSGNode *) = 0;
     virtual void setupTextureContentNode(QSGTexture *, const QRect &, const QRectF &,
                                          QSGImageNode::TextureCoordinatesTransformMode,
                                          QSGNode *) = 0;
@@ -213,13 +213,14 @@ public:
     {
     }
 
-    void setupRenderPassNode(QSGTexture *layer, const QRect &rect, QSGNode *) override
+    void setupRenderPassNode(QSGTexture *layer, const QRect &rect, const QRectF &sourceRect, QSGNode *) override
     {
         Q_ASSERT(layer);
         Q_ASSERT(m_nodeIterator != m_sceneGraphNodes->end());
         QSGInternalImageNode *imageNode = static_cast<QSGInternalImageNode*>(*m_nodeIterator++);
         imageNode->setTargetRect(rect);
         imageNode->setInnerTargetRect(rect);
+        imageNode->setSubSourceRect(layer->convertToNormalizedSourceRect(sourceRect));
         imageNode->setTexture(layer);
         imageNode->update();
     }
@@ -298,14 +299,15 @@ public:
     {
     }
 
-    void setupRenderPassNode(QSGTexture *layer, const QRect &rect,
+    void setupRenderPassNode(QSGTexture *layer, const QRect &rect, const QRectF &sourceRect,
                              QSGNode *layerChain) override
     {
         Q_ASSERT(layer);
         // Only QSGInternalImageNode currently supports QSGLayer textures.
-        QSGInternalImageNode *imageNode = m_apiDelegate->createImageNode();
+        QSGInternalImageNode *imageNode = m_apiDelegate->createInternalImageNode();
         imageNode->setTargetRect(rect);
         imageNode->setInnerTargetRect(rect);
+        imageNode->setSubSourceRect(layer->convertToNormalizedSourceRect(sourceRect));
         imageNode->setTexture(layer);
         imageNode->update();
 
@@ -1072,13 +1074,14 @@ void DelegatedFrameNode::handleQuad(
         const viz::RenderPassDrawQuad *renderPassQuad = viz::RenderPassDrawQuad::MaterialCast(quad);
         if (!renderPassQuad->mask_texture_size.IsEmpty()) {
             ResourceHolder *resource = findAndHoldResource(renderPassQuad->mask_resource_id(), resourceCandidates);
-            Q_UNUSED(resource); // FIXME
+            Q_UNUSED(resource); // FIXME: QTBUG-67652
         }
-        QSGTexture *layer =
+        QSGLayer *layer =
             findRenderPassLayer(renderPassQuad->render_pass_id, m_sgObjects.renderPassLayers).data();
 
         if (layer)
-            nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), currentLayerChain);
+            nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), toQt(renderPassQuad->tex_coord_rect), currentLayerChain);
+
         break;
     }
     case viz::DrawQuad::TEXTURE_CONTENT: {
