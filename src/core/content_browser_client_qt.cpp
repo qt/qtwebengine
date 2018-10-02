@@ -689,6 +689,8 @@ std::unique_ptr<base::Value> ContentBrowserClientQt::GetServiceManifestOverlay(b
         id = IDR_QTWEBENGINE_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY;
     else if (name == content::mojom::kRendererServiceName)
         id = IDR_QTWEBENGINE_CONTENT_RENDERER_MANIFEST_OVERLAY;
+    else if (name == content::mojom::kBrowserServiceName)
+        id = IDR_QTWEBENGINE_CONTENT_BROWSER_MANIFEST_OVERLAY;
     if (id == -1)
         return nullptr;
 
