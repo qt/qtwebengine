@@ -58,31 +58,26 @@ namespace QtWebEngineCore {
 SurfaceFactoryQt::SurfaceFactoryQt()
 {
     // Fixme: make better platform switch handling
-    QString platform = qApp->platformName();
-    if (platform == QLatin1String("xcb")) {
-        m_impls.push_back(gl::kGLImplementationDesktopGL);
+    Q_ASSERT(qApp);
+    if (qApp->platformName() == QLatin1String("xcb")) {
+        m_impl = gl::kGLImplementationDesktopGL;
+#if QT_CONFIG(webengine_system_x11)
+        m_ozone.reset(new ui::GLOzoneGLXQt());
+#endif
     } else {
-        m_impls.push_back(gl::kGLImplementationEGLGLES2);
+        m_impl = gl::kGLImplementationEGLGLES2;
+        m_ozone.reset(new ui::GLOzoneEGLQt());
     }
 }
 
 std::vector<gl::GLImplementation> SurfaceFactoryQt::GetAllowedGLImplementations()
 {
-    return m_impls;
+    return { m_impl };
 }
 
 ui::GLOzone* SurfaceFactoryQt::GetGLOzone(gl::GLImplementation implementation)
 {
-
-    QString platform = qApp->platformName();
-    if (platform == QLatin1String("xcb")) {
-#if QT_CONFIG(webengine_system_x11)
-        return new ui::GLOzoneGLXQt();
-#endif
-        return nullptr;
-    } else {
-        return new ui::GLOzoneEGLQt();
-    }
+    return m_ozone.get();
 }
 
 } // namespace QtWebEngineCore

@@ -67,7 +67,6 @@ namespace QtWebEngineCore {
 class ProfileAdapter;
 class ContentMainDelegateQt;
 class DevToolsServerQt;
-class SurfaceFactoryQt;
 
 bool usingSoftwareDynamicGL();
 
