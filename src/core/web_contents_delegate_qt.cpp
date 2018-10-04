@@ -602,14 +602,12 @@ void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransitio
     }
 
     if (!navigationAllowedByPolicy || !navigationRequestAccepted) {
+        QString errorDescription;
         if (!navigationAllowedByPolicy)
-            didFailLoad(url, 420, QStringLiteral("Launching external protocol forbidden by WebEngineSettings::UnknownUrlSchemePolicy"));
+            errorDescription = QStringLiteral("Launching external protocol forbidden by WebEngineSettings::UnknownUrlSchemePolicy");
         else
-            didFailLoad(url, 420, QStringLiteral("Launching external protocol suppressed by WebContentsAdapterClient::navigationRequested"));
-        if (settings->testAttribute(WebEngineSettings::ErrorPageEnabled)) {
-            EmitLoadStarted(toQt(GURL(content::kUnreachableWebDataURL)), true);
-            m_viewClient->webContentsAdapter()->load(toQt(GURL(content::kUnreachableWebDataURL)));
-        }
+            errorDescription = QStringLiteral("Launching external protocol suppressed by WebContentsAdapterClient::navigationRequested");
+        didFailLoad(url, net::Error::ERR_ABORTED, errorDescription);
     }
 }
 

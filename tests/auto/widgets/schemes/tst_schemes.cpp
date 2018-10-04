@@ -68,7 +68,7 @@ void tst_Schemes::unknownUrlSchemePolicy()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QWebEngineSettings *settings = view.page()->profile()->settings();
-    settings->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    settings->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
     settings->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
 
     QWebEngineSettings::UnknownUrlSchemePolicy policies[6] = {QWebEngineSettings::DisallowUnknownUrlSchemes,
@@ -103,8 +103,7 @@ void tst_Schemes::unknownUrlSchemePolicy()
             });
         }
 
-        bool errorPageEnabled = settings->testAttribute(QWebEngineSettings::ErrorPageEnabled);
-        QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 2 + (errorPageEnabled ? 1 : 0), 15000);
+        QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 2, 15000);
         QCOMPARE(page.acceptNavigationRequestCalls, shouldAccept ? 1 : 0);
     }
 }
