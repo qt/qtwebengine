@@ -82,6 +82,9 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('base/android')
         or file_path.startswith('breakpad')
         or file_path.startswith('buildtools/clang_format/script')
+        or file_path.startswith('buildtools/third_party/libc++')
+        or file_path.startswith('buildtools/third_party/libc++abi')
+        or file_path.startswith('buildtools/third_party/libunwind')
         or (file_path.startswith('chrome/') and
             not file_path.startswith('chrome/VERSION') and
             not file_path.startswith('chrome/browser/chrome_notification_types.h') and
@@ -197,7 +200,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/icu/android')
         or file_path.startswith('third_party/icu/ios')
         or file_path.startswith('third_party/instrumented_libraries')
-        or file_path.startswith('third_party/jsr-305/src')
+        or file_path.startswith('third_party/jsr-305')
         or file_path.startswith('third_party/junit')
         or file_path.startswith('third_party/lcov')
         or file_path.startswith('third_party/libphonenumber')
@@ -229,7 +232,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/talloc')
         or file_path.startswith('third_party/trace-viewer')
         or file_path.startswith('third_party/undoview')
-        or file_path.startswith('third_party/wayland/src')
+        or file_path.startswith('third_party/wayland')
         or file_path.startswith('third_party/webgl')
         or file_path.startswith('third_party/webrtc/resources/')
         or file_path.startswith('third_party/webrtc/third_party/boringssl/crypto_test_data.cc')
