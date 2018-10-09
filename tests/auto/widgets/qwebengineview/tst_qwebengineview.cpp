@@ -2811,6 +2811,7 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("policy") << QUrl("chrome://policy") << false;
     QTest::newRow("predictors") << QUrl("chrome://predictors") << false;
     QTest::newRow("print") << QUrl("chrome://print") << false;
+    QTest::newRow("process-internals") << QUrl("chrome://process-internals") << true;
     QTest::newRow("profiler") << QUrl("chrome://profiler") << false;
     QTest::newRow("quota-internals") << QUrl("chrome://quota-internals") << true;
     QTest::newRow("safe-browsing") << QUrl("chrome://safe-browsing") << false;
