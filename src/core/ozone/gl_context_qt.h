@@ -58,7 +58,7 @@ public:
     static bool initializeContext(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs);
 
     static void* getEGLConfig();
-    static void* getXConfig();
+    static void* getGlXConfig();
     static void* getEGLDisplay();
     static void* getXDisplay();
     static void* getNativeDisplay();

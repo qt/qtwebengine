@@ -59,7 +59,7 @@ SurfaceFactoryQt::SurfaceFactoryQt()
 {
     Q_ASSERT(qApp);
 #if QT_CONFIG(webengine_system_x11)
-    if (GLContextHelper::getXConfig()) {
+    if (GLContextHelper::getGlXConfig()) {
         m_impl = gl::kGLImplementationDesktopGL;
         m_ozone.reset(new ui::GLOzoneGLXQt());
     } else

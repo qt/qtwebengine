@@ -112,7 +112,7 @@ void* GLContextHelper::getEGLConfig()
     return resourceForContext(resource);
 }
 
-void* GLContextHelper::getXConfig()
+void* GLContextHelper::getGlXConfig()
 {
     return resourceForContext(QByteArrayLiteral("glxconfig"));
 }
