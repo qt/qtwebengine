@@ -3,7 +3,7 @@ DESTDIR = $$OUT_PWD/$$getConfigDir()
 
 TEMPLATE = lib
 
-CONFIG += staticlib c++14
+CONFIG += staticlib
 QT += network core-private webenginecoreheaders-private
 
 # Don't create .prl file for this intermediate library because
@@ -27,7 +27,7 @@ INCLUDEPATH += $$QTWEBENGINE_ROOT/src/core \
                $$CHROMIUM_GEN_DIR \
                $$CHROMIUM_SRC_DIR
 
-linux-g++*: QMAKE_CXXFLAGS += -Wno-unused-parameter
+gcc: QMAKE_CXXFLAGS_WARN_ON = -Wno-unused-parameter
 
 HEADERS = \
     qwebenginecallback.h \
@@ -59,6 +59,7 @@ SOURCES = \
 
 ### Qt6 Remove this workaround
 unix:!isEmpty(QMAKE_LFLAGS_VERSION_SCRIPT):!static {
+    CONFIG -= warning_clean
     SOURCES += qtbug-60565.cpp \
                qtbug-61521.cpp
 }
@@ -70,3 +71,5 @@ msvc {
         "if exist $(DESTDIR_TARGET).objects del $(DESTDIR_TARGET).objects$$escape_expand(\\n\\t)" \
         "for %%a in ($(OBJECTS)) do echo $$shell_quote($$shell_path($$OUT_PWD))\\%%a >> $(DESTDIR_TARGET).objects"
 }
+
+load(qt_common)
