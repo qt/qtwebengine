@@ -10,3 +10,6 @@ qtConfig(webengine-webchannel): QT += webchannel
 
 # LTO does not work for Chromium at the moment, so disable it completely for core.
 CONFIG -= ltcg
+
+# Chromium requires C++14
+CONFIG += c++14

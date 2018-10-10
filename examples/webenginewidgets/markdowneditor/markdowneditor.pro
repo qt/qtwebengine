@@ -1,7 +1,6 @@
 TEMPLATE = app
 
 QT += webenginewidgets webchannel
-CONFIG += c++11
 
 HEADERS += \
     mainwindow.h \

@@ -1,7 +1,6 @@
 TEMPLATE = app
 TARGET = simplebrowser
 QT += webenginewidgets
-CONFIG += c++11
 
 HEADERS += \
     browser.h \

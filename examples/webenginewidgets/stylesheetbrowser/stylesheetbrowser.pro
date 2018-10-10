@@ -1,7 +1,6 @@
 TEMPLATE = app
 TARGET = stylesheetbrowser
 QT += webenginewidgets
-CONFIG += c++11
 
 HEADERS += \
     mainwindow.h \
