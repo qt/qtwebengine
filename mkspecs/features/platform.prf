@@ -62,7 +62,8 @@ defineTest(isPlatformSupported) {
     return(false)
   }
 
-  !contains(QT_CONFIG, c++14) {
+  # QMAKE doesn't set c++14 for MSVC2017, so only test for gcc and clang (which pretends to be gcc)
+  gcc:!contains(QT_CONFIG, c++14) {
     skipBuild("C++14 support is required in order to build chromium.")
     return(false)
   }
