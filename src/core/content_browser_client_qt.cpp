@@ -76,6 +76,7 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/proxy_resolver/proxy_resolver_service.h"
 #include "third_party/WebKit/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -104,6 +105,7 @@
 #include "quota_permission_context_qt.h"
 #include "renderer_host/resource_dispatcher_host_delegate_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
+#include "type_conversion.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
@@ -679,6 +681,11 @@ void ContentBrowserClientQt::RegisterInProcessServices(StaticServiceMap* service
     service_manager::EmbeddedServiceInfo info;
     info.factory = base::Bind(&ServiceQt::Create);
     services->insert(std::make_pair("qtwebengine", info));
+}
+
+void ContentBrowserClientQt::RegisterOutOfProcessServices(content::ContentBrowserClient::OutOfProcessServiceMap *services)
+{
+    (*services)[proxy_resolver::mojom::kProxyResolverServiceName] = toString16(QLatin1String("V8 Proxy Resolver"));
 }
 
 std::unique_ptr<base::Value> ContentBrowserClientQt::GetServiceManifestOverlay(base::StringPiece name)

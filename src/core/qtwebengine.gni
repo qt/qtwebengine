@@ -31,6 +31,7 @@ deps = [
   "//third_party/WebKit/public:blink",
   "//ui/accessibility",
   "//third_party/mesa:mesa_headers",
+  "//services/proxy_resolver:lib",
   ":qtwebengine_sources",
   ":qtwebengine_resources"
 ]

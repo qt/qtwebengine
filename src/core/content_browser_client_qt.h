@@ -119,6 +119,7 @@ public:
                                        const std::string& interface_name,
                                        mojo::ScopedMessagePipeHandle interface_pipe) override;
     void RegisterInProcessServices(StaticServiceMap* services) override;
+    void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
     std::unique_ptr<base::Value> GetServiceManifestOverlay(base::StringPiece name) override;
     bool CanCreateWindow(
         content::RenderFrameHost* opener,
