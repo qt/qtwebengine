@@ -124,9 +124,9 @@ bool GLSurfaceGLXQt::InitializeOneOff()
         return false;
     }
 
-    g_config = GLContextHelper::getXConfig();
+    g_config = GLContextHelper::getGlXConfig();
     if (!g_config) {
-        LOG(ERROR) << "GLContextHelper::getXConfig() failed.";
+        LOG(ERROR) << "GLContextHelper::getGlxConfig() failed.";
         return false;
     }
 

@@ -1,7 +1,6 @@
 QT += core gui webenginewidgets
 TARGET = cookiebrowser
 TEMPLATE = app
-CONFIG += c++11
 
 SOURCES += \
     main.cpp\

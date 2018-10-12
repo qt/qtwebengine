@@ -51,10 +51,14 @@ QT_BEGIN_NAMESPACE
     \since 5.12
     \inmodule QtWebEngineWidgets
 
-    Provides access to the certificates to choose from, and a method for selecting one.
+    When a web site requests an SSL client certificate, and one or more certificates
+    are found in the system's client certificate store, this class provides access to
+    the certificates to choose from, as well as a method for selecting one.
 
     The selection is asynchronous. If no certificate is selected and no copy of the
     object is kept alive, loading will continue without a certificate.
+
+    \sa QWebEnginePage::selectClientCertificate()
 */
 
 /*! \internal

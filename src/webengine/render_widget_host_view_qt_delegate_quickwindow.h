@@ -69,8 +69,8 @@ public:
     QWindow* window() const override;
     QSGTexture *createTextureFromImage(const QImage &) override;
     QSGLayer *createLayer() override;
-    QSGInternalImageNode *createImageNode() override;
-    QSGTextureNode *createTextureNode() override;
+    QSGInternalImageNode *createInternalImageNode() override;
+    QSGImageNode *createImageNode() override;
     QSGRectangleNode *createRectangleNode() override;
     void update() override;
     void updateCursor(const QCursor &) override;

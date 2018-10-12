@@ -177,13 +177,13 @@ QSGLayer *RenderWidgetHostViewQtDelegateQuick::createLayer()
     return renderContext->sceneGraphContext()->createLayer(renderContext);
 }
 
-QSGInternalImageNode *RenderWidgetHostViewQtDelegateQuick::createImageNode()
+QSGInternalImageNode *RenderWidgetHostViewQtDelegateQuick::createInternalImageNode()
 {
     QSGRenderContext *renderContext = QQuickWindowPrivate::get(QQuickItem::window())->context;
     return renderContext->sceneGraphContext()->createInternalImageNode();
 }
 
-QSGTextureNode *RenderWidgetHostViewQtDelegateQuick::createTextureNode()
+QSGImageNode *RenderWidgetHostViewQtDelegateQuick::createImageNode()
 {
     return QQuickItem::window()->createImageNode();
 }

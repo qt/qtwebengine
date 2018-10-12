@@ -4,7 +4,6 @@ QT_FOR_CONFIG += webenginecore
 TEMPLATE = app
 TARGET = spellchecker
 QT += webenginewidgets
-CONFIG += c++11
 
 !qtConfig(webengine-spellchecker) {
     error("Qt WebEngine compiled without spellchecker support, this example will not work.")

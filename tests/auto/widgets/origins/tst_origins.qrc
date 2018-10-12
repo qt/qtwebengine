@@ -1,6 +1,7 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
 <qresource>
+    <file>resources/createObjectURL.html</file>
     <file>resources/dedicatedWorker.html</file>
     <file>resources/dedicatedWorker.js</file>
     <file>resources/mixedSchemes.html</file>

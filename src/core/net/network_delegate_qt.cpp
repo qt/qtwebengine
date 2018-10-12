@@ -281,13 +281,12 @@ void NetworkDelegateQt::OnCompleted(net::URLRequest */*request*/, bool /*started
 
 bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
                                        const net::CanonicalCookie & /*cookie*/,
-                                       net::CookieOptions*,
-                                       bool /*allowed_from_caller*/)
+                                       net::CookieOptions*)
 {
     return canSetCookies(request.site_for_cookies(), request.url(), std::string());
 }
 
-bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const net::CookieList&, bool /*allowed_from_caller*/)
+bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const net::CookieList&)
 {
     return canGetCookies(request.site_for_cookies(), request.url());
 }

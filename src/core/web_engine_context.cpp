@@ -96,7 +96,6 @@
 #include "net/webui_controller_factory_qt.h"
 #include "type_conversion.h"
 #include "ozone/gl_context_qt.h"
-#include "ozone/surface_factory_qt.h"
 #include "web_engine_library_info.h"
 
 #include <QFileInfo>
@@ -436,14 +435,12 @@ WebEngineContext::WebEngineContext()
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kMojoVideoCapture.name);
 
     if (useEmbeddedSwitches) {
+        // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kOverlayScrollbar.name);
         if (!parsedCommandLine->HasSwitch(switches::kDisablePinch))
             parsedCommandLine->AppendSwitch(switches::kEnablePinch);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
         parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
-        parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-        parsedCommandLine->AppendSwitch(switches::kDisableGpuShaderDiskCache);
-        parsedCommandLine->AppendSwitch(switches::kDisable2dCanvasAntialiasing);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
     base::FeatureList::InitializeInstance(

@@ -39,8 +39,8 @@
 
 #include "surface_factory_qt.h"
 #include "qtwebenginecoreglobal_p.h"
+#include "gl_context_qt.h"
 #include "gl_ozone_egl_qt.h"
-
 #if QT_CONFIG(webengine_system_x11)
 #include "gl_ozone_glx_qt.h"
 #endif
@@ -57,32 +57,29 @@ namespace QtWebEngineCore {
 
 SurfaceFactoryQt::SurfaceFactoryQt()
 {
-    // Fixme: make better platform switch handling
-    QString platform = qApp->platformName();
-    if (platform == QLatin1String("xcb")) {
-        m_impls.push_back(gl::kGLImplementationDesktopGL);
+    Q_ASSERT(qApp);
+#if QT_CONFIG(webengine_system_x11)
+    if (GLContextHelper::getGlXConfig()) {
+        m_impl = gl::kGLImplementationDesktopGL;
+        m_ozone.reset(new ui::GLOzoneGLXQt());
+    } else
+#endif
+    if (GLContextHelper::getEGLConfig()) {
+        m_impl = gl::kGLImplementationEGLGLES2;
+        m_ozone.reset(new ui::GLOzoneEGLQt());
     } else {
-        m_impls.push_back(gl::kGLImplementationEGLGLES2);
+        qFatal("No suitable graphics backend found\n");
     }
 }
 
 std::vector<gl::GLImplementation> SurfaceFactoryQt::GetAllowedGLImplementations()
 {
-    return m_impls;
+    return { m_impl };
 }
 
 ui::GLOzone* SurfaceFactoryQt::GetGLOzone(gl::GLImplementation implementation)
 {
-
-    QString platform = qApp->platformName();
-    if (platform == QLatin1String("xcb")) {
-#if QT_CONFIG(webengine_system_x11)
-        return new ui::GLOzoneGLXQt();
-#endif
-        return nullptr;
-    } else {
-        return new ui::GLOzoneEGLQt();
-    }
+    return m_ozone.get();
 }
 
 } // namespace QtWebEngineCore

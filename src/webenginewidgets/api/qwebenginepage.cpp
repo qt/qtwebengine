@@ -902,7 +902,7 @@ QWebEnginePage::~QWebEnginePage()
     Q_D(QWebEnginePage);
     setDevToolsPage(nullptr);
     d->adapter->stopFinding();
-    QWebEngineViewPrivate::bind(nullptr, this, true);
+    QWebEngineViewPrivate::removePageFromView(this);
 }
 
 QWebEngineHistory *QWebEnginePage::history() const

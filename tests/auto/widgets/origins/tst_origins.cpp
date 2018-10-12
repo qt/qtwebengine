@@ -184,6 +184,7 @@ private Q_SLOTS:
     void sharedWorker();
     void serviceWorker();
     void viewSource();
+    void createObjectURL();
 
 private:
     bool load(const QUrl &url)
@@ -680,6 +681,23 @@ void tst_Origins::viewSource()
 
     QVERIFY(load(QSL("view-source:PathSyntax-ViewSourceAllowed:/resources/viewSource.html")));
     QCOMPARE(m_page->requestedUrl().toString(), QSL("pathsyntax-viewsourceallowed:/resources/viewSource.html"));
+}
+
+void tst_Origins::createObjectURL()
+{
+    // Legal for registered custom schemes.
+    QVERIFY(load(QSL("qrc:/resources/createObjectURL.html")));
+    QVERIFY(eval(QSL("result")).toString().startsWith(QSL("blob:qrc:")));
+
+    // Illegal for unregistered schemes (renderer gets terminated).
+    qRegisterMetaType<QWebEnginePage::RenderProcessTerminationStatus>("RenderProcessTerminationStatus");
+    QSignalSpy loadFinishedSpy(m_page, &QWebEnginePage::loadFinished);
+    QSignalSpy renderProcessTerminatedSpy(m_page, &QWebEnginePage::renderProcessTerminated);
+    m_page->load(QSL("tst:/resources/createObjectURL.html"));
+    QVERIFY(!renderProcessTerminatedSpy.empty() || renderProcessTerminatedSpy.wait(20000));
+    QVERIFY(renderProcessTerminatedSpy.front().value(0).value<QWebEnginePage::RenderProcessTerminationStatus>()
+            != QWebEnginePage::NormalTerminationStatus);
+    QVERIFY(loadFinishedSpy.empty());
 }
 
 QTEST_MAIN(tst_Origins)

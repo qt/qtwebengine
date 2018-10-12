@@ -257,6 +257,7 @@ private:
     QString m_text;
 };
 
+#if QT_CONFIG(webengine_webchannel)
 static QString readFile(const QString &path)
 {
     QFile file(path);
@@ -277,7 +278,7 @@ static QWebEngineScript webChannelScript()
     script.setWorldId(QWebEngineScript::MainWorld);
     return script;
 }
-#if QT_CONFIG(webengine_webchannel)
+
 void tst_QWebEngineScript::webChannel_data()
 {
     QTest::addColumn<int>("worldId");

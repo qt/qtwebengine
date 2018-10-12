@@ -65,7 +65,10 @@ public:
     Q_DECLARE_PUBLIC(QWebEngineView)
     QWebEngineView *q_ptr;
 
-    static void bind(QWebEngineView *view, QWebEnginePage *page, bool pageBeingDeleted = false);
+    static void notify(QWebEngineView *view, QWebEnginePage *oldPage, QWebEnginePage *newPage);
+    static QWebEnginePage* removeViewFromPage(QWebEngineView *view);
+    static void removePageFromView(QWebEnginePage *page);
+    static void bind(QWebEngineView *view, QWebEnginePage *page);
 
     QWebEngineViewPrivate();
 

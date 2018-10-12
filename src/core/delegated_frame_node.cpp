@@ -183,12 +183,10 @@ public:
 
     virtual ~DelegatedNodeTreeHandler(){}
 
-    virtual void setupRenderPassNode(QSGTexture *, const QRect &, QSGNode *) = 0;
+    virtual void setupRenderPassNode(QSGTexture *, const QRect &, const QRectF &, QSGNode *) = 0;
     virtual void setupTextureContentNode(QSGTexture *, const QRect &, const QRectF &,
-                                         QSGTextureNode::TextureCoordinatesTransformMode,
+                                         QSGImageNode::TextureCoordinatesTransformMode,
                                          QSGNode *) = 0;
-    virtual void setupTiledContentNode(QSGTexture *, const QRect &, const QRectF &,
-                                       QSGNode *) = 0;
     virtual void setupSolidColorNode(const QRect &, const QColor &, QSGNode *) = 0;
 
 #ifndef QT_NO_OPENGL
@@ -215,47 +213,34 @@ public:
     {
     }
 
-    void setupRenderPassNode(QSGTexture *layer, const QRect &rect, QSGNode *) override
+    void setupRenderPassNode(QSGTexture *layer, const QRect &rect, const QRectF &sourceRect, QSGNode *) override
     {
         Q_ASSERT(layer);
         Q_ASSERT(m_nodeIterator != m_sceneGraphNodes->end());
         QSGInternalImageNode *imageNode = static_cast<QSGInternalImageNode*>(*m_nodeIterator++);
         imageNode->setTargetRect(rect);
         imageNode->setInnerTargetRect(rect);
+        imageNode->setSubSourceRect(layer->convertToNormalizedSourceRect(sourceRect));
         imageNode->setTexture(layer);
         imageNode->update();
     }
 
     void setupTextureContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
-                                 QSGTextureNode::TextureCoordinatesTransformMode texCoordTransForm,
+                                 QSGImageNode::TextureCoordinatesTransformMode texCoordTransForm,
                                  QSGNode *) override
     {
         Q_ASSERT(m_nodeIterator != m_sceneGraphNodes->end());
-        QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
+        QSGImageNode *textureNode = static_cast<QSGImageNode*>(*m_nodeIterator++);
         if (textureNode->texture() != texture) {
+            // Chromium sometimes uses textures that doesn't completely fit
+            // in which case the geometry needs to be recalculated even if
+            // rect and src-rect matches.
+            if (textureNode->texture()->textureSize() != texture->textureSize())
+                textureNode->markDirty(QSGImageNode::DirtyGeometry);
             textureNode->setTexture(texture);
-            // @TODO: This is a workaround for funky rendering, figure out why this is needed.
-            textureNode->markDirty(QSGTextureNode::DirtyGeometry);
         }
         if (textureNode->textureCoordinatesTransform() != texCoordTransForm)
             textureNode->setTextureCoordinatesTransform(texCoordTransForm);
-        if (textureNode->rect() != rect)
-            textureNode->setRect(rect);
-        if (textureNode->sourceRect() != sourceRect)
-            textureNode->setSourceRect(sourceRect);
-        if (textureNode->filtering() != texture->filtering())
-            textureNode->setFiltering(texture->filtering());
-    }
-    void setupTiledContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
-                               QSGNode *) override
-    {
-        Q_ASSERT(m_nodeIterator != m_sceneGraphNodes->end());
-        QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
-        if (textureNode->texture() != texture) {
-            textureNode->setTexture(texture);
-            // @TODO: This is a workaround for funky rendering, figure out why this is needed.
-            textureNode->markDirty(QSGTextureNode::DirtyGeometry);
-        }
         if (textureNode->rect() != rect)
             textureNode->setRect(rect);
         if (textureNode->sourceRect() != sourceRect)
@@ -314,14 +299,15 @@ public:
     {
     }
 
-    void setupRenderPassNode(QSGTexture *layer, const QRect &rect,
+    void setupRenderPassNode(QSGTexture *layer, const QRect &rect, const QRectF &sourceRect,
                              QSGNode *layerChain) override
     {
         Q_ASSERT(layer);
         // Only QSGInternalImageNode currently supports QSGLayer textures.
-        QSGInternalImageNode *imageNode = m_apiDelegate->createImageNode();
+        QSGInternalImageNode *imageNode = m_apiDelegate->createInternalImageNode();
         imageNode->setTargetRect(rect);
         imageNode->setInnerTargetRect(rect);
+        imageNode->setSubSourceRect(layer->convertToNormalizedSourceRect(sourceRect));
         imageNode->setTexture(layer);
         imageNode->update();
 
@@ -330,28 +316,15 @@ public:
     }
 
     void setupTextureContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
-                                 QSGTextureNode::TextureCoordinatesTransformMode texCoordTransForm,
+                                 QSGImageNode::TextureCoordinatesTransformMode texCoordTransForm,
                                  QSGNode *layerChain) override
     {
-        QSGTextureNode *textureNode = m_apiDelegate->createTextureNode();
+        QSGImageNode *textureNode = m_apiDelegate->createImageNode();
         textureNode->setTextureCoordinatesTransform(texCoordTransForm);
         textureNode->setRect(rect);
         textureNode->setSourceRect(sourceRect);
         textureNode->setTexture(texture);
         textureNode->setFiltering(texture->filtering());
-
-        layerChain->appendChildNode(textureNode);
-        m_sceneGraphNodes->append(textureNode);
-    }
-
-    void setupTiledContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
-                               QSGNode *layerChain) override
-    {
-        QSGTextureNode *textureNode = m_apiDelegate->createTextureNode();
-        textureNode->setRect(rect);
-        textureNode->setSourceRect(sourceRect);
-        textureNode->setFiltering(texture->filtering());
-        textureNode->setTexture(texture);
 
         layerChain->appendChildNode(textureNode);
         m_sceneGraphNodes->append(textureNode);
@@ -1101,13 +1074,14 @@ void DelegatedFrameNode::handleQuad(
         const viz::RenderPassDrawQuad *renderPassQuad = viz::RenderPassDrawQuad::MaterialCast(quad);
         if (!renderPassQuad->mask_texture_size.IsEmpty()) {
             ResourceHolder *resource = findAndHoldResource(renderPassQuad->mask_resource_id(), resourceCandidates);
-            Q_UNUSED(resource); // FIXME
+            Q_UNUSED(resource); // FIXME: QTBUG-67652
         }
-        QSGTexture *layer =
+        QSGLayer *layer =
             findRenderPassLayer(renderPassQuad->render_pass_id, m_sgObjects.renderPassLayers).data();
 
         if (layer)
-            nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), currentLayerChain);
+            nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), toQt(renderPassQuad->tex_coord_rect), currentLayerChain);
+
         break;
     }
     case viz::DrawQuad::TEXTURE_CONTENT: {
@@ -1124,7 +1098,7 @@ void DelegatedFrameNode::handleQuad(
 
         nodeHandler->setupTextureContentNode(
             texture, toQt(quad->rect), toQt(uv_rect),
-            tquad->y_flipped ? QSGTextureNode::MirrorVertically : QSGTextureNode::NoTransform,
+            tquad->y_flipped ? QSGImageNode::MirrorVertically : QSGImageNode::NoTransform,
             currentLayerChain);
         break;
     }
@@ -1164,10 +1138,10 @@ void DelegatedFrameNode::handleQuad(
     case viz::DrawQuad::TILED_CONTENT: {
         const viz::TileDrawQuad *tquad = viz::TileDrawQuad::MaterialCast(quad);
         ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
-        nodeHandler->setupTiledContentNode(
+        nodeHandler->setupTextureContentNode(
             initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate),
             toQt(quad->rect), toQt(tquad->tex_coord_rect),
-            currentLayerChain);
+            QSGImageNode::NoTransform, currentLayerChain);
         break;
 #ifndef QT_NO_OPENGL
     }
