@@ -59,6 +59,7 @@ namespace QtWebEngineCore {
 ResourceDispatcherHostLoginDelegateQt::ResourceDispatcherHostLoginDelegateQt(net::AuthChallengeInfo *authInfo, net::URLRequest *request)
     : m_authInfo(authInfo)
     , m_request(request)
+    , m_url(request->url())
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     const content::ResourceRequestInfo *requestInfo = content::ResourceRequestInfo::ForRequest(request);
@@ -81,11 +82,12 @@ ResourceDispatcherHostLoginDelegateQt::~ResourceDispatcherHostLoginDelegateQt()
 void ResourceDispatcherHostLoginDelegateQt::OnRequestCancelled()
 {
     destroy();
+    // TODO: this should close native dialog, since page can be navigated somewhere else
 }
 
 QUrl ResourceDispatcherHostLoginDelegateQt::url() const
 {
-    return toQt(m_request->url());
+    return toQt(m_url);
 }
 
 QString ResourceDispatcherHostLoginDelegateQt::realm() const
@@ -135,7 +137,7 @@ void ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester(bool success, co
 void ResourceDispatcherHostLoginDelegateQt::destroy()
 {
     m_dialogController.reset();
-    m_request = 0;
+    m_request = nullptr;
 }
 
 static void LaunchURL(const GURL& url, int render_process_id,

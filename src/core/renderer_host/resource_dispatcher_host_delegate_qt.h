@@ -73,7 +73,7 @@ private:
     // The request that wants login data.
     // Must only be accessed on the IO thread.
     net::URLRequest *m_request;
-
+    GURL m_url;
     // This member is used to keep authentication dialog controller alive until
     // authorization is sent or cancelled.
     QSharedPointer<AuthenticationDialogController> m_dialogController;
