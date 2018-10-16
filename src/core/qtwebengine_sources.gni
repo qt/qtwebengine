@@ -44,6 +44,7 @@ source_set("qtwebengine_sources") {
     "//chrome/common:buildflags",
     "//components/nacl/common:buildflags",
     "//extensions/buildflags:buildflags",
+    "//third_party/blink/public/mojom:mojom_platform",
   ]
   sources = [
     "//chrome/common/custom_handlers/protocol_handler.cc",
