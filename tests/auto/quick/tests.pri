@@ -1,5 +1,5 @@
-include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri) # workaround for QTBUG-68093
-QT_FOR_CONFIG += webenginecore-private
+include($$QTWEBENGINE_OUT_ROOT/src/webengine/qtwebengine-config.pri) # workaround for QTBUG-68093
+QT_FOR_CONFIG += webengine-private
 
 TEMPLATE = app
 

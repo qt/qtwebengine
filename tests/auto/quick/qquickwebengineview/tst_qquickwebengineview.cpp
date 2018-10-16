@@ -41,6 +41,7 @@
 #include <QtGui/private/qinputmethod_p.h>
 #include <QtWebEngine/private/qquickwebengineview_p.h>
 #include <QtWebEngine/private/qquickwebenginesettings_p.h>
+#include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qpa/qplatforminputcontext.h>
 
 #include <functional>

@@ -25,6 +25,8 @@
             "webengine-v8-snapshot": "boolean",
             "webengine-webchannel": "boolean",
             "webengine-kerberos": "boolean",
+            "webengine-widgets": "boolean",
+            "webengine-qml": "boolean",
             "alsa": { "type": "boolean", "name": "webengine-alsa" },
             "pulseaudio": { "type": "boolean", "name": "webengine-pulseaudio" },
             "ffmpeg": { "type": "enum", "name": "webengine-system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
@@ -546,15 +548,6 @@
             "condition": "config.macos && features.webengine-spellchecker",
             "output": [ "publicFeature" ]
         },
-        "webengine-ui-delegates": {
-            "label": "UI Delegates",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-testsupport": {
-            "label": "Test Support",
-            "autoDetect": "features.private_tests || call.isTestsInBuildParts",
-            "output": [ "privateFeature" ]
-        },
         "webengine-webrtc": {
             "label": "WebRTC",
             "purpose": "Provides WebRTC support.",
@@ -657,6 +650,19 @@
             "label": "Thumb instruction set",
             "condition": "config.linux && features.webengine-embedded-build && arch.arm && tests.webengine-arm-thumb",
             "output": [ "privateFeature" ]
+        },
+        "webengine-widgets": {
+            "label": "Qt WebEngine Widgets",
+            "purpose": "Provides WebEngine Widgets support.",
+            "section": "WebEngine",
+            "condition": "module.widgets",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-qml": {
+            "label": "Qt WebEngine Qml",
+            "purpose": "Provides WebEngine Qml support.",
+            "section": "WebEngine",
+            "output": [ "privateFeature" ]
         }
     },
 
@@ -705,8 +711,10 @@
 
     "summary": [
         {
-            "section": "Qt WebEngine",
+            "section": "Qt WebEngineCore",
             "entries": [
+                "webengine-widgets",
+                "webengine-qml",
                 "webengine-embedded-build",
                 "webengine-pepper-plugins",
                 "webengine-printing-and-pdf",

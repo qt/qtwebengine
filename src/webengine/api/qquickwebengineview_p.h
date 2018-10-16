@@ -51,7 +51,6 @@
 // We mean it.
 //
 
-#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 #include <QtWebEngine/private/qtwebengineglobal_p.h>
 #include "qquickwebenginescript.h"
 #include <QQuickItem>

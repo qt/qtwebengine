@@ -39,7 +39,6 @@
 
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
-#include "qtwebenginecoreglobal_p.h"
 #include "authentication_dialog_controller.h"
 #include "profile_adapter.h"
 #include "certificate_error_controller.h"

@@ -1,0 +1,29 @@
+{
+    "module": "webengine",
+    "depends": [
+        "webenginecore-private"
+    ],
+    "features": {
+        "webengine-ui-delegates": {
+            "label": "UI Delegates",
+            "section": "WebEngine",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-testsupport": {
+            "label": "Test Support",
+            "autoDetect": "features.private_tests || call.isTestsInBuildParts",
+            "output": [ "privateFeature" ]
+        }
+    },
+    "summary": [
+        {
+            "section": "Qt WebEngineQml",
+            "condition": "features.webengine-qml",
+            "entries": [
+                "webengine-ui-delegates",
+                "webengine-testsupport"
+            ]
+        }
+    ]
+}
+

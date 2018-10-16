@@ -1,5 +1,5 @@
 include(../tests.pri)
-QT += webengine webengine-private
+QT += core-private webengine webengine-private
 
 HEADERS += \
     server.h \

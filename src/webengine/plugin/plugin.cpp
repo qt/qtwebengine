@@ -40,22 +40,21 @@
 #include <QtQml/qqmlextensionplugin.h>
 #include <QtWebEngine/QQuickWebEngineProfile>
 
-#include "qquickwebenginecertificateerror_p.h"
-#include "qquickwebenginecontextmenurequest_p.h"
-#include "qquickwebenginedialogrequests_p.h"
-#include "qquickwebenginedownloaditem_p.h"
-#include "qquickwebenginehistory_p.h"
-#include "qquickwebenginefaviconprovider_p_p.h"
-#include "qquickwebengineloadrequest_p.h"
-#include "qquickwebenginenavigationrequest_p.h"
-#include "qquickwebenginenewviewrequest_p.h"
-#include "qquickwebenginesettings_p.h"
-#include "qquickwebenginesingleton_p.h"
-#include "qquickwebengineview_p.h"
-#include "qquickwebengineaction_p.h"
-#include "qwebenginequotarequest.h"
-#include "qwebengineregisterprotocolhandlerrequest.h"
-#include "qtwebengineversion.h"
+#include <QtWebEngine/private/qquickwebenginecertificateerror_p.h>
+#include <QtWebEngine/private/qquickwebenginecontextmenurequest_p.h>
+#include <QtWebEngine/private/qquickwebenginedialogrequests_p.h>
+#include <QtWebEngine/private/qquickwebenginedownloaditem_p.h>
+#include <QtWebEngine/private/qquickwebenginehistory_p.h>
+#include <QtWebEngine/private/qquickwebenginefaviconprovider_p_p.h>
+#include <QtWebEngine/private/qquickwebengineloadrequest_p.h>
+#include <QtWebEngine/private/qquickwebenginenavigationrequest_p.h>
+#include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
+#include <QtWebEngine/private/qquickwebenginesettings_p.h>
+#include <QtWebEngine/private/qquickwebenginesingleton_p.h>
+#include <QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/private/qquickwebengineaction_p.h>
+#include <QtWebEngineCore/qwebenginequotarequest.h>
+#include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 
 QT_BEGIN_NAMESPACE
 

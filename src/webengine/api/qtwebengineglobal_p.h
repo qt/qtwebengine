@@ -51,7 +51,9 @@
 // We mean it.
 //
 
-#include "qtwebengineglobal.h"
+#include <QtWebEngine/qtwebengineglobal.h>
+#include <QtCore/private/qglobal_p.h>
+#include <QtWebEngine/private/qtwebengine-config_p.h>
 
 QT_BEGIN_NAMESPACE
 

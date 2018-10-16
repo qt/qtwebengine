@@ -39,7 +39,7 @@
 
 #include <QtQml>
 
-#include "qquickwebenginetestsupport_p.h"
+#include <QtWebEngine/private/qquickwebenginetestsupport_p.h>
 
 QT_BEGIN_NAMESPACE
 

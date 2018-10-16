@@ -26,7 +26,6 @@
 **
 ****************************************************************************/
 
-#include "qtwebengineglobal.h"
 #include "testhandler.h"
 #include "server.h"
 #include <QtWebEngine/private/qquickwebenginedialogrequests_p.h>

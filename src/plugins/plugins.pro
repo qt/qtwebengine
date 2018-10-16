@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-qtHaveModule(designer):qtHaveModule(webenginewidgets): SUBDIRS += qwebengineview
+qtHaveModule(designer): SUBDIRS += qwebengineview
