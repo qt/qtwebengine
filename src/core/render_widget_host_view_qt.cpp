@@ -39,49 +39,38 @@
 
 #include "render_widget_host_view_qt.h"
 
-#include "common/qt_messages.h"
 #include "browser_accessibility_manager_qt.h"
-#include "browser_accessibility_qt.h"
 #include "chromium_overrides.h"
 #include "compositor.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
-#include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 #include "web_event_factory.h"
 
-#include "base/command_line.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
-#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
-#include "components/viz/service/display/direct_renderer.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
-#include "content/browser/browser_main_loop.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
-#include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/input_messages.h"
-#include "content/public/browser/browser_accessibility_state.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
-#include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/image/image_skia.h"
+
+#if defined(USE_OZONE)
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
+#endif
 
 #if defined(USE_AURA)
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursors_aura.h"
+#include "ui/base/resource/resource_bundle.h"
 #endif
 
 #include <private/qguiapplication_p.h>
