@@ -9,6 +9,7 @@ SUBDIRS += \
     faviconmanager \
     loadsignals \
     origins \
+    proxypac \
     schemes \
     shutdown \
     qwebenginedownloaditem \
@@ -27,9 +28,6 @@ qtConfig(webengine-printing-and-pdf) {
     SUBDIRS += printing
 }
 
-# QTBUG-71229
-linux:!boot2qt: SUBDIRS += proxypac
-
 qtConfig(webengine-spellchecker):!cross_compile {
     !qtConfig(webengine-native-spellchecker) {
         SUBDIRS += spellchecking
@@ -43,4 +41,4 @@ boot2qt: SUBDIRS -= accessibility defaultsurfaceformat devtools \
                     faviconmanager qwebenginepage qwebenginehistory \
                     qwebengineprofile qwebenginescript \
                     qwebengineview qwebenginedownloaditem qwebenginesettings \
-                    schemes origins loadsignals
+                    schemes origins loadsignals proxypac

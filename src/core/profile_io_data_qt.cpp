@@ -49,6 +49,7 @@
 #include "content/public/common/content_features.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -640,10 +641,15 @@ void ProfileIODataQt::updateStorageSettings()
         // must synchronously run on the glib message loop. This will be passed to
         // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
         Q_ASSERT(m_proxyConfigService == 0);
+        net::ProxyConfigWithAnnotation initialConfig;
+        ProxyPrefs::ConfigState initialConfigState = PrefProxyConfigTrackerImpl::ReadPrefConfig(
+                    m_profileAdapter->profile()->GetPrefs(), &initialConfig);
+
         m_proxyConfigService =
                 new ProxyConfigServiceQt(
                     net::ProxyResolutionService::CreateSystemProxyConfigService(
-                        base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})));
+                        base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})),
+                        initialConfig, initialConfigState);
         //pass interface to io thread
         m_proxyResolverFactoryInterface = ChromeMojoProxyResolverFactory::CreateWithStrongBinding().PassInterface();
         if (m_initialized)
