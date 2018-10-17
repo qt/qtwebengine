@@ -43,7 +43,9 @@
 
 #include "login_delegate_qt.h"
 
+#include "base/task/post_task.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -66,19 +68,21 @@ LoginDelegateQt::LoginDelegateQt(
     : m_authInfo(authInfo)
     , m_url(url)
     , m_auth_required_callback(std::move(auth_required_callback))
+    , m_webContentsGetter(web_contents_getter)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-
-    content::BrowserThread::PostTask(
-            content::BrowserThread::UI, FROM_HERE,
-            base::Bind(&LoginDelegateQt::triggerDialog,
-                       this,
-                       web_contents_getter));
 }
 
 LoginDelegateQt::~LoginDelegateQt()
 {
     Q_ASSERT(m_dialogController.isNull());
+}
+
+void LoginDelegateQt::triggerDialog()
+{
+    base::PostTaskWithTraits(
+            FROM_HERE, { content::BrowserThread::UI },
+            base::BindOnce(&LoginDelegateQt::triggerDialogOnUI, this));
 }
 
 void LoginDelegateQt::OnRequestCancelled()
@@ -107,11 +111,11 @@ bool LoginDelegateQt::isProxy() const
     return m_authInfo->is_proxy;
 }
 
-void LoginDelegateQt::triggerDialog(const content::ResourceRequestInfo::WebContentsGetter &webContentsGetter)
+void LoginDelegateQt::triggerDialogOnUI()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     content::WebContentsImpl *webContents =
-            static_cast<content::WebContentsImpl *>(webContentsGetter.Run());
+            static_cast<content::WebContentsImpl *>(m_webContentsGetter.Run());
     if (!webContents)
         return;
     WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();

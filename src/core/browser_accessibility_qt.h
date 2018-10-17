@@ -146,6 +146,7 @@ public:
 };
 
 const BrowserAccessibilityQt *ToBrowserAccessibilityQt(const BrowserAccessibility *obj);
+QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *acc);
 
 } // namespace content
 

@@ -68,6 +68,7 @@ public:
 
     // BrowserContext implementation:
     base::FilePath GetPath() const override;
+    base::FilePath GetCachePath() const override;
     bool IsOffTheRecord() const override;
 
     net::URLRequestContextGetter *CreateMediaRequestContext() override;

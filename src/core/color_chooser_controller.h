@@ -55,6 +55,9 @@
 
 #include <QObject>
 
+QT_FORWARD_DECLARE_CLASS(QColor)
+QT_FORWARD_DECLARE_CLASS(QVariant)
+
 namespace QtWebEngineCore {
 
 class ColorChooserControllerPrivate;

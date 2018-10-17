@@ -87,6 +87,8 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckEnable, false);
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
 #endif // QT_CONFIG(webengine_spellchecker)
+    registry->RegisterBooleanPref(prefs::kShowInternalAccessibilityTree, false);
+
     m_prefService = factory.Create(registry);
     user_prefs::UserPrefs::Set(this, m_prefService.get());
 
@@ -121,6 +123,11 @@ const PrefService* ProfileQt::GetPrefs() const
 base::FilePath ProfileQt::GetPath() const
 {
     return toFilePath(m_profileAdapter->dataPath());
+}
+
+base::FilePath ProfileQt::GetCachePath() const
+{
+    return toFilePath(m_profileAdapter->cachePath());
 }
 
 bool ProfileQt::IsOffTheRecord() const
@@ -229,8 +236,8 @@ net::URLRequestContextGetter *ProfileQt::CreateRequestContextForStoragePartition
 void ProfileQt::FailedToLoadDictionary(const std::string &language)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    qWarning() << "Could not load dictionary for:" << toQt(language) << endl
-               << "Make sure that correct bdic file is in:" << toQt(WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES).value());
+    LOG(WARNING) << "Could not load dictionary for:" << language;
+    LOG(INFO) << "Make sure that correct bdic file is in:" << WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES);
 }
 
 void ProfileQt::setSpellCheckLanguages(const QStringList &languages)

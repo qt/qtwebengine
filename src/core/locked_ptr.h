@@ -172,6 +172,8 @@ public:
     T *operator->() const { return get(); }
     explicit operator bool() const { return get(); }
 
+    bool MaybeValid() const { return m_core; }
+
     static LockedPtr create(T *value)
     {
         return new LockedPtrCore(reinterpret_cast<uintptr_t>(value));

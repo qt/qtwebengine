@@ -39,7 +39,7 @@
 
 #include "profile_io_data_qt.h"
 
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task.h"
 #include "components/certificate_transparency/ct_known_logs.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "content/public/browser/browser_thread.h"
@@ -161,7 +161,6 @@ static net::HttpNetworkSession::Params generateNetworkSessionParams(bool ignoreC
 {
     net::HttpNetworkSession::Params network_session_params;
     network_session_params.ignore_certificate_errors = ignoreCertificateErrors;
-    network_session_params.enable_token_binding = base::FeatureList::IsEnabled(features::kTokenBinding);
     network_session_params.enable_channel_id = base::FeatureList::IsEnabled(features::kChannelID);
     return network_session_params;
 }
@@ -274,26 +273,6 @@ void ProfileIODataQt::generateAllStorage()
     m_updateAllStorage = false;
 }
 
-class SSLConfigServiceQt : public net::SSLConfigService {
-public:
-    SSLConfigServiceQt()
-    {
-        // Enable revocation checking:
-        m_defaultConfig.rev_checking_enabled = true;
-        // Mirroring Android WebView (we have no beef with Symantec, and our users might use them):
-        m_defaultConfig.symantec_enforcement_disabled = true;
-    }
-    ~SSLConfigServiceQt() override = default;
-
-    void GetSSLConfig(net::SSLConfig* config) override
-    {
-        *config = m_defaultConfig;
-    }
-
-private:
-    net::SSLConfig m_defaultConfig;
-};
-
 void ProfileIODataQt::generateStorage()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -315,7 +294,15 @@ void ProfileIODataQt::generateStorage()
     net::ProxyConfigService *proxyConfigService = m_proxyConfigService.fetchAndStoreAcquire(0);
     Q_ASSERT(proxyConfigService);
 
-    m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
+    std::unique_ptr<net::CertVerifier> cert_verifier = net::CertVerifier::CreateDefault();
+    net::CertVerifier::Config config;
+    // Enable revocation checking:
+    config.enable_rev_checking = true;
+    // Mirroring Android WebView (we have no beef with Symantec, and our users might use them):
+    config.disable_symantec_enforcement = true;
+    cert_verifier->SetConfig(config);
+
+    m_storage->set_cert_verifier(std::move(cert_verifier));
     std::unique_ptr<net::MultiLogCTVerifier> ct_verifier(new net::MultiLogCTVerifier());
 //    FIXME:
 //    ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
@@ -339,7 +326,7 @@ void ProfileIODataQt::generateStorage()
                                                 nullptr /* NetLog */,
                                                 m_networkDelegate.get()));
 
-    m_storage->set_ssl_config_service(std::make_unique<SSLConfigServiceQt>());
+    m_storage->set_ssl_config_service(std::make_unique<net::SSLConfigServiceDefaults>());
     m_storage->set_transport_security_state(std::make_unique<net::TransportSecurityState>());
 
     if (!m_dataPath.isEmpty()) {
@@ -386,7 +373,7 @@ void ProfileIODataQt::generateCookieStore()
         channel_id_db = new net::SQLiteChannelIDStore(
                 toFilePath(m_channelIdPath),
                 base::CreateSequencedTaskRunnerWithTraits(
-                                {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+                                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
     }
 
     m_storage->set_channel_id_service(
@@ -406,8 +393,8 @@ void ProfileIODataQt::generateCookieStore()
                 base::FilePath(),
                 false,
                 false,
-                nullptr)
-        );
+                nullptr),
+            nullptr);
         break;
     case ProfileAdapter::AllowPersistentCookies:
         cookieStore = content::CreateCookieStore(
@@ -415,8 +402,8 @@ void ProfileIODataQt::generateCookieStore()
                 toFilePath(m_cookiesPath),
                 false,
                 true,
-                nullptr)
-            );
+                nullptr),
+            nullptr);
         break;
     case ProfileAdapter::ForcePersistentCookies:
         cookieStore = content::CreateCookieStore(
@@ -424,8 +411,8 @@ void ProfileIODataQt::generateCookieStore()
                 toFilePath(m_cookiesPath),
                 true,
                 true,
-                nullptr)
-            );
+                nullptr),
+            nullptr);
         break;
     }
 
@@ -533,7 +520,7 @@ void ProfileIODataQt::generateJobFactory()
                                    std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(
                                        new net::DataProtocolHandler()));
     scoped_refptr<base::TaskRunner> taskRunner(base::CreateTaskRunnerWithTraits({base::MayBlock(),
-                                      base::TaskPriority::BACKGROUND,
+                                      base::TaskPriority::BEST_EFFORT,
                                       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
     jobFactory->SetProtocolHandler(url::kFileScheme,
                                    std::make_unique<net::FileProtocolHandler>(taskRunner));

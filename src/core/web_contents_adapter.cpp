@@ -43,15 +43,14 @@
 
 #include "web_contents_adapter.h"
 
-#include "browser_accessibility_qt.h"
-#include "profile_adapter_client.h"
-#include "profile_adapter.h"
 #include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "printing/print_view_manager_qt.h"
 #endif
+#include "profile_adapter_client.h"
+#include "profile_adapter.h"
 #include "profile_qt.h"
 #include "qwebenginecallback_p.h"
 #include "render_view_observer_host_qt.h"
@@ -105,9 +104,13 @@
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qmimedata.h>
 #include <QtCore/qtemporarydir.h>
-#include <QtGui/qaccessible.h>
 #include <QtGui/qdrag.h>
 #include <QtGui/qpixmap.h>
+
+// Can't include headers as qaccessible.h conflicts with Chromium headers.
+namespace content {
+extern QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *acc);
+}
 
 namespace QtWebEngineCore {
 
@@ -117,7 +120,7 @@ namespace QtWebEngineCore {
 
 #define CHECK_VALID_RENDER_WIDGET_HOST_VIEW(render_view_host) \
     if (!render_view_host->IsRenderViewLive() && render_view_host->GetWidget()->GetView()) { \
-        qWarning("Ignore navigation due to terminated render process with invalid RenderWidgetHostView."); \
+        LOG(WARNING) << "Ignore navigation due to terminated render process with invalid RenderWidgetHostView."; \
         return; \
     }
 
@@ -190,7 +193,7 @@ static QVariant fromJSValue(const base::Value *result)
     }
     case base::Value::Type::BINARY:
     {
-        QByteArray data(result->GetBlob().data(), result->GetBlob().size());
+        QByteArray data(reinterpret_cast<const char *>(result->GetBlob().data()), result->GetBlob().size());
         ret.setValue(data);
         break;
     }
@@ -932,8 +935,8 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
     if (!manager) // FIXME!
         return nullptr;
     content::BrowserAccessibility *acc = manager->GetRoot();
-    content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);
-    return accQt;
+
+    return content::toQAccessibleInterface(acc);
 }
 #endif // QT_NO_ACCESSIBILITY
 

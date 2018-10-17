@@ -66,6 +66,8 @@ public:
 
     ~LoginDelegateQt();
 
+    void triggerDialog();
+
     // LoginDelegate implementation
     void OnRequestCancelled() override;
 
@@ -77,13 +79,14 @@ public:
     void sendAuthToRequester(bool success, const QString &user, const QString &password);
 
 private:
-    void triggerDialog(const content::ResourceRequestInfo::WebContentsGetter &);
+    void triggerDialogOnUI();
     void destroy();
 
     scoped_refptr<net::AuthChallengeInfo> m_authInfo;
 
     GURL m_url;
     LoginAuthRequiredCallback m_auth_required_callback;
+    content::ResourceRequestInfo::WebContentsGetter m_webContentsGetter;
 
     // This member is used to keep authentication dialog controller alive until
     // authorization is sent or cancelled.

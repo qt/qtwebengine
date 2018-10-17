@@ -75,6 +75,9 @@ public:
     void MoveCursorTo(const gfx::Point&) override { }
     void ConfineCursorToBounds(const gfx::Rect&) override { }
     PlatformImeController* GetPlatformImeController() override { return nullptr; }
+    void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override { }
+    gfx::Rect GetRestoredBoundsInPixels() const override { return gfx::Rect(); }
+
     // PlatformEventDispatcher:
     bool CanDispatchEvent(const PlatformEvent& event) override;
     uint32_t DispatchEvent(const PlatformEvent& event) override;

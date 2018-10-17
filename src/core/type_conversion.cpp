@@ -42,7 +42,9 @@
 #include <content/public/common/favicon_url.h>
 #include <ui/events/event_constants.h>
 #include <ui/gfx/image/image_skia.h>
+
 #include <QtCore/qcoreapplication.h>
+#include <QtGui/qmatrix4x4.h>
 
 namespace QtWebEngineCore {
 
@@ -241,6 +243,17 @@ FaviconInfo toFaviconInfo(const content::FaviconURL &favicon_url)
     // http://www.w3schools.com/tags/att_link_sizes.asp
     info.size = QSize(0, 0);
     return info;
+}
+
+void convertToQt(const SkMatrix44 &m, QMatrix4x4 &c)
+{
+    QMatrix4x4 qtMatrix(
+        m.get(0, 0), m.get(0, 1), m.get(0, 2), m.get(0, 3),
+        m.get(1, 0), m.get(1, 1), m.get(1, 2), m.get(1, 3),
+        m.get(2, 0), m.get(2, 1), m.get(2, 2), m.get(2, 3),
+        m.get(3, 0), m.get(3, 1), m.get(3, 2), m.get(3, 3));
+    qtMatrix.optimize();
+    c = qtMatrix;
 }
 
 } // namespace QtWebEngineCore

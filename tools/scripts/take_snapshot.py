@@ -72,6 +72,7 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('perftimer.h') and
             not file_path.endswith('test-torque.tq') and
             not 'ozone' in file_path and
+            not 'clang_coverage' in file_path and
             not 'fontconfig_util_linux' in file_path and
             not 'core/mojo/test/' in file_path and
             not file_path.startswith('extensions/browser/'))
@@ -98,6 +99,7 @@ def isInChromiumBlacklist(file_path):
             not 'media/webrtc/desktop_media_list.h' in file_path and
             not 'media/webrtc/desktop_streams_registry.' in file_path and
             not 'browser/net/chrome_mojo_proxy_resolver_factory.' in file_path and
+            not '/browser/accessibility/' in file_path and
             not '/browser/custom_handlers/' in file_path and
             not '/browser/devtools/' in file_path and
             not '/browser/ui/webui/' in file_path and
@@ -342,6 +344,7 @@ def exportChromium():
     files = listFilesInCurrentRepository()
     # Add LASTCHANGE files which are not tracked by git.
     files.append('build/util/LASTCHANGE')
+    files.append('build/util/LASTCHANGE.committime')
     files.append('skia/ext/skia_commit_hash.h')
     files.append('gpu/config/gpu_lists_version.h')
     print 'copying files to ' + third_party_chromium

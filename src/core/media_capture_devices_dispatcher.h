@@ -57,8 +57,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/media_stream_request.h"
 
-class DesktopStreamsRegistry;
-
 namespace QtWebEngineCore {
 
 // This singleton is used to receive updates about media events from the content
@@ -94,8 +92,6 @@ private:
                                    content::MediaStreamType /*stream_type*/,
                                    bool /*is_secure*/) override {}
 
-    DesktopStreamsRegistry *getDesktopStreamsRegistry();
-
     friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
     typedef base::RepeatingCallback<void(const content::MediaStreamDevices &devices,
@@ -128,8 +124,6 @@ private:
     void updateMediaRequestStateOnUIThread(int render_process_id, int render_frame_id, int page_request_id, const GURL &security_origin, content::MediaStreamType stream_type, content::MediaRequestState state);
 
     RequestsQueues m_pendingRequests;
-
-    std::unique_ptr<DesktopStreamsRegistry> m_desktopStreamsRegistry;
 
     content::NotificationRegistrar m_notificationsRegistrar;
 

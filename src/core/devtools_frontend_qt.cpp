@@ -109,9 +109,9 @@ public:
     ~ResponseWriter() override;
 
     // URLFetcherResponseWriter overrides:
-    int Initialize(const net::CompletionCallback &callback) override;
-    int Write(net::IOBuffer *buffer, int num_bytes, const net::CompletionCallback &callback) override;
-    int Finish(int net_error, const net::CompletionCallback &callback) override;
+    int Initialize(net::CompletionOnceCallback callback) override;
+    int Write(net::IOBuffer *buffer, int num_bytes, net::CompletionOnceCallback callback) override;
+    int Finish(int net_error, net::CompletionOnceCallback callback) override;
 
 private:
     base::WeakPtr<DevToolsFrontendQt> shell_devtools_;
@@ -126,12 +126,12 @@ ResponseWriter::ResponseWriter(base::WeakPtr<DevToolsFrontendQt> shell_devtools,
 
 ResponseWriter::~ResponseWriter() {}
 
-int ResponseWriter::Initialize(const net::CompletionCallback& callback)
+int ResponseWriter::Initialize(net::CompletionOnceCallback callback)
 {
     return net::OK;
 }
 
-int ResponseWriter::Write(net::IOBuffer *buffer, int num_bytes, const net::CompletionCallback &callback)
+int ResponseWriter::Write(net::IOBuffer *buffer, int num_bytes, net::CompletionOnceCallback callback)
 {
     std::string chunk = std::string(buffer->data(), num_bytes);
     if (!base::IsStringUTF8(chunk))
@@ -148,7 +148,7 @@ int ResponseWriter::Write(net::IOBuffer *buffer, int num_bytes, const net::Compl
     return num_bytes;
 }
 
-int ResponseWriter::Finish(int net_error, const net::CompletionCallback &callback)
+int ResponseWriter::Finish(int net_error, net::CompletionOnceCallback callback)
 {
     return net::OK;
 }

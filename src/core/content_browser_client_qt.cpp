@@ -650,7 +650,7 @@ bool ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
 // We control worker access to FS and indexed-db using cookie permissions, this is mirroring Chromium's logic.
 void ContentBrowserClientQt::AllowWorkerFileSystem(const GURL &url,
                                                    content::ResourceContext *context,
-                                                   const std::vector<std::pair<int, int> > &/*render_frames*/,
+                                                   const std::vector<content::GlobalFrameRoutingId> &/*render_frames*/,
                                                    base::Callback<void(bool)> callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -661,7 +661,7 @@ void ContentBrowserClientQt::AllowWorkerFileSystem(const GURL &url,
 bool ContentBrowserClientQt::AllowWorkerIndexedDB(const GURL &url,
                                                   const base::string16 &/*name*/,
                                                   content::ResourceContext *context,
-                                                  const std::vector<std::pair<int, int> > &/*render_frames*/)
+                                                  const std::vector<content::GlobalFrameRoutingId> &/*render_frames*/)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
@@ -716,9 +716,9 @@ scoped_refptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegat
         bool first_auth_attempt,
         LoginAuthRequiredCallback auth_required_callback)
 {
-    return base::MakeRefCounted<LoginDelegateQt>(authInfo, web_contents_getter, url, first_auth_attempt, std::move(auth_required_callback));
+    auto loginDelegate = base::MakeRefCounted<LoginDelegateQt>(authInfo, web_contents_getter, url, first_auth_attempt, std::move(auth_required_callback));
+    loginDelegate->triggerDialog();
+    return loginDelegate;
 }
 
 } // namespace QtWebEngineCore
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(QtWebEngineCore::ServiceDriver);

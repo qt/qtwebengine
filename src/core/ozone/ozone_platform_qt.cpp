@@ -43,6 +43,7 @@
 #include "ozone/surface_factory_qt.h"
 #include "ozone/platform_window_qt.h"
 #include "ui/display/types/native_display_delegate.h"
+#include "ui/events/system_input_injector.h"
 #include "ui/ozone/common/stub_client_native_pixmap_factory.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"

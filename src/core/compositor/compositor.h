@@ -54,6 +54,9 @@ QT_BEGIN_NAMESPACE
 class QSGNode;
 QT_END_NAMESPACE
 
+namespace content {
+class RenderWidgetHost;
+}
 namespace viz {
 struct ReturnedResource;
 namespace mojom {
@@ -64,7 +67,6 @@ class CompositorFrameSinkClient;
 namespace QtWebEngineCore {
 
 class CompositorResourceTracker;
-class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 
 // Receives viz::CompositorFrames from child compositors and provides QSGNodes
@@ -88,7 +90,7 @@ class RenderWidgetHostViewQtDelegate;
 class Compositor final : private viz::BeginFrameObserverBase
 {
 public:
-    explicit Compositor(RenderWidgetHostViewQt *hostView);
+    explicit Compositor(content::RenderWidgetHost *host);
     ~Compositor() override;
 
     void setFrameSinkClient(viz::mojom::CompositorFrameSinkClient *frameSinkClient);
@@ -110,7 +112,7 @@ private:
     viz::CompositorFrame m_pendingFrame;
     base::OnceClosure m_submitCallback;
     std::unique_ptr<CompositorResourceTracker> m_resourceTracker;
-    RenderWidgetHostViewQt *m_view;
+    content::RenderWidgetHost *m_host;
     std::unique_ptr<viz::SyntheticBeginFrameSource> m_beginFrameSource;
     viz::mojom::CompositorFrameSinkClient *m_frameSinkClient = nullptr;
     bool m_updatePaintNodeShouldCommit = false;

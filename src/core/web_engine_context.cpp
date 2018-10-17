@@ -46,6 +46,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -53,10 +54,12 @@
 #endif
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -355,6 +358,7 @@ WebEngineContext::WebEngineContext()
 void WebEngineContext::initialize()
 {
     base::TaskScheduler::Create("Browser");
+    content::BrowserThreadImpl::CreateTaskExecutor();
     m_contentRunner.reset(content::ContentMainRunner::Create());
     m_browserRunner.reset(content::BrowserMainRunner::Create());
 #ifdef Q_OS_LINUX
@@ -467,8 +471,6 @@ void WebEngineContext::initialize()
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kEnableSurfaceSynchronization.name);
     // The video-capture service is not functioning at this moment (since 69)
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kMojoVideoCapture.name);
-    // We do not yet support the internal video capture API.
-    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kUseVideoCaptureApiForDevToolsSnapshots.name);
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc

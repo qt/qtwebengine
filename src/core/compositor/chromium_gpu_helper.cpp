@@ -43,6 +43,11 @@
 
 #include "chromium_gpu_helper.h"
 
+// Some headers include the namespace ws, and can not coexist with
+// Qt headers that include QTextStream, which includes most QSG headers
+// via QMatrix4x4.
+#include "content/browser/renderer_host/render_widget_host_impl.h"
+
 // Including gpu/command_buffer headers before content/gpu headers makes sure that
 // guards are defined to prevent duplicate definition errors with forward declared
 // GL typedefs cascading through content header includes.
@@ -76,6 +81,11 @@ gpu::TextureBase* ConsumeTexture(gpu::MailboxManager *mailboxManager, unsigned t
 unsigned int service_id(gpu::TextureBase *tex)
 {
     return tex->service_id();
+}
+
+void ProgressFlingIfNeeded(content::RenderWidgetHost *host, const base::TimeTicks &current_time)
+{
+    content::RenderWidgetHostImpl::From(host)->ProgressFlingIfNeeded(current_time);
 }
 
 #ifdef Q_OS_QNX

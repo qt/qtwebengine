@@ -47,15 +47,13 @@ source_set("qtwebengine_sources") {
     "//third_party/blink/public/mojom:mojom_platform",
   ]
   sources = [
-    "//chrome/common/custom_handlers/protocol_handler.cc",
-    "//chrome/common/custom_handlers/protocol_handler.h",
+    "//chrome/browser/accessibility/accessibility_ui.cc",
+    "//chrome/browser/accessibility/accessibility_ui.h",
     "//chrome/browser/custom_handlers/protocol_handler_registry.cc",
     "//chrome/browser/custom_handlers/protocol_handler_registry.h",
     "//chrome/browser/custom_handlers/protocol_handler_registry_factory.cc",
     "//chrome/browser/custom_handlers/protocol_handler_registry_factory.h",
     "//chrome/browser/media/webrtc/desktop_media_list.h",
-    "//chrome/browser/media/webrtc/desktop_streams_registry.cc",
-    "//chrome/browser/media/webrtc/desktop_streams_registry.h",
     "//chrome/browser/net/chrome_mojo_proxy_resolver_factory.cc",
     "//chrome/browser/net/chrome_mojo_proxy_resolver_factory.h",
     "//chrome/browser/profiles/profile.cc",
@@ -72,6 +70,8 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/ui/webui/quota_internals/quota_internals_ui.h",
     "//chrome/browser/ui/webui/task_scheduler_internals/task_scheduler_internals_ui.cc",
     "//chrome/browser/ui/webui/task_scheduler_internals/task_scheduler_internals_ui.h",
+    "//chrome/common/custom_handlers/protocol_handler.cc",
+    "//chrome/common/custom_handlers/protocol_handler.h",
     "//chrome/common/chrome_switches.cc",
     "//chrome/common/chrome_switches.h",
     "//chrome/common/pref_names.cc",
@@ -108,11 +108,6 @@ source_set("qtwebengine_sources") {
         "//chrome/renderer/pepper/pepper_flash_font_file_host.h",
         "//chrome/renderer/pepper/pepper_shared_memory_message_filter.cc",
         "//chrome/renderer/pepper/pepper_shared_memory_message_filter.h",
-      ]
-
-      deps += [
-        # Need to depend on //content/ppapi_plugin, which is private, thus depending on parent.
-        "//content",
       ]
   }
 

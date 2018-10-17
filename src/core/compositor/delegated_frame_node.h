@@ -43,9 +43,10 @@
 #include "base/containers/circular_deque.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass.h"
-#include <QSGNode>
-#include <QSharedPointer>
+
+#include <QtCore/QSharedPointer>
 #include <QtGui/QOffscreenSurface>
+#include <QtQuick/QSGTransformNode>
 
 #include "chromium_gpu_helper.h"
 #include "render_widget_host_view_qt_delegate.h"

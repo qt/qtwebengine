@@ -43,6 +43,9 @@
 #include "color_chooser_controller_p.h"
 #include "type_conversion.h"
 
+#include <QColor>
+#include <QVariant>
+
 namespace QtWebEngineCore {
 
 ColorChooserControllerPrivate::ColorChooserControllerPrivate(content::WebContents *content, const QColor &color)

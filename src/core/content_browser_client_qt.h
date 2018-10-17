@@ -161,13 +161,13 @@ public:
 
     void AllowWorkerFileSystem(const GURL &url,
                                content::ResourceContext *context,
-                               const std::vector<std::pair<int, int> > &render_frames,
+                               const std::vector<content::GlobalFrameRoutingId> &render_frames,
                                base::Callback<void(bool)> callback) override;
 
     bool AllowWorkerIndexedDB(const GURL &url,
                               const base::string16 &name,
                               content::ResourceContext *context,
-                              const std::vector<std::pair<int, int> > &render_frames) override;
+                              const std::vector<content::GlobalFrameRoutingId> &render_frames) override;
 
 #if QT_CONFIG(webengine_geolocation)
     std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() override;

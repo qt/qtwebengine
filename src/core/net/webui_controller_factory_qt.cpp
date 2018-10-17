@@ -48,6 +48,7 @@
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/accessibility/accessibility_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
@@ -136,6 +137,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 //            return nullptr;
         return &NewWebUI<DevToolsUI>;
     }
+    if (url.host() == chrome::kChromeUIAccessibilityHost)
+        return &NewWebUI<AccessibilityUI>;
 
 //    if (url.host_piece() == chrome::kChromeUIUserActionsHost)
 //        return &NewWebUI<UserActionsUI>;

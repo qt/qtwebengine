@@ -76,7 +76,7 @@ private:
     void RegisterObserver();
 
     std::unique_ptr<net::ProxyConfigService> m_baseService;
-    base::ObserverList<net::ProxyConfigService::Observer, true> m_observers;
+    base::ObserverList<net::ProxyConfigService::Observer, true>::Unchecked m_observers;
 
     // Keep the last state around.
     bool m_usesSystemConfiguration;

@@ -82,7 +82,6 @@
 #include <QFocusEvent>
 #include <QGuiApplication>
 #include <QInputMethodEvent>
-#include <QLoggingCategory>
 #include <QTextFormat>
 #include <QKeyEvent>
 #include <QMouseEvent>
@@ -223,6 +222,8 @@ public:
     float GetPressure(size_t pointer_index) const override { return touchPoints.at(pointer_index).pressure(); }
     float GetTiltX(size_t pointer_index) const override { return 0; }
     float GetTiltY(size_t pointer_index) const override { return 0; }
+    float GetTwist(size_t) const override { return 0; }
+    float GetTangentialPressure(size_t) const override { return 0; }
     base::TimeTicks GetEventTime() const override { return eventTime; }
 
     size_t GetHistorySize() const override { return 0; }
@@ -248,7 +249,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_sendMotionActionDown(false)
     , m_touchMotionStarted(false)
-    , m_compositor(new Compositor(this))
+    , m_compositor(new Compositor(widget))
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
     , m_imeInProgress(false)
@@ -657,9 +658,9 @@ void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom:
 void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, base::Optional<viz::HitTestRegionList>)
 {
     bool scrollOffsetChanged = (m_lastScrollOffset != frame.metadata.root_scroll_offset);
-    bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);
+    bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.scrollable_viewport_size);
     m_lastScrollOffset = frame.metadata.root_scroll_offset;
-    m_lastContentsSize = frame.metadata.root_layer_size;
+    m_lastContentsSize = frame.metadata.scrollable_viewport_size;
 
     // Force to process swap messages
     uint32_t frame_token = frame.metadata.frame_token;
@@ -1426,9 +1427,6 @@ void RenderWidgetHostViewQt::handleGestureEvent(QNativeGestureEvent *ev)
 }
 #endif
 
-Q_DECLARE_LOGGING_CATEGORY(QWEBENGINE_TOUCH_HANDLING);
-Q_LOGGING_CATEGORY(QWEBENGINE_TOUCH_HANDLING, "qt.webengine.touch");
-
 void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 {
     // On macOS instead of handling touch events, we use the OS provided QNativeGestureEvents.
@@ -1436,7 +1434,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
     if (ev->spontaneous()) {
         return;
     } else {
-        qCWarning(QWEBENGINE_TOUCH_HANDLING)
+        VLOG(1)
             << "Sending simulated touch events to Chromium does not work properly on macOS. "
                "Consider using QNativeGestureEvents or QMouseEvents.";
     }
@@ -1621,11 +1619,6 @@ void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
     m_compositor->setNeedsBeginFrames(needs_begin_frames);
 }
 
-void RenderWidgetHostViewQt::OnBeginFrame(base::TimeTicks frame_time)
-{
-    host()->ProgressFlingIfNeeded(frame_time);
-}
-
 content::RenderFrameHost *RenderWidgetHostViewQt::getFocusedFrameHost()
 {
     content::RenderViewHostImpl *viewHost = content::RenderViewHostImpl::From(host());
@@ -1685,6 +1678,11 @@ void RenderWidgetHostViewQt::EnsureSurfaceSynchronizedForLayoutTest()
 uint32_t RenderWidgetHostViewQt::GetCaptureSequenceNumber() const
 {
     return m_latestCaptureSequenceNumber;
+}
+
+void RenderWidgetHostViewQt::ResetFallbackToFirstNavigationSurface()
+{
+    Q_UNIMPLEMENTED();
 }
 
 } // namespace QtWebEngineCore

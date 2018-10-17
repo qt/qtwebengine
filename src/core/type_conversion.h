@@ -45,7 +45,6 @@
 #include <QDir>
 #include <QIcon>
 #include <QImage>
-#include <QMatrix4x4>
 #include <QNetworkCookie>
 #include <QRect>
 #include <QString>
@@ -63,6 +62,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
+
+QT_FORWARD_DECLARE_CLASS(QMatrix4x4)
 
 namespace content {
 struct FaviconURL;
@@ -198,16 +199,7 @@ SkBitmap toSkBitmap(const QImage &image);
 
 QIcon toQIcon(const std::vector<SkBitmap> &bitmaps);
 
-inline QMatrix4x4 toQt(const SkMatrix44 &m)
-{
-    QMatrix4x4 qtMatrix(
-        m.get(0, 0), m.get(0, 1), m.get(0, 2), m.get(0, 3),
-        m.get(1, 0), m.get(1, 1), m.get(1, 2), m.get(1, 3),
-        m.get(2, 0), m.get(2, 1), m.get(2, 2), m.get(2, 3),
-        m.get(3, 0), m.get(3, 1), m.get(3, 2), m.get(3, 3));
-    qtMatrix.optimize();
-    return qtMatrix;
-}
+void convertToQt(const SkMatrix44 &m, QMatrix4x4 &c);
 
 inline QDateTime toQt(base::Time time)
 {

@@ -64,7 +64,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "printing/pdf_metafile_skia.h"
+#include "printing/metafile_skia.h"
 #include "printing/print_job_constants.h"
 #include "printing/printed_document.h"
 
@@ -123,8 +123,8 @@ void PrintViewManagerBaseQt::PrintDocument(printing::PrintedDocument *document,
                                            const gfx::Rect &content_area,
                                            const gfx::Point &offsets)
 {
-    std::unique_ptr<printing::PdfMetafileSkia> metafile =
-            std::make_unique<printing::PdfMetafileSkia>();
+    std::unique_ptr<printing::MetafileSkia> metafile =
+            std::make_unique<printing::MetafileSkia>();
     CHECK(metafile->InitFromData(print_data->front(), print_data->size()));
 
     // Update the rendered document. It will send notifications to the listener.

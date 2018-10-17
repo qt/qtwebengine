@@ -108,7 +108,6 @@ public:
     RenderWidgetHostViewQtDelegate *delegate() { return m_delegate.get(); }
     void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
-    void OnBeginFrame(base::TimeTicks frame_time);
 
     void InitAsChild(gfx::NativeView) override;
     void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) override;
@@ -159,6 +158,7 @@ public:
     void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
     void EnsureSurfaceSynchronizedForLayoutTest() override;
     uint32_t GetCaptureSequenceNumber() const override;
+    void ResetFallbackToFirstNavigationSurface() override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;

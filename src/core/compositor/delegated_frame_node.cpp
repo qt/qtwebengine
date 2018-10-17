@@ -411,7 +411,9 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const viz::SharedQuadState
     }
     if (!layerState->quad_to_target_transform.IsIdentity()) {
         QSGTransformNode *transformNode = new QSGTransformNode;
-        transformNode->setMatrix(toQt(layerState->quad_to_target_transform.matrix()));
+        QMatrix4x4 qMatrix;
+        convertToQt(layerState->quad_to_target_transform.matrix(), qMatrix);
+        transformNode->setMatrix(qMatrix);
         layerChain->appendChildNode(transformNode);
         layerChain = transformNode;
     }

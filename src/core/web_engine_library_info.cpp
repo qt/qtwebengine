@@ -54,6 +54,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QLibraryInfo>
+#include <QLocale>
 #include <QStandardPaths>
 #include <QString>
 

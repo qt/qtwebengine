@@ -261,8 +261,8 @@ void PermissionManagerQt::ResetPermission(
 
 int PermissionManagerQt::SubscribePermissionStatusChange(
     content::PermissionType permission,
+    content::RenderFrameHost * /* render_frame_host */,
     const GURL& requesting_origin,
-    const GURL& /*embedding_origin*/,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback)
 {
     int subscriber_id = ++m_subscriberIdCount;
@@ -278,7 +278,7 @@ int PermissionManagerQt::SubscribePermissionStatusChange(
 void PermissionManagerQt::UnsubscribePermissionStatusChange(int subscription_id)
 {
     if (!m_subscribers.remove(subscription_id))
-        qWarning() << "PermissionManagerQt::UnsubscribePermissionStatusChange called on unknown subscription id" << subscription_id;
+        LOG(WARNING) << "PermissionManagerQt::UnsubscribePermissionStatusChange called on unknown subscription id" << subscription_id;
 }
 
 } // namespace QtWebEngineCore

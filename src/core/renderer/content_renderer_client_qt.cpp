@@ -137,7 +137,7 @@ void ContentRendererClientQt::RenderThreadStarted()
     // Allow XMLHttpRequests from qrc to file.
     blink::WebURL qrc(blink::KURL("qrc:"));
     blink::WebString file(blink::WebString::FromASCII("file"));
-    blink::WebSecurityPolicy::AddOriginAccessWhitelistEntry(qrc, file, blink::WebString(), true);
+    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(qrc, file, blink::WebString(), true);
 }
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
@@ -230,6 +230,7 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
         error_page::LocalizedError::GetStrings(
             error.reason(), error.domain(), error.url(), isPost,
             error.stale_copy_in_cache(), false, false,
+            error_page::LocalizedError::OfflineContentOnNetErrorFeatureState::kDisabled,
             locale, std::unique_ptr<error_page::ErrorPageParams>(), &errorStrings);
         resourceId = IDR_NET_ERROR_HTML;
 

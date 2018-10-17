@@ -76,7 +76,7 @@ ClientCertSelectController::~ClientCertSelectController()
 void ClientCertSelectController::selectNone()
 {
     if (m_selected) {
-        qWarning() << "ClientCertSelectController::selectNone() certificate already selected";
+        LOG(WARNING) << "ClientCertSelectController::selectNone() certificate already selected";
         return;
     }
     m_selected = true;
@@ -86,7 +86,7 @@ void ClientCertSelectController::selectNone()
 void ClientCertSelectController::select(int index)
 {
     if (m_selected) {
-        qWarning() << "ClientCertSelectController::select() certificate already selected";
+        LOG(WARNING) << "ClientCertSelectController::select() certificate already selected";
         return;
     }
     for (auto &certInfo : m_clientCerts) {
@@ -103,13 +103,13 @@ void ClientCertSelectController::select(int index)
         if (certInfo->certificate()->GetPEMEncodedChain(&pem_encoded))
             --index;
     }
-    qWarning() << "ClientCertSelectController::select() index out of range:" << index;
+    LOG(WARNING) << "ClientCertSelectController::select() index out of range:" << index;
 }
 
 void ClientCertSelectController::select(const QSslCertificate &certificate)
 {
     if (m_selected) {
-        qWarning() << "ClientCertSelectController::select() certificate already selected";
+        LOG(WARNING) << "ClientCertSelectController::select() certificate already selected";
         return;
     }
     QByteArray derCertificate = certificate.toDer();
@@ -126,8 +126,8 @@ void ClientCertSelectController::select(const QSslCertificate &certificate)
             return;
         }
     }
-    qWarning() << "ClientCertSelectController::select() - selected client certificate not recognized."
-               << "    Selected certificate needs to be one of the offered";
+    LOG(WARNING) << "ClientCertSelectController::select() - selected client certificate not recognized."
+                 << "    Selected certificate needs to be one of the offered";
 }
 
 QVector<QSslCertificate> ClientCertSelectController::certificates() const

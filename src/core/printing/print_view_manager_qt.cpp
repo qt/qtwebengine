@@ -53,7 +53,7 @@
 
 #include "base/values.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print_messages.h"
@@ -62,11 +62,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/web_preferences.h"
-#include "printing/pdf_metafile_skia.h"
+#include "printing/metafile_skia.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(QtWebEngineCore::PrintViewManagerQt);
 
 namespace {
 
@@ -108,7 +106,7 @@ static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
     base::AssertBlockingAllowed();
     DCHECK_GT(data->size(), 0U);
 
-    printing::PdfMetafileSkia metafile;
+    printing::MetafileSkia metafile;
     metafile.InitFromData(static_cast<const void*>(data->front()), data->size());
 
     base::File file(path,

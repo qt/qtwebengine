@@ -41,7 +41,6 @@
 
 #include "compositor_resource_tracker.h"
 #include "delegated_frame_node.h"
-#include "render_widget_host_view_qt.h"
 
 #include "components/viz/common/resources/returned_resource.h"
 #include "content/public/browser/browser_thread.h"
@@ -49,9 +48,9 @@
 
 namespace QtWebEngineCore {
 
-Compositor::Compositor(RenderWidgetHostViewQt *hostView)
+Compositor::Compositor(content::RenderWidgetHost *host)
     : m_resourceTracker(new CompositorResourceTracker)
-    , m_view(hostView)
+    , m_host(host)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -171,7 +170,7 @@ bool Compositor::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs &args)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    m_view->OnBeginFrame(args.frame_time);
+    ProgressFlingIfNeeded(m_host, args.frame_time);
     m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
     if (m_frameSinkClient)
         m_frameSinkClient->OnBeginFrame(args);

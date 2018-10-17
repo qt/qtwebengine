@@ -46,6 +46,11 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class TimeTicks;
+}
+
+namespace content {
+class RenderWidgetHost;
 }
 
 namespace gpu {
@@ -64,6 +69,8 @@ gpu::MailboxManager *mailbox_manager();
 
 gpu::TextureBase* ConsumeTexture(gpu::MailboxManager *mailboxManager, unsigned target, const gpu::Mailbox& mailbox);
 unsigned int service_id(gpu::TextureBase *tex);
+
+void ProgressFlingIfNeeded(content::RenderWidgetHost *host, const base::TimeTicks &current_time);
 
 #ifdef Q_OS_QNX
 typedef void* EGLDisplay;

@@ -61,6 +61,11 @@ const BrowserAccessibilityQt *ToBrowserAccessibilityQt(const BrowserAccessibilit
     return static_cast<const BrowserAccessibilityQt *>(obj);
 }
 
+QAccessibleInterface *toQAccessibleInterface(BrowserAccessibility *obj)
+{
+    return static_cast<BrowserAccessibilityQt *>(obj);
+}
+
 BrowserAccessibilityQt::BrowserAccessibilityQt()
 {
     QAccessible::registerAccessibleInterface(this);
@@ -356,6 +361,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::EditableText;
     case ax::mojom::Role::kInputTime:
         return QAccessible::SpinBox;
+    case ax::mojom::Role::kKeyboard:
+        return QAccessible::NoRole; // FIXME
     case ax::mojom::Role::kLabelText:
         return QAccessible::StaticText;
     case ax::mojom::Role::kLayoutTable:
