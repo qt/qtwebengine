@@ -7,6 +7,8 @@
     <file>resources/mixedSchemes.html</file>
     <file>resources/mixedSchemesWithCsp.html</file>
     <file>resources/mixedSchemes_frame.html</file>
+    <file>resources/mixedXHR.html</file>
+    <file>resources/mixedXHR.txt</file>
     <file>resources/serviceWorker.html</file>
     <file>resources/serviceWorker.js</file>
     <file>resources/sharedWorker.html</file>

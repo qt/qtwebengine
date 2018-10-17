@@ -69,6 +69,8 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_security_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "content/public/common/web_preferences.h"
@@ -131,6 +133,11 @@ void ContentRendererClientQt::RenderThreadStarted()
     if (!m_spellCheck)
         InitSpellCheck();
 #endif
+
+    // Allow XMLHttpRequests from qrc to file.
+    blink::WebURL qrc(blink::KURL("qrc:"));
+    blink::WebString file(blink::WebString::FromASCII("file"));
+    blink::WebSecurityPolicy::AddOriginAccessWhitelistEntry(qrc, file, blink::WebString(), true);
 }
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
