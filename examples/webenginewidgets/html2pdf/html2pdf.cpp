@@ -119,6 +119,7 @@ void Html2PdfConverter::pdfPrintingFinished(const QString &filePath, bool succes
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    QCoreApplication::setOrganizationName("QtExamples");
     QCoreApplication::setApplicationName("html2pdf");
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
 
