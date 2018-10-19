@@ -44,8 +44,9 @@
 #include "print_view_manager_qt.h"
 
 #include "type_conversion.h"
-#include "web_engine_context.h"
+#include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
+#include "web_engine_context.h"
 
 #include <QtGui/qpagelayout.h>
 #include <QtGui/qpagesize.h>
@@ -57,6 +58,7 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/web_preferences.h"
