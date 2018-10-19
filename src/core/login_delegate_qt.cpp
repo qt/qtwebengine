@@ -83,6 +83,7 @@ LoginDelegateQt::~LoginDelegateQt()
 void LoginDelegateQt::OnRequestCancelled()
 {
     destroy();
+    // TODO: this should close native dialog, since page can be navigated somewhere else
 }
 
 QUrl LoginDelegateQt::url() const

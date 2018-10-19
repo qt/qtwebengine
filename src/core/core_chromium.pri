@@ -58,6 +58,7 @@ SOURCES = \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
+        content_utility_client_qt.cpp \
         delegated_frame_node.cpp \
         desktop_screen_qt.cpp \
         devtools_frontend_qt.cpp \
@@ -145,6 +146,7 @@ HEADERS = \
         content_client_qt.h \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \
+        content_utility_client_qt.h \
         delegated_frame_node.h \
         desktop_screen_qt.h \
         devtools_frontend_qt.h \

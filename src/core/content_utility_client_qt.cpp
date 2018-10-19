@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,34 +37,24 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_MAIN_DELEGATE_QT_H
-#define CONTENT_MAIN_DELEGATE_QT_H
-
-#include "content/public/app/content_main_delegate.h"
-
-#include "content_browser_client_qt.h"
 #include "content_utility_client_qt.h"
 
-namespace QtWebEngineCore {
+#include "content/public/utility/utility_thread.h"
+#include "services/proxy_resolver/proxy_resolver_service.h"
 
-class ContentMainDelegateQt : public content::ContentMainDelegate
-{
-public:
+ContentUtilityClientQt::ContentUtilityClientQt() {
+}
 
-    // This is where the embedder puts all of its startup code that needs to run
-    // before the sandbox is engaged.
-    void PreSandboxStartup() override;
+ContentUtilityClientQt::~ContentUtilityClientQt() = default;
 
-    content::ContentBrowserClient* CreateContentBrowserClient() override;
-    content::ContentRendererClient* CreateContentRendererClient() override;
-    content::ContentUtilityClient* CreateContentUtilityClient() override;
-    bool BasicStartupComplete(int* /*exit_code*/) override;
 
-private:
-    std::unique_ptr<ContentBrowserClientQt> m_browserClient;
-    std::unique_ptr<ContentUtilityClientQt> m_utilityClient;
-};
-
-} // namespace QtWebEngineCore
-
-#endif // CONTENT_MAIN_DELEGATE_QT_H
+void ContentUtilityClientQt::RegisterServices(
+    ContentUtilityClient::StaticServiceMap* services) {
+  service_manager::EmbeddedServiceInfo proxy_resolver_info;
+  proxy_resolver_info.task_runner =
+      content::ChildThread::Get()->GetIOTaskRunner();
+  proxy_resolver_info.factory =
+      base::Bind(&proxy_resolver::ProxyResolverService::CreateService);
+  services->emplace(proxy_resolver::mojom::kProxyResolverServiceName,
+                    proxy_resolver_info);
+}
