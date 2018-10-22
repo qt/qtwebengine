@@ -100,4 +100,10 @@ qtConfig(webengine-v8-snapshot) {
     gn_args += v8_use_snapshot=false
 }
 
+qtConfig(webengine-kerberos) {
+    gn_args += use_kerberos=true
+} else {
+    gn_args += use_kerberos=false
+}
+
 !msvc: gn_args += enable_iterator_debugging=false

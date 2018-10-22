@@ -39,9 +39,9 @@
 
 #include "quota_permission_context_qt.h"
 
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
 #include "quota_request_controller_impl.h"
 #include "qwebenginequotarequest.h"
 #include "web_contents_delegate_qt.h"

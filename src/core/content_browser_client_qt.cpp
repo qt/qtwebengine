@@ -72,7 +72,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "printing/buildflags/buildflags.h"
 #include "net/ssl/client_cert_identity.h"
-#include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -767,14 +766,12 @@ bool ContentBrowserClientQt::CanCreateWindow(
     return (settings && settings->getJavaScriptCanOpenWindowsAutomatically()) || user_gesture;
 }
 
+#if QT_CONFIG(webengine_geolocation)
 std::unique_ptr<device::LocationProvider> ContentBrowserClientQt::OverrideSystemLocationProvider()
 {
-#if QT_CONFIG(webengine_geolocation)
     return base::WrapUnique(new LocationProviderQt());
-#else
-    return nullptr;
-#endif
 }
+#endif
 
 scoped_refptr<net::URLRequestContextGetter> GetSystemRequestContextOnUIThread()
 {

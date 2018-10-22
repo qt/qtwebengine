@@ -46,6 +46,7 @@
 #include "base/values.h"
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/font_list.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"

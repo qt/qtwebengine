@@ -177,6 +177,7 @@ private Q_SLOTS:
     void subdirWithoutAccess();
     void mixedSchemes();
     void mixedSchemesWithCsp();
+    void mixedXHR();
 #if defined(WEBSOCKETS)
     void webSocket();
 #endif
@@ -477,6 +478,43 @@ void tst_Origins::mixedSchemesWithCsp()
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
     eval(QSL("setIFrameUrl('HostSyntax-ContentSecurityPolicyIgnored://b/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+}
+
+// Load the main page over one scheme, then make an XMLHttpRequest to a
+// different scheme.
+//
+// XMLHttpRequests can only be made to http, https, data, and chrome.
+void tst_Origins::mixedXHR()
+{
+    QVERIFY(load(QSL("file:" THIS_DIR "resources/mixedXHR.html")));
+    eval(QSL("sendXHR('file:" THIS_DIR "resources/mixedXHR.txt')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
+    eval(QSL("sendXHR('qrc:/resources/mixedXHR.txt')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("error")));
+    eval(QSL("sendXHR('tst:/resources/mixedXHR.txt')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("error")));
+    eval(QSL("sendXHR('data:,ok')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
+
+    QVERIFY(load(QSL("qrc:/resources/mixedXHR.html")));
+    eval(QSL("sendXHR('file:" THIS_DIR "resources/mixedXHR.txt')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
+    eval(QSL("sendXHR('qrc:/resources/mixedXHR.txt')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
+    eval(QSL("sendXHR('tst:/resources/mixedXHR.txt')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("error")));
+    eval(QSL("sendXHR('data:,ok')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
+
+    QVERIFY(load(QSL("tst:/resources/mixedXHR.html")));
+    eval(QSL("sendXHR('file:" THIS_DIR "resources/mixedXHR.txt')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("error")));
+    eval(QSL("sendXHR('qrc:/resources/mixedXHR.txt')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("error")));
+    eval(QSL("sendXHR('tst:/resources/mixedXHR.txt')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
+    eval(QSL("sendXHR('data:,ok')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 }
 
 #if defined(WEBSOCKETS)

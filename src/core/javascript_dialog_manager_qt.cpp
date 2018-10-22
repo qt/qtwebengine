@@ -44,7 +44,9 @@
 #include "web_contents_view_qt.h"
 #include "type_conversion.h"
 
+
 #include "base/memory/singleton.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 
 namespace QtWebEngineCore {
 

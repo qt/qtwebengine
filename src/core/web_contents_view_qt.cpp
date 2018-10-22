@@ -42,12 +42,15 @@
 #include "profile_adapter.h"
 #include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
+#include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter.h"
 #include "web_engine_context.h"
 
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/context_menu_params.h"
 #include <ui/gfx/image/image_skia.h>
 

@@ -24,6 +24,7 @@
             "webengine-geolocation": "boolean",
             "webengine-v8-snapshot": "boolean",
             "webengine-webchannel": "boolean",
+            "webengine-kerberos": "boolean",
             "alsa": { "type": "boolean", "name": "webengine-alsa" },
             "pulseaudio": { "type": "boolean", "name": "webengine-pulseaudio" },
             "ffmpeg": { "type": "enum", "name": "webengine-system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
@@ -518,6 +519,13 @@
             "autoDetect": false,
             "output": [ "privateFeature" ]
         },
+        "webengine-kerberos": {
+            "label": "Kerberos Authentication",
+            "purpose": "Enables Kerberos Authentication Support",
+            "autoDetect": "config.win32",
+            "section": "WebEngine",
+            "output": [ "privateFeature" ]
+        },
         "webengine-spellchecker": {
             "label": "Spellchecker",
             "purpose": "Provides a spellchecker.",
@@ -695,6 +703,7 @@
                 "webengine-geolocation",
                 "webengine-webchannel",
                 "webengine-v8-snapshot",
+                "webengine-kerberos",
                 {
                     "type": "feature",
                     "args": "webengine-v8-snapshot-support",

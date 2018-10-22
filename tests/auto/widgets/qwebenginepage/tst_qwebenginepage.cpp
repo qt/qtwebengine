@@ -2484,6 +2484,18 @@ void tst_QWebEnginePage::getUserMediaRequestDesktopVideoManyPages()
     const QString constraints = QStringLiteral("{video: { mandatory: { chromeMediaSource: 'desktop' }}}");
     const QWebEnginePage::Feature feature = QWebEnginePage::DesktopVideoCapture;
     std::vector<GetUserMediaTestPage> pages(10);
+
+    // Desktop capture needs to be on a desktop
+    std::vector<QWebEngineView> views(10);
+    for (size_t i = 0; i < views.size(); ++i) {
+        QWebEngineView *view = &(views[i]);
+        GetUserMediaTestPage *page = &(pages[i]);
+        view->setPage(page);
+        view->resize(640, 480);
+        view->show();
+        QVERIFY(QTest::qWaitForWindowExposed(view));
+    }
+
     for (GetUserMediaTestPage &page : pages)
         QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
     for (GetUserMediaTestPage &page : pages)
@@ -2505,6 +2517,14 @@ void tst_QWebEnginePage::getUserMediaRequestDesktopVideoManyRequests()
     const QString constraints = QStringLiteral("{video: { mandatory: { chromeMediaSource: 'desktop' }}}");
     const QWebEnginePage::Feature feature = QWebEnginePage::DesktopVideoCapture;
     GetUserMediaTestPage page;
+
+    // Desktop capture needs to be on a desktop
+    QWebEngineView view;
+    view.setPage(&page);
+    view.resize(640, 480);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
     QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
     for (int i = 0; i != 100; ++i) {
