@@ -135,6 +135,7 @@ public:
         bool user_gesture,
         bool opener_suppressed,
         bool* no_javascript_access) override;
+    bool ShouldEnableStrictSiteIsolation() override;
 
     bool AllowGetCookie(const GURL& url,
                         const GURL& first_party,

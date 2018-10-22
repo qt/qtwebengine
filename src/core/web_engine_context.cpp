@@ -54,12 +54,14 @@
 #endif
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/devtools/devtools_http_handler.h"
+#include "content/browser/scheduler/browser_task_executor.h"
+#include "content/browser/startup_helper.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -101,6 +103,7 @@
 
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QMutex>
 #include <QOffscreenSurface>
 #ifndef QT_NO_OPENGL
 # include <QOpenGLContext>
@@ -166,6 +169,8 @@ void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 } // namespace
 
 namespace QtWebEngineCore {
+
+extern std::unique_ptr<base::MessagePump> messagePumpFactory();
 
 bool usingSoftwareDynamicGL()
 {
@@ -280,6 +285,7 @@ WebEngineContext::~WebEngineContext()
     Q_ASSERT(!m_devtoolsServer);
     Q_ASSERT(!m_browserRunner);
     Q_ASSERT(m_profileAdapters.isEmpty());
+    delete s_syncPointManager.fetchAndStoreRelaxed(nullptr);
 }
 
 WebEngineContext *WebEngineContext::current()
@@ -292,8 +298,6 @@ WebEngineContext *WebEngineContext::current()
         qAddPostRoutine(WebEngineContext::destroyContextPostRoutine);
         // Add a false reference so there is no race between unreferencing m_handle and a global QApplication.
         m_handle->AddRef();
-        // This is need since gpu process start requires sync point manager;
-        m_handle->initialize();
     }
     return m_handle.get();
 }
@@ -321,7 +325,7 @@ void WebEngineContext::destroyContextPostRoutine()
     // Destroy WebEngineContext before its static pointer is zeroed and destructor called.
     // Before destroying MessageLoop via destroying BrowserMainRunner destructor
     // WebEngineContext's pointer is used.
-   m_handle->destroy();
+    m_handle->destroy();
 #if !defined(NDEBUG)
     if (!m_handle->HasOneRef())
         qWarning("WebEngineContext leaked on exit, likely due to leaked WebEngine View or Page");
@@ -352,13 +356,8 @@ static void appendToFeatureSwitch(base::CommandLine *commandLine, const char *fe
 WebEngineContext::WebEngineContext()
     : m_mainDelegate(new ContentMainDelegateQt)
     , m_globalQObject(new QObject())
-    , m_syncPointManager(new gpu::SyncPointManager())
-{}
-
-void WebEngineContext::initialize()
 {
     base::TaskScheduler::Create("Browser");
-    content::BrowserThreadImpl::CreateTaskExecutor();
     m_contentRunner.reset(content::ContentMainRunner::Create());
     m_browserRunner.reset(content::BrowserMainRunner::Create());
 #ifdef Q_OS_LINUX
@@ -470,6 +469,8 @@ void WebEngineContext::initialize()
     // The video-capture service is not functioning at this moment (since 69)
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kMojoVideoCapture.name);
 
+    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kBackgroundFetch.name);
+
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kOverlayScrollbar.name);
@@ -577,6 +578,11 @@ void WebEngineContext::initialize()
 #endif
     registerMainThreadFactories(threadedGpu);
 
+    SetContentClient(new ContentClientQt);
+
+    content::StartBrowserTaskScheduler();
+    content::BrowserTaskExecutor::Create();
+
     mojo::core::Init();
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
@@ -641,9 +647,17 @@ printing::PrintJobManager* WebEngineContext::getPrintJobManager()
 }
 #endif
 
+static QMutex s_spmMutex;
+QAtomicPointer<gpu::SyncPointManager> WebEngineContext::s_syncPointManager;
+
 gpu::SyncPointManager *WebEngineContext::syncPointManager()
 {
-    return m_syncPointManager.get();
+    if (gpu::SyncPointManager *spm = s_syncPointManager.loadAcquire())
+        return spm;
+    QMutexLocker lock(&s_spmMutex);
+    if (!s_syncPointManager)
+        s_syncPointManager.store(new gpu::SyncPointManager());
+    return s_syncPointManager.load();
 }
 
 } // namespace

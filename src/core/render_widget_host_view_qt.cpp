@@ -49,9 +49,9 @@
 #include "web_event_factory.h"
 
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
-#include "content/browser/accessibility/browser_accessibility_state_impl.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -64,7 +64,7 @@
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/geometry/size_conversions.h"
-
+#include "ui/gfx/image/image_skia.h"
 #if defined(USE_OZONE)
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #endif
@@ -1149,7 +1149,7 @@ float RenderWidgetHostViewQt::dpiScale() const
 
 bool RenderWidgetHostViewQt::IsPopup() const
 {
-    return popup_type_ != blink::kWebPopupTypeNone;
+    return widget_type_ == content::WidgetType::kPopup;
 }
 
 void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)

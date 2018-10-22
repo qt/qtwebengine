@@ -40,6 +40,10 @@
 #include "url_request_context_getter_qt.h"
 #include "profile_io_data_qt.h"
 
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+
 namespace QtWebEngineCore {
 
 URLRequestContextGetterQt::URLRequestContextGetterQt(ProfileIODataQt *data)
@@ -59,7 +63,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 
 scoped_refptr<base::SingleThreadTaskRunner> URLRequestContextGetterQt::GetNetworkTaskRunner() const
 {
-    return content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO);
+    return base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO});
 }
 
 } // namespace QtWebEngineCore

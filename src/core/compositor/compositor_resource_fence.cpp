@@ -39,7 +39,7 @@
 
 #include "compositor_resource_fence.h"
 
-#include <ui/gl/gl_context.h>
+#include "ui/gl/gl_context.h"
 
 #include <QtGui/qopenglcontext.h>
 

@@ -1003,7 +1003,7 @@ void tst_QQuickWebEngineView::changeLocale()
 
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
     errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar Die Server-IP-Adresse von non.existent wurde nicht gefunden."));
 
     QLocale::setDefault(QLocale("en"));
     QScopedPointer<QQuickWebEngineView> viewEN(newWebEngineView());

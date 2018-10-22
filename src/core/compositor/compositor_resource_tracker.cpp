@@ -44,10 +44,12 @@
 #include "web_engine_context.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/task/post_task.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/gpu/content_gpu_client.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -181,7 +183,7 @@ quint32 CompositorResourceTracker::consumeMailbox(const gpu::MailboxHolder &mail
 bool CompositorResourceTracker::scheduleUpdateMailbox(CompositorResource *resource)
 {
 #if QT_CONFIG(opengl)
-    gpu::SyncPointManager *syncPointManager = WebEngineContext::current()->syncPointManager();
+    gpu::SyncPointManager *syncPointManager = WebEngineContext::syncPointManager();
     DCHECK(syncPointManager);
     return syncPointManager->WaitOutOfOrder(
         resource->mailbox_holder.sync_token,
@@ -241,8 +243,8 @@ void CompositorResourceTracker::updateMailboxes(std::vector<CompositorResource *
 
 void CompositorResourceTracker::scheduleRunSubmitCallback()
 {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, { content::BrowserThread::UI },
         base::BindOnce(&CompositorResourceTracker::runSubmitCallback,
                        m_weakPtrFactory.GetWeakPtr()));
 }

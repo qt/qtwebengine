@@ -301,7 +301,7 @@ void tst_Origins::jsUrlOrigin()
     QCOMPARE(eval(QSL("new URL(\"qrc:/crysis.css\").origin")), QVariant(QSL("qrc://")));
     QCOMPARE(eval(QSL("new URL(\"qrc://foo.com/crysis.css\").origin")), QVariant(QSL("qrc://")));
 
-    // Same with unregistered schemes.
+    // Unregistered schemes behaves like opaque origins.
     QCOMPARE(eval(QSL("new URL(\"tst:/banana\").origin")), QVariant(QSL("tst://")));
     QCOMPARE(eval(QSL("new URL(\"tst://foo.com/banana\").origin")), QVariant(QSL("tst://")));
 
@@ -564,8 +564,6 @@ private:
 // Try opening a WebSocket from pages loaded over various URL schemes.
 void tst_Origins::webSocket()
 {
-    const int kAbnormalClosure = 1006;
-
     EchoServer echoServer;
     QWebChannel channel;
     channel.registerObject(QSL("echoServer"), &echoServer);
@@ -578,9 +576,9 @@ void tst_Origins::webSocket()
     QVERIFY(load(QSL("qrc:/resources/websocket.html")));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 
-    // Only registered schemes can open WebSockets.
+    // Unregistered schemes can also open WebSockets (since Chromium 71)
     QVERIFY(load(QSL("tst:/resources/websocket.html")));
-    QTRY_COMPARE(eval(QSL("result")), QVariant(kAbnormalClosure));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 
     // Even an insecure registered scheme can open WebSockets.
     QVERIFY(load(QSL("PathSyntax:/resources/websocket.html")));
@@ -599,11 +597,10 @@ void tst_Origins::dedicatedWorker()
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QCOMPARE(eval(QSL("result")), QVariant(42));
 
-    // Unregistered schemes cannot create Workers.
+    // Unregistered schemes can also create Workers (since Chromium 71)
     QVERIFY(load(QSL("tst:/resources/dedicatedWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
-    QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("Access to dedicated workers is denied to origin 'tst://'")));
+    QCOMPARE(eval(QSL("result")), QVariant(42));
 
     // Even an insecure registered scheme can create Workers.
     QVERIFY(load(QSL("PathSyntax:/resources/dedicatedWorker.html")));
@@ -727,15 +724,9 @@ void tst_Origins::createObjectURL()
     QVERIFY(load(QSL("qrc:/resources/createObjectURL.html")));
     QVERIFY(eval(QSL("result")).toString().startsWith(QSL("blob:qrc:")));
 
-    // Illegal for unregistered schemes (renderer gets terminated).
-    qRegisterMetaType<QWebEnginePage::RenderProcessTerminationStatus>("RenderProcessTerminationStatus");
-    QSignalSpy loadFinishedSpy(m_page, &QWebEnginePage::loadFinished);
-    QSignalSpy renderProcessTerminatedSpy(m_page, &QWebEnginePage::renderProcessTerminated);
-    m_page->load(QSL("tst:/resources/createObjectURL.html"));
-    QVERIFY(!renderProcessTerminatedSpy.empty() || renderProcessTerminatedSpy.wait(20000));
-    QVERIFY(renderProcessTerminatedSpy.front().value(0).value<QWebEnginePage::RenderProcessTerminationStatus>()
-            != QWebEnginePage::NormalTerminationStatus);
-    QVERIFY(loadFinishedSpy.empty());
+    // Also legal for unregistered schemes (since Chromium 71)
+    QVERIFY(load(QSL("tst:/resources/createObjectURL.html")));
+    QVERIFY(eval(QSL("result")).toString().startsWith(QSL("blob:tst:")));
 }
 
 QTEST_MAIN(tst_Origins)

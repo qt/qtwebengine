@@ -71,6 +71,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id)
     return GetEmptyImage();
 }
 
+// static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale)
 {
 #if defined(OS_LINUX)

@@ -52,11 +52,14 @@
 #define FILE_PICKER_CONTROLLER_H
 
 #include "qtwebenginecoreglobal_p.h"
+
+#include <memory>
+
 #include <QObject>
 #include <QStringList>
 
 namespace content {
-    class RenderFrameHost;
+    class FileSelectListener;
 }
 
 namespace QtWebEngineCore {
@@ -71,7 +74,8 @@ public:
         Save
     };
 
-    FilePickerController(FileChooserMode mode, content::RenderFrameHost *contents, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject * = 0);
+    FilePickerController(FileChooserMode mode, std::unique_ptr<content::FileSelectListener> listener, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject * = 0);
+    ~FilePickerController() override;
     QStringList acceptedMimeTypes() const;
     QString defaultFileName() const;
     FileChooserMode mode() const;
@@ -82,10 +86,10 @@ public Q_SLOTS:
     void rejected();
 
 private:
-    void filesSelectedInChooser(const QStringList &filesList, content::RenderFrameHost *contents);
+    void filesSelectedInChooser(const QStringList &filesList);
     QString m_defaultFileName;
     QStringList m_acceptedMimeTypes;
-    content::RenderFrameHost *m_frameHost;
+    std::unique_ptr<content::FileSelectListener> m_listener;
     FileChooserMode m_mode;
 
 };

@@ -116,7 +116,7 @@ TestWebEngineView {
 
             webEngineView.clear()
             webEngineView.findText("bla", findFlags, webEngineView.findTextCallback)
-            tryCompare(webEngineView, "matchCount", 100)
+            tryCompare(webEngineView, "matchCount", 100, 20000)
             verify(!findFailed)
         }
 
@@ -172,7 +172,7 @@ TestWebEngineView {
 
             webEngineView.clear()
             webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)
-            tryCompare(webEngineView, "matchCount", 0)
+            tryCompare(webEngineView, "matchCount", 0, 20000)
             verify(findFailed)
 
             runJavaScript("document.body.innerHTML = 'blahellobla'");

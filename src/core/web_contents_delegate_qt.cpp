@@ -65,6 +65,7 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -73,7 +74,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -451,12 +451,14 @@ bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebConten
     return m_viewClient->isFullScreenMode();
 }
 
-ASSERT_ENUMS_MATCH(FilePickerController::Open, content::FileChooserParams::Open)
-ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, content::FileChooserParams::OpenMultiple)
-ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, content::FileChooserParams::UploadFolder)
-ASSERT_ENUMS_MATCH(FilePickerController::Save, content::FileChooserParams::Save)
+ASSERT_ENUMS_MATCH(FilePickerController::Open, blink::mojom::FileChooserParams::Mode::kOpen)
+ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, blink::mojom::FileChooserParams::Mode::kOpenMultiple)
+ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, blink::mojom::FileChooserParams::Mode::kUploadFolder)
+ASSERT_ENUMS_MATCH(FilePickerController::Save, blink::mojom::FileChooserParams::Mode::kSave)
 
-void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost *frameHost, const content::FileChooserParams &params)
+void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost * /*frameHost*/,
+                                           std::unique_ptr<content::FileSelectListener> listener,
+                                           const blink::mojom::FileChooserParams& params)
 {
     QStringList acceptedMimeTypes;
     acceptedMimeTypes.reserve(params.accept_types.size());
@@ -464,7 +466,7 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost *frameHost, 
         acceptedMimeTypes.append(toQt(*it));
 
     m_filePickerController.reset(new FilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode),
-                                                          frameHost, toQt(params.default_file_name.value()), acceptedMimeTypes));
+                                                          std::move(listener), toQt(params.default_file_name.value()), acceptedMimeTypes));
 
     // Defer the call to not block base::MessageLoop::RunTask with modal dialogs.
     QTimer::singleShot(0, [this] () {
@@ -633,7 +635,9 @@ void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool pr
         m_viewClient->windowCloseRejected();
 }
 
-void WebContentsDelegateQt::BeforeUnloadFired(const base::TimeTicks &proceed_time) {
+void WebContentsDelegateQt::BeforeUnloadFired(bool proceed, const base::TimeTicks &proceed_time)
+{
+    Q_UNUSED(proceed);
     Q_UNUSED(proceed_time);
 }
 

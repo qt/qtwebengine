@@ -103,7 +103,7 @@ static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url) 
         matchFound = false;
         for (auto it = scriptData.urlPatterns.begin(), end = scriptData.urlPatterns.end(); it != end; ++it) {
             URLPattern urlPattern(validUserScriptSchemes());
-            if (urlPattern.Parse(*it) == URLPattern::PARSE_SUCCESS && urlPattern.MatchesURL(url))
+            if (urlPattern.Parse(*it) == URLPattern::ParseResult::kSuccess && urlPattern.MatchesURL(url))
                 matchFound = true;
         }
         if (!matchFound)
@@ -137,7 +137,7 @@ public:
 
 private:
     // RenderFrameObserver implementation.
-    void DidCommitProvisionalLoad(bool is_new_navigation, bool is_same_document_navigation) override;
+    void DidCommitProvisionalLoad(bool is_same_document_navigation, ui::PageTransition transition) override;
     void DidClearWindowObject() override;
     void DidFinishDocumentLoad() override;
     void DidFinishLoad() override;
@@ -230,8 +230,8 @@ UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(conte
 {
 }
 
-void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad(bool /* is_new_navigation */,
-                                                                                 bool is_same_document_navigation)
+void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                                                                 ui::PageTransition /*transitionbool*/)
 {
     if (is_same_document_navigation)
         return;

@@ -39,16 +39,19 @@
 
 #include "network_delegate_qt.h"
 
-#include "profile_adapter.h"
+#include "base/task/post_task.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
-#include "cookie_monster_delegate_qt.h"
-#include "ui/base/page_transition_types.h"
-#include "profile_io_data_qt.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/page_transition_types.h"
+
+#include "profile_adapter.h"
+#include "cookie_monster_delegate_qt.h"
+#include "profile_io_data_qt.h"
 #include "qwebengineurlrequestinfo.h"
 #include "qwebengineurlrequestinfo_p.h"
 #include "qwebengineurlrequestinterceptor.h"
@@ -119,10 +122,10 @@ public:
 
         m_request->SetUserData(UserData::key, std::make_unique<UserData>(this));
 
-        content::BrowserThread::PostTask(
-            content::BrowserThread::UI,
+        base::PostTaskWithTraits(
             FROM_HERE,
-            base::Bind(&URLRequestNotification::notify, base::Unretained(this)));
+            {content::BrowserThread::UI},
+            base::BindOnce(&URLRequestNotification::notify, base::Unretained(this)));
     }
 
 private:
@@ -185,9 +188,9 @@ private:
         }
 
         // Run the callback on the IO thread.
-        content::BrowserThread::PostTask(
-            content::BrowserThread::IO,
+        base::PostTaskWithTraits(
             FROM_HERE,
+            {content::BrowserThread::IO},
             base::BindOnce(&URLRequestNotification::complete, base::Unretained(this), error));
     }
 
@@ -315,13 +318,18 @@ void NetworkDelegateQt::OnCompleted(net::URLRequest */*request*/, bool /*started
 
 bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
                                        const net::CanonicalCookie & /*cookie*/,
-                                       net::CookieOptions*)
+                                       net::CookieOptions*,
+                                       bool allowedFromCaller)
 {
+    if (!allowedFromCaller)
+        return false;
     return canSetCookies(request.site_for_cookies(), request.url(), std::string());
 }
 
-bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const net::CookieList&)
+bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const net::CookieList&, bool allowedFromCaller)
 {
+    if (!allowedFromCaller)
+        return false;
     return canGetCookies(request.site_for_cookies(), request.url());
 }
 

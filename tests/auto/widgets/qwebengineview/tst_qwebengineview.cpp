@@ -268,7 +268,7 @@ void tst_QWebEngineView::getWebKitVersion()
 void tst_QWebEngineView::changePage_data()
 {
     QString html = "<html><head><title>%1</title>"
-                   "<link rel='icon' href='file://" TESTS_SOURCE_DIR "/resources/image2.png'></head></html>";
+                   "<link rel='icon' href='qrc:///resources/image2.png'></head></html>";
     QUrl urlFrom("data:text/html," + html.arg("TitleFrom"));
     QUrl urlTo("data:text/html," + html.arg("TitleTo"));
     QUrl nullPage("data:text/html,<html/>");

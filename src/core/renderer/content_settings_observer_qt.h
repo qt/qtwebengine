@@ -80,8 +80,8 @@ private:
 
     // RenderFrameObserver implementation:
     bool OnMessageReceived(const IPC::Message &message) override;
-    void DidCommitProvisionalLoad(bool is_new_navigation,
-                                  bool is_same_document_navigation) override;
+    void DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                  ui::PageTransition transition) override;
     void OnDestruct() override;
 
     // Message handlers.

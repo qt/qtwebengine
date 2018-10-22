@@ -53,9 +53,7 @@ ContentGpuClientQt::~ContentGpuClientQt()
 
 gpu::SyncPointManager *ContentGpuClientQt::GetSyncPointManager()
 {
-    WebEngineContext *current = WebEngineContext::current();
-    Q_ASSERT(current);
-    return current->syncPointManager();
+    return WebEngineContext::syncPointManager();
 }
 
 } // namespace

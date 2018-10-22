@@ -37,9 +37,9 @@
 **
 ****************************************************************************/
 
-#if defined(OS_WIN)
-
 #include "gl_surface_wgl_qt.h"
+
+#if defined(OS_WIN)
 #include "ui/gl/gl_surface_wgl.h"
 
 namespace gl {

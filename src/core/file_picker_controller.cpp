@@ -41,6 +41,7 @@
 #include "type_conversion.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/file_select_listener.h"
 
 #include <QFileInfo>
 #include <QDir>
@@ -49,18 +50,20 @@
 
 namespace QtWebEngineCore {
 
-FilePickerController::FilePickerController(FileChooserMode mode, content::RenderFrameHost *frameHost, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject *parent)
+FilePickerController::FilePickerController(FileChooserMode mode, std::unique_ptr<content::FileSelectListener> listener, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject *parent)
     : QObject(parent)
     , m_defaultFileName(defaultFileName)
     , m_acceptedMimeTypes(acceptedMimeTypes)
-    , m_frameHost(frameHost)
+    , m_listener(std::move(listener))
     , m_mode(mode)
 {
 }
 
+FilePickerController::~FilePickerController() = default;
+
 void FilePickerController::accepted(const QStringList &files)
 {
-    FilePickerController::filesSelectedInChooser(files, m_frameHost);
+    FilePickerController::filesSelectedInChooser(files);
 }
 
 void FilePickerController::accepted(const QVariant &files)
@@ -77,12 +80,12 @@ void FilePickerController::accepted(const QVariant &files)
         qWarning("An unhandled type '%s' was provided in FilePickerController::accepted(QVariant)", files.typeName());
     }
 
-    FilePickerController::filesSelectedInChooser(stringList, m_frameHost);
+    FilePickerController::filesSelectedInChooser(stringList);
 }
 
 void FilePickerController::rejected()
 {
-    FilePickerController::filesSelectedInChooser(QStringList(), m_frameHost);
+    FilePickerController::filesSelectedInChooser(QStringList());
 }
 
 static QStringList listRecursively(const QDir &dir)
@@ -99,19 +102,29 @@ static QStringList listRecursively(const QDir &dir)
     return ret;
 }
 
-ASSERT_ENUMS_MATCH(FilePickerController::Open, content::FileChooserParams::Open)
-ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, content::FileChooserParams::OpenMultiple)
-ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, content::FileChooserParams::UploadFolder)
-ASSERT_ENUMS_MATCH(FilePickerController::Save, content::FileChooserParams::Save)
+ASSERT_ENUMS_MATCH(FilePickerController::Open, blink::mojom::FileChooserParams_Mode::kOpen)
+ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, blink::mojom::FileChooserParams_Mode::kOpenMultiple)
+ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, blink::mojom::FileChooserParams_Mode::kUploadFolder)
+ASSERT_ENUMS_MATCH(FilePickerController::Save, blink::mojom::FileChooserParams_Mode::kSave)
 
-void FilePickerController::filesSelectedInChooser(const QStringList &filesList, content::RenderFrameHost *frameHost)
+void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
 {
-    Q_ASSERT(frameHost);
     QStringList files(filesList);
     if (this->m_mode == UploadFolder && !filesList.isEmpty()
             && QFileInfo(filesList.first()).isDir()) // Enumerate the directory
         files = listRecursively(QDir(filesList.first()));
-    frameHost->FilesSelectedInChooser(toVector<content::FileChooserFileInfo>(files), static_cast<content::FileChooserParams::Mode>(this->m_mode));
+
+    std::vector<blink::mojom::FileChooserFileInfoPtr> chooser_files;
+    for (const auto &file : qAsConst(files)) {
+        chooser_files.push_back(blink::mojom::FileChooserFileInfo::NewNativeFile(
+            blink::mojom::NativeFileInfo::New(toFilePath(file), base::string16())));
+    }
+
+    if (files.isEmpty())
+        m_listener->FileSelectionCanceled();
+    else
+        m_listener->FileSelected(std::move(chooser_files),
+                                 static_cast<blink::mojom::FileChooserParams::Mode>(this->m_mode));
 }
 
 QStringList FilePickerController::acceptedMimeTypes() const

@@ -9,8 +9,13 @@ windows
 
 [basicRenderingSanity]
 *
+
 [javascriptClipboard:default]
 opensuse-leap
+
 [javascriptClipboard:canPaste]
 opensuse-leap
+
+[changeLocale]
+*
 

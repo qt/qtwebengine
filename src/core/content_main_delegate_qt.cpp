@@ -45,6 +45,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -71,6 +72,10 @@
 #endif
 
 #include <QtCore/qcoreapplication.h>
+
+namespace content {
+ContentClient *GetContentClient();
+}
 
 namespace QtWebEngineCore {
 
@@ -228,7 +233,8 @@ bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
 #if QT_CONFIG(webengine_spellchecker)
     SafeOverridePath(base::DIR_APP_DICTIONARIES, WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES));
 #endif
-    SetContentClient(new ContentClientQt);
+    if (!content::GetContentClient())
+        content::SetContentClient(new ContentClientQt);
 
     url::CustomScheme::LoadSchemes(base::CommandLine::ForCurrentProcess());
 

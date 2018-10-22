@@ -39,6 +39,9 @@
 
 #include "url_request_custom_job.h"
 #include "url_request_custom_job_proxy.h"
+
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 
@@ -68,17 +71,16 @@ URLRequestCustomJob::~URLRequestCustomJob()
     if (m_device && m_device->isOpen())
         m_device->close();
     m_device = nullptr;
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&URLRequestCustomJobProxy::release,
-                                     m_proxy));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
 }
 
 void URLRequestCustomJob::Start()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&URLRequestCustomJobProxy::initialize,
-                                     m_proxy, request()->url(), request()->method(), request()->initiator()));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(&URLRequestCustomJobProxy::initialize,
+                                            m_proxy, request()->url(), request()->method(), request()->initiator()));
 }
 
 void URLRequestCustomJob::Kill()
@@ -94,9 +96,9 @@ void URLRequestCustomJob::Kill()
         m_pendingReadPos = 0;
     }
     m_device = nullptr;
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&URLRequestCustomJobProxy::release,
-                                     m_proxy));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                                     base::BindOnce(&URLRequestCustomJobProxy::release,
+                                                    m_proxy));
     URLRequestJob::Kill();
 }
 

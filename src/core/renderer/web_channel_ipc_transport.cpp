@@ -137,6 +137,8 @@ void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
         args->ThrowTypeError("Missing argument");
         return;
     }
+    v8::Isolate *isolate = blink::MainThreadIsolate();
+    v8::HandleScope handleScope(isolate);
 
     if (!jsonValue->IsString()) {
         args->ThrowTypeError("Expected string");
@@ -144,10 +146,10 @@ void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
     }
     v8::Local<v8::String> jsonString = v8::Local<v8::String>::Cast(jsonValue);
 
-    QByteArray json(jsonString->Utf8Length(), 0);
-    jsonString->WriteUtf8(json.data(), json.size(),
-                         nullptr,
-                         v8::String::REPLACE_INVALID_UTF8);
+    QByteArray json(jsonString->Utf8Length(isolate), 0);
+    jsonString->WriteUtf8(isolate,
+                          json.data(), json.size(),
+                          nullptr, v8::String::REPLACE_INVALID_UTF8);
 
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(json, &error);

@@ -63,7 +63,6 @@ public:
         : m_webContents(webContents)
         , m_client(nullptr)
         , m_factoryClient(nullptr)
-        , m_allowOtherViews(false)
     { }
 
     void initialize(WebContentsAdapterClient* client);
@@ -73,7 +72,7 @@ public:
 
     void CreateView(const gfx::Size& initial_size, gfx::NativeView context) override;
 
-    content::RenderWidgetHostViewBase* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host) override;
+    content::RenderWidgetHostViewBase *CreateViewForChildWidget(content::RenderWidgetHost* render_widget_host) override;
 
     void SetPageTitle(const base::string16& title) override { }
 
@@ -83,29 +82,29 @@ public:
 
     void RenderViewHostChanged(content::RenderViewHost*, content::RenderViewHost*) override { }
 
-    void SetOverscrollControllerEnabled(bool enabled) override { QT_NOT_YET_IMPLEMENTED }
+    void SetOverscrollControllerEnabled(bool enabled) override { }
 
     gfx::NativeView GetNativeView() const override;
 
-    gfx::NativeView GetContentNativeView() const override { QT_NOT_USED return 0; }
+    gfx::NativeView GetContentNativeView() const override { return 0; }
 
-    gfx::NativeWindow GetTopLevelNativeWindow() const override { QT_NOT_USED return 0; }
+    gfx::NativeWindow GetTopLevelNativeWindow() const override { return 0; }
 
     void GetContainerBounds(gfx::Rect* out) const override;
 
-    void SizeContents(const gfx::Size& size) override { QT_NOT_YET_IMPLEMENTED }
+    void SizeContents(const gfx::Size& size) override { }
 
     void Focus() override;
 
     void SetInitialFocus() override;
 
-    void StoreFocus() override { QT_NOT_USED }
+    void StoreFocus() override { }
 
-    void RestoreFocus() override { QT_NOT_USED }
+    void RestoreFocus() override { }
 
     content::DropData* GetDropData() const override { QT_NOT_YET_IMPLEMENTED return nullptr; }
 
-    gfx::Rect GetViewBounds() const override { QT_NOT_YET_IMPLEMENTED return gfx::Rect(); }
+    gfx::Rect GetViewBounds() const override { return gfx::Rect(); }
 
     void StartDragging(const content::DropData& drop_data, blink::WebDragOperationsMask allowed_ops,
                        const gfx::ImageSkia& image, const gfx::Vector2d& image_offset,
@@ -122,8 +121,6 @@ public:
 
 
 #if defined(OS_MACOSX)
-    void SetAllowOtherViews(bool allow) override { m_allowOtherViews = allow; }
-    bool GetAllowOtherViews() const override { return m_allowOtherViews; }
     void CloseTabAfterEventTracking() override { QT_NOT_YET_IMPLEMENTED }
     bool IsEventTracking() const override { QT_NOT_YET_IMPLEMENTED; return false; }
 #endif // defined(OS_MACOSX)
@@ -132,7 +129,6 @@ private:
     content::WebContents *m_webContents;
     WebContentsAdapterClient *m_client;
     WebContentsAdapterClient *m_factoryClient;
-    bool m_allowOtherViews;
 };
 
 } // namespace QtWebEngineCore

@@ -39,7 +39,9 @@
 
 #include "quota_permission_context_qt.h"
 
+#include "base/task/post_task.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "quota_request_controller_impl.h"
@@ -64,10 +66,10 @@ void QuotaPermissionContextQt::RequestQuotaPermission(const StorageQuotaParams &
     }
 
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-        content::BrowserThread::PostTask(
-            content::BrowserThread::UI, FROM_HERE,
-            base::Bind(&QuotaPermissionContextQt::RequestQuotaPermission, this,
-                       params, render_process_id, callback));
+        base::PostTaskWithTraits(
+            FROM_HERE, {content::BrowserThread::UI},
+            base::BindOnce(&QuotaPermissionContextQt::RequestQuotaPermission, this,
+                           params, render_process_id, callback));
         return;
     }
 
@@ -95,10 +97,10 @@ void QuotaPermissionContextQt::dispatchCallbackOnIOThread(const PermissionCallba
         return;
 
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
-        content::BrowserThread::PostTask(
-            content::BrowserThread::IO, FROM_HERE,
-            base::Bind(&QuotaPermissionContextQt::dispatchCallbackOnIOThread,
-                       this, callback, response));
+        base::PostTaskWithTraits(
+            FROM_HERE, {content::BrowserThread::IO},
+            base::BindOnce(&QuotaPermissionContextQt::dispatchCallbackOnIOThread,
+                           this, callback, response));
         return;
     }
 

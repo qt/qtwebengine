@@ -125,10 +125,7 @@ public:
 
         // Skip import documents and sandboxed documents.
         // See Document::SiteForCookies() in chromium/third_party/blink/renderer/core/dom/document.cc.
-        //
-        // TODO: Change this to empty URL during the next chromium update:
-        // https://chromium-review.googlesource.com/c/chromium/src/+/1213082/
-        return requestInfo.firstPartyUrl == QUrl("data:,");
+        return requestInfo.firstPartyUrl == QUrl("");
     }
 
     QList<RequestInfo> getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceType type)

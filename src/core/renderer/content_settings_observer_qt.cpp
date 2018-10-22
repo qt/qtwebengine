@@ -93,8 +93,8 @@ bool ContentSettingsObserverQt::OnMessageReceived(const IPC::Message& message)
     return handled;
 }
 
-void ContentSettingsObserverQt::DidCommitProvisionalLoad(bool /*is_new_navigation*/,
-                                                         bool is_same_document_navigation)
+void ContentSettingsObserverQt::DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                                         ui::PageTransition /*transition*/)
 {
     blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
     if (frame->Parent())

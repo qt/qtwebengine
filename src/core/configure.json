@@ -84,9 +84,9 @@
             ]
         },
         "webengine-harfbuzz": {
-            "label": "harfbuzz >= 1.4.2",
+            "label": "harfbuzz >= 2.0.0",
             "sources": [
-                { "type": "pkgConfig", "args": "harfbuzz >= 1.4.2" }
+                { "type": "pkgConfig", "args": "harfbuzz >= 2.0.0" }
             ]
         },
         "webengine-glib": {

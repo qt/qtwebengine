@@ -64,7 +64,6 @@
 #include "ozone/gl_surface_wgl_qt.h"
 
 #include "gpu/ipc/service/direct_composition_surface_win.h"
-#include "ui/gl/gl_context_wgl.h"
 #include "ui/gl/vsync_provider_win.h"
 #endif
 
@@ -140,9 +139,6 @@ namespace init {
 bool InitializeGLOneOffPlatform()
 {
     VSyncProviderWin::InitializeOneOff();
-
-    if (GetGLImplementation() == kGLImplementationOSMesaGL)
-        return false;
 
     if (GetGLImplementation() == kGLImplementationEGLGLES2)
         return GLSurfaceEGLQt::InitializeOneOff();

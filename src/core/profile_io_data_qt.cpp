@@ -42,6 +42,7 @@
 #include "base/task/post_task.h"
 #include "components/certificate_transparency/ct_known_logs.h"
 #include "components/network_session_configurator/common/network_features.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -109,8 +110,6 @@ static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &f
     if (first.ignore_certificate_errors != second.ignore_certificate_errors)
         return false;
     if (first.enable_channel_id != second.enable_channel_id)
-        return false;
-    if (first.enable_token_binding != second.enable_token_binding)
         return false;
     return true;
 }
@@ -333,7 +332,7 @@ void ProfileIODataQt::generateStorage()
         scoped_refptr<base::SequencedTaskRunner> background_task_runner(
                     base::CreateSequencedTaskRunnerWithTraits(
         {base::MayBlock(),
-         base::TaskPriority::BACKGROUND,
+         base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
         m_transportSecurityPersister =
                 std::make_unique<net::TransportSecurityPersister>(
@@ -644,12 +643,12 @@ void ProfileIODataQt::updateStorageSettings()
         m_proxyConfigService =
                 new ProxyConfigServiceQt(
                     net::ProxyResolutionService::CreateSystemProxyConfigService(
-                        content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)));
+                        base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})));
         //pass interface to io thread
         m_proxyResolverFactoryInterface = ChromeMojoProxyResolverFactory::CreateWithStrongBinding().PassInterface();
         if (m_initialized)
-            content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                             base::Bind(&ProfileIODataQt::generateAllStorage, m_weakPtr));
+            base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                                     base::BindOnce(&ProfileIODataQt::generateAllStorage, m_weakPtr));
     }
 }
 
@@ -664,8 +663,8 @@ void ProfileIODataQt::updateCookieStore()
     if (m_initialized && !m_updateAllStorage && !m_updateCookieStore) {
         m_updateCookieStore = true;
         m_updateHttpCache = true;
-        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                         base::Bind(&ProfileIODataQt::generateCookieStore, m_weakPtr));
+        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                                 base::BindOnce(&ProfileIODataQt::generateCookieStore, m_weakPtr));
     }
 }
 
@@ -678,8 +677,8 @@ void ProfileIODataQt::updateUserAgent()
 
     if (m_initialized && !m_updateAllStorage && !m_updateUserAgent) {
         m_updateUserAgent = true;
-        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                         base::Bind(&ProfileIODataQt::generateUserAgent, m_weakPtr));
+        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                                 base::BindOnce(&ProfileIODataQt::generateUserAgent, m_weakPtr));
     }
 }
 
@@ -702,8 +701,8 @@ void ProfileIODataQt::updateHttpCache()
 
     if (m_initialized && !m_updateAllStorage && !m_updateHttpCache) {
         m_updateHttpCache = true;
-        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                         base::Bind(&ProfileIODataQt::generateHttpCache, m_weakPtr));
+        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                                 base::BindOnce(&ProfileIODataQt::generateHttpCache, m_weakPtr));
     }
 }
 
@@ -716,8 +715,8 @@ void ProfileIODataQt::updateJobFactory()
 
     if (m_initialized && !m_updateJobFactory) {
         m_updateJobFactory = true;
-        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                         base::Bind(&ProfileIODataQt::regenerateJobFactory, m_weakPtr));
+        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                                 base::BindOnce(&ProfileIODataQt::regenerateJobFactory, m_weakPtr));
     }
 }
 
@@ -765,8 +764,8 @@ void ProfileIODataQt::updateUsedForGlobalCertificateVerification()
     m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
 
     if (m_useForGlobalCertificateVerification)
-        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                         base::Bind(&ProfileIODataQt::setGlobalCertificateVerification, m_weakPtr));
+        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                                 base::BindOnce(&ProfileIODataQt::setGlobalCertificateVerification, m_weakPtr));
 }
 
 } // namespace QtWebEngineCore

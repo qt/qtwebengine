@@ -952,8 +952,9 @@ void DelegatedFrameNode::handleQuad(
         MailboxTexture *texture = static_cast<MailboxTexture *>(
             initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate, GL_TEXTURE_EXTERNAL_OES));
 
-        nodeHandler->setupStreamVideoNode(texture, toQt(squad->rect), toQt(squad->matrix.matrix()),
-                                          currentLayerChain);
+        QMatrix4x4 qMatrix;
+        convertToQt(squad->matrix.matrix(), qMatrix);
+        nodeHandler->setupStreamVideoNode(texture, toQt(squad->rect), qMatrix, currentLayerChain);
         break;
 #endif // GL_OES_EGL_image_external
 #endif // QT_NO_OPENGL

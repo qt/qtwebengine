@@ -137,7 +137,8 @@ void ContentRendererClientQt::RenderThreadStarted()
     // Allow XMLHttpRequests from qrc to file.
     blink::WebURL qrc(blink::KURL("qrc:"));
     blink::WebString file(blink::WebString::FromASCII("file"));
-    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(qrc, file, blink::WebString(), true);
+    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(qrc, file, blink::WebString(), true,
+                                                            network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
 }
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)

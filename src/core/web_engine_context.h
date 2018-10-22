@@ -91,13 +91,12 @@ public:
 #if QT_CONFIG(webengine_printing_and_pdf)
     printing::PrintJobManager* getPrintJobManager();
 #endif
-    void initialize();
     void destroyProfileAdapter();
     void addProfileAdapter(ProfileAdapter *profileAdapter);
     void removeProfileAdapter(ProfileAdapter *profileAdapter);
     void destroy();
 
-    gpu::SyncPointManager *syncPointManager();
+    static gpu::SyncPointManager *syncPointManager();
 
 private:
     friend class base::RefCounted<WebEngineContext>;
@@ -115,7 +114,6 @@ private:
     std::unique_ptr<QObject> m_globalQObject;
     std::unique_ptr<ProfileAdapter> m_defaultProfileAdapter;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
-    std::unique_ptr<gpu::SyncPointManager> m_syncPointManager;
     QVector<ProfileAdapter*> m_profileAdapters;
 #ifndef QT_NO_ACCESSIBILITY
     std::unique_ptr<AccessibilityActivationObserver> m_accessibilityActivationObserver;
@@ -126,6 +124,7 @@ private:
 #endif
     static scoped_refptr<QtWebEngineCore::WebEngineContext> m_handle;
     static bool m_destroyed;
+    static QAtomicPointer<gpu::SyncPointManager> s_syncPointManager;
 };
 
 } // namespace

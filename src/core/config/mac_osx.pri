@@ -28,8 +28,6 @@ gn_args += \
     clang_use_chrome_plugins=false \
     mac_deployment_target=\"$${QMAKE_MACOSX_DEPLOYMENT_TARGET}\" \
     mac_sdk_min=\"$${QMAKE_MAC_SDK_VERSION}\" \
-    mac_views_browser=false \
-    toolkit_views=false \
     use_external_popup_menu=false
 
 qtConfig(webengine-spellchecker) {

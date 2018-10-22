@@ -283,11 +283,9 @@ void BrowserMainPartsQt::ServiceManagerConnectionStarted(content::ServiceManager
 {
     ServiceQt::GetInstance()->InitConnector();
     connection->GetConnector()->StartService(service_manager::Identity("qtwebengine"));
-    if (resource_coordinator::IsResourceCoordinatorEnabled()) {
-        m_processResourceCoordinator = std::make_unique<resource_coordinator::ProcessResourceCoordinator>(connection->GetConnector());
-        m_processResourceCoordinator->SetLaunchTime(base::Time::Now());
-        m_processResourceCoordinator->SetPID(base::Process::Current().Pid());
-    }
+    m_processResourceCoordinator = std::make_unique<resource_coordinator::ProcessResourceCoordinator>(connection->GetConnector());
+    m_processResourceCoordinator->SetLaunchTime(base::Time::Now());
+    m_processResourceCoordinator->SetPID(base::Process::Current().Pid());
 }
 
 } // namespace QtWebEngineCore

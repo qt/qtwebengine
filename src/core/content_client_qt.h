@@ -58,7 +58,8 @@ public:
                                      std::vector<media::CdmHostFilePath> *cdm_host_file_paths) override;
 
     base::StringPiece GetDataResource(int, ui::ScaleFactor) const override;
-    base::RefCountedMemory* GetDataResourceBytes(int resource_id) const  override;
+    base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
+    gfx::Image &GetNativeImageNamed(int resource_id) const override;
     std::string GetUserAgent() const override { return getUserAgent(); }
     base::string16 GetLocalizedString(int message_id) const override;
     std::string GetProduct() const override;

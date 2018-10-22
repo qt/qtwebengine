@@ -41,18 +41,21 @@
 
 #include "profile_adapter.h"
 #include "content_browser_client_qt.h"
+#include "render_widget_host_view_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
+#include "web_contents_adapter_client.h"
 #include "web_contents_adapter.h"
 #include "web_engine_context.h"
+#include "web_contents_delegate_qt.h"
 
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/context_menu_params.h"
-#include <ui/gfx/image/image_skia.h>
+#include "ui/gfx/image/image_skia.h"
 
 #include <QtGui/qpixmap.h>
 
@@ -82,7 +85,7 @@ content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForWidget(conten
     return view;
 }
 
-content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host)
+content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForChildWidget(content::RenderWidgetHost* render_widget_host)
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
 

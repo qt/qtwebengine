@@ -42,7 +42,9 @@
 #include "compositor_resource_tracker.h"
 #include "delegated_frame_node.h"
 
+#include "base/task/post_task.h"
 #include "components/viz/common/resources/returned_resource.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
@@ -54,11 +56,10 @@ Compositor::Compositor(content::RenderWidgetHost *host)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    base::SingleThreadTaskRunner *taskRunner =
-        content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI).get();
+    m_taskRunner = base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI});
     m_beginFrameSource =
         std::make_unique<viz::DelayBasedBeginFrameSource>(
-            std::make_unique<viz::DelayBasedTimeSource>(taskRunner),
+            std::make_unique<viz::DelayBasedTimeSource>(m_taskRunner.get()),
             viz::BeginFrameSource::kNotRestartableId);
 }
 
@@ -127,18 +128,16 @@ QSGNode *Compositor::updatePaintNode(QSGNode *oldNode, RenderWidgetHostViewQtDel
     m_updatePaintNodeShouldCommit = false;
 
     if (m_committedFrame.metadata.request_presentation_feedback)
-        content::BrowserThread::PostTask(
-            content::BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&Compositor::sendPresentationFeedback, m_weakPtrFactory.GetWeakPtr(), m_committedFrame.metadata.frame_token));
-
+        m_taskRunner->PostTask(FROM_HERE,
+                               base::BindOnce(&Compositor::sendPresentationFeedback, m_weakPtrFactory.GetWeakPtr(),
+                                              m_committedFrame.metadata.frame_token));
     m_resourceTracker->commitResources();
     frameNode->commit(m_pendingFrame, m_committedFrame, m_resourceTracker.get(), viewDelegate);
     m_committedFrame = std::move(m_pendingFrame);
     m_pendingFrame = viz::CompositorFrame();
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&Compositor::notifyFrameCommitted, m_weakPtrFactory.GetWeakPtr()));
+    m_taskRunner->PostTask(FROM_HERE,
+                           base::BindOnce(&Compositor::notifyFrameCommitted, m_weakPtrFactory.GetWeakPtr()));
 
     return frameNode;
 }

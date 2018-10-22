@@ -50,7 +50,6 @@
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
-#include "content/common/view_messages.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "qtwebenginecoreglobal_p.h"

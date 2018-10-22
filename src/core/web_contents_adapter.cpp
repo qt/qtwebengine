@@ -62,9 +62,11 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_manager.h"
@@ -82,7 +84,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
-#include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -665,8 +666,8 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
 
     if (resizeNeeded) {
         // Schedule navigation on the event loop.
-        content::BrowserThread::PostTask(
-            content::BrowserThread::UI, FROM_HERE, base::BindOnce(navigate, this, std::move(params)));
+        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                                 base::BindOnce(navigate, this, std::move(params)));
     } else {
         navigate(this, params);
     }
@@ -803,7 +804,7 @@ void WebContentsAdapter::selectAll()
 void WebContentsAdapter::requestClose()
 {
     CHECK_INITIALIZED();
-    m_webContents->DispatchBeforeUnload();
+    m_webContents->DispatchBeforeUnload(false /* auto_cancel */);
 }
 
 void WebContentsAdapter::unselect()
@@ -993,16 +994,16 @@ quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitiv
         m_adapterClient->didFindText(m_lastFindRequestId, 0);
     }
 
-    blink::WebFindOptions options;
-    options.forward = !findBackward;
-    options.match_case = caseSensitively;
-    options.find_next = subString == m_webContentsDelegate->lastSearchedString();
+    blink::mojom::FindOptionsPtr options = blink::mojom::FindOptions::New();
+    options->forward = !findBackward;
+    options->match_case = caseSensitively;
+    options->find_next = subString == m_webContentsDelegate->lastSearchedString();
     m_webContentsDelegate->setLastSearchedString(subString);
 
     // Find already allows a request ID as input, but only as an int.
     // Use the same counter but mod it to MAX_INT, this keeps the same likeliness of request ID clashing.
     int shrunkRequestId = m_nextRequestId++ & 0x7fffffff;
-    m_webContents->Find(shrunkRequestId, toString16(subString), options);
+    m_webContents->Find(shrunkRequestId, toString16(subString), std::move(options));
     m_lastFindRequestId = shrunkRequestId;
     return shrunkRequestId;
 }

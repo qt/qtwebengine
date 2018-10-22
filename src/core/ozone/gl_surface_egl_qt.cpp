@@ -44,9 +44,9 @@
 #include "gl_context_qt.h"
 #include "ozone/gl_surface_egl_qt.h"
 
-#include "ui/gl/gl_surface_egl.h"
 #if !defined(OS_MACOSX)
 #include "ui/gl/egl_util.h"
+#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
 // From ANGLE's egl/eglext.h.
@@ -302,10 +302,6 @@ void* GLSurfacelessQtEGL::GetShareHandle()
     return NULL;
 }
 
-}  // namespace gl
-#endif // !defined(OS_MACOSX)
-
-namespace gl {
 std::string DriverEGL::GetPlatformExtensions()
 {
     EGLDisplay display = GLContextHelper::getEGLDisplay();
@@ -317,3 +313,15 @@ std::string DriverEGL::GetPlatformExtensions()
     return str ? std::string(str) : "";
 }
 } // namespace gl
+#else
+namespace gl {
+struct GL_EXPORT DriverEGL {
+    static std::string GetPlatformExtensions();
+};
+
+std::string DriverEGL::GetPlatformExtensions()
+{
+    return "";
+}
+} // namespace gl
+#endif // !defined(OS_MACOSX)

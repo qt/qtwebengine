@@ -72,6 +72,7 @@ ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::CLIPBOARD_READ:
     case content::PermissionType::CLIPBOARD_WRITE:
     case content::PermissionType::PAYMENT_HANDLER:
+    case content::PermissionType::BACKGROUND_FETCH:
     case content::PermissionType::NUM:
         break;
     }

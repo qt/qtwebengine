@@ -34,6 +34,7 @@ deps = [
   "//skia",
   "//third_party/blink/public:blink",
   "//ui/accessibility",
+  "//ui/gl",
   "//qtwebengine/browser:interfaces",
   ":qtwebengine_sources",
   ":qtwebengine_resources"
@@ -45,6 +46,10 @@ if (enable_webrtc) {
 
 if (is_linux && !is_desktop_linux) {
   deps += [ "//ui/events/ozone:events_ozone_evdev"]
+}
+
+if (use_xscrnsaver) {
+  deps += [ "//ui/base/x" ]
 }
 
 if (use_ozone) {

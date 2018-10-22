@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#if !defined(__clang__) && _MSC_FULL_VER < 191125507
+#if !defined(__clang__) && _MSC_FULL_VER < 191426428
 #error unsupported Visual Studio version
 #endif
 

@@ -133,7 +133,7 @@ QImage toQImage(const SkBitmap &bitmap)
 
 QImage toQImage(const gfx::ImageSkiaRep &imageSkiaRep)
 {
-    QImage image = toQImage(imageSkiaRep.sk_bitmap());
+    QImage image = toQImage(imageSkiaRep.GetBitmap());
     if (!image.isNull() && imageSkiaRep.scale() != 1.0f)
         image.setDevicePixelRatio(imageSkiaRep.scale());
     return image;

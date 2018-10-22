@@ -42,12 +42,16 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/message_loop/message_loop.h"
+#include "base/task/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #endif
 #include "components/network_hints/browser/network_hints_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/url_schemes.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -236,10 +240,10 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 {
     const int id = host->GetID();
     Profile *profile = Profile::FromBrowserContext(host->GetBrowserContext());
-    content::BrowserThread::PostTaskAndReplyWithResult(
-            content::BrowserThread::IO, FROM_HERE,
-            base::Bind(&net::URLRequestContextGetter::GetURLRequestContext, base::Unretained(profile->GetRequestContext())),
-            base::Bind(&ContentBrowserClientQt::AddNetworkHintsMessageFilter, base::Unretained(this), id));
+    base::PostTaskWithTraitsAndReplyWithResult(
+            FROM_HERE, {content::BrowserThread::IO},
+            base::BindOnce(&net::URLRequestContextGetter::GetURLRequestContext, base::Unretained(profile->GetRequestContext())),
+            base::BindOnce(&ContentBrowserClientQt::AddNetworkHintsMessageFilter, base::Unretained(this), id));
 
     // FIXME: Add a settings variable to enable/disable the file scheme.
     content::ChildProcessSecurityPolicy::GetInstance()->GrantRequestScheme(id, url::kFileScheme);
@@ -597,9 +601,16 @@ void ContentBrowserClientQt::AddNetworkHintsMessageFilter(int render_process_id,
     if (!host)
         return;
 
-    content::BrowserMessageFilter *network_hints_message_filter(
-                new network_hints::NetworkHintsMessageFilter(context->host_resolver()));
+    content::BrowserMessageFilter *network_hints_message_filter =
+            new network_hints::NetworkHintsMessageFilter(render_process_id);
     host->AddFilter(network_hints_message_filter);
+}
+
+bool ContentBrowserClientQt::ShouldEnableStrictSiteIsolation()
+{
+    // mirroring AwContentBrowserClient, CastContentBrowserClient and
+    // HeadlessContentBrowserClient
+    return false;
 }
 
 bool ContentBrowserClientQt::AllowGetCookie(const GURL &url,
@@ -694,15 +705,13 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
     Q_UNUSED(child_id);
     Q_UNUSED(navigation_data);
 
-    content::BrowserThread::PostTask(
-            content::BrowserThread::UI,
-            FROM_HERE,
-            base::BindOnce(&LaunchURL,
-                           url,
-                           web_contents_getter,
-                           page_transition,
-                           is_main_frame,
-                           has_user_gesture));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(&LaunchURL,
+                                            url,
+                                            web_contents_getter,
+                                            page_transition,
+                                            is_main_frame,
+                                            has_user_gesture));
     return true;
 }
 

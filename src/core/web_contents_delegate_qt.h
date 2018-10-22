@@ -114,7 +114,9 @@ public:
     void EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL &origin, const blink::WebFullscreenOptions &) override;
     void ExitFullscreenModeForTab(content::WebContents*) override;
     bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const override;
-    void RunFileChooser(content::RenderFrameHost* render_frame_host, const content::FileChooserParams& params) override;
+    void RunFileChooser(content::RenderFrameHost* render_frame_host,
+                        std::unique_ptr<content::FileSelectListener> listener,
+                        const blink::mojom::FileChooserParams& params) override;
     bool DidAddMessageToConsole(content::WebContents* source, int32_t level, const base::string16& message, int32_t line_no, const base::string16& source_id) override;
     void FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update) override;
     void RequestMediaAccessPermission(content::WebContents *web_contents,
@@ -135,7 +137,7 @@ public:
     void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
     void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
-    void BeforeUnloadFired(const base::TimeTicks& proceed_time) override;
+    void BeforeUnloadFired(bool proceed, const base::TimeTicks& proceed_time) override;
     void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) override;
     void OnVisibilityChanged(content::Visibility visibility) override;
     void DidFirstVisuallyNonEmptyPaint() override;

@@ -56,11 +56,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
@@ -140,8 +142,8 @@ int ResponseWriter::Write(net::IOBuffer *buffer, int num_bytes, net::CompletionO
     base::Value *id = new base::Value(stream_id_);
     base::Value *chunkValue = new base::Value(chunk);
 
-    content::BrowserThread::PostTask(
-                content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+                FROM_HERE, {content::BrowserThread::UI},
                 base::BindOnce(&DevToolsFrontendQt::CallClientFunction,
                                shell_devtools_, "DevToolsAPI.streamWrite",
                                base::Owned(id), base::Owned(chunkValue), nullptr));

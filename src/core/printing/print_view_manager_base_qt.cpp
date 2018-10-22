@@ -52,6 +52,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -59,6 +60,7 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print_messages.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -155,21 +157,19 @@ void PrintViewManagerBaseQt::OnDidPrintDocument(content::RenderFrameHost* /*rend
         return;
 
     const PrintHostMsg_DidPrintContent_Params &content = params.content;
-    if (!base::SharedMemory::IsHandleValid(content.metafile_data_handle)) {
+    if (!content.metafile_data_region.IsValid()) {
         NOTREACHED() << "invalid memory handle";
         web_contents()->Stop();
         return;
     }
 
-    std::unique_ptr<base::SharedMemory> shared_buf =
-            std::make_unique<base::SharedMemory>(content.metafile_data_handle, true);
-    if (!shared_buf->Map(content.data_size)) {
+    auto data = base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(content.metafile_data_region);
+    if (!data) {
         NOTREACHED() << "couldn't map";
         web_contents()->Stop();
         return;
     }
-    auto data = base::MakeRefCounted<base::RefCountedSharedMemory>(
-        std::move(shared_buf), content.data_size);
+
     PrintDocument(document, data, params.page_size, params.content_area,
                   params.physical_offsets);
 }
@@ -516,9 +516,8 @@ void PrintViewManagerBaseQt::ReleasePrinterQuery()
     printerQuery = m_printerQueriesQueue->PopPrinterQuery(cookie);
     if (!printerQuery.get())
         return;
-    content::BrowserThread::PostTask(
-            content::BrowserThread::IO, FROM_HERE,
-            base::BindOnce(&printing::PrinterQuery::StopWorker, printerQuery.get()));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                             base::BindOnce(&printing::PrinterQuery::StopWorker, printerQuery.get()));
 }
 
 // Originally from print_preview_message_handler.cc:
@@ -528,7 +527,7 @@ void PrintViewManagerBaseQt::StopWorker(int documentCookie) {
   scoped_refptr<printing::PrinterQuery> printer_query =
       m_printerQueriesQueue->PopPrinterQuery(documentCookie);
   if (printer_query.get()) {
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
                             base::BindOnce(&printing::PrinterQuery::StopWorker, printer_query));
   }
 }

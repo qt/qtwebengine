@@ -48,6 +48,8 @@
 
 #include "type_conversion.h"
 
+#include <QDebug>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;

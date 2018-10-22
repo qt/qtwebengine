@@ -40,6 +40,7 @@
 #include "web_engine_context.h"
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
@@ -48,6 +49,8 @@
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
 #include "content/gpu/in_process_gpu_thread.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 
@@ -59,14 +62,14 @@ struct GpuThreadControllerQt : content::GpuThreadController
 {
     GpuThreadControllerQt(const content::InProcessChildThreadParams &params, const gpu::GpuPreferences &gpuPreferences)
     {
-        content::BrowserThread::PostTask(
-                content::BrowserThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(
+                FROM_HERE, { content::BrowserThread::UI },
                 base::BindOnce(&GpuThreadControllerQt::createGpuProcess, params, gpuPreferences));
     }
     ~GpuThreadControllerQt() override
     {
-        content::BrowserThread::PostTask(
-                content::BrowserThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(
+                FROM_HERE, { content::BrowserThread::UI },
                 base::BindOnce(&GpuThreadControllerQt::destroyGpuProcess));
     }
 

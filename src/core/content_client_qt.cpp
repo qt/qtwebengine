@@ -390,6 +390,11 @@ base::RefCountedMemory *ContentClientQt::GetDataResourceBytes(int resource_id) c
     return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
 }
 
+gfx::Image &ContentClientQt::GetNativeImageNamed(int resource_id) const
+{
+    return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+}
+
 base::string16 ContentClientQt::GetLocalizedString(int message_id) const
 {
     return l10n_util::GetStringUTF16(message_id);

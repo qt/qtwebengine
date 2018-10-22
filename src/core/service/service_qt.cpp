@@ -45,7 +45,9 @@
 #include "service_qt.h"
 
 #include "base/no_destructor.h"
+#include "base/task/post_task.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -82,10 +84,10 @@ private:
 
 ServiceQt::IOThreadContext::IOThreadContext()
 {
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-            content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI);
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-    m_registry_with_source_info.AddInterface(base::Bind(&SpellCheckHostChromeImpl::Create), ui_task_runner);
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
+            base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI});
+    m_registry_with_source_info.AddInterface(base::BindRepeating(&SpellCheckHostChromeImpl::Create), ui_task_runner);
 #endif
 }
 
@@ -97,7 +99,7 @@ void ServiceQt::IOThreadContext::BindConnector(service_manager::mojom::Connector
     // on the IO thread. Post a task instead. As long as this task is posted
     // before any code attempts to connect to the chrome service, there's no
     // race.
-    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)->PostTask(
+    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})->PostTask(
                 FROM_HERE,
                 base::BindOnce(&IOThreadContext::BindConnectorOnIOThread,
                                base::Unretained(this),

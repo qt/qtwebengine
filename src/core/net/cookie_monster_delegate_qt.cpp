@@ -41,6 +41,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cookies/cookie_util.h"
 
@@ -87,8 +89,8 @@ void CookieMonsterDelegateQt::getAllCookies(quint64 callbackId)
     net::CookieMonster::GetCookieListCallback callback =
         base::BindOnce(&CookieMonsterDelegateQt::GetAllCookiesCallbackOnIOThread, this, callbackId);
 
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::BindOnce(&CookieMonsterDelegateQt::GetAllCookiesOnIOThread, this, std::move(callback)));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                             base::BindOnce(&CookieMonsterDelegateQt::GetAllCookiesOnIOThread, this, std::move(callback)));
 }
 
 void CookieMonsterDelegateQt::GetAllCookiesOnIOThread(net::CookieMonster::GetCookieListCallback callback)
@@ -108,9 +110,9 @@ void CookieMonsterDelegateQt::setCookie(quint64 callbackId, const QNetworkCookie
 
     GURL gurl = origin.isEmpty() ? sourceUrlForCookie(cookie) : toGurl(origin);
 
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::BindOnce(&CookieMonsterDelegateQt::SetCookieOnIOThread, this,
-                                                    gurl, cookie.toRawForm().toStdString(), std::move(callback)));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                             base::BindOnce(&CookieMonsterDelegateQt::SetCookieOnIOThread, this,
+                                            gurl, cookie.toRawForm().toStdString(), std::move(callback)));
 }
 
 void CookieMonsterDelegateQt::SetCookieOnIOThread(
@@ -131,9 +133,9 @@ void CookieMonsterDelegateQt::deleteCookie(const QNetworkCookie &cookie, const Q
 
     GURL gurl = origin.isEmpty() ? sourceUrlForCookie(cookie) : toGurl(origin);
 
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::BindOnce(&CookieMonsterDelegateQt::DeleteCookieOnIOThread, this,
-                                                    gurl, cookie.name().toStdString()));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                             base::BindOnce(&CookieMonsterDelegateQt::DeleteCookieOnIOThread, this,
+                                            gurl, cookie.name().toStdString()));
 }
 
 void CookieMonsterDelegateQt::DeleteCookieOnIOThread(const GURL& url, const std::string& cookie_name)
@@ -149,8 +151,8 @@ void CookieMonsterDelegateQt::deleteSessionCookies(quint64 callbackId)
 
     net::CookieMonster::DeleteCallback callback =
         base::BindOnce(&CookieMonsterDelegateQt::DeleteCookiesCallbackOnIOThread, this, callbackId);
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::BindOnce(&CookieMonsterDelegateQt::DeleteSessionCookiesOnIOThread, this, std::move(callback)));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                             base::BindOnce(&CookieMonsterDelegateQt::DeleteSessionCookiesOnIOThread, this, std::move(callback)));
 }
 
 void CookieMonsterDelegateQt::DeleteSessionCookiesOnIOThread(net::CookieMonster::DeleteCallback callback)
@@ -166,8 +168,8 @@ void CookieMonsterDelegateQt::deleteAllCookies(quint64 callbackId)
 
     net::CookieMonster::DeleteCallback callback =
         base::BindOnce(&CookieMonsterDelegateQt::DeleteCookiesCallbackOnIOThread, this, callbackId);
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::BindOnce(&CookieMonsterDelegateQt::DeleteAllOnIOThread, this, std::move(callback)));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                             base::BindOnce(&CookieMonsterDelegateQt::DeleteAllOnIOThread, this, std::move(callback)));
 }
 
 void CookieMonsterDelegateQt::DeleteAllOnIOThread(net::CookieMonster::DeleteCallback callback)
@@ -238,26 +240,23 @@ void CookieMonsterDelegateQt::GetAllCookiesCallbackOnIOThread(qint64 callbackId,
     for (auto &&cookie : cookies)
         rawCookies += toQt(cookie).toRawForm() % QByteArrayLiteral("\n");
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::BindOnce(&CookieMonsterDelegateQt::GetAllCookiesCallbackOnUIThread, this, callbackId, rawCookies));
+    base::PostTaskWithTraits(
+                FROM_HERE, {content::BrowserThread::UI},
+                base::BindOnce(&CookieMonsterDelegateQt::GetAllCookiesCallbackOnUIThread, this, callbackId, rawCookies));
 }
 
 void CookieMonsterDelegateQt::SetCookieCallbackOnIOThread(qint64 callbackId, bool success)
 {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::BindOnce(&CookieMonsterDelegateQt::SetCookieCallbackOnUIThread, this, callbackId, success));
+    base::PostTaskWithTraits(
+                FROM_HERE, {content::BrowserThread::UI},
+                base::BindOnce(&CookieMonsterDelegateQt::SetCookieCallbackOnUIThread, this, callbackId, success));
 }
 
 void CookieMonsterDelegateQt::DeleteCookiesCallbackOnIOThread(qint64 callbackId, uint numCookies)
 {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::BindOnce(&CookieMonsterDelegateQt::DeleteCookiesCallbackOnUIThread, this, callbackId, numCookies));
+    base::PostTaskWithTraits(
+                FROM_HERE, {content::BrowserThread::UI},
+                base::BindOnce(&CookieMonsterDelegateQt::DeleteCookiesCallbackOnUIThread, this, callbackId, numCookies));
 }
 
 void CookieMonsterDelegateQt::GetAllCookiesCallbackOnUIThread(qint64 callbackId, const QByteArray &cookies)

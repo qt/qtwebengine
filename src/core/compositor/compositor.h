@@ -118,6 +118,7 @@ private:
     bool m_updatePaintNodeShouldCommit = false;
     bool m_needsBeginFrames = false;
 
+    scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
     base::WeakPtrFactory<Compositor> m_weakPtrFactory{this};
 
     DISALLOW_COPY_AND_ASSIGN(Compositor);

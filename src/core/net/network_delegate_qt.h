@@ -62,7 +62,7 @@ public:
     // net::NetworkDelegate implementation
     int OnBeforeURLRequest(net::URLRequest* request, net::CompletionOnceCallback callback, GURL* new_url) override;
     void OnURLRequestDestroyed(net::URLRequest* request) override;
-    bool OnCanSetCookie(const net::URLRequest& request, const net::CanonicalCookie& cookie, net::CookieOptions* options) override;
+    bool OnCanSetCookie(const net::URLRequest& request, const net::CanonicalCookie& cookie, net::CookieOptions* options, bool) override;
     int OnBeforeStartTransaction(net::URLRequest *request, const net::CompletionOnceCallback callback, net::HttpRequestHeaders *headers) override;
     void OnBeforeSendHeaders(net::URLRequest* request, const net::ProxyInfo& proxy_info,
                              const net::ProxyRetryInfoMap& proxy_retry_info, net::HttpRequestHeaders* headers) override;
@@ -75,7 +75,7 @@ public:
     void OnCompleted(net::URLRequest *request, bool started, int net_error) override;
     void OnPACScriptError(int, const base::string16&) override;
     net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, AuthCallback, net::AuthCredentials*) override;
-    bool OnCanGetCookies(const net::URLRequest&, const net::CookieList&) override;
+    bool OnCanGetCookies(const net::URLRequest&, const net::CookieList&, bool) override;
     bool OnCanAccessFile(const net::URLRequest&, const base::FilePath&, const base::FilePath&) const override;
     bool OnCanEnablePrivacyMode(const GURL&, const GURL&) const override;
     bool OnAreExperimentalCookieFeaturesEnabled() const override;
