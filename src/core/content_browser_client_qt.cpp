@@ -41,16 +41,13 @@
 
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #endif
 #include "components/network_hints/browser/network_hints_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/url_schemes.h"
-#include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -73,8 +70,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "printing/buildflags/buildflags.h"
 #include "net/ssl/client_cert_identity.h"
-#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -82,22 +77,20 @@
 #include "third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/display/screen.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gpu_timing.h"
 #include "url/url_util_qt.h"
 
-#include "service/service_qt.h"
 #include "qtwebengine/grit/qt_webengine_resources.h"
 
 #include "profile_adapter.h"
+#include "browser_main_parts_qt.h"
 #include "browser_message_filter_qt.h"
 #include "certificate_error_controller.h"
 #include "certificate_error_controller_p.h"
 #include "client_cert_select_controller.h"
-#include "desktop_screen_qt.h"
 #include "devtools_manager_delegate_qt.h"
 #include "login_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
@@ -110,14 +103,11 @@
 #include "profile_qt.h"
 #include "quota_permission_context_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
+#include "service/service_qt.h"
 #include "type_conversion.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
-
-#if defined(Q_OS_WIN)
-#include "ui/display/win/screen_win.h"
-#endif
 
 #if defined(Q_OS_LINUX)
 #include "global_descriptors_qt.h"
@@ -158,176 +148,6 @@ Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
-
-namespace {
-
-// Return a timeout suitable for the glib loop, -1 to block forever,
-// 0 to return right away, or a timeout in milliseconds from now.
-int GetTimeIntervalMilliseconds(const base::TimeTicks& from) {
-  if (from.is_null())
-    return -1;
-
-  // Be careful here.  TimeDelta has a precision of microseconds, but we want a
-  // value in milliseconds.  If there are 5.5ms left, should the delay be 5 or
-  // 6?  It should be 6 to avoid executing delayed work too early.
-  int delay = static_cast<int>(
-      ceil((from - base::TimeTicks::Now()).InMillisecondsF()));
-
-  // If this value is negative, then we need to run delayed work soon.
-  return delay < 0 ? 0 : delay;
-}
-
-class MessagePumpForUIQt : public QObject,
-                           public base::MessagePump
-{
-public:
-    MessagePumpForUIQt()
-        : m_delegate(nullptr)
-        , m_explicitLoop(0)
-        , m_timerId(0)
-    {
-    }
-
-    void Run(Delegate *delegate) override
-    {
-        if (!m_delegate)
-            m_delegate = delegate;
-        else
-            Q_ASSERT(delegate == m_delegate);
-        // This is used only when MessagePumpForUIQt is used outside of the GUI thread.
-        QEventLoop loop;
-        m_explicitLoop = &loop;
-        loop.exec();
-        m_explicitLoop = 0;
-    }
-
-    void Quit() override
-    {
-        Q_ASSERT(m_explicitLoop);
-        m_explicitLoop->quit();
-    }
-
-    void ScheduleWork() override
-    {
-        if (!m_delegate)
-            m_delegate = base::MessageLoopForUI::current();
-        QCoreApplication::postEvent(this, new QEvent(QEvent::User));
-    }
-
-    void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) override
-    {
-        if (!m_delegate)
-            m_delegate = base::MessageLoopForUI::current();
-        if (delayed_work_time.is_null()) {
-            killTimer(m_timerId);
-            m_timerId = 0;
-            m_timerScheduledTime = base::TimeTicks();
-        } else if (!m_timerId || delayed_work_time < m_timerScheduledTime) {
-            killTimer(m_timerId);
-            m_timerId = startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
-            m_timerScheduledTime = delayed_work_time;
-        }
-    }
-
-protected:
-    void customEvent(QEvent *ev) override
-    {
-        if (handleScheduledWork())
-            QCoreApplication::postEvent(this, new QEvent(QEvent::User));
-    }
-
-    void timerEvent(QTimerEvent *ev) override
-    {
-        Q_ASSERT(m_timerId == ev->timerId());
-        killTimer(m_timerId);
-        m_timerId = 0;
-        m_timerScheduledTime = base::TimeTicks();
-
-        base::TimeTicks next_delayed_work_time;
-        m_delegate->DoDelayedWork(&next_delayed_work_time);
-        ScheduleDelayedWork(next_delayed_work_time);
-    }
-
-private:
-    bool handleScheduledWork() {
-        bool more_work_is_plausible = m_delegate->DoWork();
-
-        base::TimeTicks delayed_work_time;
-        more_work_is_plausible |= m_delegate->DoDelayedWork(&delayed_work_time);
-
-        if (more_work_is_plausible)
-            return true;
-
-        more_work_is_plausible |= m_delegate->DoIdleWork();
-        if (!more_work_is_plausible)
-            ScheduleDelayedWork(delayed_work_time);
-
-        return more_work_is_plausible;
-    }
-
-    Delegate *m_delegate;
-    QEventLoop *m_explicitLoop;
-    int m_timerId;
-    base::TimeTicks m_timerScheduledTime;
-};
-
-std::unique_ptr<base::MessagePump> messagePumpFactory()
-{
-    return base::WrapUnique(new MessagePumpForUIQt);
-}
-
-}  // anonymous namespace
-
-class BrowserMainPartsQt : public content::BrowserMainParts
-{
-public:
-    BrowserMainPartsQt()
-        : content::BrowserMainParts()
-    { }
-
-    int PreEarlyInitialization() override
-    {
-        base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
-        return 0;
-    }
-
-    void PreMainMessageLoopStart() override
-    {
-    }
-
-    void PostMainMessageLoopRun() override
-    {
-        // The BrowserContext's destructor uses the MessageLoop so it should be deleted
-        // right before the RenderProcessHostImpl's destructor destroys it.
-        WebEngineContext::current()->destroyBrowserContext();
-    }
-
-    int PreCreateThreads() override
-    {
-        base::ThreadRestrictions::SetIOAllowed(true);
-        // Like ChromeBrowserMainExtraPartsViews::PreCreateThreads does.
-#if defined(Q_OS_WIN)
-        display::Screen::SetScreenInstance(new display::win::ScreenWin);
-#else
-        display::Screen::SetScreenInstance(new DesktopScreenQt);
-#endif
-        return 0;
-    }
-    void ServiceManagerConnectionStarted(content::ServiceManagerConnection *connection) override
-    {
-        ServiceQt::GetInstance()->InitConnector();
-        connection->GetConnector()->StartService(service_manager::Identity("qtwebengine"));
-        if (resource_coordinator::IsResourceCoordinatorEnabled()) {
-            m_processResourceCoordinator = std::make_unique<resource_coordinator::ProcessResourceCoordinator>(connection->GetConnector());
-            m_processResourceCoordinator->SetLaunchTime(base::Time::Now());
-            m_processResourceCoordinator->SetPID(base::Process::Current().Pid());
-        }
-    }
-
-private:
-    DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
-    std::unique_ptr<resource_coordinator::ProcessResourceCoordinator> m_processResourceCoordinator;
-};
 
 class QtShareGLContext : public gl::GLContext {
 public:

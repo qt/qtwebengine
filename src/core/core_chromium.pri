@@ -43,6 +43,7 @@ SOURCES = \
         browser_accessibility_manager_qt.cpp \
         browser_accessibility_qt.cpp \
         browsing_data_remover_delegate_qt.cpp \
+        browser_main_parts_qt.cpp \
         browser_message_filter_qt.cpp \
         certificate_error_controller.cpp \
         chromium_gpu_helper.cpp \
@@ -131,6 +132,7 @@ HEADERS = \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
         browsing_data_remover_delegate_qt.h \
+        browser_main_parts_qt.h \
         browser_message_filter_qt.h \
         certificate_error_controller_p.h \
         certificate_error_controller.h \
