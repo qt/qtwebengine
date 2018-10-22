@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,34 +37,20 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_MAIN_DELEGATE_QT_H
-#define CONTENT_MAIN_DELEGATE_QT_H
+#ifndef CONTENT_UTILITY_CLIENT_QT_H
+#define CONTENT_UTILITY_CLIENT_QT_H
+#include "content/public/utility/content_utility_client.h"
 
-#include "content/public/app/content_main_delegate.h"
+class MashServiceFactory;
+class UtilityMessageHandler;
 
-#include "content_browser_client_qt.h"
-#include "content_utility_client_qt.h"
+class ContentUtilityClientQt : public content::ContentUtilityClient {
+ public:
+  ContentUtilityClientQt();
+  ~ContentUtilityClientQt() override;
 
-namespace QtWebEngineCore {
-
-class ContentMainDelegateQt : public content::ContentMainDelegate
-{
-public:
-
-    // This is where the embedder puts all of its startup code that needs to run
-    // before the sandbox is engaged.
-    void PreSandboxStartup() override;
-
-    content::ContentBrowserClient* CreateContentBrowserClient() override;
-    content::ContentRendererClient* CreateContentRendererClient() override;
-    content::ContentUtilityClient* CreateContentUtilityClient() override;
-    bool BasicStartupComplete(int* /*exit_code*/) override;
-
-private:
-    std::unique_ptr<ContentBrowserClientQt> m_browserClient;
-    std::unique_ptr<ContentUtilityClientQt> m_utilityClient;
+  // content::ContentUtilityClient:
+  void RegisterServices(StaticServiceMap* services) override;
 };
 
-} // namespace QtWebEngineCore
-
-#endif // CONTENT_MAIN_DELEGATE_QT_H
+#endif

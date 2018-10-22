@@ -42,6 +42,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
@@ -74,6 +75,7 @@
 #include "net/ssl/client_cert_identity.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "services/proxy_resolver/proxy_resolver_service.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -701,6 +703,12 @@ void ContentBrowserClientQt::RegisterInProcessServices(StaticServiceMap* service
     services->insert(std::make_pair("qtwebengine", info));
 }
 
+void ContentBrowserClientQt::RegisterOutOfProcessServices(content::ContentBrowserClient::OutOfProcessServiceMap *services)
+{
+    (*services)[proxy_resolver::mojom::kProxyResolverServiceName] =
+            base::BindRepeating(&base::ASCIIToUTF16, "V8 Proxy Resolver");
+}
+
 std::unique_ptr<base::Value> ContentBrowserClientQt::GetServiceManifestOverlay(base::StringPiece name)
 {
     ui::ResourceBundle &rb = ui::ResourceBundle::GetSharedInstance();
@@ -709,6 +717,8 @@ std::unique_ptr<base::Value> ContentBrowserClientQt::GetServiceManifestOverlay(b
         id = IDR_QTWEBENGINE_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY;
     else if (name == content::mojom::kRendererServiceName)
         id = IDR_QTWEBENGINE_CONTENT_RENDERER_MANIFEST_OVERLAY;
+    else if (name == content::mojom::kBrowserServiceName)
+        id = IDR_QTWEBENGINE_CONTENT_BROWSER_MANIFEST_OVERLAY;
     if (id == -1)
         return nullptr;
 

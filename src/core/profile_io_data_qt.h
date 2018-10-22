@@ -117,7 +117,7 @@ private:
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
     content::ProtocolHandlerMap m_protocolHandlers;
-    proxy_resolver::mojom::ProxyResolverFactoryPtr m_proxyResolverFactory;
+    mojo::InterfacePtrInfo<proxy_resolver::mojom::ProxyResolverFactory> m_proxyResolverFactoryInterface;
     net::URLRequestJobFactoryImpl *m_baseJobFactory = nullptr;
     QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
     QPointer<ProfileAdapter> m_profileAdapter; // never dereferenced in IO thread and it is passed by qpointer
