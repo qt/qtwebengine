@@ -38,6 +38,7 @@ qtConfig(egl): CONFIG += egl
 INCLUDEPATH += $$PWD $$PWD/api
 
 SOURCES = \
+        accessibility_activation_observer.cpp \
         accessibility_tree_formatter_qt.cpp \
         authentication_dialog_controller.cpp \
         browser_accessibility_manager_qt.cpp \
@@ -128,6 +129,7 @@ SOURCES = \
         web_event_factory.cpp
 
 HEADERS = \
+        accessibility_activation_observer.h \
         authentication_dialog_controller_p.h \
         authentication_dialog_controller.h \
         build_config_qt.h \

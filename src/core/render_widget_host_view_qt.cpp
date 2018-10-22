@@ -93,7 +93,6 @@
 #include <QWheelEvent>
 #include <QWindow>
 #include <QtGui/private/qinputcontrol_p.h>
-#include <QtGui/qaccessible.h>
 
 namespace QtWebEngineCore {
 
@@ -244,19 +243,6 @@ private:
     float dpiScale;
 };
 
-bool isAccessibilityEnabled() {
-    // On Linux accessibility is disabled by default due to performance issues,
-    // and can be re-enabled by setting the QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY environment
-    // variable. For details, see QTBUG-59922.
-#ifdef Q_OS_LINUX
-    static bool accessibility_enabled
-            = qEnvironmentVariableIsSet("QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY");
-#else
-    const bool accessibility_enabled = true;
-#endif
-    return accessibility_enabled;
-}
-
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
     : content::RenderWidgetHostViewBase::RenderWidgetHostViewBase(widget)
     , m_gestureProvider(QtGestureProviderConfig(), this)
@@ -280,13 +266,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
                     base::checked_cast<uint32_t>(widget->GetRoutingID()))
 {
     host()->SetView(this);
-#ifndef QT_NO_ACCESSIBILITY
-    if (isAccessibilityEnabled()) {
-        QAccessible::installActivationObserver(this);
-        if (QAccessible::isActive())
-            content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
-    }
-#endif // QT_NO_ACCESSIBILITY
 
     if (GetTextInputManager())
         GetTextInputManager()->AddObserver(this);
@@ -303,9 +282,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
     QObject::disconnect(m_adapterClientDestroyedConnection);
-#ifndef QT_NO_ACCESSIBILITY
-    QAccessible::removeActivationObserver(this);
-#endif // QT_NO_ACCESSIBILITY
 
     if (text_input_manager_)
         text_input_manager_->RemoveObserver(this);
@@ -1392,16 +1368,6 @@ void RenderWidgetHostViewQt::handleInputMethodQueryEvent(QInputMethodQueryEvent 
     }
     ev->accept();
 }
-
-#ifndef QT_NO_ACCESSIBILITY
-void RenderWidgetHostViewQt::accessibilityActiveChanged(bool active)
-{
-    if (active)
-        content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
-    else
-        content::BrowserAccessibilityStateImpl::GetInstance()->DisableAccessibility();
-}
-#endif // QT_NO_ACCESSIBILITY
 
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {

@@ -80,16 +80,19 @@
 #include "content/public/app/sandbox_helper_win.h"
 #endif // OS_WIN
 
+#ifndef QT_NO_ACCESSIBILITY
+#include "accessibility_activation_observer.h"
+#endif
 #include "api/qwebengineurlscheme.h"
-#include "profile_adapter.h"
 #include "content_browser_client_qt.h"
 #include "content_client_qt.h"
 #include "content_main_delegate_qt.h"
 #include "devtools_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "net/webui_controller_factory_qt.h"
-#include "type_conversion.h"
 #include "ozone/gl_context_qt.h"
+#include "profile_adapter.h"
+#include "type_conversion.h"
 #include "web_engine_library_info.h"
 
 #include <QFileInfo>
@@ -606,6 +609,10 @@ void WebEngineContext::initialize()
 
 #if QT_CONFIG(webengine_printing_and_pdf)
     m_printJobManager.reset(new printing::PrintJobManager());
+#endif
+
+#ifndef QT_NO_ACCESSIBILITY
+    m_accessibilityActivationObserver.reset(new AccessibilityActivationObserver());
 #endif
 
     content::WebUIControllerFactory::RegisterFactory(WebUIControllerFactoryQt::GetInstance());

@@ -72,9 +72,10 @@ QT_FORWARD_DECLARE_CLASS(QObject)
 
 namespace QtWebEngineCore {
 
-class ProfileAdapter;
+class AccessibilityActivationObserver;
 class ContentMainDelegateQt;
 class DevToolsServerQt;
+class ProfileAdapter;
 
 bool usingSoftwareDynamicGL();
 
@@ -116,6 +117,9 @@ private:
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
     std::unique_ptr<gpu::SyncPointManager> m_syncPointManager;
     QVector<ProfileAdapter*> m_profileAdapters;
+#ifndef QT_NO_ACCESSIBILITY
+    std::unique_ptr<AccessibilityActivationObserver> m_accessibilityActivationObserver;
+#endif
 
 #if QT_CONFIG(webengine_printing_and_pdf)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;

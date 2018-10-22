@@ -57,7 +57,6 @@
 #include <QMap>
 #include <QPoint>
 #include <QtGlobal>
-#include <QtGui/qaccessible.h>
 #include <QtGui/QTouchEvent>
 
 QT_BEGIN_NAMESPACE
@@ -94,9 +93,6 @@ class RenderWidgetHostViewQt
     , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
-#ifndef QT_NO_ACCESSIBILITY
-    , public QAccessible::ActivationObserver
-#endif // QT_NO_ACCESSIBILITY
     , public content::TextInputManager::Observer
 {
 public:
@@ -209,9 +205,6 @@ public:
 
     // Overridden from content::BrowserAccessibilityDelegate
     content::BrowserAccessibilityManager* CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
-#ifndef QT_NO_ACCESSIBILITY
-    void accessibilityActiveChanged(bool active) override;
-#endif // QT_NO_ACCESSIBILITY
     LoadVisuallyCommittedState getLoadVisuallyCommittedState() const { return m_loadVisuallyCommittedState; }
     void setLoadVisuallyCommittedState(LoadVisuallyCommittedState state) { m_loadVisuallyCommittedState = state; }
 
