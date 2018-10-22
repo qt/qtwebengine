@@ -1677,7 +1677,7 @@ void QWebEnginePagePrivate::allowCertificateError(const QSharedPointer<Certifica
 
 void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)
 {
-#if QT_CONFIG(ssl)
+#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     Q_Q(QWebEnginePage);
     QWebEngineClientCertificateSelection certSelection(controller);
 
@@ -1687,7 +1687,7 @@ void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSele
 #endif
 }
 
-#if QT_CONFIG(ssl)
+#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 /*!
     \fn void QWebEnginePage::selectClientCertificate(QWebEngineClientCertificateSelection clientCertificateSelection)
     \since 5.12

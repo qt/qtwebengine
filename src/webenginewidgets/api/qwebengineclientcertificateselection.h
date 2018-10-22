@@ -43,7 +43,7 @@
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtNetwork/qtnetwork-config.h>
 
-#if QT_CONFIG(ssl)
+#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qvector.h>
@@ -75,6 +75,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_CONFIG(ssl)
+#endif // !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 
 #endif // QWEBENGINECLIENTCERTSELECTION_H
