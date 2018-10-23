@@ -1030,7 +1030,8 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
         return false;
     }
     case QEvent::MouseButtonPress:
-        Focus(); // Fall through.
+        Focus();
+        Q_FALLTHROUGH();
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove:
         // Skip second MouseMove event when a window is being adopted, so that Chromium
@@ -1051,7 +1052,8 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
         handleWheelEvent(static_cast<QWheelEvent*>(event));
         break;
     case QEvent::TouchBegin:
-        Focus(); // Fall through.
+        Focus();
+        Q_FALLTHROUGH();
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
     case QEvent::TouchCancel:
@@ -1059,7 +1061,8 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
         break;
 #if QT_CONFIG(tabletevent)
     case QEvent::TabletPress:
-        Focus(); // Fall through.
+        Focus();
+        Q_FALLTHROUGH();
     case QEvent::TabletRelease:
     case QEvent::TabletMove:
         handleTabletEvent(static_cast<QTabletEvent*>(event));
