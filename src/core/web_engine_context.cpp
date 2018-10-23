@@ -261,6 +261,52 @@ static void cleanupVizProcess()
     vizCompositorThreadRunner->CleanupForShutdown(base::BindOnce(&completeVizCleanup));
 }
 
+static QStringList parseEnvCommandLine(const QString &cmdLine)
+{
+    QString arg;
+    QStringList arguments;
+    enum { Parse, Quoted, Unquoted } state = Parse;
+    for (const QChar c : cmdLine) {
+        switch (state) {
+        case Parse:
+            if (c == '"') {
+                state = Quoted;
+            } else if (c != ' ' ) {
+                arg += c;
+                state = Unquoted;
+            }
+            // skips spaces
+            break;
+        case Quoted:
+            if (c == '"') {
+                DCHECK(!arg.isEmpty());
+                state = Unquoted;
+            } else {
+                // includes spaces
+                arg += c;
+            }
+            break;
+        case Unquoted:
+            if (c == '"') {
+                // skips quotes
+                state = Quoted;
+            } else if (c == ' ') {
+                arguments.append(arg);
+                arg.clear();
+                state = Parse;
+            } else {
+                arg += c;
+            }
+            break;
+        }
+    }
+    // last arg
+    if (!arg.isEmpty()) {
+        arguments.append(arg);
+    }
+    return arguments;
+}
+
 scoped_refptr<QtWebEngineCore::WebEngineContext> WebEngineContext::m_handle;
 bool WebEngineContext::m_destroyed = false;
 
@@ -829,7 +875,7 @@ base::CommandLine* WebEngineContext::commandLine() {
         QStringList appArgs = QCoreApplication::arguments();
         if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
             appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
-            appArgs.append(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv)).split(' '));
+            appArgs.append(parseEnvCommandLine(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv))));
         }
 #ifdef Q_OS_WIN
         appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
