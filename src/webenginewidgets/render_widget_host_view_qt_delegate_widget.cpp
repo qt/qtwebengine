@@ -411,6 +411,15 @@ void RenderWidgetHostViewQtDelegateWidget::hideEvent(QHideEvent *event)
     m_client->notifyHidden();
 }
 
+bool RenderWidgetHostViewQtDelegateWidget::copySurface(const QRect &rect, const QSize &size, QImage &image)
+{
+    QPixmap pixmap = rect.isEmpty() ? QQuickWidget::grab(QQuickWidget::rect()) : QQuickWidget::grab(rect);
+    if (pixmap.isNull())
+        return false;
+    image = pixmap.toImage().scaled(size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    return true;
+}
+
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
     bool handled = false;

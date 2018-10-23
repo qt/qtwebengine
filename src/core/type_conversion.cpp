@@ -137,6 +137,44 @@ QImage toQImage(const gfx::ImageSkiaRep &imageSkiaRep)
     return image;
 }
 
+SkBitmap toSkBitmap(const QImage &image)
+{
+    SkBitmap bitmap;
+    SkImageInfo imageInfo;
+
+    switch (image.format()) {
+    case QImage::Format_RGB32:
+        imageInfo = SkImageInfo::Make(image.width(), image.height(), kBGRA_8888_SkColorType, kOpaque_SkAlphaType);
+        break;
+    case QImage::Format_ARGB32:
+        imageInfo = SkImageInfo::Make(image.width(), image.height(), kBGRA_8888_SkColorType, kUnpremul_SkAlphaType);
+        break;
+    case QImage::Format_ARGB32_Premultiplied:
+        imageInfo = SkImageInfo::Make(image.width(), image.height(), kBGRA_8888_SkColorType, kPremul_SkAlphaType);
+        break;
+    case QImage::Format_RGBX8888:
+        imageInfo = SkImageInfo::Make(image.width(), image.height(), kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
+        break;
+    case QImage::Format_RGBA8888:
+        imageInfo = SkImageInfo::Make(image.width(), image.height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+        break;
+    case QImage::Format_RGBA8888_Premultiplied:
+        imageInfo = SkImageInfo::Make(image.width(), image.height(), kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+        break;
+    default:
+        return toSkBitmap(image.convertToFormat(QImage::Format_ARGB32_Premultiplied));
+    }
+
+    bitmap.installPixels(imageInfo, (void *)image.bits(), image.bytesPerLine());
+
+    // Ensure we copy the pixels
+    SkBitmap bitmapCopy;
+    bitmapCopy.allocPixels(imageInfo);
+    bitmapCopy.writePixels(bitmap.pixmap());
+
+    return bitmapCopy;
+}
+
 QIcon toQIcon(const std::vector<SkBitmap> &bitmaps)
 {
     if (!bitmaps.size())

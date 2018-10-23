@@ -428,6 +428,8 @@ WebEngineContext::WebEngineContext()
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kEnableSurfaceSynchronization.name);
     // The video-capture service is not functioning at this moment (since 69)
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kMojoVideoCapture.name);
+    // We do not yet support the internal video capture API.
+    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kUseVideoCaptureApiForDevToolsSnapshots.name);
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc

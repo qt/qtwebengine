@@ -88,6 +88,7 @@ public:
     void inputMethodStateChanged(bool editorVisible, bool passwordInput) override;
     void setInputMethodHints(Qt::InputMethodHints) override;
     void setClearColor(const QColor &color) override;
+    bool copySurface(const QRect &, const QSize &, QImage &) override;
 
 protected:
     bool event(QEvent *event) override;

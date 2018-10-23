@@ -114,6 +114,7 @@ public:
     virtual void inputMethodStateChanged(bool editorVisible, bool passwordInput) = 0;
     virtual void setInputMethodHints(Qt::InputMethodHints hints) = 0;
     virtual void setClearColor(const QColor &color) = 0;
+    virtual bool copySurface(const QRect &, const QSize &, QImage &) = 0;
 };
 
 } // namespace QtWebEngineCore

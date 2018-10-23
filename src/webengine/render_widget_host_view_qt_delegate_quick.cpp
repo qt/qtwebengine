@@ -376,4 +376,15 @@ void RenderWidgetHostViewQtDelegateQuick::onHide()
     m_client->forwardEvent(&event);
 }
 
+bool RenderWidgetHostViewQtDelegateQuick::copySurface(const QRect &rect, const QSize &size, QImage &image)
+{
+    image = QQuickItem::window()->grabWindow();
+    if (image.isNull())
+        return false;
+    QRect subrect = !rect.isEmpty() ? rect : image.rect();
+    image = image.copy(subrect);
+    image = image.scaled(size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    return true;
+}
+
 } // namespace QtWebEngineCore

@@ -403,7 +403,18 @@ bool RenderWidgetHostViewQt::HasFocus() const
 
 bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy() const
 {
-    return false;
+    return true;
+}
+
+void RenderWidgetHostViewQt::CopyFromSurface(const gfx::Rect &src_rect,
+                                             const gfx::Size &output_size,
+                                             base::OnceCallback<void(const SkBitmap &)> callback)
+{
+    QImage image;
+    if (m_delegate->copySurface(toQt(src_rect), toQt(output_size), image))
+        std::move(callback).Run(toSkBitmap(image));
+    else
+        std::move(callback).Run(SkBitmap());
 }
 
 void RenderWidgetHostViewQt::Show()
