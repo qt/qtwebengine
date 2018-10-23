@@ -1431,11 +1431,7 @@ bool WebContentsAdapter::handleDropDataFileContents(const content::DropData &dro
 
     const auto maybeFilename = dropData.GetSafeFilenameForImageFileContents();
     const QString fileName = maybeFilename ? toQt(maybeFilename->AsUTF16Unsafe()) : QString();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
     const QString &filePath = m_dndTmpDir->filePath(fileName);
-#else
-    const QString &filePath = m_dndTmpDir->path() + QLatin1Char('/') + fileName;
-#endif
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly)) {
         qWarning("Cannot write temporary file %s.", qUtf8Printable(filePath));

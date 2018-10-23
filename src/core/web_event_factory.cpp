@@ -1413,11 +1413,7 @@ static void setBlinkWheelEventDelta(blink::WebMouseWheelEvent &webEvent)
     // a pixel delta based on ticks and scroll per line.
     static const float cDefaultQtScrollStep = 20.f;
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
     static const int wheelScrollLines = QGuiApplication::styleHints()->wheelScrollLines();
-#else
-    static const int wheelScrollLines = 3;
-#endif
     webEvent.delta_x = webEvent.wheel_ticks_x * wheelScrollLines * cDefaultQtScrollStep;
     webEvent.delta_y = webEvent.wheel_ticks_y * wheelScrollLines * cDefaultQtScrollStep;
 }

@@ -93,9 +93,7 @@ void ProxyConfigServiceQt::RemoveObserver(net::ProxyConfigService::Observer *obs
 
 net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxyConfig(net::ProxyConfigWithAnnotation *config)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
     m_usesSystemConfiguration = QNetworkProxyFactory::usesSystemConfiguration();
-#endif
     if (m_usesSystemConfiguration) {
         // Use Chromium's base service to retrieve system settings
         net::ProxyConfigWithAnnotation systemConfig;
@@ -149,7 +147,6 @@ void ProxyConfigServiceQt::OnLazyPoll()
 {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
     // We need to update if
     // - setUseSystemConfiguration() was called in between
     // - user changed application proxy
@@ -160,10 +157,6 @@ void ProxyConfigServiceQt::OnLazyPoll()
         if (m_baseService.get())
             m_baseService->OnLazyPoll();
     }
-#else
-    if (m_qtApplicationProxy != QNetworkProxy::applicationProxy())
-        Update();
-#endif
 }
 
 // Called when the base service changed
