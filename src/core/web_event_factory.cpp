@@ -1426,7 +1426,9 @@ blink::WebMouseWheelEvent::Phase toBlinkPhase(QWheelEvent *ev)
 {
     switch (ev->phase()) {
     case Qt::NoScrollPhase:
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
     case Qt::ScrollMomentum:
+#endif
         return blink::WebMouseWheelEvent::kPhaseNone;
     case Qt::ScrollBegin:
         return ev->angleDelta().isNull() ? blink::WebMouseWheelEvent::kPhaseMayBegin : blink::WebMouseWheelEvent::kPhaseBegan;
