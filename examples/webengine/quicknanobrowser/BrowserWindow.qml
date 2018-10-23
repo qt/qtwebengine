@@ -367,7 +367,10 @@ ApplicationWindow {
             return tab;
         }
 
-        anchors.fill: parent
+        anchors.top: parent.top
+        anchors.bottom: devToolsView.top
+        anchors.left: parent.left
+        anchors.right: parent.right
         Component.onCompleted: createEmptyTab(defaultProfile)
 
         Component {
@@ -500,7 +503,7 @@ ApplicationWindow {
     WebEngineView {
         id: devToolsView
         visible: devToolsEnabled.checked
-        height: 400
+        height: visible ? 400 : 0
         inspectedView: visible && tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
         anchors.left: parent.left
         anchors.right: parent.right
