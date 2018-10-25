@@ -72,18 +72,18 @@ namespace {
 
 static const qreal kMicronsToMillimeter = 1000.0f;
 
-static std::vector<char>
-GetStdVectorFromHandle(base::SharedMemoryHandle handle, uint32_t data_size)
+static QSharedPointer<QByteArray>
+GetByteArrayFromHandle(base::SharedMemoryHandle handle, uint32_t data_size)
 {
     std::unique_ptr<base::SharedMemory> shared_buf(
                 new base::SharedMemory(handle, true));
 
     if (!shared_buf->Map(data_size)) {
-        return std::vector<char>();
+        return QSharedPointer<QByteArray>(new QByteArray);
     }
 
     char* data = static_cast<char*>(shared_buf->memory());
-    return std::vector<char>(data, data + data_size);
+    return QSharedPointer<QByteArray>(new QByteArray(data, data_size));
 }
 
 static scoped_refptr<base::RefCountedBytes>
@@ -247,7 +247,7 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
     // If there already is a pending print in progress, don't try starting another one.
     if (m_printSettings) {
         content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                         base::Bind(callback, std::vector<char>()));
+                                         base::Bind(callback, QSharedPointer<QByteArray>()));
         return;
     }
 
@@ -255,7 +255,7 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
     if (!PrintToPDFInternal(pageLayout, printInColor, useCustomMargins)) {
         content::BrowserThread::PostTask(content::BrowserThread::UI,
                                          FROM_HERE,
-                                         base::Bind(callback, std::vector<char>()));
+                                         base::Bind(callback, QSharedPointer<QByteArray>()));
 
         resetPdfState();
     }
@@ -358,18 +358,18 @@ void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rf
     StopWorker(params.document_cookie);
 
     // Create local copies so we can reset the state and take a new pdf print job.
-    base::Callback<void(const std::vector<char>&)> pdf_print_callback = m_pdfPrintCallback;
+    base::Callback<void(QSharedPointer<QByteArray>)> pdf_print_callback = m_pdfPrintCallback;
     base::Callback<void(bool)> pdf_save_callback = m_pdfSaveCallback;
     base::FilePath pdfOutputPath = m_pdfOutputPath;
 
     resetPdfState();
 
     if (!pdf_print_callback.is_null()) {
-        std::vector<char> data_vector = GetStdVectorFromHandle(params.content.metafile_data_handle,
-                                                               params.content.data_size);
+        QSharedPointer<QByteArray> data_array = GetByteArrayFromHandle(params.content.metafile_data_handle,
+                                                                       params.content.data_size);
         content::BrowserThread::PostTask(content::BrowserThread::UI,
                                          FROM_HERE,
-                                         base::Bind(pdf_print_callback, data_vector));
+                                         base::Bind(pdf_print_callback, data_array));
     } else {
         scoped_refptr<base::RefCountedBytes> data_bytes
                 = GetBytesFromHandle(params.content.metafile_data_handle, params.content.data_size);
@@ -394,7 +394,7 @@ void PrintViewManagerQt::NavigationStopped()
     if (!m_pdfPrintCallback.is_null()) {
         content::BrowserThread::PostTask(content::BrowserThread::UI,
                                          FROM_HERE,
-                                         base::Bind(m_pdfPrintCallback, std::vector<char>()));
+                                         base::Bind(m_pdfPrintCallback, QSharedPointer<QByteArray>()));
     }
     resetPdfState();
     PrintViewManagerBaseQt::NavigationStopped();
@@ -406,7 +406,7 @@ void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
     if (!m_pdfPrintCallback.is_null()) {
         content::BrowserThread::PostTask(content::BrowserThread::UI,
                                          FROM_HERE,
-                                         base::Bind(m_pdfPrintCallback, std::vector<char>()));
+                                         base::Bind(m_pdfPrintCallback, QSharedPointer<QByteArray>()));
     }
     resetPdfState();
 }

@@ -128,7 +128,7 @@ public:
     void didFetchDocumentMarkup(quint64, const QString&) override { }
     void didFetchDocumentInnerText(quint64, const QString&) override { }
     void didFindText(quint64, int) override;
-    void didPrintPage(quint64 requestId, const QByteArray &result) override;
+    void didPrintPage(quint64 requestId, QSharedPointer<QByteArray>) override;
     void didPrintPageToPdf(const QString &filePath, bool success) override;
     void passOnFocus(bool reverse) override;
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override;

@@ -1130,12 +1130,12 @@ void QQuickWebEngineViewPrivate::didFindText(quint64 requestId, int matchCount)
     callback.call(args);
 }
 
-void QQuickWebEngineViewPrivate::didPrintPage(quint64 requestId, const QByteArray &result)
+void QQuickWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
 {
     Q_Q(QQuickWebEngineView);
     QJSValue callback = m_callbacks.take(requestId);
     QJSValueList args;
-    args.append(qmlEngine(q)->toScriptValue(result));
+    args.append(qmlEngine(q)->toScriptValue(*(result.data())));
     callback.call(args);
 }
 

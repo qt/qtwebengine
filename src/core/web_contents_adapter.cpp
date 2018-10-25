@@ -210,10 +210,10 @@ static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint6
 #if QT_CONFIG(webengine_printing_and_pdf)
 static void callbackOnPrintingFinished(WebContentsAdapterClient *adapterClient,
                                        int requestId,
-                                       const std::vector<char>& result)
+                                       QSharedPointer<QByteArray> result)
 {
     if (requestId)
-        adapterClient->didPrintPage(requestId, QByteArray(result.data(), result.size()));
+        adapterClient->didPrintPage(requestId, result);
 }
 
 static void callbackOnPdfSavingFinished(WebContentsAdapterClient *adapterClient,

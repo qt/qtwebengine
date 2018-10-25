@@ -49,6 +49,9 @@ HEADERS = \
 
 qtConfig(webengine-printing-and-pdf) {
     QT += printsupport
+
+    SOURCES += printer_worker.cpp
+    HEADERS += printer_worker.h
 }
 
 load(qt_module)

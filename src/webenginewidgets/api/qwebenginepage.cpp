@@ -48,7 +48,7 @@
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
-#include "printing/pdfium_document_wrapper_qt.h"
+#include "printer_worker.h"
 #endif
 #include "qwebenginecertificateerror.h"
 #include "qwebenginefullscreenrequest.h"
@@ -94,6 +94,7 @@
 #include <QMimeData>
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include <QPrinter>
+#include <QThread>
 #endif
 #include <QStandardPaths>
 #include <QStyle>
@@ -105,89 +106,6 @@ QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
 
 static const int MaxTooltipLength = 1024;
-
-#if QT_CONFIG(webengine_printing_and_pdf)
-static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
-{
-    if (!data.size()) {
-        qWarning("Failure to print on printer %ls: Print result data is empty.",
-                 qUtf16Printable(printer.printerName()));
-        return false;
-    }
-
-    QSize pageSize = printer.pageRect().size();
-    PdfiumDocumentWrapperQt pdfiumWrapper(data.constData(), data.size(), pageSize);
-
-    int toPage = printer.toPage();
-    int fromPage = printer.fromPage();
-    bool ascendingOrder = true;
-
-    if (fromPage == 0 && toPage == 0) {
-        fromPage = 1;
-        toPage = pdfiumWrapper.pageCount();
-    }
-    fromPage = qMax(1, fromPage);
-    toPage = qMin(pdfiumWrapper.pageCount(), toPage);
-
-    if (printer.pageOrder() == QPrinter::LastPageFirst) {
-        qSwap(fromPage, toPage);
-        ascendingOrder = false;
-    }
-
-    int pageCopies = 1;
-    int documentCopies = 1;
-
-    if (!printer.supportsMultipleCopies())
-        documentCopies = printer.copyCount();
-
-    if (printer.collateCopies()) {
-        pageCopies = documentCopies;
-        documentCopies = 1;
-    }
-
-    QPainter painter;
-    if (!painter.begin(&printer)) {
-        qWarning("Failure to print on printer %ls: Could not open printer for painting.",
-                  qUtf16Printable(printer.printerName()));
-        return false;
-    }
-
-    for (int printedDocuments = 0; printedDocuments < documentCopies; printedDocuments++) {
-        int currentPageIndex = fromPage;
-        while (true) {
-            for (int printedPages = 0; printedPages < pageCopies; printedPages++) {
-                if (printer.printerState() == QPrinter::Aborted
-                        || printer.printerState() == QPrinter::Error)
-                    return false;
-
-                QImage currentImage = pdfiumWrapper.pageAsQImage(currentPageIndex - 1);
-                if (currentImage.isNull())
-                    return false;
-
-                // Painting operations are automatically clipped to the bounds of the drawable part of the page.
-                painter.drawImage(QRect(0, 0, pageSize.width(), pageSize.height()), currentImage, currentImage.rect());
-                if (printedPages < pageCopies - 1)
-                    printer.newPage();
-            }
-
-            if (currentPageIndex == toPage)
-                break;
-
-            if (ascendingOrder)
-                currentPageIndex++;
-            else
-                currentPageIndex--;
-
-            printer.newPage();
-        }
-        if (printedDocuments < documentCopies - 1)
-            printer.newPage();
-    }
-    painter.end();
-
-    return true;
-}
-#endif // QT_CONFIG(webengine_printing_and_pdf)
 
 static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::WindowOpenDisposition disposition)
 {
@@ -502,19 +420,35 @@ void QWebEnginePagePrivate::didFindText(quint64 requestId, int matchCount)
     m_callbacks.invoke(requestId, matchCount > 0);
 }
 
-void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &result)
+void QWebEnginePagePrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
+    Q_Q(QWebEnginePage);
+
     // If no currentPrinter is set that means that were printing to PDF only.
     if (!currentPrinter) {
-        m_callbacks.invoke(requestId, result);
+        if (!result.data())
+            return;
+        m_callbacks.invoke(requestId, *(result.data()));
         return;
     }
 
-    bool printerResult = printPdfDataOnPrinter(result, *currentPrinter);
+    QThread *printerThread = new QThread;
+    QObject::connect(printerThread, &QThread::finished, printerThread, &QThread::deleteLater);
+    printerThread->start();
 
-    currentPrinter = nullptr;
-    m_callbacks.invoke(requestId, printerResult);
+    PrinterWorker *printerWorker = new PrinterWorker(result, currentPrinter);
+    QObject::connect(printerWorker, &PrinterWorker::resultReady, q, [=](bool success) {
+        currentPrinter = nullptr;
+        m_callbacks.invoke(requestId, success);
+    });
+
+    QObject::connect(printerWorker, &PrinterWorker::resultReady, printerThread, &QThread::quit);
+    QObject::connect(printerThread, &QThread::finished, printerWorker, &PrinterWorker::deleteLater);
+
+    printerWorker->moveToThread(printerThread);
+    QMetaObject::invokeMethod(printerWorker, "print");
+
 #else
     // we should never enter this branch, but just for safe-keeping...
     Q_UNUSED(result);
