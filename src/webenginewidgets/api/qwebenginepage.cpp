@@ -676,6 +676,8 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
         adapter = std::move(newWebContents);
         adapter->setClient(this);
         adapter->loadDefault();
+        if (view && view->isVisible())
+            wasShown();
     }
 }
 
