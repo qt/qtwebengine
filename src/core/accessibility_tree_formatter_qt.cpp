@@ -52,6 +52,7 @@
 
 namespace content {
 
+#ifndef QT_NO_ACCESSIBILITY
 class AccessibilityTreeFormatterQt : public AccessibilityTreeFormatterBrowser {
 public:
     explicit AccessibilityTreeFormatterQt();
@@ -65,12 +66,6 @@ private:
     void AddProperties(const BrowserAccessibility &node, base::DictionaryValue* dict) override;
     base::string16 ProcessTreeForOutput(const base::DictionaryValue &node, base::DictionaryValue * = nullptr) override;
 };
-
-// static
-AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create()
-{
-    return new AccessibilityTreeFormatterQt();
-}
 
 AccessibilityTreeFormatterQt::AccessibilityTreeFormatterQt()
 {
@@ -203,4 +198,16 @@ const std::string AccessibilityTreeFormatterQt::GetDenyString()
     return "@QT-DENY:";
 }
 
+#endif // QT_NO_ACCESSIBILITY
+
+// static
+AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create()
+{
+#ifndef QT_NO_ACCESSIBILITY
+    return new AccessibilityTreeFormatterQt();
+#else
+    return nullptr;
+#endif
 }
+
+} // namespace content
