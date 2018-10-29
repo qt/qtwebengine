@@ -60,11 +60,6 @@ public:
 
     virtual void requestStarted(QWebEngineUrlRequestJob*) = 0;
 
-#ifndef Q_QDOC
-Q_SIGNALS:
-    void _q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*);
-#endif
-
 private:
     Q_DISABLE_COPY(QWebEngineUrlSchemeHandler)
 };

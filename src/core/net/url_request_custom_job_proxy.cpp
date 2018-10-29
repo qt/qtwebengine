@@ -164,7 +164,7 @@ void URLRequestCustomJobProxy::initialize(GURL url, std::string method, base::Op
     QWebEngineUrlSchemeHandler *schemeHandler = nullptr;
 
     if (m_profileAdapter)
-        schemeHandler = m_profileAdapter->customUrlSchemeHandlers()[toQByteArray(m_scheme)];
+        schemeHandler = m_profileAdapter->urlSchemeHandler(toQByteArray(m_scheme));
 
     if (schemeHandler) {
         m_delegate = new URLRequestCustomJobDelegate(this, toQt(url),

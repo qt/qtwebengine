@@ -414,9 +414,23 @@ void ProfileAdapter::setHttpCacheMaxSize(int maxSize)
         m_profile->m_profileIOData->updateHttpCache();
 }
 
-const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &ProfileAdapter::customUrlSchemeHandlers() const
+static bool isInternalScheme(const QByteArray &scheme)
 {
-    return m_customUrlSchemeHandlers;
+    static QSet<QByteArray> internalSchemes{
+        QByteArrayLiteral("qrc"),
+        QByteArrayLiteral("data"),
+        QByteArrayLiteral("blob"),
+        QByteArrayLiteral("http"),
+        QByteArrayLiteral("https"),
+        QByteArrayLiteral("ftp"),
+        QByteArrayLiteral("javascript"),
+    };
+    return internalSchemes.contains(scheme);
+}
+
+QWebEngineUrlSchemeHandler *ProfileAdapter::urlSchemeHandler(const QByteArray &scheme)
+{
+    return m_customUrlSchemeHandlers.value(scheme.toLower()).data();
 }
 
 const QList<QByteArray> ProfileAdapter::customUrlSchemes() const
@@ -430,12 +444,17 @@ void ProfileAdapter::updateCustomUrlSchemeHandlers()
         m_profile->m_profileIOData->updateJobFactory();
 }
 
-bool ProfileAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+void ProfileAdapter::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 {
+    Q_ASSERT(handler);
     bool removedOneOrMore = false;
     auto it = m_customUrlSchemeHandlers.begin();
     while (it != m_customUrlSchemeHandlers.end()) {
         if (it.value() == handler) {
+            if (isInternalScheme(it.key())) {
+                qWarning("Cannot remove the URL scheme handler for an internal scheme: %s", it.key().constData());
+                continue;
+            }
             it = m_customUrlSchemeHandlers.erase(it);
             removedOneOrMore = true;
             continue;
@@ -444,24 +463,36 @@ bool ProfileAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *ha
     }
     if (removedOneOrMore)
         updateCustomUrlSchemeHandlers();
-    return removedOneOrMore;
 }
 
-QWebEngineUrlSchemeHandler *ProfileAdapter::takeCustomUrlSchemeHandler(const QByteArray &scheme)
+void ProfileAdapter::removeUrlScheme(const QByteArray &scheme)
 {
-    QWebEngineUrlSchemeHandler *handler = m_customUrlSchemeHandlers.take(scheme);
-    if (handler)
+    QByteArray canonicalScheme = scheme.toLower();
+    if (isInternalScheme(canonicalScheme)) {
+        qWarning("Cannot remove the URL scheme handler for an internal scheme: %s", scheme.constData());
+        return;
+    }
+    if (m_customUrlSchemeHandlers.remove(canonicalScheme))
         updateCustomUrlSchemeHandlers();
-    return handler;
 }
 
-void ProfileAdapter::addCustomUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
+void ProfileAdapter::installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
 {
-    m_customUrlSchemeHandlers.insert(scheme, handler);
+    Q_ASSERT(handler);
+    QByteArray canonicalScheme = scheme.toLower();
+    if (isInternalScheme(canonicalScheme)) {
+        qWarning("Cannot install a URL scheme handler overriding internal scheme: %s", scheme.constData());
+        return;
+    }
+    if (m_customUrlSchemeHandlers.value(canonicalScheme, handler) != handler) {
+        qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
+        return;
+    }
+    m_customUrlSchemeHandlers.insert(canonicalScheme, handler);
     updateCustomUrlSchemeHandlers();
 }
 
-void ProfileAdapter::clearCustomUrlSchemeHandlers()
+void ProfileAdapter::removeAllUrlSchemeHandlers()
 {
     m_customUrlSchemeHandlers.clear();
     updateCustomUrlSchemeHandlers();

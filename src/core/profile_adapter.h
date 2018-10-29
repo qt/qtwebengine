@@ -169,12 +169,13 @@ public:
     bool trackVisitedLinks() const;
     bool persistVisitedLinks() const;
 
-    const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &customUrlSchemeHandlers() const;
+    QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &scheme);
+    void installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler);
+    void removeUrlScheme(const QByteArray &scheme);
+    void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler);
+    void removeAllUrlSchemeHandlers();
+
     const QList<QByteArray> customUrlSchemes() const;
-    void clearCustomUrlSchemeHandlers();
-    void addCustomUrlSchemeHandler(const QByteArray &, QWebEngineUrlSchemeHandler *);
-    bool removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
-    QWebEngineUrlSchemeHandler *takeCustomUrlSchemeHandler(const QByteArray &);
     UserResourceControllerHost *userResourceController();
 
     void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
@@ -214,7 +215,7 @@ private:
     QString m_httpAcceptLanguage;
     PersistentCookiesPolicy m_persistentCookiesPolicy;
     VisitedLinksPolicy m_visitedLinksPolicy;
-    QHash<QByteArray, QWebEngineUrlSchemeHandler *> m_customUrlSchemeHandlers;
+    QHash<QByteArray, QPointer<QWebEngineUrlSchemeHandler>> m_customUrlSchemeHandlers;
     QList<ProfileAdapterClient*> m_clients;
     int m_httpCacheMaxSize;
     int m_pageRequestInterceptors;

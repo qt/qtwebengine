@@ -898,20 +898,7 @@ void QQuickWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestIntercept
 const QWebEngineUrlSchemeHandler *QQuickWebEngineProfile::urlSchemeHandler(const QByteArray &scheme) const
 {
     const Q_D(QQuickWebEngineProfile);
-    if (d->profileAdapter()->customUrlSchemeHandlers().contains(scheme))
-        return d->profileAdapter()->customUrlSchemeHandlers().value(scheme);
-    return 0;
-}
-
-static bool checkInternalScheme(const QByteArray &scheme)
-{
-    static QSet<QByteArray> internalSchemes;
-    if (internalSchemes.isEmpty()) {
-        internalSchemes << QByteArrayLiteral("qrc") << QByteArrayLiteral("data") << QByteArrayLiteral("blob")
-                        << QByteArrayLiteral("http") << QByteArrayLiteral("https") << QByteArrayLiteral("ftp")
-                        << QByteArrayLiteral("javascript");
-    }
-    return internalSchemes.contains(scheme);
+    return d->profileAdapter()->urlSchemeHandler(scheme);
 }
 
 /*!
@@ -923,20 +910,7 @@ static bool checkInternalScheme(const QByteArray &scheme)
 void QQuickWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
 {
     Q_D(QQuickWebEngineProfile);
-    Q_ASSERT(handler);
-    QByteArray canonicalScheme = scheme.toLower();
-    if (checkInternalScheme(canonicalScheme)) {
-        qWarning("Cannot install a URL scheme handler overriding internal scheme: %s", scheme.constData());
-        return;
-    }
-
-    if (d->profileAdapter()->customUrlSchemeHandlers().contains(canonicalScheme)) {
-        if (d->profileAdapter()->customUrlSchemeHandlers().value(canonicalScheme) != handler)
-            qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
-        return;
-    }
-    d->profileAdapter()->addCustomUrlSchemeHandler(canonicalScheme, handler);
-    connect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+    d->profileAdapter()->installUrlSchemeHandler(scheme, handler);
 }
 
 /*!
@@ -947,10 +921,7 @@ void QQuickWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, Q
 void QQuickWebEngineProfile::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 {
     Q_D(QQuickWebEngineProfile);
-    Q_ASSERT(handler);
-    if (!d->profileAdapter()->removeCustomUrlSchemeHandler(handler))
-        return;
-    disconnect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+    d->profileAdapter()->removeUrlSchemeHandler(handler);
 }
 
 /*!
@@ -961,10 +932,7 @@ void QQuickWebEngineProfile::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *
 void QQuickWebEngineProfile::removeUrlScheme(const QByteArray &scheme)
 {
     Q_D(QQuickWebEngineProfile);
-    QWebEngineUrlSchemeHandler *handler = d->profileAdapter()->takeCustomUrlSchemeHandler(scheme);
-    if (!handler)
-        return;
-    disconnect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+    d->profileAdapter()->removeUrlScheme(scheme);
 }
 
 /*!
@@ -973,12 +941,7 @@ void QQuickWebEngineProfile::removeUrlScheme(const QByteArray &scheme)
 void QQuickWebEngineProfile::removeAllUrlSchemeHandlers()
 {
     Q_D(QQuickWebEngineProfile);
-    d->profileAdapter()->clearCustomUrlSchemeHandlers();
-}
-
-void QQuickWebEngineProfile::destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *obj)
-{
-    removeUrlSchemeHandler(obj);
+    d->profileAdapter()->removeAllUrlSchemeHandlers();
 }
 
 QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const

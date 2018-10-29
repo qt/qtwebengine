@@ -164,9 +164,6 @@ Q_SIGNALS:
     void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);
 
-private Q_SLOTS:
-    void destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *obj);
-
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineProfile)
     QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *, QObject *parent = Q_NULLPTR);

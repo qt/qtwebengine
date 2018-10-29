@@ -72,7 +72,6 @@ QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(QObject *parent)
 */
 QWebEngineUrlSchemeHandler::~QWebEngineUrlSchemeHandler()
 {
-    Q_EMIT _q_destroyedUrlSchemeHandler(this);
 }
 
 /*!
