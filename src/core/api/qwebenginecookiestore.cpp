@@ -196,7 +196,8 @@ bool QWebEngineCookieStorePrivate::canAccessCookies(const QUrl &firstPartyUrl, c
     if (!filterCallback)
         return true;
 
-    bool thirdParty =
+    // Empty first-party URL indicates a first-party request (see net/base/static_cookie_policy.cc)
+    bool thirdParty = !firstPartyUrl.isEmpty() &&
             !net::registry_controlled_domains::SameDomainOrHost(toGurl(url),
                                                                 toGurl(firstPartyUrl),
                                                                 net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
