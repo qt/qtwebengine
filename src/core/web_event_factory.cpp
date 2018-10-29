@@ -1449,7 +1449,11 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
     webEvent.wheel_ticks_x = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
     webEvent.wheel_ticks_y = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
     webEvent.phase = toBlinkPhase(ev);
-    webEvent.has_precise_scrolling_deltas = true;
+#if defined(Q_OS_DARWIN)
+    // has_precise_scrolling_deltas is a macOS term meaning it is a system scroll gesture, see qnsview_mouse.mm
+    webEvent.has_precise_scrolling_deltas = (ev->source() == Qt::MouseEventSynthesizedBySystem);
+#endif
+
     setBlinkWheelEventDelta(webEvent);
 
     return webEvent;
@@ -1463,6 +1467,10 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
         return false;
     if (toBlinkPhase(ev) != webEvent.phase)
         return false;
+#if defined(Q_OS_DARWIN)
+    if (webEvent.has_precise_scrolling_deltas != (ev->source() == Qt::MouseEventSynthesizedBySystem))
+        return false;
+#endif
 
     webEvent.SetTimeStamp(currentTimeForEvent(ev));
     webEvent.SetPositionInWidget(ev->x() / dpiScale, ev->y() / dpiScale);
