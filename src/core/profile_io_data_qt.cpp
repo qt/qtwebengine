@@ -79,7 +79,6 @@
 #include "net/custom_protocol_handler.h"
 #include "net/network_delegate_qt.h"
 #include "net/proxy_config_service_qt.h"
-#include "net/qrc_protocol_handler_qt.h"
 #include "net/url_request_context_getter_qt.h"
 #include "profile_qt.h"
 #include "resource_context_qt.h"
@@ -523,9 +522,6 @@ void ProfileIODataQt::generateJobFactory()
                                       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
     jobFactory->SetProtocolHandler(url::kFileScheme,
                                    std::make_unique<net::FileProtocolHandler>(taskRunner));
-    jobFactory->SetProtocolHandler(kQrcSchemeQt,
-                                   std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-                                       new QrcProtocolHandlerQt()));
     jobFactory->SetProtocolHandler(url::kFtpScheme,
             net::FtpProtocolHandler::Create(m_urlRequestContext->host_resolver()));
 

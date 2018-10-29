@@ -90,6 +90,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     content::BrowserContext::Initialize(m_profile.data(), toFilePath(dataPath()));
     // fixme: this should not be here
     m_profile->m_profileIOData->initializeOnUIThread();
+    m_customUrlSchemeHandlers.insert(QByteArrayLiteral("qrc"), &m_qrcHandler);
 }
 
 ProfileAdapter::~ProfileAdapter()
@@ -495,6 +496,7 @@ void ProfileAdapter::installUrlSchemeHandler(const QByteArray &scheme, QWebEngin
 void ProfileAdapter::removeAllUrlSchemeHandlers()
 {
     m_customUrlSchemeHandlers.clear();
+    m_customUrlSchemeHandlers.insert(QByteArrayLiteral("qrc"), &m_qrcHandler);
     updateCustomUrlSchemeHandlers();
 }
 

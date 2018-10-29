@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,27 +37,19 @@
 **
 ****************************************************************************/
 
-#include "qrc_protocol_handler_qt.h"
-#include "url_request_qrc_job_qt.h"
+#ifndef QRC_URL_SCHEME_HANDLER_H
+#define QRC_URL_SCHEME_HANDLER_H
 
-#include "net/base/net_errors.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_error_job.h"
+#include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+#include <QtWebEngineCore/qwebengineurlschemehandler.h>
 
 namespace QtWebEngineCore {
 
-const char kQrcSchemeQt[] = "qrc";
-
-QrcProtocolHandlerQt::QrcProtocolHandlerQt()
-{
-}
-
-net::URLRequestJob *QrcProtocolHandlerQt::MaybeCreateJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate) const
-{
-    if (!networkDelegate)
-        return new net::URLRequestErrorJob(request, Q_NULLPTR, net::ERR_ACCESS_DENIED);
-
-    return new URLRequestQrcJobQt(request, networkDelegate);
-}
+class QrcUrlSchemeHandler final : public QWebEngineUrlSchemeHandler {
+public:
+    void requestStarted(QWebEngineUrlRequestJob *) override;
+};
 
 } // namespace QtWebEngineCore
+
+#endif // !QRC_URL_SCHEME_HANDLER_H

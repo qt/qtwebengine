@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,40 +37,32 @@
 **
 ****************************************************************************/
 
-#ifndef URL_REQUEST_QRC_JOB_QT_H_
-#define URL_REQUEST_QRC_JOB_QT_H_
+#include "qrc_url_scheme_handler.h"
 
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_job.h"
+#include <QtWebEngineCore/qwebengineurlrequestjob.h>
 
 #include <QFile>
+#include <QFileInfo>
+#include <QMimeDatabase>
+#include <QMimeType>
 
 namespace QtWebEngineCore {
 
-// A request job that handles reading qrc file URLs
-class URLRequestQrcJobQt : public net::URLRequestJob {
+void QrcUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *job)
+{
+    QByteArray requestMethod = job->requestMethod();
+    if (requestMethod != "GET") {
+        job->fail(QWebEngineUrlRequestJob::RequestDenied);
+        return;
+    }
 
-public:
-    URLRequestQrcJobQt(net::URLRequest *request, net::NetworkDelegate *networkDelegate);
-    void Start() override;
-    void Kill() override;
-    int ReadRawData(net::IOBuffer* buf, int buf_size)  override;;
-    bool GetMimeType(std::string *mimeType) const override;
-
-protected:
-    virtual ~URLRequestQrcJobQt();
-    // Get file mime type and try open file on a background thread.
-    void startGetHead();
-
-private:
-    qint64 m_remainingBytes;
-    QFile m_file;
-    std::string m_mimeType;
-    base::WeakPtrFactory<URLRequestQrcJobQt> m_weakFactory;
-
-    DISALLOW_COPY_AND_ASSIGN(URLRequestQrcJobQt);
-};
+    QUrl requestUrl = job->requestUrl();
+    QString requestPath = requestUrl.path();
+    QScopedPointer<QFile> file(new QFile(':' + requestPath, job));
+    QFileInfo fileInfo(*file);
+    QMimeDatabase mimeDatabase;
+    QMimeType mimeType = mimeDatabase.mimeTypeForFile(fileInfo);
+    job->reply(mimeType.name().toUtf8(), file.take());
+}
 
 } // namespace QtWebEngineCore
-
-#endif // URL_REQUEST_QRC_JOB_QT_H_

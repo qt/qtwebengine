@@ -56,7 +56,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#include "net/qrc_protocol_handler_qt.h"
 #include "type_conversion.h"
 
 #include <QCoreApplication>

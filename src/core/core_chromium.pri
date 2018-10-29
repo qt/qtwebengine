@@ -75,13 +75,12 @@ SOURCES = \
         net/custom_protocol_handler.cpp \
         net/network_delegate_qt.cpp \
         net/proxy_config_service_qt.cpp \
-        net/qrc_protocol_handler_qt.cpp \
+        net/qrc_url_scheme_handler.cpp \
         net/ssl_host_state_delegate_qt.cpp \
         net/url_request_context_getter_qt.cpp \
         net/url_request_custom_job.cpp \
         net/url_request_custom_job_delegate.cpp \
         net/url_request_custom_job_proxy.cpp \
-        net/url_request_qrc_job_qt.cpp \
         net/webui_controller_factory_qt.cpp \
         ozone/gl_context_qt.cpp \
         ozone/gl_ozone_egl_qt.cpp \
@@ -166,13 +165,12 @@ HEADERS = \
         net/cookie_monster_delegate_qt.h \
         net/custom_protocol_handler.h \
         net/network_delegate_qt.h \
-        net/qrc_protocol_handler_qt.h \
+        net/qrc_url_scheme_handler.h \
         net/ssl_host_state_delegate_qt.h \
         net/url_request_context_getter_qt.h \
         net/url_request_custom_job.h \
         net/url_request_custom_job_delegate.h \
         net/url_request_custom_job_proxy.h \
-        net/url_request_qrc_job_qt.h \
         net/webui_controller_factory_qt.h \
         ozone/gl_context_qt.h \
         ozone/gl_ozone_egl_qt.h \

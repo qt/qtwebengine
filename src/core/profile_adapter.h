@@ -63,6 +63,7 @@
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebengineurlrequestinterceptor.h"
 #include "api/qwebengineurlschemehandler.h"
+#include "net/qrc_url_scheme_handler.h"
 
 QT_FORWARD_DECLARE_CLASS(QObject)
 
@@ -219,6 +220,7 @@ private:
     QList<ProfileAdapterClient*> m_clients;
     int m_httpCacheMaxSize;
     int m_pageRequestInterceptors;
+    QrcUrlSchemeHandler m_qrcHandler;
 
     Q_DISABLE_COPY(ProfileAdapter)
 };

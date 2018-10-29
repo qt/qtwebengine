@@ -100,7 +100,6 @@
 #include "login_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "net/network_delegate_qt.h"
-#include "net/qrc_protocol_handler_qt.h"
 #include "net/url_request_context_getter_qt.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "printing/printing_message_filter_qt.h"
