@@ -1235,13 +1235,12 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
                 end = qMax(0, start + end);
             }
 
+            underlines.push_back(ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, start, end, ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
+
             QTextCharFormat format = qvariant_cast<QTextFormat>(attribute.value).toCharFormat();
-
-            QColor underlineColor(0, 0, 0, 0);
             if (format.underlineStyle() != QTextCharFormat::NoUnderline)
-                underlineColor = format.underlineColor();
+                underlines.back().underline_color = toSk(format.underlineColor());
 
-            underlines.push_back(ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, start, end, ui::ImeTextSpan::Thickness::kThin, toSk(underlineColor), SK_ColorTRANSPARENT));
             break;
         }
         case QInputMethodEvent::Cursor:
