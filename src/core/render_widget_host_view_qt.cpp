@@ -41,7 +41,7 @@
 
 #include "browser_accessibility_manager_qt.h"
 #include "chromium_overrides.h"
-#include "compositor.h"
+#include "compositor/compositor.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"

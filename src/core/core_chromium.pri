@@ -46,7 +46,6 @@ SOURCES = \
         browser_main_parts_qt.cpp \
         browser_message_filter_qt.cpp \
         certificate_error_controller.cpp \
-        chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
         client_cert_select_controller.cpp \
         clipboard_qt.cpp \
@@ -55,13 +54,14 @@ SOURCES = \
         common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
-        compositor.cpp \
-        compositor_resource_tracker.cpp \
+        compositor/chromium_gpu_helper.cpp \
+        compositor/compositor.cpp \
+        compositor/compositor_resource_tracker.cpp \
+        compositor/delegated_frame_node.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
         content_utility_client_qt.cpp \
-        delegated_frame_node.cpp \
         desktop_screen_qt.cpp \
         devtools_frontend_qt.cpp \
         devtools_manager_delegate_qt.cpp \
@@ -144,19 +144,19 @@ HEADERS = \
         color_chooser_controller.h \
         common/qt_messages.h \
         common/user_script_data.h \
-        compositor.h \
-        compositor_resource.h \
-        compositor_resource_tracker.h \
+        compositor/chromium_gpu_helper.h \
+        compositor/compositor.h \
+        compositor/compositor_resource.h \
+        compositor/compositor_resource_tracker.h \
+        compositor/delegated_frame_node.h \
         content_client_qt.h \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \
         content_utility_client_qt.h \
-        delegated_frame_node.h \
         desktop_screen_qt.h \
         devtools_frontend_qt.h \
         devtools_manager_delegate_qt.h \
         download_manager_delegate_qt.h \
-        chromium_gpu_helper.h \
         favicon_manager.h \
         file_picker_controller.h \
         global_descriptors_qt.h \
@@ -268,14 +268,14 @@ qtConfig(webengine-printing-and-pdf) {
 
 contains(QT_CONFIG, opengl) {
     SOURCES += \
-        compositor_resource_fence.cpp \
-        yuv_video_node.cpp \
-        stream_video_node.cpp
+        compositor/compositor_resource_fence.cpp \
+        compositor/stream_video_node.cpp \
+        compositor/yuv_video_node.cpp
 
     HEADERS += \
-        compositor_resource_fence.h \
-        yuv_video_node.h \
-        stream_video_node.h
+        compositor/compositor_resource_fence.h \
+        compositor/stream_video_node.h \
+        compositor/yuv_video_node.h
 }
 
 qtConfig(webengine-geolocation) {
