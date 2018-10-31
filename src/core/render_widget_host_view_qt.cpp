@@ -690,6 +690,11 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
         m_adapterClient->updateScrollPosition(toQt(m_lastScrollOffset));
     if (contentsSizeChanged)
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
+
+    if (m_pendingResize && host()) {
+        if (host()->SynchronizeVisualProperties())
+            m_pendingResize = false;
+    }
 }
 
 void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo *results) const
@@ -890,10 +895,6 @@ void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::Rende
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 {
-    if (m_pendingResize && host()) {
-        if (host()->SynchronizeVisualProperties())
-            m_pendingResize = false;
-    }
     return m_compositor->updatePaintNode(oldNode);
 }
 
