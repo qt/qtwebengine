@@ -174,14 +174,6 @@ static QString qtTextForKeyEvent(const QKeyEvent *ev, int qtKey, Qt::KeyboardMod
     if ((qtModifiers & Qt::ControlModifier) && keyboardDriver() == KeyboardDriver::Xkb)
         text.clear();
 
-    if (!text.isEmpty() || qtKey >= Qt::Key_Escape)
-        return text;
-
-    QChar ch(qtKey);
-    if (!(qtModifiers & Qt::ShiftModifier)) // No way to check for caps lock
-        ch = ch.toLower();
-
-    text.append(ch);
     return text;
 }
 
@@ -1493,6 +1485,12 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
         webKitEvent.dom_key = domKeyForQtKey(qtKey);
     else if (!qtText.isEmpty())
         webKitEvent.dom_key = ui::DomKey::FromCharacter(qtText.toUcs4().first());
+    else {
+        QChar ch(qtKey);
+        if (!(qtModifiers & Qt::ShiftModifier)) // No way to check for caps lock
+            ch = ch.toLower();
+        webKitEvent.dom_key = ui::DomKey::FromCharacter(ch.unicode());
+    }
 
     // The dom_code field should contain the USB keycode of the *physical* key
     // that was pressed. Physical meaning independent of layout and modifiers.
