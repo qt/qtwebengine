@@ -166,6 +166,9 @@ QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
     adapter->stopFinding();
     if (faviconProvider)
         faviconProvider->detach(q_ptr);
+    // q_ptr->d_ptr might be null due to destroy()
+    if (q_ptr->d_ptr)
+        bindViewAndWidget(q_ptr, nullptr);
 }
 
 void QQuickWebEngineViewPrivate::initializeProfile()
@@ -188,10 +191,11 @@ bool QQuickWebEngineViewPrivate::profileInitialized() const
 
 void QQuickWebEngineViewPrivate::destroy()
 {
-   // the profile for this web contens is about to be
-   // garbage collected, delete WebContent first and
-   // let the QQuickWebEngineView be collected later by gc.
-   delete q_ptr->d_ptr.take();
+    // The profile for this web contents is about to be
+    // garbage collected, delete WebContents first and
+    // let the QQuickWebEngineView be collected later by gc.
+    bindViewAndWidget(q_ptr, nullptr);
+    delete q_ptr->d_ptr.take();
 }
 
 UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
