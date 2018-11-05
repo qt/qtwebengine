@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,64 +37,44 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEVIEW_P_H
-#define QWEBENGINEVIEW_P_H
+#ifndef BROWSER_MAIN_PARTS_QT_H
+#define BROWSER_MAIN_PARTS_QT_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "content/public/browser/browser_main_parts.h"
 
-#include <QtWebEngineWidgets/qwebengineview.h>
-
-#include <QtWidgets/qaccessiblewidget.h>
-
-namespace QtWebEngineCore {
-class RenderWidgetHostViewQtDelegateWidget;
+namespace base {
+class MessagePump;
 }
 
-QT_BEGIN_NAMESPACE
+namespace content {
+class ServiceManagerConnection;
+}
 
-class QWebEngineView;
+namespace resource_coordinator {
+class ProcessResourceCoordinator;
+}
 
-class QWebEngineViewPrivate
+namespace QtWebEngineCore {
+
+std::unique_ptr<base::MessagePump> messagePumpFactory();
+
+class BrowserMainPartsQt : public content::BrowserMainParts
 {
 public:
-    Q_DECLARE_PUBLIC(QWebEngineView)
-    QWebEngineView *q_ptr;
+    BrowserMainPartsQt();
+    ~BrowserMainPartsQt();
 
-    void pageChanged(QWebEnginePage *oldPage, QWebEnginePage *newPage);
-    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *oldWidget,
-                       QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *newWidget);
-
-    QWebEngineViewPrivate();
-
-    QWebEnginePage *page;
-    bool m_dragEntered;
-};
-
-#ifndef QT_NO_ACCESSIBILITY
-class QWebEngineViewAccessible : public QAccessibleWidget
-{
-public:
-    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o)
-    {}
-
-    int childCount() const override;
-    QAccessibleInterface *child(int index) const override;
-    int indexOfChild(const QAccessibleInterface *child) const override;
+    int PreEarlyInitialization() override;
+    void PreMainMessageLoopStart() override;
+    void PostMainMessageLoopRun() override;
+    int PreCreateThreads() override;
+    void ServiceManagerConnectionStarted(content::ServiceManagerConnection *connection) override;
 
 private:
-    QWebEngineView *view() const { return static_cast<QWebEngineView*>(object()); }
+    DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
+    std::unique_ptr<resource_coordinator::ProcessResourceCoordinator> m_processResourceCoordinator;
 };
-#endif // QT_NO_ACCESSIBILITY
 
-QT_END_NAMESPACE
+} // namespace QtWebEngineCore
 
-#endif // QWEBENGINEVIEW_P_H
+#endif // BROWSER_MAIN_PARTS_QT_H

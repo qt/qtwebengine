@@ -109,8 +109,6 @@ public:
     void load(const QWebEngineHttpRequest &request);
     void setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl);
 
-    void reattachRWHV();
-
     bool canGoBack() const;
     bool canGoForward() const;
     void stop();

@@ -55,7 +55,7 @@
 #include <QtNetwork/qtnetwork-config.h>
 
 #include <QtCore/QUrl>
-#if QT_CONFIG(ssl)
+#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 #include <QtCore/QVector>
 #include <QtNetwork/QSslCertificate>
 #endif
@@ -80,12 +80,12 @@ public:
     ~ClientCertSelectController();
 
     QUrl hostAndPort() const { return m_hostAndPort; }
-#if QT_CONFIG(ssl)
+#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     void selectNone();
     void select(const QSslCertificate &certificate);
 
     QVector<QSslCertificate> certificates() const;
-#endif // QT_CONFIG(ssl)
+#endif
 
 private:
     QUrl m_hostAndPort;

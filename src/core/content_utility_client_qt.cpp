@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,64 +37,24 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEVIEW_P_H
-#define QWEBENGINEVIEW_P_H
+#include "content_utility_client_qt.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "content/public/utility/utility_thread.h"
+#include "services/proxy_resolver/proxy_resolver_service.h"
 
-#include <QtWebEngineWidgets/qwebengineview.h>
-
-#include <QtWidgets/qaccessiblewidget.h>
-
-namespace QtWebEngineCore {
-class RenderWidgetHostViewQtDelegateWidget;
+ContentUtilityClientQt::ContentUtilityClientQt() {
 }
 
-QT_BEGIN_NAMESPACE
+ContentUtilityClientQt::~ContentUtilityClientQt() = default;
 
-class QWebEngineView;
 
-class QWebEngineViewPrivate
-{
-public:
-    Q_DECLARE_PUBLIC(QWebEngineView)
-    QWebEngineView *q_ptr;
-
-    void pageChanged(QWebEnginePage *oldPage, QWebEnginePage *newPage);
-    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *oldWidget,
-                       QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *newWidget);
-
-    QWebEngineViewPrivate();
-
-    QWebEnginePage *page;
-    bool m_dragEntered;
-};
-
-#ifndef QT_NO_ACCESSIBILITY
-class QWebEngineViewAccessible : public QAccessibleWidget
-{
-public:
-    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o)
-    {}
-
-    int childCount() const override;
-    QAccessibleInterface *child(int index) const override;
-    int indexOfChild(const QAccessibleInterface *child) const override;
-
-private:
-    QWebEngineView *view() const { return static_cast<QWebEngineView*>(object()); }
-};
-#endif // QT_NO_ACCESSIBILITY
-
-QT_END_NAMESPACE
-
-#endif // QWEBENGINEVIEW_P_H
+void ContentUtilityClientQt::RegisterServices(
+    ContentUtilityClient::StaticServiceMap* services) {
+  service_manager::EmbeddedServiceInfo proxy_resolver_info;
+  proxy_resolver_info.task_runner =
+      content::ChildThread::Get()->GetIOTaskRunner();
+  proxy_resolver_info.factory =
+      base::Bind(&proxy_resolver::ProxyResolverService::CreateService);
+  services->emplace(proxy_resolver::mojom::kProxyResolverServiceName,
+                    proxy_resolver_info);
+}

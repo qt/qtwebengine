@@ -186,6 +186,12 @@ content::ContentRendererClient *ContentMainDelegateQt::CreateContentRendererClie
     return new ContentRendererClientQt;
 }
 
+content::ContentUtilityClient *ContentMainDelegateQt::CreateContentUtilityClient()
+{
+    m_utilityClient.reset(new ContentUtilityClientQt);
+    return m_utilityClient.get();
+}
+
 // see icu_util.cc
 #define ICU_UTIL_DATA_FILE   0
 #define ICU_UTIL_DATA_SHARED 1

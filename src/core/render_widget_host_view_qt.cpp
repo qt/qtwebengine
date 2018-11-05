@@ -90,9 +90,7 @@
 #include <QVariant>
 #include <QWheelEvent>
 #include <QWindow>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
 #include <QtGui/private/qinputcontrol_p.h>
-#endif
 #include <QtGui/qaccessible.h>
 
 namespace QtWebEngineCore {
@@ -178,55 +176,7 @@ static inline bool compareTouchPoints(const QTouchEvent::TouchPoint &lhs, const 
 
 static inline bool isCommonTextEditShortcut(const QKeyEvent *ke)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
     return QInputControl::isCommonTextEditShortcut(ke);
-#else
-    if (ke->modifiers() == Qt::NoModifier
-        || ke->modifiers() == Qt::ShiftModifier
-        || ke->modifiers() == Qt::KeypadModifier) {
-        if (ke->key() < Qt::Key_Escape) {
-            return true;
-        } else {
-            switch (ke->key()) {
-                case Qt::Key_Return:
-                case Qt::Key_Enter:
-                case Qt::Key_Delete:
-                case Qt::Key_Home:
-                case Qt::Key_End:
-                case Qt::Key_Backspace:
-                case Qt::Key_Left:
-                case Qt::Key_Right:
-                case Qt::Key_Up:
-                case Qt::Key_Down:
-                case Qt::Key_Tab:
-                return true;
-            default:
-                break;
-            }
-        }
-    } else if (ke->matches(QKeySequence::Copy)
-               || ke->matches(QKeySequence::Paste)
-               || ke->matches(QKeySequence::Cut)
-               || ke->matches(QKeySequence::Redo)
-               || ke->matches(QKeySequence::Undo)
-               || ke->matches(QKeySequence::MoveToNextWord)
-               || ke->matches(QKeySequence::MoveToPreviousWord)
-               || ke->matches(QKeySequence::MoveToStartOfDocument)
-               || ke->matches(QKeySequence::MoveToEndOfDocument)
-               || ke->matches(QKeySequence::SelectNextWord)
-               || ke->matches(QKeySequence::SelectPreviousWord)
-               || ke->matches(QKeySequence::SelectStartOfLine)
-               || ke->matches(QKeySequence::SelectEndOfLine)
-               || ke->matches(QKeySequence::SelectStartOfBlock)
-               || ke->matches(QKeySequence::SelectEndOfBlock)
-               || ke->matches(QKeySequence::SelectStartOfDocument)
-               || ke->matches(QKeySequence::SelectEndOfDocument)
-               || ke->matches(QKeySequence::SelectAll)
-              ) {
-        return true;
-    }
-    return false;
-#endif
 }
 
 static uint32_t s_eventId = 0;
@@ -315,7 +265,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_adapterClient(0)
     , m_imeInProgress(false)
     , m_receivedEmptyImeEvent(false)
-    , m_initPending(false)
     , m_imState(0)
     , m_anchorPositionWithinSelection(-1)
     , m_cursorPositionWithinSelection(-1)
@@ -368,18 +317,10 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
     m_adapterClientDestroyedConnection = QObject::connect(adapterClient->holdingQObject(),
                                                           &QObject::destroyed, [this] {
                                                             m_adapterClient = nullptr; });
-    if (m_initPending)
-        InitAsChild(0);
 }
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
 {
-    if (!m_adapterClient) {
-        m_initPending = true;
-        return;
-    }
-    m_initPending = false;
-    m_delegate->initAsChild(m_adapterClient);
 }
 
 void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect& rect)
@@ -750,6 +691,11 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
         m_adapterClient->updateScrollPosition(toQt(m_lastScrollOffset));
     if (contentsSizeChanged)
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
+
+    if (m_pendingResize && host()) {
+        if (host()->SynchronizeVisualProperties())
+            m_pendingResize = false;
+    }
 }
 
 void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo *results) const
@@ -950,10 +896,6 @@ void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::Rende
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 {
-    if (m_pendingResize && host()) {
-        if (host()->SynchronizeVisualProperties())
-            m_pendingResize = false;
-    }
     return m_compositor->updatePaintNode(oldNode, m_delegate.get());
 }
 
@@ -977,13 +919,13 @@ void RenderWidgetHostViewQt::notifyHidden()
 void RenderWidgetHostViewQt::windowBoundsChanged()
 {
     host()->SendScreenRects();
-    if (m_delegate->window())
+    if (m_delegate && m_delegate->window())
         host()->NotifyScreenInfoChanged();
 }
 
 void RenderWidgetHostViewQt::windowChanged()
 {
-    if (m_delegate->window())
+    if (m_delegate && m_delegate->window())
         host()->NotifyScreenInfoChanged();
 }
 
@@ -1031,7 +973,8 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
         return false;
     }
     case QEvent::MouseButtonPress:
-        Focus(); // Fall through.
+        Focus();
+        Q_FALLTHROUGH();
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove:
         // Skip second MouseMove event when a window is being adopted, so that Chromium
@@ -1052,7 +995,8 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
         handleWheelEvent(static_cast<QWheelEvent*>(event));
         break;
     case QEvent::TouchBegin:
-        Focus(); // Fall through.
+        Focus();
+        Q_FALLTHROUGH();
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
     case QEvent::TouchCancel:
@@ -1060,7 +1004,8 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
         break;
 #if QT_CONFIG(tabletevent)
     case QEvent::TabletPress:
-        Focus(); // Fall through.
+        Focus();
+        Q_FALLTHROUGH();
     case QEvent::TabletRelease:
     case QEvent::TabletMove:
         handleTabletEvent(static_cast<QTabletEvent*>(event));
@@ -1292,13 +1237,12 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
                 end = qMax(0, start + end);
             }
 
+            underlines.push_back(ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, start, end, ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
+
             QTextCharFormat format = qvariant_cast<QTextFormat>(attribute.value).toCharFormat();
-
-            QColor underlineColor(0, 0, 0, 0);
             if (format.underlineStyle() != QTextCharFormat::NoUnderline)
-                underlineColor = format.underlineColor();
+                underlines.back().underline_color = toSk(format.underlineColor());
 
-            underlines.push_back(ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, start, end, ui::ImeTextSpan::Thickness::kThin, toSk(underlineColor), SK_ColorTRANSPARENT));
             break;
         }
         case QInputMethodEvent::Cursor:

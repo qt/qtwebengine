@@ -35,6 +35,7 @@ class tst_QWebEngineScript: public QObject {
 private Q_SLOTS:
     void domEditing();
     void loadEvents();
+    void scriptWorld_data();
     void scriptWorld();
     void scriptModifications();
 #if QT_CONFIG(webengine_webchannel)
@@ -185,8 +186,18 @@ void tst_QWebEngineScript::loadEvents()
     QCOMPARE(profile.pages.back().eval("window.log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
 }
 
+void tst_QWebEngineScript::scriptWorld_data()
+{
+    QTest::addColumn<int>("worldId");
+
+    QTest::newRow("ApplicationWorld") << static_cast<int>(QWebEngineScript::ApplicationWorld);
+    QTest::newRow("UserWorld") << static_cast<int>(QWebEngineScript::UserWorld);
+    QTest::newRow("150") << 150;
+}
+
 void tst_QWebEngineScript::scriptWorld()
 {
+    QFETCH(int, worldId);
     QWebEnginePage page;
     QWebEngineScript script;
     script.setInjectionPoint(QWebEngineScript::DocumentCreation);
@@ -197,14 +208,14 @@ void tst_QWebEngineScript::scriptWorld()
     QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
     QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "typeof(userScriptTest) != \"undefined\" && userScriptTest == 1;"), QVariant::fromValue(true));
-    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "typeof(userScriptTest) == \"undefined\"", QWebEngineScript::ApplicationWorld), QVariant::fromValue(true));
-    script.setWorldId(QWebEngineScript::ApplicationWorld);
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "typeof(userScriptTest) == \"undefined\"", worldId), QVariant::fromValue(true));
+    script.setWorldId(worldId);
     page.scripts().clear();
     page.scripts().insert(script);
     page.load(QUrl("about:blank"));
     QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "typeof(userScriptTest) == \"undefined\""), QVariant::fromValue(true));
-    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "typeof(userScriptTest) != \"undefined\" && userScriptTest == 1;", QWebEngineScript::ApplicationWorld), QVariant::fromValue(true));
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "typeof(userScriptTest) != \"undefined\" && userScriptTest == 1;", worldId), QVariant::fromValue(true));
 }
 
 void tst_QWebEngineScript::scriptModifications()

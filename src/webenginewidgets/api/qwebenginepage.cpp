@@ -276,8 +276,6 @@ RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostVie
     // The new delegate will not be deleted by the parent view though, because we unset the parent
     // when the parent is destroyed. The delegate will be destroyed by Chromium when the popup is
     // dismissed.
-    // If the delegate is not for a popup, but for a newly created QWebEngineView, the parent is 0
-    // just like before.
     return new RenderWidgetHostViewQtDelegateWidget(client, this->view);
 }
 
@@ -371,12 +369,6 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isError
 
     isLoading = true;
     QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
-    updateNavigationActions();
-}
-
-void QWebEnginePagePrivate::loadCommitted()
-{
-    updateNavigationActions();
 }
 
 void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
@@ -404,7 +396,6 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
             emit q->loadFinished(success);
         });
     }
-    updateNavigationActions();
 }
 
 void QWebEnginePagePrivate::didPrintPageToPdf(const QString &filePath, bool success)
@@ -688,6 +679,8 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
         adapter = std::move(newWebContents);
         adapter->setClient(this);
         adapter->loadDefault();
+        if (view && view->isVisible())
+            wasShown();
     }
 }
 
@@ -728,10 +721,85 @@ const QObject *QWebEnginePagePrivate::holdingQObject() const
     return q;
 }
 
+void QWebEnginePagePrivate::widgetChanged(RenderWidgetHostViewQtDelegate *newWidgetBase)
+{
+    Q_Q(QWebEnginePage);
+    bindPageAndWidget(q, static_cast<RenderWidgetHostViewQtDelegateWidget *>(newWidgetBase));
+}
+
 void QWebEnginePagePrivate::ensureInitialized() const
 {
     if (!adapter->isInitialized())
         adapter->loadDefault();
+}
+
+void QWebEnginePagePrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView *view)
+{
+    auto oldView = page ? page->d_func()->view : nullptr;
+    auto oldPage = view ? view->d_func()->page : nullptr;
+
+    // Change pointers first.
+
+    if (page && oldView != view) {
+        if (oldView)
+            oldView->d_func()->page = nullptr;
+        page->d_func()->view = view;
+    }
+
+    if (view && oldPage != page) {
+        if (oldPage)
+            oldPage->d_func()->view = nullptr;
+        view->d_func()->page = page;
+    }
+
+    // Then notify.
+
+    auto widget = page ? page->d_func()->widget : nullptr;
+    auto oldWidget = oldPage ? oldPage->d_func()->widget : nullptr;
+
+    if (page && oldView != view && oldView) {
+        oldView->d_func()->pageChanged(page, nullptr);
+        if (widget)
+            oldView->d_func()->widgetChanged(widget, nullptr);
+    }
+
+    if (view && oldPage != page) {
+        view->d_func()->pageChanged(oldPage, page);
+        if (oldWidget != widget)
+            view->d_func()->widgetChanged(oldWidget, widget);
+    }
+}
+
+void QWebEnginePagePrivate::bindPageAndWidget(QWebEnginePage *page, RenderWidgetHostViewQtDelegateWidget *widget)
+{
+    auto oldPage = widget ? widget->m_page : nullptr;
+    auto oldWidget = page ? page->d_func()->widget : nullptr;
+
+    // Change pointers first.
+
+    if (widget && oldPage != page) {
+        if (oldPage)
+            oldPage->d_func()->widget = nullptr;
+        widget->m_page = page;
+    }
+
+    if (page && oldWidget != widget) {
+        if (oldWidget)
+            oldWidget->m_page = nullptr;
+        page->d_func()->widget = widget;
+    }
+
+    // Then notify.
+
+    if (widget && oldPage != page && oldPage) {
+        if (auto oldView = oldPage->d_func()->view)
+            oldView->d_func()->widgetChanged(widget, nullptr);
+    }
+
+    if (page && oldWidget != widget) {
+        if (auto view = page->d_func()->view)
+            view->d_func()->widgetChanged(oldWidget, widget);
+    }
 }
 
 QWebEnginePage::QWebEnginePage(QObject* parent)
@@ -905,7 +973,8 @@ QWebEnginePage::~QWebEnginePage()
     Q_D(QWebEnginePage);
     setDevToolsPage(nullptr);
     d->adapter->stopFinding();
-    QWebEngineViewPrivate::removePageFromView(this);
+    QWebEnginePagePrivate::bindPageAndView(this, nullptr);
+    QWebEnginePagePrivate::bindPageAndWidget(this, nullptr);
 }
 
 QWebEngineHistory *QWebEnginePage::history() const
@@ -1074,9 +1143,9 @@ bool QWebEnginePage::recentlyAudible() const
     return d->adapter->isInitialized() && d->adapter->recentlyAudible();
 }
 
-void QWebEnginePage::setView(QWidget *view)
+void QWebEnginePage::setView(QWidget *newViewBase)
 {
-    QWebEngineViewPrivate::bind(qobject_cast<QWebEngineView*>(view), this);
+    QWebEnginePagePrivate::bindPageAndView(this, qobject_cast<QWebEngineView *>(newViewBase));
 }
 
 QWidget *QWebEnginePage::view() const
@@ -1680,7 +1749,7 @@ void QWebEnginePagePrivate::allowCertificateError(const QSharedPointer<Certifica
 
 void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)
 {
-#if QT_CONFIG(ssl)
+#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     Q_Q(QWebEnginePage);
     QWebEngineClientCertificateSelection certSelection(controller);
 
@@ -1690,7 +1759,7 @@ void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSele
 #endif
 }
 
-#if QT_CONFIG(ssl)
+#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 /*!
     \fn void QWebEnginePage::selectClientCertificate(QWebEngineClientCertificateSelection clientCertificateSelection)
     \since 5.12

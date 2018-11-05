@@ -516,14 +516,9 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     if (!rvh->IsRenderViewLive())
         static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, base::UnguessableToken::Create(), content::FrameReplicationState());
 
-    m_adapterClient->initializationFinished();
-}
+    m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
 
-void WebContentsAdapter::reattachRWHV()
-{
-    CHECK_INITIALIZED();
-    if (content::RenderWidgetHostView *rwhv = m_webContents->GetRenderWidgetHostView())
-        rwhv->InitAsChild(0);
+    m_adapterClient->initializationFinished();
 }
 
 bool WebContentsAdapter::canGoBack() const
@@ -1431,11 +1426,7 @@ bool WebContentsAdapter::handleDropDataFileContents(const content::DropData &dro
 
     const auto maybeFilename = dropData.GetSafeFilenameForImageFileContents();
     const QString fileName = maybeFilename ? toQt(maybeFilename->AsUTF16Unsafe()) : QString();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
     const QString &filePath = m_dndTmpDir->filePath(fileName);
-#else
-    const QString &filePath = m_dndTmpDir->path() + QLatin1Char('/') + fileName;
-#endif
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly)) {
         qWarning("Cannot write temporary file %s.", qUtf8Printable(filePath));

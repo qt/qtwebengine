@@ -27,6 +27,9 @@ qtConfig(webengine-printing-and-pdf) {
     SUBDIRS += printing
 }
 
+# QTBUG-71229
+linux:!boot2qt: SUBDIRS += proxypac
+
 qtConfig(webengine-spellchecker):!cross_compile {
     !qtConfig(webengine-native-spellchecker) {
         SUBDIRS += spellchecking

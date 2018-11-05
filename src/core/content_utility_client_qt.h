@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,64 +37,20 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEVIEW_P_H
-#define QWEBENGINEVIEW_P_H
+#ifndef CONTENT_UTILITY_CLIENT_QT_H
+#define CONTENT_UTILITY_CLIENT_QT_H
+#include "content/public/utility/content_utility_client.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+class MashServiceFactory;
+class UtilityMessageHandler;
 
-#include <QtWebEngineWidgets/qwebengineview.h>
+class ContentUtilityClientQt : public content::ContentUtilityClient {
+ public:
+  ContentUtilityClientQt();
+  ~ContentUtilityClientQt() override;
 
-#include <QtWidgets/qaccessiblewidget.h>
-
-namespace QtWebEngineCore {
-class RenderWidgetHostViewQtDelegateWidget;
-}
-
-QT_BEGIN_NAMESPACE
-
-class QWebEngineView;
-
-class QWebEngineViewPrivate
-{
-public:
-    Q_DECLARE_PUBLIC(QWebEngineView)
-    QWebEngineView *q_ptr;
-
-    void pageChanged(QWebEnginePage *oldPage, QWebEnginePage *newPage);
-    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *oldWidget,
-                       QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *newWidget);
-
-    QWebEngineViewPrivate();
-
-    QWebEnginePage *page;
-    bool m_dragEntered;
+  // content::ContentUtilityClient:
+  void RegisterServices(StaticServiceMap* services) override;
 };
 
-#ifndef QT_NO_ACCESSIBILITY
-class QWebEngineViewAccessible : public QAccessibleWidget
-{
-public:
-    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o)
-    {}
-
-    int childCount() const override;
-    QAccessibleInterface *child(int index) const override;
-    int indexOfChild(const QAccessibleInterface *child) const override;
-
-private:
-    QWebEngineView *view() const { return static_cast<QWebEngineView*>(object()); }
-};
-#endif // QT_NO_ACCESSIBILITY
-
-QT_END_NAMESPACE
-
-#endif // QWEBENGINEVIEW_P_H
+#endif

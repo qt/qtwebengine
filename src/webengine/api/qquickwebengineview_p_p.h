@@ -63,8 +63,9 @@
 #include <QtGui/qaccessibleobject.h>
 
 namespace QtWebEngineCore {
-class WebContentsAdapter;
+class RenderWidgetHostViewQtDelegateQuick;
 class UIDelegatesManager;
+class WebContentsAdapter;
 }
 
 QT_BEGIN_NAMESPACE
@@ -145,6 +146,7 @@ public:
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
     void updateScrollPosition(const QPointF &position) override;
     void updateContentsSize(const QSizeF &size) override;
+    void updateNavigationActions() override;
     void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
                        const QPixmap &pixmap, const QPoint &offset) override;
     bool supportsDragging() const override;
@@ -156,6 +158,7 @@ public:
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
     void printRequested() override;
+    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegate *newWidgetBase) override;
 
     void updateAction(QQuickWebEngineView::WebAction) const;
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
@@ -163,6 +166,10 @@ public:
     void updateAdapter();
     void ensureContentsAdapter();
     void setFullScreenMode(bool);
+
+    static void bindViewAndWidget(QQuickWebEngineView *view, QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *widget);
+    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *oldWidget,
+                       QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *newWidget);
 
     // QQmlListPropertyHelpers
     static void userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script);
@@ -197,6 +204,7 @@ public:
     uint m_webChannelWorld;
     bool m_isBeingAdopted;
     mutable QQuickWebEngineAction *actions[QQuickWebEngineView::WebActionCount];
+    QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *widget = nullptr;
 
     bool profileInitialized() const;
 

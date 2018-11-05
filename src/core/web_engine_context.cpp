@@ -144,10 +144,8 @@ bool usingQtQuick2DRenderer()
         }
     }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
     if (device.isEmpty())
         device = QQuickWindow::sceneGraphBackend();
-#endif
     if (device.isEmpty())
         device = QString::fromLocal8Bit(qgetenv("QT_QUICK_BACKEND"));
     if (device.isEmpty())
@@ -364,10 +362,8 @@ WebEngineContext::WebEngineContext()
         appArgs.append(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv)).split(' '));
     }
 
-#ifdef Q_OS_WIN
     bool enableWebGLSoftwareRendering =
             appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
-#endif
 
     bool useEmbeddedSwitches = false;
 #if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
@@ -462,12 +458,10 @@ WebEngineContext::WebEngineContext()
     bool tryGL =
             !usingANGLE()
             && (!usingSoftwareDynamicGL()
-#ifdef Q_OS_WIN
-                // If user requested WebGL support on Windows, instead of using Skia rendering to
-                // bitmaps, use software rendering via opengl32sw.dll. This might be less
+                // If user requested WebGL support instead of using Skia rendering to
+                // bitmaps, use software rendering via software OpenGL. This might be less
                 // performant, but at least provides WebGL support.
                 || enableWebGLSoftwareRendering
-#endif
                 )
             && !usingQtQuick2DRenderer();
 
@@ -534,12 +528,10 @@ WebEngineContext::WebEngineContext()
     if (glType) {
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
         parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
-#ifdef Q_OS_WIN
         if (enableWebGLSoftwareRendering) {
             parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
             parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlacklist);
         }
-#endif
     } else {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     }

@@ -39,7 +39,7 @@
 
 #include "qwebengineclientcertificateselection.h"
 
-#if QT_CONFIG(ssl)
+#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 
 #include "client_cert_select_controller.h"
 
@@ -124,4 +124,4 @@ QUrl QWebEngineClientCertificateSelection::host() const
 
 QT_END_NAMESPACE
 
-#endif // QT_CONFIG(ssl)
+#endif // !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)

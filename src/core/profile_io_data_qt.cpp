@@ -327,10 +327,11 @@ void ProfileIODataQt::generateStorage()
     if (!m_dhcpPacFileFetcherFactory)
         m_dhcpPacFileFetcherFactory.reset(new net::DhcpPacFileFetcherFactory);
 
+    proxy_resolver::mojom::ProxyResolverFactoryPtr proxyResolver(std::move(m_proxyResolverFactoryInterface));
     m_storage->set_proxy_resolution_service(network::CreateProxyResolutionServiceUsingMojoFactory(
-                                                std::move(m_proxyResolverFactory),
+                                                std::move(proxyResolver),
                                                 std::unique_ptr<net::ProxyConfigService>(proxyConfigService),
-                                                net::PacFileFetcherImpl::Create(m_urlRequestContext.get()),
+                                                net::PacFileFetcherImpl::CreateWithFileUrlSupport(m_urlRequestContext.get()),
                                                 m_dhcpPacFileFetcherFactory->Create(m_urlRequestContext.get()),
                                                 host_resolver.get(),
                                                 nullptr /* NetLog */,
@@ -642,8 +643,8 @@ void ProfileIODataQt::updateStorageSettings()
                 new ProxyConfigServiceQt(
                     net::ProxyResolutionService::CreateSystemProxyConfigService(
                         content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)));
-        m_proxyResolverFactory = ChromeMojoProxyResolverFactory::CreateWithStrongBinding();
-
+        //pass interface to io thread
+        m_proxyResolverFactoryInterface = ChromeMojoProxyResolverFactory::CreateWithStrongBinding().PassInterface();
         if (m_initialized)
             content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                              base::Bind(&ProfileIODataQt::generateAllStorage, m_weakPtr));

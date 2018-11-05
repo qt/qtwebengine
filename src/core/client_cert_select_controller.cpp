@@ -71,7 +71,7 @@ ClientCertSelectController::~ClientCertSelectController()
         m_delegate->ContinueWithCertificate(nullptr, nullptr);
 }
 
-#if QT_CONFIG(ssl)
+#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 
 void ClientCertSelectController::selectNone()
 {
@@ -118,6 +118,6 @@ QVector<QSslCertificate> ClientCertSelectController::certificates() const
     return out;
 }
 
-#endif // QT_CONFIG(ssl)
+#endif // !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 
 QT_END_NAMESPACE

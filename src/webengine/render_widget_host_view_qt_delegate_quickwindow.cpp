@@ -54,13 +54,6 @@ RenderWidgetHostViewQtDelegateQuickWindow::~RenderWidgetHostViewQtDelegateQuickW
 {
 }
 
-void RenderWidgetHostViewQtDelegateQuickWindow::initAsChild(WebContentsAdapterClient *container)
-{
-    Q_UNUSED(container);
-    // We should only use this wrapper class for webUI popups.
-    Q_UNREACHABLE();
-}
-
 void RenderWidgetHostViewQtDelegateQuickWindow::initAsPopup(const QRect &screenRect)
 {
     m_realDelegate->initAsPopup(QRect(QPoint(0, 0), screenRect.size()));

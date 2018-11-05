@@ -166,6 +166,9 @@ QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
     adapter->stopFinding();
     if (faviconProvider)
         faviconProvider->detach(q_ptr);
+    // q_ptr->d_ptr might be null due to destroy()
+    if (q_ptr->d_ptr)
+        bindViewAndWidget(q_ptr, nullptr);
 }
 
 void QQuickWebEngineViewPrivate::initializeProfile()
@@ -188,10 +191,11 @@ bool QQuickWebEngineViewPrivate::profileInitialized() const
 
 void QQuickWebEngineViewPrivate::destroy()
 {
-   // the profile for this web contens is about to be
-   // garbage collected, delete WebContent first and
-   // let the QQuickWebEngineView be collected later by gc.
-   delete q_ptr->d_ptr.take();
+    // The profile for this web contents is about to be
+    // garbage collected, delete WebContents first and
+    // let the QQuickWebEngineView be collected later by gc.
+    bindViewAndWidget(q_ptr, nullptr);
+    delete q_ptr->d_ptr.take();
 }
 
 UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
@@ -669,6 +673,12 @@ void QQuickWebEngineViewPrivate::printRequested()
     });
 }
 
+void QQuickWebEngineViewPrivate::widgetChanged(RenderWidgetHostViewQtDelegate *newWidgetBase)
+{
+    Q_Q(QQuickWebEngineView);
+    bindViewAndWidget(q, static_cast<RenderWidgetHostViewQtDelegateQuick *>(newWidgetBase));
+}
+
 WebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const
 {
     return m_settings->d_ptr.data();
@@ -846,6 +856,52 @@ void QQuickWebEngineViewPrivate::setFullScreenMode(bool fullscreen)
     }
 }
 
+void QQuickWebEngineViewPrivate::bindViewAndWidget(QQuickWebEngineView *view,
+                                                   RenderWidgetHostViewQtDelegateQuick *widget)
+{
+    auto oldWidget = view ? view->d_func()->widget : nullptr;
+    auto oldView = widget ? widget->m_view : nullptr;
+
+    // Change pointers first.
+
+    if (widget && oldView != view) {
+        if (oldView)
+            oldView->d_func()->widget = nullptr;
+        widget->m_view = view;
+    }
+
+    if (view && oldWidget != widget) {
+        if (oldWidget)
+            oldWidget->m_view = nullptr;
+        view->d_func()->widget = widget;
+    }
+
+    // Then notify.
+
+    if (widget && oldView != view && oldView)
+        oldView->d_func()->widgetChanged(widget, nullptr);
+
+    if (view && oldWidget != widget)
+        view->d_func()->widgetChanged(oldWidget, widget);
+}
+
+void QQuickWebEngineViewPrivate::widgetChanged(RenderWidgetHostViewQtDelegateQuick *oldWidget,
+                                               RenderWidgetHostViewQtDelegateQuick *newWidget)
+{
+    Q_Q(QQuickWebEngineView);
+
+    if (oldWidget)
+        oldWidget->setParentItem(nullptr);
+
+    if (newWidget) {
+        newWidget->setParentItem(q);
+        newWidget->setSize(q->boundingRect().size());
+        // Focus on creation if the view accepts it
+        if (q->activeFocusOnPress())
+            newWidget->setFocus(true);
+    }
+}
+
 void QQuickWebEngineViewPrivate::updateAction(QQuickWebEngineView::WebAction action) const
 {
     QQuickWebEngineAction *a = actions[action];
@@ -878,6 +934,15 @@ void QQuickWebEngineViewPrivate::updateAction(QQuickWebEngineView::WebAction act
     a->d_ptr->setEnabled(enabled);
 }
 
+void QQuickWebEngineViewPrivate::updateNavigationActions()
+{
+    updateAction(QQuickWebEngineView::Back);
+    updateAction(QQuickWebEngineView::Forward);
+    updateAction(QQuickWebEngineView::Stop);
+    updateAction(QQuickWebEngineView::Reload);
+    updateAction(QQuickWebEngineView::ReloadAndBypassCache);
+    updateAction(QQuickWebEngineView::ViewSource);
+}
 
 QUrl QQuickWebEngineView::url() const
 {
@@ -1485,11 +1550,9 @@ void QQuickWebEngineView::fullScreenCancelled()
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
-    const QList<QQuickItem *> children = childItems();
-    for (QQuickItem *child : children) {
-        if (qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child))
-            child->setSize(newGeometry.size());
-    }
+    Q_D(QQuickWebEngineView);
+    if (d->widget)
+        d->widget->setSize(newGeometry.size());
 }
 
 void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &value)

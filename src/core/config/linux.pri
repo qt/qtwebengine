@@ -24,7 +24,7 @@ qtConfig(webengine-embedded-build) {
     !use_gold_linker: gn_args += use_gold=false
 }
 
-qtConfig(webengine-system-x11) {
+qtConfig(webengine-system-x11): hasX11Dependencies() {
    gn_args += ozone_platform_x11=true
 }
 

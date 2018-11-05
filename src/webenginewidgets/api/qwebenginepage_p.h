@@ -65,6 +65,7 @@
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegate;
+class RenderWidgetHostViewQtDelegateWidget;
 class WebContentsAdapter;
 }
 
@@ -100,7 +101,7 @@ public:
     qreal dpiScale() const override;
     QColor backgroundColor() const override;
     void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) override;
-    void loadCommitted() override;
+    void loadCommitted() override { }
     void loadVisuallyCommitted() override { }
     void loadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString()) override;
     void focusContainer() override;
@@ -141,6 +142,7 @@ public:
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
     void updateScrollPosition(const QPointF &position) override;
     void updateContentsSize(const QSizeF &size) override;
+    void updateNavigationActions() override;
     void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
                        const QPixmap &pixmap, const QPoint &offset) override;
     bool supportsDragging() const override;
@@ -150,12 +152,12 @@ public:
     const QObject *holdingQObject() const override;
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
     void interceptRequest(QWebEngineUrlRequestInfo &) override;
+    void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegate *newWidget) override;
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
 
     void updateAction(QWebEnginePage::WebAction) const;
-    void updateNavigationActions();
     void _q_webActionTriggered(bool checked);
 
     void wasShown();
@@ -166,6 +168,10 @@ public:
 
     void setFullScreenMode(bool);
     void ensureInitialized() const;
+
+    static void bindPageAndView(QWebEnginePage *page, QWebEngineView *view);
+    static void bindPageAndWidget(QWebEnginePage *page,
+                                  QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget);
 
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
     QWebEngineHistory *history;
@@ -189,6 +195,7 @@ public:
     qreal defaultZoomFactor;
     QTimer wasShownTimer;
     QWebEngineUrlRequestInterceptor *requestInterceptor;
+    QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget = nullptr;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

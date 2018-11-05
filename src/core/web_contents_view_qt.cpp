@@ -78,8 +78,6 @@ content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForWidget(conten
     view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view));
     if (m_client)
         view->setAdapterClient(m_client);
-    // Tell the RWHV delegate to attach itself to the native view container.
-    view->InitAsChild(0);
 
     return view;
 }

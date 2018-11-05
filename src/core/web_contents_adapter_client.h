@@ -466,6 +466,7 @@ public:
     virtual void selectClientCert(const QSharedPointer<ClientCertSelectController> &selectController) = 0;
     virtual void updateScrollPosition(const QPointF &position) = 0;
     virtual void updateContentsSize(const QSizeF &size) = 0;
+    virtual void updateNavigationActions() = 0;
     virtual void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
                                const QPixmap &pixmap, const QPoint &offset) = 0;
     virtual bool supportsDragging() const = 0;
@@ -474,6 +475,7 @@ public:
     virtual void setToolTip(const QString& toolTipText) = 0;
     virtual ClientType clientType() = 0;
     virtual void printRequested() = 0;
+    virtual void widgetChanged(RenderWidgetHostViewQtDelegate *newWidget) = 0;
     virtual void interceptRequest(QWebEngineUrlRequestInfo &) { }
 
     virtual ProfileAdapter *profileAdapter() = 0;

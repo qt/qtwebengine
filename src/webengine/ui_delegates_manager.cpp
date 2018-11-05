@@ -508,12 +508,7 @@ public:
         if (pos.isNull() || !item->contains(pos))
             return;
         const QPoint oldPos = QCursor::pos();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
         const QPoint globalPos = item->mapToGlobal(QPointF(pos)).toPoint();
-#else
-        const QPoint posInWindow = item->mapToItem(item->window()->contentItem(), QPointF(pos)).toPoint();
-        const QPoint globalPos = item->window()->mapToGlobal(posInWindow);
-#endif
         if (oldPos == globalPos)
             return;
         m_oldCursorPos = oldPos;

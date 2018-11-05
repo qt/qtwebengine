@@ -174,14 +174,6 @@ static QString qtTextForKeyEvent(const QKeyEvent *ev, int qtKey, Qt::KeyboardMod
     if ((qtModifiers & Qt::ControlModifier) && keyboardDriver() == KeyboardDriver::Xkb)
         text.clear();
 
-    if (!text.isEmpty() || qtKey >= Qt::Key_Escape)
-        return text;
-
-    QChar ch(qtKey);
-    if (!(qtModifiers & Qt::ShiftModifier)) // No way to check for caps lock
-        ch = ch.toLower();
-
-    text.append(ch);
     return text;
 }
 
@@ -1413,11 +1405,7 @@ static void setBlinkWheelEventDelta(blink::WebMouseWheelEvent &webEvent)
     // a pixel delta based on ticks and scroll per line.
     static const float cDefaultQtScrollStep = 20.f;
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
     static const int wheelScrollLines = QGuiApplication::styleHints()->wheelScrollLines();
-#else
-    static const int wheelScrollLines = 3;
-#endif
     webEvent.delta_x = webEvent.wheel_ticks_x * wheelScrollLines * cDefaultQtScrollStep;
     webEvent.delta_y = webEvent.wheel_ticks_y * wheelScrollLines * cDefaultQtScrollStep;
 }
@@ -1426,7 +1414,9 @@ blink::WebMouseWheelEvent::Phase toBlinkPhase(QWheelEvent *ev)
 {
     switch (ev->phase()) {
     case Qt::NoScrollPhase:
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
     case Qt::ScrollMomentum:
+#endif
         return blink::WebMouseWheelEvent::kPhaseNone;
     case Qt::ScrollBegin:
         return ev->angleDelta().isNull() ? blink::WebMouseWheelEvent::kPhaseMayBegin : blink::WebMouseWheelEvent::kPhaseBegan;
@@ -1451,7 +1441,11 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
     webEvent.wheel_ticks_x = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
     webEvent.wheel_ticks_y = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
     webEvent.phase = toBlinkPhase(ev);
-    webEvent.has_precise_scrolling_deltas = true;
+#if defined(Q_OS_DARWIN)
+    // has_precise_scrolling_deltas is a macOS term meaning it is a system scroll gesture, see qnsview_mouse.mm
+    webEvent.has_precise_scrolling_deltas = (ev->source() == Qt::MouseEventSynthesizedBySystem);
+#endif
+
     setBlinkWheelEventDelta(webEvent);
 
     return webEvent;
@@ -1465,6 +1459,10 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
         return false;
     if (toBlinkPhase(ev) != webEvent.phase)
         return false;
+#if defined(Q_OS_DARWIN)
+    if (webEvent.has_precise_scrolling_deltas != (ev->source() == Qt::MouseEventSynthesizedBySystem))
+        return false;
+#endif
 
     webEvent.SetTimeStamp(currentTimeForEvent(ev));
     webEvent.SetPositionInWidget(ev->x() / dpiScale, ev->y() / dpiScale);
@@ -1495,6 +1493,12 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
         webKitEvent.dom_key = domKeyForQtKey(qtKey);
     else if (!qtText.isEmpty())
         webKitEvent.dom_key = ui::DomKey::FromCharacter(qtText.toUcs4().first());
+    else {
+        QChar ch(qtKey);
+        if (!(qtModifiers & Qt::ShiftModifier)) // No way to check for caps lock
+            ch = ch.toLower();
+        webKitEvent.dom_key = ui::DomKey::FromCharacter(ch.unicode());
+    }
 
     // The dom_code field should contain the USB keycode of the *physical* key
     // that was pressed. Physical meaning independent of layout and modifiers.

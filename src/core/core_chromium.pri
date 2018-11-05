@@ -43,6 +43,7 @@ SOURCES = \
         browser_accessibility_manager_qt.cpp \
         browser_accessibility_qt.cpp \
         browsing_data_remover_delegate_qt.cpp \
+        browser_main_parts_qt.cpp \
         browser_message_filter_qt.cpp \
         certificate_error_controller.cpp \
         chromium_gpu_helper.cpp \
@@ -59,6 +60,7 @@ SOURCES = \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
+        content_utility_client_qt.cpp \
         delegated_frame_node.cpp \
         desktop_screen_qt.cpp \
         devtools_frontend_qt.cpp \
@@ -130,6 +132,7 @@ HEADERS = \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
         browsing_data_remover_delegate_qt.h \
+        browser_main_parts_qt.h \
         browser_message_filter_qt.h \
         certificate_error_controller_p.h \
         certificate_error_controller.h \
@@ -147,6 +150,7 @@ HEADERS = \
         content_client_qt.h \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \
+        content_utility_client_qt.h \
         delegated_frame_node.h \
         desktop_screen_qt.h \
         devtools_frontend_qt.h \

@@ -43,6 +43,7 @@
 #include "content/public/app/content_main_delegate.h"
 
 #include "content_browser_client_qt.h"
+#include "content_utility_client_qt.h"
 
 namespace QtWebEngineCore {
 
@@ -56,11 +57,12 @@ public:
 
     content::ContentBrowserClient* CreateContentBrowserClient() override;
     content::ContentRendererClient* CreateContentRendererClient() override;
-
+    content::ContentUtilityClient* CreateContentUtilityClient() override;
     bool BasicStartupComplete(int* /*exit_code*/) override;
 
 private:
     std::unique_ptr<ContentBrowserClientQt> m_browserClient;
+    std::unique_ptr<ContentUtilityClientQt> m_utilityClient;
 };
 
 } // namespace QtWebEngineCore
