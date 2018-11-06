@@ -53,6 +53,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/input_messages.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -880,6 +881,13 @@ void RenderWidgetHostViewQt::selectionChanged()
 
 void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
 {
+    if ((gesture.type() == ui::ET_GESTURE_PINCH_BEGIN
+         || gesture.type() == ui::ET_GESTURE_PINCH_UPDATE
+         || gesture.type() == ui::ET_GESTURE_PINCH_END)
+        && !content::IsPinchToZoomEnabled()) {
+        return;
+    }
+
     host()->ForwardGestureEvent(ui::CreateWebGestureEventFromGestureEventData(gesture));
 }
 
