@@ -44,7 +44,7 @@ class tst_Printing : public QObject
 private slots:
     void printToPdfBasic();
     void printRequest();
-#if QT_CONFIG(webengine_poppler_cpp)
+#if QT_CONFIG(webengine_poppler_cpp) && defined(Q_OS_LINUX) && defined(__GLIBCXX__)
     void printToPdfPoppler();
 #endif
 };
@@ -108,7 +108,7 @@ void tst_Printing::printRequest()
      QVERIFY(data.length() > 0);
 }
 
-#if QT_CONFIG(webengine_poppler_cpp)
+#if QT_CONFIG(webengine_poppler_cpp) && defined(Q_OS_LINUX) && defined(__GLIBCXX__)
 void tst_Printing::printToPdfPoppler()
 {
     // check if generated pdf is correct by searching for a know string on the page
