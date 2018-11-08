@@ -177,16 +177,15 @@ RenderWidgetHostViewQtDelegateWidget::~RenderWidgetHostViewQtDelegateWidget()
 
 void RenderWidgetHostViewQtDelegateWidget::connectRemoveParentBeforeParentDelete()
 {
-    if (QWidget *parent = parentWidget())
-        connect(parent, &QObject::destroyed,
-                this, &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
-}
+    disconnect(m_parentDestroyedConnection);
 
-void RenderWidgetHostViewQtDelegateWidget::disconnectRemoveParentBeforeParentDelete()
-{
-    if (QWidget *parent = parentWidget())
-        disconnect(parent, &QObject::destroyed,
-                   this, &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
+    if (QWidget *parent = parentWidget()) {
+        m_parentDestroyedConnection = connect(parent, &QObject::destroyed,
+                                              this,
+                                              &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
+    } else {
+        m_parentDestroyedConnection = QMetaObject::Connection();
+    }
 }
 
 void RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete()
@@ -417,9 +416,6 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 
     // Track parent to make sure we don't get deleted.
     switch (event->type()) {
-    case QEvent::ParentAboutToChange:
-        disconnectRemoveParentBeforeParentDelete();
-        break;
     case QEvent::ParentChange:
         connectRemoveParentBeforeParentDelete();
         break;
