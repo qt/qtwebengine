@@ -44,17 +44,11 @@
 #include <QGuiApplication>
 #include "gl_ozone_glx_qt.h"
 #include "gl_surface_glx_qt.h"
+#include "gl_context_qt.h"
 #include "ui/gl/gl_context_glx.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_glx_api_implementation.h"
 #include <dlfcn.h>
-
-#ifndef QT_NO_OPENGL
-#include <QOpenGLContext>
-QT_BEGIN_NAMESPACE
-Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
-QT_END_NAMESPACE
-#endif
 
 namespace ui {
 
@@ -79,16 +73,12 @@ bool GLOzoneGLXQt::InitializeStaticGLBindings(
             reinterpret_cast<gl::GLGetProcAddressProc>(
                 base::GetFunctionPointerFromNativeLibrary(library,
                                                           "glXGetProcAddress"));
-
-#ifndef QT_NO_OPENGL
     if (!get_proc_address) {
     // glx handle not loaded, fallback to qpa
-        if (QOpenGLContext *context = qt_gl_global_share_context()) {
-            get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(
-                context->getProcAddress("glXGetProcAddress"));
-        }
+        QFunctionPointer address = GLContextHelper::getGlXGetProcAddress();
+        get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(address);
     }
-#endif
+
     if (!get_proc_address) {
         LOG(ERROR) << "glxGetProcAddress not found.";
         base::UnloadNativeLibrary(library);
