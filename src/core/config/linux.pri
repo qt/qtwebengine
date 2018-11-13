@@ -69,6 +69,7 @@ contains(QT_ARCH, "arm") {
         gn_args += arm_version=$$MARMV
     }
 
+    # TODO: use neon detection from qtbase
     !lessThan(MARMV, 8) {
         gn_args += arm_use_neon=true
     } else {
@@ -83,10 +84,16 @@ contains(QT_ARCH, "arm") {
         }
     }
 
-    MTHUMB = $$extractCFlag("-mthumb")
-    MARM = $$extractCFlag("-marm")
-    if (isEmpty(MARMV) | lessThan(MARMV, 7) | !isEmpty(MARM)): gn_args += arm_use_thumb=false
-    else: !isEmpty(MTHUMB): gn_args += arm_use_thumb=true
+    qtConfig(webengine-arm-thumb) {
+        gn_args += arm_use_thumb=true # this adds -mthumb
+    } else {
+        gn_args += arm_use_thumb=false
+        !qtConfig(webengine-system-ffmpeg) {
+             # Fixme QTBUG-71772
+             gn_args += media_use_ffmpeg=false
+             gn_args += use_webaudio_ffmpeg=false
+        }
+    }
 }
 
 contains(QT_ARCH, "mips") {

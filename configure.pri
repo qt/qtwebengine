@@ -294,3 +294,21 @@ defineTest(qtConfTest_isWindowsHostCompiler64) {
     qtLog("Required 64-bit cross-building or native toolchain was not detected.")
     return(false)
 }
+
+# Fixme QTBUG-71772
+defineTest(qtConfTest_hasThumbFlag) {
+    FLAG = $$extractCFlag("-mthumb")
+    !isEmpty(FLAG): return(true)
+    FLAG = $$extractCFlag("-marm")
+    !isEmpty(FLAG): return(false)
+
+    MARCH = $$extractCFlag("-march=.*")
+    MARMV = $$replace(MARCH, "armv",)
+    !isEmpty(MARMV) {
+        MARMV = $$split(MARMV,)
+        MARMV = $$member(MARMV, 0)
+    }
+    if (isEmpty(MARMV) | lessThan(MARMV, 7)): return(false)
+    # no flag assume mthumb
+    return(true)
+}
