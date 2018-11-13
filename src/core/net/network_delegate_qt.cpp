@@ -225,12 +225,18 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
 
     const QUrl qUrl = toQt(request->url());
 
+    QUrl firstPartyUrl = QUrl();
+    if (resourceType == content::ResourceType::RESOURCE_TYPE_SUB_FRAME)
+        firstPartyUrl = toQt(request->first_party_url());
+    else
+        firstPartyUrl = toQt(request->site_for_cookies());
+
     QWebEngineUrlRequestInterceptor* interceptor = m_profileIOData->acquireInterceptor();
     if (interceptor) {
         QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(toQt(resourceType),
                                                                                            toQt(navigationType),
                                                                                            qUrl,
-                                                                                           toQt(request->site_for_cookies()),
+                                                                                           firstPartyUrl,
                                                                                            QByteArray::fromStdString(request->method()));
         QWebEngineUrlRequestInfo requestInfo(infoPrivate);
         interceptor->interceptRequest(requestInfo);
