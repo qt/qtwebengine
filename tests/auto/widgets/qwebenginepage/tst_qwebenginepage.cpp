@@ -103,6 +103,7 @@ private Q_SLOTS:
     void multipleProfilesAndLocalStorage();
     void textSelection();
     void backActionUpdate();
+    void localStorageVisibility();
     void consoleOutput();
     void userAgentNewlineStripping();
     void renderWidgetHostViewNotShowTopLevel();
@@ -730,6 +731,41 @@ void tst_QWebEnginePage::backActionUpdate()
 
     QEXPECT_FAIL("", "FIXME: Mouse events aren't passed from the QWebEngineView down to the RWHVQtDelegateWidget", Continue);
     QVERIFY(action->isEnabled());
+}
+
+void tst_QWebEnginePage::localStorageVisibility()
+{
+    QWebEngineProfile profile;
+    QWebEnginePage webPage1(&profile);
+    QWebEnginePage webPage2(&profile);
+
+    webPage1.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+    webPage2.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, false);
+
+    QSignalSpy loadSpy1(&webPage1, &QWebEnginePage::loadFinished);
+    QSignalSpy loadSpy2(&webPage2, &QWebEnginePage::loadFinished);
+    webPage1.setHtml(QString("<html><body>test</body></html>"), QUrl("http://www.example.com/"));
+    webPage2.setHtml(QString("<html><body>test</body></html>"), QUrl("http://www.example.com/"));
+    QTRY_COMPARE(loadSpy1.count(), 1);
+    QTRY_COMPARE(loadSpy2.count(), 1);
+
+    // The attribute determines the visibility of the window.localStorage object.
+    QVERIFY(evaluateJavaScriptSync(&webPage1, QString("(window.localStorage != undefined)")).toBool());
+    QVERIFY(!evaluateJavaScriptSync(&webPage2, QString("(window.localStorage != undefined)")).toBool());
+
+    // Switching the feature off does not actively remove the object from webPage1.
+    webPage1.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, false);
+    webPage2.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+    QVERIFY(evaluateJavaScriptSync(&webPage1, QString("(window.localStorage != undefined)")).toBool());
+    QVERIFY(evaluateJavaScriptSync(&webPage2, QString("(window.localStorage != undefined)")).toBool());
+
+    // The object disappears only after reloading.
+    webPage1.triggerAction(QWebEnginePage::Reload);
+    webPage2.triggerAction(QWebEnginePage::Reload);
+    QTRY_COMPARE(loadSpy1.count(), 2);
+    QTRY_COMPARE(loadSpy2.count(), 2);
+    QVERIFY(!evaluateJavaScriptSync(&webPage1, QString("(window.localStorage != undefined)")).toBool());
+    QVERIFY(evaluateJavaScriptSync(&webPage2, QString("(window.localStorage != undefined)")).toBool());
 }
 
 void tst_QWebEnginePage::userAgentNewlineStripping()
