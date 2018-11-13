@@ -83,8 +83,10 @@ contains(QT_ARCH, "arm") {
         }
     }
 
-    if(isEmpty(MARMV)|lessThan(MARMV, 7)):contains(QMAKE_CFLAGS, "-marm"): gn_args += arm_use_thumb=false
-    else: contains(QMAKE_CFLAGS, "-mthumb"): gn_args += arm_use_thumb=true
+    MTHUMB = $$extractCFlag("-mthumb")
+    MARM = $$extractCFlag("-marm")
+    if (isEmpty(MARMV) | lessThan(MARMV, 7) | !isEmpty(MARM)): gn_args += arm_use_thumb=false
+    else: !isEmpty(MTHUMB): gn_args += arm_use_thumb=true
 }
 
 contains(QT_ARCH, "mips") {
