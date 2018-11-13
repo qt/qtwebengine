@@ -102,7 +102,6 @@ protected:
 private slots:
     void onWindowPosChanged();
     void connectRemoveParentBeforeParentDelete();
-    void disconnectRemoveParentBeforeParentDelete();
     void removeParentBeforeParentDelete();
 
 private:
@@ -116,6 +115,7 @@ private:
     QPoint m_lastGlobalPos;
     QList<QMetaObject::Connection> m_windowConnections;
     QWebEnginePage *m_page = nullptr;
+    QMetaObject::Connection m_parentDestroyedConnection;
 };
 
 } // namespace QtWebEngineCore
