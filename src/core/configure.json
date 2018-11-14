@@ -658,7 +658,6 @@
         "webengine-win-compiler64": {
             "label": "64bit compiler",
             "condition": "config.win32 && tests.webengine-win-compiler64",
-            "type": "isWindowsHostCompiler64",
             "output": [ "privateFeature" ]
         }
     },
