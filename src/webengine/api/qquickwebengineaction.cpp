@@ -146,7 +146,8 @@ QString QQuickWebEngineAction::iconName() const
 /*!
     \qmlproperty bool WebEngineAction::enabled
 
-    This property holds whether the action is enabled.
+    This property holds whether the action is enabled. Context-dependent
+    actions are always enabled.
 */
 bool QQuickWebEngineAction::isEnabled() const
 {
