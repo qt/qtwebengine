@@ -268,6 +268,7 @@ private:
     bool m_pendingResize;
     QList<blink::WebMouseWheelEvent> m_pendingWheelEvents;
     content::MouseWheelPhaseHandler m_mouseWheelPhaseHandler;
+    viz::FrameSinkId m_frameSinkId;
 
     uint32_t m_latestCaptureSequenceNumber = 0u;
     std::string m_editCommand;
