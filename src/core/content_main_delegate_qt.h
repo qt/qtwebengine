@@ -42,6 +42,7 @@
 
 #include "content/public/app/content_main_delegate.h"
 
+#include "compositor/content_gpu_client_qt.h"
 #include "content_browser_client_qt.h"
 #include "content_utility_client_qt.h"
 
@@ -56,12 +57,14 @@ public:
     void PreSandboxStartup() override;
 
     content::ContentBrowserClient* CreateContentBrowserClient() override;
+    content::ContentGpuClient* CreateContentGpuClient() override;
     content::ContentRendererClient* CreateContentRendererClient() override;
     content::ContentUtilityClient* CreateContentUtilityClient() override;
     bool BasicStartupComplete(int* /*exit_code*/) override;
 
 private:
     std::unique_ptr<ContentBrowserClientQt> m_browserClient;
+    std::unique_ptr<ContentGpuClientQt> m_gpuClient;
     std::unique_ptr<ContentUtilityClientQt> m_utilityClient;
 };
 

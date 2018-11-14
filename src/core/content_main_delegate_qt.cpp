@@ -40,17 +40,17 @@
 #include "content_main_delegate_qt.h"
 
 #include "base/command_line.h"
-#include <base/i18n/rtl.h>
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include <chrome/grit/generated_resources.h>
+#include "chrome/grit/generated_resources.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
-#include <ui/base/webui/jstemplate_builder.h>
+#include "ui/base/webui/jstemplate_builder.h"
 #include "net/grit/net_resources.h"
 #include "net/base/net_module.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -59,6 +59,7 @@
 #include "content_client_qt.h"
 #include "renderer/content_renderer_client_qt.h"
 #include "type_conversion.h"
+#include "web_engine_context.h"
 #include "web_engine_library_info.h"
 
 #if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
@@ -165,6 +166,12 @@ content::ContentBrowserClient *ContentMainDelegateQt::CreateContentBrowserClient
 {
     m_browserClient.reset(new ContentBrowserClientQt);
     return m_browserClient.get();
+}
+
+content::ContentGpuClient *ContentMainDelegateQt::CreateContentGpuClient()
+{
+    m_gpuClient.reset(new ContentGpuClientQt);
+    return m_gpuClient.get();
 }
 
 content::ContentRendererClient *ContentMainDelegateQt::CreateContentRendererClient()

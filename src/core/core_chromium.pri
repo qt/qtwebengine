@@ -57,6 +57,7 @@ SOURCES = \
         compositor/chromium_gpu_helper.cpp \
         compositor/compositor.cpp \
         compositor/compositor_resource_tracker.cpp \
+        compositor/content_gpu_client_qt.cpp \
         compositor/delegated_frame_node.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
@@ -149,6 +150,7 @@ HEADERS = \
         compositor/compositor.h \
         compositor/compositor_resource.h \
         compositor/compositor_resource_tracker.h \
+        compositor/content_gpu_client_qt.h \
         compositor/delegated_frame_node.h \
         content_client_qt.h \
         content_browser_client_qt.h \

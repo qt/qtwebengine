@@ -50,7 +50,6 @@ class SingleThreadTaskRunner;
 
 namespace gpu {
 struct Mailbox;
-class SyncPointManager;
 class MailboxManager;
 class TextureBase;
 }
@@ -61,7 +60,6 @@ class TextureBase;
 // functions should only be forward-declared and considered as opaque types.
 
 scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner();
-gpu::SyncPointManager *sync_point_manager();
 gpu::MailboxManager *mailbox_manager();
 
 gpu::TextureBase* ConsumeTexture(gpu::MailboxManager *mailboxManager, unsigned target, const gpu::Mailbox& mailbox);

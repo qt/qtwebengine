@@ -328,6 +328,7 @@ static void appendToFeatureSwitch(base::CommandLine *commandLine, const char *fe
 WebEngineContext::WebEngineContext()
     : m_mainDelegate(new ContentMainDelegateQt)
     , m_globalQObject(new QObject())
+    , m_syncPointManager(new gpu::SyncPointManager())
 {
     base::TaskScheduler::Create("Browser");
     m_contentRunner.reset(content::ContentMainRunner::Create());
@@ -611,5 +612,10 @@ printing::PrintJobManager* WebEngineContext::getPrintJobManager()
     return m_printJobManager.get();
 }
 #endif
+
+gpu::SyncPointManager *WebEngineContext::syncPointManager()
+{
+    return m_syncPointManager.get();
+}
 
 } // namespace

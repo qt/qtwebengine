@@ -59,6 +59,7 @@ class InProcessChildThreadParams;
 
 namespace gpu {
 struct GpuPreferences;
+class SyncPointManager;
 }
 
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -94,6 +95,8 @@ public:
     void removeBrowserContext(ProfileAdapter *profileAdapter);
     void destroy();
 
+    gpu::SyncPointManager *syncPointManager();
+
 private:
     friend class base::RefCounted<WebEngineContext>;
     friend class ProfileAdapter;
@@ -110,6 +113,7 @@ private:
     std::unique_ptr<QObject> m_globalQObject;
     std::unique_ptr<ProfileAdapter> m_defaultProfileAdapter;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
+    std::unique_ptr<gpu::SyncPointManager> m_syncPointManager;
     QVector<ProfileAdapter*> m_profileAdapters;
 
 #if QT_CONFIG(webengine_printing_and_pdf)

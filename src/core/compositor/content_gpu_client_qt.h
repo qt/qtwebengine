@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -36,56 +36,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef CONTENT_GPU_CLIENT_QT_H
+#define CONTENT_GPU_CLIENT_QT_H
 
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE.Chromium file.
+#include "content/public/gpu/content_gpu_client.h"
 
-#include "chromium_gpu_helper.h"
+namespace QtWebEngineCore {
 
-// Including gpu/command_buffer headers before content/gpu headers makes sure that
-// guards are defined to prevent duplicate definition errors with forward declared
-// GL typedefs cascading through content header includes.
-#include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/command_buffer/service/texture_base.h"
+class ContentGpuClientQt : public content::ContentGpuClient {
+public:
+    explicit ContentGpuClientQt();
+    ~ContentGpuClientQt() override;
 
-#include "content/gpu/gpu_child_thread.h"
-#include "gpu/ipc/service/gpu_channel_manager.h"
+    // content::ContentGpuClient implementation.
+    gpu::SyncPointManager *GetSyncPointManager() override;
+};
 
-#ifdef Q_OS_QNX
-#include "content/common/gpu/stream_texture_qnx.h"
-#endif
-
-scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner()
-{
-    return content::GpuChildThread::instance()->main_thread_runner();
 }
 
-gpu::MailboxManager *mailbox_manager()
-{
-    gpu::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->gpu_channel_manager();
-    return gpuChannelManager->mailbox_manager();
-}
-
-gpu::TextureBase* ConsumeTexture(gpu::MailboxManager *mailboxManager, unsigned target, const gpu::Mailbox& mailbox)
-{
-    Q_UNUSED(target);
-    return mailboxManager->ConsumeTexture(mailbox);
-}
-
-unsigned int service_id(gpu::TextureBase *tex)
-{
-    return tex->service_id();
-}
-
-#ifdef Q_OS_QNX
-EGLStreamData eglstream_connect_consumer(gpu::Texture *tex)
-{
-    EGLStreamData egl_stream;
-    content::StreamTexture* image = static_cast<content::StreamTexture *>(tex->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0));
-    if (image) {
-        image->ConnectConsumerIfNeeded(&egl_stream.egl_display, &egl_stream.egl_str_handle);
-    }
-    return egl_stream;
-}
-#endif
+#endif // CONTENT_GPU_CLIENT_QT_H

@@ -41,15 +41,17 @@
 
 #include "chromium_gpu_helper.h"
 #include "render_widget_host_view_qt_delegate.h"
+#include "web_engine_context.h"
 
-#include <base/message_loop/message_loop.h>
-#include <components/viz/common/quads/compositor_frame.h>
-#include <components/viz/common/resources/returned_resource.h>
-#include <components/viz/service/display_embedder/server_shared_bitmap_manager.h>
-#include <content/browser/browser_main_loop.h>
-#include <content/public/browser/browser_thread.h>
-#include <gpu/command_buffer/service/mailbox_manager.h>
-#include <gpu/command_buffer/service/sync_point_manager.h>
+#include "base/message_loop/message_loop.h"
+#include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
+#include "content/browser/browser_main_loop.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/gpu/content_gpu_client.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 
 namespace QtWebEngineCore {
 
@@ -179,7 +181,7 @@ quint32 CompositorResourceTracker::consumeMailbox(const gpu::MailboxHolder &mail
 bool CompositorResourceTracker::scheduleUpdateMailbox(CompositorResource *resource)
 {
 #if QT_CONFIG(opengl)
-    gpu::SyncPointManager *syncPointManager = sync_point_manager();
+    gpu::SyncPointManager *syncPointManager = WebEngineContext::current()->syncPointManager();
     DCHECK(syncPointManager);
     return syncPointManager->WaitOutOfOrder(
         resource->mailbox_holder.sync_token,
