@@ -112,6 +112,7 @@ public:
     RenderWidgetHostViewQtDelegate *delegate() { return m_delegate.get(); }
     void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
+    void OnBeginFrame(base::TimeTicks frame_time);
 
     void InitAsChild(gfx::NativeView) override;
     void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) override;

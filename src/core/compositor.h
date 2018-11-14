@@ -60,6 +60,7 @@ class CompositorFrameSinkClient;
 
 namespace QtWebEngineCore {
 
+class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 class ChromiumCompositorData;
 
@@ -84,7 +85,7 @@ class ChromiumCompositorData;
 class Compositor final : private viz::BeginFrameObserverBase
 {
 public:
-    explicit Compositor();
+    explicit Compositor(RenderWidgetHostViewQt *hostView);
     ~Compositor() override;
 
     void setViewDelegate(RenderWidgetHostViewQtDelegate *viewDelegate);
@@ -105,6 +106,7 @@ private:
 
     std::vector<viz::ReturnedResource> m_resourcesToRelease;
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
+    RenderWidgetHostViewQt *m_view;
     RenderWidgetHostViewQtDelegate *m_viewDelegate = nullptr;
     std::unique_ptr<viz::SyntheticBeginFrameSource> m_beginFrameSource;
     viz::mojom::CompositorFrameSinkClient *m_frameSinkClient = nullptr;

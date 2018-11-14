@@ -40,15 +40,17 @@
 #include "compositor.h"
 
 #include "delegated_frame_node.h"
+#include "render_widget_host_view_qt.h"
 
-#include <components/viz/common/resources/returned_resource.h>
-#include <content/public/browser/browser_thread.h>
-#include <services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h>
+#include "components/viz/common/resources/returned_resource.h"
+#include "content/public/browser/browser_thread.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 namespace QtWebEngineCore {
 
-Compositor::Compositor()
+Compositor::Compositor(RenderWidgetHostViewQt *hostView)
     : m_chromiumCompositorData(new ChromiumCompositorData)
+    , m_view(hostView)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -163,6 +165,7 @@ bool Compositor::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs &args)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+    m_view->OnBeginFrame(args.frame_time);
     m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
     if (m_frameSinkClient)
         m_frameSinkClient->OnBeginFrame(args);

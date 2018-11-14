@@ -260,7 +260,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_sendMotionActionDown(false)
     , m_touchMotionStarted(false)
-    , m_compositor(new Compositor)
+    , m_compositor(new Compositor(this))
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
     , m_imeInProgress(false)
@@ -1635,6 +1635,11 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
 void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
 {
     m_compositor->setNeedsBeginFrames(needs_begin_frames);
+}
+
+void RenderWidgetHostViewQt::OnBeginFrame(base::TimeTicks frame_time)
+{
+    host()->ProgressFlingIfNeeded(frame_time);
 }
 
 content::RenderFrameHost *RenderWidgetHostViewQt::getFocusedFrameHost()
