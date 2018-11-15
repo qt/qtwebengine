@@ -120,6 +120,7 @@ SOURCES = \
         web_contents_delegate_qt.cpp \
         web_contents_view_qt.cpp \
         web_engine_context.cpp \
+        web_engine_context_threads.cpp \
         web_engine_error.cpp \
         web_engine_library_info.cpp \
         web_engine_settings.cpp \

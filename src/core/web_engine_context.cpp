@@ -54,12 +54,6 @@
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/devtools/devtools_http_handler.h"
-#include "content/browser/gpu/gpu_main_thread_factory.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/utility_process_host.h"
-#include "content/gpu/gpu_child_thread.h"
-#include "content/gpu/gpu_process.h"
-#include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -69,9 +63,8 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/renderer/in_process_renderer_thread.h"
-#include "content/utility/in_process_utility_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/host/gpu_switches.h"
 #include "media/audio/audio_manager.h"
 #include "mojo/core/embedder/embedder.h"
@@ -551,13 +544,11 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     }
 
-    content::UtilityProcessHost::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
-    content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
-    content::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
+    bool threadedGpu = true;
 #ifndef QT_NO_OPENGL
-    if (!QOpenGLContext::supportsThreadedOpenGL())
-        content::RegisterGpuMainThreadFactory(createGpuThreadController);
+    threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
 #endif
+    registerMainThreadFactories(threadedGpu);
 
     mojo::core::Init();
 
@@ -618,60 +609,5 @@ printing::PrintJobManager* WebEngineContext::getPrintJobManager()
     return m_printJobManager.get();
 }
 #endif
-
-// static
-std::unique_ptr<content::GpuThreadController> WebEngineContext::createGpuThreadController(
-    const content::InProcessChildThreadParams &params, const gpu::GpuPreferences &gpuPreferences)
-{
-    struct Controller : content::GpuThreadController
-    {
-        Controller(const content::InProcessChildThreadParams &params, const gpu::GpuPreferences &gpuPreferences)
-        {
-            content::BrowserThread::PostTask(
-                content::BrowserThread::UI, FROM_HERE,
-                base::BindOnce(&WebEngineContext::createGpuProcess, params, gpuPreferences));
-        }
-        ~Controller()
-        {
-            content::BrowserThread::PostTask(
-                content::BrowserThread::UI, FROM_HERE,
-                base::BindOnce(&WebEngineContext::destroyGpuProcess));
-        }
-    };
-    return std::make_unique<Controller>(params, gpuPreferences);
-}
-
-// static
-void WebEngineContext::createGpuProcess(
-    const content::InProcessChildThreadParams &params, const gpu::GpuPreferences &gpuPreferences)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    WebEngineContext *context = current();
-    if (!context || context->m_gpuProcessDestroyed)
-        return;
-
-    context->m_gpuProcess = std::make_unique<content::GpuProcess>(base::ThreadPriority::NORMAL);
-    auto gpuInit = std::make_unique<gpu::GpuInit>();
-    gpuInit->InitializeInProcess(base::CommandLine::ForCurrentProcess(), gpuPreferences);
-    auto childThread = new content::GpuChildThread(params, std::move(gpuInit));
-    childThread->Init(base::Time::Now());
-    context->m_gpuProcess->set_main_thread(childThread);
-}
-
-// static
-void WebEngineContext::destroyGpuProcess()
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    WebEngineContext *context = current();
-    if (!context)
-        return;
-
-    // viz::GpuServiceImpl::~GpuServiceImpl waits for io task.
-    base::ScopedAllowBaseSyncPrimitivesForTesting allow;
-    context->m_gpuProcess.reset();
-    context->m_gpuProcessDestroyed = true;
-}
 
 } // namespace

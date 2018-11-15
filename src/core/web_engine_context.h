@@ -100,10 +100,7 @@ private:
     WebEngineContext();
     ~WebEngineContext();
 
-    static std::unique_ptr<content::GpuThreadController> createGpuThreadController(
-        const content::InProcessChildThreadParams &params, const gpu::GpuPreferences &gpuPreferences);
-    static void createGpuProcess(
-        const content::InProcessChildThreadParams &params, const gpu::GpuPreferences &gpuPreferences);
+    static void registerMainThreadFactories(bool threaded);
     static void destroyGpuProcess();
 
     std::unique_ptr<base::RunLoop> m_runLoop;
@@ -113,8 +110,6 @@ private:
     std::unique_ptr<QObject> m_globalQObject;
     std::unique_ptr<ProfileAdapter> m_defaultProfileAdapter;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
-    std::unique_ptr<content::GpuProcess> m_gpuProcess;
-    bool m_gpuProcessDestroyed = false;
     QVector<ProfileAdapter*> m_profileAdapters;
 
 #if QT_CONFIG(webengine_printing_and_pdf)
