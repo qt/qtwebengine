@@ -23,7 +23,8 @@ gn_args += \
 
 !win32: gn_args += \
     use_jumbo_build=true \
-    jumbo_file_merge_limit=8
+    jumbo_file_merge_limit=8 \
+    jumbo_build_excluded="[\"browser\"]"
 
 qtConfig(webengine-printing-and-pdf) {
     gn_args += enable_basic_printing=true enable_print_preview=true
