@@ -213,8 +213,9 @@ void ContentRendererClientQt::PrepareErrorPageForHttpStatusError(content::Render
                                       errorHtml, errorDescription);
 }
 
-void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderFrame */*renderFrame*/, const blink::WebURLRequest &failedRequest, const error_page::Error &error, std::string *errorHtml, base::string16 *errorDescription)
+void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderFrame *renderFrame, const blink::WebURLRequest &failedRequest, const error_page::Error &error, std::string *errorHtml, base::string16 *errorDescription)
 {
+    Q_UNUSED(renderFrame)
     const bool isPost = QByteArray::fromStdString(failedRequest.HttpMethod().Utf8()) == QByteArrayLiteral("POST");
 
     if (errorHtml) {
@@ -424,8 +425,6 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
         return;
     }
 
-    media::SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
-
     // Codecs and encryption schemes.
     auto codecs =
         GetSupportedCodecs(capability->video_codecs, /*is_secure=*/false);
@@ -452,8 +451,6 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
         return;
     }
 
-    bool cdm_supports_persistent_license =
-            base::ContainsValue(capability->session_types, media::CdmSessionType::kPersistentLicense);
     auto persistent_license_support = media::EmeSessionTypeSupport::NOT_SUPPORTED;
     auto persistent_usage_record_support = media::EmeSessionTypeSupport::NOT_SUPPORTED;
 

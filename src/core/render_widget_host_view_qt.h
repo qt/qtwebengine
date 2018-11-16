@@ -112,6 +112,7 @@ public:
     RenderWidgetHostViewQtDelegate *delegate() { return m_delegate.get(); }
     void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
+    void OnBeginFrame(base::TimeTicks frame_time);
 
     void InitAsChild(gfx::NativeView) override;
     void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) override;
@@ -124,6 +125,9 @@ public:
     void Focus() override;
     bool HasFocus() const override;
     bool IsSurfaceAvailableForCopy() const override;
+    void CopyFromSurface(const gfx::Rect &src_rect,
+                         const gfx::Size &output_size,
+                         base::OnceCallback<void(const SkBitmap &)> callback) override;
     void Show() override;
     void Hide() override;
     bool IsShowing() override;

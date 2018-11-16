@@ -183,16 +183,15 @@ RenderWidgetHostViewQtDelegateWidget::~RenderWidgetHostViewQtDelegateWidget()
 
 void RenderWidgetHostViewQtDelegateWidget::connectRemoveParentBeforeParentDelete()
 {
-    if (QWidget *parent = parentWidget())
-        connect(parent, &QObject::destroyed,
-                this, &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
-}
+    disconnect(m_parentDestroyedConnection);
 
-void RenderWidgetHostViewQtDelegateWidget::disconnectRemoveParentBeforeParentDelete()
-{
-    if (QWidget *parent = parentWidget())
-        disconnect(parent, &QObject::destroyed,
-                   this, &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
+    if (QWidget *parent = parentWidget()) {
+        m_parentDestroyedConnection = connect(parent, &QObject::destroyed,
+                                              this,
+                                              &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
+    } else {
+        m_parentDestroyedConnection = QMetaObject::Connection();
+    }
 }
 
 void RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete()
@@ -417,15 +416,21 @@ void RenderWidgetHostViewQtDelegateWidget::hideEvent(QHideEvent *event)
     m_client->notifyHidden();
 }
 
+bool RenderWidgetHostViewQtDelegateWidget::copySurface(const QRect &rect, const QSize &size, QImage &image)
+{
+    QPixmap pixmap = rect.isEmpty() ? QQuickWidget::grab(QQuickWidget::rect()) : QQuickWidget::grab(rect);
+    if (pixmap.isNull())
+        return false;
+    image = pixmap.toImage().scaled(size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    return true;
+}
+
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
     bool handled = false;
 
     // Track parent to make sure we don't get deleted.
     switch (event->type()) {
-    case QEvent::ParentAboutToChange:
-        disconnectRemoveParentBeforeParentDelete();
-        break;
     case QEvent::ParentChange:
         connectRemoveParentBeforeParentDelete();
         break;

@@ -53,6 +53,7 @@
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setOrganizationName("QtExamples");
     QApplication app(argc, argv);
 
     WebView view;

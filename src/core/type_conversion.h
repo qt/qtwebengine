@@ -194,6 +194,8 @@ inline QImage toQImage(const SkBitmap &bitmap, QImage::Format format)
 
 QImage toQImage(const SkBitmap &bitmap);
 QImage toQImage(const gfx::ImageSkiaRep &imageSkiaRep);
+SkBitmap toSkBitmap(const QImage &image);
+
 QIcon toQIcon(const std::vector<SkBitmap> &bitmaps);
 
 inline QMatrix4x4 toQt(const SkMatrix44 &m)
