@@ -1844,6 +1844,7 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
         break;
     case Stop:
         text = tr("Stop");
+        iconName = QStringLiteral("process-stop");
         break;
     case Reload:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Reload);
@@ -1851,28 +1852,35 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
         break;
     case ReloadAndBypassCache:
         text = tr("Reload and Bypass Cache");
+        iconName = QStringLiteral("view-refresh");
         break;
     case Cut:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Cut);
-        iconName = QStringLiteral("Cut");
+        iconName = QStringLiteral("edit-cut");
         break;
     case Copy:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Copy);
+        iconName = QStringLiteral("edit-copy");
         break;
     case Paste:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Paste);
+        iconName = QStringLiteral("edit-paste");
         break;
     case Undo:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Undo);
+        iconName = QStringLiteral("edit-undo");
         break;
     case Redo:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::Redo);
+        iconName = QStringLiteral("edit-redo");
         break;
     case SelectAll:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::SelectAll);
+        iconName = QStringLiteral("edit-select-all");
         break;
     case PasteAndMatchStyle:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::PasteAndMatchStyle);
+        iconName = QStringLiteral("edit-paste");
         break;
     case OpenLinkInThisWindow:
         text = tr("Open link in this window");
@@ -1909,9 +1917,11 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
         break;
     case ToggleMediaPlayPause:
         text = tr("Toggle Play/Pause");
+        iconName = QStringLiteral("media-playback-start");
         break;
     case ToggleMediaMute:
         text = tr("Toggle Mute");
+        iconName = QStringLiteral("audio-volume-muted");
         break;
     case DownloadMediaToDisk:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::DownloadMediaToDisk);
@@ -1921,31 +1931,38 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
         break;
     case ExitFullScreen:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ExitFullScreen);
+        iconName = QStringLiteral("view-fullscreen");
         break;
     case RequestClose:
         text = tr("Close Page");
+        iconName = QStringLiteral("window-close");
         break;
     case Unselect:
         text = tr("Unselect");
+        iconName = QStringLiteral("edit-select-none");
         break;
     case SavePage:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::SavePage);
+        iconName = QStringLiteral("document-save");
         break;
     case ViewSource:
         text = RenderViewContextMenuQt::getMenuItemName(RenderViewContextMenuQt::ContextMenuItem::ViewSource);
-        iconName = QStringLiteral("view-source");
         break;
     case ToggleBold:
         text = tr("&Bold");
+        iconName = QStringLiteral("format-text-bold");
         break;
     case ToggleItalic:
         text = tr("&Italic");
+        iconName = QStringLiteral("format-text-italic");
         break;
     case ToggleUnderline:
         text = tr("&Underline");
+        iconName = QStringLiteral("format-text-underline");
         break;
     case ToggleStrikethrough:
         text = tr("&Strikethrough");
+        iconName = QStringLiteral("format-text-strikethrough");
         break;
     case AlignLeft:
         text = tr("Align &Left");
@@ -1961,9 +1978,11 @@ QQuickWebEngineAction *QQuickWebEngineView::action(WebAction action)
         break;
     case Indent:
         text = tr("&Indent");
+        iconName = QStringLiteral("format-indent-more");
         break;
     case Outdent:
         text = tr("&Outdent");
+        iconName = QStringLiteral("format-indent-less");
         break;
     case InsertOrderedList:
         text = tr("Insert &Ordered List");

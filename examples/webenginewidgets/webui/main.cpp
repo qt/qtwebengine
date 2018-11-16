@@ -57,6 +57,7 @@
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setOrganizationName("QtExamples");
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     WebUiHandler::registerUrlScheme();

@@ -82,6 +82,7 @@ public:
     void setInputMethodHints(Qt::InputMethodHints) override { }
     // The QtQuick view doesn't have a backbuffer of its own and doesn't need this
     void setClearColor(const QColor &) override { }
+    bool copySurface(const QRect &rect, const QSize &size, QImage &image) override;
 
 protected:
     bool event(QEvent *event) override;
@@ -113,7 +114,7 @@ private:
     QList<QMetaObject::Connection> m_windowConnections;
     bool m_isPopup;
     bool m_isPasswordInput;
-    QPoint m_lastGlobalPos;
+    QPointF m_lastGlobalPos;
     QQuickWebEngineView *m_view = nullptr;
 };
 

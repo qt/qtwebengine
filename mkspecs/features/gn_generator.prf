@@ -208,6 +208,18 @@ GN_CONTENTS += "  if (!defined(deps)) {"\
     GN_CONTENTS += "  ]"
 }
 
+# Remove the default no_rtti config for our own cpp files, thus leaving the decision
+# to the compiler's defaults. This is consistent with how qtbase does it.
+# Unless the user explicitly configured Qt with a different RTTI setting.
+# Windows only for now, because macOS (and presumably Linux) does not support
+# partial rtti info (e.g. rtti info present for derived class, but not base class), and the
+# qtbase rtti feature affects only Windows.
+win32 {
+    GN_CONTENTS += "  configs -= [\"//build/config/compiler:no_rtti\"]"
+    CONFIG(rtti_off): GN_CONTENTS += "  configs += [\"//build/config/compiler:no_rtti\"]"
+    CONFIG(rtti): GN_CONTENTS += "  configs += [\"//build/config/compiler:rtti\"]"
+}
+
 GN_CONTENTS += "  if (moc_source_h_files != []) {"
 GN_CONTENTS += "    deps += ["
 GN_CONTENTS += "        \":generate_h_mocs\","

@@ -64,6 +64,7 @@ class CompositorFrameSinkClient;
 namespace QtWebEngineCore {
 
 class CompositorResourceTracker;
+class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 
 // Receives viz::CompositorFrames from child compositors and provides QSGNodes
@@ -87,7 +88,7 @@ class RenderWidgetHostViewQtDelegate;
 class Compositor final : private viz::BeginFrameObserverBase
 {
 public:
-    explicit Compositor();
+    explicit Compositor(RenderWidgetHostViewQt *hostView);
     ~Compositor() override;
 
     void setFrameSinkClient(viz::mojom::CompositorFrameSinkClient *frameSinkClient);
@@ -109,6 +110,7 @@ private:
     viz::CompositorFrame m_pendingFrame;
     base::OnceClosure m_submitCallback;
     std::unique_ptr<CompositorResourceTracker> m_resourceTracker;
+    RenderWidgetHostViewQt *m_view;
     std::unique_ptr<viz::SyntheticBeginFrameSource> m_beginFrameSource;
     viz::mojom::CompositorFrameSinkClient *m_frameSinkClient = nullptr;
     bool m_updatePaintNodeShouldCommit = false;

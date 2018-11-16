@@ -88,6 +88,7 @@ public:
     void inputMethodStateChanged(bool editorVisible, bool passwordInput) override;
     void setInputMethodHints(Qt::InputMethodHints) override;
     void setClearColor(const QColor &color) override;
+    bool copySurface(const QRect &, const QSize &, QImage &) override;
 
 protected:
     bool event(QEvent *event) override;
@@ -101,7 +102,6 @@ protected:
 private slots:
     void onWindowPosChanged();
     void connectRemoveParentBeforeParentDelete();
-    void disconnectRemoveParentBeforeParentDelete();
     void removeParentBeforeParentDelete();
 
 private:
@@ -115,6 +115,7 @@ private:
     QPoint m_lastGlobalPos;
     QList<QMetaObject::Connection> m_windowConnections;
     QWebEnginePage *m_page = nullptr;
+    QMetaObject::Connection m_parentDestroyedConnection;
 };
 
 } // namespace QtWebEngineCore

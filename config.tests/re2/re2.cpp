@@ -30,6 +30,7 @@
 
 int main(int, char **)
 {
-    RE2 re2("dummytest");
+    std::string s("dummytest");
+    RE2 re2(s);
     return 0;
 }

@@ -53,6 +53,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/input_messages.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -260,7 +261,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_sendMotionActionDown(false)
     , m_touchMotionStarted(false)
-    , m_compositor(new Compositor)
+    , m_compositor(new Compositor(this))
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
     , m_imeInProgress(false)
@@ -402,7 +403,18 @@ bool RenderWidgetHostViewQt::HasFocus() const
 
 bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy() const
 {
-    return false;
+    return true;
+}
+
+void RenderWidgetHostViewQt::CopyFromSurface(const gfx::Rect &src_rect,
+                                             const gfx::Size &output_size,
+                                             base::OnceCallback<void(const SkBitmap &)> callback)
+{
+    QImage image;
+    if (m_delegate->copySurface(toQt(src_rect), toQt(output_size), image))
+        std::move(callback).Run(toSkBitmap(image));
+    else
+        std::move(callback).Run(SkBitmap());
 }
 
 void RenderWidgetHostViewQt::Show()
@@ -870,6 +882,13 @@ void RenderWidgetHostViewQt::selectionChanged()
 
 void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
 {
+    if ((gesture.type() == ui::ET_GESTURE_PINCH_BEGIN
+         || gesture.type() == ui::ET_GESTURE_PINCH_UPDATE
+         || gesture.type() == ui::ET_GESTURE_PINCH_END)
+        && !content::IsPinchToZoomEnabled()) {
+        return;
+    }
+
     host()->ForwardGestureEvent(ui::CreateWebGestureEventFromGestureEventData(gesture));
 }
 
@@ -1625,6 +1644,11 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
 void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
 {
     m_compositor->setNeedsBeginFrames(needs_begin_frames);
+}
+
+void RenderWidgetHostViewQt::OnBeginFrame(base::TimeTicks frame_time)
+{
+    host()->ProgressFlingIfNeeded(frame_time);
 }
 
 content::RenderFrameHost *RenderWidgetHostViewQt::getFocusedFrameHost()

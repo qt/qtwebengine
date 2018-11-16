@@ -65,6 +65,7 @@ typedef QGuiApplication Application;
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setOrganizationName("QtExamples");
     Application app(argc, argv);
     QtWebEngine::initialize();
 

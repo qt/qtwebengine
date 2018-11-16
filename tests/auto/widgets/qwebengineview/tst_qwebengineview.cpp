@@ -191,6 +191,7 @@ private Q_SLOTS:
     void visibilityState();
     void jsKeyboardEvent();
     void deletePage();
+    void closeOpenerTab();
 };
 
 // This will be called before the first test function is executed.
@@ -2903,6 +2904,42 @@ void tst_QWebEngineView::deletePage()
     QSignalSpy spy(view.page(), &QWebEnginePage::loadFinished);
     view.page()->load(QStringLiteral("about:blank"));
     QTRY_VERIFY(spy.count());
+}
+
+class TestView : public QWebEngineView {
+    Q_OBJECT
+public:
+    TestView(QWidget *parent = nullptr) : QWebEngineView(parent)
+    {
+    }
+
+    QWebEngineView *createWindow(QWebEnginePage::WebWindowType) override
+    {
+        TestView *view = new TestView(parentWidget());
+        createdWindows.append(view);
+        return view;
+    }
+    QList<TestView *> createdWindows;
+};
+
+void tst_QWebEngineView::closeOpenerTab()
+{
+    QWidget rootWidget;
+    rootWidget.resize(600, 400);
+    auto *testView = new TestView(&rootWidget);
+    testView->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+    QSignalSpy loadFinishedSpy(testView, SIGNAL(loadFinished(bool)));
+    testView->setUrl(QStringLiteral("about:blank"));
+    QTRY_VERIFY(loadFinishedSpy.count());
+    testView->page()->runJavaScript(QStringLiteral("window.open('about:blank','_blank')"));
+    QTRY_COMPARE(testView->createdWindows.size(), 1);
+    auto *newView = testView->createdWindows.at(0);
+    newView->show();
+    rootWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(newView));
+    QVERIFY(newView->focusProxy()->isVisible());
+    delete testView;
+    QVERIFY(newView->focusProxy()->isVisible());
 }
 
 QTEST_MAIN(tst_QWebEngineView)
