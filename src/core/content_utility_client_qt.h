@@ -39,18 +39,23 @@
 
 #ifndef CONTENT_UTILITY_CLIENT_QT_H
 #define CONTENT_UTILITY_CLIENT_QT_H
+
 #include "content/public/utility/content_utility_client.h"
 
 class MashServiceFactory;
 class UtilityMessageHandler;
 
-class ContentUtilityClientQt : public content::ContentUtilityClient {
- public:
-  ContentUtilityClientQt();
-  ~ContentUtilityClientQt() override;
+namespace QtWebEngineCore {
 
-  // content::ContentUtilityClient:
-  void RegisterServices(StaticServiceMap* services) override;
+class ContentUtilityClientQt : public content::ContentUtilityClient {
+public:
+    ContentUtilityClientQt();
+    ~ContentUtilityClientQt() override;
+
+    // content::ContentUtilityClient:
+    void RegisterServices(StaticServiceMap *services) override;
 };
+
+} // namespace
 
 #endif
