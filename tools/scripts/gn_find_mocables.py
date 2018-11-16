@@ -32,10 +32,9 @@ import os
 
 mocables = set()
 includedMocs = set()
-dir = sys.argv[1]
 files = sys.argv[2:]
 
-for f in filter(os.path.isfile, [os.path.join(dir, f) for f in files]):
+for f in filter(os.path.isfile, files):
     inBlockComment = False
     for line in open(f).readlines():
         # Block comments handling

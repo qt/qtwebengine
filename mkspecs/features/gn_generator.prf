@@ -29,12 +29,12 @@ isEmpty(GN_FIND_MOCABLES_SCRIPT): GN_FIND_MOCABLES_SCRIPT = "//build/gn_find_moc
 # MOC SETUP
 
 GN_CONTENTS += "moc_source_h_files = exec_script(\"$$GN_FIND_MOCABLES_SCRIPT\","
-GN_CONTENTS += "  [ \"$$_PRO_FILE_PWD_\","
+GN_CONTENTS += "  ["
 for (headerfile, HEADERS): GN_CONTENTS += "    \"$$GN_SRC_DIR/$$headerfile\","
 GN_CONTENTS += "  ], \"list lines\", [\"$$system_path($$_PRO_FILE_)\"]"\
                ")"
 GN_CONTENTS += "moc_source_cpp_files = exec_script(\"$$GN_FIND_MOCABLES_SCRIPT\","
-GN_CONTENTS += "  [ \"$$_PRO_FILE_PWD_\","
+GN_CONTENTS += "  ["
 for (sourcefile, SOURCES): GN_CONTENTS += "    \"$$GN_SRC_DIR/$$sourcefile\","
 GN_CONTENTS += "  ], \"list lines\", [\"$$system_path($$_PRO_FILE_)\"]"\
                ")"
