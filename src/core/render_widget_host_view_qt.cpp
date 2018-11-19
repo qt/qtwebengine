@@ -1316,14 +1316,9 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
     if (replacementLength > 0)
     {
-        int start = ev->replacementStart();
-
-        if (start >= 0)
-            replacementRange = gfx::Range(start, start + replacementLength);
-        else if (m_surroundingText.length() + start >= 0) {
-            start = m_surroundingText.length() + start;
-            replacementRange = gfx::Range(start, start + replacementLength);
-        }
+        int replacementStart = ev->replacementStart() < 0 ? m_cursorPosition + ev->replacementStart() : ev->replacementStart();
+        if (replacementStart >= 0 && replacementStart < m_surroundingText.length())
+            replacementRange = gfx::Range(replacementStart, replacementStart + replacementLength);
     }
 
     // There are so-far two known cases, when an empty QInputMethodEvent is received.
