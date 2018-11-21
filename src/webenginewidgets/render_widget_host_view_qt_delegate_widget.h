@@ -110,7 +110,6 @@ private:
     RenderWidgetHostViewQtDelegateClient *m_client;
     QScopedPointer<QQuickItem> m_rootItem;
     bool m_isPopup;
-    bool m_isPasswordInput;
     QColor m_clearColor;
     QPoint m_lastGlobalPos;
     QList<QMetaObject::Connection> m_windowConnections;

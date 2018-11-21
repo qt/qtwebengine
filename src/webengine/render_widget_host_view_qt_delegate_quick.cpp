@@ -54,7 +54,6 @@ namespace QtWebEngineCore {
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
     : m_client(client)
     , m_isPopup(isPopup)
-    , m_isPasswordInput(false)
 {
     setFlag(ItemHasContents);
     setAcceptedMouseButtons(Qt::AllButtons);
@@ -206,11 +205,9 @@ void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVis
     if (parentItem())
         parentItem()->setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible && !passwordInput);
 
-    if (qApp->inputMethod()->isVisible() != editorVisible || m_isPasswordInput != passwordInput) {
-        qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
+    qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
+    if (qApp->inputMethod()->isVisible() != editorVisible)
         qApp->inputMethod()->setVisible(editorVisible);
-        m_isPasswordInput = passwordInput;
-    }
 }
 
 bool RenderWidgetHostViewQtDelegateQuick::event(QEvent *event)
