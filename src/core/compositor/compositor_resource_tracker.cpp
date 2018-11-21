@@ -103,7 +103,11 @@ void CompositorResourceTracker::submitResources(const viz::CompositorFrame &fram
 
 void CompositorResourceTracker::commitResources()
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    //
+    // This might be called from a Qt Quick render thread, but the UI thread
+    // will still be blocked for the duration of this call.
+
     DCHECK(m_pendingResourceUpdates == 0);
 
     for (CompositorResource *resource : m_pendingImports)
