@@ -49,6 +49,7 @@
 #include "qquickwebengineaction_p_p.h"
 #include "qquickwebenginehistory_p.h"
 #include "qquickwebenginecertificateerror_p.h"
+#include "qquickwebengineclientcertificateselection_p.h"
 #include "qquickwebenginecontextmenurequest_p.h"
 #include "qquickwebenginedialogrequests_p.h"
 #include "qquickwebenginefaviconprovider_p_p.h"
@@ -299,9 +300,17 @@ void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<Cert
         m_certificateErrorControllers.append(errorController);
 }
 
-void QQuickWebEngineViewPrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &)
+void QQuickWebEngineViewPrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)
 {
-    // Doing nothing will free the select-controller and perform default continue.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineClientCertificateSelection *certSelection = new QQuickWebEngineClientCertificateSelection(controller);
+    // mark the object for gc by creating temporary jsvalue
+    qmlEngine(q)->newQObject(certSelection);
+    Q_EMIT q->selectClientCertificate(certSelection);
+#else
+    Q_UNUSED(controller);
+#endif
 }
 
 void QQuickWebEngineViewPrivate::runGeolocationPermissionRequest(const QUrl &url)

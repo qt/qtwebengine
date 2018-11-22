@@ -41,6 +41,7 @@
 #include <QtWebEngine/QQuickWebEngineProfile>
 
 #include <QtWebEngine/private/qquickwebenginecertificateerror_p.h>
+#include <QtWebEngine/private/qquickwebengineclientcertificateselection_p.h>
 #include <QtWebEngine/private/qquickwebenginecontextmenurequest_p.h>
 #include <QtWebEngine/private/qquickwebenginedialogrequests_p.h>
 #include <QtWebEngine/private/qquickwebenginedownloaditem_p.h>
@@ -90,6 +91,7 @@ public:
         qmlRegisterType<QQuickWebEngineView, 6>(uri, 1, 6, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 7>(uri, 1, 7, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 8>(uri, 1, 8, "WebEngineView");
+        qmlRegisterType<QQuickWebEngineView, 9>(uri, 1, 9, "WebEngineView");
         qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 1>(uri, 1, 2, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 2>(uri, 1, 3, "WebEngineProfile");
@@ -153,6 +155,11 @@ public:
         qmlRegisterUncreatableType<QWebEngineRegisterProtocolHandlerRequest>(uri, 1, 7, "RegisterProtocolHandlerRequest",
                                                                              msgUncreatableType("RegisterProtocolHandlerRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineAction>(uri, 1, 8, "WebEngineAction", msgUncreatableType("WebEngineAction"));
+        qmlRegisterUncreatableType<QQuickWebEngineClientCertificateSelection>(uri, 1, 9, "WebEngineClientCertificateSelection",
+            tr("Cannot create a separate instance of WebEngineClientCertificateSelection"));
+        qmlRegisterUncreatableType<QQuickWebEngineClientCertificateOption>(uri, 1, 9, "WebEngineClientCertificateOption",
+            tr("Cannot create a separate instance of WebEngineClientCertificateOption"));
+
     }
 
 private:

@@ -83,6 +83,7 @@ public:
 #if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     void selectNone();
     void select(const QSslCertificate &certificate);
+    void select(int index);
 
     QVector<QSslCertificate> certificates() const;
 #endif
@@ -91,6 +92,7 @@ private:
     QUrl m_hostAndPort;
     std::vector<std::unique_ptr<net::ClientCertIdentity>> m_clientCerts;
     std::unique_ptr<content::ClientCertificateDelegate> m_delegate;
+    mutable QVector<QSslCertificate> m_certificates;
     bool m_selected;
 };
 

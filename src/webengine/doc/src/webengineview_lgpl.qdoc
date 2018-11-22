@@ -1475,3 +1475,19 @@
 
     \sa printToPdf
 */
+
+/*!
+    \qmlsignal WebEngineView::selectClientCertificate(WebEngineClientCertificateSelection clientCertificateSelection)
+    \since QtWebEngine 1.9
+
+    This signal is emitted when a web site requests an SSL client certificate, and one or more were
+    found in the system's client certificate store.
+
+    Handling the signal is asynchronous, and loading will be waiting until a certificate is selected,
+    or the last copy of \a clientCertificateSelection is destroyed.
+
+    If the signal is not handled, \a clientCertificateSelection is automatically destroyed, and loading
+    will continue without a client certificate.
+
+    \sa WebEngineClientCertificateSelection
+*/

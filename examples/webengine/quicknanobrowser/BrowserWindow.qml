@@ -57,7 +57,7 @@ import QtQuick.Controls.Styles 1.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 import QtQuick.Window 2.1
-import QtWebEngine 1.7
+import QtWebEngine 1.9
 
 ApplicationWindow {
     id: browserWindow
@@ -488,6 +488,10 @@ ApplicationWindow {
                         browserWindow.close();
                     else
                         tabs.removeTab(tabs.currentIndex);
+                }
+
+                onSelectClientCertificate: function(selection) {
+                    selection.certificates[0].select();
                 }
 
                 Timer {

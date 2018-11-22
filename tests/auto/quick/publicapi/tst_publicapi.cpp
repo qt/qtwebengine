@@ -40,6 +40,7 @@
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebenginecertificateerror_p.h>
+#include <private/qquickwebengineclientcertificateselection_p.h>
 #include <private/qquickwebenginedialogrequests_p.h>
 #include <private/qquickwebenginedownloaditem_p.h>
 #include <private/qquickwebenginehistory_p.h>
@@ -60,6 +61,8 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineView::staticMetaObject
     << &QQuickWebEngineAction::staticMetaObject
     << &QQuickWebEngineCertificateError::staticMetaObject
+    << &QQuickWebEngineClientCertificateOption::staticMetaObject
+    << &QQuickWebEngineClientCertificateSelection::staticMetaObject
     << &QQuickWebEngineDownloadItem::staticMetaObject
     << &QQuickWebEngineHistory::staticMetaObject
     << &QQuickWebEngineHistoryListModel::staticMetaObject
@@ -86,6 +89,8 @@ static QList<const char *> knownEnumNames = QList<const char *>();
 static const QStringList hardcodedTypes = QStringList()
     << "QJSValue"
     << "QQmlListProperty<QQuickWebEngineScript>"
+    << "QQmlListProperty<QQuickWebEngineClientCertificateOption>"
+    << "const QQuickWebEngineClientCertificateOption*"
     << "QQmlWebChannel*"
     // Ignore the testSupport types without making a fuss.
     << "QQuickWebEngineTestSupport*"
