@@ -783,7 +783,7 @@ void tst_QQuickWebEngineView::inputMethodHints()
     QVERIFY(view->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
     query = QInputMethodQueryEvent(Qt::ImHints);
     QGuiApplication::sendEvent(input, &query);
-    QTRY_COMPARE(Qt::InputMethodHints(query.value(Qt::ImHints).toUInt()), Qt::ImhPreferLowercase | Qt::ImhMultiLine);
+    QTRY_COMPARE(Qt::InputMethodHints(query.value(Qt::ImHints).toUInt()), Qt::ImhPreferLowercase | Qt::ImhNoPredictiveText | Qt::ImhMultiLine);
 }
 
 void tst_QQuickWebEngineView::setZoomFactor()

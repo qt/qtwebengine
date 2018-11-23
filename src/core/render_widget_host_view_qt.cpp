@@ -754,7 +754,7 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
     }
 
     ui::TextInputType type = getTextInputType();
-    m_delegate->setInputMethodHints(toQtInputMethodHints(getTextInputType()));
+    m_delegate->setInputMethodHints(toQtInputMethodHints(getTextInputType()) | Qt::ImhNoPredictiveText);
 
     m_surroundingText = QString::fromStdString(state->value);
     // Remove IME composition text from the surrounding text
@@ -1112,7 +1112,7 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
         // TODO: Implement this
         return QVariant(); // No limit.
     case Qt::ImHints:
-        return int(toQtInputMethodHints(getTextInputType()));
+        return int(toQtInputMethodHints(getTextInputType()) | Qt::ImhNoPredictiveText);
     default:
         return QVariant();
     }
