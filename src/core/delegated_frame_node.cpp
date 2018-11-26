@@ -101,6 +101,10 @@
 #define GL_TEXTURE_RECTANGLE              0x84F5
 #endif
 
+#ifndef GL_NEAREST
+#define GL_NEAREST                        0x2600
+#endif
+
 #ifndef GL_LINEAR
 #define GL_LINEAR                         0x2601
 #endif
@@ -642,7 +646,18 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
             Q_UNREACHABLE();
 #endif
         }
-        texture->setFiltering(m_resource.filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
+        if (m_resource.filter == GL_NEAREST)
+            texture->setFiltering(QSGTexture::Nearest);
+        else if (m_resource.filter == GL_LINEAR)
+            texture->setFiltering(QSGTexture::Linear);
+        else {
+            // Depends on qtdeclarative fix, see QTBUG-71322
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 1)
+            texture->setFiltering(QSGTexture::Linear);
+#else
+            texture->setFiltering(QSGTexture::Nearest);
+#endif
+        }
         m_texture = texture;
     }
     // All quads using a resource should request the same blending state.
