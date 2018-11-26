@@ -28,7 +28,8 @@
 
 import QtQuick 2.0
 import QtTest 1.0
-import QtWebEngine 1.5
+import QtWebEngine 1.9
+import Qt.labs.platform 1.0
 
 TestWebEngineView {
     id: webEngineView
@@ -41,6 +42,12 @@ TestWebEngineView {
     property bool cancelDownload: false
     property var downloadState: []
     property var downloadInterruptReason: null
+
+    function urlToPath(url) {
+        var path = url.toString()
+        path = path.replace(/^(file:\/{2})/,"")
+        return path
+    }
 
     SignalSpy {
         id: downLoadRequestedSpy
@@ -134,6 +141,17 @@ TestWebEngineView {
             compare(downloadFinishedSpy.count, 1)
             tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadCancelled)
             tryCompare(webEngineView, "downloadInterruptReason", WebEngineDownloadItem.UserCanceled)
+        }
+
+        function test_downloadLocation() {
+            var tmpPath = urlToPath(StandardPaths.writableLocation(StandardPaths.TempLocation));
+            var downloadPath = urlToPath(StandardPaths.writableLocation(StandardPaths.DownloadLocation));
+
+            testDownloadProfile.downloadPath = tmpPath;
+            compare(testDownloadProfile.downloadPath, tmpPath);
+
+            testDownloadProfile.downloadPath = downloadPath;
+            compare(testDownloadProfile.downloadPath, downloadPath);
         }
     }
 }

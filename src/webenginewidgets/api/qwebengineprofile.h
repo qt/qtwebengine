@@ -131,6 +131,9 @@ public:
     void setUseForGlobalCertificateVerification();
     bool isUsedForGlobalCertificateVerification() const;
 
+    QString downloadPath() const;
+    void setDownloadPath(const QString &path);
+
     static QWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:

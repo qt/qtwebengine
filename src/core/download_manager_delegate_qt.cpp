@@ -164,7 +164,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
             suggestedFilename += QStringLiteral(".") + mimeType.preferredSuffix();
     }
 
-    QDir defaultDownloadDirectory = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    QDir defaultDownloadDirectory(m_profileAdapter->downloadPath());
 
     QFileInfo suggestedFile(defaultDownloadDirectory.absoluteFilePath(suggestedFilename));
     QString suggestedFilePath = suggestedFile.absoluteFilePath();

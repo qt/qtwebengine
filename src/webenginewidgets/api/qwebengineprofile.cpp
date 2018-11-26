@@ -359,6 +359,34 @@ void QWebEngineProfile::setPersistentStoragePath(const QString &path)
 }
 
 /*!
+    \since 5.13
+
+    The path to the location where the downloaded files are stored.
+
+    \note By default, the download path is QStandardPaths::DownloadLocation.
+
+    \sa setDownloadPath(), QStandardPaths::writableLocation()
+*/
+QString QWebEngineProfile::downloadPath() const
+{
+    const Q_D(QWebEngineProfile);
+    return d->profileAdapter()->downloadPath();
+}
+
+/*!
+    Overrides the default path used for download location, setting it to \a path.
+
+    If set to the null string, the default path is restored.
+
+    \sa downloadPath()
+*/
+void QWebEngineProfile::setDownloadPath(const QString &path)
+{
+    Q_D(QWebEngineProfile);
+    d->profileAdapter()->setDownloadPath(path);
+}
+
+/*!
     Returns the path used for caches.
 
     By default, this is below StandardPaths::CacheLocation in a QtWebengine/StorageName specific

@@ -84,6 +84,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
     , m_pageRequestInterceptors(0)
+    , m_downloadPath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation))
 {
     WebEngineContext::current()->addProfileAdapter(this);
     // creation of profile requires webengine context
@@ -251,6 +252,11 @@ void ProfileAdapter::setDataPath(const QString &path)
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
+}
+
+void ProfileAdapter::setDownloadPath(const QString &path)
+{
+    m_downloadPath = path.isEmpty() ? QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) : path;
 }
 
 QString ProfileAdapter::cachePath() const

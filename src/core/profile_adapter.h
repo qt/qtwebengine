@@ -113,6 +113,9 @@ public:
     QString dataPath() const;
     void setDataPath(const QString &path);
 
+    QString downloadPath() const { return m_downloadPath; }
+    void setDownloadPath(const QString &path);
+
     QString cachePath() const;
     void setCachePath(const QString &path);
 
@@ -211,6 +214,7 @@ private:
     QPointer<QWebEngineUrlRequestInterceptor> m_requestInterceptor;
 
     QString m_dataPath;
+    QString m_downloadPath;
     QString m_cachePath;
     QString m_httpUserAgent;
     HttpCacheType m_httpCacheType;

@@ -850,6 +850,47 @@ bool QQuickWebEngineProfile::isUsedForGlobalCertificateVerification() const
 }
 
 /*!
+    \qmlproperty string WebEngineProfile::downloadPath
+    \since  QtWebEngine 1.9
+
+    The path to the location where the downloaded files are stored.
+
+    Overrides the default path used for download location.
+
+    If set to the null string, the default path is restored.
+
+    \note By default, the download path is QStandardPaths::DownloadLocation.
+*/
+
+/*!
+    \property QQuickWebEngineProfile::downloadPath
+    \since QtWebEngine 1.9
+
+    The path to the location where the downloaded files are stored.
+
+    Overrides the default path used for download location, setting it to \a path.
+
+    If set to the null string, the default path is restored.
+
+    \note By default, the download path is QStandardPaths::DownloadLocation.
+*/
+
+void QQuickWebEngineProfile::setDownloadPath(const QString &path)
+{
+    Q_D(QQuickWebEngineProfile);
+    if (downloadPath() == path)
+        return;
+    d->profileAdapter()->setDownloadPath(path);
+    emit downloadPathChanged();
+}
+
+QString QQuickWebEngineProfile::downloadPath() const
+{
+    const Q_D(QQuickWebEngineProfile);
+    return d->profileAdapter()->downloadPath();
+}
+
+/*!
 
     Returns the cookie store for this profile.
 */

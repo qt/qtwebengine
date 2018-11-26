@@ -77,6 +77,7 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineProfile : public QObject {
                WRITE setUseForGlobalCertificateVerification
                NOTIFY useForGlobalCertificateVerificationChanged
                FINAL REVISION 5)
+    Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged FINAL REVISION 5)
 
 public:
     QQuickWebEngineProfile(QObject *parent = Q_NULLPTR);
@@ -145,6 +146,9 @@ public:
     void setUseForGlobalCertificateVerification(bool b);
     bool isUsedForGlobalCertificateVerification() const;
 
+    QString downloadPath() const;
+    void setDownloadPath(const QString &path);
+
     static QQuickWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:
@@ -160,6 +164,7 @@ Q_SIGNALS:
     Q_REVISION(3) void spellCheckLanguagesChanged();
     Q_REVISION(3) void spellCheckEnabledChanged();
     Q_REVISION(5) void useForGlobalCertificateVerificationChanged();
+    Q_REVISION(5) void downloadPathChanged();
 
     void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);
