@@ -58,6 +58,7 @@ class ProxyConfigService;
 class URLRequestContext;
 class URLRequestContextStorage;
 class URLRequestJobFactoryImpl;
+class TransportSecurityPersister;
 }
 
 namespace QtWebEngineCore {
@@ -113,6 +114,7 @@ private:
     std::unique_ptr<net::DhcpPacFileFetcherFactory> m_dhcpPacFileFetcherFactory;
     std::unique_ptr<net::HttpAuthPreferences> m_httpAuthPreferences;
     std::unique_ptr<net::URLRequestJobFactory> m_jobFactory;
+    std::unique_ptr<net::TransportSecurityPersister> m_transportSecurityPersister;
     base::WeakPtr<ProfileIODataQt> m_weakPtr;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
@@ -141,6 +143,7 @@ private:
     bool m_updateUserAgent = false;
     bool m_ignoreCertificateErrors = false;
     base::WeakPtrFactory<ProfileIODataQt> m_weakPtrFactory; // this should be always the last member
+    QString m_dataPath;
     DISALLOW_COPY_AND_ASSIGN(ProfileIODataQt);
 };
 } // namespace QtWebEngineCore
