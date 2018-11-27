@@ -124,8 +124,9 @@ void* GLContextHelper::getEGLDisplay()
 
 void* GLContextHelper::getXDisplay()
 {
-    return qApp->platformNativeInterface()->nativeResourceForScreen(
-                QByteArrayLiteral("display"), qApp->primaryScreen());
+    if (QGuiApplication::platformName() != QLatin1String("xcb"))
+        return nullptr;
+    return qApp->platformNativeInterface()->nativeResourceForScreen(QByteArrayLiteral("display"), qApp->primaryScreen());
 }
 
 void* GLContextHelper::getNativeDisplay()
