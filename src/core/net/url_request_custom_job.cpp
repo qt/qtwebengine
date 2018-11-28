@@ -84,6 +84,7 @@ void URLRequestCustomJob::Start()
 void URLRequestCustomJob::Kill()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    m_proxy->m_job = nullptr;
     if (m_device && m_device->isOpen())
         m_device->close();
     if (m_pendingReadBuffer) {

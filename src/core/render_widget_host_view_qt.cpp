@@ -54,6 +54,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/input_messages.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -274,6 +275,9 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_wheelAckPending(false)
     , m_pendingResize(false)
     , m_mouseWheelPhaseHandler(this)
+    // This frame-sink id is based on what RenderWidgetHostViewChildFrame does:
+    , m_frameSinkId(base::checked_cast<uint32_t>(widget->GetProcess()->GetID()),
+                    base::checked_cast<uint32_t>(widget->GetRoutingID()))
 {
     host()->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
@@ -291,6 +295,9 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     m_imeHasHiddenTextCapability = context && context->hasCapability(QPlatformInputContext::HiddenTextCapability);
 
     m_localSurfaceId = m_localSurfaceIdAllocator.GenerateId();
+
+    if (host()->delegate() && host()->delegate()->GetInputEventRouter())
+        host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(GetFrameSinkId(), this);
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
@@ -1310,14 +1317,9 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
     if (replacementLength > 0)
     {
-        int start = ev->replacementStart();
-
-        if (start >= 0)
-            replacementRange = gfx::Range(start, start + replacementLength);
-        else if (m_surroundingText.length() + start >= 0) {
-            start = m_surroundingText.length() + start;
-            replacementRange = gfx::Range(start, start + replacementLength);
-        }
+        int replacementStart = ev->replacementStart() < 0 ? m_cursorPosition + ev->replacementStart() : ev->replacementStart();
+        if (replacementStart >= 0 && replacementStart < m_surroundingText.length())
+            replacementRange = gfx::Range(replacementStart, replacementStart + replacementLength);
     }
 
     // There are so-far two known cases, when an empty QInputMethodEvent is received.
@@ -1683,7 +1685,7 @@ viz::SurfaceId RenderWidgetHostViewQt::GetCurrentSurfaceId() const
 
 const viz::FrameSinkId &RenderWidgetHostViewQt::GetFrameSinkId() const
 {
-    return viz::FrameSinkIdAllocator::InvalidFrameSinkId();
+    return m_frameSinkId;
 }
 
 const viz::LocalSurfaceId &RenderWidgetHostViewQt::GetLocalSurfaceId() const

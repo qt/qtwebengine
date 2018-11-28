@@ -42,19 +42,20 @@
 #include "content/public/utility/utility_thread.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"
 
-ContentUtilityClientQt::ContentUtilityClientQt() {
+namespace QtWebEngineCore {
+
+ContentUtilityClientQt::ContentUtilityClientQt()
+{
 }
 
 ContentUtilityClientQt::~ContentUtilityClientQt() = default;
 
-
-void ContentUtilityClientQt::RegisterServices(
-    ContentUtilityClient::StaticServiceMap* services) {
-  service_manager::EmbeddedServiceInfo proxy_resolver_info;
-  proxy_resolver_info.task_runner =
-      content::ChildThread::Get()->GetIOTaskRunner();
-  proxy_resolver_info.factory =
-      base::Bind(&proxy_resolver::ProxyResolverService::CreateService);
-  services->emplace(proxy_resolver::mojom::kProxyResolverServiceName,
-                    proxy_resolver_info);
+void ContentUtilityClientQt::RegisterServices(ContentUtilityClient::StaticServiceMap *services)
+{
+    service_manager::EmbeddedServiceInfo proxy_resolver_info;
+    proxy_resolver_info.task_runner = content::ChildThread::Get()->GetIOTaskRunner();
+    proxy_resolver_info.factory = base::BindRepeating(&proxy_resolver::ProxyResolverService::CreateService);
+    services->emplace(proxy_resolver::mojom::kProxyResolverServiceName, proxy_resolver_info);
 }
+
+} // namespace

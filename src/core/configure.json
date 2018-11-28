@@ -328,6 +328,10 @@
         "webengine-win-compiler64": {
             "label": "64bit compiler",
             "type": "isWindowsHostCompiler64"
+        },
+        "webengine-arm-thumb" : {
+            "label": "thumb instruction set",
+            "type": "hasThumbFlag"
         }
     },
 
@@ -658,7 +662,11 @@
         "webengine-win-compiler64": {
             "label": "64bit compiler",
             "condition": "config.win32 && tests.webengine-win-compiler64",
-            "type": "isWindowsHostCompiler64",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-arm-thumb": {
+            "label": "Thumb instruction set",
+            "condition": "config.linux && features.webengine-embedded-build && arch.arm && tests.webengine-arm-thumb",
             "output": [ "privateFeature" ]
         }
     },
@@ -698,6 +706,11 @@
             "type": "warning",
             "condition": "config.win32 && !features.webengine-win-compiler64",
             "message": "64-bit cross-building or native toolchain is required to build QtWebEngine."
+        },
+        {
+            "type": "warning",
+            "condition": "config.linux && features.webengine-embedded-build && !features.webengine-system-ffmpeg && arch.arm && !features.webengine-arm-thumb",
+            "message": "Thumb instruction set is required to build ffmpeg for QtWebEngine."
         }
     ],
 

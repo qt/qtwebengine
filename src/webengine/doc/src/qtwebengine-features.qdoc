@@ -36,6 +36,7 @@
     \list
         \li \l{Audio and Video Codecs}
         \li \l{Chromium DevTools}
+        \li \l{Client Certificates}
         \li \l{Drag and Drop}
         \li \l{Fullscreen}
         \li \l{HTML5 DRM}
@@ -110,6 +111,23 @@
     {WebEngineView.inspectedView}.
 
     For more information, see \l {Qt WebEngine Debugging and Profiling}.
+
+    \section1 Client Certificates
+
+    Some web servers, in particular many intranet sites, require the client to
+    authenticate itself with a certificate, called a \e {client certificate}. Qt WebEngine
+    will read the client certificates installed in the system settings in macOS and
+    Windows, and on Linux those installed into the NSS database. Certificates can
+    be installed into the NSS database using the \c pk12util tool.
+
+    By default, QtWebEngine will not offer any client certificates to servers, as doing
+    so uniquely identifies the user and might violate privacy expectations.
+
+    To activate support for client certificates, an application needs to listen to
+    the QWebEnginePage::selectClientCertificate signal and select one of the offered
+    certificates. For applications that can navigate to untrusted web sites, it is
+    recommended to always give the user a choice before uniquely identifying them
+    to a remote server.
 
     \section1 Custom Schemes
 

@@ -2292,6 +2292,48 @@ void tst_QWebEngineView::imeComposition()
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 15);
     QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
     QCOMPARE(selectionChangedSpy.count(), 2);
+    selectionChangedSpy.clear();
+
+
+    // 5. Mimic behavior of QtVirtualKeyboard with enabled text prediction.
+    evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value='QtWebEngine';");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("QtWebEngine"));
+
+    // Move cursor into position.
+    QTest::keyClick(view.focusProxy(), Qt::Key_Home);
+    for (int j = 0; j < 2; ++j)
+        QTest::keyClick(view.focusProxy(), Qt::Key_Right);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 2);
+
+    // Turn text into composition by using negative start position.
+    {
+        int replaceFrom = -1 * view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt();
+        int replaceLength = view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString().size();
+
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("QtWebEngine", attributes);
+        event.setCommitString(QString(), replaceFrom, replaceLength);
+        QApplication::sendEvent(view.focusProxy(), &event);
+    }
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString(""));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 11);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("QtWebEngine"));
+
+    // Commit.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event(QString(), attributes);
+        event.setCommitString("QtWebEngine", 0, 0);
+        QApplication::sendEvent(view.focusProxy(), &event);
+    }
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 11);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("QtWebEngine"));
+    QCOMPARE(selectionChangedSpy.count(), 0);
 }
 
 void tst_QWebEngineView::newlineInTextarea()

@@ -66,6 +66,10 @@
 #include <QOpenGLContext>
 #endif
 
+#if defined(OS_MACOSX)
+#include "ui/base/idle/idle.h"
+#endif
+
 #if defined(Q_OS_WIN)
 #include "ui/display/win/screen_win.h"
 #else
@@ -261,6 +265,11 @@ void BrowserMainPartsQt::PostMainMessageLoopRun()
 int BrowserMainPartsQt::PreCreateThreads()
 {
     base::ThreadRestrictions::SetIOAllowed(true);
+
+#if defined(OS_MACOSX)
+    ui::InitIdleMonitor();
+#endif
+
     // Like ChromeBrowserMainExtraPartsViews::PreCreateThreads does.
 #if defined(Q_OS_WIN)
     display::Screen::SetScreenInstance(new display::win::ScreenWin);
