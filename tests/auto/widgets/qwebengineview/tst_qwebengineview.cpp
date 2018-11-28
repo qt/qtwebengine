@@ -48,7 +48,7 @@
 #include <QtWidgets/qaction.h>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
-    QVERIFY(actual == (expect | Qt::ImhNoPredictiveText));
+    QVERIFY(actual == (expect | Qt::ImhNoPredictiveText | Qt::ImhNoTextHandles | Qt::ImhNoEditMenu));
 
 #define QTRY_COMPARE_WITH_TIMEOUT_FAIL_BLOCK(__expr, __expected, __timeout, __fail_block) \
 do { \
