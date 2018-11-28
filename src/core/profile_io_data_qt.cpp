@@ -171,6 +171,8 @@ ProfileIODataQt::~ProfileIODataQt()
 {
     if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::IO))
         DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    if (m_urlRequestContext && m_urlRequestContext->proxy_resolution_service())
+        m_urlRequestContext->proxy_resolution_service()->OnShutdown();
     m_resourceContext.reset();
     if (m_cookieDelegate)
         m_cookieDelegate->setCookieMonster(0); // this will let CookieMonsterDelegateQt be deleted
@@ -263,6 +265,7 @@ void ProfileIODataQt::generateStorage()
 
     // We must stop all requests before deleting their backends.
     if (m_storage) {
+        m_urlRequestContext->proxy_resolution_service()->OnShutdown();
         m_cookieDelegate->setCookieMonster(nullptr);
         m_storage->set_cookie_store(nullptr);
         cancelAllUrlRequests();
