@@ -19,10 +19,10 @@ gn_args += \
 
 qtConfig(webengine-embedded-build) {
     gn_args += is_desktop_linux=false
-    gn_args += use_gold=false
-} else {
-    !use_gold_linker: gn_args += use_gold=false
 }
+
+use_gold_linker: gn_args += use_gold=true
+else: gn_args += use_gold=false
 
 clang {
     clang_full_path = $$which($${QMAKE_CXX})

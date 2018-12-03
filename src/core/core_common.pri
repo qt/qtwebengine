@@ -13,3 +13,7 @@ CONFIG -= ltcg
 
 # Chromium requires C++14
 CONFIG += c++14
+
+#QTBUG-73216 ci has to be updated with latest yocto
+boot2qt: CONFIG -= use_gold_linker
+
