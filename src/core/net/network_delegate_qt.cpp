@@ -225,7 +225,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
 
     const QUrl qUrl = toQt(request->url());
 
-    QWebEngineUrlRequestInterceptor* interceptor = m_profileIOData->requestInterceptor();
+    QWebEngineUrlRequestInterceptor* interceptor = m_profileIOData->acquireInterceptor();
     if (interceptor) {
         QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(toQt(resourceType),
                                                                                            toQt(navigationType),
@@ -234,6 +234,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
                                                                                            QByteArray::fromStdString(request->method()));
         QWebEngineUrlRequestInfo requestInfo(infoPrivate);
         interceptor->interceptRequest(requestInfo);
+        m_profileIOData->releaseInterceptor();
         if (requestInfo.changed()) {
             int result = infoPrivate->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
 
@@ -249,7 +250,8 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
             if (result != net::OK)
                 return result;
         }
-    }
+    } else
+        m_profileIOData->releaseInterceptor();
 
     if (!resourceInfo)
         return net::OK;
