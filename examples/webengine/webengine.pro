@@ -3,7 +3,8 @@ TEMPLATE=subdirs
 SUBDIRS += \
     customdialogs \
     minimal \
-    quicknanobrowser
+    quicknanobrowser \
+    webengineaction
 
 qtHaveModule(quickcontrols2) {
     SUBDIRS += \

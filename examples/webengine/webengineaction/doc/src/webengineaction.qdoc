@@ -1,0 +1,68 @@
+/****************************************************************************
+**
+** Copyright (C) 2018 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example webengine/webengineaction
+    \title WebEngine Action Example
+    \ingroup webengine-examples
+    \brief A simple browser implemented using WebEngineActions.
+
+    \image webengineaction-example.png
+
+    \e {WebEngine Action Example} demonstrates how to perform actions on a web page
+    using the \l{WebEngineAction} type. It shows the minimum amount of code needed
+    to bind browser functionalities to input elements and build up a custom context
+    menu.
+
+    \include examples-run.qdocinc
+
+    \section1 Working With Web Engine Actions
+
+    An intended use of \l{WebEngineAction} is building a connection between UI
+    elements and browser commands. It can be added to menus and toolbars via
+    assigning its properties to the corresponding ones of the element.
+
+    The \l{ToolButton} relies on the properties provided by a
+    \l{WebEngineAction}. Clicking the button triggers backwards navigation on the
+    originating \l{WebEngineView} of the action.
+
+    \quotefromfile webengine/webengineaction/main.qml
+    \skipto ToolButton {
+    \printuntil }
+
+    The simplest way to create custom context menus is enumerating the required
+    \l{WebEngineAction} types in a data model and instantiating \l{MenuItem} types
+    for them, for example using a \l{Repeater}.
+
+    \quotefromfile webengine/webengineaction/main.qml
+    \skipto property Menu contextMenu: Menu {
+    \printuntil /^ {8}\}/
+
+    Assigning a \l{WebEngineAction} to multiple UI elements will keep them in sync.
+    As it can be seen in the picture above, if the browser engine disables a
+    navigation action, both corresponding menu items will be disabled.
+*/
