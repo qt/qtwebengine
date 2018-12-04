@@ -270,6 +270,8 @@ WebEngineContext *WebEngineContext::current()
         qAddPostRoutine(WebEngineContext::destroyContextPostRoutine);
         // Add a false reference so there is no race between unreferencing m_handle and a global QApplication.
         m_handle->AddRef();
+        // This is need since gpu process start requires sync point manager;
+        m_handle->initialize();
     }
     return m_handle.get();
 }
@@ -329,6 +331,9 @@ WebEngineContext::WebEngineContext()
     : m_mainDelegate(new ContentMainDelegateQt)
     , m_globalQObject(new QObject())
     , m_syncPointManager(new gpu::SyncPointManager())
+{}
+
+void WebEngineContext::initialize()
 {
     base::TaskScheduler::Create("Browser");
     m_contentRunner.reset(content::ContentMainRunner::Create());
