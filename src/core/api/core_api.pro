@@ -32,6 +32,7 @@ gcc: QMAKE_CXXFLAGS_WARN_ON = -Wno-unused-parameter
 HEADERS = \
     qwebenginecallback.h \
     qwebenginecallback_p.h \
+    qwebengineclientcertificatestore.h \
     qtwebenginecoreglobal.h \
     qtwebenginecoreglobal_p.h \
     qwebenginecookiestore.h \

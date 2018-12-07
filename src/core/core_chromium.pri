@@ -48,6 +48,7 @@ SOURCES = \
         browser_message_filter_qt.cpp \
         certificate_error_controller.cpp \
         chromium_overrides.cpp \
+        client_cert_override_key.cpp \
         client_cert_select_controller.cpp \
         clipboard_qt.cpp \
         color_chooser_qt.cpp \
@@ -102,6 +103,7 @@ SOURCES = \
         profile_io_data_qt.cpp \
         quota_permission_context_qt.cpp \
         quota_request_controller_impl.cpp \
+        qwebengineclientcertificatestore.cpp \
         register_protocol_handler_request_controller_impl.cpp \
         render_view_context_menu_qt.cpp \
         render_view_observer_host_qt.cpp \
@@ -141,6 +143,8 @@ HEADERS = \
         certificate_error_controller_p.h \
         certificate_error_controller.h \
         chromium_overrides.h \
+        client_cert_override_key_p.h \
+        client_cert_override_p.h \
         client_cert_select_controller.h \
         clipboard_qt.h \
         color_chooser_qt.h \

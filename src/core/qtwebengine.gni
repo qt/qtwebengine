@@ -9,6 +9,7 @@ chromium_version = exec_script("//build/util/version.py", [ "-f", rebase_path("/
 include_dirs = [
   "//skia/config",
   "//third_party",
+  "//third_party/boringssl/src/include",
   "//third_party/skia/include/core"
 ]
 

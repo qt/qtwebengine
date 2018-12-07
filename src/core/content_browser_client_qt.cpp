@@ -85,6 +85,7 @@
 
 #include "qtwebengine/grit/qt_webengine_resources.h"
 
+#include "client_cert_override_p.h"
 #include "profile_adapter.h"
 #include "browser_main_parts_qt.h"
 #include "browser_message_filter_qt.h"
@@ -111,18 +112,6 @@
 #if defined(Q_OS_LINUX)
 #include "global_descriptors_qt.h"
 #include "ui/base/resource/resource_bundle.h"
-#endif
-
-#if defined(USE_NSS_CERTS)
-#include "net/ssl/client_cert_store_nss.h"
-#endif
-
-#if defined(OS_WIN)
-#include "net/ssl/client_cert_store_win.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "net/ssl/client_cert_store_mac.h"
 #endif
 
 #if QT_CONFIG(webengine_pepper_plugins)
@@ -381,17 +370,8 @@ std::unique_ptr<net::ClientCertStore> ContentBrowserClientQt::CreateClientCertSt
 {
     if (!resource_context)
         return nullptr;
-#if defined(USE_NSS_CERTS)
-    // FIXME: Give it a proper callback for a password delegate.
-    return std::unique_ptr<net::ClientCertStore>(
-                new net::ClientCertStoreNSS(net::ClientCertStoreNSS::PasswordDelegateFactory()));
-#elif defined(OS_WIN)
-    return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
-#elif defined(OS_MACOSX)
-    return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreMac());
-#else
-    return nullptr;
-#endif
+
+    return std::unique_ptr<net::ClientCertStore>(new net::ClientCertOverrideStore());
 }
 
 std::string ContentBrowserClientQt::GetApplicationLocale()
