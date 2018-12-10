@@ -101,7 +101,7 @@ static KeyboardDriver keyboardDriverImpl()
     if (platformName == QLatin1Literal("xcb") || platformName == QLatin1Literal("wayland"))
         return KeyboardDriver::Xkb;
 
-#if QT_CONFIG(libinput) && QT_CONFIG(xkbcommon_evdev)
+#if QT_CONFIG(libinput) && QT_CONFIG(xkbcommon)
     // Based on QEglFSIntegration::createInputHandlers and QLibInputKeyboard::processKey.
     if (platformName == QLatin1Literal("eglfs") && !qEnvironmentVariableIntValue("QT_QPA_EGLFS_NO_LIBINPUT"))
         return KeyboardDriver::Xkb;
