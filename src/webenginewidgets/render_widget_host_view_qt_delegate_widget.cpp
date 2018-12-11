@@ -277,6 +277,7 @@ void RenderWidgetHostViewQtDelegateWidget::show()
 void RenderWidgetHostViewQtDelegateWidget::hide()
 {
     m_rootItem->setVisible(false);
+    QQuickWidget::hide();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
