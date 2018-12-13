@@ -793,36 +793,45 @@ bool QQuickWebEngineProfile::isSpellCheckEnabled() const
 }
 
 /*!
-    \qmlproperty bool WebEngineProfile::useForGlobalCertificateVerification
-    \since QtWebEngine 1.9
+    \property QQuickWebEngineProfile::useForGlobalCertificateVerification
+    \since 5.13
 
-    This property controls if this profile is used for global certificate verification.
-    Only one profile may have that role at any time.
+    This property holds whether this profile is used for downloading and
+    caching during global certificate verification when using the online
+    certificate status protocol (OCSP), certificate revokation lists (CRLs),
+    and authority information access (AIA), for example.
 
-    Current only offect Linux/NSS installation where having a profile with this role
-    enables OCSP.
+    As long as one profile has this option enabled, all other profiles will be
+    able to use it for certificate verification. Only one profile at a time can
+    have this option enabled. It is recommended that the profile has a disk HTTP
+    cache to avoid needlessly re-downloading.
 
-    By default no profile has this enabled.
+    By default, no profile has this property enabled.
 
-    \sa QQuickWebEngineProfile::setUseForGlobalCertificateVerification()
+    Currently, only affects Linux/NSS installations, where having a profile with
+    this role enables OCSP.
 */
 
 /*!
-    \since 5.13
+    \qmlproperty bool WebEngineProfile::useForGlobalCertificateVerification
+    \since QtWebEngine 1.9
 
-    If enabled set this profile to be used for downloading and caching when needed
-    during certificate verification, for instance for OCSP, CRLs, and AIA.
-
-    Only one profile can do this at a time, and it is recommended that the profile
-    fullfilling this role has a disk HTTP cache to avoid needlessly re-downloading.
-
-    Currently only affects Linux/NSS installations where it enables OCSP.
+    This property holds whether this profile is used for downloading and
+    caching during global certificate verification when using the online
+    certificate status protocol (OCSP), certificate revokation lists (CRLs),
+    and authority information access (AIA), for example.
 
     As long as one profile has this option enabled, all other profiles will be
-    able to use it for their certificate verification.
+    able to use it for certificate verification. Only one profile at a time can
+    have this option enabled. It is recommended that the profile has a disk HTTP
+    cache to avoid needlessly re-downloading.
 
-    \sa isUsedForGlobalCertificateVerification()
+    By default, no profile has this property enabled.
+
+    Currently, only affects Linux/NSS installations, where having a profile with
+    this role enables OCSP.
 */
+
 void QQuickWebEngineProfile::setUseForGlobalCertificateVerification(bool enable)
 {
     Q_D(QQuickWebEngineProfile);
@@ -832,14 +841,6 @@ void QQuickWebEngineProfile::setUseForGlobalCertificateVerification(bool enable)
     }
 }
 
-/*!
-    \since 5.13
-
-    Returns \c true if this profile is currently being used for global
-    certificate verification.
-
-    \sa setUseForGlobalCertificateVerification()
-*/
 bool QQuickWebEngineProfile::isUsedForGlobalCertificateVerification() const
 {
      const Q_D(QQuickWebEngineProfile);
