@@ -63,6 +63,7 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -185,8 +186,12 @@ bool WebEngineContext::m_destroyed = false;
 
 void WebEngineContext::destroyProfileAdapter()
 {
-    if (m_defaultProfileAdapter)
-        qWarning("PostMainMessageLoopRun is done, but global profile still exists !");
+    if (content::RenderProcessHost::run_renderer_in_process()) {
+        Q_ASSERT(m_profileAdapters.count() == 1);
+        // this might be default profile
+        m_defaultProfileAdapter.release();
+        delete m_profileAdapters.first();
+    }
 }
 
 void WebEngineContext::addProfileAdapter(ProfileAdapter *profileAdapter)
@@ -201,6 +206,11 @@ void WebEngineContext::addProfileAdapter(ProfileAdapter *profileAdapter)
                 break;
             }
         }
+    }
+
+    if (content::RenderProcessHost::run_renderer_in_process() &&
+            !m_profileAdapters.isEmpty()) {
+        qFatal("Single mode supports only single profile.");
     }
     m_profileAdapters.append(profileAdapter);
 }
@@ -225,21 +235,27 @@ void WebEngineContext::destroy()
 #endif
 
     // Delete the global object and thus custom profiles
-    m_defaultProfileAdapter.reset();
-    m_globalQObject.reset();
-    while (m_profileAdapters.count())
-        delete m_profileAdapters.first();
+    // In case of single process ~RenderProcessHostImpl (there is only one instance)
+    // is called expliclty by BrowserMainLoop::ShutdownThreadsAndCleanUp and requires browser context.
+    // therefore delete browser context on PostMainMessageLoopRun.
+    if (!content::RenderProcessHost::run_renderer_in_process()) {
+        m_defaultProfileAdapter.reset();
+        m_globalQObject.reset();
+        while (m_profileAdapters.count())
+            delete m_profileAdapters.first();
+    } else {
+        m_globalQObject.reset();
+    }
 
     // Handle any events posted by browser-context shutdown.
+    // This should deliver all nessesery calls of DeleteSoon from PostTask
     while (delegate->DoWork()) { }
 
     GLContextHelper::destroy();
     m_devtoolsServer.reset();
     m_runLoop->AfterRun();
 
-    // Fixme: Force to destroy RenderProcessHostImpl by destroying BrowserMainRunner.
-    // RenderProcessHostImpl should be destroyed before WebEngineContext since
-    // default BrowserContext might be used by the RenderprocessHostImpl's destructor.
+    // Destroy the main runner, this stops main message loop
     m_browserRunner.reset();
 
     // Destroying content-runner will force Chromium at_exit calls to run, and
