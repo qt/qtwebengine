@@ -82,9 +82,9 @@ public:
 #if QT_CONFIG(webengine_printing_and_pdf)
     printing::PrintJobManager* getPrintJobManager();
 #endif
-    void destroyBrowserContext();
-    void addBrowserContext(ProfileAdapter *profileAdapter);
-    void removeBrowserContext(ProfileAdapter *profileAdapter);
+    void destroyProfileAdapter();
+    void addProfileAdapter(ProfileAdapter *profileAdapter);
+    void removeProfileAdapter(ProfileAdapter *profileAdapter);
     void destroy();
 
 private:

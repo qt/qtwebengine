@@ -204,9 +204,9 @@ void BrowserMainPartsQt::PreMainMessageLoopStart()
 
 void BrowserMainPartsQt::PostMainMessageLoopRun()
 {
-    // The BrowserContext's destructor uses the MessageLoop so it should be deleted
+    // The ProfileQt's destructor uses the MessageLoop so it should be deleted
     // right before the RenderProcessHostImpl's destructor destroys it.
-    WebEngineContext::current()->destroyBrowserContext();
+    WebEngineContext::current()->destroyProfileAdapter();
 }
 
 int BrowserMainPartsQt::PreCreateThreads()
