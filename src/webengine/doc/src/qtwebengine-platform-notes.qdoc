@@ -41,7 +41,7 @@
     \list
         \li \l{Qt for Windows - Requirements}
         \li \l{Qt for X11 Requirements}
-        \li \l{Qt for macOS - Requirements}
+        \li \l{Qt for macOS - Building from Source}
     \endlist
 
     In addition, the following tools are required for building the \l {Qt WebEngine} module:

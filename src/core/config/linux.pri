@@ -24,10 +24,6 @@ qtConfig(webengine-embedded-build) {
     !use_gold_linker: gn_args += use_gold=false
 }
 
-qtConfig(webengine-system-x11): hasX11Dependencies() {
-   gn_args += ozone_platform_x11=true
-}
-
 clang {
     clang_full_path = $$which($${QMAKE_CXX})
     # Remove the "/bin/clang++" part.
@@ -171,7 +167,11 @@ host_build {
         gn_args += use_alsa=false
     }
     !packagesExist(libpci): gn_args += use_libpci=false
-    !packagesExist(xscrnsaver): gn_args += use_xscrnsaver=false
+
+    qtConfig(webengine-system-x11): hasX11Dependencies() {
+        gn_args += ozone_platform_x11=true
+        packagesExist(xscrnsaver): gn_args += use_xscrnsaver=true
+    }
 
     qtConfig(webengine-system-libevent): gn_args += use_system_libevent=true
     qtConfig(webengine-system-libwebp):  gn_args += use_system_libwebp=true

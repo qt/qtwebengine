@@ -52,6 +52,7 @@
 #include "visited_links_manager_qt.h"
 #include "web_engine_settings.h"
 
+#include <QtWebEngineCore/qwebengineurlscheme.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -675,7 +676,7 @@ const QWebEngineUrlSchemeHandler *QWebEngineProfile::urlSchemeHandler(const QByt
 
     Registers a handler \a handler for custom URL scheme \a scheme in the profile.
 
-    It is recommended to first register the scheme with \l
+    It is necessary to first register the scheme with \l
     QWebEngineUrlScheme::registerScheme at application startup.
 */
 void QWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)

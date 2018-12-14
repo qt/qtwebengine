@@ -78,7 +78,7 @@ Qt WebEngine (QML)
   Chromium's behavior.
 - QWebEngineDownloadItem::page() accessor added to tell were the download was triggered.
 - [QTBUG-53745, QTBUG-69237] QWebEnginePage::printRequest added for window.print() support.
-- [QTBUG-54877] Introduced support for client certificates on macOS and Windows.
+- [QTBUG-54877] Introduced support for client certificates.
 - [QTBUG-64501] Fixed a way to trigger an infinite loop.
 - [QTBUG-69222] Fixed call order of print callback.
 

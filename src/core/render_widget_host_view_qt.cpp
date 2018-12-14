@@ -747,24 +747,28 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
     Q_UNUSED(updated_view);
     Q_UNUSED(did_update_state);
 
-    ui::TextInputType type = getTextInputType();
-    m_delegate->inputMethodStateChanged(type != ui::TEXT_INPUT_TYPE_NONE, type == ui::TEXT_INPUT_TYPE_PASSWORD);
-    m_delegate->setInputMethodHints(toQtInputMethodHints(type));
-
     const content::TextInputState *state = text_input_manager_->GetTextInputState();
-    if (!state)
+    if (!state) {
+        m_delegate->inputMethodStateChanged(false /*editorVisible*/, false /*passwordInput*/);
+        m_delegate->setInputMethodHints(Qt::ImhNone);
         return;
+    }
 
-    // At this point it is unknown whether the text input state has been updated due to a text selection.
-    // Keep the cursor position updated for cursor movements too.
-    if (GetSelectedText().empty())
-        m_cursorPosition = state->selection_start;
+    ui::TextInputType type = getTextInputType();
+    m_delegate->setInputMethodHints(toQtInputMethodHints(getTextInputType()) | Qt::ImhNoPredictiveText | Qt::ImhNoTextHandles | Qt::ImhNoEditMenu);
 
     m_surroundingText = QString::fromStdString(state->value);
-
     // Remove IME composition text from the surrounding text
     if (state->composition_start != -1 && state->composition_end != -1)
         m_surroundingText.remove(state->composition_start, state->composition_end - state->composition_start);
+
+    // In case of text selection, the update is expected in RenderWidgetHostViewQt::selectionChanged().
+    if (GetSelectedText().empty()) {
+        // At this point it is unknown whether the text input state has been updated due to a text selection.
+        // Keep the cursor position updated for cursor movements too.
+        m_cursorPosition = state->selection_start;
+        m_delegate->inputMethodStateChanged(type != ui::TEXT_INPUT_TYPE_NONE, type == ui::TEXT_INPUT_TYPE_PASSWORD);
+    }
 
     if (m_imState & ImStateFlags::TextInputStateUpdated) {
         m_imState = ImStateFlags::TextInputStateUpdated;
@@ -822,9 +826,10 @@ void RenderWidgetHostViewQt::selectionChanged()
 {
     // Reset input manager state
     m_imState = 0;
+    ui::TextInputType type = getTextInputType();
 
     // Handle text selection out of an input field
-    if (getTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
+    if (type == ui::TEXT_INPUT_TYPE_NONE) {
         if (GetSelectedText().empty() && m_emptyPreviousSelection)
             return;
 
@@ -844,12 +849,13 @@ void RenderWidgetHostViewQt::selectionChanged()
         // if the selection is cleared because TextInputState changes before the TextSelection change.
         Q_ASSERT(text_input_manager_->GetTextInputState());
         m_cursorPosition = text_input_manager_->GetTextInputState()->selection_start;
+        m_delegate->inputMethodStateChanged(true /*editorVisible*/, type == ui::TEXT_INPUT_TYPE_PASSWORD);
 
         m_anchorPositionWithinSelection = m_cursorPosition;
         m_cursorPositionWithinSelection = m_cursorPosition;
 
         if (!m_emptyPreviousSelection) {
-            m_emptyPreviousSelection = GetSelectedText().empty();
+            m_emptyPreviousSelection = true;
             m_adapterClient->selectionChanged();
         }
 
@@ -884,6 +890,7 @@ void RenderWidgetHostViewQt::selectionChanged()
         m_cursorPosition = newCursorPositionWithinSelection;
 
     m_emptyPreviousSelection = selection->selected_text().empty();
+    m_delegate->inputMethodStateChanged(true /*editorVisible*/, type == ui::TEXT_INPUT_TYPE_PASSWORD);
     m_adapterClient->selectionChanged();
 }
 
@@ -1106,7 +1113,7 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
         // TODO: Implement this
         return QVariant(); // No limit.
     case Qt::ImHints:
-        return int(toQtInputMethodHints(getTextInputType()));
+        return int(toQtInputMethodHints(getTextInputType()) | Qt::ImhNoPredictiveText | Qt::ImhNoTextHandles | Qt::ImhNoEditMenu);
     default:
         return QVariant();
     }

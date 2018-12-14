@@ -113,7 +113,6 @@ private:
     RenderWidgetHostViewQtDelegateClient *m_client;
     QList<QMetaObject::Connection> m_windowConnections;
     bool m_isPopup;
-    bool m_isPasswordInput;
     QPointF m_lastGlobalPos;
     QQuickWebEngineView *m_view = nullptr;
 };

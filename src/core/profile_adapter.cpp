@@ -44,6 +44,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager.h"
 
+#include "api/qwebengineurlscheme.h"
 #include "content_client_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "net/url_request_context_getter_qt.h"
@@ -489,6 +490,10 @@ void ProfileAdapter::installUrlSchemeHandler(const QByteArray &scheme, QWebEngin
         qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
         return;
     }
+    if (QWebEngineUrlScheme::schemeByName(canonicalScheme) == QWebEngineUrlScheme())
+        qWarning("Please register the custom scheme '%s' via QWebEngineUrlScheme::registerScheme() "
+                 "before installing the custom scheme handler.", scheme.constData());
+
     m_customUrlSchemeHandlers.insert(canonicalScheme, handler);
     updateCustomUrlSchemeHandlers();
 }

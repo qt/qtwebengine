@@ -107,7 +107,6 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     , m_client(client)
     , m_rootItem(new RenderWidgetHostViewQuickItem(client))
     , m_isPopup(false)
-    , m_isPasswordInput(false)
 {
     setFocusPolicy(Qt::StrongFocus);
 
@@ -347,14 +346,10 @@ void RenderWidgetHostViewQtDelegateWidget::move(const QPoint &screenPos)
 
 void RenderWidgetHostViewQtDelegateWidget::inputMethodStateChanged(bool editorVisible, bool passwordInput)
 {
-    if (qApp->inputMethod()->isVisible() == editorVisible && m_isPasswordInput == passwordInput)
-        return;
-
     QQuickWidget::setAttribute(Qt::WA_InputMethodEnabled, editorVisible && !passwordInput);
-    m_isPasswordInput = passwordInput;
-
     qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
-    qApp->inputMethod()->setVisible(editorVisible);
+    if (qApp->inputMethod()->isVisible() != editorVisible)
+        qApp->inputMethod()->setVisible(editorVisible);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::setInputMethodHints(Qt::InputMethodHints hints)

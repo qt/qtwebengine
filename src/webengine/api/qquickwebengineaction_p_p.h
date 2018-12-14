@@ -72,13 +72,13 @@ public:
 
     void trigger();
 
-private:
-    QQuickWebEngineAction *q_ptr;
-
     QVariant m_data;
     QString m_text;
     QString m_iconName;
     bool m_enabled;
+
+private:
+    QQuickWebEngineAction *q_ptr;
 };
 
 QT_END_NAMESPACE
