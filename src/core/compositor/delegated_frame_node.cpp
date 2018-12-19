@@ -92,6 +92,10 @@
 #define GL_TEXTURE_RECTANGLE              0x84F5
 #endif
 
+#ifndef GL_NEAREST
+#define GL_NEAREST                        0x2600
+#endif
+
 #ifndef GL_LINEAR
 #define GL_LINEAR                         0x2601
 #endif
@@ -986,7 +990,20 @@ inline auto &findTexture(Container &map, Container &previousMap, const Key &key)
 
 QSGTexture *DelegatedFrameNode::initAndHoldTexture(const CompositorResource *resource, bool hasAlphaChannel, RenderWidgetHostViewQtDelegate *apiDelegate, int target)
 {
-    QSGTexture::Filtering filtering = resource->filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest;
+    QSGTexture::Filtering filtering;
+
+    if (resource->filter == GL_NEAREST)
+        filtering = QSGTexture::Nearest;
+    else if (resource->filter == GL_LINEAR)
+        filtering = QSGTexture::Linear;
+    else {
+        // Depends on qtdeclarative fix, see QTBUG-71322
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 1)
+        filtering = QSGTexture::Linear;
+#else
+        filtering = QSGTexture::Nearest;
+#endif
+    }
 
     if (resource->is_software) {
         QSharedPointer<QSGTexture> &texture =

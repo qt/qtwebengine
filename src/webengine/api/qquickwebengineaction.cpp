@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.8
 
-    \brief An action that represents a \l WebEngineView::WebAction
+    \brief An action that represents a \l WebEngineView::WebAction.
 
     A WebEngineAction is returned by the \l WebEngineView::action()
     method. It provides information about the action, such as
@@ -146,7 +146,8 @@ QString QQuickWebEngineAction::iconName() const
 /*!
     \qmlproperty bool WebEngineAction::enabled
 
-    This property holds whether the action is enabled.
+    This property holds whether the action is enabled. Context-dependent
+    actions are always enabled.
 */
 bool QQuickWebEngineAction::isEnabled() const
 {

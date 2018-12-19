@@ -2225,7 +2225,8 @@ void QQuickContextMenuBuilder::addMenuItem(ContextMenuItem menuItem)
         m_view->d_ptr->ui()->addMenuSeparator(m_menu);
         return;
     }
-    action->d_ptr->setEnabled(isMenuItemEnabled(menuItem));
+    // Set enabled property directly with avoiding binding loops caused by its notifier signal.
+    action->d_ptr->m_enabled = isMenuItemEnabled(menuItem);
     m_view->d_ptr->ui()->addMenuItem(action, m_menu);
 }
 

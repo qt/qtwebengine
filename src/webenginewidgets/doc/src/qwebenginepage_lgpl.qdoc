@@ -109,9 +109,11 @@
 
     This enum describes the types of action which can be performed on the web page.
 
-    Actions only have an effect when they are applicable. The availability of
-    actions can be be determined by checking \l{QAction::}{isEnabled()} on the
-    action returned by action().
+    Actions only have an effect when they are applicable.
+
+    The availability of actions can be be determined by checking
+    \l{QAction::}{isEnabled()} on the action returned by action(). Context-dependent
+    actions are always enabled.
 
     \value NoWebAction No action is triggered.
     \value Back Navigate back in the history of navigated links.
@@ -128,9 +130,12 @@
     \value PasteAndMatchStyle Paste content from the clipboard with current style.
 
     \value OpenLinkInThisWindow Open the current link in the current window. (Added in Qt 5.6)
-    \value OpenLinkInNewWindow Open the current link in a new window. (Added in Qt 5.6)
-    \value OpenLinkInNewTab Open the current link in a new tab. (Added in Qt 5.6)
-    \value OpenLinkInNewBackgroundTab Open the current link in a new background tab. (Added in Qt 5.7)
+    \value OpenLinkInNewWindow Open the current link in a new window. Requires implementation of
+           \l createWindow(). (Added in Qt 5.6)
+    \value OpenLinkInNewTab Open the current link in a new tab. Requires implementation of
+           \l createWindow(). (Added in Qt 5.6)
+    \value OpenLinkInNewBackgroundTab Open the current link in a new background tab. Requires
+           implementation of \l createWindow(). (Added in Qt 5.7)
     \value CopyLinkToClipboard Copy the current link to the clipboard. (Added in Qt 5.6)
 
     \value CopyImageToClipboard Copy the clicked image to the clipboard. (Added in Qt 5.6)
@@ -143,9 +148,12 @@
     \value ToggleMediaPlayPause Toggle the play/pause state of the hovered audio or video element.
            (Added in Qt 5.6)
     \value ToggleMediaMute Mute or unmute the hovered audio or video element. (Added in Qt 5.6)
-    \value DownloadLinkToDisk Download the current link to the disk. (Added in Qt 5.6)
-    \value DownloadImageToDisk Download the highlighted image to the disk. (Added in Qt 5.6)
-    \value DownloadMediaToDisk Download the hovered audio or video to the disk. (Added in Qt 5.6)
+    \value DownloadLinkToDisk Download the current link to the disk. Requires a slot for
+           \l{QWebEngineProfile::}{downloadRequested()}. (Added in Qt 5.6)
+    \value DownloadImageToDisk Download the highlighted image to the disk. Requires a slot for
+           \l{QWebEngineProfile::}{downloadRequested()}. (Added in Qt 5.6)
+    \value DownloadMediaToDisk Download the hovered audio or video to the disk. Requires a slot for
+           \l{QWebEngineProfile::}{downloadRequested()}. (Added in Qt 5.6)
 
     \value InspectElement Trigger any attached Web Inspector to inspect the highlighed element.
            (Added in Qt 5.6)
@@ -155,8 +163,10 @@
            request is confirmed, \c windowCloseRequested is emitted. (Added in Qt 5.6)
     \value Unselect Clear the current selection. (Added in Qt 5.7)
     \value SavePage Save the current page to disk. MHTML is the default format that is used to store
-           the web page on disk. (Added in Qt 5.7)
-    \value ViewSource Show the source of the current page in a new tab. (Added in Qt 5.8)
+           the web page on disk. Requires a slot for \l{QWebEngineProfile::}{downloadRequested()}.
+           (Added in Qt 5.7)
+    \value ViewSource Show the source of the current page in a new tab. Requires implementation of
+            \l createWindow(). (Added in Qt 5.8)
 
     \value ToggleBold
            Toggles boldness for the selection or at the cursor position.

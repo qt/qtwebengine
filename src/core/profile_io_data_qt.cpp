@@ -59,6 +59,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_network_session.h"
+#include "net/http/transport_security_persister.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher_factory.h"
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/proxy_resolution/proxy_config_service.h"
@@ -306,6 +307,7 @@ void ProfileIODataQt::generateStorage()
         // we need to get rid of dangling pointer due to coming storage deletion
         m_urlRequestContext->set_http_transaction_factory(0);
         m_httpNetworkSession.reset();
+        m_transportSecurityPersister.reset();
     }
 
     m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
@@ -338,8 +340,20 @@ void ProfileIODataQt::generateStorage()
                                                 m_networkDelegate.get()));
 
     m_storage->set_ssl_config_service(std::make_unique<SSLConfigServiceQt>());
-    m_storage->set_transport_security_state(std::unique_ptr<net::TransportSecurityState>(
-                                                new net::TransportSecurityState()));
+    m_storage->set_transport_security_state(std::make_unique<net::TransportSecurityState>());
+
+    if (!m_dataPath.isEmpty()) {
+        scoped_refptr<base::SequencedTaskRunner> background_task_runner(
+                    base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(),
+         base::TaskPriority::BACKGROUND,
+         base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
+        m_transportSecurityPersister =
+                std::make_unique<net::TransportSecurityPersister>(
+                    m_urlRequestContext->transport_security_state(),
+                    toFilePath(m_dataPath),
+                    background_task_runner);
+    };
 
     if (!m_httpAuthPreferences)
         m_httpAuthPreferences.reset(new net::HttpAuthPreferences());
@@ -618,6 +632,7 @@ void ProfileIODataQt::setFullConfiguration()
     m_httpCacheMaxSize = m_profileAdapter->httpCacheMaxSize();
     m_customUrlSchemes = m_profileAdapter->customUrlSchemes();
     m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
+    m_dataPath = m_profileAdapter->dataPath();
 }
 
 void ProfileIODataQt::updateStorageSettings()

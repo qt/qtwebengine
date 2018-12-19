@@ -754,9 +754,11 @@
     \value  WebEngineView.OpenLinkInThisWindow
             Open the current link in the current window. (Added in Qt 5.6)
     \value  WebEngineView.OpenLinkInNewWindow
-            Open the current link in a new window. (Added in Qt 5.6)
+            Open the current link in a new window. Requires a handler for the
+            \l newViewRequested() signal. (Added in Qt 5.6)
     \value  WebEngineView.OpenLinkInNewTab
-            Open the current link in a new tab. (Added in Qt 5.6)
+            Open the current link in a new tab. Requires a handler for the
+            \l newViewRequested() signal. (Added in Qt 5.6)
     \value  WebEngineView.CopyLinkToClipboard
             Copy the current link to the clipboard. (Added in Qt 5.6)
     \value  WebEngineView.CopyImageToClipboard
@@ -777,8 +779,8 @@
             Mute or unmute the hovered audio or video element. (Added in Qt 5.6)
     \value  WebEngineView.DownloadLinkToDisk
             Download the current link to the disk. To implement download
-            actions, connect to the QWebEngineProfile::downloadRequested signal.
-            (Added in Qt 5.6)
+            actions, connect to the \l {QQuickWebEngineProfile::downloadRequested}
+            {WebEngineProfile.downloadRequested} signal. (Added in Qt 5.6)
     \value  WebEngineView.DownloadImageToDisk
             Download the highlighted image to the disk. (Added in Qt 5.6)
     \value  WebEngineView.DownloadMediaToDisk
@@ -791,7 +793,8 @@
     \value  WebEngineView.SavePage
             Save the current web page to disk. (Added in Qt 5.7)
     \value  WebEngineView.ViewSource
-            Show the source of the current page in a new tab. (Added in Qt 5.8)
+            Show the source of the current page in a new tab. Requires a handler for the
+            \l newViewRequested() signal. (Added in Qt 5.8)
 
     \value  WebEngineView.ToggleBold
             Toggles boldness for the selection or at the cursor position.

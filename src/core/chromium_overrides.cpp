@@ -92,6 +92,11 @@ void GetScreenInfoFromNativeWindow(QWindow* window, content::ScreenInfo* results
 
 } // namespace QtWebEngineCore
 
+void *GetQtXDisplay()
+{
+    return GLContextHelper::getXDisplay();
+}
+
 namespace content {
 class WebContentsImpl;
 class WebContentsView;
