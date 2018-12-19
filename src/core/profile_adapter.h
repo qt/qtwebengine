@@ -168,7 +168,6 @@ public:
     void setHttpCacheMaxSize(int maxSize);
 
     bool trackVisitedLinks() const;
-    bool persistVisitedLinks() const;
 
     QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &scheme);
     void installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler);
@@ -198,6 +197,7 @@ public:
 private:
     void updateCustomUrlSchemeHandlers();
     void resetVisitedLinksManager();
+    bool persistVisitedLinks() const;
 
     QString m_name;
     bool m_offTheRecord;

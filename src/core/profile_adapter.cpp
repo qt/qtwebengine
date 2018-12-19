@@ -600,7 +600,7 @@ bool ProfileAdapter::isSpellCheckEnabled() const
 
 void ProfileAdapter::resetVisitedLinksManager()
 {
-    m_visitedLinksManager.reset(new VisitedLinksManagerQt(this));
+    m_visitedLinksManager.reset(new VisitedLinksManagerQt(m_profile.data(), persistVisitedLinks()));
 }
 
 void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
