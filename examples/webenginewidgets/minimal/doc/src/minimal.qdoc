@@ -42,6 +42,15 @@
 
     \section1 The Code
 
+    We first define a \c commandLineUrlArgument function that returns the URL to open.
+    This is either the first positional argument given on the command line, or
+    \c https://www.qt.io as a fallback.
+
+    \quotefromfile webenginewidgets/minimal/main.cpp
+    \skipto #include
+
+    \printto int main
+
     In the \c main function we first set the
     \l{QCoreApplication::organizationName} property. This affects the locations
     where Qt WebEngine stores persistent and cached data (see also
@@ -52,13 +61,10 @@
     view automatically scale on high-dpi displays.
 
     Next, we instantiate a QApplication and a QWebEngineView. The URL
-    to load is taken from the command-line in \c commandLineUrlArgument and
+    to load is taken from \c commandLineUrlArgument and
     loaded by calling \l QWebEngineView::setUrl. The view widget is
     given a reasonable default size, and shown.
     Finally, QApplication::exec() launches the main event loop.
-
-    \quotefromfile webenginewidgets/minimal/main.cpp
-    \skipto #include
 
     \printuntil }
 
