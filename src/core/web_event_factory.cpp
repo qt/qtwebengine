@@ -1206,19 +1206,6 @@ static ui::DomKey domKeyForQtKey(int qtKey)
     }
 }
 
-static inline base::TimeTicks currentTimeForEvent(const QEvent *event)
-{
-    Q_ASSERT(event);
-
-    if (event->type() != QEvent::Leave) {
-        const QInputEvent *inputEvent = static_cast<const QInputEvent *>(event);
-        if (inputEvent->timestamp())
-            return base::TimeTicks::FromInternalValue(inputEvent->timestamp() * 1000);
-    }
-
-    return base::TimeTicks::Now();
-}
-
 template<class T>
 static WebMouseEvent::Button mouseButtonForEvent(T *event)
 {
@@ -1375,7 +1362,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
                               mouseButtonForEvent<QMouseEvent>(ev),
                               0,
                               modifiersForEvent(ev),
-                              currentTimeForEvent(ev));
+                              base::TimeTicks::Now());
 
     webKitEvent.pointer_type = WebPointerProperties::PointerType::kMouse;
 
@@ -1385,7 +1372,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent;
-    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetModifiers(modifiersForEvent(ev));
     webKitEvent.SetType(webEventTypeForEvent(ev));
 
@@ -1406,7 +1393,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev, double dpiScale
                               mouseButtonForEvent<QTabletEvent>(ev),
                               0,
                               modifiersForEvent(ev),
-                              currentTimeForEvent(ev));
+                              base::TimeTicks::Now());
 
     webKitEvent.force = ev->pressure();
     webKitEvent.tilt_x = ev->xTilt();
@@ -1423,7 +1410,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QEvent *ev)
     Q_ASSERT(ev->type() == QEvent::Leave || ev->type() == QEvent::HoverLeave);
 
     WebMouseEvent webKitEvent;
-    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetType(WebInputEvent::kMouseLeave);
     return webKitEvent;
 }
@@ -1432,7 +1419,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QEvent *ev)
 WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, double dpiScale)
 {
     WebGestureEvent webKitEvent;
-    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetModifiers(modifiersForEvent(ev));
 
     webKitEvent.SetPositionInWidget(WebFloatPoint(ev->localPos().x() / dpiScale,
@@ -1502,7 +1489,7 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
     WebMouseWheelEvent webEvent;
     webEvent.SetType(webEventTypeForEvent(ev));
     webEvent.SetModifiers(modifiersForEvent(ev));
-    webEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webEvent.SetTimeStamp(base::TimeTicks::Now());
     webEvent.SetPositionInWidget(ev->x() / dpiScale, ev->y() / dpiScale);
     webEvent.SetPositionInScreen(ev->globalX(), ev->globalY());
 
@@ -1532,7 +1519,7 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
         return false;
 #endif
 
-    webEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webEvent.SetTimeStamp(base::TimeTicks::Now());
     webEvent.SetPositionInWidget(ev->x() / dpiScale, ev->y() / dpiScale);
     webEvent.SetPositionInScreen(ev->globalX(), ev->globalY());
 
@@ -1546,7 +1533,7 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
 content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *ev)
 {
     content::NativeWebKeyboardEvent webKitEvent(reinterpret_cast<gfx::NativeEvent>(ev));
-    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetModifiers(modifiersForEvent(ev));
     webKitEvent.SetType(webEventTypeForEvent(ev));
 
