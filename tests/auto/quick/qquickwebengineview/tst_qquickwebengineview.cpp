@@ -484,8 +484,8 @@ struct InputMethodInfo
         , selectedText(selectedText)
     {}
 
-    const int cursorPosition;
-    const int anchorPosition;
+    int cursorPosition;
+    int anchorPosition;
     QString surroundingText;
     QString selectedText;
 };
