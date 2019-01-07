@@ -31,7 +31,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QPushButton>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QStandardItemModel>
 #include <QTableView>
 #include <QTest>
@@ -77,15 +77,16 @@ void TestView::loadTestData(const QString &testDataPath)
     QTextStream testDataStream(&testDataFile);
     while (!testDataStream.atEnd()) {
         QString line = testDataStream.readLine();
-        QRegExp data("^\"(.*)\"\\s*,\\s*(-?\\d+)\\s*,\\s*(-?\\d+)\\s*,\\s*(\\d+)\\s*,\\s*\"(.*)\"\\s*,\\s*\"(.*)\"\\s*$");
-        if (!data.exactMatch(line))
+        QRegularExpression data(QRegularExpression::anchoredPattern("^\"(.*)\"\\s*,\\s*(-?\\d+)\\s*,\\s*(-?\\d+)\\s*,\\s*(\\d+)\\s*,\\s*\"(.*)\"\\s*,\\s*\"(.*)\"\\s*$"));
+        QRegularExpressionMatch match = data.match(line);
+        if (!match.hasMatch())
             continue;
 
         QStandardItemModel *model = qobject_cast<QStandardItemModel *>(m_tableView->model());
 
         QList<QStandardItem *> row;
-        for (int i = 1; i <= data.captureCount(); ++i)
-            row.append(new QStandardItem(data.cap(i)));
+        for (int i = 1; i <= match.lastCapturedIndex(); ++i)
+            row.append(new QStandardItem(match.captured(i)));
 
         model->appendRow(row);
     }

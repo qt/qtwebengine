@@ -46,6 +46,7 @@
 #include <QTcpSocket>
 #include <QStyle>
 #include <QtWidgets/qaction.h>
+#include <QtCore/qregularexpression.h>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == (expect | Qt::ImhNoPredictiveText | Qt::ImhNoTextHandles | Qt::ImhNoEditMenu));
@@ -1180,7 +1181,7 @@ void tst_QWebEngineView::changeLocale()
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
-    errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 
     QLocale::setDefault(QLocale("en"));
@@ -1190,7 +1191,7 @@ void tst_QWebEngineView::changeLocale()
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyEN.count(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewEN.page()).isEmpty());
-    errorLines = toPlainTextSync(viewEN.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    errorLines = toPlainTextSync(viewEN.page()).split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("This site can\xE2\x80\x99t be reached"));
 
     // Reset error page
@@ -1203,7 +1204,7 @@ void tst_QWebEngineView::changeLocale()
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
-    errorLines = toPlainTextSync(viewDE.page()).split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 }
 
@@ -2634,7 +2635,7 @@ void tst_QWebEngineView::imeJSInputEvents()
     view.show();
 
     auto logLines = [&view]() -> QStringList {
-        return evaluateJavaScriptSync(view.page(), "log.textContent").toString().split("\n").filter(QRegExp(".+"));
+        return evaluateJavaScriptSync(view.page(), "log.textContent").toString().split("\n").filter(QRegularExpression(".+"));
     };
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
