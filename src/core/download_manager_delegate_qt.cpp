@@ -39,6 +39,8 @@
 
 #include "download_manager_delegate_qt.h"
 
+#include "base/files/file_util.h"
+#include "base/time/time_to_iso8601.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/save_page_type.h"
@@ -156,15 +158,13 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
 
     QFileInfo suggestedFile(defaultDownloadDirectory.absoluteFilePath(suggestedFilename));
     QString suggestedFilePath = suggestedFile.absoluteFilePath();
-    QString tmpFileBase = QString("%1%2%3").arg(suggestedFile.absolutePath()).arg(QDir::separator()).arg(suggestedFile.baseName());
+    base::FilePath tmpFilePath(toFilePathString(suggestedFilePath));
 
-    for (int i = 1; QFileInfo::exists(suggestedFilePath); ++i) {
-        suggestedFilePath = QString("%1(%2).%3").arg(tmpFileBase).arg(i).arg(suggestedFile.completeSuffix());
-        if (i >= 99) {
-            suggestedFilePath = suggestedFile.absoluteFilePath();
-            break;
-        }
-    }
+    int uniquifier = base::GetUniquePathNumber(tmpFilePath, base::FilePath::StringType());
+    if (uniquifier > 0)
+        suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier)).AsUTF8Unsafe());
+    else if (uniquifier == -1)
+        suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(base::StringPrintf(" - %s", base::TimeToISO8601(item->GetStartTime()).c_str())).AsUTF8Unsafe());
 
     item->AddObserver(this);
     QList<ProfileAdapterClient*> clients = m_profileAdapter->clients();

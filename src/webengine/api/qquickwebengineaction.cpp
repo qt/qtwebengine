@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.8
 
-    \brief An action that represents a \l WebEngineView::WebAction
+    \brief An action that represents a \l WebEngineView::WebAction.
 
     A WebEngineAction is returned by the \l WebEngineView::action()
     method. It provides information about the action, such as

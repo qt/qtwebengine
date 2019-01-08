@@ -52,6 +52,7 @@
 #include "visited_links_manager_qt.h"
 #include "web_engine_settings.h"
 
+#include <QtWebEngineCore/qwebengineurlscheme.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -688,7 +689,7 @@ static bool checkInternalScheme(const QByteArray &scheme)
 
     Registers a handler \a handler for custom URL scheme \a scheme in the profile.
 
-    It is recommended to first register the scheme with \l
+    It is necessary to first register the scheme with \l
     QWebEngineUrlScheme::registerScheme at application startup.
 */
 void QWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
@@ -706,6 +707,11 @@ void QWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEn
             qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
         return;
     }
+
+    if (QWebEngineUrlScheme::schemeByName(canonicalScheme) == QWebEngineUrlScheme())
+        qWarning("Please register the custom scheme '%s' via QWebEngineUrlScheme::registerScheme() "
+                 "before installing the custom scheme handler.", scheme.constData());
+
     d->profileAdapter()->addCustomUrlSchemeHandler(canonicalScheme, handler);
     connect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
 }

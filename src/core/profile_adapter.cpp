@@ -82,7 +82,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
 {
-    WebEngineContext::current()->addBrowserContext(this);
+    WebEngineContext::current()->addProfileAdapter(this);
     // creation of profile requires webengine context
     m_profile.reset(new ProfileQt(this));
     content::BrowserContext::Initialize(m_profile.data(), toFilePath(dataPath()));
@@ -92,7 +92,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
 
 ProfileAdapter::~ProfileAdapter()
 {
-    WebEngineContext::current()->removeBrowserContext(this);
+    WebEngineContext::current()->removeProfileAdapter(this);
     if (m_downloadManagerDelegate) {
         m_profile->GetDownloadManager(m_profile.data())->Shutdown();
         m_downloadManagerDelegate.reset();

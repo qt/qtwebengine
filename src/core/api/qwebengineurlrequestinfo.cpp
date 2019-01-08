@@ -120,6 +120,9 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
 
     \a info contains the information about the URL request and will track internally
     whether its members have been altered.
+
+    \warning All method calls to the profile on the main thread will block until
+    execution of this function is finished.
 */
 
 

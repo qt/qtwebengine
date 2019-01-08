@@ -48,12 +48,51 @@ QT_BEGIN_NAMESPACE
     \brief The QWebEngineUrlSchemeHandler is a base class for handling custom URL schemes.
     \since 5.6
 
-    To implement a custom URL scheme for QtWebEngine, you must write a class derived from this class,
-    and reimplement requestStarted(). Then install it via QWebEngineProfile::installUrlSchemeHandler()
+    To implement a custom URL scheme for QtWebEngine, you first have to create an instance of
+    QWebEngineUrlScheme and register it using QWebEngineUrlScheme::registerScheme().
+
+    \note Make sure that you create and register the scheme object \e before the QGuiApplication
+    or QApplication object is instantiated.
+
+    Then you must create a class derived from QWebEngineUrlSchemeHandler,
+    and reimplement the requestStarted() method.
+
+    Finally, install the scheme handler object via QWebEngineProfile::installUrlSchemeHandler()
     or QQuickWebEngineProfile::installUrlSchemeHandler().
+
+    \code
+
+    class MySchemeHandler : public QWebEngineUrlSchemeHandler
+    {
+    public:
+        MySchemeHandler(QObject *parent = nullptr);
+        void requestStarted(QWebEngineUrlRequestJob *request)
+        {
+            // ....
+        }
+    };
+
+    int main(int argc, char **argv)
+    {
+        QWebEngineUrlScheme scheme("myscheme");
+        scheme.setSyntax(QWebEngineUrlScheme::Syntax::HostAndPort);
+        scheme.setDefaultPort(2345);
+        scheme.setFlags(QWebEngineUrlScheme::SecureScheme);
+        QWebEngineUrlScheme::registerScheme(scheme);
+
+        // ...
+        QApplication app(argc, argv);
+        // ...
+
+        // installUrlSchemeHandler does not take ownership of the handler.
+        MySchemeHandler *handler = new MySchemeHandler(parent);
+        QWebEngineProfile::defaultProfile()->installUrlSchemeHandler("myscheme", handler);
+    }
+    \endcode
 
     \inmodule QtWebEngineCore
 
+    \sa {QWebEngineUrlScheme}, {WebEngine Widgets WebUI Example}
 */
 
 /*!
