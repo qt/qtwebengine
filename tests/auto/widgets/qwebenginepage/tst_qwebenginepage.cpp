@@ -4478,9 +4478,10 @@ void tst_QWebEnginePage::triggerActionWithoutMenu()
 void tst_QWebEnginePage::dynamicFrame()
 {
     QWebEnginePage page;
+    page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
     page.load(QStringLiteral("qrc:/resources/dynamicFrame.html"));
-    QVERIFY(spy.wait());
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(toPlainTextSync(&page).trimmed(), QStringLiteral("foo"));
 }
 
