@@ -75,12 +75,6 @@
                 { "type": "pkgConfig", "args": "xi" }
             ]
         },
-        "webengine-xrandr": {
-            "label": "xrandr",
-            "sources": [
-                { "type": "pkgConfig", "args": "xrandr" }
-            ]
-        },
         "webengine-xtst": {
             "label": "xtst",
             "sources": [
@@ -364,11 +358,6 @@
         "webengine-system-xi": {
             "label": "xi",
             "condition": "libs.webengine-xi",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-xrandr": {
-            "label": "xrandr",
-            "condition": "libs.webengine-xrandr",
             "output": [ "privateFeature" ]
         },
         "webengine-system-xtst": {
@@ -825,7 +814,6 @@
                         "webengine-system-xcomposite",
                         "webengine-system-xcursor",
                         "webengine-system-xi",
-                        "webengine-system-xrandr",
                         "webengine-system-xtst"
                     ]
                 }

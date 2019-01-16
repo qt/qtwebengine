@@ -91,7 +91,7 @@ defineTest(runConfigure) {
          }
 
         !qtConfig(webengine-embedded-build): qtConfig(xcb) {
-             for(package, $$list("libdrm xcomposite xcursor xi xrandr xtst")) {
+             for(package, $$list("libdrm xcomposite xcursor xi xtst")) {
                  !qtConfig(webengine-system-$$package) {
                      skipBuild("A suitable version of $$package could not be found.")
                      return(false)

@@ -221,7 +221,7 @@ HEADERS = \
         web_event_factory.h
 
 
-qtConfig(webengine-system-x11) {
+qtConfig(webengine-system-x11): hasX11Dependencies() {
     HEADERS += ozone/gl_ozone_glx_qt.h \
                ozone/gl_surface_glx_qt.h
     SOURCES += ozone/gl_surface_glx_qt.cpp \
