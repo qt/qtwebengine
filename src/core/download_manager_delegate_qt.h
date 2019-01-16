@@ -90,6 +90,7 @@ public:
     void cancelDownload(quint32 downloadId);
     void pauseDownload(quint32 downloadId);
     void resumeDownload(quint32 downloadId);
+    void removeDownload(quint32 downloadId);
 
     void markNextDownloadAsUserRequested() { m_nextDownloadIsUserRequested = true; }
 
@@ -99,6 +100,7 @@ public:
 
 private:
     void cancelDownload(const content::DownloadTargetCallback& callback);
+    download::DownloadItem *findDownloadById(quint32 downloadId);
     void savePackageDownloadCreated(download::DownloadItem *download);
     ProfileAdapter *m_profileAdapter;
 
