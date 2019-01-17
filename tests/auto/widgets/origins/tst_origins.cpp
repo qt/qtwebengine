@@ -640,10 +640,7 @@ void tst_Origins::sharedWorker()
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QCOMPARE(eval(QSL("result")), QVariant(42));
 
-    // Even unregistered schemes can create SharedWorkers.
-    QVERIFY(load(QSL("tst:/resources/sharedWorker.html")));
-    QTRY_VERIFY(eval(QSL("done")).toBool());
-    QCOMPARE(eval(QSL("result")), QVariant(42));
+    // Unregistered schemes should not create SharedWorkers.
 
     QVERIFY(load(QSL("PathSyntax:/resources/sharedWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
