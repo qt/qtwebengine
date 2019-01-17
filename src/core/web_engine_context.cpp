@@ -435,8 +435,6 @@ void WebEngineContext::initialize()
     parsedCommandLine->AppendSwitch(switches::kDisablePepper3DImageChromium);
     // Same problem with select popups.
     parsedCommandLine->AppendSwitch(switches::kDisableNativeGpuMemoryBuffers);
-    // SandboxV2 doesn't currently work for us
-    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kMacV2Sandbox.name);
 #endif
 
 #if defined(Q_OS_WIN)

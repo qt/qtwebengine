@@ -44,7 +44,10 @@
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
 #include "content/public/app/sandbox_helper_win.h"
-#endif // OS_WIN
+#elif defined(OS_MACOSX)
+#include "base/logging.h"
+#include "sandbox/mac/seatbelt_exec.h"
+#endif
 
 namespace QtWebEngine {
 
@@ -64,6 +67,13 @@ int processMain(int argc, const char **argv)
     params.argc = argc;
     params.argv = argv;
 #endif // OS_WIN
+#if defined(OS_MACOSX)
+  sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
+          sandbox::SeatbeltExecServer::CreateFromArguments(argv[0], argc, const_cast<char**>(argv));
+  if (seatbelt.sandbox_required) {
+    CHECK(seatbelt.server->InitializeSandbox());
+  }
+#endif  // defined(OS_MACOSX)
 
     return content::ContentMain(params);
 }

@@ -59,6 +59,7 @@
 #include <QWindow>
 #include <QFontDatabase>
 #include <QStringList>
+#include <QLibraryInfo>
 
 #if defined(USE_AURA) && !defined(USE_OZONE)
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -118,6 +119,14 @@ void WebContentsView::GetDefaultScreenInfo(content::ScreenInfo* results)
     QWindow dummy;
     QtWebEngineCore::GetScreenInfoFromNativeWindow(&dummy, results);
 }
+
+#if defined(Q_OS_MACOS)
+std::string getQtPrefix()
+{
+    const QString prefix = QLibraryInfo::location(QLibraryInfo::PrefixPath);
+    return prefix.toStdString();
+}
+#endif
 
 } // namespace content
 
