@@ -92,9 +92,9 @@ public:
     printing::PrintJobManager* getPrintJobManager();
 #endif
     void initialize();
-    void destroyBrowserContext();
-    void addBrowserContext(ProfileAdapter *profileAdapter);
-    void removeBrowserContext(ProfileAdapter *profileAdapter);
+    void destroyProfileAdapter();
+    void addProfileAdapter(ProfileAdapter *profileAdapter);
+    void removeProfileAdapter(ProfileAdapter *profileAdapter);
     void destroy();
 
     gpu::SyncPointManager *syncPointManager();

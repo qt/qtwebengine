@@ -131,7 +131,7 @@ defineReplace(pkgConfigHostExecutable) {
 }
 
 defineTest(hasX11Dependencies) {
-    for(package, $$list("libdrm xcomposite xcursor xi xrandr xtst")) {
+    for(package, $$list("libdrm xcomposite xcursor xi xtst")) {
         !qtConfig(webengine-system-$$package) {
             return(false)
         }

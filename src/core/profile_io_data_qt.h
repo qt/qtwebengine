@@ -89,10 +89,13 @@ public:
     void generateUserAgent();
     void generateJobFactory();
     void regenerateJobFactory();
-    QWebEngineUrlRequestInterceptor *requestInterceptor();
     bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url) const;
     bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const;
     void setGlobalCertificateVerification();
+
+    // Used in NetworkDelegateQt::OnBeforeURLRequest.
+    QWebEngineUrlRequestInterceptor *acquireInterceptor();
+    void releaseInterceptor();
 
     void setRequestContextData(content::ProtocolHandlerMap *protocolHandlers,
                                content::URLRequestInterceptorScopedVector request_interceptors);

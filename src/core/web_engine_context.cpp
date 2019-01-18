@@ -181,13 +181,13 @@ bool usingSoftwareDynamicGL()
 scoped_refptr<QtWebEngineCore::WebEngineContext> WebEngineContext::m_handle;
 bool WebEngineContext::m_destroyed = false;
 
-void WebEngineContext::destroyBrowserContext()
+void WebEngineContext::destroyProfileAdapter()
 {
     if (m_defaultProfileAdapter)
         qWarning("PostMainMessageLoopRun is done, but global profile still exists !");
 }
 
-void WebEngineContext::addBrowserContext(ProfileAdapter *profileAdapter)
+void WebEngineContext::addProfileAdapter(ProfileAdapter *profileAdapter)
 {
     Q_ASSERT(!m_profileAdapters.contains(profileAdapter));
     const QString path = profileAdapter->dataPath();
@@ -203,7 +203,7 @@ void WebEngineContext::addBrowserContext(ProfileAdapter *profileAdapter)
     m_profileAdapters.append(profileAdapter);
 }
 
-void WebEngineContext::removeBrowserContext(ProfileAdapter *profileAdapter)
+void WebEngineContext::removeProfileAdapter(ProfileAdapter *profileAdapter)
 {
     m_profileAdapters.removeAll(profileAdapter);
 }

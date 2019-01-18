@@ -1774,9 +1774,9 @@ void QWebEnginePagePrivate::setToolTip(const QString &toolTipText)
     }
 
     // Update tooltip if text was changed.
-    QString wrappedTip = QLatin1String("<p>") % toolTipText.toHtmlEscaped().left(MaxTooltipLength) % QLatin1String("</p>");
-    if (view->toolTip() != wrappedTip)
-        view->setToolTip(wrappedTip);
+    QString escapedTip = toolTipText.toHtmlEscaped().left(MaxTooltipLength);
+    if (view->toolTip() != escapedTip)
+        view->setToolTip(escapedTip);
 }
 
 void QWebEnginePagePrivate::printRequested()

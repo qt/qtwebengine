@@ -927,6 +927,74 @@ static ui::DomKey domKeyForQtKey(int qtKey)
     case Qt::Key_Zenkaku_Hankaku:
         return ui::DomKey::ZENKAKU_HANKAKU;
 
+    // Dead keys (ui/events/keycodes/keyboard_code_conversion_xkb.cc)
+    case Qt::Key_Dead_Grave:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0300);
+    case Qt::Key_Dead_Acute:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0301);
+    case Qt::Key_Dead_Circumflex:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0302);
+    case Qt::Key_Dead_Tilde:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0303);
+    case Qt::Key_Dead_Macron:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0304);
+    case Qt::Key_Dead_Breve:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0306);
+    case Qt::Key_Dead_Abovedot:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0307);
+    case Qt::Key_Dead_Diaeresis:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0308);
+    case Qt::Key_Dead_Abovering:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x030A);
+    case Qt::Key_Dead_Doubleacute:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x030B);
+    case Qt::Key_Dead_Caron:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x030C);
+    case Qt::Key_Dead_Cedilla:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0327);
+    case Qt::Key_Dead_Ogonek:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0328);
+    case Qt::Key_Dead_Iota:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0345);
+    case Qt::Key_Dead_Voiced_Sound:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x3099);
+    case Qt::Key_Dead_Semivoiced_Sound:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x309A);
+    case Qt::Key_Dead_Belowdot:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0323);
+    case Qt::Key_Dead_Hook:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0309);
+    case Qt::Key_Dead_Horn:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x031B);
+    case Qt::Key_Dead_Stroke:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0338);
+    case Qt::Key_Dead_Abovecomma:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0313);
+    case Qt::Key_Dead_Abovereversedcomma:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0314);
+    case Qt::Key_Dead_Doublegrave:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x030F);
+    case Qt::Key_Dead_Belowring:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0325);
+    case Qt::Key_Dead_Belowmacron:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0331);
+    case Qt::Key_Dead_Belowcircumflex:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x032D);
+    case Qt::Key_Dead_Belowtilde:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0330);
+    case Qt::Key_Dead_Belowbreve:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x032E);
+    case Qt::Key_Dead_Belowdiaeresis:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0324);
+    case Qt::Key_Dead_Invertedbreve:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0311);
+    case Qt::Key_Dead_Belowcomma:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x0326);
+    case Qt::Key_Dead_Currency:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x00A4);
+    case Qt::Key_Dead_Greek:
+        return ui::DomKey::DeadKeyFromCombiningCharacter(0x037E);
+
     // General-Purpose Function Keys
     case Qt::Key_F1:
         return ui::DomKey::F1;
@@ -1138,19 +1206,6 @@ static ui::DomKey domKeyForQtKey(int qtKey)
     }
 }
 
-static inline base::TimeTicks currentTimeForEvent(const QEvent *event)
-{
-    Q_ASSERT(event);
-
-    if (event->type() != QEvent::Leave) {
-        const QInputEvent *inputEvent = static_cast<const QInputEvent *>(event);
-        if (inputEvent->timestamp())
-            return base::TimeTicks::FromInternalValue(inputEvent->timestamp() * 1000);
-    }
-
-    return base::TimeTicks::Now();
-}
-
 template<class T>
 static WebMouseEvent::Button mouseButtonForEvent(T *event)
 {
@@ -1307,7 +1362,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
                               mouseButtonForEvent<QMouseEvent>(ev),
                               0,
                               modifiersForEvent(ev),
-                              currentTimeForEvent(ev));
+                              base::TimeTicks::Now());
 
     webKitEvent.pointer_type = WebPointerProperties::PointerType::kMouse;
 
@@ -1317,7 +1372,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent;
-    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetModifiers(modifiersForEvent(ev));
     webKitEvent.SetType(webEventTypeForEvent(ev));
 
@@ -1338,7 +1393,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev, double dpiScale
                               mouseButtonForEvent<QTabletEvent>(ev),
                               0,
                               modifiersForEvent(ev),
-                              currentTimeForEvent(ev));
+                              base::TimeTicks::Now());
 
     webKitEvent.force = ev->pressure();
     webKitEvent.tilt_x = ev->xTilt();
@@ -1355,7 +1410,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QEvent *ev)
     Q_ASSERT(ev->type() == QEvent::Leave || ev->type() == QEvent::HoverLeave);
 
     WebMouseEvent webKitEvent;
-    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetType(WebInputEvent::kMouseLeave);
     return webKitEvent;
 }
@@ -1364,7 +1419,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QEvent *ev)
 WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev, double dpiScale)
 {
     WebGestureEvent webKitEvent;
-    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetModifiers(modifiersForEvent(ev));
 
     webKitEvent.SetPositionInWidget(WebFloatPoint(ev->localPos().x() / dpiScale,
@@ -1434,7 +1489,7 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
     WebMouseWheelEvent webEvent;
     webEvent.SetType(webEventTypeForEvent(ev));
     webEvent.SetModifiers(modifiersForEvent(ev));
-    webEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webEvent.SetTimeStamp(base::TimeTicks::Now());
     webEvent.SetPositionInWidget(ev->x() / dpiScale, ev->y() / dpiScale);
     webEvent.SetPositionInScreen(ev->globalX(), ev->globalY());
 
@@ -1464,7 +1519,7 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
         return false;
 #endif
 
-    webEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webEvent.SetTimeStamp(base::TimeTicks::Now());
     webEvent.SetPositionInWidget(ev->x() / dpiScale, ev->y() / dpiScale);
     webEvent.SetPositionInScreen(ev->globalX(), ev->globalY());
 
@@ -1478,7 +1533,7 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
 content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *ev)
 {
     content::NativeWebKeyboardEvent webKitEvent(reinterpret_cast<gfx::NativeEvent>(ev));
-    webKitEvent.SetTimeStamp(currentTimeForEvent(ev));
+    webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetModifiers(modifiersForEvent(ev));
     webKitEvent.SetType(webEventTypeForEvent(ev));
 
@@ -1502,17 +1557,20 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
 
     // The dom_code field should contain the USB keycode of the *physical* key
     // that was pressed. Physical meaning independent of layout and modifiers.
-    //
     // Since this information is not available from QKeyEvent in portable form,
-    // we try to compute it from the native key code. If there's no native key
-    // code available either, then we assume a US layout and convert it from
-    // windows_key_code. The result will be incorrect on non-US layouts.
+    // we try to compute it from the native key code.
     if (webKitEvent.native_key_code)
         webKitEvent.dom_code = static_cast<int>(
             ui::KeycodeConverter::NativeKeycodeToDomCode(webKitEvent.native_key_code));
-    else
+
+    // The dom_code and windows_key_code can be converted to each other. The
+    // result will be incorrect on non-US layouts.
+    if (!webKitEvent.dom_code && webKitEvent.windows_key_code)
         webKitEvent.dom_code = static_cast<int>(
-            ui::UsLayoutKeyboardCodeToDomCode(static_cast<ui::KeyboardCode>(webKitEvent.windows_key_code)));
+                ui::UsLayoutKeyboardCodeToDomCode(static_cast<ui::KeyboardCode>(webKitEvent.windows_key_code)));
+    else if (webKitEvent.dom_code && !webKitEvent.windows_key_code)
+        webKitEvent.windows_key_code =
+                ui::DomCodeToUsLayoutKeyboardCode(static_cast<ui::DomCode>(webKitEvent.dom_code));
 
     const ushort* text = qtText.utf16();
     size_t textSize = std::min(sizeof(webKitEvent.text), size_t(qtText.length() * 2));
