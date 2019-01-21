@@ -84,10 +84,6 @@
 #include <EGL/eglext.h>
 #endif
 
-#ifndef GL_TIMEOUT_IGNORED
-#define GL_TIMEOUT_IGNORED                0xFFFFFFFFFFFFFFFFull
-#endif
-
 #ifndef GL_TEXTURE_RECTANGLE
 #define GL_TEXTURE_RECTANGLE              0x84F5
 #endif

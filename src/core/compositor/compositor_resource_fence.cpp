@@ -43,6 +43,10 @@
 
 #include <QtGui/qopenglcontext.h>
 
+#ifndef GL_TIMEOUT_IGNORED
+#define GL_TIMEOUT_IGNORED                0xFFFFFFFFFFFFFFFFull
+#endif
+
 namespace QtWebEngineCore {
 
 void CompositorResourceFence::wait()
