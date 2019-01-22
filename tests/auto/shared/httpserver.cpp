@@ -39,6 +39,7 @@ HttpServer::HttpServer(QObject *parent) : QObject(parent)
 bool HttpServer::start()
 {
     m_error = false;
+    m_expectingError = false;
 
     if (!m_tcpServer.listen()) {
         qCWarning(gHttpServerLog).noquote() << m_tcpServer.errorString();
@@ -55,7 +56,12 @@ bool HttpServer::start()
 bool HttpServer::stop()
 {
     m_tcpServer.close();
-    return !m_error;
+    return m_error == m_expectingError;
+}
+
+void HttpServer::setExpectError(bool b)
+{
+    m_expectingError = b;
 }
 
 QUrl HttpServer::url(const QString &path) const

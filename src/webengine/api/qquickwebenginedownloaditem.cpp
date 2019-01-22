@@ -615,6 +615,8 @@ QQuickWebEngineDownloadItem::QQuickWebEngineDownloadItem(QQuickWebEngineDownload
 
 QQuickWebEngineDownloadItem::~QQuickWebEngineDownloadItem()
 {
+    if (d_ptr->profile)
+        d_ptr->profile->d_ptr->profileAdapter()->removeDownload(d_ptr->downloadId);
 }
 
 QT_END_NAMESPACE

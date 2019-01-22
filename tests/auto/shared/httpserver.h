@@ -68,6 +68,8 @@ public:
     // Stops listening and performs final error checks.
     Q_REQUIRED_RESULT bool stop();
 
+    void setExpectError(bool b);
+
     // Full URL for given relative path
     QUrl url(const QString &path = QStringLiteral("/")) const;
 
@@ -82,6 +84,7 @@ private:
     QTcpServer m_tcpServer;
     QUrl m_url;
     bool m_error = false;
+    bool m_expectingError = false;
 };
 
 #endif // !HTTPSERVER_H
