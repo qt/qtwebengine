@@ -82,33 +82,43 @@ void DownloadManagerDelegateQt::GetNextId(const content::DownloadIdCallback& cal
     callback.Run(++m_currentId);
 }
 
+download::DownloadItem *DownloadManagerDelegateQt::findDownloadById(quint32 downloadId)
+{
+    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_profileAdapter->profile());
+    return dlm->GetDownload(downloadId);
+}
+
 void DownloadManagerDelegateQt::cancelDownload(const content::DownloadTargetCallback& callback)
 {
-    callback.Run(base::FilePath(), download::DownloadItem::TARGET_DISPOSITION_PROMPT, download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, base::FilePath(), download::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+    callback.Run(base::FilePath(),
+                 download::DownloadItem::TARGET_DISPOSITION_PROMPT,
+                 download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+                 base::FilePath(),
+                 download::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
 }
 
 void DownloadManagerDelegateQt::cancelDownload(quint32 downloadId)
 {
-    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_profileAdapter->profile());
-    download::DownloadItem *download = dlm->GetDownload(downloadId);
-    if (download)
+    if (download::DownloadItem *download = findDownloadById(downloadId))
         download->Cancel(/* user_cancel */ true);
 }
 
 void DownloadManagerDelegateQt::pauseDownload(quint32 downloadId)
 {
-    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_profileAdapter->profile());
-    download::DownloadItem *download = dlm->GetDownload(downloadId);
-    if (download)
+    if (download::DownloadItem *download = findDownloadById(downloadId))
         download->Pause();
 }
 
 void DownloadManagerDelegateQt::resumeDownload(quint32 downloadId)
 {
-    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_profileAdapter->profile());
-    download::DownloadItem *download = dlm->GetDownload(downloadId);
-    if (download)
+    if (download::DownloadItem *download = findDownloadById(downloadId))
         download->Resume();
+}
+
+void DownloadManagerDelegateQt::removeDownload(quint32 downloadId)
+{
+    if (download::DownloadItem *download = findDownloadById(downloadId))
+        download->Remove();
 }
 
 bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* item,

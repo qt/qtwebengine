@@ -141,8 +141,8 @@ static inline QWebEngineDownloadItem::DownloadInterruptReason toDownloadInterrup
     QWebEngineProfile being a long-lived object, it is in fact recommended that
     the application delete any items it is no longer interested in.
 
-    \note Deleting an item will not cancel a possible ongoing download. If that
-    is desirable, then cancel() must be called separately.
+    \note Deleting an item will also automatically cancel a download since 5.12.2,
+    but it is recommended to cancel manually before deleting for portability.
 
     \section2 Web Page Downloads
 
@@ -653,6 +653,8 @@ QWebEngineDownloadItem::QWebEngineDownloadItem(QWebEngineDownloadItemPrivate *p,
 */
 QWebEngineDownloadItem::~QWebEngineDownloadItem()
 {
+    if (auto profileAdapter = d_ptr->profile->profileAdapter())
+        profileAdapter->removeDownload(d_ptr->downloadId);
 }
 
 QT_END_NAMESPACE

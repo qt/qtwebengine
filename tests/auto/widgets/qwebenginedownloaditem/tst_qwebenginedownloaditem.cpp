@@ -34,6 +34,7 @@
 #include <QWebEngineDownloadItem>
 #include <QWebEnginePage>
 #include <QWebEngineProfile>
+#include <QWebEngineSettings>
 #include <QWebEngineView>
 #include <httpserver.h>
 
@@ -67,6 +68,7 @@ private Q_SLOTS:
     void downloadViaSetUrl();
     void downloadFileNot1();
     void downloadFileNot2();
+    void downloadDeleted();
 
 private:
     void saveLink(QPoint linkPos);
@@ -81,7 +83,8 @@ private:
     QWebEngineProfile *m_profile;
     QWebEnginePage *m_page;
     QWebEngineView *m_view;
-    QSet<QWebEngineDownloadItem *> m_downloads;
+    QSet<QWebEngineDownloadItem *> m_requestedDownloads;
+    QSet<QWebEngineDownloadItem *> m_finishedDownloads;
 };
 
 class ScopedConnection {
@@ -100,13 +103,15 @@ void tst_QWebEngineDownloadItem::initTestCase()
     m_server = new HttpServer();
     m_profile = new QWebEngineProfile;
     m_profile->setHttpCacheType(QWebEngineProfile::NoCache);
+    m_profile->settings()->setAttribute(QWebEngineSettings::AutoLoadIconsForPage, false);
     connect(m_profile, &QWebEngineProfile::downloadRequested, [this](QWebEngineDownloadItem *item) {
-        m_downloads.insert(item);
+        m_requestedDownloads.insert(item);
         connect(item, &QWebEngineDownloadItem::destroyed, [this, item](){
-            m_downloads.remove(item);
+            m_requestedDownloads.remove(item);
+            m_finishedDownloads.remove(item);
         });
         connect(item, &QWebEngineDownloadItem::finished, [this, item](){
-            m_downloads.remove(item);
+            m_finishedDownloads.insert(item);
         });
     });
     m_page = new QWebEnginePage(m_profile);
@@ -123,7 +128,11 @@ void tst_QWebEngineDownloadItem::init()
 
 void tst_QWebEngineDownloadItem::cleanup()
 {
-    QCOMPARE(m_downloads.count(), 0);
+    for (QWebEngineDownloadItem *item : m_finishedDownloads) {
+        item->deleteLater();
+    }
+    QTRY_COMPARE(m_requestedDownloads.count(), 0);
+    QCOMPARE(m_finishedDownloads.count(), 0);
     QVERIFY(m_server->stop());
 }
 
@@ -776,6 +785,31 @@ void tst_QWebEngineDownloadItem::downloadFileNot2()
     QTRY_COMPARE(downloadCount, 1);
     QVERIFY(downloadItem);
     QCOMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCancelled);
+}
+
+void tst_QWebEngineDownloadItem::downloadDeleted()
+{
+    QPointer<QWebEngineDownloadItem> downloadItem;
+    m_server->setExpectError(true);
+    int downloadCount = 0;
+    int finishedCount = 0;
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+        QVERIFY(item);
+        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+        downloadItem = item;
+        connect(downloadItem, &QWebEngineDownloadItem::finished, [&]() {
+            finishedCount++;
+        });
+        item->accept();
+        downloadCount++;
+    });
+
+    m_page->download(m_server->url(QByteArrayLiteral("/file")));
+    QTRY_COMPARE(downloadCount, 1);
+    QVERIFY(downloadItem);
+    QCOMPARE(finishedCount, 0);
+    downloadItem->deleteLater();
+    QTRY_COMPARE(finishedCount, 1);
 }
 
 QTEST_MAIN(tst_QWebEngineDownloadItem)
