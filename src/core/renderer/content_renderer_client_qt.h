@@ -96,7 +96,20 @@ public:
     blink::WebPrescientNetworking* GetPrescientNetworking() override;
     void AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) override;
 
-    void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
+    void RunScriptsAtDocumentStart(content::RenderFrame *render_frame) override;
+    void RunScriptsAtDocumentEnd(content::RenderFrame *render_frame) override;
+    void RunScriptsAtDocumentIdle(content::RenderFrame *render_frame) override;
+    bool OverrideCreatePlugin(content::RenderFrame* render_frame,
+        const blink::WebPluginParams& params, blink::WebPlugin** plugin) override;
+    content::BrowserPluginDelegate* CreateBrowserPluginDelegate(content::RenderFrame* render_frame,
+        const content::WebPluginInfo& info, const std::string& mime_type, const GURL& original_url) override;
+
+    void WillSendRequest(blink::WebLocalFrame *frame,
+                         ui::PageTransition transition_type,
+                         const blink::WebURL &url,
+                         const url::Origin *initiator_origin,
+                         GURL *new_url,
+                         bool *attach_same_site_cookies) override;
 
     void CreateRendererService(service_manager::mojom::ServiceRequest service_request) override;
 

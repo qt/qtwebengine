@@ -217,6 +217,13 @@ content::ResourceContext *ProfileIODataQt::resourceContext()
     return m_resourceContext.get();
 }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+extensions::ExtensionSystemQt* ProfileIODataQt::GetExtensionSystem()
+{
+    return m_profile->GetExtensionSystem();
+}
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
+
 void ProfileIODataQt::initializeOnIOThread()
 {
     m_networkDelegate.reset(new NetworkDelegateQt(this));

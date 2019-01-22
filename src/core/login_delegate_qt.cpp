@@ -50,10 +50,22 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/stream_info.h"
+#include "extensions/buildflags/buildflags.h"
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/info_map.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/mime_types_handler.h"
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
+
 #include "net/url_request/url_request.h"
 
 #include "authentication_dialog_controller.h"
 #include "authentication_dialog_controller_p.h"
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/extension_system_qt.h"
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
+#include "resource_context_qt.h"
 #include "type_conversion.h"
 #include "web_contents_view_qt.h"
 

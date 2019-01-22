@@ -43,6 +43,7 @@
 #include "profile_adapter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "extensions/buildflags/buildflags.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 #include <QtCore/QString>
@@ -61,6 +62,10 @@ class URLRequestJobFactoryImpl;
 class TransportSecurityPersister;
 }
 
+namespace extensions {
+class ExtensionSystemQt;
+}
+
 namespace QtWebEngineCore {
 
 class ProfileQt;
@@ -77,6 +82,10 @@ public:
 
     content::ResourceContext *resourceContext();
     net::URLRequestContext *urlRequestContext();
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::ExtensionSystemQt* GetExtensionSystem();
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
+
     void initializeOnIOThread();
     void initializeOnUIThread(); // runs on ui thread
     void shutdownOnUIThread(); // runs on ui thread

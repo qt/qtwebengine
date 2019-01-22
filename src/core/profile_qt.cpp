@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -68,11 +68,24 @@
 #include "components/spellcheck/browser/pref_names.h"
 #endif
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "extensions/browser/extension_protocols.h"
+#include "extensions/browser/pref_names.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/common/constants.h"
+
+#include "extensions/extension_system_qt.h"
+#endif
+
 namespace QtWebEngineCore {
 
 ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     : m_profileIOData(new ProfileIODataQt(this)),
       m_profileAdapter(profileAdapter)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    , m_extensionSystem(nullptr)
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
 {
     PrefServiceFactory factory;
     factory.set_user_prefs(new InMemoryPrefStore);
@@ -89,6 +102,23 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
 #endif // QT_CONFIG(webengine_spellchecker)
     registry->RegisterBooleanPref(prefs::kShowInternalAccessibilityTree, false);
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    registry->RegisterDictionaryPref(extensions::pref_names::kExtensions);
+    registry->RegisterListPref(extensions::pref_names::kInstallAllowList);
+    registry->RegisterListPref(extensions::pref_names::kInstallDenyList);
+    registry->RegisterDictionaryPref(extensions::pref_names::kInstallForceList);
+    registry->RegisterDictionaryPref(extensions::pref_names::kInstallLoginScreenAppList);
+    registry->RegisterListPref(extensions::pref_names::kAllowedTypes);
+    registry->RegisterBooleanPref(extensions::pref_names::kStorageGarbageCollect, false);
+    registry->RegisterInt64Pref(extensions::pref_names::kLastUpdateCheck, 0);
+    registry->RegisterInt64Pref(extensions::pref_names::kNextUpdateCheck, 0);
+    registry->RegisterListPref(extensions::pref_names::kAllowedInstallSites);
+    registry->RegisterStringPref(extensions::pref_names::kLastChromeVersion, std::string());
+    registry->RegisterListPref(extensions::pref_names::kNativeMessagingBlacklist);
+    registry->RegisterListPref(extensions::pref_names::kNativeMessagingWhitelist);
+    registry->RegisterBooleanPref(extensions::pref_names::kNativeMessagingUserLevelHosts, true);
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
+
     m_prefService = factory.Create(registry);
     user_prefs::UserPrefs::Set(this, m_prefService.get());
 
@@ -97,6 +127,11 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     // ProfileQt object is allocated at the same address as a previously
     // destroyed one. Needs to be called after WebEngineContext initialization.
     BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(this);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    m_extensionSystem = static_cast<extensions::ExtensionSystemQt*>(extensions::ExtensionSystem::Get(this));
+    m_extensionSystem->InitForRegularProfile(true);
+#endif
 }
 
 ProfileQt::~ProfileQt()
@@ -163,7 +198,9 @@ content::DownloadManagerDelegate *ProfileQt::GetDownloadManagerDelegate()
 
 content::BrowserPluginGuestManager *ProfileQt::GetGuestManager()
 {
-    return nullptr;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    return guest_view::GuestViewManager::FromBrowserContext(this);
+#endif
 }
 
 storage::SpecialStoragePolicy *ProfileQt::GetSpecialStoragePolicy()
@@ -217,6 +254,12 @@ net::URLRequestContextGetter *ProfileQt::CreateRequestContext(
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(!m_urlRequestContextGetter.get());
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::InfoMap* extension_info_map = GetExtensionSystem()->info_map();
+    (*protocol_handlers)[extensions::kExtensionScheme] =
+            extensions::CreateExtensionProtocolHandler(IsOffTheRecord(),extension_info_map);
+#endif
+
     m_profileIOData->setRequestContextData(protocol_handlers, std::move(request_interceptors));
     m_profileIOData->updateStorageSettings();
     m_urlRequestContextGetter = new URLRequestContextGetterQt(m_profileIOData.get());
@@ -273,4 +316,12 @@ bool ProfileQt::isSpellCheckEnabled() const
     return m_prefService->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
 }
 #endif // QT_CONFIG(webengine_spellchecker)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+extensions::ExtensionSystemQt* ProfileQt::GetExtensionSystem()
+{
+    return m_extensionSystem;
+}
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
+
 } // namespace QtWebEngineCore

@@ -1,9 +1,11 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//chrome/common/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//pdf/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
+import("//extensions/buildflags/buildflags.gni")
 
 source_set("qtwebengine_spellcheck_sources") {
   include_dirs = core_include_dirs
@@ -40,12 +42,14 @@ source_set("qtwebengine_sources") {
     "//skia:skia_config",
     "//third_party/boringssl:external_config",
   ]
+
   deps = [
     "//chrome/common:buildflags",
     "//components/nacl/common:buildflags",
     "//extensions/buildflags:buildflags",
     "//third_party/blink/public/mojom:mojom_platform",
   ]
+
   sources = [
     "//chrome/browser/accessibility/accessibility_ui.cc",
     "//chrome/browser/accessibility/accessibility_ui.h",
@@ -80,11 +84,46 @@ source_set("qtwebengine_sources") {
     "//chrome/common/url_constants.h",
     "//chrome/common/webui_url_constants.cc",
     "//chrome/common/webui_url_constants.h",
-    "//extensions/common/constants.cc",
-    "//extensions/common/constants.h",
-    "//extensions/common/url_pattern.cc",
-    "//extensions/common/url_pattern.h",
+    "//components/prefs/in_memory_pref_store.cc",
+    "//components/prefs/in_memory_pref_store.h",
   ]
+
+  if (enable_extensions) {
+    deps += [
+      ":qtwebengine_extensions_features",
+      "//chrome/browser/resources:component_extension_resources_grit",
+      "//chrome/common/extensions/api",
+      "//chrome/common/extensions/api:extensions_features",
+      "//components/crx_file",
+      "//components/crx_file:crx_creator",
+      "//components/spellcheck:buildflags",
+      "//extensions/buildflags:buildflags",
+      "//extensions/common",
+      "//extensions/common/api",
+      "//extensions/common:core_api_provider",
+      "//extensions/browser",
+      "//extensions/browser/api",
+      "//extensions/browser:core_api_provider",
+      "//extensions/renderer",
+      "//extensions:extensions_resources",
+      "//extensions/strings",
+    ]
+    sources += [
+      "//chrome/common/extensions/permissions/chrome_api_permissions.cc",
+      "//chrome/common/extensions/permissions/chrome_api_permissions.h",
+      "//chrome/common/extensions/permissions/chrome_permission_message_provider.cc",
+      "//chrome/common/extensions/permissions/chrome_permission_message_provider.h",
+      "//chrome/common/extensions/permissions/chrome_permission_message_rules.cc",
+      "//chrome/common/extensions/permissions/chrome_permission_message_rules.h",
+    ]
+  } else {
+    sources += [
+      "//extensions/common/constants.cc",
+      "//extensions/common/constants.h",
+      "//extensions/common/url_pattern.cc",
+      "//extensions/common/url_pattern.h",
+    ]
+  }
 
   if (is_linux) {
     sources += [
@@ -131,6 +170,8 @@ source_set("qtwebengine_sources") {
       deps += [
          "//pdf",
          "//pdf:buildflags",
+         "//components/pdf/browser:browser",
+         "//components/pdf/renderer:renderer",
          "//components/printing/browser",
          "//components/printing/renderer",
       ]

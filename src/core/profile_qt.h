@@ -43,6 +43,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/url_request/url_request_context.h"
 #include "profile_io_data_qt.h"
 #include <QtGlobal>
@@ -52,6 +53,10 @@ class QStringList;
 QT_END_NAMESPACE
 class InMemoryPrefStore;
 class PrefService;
+
+namespace extensions {
+class ExtensionSystemQt;
+}
 
 namespace QtWebEngineCore {
 
@@ -99,6 +104,7 @@ public:
     PrefService *GetPrefs() override;
     const PrefService *GetPrefs() const override;
     net::URLRequestContextGetter *GetRequestContext() override;
+    void Initialize();
 
     ProfileAdapter *profileAdapter() { return m_profileAdapter; }
 
@@ -109,6 +115,9 @@ public:
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
 #endif
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::ExtensionSystemQt* GetExtensionSystem();
+#endif // defined(ENABLE_EXTENSIONS)
 
 private:
     friend class ContentBrowserClientQt;
@@ -120,6 +129,10 @@ private:
     std::unique_ptr<ProfileIODataQt> m_profileIOData;
     ProfileAdapter *m_profileAdapter;
     friend class ProfileAdapter;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::ExtensionSystemQt *m_extensionSystem;
+#endif //ENABLE_EXTENSIONS
+    friend class BrowserContextAdapter;
 
     DISALLOW_COPY_AND_ASSIGN(ProfileQt);
 };

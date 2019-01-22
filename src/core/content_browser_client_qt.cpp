@@ -48,6 +48,7 @@
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #endif
+#include "components/guest_view/browser/guest_view_base.h"
 #include "components/network_hints/browser/network_hints_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/url_schemes.h"
@@ -70,6 +71,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "media/media_buildflags.h"
+#include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "printing/buildflags/buildflags.h"
@@ -126,6 +128,16 @@
 
 #if QT_CONFIG(webengine_geolocation)
 #include "location_provider_qt.h"
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/extensions_browser_client_qt.h"
+#include "extensions/browser/extension_message_filter.h"
+#include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
+#include "extensions/browser/io_thread_extension_message_filter.h"
+#include "extensions/common/constants.h"
+#include "common/extensions/extensions_client_qt.h"
+#include "renderer_host/resource_dispatcher_host_delegate_qt.h"
 #endif
 
 #include <QGuiApplication>
@@ -252,6 +264,11 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 #if QT_CONFIG(webengine_printing_and_pdf)
     host->AddFilter(new PrintingMessageFilterQt(host->GetID()));
 #endif
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    host->AddFilter(new extensions::ExtensionMessageFilter(host->GetID(), host->GetBrowserContext()));
+    host->AddFilter(new extensions::IOThreadExtensionMessageFilter(host->GetID(), host->GetBrowserContext()));
+    host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(host->GetID(), host->GetBrowserContext()));
+#endif //ENABLE_EXTENSIONS
 
     service_manager::mojom::ServicePtr service;
     *service_request = mojo::MakeRequest(&service);
@@ -266,7 +283,11 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()
 {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    m_resourceDispatcherHostDelegate.reset(new ResourceDispatcherHostDelegateQt);
+#else
     m_resourceDispatcherHostDelegate.reset(new content::ResourceDispatcherHostDelegate);
+#endif
     content::ResourceDispatcherHost::Get()->SetDelegate(m_resourceDispatcherHostDelegate.get());
 }
 
@@ -285,6 +306,10 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
 void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, content::WebPreferences *web_prefs)
 {
     if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents()) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+        if (guest_view::GuestViewBase::IsGuest(webContents))
+            return;
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
         WebContentsDelegateQt* delegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
         if (delegate)
             delegate->overrideWebPreferences(webContents, web_prefs);
@@ -402,6 +427,11 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
 void ContentBrowserClientQt::GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes)
 {
     additional_schemes->push_back(content::kChromeDevToolsScheme);
+}
+
+void ContentBrowserClientQt::GetAdditionalViewSourceSchemes(std::vector<std::string>* additional_schemes)
+{
+   additional_schemes->push_back(content::kChromeDevToolsScheme);
 }
 
 #if defined(Q_OS_LINUX)
@@ -728,6 +758,15 @@ scoped_refptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegat
     auto loginDelegate = base::MakeRefCounted<LoginDelegateQt>(authInfo, web_contents_getter, url, first_auth_attempt, std::move(auth_required_callback));
     loginDelegate->triggerDialog();
     return loginDelegate;
+}
+
+bool ContentBrowserClientQt::ShouldUseProcessPerSite(content::BrowserContext* browser_context, const GURL& effective_url)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    return true;
+#else
+    return ContentBrowserClient::ShouldUseProcessPerSite(browser_context, effective_url);
+#endif
 }
 
 } // namespace QtWebEngineCore

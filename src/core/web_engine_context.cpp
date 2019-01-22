@@ -51,6 +51,7 @@
 #include "cc/base/switches.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "chrome/browser/printing/print_job_manager.h"
+#include "components/printing/browser/features.h"
 #endif
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
@@ -470,6 +471,10 @@ WebEngineContext::WebEngineContext()
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kMojoVideoCapture.name);
 
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kBackgroundFetch.name);
+
+#if QT_CONFIG(webengine_printing_and_pdf)
+    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, printing::features::kUsePdfCompositorServiceForPrint.name);
+#endif
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc

@@ -20,6 +20,7 @@
             "webengine-pulseaudio": "boolean",
             "webengine-spellchecker": "boolean",
             "webengine-native-spellchecker": "boolean",
+            "webengine-extensions": "boolean",
             "webengine-webrtc": "boolean",
             "webengine-geolocation": "boolean",
             "webengine-v8-snapshot": "boolean",
@@ -36,6 +37,7 @@
             "printing-and-pdf": { "type": "boolean", "name": "webengine-printing-and-pdf" },
             "proprietary-codecs": { "type": "boolean", "name": "webengine-proprietary-codecs" },
             "spellchecker": { "type": "boolean", "name": "webengine-spellchecker" },
+            "extensions": { "type": "boolean", "name": "webengine-extensions" },
             "webrtc": { "type": "boolean", "name": "webengine-webrtc" }
         }
     },
@@ -328,6 +330,10 @@
         "webengine-arm-thumb" : {
             "label": "thumb instruction set",
             "type": "hasThumbFlag"
+        },
+        "webengine-extensions-gcc-version" : {
+            "label": "GCC 6 or newer",
+            "type": "hasGcc6OrNewer"
         }
     },
 
@@ -548,6 +554,14 @@
             "condition": "config.macos && features.webengine-spellchecker",
             "output": [ "publicFeature" ]
         },
+        "webengine-extensions": {
+            "label": "Extensions",
+            "purpose": "Enables Chromium extensions within certain limits. Currently used for enabling the pdf viewer.",
+            "section": "WebEngine",
+            "condition": "features.webengine-printing-and-pdf && (tests.webengine-extensions-gcc-version || config.clang || !config.gcc)",
+            "autoDetect": "features.webengine-printing-and-pdf",
+            "output": [ "publicFeature" ]
+        },
         "webengine-webrtc": {
             "label": "WebRTC",
             "purpose": "Provides WebRTC support.",
@@ -727,6 +741,7 @@
                 "webengine-webchannel",
                 "webengine-v8-snapshot",
                 "webengine-kerberos",
+                "webengine-extensions",
                 {
                     "type": "feature",
                     "args": "webengine-v8-snapshot-support",

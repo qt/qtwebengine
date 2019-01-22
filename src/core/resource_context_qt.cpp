@@ -64,4 +64,11 @@ net::URLRequestContext* ResourceContextQt::GetRequestContext()
     return m_io_data->urlRequestContext();
 }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+extensions::ExtensionSystemQt* ResourceContextQt::GetExtensionSystem()
+{
+    return m_io_data->GetExtensionSystem();
+}
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
+
 } // namespace QtWebEngineCore

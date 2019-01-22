@@ -66,6 +66,7 @@ public:
 
     int PreEarlyInitialization() override;
     void PreMainMessageLoopStart() override;
+    void PreMainMessageLoopRun() override;
     void PostMainMessageLoopRun() override;
     int PreCreateThreads() override;
     void ServiceManagerConnectionStarted(content::ServiceManagerConnection *connection) override;

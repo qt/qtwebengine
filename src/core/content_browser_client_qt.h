@@ -112,6 +112,8 @@ public:
     std::string GetApplicationLocale() override;
     std::string GetAcceptLangs(content::BrowserContext* context) override;
     void AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id) override;
+
+    void GetAdditionalViewSourceSchemes(std::vector<std::string>* additional_schemes) override;
     void GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes) override;
 
     void BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,
@@ -173,6 +175,7 @@ public:
 #if QT_CONFIG(webengine_geolocation)
     std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() override;
 #endif
+    bool ShouldUseProcessPerSite(content::BrowserContext* browser_context, const GURL& effective_url) override;
 
 #if defined(Q_OS_LINUX)
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;
