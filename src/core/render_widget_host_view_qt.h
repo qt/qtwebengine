@@ -263,7 +263,6 @@ private:
 
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
-    viz::LocalSurfaceId m_localSurfaceId;
     viz::ParentLocalSurfaceIdAllocator m_localSurfaceIdAllocator;
 
     uint m_imState;

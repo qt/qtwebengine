@@ -280,8 +280,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     const QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
     m_imeHasHiddenTextCapability = context && context->hasCapability(QPlatformInputContext::HiddenTextCapability);
 
-    m_localSurfaceId = m_localSurfaceIdAllocator.GenerateId();
-
     if (host()->delegate() && host()->delegate()->GetInputEventRouter())
         host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(GetFrameSinkId(), this);
 
@@ -938,7 +936,7 @@ void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::Rende
     if (metadata.local_surface_id)
         m_localSurfaceIdAllocator.UpdateFromChild(*metadata.local_surface_id);
 
-    m_localSurfaceId = m_localSurfaceIdAllocator.GenerateId();
+    m_localSurfaceIdAllocator.GenerateId();
     host()->SendScreenRects();
     if (m_pendingResize) {
         if (host()->SynchronizeVisualProperties())
@@ -1732,7 +1730,7 @@ const viz::FrameSinkId &RenderWidgetHostViewQt::GetFrameSinkId() const
 
 const viz::LocalSurfaceId &RenderWidgetHostViewQt::GetLocalSurfaceId() const
 {
-    return m_localSurfaceId;
+    return m_localSurfaceIdAllocator.GetCurrentLocalSurfaceId();
 }
 
 void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostView *view)
