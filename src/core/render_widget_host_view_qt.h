@@ -234,7 +234,6 @@ private:
     void processMotionEvent(const ui::MotionEvent &motionEvent);
     void clearPreviousTouchMotionState();
     QList<QTouchEvent::TouchPoint> mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints);
-    float dpiScale() const;
     void updateNeedsBeginFramesInternal();
 
     bool IsPopup() const;

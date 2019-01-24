@@ -128,7 +128,6 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_webChannel(0)
     , m_webChannelWorld(0)
     , m_isBeingAdopted(false)
-    , m_dpiScale(1.0)
     , m_backgroundColor(Qt::white)
     , m_zoomFactor(1.0)
     , m_ui2Enabled(false)
@@ -413,11 +412,6 @@ QRectF QQuickWebEngineViewPrivate::viewportRect() const
 {
     Q_Q(const QQuickWebEngineView);
     return QRectF(q->x(), q->y(), q->width(), q->height());
-}
-
-qreal QQuickWebEngineViewPrivate::dpiScale() const
-{
-    return m_dpiScale;
 }
 
 QColor QQuickWebEngineViewPrivate::backgroundColor() const

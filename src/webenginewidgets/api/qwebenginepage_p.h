@@ -100,7 +100,6 @@ public:
     void selectionChanged() override;
     void recentlyAudibleChanged(bool recentlyAudible) override;
     QRectF viewportRect() const override;
-    qreal dpiScale() const override;
     QColor backgroundColor() const override;
     void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) override;
     void loadCommitted() override { }
