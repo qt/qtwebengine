@@ -281,7 +281,6 @@ private:
     content::MouseWheelPhaseHandler m_mouseWheelPhaseHandler;
     viz::FrameSinkId m_frameSinkId;
 
-    uint32_t m_latestCaptureSequenceNumber = 0u;
     std::string m_editCommand;
 
     std::unique_ptr<TouchSelectionControllerClientQt> m_touchSelectionControllerClient;

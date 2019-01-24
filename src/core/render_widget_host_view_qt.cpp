@@ -1746,14 +1746,12 @@ void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostVi
 
 void RenderWidgetHostViewQt::EnsureSurfaceSynchronizedForLayoutTest()
 {
-    ++m_latestCaptureSequenceNumber;
-    if (host())
-        host()->SynchronizeVisualProperties();
+    NOTIMPLEMENTED();
 }
 
 uint32_t RenderWidgetHostViewQt::GetCaptureSequenceNumber() const
 {
-    return m_latestCaptureSequenceNumber;
+    return 0;
 }
 
 void RenderWidgetHostViewQt::ResetFallbackToFirstNavigationSurface()
