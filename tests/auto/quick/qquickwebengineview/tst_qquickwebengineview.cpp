@@ -1108,6 +1108,39 @@ void tst_QQuickWebEngineView::javascriptClipboard()
     QCOMPARE(evaluateJavaScriptSync(view, "document.execCommand('paste')").toBool(), pasteResult);
     QCOMPARE(evaluateJavaScriptSync(view, "document.getElementById('myInput').value").toString(),
                 (pasteResult ? QString("AnotherText") : QString("OriginalText")));
+
+    // Test settings on clipboard permissions
+    evaluateJavaScriptSync(view,
+        QStringLiteral(
+            "var accessGranted = false;"
+            "var accessDenied = false;"
+            "var accessPrompt = false;"
+            "navigator.permissions.query({name:'clipboard-write'})"
+            ".then(result => {"
+                "if (result.state == 'granted') accessGranted = true;"
+                "if (result.state == 'denied') accessDenied = true;"
+                "if (result.state == 'prompt') accessPrompt = true;"
+            "})"));
+
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), copyResult);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), !javascriptCanAccessClipboard);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), false);
+
+    evaluateJavaScriptSync(view,
+        QStringLiteral(
+            "accessGranted = false;"
+            "accessDenied = false;"
+            "accessPrompt = false;"
+            "navigator.permissions.query({name:'clipboard-read'})"
+            ".then(result => {"
+                "if (result.state == 'granted') accessGranted = true;"
+                "if (result.state == 'denied') accessDenied = true;"
+                "if (result.state == 'prompt') accessPrompt = true;"
+            "})"));
+
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), pasteResult);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), !javascriptCanAccessClipboard || !javascriptCanPaste);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), false);
 }
 
 QTEST_MAIN(tst_QQuickWebEngineView)

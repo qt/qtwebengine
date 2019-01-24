@@ -153,6 +153,8 @@ public:
 //        NotificationPermission = 2,
         AudioCapturePermission = 3,
         VideoCapturePermission = 4,
+        ClipboardRead = 5,
+        ClipboardWrite = 6,
     };
 
     HttpCacheType httpCacheType() const;
