@@ -108,6 +108,12 @@
 #define GL_LINE_LOOP                      0x0002
 #endif
 
+#ifndef QT_NO_OPENGL
+QT_BEGIN_NAMESPACE
+Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
+QT_END_NAMESPACE
+#endif
+
 namespace QtWebEngineCore {
 #ifndef QT_NO_OPENGL
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
