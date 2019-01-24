@@ -1285,16 +1285,6 @@ void WebContentsAdapter::grantMouseLockPermission(bool granted)
     m_webContents->GotResponseToLockMouseRequest(granted);
 }
 
-void WebContentsAdapter::dpiScaleChanged()
-{
-    CHECK_INITIALIZED();
-    content::RenderWidgetHostImpl* impl = NULL;
-    if (m_webContents->GetRenderViewHost())
-        impl = content::RenderWidgetHostImpl::From(m_webContents->GetRenderViewHost()->GetWidget());
-    if (impl)
-        impl->NotifyScreenInfoChanged();
-}
-
 void WebContentsAdapter::setBackgroundColor(const QColor &color)
 {
     CHECK_INITIALIZED();
