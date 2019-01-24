@@ -149,7 +149,6 @@ HEADERS = \
         browser_message_filter_qt.h \
         certificate_error_controller_p.h \
         certificate_error_controller.h \
-        chromium_overrides.h \
         client_cert_select_controller.h \
         clipboard_qt.h \
         command_line_pref_store_qt.h \

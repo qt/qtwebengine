@@ -619,7 +619,7 @@ void DelegatedFrameNode::commit(const viz::CompositorFrame &pendingFrame,
 
     QScopedPointer<DelegatedNodeTreeHandler> nodeHandler;
 
-    const QSizeF viewportSizeInPt = apiDelegate->screenRect().size();
+    const QSizeF viewportSizeInPt = apiDelegate->viewGeometry().size();
     const QSizeF viewportSizeF = viewportSizeInPt * devicePixelRatio;
     const QSize viewportSize(std::ceil(viewportSizeF.width()), std::ceil(viewportSizeF.height()));
 

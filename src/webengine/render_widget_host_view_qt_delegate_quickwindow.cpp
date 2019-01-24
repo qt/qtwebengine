@@ -62,14 +62,9 @@ void RenderWidgetHostViewQtDelegateQuickWindow::initAsPopup(const QRect &screenR
     show();
 }
 
-QRectF RenderWidgetHostViewQtDelegateQuickWindow::screenRect() const
+QRectF RenderWidgetHostViewQtDelegateQuickWindow::viewGeometry() const
 {
-    return QRectF(x(), y(), width(), height());
-}
-
-QRectF RenderWidgetHostViewQtDelegateQuickWindow::contentsRect() const
-{
-    return geometry();
+    return m_realDelegate->viewGeometry();
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::show()

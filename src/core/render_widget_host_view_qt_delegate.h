@@ -78,11 +78,9 @@ class QWEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegateClient {
 public:
     virtual ~RenderWidgetHostViewQtDelegateClient() { }
     virtual QSGNode *updatePaintNode(QSGNode *) = 0;
-    virtual void notifyResize() = 0;
     virtual void notifyShown() = 0;
     virtual void notifyHidden() = 0;
-    virtual void windowBoundsChanged() = 0;
-    virtual void windowChanged() = 0;
+    virtual void visualPropertiesChanged() = 0;
     virtual bool forwardEvent(QEvent *) = 0;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) = 0;
     virtual void closePopup() = 0;
@@ -92,8 +90,7 @@ class QWEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegate {
 public:
     virtual ~RenderWidgetHostViewQtDelegate() { }
     virtual void initAsPopup(const QRect&) = 0;
-    virtual QRectF screenRect() const = 0;
-    virtual QRectF contentsRect() const = 0;
+    virtual QRectF viewGeometry() const = 0;
     virtual void setKeyboardFocus() = 0;
     virtual bool hasKeyboardFocus() = 0;
     virtual void lockMouse() = 0;

@@ -124,7 +124,6 @@ public:
     void InitAsFullscreen(content::RenderWidgetHostView*) override;
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
-    gfx::Size GetCompositorViewportPixelSize() const override;
     gfx::NativeView GetNativeView() const override;
     gfx::NativeViewAccessible GetNativeViewAccessible() override;
     void Focus() override;
@@ -176,11 +175,9 @@ public:
 
     // Overridden from RenderWidgetHostViewQtDelegateClient.
     QSGNode *updatePaintNode(QSGNode *) override;
-    void notifyResize() override;
     void notifyShown() override;
     void notifyHidden() override;
-    void windowBoundsChanged() override;
-    void windowChanged() override;
+    void visualPropertiesChanged() override;
     bool forwardEvent(QEvent *) override;
     QVariant inputMethodQuery(Qt::InputMethodQuery query) override;
     void closePopup() override;
@@ -234,12 +231,19 @@ private:
     void processMotionEvent(const ui::MotionEvent &motionEvent);
     void clearPreviousTouchMotionState();
     QList<QTouchEvent::TouchPoint> mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints);
-    void updateNeedsBeginFramesInternal();
 
     bool IsPopup() const;
 
     void selectionChanged();
     content::RenderFrameHost *getFocusedFrameHost();
+
+    void synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceId> &childSurfaceId);
+
+    // Geometry of the view in screen DIPs.
+    gfx::Rect m_viewRectInDips;
+    // Geometry of the window, including frame, in screen DIPs.
+    gfx::Rect m_windowRectInDips;
+    content::ScreenInfo m_screenInfo;
 
     ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
@@ -274,7 +278,6 @@ private:
     bool m_imeHasHiddenTextCapability;
 
     bool m_wheelAckPending;
-    bool m_pendingResize;
     QList<blink::WebMouseWheelEvent> m_pendingWheelEvents;
     content::MouseWheelPhaseHandler m_mouseWheelPhaseHandler;
     viz::FrameSinkId m_frameSinkId;
