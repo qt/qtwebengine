@@ -485,6 +485,10 @@
     The \a resultCallback must take a boolean parameter. It will be called with a value of \c true
     if the \a subString was found; otherwise the callback value will be \c false.
 
+    \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
+    during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
+    value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
+
     For example:
     \snippet qtwebengine_qwebenginepage_snippet.cpp 0
 */
@@ -613,6 +617,10 @@
 
     \note \a resultCallback can be any of a function pointer, a functor or a lambda, and it is expected to take a QString parameter.
 
+    \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
+    during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
+    value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
+
     \sa setHtml(), toPlainText()
 */
 
@@ -623,6 +631,10 @@
     Upon successful completion, \a resultCallback is called with the page's content.
 
     \note \a resultCallback can be any of a function pointer, a functor or a lambda, and it is expected to take a QString parameter.
+
+    \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
+    during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
+    value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
 
     \sa toHtml()
 */
@@ -742,6 +754,10 @@
 
     \warning Do not execute lengthy routines in the callback function, because it might block the
     rendering of the web engine page.
+
+    \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
+    during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
+    value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
 
     See scripts() for an alternative API to inject scripts.
 

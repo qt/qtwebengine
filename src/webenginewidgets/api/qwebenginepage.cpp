@@ -2406,6 +2406,10 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &page
     The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array
     will contain the PDF data, otherwise, the byte array will be empty.
 
+    \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
+    during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
+    value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
+
     \since 5.7
 */
 void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &pageLayout)
@@ -2441,6 +2445,11 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
 
     The \a resultCallback must take a boolean as parameter. If printing was successful, this
     boolean will have the value \c true, otherwise, its value will be \c false.
+
+    \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
+    during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
+    value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
+
     \since 5.8
 */
 void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback)
