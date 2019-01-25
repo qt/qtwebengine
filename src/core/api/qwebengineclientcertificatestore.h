@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(ssl)
+
 struct QWebEngineClientCertificateStoreData;
 
 class QWEBENGINECORE_EXPORT QWebEngineClientCertificateStore {
@@ -71,6 +73,8 @@ private:
     ~QWebEngineClientCertificateStore();
     QWebEngineClientCertificateStoreData *d_ptr;
 };
+
+#endif // QT_CONFIG(ssl)
 
 QT_END_NAMESPACE
 

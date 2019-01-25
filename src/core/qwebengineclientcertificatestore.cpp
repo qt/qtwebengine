@@ -71,6 +71,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(ssl)
+
 typedef struct OverrideData {
     QSslKey key;
     QSslCertificate certificate;
@@ -197,6 +199,8 @@ void QWebEngineClientCertificateStore::clear()
     ClientCertOverrideData.clear();
 }
 
+#endif // QT_CONFIG(ssl)
+
 QT_END_NAMESPACE
 
 namespace net {
@@ -245,6 +249,7 @@ ClientCertOverrideStore::~ClientCertOverrideStore()
 void ClientCertOverrideStore::GetClientCerts(const SSLCertRequestInfo &cert_request_info,
                                              const ClientCertListCallback &callback)
 {
+#if QT_CONFIG(ssl)
     // Look for certificates in memory store
     for (int i = 0; i < ClientCertOverrideData.length(); i++) {
         scoped_refptr<net::X509Certificate> cert = ClientCertOverrideData[i]->certPtr;
@@ -255,6 +260,7 @@ void ClientCertOverrideStore::GetClientCerts(const SSLCertRequestInfo &cert_requ
             return;
         }
     }
+#endif // QT_CONFIG(ssl)
 
     // Continue with native cert store if matching certificate is not found in memory
     std::unique_ptr<net::ClientCertStore> store = getNativeStore();
