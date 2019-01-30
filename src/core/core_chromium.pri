@@ -87,6 +87,7 @@ SOURCES = \
         net/url_request_custom_job.cpp \
         net/url_request_custom_job_delegate.cpp \
         net/url_request_custom_job_proxy.cpp \
+        net/url_request_notification.cpp \
         net/webui_controller_factory_qt.cpp \
         ozone/gl_context_qt.cpp \
         ozone/gl_ozone_egl_qt.cpp \
@@ -189,6 +190,7 @@ HEADERS = \
         net/url_request_custom_job.h \
         net/url_request_custom_job_delegate.h \
         net/url_request_custom_job_proxy.h \
+        net/url_request_notification.h \
         net/webui_controller_factory_qt.h \
         ozone/gl_context_qt.h \
         ozone/gl_ozone_egl_qt.h \
