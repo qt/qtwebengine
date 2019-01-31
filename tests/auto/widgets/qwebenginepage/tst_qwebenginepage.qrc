@@ -23,4 +23,7 @@
     <file>resources/bar.txt</file>
     <file>resources/path with spaces.txt</file>
 </qresource>
+<qresource prefix='/shared'>
+    <file alias='notification.html'>../../shared/data/notification.html</file>
+</qresource>
 </RCC>

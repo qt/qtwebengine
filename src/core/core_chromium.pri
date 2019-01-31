@@ -98,6 +98,7 @@ SOURCES = \
         ozone/platform_window_qt.cpp \
         ozone/surface_factory_qt.cpp \
         permission_manager_qt.cpp \
+        platform_notification_service_qt.cpp \
         process_main.cpp \
         profile_adapter.cpp \
         profile_adapter_client.cpp \
@@ -123,6 +124,7 @@ SOURCES = \
         touch_selection_controller_client_qt.cpp \
         touch_selection_menu_controller.cpp \
         type_conversion.cpp \
+        user_notification_controller.cpp \
         user_script.cpp \
         visited_links_manager_qt.cpp \
         web_contents_adapter.cpp \
@@ -201,6 +203,7 @@ HEADERS = \
         ozone/platform_window_qt.h \
         ozone/surface_factory_qt.h \
         permission_manager_qt.h \
+        platform_notification_service_qt.h \
         process_main.h \
         profile_adapter.h \
         profile_adapter_client.h \
@@ -230,6 +233,7 @@ HEADERS = \
         touch_selection_controller_client_qt.h \
         touch_selection_menu_controller.h \
         type_conversion.h \
+        user_notification_controller.h \
         user_script.h \
         visited_links_manager_qt.h \
         web_contents_adapter.h \

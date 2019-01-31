@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,67 +37,65 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEPROFILE_P_H
-#define QWEBENGINEPROFILE_P_H
+#include "qwebenginenotificationpresenter_p.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "profile_adapter_client.h"
-#include "qwebengineprofile.h"
-#include "qwebenginescriptcollection.h"
-
-#include <QMap>
-#include <QPointer>
-#include <QScopedPointer>
-#include <QSharedPointer>
-
-#include <functional>
-
-namespace QtWebEngineCore {
-class ProfileAdapter;
-}
+#include <QSystemTrayIcon>
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineBrowserContext;
-class QWebEngineProfilePrivate;
-class QWebEngineNotification;
-class QWebEngineSettings;
+DefaultNotificationPresenter::DefaultNotificationPresenter(QObject *parent) : QObject(parent)
+{
+#ifndef QT_NO_SYSTEMTRAYICON
+    m_systemTrayIcon = new QSystemTrayIcon(this);
+    connect(m_systemTrayIcon, &QSystemTrayIcon::messageClicked, this, &DefaultNotificationPresenter::messageClicked);
+#endif
+}
 
-class QWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {
-public:
-    Q_DECLARE_PUBLIC(QWebEngineProfile)
-    QWebEngineProfilePrivate(QtWebEngineCore::ProfileAdapter *profileAdapter);
-    ~QWebEngineProfilePrivate();
+DefaultNotificationPresenter::~DefaultNotificationPresenter()
+{
+}
 
-    QtWebEngineCore::ProfileAdapter* profileAdapter() const;
-    QWebEngineSettings *settings() const { return m_settings; }
+void DefaultNotificationPresenter::show(const QWebEngineNotification &notification)
+{
+    if (!m_activeNotification.isNull())
+        m_activeNotification.close();
+    m_activeNotification = notification;
+#ifndef QT_NO_SYSTEMTRAYICON
+    if (m_systemTrayIcon) {
+        m_systemTrayIcon->show();
+        QIcon icon = notification.icon();
+        if (!icon.isNull())
+            m_systemTrayIcon->showMessage(notification.title(), notification.message(), icon);
+        else
+            m_systemTrayIcon->showMessage(notification.title(), notification.message());
+        notification.show();
+        connect(&m_activeNotification, &QWebEngineNotification::closed, this, &DefaultNotificationPresenter::closeNotification);
+    }
+#endif
+}
 
-    void downloadDestroyed(quint32 downloadId);
+void DefaultNotificationPresenter::messageClicked()
+{
+    if (!m_activeNotification.isNull())
+        m_activeNotification.click();
+}
 
-    void downloadRequested(DownloadItemInfo &info) override;
-    void downloadUpdated(const DownloadItemInfo &info) override;
+void DefaultNotificationPresenter::closeNotification()
+{
+#ifndef QT_NO_SYSTEMTRAYICON
+    const QWebEngineNotification *canceled = static_cast<const QWebEngineNotification *>(QObject::sender());
+    if (m_systemTrayIcon && canceled->matches(m_activeNotification))
+        m_systemTrayIcon->hide();
+#endif
+}
 
-    void showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &) override;
+void defaultNotificationPresenter(const QWebEngineNotification &notification)
+{
+    static DefaultNotificationPresenter *presenter = nullptr;
+    if (!presenter)
+        presenter = new DefaultNotificationPresenter();
+    presenter->show(notification);
+}
 
-private:
-    QWebEngineProfile *q_ptr;
-    QWebEngineSettings *m_settings;
-    QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
-    QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
-    QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
-    std::function<void(const QWebEngineNotification &)> m_notificationPresenter;
-};
 
 QT_END_NAMESPACE
-
-#endif // QWEBENGINEPROFILE_P_H

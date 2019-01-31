@@ -38,6 +38,7 @@ HEADERS = \
     qwebenginecookiestore.h \
     qwebenginecookiestore_p.h \
     qwebenginehttprequest.h \
+    qwebenginenotification.h \
     qwebenginequotarequest.h \
     qwebengineregisterprotocolhandlerrequest.h \
     qwebengineurlrequestinterceptor.h \
@@ -51,6 +52,7 @@ SOURCES = \
     qtwebenginecoreglobal.cpp \
     qwebenginecookiestore.cpp \
     qwebenginehttprequest.cpp \
+    qwebenginenotification.cpp \
     qwebenginequotarequest.cpp \
     qwebengineregisterprotocolhandlerrequest.cpp \
     qwebengineurlrequestinfo.cpp \

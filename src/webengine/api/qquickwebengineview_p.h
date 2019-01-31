@@ -209,7 +209,8 @@ public:
         MediaAudioVideoCapture,
         Geolocation,
         DesktopVideoCapture,
-        DesktopAudioVideoCapture
+        DesktopAudioVideoCapture,
+        Notifications,
     };
     Q_ENUM(Feature)
 

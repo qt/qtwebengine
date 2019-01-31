@@ -185,9 +185,7 @@ public:
     Q_ENUM(NavigationType)
 
     enum Feature {
-#ifndef Q_QDOC
         Notifications = 0,
-#endif
         Geolocation = 1,
         MediaAudioCapture = 2,
         MediaVideoCapture,

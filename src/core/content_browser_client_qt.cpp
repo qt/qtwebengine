@@ -103,6 +103,7 @@
 #include "media_capture_devices_dispatcher.h"
 #include "net/network_delegate_qt.h"
 #include "net/url_request_context_getter_qt.h"
+#include "platform_notification_service_qt.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "printing/printing_message_filter_qt.h"
 #endif
@@ -454,13 +455,20 @@ void ContentBrowserClientQt::GetAdditionalMappedFilesForChildProcess(const base:
 void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host)
 {
     browser_host->GetPpapiHost()->AddHostFactoryFilter(
-                base::WrapUnique(new QtWebEngineCore::PepperHostFactoryQt(browser_host)));
+                std::make_unique<QtWebEngineCore::PepperHostFactoryQt>(browser_host));
 }
 #endif
 
 content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDelegate()
 {
     return new DevToolsManagerDelegateQt;
+}
+
+content::PlatformNotificationService *ContentBrowserClientQt::GetPlatformNotificationService()
+{
+    if (!m_platformNotificationService)
+        m_platformNotificationService = std::make_unique<PlatformNotificationServiceQt>();
+    return m_platformNotificationService.get();
 }
 
 // This is a really complicated way of doing absolutely nothing, but Mojo demands it:

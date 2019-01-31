@@ -55,6 +55,7 @@ class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineScript;
 class QQuickWebEngineSettings;
 class QWebEngineCookieStore;
+class QWebEngineNotification;
 class QWebEngineUrlRequestInterceptor;
 class QWebEngineUrlSchemeHandler;
 
@@ -171,6 +172,8 @@ Q_SIGNALS:
 
     void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);
+
+    void userNotification(QWebEngineNotification *notification);
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineProfile)

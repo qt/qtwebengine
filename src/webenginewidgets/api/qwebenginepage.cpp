@@ -54,6 +54,7 @@
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
+#include "qwebenginenotification.h"
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
 #include "qwebenginequotarequest.h"
@@ -62,6 +63,7 @@
 #include "qwebenginesettings.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
+#include "user_notification_controller.h"
 #include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_adapter.h"
 #include "web_engine_settings.h"
@@ -536,6 +538,12 @@ void QWebEnginePagePrivate::runRegisterProtocolHandlerRequest(QWebEngineRegister
 {
     Q_Q(QWebEnginePage);
     Q_EMIT q->registerProtocolHandlerRequested(request);
+}
+
+void QWebEnginePagePrivate::runUserNotificationPermissionRequest(const QUrl &securityOrigin)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->featurePermissionRequested(securityOrigin, QWebEnginePage::Notifications);
 }
 
 QObject *QWebEnginePagePrivate::accessibilityParentObject()
@@ -1874,6 +1882,7 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
             d->adapter->grantMouseLockPermission(true);
             break;
         case Notifications:
+            d->adapter->runUserNotificationRequestCallback(securityOrigin, true);
             break;
         }
     } else { // if (policy == PermissionDeniedByUser)
@@ -1892,6 +1901,7 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
             d->adapter->grantMouseLockPermission(false);
             break;
         case Notifications:
+            d->adapter->runUserNotificationRequestCallback(securityOrigin, false);
             break;
         }
     }

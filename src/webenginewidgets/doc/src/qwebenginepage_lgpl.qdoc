@@ -285,6 +285,8 @@
     This enum describes the platform feature access categories that the user may be asked to grant
     or deny access to:
 
+    \value  Notifications
+            Web notifications for the end-user.
     \value  Geolocation
             Location hardware or service.
     \value  MediaAudioCapture

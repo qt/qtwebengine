@@ -106,6 +106,7 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
 #endif // QT_CONFIG(webengine_spellchecker)
     registry->RegisterBooleanPref(prefs::kShowInternalAccessibilityTree, false);
+    registry->RegisterIntegerPref(prefs::kNotificationNextPersistentId, 10000);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     registry->RegisterDictionaryPref(extensions::pref_names::kExtensions);

@@ -43,6 +43,7 @@
 #include "qwebenginecookiestore.h"
 #include "qwebenginedownloaditem.h"
 #include "qwebenginedownloaditem_p.h"
+#include "qwebenginenotificationpresenter_p.h"
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
 #include "qwebenginesettings.h"
@@ -139,6 +140,12 @@ using QtWebEngineCore::ProfileAdapter;
     \value  ForcePersistentCookies
             Both session and persistent cookies are saved to and restored from disk.
 */
+
+void QWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &notification)
+{
+    if (m_notificationPresenter)
+        m_notificationPresenter(QWebEngineNotification(notification));
+}
 
 /*!
   \fn QWebEngineProfile::downloadRequested(QWebEngineDownloadItem *download)
@@ -634,6 +641,27 @@ QWebEngineScriptCollection *QWebEngineProfile::scripts() const
 }
 
 /*!
+    Sets the function \a notificationPresenter as responsible for presenting sent notifications.
+
+    \since 5.13
+    \sa QWebEngineNotification
+*/
+void QWebEngineProfile::setNotificationPresenter(const std::function<void(const QWebEngineNotification &)> &notificationPresenter)
+{
+    Q_D(QWebEngineProfile);
+    d->m_notificationPresenter = notificationPresenter;
+}
+
+/*!
+    \overload
+*/
+void QWebEngineProfile::setNotificationPresenter(std::function<void(const QWebEngineNotification &)> &&notificationPresenter)
+{
+    Q_D(QWebEngineProfile);
+    d->m_notificationPresenter = std::move(notificationPresenter);
+}
+
+/*!
     Returns the default profile.
 
     The default profile uses the storage name "Default".
@@ -645,6 +673,8 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
     static QWebEngineProfile* profile = new QWebEngineProfile(
                 new QWebEngineProfilePrivate(ProfileAdapter::createDefaultProfileAdapter()),
                 ProfileAdapter::globalQObjectRoot());
+    if (!profile->d_ptr->m_notificationPresenter)
+        profile->setNotificationPresenter(&defaultNotificationPresenter);
     return profile;
 }
 

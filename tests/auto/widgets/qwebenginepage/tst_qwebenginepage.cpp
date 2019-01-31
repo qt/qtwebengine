@@ -49,6 +49,7 @@
 #include <qwebenginedownloaditem.h>
 #include <qwebenginefullscreenrequest.h>
 #include <qwebenginehistory.h>
+#include <qwebenginenotification.h>
 #include <qwebenginepage.h>
 #include <qwebengineprofile.h>
 #include <qwebenginequotarequest.h>
@@ -194,6 +195,10 @@ private Q_SLOTS:
     void openLinkInDifferentProfile();
     void triggerActionWithoutMenu();
     void dynamicFrame();
+
+    void notificationRequest_data();
+    void notificationRequest();
+    void sendNotification();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -3200,6 +3205,96 @@ void tst_QWebEnginePage::dynamicFrame()
     page.load(QStringLiteral("qrc:/resources/dynamicFrame.html"));
     QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(toPlainTextSync(&page).trimmed(), QStringLiteral("foo"));
+}
+
+struct NotificationPage : ConsolePage {
+    Q_OBJECT
+    const QWebEnginePage::PermissionPolicy policy;
+
+public:
+    NotificationPage(QWebEnginePage::PermissionPolicy ppolicy) : policy(ppolicy) {
+        connect(this, &QWebEnginePage::loadFinished, [load = spyLoad.ref()] (bool result) mutable { load(result); });
+
+        connect(this, &QWebEnginePage::featurePermissionRequested,
+                [this] (const QUrl &origin, QWebEnginePage::Feature feature) {
+            if (feature != QWebEnginePage::Notifications)
+                return;
+            if (spyRequest.wasCalled())
+                QFAIL("request executed twise!");
+            setFeaturePermission(origin, feature, policy);
+            spyRequest.ref()(origin);
+        });
+
+        load(QStringLiteral("qrc:///shared/notification.html"));
+    }
+
+    CallbackSpy<bool> spyLoad;
+    CallbackSpy<QUrl> spyRequest;
+
+    QString getPermission() { return evaluateJavaScriptSync(this, "getPermission()").toString(); }
+    void requestPermission() { runJavaScript("requestPermission()"); }
+    void resetPermission() { runJavaScript("resetPermission()"); }
+    void sendNotification(const QString &title, const QString &body) {
+        runJavaScript("sendNotification('" + title + "', '" + body + "')");
+    }
+};
+
+void tst_QWebEnginePage::notificationRequest_data()
+{
+    QTest::addColumn<QWebEnginePage::PermissionPolicy>("policy");
+    QTest::addColumn<QString>("permission");
+    QTest::newRow("deny") << QWebEnginePage::PermissionDeniedByUser << "denied";
+    QTest::newRow("grant") << QWebEnginePage::PermissionGrantedByUser << "granted";
+}
+
+void tst_QWebEnginePage::notificationRequest()
+{
+    QFETCH(QWebEnginePage::PermissionPolicy, policy);
+    QFETCH(QString, permission);
+
+    NotificationPage page(policy);
+    QVERIFY(page.spyLoad.waitForResult());
+
+    page.resetPermission();
+    QCOMPARE(page.getPermission(), "default");
+
+    page.requestPermission();
+    page.spyRequest.waitForResult();
+    QVERIFY(page.spyRequest.wasCalled());
+
+    QCOMPARE(page.getPermission(), permission);
+}
+
+void tst_QWebEnginePage::sendNotification()
+{
+    NotificationPage page(QWebEnginePage::PermissionGrantedByUser);
+    QVERIFY(page.spyLoad.waitForResult());
+
+    page.resetPermission();
+    page.requestPermission();
+    auto origin = page.spyRequest.waitForResult();
+    QVERIFY(page.spyRequest.wasCalled());
+    QCOMPARE(page.getPermission(), "granted");
+
+    CallbackSpy<QWebEngineNotification> presenter;
+    page.profile()->setNotificationPresenter([callback = presenter.ref()] (const QWebEngineNotification &notification) mutable { callback(notification); });
+
+    QString title("Title"), message("Message");
+    page.sendNotification(title, message);
+
+    auto notification = presenter.waitForResult();
+    QVERIFY(presenter.wasCalled());
+    QVERIFY(!notification.isNull());
+    QCOMPARE(notification.title(), title);
+    QCOMPARE(notification.message(), message);
+    QCOMPARE(notification.origin(), origin);
+
+    notification.show();
+    QTRY_VERIFY2(page.messages.contains("onshow"), page.messages.join("\n").toLatin1().constData());
+    notification.click();
+    QTRY_VERIFY2(page.messages.contains("onclick"), page.messages.join("\n").toLatin1().constData());
+    notification.close();
+    QTRY_VERIFY2(page.messages.contains("onclose"), page.messages.join("\n").toLatin1().constData());
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

@@ -1271,6 +1271,12 @@ void WebContentsAdapter::runGeolocationRequestCallback(const QUrl &securityOrigi
     m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::GeolocationPermission, allowed);
 }
 
+void WebContentsAdapter::runUserNotificationRequestCallback(const QUrl &securityOrigin, bool allowed)
+{
+    CHECK_INITIALIZED();
+    m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::NotificationPermission, allowed);
+}
+
 void WebContentsAdapter::grantMouseLockPermission(bool granted)
 {
     CHECK_INITIALIZED();

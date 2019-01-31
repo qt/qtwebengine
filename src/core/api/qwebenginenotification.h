@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,67 +37,76 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEPROFILE_P_H
-#define QWEBENGINEPROFILE_P_H
+#ifndef QWEBENGINENOTIFICATION_H
+#define QWEBENGINENOTIFICATION_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include "profile_adapter_client.h"
-#include "qwebengineprofile.h"
-#include "qwebenginescriptcollection.h"
-
-#include <QMap>
-#include <QPointer>
-#include <QScopedPointer>
-#include <QSharedPointer>
-
-#include <functional>
+#include <QtCore/QObject>
+#include <QtCore/QScopedPointer>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QUrl>
+#include <QtGui/QIcon>
 
 namespace QtWebEngineCore {
-class ProfileAdapter;
+class UserNotificationController;
 }
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineBrowserContext;
-class QWebEngineProfilePrivate;
-class QWebEngineNotification;
-class QWebEngineSettings;
+class QWebEngineNotificationPrivate;
 
-class QWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {
+class QWEBENGINECORE_EXPORT QWebEngineNotification : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
+    Q_PROPERTY(QIcon icon READ icon CONSTANT FINAL)
+    Q_PROPERTY(QString title READ title CONSTANT FINAL)
+    Q_PROPERTY(QString message READ message CONSTANT FINAL)
+    Q_PROPERTY(QString tag READ tag CONSTANT FINAL)
+    Q_PROPERTY(QString language READ language CONSTANT FINAL)
+    Q_PROPERTY(Direction direction READ direction CONSTANT FINAL)
+
 public:
-    Q_DECLARE_PUBLIC(QWebEngineProfile)
-    QWebEngineProfilePrivate(QtWebEngineCore::ProfileAdapter *profileAdapter);
-    ~QWebEngineProfilePrivate();
+    QWebEngineNotification();
+    QWebEngineNotification(const QWebEngineNotification &);
+    virtual ~QWebEngineNotification();
+    const QWebEngineNotification &operator=(const QWebEngineNotification &);
 
-    QtWebEngineCore::ProfileAdapter* profileAdapter() const;
-    QWebEngineSettings *settings() const { return m_settings; }
+    enum Direction {
+        LeftToRight = Qt::LeftToRight,
+        RightToLeft = Qt::RightToLeft,
+        DirectionAuto = Qt::LayoutDirectionAuto
+    };
+    Q_ENUM(Direction)
 
-    void downloadDestroyed(quint32 downloadId);
+    bool matches(const QWebEngineNotification &) const;
 
-    void downloadRequested(DownloadItemInfo &info) override;
-    void downloadUpdated(const DownloadItemInfo &info) override;
+    QUrl origin() const;
+    QIcon icon() const;
+    QString title() const;
+    QString message() const;
+    QString tag() const;
+    QString language() const;
+    Direction direction() const;
 
-    void showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &) override;
+    bool isNull() const;
+
+public Q_SLOTS:
+    void show() const;
+    void click() const;
+    void close() const;
+
+Q_SIGNALS:
+    void closed();
 
 private:
-    QWebEngineProfile *q_ptr;
-    QWebEngineSettings *m_settings;
-    QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
-    QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
-    QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
-    std::function<void(const QWebEngineNotification &)> m_notificationPresenter;
+    QWebEngineNotification(const QSharedPointer<QtWebEngineCore::UserNotificationController> &);
+    Q_DECLARE_PRIVATE(QWebEngineNotification)
+    QScopedPointer<QWebEngineNotificationPrivate> d_ptr;
+    friend class QQuickWebEngineProfilePrivate;
+    friend class QWebEngineProfilePrivate;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINEPROFILE_P_H
+#endif // QWEBENGINENOTIFICATION_H

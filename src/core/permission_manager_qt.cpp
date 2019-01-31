@@ -61,8 +61,9 @@ ProfileAdapter::PermissionType toQt(content::PermissionType type)
         return ProfileAdapter::AudioCapturePermission;
     case content::PermissionType::VIDEO_CAPTURE:
         return ProfileAdapter::VideoCapturePermission;
-    case content::PermissionType::FLASH:
     case content::PermissionType::NOTIFICATIONS:
+        return ProfileAdapter::NotificationPermission;
+    case content::PermissionType::FLASH:
     case content::PermissionType::MIDI_SYSEX:
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
     case content::PermissionType::MIDI:
@@ -188,6 +189,9 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
     m_requests.insert(request_id, request);
     if (permissionType == ProfileAdapter::GeolocationPermission)
         contentsDelegate->requestGeolocationPermission(request.origin);
+    else if (permissionType == ProfileAdapter::NotificationPermission)
+        contentsDelegate->requestUserNotificationPermission(request.origin);
+
     return request_id;
 }
 
@@ -236,6 +240,8 @@ int PermissionManagerQt::RequestPermissions(const std::vector<content::Permissio
         const ProfileAdapter::PermissionType permissionType = toQt(permission);
         if (permissionType == ProfileAdapter::GeolocationPermission)
             contentsDelegate->requestGeolocationPermission(request.origin);
+        else if (permissionType == ProfileAdapter::NotificationPermission)
+            contentsDelegate->requestUserNotificationPermission(request.origin);
     }
     return request_id;
 }

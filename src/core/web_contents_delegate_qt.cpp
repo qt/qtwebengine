@@ -585,6 +585,11 @@ void WebContentsDelegateQt::requestGeolocationPermission(const QUrl &requestingO
     m_viewClient->runGeolocationPermissionRequest(requestingOrigin);
 }
 
+void WebContentsDelegateQt::requestUserNotificationPermission(const QUrl &requestingOrigin)
+{
+    m_viewClient->runUserNotificationPermissionRequest(requestingOrigin);
+}
+
 extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition);
 
 void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture)

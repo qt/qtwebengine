@@ -505,6 +505,18 @@ ApplicationWindow {
         download.accept()
     }
 
+    MessageDialog {
+        id: notificationDialog
+        width: 200
+        standardButtons: StandardButton.Ok
+    }
+
+    function onUserNotification(notification) {
+        notificationDialog.title = notification.title
+        notificationDialog.text = notification.origin.toString() + '\n' + notification.message
+        notificationDialog.open()
+    }
+
     ZoomController {
       id: zoomController
       y: parent.mapFromItem(currentWebView, 0 , 0).y - 4

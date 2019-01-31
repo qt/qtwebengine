@@ -459,6 +459,7 @@ public:
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runQuotaRequest(QWebEngineQuotaRequest) = 0;
     virtual void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) = 0;
+    virtual void runUserNotificationPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual WebEngineSettings *webEngineSettings() const = 0;
     RenderProcessTerminationStatus renderProcessExitStatus(int);
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;

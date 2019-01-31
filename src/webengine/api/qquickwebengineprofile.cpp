@@ -46,6 +46,7 @@
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebengineview_p_p.h"
 #include "qwebenginecookiestore.h"
+#include "qwebenginenotification.h"
 
 #include <QQmlEngine>
 
@@ -148,6 +149,13 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
   This signal is emitted whenever downloading stops, because it finished successfully, was
   cancelled, or was interrupted (for example, because connectivity was lost).
   The \a download argument holds the state of the finished download instance.
+*/
+
+/*!
+    \fn QQuickWebEngineProfile::userNotification(QWebEngineNotification *notification)
+
+    This signal is emitted whenever there is a newly created user notification.
+    The \a notification argument holds the notification instance to query data and interact with.
 */
 
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(ProfileAdapter *profileAdapter)
@@ -285,6 +293,14 @@ void QQuickWebEngineProfilePrivate::useForGlobalCertificateVerificationChanged()
     Q_EMIT q->useForGlobalCertificateVerificationChanged();
 }
 
+void QQuickWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller)
+{
+    Q_Q(QQuickWebEngineProfile);
+    auto notification = new QWebEngineNotification(controller);
+    QQmlEngine::setObjectOwnership(notification, QQmlEngine::JavaScriptOwnership);
+    Q_EMIT q->userNotification(notification);
+}
+
 void QQuickWebEngineProfilePrivate::userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script)
 {
     Q_ASSERT(p && p->data);
@@ -362,6 +378,13 @@ void QQuickWebEngineProfilePrivate::userScripts_clear(QQmlListProperty<QQuickWeb
     This signal is emitted whenever downloading stops, because it finished successfully, was
     cancelled, or was interrupted (for example, because connectivity was lost).
     The \a download argument holds the state of the finished download instance.
+*/
+
+/*!
+    \qmlsignal WebEngineProfile::userNotification(WebEngineNotification notification)
+
+    This signal is emitted whenever there is a newly created user notification.
+    The \a notification argument holds the notification instance to query data and interact with.
 */
 
 /*!

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINEPROFILE_P_H
-#define QQUICKWEBENGINEPROFILE_P_H
+#ifndef QWEBENGINENOTIFICATIONPRESENTER_P_H
+#define QWEBENGINENOTIFICATIONPRESENTER_P_H
 
 //
 //  W A R N I N G
@@ -51,58 +51,33 @@
 // We mean it.
 //
 
-#include "profile_adapter_client.h"
-#include "profile_adapter.h"
-#include "qquickwebengineprofile_p.h"
+#include <QtWebEngineCore/QWebEngineNotification>
 
-#include <QExplicitlySharedDataPointer>
-#include <QMap>
-#include <QPointer>
-#include <QSharedPointer>
+#include <QtCore/QObject>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineDownloadItem;
-class QQuickWebEngineSettings;
-class QQuickWebEngineViewPrivate;
+class QSystemTrayIcon;
 
-class QQuickWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {
+class DefaultNotificationPresenter : public QObject {
+    Q_OBJECT
 public:
-    Q_DECLARE_PUBLIC(QQuickWebEngineProfile)
-    QQuickWebEngineProfilePrivate(QtWebEngineCore::ProfileAdapter *profileAdapter);
-    ~QQuickWebEngineProfilePrivate();
-    void addWebContentsAdapterClient(QQuickWebEngineViewPrivate *adapter);
-    void removeWebContentsAdapterClient(QQuickWebEngineViewPrivate *adapter);
+    DefaultNotificationPresenter(QObject *parent = nullptr);
+    virtual ~DefaultNotificationPresenter();
 
-    QtWebEngineCore::ProfileAdapter* profileAdapter() const;
-    QQuickWebEngineSettings *settings() const;
+    void show(const QWebEngineNotification &notification);
 
-    void cancelDownload(quint32 downloadId);
-    void downloadDestroyed(quint32 downloadId);
-
-    void downloadRequested(DownloadItemInfo &info) override;
-    void downloadUpdated(const DownloadItemInfo &info) override;
-
-    void useForGlobalCertificateVerificationChanged() override;
-
-    void showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller) override;
-
-    // QQmlListPropertyHelpers
-    static void userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script);
-    static int userScripts_count(QQmlListProperty<QQuickWebEngineScript> *p);
-    static QQuickWebEngineScript *userScripts_at(QQmlListProperty<QQuickWebEngineScript> *p, int idx);
-    static void userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p);
+private Q_SLOTS:
+    void messageClicked();
+    void closeNotification();
 
 private:
-    friend class QQuickWebEngineView;
-    QQuickWebEngineProfile *q_ptr;
-    QScopedPointer<QQuickWebEngineSettings> m_settings;
-    QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
-    QMap<quint32, QPointer<QQuickWebEngineDownloadItem> > m_ongoingDownloads;
-    QList<QQuickWebEngineScript *> m_userScripts;
-    QVector<QQuickWebEngineViewPrivate *> m_webContentsAdapterClients;
+    QSystemTrayIcon *m_systemTrayIcon;
+    QWebEngineNotification m_activeNotification;
 };
+
+void defaultNotificationPresenter(const QWebEngineNotification &notification);
 
 QT_END_NAMESPACE
 
-#endif // QQUICKWEBENGINEPROFILE_P_H
+#endif // QWEBENGINENOTIFICATIONPRESENTER_P_H
