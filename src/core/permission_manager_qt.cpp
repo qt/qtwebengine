@@ -70,6 +70,7 @@ ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::BACKGROUND_SYNC:
     case content::PermissionType::SENSORS:
     case content::PermissionType::ACCESSIBILITY_EVENTS:
+        break;
     case content::PermissionType::CLIPBOARD_READ:
         return ProfileAdapter::ClipboardRead;
     case content::PermissionType::CLIPBOARD_WRITE:
