@@ -730,4 +730,10 @@ scoped_refptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegat
     return loginDelegate;
 }
 
+bool ContentBrowserClientQt::ShouldIsolateErrorPage(bool in_main_frame)
+{
+    Q_UNUSED(in_main_frame);
+    return false;
+}
+
 } // namespace QtWebEngineCore

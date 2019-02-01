@@ -1001,6 +1001,7 @@ void tst_QQuickWebEngineView::changeLocale()
     viewDE->setUrl(url);
     QVERIFY(waitForLoadFailed(viewDE.data()));
 
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
     errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar Die Server-IP-Adresse von non.existent wurde nicht gefunden."));
@@ -1010,9 +1011,10 @@ void tst_QQuickWebEngineView::changeLocale()
     viewEN->setUrl(url);
     QVERIFY(waitForLoadFailed(viewEN.data()));
 
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewEN.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").isNull());
     errorLines = evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("This site can\xE2\x80\x99t be reached"));
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("This site can\xE2\x80\x99t be reached non.existent\xE2\x80\x99s server IP address could not be found."));
 
     // Reset error page
     viewDE->setUrl(QUrl("about:blank"));
@@ -1022,9 +1024,10 @@ void tst_QQuickWebEngineView::changeLocale()
     viewDE->setUrl(url);
     QVERIFY(waitForLoadFailed(viewDE.data()));
 
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
     errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar Die Server-IP-Adresse von non.existent wurde nicht gefunden."));
 }
 
 void tst_QQuickWebEngineView::userScripts()
