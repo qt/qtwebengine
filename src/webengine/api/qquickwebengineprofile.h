@@ -126,7 +126,10 @@ public:
 
     QWebEngineCookieStore *cookieStore() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
+#endif
+    void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     const QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &) const;
     void installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *);

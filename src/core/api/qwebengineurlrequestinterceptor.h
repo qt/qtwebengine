@@ -55,7 +55,7 @@ class QWEBENGINECORE_EXPORT QWebEngineUrlRequestInterceptor : public QObject
     Q_OBJECT
     Q_DISABLE_COPY(QWebEngineUrlRequestInterceptor)
 public:
-    explicit QWebEngineUrlRequestInterceptor(QObject *p = Q_NULLPTR)
+    explicit QWebEngineUrlRequestInterceptor(QObject *p = nullptr)
         : QObject (p)
     {
     }

@@ -1802,7 +1802,7 @@ void QWebEnginePagePrivate::printRequested()
     \sa QWebEngineUrlRequestInfo, QWebEngineProfile::setRequestInterceptor()
 */
 
-void QWebEnginePage::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+void QWebEnginePage::setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     Q_D(QWebEnginePage);
     bool hadInterceptorChanged = bool(d->requestInterceptor) != bool(interceptor);

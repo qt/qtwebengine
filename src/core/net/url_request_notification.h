@@ -43,6 +43,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/completion_once_callback.h"
 #include "qwebengineurlrequestinfo.h"
+#include <QPointer>
 
 class GURL;
 
@@ -52,6 +53,9 @@ class URLRequest;
 
 namespace QtWebEngineCore {
 
+class ProfileAdapter;
+class ProfileIoDataQt;
+
 // Notifies WebContentsAdapterClient of a new URLRequest.
 class URLRequestNotification {
 public:
@@ -60,7 +64,8 @@ public:
                            GURL *newUrl,
                            QWebEngineUrlRequestInfo &&requestInfo,
                            content::ResourceRequestInfo::WebContentsGetter webContentsGetter,
-                           net::CompletionOnceCallback callback);
+                           net::CompletionOnceCallback callback,
+                           QPointer<ProfileAdapter> adapter);
     ~URLRequestNotification() = default;
     void cancel();
     void notify();
@@ -74,6 +79,7 @@ private:
     QWebEngineUrlRequestInfo m_requestInfo;
     content::ResourceRequestInfo::WebContentsGetter m_webContentsGetter;
     net::CompletionOnceCallback m_callback;
+    QPointer<ProfileAdapter> m_profileAdapter;
 };
 }
 #endif

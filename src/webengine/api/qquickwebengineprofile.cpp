@@ -922,19 +922,44 @@ void QQuickWebEngineProfile::clearHttpCache()
     d->profileAdapter()->clearHttpCache();
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
+/*!
+    Registers a request interceptor singleton \a interceptor to intercept URL requests.
+
+    The profile does not take ownership of the pointer.
+
+    \obsolete
+
+    Interceptors installed with this method will call
+    QWebEngineUrlRequestInterceptor::interceptRequest on the I/O thread. Therefore
+    the user has to provide thread-safe interaction with the other user classes.
+    Use setUrlRequestInterceptor instead.
+
+    \sa QWebEngineUrlRequestInterceptor
+
+*/
+void QQuickWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+{
+    Q_D(QQuickWebEngineProfile);
+    interceptor->setProperty("deprecated", true);
+    d->profileAdapter()->setRequestInterceptor(interceptor);
+    qWarning("Use of deprecated not tread-safe setter, use setUrlRequestInterceptor instead.");
+}
+#endif
 
 /*!
     Registers a request interceptor singleton \a interceptor to intercept URL requests.
 
     The profile does not take ownership of the pointer.
 
-    \sa QWebEngineUrlRequestInterceptor
+    \sa QWebEngineUrlRequestInfo QWebEngineUrlRequestInterceptor
 */
-void QQuickWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+void QQuickWebEngineProfile::setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     Q_D(QQuickWebEngineProfile);
     d->profileAdapter()->setRequestInterceptor(interceptor);
 }
+
 
 /*!
     Returns the custom URL scheme handler register for the URL scheme \a scheme.

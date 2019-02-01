@@ -75,6 +75,7 @@ public:
     ProfileIODataQt(ProfileQt *profile); // runs on ui thread
     virtual ~ProfileIODataQt();
 
+    QPointer<ProfileAdapter> profileAdapter();
     content::ResourceContext *resourceContext();
     net::URLRequestContext *urlRequestContext();
     void initializeOnIOThread();
@@ -96,6 +97,7 @@ public:
     // Used in NetworkDelegateQt::OnBeforeURLRequest.
     QWebEngineUrlRequestInterceptor *acquireInterceptor();
     void releaseInterceptor();
+    QWebEngineUrlRequestInterceptor *requestInterceptor();
 
     void setRequestContextData(content::ProtocolHandlerMap *protocolHandlers,
                                content::URLRequestInterceptorScopedVector request_interceptors);

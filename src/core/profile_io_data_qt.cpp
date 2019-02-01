@@ -195,6 +195,11 @@ ProfileIODataQt::~ProfileIODataQt()
     delete m_proxyConfigService.fetchAndStoreAcquire(0);
 }
 
+QPointer<ProfileAdapter> ProfileIODataQt::profileAdapter()
+{
+    return m_profileAdapter;
+}
+
 void ProfileIODataQt::shutdownOnUIThread()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -738,6 +743,11 @@ void ProfileIODataQt::updateRequestInterceptor()
 QWebEngineUrlRequestInterceptor *ProfileIODataQt::acquireInterceptor()
 {
     m_mutex.lock();
+    return m_requestInterceptor;
+}
+
+QWebEngineUrlRequestInterceptor *ProfileIODataQt::requestInterceptor()
+{
     return m_requestInterceptor;
 }
 

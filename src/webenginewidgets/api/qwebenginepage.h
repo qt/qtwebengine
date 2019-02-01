@@ -304,7 +304,7 @@ public:
     void setDevToolsPage(QWebEnginePage *page);
     QWebEnginePage *devToolsPage() const;
 
-    void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
+    void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     const QWebEngineContextMenuData &contextMenuData() const;
 

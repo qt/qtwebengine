@@ -131,33 +131,41 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
                                                                                        QByteArray::fromStdString(request->method()));
     QWebEngineUrlRequestInfo requestInfo(infoPrivate);
 
-    if (QWebEngineUrlRequestInterceptor* interceptor = m_profileIOData->acquireInterceptor()) {
-        interceptor->interceptRequest(requestInfo);
-        m_profileIOData->releaseInterceptor();
-        if (requestInfo.changed()) {
-            int result = infoPrivate->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
+    // Deprecated =begin
+    // quick peek if deprecated
+    QWebEngineUrlRequestInterceptor* profileInterceptor = m_profileIOData->requestInterceptor();
+    if (profileInterceptor && profileInterceptor->property("deprecated").toBool()) {
+        profileInterceptor = nullptr;
+        if (QWebEngineUrlRequestInterceptor* interceptor = m_profileIOData->acquireInterceptor()) {
+            interceptor->interceptRequest(requestInfo);
+            m_profileIOData->releaseInterceptor();
+            if (requestInfo.changed()) {
+                int result = infoPrivate->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
 
-            if (qUrl != infoPrivate->url)
-                *newUrl = toGurl(infoPrivate->url);
+                if (qUrl != infoPrivate->url)
+                    *newUrl = toGurl(infoPrivate->url);
 
-            if (!infoPrivate->extraHeaders.isEmpty()) {
-                auto end = infoPrivate->extraHeaders.constEnd();
-                for (auto header = infoPrivate->extraHeaders.constBegin(); header != end; ++header)
-                    request->SetExtraRequestHeaderByName(header.key().toStdString(), header.value().toStdString(), /* overwrite */ true);
+                if (!infoPrivate->extraHeaders.isEmpty()) {
+                    auto end = infoPrivate->extraHeaders.constEnd();
+                    for (auto header = infoPrivate->extraHeaders.constBegin(); header != end; ++header)
+                        request->SetExtraRequestHeaderByName(header.key().toStdString(), header.value().toStdString(), /* overwrite */ true);
+                }
+
+                if (result != net::OK)
+                    return result;
+
+                requestInfo.resetChanged();
             }
-
-            if (result != net::OK)
-                return result;
-
-            requestInfo.resetChanged();
+        } else {
+            m_profileIOData->releaseInterceptor();
         }
-    } else
-        m_profileIOData->releaseInterceptor();
+    }
+    // Deprecated =cut
 
     if (!resourceInfo)
         return net::OK;
 
-    if (!m_profileIOData->hasPageInterceptors() && !content::IsResourceTypeFrame(resourceType))
+    if (!m_profileIOData->hasPageInterceptors() && !profileInterceptor && !content::IsResourceTypeFrame(resourceType))
         return net::OK;
 
     auto webContentsGetter = resourceInfo->GetWebContentsGetterForRequest();
@@ -167,7 +175,8 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
         newUrl,
         std::move(requestInfo),
         webContentsGetter,
-        std::move(callback)
+        std::move(callback),
+        profileInterceptor ? m_profileIOData->profileAdapter() : nullptr
     );
 
     // We'll run the callback after we notified the UI thread.

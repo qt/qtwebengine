@@ -107,6 +107,7 @@ public:
 
     void interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
+        QVERIFY(QThread::currentThread() == QCoreApplication::instance()->thread());
         // Since 63 we also intercept some unrelated blob requests..
         if (info.requestUrl().scheme() == QLatin1String("blob"))
             return;
@@ -167,7 +168,7 @@ void tst_QWebEngineUrlRequestInterceptor::interceptRequest()
     QWebEngineProfile profile;
     profile.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     TestRequestInterceptor interceptor(/* intercept */ true);
-    profile.setRequestInterceptor(&interceptor);
+    profile.setUrlRequestInterceptor(&interceptor);
 
     QWebEnginePage page(&profile);
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
@@ -197,7 +198,7 @@ void tst_QWebEngineUrlRequestInterceptor::interceptRequest()
 
     // Make sure that registering an observer does not modify the request.
     TestRequestInterceptor observer(/* intercept */ false);
-    profile.setRequestInterceptor(&observer);
+    profile.setUrlRequestInterceptor(&observer);
     page.load(QUrl("qrc:///resources/__placeholder__"));
     QTRY_COMPARE(loadSpy.count(), 1);
     success = loadSpy.takeFirst().takeFirst();
@@ -230,7 +231,7 @@ void tst_QWebEngineUrlRequestInterceptor::ipv6HostEncoding()
 {
     QWebEngineProfile profile;
     LocalhostContentProvider contentProvider;
-    profile.setRequestInterceptor(&contentProvider);
+    profile.setUrlRequestInterceptor(&contentProvider);
 
     QWebEnginePage page(&profile);
     QSignalSpy spyLoadFinished(&page, SIGNAL(loadFinished(bool)));
@@ -264,11 +265,11 @@ void tst_QWebEngineUrlRequestInterceptor::requestedUrl()
     profile.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     TestRequestInterceptor interceptor(/* intercept */ true);
     if (!interceptInPage)
-        profile.setRequestInterceptor(&interceptor);
+        profile.setUrlRequestInterceptor(&interceptor);
 
     QWebEnginePage page(&profile);
     if (interceptInPage)
-        page.setRequestInterceptor(&interceptor);
+        page.setUrlRequestInterceptor(&interceptor);
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     page.setUrl(QUrl("qrc:///resources/__placeholder__"));
@@ -303,11 +304,11 @@ void tst_QWebEngineUrlRequestInterceptor::setUrlSameUrl()
     QWebEngineProfile profile;
     TestRequestInterceptor interceptor(/* intercept */ true);
     if (!interceptInPage)
-        profile.setRequestInterceptor(&interceptor);
+        profile.setUrlRequestInterceptor(&interceptor);
 
     QWebEnginePage page(&profile);
     if (interceptInPage)
-        page.setRequestInterceptor(&interceptor);
+        page.setUrlRequestInterceptor(&interceptor);
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     page.setUrl(QUrl("qrc:///resources/__placeholder__"));
@@ -336,7 +337,7 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrl()
 {
     QWebEngineProfile profile;
     TestRequestInterceptor interceptor(/* intercept */ false);
-    profile.setRequestInterceptor(&interceptor);
+    profile.setUrlRequestInterceptor(&interceptor);
 
     QWebEnginePage page(&profile);
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
@@ -370,7 +371,7 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlNestedIframes()
 
     QWebEngineProfile profile;
     TestRequestInterceptor interceptor(/* intercept */ false);
-    profile.setRequestInterceptor(&interceptor);
+    profile.setUrlRequestInterceptor(&interceptor);
 
     QWebEnginePage page(&profile);
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
@@ -431,7 +432,7 @@ void tst_QWebEngineUrlRequestInterceptor::requestInterceptorByResourceType()
 
     QWebEngineProfile profile;
     TestRequestInterceptor interceptor(/* intercept */ false);
-    profile.setRequestInterceptor(&interceptor);
+    profile.setUrlRequestInterceptor(&interceptor);
 
     QWebEnginePage page(&profile);
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
@@ -449,7 +450,7 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlHttp()
 {
     QWebEngineProfile profile;
     TestRequestInterceptor interceptor(/* intercept */ false);
-    profile.setRequestInterceptor(&interceptor);
+    profile.setUrlRequestInterceptor(&interceptor);
 
     QWebEnginePage page(&profile);
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));

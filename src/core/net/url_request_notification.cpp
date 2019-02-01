@@ -46,6 +46,7 @@
 #include "net/url_request/url_request.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
+#include "profile_io_data_qt.h"
 #include "qwebengineurlrequestinfo_p.h"
 #include "type_conversion.h"
 
@@ -73,7 +74,8 @@ URLRequestNotification::URLRequestNotification(net::URLRequest *request,
                        GURL *newUrl,
                        QWebEngineUrlRequestInfo &&requestInfo,
                        content::ResourceRequestInfo::WebContentsGetter webContentsGetter,
-                       net::CompletionOnceCallback callback)
+                       net::CompletionOnceCallback callback,
+                       QPointer<ProfileAdapter> adapter)
     : m_request(request)
     , m_isMainFrameRequest(isMainFrameRequest)
     , m_newUrl(newUrl)
@@ -81,6 +83,7 @@ URLRequestNotification::URLRequestNotification(net::URLRequest *request,
     , m_requestInfo(std::move(requestInfo))
     , m_webContentsGetter(webContentsGetter)
     , m_callback(std::move(callback))
+    , m_profileAdapter(adapter)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -99,36 +102,45 @@ void URLRequestNotification::notify()
 
     // May run concurrently with cancel() so no peeking at m_request here.
 
-    int error = net::OK;
+    int result = net::OK;
     content::WebContents *webContents = m_webContentsGetter.Run();
 
     if (webContents) {
-        WebContentsAdapterClient *client =
-                WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
 
-        client->interceptRequest(m_requestInfo);
+        if (m_profileAdapter) {
+            QWebEngineUrlRequestInterceptor* interceptor = m_profileAdapter->requestInterceptor();
+            interceptor->interceptRequest(m_requestInfo);
+        }
+
+        WebContentsAdapterClient *client =
+            WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
+
+        if (!m_requestInfo.changed()) {
+            client->interceptRequest(m_requestInfo);
+        }
+
         if (m_requestInfo.changed()) {
-            error = m_requestInfo.d_ptr->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
+            result = m_requestInfo.d_ptr->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
             // We handle the rest of the changes later when we are back in I/O thread
         }
 
         // Only do navigationRequested on MAIN_FRAME and SUB_FRAME resources
-        if (error == net::OK && content::IsResourceTypeFrame(fromQt(m_requestInfo.resourceType()))) {
+        if (result == net::OK && content::IsResourceTypeFrame(fromQt(m_requestInfo.resourceType()))) {
             int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
             client->navigationRequested(m_requestInfo.navigationType(),
                                         m_requestInfo.requestUrl(),
                                         navigationRequestAction,
                                         m_isMainFrameRequest);
-            error = net::ERR_FAILED;
+            result = net::ERR_FAILED;
             switch (static_cast<WebContentsAdapterClient::NavigationRequestAction>(navigationRequestAction)) {
             case WebContentsAdapterClient::AcceptRequest:
-                error = net::OK;
+                result = net::OK;
                 break;
             case WebContentsAdapterClient::IgnoreRequest:
-                error = net::ERR_ABORTED;
+                result = net::ERR_ABORTED;
                 break;
             }
-            DCHECK(error != net::ERR_FAILED);
+            DCHECK(result != net::ERR_FAILED);
         }
     }
 
@@ -136,7 +148,7 @@ void URLRequestNotification::notify()
     base::PostTaskWithTraits(
         FROM_HERE,
         {content::BrowserThread::IO},
-        base::BindOnce(&URLRequestNotification::complete, base::Unretained(this), error));
+        base::BindOnce(&URLRequestNotification::complete, base::Unretained(this), result));
 }
 
 void  URLRequestNotification::cancel()
