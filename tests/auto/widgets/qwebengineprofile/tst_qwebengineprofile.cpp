@@ -30,6 +30,7 @@
 #include <QtCore/qbuffer.h>
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
+#include <QtWebEngineCore/qwebenginecookiestore.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
@@ -57,6 +58,7 @@ private Q_SLOTS:
     void downloadItem();
     void changePersistentPath();
     void initiator();
+    void qtbug_72299(); // this should be the last test
 };
 
 void tst_QWebEngineProfile::init()
@@ -567,6 +569,20 @@ void tst_QWebEngineProfile::initiator()
     QVERIFY(loadFinishedSpy.wait());
     QCOMPARE(handler.initiator, QUrl());
 }
+
+void tst_QWebEngineProfile::qtbug_72299()
+{
+    QWebEngineView view;
+    view.setUrl(QUrl("https://www.qt.io"));
+    view.show();
+    QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
+    view.page()->profile()->clearHttpCache();
+    view.page()->profile()->setHttpCacheType(QWebEngineProfile::NoCache);
+    view.page()->profile()->cookieStore()->deleteAllCookies();
+    view.page()->profile()->setPersistentCookiesPolicy(QWebEngineProfile::NoPersistentCookies);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
+}
+
 
 QTEST_MAIN(tst_QWebEngineProfile)
 #include "tst_qwebengineprofile.moc"
