@@ -45,6 +45,7 @@
 #include "extensions/buildflags/buildflags.h"
 
 namespace net {
+class URLRequestContext;
 class URLRequestContextGetter;
 }
 
@@ -64,10 +65,6 @@ class ResourceContextQt : public content::ResourceContext
 {
 public:
     ResourceContextQt(ProfileIODataQt *io_data);
-    net::URLRequestContext *GetRequestContext() override;
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    extensions::ExtensionSystemQt* GetExtensionSystem();
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
 private:
     friend class ProfileIODataQt;
     ProfileIODataQt* m_io_data;

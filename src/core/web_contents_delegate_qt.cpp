@@ -248,11 +248,13 @@ void WebContentsDelegateQt::LoadProgressChanged(content::WebContents */*source*/
     m_viewClient->loadProgressChanged(m_lastLoadProgress);
 }
 
-void WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const content::NativeWebKeyboardEvent &event)
+bool WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const content::NativeWebKeyboardEvent &event)
 {
     Q_ASSERT(!event.skip_in_browser);
     if (event.os_event)
         m_viewClient->unhandledKeyEvent(reinterpret_cast<QKeyEvent *>(event.os_event));
+    // FIXME: ?
+    return true;
 }
 
 void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)

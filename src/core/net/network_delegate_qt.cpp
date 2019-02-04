@@ -211,9 +211,11 @@ bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const ne
     return canGetCookies(request.site_for_cookies(), request.url());
 }
 
-bool NetworkDelegateQt::OnCanEnablePrivacyMode(const GURL &url, const GURL &site_for_cookies) const
+bool NetworkDelegateQt::OnForcePrivacyMode(const GURL &url, const GURL &site_for_cookies) const
 {
-    return !canGetCookies(site_for_cookies, url);
+    return false;
+// FIXME: This is what the NetworkContext implementation does (changes tst_QWebEngineCookieStore tests since 72)
+//    return !canGetCookies(site_for_cookies, url);
 }
 
 bool NetworkDelegateQt::canSetCookies(const GURL &first_party, const GURL &url, const std::string &cookie_line) const
@@ -275,11 +277,6 @@ net::NetworkDelegate::AuthRequiredResponse NetworkDelegateQt::OnAuthRequired(net
 bool NetworkDelegateQt::OnCanAccessFile(const net::URLRequest&, const base::FilePath&, const base::FilePath&) const
 {
     return true;
-}
-
-bool NetworkDelegateQt::OnAreExperimentalCookieFeaturesEnabled() const
-{
-    return false;
 }
 
 bool NetworkDelegateQt::OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const

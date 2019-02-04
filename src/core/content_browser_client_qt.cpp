@@ -276,10 +276,11 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     *service_request = mojo::MakeRequest(&service);
     service_manager::mojom::PIDReceiverPtr pid_receiver;
     service_manager::Identity renderer_identity = host->GetChildIdentity();
-    ServiceQt::GetInstance()->connector()->StartService(
+    ServiceQt::GetInstance()->connector()->RegisterServiceInstance(
                 service_manager::Identity("qtwebengine_renderer",
-                                          renderer_identity.user_id(),
-                                          renderer_identity.instance()),
+                                          renderer_identity.instance_group(),
+                                          renderer_identity.instance_id(),
+                                          base::Token::CreateRandom()),
                 std::move(service), mojo::MakeRequest(&pid_receiver));
 }
 
@@ -540,9 +541,10 @@ void ContentBrowserClientQt::BindInterfaceRequestFromFrame(content::RenderFrameH
 
 void ContentBrowserClientQt::RegisterInProcessServices(StaticServiceMap* services, content::ServiceManagerConnection* connection)
 {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = ServiceQt::GetInstance()->CreateServiceQtFactory();
-    services->insert(std::make_pair("qtwebengine", info));
+    Q_UNUSED(services);
+    connection->AddServiceRequestHandler(
+            "qtwebengine",
+            ServiceQt::GetInstance()->CreateServiceQtRequestHandler());
 }
 
 void ContentBrowserClientQt::RegisterOutOfProcessServices(content::ContentBrowserClient::OutOfProcessServiceMap *services)
@@ -660,8 +662,7 @@ bool ContentBrowserClientQt::AllowGetCookie(const GURL &url,
                                             int /*render_frame_id*/)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
-    return networkDelegate->canGetCookies(first_party, url);
+    return ProfileIODataQt::FromResourceContext(context)->canGetCookies(toQt(first_party), toQt(url));
 }
 
 bool ContentBrowserClientQt::AllowSetCookie(const GURL &url,
@@ -672,8 +673,7 @@ bool ContentBrowserClientQt::AllowSetCookie(const GURL &url,
                                             int /*render_frame_id*/)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
-    return networkDelegate->canSetCookies(first_party, url, std::string());
+    return ProfileIODataQt::FromResourceContext(context)->canSetCookie(toQt(first_party), QByteArray(), toQt(url));
 }
 
 bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
@@ -681,20 +681,18 @@ bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
                                            content::ResourceContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
-    return networkDelegate->canGetCookies(first_party, manifest_url);
+    return ProfileIODataQt::FromResourceContext(context)->canGetCookies(toQt(first_party), toQt(manifest_url));
 }
 
 bool ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
                                                 const GURL &first_party,
                                                 content::ResourceContext *context,
-                                                const base::Callback<content::WebContents*(void)> &/*wc_getter*/)
+                                                base::RepeatingCallback<content::WebContents*()> wc_getter)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     // FIXME: Chrome also checks if javascript is enabled here to check if has been disabled since the service worker
     // was started.
-    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
-    return networkDelegate->canGetCookies(first_party, scope);
+    return ProfileIODataQt::FromResourceContext(context)->canGetCookies(toQt(first_party), toQt(scope));
 }
 
 // We control worker access to FS and indexed-db using cookie permissions, this is mirroring Chromium's logic.
@@ -704,18 +702,16 @@ void ContentBrowserClientQt::AllowWorkerFileSystem(const GURL &url,
                                                    base::Callback<void(bool)> callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
-    callback.Run(networkDelegate->canSetCookies(url, url, std::string()));
+    callback.Run(ProfileIODataQt::FromResourceContext(context)->canSetCookie(toQt(url), QByteArray(), toQt(url)));
 }
 
+
 bool ContentBrowserClientQt::AllowWorkerIndexedDB(const GURL &url,
-                                                  const base::string16 &/*name*/,
                                                   content::ResourceContext *context,
                                                   const std::vector<content::GlobalFrameRoutingId> &/*render_frames*/)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(context->GetRequestContext()->network_delegate());
-    return networkDelegate->canSetCookies(url, url, std::string());
+    return ProfileIODataQt::FromResourceContext(context)->canSetCookie(toQt(url), QByteArray(), toQt(url));
 }
 
 static void LaunchURL(const GURL& url,
@@ -738,11 +734,15 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
         content::NavigationUIData *navigation_data,
         bool is_main_frame,
         ui::PageTransition page_transition,
-        bool has_user_gesture)
+        bool has_user_gesture,
+        const std::string &method,
+        const net::HttpRequestHeaders &headers)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_UNUSED(child_id);
     Q_UNUSED(navigation_data);
+    Q_UNUSED(method);
+    Q_UNUSED(headers);
 
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                              base::BindOnce(&LaunchURL,

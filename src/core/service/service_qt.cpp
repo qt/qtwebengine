@@ -53,7 +53,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
@@ -64,6 +64,7 @@ public:
     IOThreadContext();
     ~IOThreadContext() override = default;
 
+    void BindServiceRequest(service_manager::mojom::ServiceRequest request);
     void BindConnector(service_manager::mojom::ConnectorRequest connector_request);
 
 private:
@@ -76,6 +77,7 @@ private:
                          mojo::ScopedMessagePipeHandle handle) override;
 
     service_manager::mojom::ConnectorRequest m_connectorRequest;
+    service_manager::ServiceBinding m_serviceBinding{this};
     service_manager::BinderRegistry m_registry;
     service_manager::BinderRegistryWithArgs<const service_manager::BindSourceInfo&> m_registry_with_source_info;
 
@@ -89,6 +91,11 @@ ServiceQt::IOThreadContext::IOThreadContext()
             base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI});
     m_registry_with_source_info.AddInterface(base::BindRepeating(&SpellCheckHostChromeImpl::Create), ui_task_runner);
 #endif
+}
+
+void ServiceQt::IOThreadContext::BindServiceRequest(service_manager::mojom::ServiceRequest request)
+{
+    m_serviceBinding.Bind(std::move(request));
 }
 
 void ServiceQt::IOThreadContext::BindConnector(service_manager::mojom::ConnectorRequest connector_request)
@@ -116,7 +123,7 @@ void ServiceQt::IOThreadContext::OnStart()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     DCHECK(m_connectorRequest.is_pending());
-    context()->connector()->BindConnectorRequest(std::move(m_connectorRequest));
+    m_serviceBinding.GetConnector()->BindConnectorRequest(std::move(m_connectorRequest));
 }
 
 void ServiceQt::IOThreadContext::OnBindInterface(const service_manager::BindSourceInfo &remote_info,
@@ -138,9 +145,9 @@ ServiceQt *ServiceQt::GetInstance()
     return service.get();
 }
 
-service_manager::EmbeddedServiceInfo::ServiceFactory ServiceQt::CreateServiceQtFactory()
+content::ServiceManagerConnection::ServiceRequestHandler ServiceQt::CreateServiceQtRequestHandler()
 {
-    return base::BindRepeating(&ServiceQt::CreateServiceQtWrapper, base::Unretained(this));
+    return base::BindRepeating(&ServiceQt::BindServiceQtRequest, base::Unretained(this));
 }
 
 ServiceQt::ServiceQt() : m_ioThreadContext(std::make_unique<IOThreadContext>())
@@ -155,8 +162,8 @@ void ServiceQt::InitConnector()
     m_ioThreadContext->BindConnector(std::move(request));
 }
 
-std::unique_ptr<service_manager::Service> ServiceQt::CreateServiceQtWrapper()
+void ServiceQt::BindServiceQtRequest(service_manager::mojom::ServiceRequest request)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    return std::make_unique<service_manager::ForwardingService>(m_ioThreadContext.get());
+    m_ioThreadContext->BindServiceRequest(std::move(request));
 }

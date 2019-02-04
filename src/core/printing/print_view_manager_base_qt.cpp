@@ -455,7 +455,7 @@ bool PrintViewManagerBaseQt::RunInnerMessageLoop() {
 
   // Need to enable recursive task.
   {
-      base::MessageLoop::ScopedNestableTaskAllower allow;
+      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
       run_loop.Run();
   }
 

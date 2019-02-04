@@ -46,6 +46,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 #include <QScopedPointer>
 
@@ -85,11 +86,12 @@ public:
     void RenderFrameCreated(content::RenderFrame* render_frame) override;
     bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) override;
     bool HasErrorPage(int http_status_code) override;
+
     void PrepareErrorPage(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
-                          const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) override;
+                          const blink::WebURLError& error, std::string* errorHtml) override;
     void PrepareErrorPageForHttpStatusError(content::RenderFrame* render_frame, const blink::WebURLRequest& failed_request,
                                             const GURL& unreachable_url, int http_status,
-                                            std::string* error_html, base::string16* error_description) override;
+                                            std::string* error_html) override;
 
     unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) override;
     bool IsLinkVisited(unsigned long long linkHash) override;
@@ -120,7 +122,6 @@ private:
     service_manager::Connector *GetConnector();
 
     // service_manager::Service:
-    void OnStart() override;
     void OnBindInterface(const service_manager::BindSourceInfo &remote_info,
                          const std::string &name,
                          mojo::ScopedMessagePipeHandle handle) override;
@@ -129,7 +130,7 @@ private:
     void GetInterface(const std::string& name, mojo::ScopedMessagePipeHandle request_handle) override;
 
     void GetNavigationErrorStringsInternal(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
-                                           const error_page::Error& error, std::string* errorHtml, base::string16* errorDescription);
+                                           const error_page::Error& error, std::string* errorHtml);
 
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
     QScopedPointer<web_cache::WebCacheImpl> m_webCacheImpl;
@@ -137,9 +138,8 @@ private:
     QScopedPointer<SpellCheck> m_spellCheck;
 #endif
 
-    std::unique_ptr<service_manager::Connector> m_connector;
     service_manager::mojom::ConnectorRequest m_connectorRequest;
-    std::unique_ptr<service_manager::ServiceContext> m_serviceContext;
+    service_manager::ServiceBinding m_serviceBinding;
     service_manager::BinderRegistry m_registry;
     std::unique_ptr<network_hints::PrescientNetworkingDispatcher> m_prescientNetworkingDispatcher;
 

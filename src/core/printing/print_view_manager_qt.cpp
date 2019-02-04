@@ -98,7 +98,7 @@ static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
                         const base::FilePath &path,
                         const QtWebEngineCore::PrintViewManagerQt::PrintToPDFFileCallback &saveCallback)
 {
-    base::AssertBlockingAllowed();
+    base::AssertBlockingAllowedDeprecated();
     DCHECK_GT(data->size(), 0U);
 
     printing::MetafileSkia metafile;

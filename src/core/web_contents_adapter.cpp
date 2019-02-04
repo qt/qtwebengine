@@ -61,6 +61,7 @@
 #include "web_engine_settings.h"
 
 #include "base/command_line.h"
+#include "base/message_loop/message_loop_impl.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -333,7 +334,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
 
         std::unique_ptr<content::NavigationEntry> entry = content::NavigationController::CreateNavigationEntry(
             toGurl(virtualUrl),
-            content::Referrer(toGurl(referrerUrl), static_cast<blink::WebReferrerPolicy>(referrerPolicy)),
+            content::Referrer(toGurl(referrerUrl), static_cast<network::mojom::ReferrerPolicy>(referrerPolicy)),
             // Use a transition type of reload so that we don't incorrectly
             // increase the typed count.
             ui::PAGE_TRANSITION_RELOAD,
@@ -494,7 +495,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
 #endif
     // Set web-contents font settings to the default font settings as Chromium constantly overrides
     // the global font defaults with the font settings of the latest web-contents created.
-    CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params, (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL)));
+    static const gfx::FontRenderParams params = gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
     rendererPrefs->should_antialias_text = params.antialiasing;
     rendererPrefs->use_subpixel_positioning = params.subpixel_positioning;
     rendererPrefs->hinting = params.hinting;
@@ -1084,7 +1085,7 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     content::Referrer referrer = content::Referrer::SanitizeForRequest(
                 gurl,
                 content::Referrer(toGurl(referrerUrl).GetAsReferrer(),
-                                  static_cast<blink::WebReferrerPolicy>(referrerPolicy)));
+                                  static_cast<network::mojom::ReferrerPolicy>(referrerPolicy)));
 
     params->set_referrer(referrer.url);
     params->set_referrer_policy(content::Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
@@ -1116,16 +1117,30 @@ void WebContentsAdapter::copyImageAt(const QPoint &location)
     m_webContents->GetRenderViewHost()->GetMainFrame()->CopyImageAt(location.x(), location.y());
 }
 
-ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerNoAction, blink::WebMediaPlayerAction::kUnknown)
-ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerPlay, blink::WebMediaPlayerAction::kPlay)
-ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerMute, blink::WebMediaPlayerAction::kMute)
-ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerLoop,  blink::WebMediaPlayerAction::kLoop)
-ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerControls,  blink::WebMediaPlayerAction::kControls)
+static blink::WebMediaPlayerAction::Type toBlinkMediaPlayerActionType(WebContentsAdapter::MediaPlayerAction action)
+{
+    switch (action) {
+    case WebContentsAdapter::MediaPlayerPlay:
+        return blink::WebMediaPlayerAction::Type::kPlay;
+    case WebContentsAdapter::MediaPlayerMute:
+        return blink::WebMediaPlayerAction::Type::kMute;
+    case WebContentsAdapter::MediaPlayerLoop:
+        return blink::WebMediaPlayerAction::Type::kLoop;
+    case WebContentsAdapter::MediaPlayerControls:
+        return blink::WebMediaPlayerAction::Type::kControls;
+    case WebContentsAdapter::MediaPlayerNoAction:
+        break;
+    }
+    NOTREACHED();
+    return (blink::WebMediaPlayerAction::Type)-1;
+}
 
 void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, MediaPlayerAction action, bool enable)
 {
     CHECK_INITIALIZED();
-    blink::WebMediaPlayerAction blinkAction((blink::WebMediaPlayerAction::Type)action, enable);
+    if (action == MediaPlayerNoAction)
+        return;
+    blink::WebMediaPlayerAction blinkAction(toBlinkMediaPlayerActionType(action), enable);
     m_webContents->GetRenderViewHost()->GetMainFrame()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
 }
 
@@ -1402,7 +1417,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     }
 
     {
-        base::MessageLoop::ScopedNestableTaskAllower allow;
+        base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
         drag->exec(allowedActions);
     }
 
@@ -1546,7 +1561,7 @@ void WebContentsAdapter::waitForUpdateDragActionCalled()
     const qint64 timeout = 3000;
     QElapsedTimer t;
     t.start();
-    base::MessagePump::Delegate *delegate = base::MessageLoop::current();
+    base::MessagePump::Delegate *delegate = static_cast<base::MessageLoopImpl *>(base::MessageLoopCurrent::Get().ToMessageLoopBaseDeprecated());
     DCHECK(delegate);
     m_updateDragActionCalled = false;
     for (;;) {
@@ -1675,15 +1690,15 @@ ASSERT_ENUMS_MATCH(WebContentsAdapterClient::SaveToDiskDisposition, WindowOpenDi
 ASSERT_ENUMS_MATCH(WebContentsAdapterClient::OffTheRecordDisposition, WindowOpenDisposition::OFF_THE_RECORD)
 ASSERT_ENUMS_MATCH(WebContentsAdapterClient::IgnoreActionDisposition, WindowOpenDisposition::IGNORE_ACTION)
 
-ASSERT_ENUMS_MATCH(ReferrerPolicy::Always, blink::kWebReferrerPolicyAlways)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::Default, blink::kWebReferrerPolicyDefault)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngrade, blink::kWebReferrerPolicyNoReferrerWhenDowngrade)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::Never, blink::kWebReferrerPolicyNever)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::Origin, blink::kWebReferrerPolicyOrigin)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::OriginWhenCrossOrigin, blink::kWebReferrerPolicyOriginWhenCrossOrigin)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngradeOriginWhenCrossOrigin, blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::SameOrigin, blink::kWebReferrerPolicySameOrigin)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::StrictOrigin, blink::kWebReferrerPolicyStrictOrigin)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::Last, blink::kWebReferrerPolicyLast)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Always, network::mojom::ReferrerPolicy::kAlways)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Default, network::mojom::ReferrerPolicy::kDefault)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngrade, network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Never, network::mojom::ReferrerPolicy::kNever)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Origin, network::mojom::ReferrerPolicy::kOrigin)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::OriginWhenCrossOrigin, network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngradeOriginWhenCrossOrigin, network::mojom::ReferrerPolicy::kNoReferrerWhenDowngradeOriginWhenCrossOrigin)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::SameOrigin, network::mojom::ReferrerPolicy::kSameOrigin)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::StrictOrigin, network::mojom::ReferrerPolicy::kStrictOrigin)
+ASSERT_ENUMS_MATCH(ReferrerPolicy::Last, network::mojom::ReferrerPolicy::kLast)
 
 } // namespace QtWebEngineCore

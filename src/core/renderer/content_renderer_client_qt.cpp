@@ -68,6 +68,8 @@
 #include "media/base/key_system_properties.h"
 #include "media/media_buildflags.h"
 #include "net/base/net_errors.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -112,6 +114,7 @@ namespace QtWebEngineCore {
 static const char kHttpErrorDomain[] = "http";
 
 ContentRendererClientQt::ContentRendererClientQt()
+    : m_serviceBinding(this)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionsClient::Set(extensions::ExtensionsClientQt::GetInstance());
@@ -149,7 +152,7 @@ void ContentRendererClientQt::RenderThreadStarted()
     blink::WebURL qrc(blink::KURL("qrc:"));
     blink::WebString file(blink::WebString::FromASCII("file"));
     blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(qrc, file, blink::WebString(), true,
-                                                            network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+                                                            network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     ExtensionsRendererClientQt::GetInstance()->RenderThreadStarted();
 #endif
@@ -237,23 +240,23 @@ bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *fram
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
 void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame* renderFrame, const blink::WebURLRequest &failedRequest,
                                                const blink::WebURLError &web_error,
-                                               std::string *errorHtml, base::string16 *errorDescription)
+                                               std::string *errorHtml)
 {
     GetNavigationErrorStringsInternal(renderFrame, failedRequest,
                                       error_page::Error::NetError(web_error.url(), web_error.reason(), web_error.has_copy_in_cache()),
-                                      errorHtml, errorDescription);
+                                      errorHtml);
 }
 
 void ContentRendererClientQt::PrepareErrorPageForHttpStatusError(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
                                                                  const GURL& unreachable_url, int http_status,
-                                                                 std::string* errorHtml, base::string16* errorDescription)
+                                                                 std::string* errorHtml)
 {
     GetNavigationErrorStringsInternal(renderFrame, failedRequest,
                                       error_page::Error::HttpError(unreachable_url, http_status),
-                                      errorHtml, errorDescription);
+                                      errorHtml);
 }
 
-void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderFrame *renderFrame, const blink::WebURLRequest &failedRequest, const error_page::Error &error, std::string *errorHtml, base::string16 *errorDescription)
+void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderFrame *renderFrame, const blink::WebURLRequest &failedRequest, const error_page::Error &error, std::string *errorHtml)
 {
     Q_UNUSED(renderFrame)
     const bool isPost = QByteArray::fromStdString(failedRequest.HttpMethod().Utf8()) == QByteArrayLiteral("POST");
@@ -271,7 +274,7 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
             error.reason(), error.domain(), error.url(), isPost,
             error.stale_copy_in_cache(), false, false,
             error_page::LocalizedError::OfflineContentOnNetErrorFeatureState::kDisabled,
-            locale, std::unique_ptr<error_page::ErrorPageParams>(), &errorStrings);
+            false, locale, std::unique_ptr<error_page::ErrorPageParams>(), &errorStrings);
         resourceId = IDR_NET_ERROR_HTML;
 
         const base::StringPiece template_html(ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resourceId));
@@ -280,9 +283,6 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
         else // "t" is the id of the templates root node.
             *errorHtml = webui::GetTemplatesHtml(template_html, &errorStrings, "t");
     }
-
-    if (errorDescription)
-        *errorDescription = error_page::LocalizedError::GetErrorDetails(error.domain(), error.reason(), isPost);
 }
 
 unsigned long long ContentRendererClientQt::VisitedLinkHash(const char *canonicalUrl, size_t length)
@@ -323,11 +323,6 @@ content::BrowserPluginDelegate* ContentRendererClientQt::CreateBrowserPluginDele
 #endif
 }
 
-void ContentRendererClientQt::OnStart()
-{
-    context()->connector()->BindConnectorRequest(std::move(m_connectorRequest));
-}
-
 void ContentRendererClientQt::OnBindInterface(const service_manager::BindSourceInfo &remote_info,
                                               const std::string& name,
                                               mojo::ScopedMessagePipeHandle handle)
@@ -338,11 +333,9 @@ void ContentRendererClientQt::OnBindInterface(const service_manager::BindSourceI
 
 void ContentRendererClientQt::GetInterface(const std::string &interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {
-    if (!m_connector)
-        return;
-    m_connector->BindInterface(service_manager::Identity("qtwebengine"),
-                               interface_name,
-                               std::move(interface_pipe));
+    m_serviceBinding.GetConnector()->BindInterface(
+        service_manager::ServiceFilter::ByName("qtwebengine"),
+        interface_name, std::move(interface_pipe));
 }
 
 // The following is based on chrome/renderer/media/chrome_key_systems.cc:
@@ -568,16 +561,13 @@ void ContentRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
 
 void ContentRendererClientQt::CreateRendererService(service_manager::mojom::ServiceRequest service_request)
 {
-    m_serviceContext = std::make_unique<service_manager::ServiceContext>(
-                std::make_unique<service_manager::ForwardingService>(this),
-                std::move(service_request));
+    DCHECK(!m_serviceBinding.is_bound());
+    m_serviceBinding.Bind(std::move(service_request));
 }
 
 service_manager::Connector* ContentRendererClientQt::GetConnector()
 {
-    if (!m_connector)
-        m_connector = service_manager::Connector::Create(&m_connectorRequest);
-    return m_connector.get();
+    return m_serviceBinding.GetConnector();
 }
 
 } // namespace

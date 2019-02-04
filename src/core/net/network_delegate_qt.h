@@ -77,8 +77,7 @@ public:
     net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, AuthCallback, net::AuthCredentials*) override;
     bool OnCanGetCookies(const net::URLRequest&, const net::CookieList&, bool) override;
     bool OnCanAccessFile(const net::URLRequest&, const base::FilePath&, const base::FilePath&) const override;
-    bool OnCanEnablePrivacyMode(const GURL&, const GURL&) const override;
-    bool OnAreExperimentalCookieFeaturesEnabled() const override;
+    bool OnForcePrivacyMode(const GURL&, const GURL&) const override;
     bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const override;
 
     bool OnCanQueueReportingReport(const url::Origin& origin) const override;

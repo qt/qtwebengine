@@ -163,7 +163,7 @@ public:
     void SetWantsAnimateOnlyBeginFrames() override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
     const viz::FrameSinkId &GetFrameSinkId() const override;
-    const viz::LocalSurfaceId &GetLocalSurfaceId() const override;
+    const viz::LocalSurfaceIdAllocation &GetLocalSurfaceIdAllocation() const override;
     void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
     void EnsureSurfaceSynchronizedForLayoutTest() override;
     uint32_t GetCaptureSequenceNumber() const override;

@@ -163,7 +163,6 @@ static net::HttpNetworkSession::Params generateNetworkSessionParams(bool ignoreC
 {
     net::HttpNetworkSession::Params network_session_params;
     network_session_params.ignore_certificate_errors = ignoreCertificateErrors;
-    network_session_params.enable_channel_id = base::FeatureList::IsEnabled(features::kChannelID);
     return network_session_params;
 }
 
@@ -666,10 +665,10 @@ void ProfileIODataQt::updateStorageSettings()
     QMutexLocker lock(&m_mutex);
     setFullConfiguration();
 
-    std::string userId = content::BrowserContext::GetServiceUserIdFor(m_profile);
-    if (file::GetUserDirForUserId(userId) != toFilePath(m_profileAdapter->dataPath())) {
-        file::ForgetServiceUserIdUserDirAssociation(userId);
-        file::AssociateServiceUserIdWithUserDir(userId, toFilePath(m_profileAdapter->dataPath()));
+    base::Token groupId = content::BrowserContext::GetServiceInstanceGroupFor(m_profile);
+    if (file::GetUserDirForInstanceGroup(groupId) != toFilePath(m_profileAdapter->dataPath())) {
+        file::ForgetServiceInstanceGroupUserDirAssociation(groupId);
+        file::AssociateServiceInstanceGroupWithUserDir(groupId, toFilePath(m_profileAdapter->dataPath()));
     }
     requestStorageGeneration();
 }

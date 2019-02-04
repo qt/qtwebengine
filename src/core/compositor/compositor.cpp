@@ -162,7 +162,7 @@ void Compositor::notifyFrameCommitted()
 void Compositor::sendPresentationFeedback(uint frame_token)
 {
     gfx::PresentationFeedback dummyFeedback(base::TimeTicks::Now(), base::TimeDelta(), gfx::PresentationFeedback::Flags::kVSync);
-    m_frameSinkClient->DidPresentCompositorFrame(frame_token, dummyFeedback);
+    m_presentations.insert({frame_token, dummyFeedback});
 }
 
 bool Compositor::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs &args)
@@ -171,8 +171,10 @@ bool Compositor::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs &args)
 
     ProgressFlingIfNeeded(m_host, args.frame_time);
     m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
-    if (m_frameSinkClient)
-        m_frameSinkClient->OnBeginFrame(args);
+    if (m_frameSinkClient) {
+        m_frameSinkClient->OnBeginFrame(args, m_presentations);
+        m_presentations.clear();
+    }
 
     return true;
 }

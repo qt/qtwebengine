@@ -111,8 +111,8 @@ Clipboard::FormatType Clipboard::GetFormatType(const std::string& format_string)
 
 const Clipboard::FormatType& Clipboard::GetPlainTextFormatType()
 {
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeText));
-    return type;
+    static base::NoDestructor<FormatType> type(kMimeTypeText);
+    return *type;
 }
 
 const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType()
@@ -132,38 +132,38 @@ const Clipboard::FormatType& Clipboard::GetUrlWFormatType()
 
 const Clipboard::FormatType& Clipboard::GetHtmlFormatType()
 {
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeHTML));
-    return type;
+    static base::NoDestructor<FormatType> type(kMimeTypeHTML);
+    return *type;
 }
 
 const Clipboard::FormatType& Clipboard::GetRtfFormatType()
 {
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeRTF));
-    return type;
+    static base::NoDestructor<FormatType> type(kMimeTypeRTF);
+    return *type;
 }
 
 const Clipboard::FormatType& Clipboard::GetBitmapFormatType()
 {
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeBitmap));
-    return type;
+    static base::NoDestructor<FormatType> type(kMimeTypeBitmap);
+    return *type;
 }
 
 const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType()
 {
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebkitSmartPaste));
-    return type;
+    static base::NoDestructor<FormatType> type(kMimeTypeWebkitSmartPaste);
+    return *type;
 }
 
 const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType()
 {
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomDataCopy));
-    return type;
+    static base::NoDestructor<FormatType> type(kMimeTypeWebCustomData);
+    return *type;
 }
 
 const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType()
 {
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
-    return type;
+    static base::NoDestructor<FormatType> type(kMimeTypePepperCustomData);
+    return *type;
 }
 
 

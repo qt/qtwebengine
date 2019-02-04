@@ -42,6 +42,8 @@
 #include "api/qwebenginemessagepumpscheduler_p.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_impl.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/process/process.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -104,6 +106,8 @@ int GetTimeIntervalMilliseconds(const base::TimeTicks &from)
     return delay < 0 ? 0 : delay;
 }
 
+}  // anonymous namespace
+
 class MessagePumpForUIQt : public base::MessagePump
 {
 public:
@@ -134,14 +138,13 @@ public:
     {
         // NOTE: This method may called from any thread at any time.
         if (!m_delegate)
-            m_delegate = base::MessageLoopForUI::current();
+            m_delegate = static_cast<base::MessageLoopImpl*>(base::MessageLoopCurrentForUI::Get().ToMessageLoopBaseDeprecated());
         m_scheduler.scheduleWork();
     }
 
     void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) override
     {
-        if (!m_delegate)
-            m_delegate = base::MessageLoopForUI::current();
+        Q_ASSERT(m_delegate);
         m_scheduler.scheduleDelayedWork(GetTimeIntervalMilliseconds(delayed_work_time));
     }
 
@@ -215,8 +218,6 @@ private:
     QWebEngineMessagePumpScheduler m_scheduler;
 };
 
-}  // anonymous namespace
-
 std::unique_ptr<base::MessagePump> messagePumpFactory()
 {
     return base::WrapUnique(new MessagePumpForUIQt);
@@ -277,10 +278,9 @@ int BrowserMainPartsQt::PreCreateThreads()
 void BrowserMainPartsQt::ServiceManagerConnectionStarted(content::ServiceManagerConnection *connection)
 {
     ServiceQt::GetInstance()->InitConnector();
-    connection->GetConnector()->StartService(service_manager::Identity("qtwebengine"));
+    connection->GetConnector()->WarmService(service_manager::ServiceFilter::ByName("qtwebengine"));
     m_processResourceCoordinator = std::make_unique<resource_coordinator::ProcessResourceCoordinator>(connection->GetConnector());
-    m_processResourceCoordinator->SetLaunchTime(base::Time::Now());
-    m_processResourceCoordinator->SetPID(base::Process::Current().Pid());
+    m_processResourceCoordinator->OnProcessLaunched(base::Process::Current());
 }
 
 } // namespace QtWebEngineCore

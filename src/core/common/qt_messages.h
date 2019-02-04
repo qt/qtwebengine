@@ -108,9 +108,8 @@ IPC_MESSAGE_CONTROL4(QtWebEngineHostMsg_RequestFileSystemAccessAsync,
 
 // Sent by the renderer process to check whether access to Indexed DB is
 // granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL4_1(QtWebEngineHostMsg_AllowIndexedDB,
+IPC_SYNC_MESSAGE_CONTROL3_1(QtWebEngineHostMsg_AllowIndexedDB,
                             int /* render_frame_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
-                            base::string16 /* database name */,
                             bool /* allowed */)

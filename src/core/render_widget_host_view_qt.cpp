@@ -905,7 +905,7 @@ viz::ScopedSurfaceIdAllocator RenderWidgetHostViewQt::DidUpdateVisualProperties(
 
 void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata)
 {
-    synchronizeVisualProperties(metadata.local_surface_id);
+    synchronizeVisualProperties(metadata.local_surface_allocation_id);
 }
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
@@ -1685,9 +1685,9 @@ const viz::FrameSinkId &RenderWidgetHostViewQt::GetFrameSinkId() const
     return m_frameSinkId;
 }
 
-const viz::LocalSurfaceId &RenderWidgetHostViewQt::GetLocalSurfaceId() const
+const viz::LocalSurfaceIdAllocation &RenderWidgetHostViewQt::GetLocalSurfaceIdAllocation() const
 {
-    return m_localSurfaceIdAllocator.GetCurrentLocalSurfaceId();
+    return m_localSurfaceIdAllocator.GetCurrentLocalSurfaceIdAllocation();
 }
 
 void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostView *view)

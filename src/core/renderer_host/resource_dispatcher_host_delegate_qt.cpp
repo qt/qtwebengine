@@ -70,7 +70,7 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 
-#include "resource_context_qt.h"
+#include "profile_io_data_qt.h"
 #include "type_conversion.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_settings.h"
@@ -128,10 +128,9 @@ bool ResourceDispatcherHostDelegateQt::ShouldInterceptResourceAsStream(net::URLR
     if (!content::ResourceRequestInfo::GetRenderFrameForRequest(request, &render_process_host_id, &render_frame_id))
         return false;
 
-    ResourceContextQt *context = static_cast<ResourceContextQt *>(info->GetContext());
     std::vector<std::string> whitelist = MimeTypesHandler::GetMIMETypeWhitelist();
 
-    extensions::ExtensionSystemQt *extensionSystem = context->GetExtensionSystem();
+    extensions::ExtensionSystemQt *extensionSystem = ProfileIODataQt::FromResourceContext(info->GetContext())->GetExtensionSystem();
     if (!extensionSystem)
         return false;
 

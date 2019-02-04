@@ -39,6 +39,8 @@ SOURCES += \
 
 QMAKE_TARGET_DESCRIPTION = "Qt WebEngine Dictionary Converter"
 
+CONFIG += c++14
+
 # Support converting dictionaries in a prefix build, by supplying
 # the path to the ICU data file located in the Qt build path, rather
 # than the install path (which is not present at build time).

@@ -161,7 +161,7 @@ public:
     bool AllowServiceWorker(const GURL& scope,
                             const GURL& first_party,
                             content::ResourceContext* context,
-                            const base::Callback<content::WebContents*(void)>& wc_getter) override;
+                            base::RepeatingCallback<content::WebContents*()> wc_getter) override;
 
     void AllowWorkerFileSystem(const GURL &url,
                                content::ResourceContext *context,
@@ -169,7 +169,6 @@ public:
                                base::Callback<void(bool)> callback) override;
 
     bool AllowWorkerIndexedDB(const GURL &url,
-                              const base::string16 &name,
                               content::ResourceContext *context,
                               const std::vector<content::GlobalFrameRoutingId> &render_frames) override;
 
@@ -200,10 +199,12 @@ public:
             const GURL &url,
             content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
             int child_id,
-            content::NavigationUIData  *navigation_data,
+            content::NavigationUIData *navigation_data,
             bool is_main_frame,
             ui::PageTransition page_transition,
-            bool has_user_gesture) override;
+            bool has_user_gesture,
+            const std::string &method,
+            const net::HttpRequestHeaders &headers) override;
 
 private:
     void InitFrameInterfaces();

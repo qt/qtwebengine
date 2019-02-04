@@ -44,7 +44,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_impl.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
@@ -238,7 +238,7 @@ void WebEngineContext::destroy()
     destroyGpuProcess();
 
     base::MessagePump::Delegate *delegate =
-            static_cast<base::MessageLoop *>(m_runLoop->delegate_);
+            static_cast<base::MessageLoopImpl *>(m_runLoop->delegate_);
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
 
@@ -392,7 +392,7 @@ WebEngineContext::WebEngineContext()
     QWebEngineUrlScheme::lockSchemes();
 
     // Allow us to inject javascript like any webview toolkit.
-    content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
+    content::RenderFrameHost::AllowInjectingJavaScript();
 
     QStringList appArgs = QCoreApplication::arguments();
 

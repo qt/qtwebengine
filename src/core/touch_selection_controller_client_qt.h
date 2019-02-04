@@ -73,6 +73,8 @@ public:
     bool IsCommandIdEnabled(int command_id) const override;
     void ExecuteCommand(int command_id, int event_flags) override;
     void RunContextMenu() override;
+    bool ShouldShowQuickMenu() override { return false; }
+    base::string16 GetSelectedText() override { return base::string16(); }
 
     // content::TouchSelectionControllerClientManager overrides
     void DidStopFlinging() override;
