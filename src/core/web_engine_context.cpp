@@ -114,6 +114,7 @@
 #include <QSurfaceFormat>
 #include <QVector>
 #include <qpa/qplatformnativeinterface.h>
+#include <QNetworkProxy>
 
 using namespace QtWebEngineCore;
 
@@ -333,6 +334,18 @@ void WebEngineContext::destroyContextPostRoutine()
 #endif
     m_handle = nullptr;
     m_destroyed = true;
+}
+
+ProxyAuthentication WebEngineContext::qProxyNetworkAuthentication(QString host, int port)
+{
+    if (!QNetworkProxyFactory::usesSystemConfiguration()) {
+        QNetworkProxy proxy = QNetworkProxy::applicationProxy();
+        if (host == proxy.hostName() && port == proxy.port() && !proxy.user().isEmpty()
+            && !proxy.password().isEmpty()) {
+            return std::make_tuple(true, proxy.user(), proxy.password());
+        }
+    }
+    return std::make_tuple(false, QString(), QString());
 }
 
 #ifndef CHROMIUM_VERSION

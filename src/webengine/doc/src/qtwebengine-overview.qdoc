@@ -228,13 +228,17 @@
     are automatically retrieved from the system. Settings from an installed QNetworkProxyFactory
     will be ignored, though.
 
+    In case QNetworkProxy::user() and QNetworkProxy::password() are set, these credentials
+    will be automatically used for proxy authentication. It is up to the user to provide valid
+    credentials, since there is no error handling callback.
+
+    If no credentials are set with QNetworkProxy, but the proxy requires authentication,
+    QWebEnginePage::proxyAuthenticationRequired is emitted.
+    For Qt Quick, a dialog is shown.
+
     Not all properties of QNetworkProxy are supported by Qt WebEngine. That is,
     QNetworkProxy::type(), QNetworkProxy::hostName() and QNetworkProxy::port() are taken into
-    account. All other proxy settings such as QNetworkProxy::rawHeader(), QNetworkProxy::user(), or
-    QNetworkProxy::password() are ignored.
-
-    If a proxy requires authentication, QWebEnginePage::proxyAuthenticationRequired is emitted.
-    For Qt Quick, a dialog is shown.
+    account. All other proxy settings such as QNetworkProxy::rawHeader() are ignored.
 
     \section1 High DPI Support
 
