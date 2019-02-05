@@ -593,12 +593,14 @@ bool QQuickWebEngineDownloadItem::isPaused() const
 }
 
 /*!
-    \qmlproperty bool WebEngineDownloadItem::view
+    \qmlproperty WebEngineView WebEngineDownloadItem::view
     \readonly
     \since QtWebEngine 1.8
 
     Returns the view the download was requested on. If the download was not triggered by content in a view,
     \c nullptr is returned.
+
+    \sa WebEngineView
 */
 QQuickWebEngineView *QQuickWebEngineDownloadItem::view() const
 {
