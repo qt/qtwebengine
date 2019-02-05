@@ -1,5 +1,6 @@
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 
 chromium_version = exec_script("//build/util/version.py", [ "-f", rebase_path("//chrome/VERSION"),
@@ -38,7 +39,7 @@ deps = [
   "//ui/gl",
   "//qtwebengine/browser:interfaces",
   ":qtwebengine_sources",
-  ":qtwebengine_resources"
+  ":qtwebengine_resources",
 ]
 
 if (enable_webrtc) {
@@ -56,6 +57,12 @@ if (use_xscrnsaver) {
 if (use_ozone) {
   deps += [
     "//ui/ozone/common"
+  ]
+}
+
+if (enable_extensions) {
+  deps += [
+    ":qtwebengine_extensions_features"
   ]
 }
 

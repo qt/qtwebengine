@@ -44,6 +44,8 @@
 #include "base/compiler_specific.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
+#include "ppapi/buildflags/buildflags.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 class RenderFrame;
@@ -67,10 +69,13 @@ public:
 
     bool isFrameDetached() const;
 
+    service_manager::BinderRegistry* registry() { return &registry_; }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(RenderFrameObserverQt);
 
     bool m_isFrameDetached;
+    service_manager::BinderRegistry registry_;
 };
 
 } // namespace QtWebEngineCore

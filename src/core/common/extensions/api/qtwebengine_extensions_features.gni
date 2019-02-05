@@ -1,0 +1,25 @@
+import("//tools/json_schema_compiler/json_features.gni")
+
+json_features("qt_api_features") {
+  feature_type = "APIFeature"
+  method_name = "AddQtAPIFeatures"
+  sources = [
+    "//extensions/common/api/_webengine_api_features.json"
+  ]
+}
+
+json_features("qt_permission_features") {
+  feature_type = "PermissionFeature"
+  method_name = "AddQtPermissionFeatures"
+  sources = [
+    "//extensions/common/api/_permission_features.json"
+  ]
+}
+
+group("qtwebengine_extensions_features") {
+  public_deps = [
+    ":qt_api_features",
+    ":qt_permission_features",
+    "//extensions/common/api:extensions_features",
+  ]
+}

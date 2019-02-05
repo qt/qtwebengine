@@ -188,14 +188,13 @@ static inline bool isCommonTextEditShortcut(const QKeyEvent *ke)
 static uint32_t s_eventId = 0;
 class MotionEventQt : public ui::MotionEvent {
 public:
-    MotionEventQt(const QList<QTouchEvent::TouchPoint> &touchPoints, const base::TimeTicks &eventTime, Action action, const Qt::KeyboardModifiers modifiers, float dpiScale, int index = -1)
+    MotionEventQt(const QList<QTouchEvent::TouchPoint> &touchPoints, const base::TimeTicks &eventTime, Action action, const Qt::KeyboardModifiers modifiers, int index = -1)
         : touchPoints(touchPoints)
         , eventTime(eventTime)
         , action(action)
         , eventId(++s_eventId)
         , flags(flagsFromModifiers(modifiers))
         , index(index)
-        , dpiScale(dpiScale)
     {
         // ACTION_DOWN and ACTION_UP must be accesssed through pointer_index 0
         Q_ASSERT((action != Action::DOWN && action != Action::UP) || index == 0);
@@ -206,8 +205,8 @@ public:
     int GetActionIndex() const override { return index; }
     size_t GetPointerCount() const override { return touchPoints.size(); }
     int GetPointerId(size_t pointer_index) const override { return touchPoints.at(pointer_index).id(); }
-    float GetX(size_t pointer_index) const override { return touchPoints.at(pointer_index).pos().x() / dpiScale; }
-    float GetY(size_t pointer_index) const override { return touchPoints.at(pointer_index).pos().y() / dpiScale; }
+    float GetX(size_t pointer_index) const override { return touchPoints.at(pointer_index).pos().x(); }
+    float GetY(size_t pointer_index) const override { return touchPoints.at(pointer_index).pos().y(); }
     float GetRawX(size_t pointer_index) const override { return touchPoints.at(pointer_index).screenPos().x(); }
     float GetRawY(size_t pointer_index) const override { return touchPoints.at(pointer_index).screenPos().y(); }
     float GetTouchMajor(size_t pointer_index) const override
@@ -247,7 +246,6 @@ private:
     const uint32_t eventId;
     int flags;
     int index;
-    float dpiScale;
 };
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
@@ -434,9 +432,8 @@ bool RenderWidgetHostViewQt::IsShowing()
 gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
 {
     QRectF p = m_delegate->contentsRect();
-    float s = dpiScale();
-    gfx::Point p1(floor(p.x() / s), floor(p.y() / s));
-    gfx::Point p2(ceil(p.right() /s), ceil(p.bottom() / s));
+    gfx::Point p1(floor(p.x()), floor(p.y()));
+    gfx::Point p2(ceil(p.right()), ceil(p.bottom()));
     return gfx::BoundingRect(p1, p2);
 }
 
@@ -681,11 +678,6 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
     if (frame_token)
         OnFrameTokenChangedForView(frame_token);
 
-    // Support experimental.viewport.devicePixelRatio, see GetScreenInfo implementation below.
-    float dpiScale = this->dpiScale();
-    if (dpiScale != 0 && dpiScale != 1)
-        frame.metadata.device_scale_factor /= dpiScale;
-
     m_compositor->submitFrame(
         std::move(frame),
         base::BindOnce(&RenderWidgetHostViewQtDelegate::update, base::Unretained(m_delegate.get())));
@@ -714,9 +706,6 @@ void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo *results) const
     if (!window)
         return;
     GetScreenInfoFromNativeWindow(window, results);
-
-    // Support experimental.viewport.devicePixelRatio
-    results->device_scale_factor *= dpiScale();
 }
 
 gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
@@ -1182,11 +1171,6 @@ QList<QTouchEvent::TouchPoint> RenderWidgetHostViewQt::mapTouchPointIds(const QL
     return outputPoints;
 }
 
-float RenderWidgetHostViewQt::dpiScale() const
-{
-    return m_adapterClient ? m_adapterClient->dpiScale() : 1.0;
-}
-
 bool RenderWidgetHostViewQt::IsPopup() const
 {
     return widget_type_ == content::WidgetType::kPopup;
@@ -1414,7 +1398,7 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {
     if (!m_wheelAckPending) {
         Q_ASSERT(m_pendingWheelEvents.isEmpty());
-        blink::WebMouseWheelEvent webEvent = WebEventFactory::toWebWheelEvent(ev, dpiScale());
+        blink::WebMouseWheelEvent webEvent = WebEventFactory::toWebWheelEvent(ev);
         m_wheelAckPending = (webEvent.phase != blink::WebMouseWheelEvent::kPhaseEnded);
         m_mouseWheelPhaseHandler.AddPhaseIfNeededAndScheduleEndEvent(webEvent, false);
         host()->ForwardWheelEvent(webEvent);
@@ -1422,10 +1406,10 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
     }
     if (!m_pendingWheelEvents.isEmpty()) {
         // Try to combine with this wheel event with the last pending one.
-        if (WebEventFactory::coalesceWebWheelEvent(m_pendingWheelEvents.last(), ev, dpiScale()))
+        if (WebEventFactory::coalesceWebWheelEvent(m_pendingWheelEvents.last(), ev))
             return;
     }
-    m_pendingWheelEvents.append(WebEventFactory::toWebWheelEvent(ev, dpiScale()));
+    m_pendingWheelEvents.append(WebEventFactory::toWebWheelEvent(ev));
 }
 
 void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState /*ack_result*/)
@@ -1460,9 +1444,7 @@ void RenderWidgetHostViewQt::handleGestureEvent(QNativeGestureEvent *ev)
     const Qt::NativeGestureType type = ev->gestureType();
     // These are the only supported gestures by Chromium so far.
     if (type == Qt::ZoomNativeGesture || type == Qt::SmartZoomNativeGesture) {
-        host()->ForwardGestureEvent(WebEventFactory::toWebGestureEvent(
-                                        ev,
-                                        static_cast<double>(dpiScale())));
+        host()->ForwardGestureEvent(WebEventFactory::toWebGestureEvent(ev));
     }
 }
 #endif
@@ -1508,7 +1490,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
             break;
         }
 
-        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), dpiScale(), 0);
+        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), 0);
         if (m_touchSelectionController->WillHandleTouchEvent(motionEvent)) {
             ev->accept();
             return;
@@ -1539,8 +1521,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         if (touchPoints.isEmpty())
             touchPoints = m_previousTouchPoints;
         clearPreviousTouchMotionState();
-        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::Action::CANCEL,
-                                  ev->modifiers(), dpiScale());
+        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::Action::CANCEL, ev->modifiers());
         processMotionEvent(cancelEvent);
         return;
     }
@@ -1593,8 +1574,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
             continue;
         }
 
-        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), dpiScale(),
-                                  i);
+        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), i);
         processMotionEvent(motionEvent);
     }
 }
@@ -1611,7 +1591,7 @@ void RenderWidgetHostViewQt::handlePointerEvent(T *event)
 {
     // Currently WebMouseEvent is a subclass of WebPointerProperties, so basically
     // tablet events are mouse events with extra properties.
-    blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
+    blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event);
     if ((webEvent.GetType() == blink::WebInputEvent::kMouseDown || webEvent.GetType() == blink::WebInputEvent::kMouseUp)
             && webEvent.button == blink::WebMouseEvent::Button::kNoButton) {
         // Blink can only handle the 3 main mouse-buttons and may assert when processing mouse-down for no button.
@@ -1657,7 +1637,7 @@ void RenderWidgetHostViewQt::handlePointerEvent(T *event)
 
 void RenderWidgetHostViewQt::handleHoverEvent(QHoverEvent *ev)
 {
-    host()->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev, dpiScale()));
+    host()->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev));
 }
 
 void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)

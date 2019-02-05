@@ -41,8 +41,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE.Chromium file.
 
-#include "print_web_view_helper_delegate_qt.h"
+#include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_view.h"
+#include "extensions/common/constants.h"
+#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+
+#include "print_web_view_helper_delegate_qt.h"
 #include "web_engine_library_info.h"
 
 namespace QtWebEngineCore {
@@ -58,6 +64,15 @@ bool PrintWebViewHelperDelegateQt::CancelPrerender(content::RenderFrame *)
 
 blink::WebElement PrintWebViewHelperDelegateQt::GetPdfElement(blink::WebLocalFrame* frame)
 {
+    GURL url = frame->GetDocument().Url();
+    if (url.SchemeIs(extensions::kExtensionScheme) && url.host() == extension_misc::kPdfExtensionId)
+    {
+        // <object> with id="plugin" is created in
+        // chrome/browser/resources/pdf/pdf.js.
+        auto plugin_element = frame->GetDocument().GetElementById("plugin");
+        CHECK(!plugin_element.IsNull());
+        return plugin_element;
+    }
     return blink::WebElement();
 }
 

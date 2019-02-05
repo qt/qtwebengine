@@ -312,3 +312,8 @@ defineTest(qtConfTest_hasThumbFlag) {
     # no flag assume mthumb
     return(true)
 }
+
+defineTest(qtConfTest_hasGcc6OrNewer) {
+    greaterThan(QT_GCC_MAJOR_VERSION, 5):return(true)
+    return(false)
+}

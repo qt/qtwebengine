@@ -44,7 +44,16 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/service_manager_connection.h"
+#include "extensions/buildflags/buildflags.h"
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#include "extensions/common/extensions_client.h"
+#include "extensions/extensions_browser_client_qt.h"
+#include "extensions/extension_system_factory_qt.h"
+#include "common/extensions/extensions_client_qt.h"
+#endif //BUILDFLAG(ENABLE_EXTENSIONS)
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -247,12 +256,24 @@ BrowserMainPartsQt::~BrowserMainPartsQt() = default;
 
 int BrowserMainPartsQt::PreEarlyInitialization()
 {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(extensions::kExtensionScheme);
+#endif //ENABLE_EXTENSIONS
     base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
     return 0;
 }
 
 void BrowserMainPartsQt::PreMainMessageLoopStart()
 {
+}
+
+void BrowserMainPartsQt::PreMainMessageLoopRun()
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::ExtensionsClient::Set(new extensions::ExtensionsClientQt());
+    extensions::ExtensionsBrowserClient::Set(new extensions::ExtensionsBrowserClientQt());
+    extensions::ExtensionSystemFactoryQt::GetInstance();
+#endif //ENABLE_EXTENSIONS
 }
 
 void BrowserMainPartsQt::PostMainMessageLoopRun()

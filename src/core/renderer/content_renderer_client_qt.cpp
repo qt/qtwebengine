@@ -40,6 +40,8 @@
 #include "renderer/content_renderer_client_qt.h"
 
 #include "common/qt_messages.h"
+#include "extensions/buildflags/buildflags.h"
+#include "printing/buildflags/buildflags.h"
 #include "renderer/content_settings_observer_qt.h"
 #include "base/strings/string_split.h"
 #if QT_CONFIG(webengine_spellchecker)
@@ -85,6 +87,12 @@
 #if QT_CONFIG(webengine_webchannel)
 #include "renderer/web_channel_ipc_transport.h"
 #endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "common/extensions/extensions_client_qt.h"
+#include "extensions/extensions_renderer_client_qt.h"
+#endif //ENABLE_EXTENSIONS
+
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -106,6 +114,10 @@ static const char kHttpErrorDomain[] = "http";
 
 ContentRendererClientQt::ContentRendererClientQt()
 {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::ExtensionsClient::Set(extensions::ExtensionsClientQt::GetInstance());
+    extensions::ExtensionsRendererClient::Set(ExtensionsRendererClientQt::GetInstance());
+#endif
 }
 
 ContentRendererClientQt::~ContentRendererClientQt()
@@ -139,6 +151,9 @@ void ContentRendererClientQt::RenderThreadStarted()
     blink::WebString file(blink::WebString::FromASCII("file"));
     blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(qrc, file, blink::WebString(), true,
                                                             network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    ExtensionsRendererClientQt::GetInstance()->RenderThreadStarted();
+#endif
 }
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
@@ -150,11 +165,12 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
 
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)
 {
-    new QtWebEngineCore::RenderFrameObserverQt(render_frame);
+    QtWebEngineCore::RenderFrameObserverQt *render_frame_observer = new QtWebEngineCore::RenderFrameObserverQt(render_frame);
 #if QT_CONFIG(webengine_webchannel)
     if (render_frame->IsMainFrame())
         new WebChannelIPCTransport(render_frame);
 #endif
+
     UserResourceController::instance()->renderFrameCreated(render_frame);
 
     new QtWebEngineCore::ContentSettingsObserverQt(render_frame);
@@ -167,17 +183,41 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_fr
                 render_frame,
                 base::WrapUnique(new PrintWebViewHelperDelegateQt()));
 #endif // QT_CONFIG(webengine_printing_and_pdf)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    auto registry = std::make_unique<service_manager::BinderRegistry>();
+    ExtensionsRendererClientQt::GetInstance()->RenderFrameCreated(render_frame, render_frame_observer->registry());
+#endif
 }
 
-void ContentRendererClientQt::RunScriptsAtDocumentEnd(content::RenderFrame* render_frame)
+void ContentRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame *render_frame)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    ExtensionsRendererClientQt::GetInstance()->RunScriptsAtDocumentStart(render_frame);
+    // |render_frame| might be dead by now.
+#endif
+}
+
+void ContentRendererClientQt::RunScriptsAtDocumentEnd(content::RenderFrame *render_frame)
 {
     // Check whether the render_frame has been created and has not been detached yet.
     // Otherwise the WebFrame is not available.
     RenderFrameObserverQt *render_frame_observer = RenderFrameObserverQt::Get(render_frame);
-    if (!render_frame_observer || render_frame_observer->isFrameDetached())
-        return; // The frame is invisible to scripts.
 
-    UserResourceController::instance()->RunScriptsAtDocumentEnd(render_frame);
+    if (render_frame_observer && !render_frame_observer->isFrameDetached())
+        UserResourceController::instance()->RunScriptsAtDocumentEnd(render_frame);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    ExtensionsRendererClientQt::GetInstance()->RunScriptsAtDocumentEnd(render_frame);
+    // |render_frame| might be dead by now.
+#endif
+}
+
+void ContentRendererClientQt::RunScriptsAtDocumentIdle(content::RenderFrame *render_frame)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    ExtensionsRendererClientQt::GetInstance()->RunScriptsAtDocumentIdle(render_frame);
+    // |render_frame| might be dead by now.
+#endif
 }
 
 bool ContentRendererClientQt::HasErrorPage(int httpStatusCode)
@@ -259,6 +299,29 @@ bool ContentRendererClientQt::IsLinkVisited(unsigned long long linkHash)
 blink::WebPrescientNetworking *ContentRendererClientQt::GetPrescientNetworking()
 {
     return m_prescientNetworkingDispatcher.get();
+}
+
+bool ContentRendererClientQt::OverrideCreatePlugin(
+    content::RenderFrame* render_frame,
+    const blink::WebPluginParams& params, blink::WebPlugin** plugin)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    if (!ExtensionsRendererClientQt::GetInstance()->OverrideCreatePlugin(render_frame, params))
+        return false;
+#endif //ENABLE_EXTENSIONS
+    return content::ContentRendererClient::OverrideCreatePlugin(render_frame, params, plugin);
+}
+
+content::BrowserPluginDelegate* ContentRendererClientQt::CreateBrowserPluginDelegate(content::RenderFrame *render_frame,
+                                                                                     const content::WebPluginInfo &info,
+                                                                                     const std::string &mime_type,
+                                                                                     const GURL &original_url)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    return ExtensionsRendererClientQt::GetInstance()->CreateBrowserPluginDelegate(render_frame, info, mime_type, original_url);
+#else
+    return nullptr;
+#endif
 }
 
 void ContentRendererClientQt::OnStart()
@@ -488,6 +551,21 @@ void ContentRendererClientQt::InitSpellCheck()
     m_spellCheck.reset(new SpellCheck(&m_registry, this));
 }
 #endif
+
+void ContentRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
+                                              ui::PageTransition transition_type,
+                                              const blink::WebURL &url,
+                                              const url::Origin *initiator_origin,
+                                              GURL *new_url,
+                                              bool *attach_same_site_cookies)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    ExtensionsRendererClientQt::GetInstance()->WillSendRequest(frame, transition_type, url, initiator_origin, new_url, attach_same_site_cookies);
+    if (!new_url->is_empty())
+        return;
+#endif
+    content::ContentRendererClient::WillSendRequest(frame, transition_type, url, initiator_origin, new_url, attach_same_site_cookies);
+}
 
 void ContentRendererClientQt::CreateRendererService(service_manager::mojom::ServiceRequest service_request)
 {

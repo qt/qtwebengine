@@ -267,11 +267,6 @@ QRectF QWebEnginePagePrivate::viewportRect() const
     return view ? view->rect() : QRectF();
 }
 
-qreal QWebEnginePagePrivate::dpiScale() const
-{
-    return 1.0;
-}
-
 QColor QWebEnginePagePrivate::backgroundColor() const
 {
     return m_backgroundColor;

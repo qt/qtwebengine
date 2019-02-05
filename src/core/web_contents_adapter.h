@@ -184,7 +184,6 @@ public:
     void runGeolocationRequestCallback(const QUrl &securityOrigin, bool allowed);
     void grantMouseLockPermission(bool granted);
 
-    void dpiScaleChanged();
     void setBackgroundColor(const QColor &color);
     QAccessibleInterface *browserAccessible();
     ProfileQt* profile();

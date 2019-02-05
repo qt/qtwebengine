@@ -84,6 +84,9 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
+#include "extensions/buildflags/buildflags.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
+//#include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -93,6 +96,10 @@
 #if QT_CONFIG(webengine_webchannel)
 #include "renderer_host/web_channel_ipc_transport_host.h"
 #include <QtWebChannel/QWebChannel>
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/extension_web_contents_observer_qt.h"
 #endif
 
 #include <QDir>
@@ -506,6 +513,9 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
 
 #if QT_CONFIG(webengine_printing_and_pdf)
     PrintViewManagerQt::CreateForWebContents(webContents());
+#endif
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::ExtensionWebContentsObserverQt::CreateForWebContents(webContents());
 #endif
 
     // Create an instance of WebEngineVisitedLinksManager to catch the first
@@ -1273,16 +1283,6 @@ void WebContentsAdapter::grantMouseLockPermission(bool granted)
     }
 
     m_webContents->GotResponseToLockMouseRequest(granted);
-}
-
-void WebContentsAdapter::dpiScaleChanged()
-{
-    CHECK_INITIALIZED();
-    content::RenderWidgetHostImpl* impl = NULL;
-    if (m_webContents->GetRenderViewHost())
-        impl = content::RenderWidgetHostImpl::From(m_webContents->GetRenderViewHost()->GetWidget());
-    if (impl)
-        impl->NotifyScreenInfoChanged();
 }
 
 void WebContentsAdapter::setBackgroundColor(const QColor &color)

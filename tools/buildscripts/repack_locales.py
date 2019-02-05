@@ -56,6 +56,8 @@ INT_DIR = None
 # The target platform. If it is not defined, sys.platform will be used.
 OS = None
 
+ENABLE_EXTENSIONS = False
+
 # Extra input files.
 EXTRA_INPUT_FILES = []
 
@@ -109,6 +111,14 @@ def calc_inputs(locale):
     inputs.append(os.path.join(SHARE_INT_DIR, 'chrome',
                   'chromium_strings_%s.pak' % locale))
 
+  if ENABLE_EXTENSIONS:
+    # For example:
+    # '<(SHARED_INTERMEDIATE_DIR)/extensions/strings/extensions_strings_da.pak
+    # TODO(jamescook): When Android stops building extensions code move this
+    # to the OS != 'ios' and OS != 'android' section below.
+    inputs.append(os.path.join(SHARE_INT_DIR, 'extensions', 'strings',
+                  'extensions_strings_%s.pak' % locale))
+
   # Add any extra input files.
   for extra_file in EXTRA_INPUT_FILES:
     inputs.append('%s_%s.pak' % (extra_file, locale))
@@ -158,6 +168,7 @@ def DoMain(argv):
   global INT_DIR
   global OS
   global EXTRA_INPUT_FILES
+  global ENABLE_EXTENSIONS
 
   parser = optparse.OptionParser("usage: %prog [options] locales")
   parser.add_option("-i", action="store_true", dest="inputs", default=False,
@@ -177,6 +188,9 @@ def DoMain(argv):
                          locale suffix and \".pak\" extension.")
   parser.add_option("-p", action="store", dest="os",
                     help="The target OS. (e.g. mac, linux, win, etc.)")
+  parser.add_option("--enable-extensions", action="store",
+                    dest="enable_extensions",
+                    help="Whether to include strings for extensions")
   options, locales = parser.parse_args(argv)
 
   if not locales:
@@ -188,6 +202,7 @@ def DoMain(argv):
   SHARE_INT_DIR = options.share_int_dir
   EXTRA_INPUT_FILES = options.extra_input
   OS = options.os
+  ENABLE_EXTENSIONS = options.enable_extensions == '1'
 
   if not OS:
     if sys.platform == 'darwin':

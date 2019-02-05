@@ -239,7 +239,7 @@ void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
 
     QPixmap pixmap;
     QPoint hotspot;
-    pixmap = QPixmap::fromImage(toQImage(image.GetRepresentation(m_client->dpiScale())));
+    pixmap = QPixmap::fromImage(toQImage(image.GetRepresentation(1.0)));
     if (!pixmap.isNull()) {
         hotspot.setX(image_offset.x());
         hotspot.setY(image_offset.y());

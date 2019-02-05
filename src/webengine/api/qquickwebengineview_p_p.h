@@ -109,7 +109,6 @@ public:
     void selectionChanged() override { }
     void recentlyAudibleChanged(bool recentlyAudible) override;
     QRectF viewportRect() const override;
-    qreal dpiScale() const override;
     QColor backgroundColor() const override;
     void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) override;
     void loadCommitted() override;
@@ -218,7 +217,6 @@ public:
 private:
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;
     QList<QQuickWebEngineScript *> m_userScripts;
-    qreal m_dpiScale;
     QColor m_backgroundColor;
     qreal m_zoomFactor;
     bool m_ui2Enabled;

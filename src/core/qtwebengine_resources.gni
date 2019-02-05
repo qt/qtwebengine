@@ -1,10 +1,14 @@
 import("//tools/grit/repack.gni")
 import("//build/config/locales.gni")
 import("//chrome/chrome_repack_locales.gni")
+import("//extensions/buildflags/buildflags.gni")
 
 group("qtwebengine_resources") {
   deps = [
       "//chrome/app:generated_resources",
+      "//chrome/browser:resources",
+      "//chrome/browser/resources:component_extension_resources",
+      "//chrome/common:resources",
       "//components/resources:components_resources",
       ":qtwebengine_repack_resources",
       ":qtwebengine_repack_resources_100",
@@ -17,6 +21,8 @@ group("qtwebengine_resources") {
 repack("qtwebengine_repack_resources") {
   sources = [
     "$root_gen_dir/qtwebengine/qt_webengine_resources.pak",
+    "$root_gen_dir/chrome/browser_resources.pak",
+    "$root_gen_dir/chrome/common_resources.pak",
     "$root_gen_dir/chrome/quota_internals_resources.pak",
     "$root_gen_dir/chrome/task_scheduler_internals_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
@@ -31,6 +37,8 @@ repack("qtwebengine_repack_resources") {
      "//qtwebengine/browser:qt_webengine_resources",
      "//chrome/browser/resources:quota_internals_resources",
      "//chrome/browser/resources:task_scheduler_internals_resources",
+     "//chrome/browser:resources_grit",
+     "//chrome/common:resources_grit",
      "//components/resources:components_resources_grit",
      "//content:resources_grit",
      "//mojo/public/js:resources",
@@ -38,6 +46,20 @@ repack("qtwebengine_repack_resources") {
      "//third_party/blink/public:resources_grit",
      "//ui/resources:webui_resources_grd_grit",
   ]
+
+  if (enable_extensions) {
+    sources += [
+      "$root_gen_dir/chrome/component_extension_resources.pak",
+      "$root_gen_dir/extensions/extensions_renderer_resources.pak",
+      "$root_gen_dir/extensions/extensions_resources.pak",
+    ]
+    deps += [
+      "//chrome/browser/resources:component_extension_resources_grit",
+      "//extensions:extensions_renderer_resources_grit",
+      "//extensions:extensions_resources_grd_grit",
+    ]
+  }
+
 }
 
 repack("qtwebengine_repack_resources_100") {
@@ -56,6 +78,14 @@ repack("qtwebengine_repack_resources_100") {
     "//third_party/blink/public:scaled_resources_100_percent",
     "//ui/resources:ui_resources_grd_grit"
   ]
+  if (enable_extensions) {
+    sources += [
+      "$root_gen_dir/extensions/extensions_browser_resources_100_percent.pak"
+    ]
+    deps += [
+      "//extensions:extensions_browser_resources_grit"
+    ]
+  }
 }
 
 repack("qtwebengine_repack_resources_200") {
@@ -74,6 +104,14 @@ repack("qtwebengine_repack_resources_200") {
     "//third_party/blink/public:scaled_resources_200_percent",
     "//ui/resources:ui_resources_grd_grit"
   ]
+  if (enable_extensions) {
+    sources += [
+      "$root_gen_dir/extensions/extensions_browser_resources_200_percent.pak"
+    ]
+    deps += [
+      "//extensions:extensions_browser_resources_grit"
+    ]
+  }
 }
 
 repack("qtwebengine_repack_resources_devtools") {

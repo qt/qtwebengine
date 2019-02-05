@@ -22,7 +22,10 @@ gn_args += \
     use_custom_libcxx=false \
     v8_use_external_startup_data=false \
     toolkit_views=false \
-    treat_warnings_as_errors=false
+    treat_warnings_as_errors=false \
+    safe_browsing_mode=0 \
+    optimize_webui=false \
+    closure_compile=false
 
 !win32: gn_args += \
     use_jumbo_build=true \
@@ -56,6 +59,12 @@ qtConfig(webengine-webrtc) {
 }
 
 qtConfig(webengine-proprietary-codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
+
+qtConfig(webengine-extensions) {
+    gn_args += enable_extensions=true
+} else {
+    gn_args += enable_extensions=false
+}
 
 precompile_header {
     gn_args += enable_precompiled_headers=true

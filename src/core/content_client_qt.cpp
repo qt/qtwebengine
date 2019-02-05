@@ -84,6 +84,14 @@ const char kWidevineCdmFileName[] =
 #endif
 #endif
 
+#if QT_CONFIG(webengine_printing_and_pdf)
+#include "pdf/pdf.h"
+#include "pdf/pdf_ppapi.h"
+const char kPdfPluginMimeType[] = "application/x-google-chrome-pdf";
+const char kPdfPluginPath[] = "internal-pdf-viewer/";
+const char kPdfPluginSrc[] = "src";
+#endif // QT_CONFIG(webengine_printing_and_pdf)
+
 static QString webenginePluginsPath()
 {
     // Look for plugins in /plugins/webengine or application dir.
@@ -97,7 +105,6 @@ static QString webenginePluginsPath()
     return potentialPluginsPath;
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
 
 #if defined(Q_OS_WIN)
 #include <shlobj.h>
@@ -234,10 +241,30 @@ void AddPepperFlashFromCommandLine(std::vector<content::PepperPluginInfo>* plugi
     plugins->push_back(CreatePepperFlashInfo(base::FilePath(flash_path), flash_version));
 }
 
+void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins)
+{
+#if QT_CONFIG(webengine_printing_and_pdf)
+    content::PepperPluginInfo pdf_info;
+    pdf_info.is_internal = true;
+    pdf_info.is_out_of_process = true;
+    pdf_info.name = "Chromium PDF Viewer";
+    pdf_info.description = "Portable Document Format";
+    pdf_info.path = base::FilePath::FromUTF8Unsafe(kPdfPluginPath);
+    content::WebPluginMimeType pdf_mime_type(kPdfPluginMimeType, "pdf", "Portable Document Format");
+    pdf_info.mime_types.push_back(pdf_mime_type);
+    pdf_info.internal_entry_points.get_interface = chrome_pdf::PPP_GetInterface;
+    pdf_info.internal_entry_points.initialize_module = chrome_pdf::PPP_InitializeModule;
+    pdf_info.internal_entry_points.shutdown_module = chrome_pdf::PPP_ShutdownModule;
+    pdf_info.permissions = ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV | ppapi::PERMISSION_PDF;
+    plugins->push_back(pdf_info);
+#endif // QT_CONFIG(webengine_printing_and_pdf)
+}
+
 namespace QtWebEngineCore {
 
 void ContentClientQt::AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins)
 {
+    ComputeBuiltInPlugins(plugins);
     AddPepperFlashFromSystem(plugins);
     AddPepperFlashFromCommandLine(plugins);
 }
@@ -319,7 +346,6 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 
-
 void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> *cdms,
                                                   std::vector<media::CdmHostFilePath> *cdm_host_file_paths)
 {
@@ -373,6 +399,11 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
         }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
     }
+}
+
+void ContentClientQt::AddAdditionalSchemes(Schemes* schemes)
+{
+    schemes->standard_schemes.push_back("chrome-extension");
 }
 
 std::string ContentClientQt::getUserAgent()

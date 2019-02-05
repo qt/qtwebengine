@@ -310,3 +310,39 @@ qtConfig(webengine-webchannel) {
     SOURCES += renderer/web_channel_ipc_transport.cpp \
                renderer_host/web_channel_ipc_transport_host.cpp
 }
+
+qtConfig(webengine-extensions) {
+    SOURCES += \
+        common/extensions/extensions_api_provider_qt.cpp \
+        common/extensions/extensions_client_qt.cpp \
+        extensions/component_extension_resource_manager_qt.cpp \
+        extensions/extension_system_qt.cpp \
+        extensions/extension_system_factory_qt.cpp \
+        extensions/extension_web_contents_observer_qt.cpp \
+        extensions/extensions_api_client_qt.cpp \
+        extensions/extensions_browser_api_provider_qt.cpp \
+        extensions/extensions_browser_client_qt.cpp \
+        extensions/mime_handler_view_guest_delegate_qt.cpp \
+        renderer/extensions/extensions_dispatcher_delegate_qt.cpp \
+        renderer/extensions/extensions_renderer_client_qt.cpp \
+        renderer/extensions/renderer_permissions_policy_delegate_qt.cpp \
+        renderer/extensions/resource_request_policy_qt.cpp \
+        renderer_host/resource_dispatcher_host_delegate_qt.cpp
+
+    HEADERS += \
+        common/extensions/extensions_api_provider_qt.h \
+        common/extensions/extensions_client_qt.h \
+        extensions/component_extension_resource_manager_qt.h \
+        extensions/extension_system_qt.h \
+        extensions/extension_system_factory_qt.h \
+        extensions/extension_web_contents_observer_qt.h \
+        extensions/extensions_api_client_qt.h \
+        extensions/extensions_browser_api_provider_qt.h \
+        extensions/extensions_browser_client_qt.h \
+        extensions/mime_handler_view_guest_delegate_qt.h \
+        renderer/extensions/extensions_dispatcher_delegate_qt.h \
+        renderer/extensions/extensions_renderer_client_qt.h \
+        renderer/extensions/renderer_permissions_policy_delegate_qt.h \
+        renderer/extensions/resource_request_policy_qt.h \
+        renderer_host/resource_dispatcher_host_delegate_qt.h
+}
