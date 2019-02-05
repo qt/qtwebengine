@@ -46,6 +46,8 @@
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
 
+namespace QtWebEngineCore { class WebEngineContext; }
+
 QT_BEGIN_NAMESPACE
 
 class QWebEngineUrlSchemePrivate;
@@ -106,6 +108,8 @@ public:
     static QWebEngineUrlScheme schemeByName(const QByteArray &name);
 
 private:
+    friend QtWebEngineCore::WebEngineContext;
+    static void lockSchemes();
     QWebEngineUrlScheme(QWebEngineUrlSchemePrivate *d);
     QSharedDataPointer<QWebEngineUrlSchemePrivate> d;
 };
