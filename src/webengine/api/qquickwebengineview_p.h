@@ -76,6 +76,7 @@ class QQuickWebEngineNavigationRequest;
 class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineProfile;
 class QQuickWebEngineSettings;
+class QQuickWebEngineTooltipRequest;
 class QQuickWebEngineFormValidationMessageRequest;
 class QQuickWebEngineViewPrivate;
 class QWebEngineQuotaRequest;
@@ -104,7 +105,7 @@ private:
     const bool m_toggleOn;
 };
 
-#define LATEST_WEBENGINEVIEW_REVISION 9
+#define LATEST_WEBENGINEVIEW_REVISION 10
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -552,6 +553,7 @@ Q_SIGNALS:
     Q_REVISION(7) void registerProtocolHandlerRequested(const QWebEngineRegisterProtocolHandlerRequest &request);
     Q_REVISION(8) void printRequested();
     Q_REVISION(9) void selectClientCertificate(QQuickWebEngineClientCertificateSelection *clientCertSelection);
+    Q_REVISION(10) void tooltipRequested(QQuickWebEngineTooltipRequest *request);
 
 #if QT_CONFIG(webengine_testsupport)
     void testSupportChanged();

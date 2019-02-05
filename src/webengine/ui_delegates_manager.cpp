@@ -539,13 +539,13 @@ void UIDelegatesManager::showMenu(QObject *menu)
 
 void UIDelegatesManager::showToolTip(const QString &text)
 {
-    if (!ensureComponentLoaded(ToolTip))
-        return;
-
     if (text.isEmpty()) {
         m_toolTip.reset();
         return;
     }
+
+    if (!ensureComponentLoaded(ToolTip))
+        return;
 
     if (!m_toolTip.isNull())
         return;

@@ -95,6 +95,7 @@ public:
         qmlRegisterType<QQuickWebEngineView, 7>(uri, 1, 7, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 8>(uri, 1, 8, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 9>(uri, 1, 9, "WebEngineView");
+        qmlRegisterType<QQuickWebEngineView, 10>(uri, 1, 10, "WebEngineView");
         qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 1>(uri, 1, 2, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 2>(uri, 1, 3, "WebEngineProfile");
@@ -163,6 +164,8 @@ public:
         qmlRegisterUncreatableType<QQuickWebEngineClientCertificateOption>(uri, 1, 9, "WebEngineClientCertificateOption",
             tr("Cannot create a separate instance of WebEngineClientCertificateOption"));
         qmlRegisterUncreatableType<QWebEngineNotification>(uri, 1, 9, "WebEngineNotification", msgUncreatableType("WebEngineNotification"));
+        qmlRegisterUncreatableType<QQuickWebEngineTooltipRequest>(uri, 1, 10, "TooltipRequest",
+                                                                         msgUncreatableType("TooltipRequest"));
     }
 
 private:

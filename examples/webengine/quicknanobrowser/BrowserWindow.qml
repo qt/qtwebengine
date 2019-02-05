@@ -57,7 +57,7 @@ import QtQuick.Controls.Styles 1.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 import QtQuick.Window 2.1
-import QtWebEngine 1.9
+import QtWebEngine 1.10
 
 ApplicationWindow {
     id: browserWindow

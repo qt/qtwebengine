@@ -80,6 +80,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineColorDialogRequest::staticMetaObject
     << &QQuickWebEngineFileDialogRequest::staticMetaObject
     << &QQuickWebEngineFormValidationMessageRequest::staticMetaObject
+    << &QQuickWebEngineTooltipRequest::staticMetaObject
     << &QQuickWebEngineContextMenuRequest::staticMetaObject
     << &QWebEngineQuotaRequest::staticMetaObject
     << &QWebEngineRegisterProtocolHandlerRequest::staticMetaObject
@@ -243,6 +244,13 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineFormValidationMessageRequest.subText --> QString"
     << "QQuickWebEngineFormValidationMessageRequest.text --> QString"
     << "QQuickWebEngineFormValidationMessageRequest.type --> RequestType"
+    << "QQuickWebEngineTooltipRequest.Hide --> RequestType"
+    << "QQuickWebEngineTooltipRequest.Show --> RequestType"
+    << "QQuickWebEngineTooltipRequest.x --> int"
+    << "QQuickWebEngineTooltipRequest.y --> int"
+    << "QQuickWebEngineTooltipRequest.text --> QString"
+    << "QQuickWebEngineTooltipRequest.type --> RequestType"
+    << "QQuickWebEngineTooltipRequest.accepted --> bool"
     << "QQuickWebEngineFullScreenRequest.accept() --> void"
     << "QQuickWebEngineFullScreenRequest.origin --> QUrl"
     << "QQuickWebEngineFullScreenRequest.reject() --> void"
@@ -688,6 +696,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.testSupportChanged() --> void"
     << "QQuickWebEngineView.title --> QString"
     << "QQuickWebEngineView.titleChanged() --> void"
+    << "QQuickWebEngineView.tooltipRequested(QQuickWebEngineTooltipRequest*) --> void"
     << "QQuickWebEngineView.triggerWebAction(WebAction) --> void"
     << "QQuickWebEngineView.url --> QUrl"
     << "QQuickWebEngineView.urlChanged() --> void"

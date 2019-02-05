@@ -44,6 +44,9 @@
 #include "file_picker_controller.h"
 #include "web_contents_adapter_client.h"
 
+#include <QCursor>
+#include <QQuickItem>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
@@ -819,6 +822,113 @@ bool QQuickWebEngineFormValidationMessageRequest::isAccepted() const
 }
 
 void QQuickWebEngineFormValidationMessageRequest::setAccepted(bool accepted)
+{
+    m_accepted = accepted;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+/*!
+    \qmltype TooltipRequest
+    \instantiates QQuickWebEngineTooltipRequest
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 1.10
+
+    \brief A request for showing a tooltip to the user.
+*/
+
+QQuickWebEngineTooltipRequest::QQuickWebEngineTooltipRequest(
+        const QString &text, QObject *parent):
+    QObject(parent)
+  , m_text(text)
+  , m_type(text.isEmpty() ? RequestType::Hide : RequestType::Show)
+  , m_accepted(false)
+{
+    Q_ASSERT(parent);
+    if (QQuickItem *view = qobject_cast<QQuickItem *>(parent))
+        m_position = view->mapFromGlobal(view->cursor().pos()).toPoint();
+}
+
+QQuickWebEngineTooltipRequest::~QQuickWebEngineTooltipRequest()
+{
+
+}
+
+/*!
+    \qmlproperty int TooltipRequest::x
+    \readonly
+
+    The x coordinate of the top-left corner of the requested tooltip.
+*/
+
+int QQuickWebEngineTooltipRequest::x() const
+{
+    return m_position.x();
+}
+
+/*!
+    \qmlproperty int TooltipRequest::y
+    \readonly
+
+    The y coordinate of the top-left corner of the requested tooltip.
+*/
+
+int QQuickWebEngineTooltipRequest::y() const
+{
+    return m_position.y();
+}
+
+/*!
+    \qmlproperty bool TooltipRequest::text
+    \readonly
+
+    The text of the tooltip. It contains an empty string when the
+    tooltip should be hidden.
+*/
+
+
+QString QQuickWebEngineTooltipRequest::text() const
+{
+    return m_text;
+}
+
+/*!
+    \qmlproperty enumeration TooltipRequest::type
+    \readonly
+
+    The type of the tooltip request.
+
+    \value  TooltipRequest.Show
+            The tooltip should be shown.
+    \value  TooltipRequest.Hide
+            The tooltip should be hidden.
+*/
+
+QQuickWebEngineTooltipRequest::RequestType QQuickWebEngineTooltipRequest::type() const
+{
+    return m_type;
+}
+
+/*!
+    \qmlproperty bool TooltipRequest::accepted
+
+    Indicates whether the tooltip request has been accepted
+    by the signal handler.
+
+    If the property is \c false after any signal handlers
+    for WebEngineView::tooltipRequested have been executed,
+    a default tooltip will be shown.
+    To prevent this, set \c {request.accepted} to \c true.
+
+    The default is \c false.
+*/
+
+bool QQuickWebEngineTooltipRequest::isAccepted() const
+{
+    return m_accepted;
+}
+
+void QQuickWebEngineTooltipRequest::setAccepted(bool accepted)
 {
     m_accepted = accepted;
 }

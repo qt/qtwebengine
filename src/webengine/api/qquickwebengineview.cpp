@@ -1210,7 +1210,13 @@ bool QQuickWebEngineViewPrivate::isEnabled() const
 
 void QQuickWebEngineViewPrivate::setToolTip(const QString &toolTipText)
 {
-    ui()->showToolTip(toolTipText);
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineTooltipRequest *request = new QQuickWebEngineTooltipRequest(toolTipText, q);
+    // mark the object for gc by creating temporary jsvalue
+    qmlEngine(q)->newQObject(request);
+    Q_EMIT q->tooltipRequested(request);
+    if (!request->isAccepted())
+        ui()->showToolTip(toolTipText);
 }
 
 QtWebEngineCore::TouchHandleDrawableClient *QQuickWebEngineViewPrivate::createTouchHandle(const QMap<int, QImage> &images)

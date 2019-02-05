@@ -260,6 +260,39 @@ private:
     friend class QQuickWebEngineViewPrivate;
 };
 
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTooltipRequest : public QObject {
+    Q_OBJECT
+public:
+    enum RequestType {
+        Show,
+        Hide,
+    };
+    Q_ENUM(RequestType)
+    Q_PROPERTY(int x READ x CONSTANT FINAL)
+    Q_PROPERTY(int y READ y CONSTANT FINAL)
+    Q_PROPERTY(QString text READ text CONSTANT FINAL)
+    Q_PROPERTY(RequestType type READ type CONSTANT FINAL)
+    Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
+
+    ~QQuickWebEngineTooltipRequest();
+    int x() const;
+    int y() const;
+    QString text() const;
+    RequestType type() const;
+    bool isAccepted() const;
+    void setAccepted(bool accepted);
+
+private:
+    QQuickWebEngineTooltipRequest(const QString &text = QString(),
+                                QObject *parent = nullptr);
+    QPoint m_position;
+    QString m_text;
+    RequestType m_type;
+    bool m_accepted;
+    friend class QQuickWebEngineViewPrivate;
+    Q_DISABLE_COPY(QQuickWebEngineTooltipRequest)
+};
+
 QT_END_NAMESPACE
 
 #endif // QQUICKWEBENGINDIALOGREQUESTS_H
