@@ -65,9 +65,9 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "chrome/common/pref_names.h"
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/common/pref_names.h"
 #include "components/spellcheck/browser/pref_names.h"
 #endif
 
