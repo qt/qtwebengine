@@ -2,6 +2,7 @@ import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//third_party/widevine/cdm/widevine.gni")
+import("//ui/ozone/ozone.gni")
 
 chromium_version = exec_script("//build/util/version.py", [ "-f", rebase_path("//chrome/VERSION"),
                                                             "-t", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"],
@@ -38,6 +39,7 @@ deps = [
   "//ui/accessibility",
   "//ui/gl",
   "//qtwebengine/browser:interfaces",
+  "//qtwebengine/browser:service_manifests",
   ":qtwebengine_sources",
   ":qtwebengine_resources",
 ]
@@ -46,18 +48,13 @@ if (enable_webrtc) {
   deps += [ "//third_party/webrtc_overrides" ]
 }
 
-if (is_linux && !is_desktop_linux) {
-  deps += [ "//ui/events/ozone:events_ozone_evdev"]
+if (use_ozone) {
+  _ozone_extra_directory = get_path_info(ozone_extra_path, "dir")
+  deps += [ "$_ozone_extra_directory:qt" ]
 }
 
 if (use_xscrnsaver) {
   deps += [ "//ui/base/x" ]
-}
-
-if (use_ozone) {
-  deps += [
-    "//ui/ozone/common"
-  ]
 }
 
 if (enable_extensions) {
@@ -66,7 +63,9 @@ if (enable_extensions) {
   ]
 }
 
-data_deps = [ "//qtwebengine/browser:service_manifests" ]
+assert_no_deps = [
+  "//ui/views/mus",
+]
 
 defines = [
   "CHROMIUM_VERSION=\"" + chromium_version[0] + "\""

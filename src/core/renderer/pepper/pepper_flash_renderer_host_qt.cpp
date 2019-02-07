@@ -70,6 +70,7 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/private/SkTemplates.h"
 #include "ui/gfx/geometry/rect.h"
@@ -299,14 +300,12 @@ int32_t PepperFlashRendererHostQt::OnDrawGlyphs(
 
     SkPaint paint;
     paint.setColor(params.color);
-    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-    paint.setAntiAlias(true);
-    paint.setHinting(SkFontHinting::kFull);
-    paint.setTextSize(SkIntToScalar(params.font_desc.size));
-    paint.setTypeface(std::move(typeface));
+
+    SkFont font(std::move(typeface), SkIntToScalar(params.font_desc.size));
+    font.setHinting(SkFontHinting::kFull);
     if (params.allow_subpixel_aa) {
-        paint.setSubpixelText(true);
-        paint.setLCDRenderText(true);
+        font.setSubpixel(true);
+        font.setEdging(SkFont::Edging::kSubpixelAntiAlias);
     }
 
     SkScalar x = SkIntToScalar(params.position.x);
@@ -315,15 +314,16 @@ int32_t PepperFlashRendererHostQt::OnDrawGlyphs(
     // Build up the skia advances.
     size_t glyph_count = params.glyph_indices.size();
     if (glyph_count) {
-        std::vector<SkPoint> sk_positions(glyph_count);
+        SkTextBlobBuilder builder;
+        auto rec = builder.allocRunPos(font, glyph_count);
+        memcpy(rec.glyphs, &params.glyph_indices[0], glyph_count * 2);
+        SkPoint* pos = reinterpret_cast<SkPoint*>(rec.pos);
         for (uint32_t i = 0; i < glyph_count; i++) {
-            sk_positions[i].set(x, y);
+            pos[i].set(x, y);
             x += SkFloatToScalar(params.glyph_advances[i].x);
             y += SkFloatToScalar(params.glyph_advances[i].y);
         }
-
-        canvas->drawPosText(
-            &params.glyph_indices[0], glyph_count * 2, &sk_positions[0], paint);
+        canvas->drawTextBlob(builder.make(), 0, 0, paint);
     }
 
     if (needs_unmapping)
@@ -351,7 +351,7 @@ int32_t PepperFlashRendererHostQt::OnNavigate(
     std::map<std::string, FlashNavigateUsage>& rejected_headers =
             g_rejected_headers.Get();
     if (rejected_headers.empty()) {
-        for (size_t i = 0; i < arraysize(kRejectedHttpRequestHeaders); ++i)
+        for (size_t i = 0; i < base::size(kRejectedHttpRequestHeaders); ++i)
             rejected_headers[kRejectedHttpRequestHeaders[i]] =
                     static_cast<FlashNavigateUsage>(i);
     }

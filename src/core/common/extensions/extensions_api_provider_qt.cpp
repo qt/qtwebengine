@@ -62,23 +62,19 @@ namespace extensions {
 
 ExtensionsAPIProviderQt::ExtensionsAPIProviderQt()
 {
-
 }
 
 void ExtensionsAPIProviderQt::RegisterManifestHandlers()
 {
-    RegisterCommonManifestHandlers();
 }
 
 void ExtensionsAPIProviderQt::AddAPIFeatures(FeatureProvider *provider)
 {
-    AddCoreAPIFeatures(provider);
     AddQtAPIFeatures(provider);
 }
 
 void ExtensionsAPIProviderQt::AddAPIJSONSources(JSONFeatureProviderSource *json_source)
 {
-    json_source->LoadJSON(IDR_EXTENSION_API_FEATURES);
     json_source->LoadJSON(IDR_CHROME_EXTENSION_API_FEATURES);
 }
 
@@ -99,7 +95,6 @@ base::StringPiece ExtensionsAPIProviderQt::GetAPISchema(const std::string &name)
 
 void ExtensionsAPIProviderQt::RegisterPermissions(PermissionsInfo* permissions_info)
 {
-
 }
 
 }

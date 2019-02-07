@@ -46,6 +46,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/host/host_frame_sink_client.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -165,7 +166,7 @@ public:
     const viz::FrameSinkId &GetFrameSinkId() const override;
     const viz::LocalSurfaceIdAllocation &GetLocalSurfaceIdAllocation() const override;
     void TakeFallbackContentFrom(content::RenderWidgetHostView *view) override;
-    void EnsureSurfaceSynchronizedForLayoutTest() override;
+    void EnsureSurfaceSynchronizedForWebTest() override;
     uint32_t GetCaptureSequenceNumber() const override;
     void ResetFallbackToFirstNavigationSurface() override;
     void DidStopFlinging() override;
@@ -237,7 +238,7 @@ private:
     void selectionChanged();
     content::RenderFrameHost *getFocusedFrameHost();
 
-    void synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceId> &childSurfaceId);
+    void synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceIdAllocation> &childSurfaceId);
 
     // Geometry of the view in screen DIPs.
     gfx::Rect m_viewRectInDips;

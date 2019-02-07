@@ -91,6 +91,7 @@
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/font_render_params.h"
 
@@ -250,7 +251,7 @@ static std::unique_ptr<content::WebContents> createBlankWebContents(WebContentsA
     return webContents;
 }
 
-static void serializeNavigationHistory(const content::NavigationController &controller, QDataStream &output)
+static void serializeNavigationHistory(content::NavigationController &controller, QDataStream &output)
 {
     const int currentIndex = controller.GetCurrentEntryIndex();
     const int count = controller.GetEntryCount();
@@ -262,7 +263,7 @@ static void serializeNavigationHistory(const content::NavigationController &cont
 
     // Logic taken from SerializedNavigationEntry::WriteToPickle.
     for (int i = 0; i < count; ++i) {
-        const content::NavigationEntry* entry = (i == pendingIndex)
+        content::NavigationEntry* entry = (i == pendingIndex)
             ? controller.GetPendingEntry()
             : controller.GetEntryAtIndex(i);
         if (entry->GetVirtualURL().is_valid()) {
@@ -1365,7 +1366,7 @@ static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
     if (!dropData.custom_data.empty()) {
         base::Pickle pickle;
         ui::WriteCustomDataToPickle(dropData.custom_data, &pickle);
-        mimeData->setData(toQt(ui::Clipboard::GetWebCustomDataFormatType().ToString()), QByteArray((const char*)pickle.data(), pickle.size()));
+        mimeData->setData(QLatin1String(ui::kMimeTypeWebCustomData), QByteArray((const char*)pickle.data(), pickle.size()));
     }
     return mimeData;
 }
@@ -1483,8 +1484,8 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
         dropData->html = toNullableString16(mimeData->html());
     if (mimeData->hasText())
         dropData->text = toNullableString16(mimeData->text());
-    if (mimeData->hasFormat(toQt(ui::Clipboard::GetWebCustomDataFormatType().ToString()))) {
-        QByteArray customData = mimeData->data(toQt(ui::Clipboard::GetWebCustomDataFormatType().ToString()));
+    if (mimeData->hasFormat(QLatin1String(ui::kMimeTypeWebCustomData))) {
+        QByteArray customData = mimeData->data(QLatin1String(ui::kMimeTypeWebCustomData));
         ui::ReadCustomDataIntoMap(customData.constData(), customData.length(), &dropData->custom_data);
     }
 }

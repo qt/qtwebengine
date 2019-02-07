@@ -70,7 +70,6 @@
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_security_policy.h"
@@ -238,28 +237,35 @@ bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *fram
 }
 
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
-void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame* renderFrame, const blink::WebURLRequest &failedRequest,
+void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame *renderFrame,
                                                const blink::WebURLError &web_error,
+                                               const std::string &httpMethod,
+                                               bool ignoring_cache,
                                                std::string *errorHtml)
 {
-    GetNavigationErrorStringsInternal(renderFrame, failedRequest,
+    Q_UNUSED(ignoring_cache);
+    GetNavigationErrorStringsInternal(renderFrame, httpMethod,
                                       error_page::Error::NetError(web_error.url(), web_error.reason(), web_error.has_copy_in_cache()),
                                       errorHtml);
 }
 
-void ContentRendererClientQt::PrepareErrorPageForHttpStatusError(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
-                                                                 const GURL& unreachable_url, int http_status,
-                                                                 std::string* errorHtml)
+void ContentRendererClientQt::PrepareErrorPageForHttpStatusError(content::RenderFrame *renderFrame,
+                                                                 const GURL &unreachable_url,
+                                                                 const std::string &httpMethod,
+                                                                 bool ignoring_cache,
+                                                                 int http_status,
+                                                                 std::string *errorHtml)
 {
-    GetNavigationErrorStringsInternal(renderFrame, failedRequest,
+    Q_UNUSED(ignoring_cache);
+    GetNavigationErrorStringsInternal(renderFrame, httpMethod,
                                       error_page::Error::HttpError(unreachable_url, http_status),
                                       errorHtml);
 }
 
-void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderFrame *renderFrame, const blink::WebURLRequest &failedRequest, const error_page::Error &error, std::string *errorHtml)
+void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderFrame *renderFrame, const std::string &httpMethod, const error_page::Error &error, std::string *errorHtml)
 {
     Q_UNUSED(renderFrame)
-    const bool isPost = QByteArray::fromStdString(failedRequest.HttpMethod().Utf8()) == QByteArrayLiteral("POST");
+    const bool isPost = QByteArray::fromStdString(httpMethod) == QByteArrayLiteral("POST");
 
     if (errorHtml) {
         // Use a local error page.
@@ -457,8 +463,8 @@ static media::SupportedCodecs GetSupportedCodecs(const std::vector<media::VideoC
             supported_codecs |= media::EME_CODEC_VP8;
             break;
         case media::VideoCodec::kCodecVP9:
-            supported_codecs |= media::EME_CODEC_LEGACY_VP9;
-            supported_codecs |= media::EME_CODEC_VP9;
+            supported_codecs |= media::EME_CODEC_VP9_PROFILE0;
+            supported_codecs |= media::EME_CODEC_VP9_PROFILE2;
             break;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
         case media::VideoCodec::kCodecH264:

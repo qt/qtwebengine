@@ -110,7 +110,7 @@ class PrintingMessageFilterQt : public content::BrowserMessageFilter {
   // handled by the print worker thread and the UI thread. The reply occurs on
   // the IO thread.
   void OnUpdatePrintSettings(int document_cookie,
-                             const base::DictionaryValue& job_settings,
+                             base::Value job_settings,
                              IPC::Message* reply_msg);
   void OnUpdatePrintSettingsReply(scoped_refptr<printing::PrinterQuery> printer_query,
                                   IPC::Message* reply_msg);

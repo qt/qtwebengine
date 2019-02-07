@@ -95,7 +95,6 @@ SOURCES = \
         ozone/gl_surface_qt.cpp \
         ozone/gl_surface_egl_qt.cpp \
         ozone/gl_surface_wgl_qt.cpp \
-        ozone/ozone_platform_qt.cpp \
         ozone/platform_window_qt.cpp \
         ozone/surface_factory_qt.cpp \
         permission_manager_qt.cpp \
@@ -198,7 +197,6 @@ HEADERS = \
         ozone/gl_surface_qt.h \
         ozone/gl_surface_egl_qt.h \
         ozone/gl_surface_wgl_qt.h \
-        ozone/ozone_platform_qt.h \
         ozone/platform_window_qt.h \
         ozone/surface_factory_qt.h \
         permission_manager_qt.h \

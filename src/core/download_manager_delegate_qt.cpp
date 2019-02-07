@@ -112,7 +112,7 @@ void DownloadManagerDelegateQt::pauseDownload(quint32 downloadId)
 void DownloadManagerDelegateQt::resumeDownload(quint32 downloadId)
 {
     if (download::DownloadItem *download = findDownloadById(downloadId))
-        download->Resume();
+        download->Resume(/* user_resume */ true);
 }
 
 void DownloadManagerDelegateQt::removeDownload(quint32 downloadId)

@@ -87,11 +87,17 @@ public:
     bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) override;
     bool HasErrorPage(int http_status_code) override;
 
-    void PrepareErrorPage(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
-                          const blink::WebURLError& error, std::string* errorHtml) override;
-    void PrepareErrorPageForHttpStatusError(content::RenderFrame* render_frame, const blink::WebURLRequest& failed_request,
-                                            const GURL& unreachable_url, int http_status,
-                                            std::string* error_html) override;
+    void PrepareErrorPage(content::RenderFrame *render_frame,
+                          const blink::WebURLError &error,
+                          const std::string &http_method,
+                          bool ignoring_cache,
+                          std::string *error_html) override;
+    void PrepareErrorPageForHttpStatusError(content::RenderFrame *render_frame,
+                                            const GURL &unreachable_url,
+                                            const std::string &http_method,
+                                            bool ignoring_cache,
+                                            int http_status,
+                                            std::string *error_html) override;
 
     unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) override;
     bool IsLinkVisited(unsigned long long linkHash) override;
@@ -129,7 +135,7 @@ private:
     // service_manager::LocalInterfaceProvider:
     void GetInterface(const std::string& name, mojo::ScopedMessagePipeHandle request_handle) override;
 
-    void GetNavigationErrorStringsInternal(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest,
+    void GetNavigationErrorStringsInternal(content::RenderFrame* renderFrame, const std::string &httpMethod,
                                            const error_page::Error& error, std::string* errorHtml);
 
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;

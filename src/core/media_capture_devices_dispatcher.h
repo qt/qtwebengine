@@ -55,7 +55,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/media_stream_request.h"
 
 namespace QtWebEngineCore {
 
@@ -73,7 +72,7 @@ public:
     void handleMediaAccessPermissionResponse(content::WebContents *, const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags);
 
 private:
-    void getDefaultDevices(const std::string &audioDeviceId, const std::string &videoDeviceId, bool audio, bool video, content::MediaStreamDevices *);
+    void getDefaultDevices(const std::string &audioDeviceId, const std::string &videoDeviceId, bool audio, bool video, blink::MediaStreamDevices *);
 
     // Overridden from content::MediaObserver:
     void OnAudioCaptureDevicesChanged() override {}
@@ -82,20 +81,20 @@ private:
                                     int render_frame_id,
                                     int page_request_id,
                                     const GURL &security_origin,
-                                    content::MediaStreamType stream_type,
+                                    blink::MediaStreamType stream_type,
                                     content::MediaRequestState state) override;
 
     void OnCreatingAudioStream(int /*render_process_id*/, int /*render_frame_id*/) override {}
     void OnSetCapturingLinkSecured(int /*render_process_id*/,
                                    int /*render_frame_id*/,
                                    int /*page_request_id*/,
-                                   content::MediaStreamType /*stream_type*/,
+                                   blink::MediaStreamType /*stream_type*/,
                                    bool /*is_secure*/) override {}
 
     friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
-    typedef base::RepeatingCallback<void(const content::MediaStreamDevices &devices,
-                                         content::MediaStreamRequestResult result,
+    typedef base::RepeatingCallback<void(const blink::MediaStreamDevices &devices,
+                                         blink::MediaStreamRequestResult result,
                                          std::unique_ptr<content::MediaStreamUI> ui)>
             RepeatingMediaResponseCallback;
 
@@ -121,7 +120,8 @@ private:
     void ProcessQueuedAccessRequest(content::WebContents *);
 
     // Called by the MediaObserver() functions, executed on UI thread.
-    void updateMediaRequestStateOnUIThread(int render_process_id, int render_frame_id, int page_request_id, const GURL &security_origin, content::MediaStreamType stream_type, content::MediaRequestState state);
+    void updateMediaRequestStateOnUIThread(int render_process_id, int render_frame_id, int page_request_id, const GURL &security_origin,
+                                           blink::MediaStreamType stream_type, content::MediaRequestState state);
 
     RequestsQueues m_pendingRequests;
 

@@ -437,7 +437,7 @@ void ProfileIODataQt::generateCookieStore()
     m_storage->set_cookie_store(std::move(cookieStore));
 
     const std::vector<std::string> cookieableSchemes(kCookieableSchemes,
-                                                     kCookieableSchemes + arraysize(kCookieableSchemes));
+                                                     kCookieableSchemes + base::size(kCookieableSchemes));
     cookieMonster->SetCookieableSchemes(cookieableSchemes);
 }
 

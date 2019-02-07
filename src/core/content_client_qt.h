@@ -49,8 +49,6 @@ namespace QtWebEngineCore {
 
 class ContentClientQt : public content::ContentClient {
 public:
-    static std::string getUserAgent();
-
 #if QT_CONFIG(webengine_pepper_plugins)
     void AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins) override;
 #endif
@@ -61,9 +59,7 @@ public:
     base::StringPiece GetDataResource(int, ui::ScaleFactor) const override;
     base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
     gfx::Image &GetNativeImageNamed(int resource_id) const override;
-    std::string GetUserAgent() const override { return getUserAgent(); }
     base::string16 GetLocalizedString(int message_id) const override;
-    std::string GetProduct() const override;
 };
 
 } // namespace QtWebEngineCore

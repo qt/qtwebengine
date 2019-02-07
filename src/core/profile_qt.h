@@ -100,6 +100,12 @@ public:
     content::BackgroundFetchDelegate *GetBackgroundFetchDelegate() override;
     content::BackgroundSyncController *GetBackgroundSyncController() override;
     content::BrowsingDataRemoverDelegate *GetBrowsingDataRemoverDelegate() override;
+    content::ClientHintsControllerDelegate *GetClientHintsControllerDelegate() override;
+    void SetCorsOriginAccessListForOrigin(const url::Origin &source_origin,
+                                          std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+                                          std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+                                          base::OnceClosure closure) override;
+    const content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList() const override;
 
     // Profile implementation:
     PrefService *GetPrefs() override;
@@ -127,6 +133,7 @@ private:
     std::unique_ptr<PermissionManagerQt> m_permissionManager;
     std::unique_ptr<SSLHostStateDelegateQt> m_sslHostStateDelegate;
     std::unique_ptr<PrefService> m_prefService;
+    scoped_refptr<content::SharedCorsOriginAccessList> m_sharedCorsOriginAccessList;
     std::unique_ptr<ProfileIODataQt> m_profileIOData;
     ProfileAdapter *m_profileAdapter;
     friend class ProfileAdapter;

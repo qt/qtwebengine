@@ -183,11 +183,9 @@ void PrintingMessageFilterQt::OnScriptedPrintReply(
   }
 }
 
-void PrintingMessageFilterQt::OnUpdatePrintSettings(
-    int document_cookie, const base::DictionaryValue& job_settings,
-    IPC::Message* reply_msg) {
-  std::unique_ptr<base::DictionaryValue> new_settings(job_settings.DeepCopy());
-
+void PrintingMessageFilterQt::OnUpdatePrintSettings(int document_cookie,
+                                                    base::Value job_settings,
+                                                    IPC::Message* reply_msg) {
   scoped_refptr<printing::PrinterQuery> printer_query;
   printer_query = queue_->PopPrinterQuery(document_cookie);
   if (!printer_query.get()) {
@@ -195,7 +193,7 @@ void PrintingMessageFilterQt::OnUpdatePrintSettings(
         content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
   }
   printer_query->SetSettings(
-      std::move(new_settings),
+      std::move(job_settings),
       base::Bind(&PrintingMessageFilterQt::OnUpdatePrintSettingsReply, this,
                  printer_query, reply_msg));
 }

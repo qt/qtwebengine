@@ -53,6 +53,7 @@
 
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 
 #include "base/base_paths.h"
@@ -84,8 +85,9 @@
 namespace QtWebEngineCore {
 
 ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
-    : m_profileIOData(new ProfileIODataQt(this)),
-      m_profileAdapter(profileAdapter)
+    : m_sharedCorsOriginAccessList(content::SharedCorsOriginAccessList::Create())
+    , m_profileIOData(new ProfileIODataQt(this))
+    , m_profileAdapter(profileAdapter)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     , m_extensionSystem(nullptr)
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -116,8 +118,6 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     registry->RegisterDictionaryPref(extensions::pref_names::kInstallLoginScreenAppList);
     registry->RegisterListPref(extensions::pref_names::kAllowedTypes);
     registry->RegisterBooleanPref(extensions::pref_names::kStorageGarbageCollect, false);
-    registry->RegisterInt64Pref(extensions::pref_names::kLastUpdateCheck, 0);
-    registry->RegisterInt64Pref(extensions::pref_names::kNextUpdateCheck, 0);
     registry->RegisterListPref(extensions::pref_names::kAllowedInstallSites);
     registry->RegisterStringPref(extensions::pref_names::kLastChromeVersion, std::string());
     registry->RegisterListPref(extensions::pref_names::kNativeMessagingBlacklist);
@@ -281,6 +281,27 @@ net::URLRequestContextGetter *ProfileQt::CreateRequestContextForStoragePartition
 {
     Q_UNIMPLEMENTED();
     return nullptr;
+}
+
+content::ClientHintsControllerDelegate *ProfileQt::GetClientHintsControllerDelegate()
+{
+    return nullptr;
+}
+
+void ProfileQt::SetCorsOriginAccessListForOrigin(const url::Origin &source_origin,
+                                                 std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+                                                 std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+                                                 base::OnceClosure closure)
+{
+    m_sharedCorsOriginAccessList->SetForOrigin(source_origin,
+                                               std::move(allow_patterns),
+                                               std::move(block_patterns),
+                                               std::move(closure));
+}
+
+const content::SharedCorsOriginAccessList *ProfileQt::GetSharedCorsOriginAccessList() const
+{
+    return m_sharedCorsOriginAccessList.get();
 }
 
 #if QT_CONFIG(webengine_spellchecker)

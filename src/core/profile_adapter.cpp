@@ -45,7 +45,7 @@
 #include "content/public/browser/download_manager.h"
 
 #include "api/qwebengineurlscheme.h"
-#include "content_client_qt.h"
+#include "content_browser_client_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "net/url_request_context_getter_qt.h"
 #include "permission_manager_qt.h"
@@ -333,7 +333,7 @@ QString ProfileAdapter::httpCachePath() const
 QString ProfileAdapter::httpUserAgent() const
 {
     if (m_httpUserAgent.isNull())
-        return QString::fromStdString(ContentClientQt::getUserAgent());
+        return QString::fromStdString(ContentBrowserClientQt::getUserAgent());
     return m_httpUserAgent;
 }
 

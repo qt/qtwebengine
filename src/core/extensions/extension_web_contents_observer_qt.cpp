@@ -121,4 +121,6 @@ void ExtensionWebContentsObserverQt::RenderFrameCreated(content::RenderFrameHost
         policy->GrantRequestOrigin(process_id, url::Origin::Create(GURL(content::kChromeUIResourcesURL)));
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ExtensionWebContentsObserverQt)
+
 } // namespace extensions

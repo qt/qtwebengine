@@ -127,10 +127,9 @@ QSGNode *Compositor::updatePaintNode(QSGNode *oldNode, RenderWidgetHostViewQtDel
     }
     m_updatePaintNodeShouldCommit = false;
 
-    if (m_committedFrame.metadata.request_presentation_feedback)
-        m_taskRunner->PostTask(FROM_HERE,
-                               base::BindOnce(&Compositor::sendPresentationFeedback, m_weakPtrFactory.GetWeakPtr(),
-                                              m_committedFrame.metadata.frame_token));
+    gfx::PresentationFeedback dummyFeedback(base::TimeTicks::Now(), base::TimeDelta(), gfx::PresentationFeedback::Flags::kVSync);
+    m_presentations.insert({m_committedFrame.metadata.frame_token, dummyFeedback});
+
     m_resourceTracker->commitResources();
     frameNode->commit(m_pendingFrame, m_committedFrame, m_resourceTracker.get(), viewDelegate);
     m_committedFrame = std::move(m_pendingFrame);

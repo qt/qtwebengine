@@ -119,7 +119,9 @@ void WebChannelTransport::Uninstall(blink::WebLocalFrame *frame, uint worldId)
     if (qtObjectValue.IsEmpty() || !qtObjectValue->IsObject())
         return;
     v8::Local<v8::Object> qtObject = v8::Local<v8::Object>::Cast(qtObjectValue);
-    qtObject->Delete(gin::StringToV8(isolate, "webChannelTransport"));
+    // FIXME: ?
+    auto whocares = qtObject->Delete(context, gin::StringToV8(isolate, "webChannelTransport"));
+    Q_UNUSED(whocares);
 }
 
 void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)

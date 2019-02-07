@@ -53,6 +53,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
+#include "gpu/ipc/service/gpu_init.h"
 
 #include <memory>
 

@@ -39,8 +39,8 @@
 
 #include "content_browser_client_qt.h"
 
-#include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task/post_task.h"
@@ -70,11 +70,16 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/user_agent.h"
 #include "media/media_buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "printing/buildflags/buildflags.h"
+#include "qtwebengine/browser/qtwebengine_content_browser_overlay_manifest.h"
+#include "qtwebengine/browser/qtwebengine_content_renderer_overlay_manifest.h"
+#include "qtwebengine/browser/qtwebengine_packaged_service_manifest.h"
+#include "qtwebengine/browser/qtwebengine_renderer_manifest.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"
@@ -508,18 +513,17 @@ public:
     }
 
     // blink::mojom::InsecureInputService:
-    void PasswordFieldVisibleInInsecureContext() override
-    { }
-    void AllPasswordFieldsInInsecureContextInvisible() override
-    { }
     void DidEditFieldInInsecureContext() override
     { }
 
 private:
+    WEB_CONTENTS_USER_DATA_KEY_DECL()
     explicit ServiceDriver(content::WebContents* /*web_contents*/) { }
     friend class content::WebContentsUserData<ServiceDriver>;
     mojo::BindingSet<blink::mojom::InsecureInputService> m_insecureInputServiceBindings;
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ServiceDriver)
 
 void ContentBrowserClientQt::InitFrameInterfaces()
 {
@@ -539,9 +543,8 @@ void ContentBrowserClientQt::BindInterfaceRequestFromFrame(content::RenderFrameH
         m_frameInterfaces->TryBindInterface(interface_name, &interface_pipe);
 }
 
-void ContentBrowserClientQt::RegisterInProcessServices(StaticServiceMap* services, content::ServiceManagerConnection* connection)
+void ContentBrowserClientQt::RegisterIOThreadServiceHandlers(content::ServiceManagerConnection *connection)
 {
-    Q_UNUSED(services);
     connection->AddServiceRequestHandler(
             "qtwebengine",
             ServiceQt::GetInstance()->CreateServiceQtRequestHandler());
@@ -553,46 +556,41 @@ void ContentBrowserClientQt::RegisterOutOfProcessServices(content::ContentBrowse
             base::BindRepeating(&base::ASCIIToUTF16, "V8 Proxy Resolver");
 }
 
-std::unique_ptr<base::Value> ContentBrowserClientQt::GetServiceManifestOverlay(base::StringPiece name)
+base::Optional<service_manager::Manifest> ContentBrowserClientQt::GetServiceManifestOverlay(base::StringPiece name)
 {
-    ui::ResourceBundle &rb = ui::ResourceBundle::GetSharedInstance();
-    int id = -1;
-    if (name == content::mojom::kPackagedServicesServiceName)
-        id = IDR_QTWEBENGINE_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY;
-    else if (name == content::mojom::kRendererServiceName)
-        id = IDR_QTWEBENGINE_CONTENT_RENDERER_MANIFEST_OVERLAY;
-    else if (name == content::mojom::kBrowserServiceName)
-        id = IDR_QTWEBENGINE_CONTENT_BROWSER_MANIFEST_OVERLAY;
-    if (id == -1)
-        return nullptr;
+    if (name == content::mojom::kBrowserServiceName) {
+        return GetQtWebEngineContentBrowserOverlayManifest();
+    } else if (name == content::mojom::kPackagedServicesServiceName) {
+        service_manager::Manifest overlay;
+        overlay.packaged_services = GetQtWebEnginePackagedServiceManifests();
+        return overlay;
+    } else if (name == content::mojom::kRendererServiceName) {
+        return GetQtWebEngineContentRendererOverlayManifest();
+    }
 
-    base::StringPiece manifest_contents =
-        rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
-    return base::JSONReader::Read(manifest_contents);
+    return base::nullopt;
 }
 
-std::vector<content::ContentBrowserClient::ServiceManifestInfo> ContentBrowserClientQt::GetExtraServiceManifests()
+std::vector<service_manager::Manifest> ContentBrowserClientQt::GetExtraServiceManifests()
 {
-    return std::vector<content::ContentBrowserClient::ServiceManifestInfo>({
-        {"qtwebengine_renderer", IDR_QTWEBENGINE_RENDERER_SERVICE_MANIFEST},
-    });
+    return std::vector<service_manager::Manifest>{GetQtWebEngineRendererManifest()};
 }
 
 bool ContentBrowserClientQt::CanCreateWindow(
-    content::RenderFrameHost* opener,
-    const GURL& opener_url,
-    const GURL& opener_top_level_frame_url,
-    const GURL& source_origin,
-    content::mojom::WindowContainerType container_type,
-    const GURL& target_url,
-    const content::Referrer& referrer,
-    const std::string& frame_name,
-    WindowOpenDisposition disposition,
-    const blink::mojom::WindowFeatures& features,
-    bool user_gesture,
-    bool opener_suppressed,
-    bool* no_javascript_access) {
-
+        content::RenderFrameHost* opener,
+        const GURL& opener_url,
+        const GURL& opener_top_level_frame_url,
+        const url::Origin& source_origin,
+        content::mojom::WindowContainerType container_type,
+        const GURL& target_url,
+        const content::Referrer& referrer,
+        const std::string& frame_name,
+        WindowOpenDisposition disposition,
+        const blink::mojom::WindowFeatures& features,
+        bool user_gesture,
+        bool opener_suppressed,
+        bool* no_javascript_access)
+{
     Q_UNUSED(opener_url);
     Q_UNUSED(opener_top_level_frame_url);
     Q_UNUSED(source_origin);
@@ -782,6 +780,18 @@ bool ContentBrowserClientQt::ShouldUseProcessPerSite(content::BrowserContext* br
         return true;
 #endif
     return ContentBrowserClient::ShouldUseProcessPerSite(browser_context, effective_url);
+}
+
+std::string ContentBrowserClientQt::getUserAgent()
+{
+    // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
+    return content::BuildUserAgentFromProduct("QtWebEngine/" QTWEBENGINECORE_VERSION_STR " Chrome/" CHROMIUM_VERSION);
+}
+
+std::string ContentBrowserClientQt::GetProduct() const
+{
+    QString productName(qApp->applicationName() % '/' % qApp->applicationVersion());
+    return productName.toStdString();
 }
 
 } // namespace QtWebEngineCore
