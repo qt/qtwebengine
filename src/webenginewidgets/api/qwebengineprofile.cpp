@@ -175,13 +175,6 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
         m_profileAdapter->removeClient(this);
     }
 
-    for (QWebEngineDownloadItem *download : qAsConst(m_ongoingDownloads)) {
-        if (download)
-            download->cancel();
-    }
-
-    m_ongoingDownloads.clear();
-
     if (m_profileAdapter != QtWebEngineCore::ProfileAdapter::defaultProfileAdapter())
         delete m_profileAdapter;
 
@@ -196,6 +189,23 @@ ProfileAdapter* QWebEngineProfilePrivate::profileAdapter() const
 void QWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
 {
     m_ongoingDownloads.remove(downloadId);
+    if (m_profileAdapter)
+        m_profileAdapter->removeDownload(downloadId);
+}
+
+void QWebEngineProfilePrivate::cleanDownloads()
+{
+    for (auto download : m_ongoingDownloads.values()) {
+        if (!download)
+            continue;
+
+        if (!download->isFinished())
+            download->cancel();
+
+        if (m_profileAdapter)
+            m_profileAdapter->removeDownload(download->id());
+    }
+    m_ongoingDownloads.clear();
 }
 
 void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
@@ -219,6 +229,7 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     QWebEngineDownloadItem *download = new QWebEngineDownloadItem(itemPrivate, q);
 
     m_ongoingDownloads.insert(info.id, download);
+    QObject::connect(download, &QWebEngineDownloadItem::destroyed, q, [id = info.id, this] () { downloadDestroyed(id); });
 
     Q_EMIT q->downloadRequested(download);
 
@@ -232,7 +243,6 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     if (state == QWebEngineDownloadItem::DownloadRequested) {
         // Delete unaccepted downloads.
         info.accepted = false;
-        m_ongoingDownloads.remove(info.id);
         delete download;
     }
 }
@@ -250,9 +260,6 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
     }
 
     download->d_func()->update(info);
-
-    if (download->isFinished())
-        m_ongoingDownloads.remove(info.id);
 }
 
 /*!
@@ -301,6 +308,7 @@ QWebEngineProfile::QWebEngineProfile(QWebEngineProfilePrivate *privatePtr, QObje
 */
 QWebEngineProfile::~QWebEngineProfile()
 {
+    d_ptr->cleanDownloads();
 }
 
 /*!

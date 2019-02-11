@@ -53,7 +53,7 @@
 
 #include "profile_adapter_client.h"
 #include "profile_adapter.h"
-#include "qquickwebengineprofile_p.h"
+#include "qquickwebengineprofile.h"
 
 #include <QExplicitlySharedDataPointer>
 #include <QMap>
@@ -79,6 +79,8 @@ public:
 
     void cancelDownload(quint32 downloadId);
     void downloadDestroyed(quint32 downloadId);
+
+    void cleanDownloads();
 
     void downloadRequested(DownloadItemInfo &info) override;
     void downloadUpdated(const DownloadItemInfo &info) override;

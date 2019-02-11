@@ -660,10 +660,10 @@ QWebEngineDownloadItem::QWebEngineDownloadItem(QWebEngineDownloadItemPrivate *p,
 */
 QWebEngineDownloadItem::~QWebEngineDownloadItem()
 {
+    // MEMO Items are owned by profile by default and will be destroyed on profile's destruction
+    //      It's not safe to access profile in that case, so we rely on profile to clean up items
     if (!isFinished())
         cancel();
-    if (auto profileAdapter = d_ptr->profile->profileAdapter())
-        profileAdapter->removeDownload(d_ptr->downloadId);
 }
 
 QT_END_NAMESPACE

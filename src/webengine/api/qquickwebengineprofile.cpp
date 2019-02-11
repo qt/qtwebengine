@@ -175,13 +175,6 @@ QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
         m_profileAdapter->removeClient(this);
     }
 
-    for (QQuickWebEngineDownloadItem *download : qAsConst(m_ongoingDownloads)) {
-        if (download)
-            download->cancel();
-    }
-
-    m_ongoingDownloads.clear();
-
     if (m_profileAdapter != QtWebEngineCore::ProfileAdapter::defaultProfileAdapter())
         delete m_profileAdapter;
 }
@@ -215,6 +208,23 @@ void QQuickWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
 void QQuickWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
 {
     m_ongoingDownloads.remove(downloadId);
+    if (m_profileAdapter)
+        m_profileAdapter->removeDownload(downloadId);
+}
+
+void QQuickWebEngineProfilePrivate::cleanDownloads()
+{
+    for (auto download : m_ongoingDownloads.values()) {
+        if (!download)
+            continue;
+
+        if (!download->isFinished())
+            download->cancel();
+
+        if (m_profileAdapter)
+            m_profileAdapter->removeDownload(download->id());
+    }
+    m_ongoingDownloads.clear();
 }
 
 void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
@@ -239,6 +249,7 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     QQuickWebEngineDownloadItem *download = new QQuickWebEngineDownloadItem(itemPrivate, q);
 
     m_ongoingDownloads.insert(info.id, download);
+    QObject::connect(download, &QQuickWebEngineDownloadItem::destroyed, q, [id = info.id, this] () { downloadDestroyed(id); });
 
     QQmlEngine::setObjectOwnership(download, QQmlEngine::JavaScriptOwnership);
     Q_EMIT q->downloadRequested(download);
@@ -252,7 +263,6 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     if (state == QQuickWebEngineDownloadItem::DownloadRequested) {
         // Delete unaccepted downloads.
         info.accepted = false;
-        m_ongoingDownloads.remove(info.id);
         delete download;
     }
 }
@@ -275,7 +285,6 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 
     if (info.state != ProfileAdapterClient::DownloadInProgress) {
         Q_EMIT q->downloadFinished(download);
-        m_ongoingDownloads.remove(info.id);
     }
 }
 
@@ -380,6 +389,7 @@ QQuickWebEngineProfile::QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *pr
 */
 QQuickWebEngineProfile::~QQuickWebEngineProfile()
 {
+    d_ptr->cleanDownloads();
 }
 
 /*!
