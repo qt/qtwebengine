@@ -253,7 +253,7 @@ void FaviconManager::update(const QList<FaviconInfo> &candidates)
 
     const QList<FaviconInfo> &faviconInfoList = getFaviconInfoList(true /* candidates only */);
     for (auto it = faviconInfoList.cbegin(), end = faviconInfoList.cend(); it != end; ++it) {
-        if (!touchIconsEnabled && it->type != FaviconInfo::Favicon)
+        if (!touchIconsEnabled && !(it->type & FaviconInfo::Favicon))
             continue;
 
         if (it->isValid())
@@ -272,6 +272,14 @@ void FaviconManager::update(const QList<FaviconInfo> &candidates)
 
 void FaviconManager::updateCandidates(const QList<FaviconInfo> &candidates)
 {
+    // Invalidate types of the already stored candidate icons because it might differ
+    // among pages.
+    for (FaviconInfo candidateFaviconInfo : candidates) {
+        const QUrl &candidateUrl = candidateFaviconInfo.url;
+        if (m_faviconInfoMap.contains(candidateUrl))
+            m_faviconInfoMap[candidateUrl].type = FaviconInfo::InvalidIcon;
+    }
+
     m_candidateCount = candidates.count();
     for (FaviconInfo candidateFaviconInfo : candidates) {
         const QUrl &candidateUrl = candidateFaviconInfo.url;
@@ -279,8 +287,8 @@ void FaviconManager::updateCandidates(const QList<FaviconInfo> &candidates)
         if (!m_faviconInfoMap.contains(candidateUrl))
             m_faviconInfoMap.insert(candidateUrl, candidateFaviconInfo);
         else {
-            // The same icon can be used for more than one page with different types.
-            m_faviconInfoMap[candidateUrl].type = candidateFaviconInfo.type;
+            // The same icon URL can be used for different types.
+            m_faviconInfoMap[candidateUrl].type |= candidateFaviconInfo.type;
         }
 
         m_faviconInfoMap[candidateUrl].candidate = true;
@@ -311,7 +319,7 @@ QUrl FaviconManager::candidateIconUrl(bool touchIconsEnabled) const
 
     unsigned bestArea = 0;
     for (auto it = faviconInfoList.cbegin(), end = faviconInfoList.cend(); it != end; ++it) {
-        if (!touchIconsEnabled && it->type != FaviconInfo::Favicon)
+        if (!touchIconsEnabled && !(it->type & FaviconInfo::Favicon))
             continue;
 
         if (it->isValid() && bestArea < area(it->size)) {
@@ -331,7 +339,7 @@ void FaviconManager::generateCandidateIcon(bool touchIconsEnabled)
     const QList<FaviconInfo> &faviconInfoList = getFaviconInfoList(true /* candidates only */);
 
     for (auto it = faviconInfoList.cbegin(), end = faviconInfoList.cend(); it != end; ++it) {
-        if (!touchIconsEnabled && it->type != FaviconInfo::Favicon)
+        if (!touchIconsEnabled && !(it->type & FaviconInfo::Favicon))
             continue;
 
         if (!it->isValid() || !it->isDownloaded())
@@ -373,7 +381,7 @@ FaviconInfo::FaviconInfo(const FaviconInfo &other)
 {
 }
 
-FaviconInfo::FaviconInfo(const QUrl &url, FaviconInfo::FaviconType type)
+FaviconInfo::FaviconInfo(const QUrl &url, FaviconInfo::FaviconTypeFlags type)
     : url(url)
     , type(type)
     , size(QSize(0, 0))

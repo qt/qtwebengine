@@ -84,23 +84,24 @@ class WebContentsAdapterClient;
 // Based on src/3rdparty/chromium/content/public/common/favicon_url.h
 class QWEBENGINECORE_PRIVATE_EXPORT FaviconInfo {
 public:
-    enum FaviconType {
-        InvalidIcon,
-        Favicon,
-        TouchIcon,
-        TouchPrecomposedIcon
+    enum FaviconTypeFlag {
+        InvalidIcon = 0,
+        Favicon = 1 << 0,
+        TouchIcon = 1 << 1,
+        TouchPrecomposedIcon = 1 << 2
     };
+    Q_DECLARE_FLAGS(FaviconTypeFlags, FaviconTypeFlag);
 
     FaviconInfo();
     FaviconInfo(const FaviconInfo &);
-    FaviconInfo(const QUrl &, FaviconInfo::FaviconType);
+    FaviconInfo(const QUrl &, FaviconInfo::FaviconTypeFlags);
     ~FaviconInfo();
 
     bool isValid() const;
     bool isDownloaded() const;
 
     QUrl url;
-    FaviconType type;
+    FaviconTypeFlags type;
     // Stores the largest size in case of multi-size icon
     QSize size;
     bool candidate;

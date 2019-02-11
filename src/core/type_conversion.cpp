@@ -216,7 +216,7 @@ int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
     return modifierFlags;
 }
 
-FaviconInfo::FaviconType toQt(content::FaviconURL::IconType type)
+FaviconInfo::FaviconTypeFlags toQt(content::FaviconURL::IconType type)
 {
     switch (type) {
     case content::FaviconURL::IconType::kFavicon:

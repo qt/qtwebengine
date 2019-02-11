@@ -62,6 +62,7 @@ private Q_SLOTS:
     void downloadTouchIconsEnabled_data();
     void downloadTouchIconsEnabled();
     void dynamicFavicon();
+    void touchIconWithSameURL();
 
 private:
     QWebEngineView *m_view;
@@ -506,6 +507,43 @@ void tst_FaviconManager::dynamicFavicon()
         QTRY_COMPARE(m_page->iconUrl().toString(), QString("data:image/png;base64," + colors[color]));
         QCOMPARE(m_page->icon().pixmap(1, 1).toImage().pixelColor(0, 0), QColor(color));
     }
+}
+
+void tst_FaviconManager::touchIconWithSameURL()
+{
+    m_page->settings()->setAttribute(QWebEngineSettings::TouchIconsEnabled, false);
+
+    const QString icon("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=");
+    QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
+    QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
+    QSignalSpy iconChangedSpy(m_page, SIGNAL(iconChanged(QIcon)));
+
+    m_page->setHtml("<html>"
+                    "<link rel='icon' type='image/png' href='" + icon + "'/>"
+                    "<link rel='apple-touch-icon' type='image/png' href='" + icon + "'/>"
+                    "</html>");
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+
+    // The default favicon has to be loaded even if its URL is also set as a touch icon while touch icons are disabled.
+    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
+    QCOMPARE(m_page->iconUrl().toString(), icon);
+    QTRY_COMPARE(iconChangedSpy.count(), 1);
+
+    loadFinishedSpy.clear();
+    iconUrlChangedSpy.clear();
+    iconChangedSpy.clear();
+
+    m_page->setHtml("<html>"
+                    "<link rel='apple-touch-icon' type='image/png' href='" + icon + "'/>"
+                    "</html>");
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+
+    // This page only has a touch icon. With disabled touch icons we don't expect any icon to be shown even if the same icon
+    // was loaded previously.
+    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
+    QVERIFY(m_page->iconUrl().toString().isEmpty());
+    QTRY_COMPARE(iconChangedSpy.count(), 1);
+
 }
 
 QTEST_MAIN(tst_FaviconManager)
