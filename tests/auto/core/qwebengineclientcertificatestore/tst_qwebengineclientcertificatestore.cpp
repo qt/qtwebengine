@@ -85,7 +85,7 @@ void tst_QWebEngineClientCertificateStore::removeAndClearCertificates()
 
     // Remove one certificate from in-memory store
     auto list = QWebEngineClientCertificateStore::getInstance()->toList();
-    QWebEngineClientCertificateStore::getInstance()->remove(list[0]);
+    QWebEngineClientCertificateStore::getInstance()->remove(list[0].certificate);
     QCOMPARE(1, QWebEngineClientCertificateStore::getInstance()->toList().length());
 
     // Remove all certificates in-memory store

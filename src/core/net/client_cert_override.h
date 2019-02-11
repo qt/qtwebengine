@@ -59,6 +59,10 @@ public:
                         const ClientCertListCallback &callback) override;
 private:
     static std::unique_ptr<net::ClientCertStore> createNativeStore();
+    static net::ClientCertIdentityList GetClientCertsOnUIThread(const net::SSLCertRequestInfo &request);
+    void GetClientCertsReturn(const net::SSLCertRequestInfo &cert_request_info,
+                              const ClientCertListCallback &callback,
+                              net::ClientCertIdentityList &&result);
     std::unique_ptr<net::ClientCertStore> m_nativeStore;
 };
 

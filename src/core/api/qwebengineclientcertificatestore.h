@@ -67,7 +67,7 @@ public:
     static QWebEngineClientCertificateStore *getInstance();
     void add(const QSslCertificate &certificate, const QSslKey &privateKey);
     QList<Entry> toList() const;
-    void remove(Entry entry);
+    void remove(const QSslCertificate &certificate);
     void clear();
 
 private:

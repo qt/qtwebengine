@@ -112,7 +112,7 @@ void QWebEngineClientCertificateStore::add(const QSslCertificate &certificate, c
 QList<QWebEngineClientCertificateStore::Entry> QWebEngineClientCertificateStore::toList() const
 {
     QList<Entry> certificateList;
-    for (auto data : qAsConst(d_ptr->addedCerts)) {
+    for (auto data : qAsConst(d_ptr->extraCerts)) {
         Entry entry;
         entry.certificate = data->certificate;
         entry.privateKey = data->key;
@@ -123,21 +123,12 @@ QList<QWebEngineClientCertificateStore::Entry> QWebEngineClientCertificateStore:
 
 /*!
     Deletes all the instances of the client certificate in the in-memory client certificate store
-    that matches the certificate in the \a entry.
+    that matches the certificate \a certificate.
 */
 
-void QWebEngineClientCertificateStore::remove(Entry entry)
+void QWebEngineClientCertificateStore::remove(const QSslCertificate &certificate)
 {
-    auto it = d_ptr->addedCerts.begin();
-    while (it != d_ptr->addedCerts.end()) {
-        auto *overrideData = *it;
-        if (entry.certificate.toDer() == overrideData->certificate.toDer()) {
-            d_ptr->deletedCerts.append(overrideData);
-            it = d_ptr->addedCerts.erase(it);
-            continue;
-        }
-        ++it;
-    }
+    d_ptr->remove(certificate);
 }
 
 /*!
@@ -146,8 +137,7 @@ void QWebEngineClientCertificateStore::remove(Entry entry)
 
 void QWebEngineClientCertificateStore::clear()
 {
-    d_ptr->deletedCerts.append(d_ptr->addedCerts);
-    d_ptr->addedCerts.clear();
+    d_ptr->clear();
 }
 
 #endif // QT_CONFIG(ssl)
