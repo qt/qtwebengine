@@ -185,10 +185,8 @@ void QQuickWebEngineDownloadItemPrivate::update(const ProfileAdapterClient::Down
         Q_EMIT q->totalBytesChanged();
     }
 
-    if (info.done != downloadFinished) {
-        downloadFinished = info.done;
-        Q_EMIT q->isFinishedChanged();
-    }
+    if (info.done)
+        setFinished();
 
     if (info.paused != downloadPaused) {
         downloadPaused = info.paused;
@@ -204,6 +202,17 @@ void QQuickWebEngineDownloadItemPrivate::updateState(QQuickWebEngineDownloadItem
         downloadState = newState;
         Q_EMIT q->stateChanged();
     }
+}
+
+void QQuickWebEngineDownloadItemPrivate::setFinished()
+{
+    Q_Q(QQuickWebEngineDownloadItem);
+
+    if (downloadFinished)
+        return;
+
+    downloadFinished = true;
+    Q_EMIT q->isFinishedChanged();
 }
 
 /*!
@@ -255,6 +264,7 @@ void QQuickWebEngineDownloadItem::cancel()
         return;
 
     d->updateState(QQuickWebEngineDownloadItem::DownloadCancelled);
+    d->setFinished();
 
     // We directly cancel the download if the user cancels before
     // it even started, so no need to notify the profile here.
@@ -617,6 +627,8 @@ QQuickWebEngineDownloadItem::QQuickWebEngineDownloadItem(QQuickWebEngineDownload
 
 QQuickWebEngineDownloadItem::~QQuickWebEngineDownloadItem()
 {
+    if (!isFinished())
+        cancel();
     if (d_ptr->profile)
         d_ptr->profile->d_ptr->profileAdapter()->removeDownload(d_ptr->downloadId);
 }
