@@ -74,17 +74,13 @@ namespace {
 class ClientCertIdentityOverride : public net::ClientCertIdentity
 {
 public:
-    ClientCertIdentityOverride(
-            scoped_refptr<net::X509Certificate> cert,
-            scoped_refptr<net::SSLPrivateKey> key)
-        : net::ClientCertIdentity(std::move(cert)), key_(std::move(key)) {}
+    ClientCertIdentityOverride(scoped_refptr<net::X509Certificate> cert, scoped_refptr<net::SSLPrivateKey> key)
+            : net::ClientCertIdentity(std::move(cert)), m_key(std::move(key)) {}
     ~ClientCertIdentityOverride() override = default;
 
-    void AcquirePrivateKey(
-            const base::Callback<void(scoped_refptr<net::SSLPrivateKey>)> &
-                    private_key_callback) override
+    void AcquirePrivateKey(const base::Callback<void(scoped_refptr<net::SSLPrivateKey>)> &private_key_callback) override
     {
-        private_key_callback.Run(key_);
+        private_key_callback.Run(m_key);
     }
 
 #if defined(OS_MACOSX)
@@ -95,7 +91,7 @@ public:
 #endif
 
 private:
-    scoped_refptr<net::SSLPrivateKey> key_;
+    scoped_refptr<net::SSLPrivateKey> m_key;
 };
 
 } // namespace
@@ -104,12 +100,11 @@ namespace QtWebEngineCore {
 
 ClientCertOverrideStore::ClientCertOverrideStore()
     : ClientCertStore()
+    , m_nativeStore(createNativeStore())
 {
 }
 
-ClientCertOverrideStore::~ClientCertOverrideStore()
-{
-}
+ClientCertOverrideStore::~ClientCertOverrideStore() = default;
 
 void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert_request_info,
                                              const ClientCertListCallback &callback)
@@ -130,9 +125,8 @@ void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert
 #endif // QT_CONFIG(ssl)
 
     // Continue with native cert store if matching certificate is not found in memory
-    std::unique_ptr<net::ClientCertStore> store = getNativeStore();
-    if (store != NULL) {
-        store->GetClientCerts(cert_request_info, callback);
+    if (m_nativeStore) {
+        m_nativeStore->GetClientCerts(cert_request_info, callback);
         return;
     }
 
@@ -140,7 +134,8 @@ void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert
     return;
 }
 
-std::unique_ptr<net::ClientCertStore> ClientCertOverrideStore::getNativeStore()
+// static
+std::unique_ptr<net::ClientCertStore> ClientCertOverrideStore::createNativeStore()
 {
 #if defined(USE_NSS_CERTS)
     return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(net::ClientCertStoreNSS::PasswordDelegateFactory()));

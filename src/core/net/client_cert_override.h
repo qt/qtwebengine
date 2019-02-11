@@ -58,7 +58,8 @@ public:
     void GetClientCerts(const net::SSLCertRequestInfo &cert_request_info,
                         const ClientCertListCallback &callback) override;
 private:
-    std::unique_ptr<net::ClientCertStore> getNativeStore();
+    static std::unique_ptr<net::ClientCertStore> createNativeStore();
+    std::unique_ptr<net::ClientCertStore> m_nativeStore;
 };
 
 } // QtWebEngineCore
