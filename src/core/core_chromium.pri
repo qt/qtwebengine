@@ -48,7 +48,6 @@ SOURCES = \
         browser_message_filter_qt.cpp \
         certificate_error_controller.cpp \
         chromium_overrides.cpp \
-        client_cert_override_key.cpp \
         client_cert_select_controller.cpp \
         clipboard_qt.cpp \
         color_chooser_qt.cpp \
@@ -77,6 +76,8 @@ SOURCES = \
         login_delegate_qt.cpp \
         media_capture_devices_dispatcher.cpp \
         native_web_keyboard_event_qt.cpp \
+        net/client_cert_override.cpp \
+        net/client_cert_store_data.cpp \
         net/cookie_monster_delegate_qt.cpp \
         net/custom_protocol_handler.cpp \
         net/network_delegate_qt.cpp \
@@ -106,7 +107,6 @@ SOURCES = \
         profile_io_data_qt.cpp \
         quota_permission_context_qt.cpp \
         quota_request_controller_impl.cpp \
-        qwebengineclientcertificatestore.cpp \
         register_protocol_handler_request_controller_impl.cpp \
         render_view_context_menu_qt.cpp \
         render_view_observer_host_qt.cpp \
@@ -150,8 +150,6 @@ HEADERS = \
         certificate_error_controller_p.h \
         certificate_error_controller.h \
         chromium_overrides.h \
-        client_cert_override_key_p.h \
-        client_cert_override_p.h \
         client_cert_select_controller.h \
         clipboard_qt.h \
         command_line_pref_store_qt.h \
@@ -183,6 +181,8 @@ HEADERS = \
         locked_ptr.h \
         login_delegate_qt.h \
         media_capture_devices_dispatcher.h \
+        net/client_cert_override.h \
+        net/client_cert_store_data.h \
         net/cookie_monster_delegate_qt.h \
         net/custom_protocol_handler.h \
         net/network_delegate_qt.h \

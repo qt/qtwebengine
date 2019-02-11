@@ -76,6 +76,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "printing/buildflags/buildflags.h"
 #include "net/ssl/client_cert_identity.h"
+#include "net/ssl/client_cert_store.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -91,7 +92,6 @@
 
 #include "qtwebengine/grit/qt_webengine_resources.h"
 
-#include "client_cert_override_p.h"
 #include "profile_adapter.h"
 #include "browser_main_parts_qt.h"
 #include "browser_message_filter_qt.h"
@@ -108,6 +108,7 @@
 #include "printing/printing_message_filter_qt.h"
 #endif
 #include "profile_qt.h"
+#include "profile_io_data_qt.h"
 #include "quota_permission_context_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "service/service_qt.h"
@@ -401,7 +402,7 @@ std::unique_ptr<net::ClientCertStore> ContentBrowserClientQt::CreateClientCertSt
     if (!resource_context)
         return nullptr;
 
-    return std::unique_ptr<net::ClientCertStore>(new net::ClientCertOverrideStore());
+    return ProfileIODataQt::FromResourceContext(resource_context)->CreateClientCertStore();
 }
 
 std::string ContentBrowserClientQt::GetApplicationLocale()

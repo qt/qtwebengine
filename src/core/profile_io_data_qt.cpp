@@ -78,6 +78,7 @@
 #include "services/file/user_id_map.h"
 #include "services/network/proxy_service_mojo.h"
 
+#include "net/client_cert_override.h"
 #include "net/cookie_monster_delegate_qt.h"
 #include "net/custom_protocol_handler.h"
 #include "net/network_delegate_qt.h"
@@ -789,6 +790,17 @@ void ProfileIODataQt::updateUsedForGlobalCertificateVerification()
     if (m_useForGlobalCertificateVerification)
         base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
                                  base::BindOnce(&ProfileIODataQt::setGlobalCertificateVerification, m_weakPtr));
+}
+
+std::unique_ptr<net::ClientCertStore> ProfileIODataQt::CreateClientCertStore()
+{
+    return std::unique_ptr<net::ClientCertStore>(new ClientCertOverrideStore());
+}
+
+// static
+ProfileIODataQt *ProfileIODataQt::FromResourceContext(content::ResourceContext *resource_context)
+{
+    return static_cast<ResourceContextQt *>(resource_context)->m_io_data;
 }
 
 } // namespace QtWebEngineCore

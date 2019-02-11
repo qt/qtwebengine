@@ -51,6 +51,7 @@
 #include <QtCore/QMutex>
 
 namespace net {
+class ClientCertStore;
 class DhcpPacFileFetcherFactory;
 class HttpAuthPreferences;
 class HttpNetworkSession;
@@ -120,6 +121,8 @@ public:
     void updateUsedForGlobalCertificateVerification(); // runs on ui thread
     bool hasPageInterceptors();
 
+    std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
+    static ProfileIODataQt *FromResourceContext(content::ResourceContext *resource_context);
 private:
     ProfileQt *m_profile;
     std::unique_ptr<net::URLRequestContextStorage> m_storage;

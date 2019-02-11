@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,10 +37,17 @@
 **
 ****************************************************************************/
 
-#ifndef CLIENT_CERT_OVERRIDE_KEY_H
-#define CLIENT_CERT_OVERRIDE_KEY_H
+#include "net/client_cert_store_data.h"
 
-#include "client_cert_override_key_p.h"
+#if QT_CONFIG(ssl)
+#include "base/logging.h"
+#include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "net/base/net_errors.h"
+#include "net/cert/x509_certificate.h"
+#include "net/ssl/ssl_platform_key_util.h"
+#include "net/ssl/ssl_private_key.h"
+#include "net/ssl/threaded_ssl_private_key.h"
 
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
@@ -48,90 +55,97 @@
 #include "third_party/boringssl/src/include/openssl/rsa.h"
 #include "third_party/boringssl/src/include/openssl/pem.h"
 
-#include <utility>
-#include <QByteArray>
-
-#include "base/logging.h"
-#include "base/macros.h"
-#include "base/memory/ptr_util.h"
-#include "net/base/net_errors.h"
-#include "net/ssl/ssl_platform_key_util.h"
-#include "net/ssl/ssl_private_key.h"
-#include "net/ssl/threaded_ssl_private_key.h"
-
-namespace net {
+#include "QtCore/qbytearray.h"
 
 namespace {
 
-class SSLPlatformKeyOverride : public ThreadedSSLPrivateKey::Delegate {
+class SSLPlatformKeyOverride : public net::ThreadedSSLPrivateKey::Delegate {
 public:
     SSLPlatformKeyOverride(const QByteArray &sslKeyInBytes)
     {
-        mem_ = BIO_new_mem_buf(sslKeyInBytes, -1);
-        key_ = PEM_read_bio_PrivateKey(mem_, NULL, 0, NULL);
+        m_mem = BIO_new_mem_buf(sslKeyInBytes, -1);
+        m_key = PEM_read_bio_PrivateKey(m_mem, nullptr, nullptr, nullptr);
     }
 
-    ~SSLPlatformKeyOverride() override {
-        if (key_)
-            EVP_PKEY_free(key_);
-        if (mem_)
-            BIO_free(mem_);
+    ~SSLPlatformKeyOverride() override
+    {
+        if (m_key)
+            EVP_PKEY_free(m_key);
+        if (m_mem)
+            BIO_free(m_mem);
     }
 
-    Error Sign(uint16_t algorithm,
-               base::span<const uint8_t> input,
-               std::vector<uint8_t>* signature) override {
+    net::Error Sign(uint16_t algorithm, base::span<const uint8_t> input, std::vector<uint8_t> *signature) override
+    {
         bssl::ScopedEVP_MD_CTX ctx;
-        EVP_PKEY_CTX* pctx;
+        EVP_PKEY_CTX *pctx;
         if (!EVP_DigestSignInit(ctx.get(), &pctx,
                                 SSL_get_signature_algorithm_digest(algorithm),
-                                nullptr, key_)) {
-            return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+                                nullptr, m_key)) {
+            return net::ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
         }
 
         if (SSL_is_signature_algorithm_rsa_pss(algorithm)) {
             if (!EVP_PKEY_CTX_set_rsa_padding(pctx, RSA_PKCS1_PSS_PADDING) ||
                     !EVP_PKEY_CTX_set_rsa_pss_saltlen(pctx, -1 /* hash length */)) {
-                return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+                return net::ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
             }
         }
         size_t sig_len = 0;
         if (!EVP_DigestSign(ctx.get(), NULL, &sig_len, input.data(), input.size()))
-            return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+            return net::ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
         signature->resize(sig_len);
-        if (!EVP_DigestSign(ctx.get(), signature->data(), &sig_len, input.data(),
-                            input.size())) {
-            return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-        }
+        if (!EVP_DigestSign(ctx.get(), signature->data(), &sig_len, input.data(), input.size()))
+            return net::ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
         signature->resize(sig_len);
-        return OK;
+        return net::OK;
     }
 
-    std::vector<uint16_t> GetAlgorithmPreferences() override {
-        return {
-            SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA512,
-                    SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA256,
-        };
+    std::vector<uint16_t> GetAlgorithmPreferences() override
+    {
+        return { SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA512
+               , SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA256 };
     }
 
 private:
-    EVP_PKEY* key_;
-    BIO * mem_;
+    EVP_PKEY *m_key;
+    BIO *m_mem;
 
     DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyOverride);
 };
 
-}  // namespace
-
-scoped_refptr<SSLPrivateKey> WrapOpenSSLPrivateKey(const QByteArray &sslKeyInBytes) {
+scoped_refptr<net::SSLPrivateKey> wrapOpenSSLPrivateKey(const QByteArray &sslKeyInBytes)
+{
     if (sslKeyInBytes.isEmpty())
         return nullptr;
 
-    return base::MakeRefCounted<ThreadedSSLPrivateKey>(
+    return base::MakeRefCounted<net::ThreadedSSLPrivateKey>(
                 std::make_unique<SSLPlatformKeyOverride>(sslKeyInBytes),
-                GetSSLPlatformKeyTaskRunner());
+                net::GetSSLPlatformKeyTaskRunner());
 }
 
-}  // namespace net
+}  // namespace
+
+namespace QtWebEngineCore {
+
+void ClientCertificateStoreData::add(const QSslCertificate &certificate, const QSslKey &privateKey)
+{
+    QByteArray sslKeyInBytes = privateKey.toPem();
+    QByteArray certInBytes = certificate.toDer();
+
+    Entry *data = new Entry;
+    data->keyPtr = wrapOpenSSLPrivateKey(sslKeyInBytes);
+    data->certPtr = net::X509Certificate::CreateFromBytes(certInBytes.data(), certInBytes.length());
+    data->key = privateKey;
+    data->certificate = certificate;
+    addedCerts.append(data);
+}
+
+ClientCertificateStoreData::~ClientCertificateStoreData()
+{
+    qDeleteAll(deletedCerts);
+}
+
+} // namespace QtWebEngineCore
 
 #endif

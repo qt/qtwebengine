@@ -69,6 +69,7 @@ public:
     extensions::ExtensionSystemQt* GetExtensionSystem();
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 private:
+    friend class ProfileIODataQt;
     ProfileIODataQt* m_io_data;
     DISALLOW_COPY_AND_ASSIGN(ResourceContextQt);
 };

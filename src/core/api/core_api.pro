@@ -50,6 +50,7 @@ HEADERS = \
 
 SOURCES = \
     qtwebenginecoreglobal.cpp \
+    qwebengineclientcertificatestore.cpp \
     qwebenginecookiestore.cpp \
     qwebenginehttprequest.cpp \
     qwebenginenotification.cpp \

@@ -46,17 +46,22 @@
 
 namespace net {
 class SSLCertRequestInfo;
-class ClientCertOverrideStore : public ClientCertStore
+} // namespace net
+
+namespace QtWebEngineCore {
+
+class ClientCertOverrideStore : public net::ClientCertStore
 {
 public:
     ClientCertOverrideStore();
     virtual ~ClientCertOverrideStore() override;
-    void GetClientCerts(const SSLCertRequestInfo &cert_request_info,
+    void GetClientCerts(const net::SSLCertRequestInfo &cert_request_info,
                         const ClientCertListCallback &callback) override;
 private:
     std::unique_ptr<net::ClientCertStore> getNativeStore();
 };
-} // namespace net
+
+} // QtWebEngineCore
 
 #endif
 

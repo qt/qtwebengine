@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,16 +37,42 @@
 **
 ****************************************************************************/
 
-#ifndef CLIENT_CERT_OVERRIDE_KEY_P_H
-#define CLIENT_CERT_OVERRIDE_KEY_P_H
+#ifndef CLIENT_CERT_STORE_DATA_H
+#define CLIENT_CERT_STORE_DATA_H
 
-#include "net/ssl/ssl_private_key.h"
+#include "qtwebenginecoreglobal.h"
+#include "qtnetworkglobal.h"
 
-#include <QByteArray>
+#if QT_CONFIG(ssl)
+#include "base/memory/ref_counted.h"
+
+#include <QtCore/qlist.h>
+#include <QtNetwork/qsslcertificate.h>
+#include <QtNetwork/qsslkey.h>
 
 namespace net {
-    class SSLPrivateKey;
-    scoped_refptr<SSLPrivateKey> WrapOpenSSLPrivateKey(const QByteArray &sslKeyInBytes);
-} // namespace net
+class SSLPrivateKey;
+class X509Certificate;
+}
+
+namespace QtWebEngineCore {
+
+struct ClientCertificateStoreData {
+    struct Entry {
+        QSslKey key;
+        QSslCertificate certificate;
+        scoped_refptr<net::X509Certificate> certPtr;
+        scoped_refptr<net::SSLPrivateKey> keyPtr;
+    };
+
+    ~ClientCertificateStoreData();
+    void add(const QSslCertificate &certificate, const QSslKey &privateKey);
+
+    QList<Entry*> addedCerts;
+    QList<Entry*> deletedCerts;
+};
+
+} // namespace QtWebEngineCore
 
 #endif
+#endif // CLIENT_CERT_STORE_DATA_H
