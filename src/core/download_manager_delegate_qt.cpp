@@ -79,7 +79,7 @@ DownloadManagerDelegateQt::~DownloadManagerDelegateQt()
 
 void DownloadManagerDelegateQt::GetNextId(const content::DownloadIdCallback& callback)
 {
-    callback.Run(++m_currentId);
+    callback.Run(m_currentId);
 }
 
 download::DownloadItem *DownloadManagerDelegateQt::findDownloadById(quint32 downloadId)
@@ -124,6 +124,8 @@ void DownloadManagerDelegateQt::removeDownload(quint32 downloadId)
 bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* item,
                                                         const content::DownloadTargetCallback& callback)
 {
+    m_currentId = item->GetId();
+
     // Keep the forced file path if set, also as the temporary file, so the check for existence
     // will already return that the file exists. Forced file paths seem to be only used for
     // store downloads and other special downloads, so they might never end up here anyway.
@@ -184,6 +186,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
         if (webContents)
             adapterClient = static_cast<WebContentsDelegateQt *>(webContents->GetDelegate())->adapterClient();
 
+        Q_ASSERT(m_currentId == item->GetId());
         ProfileAdapterClient::DownloadItemInfo info = {
             item->GetId(),
             toQt(item->GetURL()),
@@ -284,8 +287,9 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
     if (web_contents)
         adapterClient = static_cast<WebContentsDelegateQt *>(web_contents->GetDelegate())->adapterClient();
 
+    // Chromium doesn't increase download ID when saving page.
     ProfileAdapterClient::DownloadItemInfo info = {
-        m_currentId + 1,
+        ++m_currentId,
         toQt(web_contents->GetURL()),
         download::DownloadItem::IN_PROGRESS,
         0, /* totalBytes */
