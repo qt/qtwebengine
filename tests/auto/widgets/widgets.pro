@@ -9,6 +9,7 @@ SUBDIRS += \
     faviconmanager \
     loadsignals \
     origins \
+    proxy \
     proxypac \
     schemes \
     shutdown \
@@ -41,4 +42,4 @@ boot2qt: SUBDIRS -= accessibility defaultsurfaceformat devtools \
                     faviconmanager qwebenginepage qwebenginehistory \
                     qwebengineprofile qwebenginescript \
                     qwebengineview qwebenginedownloaditem qwebenginesettings \
-                    schemes origins loadsignals proxypac
+                    schemes origins loadsignals proxy proxypac
