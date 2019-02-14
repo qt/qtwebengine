@@ -18,7 +18,10 @@ build_pass|!debug_and_release {
             src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
             gn_bootstrap = $$system_path($$absolute_path(gn/build/gen.py, $$src_3rd_party_dir))
 
-            gn_configure = $$system_quote($$gn_bootstrap) --no-last-commit-position --out-path $$out_path
+            gn_configure = $$system_quote($$gn_bootstrap) --no-last-commit-position --out-path $$out_path \
+                           --cc \"$$which($$QMAKE_CC)\" --cxx \"$$which($$QMAKE_CXX)\" \
+                           --ld \"$$which($$QMAKE_LINK)\" --ar \"$$which(ar)\"
+            message($$gn_configure)
             !system("$$pythonPathForSystem() $$gn_configure") {
                 error("GN generation error!")
             }
