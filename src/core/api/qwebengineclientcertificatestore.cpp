@@ -129,8 +129,7 @@ QList<QWebEngineClientCertificateStore::Entry> QWebEngineClientCertificateStore:
 void QWebEngineClientCertificateStore::remove(Entry entry)
 {
     auto it = d_ptr->addedCerts.begin();
-    const auto end = d_ptr->addedCerts.end();
-    while (it != end) {
+    while (it != d_ptr->addedCerts.end()) {
         auto *overrideData = *it;
         if (entry.certificate.toDer() == overrideData->certificate.toDer()) {
             d_ptr->deletedCerts.append(overrideData);
