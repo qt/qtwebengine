@@ -96,7 +96,6 @@ optimize_size: gn_args += optimize_for_size=true
 
 # We don't want to apply sanitizer options to the build tools (GN, dict convert, etc).
 !host_build {
-    sanitizer: gn_args += sanitizer_keep_symbols=true
     sanitize_address: gn_args += is_asan=true
     sanitize_thread: gn_args += is_tsan=true
     sanitize_memory: gn_args += is_msan=true
