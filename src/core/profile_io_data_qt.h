@@ -118,6 +118,8 @@ public:
     void updateHttpCache(); // runs on ui thread
     void updateJobFactory(); // runs on ui thread
     void updateRequestInterceptor(); // runs on ui thread
+    void requestStorageGeneration(); //runs on ui thread
+    void createProxyConfig(); //runs on ui thread
     void updateUsedForGlobalCertificateVerification(); // runs on ui thread
     bool hasPageInterceptors();
 
@@ -157,10 +159,7 @@ private:
     int m_httpCacheMaxSize = 0;
     bool m_initialized = false;
     bool m_updateAllStorage = false;
-    bool m_updateCookieStore = false;
-    bool m_updateHttpCache = false;
     bool m_updateJobFactory = false;
-    bool m_updateUserAgent = false;
     bool m_ignoreCertificateErrors = false;
     bool m_useForGlobalCertificateVerification = false;
     bool m_hasPageInterceptors = false;

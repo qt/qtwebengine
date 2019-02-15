@@ -368,11 +368,16 @@ WebEngineContext::WebEngineContext()
     qputenv("force_s3tc_enable", "true");
 #endif
 
-    QWebEngineUrlScheme qrcScheme(QByteArrayLiteral("qrc"));
-    qrcScheme.setFlags(QWebEngineUrlScheme::SecureScheme
-                       | QWebEngineUrlScheme::LocalAccessAllowed
-                       | QWebEngineUrlScheme::ViewSourceAllowed);
-    QWebEngineUrlScheme::registerScheme(qrcScheme);
+    if (QWebEngineUrlScheme::schemeByName(QByteArrayLiteral("qrc")) == QWebEngineUrlScheme()) {
+        // User might have registered "qrc" already with different options.
+        QWebEngineUrlScheme qrcScheme(QByteArrayLiteral("qrc"));
+        qrcScheme.setFlags(QWebEngineUrlScheme::SecureScheme
+                           | QWebEngineUrlScheme::LocalAccessAllowed
+                           | QWebEngineUrlScheme::ViewSourceAllowed);
+        QWebEngineUrlScheme::registerScheme(qrcScheme);
+    }
+
+    QWebEngineUrlScheme::lockSchemes();
 
     // Allow us to inject javascript like any webview toolkit.
     content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
