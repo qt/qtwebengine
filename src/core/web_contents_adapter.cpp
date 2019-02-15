@@ -240,9 +240,13 @@ static std::unique_ptr<content::WebContents> createBlankWebContents(WebContentsA
     content::WebContents::CreateParams create_params(browserContext, NULL);
     create_params.routing_id = MSG_ROUTING_NONE;
     create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
-    create_params.context = reinterpret_cast<gfx::NativeView>(adapterClient);
     create_params.initially_hidden = true;
-    return content::WebContents::Create(create_params);
+
+    std::unique_ptr<content::WebContents> webContents = content::WebContents::Create(create_params);
+    WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(static_cast<content::WebContentsImpl*>(webContents.get())->GetView());
+    contentsView->setClient(adapterClient);
+
+    return webContents;
 }
 
 static void serializeNavigationHistory(const content::NavigationController &controller, QDataStream &output)
@@ -468,7 +472,6 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     if (!m_webContents) {
         content::WebContents::CreateParams create_params(m_profileAdapter->profile(), site);
         create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
-        create_params.context = reinterpret_cast<gfx::NativeView>(m_adapterClient);
         create_params.initially_hidden = true;
         m_webContents = content::WebContents::Create(create_params);
     }
@@ -506,7 +509,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
 
     // Let the WebContent's view know about the WebContentsAdapterClient.
     WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(static_cast<content::WebContentsImpl*>(m_webContents.get())->GetView());
-    contentsView->initialize(m_adapterClient);
+    contentsView->setClient(m_adapterClient);
 
     // This should only be necessary after having restored the history to a new WebContentsAdapter.
     m_webContents->GetController().LoadIfNecessary();

@@ -65,7 +65,8 @@ public:
         , m_factoryClient(nullptr)
     { }
 
-    void initialize(WebContentsAdapterClient* client);
+    void setFactoryClient(WebContentsAdapterClient* client);
+    void setClient(WebContentsAdapterClient* client);
     WebContentsAdapterClient *client() { return m_client; }
 
     content::RenderWidgetHostViewBase *CreateViewForWidget(content::RenderWidgetHost* render_widget_host, bool is_guest_view_hack) override;
@@ -86,9 +87,9 @@ public:
 
     gfx::NativeView GetNativeView() const override;
 
-    gfx::NativeView GetContentNativeView() const override { return 0; }
+    gfx::NativeView GetContentNativeView() const override { return nullptr; }
 
-    gfx::NativeWindow GetTopLevelNativeWindow() const override { return 0; }
+    gfx::NativeWindow GetTopLevelNativeWindow() const override { return nullptr; }
 
     void GetContainerBounds(gfx::Rect* out) const override;
 

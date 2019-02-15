@@ -58,12 +58,14 @@
 #include "visited_links_manager_qt.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_adapter.h"
+#include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
 
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/invalidate_type.h"
@@ -414,9 +416,11 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::Favic
 void WebContentsDelegateQt::WebContentsCreated(content::WebContents */*source_contents*/,
                                                int /*opener_render_process_id*/, int /*opener_render_frame_id*/,
                                                const std::string &/*frame_name*/,
-                                               const GURL &target_url, content::WebContents */*new_contents*/)
+                                               const GURL &target_url, content::WebContents *newContents)
 {
     m_initialTargetUrl = toQt(target_url);
+    if (auto *view = static_cast<content::WebContentsImpl *>(newContents)->GetView())
+        static_cast<WebContentsViewQt *>(view)->setFactoryClient(m_viewClient);
 }
 
 content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<blink::mojom::ColorSuggestionPtr> &suggestion)
