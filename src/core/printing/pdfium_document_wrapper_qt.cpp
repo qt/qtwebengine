@@ -102,7 +102,7 @@ private:
                               0, 0);
         FPDFBitmap_Destroy(bitmap);
         bitmap = nullptr;
-        return std::move(image);
+        return image;
     }
 
 private:
