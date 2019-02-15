@@ -314,6 +314,6 @@ defineTest(qtConfTest_hasThumbFlag) {
 }
 
 defineTest(qtConfTest_hasGcc6OrNewer) {
-    greaterThan(QT_GCC_MAJOR_VERSION, 5):return(true)
+    greaterThan(QMAKE_GCC_MAJOR_VERSION, 5):return(true)
     return(false)
 }
