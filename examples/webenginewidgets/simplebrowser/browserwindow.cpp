@@ -62,6 +62,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QProgressBar>
+#include <QScreen>
 #include <QStatusBar>
 #include <QToolBar>
 #include <QVBoxLayout>
@@ -143,7 +144,7 @@ BrowserWindow::BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool 
 
 QSize BrowserWindow::sizeHint() const
 {
-    QRect desktopRect = QApplication::desktop()->screenGeometry();
+    QRect desktopRect = QApplication::primaryScreen()->geometry();
     QSize size = desktopRect.size() * qreal(0.9);
     return size;
 }

@@ -43,6 +43,7 @@
 #include "qwebenginecookiestore.h"
 #include "qwebenginedownloaditem.h"
 #include "qwebenginedownloaditem_p.h"
+#include "qwebenginenotificationpresenter_p.h"
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
 #include "qwebenginesettings.h"
@@ -139,6 +140,12 @@ using QtWebEngineCore::ProfileAdapter;
     \value  ForcePersistentCookies
             Both session and persistent cookies are saved to and restored from disk.
 */
+
+void QWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &notification)
+{
+    if (m_notificationPresenter)
+        m_notificationPresenter(QWebEngineNotification(notification));
+}
 
 /*!
   \fn QWebEngineProfile::downloadRequested(QWebEngineDownloadItem *download)
@@ -550,17 +557,41 @@ QWebEngineCookieStore* QWebEngineProfile::cookieStore()
     return d->profileAdapter()->cookieStore();
 }
 
-
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     Registers a request interceptor singleton \a interceptor to intercept URL requests.
 
     The profile does not take ownership of the pointer.
 
+    \obsolete
+
+    Interceptors installed with this method will call
+    QWebEngineUrlRequestInterceptor::interceptRequest on the I/O thread. Therefore
+    the user has to provide thread-safe interaction with the other user classes.
+    Use setUrlRequestInterceptor instead.
+
     \since 5.6
     \sa QWebEngineUrlRequestInfo
+
+*/
+void QWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+{
+    Q_D(QWebEngineProfile);
+    interceptor->setProperty("deprecated", true);
+    d->profileAdapter()->setRequestInterceptor(interceptor);
+    qWarning("Use of deprecated not tread-safe setter, use setUrlRequestInterceptor instead.");
+}
+#endif
+/*!
+    Registers a request interceptor singleton \a interceptor to intercept URL requests.
+
+    The profile does not take ownership of the pointer.
+
+    \since 5.13
+    \sa QWebEngineUrlRequestInfo QWebEngineUrlRequestInterceptor
 */
 
-void QWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+void QWebEngineProfile::setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     Q_D(QWebEngineProfile);
     d->profileAdapter()->setRequestInterceptor(interceptor);
@@ -610,6 +641,27 @@ QWebEngineScriptCollection *QWebEngineProfile::scripts() const
 }
 
 /*!
+    Sets the function \a notificationPresenter as responsible for presenting sent notifications.
+
+    \since 5.13
+    \sa QWebEngineNotification
+*/
+void QWebEngineProfile::setNotificationPresenter(const std::function<void(const QWebEngineNotification &)> &notificationPresenter)
+{
+    Q_D(QWebEngineProfile);
+    d->m_notificationPresenter = notificationPresenter;
+}
+
+/*!
+    \overload
+*/
+void QWebEngineProfile::setNotificationPresenter(std::function<void(const QWebEngineNotification &)> &&notificationPresenter)
+{
+    Q_D(QWebEngineProfile);
+    d->m_notificationPresenter = std::move(notificationPresenter);
+}
+
+/*!
     Returns the default profile.
 
     The default profile uses the storage name "Default".
@@ -621,6 +673,8 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
     static QWebEngineProfile* profile = new QWebEngineProfile(
                 new QWebEngineProfilePrivate(ProfileAdapter::createDefaultProfileAdapter()),
                 ProfileAdapter::globalQObjectRoot());
+    if (!profile->d_ptr->m_notificationPresenter)
+        profile->setNotificationPresenter(&defaultNotificationPresenter);
     return profile;
 }
 

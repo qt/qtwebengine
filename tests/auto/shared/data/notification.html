@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+<title>Desktop Notifications Demo</title>
+<script>
+    function resetPermission() { document.Notification = 'default' }
+
+    function getPermission() { return document.Notification }
+
+    function sendNotification(title, body) {
+        let notification = new Notification(title, { body: body })
+        notification.onclick = function() { console.info('onclick') }
+        notification.onclose = function() { console.info('onclose') }
+        notification.onerror = function(error) { console.info('onerror: ' + error) }
+        notification.onshow = function() { console.info('onshow') }
+    }
+
+    function makeNotification() {
+        let title = document.getElementById("title").value
+        let body = document.getElementById("body").value
+        console.log('making notification:', title)
+        sendNotification(title, body)
+    }
+
+    function requestPermission(callback) {
+        Notification.requestPermission().then(function (permission) {
+            document.Notification = permission
+            if (callback)
+                callback(permission)
+        })
+    }
+
+    function displayNotification() {
+        console.info('notifications are ' + document.Notification)
+
+        let state = document.getElementById('state')
+
+        if (document.Notification === 'denied') {
+            state.innerHTML = 'Notifications disabled'
+        } else if (document.Notification === 'granted') {
+            makeNotification()
+            state.innerHTML = 'notification created'
+        } else {
+            state.innerHTML = 'requesting permission...'
+            requestPermission(function (permission) {
+                console.info('notifications request: ' + permission)
+                if (permission === 'granted') {
+                    makeNotification()
+                    state.innerHTML = 'permission granted, notification created'
+                } else if (permission === 'denied')
+                    state.innerHTML = 'Notifications are disabled'
+            })
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.Notification = Notification.permission
+    })
+</script>
+</head>
+<body>
+    <form name="NotificationForm" id="notificationForm">
+        Title: <input type="text" id="title" placeholder="Notification title" value='sample title'><br>
+        Body: <input type="text" id="body" placeholder="Notification body" value='default body'><br>
+        <input type="button" value="Display Notification" onclick="displayNotification()"><br>
+        <input type="button" value="Reset Permission" onclick="resetPermission()">
+    </form>
+    <div id='state'></div>
+</body>
+</html>

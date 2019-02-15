@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,16 +37,49 @@
 **
 ****************************************************************************/
 
-#ifndef CLIENT_CERT_OVERRIDE_KEY_P_H
-#define CLIENT_CERT_OVERRIDE_KEY_P_H
+#ifndef URL_REQUEST_NOTIFIACTION_H
+#define URL_REQUEST_NOTIFIACTION_H
 
-#include "net/ssl/ssl_private_key.h"
+#include "content/public/browser/resource_request_info.h"
+#include "net/base/completion_once_callback.h"
+#include "qwebengineurlrequestinfo.h"
+#include <QPointer>
 
-#include <QByteArray>
+class GURL;
 
 namespace net {
-    class SSLPrivateKey;
-    scoped_refptr<SSLPrivateKey> WrapOpenSSLPrivateKey(const QByteArray &sslKeyInBytes);
-} // namespace net
+class URLRequest;
+}
 
+namespace QtWebEngineCore {
+
+class ProfileAdapter;
+class ProfileIoDataQt;
+
+// Notifies WebContentsAdapterClient of a new URLRequest.
+class URLRequestNotification {
+public:
+    URLRequestNotification(net::URLRequest *request,
+                           bool isMainFrameRequest,
+                           GURL *newUrl,
+                           QWebEngineUrlRequestInfo &&requestInfo,
+                           content::ResourceRequestInfo::WebContentsGetter webContentsGetter,
+                           net::CompletionOnceCallback callback,
+                           QPointer<ProfileAdapter> adapter);
+    ~URLRequestNotification() = default;
+    void cancel();
+    void notify();
+    void complete(int error);
+
+private:
+    net::URLRequest *m_request; //used only by io thread
+    bool m_isMainFrameRequest;
+    GURL *m_newUrl;
+    const QUrl m_originalUrl;
+    QWebEngineUrlRequestInfo m_requestInfo;
+    content::ResourceRequestInfo::WebContentsGetter m_webContentsGetter;
+    net::CompletionOnceCallback m_callback;
+    QPointer<ProfileAdapter> m_profileAdapter;
+};
+}
 #endif

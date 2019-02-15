@@ -46,6 +46,7 @@
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebengineview_p_p.h"
 #include "qwebenginecookiestore.h"
+#include "qwebenginenotification.h"
 
 #include <QQmlEngine>
 
@@ -148,6 +149,13 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
   This signal is emitted whenever downloading stops, because it finished successfully, was
   cancelled, or was interrupted (for example, because connectivity was lost).
   The \a download argument holds the state of the finished download instance.
+*/
+
+/*!
+    \fn QQuickWebEngineProfile::userNotification(QWebEngineNotification *notification)
+
+    This signal is emitted whenever there is a newly created user notification.
+    The \a notification argument holds the notification instance to query data and interact with.
 */
 
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(ProfileAdapter *profileAdapter)
@@ -285,6 +293,14 @@ void QQuickWebEngineProfilePrivate::useForGlobalCertificateVerificationChanged()
     Q_EMIT q->useForGlobalCertificateVerificationChanged();
 }
 
+void QQuickWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller)
+{
+    Q_Q(QQuickWebEngineProfile);
+    auto notification = new QWebEngineNotification(controller);
+    QQmlEngine::setObjectOwnership(notification, QQmlEngine::JavaScriptOwnership);
+    Q_EMIT q->userNotification(notification);
+}
+
 void QQuickWebEngineProfilePrivate::userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script)
 {
     Q_ASSERT(p && p->data);
@@ -362,6 +378,13 @@ void QQuickWebEngineProfilePrivate::userScripts_clear(QQmlListProperty<QQuickWeb
     This signal is emitted whenever downloading stops, because it finished successfully, was
     cancelled, or was interrupted (for example, because connectivity was lost).
     The \a download argument holds the state of the finished download instance.
+*/
+
+/*!
+    \qmlsignal WebEngineProfile::userNotification(WebEngineNotification notification)
+
+    This signal is emitted whenever there is a newly created user notification.
+    The \a notification argument holds the notification instance to query data and interact with.
 */
 
 /*!
@@ -922,19 +945,44 @@ void QQuickWebEngineProfile::clearHttpCache()
     d->profileAdapter()->clearHttpCache();
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
+/*!
+    Registers a request interceptor singleton \a interceptor to intercept URL requests.
+
+    The profile does not take ownership of the pointer.
+
+    \obsolete
+
+    Interceptors installed with this method will call
+    QWebEngineUrlRequestInterceptor::interceptRequest on the I/O thread. Therefore
+    the user has to provide thread-safe interaction with the other user classes.
+    Use setUrlRequestInterceptor instead.
+
+    \sa QWebEngineUrlRequestInterceptor
+
+*/
+void QQuickWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+{
+    Q_D(QQuickWebEngineProfile);
+    interceptor->setProperty("deprecated", true);
+    d->profileAdapter()->setRequestInterceptor(interceptor);
+    qWarning("Use of deprecated not tread-safe setter, use setUrlRequestInterceptor instead.");
+}
+#endif
 
 /*!
     Registers a request interceptor singleton \a interceptor to intercept URL requests.
 
     The profile does not take ownership of the pointer.
 
-    \sa QWebEngineUrlRequestInterceptor
+    \sa QWebEngineUrlRequestInfo QWebEngineUrlRequestInterceptor
 */
-void QQuickWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+void QQuickWebEngineProfile::setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     Q_D(QQuickWebEngineProfile);
     d->profileAdapter()->setRequestInterceptor(interceptor);
 }
+
 
 /*!
     Returns the custom URL scheme handler register for the URL scheme \a scheme.

@@ -27,6 +27,7 @@ deps = [
   "//components/web_cache/browser",
   "//components/web_cache/renderer",
   "//components/spellcheck:buildflags",
+  "//components/proxy_config",
   "//content/public/app:browser",
   "//content",
   "//media:media_buildflags",

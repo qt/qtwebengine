@@ -35,6 +35,7 @@
 #include <QtTest/QtTest>
 #include <QtWebEngine/QQuickWebEngineProfile>
 #include <QtWebEngine/QQuickWebEngineScript>
+#include <QtWebEngineCore/QWebEngineNotification>
 #include <QtWebEngineCore/QWebEngineQuotaRequest>
 #include <QtWebEngineCore/QWebEngineRegisterProtocolHandlerRequest>
 #include <private/qquickwebengineview_p.h>
@@ -82,6 +83,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineContextMenuRequest::staticMetaObject
     << &QWebEngineQuotaRequest::staticMetaObject
     << &QWebEngineRegisterProtocolHandlerRequest::staticMetaObject
+    << &QWebEngineNotification::staticMetaObject
     ;
 
 static QList<const char *> knownEnumNames = QList<const char *>();
@@ -286,6 +288,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.clearHttpCache() --> void"
     << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadItem*) --> void"
     << "QQuickWebEngineProfile.downloadRequested(QQuickWebEngineDownloadItem*) --> void"
+    << "QQuickWebEngineProfile.userNotification(QWebEngineNotification*) --> void"
     << "QQuickWebEngineProfile.httpAcceptLanguage --> QString"
     << "QQuickWebEngineProfile.httpAcceptLanguageChanged() --> void"
     << "QQuickWebEngineProfile.httpCacheMaximumSize --> int"
@@ -564,6 +567,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.NewViewInTab --> NewViewDestination"
     << "QQuickWebEngineView.NewViewInWindow --> NewViewDestination"
     << "QQuickWebEngineView.NoErrorDomain --> ErrorDomain"
+    << "QQuickWebEngineView.Notifications --> Feature"
     << "QQuickWebEngineView.NoWebAction --> WebAction"
     << "QQuickWebEngineView.NormalTerminationStatus --> RenderProcessTerminationStatus"
     << "QQuickWebEngineView.Note --> PrintedPageSizeId"
@@ -703,6 +707,20 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineRegisterProtocolHandlerRequest.origin --> QUrl"
     << "QWebEngineRegisterProtocolHandlerRequest.reject() --> void"
     << "QWebEngineRegisterProtocolHandlerRequest.scheme --> QString"
+    << "QWebEngineNotification.origin --> QUrl"
+    << "QWebEngineNotification.icon --> QIcon"
+    << "QWebEngineNotification.title --> QString"
+    << "QWebEngineNotification.message --> QString"
+    << "QWebEngineNotification.tag --> QString"
+    << "QWebEngineNotification.language --> QString"
+    << "QWebEngineNotification.direction --> Direction"
+    << "QWebEngineNotification.LeftToRight --> Direction"
+    << "QWebEngineNotification.RightToLeft --> Direction"
+    << "QWebEngineNotification.DirectionAuto --> Direction"
+    << "QWebEngineNotification.show() --> void"
+    << "QWebEngineNotification.click() --> void"
+    << "QWebEngineNotification.close() --> void"
+    << "QWebEngineNotification.closed() --> void"
     ;
 
 static bool isCheckedEnum(const QByteArray &typeName)

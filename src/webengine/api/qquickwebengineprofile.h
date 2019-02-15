@@ -55,6 +55,7 @@ class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineScript;
 class QQuickWebEngineSettings;
 class QWebEngineCookieStore;
+class QWebEngineNotification;
 class QWebEngineUrlRequestInterceptor;
 class QWebEngineUrlSchemeHandler;
 
@@ -126,7 +127,10 @@ public:
 
     QWebEngineCookieStore *cookieStore() const;
 
+#if QT_DEPRECATED_SINCE(5, 13)
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
+#endif
+    void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     const QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &) const;
     void installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *);
@@ -168,6 +172,8 @@ Q_SIGNALS:
 
     void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);
+
+    void userNotification(QWebEngineNotification *notification);
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineProfile)

@@ -47,6 +47,7 @@
 
 namespace base {
 class RunLoop;
+class CommandLine;
 }
 
 namespace content {
@@ -95,6 +96,7 @@ public:
     void addProfileAdapter(ProfileAdapter *profileAdapter);
     void removeProfileAdapter(ProfileAdapter *profileAdapter);
     void destroy();
+    static base::CommandLine* commandLine();
 
     static gpu::SyncPointManager *syncPointManager();
 

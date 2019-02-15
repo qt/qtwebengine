@@ -69,8 +69,9 @@ QT_FORWARD_DECLARE_CLASS(QObject)
 
 namespace QtWebEngineCore {
 
-class ProfileAdapterClient;
+class UserNotificationController;
 class DownloadManagerDelegateQt;
+class ProfileAdapterClient;
 class ProfileQt;
 class UserResourceControllerHost;
 class VisitedLinksManagerQt;
@@ -153,10 +154,11 @@ public:
     enum PermissionType {
         UnsupportedPermission = 0,
         GeolocationPermission = 1,
-// Reserved:
-//        NotificationPermission = 2,
+        NotificationPermission = 2,
         AudioCapturePermission = 3,
         VideoCapturePermission = 4,
+        ClipboardRead = 5,
+        ClipboardWrite = 6,
     };
 
     HttpCacheType httpCacheType() const;
@@ -198,6 +200,11 @@ public:
     void removePageRequestInterceptor();
     bool hasPageRequestInterceptor() const { return m_pageRequestInterceptors > 0; }
 
+    QHash<QByteArray, QWeakPointer<UserNotificationController>> &ephemeralNotifications()
+    {   return m_ephemeralNotifications; }
+    QHash<QByteArray, QSharedPointer<UserNotificationController>> &persistentNotifications()
+    {   return m_persistentNotifications; }
+
 private:
     void updateCustomUrlSchemeHandlers();
     void resetVisitedLinksManager();
@@ -222,6 +229,9 @@ private:
     PersistentCookiesPolicy m_persistentCookiesPolicy;
     VisitedLinksPolicy m_visitedLinksPolicy;
     QHash<QByteArray, QPointer<QWebEngineUrlSchemeHandler>> m_customUrlSchemeHandlers;
+    QHash<QByteArray, QWeakPointer<UserNotificationController>> m_ephemeralNotifications;
+    QHash<QByteArray, QSharedPointer<UserNotificationController>> m_persistentNotifications;
+
     QList<ProfileAdapterClient*> m_clients;
     int m_httpCacheMaxSize;
     int m_pageRequestInterceptors;

@@ -63,7 +63,7 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
     setFocus(true);
     setActiveFocusOnTab(true);
 
-#ifdef Q_OS_OSX
+#if defined(Q_OS_MACOS) && !defined(QT_NO_OPENGL)
     // Check that the default QSurfaceFormat OpenGL profile is compatible with the global OpenGL
     // shared context profile, otherwise this could lead to a nasty crash.
     QOpenGLContext *globalSharedContext = QOpenGLContext::globalShareContext();
@@ -99,19 +99,9 @@ void RenderWidgetHostViewQtDelegateQuick::initAsPopup(const QRect &r)
     setVisible(true);
 }
 
-QRectF RenderWidgetHostViewQtDelegateQuick::screenRect() const
+QRectF RenderWidgetHostViewQtDelegateQuick::viewGeometry() const
 {
-    QPointF pos = mapToScene(QPointF(0,0));
-    return QRectF(pos.x(), pos.y(), width(), height());
-}
-
-QRectF RenderWidgetHostViewQtDelegateQuick::contentsRect() const
-{
-    QPointF scenePoint = mapToScene(QPointF(0, 0));
-    QPointF screenPos;
-    if (window())
-        screenPos = window()->mapToGlobal(scenePoint.toPoint());
-    return QRectF(screenPos.x(), screenPos.y(), width(), height());
+    return QRectF(mapToGlobal(QPointF(0, 0)), size());
 }
 
 void RenderWidgetHostViewQtDelegateQuick::setKeyboardFocus()
@@ -322,16 +312,7 @@ void RenderWidgetHostViewQtDelegateQuick::inputMethodEvent(QInputMethodEvent *ev
 void RenderWidgetHostViewQtDelegateQuick::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
-
-    if (window()) {
-        const QPointF globalPos = QQuickItem::mapToGlobal(position());
-        if (globalPos != m_lastGlobalPos) {
-            m_lastGlobalPos = globalPos;
-            m_client->windowBoundsChanged();
-        }
-    }
-
-    m_client->notifyResize();
+    m_client->visualPropertiesChanged();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const ItemChangeData &value)
@@ -347,8 +328,7 @@ void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const It
             if (!m_isPopup)
                 m_windowConnections.append(connect(value.window, SIGNAL(closing(QQuickCloseEvent *)), SLOT(onHide())));
         }
-
-        m_client->windowChanged();
+        m_client->visualPropertiesChanged();
     } else if (change == QQuickItem::ItemVisibleHasChanged) {
         if (!m_isPopup && !value.boolValue)
             onHide();
@@ -362,9 +342,7 @@ QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, 
 
 void RenderWidgetHostViewQtDelegateQuick::onWindowPosChanged()
 {
-    if (window())
-        m_lastGlobalPos = QQuickItem::mapToGlobal(position());
-    m_client->windowBoundsChanged();
+    m_client->visualPropertiesChanged();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::onHide()

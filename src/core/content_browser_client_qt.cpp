@@ -76,6 +76,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "printing/buildflags/buildflags.h"
 #include "net/ssl/client_cert_identity.h"
+#include "net/ssl/client_cert_store.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -91,7 +92,6 @@
 
 #include "qtwebengine/grit/qt_webengine_resources.h"
 
-#include "client_cert_override_p.h"
 #include "profile_adapter.h"
 #include "browser_main_parts_qt.h"
 #include "browser_message_filter_qt.h"
@@ -103,10 +103,12 @@
 #include "media_capture_devices_dispatcher.h"
 #include "net/network_delegate_qt.h"
 #include "net/url_request_context_getter_qt.h"
+#include "platform_notification_service_qt.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "printing/printing_message_filter_qt.h"
 #endif
 #include "profile_qt.h"
+#include "profile_io_data_qt.h"
 #include "quota_permission_context_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "service/service_qt.h"
@@ -161,7 +163,7 @@ public:
     {
         QString platform = qApp->platformName().toLower();
         QPlatformNativeInterface *pni = QGuiApplication::platformNativeInterface();
-        if (platform == QLatin1String("xcb")) {
+        if (platform == QLatin1String("xcb") || platform == QLatin1String("offscreen")) {
             if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2)
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
             else
@@ -400,7 +402,7 @@ std::unique_ptr<net::ClientCertStore> ContentBrowserClientQt::CreateClientCertSt
     if (!resource_context)
         return nullptr;
 
-    return std::unique_ptr<net::ClientCertStore>(new net::ClientCertOverrideStore());
+    return ProfileIODataQt::FromResourceContext(resource_context)->CreateClientCertStore();
 }
 
 std::string ContentBrowserClientQt::GetApplicationLocale()
@@ -454,13 +456,20 @@ void ContentBrowserClientQt::GetAdditionalMappedFilesForChildProcess(const base:
 void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host)
 {
     browser_host->GetPpapiHost()->AddHostFactoryFilter(
-                base::WrapUnique(new QtWebEngineCore::PepperHostFactoryQt(browser_host)));
+                std::make_unique<QtWebEngineCore::PepperHostFactoryQt>(browser_host));
 }
 #endif
 
 content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDelegate()
 {
     return new DevToolsManagerDelegateQt;
+}
+
+content::PlatformNotificationService *ContentBrowserClientQt::GetPlatformNotificationService()
+{
+    if (!m_platformNotificationService)
+        m_platformNotificationService = std::make_unique<PlatformNotificationServiceQt>();
+    return m_platformNotificationService.get();
 }
 
 // This is a really complicated way of doing absolutely nothing, but Mojo demands it:
@@ -760,13 +769,19 @@ scoped_refptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegat
     return loginDelegate;
 }
 
+bool ContentBrowserClientQt::ShouldIsolateErrorPage(bool in_main_frame)
+{
+    Q_UNUSED(in_main_frame);
+    return false;
+}
+
 bool ContentBrowserClientQt::ShouldUseProcessPerSite(content::BrowserContext* browser_context, const GURL& effective_url)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    return true;
-#else
-    return ContentBrowserClient::ShouldUseProcessPerSite(browser_context, effective_url);
+     if (effective_url.SchemeIs(extensions::kExtensionScheme))
+        return true;
 #endif
+    return ContentBrowserClient::ShouldUseProcessPerSite(browser_context, effective_url);
 }
 
 } // namespace QtWebEngineCore

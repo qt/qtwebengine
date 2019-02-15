@@ -233,15 +233,9 @@ void RenderWidgetHostViewQtDelegateWidget::closeEvent(QCloseEvent *event)
         m_client->closePopup();
 }
 
-QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
+QRectF RenderWidgetHostViewQtDelegateWidget::viewGeometry() const
 {
-    return QRectF(x(), y(), width(), height());
-}
-
-QRectF RenderWidgetHostViewQtDelegateWidget::contentsRect() const
-{
-    QPointF pos = mapToGlobal(QPoint(0, 0));
-    return QRectF(pos.x(), pos.y(), width(), height());
+    return QRectF(mapToGlobal(pos()), size());
 }
 
 void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
@@ -283,6 +277,7 @@ void RenderWidgetHostViewQtDelegateWidget::show()
 void RenderWidgetHostViewQtDelegateWidget::hide()
 {
     m_rootItem->setVisible(false);
+    QQuickWidget::hide();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
@@ -378,14 +373,7 @@ QVariant RenderWidgetHostViewQtDelegateWidget::inputMethodQuery(Qt::InputMethodQ
 void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
 {
     QQuickWidget::resizeEvent(resizeEvent);
-
-    const QPoint globalPos = mapToGlobal(pos());
-    if (globalPos != m_lastGlobalPos) {
-        m_lastGlobalPos = globalPos;
-        m_client->windowBoundsChanged();
-    }
-
-    m_client->notifyResize();
+    m_client->visualPropertiesChanged();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::showEvent(QShowEvent *event)
@@ -401,7 +389,7 @@ void RenderWidgetHostViewQtDelegateWidget::showEvent(QShowEvent *event)
         m_windowConnections.append(connect(w, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
         m_windowConnections.append(connect(w, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
     }
-    m_client->windowChanged();
+    m_client->visualPropertiesChanged();
     m_client->notifyShown();
 }
 
@@ -497,8 +485,7 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 
 void RenderWidgetHostViewQtDelegateWidget::onWindowPosChanged()
 {
-    m_lastGlobalPos = mapToGlobal(pos());
-    m_client->windowBoundsChanged();
+    m_client->visualPropertiesChanged();
 }
 
 } // namespace QtWebEngineCore

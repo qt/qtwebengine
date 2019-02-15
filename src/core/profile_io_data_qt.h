@@ -51,6 +51,7 @@
 #include <QtCore/QMutex>
 
 namespace net {
+class ClientCertStore;
 class DhcpPacFileFetcherFactory;
 class HttpAuthPreferences;
 class HttpNetworkSession;
@@ -80,6 +81,7 @@ public:
     ProfileIODataQt(ProfileQt *profile); // runs on ui thread
     virtual ~ProfileIODataQt();
 
+    QPointer<ProfileAdapter> profileAdapter();
     content::ResourceContext *resourceContext();
     net::URLRequestContext *urlRequestContext();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -105,6 +107,7 @@ public:
     // Used in NetworkDelegateQt::OnBeforeURLRequest.
     QWebEngineUrlRequestInterceptor *acquireInterceptor();
     void releaseInterceptor();
+    QWebEngineUrlRequestInterceptor *requestInterceptor();
 
     void setRequestContextData(content::ProtocolHandlerMap *protocolHandlers,
                                content::URLRequestInterceptorScopedVector request_interceptors);
@@ -115,9 +118,13 @@ public:
     void updateHttpCache(); // runs on ui thread
     void updateJobFactory(); // runs on ui thread
     void updateRequestInterceptor(); // runs on ui thread
+    void requestStorageGeneration(); //runs on ui thread
+    void createProxyConfig(); //runs on ui thread
     void updateUsedForGlobalCertificateVerification(); // runs on ui thread
     bool hasPageInterceptors();
 
+    std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
+    static ProfileIODataQt *FromResourceContext(content::ResourceContext *resource_context);
 private:
     ProfileQt *m_profile;
     std::unique_ptr<net::URLRequestContextStorage> m_storage;
@@ -152,10 +159,7 @@ private:
     int m_httpCacheMaxSize = 0;
     bool m_initialized = false;
     bool m_updateAllStorage = false;
-    bool m_updateCookieStore = false;
-    bool m_updateHttpCache = false;
     bool m_updateJobFactory = false;
-    bool m_updateUserAgent = false;
     bool m_ignoreCertificateErrors = false;
     bool m_useForGlobalCertificateVerification = false;
     bool m_hasPageInterceptors = false;

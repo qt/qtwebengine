@@ -42,14 +42,19 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
+#include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qsslcertificate.h>
 #include <QtNetwork/qsslkey.h>
+
+namespace QtWebEngineCore {
+class ClientCertOverrideStore;
+struct ClientCertificateStoreData;
+}
 
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(ssl)
 
-struct QWebEngineClientCertificateStoreData;
 
 class QWEBENGINECORE_EXPORT QWebEngineClientCertificateStore {
 
@@ -66,12 +71,13 @@ public:
     void clear();
 
 private:
+    friend class QtWebEngineCore::ClientCertOverrideStore;
     static QWebEngineClientCertificateStore *m_instance;
     Q_DISABLE_COPY(QWebEngineClientCertificateStore)
 
     QWebEngineClientCertificateStore();
     ~QWebEngineClientCertificateStore();
-    QWebEngineClientCertificateStoreData *d_ptr;
+    QScopedPointer<QtWebEngineCore::ClientCertificateStoreData> d_ptr;
 };
 
 #endif // QT_CONFIG(ssl)

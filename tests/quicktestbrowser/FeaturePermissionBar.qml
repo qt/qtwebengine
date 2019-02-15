@@ -40,10 +40,24 @@ Rectangle {
     visible: false
     height: acceptButton.height + 4
 
-    onRequestedFeatureChanged: {
-        message.text = securityOrigin + " wants to access " + message.textForFeature(requestedFeature);
+
+    function textForFeature(feature) {
+        switch (feature) {
+            case WebEngineView.Geolocation:              return 'Allow %1 to access your location information?'
+            case WebEngineView.MediaAudioCapture:        return 'Allow %1 to access your microphone?'
+            case WebEngineView.MediaVideoCapture:        return 'Allow %1 to access your webcam?'
+            case WebEngineView.MediaAudioVideoCapture:   return 'Allow %1 to access your microphone and webcam?'
+            case WebEngineView.DesktopVideoCapture:      return 'Allow %1 to capture video of your desktop?'
+            case WebEngineView.DesktopAudioVideoCapture: return 'Allow %1 to capture audio and video of your desktop?'
+            case WebEngineView.Notifications:            return 'Allow %1 to show notification on your desktop?'
+            default: break
+        }
+        return 'Grant permission for %1 to unknown or unsupported feature [' + feature + ']?'
     }
 
+    onRequestedFeatureChanged: {
+        message.text = textForFeature(requestedFeature).arg(securityOrigin);
+    }
 
     RowLayout {
         anchors {
@@ -54,17 +68,6 @@ Rectangle {
         Label {
             id: message
             Layout.fillWidth: true
-
-            function textForFeature(feature) {
-                if (feature === WebEngineView.MediaAudioCapture)
-                    return "your microphone"
-                if (feature === WebEngineView.MediaVideoCapture)
-                    return "your camera"
-                if (feature === WebEngineView.MediaAudioVideoCapture)
-                    return "your camera and microphone"
-                if (feature === WebEngineView.Geolocation)
-                    return "your position"
-            }
         }
 
         Button {

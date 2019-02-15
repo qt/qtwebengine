@@ -39,7 +39,9 @@
 
 #include "qwebengineurlscheme.h"
 
-#include <url/url_util_qt.h>
+#include "url/url_util_qt.h"
+
+#include <QtDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -58,6 +60,8 @@ ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::NoAccessAllowed, url::CustomScheme::NoAc
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::ServiceWorkersAllowed, url::CustomScheme::ServiceWorkersAllowed)
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::ViewSourceAllowed, url::CustomScheme::ViewSourceAllowed)
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::ContentSecurityPolicyIgnored, url::CustomScheme::ContentSecurityPolicyIgnored)
+
+static bool g_schemesLocked = false;
 
 class QWebEngineUrlSchemePrivate : public QSharedData
                                  , public url::CustomScheme
@@ -357,6 +361,28 @@ void QWebEngineUrlScheme::setFlags(Flags newValue)
 */
 void QWebEngineUrlScheme::registerScheme(const QWebEngineUrlScheme &scheme)
 {
+    if (scheme.d->name.empty()) {
+        qWarning() << "QWebEngineUrlScheme::registerScheme: Scheme name cannot be empty";
+        return;
+    }
+
+    bool needsPort = scheme.d->has_port_component();
+    bool hasPort = scheme.d->default_port != url::PORT_UNSPECIFIED;
+    if (needsPort && !hasPort) {
+        qWarning() << "QWebEngineUrlScheme::registerScheme: Scheme" << scheme.name() << "needs a default port";
+        return;
+    }
+
+    if (url::CustomScheme::FindScheme(scheme.d->name)) {
+        qWarning() << "QWebEngineUrlScheme::registerScheme: Scheme" << scheme.name() << "already registered";
+        return;
+    }
+
+    if (g_schemesLocked) {
+        qWarning() << "QWebEngineUrlScheme::registerScheme: Too late to register scheme" << scheme.name();
+        return;
+    }
+
     url::CustomScheme::AddScheme(*scheme.d);
 }
 
@@ -372,6 +398,11 @@ QWebEngineUrlScheme QWebEngineUrlScheme::schemeByName(const QByteArray &name)
     if (const url::CustomScheme *cs = url::CustomScheme::FindScheme(namePiece))
         return QWebEngineUrlScheme(new QWebEngineUrlSchemePrivate(*cs));
     return QWebEngineUrlScheme();
+}
+
+void QWebEngineUrlScheme::lockSchemes()
+{
+    g_schemesLocked = true;
 }
 
 QT_END_NAMESPACE

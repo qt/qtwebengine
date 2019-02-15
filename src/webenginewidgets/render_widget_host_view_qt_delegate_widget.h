@@ -66,8 +66,7 @@ public:
     ~RenderWidgetHostViewQtDelegateWidget();
 
     void initAsPopup(const QRect&) override;
-    QRectF screenRect() const override;
-    QRectF contentsRect() const override;
+    QRectF viewGeometry() const override;
     void setKeyboardFocus() override;
     bool hasKeyboardFocus() override;
     void lockMouse() override;
@@ -111,7 +110,6 @@ private:
     QScopedPointer<QQuickItem> m_rootItem;
     bool m_isPopup;
     QColor m_clearColor;
-    QPoint m_lastGlobalPos;
     QList<QMetaObject::Connection> m_windowConnections;
     QWebEnginePage *m_page = nullptr;
     QMetaObject::Connection m_parentDestroyedConnection;

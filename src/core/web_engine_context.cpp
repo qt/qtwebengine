@@ -361,48 +361,39 @@ WebEngineContext::WebEngineContext()
     base::TaskScheduler::Create("Browser");
     m_contentRunner.reset(content::ContentMainRunner::Create());
     m_browserRunner.reset(content::BrowserMainRunner::Create());
+
 #ifdef Q_OS_LINUX
     // Call qputenv before BrowserMainRunnerImpl::Initialize is called.
     // http://crbug.com/245466
     qputenv("force_s3tc_enable", "true");
 #endif
 
-    QWebEngineUrlScheme qrcScheme(QByteArrayLiteral("qrc"));
-    qrcScheme.setFlags(QWebEngineUrlScheme::SecureScheme
-                       | QWebEngineUrlScheme::LocalAccessAllowed
-                       | QWebEngineUrlScheme::ViewSourceAllowed);
-    QWebEngineUrlScheme::registerScheme(qrcScheme);
+    if (QWebEngineUrlScheme::schemeByName(QByteArrayLiteral("qrc")) == QWebEngineUrlScheme()) {
+        // User might have registered "qrc" already with different options.
+        QWebEngineUrlScheme qrcScheme(QByteArrayLiteral("qrc"));
+        qrcScheme.setFlags(QWebEngineUrlScheme::SecureScheme
+                           | QWebEngineUrlScheme::LocalAccessAllowed
+                           | QWebEngineUrlScheme::ViewSourceAllowed);
+        QWebEngineUrlScheme::registerScheme(qrcScheme);
+    }
+
+    QWebEngineUrlScheme::lockSchemes();
 
     // Allow us to inject javascript like any webview toolkit.
     content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
 
-    base::CommandLine::CreateEmpty();
-    base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
     QStringList appArgs = QCoreApplication::arguments();
-    if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
-        appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
-        appArgs.append(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv)).split(' '));
-    }
 
-    bool enableWebGLSoftwareRendering =
-            appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
+    bool enableWebGLSoftwareRendering = appArgs.contains(QStringLiteral("--enable-webgl-software-rendering"));
 
     bool useEmbeddedSwitches = false;
 #if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
-    useEmbeddedSwitches = !appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
+    useEmbeddedSwitches = !appArgs.contains(QStringLiteral("--disable-embedded-switches"));
 #else
-    useEmbeddedSwitches = appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
+    useEmbeddedSwitches  = appArgs.contains(QStringLiteral("--enable-embedded-switches"));
 #endif
-    base::CommandLine::StringVector argv;
-    argv.resize(appArgs.size());
-#if defined(Q_OS_WIN)
-    for (int i = 0; i < appArgs.size(); ++i)
-        argv[i] = toString16(appArgs[i]);
-#else
-    for (int i = 0; i < appArgs.size(); ++i)
-        argv[i] = appArgs[i].toStdString();
-#endif
-    parsedCommandLine->InitFromArgv(argv);
+
+    base::CommandLine* parsedCommandLine = commandLine();
 
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
 
@@ -663,6 +654,36 @@ gpu::SyncPointManager *WebEngineContext::syncPointManager()
     if (!s_syncPointManager)
         s_syncPointManager.store(new gpu::SyncPointManager());
     return s_syncPointManager.load();
+}
+
+base::CommandLine* WebEngineContext::commandLine() {
+    if (base::CommandLine::CreateEmpty()) {
+        base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
+        QStringList appArgs = QCoreApplication::arguments();
+        if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
+            appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
+            appArgs.append(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv)).split(' '));
+        }
+#ifdef Q_OS_WIN
+        appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));
+#endif
+        appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
+        appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
+
+        base::CommandLine::StringVector argv;
+        argv.resize(appArgs.size());
+#if defined(Q_OS_WIN)
+        for (int i = 0; i < appArgs.size(); ++i)
+            argv[i] = toString16(appArgs[i]);
+#else
+        for (int i = 0; i < appArgs.size(); ++i)
+            argv[i] = appArgs[i].toStdString();
+#endif
+        parsedCommandLine->InitFromArgv(argv);
+        return parsedCommandLine;
+    } else {
+        return base::CommandLine::ForCurrentProcess();
+    }
 }
 
 } // namespace

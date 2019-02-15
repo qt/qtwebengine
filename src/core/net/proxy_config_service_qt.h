@@ -43,8 +43,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 
+#include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_config_with_annotation.h"
+#include "components/proxy_config/proxy_prefs.h"
 
 #include <QNetworkProxy>
 
@@ -55,7 +57,9 @@ public:
 
     static net::ProxyServer fromQNetworkProxy(const QNetworkProxy &);
 
-    explicit ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService);
+    explicit ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService,
+                                  const net::ProxyConfigWithAnnotation& initialConfig,
+                                  ProxyPrefs::ConfigState initialState);
     ~ProxyConfigServiceQt() override;
 
     // ProxyConfigService implementation:
@@ -85,6 +89,10 @@ private:
 
     // Indicates whether the base service registration is done.
     bool m_registeredObserver;
+
+    // Configuration as defined by prefs.
+    net::ProxyConfigWithAnnotation m_prefConfig;
+    ProxyPrefs::ConfigState m_perfState;
 
     DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceQt);
 };

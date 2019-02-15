@@ -46,12 +46,15 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
 
 class QObject;
 class QUrl;
 class QWebEngineCookieStore;
 class QWebEngineDownloadItem;
+class QWebEngineNotification;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
 class QWebEngineProfilePrivate;
@@ -106,7 +109,10 @@ public:
     void setHttpCacheMaximumSize(int maxSize);
 
     QWebEngineCookieStore* cookieStore();
+#if QT_DEPRECATED_SINCE(5, 13)
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
+#endif
+    void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     void clearAllVisitedLinks();
     void clearVisitedLinks(const QList<QUrl> &urls);
@@ -133,6 +139,9 @@ public:
 
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
+
+    void setNotificationPresenter(const std::function<void(const QWebEngineNotification &)> &notificationPresenter);
+    void setNotificationPresenter(std::function<void(const QWebEngineNotification &)> &&notificationPresenter);
 
     static QWebEngineProfile *defaultProfile();
 

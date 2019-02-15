@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,18 +37,33 @@
 **
 ****************************************************************************/
 
-#ifndef CHROMIUM_OVERRIDES_H
-#define CHROMIUM_OVERRIDES_H
+#ifndef CLIENT_CERT_OVERRIDE_P_H
+#define CLIENT_CERT_OVERRIDE_P_H
 
-#include "content/public/common/screen_info.h"
-#include <QtGlobal>
+#include "net/ssl/client_cert_store.h"
+#include "base/callback_forward.h"
+#include "net/cert/x509_certificate.h"
 
-QT_BEGIN_NAMESPACE
-class QWindow;
-QT_END_NAMESPACE
+namespace net {
+class SSLCertRequestInfo;
+} // namespace net
 
 namespace QtWebEngineCore {
-void GetScreenInfoFromNativeWindow(QWindow* window, content::ScreenInfo* results);
-}
+
+class ClientCertOverrideStore : public net::ClientCertStore
+{
+public:
+    ClientCertOverrideStore();
+    virtual ~ClientCertOverrideStore() override;
+    void GetClientCerts(const net::SSLCertRequestInfo &cert_request_info,
+                        const ClientCertListCallback &callback) override;
+private:
+    static std::unique_ptr<net::ClientCertStore> createNativeStore();
+    std::unique_ptr<net::ClientCertStore> m_nativeStore;
+};
+
+} // QtWebEngineCore
 
 #endif
+
+

@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-#include "chromium_overrides.h"
-
 #include "ozone/gl_context_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "web_contents_view_qt.h"
@@ -72,27 +70,6 @@
 #include "net/ssl/openssl_client_key_store.h"
 #endif
 
-namespace QtWebEngineCore {
-void GetScreenInfoFromNativeWindow(QWindow* window, content::ScreenInfo* results)
-{
-    QScreen* screen = window->screen();
-    if (!screen)
-        return;
-    content::ScreenInfo r;
-    r.device_scale_factor = screen->devicePixelRatio();
-    r.depth_per_component = 8;
-    r.depth = screen->depth();
-    r.is_monochrome = (r.depth == 1);
-
-    QRect screenGeometry = screen->geometry();
-    r.rect = gfx::Rect(screenGeometry.x(), screenGeometry.y(), screenGeometry.width(), screenGeometry.height());
-    QRect available = screen->availableGeometry();
-    r.available_rect = gfx::Rect(available.x(), available.y(), available.width(), available.height());
-    *results = r;
-}
-
-} // namespace QtWebEngineCore
-
 void *GetQtXDisplay()
 {
     return GLContextHelper::getXDisplay();
@@ -111,13 +88,6 @@ WebContentsView* CreateWebContentsView(WebContentsImpl *web_contents,
     QtWebEngineCore::WebContentsViewQt* rv = new QtWebEngineCore::WebContentsViewQt(web_contents);
     *render_view_host_delegate_view = rv;
     return rv;
-}
-
-// static
-void WebContentsView::GetDefaultScreenInfo(content::ScreenInfo* results)
-{
-    QWindow dummy;
-    QtWebEngineCore::GetScreenInfoFromNativeWindow(&dummy, results);
 }
 
 #if defined(Q_OS_MACOS)

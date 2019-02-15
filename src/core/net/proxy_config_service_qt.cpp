@@ -47,6 +47,7 @@
 
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 
 using content::BrowserThread;
 
@@ -68,10 +69,13 @@ net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qt
     }
 }
 
-ProxyConfigServiceQt::ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService)
+ProxyConfigServiceQt::ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService,
+                                           const net::ProxyConfigWithAnnotation& initialConfig, ProxyPrefs::ConfigState initialState)
     : m_baseService(baseService.release()),
       m_usesSystemConfiguration(false),
-      m_registeredObserver(false)
+      m_registeredObserver(false),
+      m_prefConfig(initialConfig),
+      m_perfState(initialState)
 {
 }
 
@@ -100,8 +104,10 @@ net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxy
         ConfigAvailability systemAvailability = net::ProxyConfigService::CONFIG_UNSET;
         if (m_baseService.get())
             systemAvailability = m_baseService->GetLatestProxyConfig(&systemConfig);
-        *config = systemConfig;
-        // make sure to get updates via OnProxyConfigChanged
+        ProxyPrefs::ConfigState configState;
+        systemAvailability = PrefProxyConfigTrackerImpl::GetEffectiveProxyConfig(
+            m_perfState, m_prefConfig, systemAvailability, systemConfig,
+            false, &configState, config);
         RegisterObserver();
         return systemAvailability;
     }

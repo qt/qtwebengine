@@ -320,6 +320,12 @@ void QQuickWebEngineViewPrivate::runGeolocationPermissionRequest(const QUrl &url
     Q_EMIT q->featurePermissionRequested(url, QQuickWebEngineView::Geolocation);
 }
 
+void QQuickWebEngineViewPrivate::runUserNotificationPermissionRequest(const QUrl &url)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->featurePermissionRequested(url, QQuickWebEngineView::Notifications);
+}
+
 void QQuickWebEngineViewPrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
 {
     Q_Q(QQuickWebEngineView);
@@ -1549,6 +1555,9 @@ void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQu
             WebContentsAdapterClient::MediaRequestFlags(
                 WebContentsAdapterClient::MediaDesktopAudioCapture |
                 WebContentsAdapterClient::MediaDesktopVideoCapture));
+        break;
+    case Notifications:
+        d_ptr->adapter->runUserNotificationRequestCallback(securityOrigin, granted);
         break;
     default:
         Q_UNREACHABLE();

@@ -858,6 +858,8 @@
             (Added in Qt 5.10)
     \value  DesktopAudioVideoCapture
             Both audio and video output capture. (Added in Qt 5.10)
+    \value  WebEnginView.Notifications
+            Web notifications for the end-user.
 
     \sa featurePermissionRequested(), grantFeaturePermission()
 */

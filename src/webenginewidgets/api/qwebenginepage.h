@@ -77,8 +77,6 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString selectedText READ selectedText)
     Q_PROPERTY(bool hasSelection READ hasSelection)
-
-    // Ex-QWebFrame properties
     Q_PROPERTY(QUrl requestedUrl READ requestedUrl)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
     Q_PROPERTY(QString title READ title)
@@ -187,9 +185,7 @@ public:
     Q_ENUM(NavigationType)
 
     enum Feature {
-#ifndef Q_QDOC
         Notifications = 0,
-#endif
         Geolocation = 1,
         MediaAudioCapture = 2,
         MediaVideoCapture,
@@ -306,7 +302,7 @@ public:
     void setDevToolsPage(QWebEnginePage *page);
     QWebEnginePage *devToolsPage() const;
 
-    void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
+    void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     const QWebEngineContextMenuData &contextMenuData() const;
 

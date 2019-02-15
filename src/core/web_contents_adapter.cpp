@@ -644,12 +644,11 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
                                            "HTTP-POST data can only be sent over HTTP(S) protocol"));
             return;
         }
+        params.post_data = network::ResourceRequestBody::CreateFromBytes(
+                    (const char*)request.postData().constData(),
+                    request.postData().length());
         break;
     }
-
-    params.post_data = network::ResourceRequestBody::CreateFromBytes(
-                (const char*)request.postData().constData(),
-                request.postData().length());
 
     // convert the custom headers into the format that chromium expects
     QVector<QByteArray> headers = request.headers();
@@ -1269,6 +1268,12 @@ void WebContentsAdapter::runGeolocationRequestCallback(const QUrl &securityOrigi
 {
     CHECK_INITIALIZED();
     m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::GeolocationPermission, allowed);
+}
+
+void WebContentsAdapter::runUserNotificationRequestCallback(const QUrl &securityOrigin, bool allowed)
+{
+    CHECK_INITIALIZED();
+    m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::NotificationPermission, allowed);
 }
 
 void WebContentsAdapter::grantMouseLockPermission(bool granted)

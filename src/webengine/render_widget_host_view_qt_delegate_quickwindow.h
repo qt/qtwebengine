@@ -56,8 +56,7 @@ public:
     ~RenderWidgetHostViewQtDelegateQuickWindow();
 
     void initAsPopup(const QRect&) override;
-    QRectF screenRect() const override;
-    QRectF contentsRect() const override;
+    QRectF viewGeometry() const override;
     void setKeyboardFocus() override {}
     bool hasKeyboardFocus() override { return false; }
     void lockMouse() override {}

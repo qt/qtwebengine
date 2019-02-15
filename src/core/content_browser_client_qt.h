@@ -108,6 +108,7 @@ public:
                                          std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
     std::unique_ptr<net::ClientCertStore> CreateClientCertStore(content::ResourceContext *resource_context) override;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() override;
+    content::PlatformNotificationService *GetPlatformNotificationService() override;
 
     std::string GetApplicationLocale() override;
     std::string GetAcceptLangs(content::BrowserContext* context) override;
@@ -175,6 +176,7 @@ public:
 #if QT_CONFIG(webengine_geolocation)
     std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider() override;
 #endif
+    bool ShouldIsolateErrorPage(bool in_main_frame) override;
     bool ShouldUseProcessPerSite(content::BrowserContext* browser_context, const GURL& effective_url) override;
 
 #if defined(Q_OS_LINUX)
@@ -209,6 +211,7 @@ private:
 
     BrowserMainPartsQt* m_browserMainParts;
     std::unique_ptr<content::ResourceDispatcherHostDelegate> m_resourceDispatcherHostDelegate;
+    std::unique_ptr<content::PlatformNotificationService> m_platformNotificationService;
     scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
     std::unique_ptr<service_manager::BinderRegistry> m_frameInterfaces;
     std::unique_ptr<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>> m_frameInterfacesParameterized;

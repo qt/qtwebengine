@@ -46,6 +46,7 @@
 #include <QTcpSocket>
 #include <QStyle>
 #include <QtWidgets/qaction.h>
+#include <QWebEngineProfile>
 #include <QtCore/qregularexpression.h>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
@@ -194,6 +195,7 @@ private Q_SLOTS:
     void jsKeyboardEvent();
     void deletePage();
     void closeOpenerTab();
+    void switchPage();
 };
 
 // This will be called before the first test function is executed.
@@ -3172,6 +3174,27 @@ void tst_QWebEngineView::closeOpenerTab()
     QVERIFY(newView->focusProxy()->isVisible());
     delete testView;
     QVERIFY(newView->focusProxy()->isVisible());
+}
+
+void tst_QWebEngineView::switchPage()
+{
+      QWebEngineProfile profile;
+      QWebEnginePage page1(&profile);
+      QWebEnginePage page2(&profile);
+      QSignalSpy loadFinishedSpy1(&page1, SIGNAL(loadFinished(bool)));
+      QSignalSpy loadFinishedSpy2(&page2, SIGNAL(loadFinished(bool)));
+      page1.setHtml("<html><body bgcolor=\"#000000\"></body></html>");
+      page2.setHtml("<html><body bgcolor=\"#ffffff\"></body></html>");
+      QTRY_VERIFY(loadFinishedSpy1.count() && loadFinishedSpy2.count());
+      QWebEngineView webView;
+      webView.resize(300,300);
+      webView.show();
+      webView.setPage(&page1);
+      QTRY_COMPARE(webView.grab().toImage().pixelColor(QPoint(150,150)), Qt::black);
+      webView.setPage(&page2);
+      QTRY_COMPARE(webView.grab().toImage().pixelColor(QPoint(150,150)), Qt::white);
+      webView.setPage(&page1);
+      QTRY_COMPARE(webView.grab().toImage().pixelColor(QPoint(150,150)), Qt::black);
 }
 
 QTEST_MAIN(tst_QWebEngineView)

@@ -620,7 +620,6 @@ void tst_QWebEngineDownloadItem::downloadPage_data()
 
 void tst_QWebEngineDownloadItem::downloadPage()
 {
-    QSKIP("Unstable since Chromium 71");
     QFETCH(QWebEngineDownloadItem::SavePageFormat, savePageFormat);
 
     // Set up HTTP server

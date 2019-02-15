@@ -71,8 +71,9 @@ using CompositorResourceId = quint32;
 //
 // - A committed resource's fields may not be updated and are safe to use from
 //   other threads without synchronization (unless noted otherwise).
-struct CompositorResource : viz::TransferableResource
+class CompositorResource : public viz::TransferableResource
 {
+public:
     CompositorResource(const viz::TransferableResource &tr) : viz::TransferableResource(tr) {}
 
     // Counts the number of times this resource has been encountered in

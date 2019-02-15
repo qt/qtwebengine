@@ -41,6 +41,7 @@
 
 #include "profile_adapter.h"
 #include "browsing_data_remover_delegate_qt.h"
+#include "command_line_pref_store_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "net/ssl_host_state_delegate_qt.h"
 #include "net/url_request_context_getter_qt.h"
@@ -48,6 +49,7 @@
 #include "qtwebenginecoreglobal_p.h"
 #include "type_conversion.h"
 #include "web_engine_library_info.h"
+#include "web_engine_context.h"
 
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
@@ -62,9 +64,10 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "chrome/common/pref_names.h"
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/common/pref_names.h"
 #include "components/spellcheck/browser/pref_names.h"
 #endif
 
@@ -89,8 +92,10 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
 {
     PrefServiceFactory factory;
     factory.set_user_prefs(new InMemoryPrefStore);
+    factory.set_command_line_prefs(base::MakeRefCounted<CommandLinePrefStoreQt>(
+            WebEngineContext::commandLine()));
     PrefRegistrySimple *registry = new PrefRegistrySimple();
-
+    PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
 #if QT_CONFIG(webengine_spellchecker)
     // Initial spellcheck settings
     registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
@@ -101,6 +106,7 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
 #endif // QT_CONFIG(webengine_spellchecker)
     registry->RegisterBooleanPref(prefs::kShowInternalAccessibilityTree, false);
+    registry->RegisterIntegerPref(prefs::kNotificationNextPersistentId, 10000);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     registry->RegisterDictionaryPref(extensions::pref_names::kExtensions);

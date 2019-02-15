@@ -1001,6 +1001,7 @@ void tst_QQuickWebEngineView::changeLocale()
     viewDE->setUrl(url);
     QVERIFY(waitForLoadFailed(viewDE.data()));
 
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
     errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar Die Server-IP-Adresse von non.existent wurde nicht gefunden."));
@@ -1010,9 +1011,10 @@ void tst_QQuickWebEngineView::changeLocale()
     viewEN->setUrl(url);
     QVERIFY(waitForLoadFailed(viewEN.data()));
 
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewEN.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").isNull());
     errorLines = evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("This site can\xE2\x80\x99t be reached"));
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("This site can\xE2\x80\x99t be reached non.existent\xE2\x80\x99s server IP address could not be found."));
 
     // Reset error page
     viewDE->setUrl(QUrl("about:blank"));
@@ -1022,9 +1024,10 @@ void tst_QQuickWebEngineView::changeLocale()
     viewDE->setUrl(url);
     QVERIFY(waitForLoadFailed(viewDE.data()));
 
+    QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
     errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
-    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
+    QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar Die Server-IP-Adresse von non.existent wurde nicht gefunden."));
 }
 
 void tst_QQuickWebEngineView::userScripts()
@@ -1110,6 +1113,39 @@ void tst_QQuickWebEngineView::javascriptClipboard()
     QCOMPARE(evaluateJavaScriptSync(view, "document.execCommand('paste')").toBool(), pasteResult);
     QCOMPARE(evaluateJavaScriptSync(view, "document.getElementById('myInput').value").toString(),
                 (pasteResult ? QString("AnotherText") : QString("OriginalText")));
+
+    // Test settings on clipboard permissions
+    evaluateJavaScriptSync(view,
+        QStringLiteral(
+            "var accessGranted = false;"
+            "var accessDenied = false;"
+            "var accessPrompt = false;"
+            "navigator.permissions.query({name:'clipboard-write'})"
+            ".then(result => {"
+                "if (result.state == 'granted') accessGranted = true;"
+                "if (result.state == 'denied') accessDenied = true;"
+                "if (result.state == 'prompt') accessPrompt = true;"
+            "})"));
+
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), copyResult);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), !javascriptCanAccessClipboard);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), false);
+
+    evaluateJavaScriptSync(view,
+        QStringLiteral(
+            "accessGranted = false;"
+            "accessDenied = false;"
+            "accessPrompt = false;"
+            "navigator.permissions.query({name:'clipboard-read'})"
+            ".then(result => {"
+                "if (result.state == 'granted') accessGranted = true;"
+                "if (result.state == 'denied') accessDenied = true;"
+                "if (result.state == 'prompt') accessPrompt = true;"
+            "})"));
+
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), pasteResult);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), !javascriptCanAccessClipboard || !javascriptCanPaste);
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), false);
 }
 
 QTEST_MAIN(tst_QQuickWebEngineView)

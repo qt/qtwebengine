@@ -19,6 +19,7 @@ SOURCES = \
         api/qwebenginedownloaditem.cpp \
         api/qwebenginefullscreenrequest.cpp \
         api/qwebenginehistory.cpp \
+        api/qwebenginenotificationpresenter.cpp \
         api/qwebenginepage.cpp \
         api/qwebengineprofile.cpp \
         api/qwebenginescript.cpp \
@@ -36,6 +37,7 @@ HEADERS = \
         api/qwebenginedownloaditem_p.h \
         api/qwebenginefullscreenrequest.h \
         api/qwebenginehistory.h \
+        api/qwebenginenotificationpresenter_p.h \
         api/qwebenginepage.h \
         api/qwebenginepage_p.h \
         api/qwebengineprofile.h \

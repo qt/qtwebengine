@@ -48,11 +48,11 @@ SOURCES = \
         browser_message_filter_qt.cpp \
         certificate_error_controller.cpp \
         chromium_overrides.cpp \
-        client_cert_override_key.cpp \
         client_cert_select_controller.cpp \
         clipboard_qt.cpp \
         color_chooser_qt.cpp \
         color_chooser_controller.cpp \
+        command_line_pref_store_qt.cpp \
         common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
@@ -76,6 +76,8 @@ SOURCES = \
         login_delegate_qt.cpp \
         media_capture_devices_dispatcher.cpp \
         native_web_keyboard_event_qt.cpp \
+        net/client_cert_override.cpp \
+        net/client_cert_store_data.cpp \
         net/cookie_monster_delegate_qt.cpp \
         net/custom_protocol_handler.cpp \
         net/network_delegate_qt.cpp \
@@ -86,6 +88,7 @@ SOURCES = \
         net/url_request_custom_job.cpp \
         net/url_request_custom_job_delegate.cpp \
         net/url_request_custom_job_proxy.cpp \
+        net/url_request_notification.cpp \
         net/webui_controller_factory_qt.cpp \
         ozone/gl_context_qt.cpp \
         ozone/gl_ozone_egl_qt.cpp \
@@ -96,6 +99,7 @@ SOURCES = \
         ozone/platform_window_qt.cpp \
         ozone/surface_factory_qt.cpp \
         permission_manager_qt.cpp \
+        platform_notification_service_qt.cpp \
         process_main.cpp \
         profile_adapter.cpp \
         profile_adapter_client.cpp \
@@ -103,7 +107,6 @@ SOURCES = \
         profile_io_data_qt.cpp \
         quota_permission_context_qt.cpp \
         quota_request_controller_impl.cpp \
-        qwebengineclientcertificatestore.cpp \
         register_protocol_handler_request_controller_impl.cpp \
         render_view_context_menu_qt.cpp \
         render_view_observer_host_qt.cpp \
@@ -121,6 +124,7 @@ SOURCES = \
         touch_selection_controller_client_qt.cpp \
         touch_selection_menu_controller.cpp \
         type_conversion.cpp \
+        user_notification_controller.cpp \
         user_script.cpp \
         visited_links_manager_qt.cpp \
         web_contents_adapter.cpp \
@@ -145,11 +149,9 @@ HEADERS = \
         browser_message_filter_qt.h \
         certificate_error_controller_p.h \
         certificate_error_controller.h \
-        chromium_overrides.h \
-        client_cert_override_key_p.h \
-        client_cert_override_p.h \
         client_cert_select_controller.h \
         clipboard_qt.h \
+        command_line_pref_store_qt.h \
         color_chooser_qt.h \
         color_chooser_controller_p.h \
         color_chooser_controller.h \
@@ -178,6 +180,8 @@ HEADERS = \
         locked_ptr.h \
         login_delegate_qt.h \
         media_capture_devices_dispatcher.h \
+        net/client_cert_override.h \
+        net/client_cert_store_data.h \
         net/cookie_monster_delegate_qt.h \
         net/custom_protocol_handler.h \
         net/network_delegate_qt.h \
@@ -187,6 +191,7 @@ HEADERS = \
         net/url_request_custom_job.h \
         net/url_request_custom_job_delegate.h \
         net/url_request_custom_job_proxy.h \
+        net/url_request_notification.h \
         net/webui_controller_factory_qt.h \
         ozone/gl_context_qt.h \
         ozone/gl_ozone_egl_qt.h \
@@ -197,6 +202,7 @@ HEADERS = \
         ozone/platform_window_qt.h \
         ozone/surface_factory_qt.h \
         permission_manager_qt.h \
+        platform_notification_service_qt.h \
         process_main.h \
         profile_adapter.h \
         profile_adapter_client.h \
@@ -226,6 +232,7 @@ HEADERS = \
         touch_selection_controller_client_qt.h \
         touch_selection_menu_controller.h \
         type_conversion.h \
+        user_notification_controller.h \
         user_script.h \
         visited_links_manager_qt.h \
         web_contents_adapter.h \

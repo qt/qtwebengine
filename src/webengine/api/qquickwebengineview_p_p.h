@@ -145,6 +145,7 @@ public:
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) override;
     void selectClientCert(const QSharedPointer<ClientCertSelectController> &selectController) override;
     void runGeolocationPermissionRequest(QUrl const&) override;
+    void runUserNotificationPermissionRequest(QUrl const&) override;
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) override;
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
     void updateScrollPosition(const QPointF &position) override;

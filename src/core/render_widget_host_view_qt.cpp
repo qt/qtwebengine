@@ -40,7 +40,6 @@
 #include "render_widget_host_view_qt.h"
 
 #include "browser_accessibility_manager_qt.h"
-#include "chromium_overrides.h"
 #include "compositor/compositor.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
@@ -67,7 +66,6 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
-#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
@@ -248,6 +246,22 @@ private:
     int index;
 };
 
+static content::ScreenInfo screenInfoFromQScreen(QScreen *screen)
+{
+    content::ScreenInfo r;
+    if (screen) {
+        r.device_scale_factor = screen->devicePixelRatio();
+        r.depth_per_component = 8;
+        r.depth = screen->depth();
+        r.is_monochrome = (r.depth == 1);
+        r.rect = toGfx(screen->geometry());
+        r.available_rect = toGfx(screen->availableGeometry());
+    } else {
+        r.device_scale_factor = qGuiApp->devicePixelRatio();
+    }
+    return r;
+}
+
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
     : content::RenderWidgetHostViewBase::RenderWidgetHostViewBase(widget)
     , m_gestureProvider(QtGestureProviderConfig(), this)
@@ -264,7 +278,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_cursorPosition(0)
     , m_emptyPreviousSelection(true)
     , m_wheelAckPending(false)
-    , m_pendingResize(false)
     , m_mouseWheelPhaseHandler(this)
     // This frame-sink id is based on what RenderWidgetHostViewChildFrame does:
     , m_frameSinkId(base::checked_cast<uint32_t>(widget->GetProcess()->GetID()),
@@ -303,6 +316,7 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
 {
     m_delegate.reset(delegate);
+    visualPropertiesChanged();
 }
 
 void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterClient)
@@ -329,30 +343,16 @@ void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
 {
 }
 
-void RenderWidgetHostViewQt::SetSize(const gfx::Size& size)
+void RenderWidgetHostViewQt::SetSize(const gfx::Size &sizeInDips)
 {
-    int width = size.width();
-    int height = size.height();
-
-    m_delegate->resize(width,height);
+    m_delegate->resize(sizeInDips.width(), sizeInDips.height());
 }
 
-void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& screenRect)
+void RenderWidgetHostViewQt::SetBounds(const gfx::Rect &windowRectInDips)
 {
-    // This is called when webkit has sent us a Move message.
-    if (IsPopup())
-        m_delegate->move(toQt(screenRect.origin()));
-    SetSize(screenRect.size());
-}
-
-gfx::Size RenderWidgetHostViewQt::GetCompositorViewportPixelSize() const
-{
-    if (!m_delegate || !m_delegate->window() || !m_delegate->window()->screen())
-        return gfx::Size();
-
-    const QScreen* screen = m_delegate->window()->screen();
-    gfx::SizeF size = toGfx(m_delegate->screenRect().size());
-    return gfx::ToCeiledSize(gfx::ScaleSize(size, screen->devicePixelRatio()));
+    DCHECK(IsPopup());
+    m_delegate->move(toQt(windowRectInDips.origin()));
+    m_delegate->resize(windowRectInDips.width(), windowRectInDips.height());
 }
 
 gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
@@ -431,10 +431,7 @@ bool RenderWidgetHostViewQt::IsShowing()
 // Retrieve the bounds of the View, in screen coordinates.
 gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
 {
-    QRectF p = m_delegate->contentsRect();
-    gfx::Point p1(floor(p.x()), floor(p.y()));
-    gfx::Point p2(ceil(p.right()), ceil(p.bottom()));
-    return gfx::BoundingRect(p1, p2);
+    return m_viewRectInDips;
 }
 
 void RenderWidgetHostViewQt::UpdateBackgroundColor()
@@ -588,15 +585,13 @@ void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
     }
 #if defined(USE_AURA)
     if (auraType != ui::CursorType::kNull) {
-        QWindow *window = m_delegate->window();
-        qreal windowDpr = window ? window->devicePixelRatio() : 1.0f;
         int resourceId;
         gfx::Point hotspot;
         // GetCursorDataFor only knows hotspots for 1x and 2x cursor images, in physical pixels.
-        qreal hotspotDpr = windowDpr <= 1.0f ? 1.0f : 2.0f;
+        qreal hotspotDpr = m_screenInfo.device_scale_factor <= 1.0f ? 1.0f : 2.0f;
         if (ui::GetCursorDataFor(ui::CursorSize::kNormal, auraType, hotspotDpr, &resourceId, &hotspot)) {
             if (const gfx::ImageSkia *imageSkia = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resourceId)) {
-                QImage imageQt = toQImage(imageSkia->GetRepresentation(windowDpr));
+                QImage imageQt = toQImage(imageSkia->GetRepresentation(m_screenInfo.device_scale_factor));
 
                 // Convert hotspot coordinates into device-independent pixels.
                 qreal hotX = hotspot.x() / hotspotDpr;
@@ -693,28 +688,16 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
         m_adapterClient->updateScrollPosition(toQt(m_lastScrollOffset));
     if (contentsSizeChanged)
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
-
-    if (m_pendingResize && host()) {
-        if (host()->SynchronizeVisualProperties())
-            m_pendingResize = false;
-    }
 }
 
 void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo *results) const
 {
-    QWindow *window = m_delegate->window();
-    if (!window)
-        return;
-    GetScreenInfoFromNativeWindow(window, results);
+    *results = m_screenInfo;
 }
 
 gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 {
-    if (!m_delegate->window())
-        return gfx::Rect();
-
-    QRect r = m_delegate->window()->frameGeometry();
-    return gfx::Rect(r.x(), r.y(), r.width(), r.height());
+    return m_windowRectInDips;
 }
 
 void RenderWidgetHostViewQt::ClearCompositorFrame()
@@ -922,27 +905,12 @@ viz::ScopedSurfaceIdAllocator RenderWidgetHostViewQt::DidUpdateVisualProperties(
 
 void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata)
 {
-    if (metadata.local_surface_id)
-        m_localSurfaceIdAllocator.UpdateFromChild(*metadata.local_surface_id);
-
-    m_localSurfaceIdAllocator.GenerateId();
-    host()->SendScreenRects();
-    if (m_pendingResize) {
-        if (host()->SynchronizeVisualProperties())
-            m_pendingResize = false;
-    }
+    synchronizeVisualProperties(metadata.local_surface_id);
 }
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 {
     return m_compositor->updatePaintNode(oldNode, m_delegate.get());
-}
-
-void RenderWidgetHostViewQt::notifyResize()
-{
-    m_pendingResize = true;
-    if (host()->SynchronizeVisualProperties())
-        m_pendingResize = false;
 }
 
 void RenderWidgetHostViewQt::notifyShown()
@@ -955,17 +923,26 @@ void RenderWidgetHostViewQt::notifyHidden()
     host()->WasHidden();
 }
 
-void RenderWidgetHostViewQt::windowBoundsChanged()
+void RenderWidgetHostViewQt::visualPropertiesChanged()
 {
-    host()->SendScreenRects();
-    if (m_delegate && m_delegate->window())
-        host()->NotifyScreenInfoChanged();
-}
+    if (!m_delegate)
+        return;
 
-void RenderWidgetHostViewQt::windowChanged()
-{
-    if (m_delegate && m_delegate->window())
-        host()->NotifyScreenInfoChanged();
+    gfx::Rect oldViewRect = m_viewRectInDips;
+    m_viewRectInDips = toGfx(m_delegate->viewGeometry().toAlignedRect());
+
+    gfx::Rect oldWindowRect = m_windowRectInDips;
+    QWindow *window = m_delegate->window();
+    m_windowRectInDips = window ? toGfx(window->frameGeometry()) : gfx::Rect();
+
+    content::ScreenInfo oldScreenInfo = m_screenInfo;
+    m_screenInfo = screenInfoFromQScreen(window ? window->screen() : nullptr);
+
+    if (m_viewRectInDips != oldViewRect || m_windowRectInDips != oldWindowRect)
+        host()->SendScreenRects();
+
+    if (m_viewRectInDips.size() != oldViewRect.size() || m_screenInfo != oldScreenInfo)
+        synchronizeVisualProperties(base::nullopt);
 }
 
 bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
@@ -1747,6 +1724,16 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation()
         m_selectionEnd = metadata.selection.end;
         m_touchSelectionControllerClient->UpdateClientSelectionBounds(m_selectionStart, m_selectionEnd);
     }
+}
+
+void RenderWidgetHostViewQt::synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceId> &childSurfaceId)
+{
+    if (childSurfaceId)
+        m_localSurfaceIdAllocator.UpdateFromChild(*childSurfaceId);
+    else
+        m_localSurfaceIdAllocator.GenerateId();
+
+    host()->SynchronizeVisualProperties();
 }
 
 } // namespace QtWebEngineCore

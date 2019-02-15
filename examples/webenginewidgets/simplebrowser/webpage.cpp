@@ -138,7 +138,7 @@ inline QString questionForFeature(QWebEnginePage::Feature feature)
     case QWebEnginePage::DesktopAudioVideoCapture:
         return WebPage::tr("Allow %1 to capture audio and video of your desktop?");
     case QWebEnginePage::Notifications:
-        return QString();
+        return WebPage::tr("Allow %1 to show notification on your desktop?");
     }
     return QString();
 }
