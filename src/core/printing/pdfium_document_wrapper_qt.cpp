@@ -54,7 +54,6 @@ public:
         : m_pageData(FPDF_LoadPage(data, pageIndex))
         , m_width(FPDF_GetPageWidth(m_pageData))
         , m_height(FPDF_GetPageHeight(m_pageData))
-        , m_index(pageIndex)
         , m_image(createImage(targetWidth, targetHeight))
     {
     }
@@ -63,7 +62,6 @@ public:
         : m_pageData(nullptr)
         , m_width(-1)
         , m_height(-1)
-        , m_index(-1)
         , m_image(QImage())
     {
     }
@@ -109,7 +107,6 @@ private:
     FPDF_PAGE m_pageData;
     int m_width;
     int m_height;
-    int m_index;
     QImage m_image;
 };
 
