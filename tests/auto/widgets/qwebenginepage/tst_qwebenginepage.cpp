@@ -1009,9 +1009,8 @@ static QWindow *findNewTopLevelWindow(const QWindowList &oldTopLevelWindows)
 
 void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
 {
-    QScreen *screen = QGuiApplication::primaryScreen();
     QWebEngineView view;
-    view.move(screen->availableGeometry().topLeft());
+    view.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
     view.resize(640, 480);
     view.show();
 
@@ -1027,18 +1026,29 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
 
     QWindow *popup = nullptr;
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
+    QTRY_VERIFY(!popup->position().isNull());
     QPoint popupPos = popup->position();
 
     // Close the popup by clicking somewhere into the page.
     QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(), QPoint(1, 1));
     QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
 
+    auto jsViewPosition = [&view]() {
+        QLatin1String script("(function() { return [window.screenX, window.screenY]; })()");
+        QVariantList posList = evaluateJavaScriptSync(view.page(), script).toList();
+        return QPoint(posList.at(0).toInt(), posList.at(1).toInt());
+    };
+
     // Move the top-level QWebEngineView a little and check the popup's position.
     const QPoint offset(12, 13);
-    view.move(screen->availableGeometry().topLeft() + offset);
+    view.move(view.pos() + offset);
+    QTRY_COMPARE(jsViewPosition(), view.pos());
     QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
                       elementCenter(view.page(), "foo"));
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
+    QTRY_VERIFY(!popup->position().isNull());
     QCOMPARE(popupPos + offset, popup->position());
 }
 
@@ -1048,7 +1058,6 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     mainWidget.setLayout(new QHBoxLayout);
 
     QWidget spacer;
-    spacer.setMinimumWidth(50);
     mainWidget.layout()->addWidget(&spacer);
 
     QWebEngineView view;
@@ -1071,6 +1080,8 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
 
     QWindow *popup = nullptr;
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
+    QTRY_VERIFY(!popup->position().isNull());
     QPoint popupPos = popup->position();
 
     // Close the popup by clicking somewhere into the page.
@@ -1078,11 +1089,22 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
                       view.mapTo(view.window(), QPoint(1, 1)));
     QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
 
+    int originalViewWidth = view.size().width();
+    auto jsViewWidth = [&view]() {
+        QLatin1String script("(function() { return window.innerWidth; })()");
+        int viewWidth = evaluateJavaScriptSync(view.page(), script).toInt();
+        return viewWidth;
+    };
+
     // Resize the "spacer" widget, and implicitly change the global position of the QWebEngineView.
-    spacer.setMinimumWidth(100);
+    const int offset = 50;
+    spacer.setMinimumWidth(spacer.size().width() + offset);
+    QTRY_COMPARE(jsViewWidth(), originalViewWidth - offset);
+
     QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
                       view.mapTo(view.window(), elementCenter(view.page(), "foo")));
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY(!popup->position().isNull());
     QCOMPARE(popupPos + QPoint(50, 0), popup->position());
 }
 
