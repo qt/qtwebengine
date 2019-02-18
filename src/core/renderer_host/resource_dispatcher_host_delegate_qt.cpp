@@ -47,8 +47,11 @@
 #include "base/guid.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/navigation_controller.h"
 
 #include "content/public/browser/render_frame_host.h"
@@ -69,6 +72,8 @@
 
 #include "resource_context_qt.h"
 #include "type_conversion.h"
+#include "web_contents_delegate_qt.h"
+#include "web_engine_settings.h"
 
 namespace QtWebEngineCore {
 
@@ -81,6 +86,23 @@ void OnPdfStreamIntercepted(
     content::WebContents* web_contents = web_contents_getter.Run();
     if (!web_contents)
         return;
+
+    WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(web_contents->GetDelegate());
+    if (!contentsDelegate)
+        return;
+
+    WebEngineSettings *settings = contentsDelegate->webEngineSettings();
+    if (!settings->testAttribute(WebEngineSettings::PDFViewerEnabled)
+        || !settings->testAttribute(WebEngineSettings::PluginsEnabled)) {
+        // If the applications has been set up to always download PDF files to open them in an
+        // external viewer, trigger the download.
+        std::unique_ptr<download::DownloadUrlParameters> params(
+                    content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
+                        web_contents, original_url, NO_TRAFFIC_ANNOTATION_YET));
+        content::BrowserContext::GetDownloadManager(web_contents->GetBrowserContext())
+                ->DownloadUrl(std::move(params));
+        return;
+    }
 
     // The URL passes the original pdf resource url, that will be requested
     // by the pdf viewer extension page.
@@ -103,9 +125,8 @@ bool ResourceDispatcherHostDelegateQt::ShouldInterceptResourceAsStream(net::URLR
 
     int render_process_host_id = -1;
     int render_frame_id = -1;
-    if (!content::ResourceRequestInfo::GetRenderFrameForRequest(request, &render_process_host_id, &render_frame_id)) {
-      return false;
-    }
+    if (!content::ResourceRequestInfo::GetRenderFrameForRequest(request, &render_process_host_id, &render_frame_id))
+        return false;
 
     ResourceContextQt *context = static_cast<ResourceContextQt *>(info->GetContext());
     std::vector<std::string> whitelist = MimeTypesHandler::GetMIMETypeWhitelist();

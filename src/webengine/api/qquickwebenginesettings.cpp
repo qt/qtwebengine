@@ -457,6 +457,20 @@ bool QQuickWebEngineSettings::dnsPrefetchEnabled() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::pdfViewerEnabled
+    \since QtWebEngine 1.9
+
+    Specifies that PDF documents will be opened in the internal PDF viewer
+    instead of being downloaded.
+
+    Enabled by default.
+*/
+bool QQuickWebEngineSettings::pdfViewerEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::PDFViewerEnabled);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -712,6 +726,14 @@ void QQuickWebEngineSettings::setDnsPrefetchEnabled(bool on)
     d_ptr->setAttribute(WebEngineSettings::DnsPrefetchEnabled, on);
     if (wasOn != on)
         Q_EMIT dnsPrefetchEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setPDFViewerEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::PDFViewerEnabled);
+    d_ptr->setAttribute(WebEngineSettings::PDFViewerEnabled, on);
+    if (wasOn != on)
+        Q_EMIT pdfViewerEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)

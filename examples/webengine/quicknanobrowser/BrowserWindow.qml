@@ -89,6 +89,7 @@ ApplicationWindow {
         property alias touchIconsEnabled: touchIconsEnabled.checked
         property alias webRTCPublicInterfacesOnly : webRTCPublicInterfacesOnly.checked
         property alias devToolsEnabled: devToolsEnabled.checked
+        property alias pdfViewerEnabled: pdfViewerEnabled.checked
     }
 
     Action {
@@ -333,6 +334,12 @@ ApplicationWindow {
                             checkable: true
                             checked: false
                         }
+                        MenuItem {
+                            id: pdfViewerEnabled
+                            text: "PDF viewer enabled"
+                            checkable: true
+                            checked: WebEngine.settings.pdfViewerEnabled
+                        }
                     }
                 }
             }
@@ -410,6 +417,7 @@ ApplicationWindow {
                 settings.autoLoadIconsForPage: appSettings.autoLoadIconsForPage
                 settings.touchIconsEnabled: appSettings.touchIconsEnabled
                 settings.webRTCPublicInterfacesOnly: appSettings.webRTCPublicInterfacesOnly
+                settings.pdfViewerEnabled: appSettings.pdfViewerEnabled
 
                 onCertificateError: function(error) {
                     error.defer();

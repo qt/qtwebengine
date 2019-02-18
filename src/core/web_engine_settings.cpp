@@ -299,6 +299,11 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(WebRTCPublicInterfacesOnly, false);
         s_defaultAttributes.insert(JavascriptCanPaste, false);
         s_defaultAttributes.insert(DnsPrefetchEnabled, false);
+#if QT_CONFIG(webengine_extensions)
+        s_defaultAttributes.insert(PDFViewerEnabled, true);
+#else
+        s_defaultAttributes.insert(PDFViewerEnabled, false);
+#endif
     }
 
     if (s_defaultFontFamilies.isEmpty()) {
