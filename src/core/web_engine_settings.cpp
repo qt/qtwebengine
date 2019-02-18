@@ -67,27 +67,6 @@ QHash<WebEngineSettings::FontSize, int> WebEngineSettings::s_defaultFontSizes;
 
 static const int batchTimerTimeout = 0;
 
-class BatchTimer : public QTimer {
-    Q_OBJECT
-public:
-    BatchTimer(WebEngineSettings *settings)
-        : m_settings(settings)
-    {
-        setSingleShot(true);
-        setInterval(batchTimerTimeout);
-        connect(this, SIGNAL(timeout()), SLOT(onTimeout()));
-    }
-
-private Q_SLOTS:
-    void onTimeout()
-    {
-        m_settings->doApply();
-    }
-
-private:
-    WebEngineSettings *m_settings;
-};
-
 static inline bool isTouchEventsAPIEnabled() {
     static bool initialized = false;
     static bool touchEventsAPIEnabled = false;
@@ -113,12 +92,17 @@ static inline bool isTouchEventsAPIEnabled() {
 
 WebEngineSettings::WebEngineSettings(WebEngineSettings *_parentSettings)
     : m_adapter(0)
-    , m_batchTimer(new BatchTimer(this))
     , parentSettings(_parentSettings)
     , m_unknownUrlSchemePolicy(WebEngineSettings::InheritedUnknownUrlSchemePolicy)
 {
     if (parentSettings)
         parentSettings->childSettings.insert(this);
+
+    m_batchTimer.setSingleShot(true);
+    m_batchTimer.setInterval(batchTimerTimeout);
+    QObject::connect(&m_batchTimer, &QTimer::timeout, [this]() {
+        doApply();
+    });
 }
 
 WebEngineSettings::~WebEngineSettings()
@@ -335,8 +319,8 @@ void WebEngineSettings::initDefaults()
 
 void WebEngineSettings::scheduleApply()
 {
-    if (!m_batchTimer->isActive())
-        m_batchTimer->start();
+    if (!m_batchTimer.isActive())
+        m_batchTimer.start();
 }
 
 void WebEngineSettings::doApply()
@@ -448,5 +432,3 @@ void WebEngineSettings::setParentSettings(WebEngineSettings *_parentSettings)
 }
 
 } // namespace QtWebEngineCore
-
-#include "web_engine_settings.moc"

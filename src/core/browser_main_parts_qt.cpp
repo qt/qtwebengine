@@ -39,6 +39,8 @@
 
 #include "browser_main_parts_qt.h"
 
+#include "api/qwebenginemessagepumpscheduler_p.h"
+
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "base/threading/thread_restrictions.h"
@@ -54,11 +56,7 @@
 #include "service/service_qt.h"
 #include "web_engine_context.h"
 
-#include <QCoreApplication>
-#include <QEvent>
 #include <QEventLoop>
-#include <QObject>
-#include <QTimerEvent>
 
 #if defined(OS_MACOSX)
 #include "ui/base/idle/idle.h"
@@ -91,16 +89,12 @@ int GetTimeIntervalMilliseconds(const base::TimeTicks &from)
     return delay < 0 ? 0 : delay;
 }
 
-class MessagePumpForUIQt : public QObject,
-                           public base::MessagePump
+class MessagePumpForUIQt : public base::MessagePump
 {
 public:
     MessagePumpForUIQt()
-        : m_delegate(nullptr)
-        , m_explicitLoop(nullptr)
-        , m_timerId(0)
-    {
-    }
+        : m_scheduler([this]() { handleScheduledWork(); })
+    {}
 
     void Run(Delegate *delegate) override
     {
@@ -123,36 +117,17 @@ public:
 
     void ScheduleWork() override
     {
+        // NOTE: This method may called from any thread at any time.
         if (!m_delegate)
             m_delegate = base::MessageLoopForUI::current();
-        QCoreApplication::postEvent(this, new QTimerEvent(0));
-        m_timerScheduledTime = base::TimeTicks::Now();
+        m_scheduler.scheduleWork();
     }
 
     void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) override
     {
         if (!m_delegate)
             m_delegate = base::MessageLoopForUI::current();
-        if (delayed_work_time.is_null()) {
-            killTimer(m_timerId);
-            m_timerId = 0;
-            m_timerScheduledTime = base::TimeTicks();
-        } else if (!m_timerId || delayed_work_time < m_timerScheduledTime) {
-            killTimer(m_timerId);
-            m_timerId = startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
-            m_timerScheduledTime = delayed_work_time;
-        }
-    }
-
-protected:
-    void timerEvent(QTimerEvent *ev) override
-    {
-        Q_ASSERT(!ev->timerId() || m_timerId == ev->timerId());
-        killTimer(m_timerId);
-        m_timerId = 0;
-        m_timerScheduledTime = base::TimeTicks();
-
-        handleScheduledWork();
+        m_scheduler.scheduleDelayedWork(GetTimeIntervalMilliseconds(delayed_work_time));
     }
 
 private:
@@ -173,10 +148,9 @@ private:
         ScheduleDelayedWork(delayed_work_time);
     }
 
-    Delegate *m_delegate;
-    QEventLoop *m_explicitLoop;
-    int m_timerId;
-    base::TimeTicks m_timerScheduledTime;
+    Delegate *m_delegate = nullptr;
+    QEventLoop *m_explicitLoop = nullptr;
+    QWebEngineMessagePumpScheduler m_scheduler;
 };
 
 }  // anonymous namespace

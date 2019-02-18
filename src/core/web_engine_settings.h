@@ -57,6 +57,7 @@
 #include <QHash>
 #include <QUrl>
 #include <QSet>
+#include <QTimer>
 
 namespace content {
 struct RendererPreferences;
@@ -65,7 +66,6 @@ struct WebPreferences;
 }
 namespace QtWebEngineCore {
 
-class BatchTimer;
 class WebContentsAdapter;
 
 class QWEBENGINECORE_PRIVATE_EXPORT WebEngineSettings {
@@ -177,7 +177,7 @@ private:
     QHash<FontSize, int> m_fontSizes;
     QString m_defaultEncoding;
     QScopedPointer<content::WebPreferences> webPreferences;
-    QScopedPointer<BatchTimer> m_batchTimer;
+    QTimer m_batchTimer;
 
     WebEngineSettings *parentSettings;
     QSet<WebEngineSettings *> childSettings;
@@ -187,7 +187,6 @@ private:
     static QHash<FontSize, int> s_defaultFontSizes;
     UnknownUrlSchemePolicy m_unknownUrlSchemePolicy;
 
-    friend class BatchTimer;
     friend class WebContentsAdapter;
 };
 
