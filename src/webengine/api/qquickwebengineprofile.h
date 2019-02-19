@@ -173,7 +173,7 @@ Q_SIGNALS:
     void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);
 
-    void userNotification(QWebEngineNotification *notification);
+    Q_REVISION(5) void userNotification(QWebEngineNotification *notification);
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineProfile)

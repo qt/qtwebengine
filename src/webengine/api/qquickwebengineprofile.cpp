@@ -382,6 +382,7 @@ void QQuickWebEngineProfilePrivate::userScripts_clear(QQmlListProperty<QQuickWeb
 
 /*!
     \qmlsignal WebEngineProfile::userNotification(WebEngineNotification notification)
+    \since QtWebEngine 1.9
 
     This signal is emitted whenever there is a newly created user notification.
     The \a notification argument holds the notification instance to query data and interact with.
