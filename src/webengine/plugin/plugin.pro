@@ -8,4 +8,5 @@ QT_PRIVATE += core-private webenginecore-private webengine-private
 
 SOURCES = plugin.cpp
 
+QMAKE_QMLPLUGINDUMP_FLAGS = -defaultplatform
 load(qml_plugin)
