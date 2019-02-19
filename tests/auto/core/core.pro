@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
+    qwebengineclientcertificatestore \
     qwebenginecookiestore \
     qwebengineurlrequestinterceptor \
 
