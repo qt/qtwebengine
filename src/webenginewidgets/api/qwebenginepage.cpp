@@ -255,7 +255,7 @@ void QWebEnginePagePrivate::didUpdateTargetURL(const QUrl &hoveredUrl)
 void QWebEnginePagePrivate::selectionChanged()
 {
     Q_Q(QWebEnginePage);
-    Q_EMIT q->selectionChanged();
+    QTimer::singleShot(0, q, &QWebEnginePage::selectionChanged);
 }
 
 void QWebEnginePagePrivate::recentlyAudibleChanged(bool recentlyAudible)

@@ -138,6 +138,7 @@ private Q_SLOTS:
 
     void runJavaScript();
     void runJavaScriptDisabled();
+    void runJavaScriptFromSlot();
     void fullScreenRequested();
     void quotaRequested();
 
@@ -1642,6 +1643,28 @@ void tst_QWebEnginePage::runJavaScriptDisabled()
              QVariant());
     QCOMPARE(evaluateJavaScriptSyncInWorld(&page, QStringLiteral("1+1"), QWebEngineScript::ApplicationWorld),
              QVariant(2));
+}
+
+// Based on https://bugreports.qt.io/browse/QTBUG-73876
+void tst_QWebEnginePage::runJavaScriptFromSlot()
+{
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+
+    QSignalSpy loadFinishedSpy(&page, &QWebEnginePage::loadFinished);
+    page.setHtml("<html><body>"
+                 "  <input type='text' id='input1' value='QtWebEngine' size='50' />"
+                 "</body></html>");
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+
+    QVariant result(-1);
+    connect(&page, &QWebEnginePage::selectionChanged, [&]() {
+        result = evaluateJavaScriptSync(&page, QStringLiteral("2+2"));
+    });
+    evaluateJavaScriptSync(&page, QStringLiteral("const input = document.getElementById('input1');"
+                                                 "input.focus();"
+                                                 "input.select();"));
+    QTRY_COMPARE(result, QVariant(4));
 }
 
 void tst_QWebEnginePage::fullScreenRequested()
