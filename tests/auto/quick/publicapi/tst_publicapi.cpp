@@ -134,8 +134,28 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineCertificateError.url --> QUrl"
     << "QQuickWebEngineColorDialogRequest.accepted --> bool"
     << "QQuickWebEngineColorDialogRequest.color --> QColor"
+    << "QQuickWebEngineContextMenuRequest.CanUndo --> EditFlags"
+    << "QQuickWebEngineContextMenuRequest.CanRedo --> EditFlags"
+    << "QQuickWebEngineContextMenuRequest.CanCut --> EditFlags"
+    << "QQuickWebEngineContextMenuRequest.CanCopy --> EditFlags"
+    << "QQuickWebEngineContextMenuRequest.CanPaste --> EditFlags"
+    << "QQuickWebEngineContextMenuRequest.CanDelete --> EditFlags"
+    << "QQuickWebEngineContextMenuRequest.CanSelectAll --> EditFlags"
+    << "QQuickWebEngineContextMenuRequest.CanTranslate --> EditFlags"
+    << "QQuickWebEngineContextMenuRequest.CanEditRichly --> EditFlags"
     << "QQuickWebEngineColorDialogRequest.dialogAccept(QColor) --> void"
     << "QQuickWebEngineColorDialogRequest.dialogReject() --> void"
+    << "QQuickWebEngineContextMenuRequest.editFlags --> EditFlags"
+    << "QQuickWebEngineContextMenuRequest.MediaInError --> MediaFlags"
+    << "QQuickWebEngineContextMenuRequest.MediaPaused --> MediaFlags"
+    << "QQuickWebEngineContextMenuRequest.MediaMuted --> MediaFlags"
+    << "QQuickWebEngineContextMenuRequest.MediaLoop --> MediaFlags"
+    << "QQuickWebEngineContextMenuRequest.MediaCanSave --> MediaFlags"
+    << "QQuickWebEngineContextMenuRequest.MediaHasAudio --> MediaFlags"
+    << "QQuickWebEngineContextMenuRequest.MediaCanToggleControls --> MediaFlags"
+    << "QQuickWebEngineContextMenuRequest.MediaControls --> MediaFlags"
+    << "QQuickWebEngineContextMenuRequest.MediaCanPrint --> MediaFlags"
+    << "QQuickWebEngineContextMenuRequest.MediaCanRotate --> MediaFlags"
     << "QQuickWebEngineContextMenuRequest.MediaTypeAudio --> MediaType"
     << "QQuickWebEngineContextMenuRequest.MediaTypeCanvas --> MediaType"
     << "QQuickWebEngineContextMenuRequest.MediaTypeFile --> MediaType"
@@ -147,6 +167,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineContextMenuRequest.isContentEditable --> bool"
     << "QQuickWebEngineContextMenuRequest.linkText --> QString"
     << "QQuickWebEngineContextMenuRequest.linkUrl --> QUrl"
+    << "QQuickWebEngineContextMenuRequest.mediaFlags --> MediaFlags"
     << "QQuickWebEngineContextMenuRequest.mediaType --> MediaType"
     << "QQuickWebEngineContextMenuRequest.mediaUrl --> QUrl"
     << "QQuickWebEngineContextMenuRequest.misspelledWord --> QString"
@@ -218,6 +239,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineDownloadItem.totalBytesChanged() --> void"
     << "QQuickWebEngineDownloadItem.type --> DownloadType"
     << "QQuickWebEngineDownloadItem.typeChanged() --> void"
+    << "QQuickWebEngineDownloadItem.view --> QQuickWebEngineView*"
     << "QQuickWebEngineFileDialogRequest.FileModeOpen --> FileMode"
     << "QQuickWebEngineFileDialogRequest.FileModeOpenMultiple --> FileMode"
     << "QQuickWebEngineFileDialogRequest.FileModeSave --> FileMode"
@@ -344,6 +366,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.autoLoadImagesChanged() --> void"
     << "QQuickWebEngineSettings.defaultTextEncoding --> QString"
     << "QQuickWebEngineSettings.defaultTextEncodingChanged() --> void"
+    << "QQuickWebEngineSettings.dnsPrefetchEnabled --> bool"
+    << "QQuickWebEngineSettings.dnsPrefetchEnabledChanged() --> void"
     << "QQuickWebEngineSettings.errorPageEnabled --> bool"
     << "QQuickWebEngineSettings.errorPageEnabledChanged() --> void"
     << "QQuickWebEngineSettings.focusOnNavigationEnabled --> bool"
@@ -356,6 +380,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.javascriptCanAccessClipboardChanged() --> void"
     << "QQuickWebEngineSettings.javascriptCanOpenWindows --> bool"
     << "QQuickWebEngineSettings.javascriptCanOpenWindowsChanged() --> void"
+    << "QQuickWebEngineSettings.javascriptCanPaste --> bool"
+    << "QQuickWebEngineSettings.javascriptCanPasteChanged() --> void"
     << "QQuickWebEngineSettings.javascriptEnabled --> bool"
     << "QQuickWebEngineSettings.javascriptEnabledChanged() --> void"
     << "QQuickWebEngineSettings.linksIncludedInFocusChain --> bool"
@@ -650,6 +676,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.navigationRequested(QQuickWebEngineNavigationRequest*) --> void"
     << "QQuickWebEngineView.newViewRequested(QQuickWebEngineNewViewRequest*) --> void"
     << "QQuickWebEngineView.pdfPrintingFinished(QString,bool) --> void"
+    << "QQuickWebEngineView.printRequested() --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue) --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue,PrintedPageSizeId) --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue,PrintedPageSizeId,PrintedPageOrientation) --> void"
@@ -675,8 +702,10 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.setActiveFocusOnPress(bool) --> void"
     << "QQuickWebEngineView.settings --> QQuickWebEngineSettings*"
     << "QQuickWebEngineView.stop() --> void"
+#if QT_CONFIG(webengine_testsupport)
     << "QQuickWebEngineView.testSupport --> QQuickWebEngineTestSupport*"
     << "QQuickWebEngineView.testSupportChanged() --> void"
+#endif
     << "QQuickWebEngineView.title --> QString"
     << "QQuickWebEngineView.titleChanged() --> void"
     << "QQuickWebEngineView.triggerWebAction(WebAction) --> void"
@@ -792,18 +821,23 @@ void tst_publicapi::publicAPI()
     // for (const QString &actual : qAsConst(sortedAPI))
     //     printf("    << \"%s\"\n", qPrintable(actual));
 
+    bool apiMatch = true;
     // Make sure that nothing slips in the public API unintentionally.
     for (const QString &actual : qAsConst(actualAPI)) {
-        if (!expectedAPI.contains(actual))
-            QEXPECT_FAIL("", qPrintable("Expected list is not up-to-date: " + actual), Continue);
-        QVERIFY2(expectedAPI.contains(actual), qPrintable(actual));
+        if (!expectedAPI.contains(actual)) {
+            QWARN(qPrintable("Expected list is not up-to-date: " + actual));
+            apiMatch = false;
+        }
     }
     // Make sure that the expected list is up-to-date with intentionally added APIs.
     for (const QString &expected : expectedAPI) {
-        if (!actualAPI.contains(expected))
-            QEXPECT_FAIL("", qPrintable("Not implemented: " + expected), Continue);
-        QVERIFY2(actualAPI.contains(expected), qPrintable(expected));
+        if (!actualAPI.contains(expected)) {
+            apiMatch = false;
+            QWARN(qPrintable("Not implemented: " + expected));
+        }
     }
+
+    QVERIFY2(apiMatch, "Unexpected, missing or misspelled API!");
 }
 
 QTEST_MAIN(tst_publicapi)

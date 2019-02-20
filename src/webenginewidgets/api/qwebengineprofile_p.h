@@ -81,6 +81,8 @@ public:
 
     void downloadDestroyed(quint32 downloadId);
 
+    void cleanDownloads();
+
     void downloadRequested(DownloadItemInfo &info) override;
     void downloadUpdated(const DownloadItemInfo &info) override;
 

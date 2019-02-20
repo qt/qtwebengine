@@ -68,7 +68,8 @@ BrowserAccessibilityQt::BrowserAccessibilityQt()
 
 bool BrowserAccessibilityQt::isValid() const
 {
-    return true;
+    auto managerQt = static_cast<BrowserAccessibilityManagerQt *>(manager_);
+    return managerQt && managerQt->isValid();
 }
 
 QObject *BrowserAccessibilityQt::object() const
