@@ -380,11 +380,12 @@ ApplicationWindow {
                 focus: true
 
                 onLinkHovered: function(hoveredUrl) {
-                    if (hoveredUrl === "")
-                        resetStatusText.start();
+                    if (hoveredUrl == "")
+                        hideStatusText.start();
                     else {
-                        resetStatusText.stop();
                         statusText.text = hoveredUrl;
+                        statusBubble.visible = true;
+                        hideStatusText.stop();
                     }
                 }
 
@@ -566,6 +567,7 @@ ApplicationWindow {
         id: statusBubble
         color: "oldlace"
         property int padding: 8
+        visible: false
 
         anchors.left: parent.left
         anchors.bottom: parent.bottom
@@ -578,9 +580,12 @@ ApplicationWindow {
             elide: Qt.ElideMiddle
 
             Timer {
-                id: resetStatusText
+                id: hideStatusText
                 interval: 750
-                onTriggered: statusText.text = ""
+                onTriggered: {
+                    statusText.text = "";
+                    statusBubble.visible = false;
+                }
             }
         }
     }
