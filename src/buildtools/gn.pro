@@ -20,7 +20,7 @@ build_pass|!debug_and_release {
 
             gn_configure = $$system_quote($$gn_bootstrap) --no-last-commit-position --out-path $$out_path \
                            --cc \"$$which($$QMAKE_CC)\" --cxx \"$$which($$QMAKE_CXX)\" \
-                           --ld \"$$which($$QMAKE_LINK)\" --ar \"$$which(ar)\"
+                           --ld \"$$which($$QMAKE_LINK)\"
             message($$gn_configure)
             !system("$$pythonPathForSystem() $$gn_configure") {
                 error("GN generation error!")
