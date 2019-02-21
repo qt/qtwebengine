@@ -449,14 +449,14 @@
 
 /*!
     \property QWebEnginePage::hasSelection
-    \brief whether this page contains selected content or not.
+    \brief Whether this page contains selected content or not.
 
     \sa selectionChanged()
 */
 
 /*!
     \property QWebEnginePage::selectedText
-    \brief the text currently selected
+    \brief The text currently selected.
 
     By default, this property contains an empty string.
 
@@ -641,7 +641,7 @@
 
 /*!
     \property QWebEnginePage::title
-    \brief the title of the page as defined by the HTML \c <title> element
+    \brief The title of the page as defined by the HTML \c <title> element.
 
     If the page has no \c <title> element, then the URL is used instead. For \c
     file:// URLs only the filename is used and not the full path.
@@ -654,7 +654,7 @@
 
 /*!
     \property QWebEnginePage::url
-    \brief the URL of the page currently viewed
+    \brief The URL of the page currently viewed.
 
     Setting this property clears the view and loads the URL.
 
@@ -665,8 +665,8 @@
 
 /*!
     \property QWebEnginePage::requestedUrl
-    \brief the URL that was originally requested to be loaded by the page
-    that is currently viewed
+    \brief The URL that was originally requested to be loaded by the page
+    that is currently viewed.
 
     \note The URL may differ from the one returned by url(), which is the actual
     URL that results from DNS resolution or redirection.
@@ -733,7 +733,7 @@
 
 /*!
     \property QWebEnginePage::zoomFactor
-    \brief the zoom factor for the page content
+    \brief The zoom factor for the page content.
 
     Valid values are within the range from \c{0.25} to \c{5.0}. The default factor is \c{1.0}.
 */

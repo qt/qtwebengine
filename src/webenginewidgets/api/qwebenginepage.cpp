@@ -905,7 +905,7 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
     \property QWebEnginePage::contentsSize
     \since 5.7
 
-    The size of the page contents.
+    \brief The size of the page contents.
 */
 
 /*!
@@ -1054,7 +1054,7 @@ void QWebEnginePage::setWebChannel(QWebChannel *channel, uint worldId)
 
 /*!
     \property QWebEnginePage::backgroundColor
-    \brief the page's background color behind the document's body.
+    \brief The page's background color behind the document's body.
     \since 5.6
 
     You can set the background color to Qt::transparent or to a translucent
@@ -1105,7 +1105,7 @@ void QWebEnginePage::save(const QString &filePath,
 
 /*!
     \property QWebEnginePage::audioMuted
-    \brief whether the current page audio is muted.
+    \brief Whether the current page audio is muted.
     \since 5.7
 
     The default value is \c false.
@@ -1127,7 +1127,7 @@ void QWebEnginePage::setAudioMuted(bool muted) {
 
 /*!
     \property QWebEnginePage::recentlyAudible
-    \brief the current page's \e {audible state}, that is, whether audio was recently played
+    \brief The current page's \e {audible state}, that is, whether audio was recently played
     or not.
     \since 5.7
 
@@ -2046,7 +2046,7 @@ QUrl QWebEnginePage::requestedUrl() const
 
 /*!
     \property QWebEnginePage::iconUrl
-    \brief the URL of the icon associated with the page currently viewed
+    \brief The URL of the icon associated with the page currently viewed.
 
     By default, this property contains an empty URL.
 
@@ -2060,7 +2060,7 @@ QUrl QWebEnginePage::iconUrl() const
 
 /*!
     \property QWebEnginePage::icon
-    \brief the icon associated with the page currently viewed
+    \brief The icon associated with the page currently viewed.
     \since 5.7
 
     By default, this property contains a null icon. If the web page specifies more than one icon,

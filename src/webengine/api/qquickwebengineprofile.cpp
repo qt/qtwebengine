@@ -958,7 +958,7 @@ QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
     \property QQuickWebEngineProfile::userScripts
     \since 5.9
 
-    \brief the collection of scripts that are injected into all pages that share
+    \brief The collection of scripts that are injected into all pages that share
     this profile.
 
     \sa QQuickWebEngineScript, QQmlListReference

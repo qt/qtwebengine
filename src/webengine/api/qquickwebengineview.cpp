@@ -1277,7 +1277,7 @@ void QQuickWebEngineView::setBackgroundColor(const QColor &color)
 
 /*!
     \property QQuickWebEngineView::audioMuted
-    \brief the state of whether the current page audio is muted.
+    \brief The state of whether the current page audio is muted.
     \since 5.7
 
     The default value is false.

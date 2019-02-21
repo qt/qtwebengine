@@ -238,7 +238,7 @@ QUrl QWebEngineView::iconUrl() const
 
 /*!
     \property QWebEngineView::icon
-    \brief the icon associated with the page currently viewed
+    \brief The icon associated with the page currently viewed.
     \since 5.7
 
     By default, this property contains a null icon.

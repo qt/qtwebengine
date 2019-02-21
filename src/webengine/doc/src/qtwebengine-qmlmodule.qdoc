@@ -28,7 +28,7 @@
 /*!
     \qmlmodule QtWebEngine 1.8
     \title Qt WebEngine QML Types
-    \brief Provides QML types for rendering web content within a QML application
+    \brief Provides QML types for rendering web content within a QML application.
     \ingroup qtwebengine-modules
     \ingroup qmlmodules
 
