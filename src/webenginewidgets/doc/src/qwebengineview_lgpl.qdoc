@@ -173,9 +173,9 @@
 
 /*!
     \property QWebEngineView::title
-    \brief the title of the web page currently viewed
+    \brief the title of the page as defined by the HTML \c <title> element
 
-    By default, this property contains an empty string.
+    Equivalent to \l {QWebEnginePage::title()}.
 
     \sa titleChanged()
 */

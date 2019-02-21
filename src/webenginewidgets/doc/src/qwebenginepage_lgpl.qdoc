@@ -643,6 +643,12 @@
     \property QWebEnginePage::title
     \brief the title of the page as defined by the HTML \c <title> element
 
+    If the page has no \c <title> element, then the URL is used instead. For \c
+    file:// URLs only the filename is used and not the full path.
+
+    By default, before any content has been loaded, this property contains an
+    empty string.
+
     \sa titleChanged()
 */
 
