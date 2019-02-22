@@ -50,7 +50,7 @@
         \li \l{Touch}
         \li \l{View Source}
         \li \l{WebRTC}
-        \li \l{Notifications}
+        \li \l{Web Notifications}
     \endlist
 
     \section1 Audio and Video Codecs
@@ -513,9 +513,9 @@
     opening \c https://test.webrtc.org/ in \l{WebEngine Widgets Simple Browser
     Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}.
 
-    \section1 Notifications
+    \section1 Web Notifications
 
-    Qt WebEngine supports JavaScript Web Notification API.
+    Qt WebEngine supports JavaScript \l{Web Notifications API}.
     The application has to explicitly allow the feature by using
     QWebEnginePage::Notifications or \l{WebEngineView::Feature}
     {WebEngineView.Notifications}.
