@@ -881,7 +881,7 @@ bool QQuickWebEngineProfile::isUsedForGlobalCertificateVerification() const
 
     Overrides the default path used for download location.
 
-    If set to the null string, the default path is restored.
+    If set to an empty string, the default path is restored.
 
     \note By default, the download path is QStandardPaths::DownloadLocation.
 */
@@ -894,7 +894,7 @@ bool QQuickWebEngineProfile::isUsedForGlobalCertificateVerification() const
 
     Overrides the default path used for download location, setting it to \a path.
 
-    If set to the null string, the default path is restored.
+    If set to an empty string, the default path is restored.
 
     \note By default, the download path is QStandardPaths::DownloadLocation.
 */
