@@ -577,9 +577,11 @@ QWebEngineCookieStore* QWebEngineProfile::cookieStore()
 void QWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     Q_D(QWebEngineProfile);
-    interceptor->setProperty("deprecated", true);
+    if (interceptor)
+        interceptor->setProperty("deprecated", true);
     d->profileAdapter()->setRequestInterceptor(interceptor);
-    qWarning("Use of deprecated not tread-safe setter, use setUrlRequestInterceptor instead.");
+    if (interceptor)
+        qDebug("Use of deprecated not thread-safe setter, use setUrlRequestInterceptor instead.");
 }
 #endif
 /*!
