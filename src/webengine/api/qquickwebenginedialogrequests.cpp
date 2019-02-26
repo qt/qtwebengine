@@ -340,8 +340,8 @@ QString QQuickWebEngineJavaScriptDialogRequest::title() const
     \qmlproperty enumeration JavaScriptDialogRequest::type
     \readonly
 
-    Returns the type of the requested dialog box, see HTML5's
-
+    Returns the type of the requested dialog box. For more information, see
+    HTML5's
     \l{https://www.w3.org/TR/html5/webappapis.html#simple-dialogs}{Simple Dialogs}.
 
     \value  JavaScriptDialogRequest.DialogTypeAlert
@@ -350,7 +350,7 @@ QString QQuickWebEngineJavaScriptDialogRequest::title() const
             A JavaScript confirmation dialog.
     \value  JavaScriptDialogRequest.DialogTypePrompt
             A JavaScript prompt dialog.
-    \value  JavaScriptDialogRequest.DialogTypeUnload
+    \value  JavaScriptDialogRequest.DialogTypeBeforeUnload
             The users should be asked if they want to leave the page.
 */
 
