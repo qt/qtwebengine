@@ -126,6 +126,7 @@ void ExtensionsRendererClientQt::RenderThreadStarted()
     // injects it using SetExtensionDispatcher(). Don't overwrite it.
     if (!extension_dispatcher_)
         extension_dispatcher_.reset(new extensions::Dispatcher(std::make_unique<ExtensionsDispatcherDelegateQt>()));
+    extension_dispatcher_->OnRenderThreadStarted(thread);
     permissions_policy_delegate_.reset(new RendererPermissionsPolicyDelegateQt(extension_dispatcher_.get()));
     resource_request_policy_.reset(new extensions::ResourceRequestPolicyQt(extension_dispatcher_.get()));
     guest_view_container_dispatcher_.reset(new extensions::ExtensionsGuestViewContainerDispatcher());
