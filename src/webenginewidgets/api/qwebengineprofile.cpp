@@ -648,16 +648,7 @@ QWebEngineScriptCollection *QWebEngineProfile::scripts() const
     \since 5.13
     \sa QWebEngineNotification
 */
-void QWebEngineProfile::setNotificationPresenter(const std::function<void(const QWebEngineNotification &)> &notificationPresenter)
-{
-    Q_D(QWebEngineProfile);
-    d->m_notificationPresenter = notificationPresenter;
-}
-
-/*!
-    \overload
-*/
-void QWebEngineProfile::setNotificationPresenter(std::function<void(const QWebEngineNotification &)> &&notificationPresenter)
+void QWebEngineProfile::setNotificationPresenter(std::function<void(const QWebEngineNotification &)> notificationPresenter)
 {
     Q_D(QWebEngineProfile);
     d->m_notificationPresenter = std::move(notificationPresenter);
@@ -809,12 +800,13 @@ void QWebEngineProfile::removeAllUrlSchemeHandlers()
 /*!
     \since 5.13
 
-    Sets this profile to be used for downloading and caching when needed during
-    certificate verification, for instance for OCSP, CRLs, and AIA.
+    Sets if this profile is to be used for downloading and caching when needed
+    during certificate verification, for instance for OCSP, CRLs, and AIA.
 
     Only one QWebEngineProfile can do this at a time, and it is recommended
     that the profile fullfilling this role has a disk HTTP cache to avoid
-    needlessly re-downloading.
+    needlessly re-downloading. If you set the option on a second profile,
+    it will be disabled on the profile it is currently set.
 
     Currently only affects Linux/NSS installations where it enables OCSP.
 
@@ -823,10 +815,10 @@ void QWebEngineProfile::removeAllUrlSchemeHandlers()
 
     \sa isUsedForGlobalCertificateVerification(), httpCacheType()
 */
-void QWebEngineProfile::setUseForGlobalCertificateVerification()
+void QWebEngineProfile::setUseForGlobalCertificateVerification(bool enabled)
 {
     Q_D(QWebEngineProfile);
-    d->profileAdapter()->setUseForGlobalCertificateVerification();
+    d->profileAdapter()->setUseForGlobalCertificateVerification(enabled);
 }
 
 /*!

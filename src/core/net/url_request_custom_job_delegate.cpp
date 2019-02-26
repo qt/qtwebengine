@@ -83,7 +83,7 @@ QUrl URLRequestCustomJobDelegate::initiator() const
     return m_initiatorOrigin;
 }
 
-const QMap<QByteArray, QByteArray> &URLRequestCustomJobDelegate::requestHeaders() const
+QMap<QByteArray, QByteArray> URLRequestCustomJobDelegate::requestHeaders() const
 {
     return m_requestHeaders;
 }

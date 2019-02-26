@@ -134,14 +134,13 @@ public:
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
 
-    void setUseForGlobalCertificateVerification();
+    void setUseForGlobalCertificateVerification(bool enabled = true);
     bool isUsedForGlobalCertificateVerification() const;
 
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
 
-    void setNotificationPresenter(const std::function<void(const QWebEngineNotification &)> &notificationPresenter);
-    void setNotificationPresenter(std::function<void(const QWebEngineNotification &)> &&notificationPresenter);
+    void setNotificationPresenter(std::function<void(const QWebEngineNotification &)> notificationPresenter);
 
     static QWebEngineProfile *defaultProfile();
 
