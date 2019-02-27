@@ -3329,10 +3329,13 @@ void tst_QWebEnginePage::sendNotification()
 
     auto notification = presenter.waitForResult();
     QVERIFY(presenter.wasCalled());
-    QVERIFY(!notification.isNull());
+    QVERIFY(notification.isValid());
     QCOMPARE(notification.title(), title);
     QCOMPARE(notification.message(), message);
     QCOMPARE(notification.origin(), origin);
+    QCOMPARE(notification.direction(), Qt::RightToLeft);
+    QCOMPARE(notification.language(), "de");
+    QCOMPARE(notification.tag(), "tst");
 
     notification.show();
     QTRY_VERIFY2(page.messages.contains("onshow"), page.messages.join("\n").toLatin1().constData());

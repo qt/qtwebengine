@@ -99,6 +99,7 @@ static const QStringList hardcodedTypes = QStringList()
     << "QQuickWebEngineErrorPage*"
     << "const QQuickWebEngineContextMenuData*"
     << "QWebEngineCookieStore*"
+    << "Qt::LayoutDirection"
     ;
 
 static const QStringList expectedAPI = QStringList()
@@ -760,10 +761,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineNotification.message --> QString"
     << "QWebEngineNotification.tag --> QString"
     << "QWebEngineNotification.language --> QString"
-    << "QWebEngineNotification.direction --> Direction"
-    << "QWebEngineNotification.LeftToRight --> Direction"
-    << "QWebEngineNotification.RightToLeft --> Direction"
-    << "QWebEngineNotification.DirectionAuto --> Direction"
+    << "QWebEngineNotification.direction --> Qt::LayoutDirection"
     << "QWebEngineNotification.show() --> void"
     << "QWebEngineNotification.click() --> void"
     << "QWebEngineNotification.close() --> void"

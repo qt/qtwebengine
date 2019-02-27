@@ -217,18 +217,18 @@ QString QWebEngineNotification::language() const
     \brief The text direction for the notification's title and body.
     \sa title(), message()
 */
-QWebEngineNotification::Direction QWebEngineNotification::direction() const
+Qt::LayoutDirection QWebEngineNotification::direction() const
 {
     Q_D(const QWebEngineNotification);
-    return d ? static_cast<Direction>(d->controller->direction()) : DirectionAuto;
+    return d ? d->controller->direction() : Qt::LayoutDirectionAuto;
 }
 
 /*!
-    Returns \c true if the notification is a default constructed null notification.
+    Returns \c true if the notification is not a default constructed null notification.
 */
-bool QWebEngineNotification::isNull() const
+bool QWebEngineNotification::isValid() const
 {
-    return d_ptr.isNull();
+    return !d_ptr.isNull();
 }
 
 /*!

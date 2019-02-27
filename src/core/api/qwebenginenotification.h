@@ -64,22 +64,15 @@ class QWEBENGINECORE_EXPORT QWebEngineNotification : public QObject {
     Q_PROPERTY(QString message READ message CONSTANT FINAL)
     Q_PROPERTY(QString tag READ tag CONSTANT FINAL)
     Q_PROPERTY(QString language READ language CONSTANT FINAL)
-    Q_PROPERTY(Direction direction READ direction CONSTANT FINAL)
+    Q_PROPERTY(Qt::LayoutDirection direction READ direction CONSTANT FINAL)
 
 public:
     QWebEngineNotification();
-    QWebEngineNotification(const QWebEngineNotification &);
+    QWebEngineNotification(const QWebEngineNotification &other);
     virtual ~QWebEngineNotification();
-    const QWebEngineNotification &operator=(const QWebEngineNotification &);
+    const QWebEngineNotification &operator=(const QWebEngineNotification &other);
 
-    enum Direction {
-        LeftToRight = Qt::LeftToRight,
-        RightToLeft = Qt::RightToLeft,
-        DirectionAuto = Qt::LayoutDirectionAuto
-    };
-    Q_ENUM(Direction)
-
-    bool matches(const QWebEngineNotification &) const;
+    bool matches(const QWebEngineNotification &other) const;
 
     QUrl origin() const;
     QIcon icon() const;
@@ -87,9 +80,9 @@ public:
     QString message() const;
     QString tag() const;
     QString language() const;
-    Direction direction() const;
+    Qt::LayoutDirection direction() const;
 
-    bool isNull() const;
+    bool isValid() const;
 
 public Q_SLOTS:
     void show() const;
@@ -100,7 +93,7 @@ Q_SIGNALS:
     void closed();
 
 private:
-    QWebEngineNotification(const QSharedPointer<QtWebEngineCore::UserNotificationController> &);
+    QWebEngineNotification(const QSharedPointer<QtWebEngineCore::UserNotificationController> &controller);
     Q_DECLARE_PRIVATE(QWebEngineNotification)
     QScopedPointer<QWebEngineNotificationPrivate> d_ptr;
     friend class QQuickWebEngineProfilePrivate;

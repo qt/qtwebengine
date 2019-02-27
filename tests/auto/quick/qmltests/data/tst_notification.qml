@@ -37,6 +37,7 @@ TestWebEngineView {
 
     property bool permissionRequested: false
     property bool grantPermission: false
+    property url securityOrigin: ''
 
     signal consoleMessage(string message)
 
@@ -48,7 +49,8 @@ TestWebEngineView {
 
     onFeaturePermissionRequested: {
         if (feature === WebEngineView.Notifications) {
-            permissionRequested = true
+            view.permissionRequested = true
+            view.securityOrigin = securityOrigin
             view.grantFeaturePermission(securityOrigin, feature, grantPermission)
         }
     }
@@ -111,6 +113,10 @@ TestWebEngineView {
             tryVerify(function () { return notification !== null })
             compare(notification.title, title)
             compare(notification.message, message)
+            compare(notification.direction, Qt.RightToLeft)
+            compare(notification.origin, securityOrigin)
+            compare(notification.tag, 'tst')
+            compare(notification.language, 'de')
         }
     }
 }
