@@ -159,9 +159,9 @@ public:
                                                                              msgUncreatableType("RegisterProtocolHandlerRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineAction>(uri, 1, 8, "WebEngineAction", msgUncreatableType("WebEngineAction"));
         qmlRegisterUncreatableType<QQuickWebEngineClientCertificateSelection>(uri, 1, 9, "WebEngineClientCertificateSelection",
-            tr("Cannot create a separate instance of WebEngineClientCertificateSelection"));
+                                                                              msgUncreatableType("WebEngineClientCertificateSelection"));
         qmlRegisterUncreatableType<QQuickWebEngineClientCertificateOption>(uri, 1, 9, "WebEngineClientCertificateOption",
-            tr("Cannot create a separate instance of WebEngineClientCertificateOption"));
+                                                                           msgUncreatableType("WebEngineClientCertificateOption"));
         qmlRegisterUncreatableType<QWebEngineNotification>(uri, 1, 9, "WebEngineNotification", msgUncreatableType("WebEngineNotification"));
     }
 

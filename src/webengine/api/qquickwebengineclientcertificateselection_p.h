@@ -76,10 +76,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineClientCertificateOption : public
     Q_PROPERTY(bool isSelfSigned READ isSelfSigned CONSTANT FINAL)
 
 public:
-    QQuickWebEngineClientCertificateOption();
-    QQuickWebEngineClientCertificateOption(const QQuickWebEngineClientCertificateOption &);
-    QQuickWebEngineClientCertificateOption &operator=(const QQuickWebEngineClientCertificateOption &);
-
     QString issuer() const;
     QString subject() const;
     QDateTime effectiveDate() const;
@@ -120,7 +116,7 @@ private:
 
     explicit QQuickWebEngineClientCertificateSelection(QSharedPointer<ClientCertSelectController>);
 
-    mutable QVector<QQuickWebEngineClientCertificateOption> m_certificates;
+    mutable QVector<QQuickWebEngineClientCertificateOption *> m_certificates;
     QSharedPointer<ClientCertSelectController> d_ptr;
 };
 

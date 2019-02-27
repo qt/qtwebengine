@@ -55,22 +55,9 @@ QT_BEGIN_NAMESPACE
     \sa {WebEngineClientCertificateSelection::certificates} {WebEngineClientCertificateSelection.certificates}
 */
 
-QQuickWebEngineClientCertificateOption::QQuickWebEngineClientCertificateOption() = default;
-
 QQuickWebEngineClientCertificateOption::QQuickWebEngineClientCertificateOption(QQuickWebEngineClientCertificateSelection *selection, int index)
-        : QObject(), m_selection(selection), m_index(index)
+        : QObject(selection), m_selection(selection), m_index(index)
 {}
-
-QQuickWebEngineClientCertificateOption::QQuickWebEngineClientCertificateOption(const QQuickWebEngineClientCertificateOption &other)
-        : QObject(), m_selection(other.m_selection), m_index(other.m_index)
-{}
-
-QQuickWebEngineClientCertificateOption &QQuickWebEngineClientCertificateOption::operator=(const QQuickWebEngineClientCertificateOption &other)
-{
-    m_selection = other.m_selection;
-    m_index = other.m_index;
-    return *this;
-}
 
 /*!
     \qmlproperty string WebEngineClientCertificateOption::issuer
@@ -164,7 +151,7 @@ QQuickWebEngineClientCertificateOption *QQuickWebEngineClientCertificateSelectio
     QQuickWebEngineClientCertificateSelection *d = static_cast<QQuickWebEngineClientCertificateSelection *>(p->object);
     if (idx < 0 || idx >= d->m_certificates.size())
         return nullptr;
-    return &d->m_certificates[idx];
+    return d->m_certificates[idx];
 }
 
 /*!
@@ -177,7 +164,7 @@ QQmlListProperty<QQuickWebEngineClientCertificateOption> QQuickWebEngineClientCe
     if (m_certificates.empty()) {
         QVector<QSslCertificate> certificates = d_ptr->certificates();
         for (int i = 0; i < certificates.count(); ++i)
-            m_certificates.push_back(QQuickWebEngineClientCertificateOption(this, i));
+            m_certificates.push_back(new QQuickWebEngineClientCertificateOption(this, i));
     }
 
     return QQmlListProperty<QQuickWebEngineClientCertificateOption>(
