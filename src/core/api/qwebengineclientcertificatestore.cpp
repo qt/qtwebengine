@@ -48,8 +48,6 @@ QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(ssl)
 
-QWebEngineClientCertificateStore *QWebEngineClientCertificateStore::m_instance = nullptr;
-
 /*!
     \class QWebEngineClientCertificateStore::Entry
     \inmodule QtWebEngineCore
@@ -69,8 +67,8 @@ QWebEngineClientCertificateStore *QWebEngineClientCertificateStore::m_instance =
     The getInstance() method can be used to access the single instance of the class.
 */
 
-QWebEngineClientCertificateStore::QWebEngineClientCertificateStore()
-        : d_ptr(new QtWebEngineCore::ClientCertificateStoreData)
+QWebEngineClientCertificateStore::QWebEngineClientCertificateStore(QtWebEngineCore::ClientCertificateStoreData *storeData)
+        : m_storeData(storeData)
 {
 }
 
@@ -85,23 +83,12 @@ QWebEngineClientCertificateStore::~QWebEngineClientCertificateStore()
 }
 
 /*!
-    Returns an in-memory client certificate store.
-*/
-
-QWebEngineClientCertificateStore *QWebEngineClientCertificateStore::getInstance()
-{
-    if (!m_instance)
-        m_instance = new QWebEngineClientCertificateStore;
-    return m_instance;
-}
-
-/*!
     Adds a \a certificate with the \a privateKey to the in-memory client certificate store.
 */
 
 void QWebEngineClientCertificateStore::add(const QSslCertificate &certificate, const QSslKey &privateKey)
 {
-    d_ptr->add(certificate, privateKey);
+    m_storeData->add(certificate, privateKey);
 }
 
 /*!
@@ -112,7 +99,7 @@ void QWebEngineClientCertificateStore::add(const QSslCertificate &certificate, c
 QList<QWebEngineClientCertificateStore::Entry> QWebEngineClientCertificateStore::toList() const
 {
     QList<Entry> certificateList;
-    for (auto data : qAsConst(d_ptr->extraCerts)) {
+    for (auto data : qAsConst(m_storeData->extraCerts)) {
         Entry entry;
         entry.certificate = data->certificate;
         entry.privateKey = data->key;
@@ -128,7 +115,7 @@ QList<QWebEngineClientCertificateStore::Entry> QWebEngineClientCertificateStore:
 
 void QWebEngineClientCertificateStore::remove(const QSslCertificate &certificate)
 {
-    d_ptr->remove(certificate);
+    m_storeData->remove(certificate);
 }
 
 /*!
@@ -137,7 +124,7 @@ void QWebEngineClientCertificateStore::remove(const QSslCertificate &certificate
 
 void QWebEngineClientCertificateStore::clear()
 {
-    d_ptr->clear();
+    m_storeData->clear();
 }
 
 #endif // QT_CONFIG(ssl)

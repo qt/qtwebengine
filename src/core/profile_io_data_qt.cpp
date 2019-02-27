@@ -79,6 +79,7 @@
 #include "services/network/proxy_service_mojo.h"
 
 #include "net/client_cert_override.h"
+#include "net/client_cert_store_data.h"
 #include "net/cookie_monster_delegate_qt.h"
 #include "net/custom_protocol_handler.h"
 #include "net/network_delegate_qt.h"
@@ -168,6 +169,7 @@ static net::HttpNetworkSession::Params generateNetworkSessionParams(bool ignoreC
 
 ProfileIODataQt::ProfileIODataQt(ProfileQt *profile)
     : m_profile(profile),
+      m_clientCertificateStoreData(new ClientCertificateStoreData),
       m_mutex(QMutex::Recursive),
       m_weakPtrFactory(this)
 {
@@ -207,6 +209,8 @@ QPointer<ProfileAdapter> ProfileIODataQt::profileAdapter()
 void ProfileIODataQt::shutdownOnUIThread()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    delete m_clientCertificateStoreData;
+    m_clientCertificateStoreData = nullptr;
     bool posted = content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, this);
     if (!posted) {
         qWarning() << "Could not delete ProfileIODataQt on io thread !";
@@ -771,9 +775,14 @@ void ProfileIODataQt::updateUsedForGlobalCertificateVerification()
                                  base::BindOnce(&ProfileIODataQt::setGlobalCertificateVerification, m_weakPtr));
 }
 
+ClientCertificateStoreData *ProfileIODataQt::clientCertificateStoreData()
+{
+    return m_clientCertificateStoreData;
+}
+
 std::unique_ptr<net::ClientCertStore> ProfileIODataQt::CreateClientCertStore()
 {
-    return std::unique_ptr<net::ClientCertStore>(new ClientCertOverrideStore());
+    return std::unique_ptr<net::ClientCertStore>(new ClientCertOverrideStore(m_clientCertificateStoreData));
 }
 
 // static

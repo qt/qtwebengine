@@ -54,6 +54,7 @@ class QQuickWebEngineDownloadItem;
 class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineScript;
 class QQuickWebEngineSettings;
+class QWebEngineClientCertificateStore;
 class QWebEngineCookieStore;
 class QWebEngineNotification;
 class QWebEngineUrlRequestInterceptor;
@@ -152,6 +153,8 @@ public:
 
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
+
+    QWebEngineClientCertificateStore *clientCertificateStore();
 
     static QQuickWebEngineProfile *defaultProfile();
 

@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QObject;
 class QUrl;
+class QWebEngineClientCertificateStore;
 class QWebEngineCookieStore;
 class QWebEngineDownloadItem;
 class QWebEngineNotification;
@@ -141,6 +142,8 @@ public:
     void setDownloadPath(const QString &path);
 
     void setNotificationPresenter(std::function<void(const QWebEngineNotification &)> notificationPresenter);
+
+    QWebEngineClientCertificateStore *clientCertificateStore();
 
     static QWebEngineProfile *defaultProfile();
 

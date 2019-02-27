@@ -69,6 +69,7 @@ class ExtensionSystemQt;
 
 namespace QtWebEngineCore {
 
+class ClientCertificateStoreData;
 class ProfileQt;
 
 // ProfileIOData contains data that lives on the IOthread
@@ -123,6 +124,7 @@ public:
     void updateUsedForGlobalCertificateVerification(); // runs on ui thread
     bool hasPageInterceptors();
 
+    ClientCertificateStoreData *clientCertificateStoreData();
     std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
     static ProfileIODataQt *FromResourceContext(content::ResourceContext *resource_context);
 private:
@@ -146,6 +148,7 @@ private:
     QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
     QPointer<ProfileAdapter> m_profileAdapter; // never dereferenced in IO thread and it is passed by qpointer
     ProfileAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;
+    ClientCertificateStoreData *m_clientCertificateStoreData;
     QString m_cookiesPath;
     QString m_channelIdPath;
     QString m_httpAcceptLanguage;

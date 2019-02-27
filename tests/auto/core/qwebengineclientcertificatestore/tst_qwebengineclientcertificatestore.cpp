@@ -28,6 +28,7 @@
 
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineclientcertificatestore.h>
+#include <QtWebEngineWidgets/qwebengineprofile.h>
 
 class tst_QWebEngineClientCertificateStore : public QObject
 {
@@ -73,24 +74,24 @@ void tst_QWebEngineClientCertificateStore::addAndListCertificates()
     const QSslKey sslKeySecond(keyFileSecond.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, "");
 
     // Add certificates to in-memory store
-    QWebEngineClientCertificateStore::getInstance()->add(cert, sslKey);
-    QWebEngineClientCertificateStore::getInstance()->add(certSecond, sslKeySecond);
+    QWebEngineProfile::defaultProfile()->clientCertificateStore()->add(cert, sslKey);
+    QWebEngineProfile::defaultProfile()->clientCertificateStore()->add(certSecond, sslKeySecond);
 
-    QCOMPARE(2, QWebEngineClientCertificateStore::getInstance()->toList().length());
+    QCOMPARE(2, QWebEngineProfile::defaultProfile()->clientCertificateStore()->toList().length());
 }
 
 void tst_QWebEngineClientCertificateStore::removeAndClearCertificates()
 {
-    QCOMPARE(2, QWebEngineClientCertificateStore::getInstance()->toList().length());
+    QCOMPARE(2, QWebEngineProfile::defaultProfile()->clientCertificateStore()->toList().length());
 
     // Remove one certificate from in-memory store
-    auto list = QWebEngineClientCertificateStore::getInstance()->toList();
-    QWebEngineClientCertificateStore::getInstance()->remove(list[0].certificate);
-    QCOMPARE(1, QWebEngineClientCertificateStore::getInstance()->toList().length());
+    auto list = QWebEngineProfile::defaultProfile()->clientCertificateStore()->toList();
+    QWebEngineProfile::defaultProfile()->clientCertificateStore()->remove(list[0].certificate);
+    QCOMPARE(1, QWebEngineProfile::defaultProfile()->clientCertificateStore()->toList().length());
 
     // Remove all certificates in-memory store
-    QWebEngineClientCertificateStore::getInstance()->clear();
-    QCOMPARE(0, QWebEngineClientCertificateStore::getInstance()->toList().length());
+    QWebEngineProfile::defaultProfile()->clientCertificateStore()->clear();
+    QCOMPARE(0, QWebEngineProfile::defaultProfile()->clientCertificateStore()->toList().length());
 }
 
 QTEST_MAIN(tst_QWebEngineClientCertificateStore)

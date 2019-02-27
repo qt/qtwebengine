@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "net/client_cert_override.h"
+#include "client_cert_override.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -52,8 +52,7 @@
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
-#include "api/qwebengineclientcertificatestore.h"
-#include "net/client_cert_store_data.h"
+#include "client_cert_store_data.h"
 #include "profile_io_data_qt.h"
 
 #include <QtNetwork/qtnetworkglobal.h>
@@ -99,8 +98,9 @@ private:
 
 namespace QtWebEngineCore {
 
-ClientCertOverrideStore::ClientCertOverrideStore()
+ClientCertOverrideStore::ClientCertOverrideStore(ClientCertificateStoreData *storeData)
     : ClientCertStore()
+    , m_storeData(storeData)
     , m_nativeStore(createNativeStore())
 {
 }
@@ -108,12 +108,10 @@ ClientCertOverrideStore::ClientCertOverrideStore()
 ClientCertOverrideStore::~ClientCertOverrideStore() = default;
 
 #if QT_CONFIG(ssl)
-// static
 net::ClientCertIdentityList ClientCertOverrideStore::GetClientCertsOnUIThread(const net::SSLCertRequestInfo &cert_request_info)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    QWebEngineClientCertificateStore *clientCertificateStore = QWebEngineClientCertificateStore::getInstance();
-    const auto &clientCertOverrideData = clientCertificateStore->d_ptr->extraCerts;
+    const auto &clientCertOverrideData = m_storeData->extraCerts;
     // Look for certificates in memory store
     for (int i = 0; i < clientCertOverrideData.length(); i++) {
         scoped_refptr<net::X509Certificate> cert = clientCertOverrideData[i]->certPtr;
@@ -146,7 +144,8 @@ void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert
     // Access the user-provided data from the UI thread, but return on whatever thread this is.
     if (base::PostTaskWithTraitsAndReplyWithResult(
             FROM_HERE, { content::BrowserThread::UI },
-            base::BindOnce(&GetClientCertsOnUIThread, base::ConstRef(cert_request_info)),
+            base::BindOnce(&ClientCertOverrideStore::GetClientCertsOnUIThread,
+                           base::Unretained(this), base::ConstRef(cert_request_info)),
             base::BindOnce(&ClientCertOverrideStore::GetClientCertsReturn,
                            base::Unretained(this), base::ConstRef(cert_request_info), callback))
        ) {

@@ -1072,4 +1072,15 @@ QQmlListProperty<QQuickWebEngineScript> QQuickWebEngineProfile::userScripts()
                                                    d->userScripts_clear);
 }
 
+/*!
+    \since 5.13
+
+    Returns the profile's client certificate store.
+*/
+QWebEngineClientCertificateStore *QQuickWebEngineProfile::clientCertificateStore()
+{
+    Q_D(QQuickWebEngineProfile);
+    return d->profileAdapter()->clientCertificateStore();
+}
+
 QT_END_NAMESPACE

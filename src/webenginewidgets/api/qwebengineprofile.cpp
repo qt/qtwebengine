@@ -844,4 +844,15 @@ void QWebEngineProfile::clearHttpCache()
     d->profileAdapter()->clearHttpCache();
 }
 
+/*!
+    \since 5.13
+
+    Returns the profile's client certificate store.
+*/
+QWebEngineClientCertificateStore *QWebEngineProfile::clientCertificateStore()
+{
+    Q_D(QWebEngineProfile);
+    return d->profileAdapter()->clientCertificateStore();
+}
+
 QT_END_NAMESPACE

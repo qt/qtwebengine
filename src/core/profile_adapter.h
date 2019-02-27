@@ -60,6 +60,7 @@
 #include <QString>
 #include <QVector>
 
+#include "api/qwebengineclientcertificatestore.h"
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebengineurlrequestinterceptor.h"
 #include "api/qwebengineurlschemehandler.h"
@@ -200,6 +201,8 @@ public:
     void removePageRequestInterceptor();
     bool hasPageRequestInterceptor() const { return m_pageRequestInterceptors > 0; }
 
+    QWebEngineClientCertificateStore *clientCertificateStore();
+
     QHash<QByteArray, QWeakPointer<UserNotificationController>> &ephemeralNotifications()
     {   return m_ephemeralNotifications; }
     QHash<QByteArray, QSharedPointer<UserNotificationController>> &persistentNotifications()
@@ -218,6 +221,7 @@ private:
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
     QScopedPointer<UserResourceControllerHost> m_userResourceController;
     QScopedPointer<QWebEngineCookieStore> m_cookieStore;
+    QWebEngineClientCertificateStore *m_clientCertificateStore = nullptr;
     QPointer<QWebEngineUrlRequestInterceptor> m_requestInterceptor;
 
     QString m_dataPath;
