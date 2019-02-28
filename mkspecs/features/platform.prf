@@ -67,10 +67,6 @@ defineTest(isPlatformSupported) {
     skipBuild("C++14 support is required in order to build chromium.")
     return(false)
   }
-  qtConfig(mirclient) {
-    skipBuild("Mir is not yet supported as graphics backend for Qt WebEngine.")
-    return(false)
-  }
   static {
     skipBuild("Static builds of QtWebEngine aren't supported.")
     return(false)
