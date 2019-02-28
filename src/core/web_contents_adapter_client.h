@@ -478,6 +478,7 @@ public:
 
     virtual ProfileAdapter *profileAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;
+    virtual void releaseProfile() = 0;
 
 };
 

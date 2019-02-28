@@ -142,6 +142,8 @@ public:
 
     virtual void downloadRequested(DownloadItemInfo &info) = 0;
     virtual void downloadUpdated(const DownloadItemInfo &info) = 0;
+    virtual void addWebContentsAdapterClient(WebContentsAdapterClient *adapter) = 0;
+    virtual void removeWebContentsAdapterClient(WebContentsAdapterClient *adapter) = 0;
     static QString downloadInterruptReasonToString(DownloadInterruptReason reason);
 };
 

@@ -163,11 +163,6 @@ QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(ProfileAdapter *pro
 
 QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 {
-
-    while (!m_webContentsAdapterClients.isEmpty()) {
-       m_webContentsAdapterClients.first()->destroy();
-    }
-
     if (m_profileAdapter) {
         // In the case the user sets this profile as the parent of the interceptor
         // it can be deleted before the browser-context still referencing it is.
@@ -179,14 +174,16 @@ QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
         delete m_profileAdapter;
 }
 
-void QQuickWebEngineProfilePrivate::addWebContentsAdapterClient(QQuickWebEngineViewPrivate *adapter)
+void QQuickWebEngineProfilePrivate::addWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter)
 {
-    m_webContentsAdapterClients.append(adapter);
+    Q_ASSERT(m_profileAdapter);
+    m_profileAdapter->addWebContentsAdapterClient(adapter);
 }
 
-void QQuickWebEngineProfilePrivate::removeWebContentsAdapterClient(QQuickWebEngineViewPrivate*adapter)
+void QQuickWebEngineProfilePrivate::removeWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient*adapter)
 {
-    m_webContentsAdapterClients.removeAll(adapter);
+    Q_ASSERT(m_profileAdapter);
+    m_profileAdapter->removeWebContentsAdapterClient(adapter);
 }
 
 QtWebEngineCore::ProfileAdapter *QQuickWebEngineProfilePrivate::profileAdapter() const

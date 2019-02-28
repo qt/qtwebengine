@@ -262,6 +262,18 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
     download->d_func()->update(info);
 }
 
+void QWebEngineProfilePrivate::addWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter)
+{
+    Q_ASSERT(m_profileAdapter);
+    m_profileAdapter->addWebContentsAdapterClient(adapter);
+}
+
+void QWebEngineProfilePrivate::removeWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter)
+{
+    Q_ASSERT(m_profileAdapter);
+    m_profileAdapter->removeWebContentsAdapterClient(adapter);
+}
+
 /*!
     Constructs a new off-the-record profile with the parent \a parent.
 

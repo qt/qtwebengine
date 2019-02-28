@@ -189,7 +189,7 @@ bool QQuickWebEngineViewPrivate::profileInitialized() const
     return m_profileInitialized;
 }
 
-void QQuickWebEngineViewPrivate::destroy()
+void QQuickWebEngineViewPrivate::releaseProfile()
 {
     // The profile for this web contents is about to be
     // garbage collected, delete WebContents first and

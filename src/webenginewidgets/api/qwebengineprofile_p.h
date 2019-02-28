@@ -86,6 +86,9 @@ public:
     void downloadRequested(DownloadItemInfo &info) override;
     void downloadUpdated(const DownloadItemInfo &info) override;
 
+    void addWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter) override;
+    void removeWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter) override;
+
 private:
     QWebEngineProfile *q_ptr;
     QWebEngineSettings *m_settings;

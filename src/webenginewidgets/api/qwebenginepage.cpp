@@ -256,12 +256,15 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
         ensureInitialized();
         wasShown();
     });
+
+    profile->d_ptr->addWebContentsAdapterClient(this);
 }
 
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
 {
     delete history;
     delete settings;
+    profile->d_ptr->removeWebContentsAdapterClient(this);
 }
 
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client)
@@ -543,6 +546,13 @@ void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<Authentication
     }
 
     controller->accept(networkAuth.user(), networkAuth.password());
+}
+
+void QWebEnginePagePrivate::releaseProfile()
+{
+    qDebug("Release of profile requested but WebEnginePage still not deleted. Expect troubles !");
+    // this is not the way to go, but might avoid the crash if user code does not make any calls to page.
+    delete q_ptr->d_ptr.take();
 }
 
 void QWebEnginePagePrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
@@ -967,11 +977,13 @@ QWebEnginePage::QWebEnginePage(QWebEngineProfile *profile, QObject* parent)
 
 QWebEnginePage::~QWebEnginePage()
 {
-    Q_D(QWebEnginePage);
-    setDevToolsPage(nullptr);
-    d->adapter->stopFinding();
-    QWebEnginePagePrivate::bindPageAndView(this, nullptr);
-    QWebEnginePagePrivate::bindPageAndWidget(this, nullptr);
+    if (d_ptr) {
+        // d_ptr might be exceptionally null if profile adapter got deleted first
+        setDevToolsPage(nullptr);
+        d_ptr->adapter->stopFinding();
+        QWebEnginePagePrivate::bindPageAndView(this, nullptr);
+        QWebEnginePagePrivate::bindPageAndWidget(this, nullptr);
+    }
 }
 
 QWebEngineHistory *QWebEnginePage::history() const
