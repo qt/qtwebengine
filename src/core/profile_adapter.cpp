@@ -200,7 +200,8 @@ ProfileAdapter *ProfileAdapter::createDefaultProfileAdapter()
 
 ProfileAdapter *ProfileAdapter::defaultProfileAdapter()
 {
-    return WebEngineContext::current()->defaultProfileAdapter();
+    WebEngineContext *context = WebEngineContext::current();
+    return context ? context->defaultProfileAdapter() : nullptr;
 }
 
 QObject* ProfileAdapter::globalQObjectRoot()
