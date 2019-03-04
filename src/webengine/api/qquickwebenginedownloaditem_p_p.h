@@ -85,6 +85,7 @@ public:
 
     void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
     void updateState(QQuickWebEngineDownloadItem::DownloadState newState);
+    void setFinished();
 };
 
 QT_END_NAMESPACE

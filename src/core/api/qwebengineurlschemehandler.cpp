@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QWebEngineUrlSchemeHandler
-    \brief The QWebEngineUrlSchemeHandler is a base class for handling custom URL schemes.
+    \brief The QWebEngineUrlSchemeHandler class is a base class for handling custom URL schemes.
     \since 5.6
 
     To implement a custom URL scheme for QtWebEngine, you first have to create an instance of

@@ -76,6 +76,12 @@ BrowserAccessibilityManagerQt::BrowserAccessibilityManagerQt(
       , m_parentObject(parentObject)
 {
     Initialize(initialTree);
+    m_valid = true; // BrowserAccessibilityQt can start using the AXTree
+}
+
+BrowserAccessibilityManagerQt::~BrowserAccessibilityManagerQt()
+{
+    m_valid = false; // BrowserAccessibilityQt should stop using the AXTree
 }
 
 QAccessibleInterface *BrowserAccessibilityManagerQt::rootParentAccessible()

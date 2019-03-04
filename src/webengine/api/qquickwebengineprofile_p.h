@@ -53,7 +53,7 @@
 
 #include "profile_adapter_client.h"
 #include "profile_adapter.h"
-#include "qquickwebengineprofile_p.h"
+#include "qquickwebengineprofile.h"
 
 #include <QExplicitlySharedDataPointer>
 #include <QMap>
@@ -71,14 +71,16 @@ public:
     Q_DECLARE_PUBLIC(QQuickWebEngineProfile)
     QQuickWebEngineProfilePrivate(QtWebEngineCore::ProfileAdapter *profileAdapter);
     ~QQuickWebEngineProfilePrivate();
-    void addWebContentsAdapterClient(QQuickWebEngineViewPrivate *adapter);
-    void removeWebContentsAdapterClient(QQuickWebEngineViewPrivate *adapter);
+    void addWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter) override;
+    void removeWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter) override;
 
     QtWebEngineCore::ProfileAdapter* profileAdapter() const;
     QQuickWebEngineSettings *settings() const;
 
     void cancelDownload(quint32 downloadId);
     void downloadDestroyed(quint32 downloadId);
+
+    void cleanDownloads();
 
     void downloadRequested(DownloadItemInfo &info) override;
     void downloadUpdated(const DownloadItemInfo &info) override;
@@ -100,7 +102,6 @@ private:
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
     QMap<quint32, QPointer<QQuickWebEngineDownloadItem> > m_ongoingDownloads;
     QList<QQuickWebEngineScript *> m_userScripts;
-    QVector<QQuickWebEngineViewPrivate *> m_webContentsAdapterClients;
 };
 
 QT_END_NAMESPACE

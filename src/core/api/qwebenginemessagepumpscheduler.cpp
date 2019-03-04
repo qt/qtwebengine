@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,40 +37,36 @@
 **
 ****************************************************************************/
 
-#ifndef BROWSER_ACCESSIBILITY_MANAGER_QT_H
-#define BROWSER_ACCESSIBILITY_MANAGER_QT_H
+#include "qwebenginemessagepumpscheduler_p.h"
 
-#include "content/browser/accessibility/browser_accessibility_manager.h"
-#ifndef QT_NO_ACCESSIBILITY
-#include <QtCore/qobject.h>
+#include <QAbstractEventDispatcher>
+#include <QCoreApplication>
+#include <QTimerEvent>
 
-QT_BEGIN_NAMESPACE
-class QAccessibleInterface;
-QT_END_NAMESPACE
+QWebEngineMessagePumpScheduler::QWebEngineMessagePumpScheduler(std::function<void()> callback)
+    : m_callback(std::move(callback))
+{}
 
-namespace content {
-
-class BrowserAccessibilityManagerQt : public BrowserAccessibilityManager
+void QWebEngineMessagePumpScheduler::scheduleWork()
 {
-public:
-    BrowserAccessibilityManagerQt(QObject* parentObject,
-                                  const ui::AXTreeUpdate& initialTree,
-                                  BrowserAccessibilityDelegate* delegate,
-                                  BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
-    ~BrowserAccessibilityManagerQt() override;
-    void FireBlinkEvent(ax::mojom::Event event_type,
-                        BrowserAccessibility* node) override;
-
-    QAccessibleInterface *rootParentAccessible();
-    bool isValid() const { return m_valid; }
-
-private:
-    Q_DISABLE_COPY(BrowserAccessibilityManagerQt)
-    QObject *m_parentObject;
-    bool m_valid = false;
-};
-
+    QCoreApplication::postEvent(this, new QTimerEvent(0));
 }
 
-#endif // QT_NO_ACCESSIBILITY
-#endif
+void QWebEngineMessagePumpScheduler::scheduleDelayedWork(int delay)
+{
+    if (delay < 0) {
+        killTimer(m_timerId);
+        m_timerId = 0;
+    } else if (!m_timerId || delay < QAbstractEventDispatcher::instance()->remainingTime(m_timerId)) {
+        killTimer(m_timerId);
+        m_timerId = startTimer(delay);
+    }
+}
+
+void QWebEngineMessagePumpScheduler::timerEvent(QTimerEvent *ev)
+{
+    Q_ASSERT(!ev->timerId() || m_timerId == ev->timerId());
+    killTimer(m_timerId);
+    m_timerId = 0;
+    m_callback();
+}

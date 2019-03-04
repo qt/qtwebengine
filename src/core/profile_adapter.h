@@ -76,6 +76,7 @@ class ProfileAdapterClient;
 class ProfileQt;
 class UserResourceControllerHost;
 class VisitedLinksManagerQt;
+class WebContentsAdapterClient;
 
 class QWEBENGINECORE_PRIVATE_EXPORT ProfileAdapter : public QObject
 {
@@ -132,6 +133,9 @@ public:
     QStringList spellCheckLanguages() const;
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
+
+    void addWebContentsAdapterClient(WebContentsAdapterClient *client);
+    void removeWebContentsAdapterClient(WebContentsAdapterClient *client);
 
     // KEEP IN SYNC with API or add mapping layer
     enum HttpCacheType {
@@ -237,6 +241,7 @@ private:
     QHash<QByteArray, QSharedPointer<UserNotificationController>> m_persistentNotifications;
 
     QList<ProfileAdapterClient*> m_clients;
+    QVector<WebContentsAdapterClient *> m_webContentsAdapterClients;
     int m_httpCacheMaxSize;
     int m_pageRequestInterceptors;
     QrcUrlSchemeHandler m_qrcHandler;
