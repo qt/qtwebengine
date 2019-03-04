@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,40 +37,44 @@
 **
 ****************************************************************************/
 
-#ifndef BROWSER_ACCESSIBILITY_MANAGER_QT_H
-#define BROWSER_ACCESSIBILITY_MANAGER_QT_H
+#ifndef QWEBENGINEMESSAGEPUMPSCHEDULER_P_H
+#define QWEBENGINEMESSAGEPUMPSCHEDULER_P_H
 
-#include "content/browser/accessibility/browser_accessibility_manager.h"
-#ifndef QT_NO_ACCESSIBILITY
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qtwebenginecoreglobal_p.h"
+
 #include <QtCore/qobject.h>
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
-class QAccessibleInterface;
-QT_END_NAMESPACE
 
-namespace content {
-
-class BrowserAccessibilityManagerQt : public BrowserAccessibilityManager
+class QWEBENGINECORE_PRIVATE_EXPORT QWebEngineMessagePumpScheduler : public QObject
 {
+    Q_OBJECT
 public:
-    BrowserAccessibilityManagerQt(QObject* parentObject,
-                                  const ui::AXTreeUpdate& initialTree,
-                                  BrowserAccessibilityDelegate* delegate,
-                                  BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
-    ~BrowserAccessibilityManagerQt() override;
-    void FireBlinkEvent(ax::mojom::Event event_type,
-                        BrowserAccessibility* node) override;
+    QWebEngineMessagePumpScheduler(std::function<void()> callback);
+    void scheduleWork();
+    void scheduleDelayedWork(int delay);
 
-    QAccessibleInterface *rootParentAccessible();
-    bool isValid() const { return m_valid; }
+protected:
+    void timerEvent(QTimerEvent *ev) override;
 
 private:
-    Q_DISABLE_COPY(BrowserAccessibilityManagerQt)
-    QObject *m_parentObject;
-    bool m_valid = false;
+    int m_timerId = 0;
+    std::function<void()> m_callback;
 };
 
-}
+QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
-#endif
+#endif // !QWEBENGINEMESSAGEPUMPSCHEDULER_P_H

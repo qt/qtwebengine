@@ -70,6 +70,7 @@ private Q_SLOTS:
     void downloadFileNot1();
     void downloadFileNot2();
     void downloadDeleted();
+    void downloadDeletedByProfile();
     void downloadUniqueFilename_data();
     void downloadUniqueFilename();
     void downloadUniqueFileNameWithTimeStamp();
@@ -819,6 +820,37 @@ void tst_QWebEngineDownloadItem::downloadDeleted()
     QCOMPARE(finishedCount, 0);
     downloadItem->deleteLater();
     QTRY_COMPARE(finishedCount, 1);
+}
+
+void tst_QWebEngineDownloadItem::downloadDeletedByProfile()
+{
+    m_server->setExpectError(true);
+
+    QPointer<QWebEngineProfile> profile(new QWebEngineProfile);
+    profile->setHttpCacheType(QWebEngineProfile::NoCache);
+    profile->settings()->setAttribute(QWebEngineSettings::AutoLoadIconsForPage, false);
+
+    bool downloadFinished = false;
+    QPointer<QWebEngineDownloadItem> downloadItem;
+    connect(profile, &QWebEngineProfile::downloadRequested, [&] (QWebEngineDownloadItem *item) {
+        connect(item, &QWebEngineDownloadItem::finished, [&] () {
+            downloadFinished = true;
+        });
+        downloadItem = item;
+        item->accept();
+    });
+
+    QPointer<QWebEnginePage> page(new QWebEnginePage(profile));
+    page->download(m_server->url(QByteArrayLiteral("/file")));
+
+    QTRY_COMPARE(downloadItem.isNull(), false);
+    QVERIFY(downloadItem);
+
+    page->deleteLater();
+    profile->deleteLater();
+
+    QTRY_COMPARE(downloadFinished, true);
+    QTRY_COMPARE(downloadItem.isNull(), true);
 }
 
 void tst_QWebEngineDownloadItem::downloadUniqueFilename_data()

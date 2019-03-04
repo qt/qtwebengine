@@ -147,6 +147,8 @@ public:
     virtual void useForGlobalCertificateVerificationChanged() {}
     virtual void showNotification(QSharedPointer<UserNotificationController> &) { }
 
+    virtual void addWebContentsAdapterClient(WebContentsAdapterClient *adapter) = 0;
+    virtual void removeWebContentsAdapterClient(WebContentsAdapterClient *adapter) = 0;
     static QString downloadInterruptReasonToString(DownloadInterruptReason reason);
 };
 

@@ -130,6 +130,7 @@ public:
     void passOnFocus(bool reverse) override;
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) override;
     void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) override;
+    void releaseProfile() override;
     void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) override;
     void runGeolocationPermissionRequest(const QUrl &securityOrigin) override;
     void runUserNotificationPermissionRequest(const QUrl &securityOrigin) override;

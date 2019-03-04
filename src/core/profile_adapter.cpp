@@ -55,6 +55,7 @@
 #include "type_conversion.h"
 #include "visited_links_manager_qt.h"
 #include "web_engine_context.h"
+#include "web_contents_adapter_client.h"
 
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -105,6 +106,9 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
 
 ProfileAdapter::~ProfileAdapter()
 {
+    while (!m_webContentsAdapterClients.isEmpty()) {
+       m_webContentsAdapterClients.first()->releaseProfile();
+    }
     WebEngineContext::current()->removeProfileAdapter(this);
     if (m_downloadManagerDelegate) {
         m_profile->GetDownloadManager(m_profile.data())->Shutdown();
@@ -231,7 +235,8 @@ ProfileAdapter *ProfileAdapter::createDefaultProfileAdapter()
 
 ProfileAdapter *ProfileAdapter::defaultProfileAdapter()
 {
-    return WebEngineContext::current()->defaultProfileAdapter();
+    WebEngineContext *context = WebEngineContext::current();
+    return context ? context->defaultProfileAdapter() : nullptr;
 }
 
 QObject* ProfileAdapter::globalQObjectRoot()
@@ -616,6 +621,16 @@ bool ProfileAdapter::isSpellCheckEnabled() const
 #else
     return false;
 #endif
+}
+
+void ProfileAdapter::addWebContentsAdapterClient(WebContentsAdapterClient *client)
+{
+    m_webContentsAdapterClients.append(client);
+}
+
+void ProfileAdapter::removeWebContentsAdapterClient(WebContentsAdapterClient *client)
+{
+    m_webContentsAdapterClients.removeAll(client);
 }
 
 void ProfileAdapter::resetVisitedLinksManager()

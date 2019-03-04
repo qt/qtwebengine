@@ -382,7 +382,7 @@ void QWebEngineCookieStore::setCookieFilter(std::function<bool(const FilterReque
     \inmodule QtWebEngineCore
     \since 5.11
 
-    \brief This struct is used in conjunction with QWebEngineCookieStore::setCookieFilter() and is
+    \brief The QWebEngineCookieStore::FilterRequest struct is used in conjunction with QWebEngineCookieStore::setCookieFilter() and is
     the type \a filterCallback operates on.
 
     \sa QWebEngineCookieStore::setCookieFilter()

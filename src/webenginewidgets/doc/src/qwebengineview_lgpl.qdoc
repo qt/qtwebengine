@@ -173,16 +173,16 @@
 
 /*!
     \property QWebEngineView::title
-    \brief the title of the web page currently viewed
+    \brief The title of the page as defined by the HTML \c <title> element.
 
-    By default, this property contains an empty string.
+    Equivalent to \l {QWebEnginePage::title()}.
 
     \sa titleChanged()
 */
 
 /*!
     \property QWebEngineView::url
-    \brief the URL of the web page currently viewed
+    \brief The URL of the web page currently viewed.
 
     Setting this property clears the view and loads the URL.
 
@@ -193,7 +193,7 @@
 
 /*!
     \property QWebEngineView::iconUrl
-    \brief the URL of the icon associated with the page currently viewed
+    \brief The URL of the icon associated with the page currently viewed.
 
     By default, this property contains an empty URL.
 
@@ -202,7 +202,7 @@
 
 /*!
     \property QWebEngineView::hasSelection
-    \brief whether this page contains selected content or not.
+    \brief Whether this page contains selected content or not.
 
     By default, this property is \c false.
 
@@ -211,7 +211,7 @@
 
 /*!
     \property QWebEngineView::selectedText
-    \brief the text currently selected
+    \brief The text currently selected.
 
     By default, this property contains an empty string.
 
@@ -238,7 +238,7 @@
 
 /*!
     \property QWebEngineView::zoomFactor
-    \brief the zoom factor for the view
+    \brief The zoom factor for the view.
 
     Valid values are within the range from \c{0.25} to \c{5.0}. The default factor is \c{1.0}.
 */
