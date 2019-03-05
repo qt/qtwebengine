@@ -55,6 +55,11 @@ using QtWebEngineCore::UserNotificationController;
     \inmodule QtWebEngineCore
 
     This class contains the information and API for HTML5 desktop and push notifications.
+
+    Web engine notifications are passed to the user in the
+    \l QWebEngineProfile::setNotificationPresenter() and
+    \l QQuickWebEngineProfile::userNotification() calls and the
+    \l WebEngineProfile::userNotification() signal.
 */
 
 class QWebEngineNotificationPrivate : public UserNotificationController::Client {
