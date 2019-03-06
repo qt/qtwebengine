@@ -205,7 +205,9 @@ public:
     void removePageRequestInterceptor();
     bool hasPageRequestInterceptor() const { return m_pageRequestInterceptors > 0; }
 
+#if QT_CONFIG(ssl)
     QWebEngineClientCertificateStore *clientCertificateStore();
+#endif
 
     QHash<QByteArray, QWeakPointer<UserNotificationController>> &ephemeralNotifications()
     {   return m_ephemeralNotifications; }
@@ -225,7 +227,9 @@ private:
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
     QScopedPointer<UserResourceControllerHost> m_userResourceController;
     QScopedPointer<QWebEngineCookieStore> m_cookieStore;
+#if QT_CONFIG(ssl)
     QWebEngineClientCertificateStore *m_clientCertificateStore = nullptr;
+#endif
     QPointer<QWebEngineUrlRequestInterceptor> m_requestInterceptor;
 
     QString m_dataPath;

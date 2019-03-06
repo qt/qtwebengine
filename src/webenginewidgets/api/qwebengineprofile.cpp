@@ -871,8 +871,12 @@ void QWebEngineProfile::clearHttpCache()
 */
 QWebEngineClientCertificateStore *QWebEngineProfile::clientCertificateStore()
 {
+#if QT_CONFIG(ssl)
     Q_D(QWebEngineProfile);
     return d->profileAdapter()->clientCertificateStore();
+#else
+    return nullptr;
+#endif
 }
 
 QT_END_NAMESPACE

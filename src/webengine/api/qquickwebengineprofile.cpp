@@ -1086,8 +1086,12 @@ QQmlListProperty<QQuickWebEngineScript> QQuickWebEngineProfile::userScripts()
 */
 QWebEngineClientCertificateStore *QQuickWebEngineProfile::clientCertificateStore()
 {
+#if QT_CONFIG(ssl)
     Q_D(QQuickWebEngineProfile);
     return d->profileAdapter()->clientCertificateStore();
+#else
+    return nullptr;
+#endif
 }
 
 QT_END_NAMESPACE

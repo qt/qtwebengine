@@ -114,7 +114,9 @@ ProfileAdapter::~ProfileAdapter()
         m_profile->GetDownloadManager(m_profile.data())->Shutdown();
         m_downloadManagerDelegate.reset();
     }
+#if QT_CONFIG(ssl)
     delete m_clientCertificateStore;
+#endif
     Q_ASSERT(m_pageRequestInterceptors == 0);
 }
 
@@ -668,11 +670,13 @@ bool ProfileAdapter::isUsedForGlobalCertificateVerification() const
     return m_usedForGlobalCertificateVerification;
 }
 
+#if QT_CONFIG(ssl)
 QWebEngineClientCertificateStore *ProfileAdapter::clientCertificateStore()
 {
     if (!m_clientCertificateStore)
         m_clientCertificateStore = new QWebEngineClientCertificateStore(m_profile->m_profileIOData->clientCertificateStoreData());
     return m_clientCertificateStore;
 }
+#endif
 
 } // namespace QtWebEngineCore
