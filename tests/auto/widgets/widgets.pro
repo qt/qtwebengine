@@ -40,7 +40,8 @@ qtConfig(webengine-spellchecker):!cross_compile {
 
 # QTBUG-60268
 boot2qt: SUBDIRS -= accessibility defaultsurfaceformat devtools \
-                    faviconmanager qwebenginepage qwebenginehistory \
-                    qwebengineprofile qwebenginescript \
-                    qwebengineview qwebenginedownloaditem qwebenginesettings \
-                    schemes origins loadsignals proxy proxypac offscreen
+                    qwebenginepage \
+                    qwebengineprofile  \
+                    qwebengineview  \
+                    qwebenginescript \
+                    proxypac offscreen
