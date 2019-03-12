@@ -173,7 +173,7 @@ bool GLSurfaceGLXQt::Initialize(GLSurfaceFormat format)
         GLX_PBUFFER_HEIGHT, m_size.height(),
         GLX_LARGEST_PBUFFER, x11::False,
         GLX_PRESERVED_CONTENTS, x11::False,
-        NULL
+        x11::None // MEMO doc: ...must be terminated with None or NULL
     };
 
     m_surfaceBuffer = glXCreatePbuffer(display, static_cast<GLXFBConfig>(g_config), pbuffer_attributes);
