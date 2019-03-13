@@ -206,6 +206,8 @@ content::BrowserPluginGuestManager *ProfileQt::GetGuestManager()
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     return guest_view::GuestViewManager::FromBrowserContext(this);
+#else
+    return nullptr;
 #endif
 }
 
