@@ -3,9 +3,7 @@ QT_FOR_CONFIG += network-private
 
 SUBDIRS += \
     qwebenginecookiestore \
-    qwebengineurlrequestinterceptor \
+    qwebengineurlrequestinterceptor
 
 qtConfig(ssl): SUBDIRS += qwebengineclientcertificatestore
 
-# QTBUG-60268
-boot2qt: SUBDIRS = ""
