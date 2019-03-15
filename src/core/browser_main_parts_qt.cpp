@@ -67,7 +67,6 @@
 #include "service/service_qt.h"
 #include "web_engine_context.h"
 
-#include <QEventLoop>
 #include <QtGui/qtgui-config.h>
 
 #if QT_CONFIG(opengl)
@@ -115,36 +114,31 @@ public:
         : m_scheduler([this]() { handleScheduledWork(); })
     {}
 
+    void setDelegate(Delegate *delegate)
+    {
+        m_delegate = delegate;
+    }
+
     void Run(Delegate *delegate) override
     {
-        if (!m_delegate)
-            m_delegate = delegate;
-        else
-            Q_ASSERT(delegate == m_delegate);
         // This is used only when MessagePumpForUIQt is used outside of the GUI thread.
-        QEventLoop loop;
-        m_explicitLoop = &loop;
-        loop.exec();
-        m_explicitLoop = nullptr;
+        NOTIMPLEMENTED();
     }
 
     void Quit() override
     {
-        Q_ASSERT(m_explicitLoop);
-        m_explicitLoop->quit();
+        // This is used only when MessagePumpForUIQt is used outside of the GUI thread.
+        NOTIMPLEMENTED();
     }
 
     void ScheduleWork() override
     {
         // NOTE: This method may called from any thread at any time.
-        if (!m_delegate)
-            m_delegate = static_cast<base::MessageLoopImpl*>(base::MessageLoopCurrentForUI::Get().ToMessageLoopBaseDeprecated());
         m_scheduler.scheduleWork();
     }
 
     void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) override
     {
-        Q_ASSERT(m_delegate);
         m_scheduler.scheduleDelayedWork(GetTimeIntervalMilliseconds(delayed_work_time));
     }
 
@@ -196,6 +190,8 @@ private:
 
     void handleScheduledWork()
     {
+        Q_ASSERT(m_delegate);
+
         ScopedGLContextChecker glContextChecker;
 
         bool more_work_is_plausible = m_delegate->DoWork();
@@ -214,14 +210,26 @@ private:
     }
 
     Delegate *m_delegate = nullptr;
-    QEventLoop *m_explicitLoop = nullptr;
     QWebEngineMessagePumpScheduler m_scheduler;
 };
 
-std::unique_ptr<base::MessagePump> messagePumpFactory()
-{
-    return base::WrapUnique(new MessagePumpForUIQt);
-}
+// Needed to access protected constructor from MessageLoop.
+class MessageLoopForUIQt : public base::MessageLoop {
+public:
+    MessageLoopForUIQt() : MessageLoop(TYPE_UI, base::BindOnce(&messagePumpFactory))
+    {
+        BindToCurrentThread();
+
+        auto pump = static_cast<MessagePumpForUIQt *>(pump_);
+        auto backend = static_cast<base::MessageLoopImpl *>(backend_.get());
+        pump->setDelegate(backend);
+    }
+private:
+    static std::unique_ptr<base::MessagePump> messagePumpFactory()
+    {
+        return base::WrapUnique(new MessagePumpForUIQt);
+    }
+};
 
 BrowserMainPartsQt::BrowserMainPartsQt() : content::BrowserMainParts()
 { }
@@ -234,12 +242,13 @@ int BrowserMainPartsQt::PreEarlyInitialization()
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(extensions::kExtensionScheme);
 #endif //ENABLE_EXTENSIONS
-    base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
     return 0;
 }
 
 void BrowserMainPartsQt::PreMainMessageLoopStart()
 {
+    // Overrides message loop creation in BrowserMainLoop::MainMessageLoopStart().
+    m_mainMessageLoop.reset(new MessageLoopForUIQt);
 }
 
 void BrowserMainPartsQt::PreMainMessageLoopRun()
