@@ -201,7 +201,7 @@ int64_t PlatformNotificationServiceQt::ReadNextPersistentNotificationId(content:
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     auto prefs = static_cast<ProfileQt *>(browser_context)->GetPrefs();
     int64_t nextId = prefs->GetInteger(prefs::kNotificationNextPersistentId) + 1;
-    prefs->SetInt64(prefs::kNotificationNextPersistentId, nextId);
+    prefs->SetInteger(prefs::kNotificationNextPersistentId, nextId);
     return nextId;
 }
 
