@@ -600,11 +600,17 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
     QTRY_COMPARE(loadSpy.count(), 4);
     QTRY_COMPARE(page.navigations.count(), 4);
 
+    page.load(QUrl("qrc:///resources/reload.html"));
+    QTRY_COMPARE(loadSpy.count(), 6);
+    QTRY_COMPARE(page.navigations.count(), 6);
+
     QList<QWebEnginePage::NavigationType> expectedList;
     expectedList << QWebEnginePage::NavigationTypeTyped
         << QWebEnginePage::NavigationTypeTyped
         << QWebEnginePage::NavigationTypeBackForward
-        << QWebEnginePage::NavigationTypeReload;
+        << QWebEnginePage::NavigationTypeReload
+        << QWebEnginePage::NavigationTypeTyped
+        << QWebEnginePage::NavigationTypeOther;
     QVERIFY(expectedList.count() == page.navigations.count());
     for (int i = 0; i < expectedList.count(); ++i) {
         QCOMPARE(page.navigations[i].type, expectedList[i]);
