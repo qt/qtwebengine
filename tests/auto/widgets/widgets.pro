@@ -44,6 +44,6 @@ boot2qt: SUBDIRS -= accessibility defaultsurfaceformat devtools \
                     qwebengineprofile  \
                     qwebengineview  \
                     qwebenginescript \
-                    proxypac offscreen
+                    offscreen
 
 win32: SUBDIRS -= offscreen
