@@ -42,7 +42,7 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qvector.h>
 #include <QtNetwork/qsslcertificate.h>
 #include <QtNetwork/qsslkey.h>
 
@@ -55,17 +55,11 @@ QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(ssl)
 
-class QWebEngineProfile;
 class QWEBENGINECORE_EXPORT QWebEngineClientCertificateStore {
 
 public:
-    struct Entry {
-        QSslKey privateKey;
-        QSslCertificate certificate;
-    };
-
     void add(const QSslCertificate &certificate, const QSslKey &privateKey);
-    QList<Entry> toList() const;
+    QVector<QSslCertificate> certificates() const;
     void remove(const QSslCertificate &certificate);
     void clear();
 

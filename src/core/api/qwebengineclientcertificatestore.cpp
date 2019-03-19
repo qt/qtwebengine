@@ -92,19 +92,15 @@ void QWebEngineClientCertificateStore::add(const QSslCertificate &certificate, c
 }
 
 /*!
-    Returns a list of private and public keys of client certificates in the in-memory store.
-    Returns an empty list if the in-memory store does not contain certificates.
+    Returns a list of the client certificates in the in-memory store.
+    Returns an empty list if the store does not contain any certificates.
 */
 
-QList<QWebEngineClientCertificateStore::Entry> QWebEngineClientCertificateStore::toList() const
+QVector<QSslCertificate> QWebEngineClientCertificateStore::certificates() const
 {
-    QList<Entry> certificateList;
-    for (auto data : qAsConst(m_storeData->extraCerts)) {
-        Entry entry;
-        entry.certificate = data->certificate;
-        entry.privateKey = data->key;
-        certificateList.append(entry);
-    }
+    QVector<QSslCertificate> certificateList;
+    for (auto data : qAsConst(m_storeData->extraCerts))
+        certificateList.append(data->certificate);
     return certificateList;
 }
 
