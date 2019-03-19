@@ -93,7 +93,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool webRTCPublicInterfacesOnly READ webRTCPublicInterfacesOnly WRITE setWebRTCPublicInterfacesOnly NOTIFY webRTCPublicInterfacesOnlyChanged REVISION 6 FINAL)
     Q_PROPERTY(bool javascriptCanPaste READ javascriptCanPaste WRITE setJavascriptCanPaste NOTIFY javascriptCanPasteChanged REVISION 6 FINAL)
     Q_PROPERTY(bool dnsPrefetchEnabled READ dnsPrefetchEnabled WRITE setDnsPrefetchEnabled NOTIFY dnsPrefetchEnabledChanged REVISION 7 FINAL)
-    Q_PROPERTY(bool pdfViewerEnabled READ pdfViewerEnabled WRITE setPDFViewerEnabled NOTIFY pdfViewerEnabledChanged REVISION 8 FINAL)
+    Q_PROPERTY(bool pdfViewerEnabled READ pdfViewerEnabled WRITE setPdfViewerEnabled NOTIFY pdfViewerEnabledChanged REVISION 8 FINAL)
 
 public:
     enum UnknownUrlSchemePolicy {
@@ -168,7 +168,7 @@ public:
     void setWebRTCPublicInterfacesOnly(bool on);
     void setJavascriptCanPaste(bool on);
     void setDnsPrefetchEnabled(bool on);
-    void setPDFViewerEnabled(bool on);
+    void setPdfViewerEnabled(bool on);
 
 signals:
     void autoLoadImagesChanged();

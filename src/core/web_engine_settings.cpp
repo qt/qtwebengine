@@ -284,9 +284,9 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(JavascriptCanPaste, false);
         s_defaultAttributes.insert(DnsPrefetchEnabled, false);
 #if QT_CONFIG(webengine_extensions)
-        s_defaultAttributes.insert(PDFViewerEnabled, true);
+        s_defaultAttributes.insert(PdfViewerEnabled, true);
 #else
-        s_defaultAttributes.insert(PDFViewerEnabled, false);
+        s_defaultAttributes.insert(PdfViewerEnabled, false);
 #endif
     }
 

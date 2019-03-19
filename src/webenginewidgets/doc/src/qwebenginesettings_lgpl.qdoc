@@ -188,7 +188,7 @@
     \value DnsPrefetchEnabled Specifies whether WebEngine will try to pre-fetch DNS entries to
             speed up browsing.
             Disabled by default. (Added in Qt 5.12)
-    \value EnablePDFViewer Specifies that PDF documents will be opened in the internal PDF viewer
+    \value PdfViewerEnabled Specifies that PDF documents will be opened in the internal PDF viewer
            instead of being downloaded.
            Enabled by default. (Added in Qt 5.13)
 */

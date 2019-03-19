@@ -103,7 +103,7 @@ public:
         WebRTCPublicInterfacesOnly,
         JavascriptCanPaste,
         DnsPrefetchEnabled,
-        PDFViewerEnabled,
+        PdfViewerEnabled,
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

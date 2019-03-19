@@ -92,7 +92,7 @@ void OnPdfStreamIntercepted(
         return;
 
     WebEngineSettings *settings = contentsDelegate->webEngineSettings();
-    if (!settings->testAttribute(WebEngineSettings::PDFViewerEnabled)
+    if (!settings->testAttribute(WebEngineSettings::PdfViewerEnabled)
         || !settings->testAttribute(WebEngineSettings::PluginsEnabled)) {
         // If the applications has been set up to always download PDF files to open them in an
         // external viewer, trigger the download.

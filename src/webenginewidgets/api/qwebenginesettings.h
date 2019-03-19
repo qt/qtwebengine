@@ -96,7 +96,7 @@ public:
         WebRTCPublicInterfacesOnly,
         JavascriptCanPaste,
         DnsPrefetchEnabled,
-        PDFViewerEnabled,
+        PdfViewerEnabled,
     };
 
     enum FontSize {

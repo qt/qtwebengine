@@ -467,7 +467,7 @@ bool QQuickWebEngineSettings::dnsPrefetchEnabled() const
 */
 bool QQuickWebEngineSettings::pdfViewerEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::PDFViewerEnabled);
+    return d_ptr->testAttribute(WebEngineSettings::PdfViewerEnabled);
 }
 
 /*!
@@ -728,10 +728,10 @@ void QQuickWebEngineSettings::setDnsPrefetchEnabled(bool on)
         Q_EMIT dnsPrefetchEnabledChanged();
 }
 
-void QQuickWebEngineSettings::setPDFViewerEnabled(bool on)
+void QQuickWebEngineSettings::setPdfViewerEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::PDFViewerEnabled);
-    d_ptr->setAttribute(WebEngineSettings::PDFViewerEnabled, on);
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::PdfViewerEnabled);
+    d_ptr->setAttribute(WebEngineSettings::PdfViewerEnabled, on);
     if (wasOn != on)
         Q_EMIT pdfViewerEnabledChanged();
 }
