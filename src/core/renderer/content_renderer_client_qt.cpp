@@ -103,9 +103,8 @@
 #include "content/public/renderer/key_system_support.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
+#include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
-
-#include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 #endif
 
 namespace QtWebEngineCore {
@@ -438,7 +437,7 @@ static void AddExternalClearKey(std::vector<std::unique_ptr<media::KeySystemProp
                                            kExternalClearKeyCdmProxyTestKeySystem));
 }
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
 static media::SupportedCodecs GetSupportedCodecs(const std::vector<media::VideoCodec> &supported_video_codecs, bool is_secure)
 {
     media::SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
@@ -450,11 +449,11 @@ static media::SupportedCodecs GetSupportedCodecs(const std::vector<media::VideoC
     // TODO(sandersd): Distinguish these from those that are directly supported,
     // as those may offer a higher level of protection.
     if (!supported_video_codecs.empty() || !is_secure) {
-        supported_codecs |= media::EME_CODEC_WEBM_OPUS;
-        supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
-        supported_codecs |= media::EME_CODEC_MP4_FLAC;
+        supported_codecs |= media::EME_CODEC_OPUS;
+        supported_codecs |= media::EME_CODEC_VORBIS;
+        supported_codecs |= media::EME_CODEC_FLAC;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-        supported_codecs |= media::EME_CODEC_MP4_AAC;
+        supported_codecs |= media::EME_CODEC_AAC;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
     }
 
@@ -462,15 +461,15 @@ static media::SupportedCodecs GetSupportedCodecs(const std::vector<media::VideoC
     for (const auto &codec : supported_video_codecs) {
         switch (codec) {
         case media::VideoCodec::kCodecVP8:
-            supported_codecs |= media::EME_CODEC_WEBM_VP8;
+            supported_codecs |= media::EME_CODEC_VP8;
             break;
         case media::VideoCodec::kCodecVP9:
-            supported_codecs |= media::EME_CODEC_WEBM_VP9;
-            supported_codecs |= media::EME_CODEC_COMMON_VP9;
+            supported_codecs |= media::EME_CODEC_LEGACY_VP9;
+            supported_codecs |= media::EME_CODEC_VP9;
             break;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
         case media::VideoCodec::kCodecH264:
-            supported_codecs |= media::EME_CODEC_MP4_AVC1;
+            supported_codecs |= media::EME_CODEC_AVC1;
             break;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
         default:
@@ -529,7 +528,7 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
                                            persistent_license_support, persistent_usage_record_support,
                                            persistent_state_support, distinctive_identifier_support));
 }
-#endif // defined(WIDEVINE_CDM_AVAILABLE)
+#endif // BUILDFLAG(ENABLE_WIDEVINE)
 #endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 void ContentRendererClientQt::AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>> *key_systems)
@@ -538,9 +537,9 @@ void ContentRendererClientQt::AddSupportedKeySystems(std::vector<std::unique_ptr
     if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting))
         AddExternalClearKey(key_systems);
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_WIDEVINE)
     AddWidevine(key_systems);
-#endif // defined(WIDEVINE_CDM_AVAILABLE)
+#endif // BUILDFLAG(ENABLE_WIDEVINE)
 
 #endif // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }
