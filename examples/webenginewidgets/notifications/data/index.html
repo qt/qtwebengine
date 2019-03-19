@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+<title>Web Notifications Example</title>
+<script>
+    var notificationsCreated = 0
+
+    function getPermission() { return document.Notification }
+    function resetPermission(permission = 'default') {
+        document.Notification = permission
+        document.getElementById('state').value = getPermission()
+    }
+
+    function createNotification() {
+        let title = 'Notification #' + ++notificationsCreated
+        let options = { body: 'Visit doc.qt.io for more info!', icon: 'icon.png', }
+
+        let notification = new Notification(title, options)
+        document.notification = notification
+
+        notification.onerror = function(error) {
+            document.getElementById('act').value += ' with error'
+            document.notification = null
+        }
+        notification.onshow = function() {
+            document.getElementById('act').value += ', shown'
+            document.getElementById('close').style.display = 'inline'
+        }
+        notification.onclick = function() {
+            document.getElementById('act').value += ', clicked'
+        }
+        notification.onclose = function() {
+            if (document.notification && notification == document.notification) {
+                document.getElementById('act').value += ' and closed'
+                document.getElementById('close').style.display = 'none'
+                document.notification = null
+            }
+        }
+
+        console.log('...notification created [Title: ' + title + ']')
+        document.getElementById('act').value = 'Notification was created'
+    }
+
+    function onMakeNotification() {
+        if (getPermission() == 'granted') {
+            createNotification()
+        } else if (getPermission() == 'denied') {
+            setTimeout(function() {
+                if (window.confirm('Notifications are disabled!\n' +
+                                   'Permission needs to be granted by user. Reset?'))
+                    resetPermission()
+            }, 1)
+        } else {
+            Notification.requestPermission().then(function (permission) {
+                console.info('notifications request: ' + permission)
+                resetPermission(permission)
+                if (permission == 'granted')
+                    createNotification()
+            })
+        }
+    }
+
+    function closeNotification() { if (document.notification) document.notification.close() }
+
+    document.addEventListener('DOMContentLoaded', function() { resetPermission(Notification.permission) })
+</script>
+</head>
+<body style='text-align:center;'>
+    <h3>Click the button to send a notification</h3>
+
+    <button onclick='onMakeNotification()'>Notify!</button>
+
+    <p>
+        <output id='act'></output>
+        <button id='close' style='display: none;' onclick='closeNotification()'>Close</button>
+    </p><br>
+
+    <p>
+        <label for='state'>Permission:</label>
+        <output id='state'></output>
+        <button onclick='resetPermission()'>Reset</button>
+    </p><br>
+
+    <h4>More info can be found on:</h4>
+    <ul style='list-style-type: none;'>
+        <li>W3 <a href='https://www.w3.org/TR/notifications'>Web Notifications</a> standard</li>
+        <li>Documentation for <a href='https://doc.qt.io'>Qt WebEngine</a> module</li>
+    </ul>
+</body>
+</html>

@@ -7,6 +7,7 @@ SUBDIRS += \
     minimal \
     contentmanipulation \
     cookiebrowser \
+    notifications \
     simplebrowser \
     stylesheetbrowser \
     videoplayer \
