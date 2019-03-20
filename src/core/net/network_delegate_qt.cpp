@@ -68,6 +68,9 @@ WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::Page
 
     if (qualifier & ui::PAGE_TRANSITION_FORWARD_BACK)
         return WebContentsAdapterClient::BackForwardNavigation;
+    // FIXME: Make redirects a separate type:
+    if (qualifier & ui::PAGE_TRANSITION_CLIENT_REDIRECT)
+        return WebContentsAdapterClient::OtherNavigation;
 
     ui::PageTransition strippedTransition = ui::PageTransitionStripQualifier(transition);
 
