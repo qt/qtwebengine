@@ -532,7 +532,7 @@ Module {
         }
         Signal {
             name: "userNotification"
-            revision: 6
+            revision: 5
             Parameter { name: "notification"; type: "QWebEngineNotification"; isPointer: true }
         }
         Method { name: "clearHttpCache"; revision: 2 }
@@ -667,6 +667,7 @@ Module {
         Property { name: "webRTCPublicInterfacesOnly"; revision: 6; type: "bool" }
         Property { name: "javascriptCanPaste"; revision: 6; type: "bool" }
         Property { name: "dnsPrefetchEnabled"; revision: 7; type: "bool" }
+        Property { name: "pdfViewerEnabled"; revision: 8; type: "bool" }
         Signal { name: "fullScreenSupportEnabledChanged"; revision: 1 }
         Signal { name: "screenCaptureEnabledChanged"; revision: 2 }
         Signal { name: "webGLEnabledChanged"; revision: 2 }
@@ -684,6 +685,7 @@ Module {
         Signal { name: "webRTCPublicInterfacesOnlyChanged"; revision: 6 }
         Signal { name: "javascriptCanPasteChanged"; revision: 6 }
         Signal { name: "dnsPrefetchEnabledChanged"; revision: 7 }
+        Signal { name: "pdfViewerEnabledChanged"; revision: 8 }
     }
     Component {
         name: "QQuickWebEngineSingleton"
