@@ -54,6 +54,9 @@
 #include <QtWebEngineCore/QWebEngineNotification>
 
 #include <QtCore/QObject>
+#include <QtGui/QIcon>
+
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +68,7 @@ public:
     DefaultNotificationPresenter(QObject *parent = nullptr);
     virtual ~DefaultNotificationPresenter();
 
-    void show(const QWebEngineNotification &notification);
+    void show(std::unique_ptr<QWebEngineNotification> notification);
 
 private Q_SLOTS:
     void messageClicked();
@@ -73,10 +76,11 @@ private Q_SLOTS:
 
 private:
     QSystemTrayIcon *m_systemTrayIcon;
-    QWebEngineNotification m_activeNotification;
+    QIcon m_notificationIcon;
+    std::unique_ptr<QWebEngineNotification> m_activeNotification;
 };
 
-void defaultNotificationPresenter(const QWebEngineNotification &notification);
+void defaultNotificationPresenter(std::unique_ptr<QWebEngineNotification> notification);
 
 QT_END_NAMESPACE
 

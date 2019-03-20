@@ -47,6 +47,7 @@
 #include <QtCore/qstring.h>
 
 #include <functional>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -141,7 +142,7 @@ public:
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
 
-    void setNotificationPresenter(std::function<void(const QWebEngineNotification &)> notificationPresenter);
+    void setNotificationPresenter(std::function<void(std::unique_ptr<QWebEngineNotification>)> notificationPresenter);
 
     QWebEngineClientCertificateStore *clientCertificateStore();
 

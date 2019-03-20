@@ -46,7 +46,6 @@
 #include <QtCore/QScopedPointer>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QUrl>
-#include <QtGui/QIcon>
 
 namespace QtWebEngineCore {
 class UserNotificationController;
@@ -59,7 +58,6 @@ class QWebEngineNotificationPrivate;
 class Q_WEBENGINECORE_EXPORT QWebEngineNotification : public QObject {
     Q_OBJECT
     Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
-    Q_PROPERTY(QIcon icon READ icon CONSTANT FINAL)
     Q_PROPERTY(QString title READ title CONSTANT FINAL)
     Q_PROPERTY(QString message READ message CONSTANT FINAL)
     Q_PROPERTY(QString tag READ tag CONSTANT FINAL)
@@ -67,22 +65,17 @@ class Q_WEBENGINECORE_EXPORT QWebEngineNotification : public QObject {
     Q_PROPERTY(Qt::LayoutDirection direction READ direction CONSTANT FINAL)
 
 public:
-    QWebEngineNotification();
-    QWebEngineNotification(const QWebEngineNotification &other);
-    virtual ~QWebEngineNotification();
-    const QWebEngineNotification &operator=(const QWebEngineNotification &other);
+    virtual ~QWebEngineNotification() override;
 
-    bool matches(const QWebEngineNotification &other) const;
+    bool matches(const QWebEngineNotification *other) const;
 
     QUrl origin() const;
-    QIcon icon() const;
+    QImage icon() const;
     QString title() const;
     QString message() const;
     QString tag() const;
     QString language() const;
     Qt::LayoutDirection direction() const;
-
-    bool isValid() const;
 
 public Q_SLOTS:
     void show() const;
@@ -93,8 +86,9 @@ Q_SIGNALS:
     void closed();
 
 private:
-    QWebEngineNotification(const QSharedPointer<QtWebEngineCore::UserNotificationController> &controller);
+    Q_DISABLE_COPY(QWebEngineNotification)
     Q_DECLARE_PRIVATE(QWebEngineNotification)
+    QWebEngineNotification(const QSharedPointer<QtWebEngineCore::UserNotificationController> &controller);
     QScopedPointer<QWebEngineNotificationPrivate> d_ptr;
     friend class QQuickWebEngineProfilePrivate;
     friend class QWebEngineProfilePrivate;

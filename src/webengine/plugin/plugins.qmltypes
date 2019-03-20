@@ -531,7 +531,7 @@ Module {
             Parameter { name: "download"; type: "QQuickWebEngineDownloadItem"; isPointer: true }
         }
         Signal {
-            name: "userNotification"
+            name: "presentNotification"
             revision: 5
             Parameter { name: "notification"; type: "QWebEngineNotification"; isPointer: true }
         }

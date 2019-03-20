@@ -3327,27 +3327,33 @@ void tst_QWebEnginePage::sendNotification()
     QVERIFY(page.spyRequest.wasCalled());
     QCOMPARE(page.getPermission(), "granted");
 
-    CallbackSpy<QWebEngineNotification> presenter;
-    page.profile()->setNotificationPresenter([callback = presenter.ref()] (const QWebEngineNotification &notification) mutable { callback(notification); });
+    std::unique_ptr<QWebEngineNotification> activeNotification;
+    CallbackSpy<bool> presenter;
+    page.profile()->setNotificationPresenter(
+                [&] (std::unique_ptr<QWebEngineNotification> notification)
+                {
+                    activeNotification = std::move(notification);
+                    presenter(true);
+                });
 
     QString title("Title"), message("Message");
     page.sendNotification(title, message);
 
-    auto notification = presenter.waitForResult();
+    presenter.waitForResult();
     QVERIFY(presenter.wasCalled());
-    QVERIFY(notification.isValid());
-    QCOMPARE(notification.title(), title);
-    QCOMPARE(notification.message(), message);
-    QCOMPARE(notification.origin(), origin);
-    QCOMPARE(notification.direction(), Qt::RightToLeft);
-    QCOMPARE(notification.language(), "de");
-    QCOMPARE(notification.tag(), "tst");
+    QVERIFY(activeNotification);
+    QCOMPARE(activeNotification->title(), title);
+    QCOMPARE(activeNotification->message(), message);
+    QCOMPARE(activeNotification->origin(), origin);
+    QCOMPARE(activeNotification->direction(), Qt::RightToLeft);
+    QCOMPARE(activeNotification->language(), "de");
+    QCOMPARE(activeNotification->tag(), "tst");
 
-    notification.show();
+    activeNotification->show();
     QTRY_VERIFY2(page.messages.contains("onshow"), page.messages.join("\n").toLatin1().constData());
-    notification.click();
+    activeNotification->click();
     QTRY_VERIFY2(page.messages.contains("onclick"), page.messages.join("\n").toLatin1().constData());
-    notification.close();
+    activeNotification->close();
     QTRY_VERIFY2(page.messages.contains("onclose"), page.messages.join("\n").toLatin1().constData());
 }
 

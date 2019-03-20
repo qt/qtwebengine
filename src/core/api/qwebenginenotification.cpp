@@ -58,8 +58,8 @@ using QtWebEngineCore::UserNotificationController;
 
     Web engine notifications are passed to the user in the
     \l QWebEngineProfile::setNotificationPresenter() and
-    \l QQuickWebEngineProfile::userNotification() calls and the
-    \l WebEngineProfile::userNotification() signal.
+    \l QQuickWebEngineProfile::presentNotification() calls and the
+    \l WebEngineProfile::presentNotification() signal.
 */
 
 class QWebEngineNotificationPrivate : public UserNotificationController::Client {
@@ -86,14 +86,6 @@ public:
     QWebEngineNotification *q;
 };
 
-
-/*!
-    Creates a null QWebEngineNotification.
-
-    \sa isNull()
-*/
-QWebEngineNotification::QWebEngineNotification() { }
-
 /*! \internal
 */
 QWebEngineNotification::QWebEngineNotification(const QSharedPointer<UserNotificationController> &controller)
@@ -102,23 +94,8 @@ QWebEngineNotification::QWebEngineNotification(const QSharedPointer<UserNotifica
 
 /*! \internal
 */
-QWebEngineNotification::QWebEngineNotification(const QWebEngineNotification &other)
-    : QObject()
-    , d_ptr(new QWebEngineNotificationPrivate(this, other.d_ptr->controller))
-{ }
-
-/*! \internal
-*/
 QWebEngineNotification::~QWebEngineNotification()
 {
-}
-
-/*! \internal
-*/
-const QWebEngineNotification &QWebEngineNotification::operator=(const QWebEngineNotification &other)
-{
-    d_ptr.reset(new QWebEngineNotificationPrivate(this, other.d_ptr->controller));
-    return *this;
 }
 
 /*!
@@ -128,13 +105,15 @@ const QWebEngineNotification &QWebEngineNotification::operator=(const QWebEngine
 
     \sa tag(), origin()
 */
-bool QWebEngineNotification::matches(const QWebEngineNotification &other) const
+bool QWebEngineNotification::matches(const QWebEngineNotification *other) const
 {
-    if (!d_ptr)
-        return !other.d_ptr;
-    if (!other.d_ptr)
+    if (!other)
         return false;
-    return tag() == other.tag() && origin() == other.origin();
+    if (!d_ptr)
+        return !other->d_ptr;
+    if (!other->d_ptr)
+        return false;
+    return tag() == other->tag() && origin() == other->origin();
 }
 
 /*!
@@ -187,15 +166,14 @@ QUrl QWebEngineNotification::origin() const
 }
 
 /*!
-    \property QWebEngineNotification::icon
-    \brief The icon to be shown with the notification.
+    Returns the icon to be shown with the notification.
 
-    If no icon is set by the sender, an null QIcon is returned.
+    If no icon is set by the sender, a null QImage is returned.
 */
-QIcon QWebEngineNotification::icon() const
+QImage QWebEngineNotification::icon() const
 {
     Q_D(const QWebEngineNotification);
-    return d ? d->controller->icon() : QIcon();
+    return d ? d->controller->icon() : QImage();
 }
 
 /*!
@@ -221,14 +199,6 @@ Qt::LayoutDirection QWebEngineNotification::direction() const
 {
     Q_D(const QWebEngineNotification);
     return d ? d->controller->direction() : Qt::LayoutDirectionAuto;
-}
-
-/*!
-    Returns \c true if the notification is not a default constructed null notification.
-*/
-bool QWebEngineNotification::isValid() const
-{
-    return !d_ptr.isNull();
 }
 
 /*!

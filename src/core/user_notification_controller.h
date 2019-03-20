@@ -86,7 +86,7 @@ public:
     void closeNotification();
 
     QUrl origin() const;
-    QIcon icon() const;
+    QImage icon() const;
     QImage image() const;
     QImage badge() const;
     QString title() const;
