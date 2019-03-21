@@ -143,7 +143,7 @@ QUrl QWebEngineUrlRequestJob::initiator() const
     \since 5.13
     Returns any HTTP headers added to the request.
 */
-const QMap<QByteArray, QByteArray> &QWebEngineUrlRequestJob::requestHeaders() const
+QMap<QByteArray, QByteArray> QWebEngineUrlRequestJob::requestHeaders() const
 {
     return d_ptr->requestHeaders();
 }

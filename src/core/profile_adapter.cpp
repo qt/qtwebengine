@@ -55,6 +55,7 @@
 #include "type_conversion.h"
 #include "visited_links_manager_qt.h"
 #include "web_engine_context.h"
+#include "web_contents_adapter_client.h"
 
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -105,11 +106,17 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
 
 ProfileAdapter::~ProfileAdapter()
 {
+    while (!m_webContentsAdapterClients.isEmpty()) {
+       m_webContentsAdapterClients.first()->releaseProfile();
+    }
     WebEngineContext::current()->removeProfileAdapter(this);
     if (m_downloadManagerDelegate) {
         m_profile->GetDownloadManager(m_profile.data())->Shutdown();
         m_downloadManagerDelegate.reset();
     }
+#if QT_CONFIG(ssl)
+    delete m_clientCertificateStore;
+#endif
     Q_ASSERT(m_pageRequestInterceptors == 0);
 }
 
@@ -230,7 +237,8 @@ ProfileAdapter *ProfileAdapter::createDefaultProfileAdapter()
 
 ProfileAdapter *ProfileAdapter::defaultProfileAdapter()
 {
-    return WebEngineContext::current()->defaultProfileAdapter();
+    WebEngineContext *context = WebEngineContext::current();
+    return context ? context->defaultProfileAdapter() : nullptr;
 }
 
 QObject* ProfileAdapter::globalQObjectRoot()
@@ -617,6 +625,16 @@ bool ProfileAdapter::isSpellCheckEnabled() const
 #endif
 }
 
+void ProfileAdapter::addWebContentsAdapterClient(WebContentsAdapterClient *client)
+{
+    m_webContentsAdapterClients.append(client);
+}
+
+void ProfileAdapter::removeWebContentsAdapterClient(WebContentsAdapterClient *client)
+{
+    m_webContentsAdapterClients.removeAll(client);
+}
+
 void ProfileAdapter::resetVisitedLinksManager()
 {
     m_visitedLinksManager.reset(new VisitedLinksManagerQt(m_profile.data(), persistVisitedLinks()));
@@ -651,5 +669,14 @@ bool ProfileAdapter::isUsedForGlobalCertificateVerification() const
 {
     return m_usedForGlobalCertificateVerification;
 }
+
+#if QT_CONFIG(ssl)
+QWebEngineClientCertificateStore *ProfileAdapter::clientCertificateStore()
+{
+    if (!m_clientCertificateStore)
+        m_clientCertificateStore = new QWebEngineClientCertificateStore(m_profile->m_profileIOData->clientCertificateStoreData());
+    return m_clientCertificateStore;
+}
+#endif
 
 } // namespace QtWebEngineCore

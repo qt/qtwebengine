@@ -8,7 +8,7 @@
     function getPermission() { return document.Notification }
 
     function sendNotification(title, body) {
-        let notification = new Notification(title, { body: body })
+        let notification = new Notification(title, { body: body, dir: 'rtl', lang: 'de', tag: 'tst' })
         notification.onclick = function() { console.info('onclick') }
         notification.onclose = function() { console.info('onclose') }
         notification.onerror = function(error) { console.info('onerror: ' + error) }

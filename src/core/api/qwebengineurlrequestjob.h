@@ -73,7 +73,7 @@ public:
     QUrl requestUrl() const;
     QByteArray requestMethod() const;
     QUrl initiator() const;
-    const QMap<QByteArray, QByteArray> &requestHeaders() const;
+    QMap<QByteArray, QByteArray> requestHeaders() const;
 
     void reply(const QByteArray &contentType, QIODevice *device);
     void fail(Error error);

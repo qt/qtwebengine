@@ -138,12 +138,27 @@ void ClientCertificateStoreData::add(const QSslCertificate &certificate, const Q
     data->certPtr = net::X509Certificate::CreateFromBytes(certInBytes.data(), certInBytes.length());
     data->key = privateKey;
     data->certificate = certificate;
-    addedCerts.append(data);
+    extraCerts.append(data);
 }
 
-ClientCertificateStoreData::~ClientCertificateStoreData()
+void ClientCertificateStoreData::remove(const QSslCertificate &certificate)
 {
-    qDeleteAll(deletedCerts);
+    auto it = extraCerts.begin();
+    while (it != extraCerts.end()) {
+        const QtWebEngineCore::ClientCertificateStoreData::Entry *overrideData = *it;
+        if (certificate.toDer() == overrideData->certificate.toDer()) {
+            it = extraCerts.erase(it);
+            delete overrideData;
+            continue;
+        }
+        ++it;
+    }
+}
+
+void ClientCertificateStoreData::clear()
+{
+    qDeleteAll(extraCerts);
+    extraCerts.clear();
 }
 
 } // namespace QtWebEngineCore

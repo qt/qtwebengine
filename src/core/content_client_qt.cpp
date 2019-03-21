@@ -65,10 +65,9 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"  // nogncheck
+#include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
-#define WIDEVINE_CDM_AVAILABLE
-#if defined(WIDEVINE_CDM_AVAILABLE) && !defined(WIDEVINE_CDM_IS_COMPONENT)
+#if BUILDFLAG(ENABLE_WIDEVINE) && !BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
 #define WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT
 namespace switches {
 const char kCdmWidevinePath[] = "widevine-path";

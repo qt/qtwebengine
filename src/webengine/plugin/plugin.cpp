@@ -160,12 +160,12 @@ public:
                                                                              msgUncreatableType("RegisterProtocolHandlerRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineAction>(uri, 1, 8, "WebEngineAction", msgUncreatableType("WebEngineAction"));
         qmlRegisterUncreatableType<QQuickWebEngineClientCertificateSelection>(uri, 1, 9, "WebEngineClientCertificateSelection",
-            msgUncreatableType("WebEngineClientCertificateSelection"));
+                                                                              msgUncreatableType("WebEngineClientCertificateSelection"));
         qmlRegisterUncreatableType<QQuickWebEngineClientCertificateOption>(uri, 1, 9, "WebEngineClientCertificateOption",
-            msgUncreatableType("WebEngineClientCertificateOption"));
+                                                                           msgUncreatableType("WebEngineClientCertificateOption"));
         qmlRegisterUncreatableType<QWebEngineNotification>(uri, 1, 9, "WebEngineNotification", msgUncreatableType("WebEngineNotification"));
         qmlRegisterUncreatableType<QQuickWebEngineTooltipRequest>(uri, 1, 10, "TooltipRequest",
-                                                                         msgUncreatableType("TooltipRequest"));
+                                                                  msgUncreatableType("TooltipRequest"));
     }
 
 private:

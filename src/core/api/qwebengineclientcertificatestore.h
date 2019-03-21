@@ -42,42 +42,34 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qvector.h>
 #include <QtNetwork/qsslcertificate.h>
 #include <QtNetwork/qsslkey.h>
 
 namespace QtWebEngineCore {
-class ClientCertOverrideStore;
 struct ClientCertificateStoreData;
+class ProfileAdapter;
 }
 
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(ssl)
 
-
 class QWEBENGINECORE_EXPORT QWebEngineClientCertificateStore {
 
 public:
-    struct Entry {
-        QSslKey privateKey;
-        QSslCertificate certificate;
-    };
-
-    static QWebEngineClientCertificateStore *getInstance();
     void add(const QSslCertificate &certificate, const QSslKey &privateKey);
-    QList<Entry> toList() const;
-    void remove(Entry entry);
+    QVector<QSslCertificate> certificates() const;
+    void remove(const QSslCertificate &certificate);
     void clear();
 
 private:
-    friend class QtWebEngineCore::ClientCertOverrideStore;
-    static QWebEngineClientCertificateStore *m_instance;
+    friend class QtWebEngineCore::ProfileAdapter;
     Q_DISABLE_COPY(QWebEngineClientCertificateStore)
 
-    QWebEngineClientCertificateStore();
+    QWebEngineClientCertificateStore(QtWebEngineCore::ClientCertificateStoreData *storeData);
     ~QWebEngineClientCertificateStore();
-    QScopedPointer<QtWebEngineCore::ClientCertificateStoreData> d_ptr;
+    QtWebEngineCore::ClientCertificateStoreData *m_storeData;
 };
 
 #endif // QT_CONFIG(ssl)

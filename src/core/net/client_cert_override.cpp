@@ -37,12 +37,13 @@
 **
 ****************************************************************************/
 
-#include "net/client_cert_override.h"
+#include "client_cert_override.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "base/callback_forward.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_private_key.h"
@@ -51,8 +52,7 @@
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
-#include "api/qwebengineclientcertificatestore.h"
-#include "net/client_cert_store_data.h"
+#include "client_cert_store_data.h"
 #include "profile_io_data_qt.h"
 
 #include <QtNetwork/qtnetworkglobal.h>
@@ -98,40 +98,66 @@ private:
 
 namespace QtWebEngineCore {
 
-ClientCertOverrideStore::ClientCertOverrideStore()
+ClientCertOverrideStore::ClientCertOverrideStore(ClientCertificateStoreData *storeData)
     : ClientCertStore()
+    , m_storeData(storeData)
     , m_nativeStore(createNativeStore())
 {
 }
 
 ClientCertOverrideStore::~ClientCertOverrideStore() = default;
 
-void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert_request_info,
-                                             const ClientCertListCallback &callback)
-{
 #if QT_CONFIG(ssl)
-    QWebEngineClientCertificateStore *clientCertificateStore = QWebEngineClientCertificateStore::getInstance();
-    const auto &clientCertOverrideData = clientCertificateStore->d_ptr->addedCerts;
+net::ClientCertIdentityList ClientCertOverrideStore::GetClientCertsOnUIThread(const net::SSLCertRequestInfo &cert_request_info)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    const auto &clientCertOverrideData = m_storeData->extraCerts;
     // Look for certificates in memory store
     for (int i = 0; i < clientCertOverrideData.length(); i++) {
         scoped_refptr<net::X509Certificate> cert = clientCertOverrideData[i]->certPtr;
         if (cert != NULL && cert->IsIssuedByEncoded(cert_request_info.cert_authorities)) {
             net::ClientCertIdentityList selected_identities;
             selected_identities.push_back(std::make_unique<ClientCertIdentityOverride>(cert, clientCertOverrideData[i]->keyPtr));
-            callback.Run(std::move(selected_identities));
-            return;
+            return selected_identities;
         }
+    }
+    return net::ClientCertIdentityList();
+}
+
+void ClientCertOverrideStore::GetClientCertsReturn(const net::SSLCertRequestInfo &cert_request_info,
+                                                   const ClientCertListCallback &callback,
+                                                   net::ClientCertIdentityList &&result)
+{
+    // Continue with native cert store if matching certificatse were not found in memory
+    if (result.empty() && m_nativeStore)
+        m_nativeStore->GetClientCerts(cert_request_info, callback);
+    else
+        callback.Run(std::move(result));
+}
+
+#endif // QT_CONFIG(ssl)
+
+void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert_request_info,
+                                             const ClientCertListCallback &callback)
+{
+#if QT_CONFIG(ssl)
+    // Access the user-provided data from the UI thread, but return on whatever thread this is.
+    if (base::PostTaskWithTraitsAndReplyWithResult(
+            FROM_HERE, { content::BrowserThread::UI },
+            base::BindOnce(&ClientCertOverrideStore::GetClientCertsOnUIThread,
+                           base::Unretained(this), base::ConstRef(cert_request_info)),
+            base::BindOnce(&ClientCertOverrideStore::GetClientCertsReturn,
+                           base::Unretained(this), base::ConstRef(cert_request_info), callback))
+       ) {
+        return;
     }
 #endif // QT_CONFIG(ssl)
 
-    // Continue with native cert store if matching certificate is not found in memory
-    if (m_nativeStore) {
+    // Continue with native cert store if we failed to post task
+    if (m_nativeStore)
         m_nativeStore->GetClientCerts(cert_request_info, callback);
-        return;
-    }
-
-    callback.Run(net::ClientCertIdentityList());
-    return;
+    else
+        callback.Run(net::ClientCertIdentityList());
 }
 
 // static

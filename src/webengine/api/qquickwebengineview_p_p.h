@@ -94,7 +94,7 @@ public:
     QQuickWebEngineView *q_ptr;
     QQuickWebEngineViewPrivate();
     ~QQuickWebEngineViewPrivate();
-    void destroy();
+    void releaseProfile() override;
     void initializeProfile();
     QtWebEngineCore::UIDelegatesManager *ui();
 

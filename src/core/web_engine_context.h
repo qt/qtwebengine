@@ -80,10 +80,13 @@ class ProfileAdapter;
 
 bool usingSoftwareDynamicGL();
 
+typedef std::tuple<bool, QString, QString> ProxyAuthentication;
+
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
     static WebEngineContext *current();
     static void destroyContextPostRoutine();
+    static ProxyAuthentication qProxyNetworkAuthentication(QString host, int port);
 
     ProfileAdapter *createDefaultProfileAdapter();
     ProfileAdapter *defaultProfileAdapter();

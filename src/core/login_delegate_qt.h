@@ -74,6 +74,7 @@ public:
     QUrl url() const;
     QString realm() const;
     QString host() const;
+    int port() const;
     bool isProxy() const;
 
     void sendAuthToRequester(bool success, const QString &user, const QString &password);

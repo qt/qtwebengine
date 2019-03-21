@@ -146,3 +146,8 @@
     \externalpage https://developer.mozilla.org/en-US/docs/Web/API/Navigator/registerProtocolHandler
     \title registerProtocolHandler
 */
+
+/*!
+    \externalpage https://www.w3.org/TR/notifications
+    \title Web Notifications API
+*/

@@ -68,6 +68,7 @@
 #include "resource_context_qt.h"
 #include "type_conversion.h"
 #include "web_contents_view_qt.h"
+#include "web_engine_context.h"
 
 namespace QtWebEngineCore {
 
@@ -118,6 +119,11 @@ QString LoginDelegateQt::host() const
     return QString::fromStdString(m_authInfo->challenger.host());
 }
 
+int LoginDelegateQt::port() const
+{
+    return m_authInfo->challenger.port();
+}
+
 bool LoginDelegateQt::isProxy() const
 {
     return m_authInfo->is_proxy;
@@ -126,6 +132,19 @@ bool LoginDelegateQt::isProxy() const
 void LoginDelegateQt::triggerDialogOnUI()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+    if (isProxy()) {
+        // workaround for 'ws' redefined symbols when including QNetworkProxy
+        auto authentication = WebEngineContext::qProxyNetworkAuthentication(host(), port());
+        if (std::get<0>(authentication)) {
+            base::PostTaskWithTraits(
+                    FROM_HERE, { content::BrowserThread::IO },
+                    base::BindOnce(&LoginDelegateQt::sendAuthToRequester, this, true,
+                                   std::get<1>(authentication), std::get<2>(authentication)));
+
+            return;
+        }
+    }
     content::WebContentsImpl *webContents =
             static_cast<content::WebContentsImpl *>(m_webContentsGetter.Run());
     if (!webContents)

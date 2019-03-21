@@ -48,8 +48,6 @@ QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(ssl)
 
-QWebEngineClientCertificateStore *QWebEngineClientCertificateStore::m_instance = nullptr;
-
 /*!
     \class QWebEngineClientCertificateStore::Entry
     \inmodule QtWebEngineCore
@@ -69,8 +67,8 @@ QWebEngineClientCertificateStore *QWebEngineClientCertificateStore::m_instance =
     The getInstance() method can be used to access the single instance of the class.
 */
 
-QWebEngineClientCertificateStore::QWebEngineClientCertificateStore()
-        : d_ptr(new QtWebEngineCore::ClientCertificateStoreData)
+QWebEngineClientCertificateStore::QWebEngineClientCertificateStore(QtWebEngineCore::ClientCertificateStoreData *storeData)
+        : m_storeData(storeData)
 {
 }
 
@@ -85,59 +83,35 @@ QWebEngineClientCertificateStore::~QWebEngineClientCertificateStore()
 }
 
 /*!
-    Returns an in-memory client certificate store.
-*/
-
-QWebEngineClientCertificateStore *QWebEngineClientCertificateStore::getInstance()
-{
-    if (!m_instance)
-        m_instance = new QWebEngineClientCertificateStore;
-    return m_instance;
-}
-
-/*!
     Adds a \a certificate with the \a privateKey to the in-memory client certificate store.
 */
 
 void QWebEngineClientCertificateStore::add(const QSslCertificate &certificate, const QSslKey &privateKey)
 {
-    d_ptr->add(certificate, privateKey);
+    m_storeData->add(certificate, privateKey);
 }
 
 /*!
-    Returns a list of private and public keys of client certificates in the in-memory store.
-    Returns an empty list if the in-memory store does not contain certificates.
+    Returns a list of the client certificates in the in-memory store.
+    Returns an empty list if the store does not contain any certificates.
 */
 
-QList<QWebEngineClientCertificateStore::Entry> QWebEngineClientCertificateStore::toList() const
+QVector<QSslCertificate> QWebEngineClientCertificateStore::certificates() const
 {
-    QList<Entry> certificateList;
-    for (auto data : qAsConst(d_ptr->addedCerts)) {
-        Entry entry;
-        entry.certificate = data->certificate;
-        entry.privateKey = data->key;
-        certificateList.append(entry);
-    }
+    QVector<QSslCertificate> certificateList;
+    for (auto data : qAsConst(m_storeData->extraCerts))
+        certificateList.append(data->certificate);
     return certificateList;
 }
 
 /*!
     Deletes all the instances of the client certificate in the in-memory client certificate store
-    that matches the certificate in the \a entry.
+    that matches the certificate \a certificate.
 */
 
-void QWebEngineClientCertificateStore::remove(Entry entry)
+void QWebEngineClientCertificateStore::remove(const QSslCertificate &certificate)
 {
-    auto it = d_ptr->addedCerts.begin();
-    while (it != d_ptr->addedCerts.end()) {
-        auto *overrideData = *it;
-        if (entry.certificate.toDer() == overrideData->certificate.toDer()) {
-            d_ptr->deletedCerts.append(overrideData);
-            it = d_ptr->addedCerts.erase(it);
-            continue;
-        }
-        ++it;
-    }
+    m_storeData->remove(certificate);
 }
 
 /*!
@@ -146,8 +120,7 @@ void QWebEngineClientCertificateStore::remove(Entry entry)
 
 void QWebEngineClientCertificateStore::clear()
 {
-    d_ptr->deletedCerts.append(d_ptr->addedCerts);
-    d_ptr->addedCerts.clear();
+    m_storeData->clear();
 }
 
 #endif // QT_CONFIG(ssl)

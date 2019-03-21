@@ -46,7 +46,7 @@
 #if QT_CONFIG(ssl)
 #include "base/memory/ref_counted.h"
 
-#include <QtCore/qlist.h>
+#include <QtCore/qvector.h>
 #include <QtNetwork/qsslcertificate.h>
 #include <QtNetwork/qsslkey.h>
 
@@ -65,11 +65,11 @@ struct ClientCertificateStoreData {
         scoped_refptr<net::SSLPrivateKey> keyPtr;
     };
 
-    ~ClientCertificateStoreData();
     void add(const QSslCertificate &certificate, const QSslKey &privateKey);
+    void remove(const QSslCertificate &certificate);
+    void clear();
 
-    QList<Entry*> addedCerts;
-    QList<Entry*> deletedCerts;
+    QVector<Entry*> extraCerts;
 };
 
 } // namespace QtWebEngineCore

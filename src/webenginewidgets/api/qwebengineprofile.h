@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QObject;
 class QUrl;
+class QWebEngineClientCertificateStore;
 class QWebEngineCookieStore;
 class QWebEngineDownloadItem;
 class QWebEngineNotification;
@@ -134,14 +135,15 @@ public:
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
 
-    void setUseForGlobalCertificateVerification();
+    void setUseForGlobalCertificateVerification(bool enabled = true);
     bool isUsedForGlobalCertificateVerification() const;
 
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
 
-    void setNotificationPresenter(const std::function<void(const QWebEngineNotification &)> &notificationPresenter);
-    void setNotificationPresenter(std::function<void(const QWebEngineNotification &)> &&notificationPresenter);
+    void setNotificationPresenter(std::function<void(const QWebEngineNotification &)> notificationPresenter);
+
+    QWebEngineClientCertificateStore *clientCertificateStore();
 
     static QWebEngineProfile *defaultProfile();
 

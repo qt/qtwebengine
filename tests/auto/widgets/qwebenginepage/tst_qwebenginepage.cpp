@@ -138,6 +138,7 @@ private Q_SLOTS:
 
     void runJavaScript();
     void runJavaScriptDisabled();
+    void runJavaScriptFromSlot();
     void fullScreenRequested();
     void quotaRequested();
 
@@ -561,11 +562,17 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
     QTRY_COMPARE(loadSpy.count(), 4);
     QTRY_COMPARE(page.navigations.count(), 4);
 
+    page.load(QUrl("qrc:///resources/reload.html"));
+    QTRY_COMPARE(loadSpy.count(), 6);
+    QTRY_COMPARE(page.navigations.count(), 6);
+
     QList<QWebEnginePage::NavigationType> expectedList;
     expectedList << QWebEnginePage::NavigationTypeTyped
         << QWebEnginePage::NavigationTypeTyped
         << QWebEnginePage::NavigationTypeBackForward
-        << QWebEnginePage::NavigationTypeReload;
+        << QWebEnginePage::NavigationTypeReload
+        << QWebEnginePage::NavigationTypeTyped
+        << QWebEnginePage::NavigationTypeOther;
     QVERIFY(expectedList.count() == page.navigations.count());
     for (int i = 0; i < expectedList.count(); ++i) {
         QCOMPARE(page.navigations[i].type, expectedList[i]);
@@ -1008,9 +1015,8 @@ static QWindow *findNewTopLevelWindow(const QWindowList &oldTopLevelWindows)
 
 void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
 {
-    QScreen *screen = QGuiApplication::primaryScreen();
     QWebEngineView view;
-    view.move(screen->availableGeometry().topLeft());
+    view.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
     view.resize(640, 480);
     view.show();
 
@@ -1026,18 +1032,29 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
 
     QWindow *popup = nullptr;
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
+    QTRY_VERIFY(!popup->position().isNull());
     QPoint popupPos = popup->position();
 
     // Close the popup by clicking somewhere into the page.
     QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(), QPoint(1, 1));
     QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
 
+    auto jsViewPosition = [&view]() {
+        QLatin1String script("(function() { return [window.screenX, window.screenY]; })()");
+        QVariantList posList = evaluateJavaScriptSync(view.page(), script).toList();
+        return QPoint(posList.at(0).toInt(), posList.at(1).toInt());
+    };
+
     // Move the top-level QWebEngineView a little and check the popup's position.
     const QPoint offset(12, 13);
-    view.move(screen->availableGeometry().topLeft() + offset);
+    view.move(view.pos() + offset);
+    QTRY_COMPARE(jsViewPosition(), view.pos());
     QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
                       elementCenter(view.page(), "foo"));
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
+    QTRY_VERIFY(!popup->position().isNull());
     QCOMPARE(popupPos + offset, popup->position());
 }
 
@@ -1047,7 +1064,6 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
     mainWidget.setLayout(new QHBoxLayout);
 
     QWidget spacer;
-    spacer.setMinimumWidth(50);
     mainWidget.layout()->addWidget(&spacer);
 
     QWebEngineView view;
@@ -1070,6 +1086,8 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
 
     QWindow *popup = nullptr;
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
+    QTRY_VERIFY(!popup->position().isNull());
     QPoint popupPos = popup->position();
 
     // Close the popup by clicking somewhere into the page.
@@ -1077,11 +1095,22 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
                       view.mapTo(view.window(), QPoint(1, 1)));
     QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
 
+    int originalViewWidth = view.size().width();
+    auto jsViewWidth = [&view]() {
+        QLatin1String script("(function() { return window.innerWidth; })()");
+        int viewWidth = evaluateJavaScriptSync(view.page(), script).toInt();
+        return viewWidth;
+    };
+
     // Resize the "spacer" widget, and implicitly change the global position of the QWebEngineView.
-    spacer.setMinimumWidth(100);
+    const int offset = 50;
+    spacer.setMinimumWidth(spacer.size().width() + offset);
+    QTRY_COMPARE(jsViewWidth(), originalViewWidth - offset);
+
     QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
                       view.mapTo(view.window(), elementCenter(view.page(), "foo")));
     QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QTRY_VERIFY(!popup->position().isNull());
     QCOMPARE(popupPos + QPoint(50, 0), popup->position());
 }
 
@@ -1642,6 +1671,28 @@ void tst_QWebEnginePage::runJavaScriptDisabled()
              QVariant());
     QCOMPARE(evaluateJavaScriptSyncInWorld(&page, QStringLiteral("1+1"), QWebEngineScript::ApplicationWorld),
              QVariant(2));
+}
+
+// Based on https://bugreports.qt.io/browse/QTBUG-73876
+void tst_QWebEnginePage::runJavaScriptFromSlot()
+{
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+
+    QSignalSpy loadFinishedSpy(&page, &QWebEnginePage::loadFinished);
+    page.setHtml("<html><body>"
+                 "  <input type='text' id='input1' value='QtWebEngine' size='50' />"
+                 "</body></html>");
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+
+    QVariant result(-1);
+    connect(&page, &QWebEnginePage::selectionChanged, [&]() {
+        result = evaluateJavaScriptSync(&page, QStringLiteral("2+2"));
+    });
+    evaluateJavaScriptSync(&page, QStringLiteral("const input = document.getElementById('input1');"
+                                                 "input.focus();"
+                                                 "input.select();"));
+    QTRY_COMPARE(result, QVariant(4));
 }
 
 void tst_QWebEnginePage::fullScreenRequested()
@@ -3284,10 +3335,13 @@ void tst_QWebEnginePage::sendNotification()
 
     auto notification = presenter.waitForResult();
     QVERIFY(presenter.wasCalled());
-    QVERIFY(!notification.isNull());
+    QVERIFY(notification.isValid());
     QCOMPARE(notification.title(), title);
     QCOMPARE(notification.message(), message);
     QCOMPARE(notification.origin(), origin);
+    QCOMPARE(notification.direction(), Qt::RightToLeft);
+    QCOMPARE(notification.language(), "de");
+    QCOMPARE(notification.tag(), "tst");
 
     notification.show();
     QTRY_VERIFY2(page.messages.contains("onshow"), page.messages.join("\n").toLatin1().constData());

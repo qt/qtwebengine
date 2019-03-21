@@ -17,3 +17,11 @@ INCLUDEPATH += $$CHROMIUM_SRC_DIR \
 SOURCES += $$NINJA_SOURCES
 HEADERS += $$NINJA_HEADERS
 DEFINES += $$NINJA_DEFINES
+
+lupdate_run {
+    SOURCES += clipboard_qt.cpp \
+        profile_adapter_client.cpp \
+        profile_adapter.cpp \
+        render_view_context_menu_qt.cpp \
+        web_contents_adapter.cpp
+}

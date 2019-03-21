@@ -54,6 +54,7 @@ class QQuickWebEngineDownloadItem;
 class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineScript;
 class QQuickWebEngineSettings;
+class QWebEngineClientCertificateStore;
 class QWebEngineCookieStore;
 class QWebEngineNotification;
 class QWebEngineUrlRequestInterceptor;
@@ -153,6 +154,8 @@ public:
     QString downloadPath() const;
     void setDownloadPath(const QString &path);
 
+    QWebEngineClientCertificateStore *clientCertificateStore();
+
     static QQuickWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:
@@ -173,7 +176,7 @@ Q_SIGNALS:
     void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);
 
-    void userNotification(QWebEngineNotification *notification);
+    Q_REVISION(5) void userNotification(QWebEngineNotification *notification);
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineProfile)

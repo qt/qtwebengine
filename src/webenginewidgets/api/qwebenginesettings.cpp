@@ -109,7 +109,8 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::JavascriptCanPaste;
     case QWebEngineSettings::DnsPrefetchEnabled:
         return WebEngineSettings::DnsPrefetchEnabled;
-
+    case QWebEngineSettings::PdfViewerEnabled:
+        return WebEngineSettings::PdfViewerEnabled;
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;
     }

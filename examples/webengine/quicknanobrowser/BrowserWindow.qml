@@ -89,6 +89,7 @@ ApplicationWindow {
         property alias touchIconsEnabled: touchIconsEnabled.checked
         property alias webRTCPublicInterfacesOnly : webRTCPublicInterfacesOnly.checked
         property alias devToolsEnabled: devToolsEnabled.checked
+        property alias pdfViewerEnabled: pdfViewerEnabled.checked
     }
 
     Action {
@@ -333,6 +334,12 @@ ApplicationWindow {
                             checkable: true
                             checked: false
                         }
+                        MenuItem {
+                            id: pdfViewerEnabled
+                            text: "PDF viewer enabled"
+                            checkable: true
+                            checked: WebEngine.settings.pdfViewerEnabled
+                        }
                     }
                 }
             }
@@ -380,11 +387,12 @@ ApplicationWindow {
                 focus: true
 
                 onLinkHovered: function(hoveredUrl) {
-                    if (hoveredUrl === "")
-                        resetStatusText.start();
+                    if (hoveredUrl == "")
+                        hideStatusText.start();
                     else {
-                        resetStatusText.stop();
                         statusText.text = hoveredUrl;
+                        statusBubble.visible = true;
+                        hideStatusText.stop();
                     }
                 }
 
@@ -410,6 +418,7 @@ ApplicationWindow {
                 settings.autoLoadIconsForPage: appSettings.autoLoadIconsForPage
                 settings.touchIconsEnabled: appSettings.touchIconsEnabled
                 settings.webRTCPublicInterfacesOnly: appSettings.webRTCPublicInterfacesOnly
+                settings.pdfViewerEnabled: appSettings.pdfViewerEnabled
 
                 onCertificateError: function(error) {
                     error.defer();
@@ -570,6 +579,7 @@ ApplicationWindow {
         id: statusBubble
         color: "oldlace"
         property int padding: 8
+        visible: false
 
         anchors.left: parent.left
         anchors.bottom: parent.bottom
@@ -582,9 +592,12 @@ ApplicationWindow {
             elide: Qt.ElideMiddle
 
             Timer {
-                id: resetStatusText
+                id: hideStatusText
                 interval: 750
-                onTriggered: statusText.text = ""
+                onTriggered: {
+                    statusText.text = "";
+                    statusBubble.visible = false;
+                }
             }
         }
     }

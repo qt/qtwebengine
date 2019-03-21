@@ -182,13 +182,6 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
         m_profileAdapter->removeClient(this);
     }
 
-    for (QWebEngineDownloadItem *download : qAsConst(m_ongoingDownloads)) {
-        if (download)
-            download->cancel();
-    }
-
-    m_ongoingDownloads.clear();
-
     if (m_profileAdapter != QtWebEngineCore::ProfileAdapter::defaultProfileAdapter())
         delete m_profileAdapter;
 
@@ -203,6 +196,23 @@ ProfileAdapter* QWebEngineProfilePrivate::profileAdapter() const
 void QWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
 {
     m_ongoingDownloads.remove(downloadId);
+    if (m_profileAdapter)
+        m_profileAdapter->removeDownload(downloadId);
+}
+
+void QWebEngineProfilePrivate::cleanDownloads()
+{
+    for (auto download : m_ongoingDownloads.values()) {
+        if (!download)
+            continue;
+
+        if (!download->isFinished())
+            download->cancel();
+
+        if (m_profileAdapter)
+            m_profileAdapter->removeDownload(download->id());
+    }
+    m_ongoingDownloads.clear();
 }
 
 void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
@@ -226,6 +236,7 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     QWebEngineDownloadItem *download = new QWebEngineDownloadItem(itemPrivate, q);
 
     m_ongoingDownloads.insert(info.id, download);
+    QObject::connect(download, &QWebEngineDownloadItem::destroyed, q, [id = info.id, this] () { downloadDestroyed(id); });
 
     Q_EMIT q->downloadRequested(download);
 
@@ -239,7 +250,6 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     if (state == QWebEngineDownloadItem::DownloadRequested) {
         // Delete unaccepted downloads.
         info.accepted = false;
-        m_ongoingDownloads.remove(info.id);
         delete download;
     }
 }
@@ -257,9 +267,18 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
     }
 
     download->d_func()->update(info);
+}
 
-    if (download->isFinished())
-        m_ongoingDownloads.remove(info.id);
+void QWebEngineProfilePrivate::addWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter)
+{
+    Q_ASSERT(m_profileAdapter);
+    m_profileAdapter->addWebContentsAdapterClient(adapter);
+}
+
+void QWebEngineProfilePrivate::removeWebContentsAdapterClient(QtWebEngineCore::WebContentsAdapterClient *adapter)
+{
+    Q_ASSERT(m_profileAdapter);
+    m_profileAdapter->removeWebContentsAdapterClient(adapter);
 }
 
 /*!
@@ -308,6 +327,7 @@ QWebEngineProfile::QWebEngineProfile(QWebEngineProfilePrivate *privatePtr, QObje
 */
 QWebEngineProfile::~QWebEngineProfile()
 {
+    d_ptr->cleanDownloads();
 }
 
 /*!
@@ -577,9 +597,11 @@ QWebEngineCookieStore* QWebEngineProfile::cookieStore()
 void QWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     Q_D(QWebEngineProfile);
-    interceptor->setProperty("deprecated", true);
+    if (interceptor)
+        interceptor->setProperty("deprecated", true);
     d->profileAdapter()->setRequestInterceptor(interceptor);
-    qWarning("Use of deprecated not tread-safe setter, use setUrlRequestInterceptor instead.");
+    if (interceptor)
+        qDebug("Use of deprecated not thread-safe setter, use setUrlRequestInterceptor instead.");
 }
 #endif
 /*!
@@ -646,16 +668,7 @@ QWebEngineScriptCollection *QWebEngineProfile::scripts() const
     \since 5.13
     \sa QWebEngineNotification
 */
-void QWebEngineProfile::setNotificationPresenter(const std::function<void(const QWebEngineNotification &)> &notificationPresenter)
-{
-    Q_D(QWebEngineProfile);
-    d->m_notificationPresenter = notificationPresenter;
-}
-
-/*!
-    \overload
-*/
-void QWebEngineProfile::setNotificationPresenter(std::function<void(const QWebEngineNotification &)> &&notificationPresenter)
+void QWebEngineProfile::setNotificationPresenter(std::function<void(const QWebEngineNotification &)> notificationPresenter)
 {
     Q_D(QWebEngineProfile);
     d->m_notificationPresenter = std::move(notificationPresenter);
@@ -807,12 +820,13 @@ void QWebEngineProfile::removeAllUrlSchemeHandlers()
 /*!
     \since 5.13
 
-    Sets this profile to be used for downloading and caching when needed during
-    certificate verification, for instance for OCSP, CRLs, and AIA.
+    Sets if this profile is to be used for downloading and caching when needed
+    during certificate verification, for instance for OCSP, CRLs, and AIA.
 
     Only one QWebEngineProfile can do this at a time, and it is recommended
     that the profile fullfilling this role has a disk HTTP cache to avoid
-    needlessly re-downloading.
+    needlessly re-downloading. If you set the option on a second profile,
+    it will be disabled on the profile it is currently set.
 
     Currently only affects Linux/NSS installations where it enables OCSP.
 
@@ -821,10 +835,10 @@ void QWebEngineProfile::removeAllUrlSchemeHandlers()
 
     \sa isUsedForGlobalCertificateVerification(), httpCacheType()
 */
-void QWebEngineProfile::setUseForGlobalCertificateVerification()
+void QWebEngineProfile::setUseForGlobalCertificateVerification(bool enabled)
 {
     Q_D(QWebEngineProfile);
-    d->profileAdapter()->setUseForGlobalCertificateVerification();
+    d->profileAdapter()->setUseForGlobalCertificateVerification(enabled);
 }
 
 /*!
@@ -848,6 +862,21 @@ void QWebEngineProfile::clearHttpCache()
 {
     Q_D(QWebEngineProfile);
     d->profileAdapter()->clearHttpCache();
+}
+
+/*!
+    \since 5.13
+
+    Returns the profile's client certificate store.
+*/
+QWebEngineClientCertificateStore *QWebEngineProfile::clientCertificateStore()
+{
+#if QT_CONFIG(ssl)
+    Q_D(QWebEngineProfile);
+    return d->profileAdapter()->clientCertificateStore();
+#else
+    return nullptr;
+#endif
 }
 
 QT_END_NAMESPACE

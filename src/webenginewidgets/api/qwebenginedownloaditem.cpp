@@ -197,16 +197,22 @@ void QWebEngineDownloadItemPrivate::update(const ProfileAdapterClient::DownloadI
         Q_EMIT q->downloadProgress(receivedBytes, totalBytes);
     }
 
-    if (info.done != downloadFinished) {
-        downloadFinished = info.done;
-        if (downloadFinished)
-            Q_EMIT q->finished();
-    }
+    if (info.done)
+        setFinished();
 
     if (downloadPaused != info.paused) {
         downloadPaused = info.paused;
         Q_EMIT q->isPausedChanged(downloadPaused);
     }
+}
+
+void QWebEngineDownloadItemPrivate::setFinished()
+{
+    if (downloadFinished)
+        return;
+
+    downloadFinished = true;
+    Q_EMIT q_ptr->finished();
 }
 
 /*!
@@ -262,6 +268,7 @@ void QWebEngineDownloadItem::cancel()
     } else {
         d->downloadState = QWebEngineDownloadItem::DownloadCancelled;
         Q_EMIT stateChanged(d->downloadState);
+        d->setFinished();
     }
 }
 
@@ -653,8 +660,10 @@ QWebEngineDownloadItem::QWebEngineDownloadItem(QWebEngineDownloadItemPrivate *p,
 */
 QWebEngineDownloadItem::~QWebEngineDownloadItem()
 {
-    if (auto profileAdapter = d_ptr->profile->profileAdapter())
-        profileAdapter->removeDownload(d_ptr->downloadId);
+    // MEMO Items are owned by profile by default and will be destroyed on profile's destruction
+    //      It's not safe to access profile in that case, so we rely on profile to clean up items
+    if (!isFinished())
+        cancel();
 }
 
 QT_END_NAMESPACE

@@ -81,7 +81,7 @@ public:
     QUrl url() const;
     QByteArray method() const;
     QUrl initiator() const;
-    const QMap<QByteArray, QByteArray> &requestHeaders() const;
+    QMap<QByteArray, QByteArray> requestHeaders() const;
 
     void reply(const QByteArray &contentType, QIODevice *device);
     void redirect(const QUrl& url);

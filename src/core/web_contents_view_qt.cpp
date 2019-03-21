@@ -62,7 +62,19 @@
 
 namespace QtWebEngineCore {
 
-void WebContentsViewQt::initialize(WebContentsAdapterClient* client)
+void WebContentsViewQt::setFactoryClient(WebContentsAdapterClient* client)
+{
+    if (m_factoryClient)
+        return;
+    m_factoryClient = client;
+
+    // Check if a RWHV was created before the pre-initialization.
+    if (auto view = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
+        view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view));
+    }
+}
+
+void WebContentsViewQt::setClient(WebContentsAdapterClient* client)
 {
     m_client = client;
     m_factoryClient = client;
@@ -78,10 +90,11 @@ content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForWidget(conten
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
 
-    Q_ASSERT(m_factoryClient);
-    view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view));
-    if (m_client)
-        view->setAdapterClient(m_client);
+    if (m_factoryClient) {
+        view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view));
+        if (m_client)
+            view->setAdapterClient(m_client);
+    }
 
     return view;
 }
@@ -99,15 +112,11 @@ content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForChildWidget(c
 
 void WebContentsViewQt::CreateView(const gfx::Size& initial_size, gfx::NativeView context)
 {
-    // This is passed through content::WebContents::CreateParams::context either as the native view's client
-    // directly or, in the case of a page-created new window, the client of the creating window's native view.
-    m_factoryClient = reinterpret_cast<WebContentsAdapterClient *>(context);
 }
 
 gfx::NativeView WebContentsViewQt::GetNativeView() const
 {
-    // Hack to provide the client to WebContentsImpl::CreateNewWindow.
-    return reinterpret_cast<gfx::NativeView>(m_client);
+    return nullptr;
 }
 
 void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const

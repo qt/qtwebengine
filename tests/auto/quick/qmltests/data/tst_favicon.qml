@@ -375,5 +375,38 @@ TestWebEngineView {
 
             faviconImage.destroy()
         }
+
+        function test_touchIconWithSameURL()
+        {
+            WebEngine.settings.touchIconsEnabled = false;
+
+            var icon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+
+            webEngineView.loadHtml(
+                        "<html>" +
+                        "<link rel='icon' type='image/png' href='" + icon + "'/>" +
+                        "<link rel='apple-touch-icon' type='image/png' href='" + icon + "'/>" +
+                        "</html>"
+            );
+            verify(webEngineView.waitForLoadSucceeded());
+
+            // The default favicon has to be loaded even if its URL is also set as a touch icon while touch icons are disabled.
+            tryCompare(iconChangedSpy, "count", 1);
+            compare(webEngineView.icon.toString().replace(/^image:\/\/favicon\//, ''), icon);
+
+            iconChangedSpy.clear();
+
+            webEngineView.loadHtml(
+                        "<html>" +
+                        "<link rel='apple-touch-icon' type='image/png' href='" + icon + "'/>" +
+                        "</html>"
+            );
+            verify(webEngineView.waitForLoadSucceeded());
+
+            // This page only has a touch icon. With disabled touch icons we don't expect any icon to be shown even if the same icon
+            // was loaded previously.
+            tryCompare(iconChangedSpy, "count", 1);
+            verify(!webEngineView.icon.toString().replace(/^image:\/\/favicon\//, ''));
+        }
     }
 }

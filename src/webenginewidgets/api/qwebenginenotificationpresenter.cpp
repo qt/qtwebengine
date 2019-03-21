@@ -57,11 +57,15 @@ DefaultNotificationPresenter::~DefaultNotificationPresenter()
 
 void DefaultNotificationPresenter::show(const QWebEngineNotification &notification)
 {
-    if (!m_activeNotification.isNull())
+    if (m_activeNotification.isValid()) {
         m_activeNotification.close();
+        m_activeNotification.disconnect(this);
+    }
+
     m_activeNotification = notification;
+
 #ifndef QT_NO_SYSTEMTRAYICON
-    if (m_systemTrayIcon) {
+    if (m_activeNotification.isValid() && m_systemTrayIcon) {
         m_systemTrayIcon->show();
         QIcon icon = notification.icon();
         if (!icon.isNull())
@@ -76,7 +80,7 @@ void DefaultNotificationPresenter::show(const QWebEngineNotification &notificati
 
 void DefaultNotificationPresenter::messageClicked()
 {
-    if (!m_activeNotification.isNull())
+    if (m_activeNotification.isValid())
         m_activeNotification.click();
 }
 

@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/certificate.crt</file>
+        <file>resources/privatekey.key</file>
+        <file>resources/certificate1.crt</file>
+        <file>resources/privatekey1.key</file>
+    </qresource>
+</RCC>

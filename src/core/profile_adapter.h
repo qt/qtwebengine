@@ -60,6 +60,7 @@
 #include <QString>
 #include <QVector>
 
+#include "api/qwebengineclientcertificatestore.h"
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebengineurlrequestinterceptor.h"
 #include "api/qwebengineurlschemehandler.h"
@@ -75,6 +76,7 @@ class ProfileAdapterClient;
 class ProfileQt;
 class UserResourceControllerHost;
 class VisitedLinksManagerQt;
+class WebContentsAdapterClient;
 
 class QWEBENGINECORE_PRIVATE_EXPORT ProfileAdapter : public QObject
 {
@@ -131,6 +133,9 @@ public:
     QStringList spellCheckLanguages() const;
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
+
+    void addWebContentsAdapterClient(WebContentsAdapterClient *client);
+    void removeWebContentsAdapterClient(WebContentsAdapterClient *client);
 
     // KEEP IN SYNC with API or add mapping layer
     enum HttpCacheType {
@@ -200,6 +205,10 @@ public:
     void removePageRequestInterceptor();
     bool hasPageRequestInterceptor() const { return m_pageRequestInterceptors > 0; }
 
+#if QT_CONFIG(ssl)
+    QWebEngineClientCertificateStore *clientCertificateStore();
+#endif
+
     QHash<QByteArray, QWeakPointer<UserNotificationController>> &ephemeralNotifications()
     {   return m_ephemeralNotifications; }
     QHash<QByteArray, QSharedPointer<UserNotificationController>> &persistentNotifications()
@@ -218,6 +227,9 @@ private:
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
     QScopedPointer<UserResourceControllerHost> m_userResourceController;
     QScopedPointer<QWebEngineCookieStore> m_cookieStore;
+#if QT_CONFIG(ssl)
+    QWebEngineClientCertificateStore *m_clientCertificateStore = nullptr;
+#endif
     QPointer<QWebEngineUrlRequestInterceptor> m_requestInterceptor;
 
     QString m_dataPath;
@@ -233,6 +245,7 @@ private:
     QHash<QByteArray, QSharedPointer<UserNotificationController>> m_persistentNotifications;
 
     QList<ProfileAdapterClient*> m_clients;
+    QVector<WebContentsAdapterClient *> m_webContentsAdapterClients;
     int m_httpCacheMaxSize;
     int m_pageRequestInterceptors;
     QrcUrlSchemeHandler m_qrcHandler;

@@ -26,9 +26,9 @@
 ****************************************************************************/
 
 /*!
-    \qmlmodule QtWebEngine 1.8
+    \qmlmodule QtWebEngine 1.9
     \title Qt WebEngine QML Types
-    \brief Provides QML types for rendering web content within a QML application
+    \brief Provides QML types for rendering web content within a QML application.
     \ingroup qtwebengine-modules
     \ingroup qmlmodules
 
@@ -36,7 +36,7 @@
     your .qml file:
 
     \badcode
-    import QtWebEngine 1.8
+    import QtWebEngine 1.9
     \endcode
 
     To link against the module, add the following QT variable to your qmake .pro
