@@ -1124,7 +1124,7 @@ void RenderWidgetHostViewQt::closePopup()
     // (hiding the widget and automatic memory cleanup via
     // RenderWidget::CloseWidgetSoon() -> RenderWidgetHostImpl::ShutdownAndDestroyWidget(true).
     host()->SetActive(false);
-    host()->Blur();
+    host()->LostFocus();
 }
 
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
@@ -1644,7 +1644,7 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         ev->accept();
     } else if (ev->lostFocus()) {
         host()->SetActive(false);
-        host()->Blur();
+        host()->LostFocus();
         ev->accept();
     }
 }

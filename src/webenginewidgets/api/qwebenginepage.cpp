@@ -522,10 +522,11 @@ void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &re
 #endif
 }
 
-void QWebEnginePagePrivate::passOnFocus(bool reverse)
+bool QWebEnginePagePrivate::passOnFocus(bool reverse)
 {
     if (view)
-        view->focusNextPrevChild(!reverse);
+        return view->focusNextPrevChild(!reverse);
+    return false;
 }
 
 void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<AuthenticationDialogController> controller)

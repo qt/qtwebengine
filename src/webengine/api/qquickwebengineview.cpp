@@ -333,12 +333,16 @@ void QQuickWebEngineViewPrivate::runFileChooser(QSharedPointer<FilePickerControl
         ui()->showFilePicker(controller);
 }
 
-void QQuickWebEngineViewPrivate::passOnFocus(bool reverse)
+bool QQuickWebEngineViewPrivate::passOnFocus(bool reverse)
 {
     Q_Q(QQuickWebEngineView);
     // The child delegate currently has focus, find the next one from there and give it focus.
     QQuickItem *next = q->scopedFocusItem()->nextItemInFocusChain(!reverse);
-    next->forceActiveFocus(reverse ? Qt::BacktabFocusReason : Qt::TabFocusReason);
+    if (next) {
+        next->forceActiveFocus(reverse ? Qt::BacktabFocusReason : Qt::TabFocusReason);
+        return true;
+    }
+    return false;
 }
 
 void QQuickWebEngineViewPrivate::titleChanged(const QString &title)

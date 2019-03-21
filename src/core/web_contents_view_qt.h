@@ -69,6 +69,7 @@ public:
     void initialize(WebContentsAdapterClient* client);
     WebContentsAdapterClient *client() { return m_client; }
 
+    // content::WebContentsView overrides:
     content::RenderWidgetHostViewBase *CreateViewForWidget(content::RenderWidgetHost* render_widget_host, bool is_guest_view_hack) override;
 
     void CreateView(const gfx::Size& initial_size, gfx::NativeView context) override;
@@ -107,6 +108,16 @@ public:
 
     gfx::Rect GetViewBounds() const override { QT_NOT_YET_IMPLEMENTED return gfx::Rect(); }
 
+    void FocusThroughTabTraversal(bool reverse) override;
+
+#if defined(OS_MACOSX)
+    void SetAllowOtherViews(bool allow) override { m_allowOtherViews = allow; }
+    bool GetAllowOtherViews() const override { return m_allowOtherViews; }
+    void CloseTabAfterEventTracking() override { QT_NOT_YET_IMPLEMENTED }
+    bool IsEventTracking() const override { QT_NOT_YET_IMPLEMENTED; return false; }
+#endif // defined(OS_MACOSX)
+
+    // content::RenderViewHostDelegateView overrides:
     void StartDragging(const content::DropData& drop_data, blink::WebDragOperationsMask allowed_ops,
                        const gfx::ImageSkia& image, const gfx::Vector2d& image_offset,
                        const content::DragEventSourceInfo& event_info,
@@ -116,17 +127,9 @@ public:
 
     void ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params) override;
 
+    void GotFocus(content::RenderWidgetHostImpl *render_widget_host) override;
+    void LostFocus(content::RenderWidgetHostImpl *render_widget_host) override;
     void TakeFocus(bool reverse) override;
-
-    void FocusThroughTabTraversal(bool reverse) override;
-
-
-#if defined(OS_MACOSX)
-    void SetAllowOtherViews(bool allow) override { m_allowOtherViews = allow; }
-    bool GetAllowOtherViews() const override { return m_allowOtherViews; }
-    void CloseTabAfterEventTracking() override { QT_NOT_YET_IMPLEMENTED }
-    bool IsEventTracking() const override { QT_NOT_YET_IMPLEMENTED; return false; }
-#endif // defined(OS_MACOSX)
 
 private:
     content::WebContents *m_webContents;

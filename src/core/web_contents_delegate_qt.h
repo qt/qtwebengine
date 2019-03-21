@@ -127,6 +127,7 @@ public:
     bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host, const GURL& security_origin, content::MediaStreamType type) override;
     void RegisterProtocolHandler(content::WebContents* web_contents, const std::string& protocol, const GURL& url, bool user_gesture) override;
     void UnregisterProtocolHandler(content::WebContents* web_contents, const std::string& protocol, const GURL& url, bool user_gesture) override;
+    bool TakeFocus(content::WebContents *source, bool reverse) override;
 
     // WebContentsObserver overrides
     void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) override;

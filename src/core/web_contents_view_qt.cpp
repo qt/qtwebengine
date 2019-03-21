@@ -51,6 +51,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/context_menu_params.h"
 #include <ui/gfx/image/image_skia.h>
 
@@ -127,6 +128,22 @@ void WebContentsViewQt::SetInitialFocus()
 {
     Focus();
 }
+
+void WebContentsViewQt::FocusThroughTabTraversal(bool reverse)
+{
+    content::WebContentsImpl *web_contents = static_cast<content::WebContentsImpl*>(m_webContents);
+    if (web_contents->ShowingInterstitialPage()) {
+        web_contents->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
+        return;
+    }
+    content::RenderWidgetHostView *fullscreen_view = web_contents->GetFullscreenRenderWidgetHostView();
+    if (fullscreen_view) {
+        fullscreen_view->Focus();
+        return;
+    }
+    web_contents->GetRenderViewHost()->SetInitialFocus(reverse);
+}
+
 
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeNone, blink::WebContextMenuData::kMediaTypeNone)
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeImage, blink::WebContextMenuData::kMediaTypeImage)
@@ -247,25 +264,22 @@ void WebContentsViewQt::UpdateDragCursor(blink::WebDragOperation dragOperation)
 #endif // QT_CONFIG(draganddrop)
 }
 
-void WebContentsViewQt::TakeFocus(bool reverse)
-{
-    m_client->passOnFocus(reverse);
-}
-
-void WebContentsViewQt::FocusThroughTabTraversal(bool reverse)
+void WebContentsViewQt::GotFocus(content::RenderWidgetHostImpl* render_widget_host)
 {
     content::WebContentsImpl *web_contents = static_cast<content::WebContentsImpl*>(m_webContents);
-    if (web_contents->ShowingInterstitialPage()) {
-        web_contents->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
-        return;
-    }
-    content::RenderWidgetHostView *fullscreen_view = web_contents->GetFullscreenRenderWidgetHostView();
-    if (fullscreen_view) {
-        fullscreen_view->Focus();
-        return;
-    }
-    web_contents->GetRenderViewHost()->SetInitialFocus(reverse);
+    web_contents->NotifyWebContentsFocused(render_widget_host);
 }
 
+void WebContentsViewQt::LostFocus(content::RenderWidgetHostImpl* render_widget_host)
+{
+    content::WebContentsImpl *web_contents = static_cast<content::WebContentsImpl*>(m_webContents);
+    web_contents->NotifyWebContentsLostFocus(render_widget_host);
+}
+
+void WebContentsViewQt::TakeFocus(bool reverse)
+{
+    if (m_webContents->GetDelegate())
+        m_webContents->GetDelegate()->TakeFocus(m_webContents, reverse);
+}
 
 } // namespace QtWebEngineCore
