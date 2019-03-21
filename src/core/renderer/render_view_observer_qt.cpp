@@ -78,6 +78,11 @@ void RenderViewObserverQt::onFetchDocumentInnerText(quint64 requestId)
     Send(new RenderViewObserverHostQt_DidFetchDocumentInnerText(routing_id(), requestId, text.Utf16()));
 }
 
+void RenderViewObserverQt::onSetBackgroundColor(quint32 color)
+{
+    render_view()->GetWebFrameWidget()->SetBaseBackgroundColor(color);
+}
+
 void RenderViewObserverQt::OnDestruct()
 {
     delete this;
@@ -89,6 +94,7 @@ bool RenderViewObserverQt::OnMessageReceived(const IPC::Message& message)
     IPC_BEGIN_MESSAGE_MAP(RenderViewObserverQt, message)
         IPC_MESSAGE_HANDLER(RenderViewObserverQt_FetchDocumentMarkup, onFetchDocumentMarkup)
         IPC_MESSAGE_HANDLER(RenderViewObserverQt_FetchDocumentInnerText, onFetchDocumentInnerText)
+        IPC_MESSAGE_HANDLER(RenderViewObserverQt_SetBackgroundColor, onSetBackgroundColor)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;

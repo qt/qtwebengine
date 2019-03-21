@@ -65,6 +65,9 @@ IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentInnerText,
                     uint64_t /* requestId */,
                     base::string16 /* innerText */)
 
+IPC_MESSAGE_ROUTED1(RenderViewObserverQt_SetBackgroundColor,
+                    uint32_t /* color */)
+
 IPC_MESSAGE_ROUTED0(RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout)
 
 //-----------------------------------------------------------------------------

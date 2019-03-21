@@ -41,6 +41,7 @@
 
 #include "browser_accessibility_manager_qt.h"
 #include "chromium_overrides.h"
+#include "common/qt_messages.h"
 #include "compositor.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
@@ -455,6 +456,7 @@ void RenderWidgetHostViewQt::UpdateBackgroundColor()
     auto color = GetBackgroundColor();
     if (color) {
         m_delegate->setClearColor(toQt(*color));
+        host()->Send(new RenderViewObserverQt_SetBackgroundColor(host()->GetRoutingID(), *color));
     }
 }
 
