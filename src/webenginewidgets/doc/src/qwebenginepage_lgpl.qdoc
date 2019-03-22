@@ -274,6 +274,7 @@
     \value NavigationTypeFormSubmitted The navigation request resulted from a form submission.
     \value NavigationTypeBackForward The navigation request resulted from a back or forward action.
     \value NavigationTypeReload The navigation request resulted from a reload action.
+    \value NavigationTypeRedirect The navigation request resulted from a content or server controlled redirect. This also includes automatic reloads. (Added in Qt 5.14)
     \value NavigationTypeOther The navigation request was triggered by other means not covered by the above.
 
     \sa acceptNavigationRequest()

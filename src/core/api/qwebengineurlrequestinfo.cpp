@@ -74,6 +74,7 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::BackForwardNavigat
                    QWebEngineUrlRequestInfo::NavigationTypeBackForward)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::ReloadNavigation, QWebEngineUrlRequestInfo::NavigationTypeReload)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, QWebEngineUrlRequestInfo::NavigationTypeOther)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::RedirectNavigation, QWebEngineUrlRequestInfo::NavigationTypeRedirect)
 
 /*!
     \class QWebEngineUrlRequestInfo
@@ -210,6 +211,7 @@ QWebEngineUrlRequestInfo::ResourceType QWebEngineUrlRequestInfo::resourceType() 
     \value NavigationTypeFormSubmitted Navigation submits a form.
     \value NavigationTypeBackForward Navigation initiated by a history action.
     \value NavigationTypeReload Navigation initiated by refreshing the page.
+    \value NavigationTypeRedirect Navigation triggered automatically by page content or remote server.
     \value NavigationTypeOther None of the above.
 */
 

@@ -143,6 +143,8 @@ QQuickWebEngineView::NavigationRequestAction QQuickWebEngineNavigationRequest::a
             Using navigation history to go to the previous or next page.
     \value  WebEngineNavigationRequest.ReloadNavigation
             Reloading the page.
+    \value  WebEngineNavigationRequest.RedirectNavigation
+            Page content or server triggered a redirection or page refresh.
     \value  WebEngineNavigationRequest.OtherNavigation
             Using some other method to go to a page.
 */

@@ -637,6 +637,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.Prc32K --> PrintedPageSizeId"
     << "QQuickWebEngineView.Prc32KBig --> PrintedPageSizeId"
     << "QQuickWebEngineView.Quarto --> PrintedPageSizeId"
+    << "QQuickWebEngineView.RedirectNavigation --> NavigationType"
     << "QQuickWebEngineView.Redo --> WebAction"
     << "QQuickWebEngineView.Reload --> WebAction"
     << "QQuickWebEngineView.ReloadAndBypassCache --> WebAction"

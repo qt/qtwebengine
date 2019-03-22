@@ -180,7 +180,8 @@ public:
         NavigationTypeFormSubmitted,
         NavigationTypeBackForward,
         NavigationTypeReload,
-        NavigationTypeOther
+        NavigationTypeOther,
+        NavigationTypeRedirect,
     };
     Q_ENUM(NavigationType)
 

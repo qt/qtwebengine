@@ -381,7 +381,8 @@ public:
         FormSubmittedNavigation,
         BackForwardNavigation,
         ReloadNavigation,
-        OtherNavigation
+        OtherNavigation,
+        RedirectNavigation,
     };
 
     enum JavaScriptConsoleMessageLevel {

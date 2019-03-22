@@ -573,7 +573,7 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
         << QWebEnginePage::NavigationTypeBackForward
         << QWebEnginePage::NavigationTypeReload
         << QWebEnginePage::NavigationTypeTyped
-        << QWebEnginePage::NavigationTypeOther;
+        << QWebEnginePage::NavigationTypeRedirect;
     QVERIFY(expectedList.count() == page.navigations.count());
     for (int i = 0; i < expectedList.count(); ++i) {
         QCOMPARE(page.navigations[i].type, expectedList[i]);

@@ -173,7 +173,8 @@ public:
         FormSubmittedNavigation,
         BackForwardNavigation,
         ReloadNavigation,
-        OtherNavigation
+        OtherNavigation,
+        RedirectNavigation,
     };
     Q_ENUM(NavigationType)
 
