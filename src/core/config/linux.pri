@@ -10,6 +10,7 @@ gn_args += \
     use_bundled_fontconfig=false \
     use_sysroot=false \
     enable_session_service=false \
+    is_cfi=false \
     toolkit_views=false \
     use_ozone=true \
     ozone_auto_platforms=false \
