@@ -53,7 +53,7 @@
 #include "profile_adapter.h"
 #include "profile_qt.h"
 #include "qwebenginecallback_p.h"
-#include "render_view_observer_host_qt.h"
+#include "renderer_host/render_view_observer_host_qt.h"
 #include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
 #include "web_contents_view_qt.h"

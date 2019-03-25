@@ -108,13 +108,13 @@ SOURCES = \
         quota_request_controller_impl.cpp \
         register_protocol_handler_request_controller_impl.cpp \
         render_view_context_menu_qt.cpp \
-        render_view_observer_host_qt.cpp \
         render_widget_host_view_qt.cpp \
         renderer/content_renderer_client_qt.cpp \
         renderer/content_settings_observer_qt.cpp \
         renderer/render_frame_observer_qt.cpp \
         renderer/render_view_observer_qt.cpp \
         renderer/user_resource_controller.cpp \
+        renderer_host/render_view_observer_host_qt.cpp \
         renderer_host/user_resource_controller_host.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
@@ -213,7 +213,6 @@ HEADERS = \
         register_protocol_handler_request_controller.h \
         register_protocol_handler_request_controller_impl.h \
         render_view_context_menu_qt.h \
-        render_view_observer_host_qt.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
         renderer/content_renderer_client_qt.h \
@@ -221,6 +220,7 @@ HEADERS = \
         renderer/render_frame_observer_qt.h \
         renderer/render_view_observer_qt.h \
         renderer/user_resource_controller.h \
+        renderer_host/render_view_observer_host_qt.h \
         renderer_host/user_resource_controller_host.h \
         request_controller.h \
         resource_context_qt.h \
