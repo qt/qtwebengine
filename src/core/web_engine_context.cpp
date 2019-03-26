@@ -73,6 +73,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/host/gpu_switches.h"
 #include "media/audio/audio_manager.h"
+#include "media/base/media_switches.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/base/port_util.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -451,6 +452,9 @@ WebEngineContext::WebEngineContext()
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kMojoVideoCapture.name);
     // We do not yet support the internal video capture API.
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kUseVideoCaptureApiForDevToolsSnapshots.name);
+    // Qt 5.12 only: The modern media controls are not yet good enough in 69-based,
+    // so we stick to the old style
+    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, media::kUseModernMediaControls.name);
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
