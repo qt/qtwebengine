@@ -170,7 +170,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
 
     QFileInfo suggestedFile(defaultDownloadDirectory.absoluteFilePath(suggestedFilename));
     QString suggestedFilePath = suggestedFile.absoluteFilePath();
-    base::FilePath tmpFilePath(toFilePathString(suggestedFilePath));
+    base::FilePath tmpFilePath(toFilePath(suggestedFilePath).NormalizePathSeparatorsTo('/'));
 
     int uniquifier = base::GetUniquePathNumber(tmpFilePath, base::FilePath::StringType());
     if (uniquifier > 0)
