@@ -70,7 +70,7 @@ class ExtensionSystemQt;
 
 namespace QtWebEngineCore {
 
-class ClientCertificateStoreData;
+struct ClientCertificateStoreData;
 class ProfileIODataQt;
 class ProfileQt;
 
