@@ -704,6 +704,12 @@ void WebContentsDelegateQt::UnregisterProtocolHandler(content::WebContents *webC
     registry->RemoveHandler(handler);
 }
 
+bool WebContentsDelegateQt::TakeFocus(content::WebContents *source, bool reverse)
+{
+    Q_UNUSED(source);
+    return m_viewClient->passOnFocus(reverse);
+}
+
 FaviconManager *WebContentsDelegateQt::faviconManager()
 {
     return m_faviconManager.data();

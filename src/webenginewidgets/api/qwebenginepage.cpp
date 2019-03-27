@@ -456,10 +456,11 @@ void QWebEnginePagePrivate::didPrintPage(quint64 requestId, QSharedPointer<QByte
 #endif
 }
 
-void QWebEnginePagePrivate::passOnFocus(bool reverse)
+bool QWebEnginePagePrivate::passOnFocus(bool reverse)
 {
     if (view)
-        view->focusNextPrevChild(!reverse);
+        return view->focusNextPrevChild(!reverse);
+    return false;
 }
 
 void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<AuthenticationDialogController> controller)
@@ -1789,9 +1790,11 @@ void QWebEnginePagePrivate::setToolTip(const QString &toolTipText)
     }
 
     // Update tooltip if text was changed.
-    QString escapedTip = toolTipText.toHtmlEscaped().left(MaxTooltipLength);
-    if (view->toolTip() != escapedTip)
-        view->setToolTip(escapedTip);
+    QString wrappedTip = QLatin1String("<p style=\"white-space:pre\">")
+            % toolTipText.toHtmlEscaped().left(MaxTooltipLength)
+            % QLatin1String("</p>");
+    if (view->toolTip() != wrappedTip)
+        view->setToolTip(wrappedTip);
 }
 
 void QWebEnginePagePrivate::printRequested()
