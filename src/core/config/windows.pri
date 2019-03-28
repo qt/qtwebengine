@@ -6,7 +6,8 @@ gn_args += \
     enable_session_service=false \
     ninja_use_custom_environment_files=false \
     is_multi_dll_chrome=false \
-    win_linker_timing=true
+    win_linker_timing=true \
+    com_init_check_hook_disabled=true
 
 isDeveloperBuild() {
     gn_args += \

@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 import QtQml 2.0
-import QtQuick 2.0
+import QtQuick 2.1
 import QtQuick.Controls 2.0
 import QtQuick.Controls.Material 2.0
 import QtQuick.Layouts 1.0
@@ -98,7 +98,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             focus: true
-            KeyNavigation.tab: webView
+            activeFocusOnTab: true
             onRecipeSelected: function(url) {
                 webView.showRecipe(url)
             }
@@ -109,8 +109,6 @@ ApplicationWindow {
             Layout.preferredWidth: 2 * parent.width / 3
             Layout.fillWidth: true
             Layout.fillHeight: true
-            KeyNavigation.tab: recipeList
-            KeyNavigation.priority: KeyNavigation.BeforeItem
             // Make sure focus is not taken by the web view, so user can continue navigating
             // recipes with the keyboard.
             settings.focusOnNavigationEnabled: false

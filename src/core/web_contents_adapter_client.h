@@ -448,7 +448,7 @@ public:
     virtual void didFindText(quint64 requestId, int matchCount) = 0;
     virtual void didPrintPage(quint64 requestId, QSharedPointer<QByteArray>) = 0;
     virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;
-    virtual void passOnFocus(bool reverse) = 0;
+    virtual bool passOnFocus(bool reverse) = 0;
     // returns the last QObject (QWidget/QQuickItem) based object in the accessibility
     // hierarchy before going into the BrowserAccessibility tree
     virtual QObject *accessibilityParentObject() = 0;
