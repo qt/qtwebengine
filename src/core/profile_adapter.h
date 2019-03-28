@@ -78,7 +78,7 @@ class UserResourceControllerHost;
 class VisitedLinksManagerQt;
 class WebContentsAdapterClient;
 
-class QWEBENGINECORE_PRIVATE_EXPORT ProfileAdapter : public QObject
+class Q_WEBENGINECORE_PRIVATE_EXPORT ProfileAdapter : public QObject
 {
 public:
     explicit ProfileAdapter(const QString &storagePrefix = QString());

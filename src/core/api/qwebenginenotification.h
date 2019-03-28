@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 
 class QWebEngineNotificationPrivate;
 
-class QWEBENGINECORE_EXPORT QWebEngineNotification : public QObject {
+class Q_WEBENGINECORE_EXPORT QWebEngineNotification : public QObject {
     Q_OBJECT
     Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
     Q_PROPERTY(QIcon icon READ icon CONSTANT FINAL)

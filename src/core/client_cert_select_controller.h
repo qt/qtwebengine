@@ -72,7 +72,7 @@ class SSLCertRequestInfo;
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINECORE_PRIVATE_EXPORT ClientCertSelectController {
+class Q_WEBENGINECORE_PRIVATE_EXPORT ClientCertSelectController {
 public:
     ClientCertSelectController(net::SSLCertRequestInfo *certRequestInfo,
                                std::vector<std::unique_ptr<net::ClientCertIdentity>> clientCerts,

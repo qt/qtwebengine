@@ -48,7 +48,7 @@
 namespace QtWebEngineCore {
 int PdfiumDocumentWrapperQt::m_libraryUsers = 0;
 
-class QWEBENGINECORE_PRIVATE_EXPORT PdfiumPageWrapperQt {
+class PdfiumPageWrapperQt {
 public:
     PdfiumPageWrapperQt(FPDF_DOCUMENT data, int pageIndex, int targetWidth, int targetHeight)
         : m_pageData(FPDF_LoadPage(data, pageIndex))

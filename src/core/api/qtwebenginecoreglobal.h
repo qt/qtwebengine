@@ -46,9 +46,9 @@
 QT_BEGIN_NAMESPACE
 
 #if defined(BUILDING_CHROMIUM)
-#  define QWEBENGINECORE_EXPORT Q_DECL_EXPORT
+#  define Q_WEBENGINECORE_EXPORT Q_DECL_EXPORT
 #else
-#  define QWEBENGINECORE_EXPORT Q_DECL_IMPORT
+#  define Q_WEBENGINECORE_EXPORT Q_DECL_IMPORT
 #endif
 
 #define ASSERT_ENUMS_MATCH(A, B) Q_STATIC_ASSERT_X(static_cast<int>(A) == static_cast<int>(B), "The enum values must match");

@@ -53,7 +53,7 @@
 
 #include "qtwebenginecoreglobal_p.h"
 
-class QWEBENGINECORE_PRIVATE_EXPORT WebEngineError
+class Q_WEBENGINECORE_PRIVATE_EXPORT WebEngineError
 {
 
 public:

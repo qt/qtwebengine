@@ -55,7 +55,7 @@
 
 namespace QtWebEngineCore {
 
-class QWEBENGINECORE_PRIVATE_EXPORT RenderViewContextMenuQt
+class Q_WEBENGINECORE_PRIVATE_EXPORT RenderViewContextMenuQt
 {
 public:
     enum ContextMenuItem {
