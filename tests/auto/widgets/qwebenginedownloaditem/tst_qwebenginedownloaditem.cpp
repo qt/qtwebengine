@@ -73,7 +73,7 @@ private Q_SLOTS:
     void downloadDeletedByProfile();
     void downloadUniqueFilename_data();
     void downloadUniqueFilename();
-    void downloadUniqueFileNameWithTimeStamp();
+    void downloadUniqueFilenameWithTimestamp();
     void downloadToDefaultLocation();
     void downloadToNonExistentDir();
     void downloadToReadOnlyDir();
@@ -917,11 +917,8 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilename()
     }
 }
 
-void tst_QWebEngineDownloadItem::downloadUniqueFileNameWithTimeStamp()
+void tst_QWebEngineDownloadItem::downloadUniqueFilenameWithTimestamp()
 {
-#ifdef Q_OS_WIN
-    QSKIP("QTBUG-74764: The download completes after the test fails thus would ruin subsequent tests on Windows.");
-#endif
     // Set up HTTP server
     QString baseName("test(1.test)");
     QString extension("txt");
@@ -988,8 +985,8 @@ void tst_QWebEngineDownloadItem::downloadUniqueFileNameWithTimeStamp()
         QRegularExpressionMatch match = fileNameCheck.match(downloadedFilePath);
         QVERIFY(match.hasMatch());
         // ISO 8601 Date and time in UTC
-        QRegExp timeStamp("^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])([.][0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$");
-        QVERIFY(timeStamp.exactMatch(match.captured(1)));
+        QRegExp timestamp("^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9])([0-5][0-9])([0-5][0-9])([.][0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9])[0-5][0-9])?$");
+        QVERIFY(timestamp.exactMatch(match.captured(1)));
     }
 }
 
