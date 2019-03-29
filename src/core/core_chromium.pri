@@ -37,6 +37,11 @@ qtConfig(egl): CONFIG += egl
 
 INCLUDEPATH += $$PWD $$PWD/api
 
+clang_cl {
+    QMAKE_CFLAGS -= $$QMAKE_CFLAGS_MSVC_COMPAT
+    QMAKE_CXXFLAGS -= $$QMAKE_CFLAGS_MSVC_COMPAT
+}
+
 SOURCES = \
         accessibility_activation_observer.cpp \
         accessibility_tree_formatter_qt.cpp \

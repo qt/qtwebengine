@@ -120,11 +120,16 @@ GN_CONTENTS += "config(\"$${TARGET}_config\") {"
 }
 
 # Stop the barrage of unused variables warnings.
-gcc|clang {
+gcc|clang|clang_cl {
     QMAKE_CXXFLAGS += "-Wno-unused-parameter"
     QMAKE_CXXFLAGS += "-Wno-unused-variable"
 } else:msvc {
     QMAKE_CXXFLAGS += /wd4100 /wd4101
+}
+
+# Chromium activates this, but we need it off to be able to compile QFlags
+clang_cl {
+    QMAKE_CXXFLAGS += "-fno-complete-member-pointers"
 }
 
 !isEmpty(QMAKE_CXXFLAGS) {

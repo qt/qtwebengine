@@ -64,7 +64,7 @@
 namespace QtWebEngineCore {
 
 #define NO_SEPARATOR
-#if defined(Q_OS_WIN)
+#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 #define FILE_NAME_CASE_STATEMENT(TYPE, COMPONENT) \
     case UIDelegatesManager::TYPE:\
         return QString::fromLatin1(#TYPE ##".qml");
