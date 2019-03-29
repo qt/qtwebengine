@@ -124,6 +124,7 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList)
         m_listener->FileSelectionCanceled();
     else
         m_listener->FileSelected(std::move(chooser_files),
+                                  /* FIXME? */ base::FilePath(),
                                  static_cast<blink::mojom::FileChooserParams::Mode>(this->m_mode));
 }
 

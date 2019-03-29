@@ -48,7 +48,6 @@
 #include "base/version.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/user_agent.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/media_buildflags.h"
@@ -415,12 +414,6 @@ void ContentClientQt::AddAdditionalSchemes(Schemes* schemes)
     schemes->standard_schemes.push_back("chrome-extension");
 }
 
-std::string ContentClientQt::getUserAgent()
-{
-    // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
-    return content::BuildUserAgentFromProduct("QtWebEngine/" QTWEBENGINECORE_VERSION_STR " Chrome/" CHROMIUM_VERSION);
-}
-
 base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ScaleFactor scale_factor) const {
     return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(resource_id, scale_factor);
 }
@@ -438,12 +431,6 @@ gfx::Image &ContentClientQt::GetNativeImageNamed(int resource_id) const
 base::string16 ContentClientQt::GetLocalizedString(int message_id) const
 {
     return l10n_util::GetStringUTF16(message_id);
-}
-
-std::string ContentClientQt::GetProduct() const
-{
-    QString productName(qApp->applicationName() % '/' % qApp->applicationVersion());
-    return productName.toStdString();
 }
 
 } // namespace QtWebEngineCore

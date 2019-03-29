@@ -104,7 +104,7 @@ private:
     void savePackageDownloadCreated(download::DownloadItem *download);
     ProfileAdapter *m_profileAdapter;
 
-    uint64_t m_currentId;
+    uint32_t m_currentId;
     base::WeakPtrFactory<DownloadManagerDelegateQt> m_weakPtrFactory;
     bool m_nextDownloadIsUserRequested;
 

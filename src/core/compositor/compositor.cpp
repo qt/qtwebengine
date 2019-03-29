@@ -127,10 +127,9 @@ QSGNode *Compositor::updatePaintNode(QSGNode *oldNode, RenderWidgetHostViewQtDel
     }
     m_updatePaintNodeShouldCommit = false;
 
-    if (m_committedFrame.metadata.request_presentation_feedback)
-        m_taskRunner->PostTask(FROM_HERE,
-                               base::BindOnce(&Compositor::sendPresentationFeedback, m_weakPtrFactory.GetWeakPtr(),
-                                              m_committedFrame.metadata.frame_token));
+    gfx::PresentationFeedback dummyFeedback(base::TimeTicks::Now(), base::TimeDelta(), gfx::PresentationFeedback::Flags::kVSync);
+    m_presentations.insert({m_committedFrame.metadata.frame_token, dummyFeedback});
+
     m_resourceTracker->commitResources();
     frameNode->commit(m_pendingFrame, m_committedFrame, m_resourceTracker.get(), viewDelegate);
     m_committedFrame = std::move(m_pendingFrame);
@@ -162,7 +161,7 @@ void Compositor::notifyFrameCommitted()
 void Compositor::sendPresentationFeedback(uint frame_token)
 {
     gfx::PresentationFeedback dummyFeedback(base::TimeTicks::Now(), base::TimeDelta(), gfx::PresentationFeedback::Flags::kVSync);
-    m_frameSinkClient->DidPresentCompositorFrame(frame_token, dummyFeedback);
+    m_presentations.insert({frame_token, dummyFeedback});
 }
 
 bool Compositor::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs &args)
@@ -171,8 +170,10 @@ bool Compositor::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs &args)
 
     ProgressFlingIfNeeded(m_host, args.frame_time);
     m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
-    if (m_frameSinkClient)
-        m_frameSinkClient->OnBeginFrame(args);
+    if (m_frameSinkClient) {
+        m_frameSinkClient->OnBeginFrame(args, m_presentations);
+        m_presentations.clear();
+    }
 
     return true;
 }

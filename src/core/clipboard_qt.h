@@ -66,7 +66,7 @@ private:
 class ClipboardQt : public ui::Clipboard {
 public:
     uint64_t GetSequenceNumber(ui::ClipboardType type) const override;
-    bool IsFormatAvailable(const FormatType& format, ui::ClipboardType type) const override;
+    bool IsFormatAvailable(const ui::ClipboardFormatType& format, ui::ClipboardType type) const override;
     void Clear(ui::ClipboardType type) override;
     void ReadAvailableTypes(ui::ClipboardType type, std::vector<base::string16>* types, bool* contains_filenames) const override;
     void ReadText(ui::ClipboardType type, base::string16* result) const override;
@@ -80,7 +80,7 @@ public:
     SkBitmap ReadImage(ui::ClipboardType type) const override;
     void ReadCustomData(ui::ClipboardType clipboard_type, const base::string16& type, base::string16* result) const override;
     void ReadBookmark(base::string16* title, std::string* url) const override;
-    void ReadData(const FormatType& format, std::string* result) const override;
+    void ReadData(const ui::ClipboardFormatType& format, std::string* result) const override;
 
     void OnPreShutdown() override { }
 
@@ -92,7 +92,7 @@ protected:
     void WriteBookmark(const char* title_data, size_t title_len, const char* url_data, size_t url_len) override;
     void WriteWebSmartPaste() override;
     void WriteBitmap(const SkBitmap& bitmap) override;
-    void WriteData(const FormatType& format, const char* data_data, size_t data_len) override;
+    void WriteData(const ui::ClipboardFormatType& format, const char* data_data, size_t data_len) override;
 };
 
 } // namespace QtWebEngineCore

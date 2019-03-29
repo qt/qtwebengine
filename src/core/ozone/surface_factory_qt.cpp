@@ -38,10 +38,9 @@
 ****************************************************************************/
 
 #include "surface_factory_qt.h"
-#include "qtwebenginecoreglobal_p.h"
 #include "gl_context_qt.h"
 #include "gl_ozone_egl_qt.h"
-#if QT_CONFIG(webengine_system_x11)
+#if defined(USE_GLX)
 #include "gl_ozone_glx_qt.h"
 #endif
 
@@ -58,7 +57,7 @@ namespace QtWebEngineCore {
 SurfaceFactoryQt::SurfaceFactoryQt()
 {
     Q_ASSERT(qApp);
-#if QT_CONFIG(webengine_system_x11)
+#if defined(USE_GLX)
     if (GLContextHelper::getGlXConfig()) {
         m_impl = gl::kGLImplementationDesktopGL;
         m_ozone.reset(new ui::GLOzoneGLXQt());

@@ -201,10 +201,10 @@ const std::string AccessibilityTreeFormatterQt::GetDenyString()
 #endif // QT_NO_ACCESSIBILITY
 
 // static
-AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create()
+std::unique_ptr<AccessibilityTreeFormatter> AccessibilityTreeFormatter::Create()
 {
 #ifndef QT_NO_ACCESSIBILITY
-    return new AccessibilityTreeFormatterQt();
+    return std::unique_ptr<AccessibilityTreeFormatter>(new AccessibilityTreeFormatterQt());
 #else
     return nullptr;
 #endif

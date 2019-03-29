@@ -61,6 +61,10 @@ ProfileAdapter::PermissionType toQt(content::PermissionType type)
         return ProfileAdapter::AudioCapturePermission;
     case content::PermissionType::VIDEO_CAPTURE:
         return ProfileAdapter::VideoCapturePermission;
+    case content::PermissionType::CLIPBOARD_READ:
+        return ProfileAdapter::ClipboardRead;
+    case content::PermissionType::CLIPBOARD_WRITE:
+        return ProfileAdapter::ClipboardWrite;
     case content::PermissionType::NOTIFICATIONS:
         return ProfileAdapter::NotificationPermission;
     case content::PermissionType::FLASH:
@@ -71,14 +75,11 @@ ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::BACKGROUND_SYNC:
     case content::PermissionType::SENSORS:
     case content::PermissionType::ACCESSIBILITY_EVENTS:
-        break;
-    case content::PermissionType::CLIPBOARD_READ:
-        return ProfileAdapter::ClipboardRead;
-    case content::PermissionType::CLIPBOARD_WRITE:
-        return ProfileAdapter::ClipboardWrite;
     case content::PermissionType::PAYMENT_HANDLER:
     case content::PermissionType::BACKGROUND_FETCH:
+    case content::PermissionType::IDLE_DETECTION:
     case content::PermissionType::NUM:
+        NOTIMPLEMENTED() << "Unsupported permission type: " << static_cast<int>(type);
         break;
     }
     return ProfileAdapter::UnsupportedPermission;

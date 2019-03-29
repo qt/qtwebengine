@@ -50,6 +50,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/snapshot/snapshot.h"
 #include "ppapi/buildflags/buildflags.h"
 
 #include <QGuiApplication>
@@ -151,6 +152,53 @@ ActivationClient *GetActivationClient(aura::Window *)
 
 } // namespace wm
 #endif // defined(USE_AURA) || defined(USE_OZONE)
+
+#if defined(USE_AURA)
+namespace ui {
+
+bool GrabWindowSnapshot(gfx::NativeWindow window,
+                        const gfx::Rect& snapshot_bounds,
+                        gfx::Image* image)
+{
+    NOTIMPLEMENTED();
+    return false;
+}
+
+bool GrabViewSnapshot(gfx::NativeView view,
+                      const gfx::Rect& snapshot_bounds,
+                      gfx::Image* image)
+{
+    NOTIMPLEMENTED();
+    return false;
+}
+
+void GrabWindowSnapshotAndScaleAsync(gfx::NativeWindow window,
+                                     const gfx::Rect& source_rect,
+                                     const gfx::Size& target_size,
+                                     const GrabWindowSnapshotAsyncCallback& callback)
+{
+    NOTIMPLEMENTED();
+    callback.Run(gfx::Image());
+}
+
+void GrabWindowSnapshotAsync(gfx::NativeWindow window,
+                             const gfx::Rect& source_rect,
+                             const GrabWindowSnapshotAsyncCallback& callback)
+{
+    NOTIMPLEMENTED();
+    callback.Run(gfx::Image());
+}
+
+void GrabViewSnapshotAsync(gfx::NativeView view,
+                           const gfx::Rect& source_rect,
+                           const GrabWindowSnapshotAsyncCallback& callback)
+{
+    NOTIMPLEMENTED();
+    callback.Run(gfx::Image());
+}
+
+} // namespace ui
+#endif // defined(USE_AURA)
 
 std::unique_ptr<ui::OSExchangeData::Provider>
 ui::OSExchangeDataProviderFactory::CreateProvider() {

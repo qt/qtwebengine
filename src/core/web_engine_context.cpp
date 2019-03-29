@@ -44,7 +44,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_impl.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
@@ -77,8 +77,9 @@
 #include "mojo/core/embedder/embedder.h"
 #include "net/base/port_util.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/service_manager/sandbox/switches.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 #include "ui/gl/gl_switches.h"
@@ -238,7 +239,7 @@ void WebEngineContext::destroy()
     destroyGpuProcess();
 
     base::MessagePump::Delegate *delegate =
-            static_cast<base::MessageLoop *>(m_runLoop->delegate_);
+            static_cast<base::MessageLoopImpl *>(m_runLoop->delegate_);
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
 
@@ -372,7 +373,7 @@ WebEngineContext::WebEngineContext()
 {
     base::TaskScheduler::Create("Browser");
     m_contentRunner.reset(content::ContentMainRunner::Create());
-    m_browserRunner.reset(content::BrowserMainRunner::Create());
+    m_browserRunner = content::BrowserMainRunner::Create();
 
 #ifdef Q_OS_LINUX
     // Call qputenv before BrowserMainRunnerImpl::Initialize is called.
@@ -392,7 +393,7 @@ WebEngineContext::WebEngineContext()
     QWebEngineUrlScheme::lockSchemes();
 
     // Allow us to inject javascript like any webview toolkit.
-    content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
+    content::RenderFrameHost::AllowInjectingJavaScript();
 
     QStringList appArgs = QCoreApplication::arguments();
 
@@ -474,8 +475,12 @@ WebEngineContext::WebEngineContext()
     appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kAllowContentInitiatedDataUrlNavigations.name);
     // Surface synchronization breaks our current graphics integration (since 65)
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kEnableSurfaceSynchronization.name);
+    // Viz Display Compositor is enabled by default since 73. Doesn't work for us (also implies SurfaceSynchronization)
+    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kVizDisplayCompositor.name);
     // The video-capture service is not functioning at this moment (since 69)
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kMojoVideoCapture.name);
+    // Breaks WebEngineNewViewRequest.userInitiated API (since 73)
+    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kUserActivationV2.name);
 
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kBackgroundFetch.name);
 
@@ -616,8 +621,8 @@ WebEngineContext::WebEngineContext()
 
     base::ThreadRestrictions::SetIOAllowed(true);
 
-    if (parsedCommandLine->HasSwitch(switches::kExplicitlyAllowedPorts)) {
-        std::string allowedPorts = parsedCommandLine->GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
+    if (parsedCommandLine->HasSwitch(network::switches::kExplicitlyAllowedPorts)) {
+        std::string allowedPorts = parsedCommandLine->GetSwitchValueASCII(network::switches::kExplicitlyAllowedPorts);
         net::SetExplicitlyAllowedPorts(allowedPorts);
     }
 

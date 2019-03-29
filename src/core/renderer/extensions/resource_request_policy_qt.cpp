@@ -50,6 +50,7 @@
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
 #include "extensions/renderer/dispatcher.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -172,7 +173,7 @@ bool ResourceRequestPolicyQt::CanRequestResource(const GURL &resource_url,
                     "web_accessible_resources manifest key in order to be loaded by "
                     "pages outside the extension.",
                     resource_url.spec().c_str());
-        frame->AddMessageToConsole(blink::WebConsoleMessage(blink::WebConsoleMessage::kLevelError, blink::WebString::FromUTF8(message)));
+        frame->AddMessageToConsole(blink::WebConsoleMessage(blink::mojom::ConsoleMessageLevel::kError, blink::WebString::FromUTF8(message)));
         return false;
     }
 

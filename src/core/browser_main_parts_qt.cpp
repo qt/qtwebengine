@@ -42,6 +42,8 @@
 #include "api/qwebenginemessagepumpscheduler_p.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_impl.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/process/process.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -65,7 +67,6 @@
 #include "service/service_qt.h"
 #include "web_engine_context.h"
 
-#include <QEventLoop>
 #include <QtGui/qtgui-config.h>
 
 #if QT_CONFIG(opengl)
@@ -104,6 +105,8 @@ int GetTimeIntervalMilliseconds(const base::TimeTicks &from)
     return delay < 0 ? 0 : delay;
 }
 
+}  // anonymous namespace
+
 class MessagePumpForUIQt : public base::MessagePump
 {
 public:
@@ -111,37 +114,31 @@ public:
         : m_scheduler([this]() { handleScheduledWork(); })
     {}
 
+    void setDelegate(Delegate *delegate)
+    {
+        m_delegate = delegate;
+    }
+
     void Run(Delegate *delegate) override
     {
-        if (!m_delegate)
-            m_delegate = delegate;
-        else
-            Q_ASSERT(delegate == m_delegate);
         // This is used only when MessagePumpForUIQt is used outside of the GUI thread.
-        QEventLoop loop;
-        m_explicitLoop = &loop;
-        loop.exec();
-        m_explicitLoop = nullptr;
+        NOTIMPLEMENTED();
     }
 
     void Quit() override
     {
-        Q_ASSERT(m_explicitLoop);
-        m_explicitLoop->quit();
+        // This is used only when MessagePumpForUIQt is used outside of the GUI thread.
+        NOTIMPLEMENTED();
     }
 
     void ScheduleWork() override
     {
         // NOTE: This method may called from any thread at any time.
-        if (!m_delegate)
-            m_delegate = base::MessageLoopForUI::current();
         m_scheduler.scheduleWork();
     }
 
     void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) override
     {
-        if (!m_delegate)
-            m_delegate = base::MessageLoopForUI::current();
         m_scheduler.scheduleDelayedWork(GetTimeIntervalMilliseconds(delayed_work_time));
     }
 
@@ -193,6 +190,8 @@ private:
 
     void handleScheduledWork()
     {
+        Q_ASSERT(m_delegate);
+
         ScopedGLContextChecker glContextChecker;
 
         bool more_work_is_plausible = m_delegate->DoWork();
@@ -211,16 +210,26 @@ private:
     }
 
     Delegate *m_delegate = nullptr;
-    QEventLoop *m_explicitLoop = nullptr;
     QWebEngineMessagePumpScheduler m_scheduler;
 };
 
-}  // anonymous namespace
+// Needed to access protected constructor from MessageLoop.
+class MessageLoopForUIQt : public base::MessageLoop {
+public:
+    MessageLoopForUIQt() : MessageLoop(TYPE_UI, base::BindOnce(&messagePumpFactory))
+    {
+        BindToCurrentThread();
 
-std::unique_ptr<base::MessagePump> messagePumpFactory()
-{
-    return base::WrapUnique(new MessagePumpForUIQt);
-}
+        auto pump = static_cast<MessagePumpForUIQt *>(pump_);
+        auto backend = static_cast<base::MessageLoopImpl *>(backend_.get());
+        pump->setDelegate(backend);
+    }
+private:
+    static std::unique_ptr<base::MessagePump> messagePumpFactory()
+    {
+        return base::WrapUnique(new MessagePumpForUIQt);
+    }
+};
 
 BrowserMainPartsQt::BrowserMainPartsQt() : content::BrowserMainParts()
 { }
@@ -233,12 +242,13 @@ int BrowserMainPartsQt::PreEarlyInitialization()
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(extensions::kExtensionScheme);
 #endif //ENABLE_EXTENSIONS
-    base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
     return 0;
 }
 
 void BrowserMainPartsQt::PreMainMessageLoopStart()
 {
+    // Overrides message loop creation in BrowserMainLoop::MainMessageLoopStart().
+    m_mainMessageLoop.reset(new MessageLoopForUIQt);
 }
 
 void BrowserMainPartsQt::PreMainMessageLoopRun()
@@ -277,10 +287,9 @@ int BrowserMainPartsQt::PreCreateThreads()
 void BrowserMainPartsQt::ServiceManagerConnectionStarted(content::ServiceManagerConnection *connection)
 {
     ServiceQt::GetInstance()->InitConnector();
-    connection->GetConnector()->StartService(service_manager::Identity("qtwebengine"));
+    connection->GetConnector()->WarmService(service_manager::ServiceFilter::ByName("qtwebengine"));
     m_processResourceCoordinator = std::make_unique<resource_coordinator::ProcessResourceCoordinator>(connection->GetConnector());
-    m_processResourceCoordinator->SetLaunchTime(base::Time::Now());
-    m_processResourceCoordinator->SetPID(base::Process::Current().Pid());
+    m_processResourceCoordinator->OnProcessLaunched(base::Process::Current());
 }
 
 } // namespace QtWebEngineCore

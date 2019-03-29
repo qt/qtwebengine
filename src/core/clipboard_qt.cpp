@@ -43,6 +43,8 @@
 
 #include "clipboard_qt.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 
 #include "type_conversion.h"
 
@@ -81,12 +83,6 @@ using namespace QtWebEngineCore;
 
 namespace {
 
-const char kMimeTypeBitmap[] = "image/bmp";
-const char kMimeTypeMozillaURL[] = "text/x-moz-url";
-const char kMimeTypeWebCustomDataCopy[] = "chromium/x-web-custom-data";
-const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
-const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
-
 QScopedPointer<QMimeData> uncommittedData;
 QMimeData *getUncommittedData()
 {
@@ -103,104 +99,6 @@ namespace ui {
 Clipboard* Clipboard::Create() {
     return new ClipboardQt;
 }
-
-Clipboard::FormatType Clipboard::GetFormatType(const std::string& format_string)
-{
-    return FormatType::Deserialize(format_string);
-}
-
-const Clipboard::FormatType& Clipboard::GetPlainTextFormatType()
-{
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeText));
-    return type;
-}
-
-const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType()
-{
-    return GetPlainTextFormatType();
-}
-
-const Clipboard::FormatType& Clipboard::GetUrlFormatType()
-{
-    return GetPlainTextFormatType();
-}
-
-const Clipboard::FormatType& Clipboard::GetUrlWFormatType()
-{
-    return GetPlainTextWFormatType();
-}
-
-const Clipboard::FormatType& Clipboard::GetHtmlFormatType()
-{
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeHTML));
-    return type;
-}
-
-const Clipboard::FormatType& Clipboard::GetRtfFormatType()
-{
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeRTF));
-    return type;
-}
-
-const Clipboard::FormatType& Clipboard::GetBitmapFormatType()
-{
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeBitmap));
-    return type;
-}
-
-const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType()
-{
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebkitSmartPaste));
-    return type;
-}
-
-const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType()
-{
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomDataCopy));
-    return type;
-}
-
-const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType()
-{
-    CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
-    return type;
-}
-
-
-Clipboard::FormatType::FormatType()
-{
-}
-
-Clipboard::FormatType::FormatType(const std::string& format_string)
-    : data_(format_string)
-{
-}
-
-Clipboard::FormatType::~FormatType()
-{
-}
-
-std::string Clipboard::FormatType::Serialize() const
-{
-  return data_;
-}
-
-Clipboard::FormatType Clipboard::FormatType::Deserialize(const std::string& serialization)
-{
-  return FormatType(serialization);
-}
-
-bool Clipboard::FormatType::Equals(const FormatType& other) const
-{
-  return data_ == other.data_;
-}
-
-#if defined(OS_WIN) || defined(USE_AURA)
-bool Clipboard::FormatType::operator<(const FormatType& other) const
-{
-    return data_.compare(other.data_) < 0;
-}
-#endif
 
 } // namespace ui
 
@@ -240,12 +138,12 @@ void ClipboardQt::WriteHTML(const char* markup_data, size_t markup_len, const ch
 
 void ClipboardQt::WriteRTF(const char* rtf_data, size_t data_len)
 {
-    getUncommittedData()->setData(QString::fromLatin1(kMimeTypeRTF), QByteArray(rtf_data, data_len));
+    getUncommittedData()->setData(QString::fromLatin1(ui::kMimeTypeRTF), QByteArray(rtf_data, data_len));
 }
 
 void ClipboardQt::WriteWebSmartPaste()
 {
-    getUncommittedData()->setData(QString::fromLatin1(kMimeTypeWebkitSmartPaste), QByteArray());
+    getUncommittedData()->setData(QString::fromLatin1(ui::kMimeTypeWebkitSmartPaste), QByteArray());
 }
 
 void ClipboardQt::WriteBitmap(const SkBitmap& bitmap)
@@ -264,15 +162,15 @@ void ClipboardQt::WriteBookmark(const char* title_data, size_t title_len, const 
     data.append(reinterpret_cast<const char*>(url.utf16()), url.size() * 2);
     data.append('\n');
     data.append(reinterpret_cast<const char*>(title.utf16()), title.size() * 2);
-    getUncommittedData()->setData(QString::fromLatin1(kMimeTypeMozillaURL), data);
+    getUncommittedData()->setData(QString::fromLatin1(ui::kMimeTypeMozillaURL), data);
 }
 
-void ClipboardQt::WriteData(const FormatType& format, const char* data_data, size_t data_len)
+void ClipboardQt::WriteData(const ui::ClipboardFormatType& format, const char* data_data, size_t data_len)
 {
     getUncommittedData()->setData(QString::fromStdString(format.ToString()), QByteArray(data_data, data_len));
 }
 
-bool ClipboardQt::IsFormatAvailable(const ui::Clipboard::FormatType& format, ui::ClipboardType type) const
+bool ClipboardQt::IsFormatAvailable(const ui::ClipboardFormatType& format, ui::ClipboardType type) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
     return mimeData && mimeData->hasFormat(QString::fromStdString(format.ToString()));
@@ -301,7 +199,7 @@ void ClipboardQt::ReadAvailableTypes(ui::ClipboardType type, std::vector<base::s
         types->push_back(toString16(mimeType));
     *contains_filenames = false;
 
-    const QByteArray customData = mimeData->data(QString::fromLatin1(kMimeTypeWebCustomDataCopy));
+    const QByteArray customData = mimeData->data(QString::fromLatin1(ui::kMimeTypeWebCustomData));
     ui::ReadCustomDataTypes(customData.constData(), customData.size(), types);
 }
 
@@ -340,7 +238,7 @@ void ClipboardQt::ReadRTF(ui::ClipboardType type, std::string* result) const
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
     if (!mimeData)
         return;
-    const QByteArray byteArray = mimeData->data(QString::fromLatin1(kMimeTypeRTF));
+    const QByteArray byteArray = mimeData->data(QString::fromLatin1(ui::kMimeTypeRTF));
     *result = std::string(byteArray.constData(), byteArray.length());
 }
 
@@ -374,7 +272,7 @@ void ClipboardQt::ReadCustomData(ui::ClipboardType clipboard_type, const base::s
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(clipboard_type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
     if (!mimeData)
         return;
-    const QByteArray customData = mimeData->data(QString::fromLatin1(kMimeTypeWebCustomDataCopy));
+    const QByteArray customData = mimeData->data(QString::fromLatin1(ui::kMimeTypeWebCustomData));
     ui::ReadCustomDataForType(customData.constData(), customData.size(), type, result);
 }
 
@@ -383,7 +281,7 @@ void ClipboardQt::ReadBookmark(base::string16* title, std::string* url) const
     NOTIMPLEMENTED();
 }
 
-void ClipboardQt::ReadData(const FormatType& format, std::string* result) const
+void ClipboardQt::ReadData(const ui::ClipboardFormatType& format, std::string* result) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData();
     if (!mimeData)

@@ -136,6 +136,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     Q_ASSERT(target);
 
     content::NavigationController::LoadURLParams load_url_params(params.url);
+    load_url_params.initiator_origin = params.initiator_origin;
     load_url_params.source_site_instance = target_site_instance;
     load_url_params.referrer = referrer;
     load_url_params.frame_tree_node_id = params.frame_tree_node_id;
@@ -145,7 +146,11 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     load_url_params.should_replace_current_entry = params.should_replace_current_entry;
     load_url_params.is_renderer_initiated = params.is_renderer_initiated;
     load_url_params.started_from_context_menu = params.started_from_context_menu;
+    load_url_params.has_user_gesture = params.user_gesture;
+    load_url_params.blob_url_loader_factory = params.blob_url_loader_factory;
     load_url_params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
+    load_url_params.href_translate = params.href_translate;
+    load_url_params.reload_type = params.reload_type;
     if (params.uses_post) {
         load_url_params.load_type = content::NavigationController::LOAD_TYPE_HTTP_POST;
         load_url_params.post_data = params.post_data;
@@ -155,7 +160,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     return target;
 }
 
-static bool shouldUseActualURL(const content::NavigationEntry *entry)
+static bool shouldUseActualURL(content::NavigationEntry *entry)
 {
     Q_ASSERT(entry);
 
@@ -248,11 +253,13 @@ void WebContentsDelegateQt::LoadProgressChanged(content::WebContents */*source*/
     m_viewClient->loadProgressChanged(m_lastLoadProgress);
 }
 
-void WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const content::NativeWebKeyboardEvent &event)
+bool WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const content::NativeWebKeyboardEvent &event)
 {
     Q_ASSERT(!event.skip_in_browser);
     if (event.os_event)
         m_viewClient->unhandledKeyEvent(reinterpret_cast<QKeyEvent *>(event.os_event));
+    // FIXME: ?
+    return true;
 }
 
 void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
@@ -413,7 +420,7 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::Favic
     m_faviconManager->update(faviconCandidates);
 }
 
-void WebContentsDelegateQt::WebContentsCreated(content::WebContents */*source_contents*/,
+void WebContentsDelegateQt::WebContentsCreated(content::WebContents * /*source_contents*/,
                                                int /*opener_render_process_id*/, int /*opener_render_frame_id*/,
                                                const std::string &/*frame_name*/,
                                                const GURL &target_url, content::WebContents *newContents)
@@ -650,12 +657,12 @@ void WebContentsDelegateQt::BeforeUnloadFired(bool proceed, const base::TimeTick
     Q_UNUSED(proceed_time);
 }
 
-bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *, const GURL& security_origin, content::MediaStreamType type)
+bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *, const GURL& security_origin, blink::MediaStreamType type)
 {
     switch (type) {
-    case content::MEDIA_DEVICE_AUDIO_CAPTURE:
+    case blink::MEDIA_DEVICE_AUDIO_CAPTURE:
         return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::AudioCapturePermission);
-    case content::MEDIA_DEVICE_VIDEO_CAPTURE:
+    case blink::MEDIA_DEVICE_VIDEO_CAPTURE:
         return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::VideoCapturePermission);
     default:
         LOG(INFO) << "WebContentsDelegateQt::CheckMediaAccessPermission: "
@@ -695,6 +702,12 @@ void WebContentsDelegateQt::UnregisterProtocolHandler(content::WebContents *webC
     ProtocolHandlerRegistry* registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
     registry->RemoveHandler(handler);
+}
+
+bool WebContentsDelegateQt::TakeFocus(content::WebContents *source, bool reverse)
+{
+    Q_UNUSED(source);
+    return m_viewClient->passOnFocus(reverse);
 }
 
 FaviconManager *WebContentsDelegateQt::faviconManager()

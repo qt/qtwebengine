@@ -41,7 +41,7 @@
 #define SERVICE_QT_H
 
 #include "base/no_destructor.h"
-#include "services/service_manager/embedder/embedded_service_info.h"
+#include "content/public/common/service_manager_connection.h"
 
 namespace service_manager {
 class Connector;
@@ -53,7 +53,7 @@ public:
     static ServiceQt *GetInstance();
 
     void InitConnector();
-    service_manager::EmbeddedServiceInfo::ServiceFactory CreateServiceQtFactory();
+    content::ServiceManagerConnection::ServiceRequestHandler CreateServiceQtRequestHandler();
     service_manager::Connector *connector() { return m_connector.get(); }
 
 private:
@@ -63,7 +63,7 @@ private:
     ServiceQt();
     ~ServiceQt();
 
-    std::unique_ptr<service_manager::Service> CreateServiceQtWrapper();
+    void BindServiceQtRequest(service_manager::mojom::ServiceRequest request);
 
     const std::unique_ptr<IOThreadContext> m_ioThreadContext;
 

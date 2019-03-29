@@ -98,7 +98,7 @@ static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
                         const base::FilePath &path,
                         const QtWebEngineCore::PrintViewManagerQt::PrintToPDFFileCallback &saveCallback)
 {
-    base::AssertBlockingAllowed();
+    base::AssertBlockingAllowedDeprecated();
     DCHECK_GT(data->size(), 0U);
 
     printing::MetafileSkia metafile;
@@ -131,14 +131,15 @@ static base::DictionaryValue *createPrintSettings()
 
     printSettings->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
     printSettings->SetInteger(printing::kSettingCopies, 1);
+    printSettings->SetInteger(printing::kSettingPagesPerSheet, 1);
     printSettings->SetBoolean(printing::kSettingCollate, false);
 //    printSettings->SetBoolean(printing::kSettingGenerateDraftData, false);
     printSettings->SetBoolean(printing::kSettingPreviewModifiable, false);
 
-    printSettings->SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);
-    printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds, true);
-    printSettings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
-    printSettings->SetBoolean(printing::kSettingRasterizePdf, false);
+    printSettings->SetKey(printing::kSettingShouldPrintSelectionOnly, base::Value(false));
+    printSettings->SetKey(printing::kSettingShouldPrintBackgrounds, base::Value(true));
+    printSettings->SetKey(printing::kSettingHeaderFooterEnabled, base::Value(false));
+    printSettings->SetKey(printing::kSettingRasterizePdf, base::Value(false));
     printSettings->SetInteger(printing::kSettingScaleFactor, 100);
     printSettings->SetString(printing::kSettingDeviceName, "");
     printSettings->SetInteger(printing::kPreviewUIID, 12345678);
@@ -433,5 +434,7 @@ void PrintViewManagerQt::PrintPreviewDone() {
                                 m_printPreviewRfh->GetRoutingID()));
     m_printPreviewRfh = nullptr;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintViewManagerQt)
 
 } // namespace QtWebEngineCore

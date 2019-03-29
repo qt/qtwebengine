@@ -163,7 +163,6 @@ static net::HttpNetworkSession::Params generateNetworkSessionParams(bool ignoreC
 {
     net::HttpNetworkSession::Params network_session_params;
     network_session_params.ignore_certificate_errors = ignoreCertificateErrors;
-    network_session_params.enable_channel_id = base::FeatureList::IsEnabled(features::kChannelID);
     return network_session_params;
 }
 
@@ -173,6 +172,7 @@ ProfileIODataQt::ProfileIODataQt(ProfileQt *profile)
       m_clientCertificateStoreData(new ClientCertificateStoreData),
 #endif
       m_mutex(QMutex::Recursive),
+      m_removerObserver(this),
       m_weakPtrFactory(this)
 {
     if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI))
@@ -438,7 +438,7 @@ void ProfileIODataQt::generateCookieStore()
     m_storage->set_cookie_store(std::move(cookieStore));
 
     const std::vector<std::string> cookieableSchemes(kCookieableSchemes,
-                                                     kCookieableSchemes + arraysize(kCookieableSchemes));
+                                                     kCookieableSchemes + base::size(kCookieableSchemes));
     cookieMonster->SetCookieableSchemes(cookieableSchemes);
 }
 
@@ -666,12 +666,13 @@ void ProfileIODataQt::updateStorageSettings()
     QMutexLocker lock(&m_mutex);
     setFullConfiguration();
 
-    std::string userId = content::BrowserContext::GetServiceUserIdFor(m_profile);
-    if (file::GetUserDirForUserId(userId) != toFilePath(m_profileAdapter->dataPath())) {
-        file::ForgetServiceUserIdUserDirAssociation(userId);
-        file::AssociateServiceUserIdWithUserDir(userId, toFilePath(m_profileAdapter->dataPath()));
+    base::Token groupId = content::BrowserContext::GetServiceInstanceGroupFor(m_profile);
+    if (file::GetUserDirForInstanceGroup(groupId) != toFilePath(m_profileAdapter->dataPath())) {
+        file::ForgetServiceInstanceGroupUserDirAssociation(groupId);
+        file::AssociateServiceInstanceGroupWithUserDir(groupId, toFilePath(m_profileAdapter->dataPath()));
     }
-    requestStorageGeneration();
+    if (!m_pendingStorageRequestGeneration)
+        requestStorageGeneration();
 }
 
 void ProfileIODataQt::updateCookieStore()
@@ -681,7 +682,8 @@ void ProfileIODataQt::updateCookieStore()
     m_persistentCookiesPolicy = m_profileAdapter->persistentCookiesPolicy();
     m_cookiesPath = m_profileAdapter->cookiesPath();
     m_channelIdPath = m_profileAdapter->channelIdPath();
-    requestStorageGeneration();
+    if (!m_pendingStorageRequestGeneration)
+        requestStorageGeneration();
 }
 
 void ProfileIODataQt::updateUserAgent()
@@ -690,7 +692,8 @@ void ProfileIODataQt::updateUserAgent()
     QMutexLocker lock(&m_mutex);
     m_httpAcceptLanguage = m_profileAdapter->httpAcceptLanguage();
     m_httpUserAgent = m_profileAdapter->httpUserAgent();
-    requestStorageGeneration();
+    if (!m_pendingStorageRequestGeneration)
+        requestStorageGeneration();
 }
 
 void ProfileIODataQt::updateHttpCache()
@@ -702,14 +705,19 @@ void ProfileIODataQt::updateHttpCache()
     m_httpCacheMaxSize = m_profileAdapter->httpCacheMaxSize();
 
     if (m_httpCacheType == ProfileAdapter::NoCache) {
+        m_pendingStorageRequestGeneration = true;
         content::BrowsingDataRemover *remover =
                 content::BrowserContext::GetBrowsingDataRemover(m_profileAdapter->profile());
-        remover->Remove(base::Time(), base::Time::Max(),
+        remover->AddObserver(&m_removerObserver);
+        remover->RemoveAndReply(base::Time(), base::Time::Max(),
             content::BrowsingDataRemover::DATA_TYPE_CACHE,
             content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
-                        content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB);
+                        content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
+            &m_removerObserver);
+        return;
     }
-    requestStorageGeneration();
+    if (!m_pendingStorageRequestGeneration)
+        requestStorageGeneration();
 }
 
 void ProfileIODataQt::updateJobFactory()
@@ -799,6 +807,26 @@ std::unique_ptr<net::ClientCertStore> ProfileIODataQt::CreateClientCertStore()
 ProfileIODataQt *ProfileIODataQt::FromResourceContext(content::ResourceContext *resource_context)
 {
     return static_cast<ResourceContextQt *>(resource_context)->m_io_data;
+}
+
+void ProfileIODataQt::removeBrowsingDataRemoverObserver()
+{
+    content::BrowsingDataRemover *remover =
+            content::BrowserContext::GetBrowsingDataRemover(m_profileAdapter->profile());
+    remover->RemoveObserver(&m_removerObserver);
+}
+
+BrowsingDataRemoverObserverQt::BrowsingDataRemoverObserverQt(ProfileIODataQt *profileIOData)
+    : m_profileIOData(profileIOData)
+{
+}
+
+void BrowsingDataRemoverObserverQt::OnBrowsingDataRemoverDone()
+{
+    Q_ASSERT(m_profileIOData->m_pendingStorageRequestGeneration);
+    m_profileIOData->requestStorageGeneration();
+    m_profileIOData->removeBrowsingDataRemoverObserver();
+    m_profileIOData->m_pendingStorageRequestGeneration = false;
 }
 
 } // namespace QtWebEngineCore

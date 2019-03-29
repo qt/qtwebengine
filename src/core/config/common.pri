@@ -17,6 +17,7 @@ gn_args += \
     enable_web_speech=false \
     enable_widevine=true \
     has_native_accessibility=false \
+    enable_debugallocation=false \
     use_allocator_shim=false \
     use_allocator=\"none\" \
     use_custom_libcxx=false \
@@ -24,8 +25,7 @@ gn_args += \
     toolkit_views=false \
     treat_warnings_as_errors=false \
     safe_browsing_mode=0 \
-    optimize_webui=false \
-    closure_compile=false
+    optimize_webui=false
 
 !win32: gn_args += \
     use_jumbo_build=true \
@@ -55,7 +55,7 @@ qtConfig(webengine-spellchecker) {
 qtConfig(webengine-webrtc) {
     gn_args += enable_webrtc=true
 } else {
-    gn_args += enable_webrtc=false
+    gn_args += enable_webrtc=false audio_processing_in_audio_service_supported=false
 }
 
 qtConfig(webengine-proprietary-codecs): gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
@@ -72,6 +72,13 @@ precompile_header {
     gn_args += enable_precompiled_headers=false
 }
 
+CONFIG(release, debug|release):!isDeveloperBuild() {
+    gn_args += is_official_build=true
+} else {
+    gn_args += is_official_build=false
+    !isDeveloperBuild(): gn_args += is_unsafe_developer_build=false
+}
+
 CONFIG(release, debug|release) {
     gn_args += is_debug=false
     force_debug_info {
@@ -86,6 +93,8 @@ CONFIG(release, debug|release) {
 CONFIG(debug, debug|release) {
     gn_args += is_debug=true
     gn_args += use_debug_fission=false
+    # MSVC requires iterator debug to always match and Qt has leaves it default on.
+    msvc: gn_args += enable_iterator_debugging=true
 }
 
 !webcore_debug: gn_args += remove_webcore_debug_symbols=true
@@ -116,5 +125,3 @@ qtConfig(webengine-kerberos) {
 } else {
     gn_args += use_kerberos=false
 }
-
-!msvc: gn_args += enable_iterator_debugging=false

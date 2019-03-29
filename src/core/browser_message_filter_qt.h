@@ -73,7 +73,6 @@ private:
     void OnAllowIndexedDB(int render_frame_id,
                           const GURL &origin_url,
                           const GURL &top_origin_url,
-                          const base::string16 &name,
                           bool *allowed);
 
     void OnRequestFileSystemAccessSync(int render_frame_id,

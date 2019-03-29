@@ -205,7 +205,7 @@ void tst_QWebEngineCookieStore::basicFilter()
     QTRY_COMPARE(loadSpy.count(), 1);
     QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
     QTRY_COMPARE(cookieAddedSpy.count(), 2);
-    QTRY_COMPARE(accessTested.loadAcquire(), 2);
+    QTRY_COMPARE(accessTested.loadAcquire(), 2); // FIXME?
 
     client->deleteAllCookies();
     QTRY_COMPARE(cookieRemovedSpy.count(), 2);
@@ -214,7 +214,7 @@ void tst_QWebEngineCookieStore::basicFilter()
     page.triggerAction(QWebEnginePage::ReloadAndBypassCache);
     QTRY_COMPARE(loadSpy.count(), 1);
     QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
-    QTRY_COMPARE(accessTested.loadAcquire(), 4);
+    QTRY_COMPARE(accessTested.loadAcquire(), 4); // FIXME?
     // Test cookies are NOT added:
     QTest::qWait(100);
     QCOMPARE(cookieAddedSpy.count(), 2);
@@ -234,7 +234,7 @@ void tst_QWebEngineCookieStore::html5featureFilter()
 
     QTRY_COMPARE(loadSpy.count(), 1);
     QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
-    QCOMPARE(accessTested.loadAcquire(), 0);
+    QCOMPARE(accessTested.loadAcquire(), 0); // FIXME?
     QTest::ignoreMessage(QtCriticalMsg, QRegularExpression(".*Uncaught SecurityError.*sessionStorage.*"));
     page.runJavaScript("sessionStorage.test = 5;");
     QTRY_COMPARE(accessTested.loadAcquire(), 1);

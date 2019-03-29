@@ -151,8 +151,7 @@ void ContentSettingsObserverQt::RequestFileSystemAccessAsync(const WebContentSet
              url::Origin(frame->Top()->GetSecurityOrigin()).GetURL()));
 }
 
-bool ContentSettingsObserverQt::AllowIndexedDB(const WebString &name,
-                                               const WebSecurityOrigin &/*origin*/)
+bool ContentSettingsObserverQt::AllowIndexedDB(const WebSecurityOrigin &origin)
 {
     blink::WebFrame *frame = render_frame()->GetWebFrame();
     if (IsUniqueFrame(frame))
@@ -160,8 +159,8 @@ bool ContentSettingsObserverQt::AllowIndexedDB(const WebString &name,
 
     bool result = false;
     Send(new QtWebEngineHostMsg_AllowIndexedDB(
-             routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
-             url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), name.Utf16(),
+             routing_id(), url::Origin(origin).GetURL(),
+             url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(),
              &result));
     return result;
 }

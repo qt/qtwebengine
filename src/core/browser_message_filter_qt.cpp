@@ -100,7 +100,6 @@ void BrowserMessageFilterQt::OnAllowDOMStorage(int /*render_frame_id*/,
 void BrowserMessageFilterQt::OnAllowIndexedDB(int /*render_frame_id*/,
                                               const GURL &origin_url,
                                               const GURL &top_origin_url,
-                                              const base::string16 &/*name*/,
                                               bool *allowed)
 {
     NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(m_profile->GetRequestContext()->GetURLRequestContext()->network_delegate());

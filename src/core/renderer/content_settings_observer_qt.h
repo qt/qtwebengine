@@ -72,8 +72,7 @@ public:
                        const blink::WebString &display_name,
                        unsigned estimated_size) override;
     void RequestFileSystemAccessAsync(const blink::WebContentSettingCallbacks &callbacks) override;
-    bool AllowIndexedDB(const blink::WebString &name,
-                        const blink::WebSecurityOrigin &origin) override;
+    bool AllowIndexedDB(const blink::WebSecurityOrigin &origin) override;
     bool AllowStorage(bool local) override;
 
 private:

@@ -106,7 +106,9 @@ public:
         return { SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA512
                , SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA256 };
     }
-
+    std::string GetProviderName() override {
+        return "qtwebengine";
+    }
 private:
     EVP_PKEY *m_key;
     BIO *m_mem;

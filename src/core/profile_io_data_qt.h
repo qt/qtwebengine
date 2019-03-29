@@ -41,6 +41,7 @@
 #define PROFILE_IO_DATA_QT_H
 
 #include "profile_adapter.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "extensions/buildflags/buildflags.h"
@@ -69,8 +70,21 @@ class ExtensionSystemQt;
 
 namespace QtWebEngineCore {
 
-class ClientCertificateStoreData;
+struct ClientCertificateStoreData;
+class ProfileIODataQt;
 class ProfileQt;
+
+
+class BrowsingDataRemoverObserverQt : public content::BrowsingDataRemover::Observer {
+public:
+    BrowsingDataRemoverObserverQt(ProfileIODataQt *profileIOData);
+
+    void OnBrowsingDataRemoverDone() override;
+
+private:
+    ProfileIODataQt *m_profileIOData;
+};
+
 
 // ProfileIOData contains data that lives on the IOthread
 // we still use shared memebers and use mutex which breaks
@@ -130,6 +144,8 @@ public:
     std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
     static ProfileIODataQt *FromResourceContext(content::ResourceContext *resource_context);
 private:
+    void removeBrowsingDataRemoverObserver();
+
     ProfileQt *m_profile;
     std::unique_ptr<net::URLRequestContextStorage> m_storage;
     std::unique_ptr<net::NetworkDelegate> m_networkDelegate;
@@ -170,9 +186,13 @@ private:
     bool m_ignoreCertificateErrors = false;
     bool m_useForGlobalCertificateVerification = false;
     bool m_hasPageInterceptors = false;
+    BrowsingDataRemoverObserverQt m_removerObserver;
     base::WeakPtrFactory<ProfileIODataQt> m_weakPtrFactory; // this should be always the last member
     QString m_dataPath;
+    bool m_pendingStorageRequestGeneration = false;
     DISALLOW_COPY_AND_ASSIGN(ProfileIODataQt);
+
+    friend class BrowsingDataRemoverObserverQt;
 };
 } // namespace QtWebEngineCore
 

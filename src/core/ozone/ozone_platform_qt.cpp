@@ -37,11 +37,9 @@
 **
 ****************************************************************************/
 
-#include "ozone/ozone_platform_qt.h"
+#include "ozone_platform_qt.h"
 
 #if defined(USE_OZONE)
-#include "ozone/surface_factory_qt.h"
-#include "ozone/platform_window_qt.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/system_input_injector.h"
 #include "ui/ozone/common/stub_client_native_pixmap_factory.h"
@@ -53,6 +51,9 @@
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/platform_window.h"
+
+#include "surface_factory_qt.h"
+#include "platform_window_qt.h"
 
 namespace ui {
 

@@ -80,6 +80,11 @@ bool ComponentExtensionResourceManagerQt::IsComponentExtensionResource(const bas
     return entry != path_to_resource_id_.end();
 }
 
+const ui::TemplateReplacements *ComponentExtensionResourceManagerQt::GetTemplateReplacementsForExtension(const std::string &) const
+{
+    return nullptr;
+}
+
 void ComponentExtensionResourceManagerQt::AddComponentResourceEntries(const GritResourceMap *entries, size_t size)
 {
     for (size_t i = 0; i < size; ++i) {

@@ -58,11 +58,9 @@ public:
     bool IsAPISchemaGenerated(const std::string& name) override;
     base::StringPiece GetAPISchema(const std::string& name) override;
 
-
     // Adds feature definitions to the given |provider| of the specified type.
     void AddManifestFeatures(FeatureProvider* provider) override { }
     void AddBehaviorFeatures(FeatureProvider* provider) override { }
-
 
     // Registers permissions for any associated API features.
     void RegisterPermissions(PermissionsInfo* permissions_info) override;

@@ -40,9 +40,10 @@
 #ifndef COMPOSITOR_H
 #define COMPOSITOR_H
 
-#include <base/memory/weak_ptr.h>
-#include <components/viz/common/frame_sinks/begin_frame_source.h>
-#include <components/viz/common/quads/compositor_frame.h>
+#include "base/memory/weak_ptr.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/compositor_frame.h"
+#include "ui/gfx/presentation_feedback.h"
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qshareddata.h>
@@ -114,6 +115,7 @@ private:
     std::unique_ptr<CompositorResourceTracker> m_resourceTracker;
     content::RenderWidgetHost *m_host;
     std::unique_ptr<viz::SyntheticBeginFrameSource> m_beginFrameSource;
+    base::flat_map<uint32_t, gfx::PresentationFeedback> m_presentations;
     viz::mojom::CompositorFrameSinkClient *m_frameSinkClient = nullptr;
     bool m_updatePaintNodeShouldCommit = false;
     bool m_needsBeginFrames = false;

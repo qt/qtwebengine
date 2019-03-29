@@ -10,12 +10,14 @@ gn_args += \
     use_bundled_fontconfig=false \
     use_sysroot=false \
     enable_session_service=false \
+    is_cfi=false \
     toolkit_views=false \
     use_ozone=true \
     ozone_auto_platforms=false \
     ozone_platform_headless=false \
     ozone_platform_external=true \
-    ozone_platform=\"qt\"
+    ozone_platform=\"qt\" \
+    ozone_extra_path=\"$$QTWEBENGINE_ROOT/src/core/ozone/ozone_extra.gni\"
 
 qtConfig(webengine-embedded-build) {
     gn_args += is_desktop_linux=false

@@ -98,7 +98,8 @@ TestWebEngineView {
 
             verify(dialog.webEngineView.waitForLoadSucceeded());
             compare(dialog.webEngineView.url, "");
-            compare(newViewRequest.requestedUrl, 'about:blank');
+            // https://chromium-review.googlesource.com/c/chromium/src/+/1300395
+            compare(newViewRequest.requestedUrl, 'about:blank#blocked');
             newViewRequestedSpy.clear();
             dialog.destroy();
 
@@ -129,8 +130,8 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded());
             verifyElementHasFocus("popupButton");
             keyPress(Qt.Key_Enter);
-            compare(newViewRequest.requestedUrl, url);
             tryCompare(newViewRequestedSpy, "count", 1);
+            compare(newViewRequest.requestedUrl, url);
 
             compare(newViewRequest.destination, WebEngineView.NewViewInDialog);
             verify(newViewRequest.userInitiated);

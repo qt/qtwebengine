@@ -212,7 +212,7 @@ DevToolsFrontendQt::DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webCon
     // We use a separate prefstore than one in ProfileQt, because that one is in-memory only, and this
     // needs to be stored or it will show introduction text on every load.
     if (webContentsAdapter->profileAdapter()->isOffTheRecord())
-        m_prefStore = std::move(scoped_refptr<PersistentPrefStore>(new InMemoryPrefStore()));
+        m_prefStore = scoped_refptr<PersistentPrefStore>(new InMemoryPrefStore());
     else
         CreateJsonPreferences(false);
 
@@ -270,9 +270,10 @@ void DevToolsFrontendQt::ReadyToCommitNavigation(content::NavigationHandle *navi
         if (navigationHandle->GetURL() != GetFrontendURL())
             m_frontendHost.reset(nullptr);
         else
-            m_frontendHost.reset(content::DevToolsFrontendHost::Create(frame,
-                                    base::Bind(&DevToolsFrontendQt::HandleMessageFromDevToolsFrontend,
-                                                base::Unretained(this))));
+            m_frontendHost = content::DevToolsFrontendHost::Create(
+                        frame,
+                        base::Bind(&DevToolsFrontendQt::HandleMessageFromDevToolsFrontend,
+                                   base::Unretained(this)));
     }
 }
 

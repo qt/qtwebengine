@@ -60,7 +60,7 @@ private Q_SLOTS:
     void downloadItem();
     void changePersistentPath();
     void initiator();
-    void qtbug_72299(); // this should be the last test
+    void qtbug_71895(); // this should be the last test
 };
 
 void tst_QWebEngineProfile::init()
@@ -631,7 +631,7 @@ void tst_QWebEngineProfile::initiator()
     QCOMPARE(handler.initiator, QUrl());
 }
 
-void tst_QWebEngineProfile::qtbug_72299()
+void tst_QWebEngineProfile::qtbug_71895()
 {
     QWebEngineView view;
     view.setUrl(QUrl("https://www.qt.io"));

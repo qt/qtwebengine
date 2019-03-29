@@ -111,7 +111,9 @@ inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
         base::span<const int> expectedAffixes(org_words[i].second);
         base::span<const int> actualAffixes(affix_ids, affix_matches);
 
-        if (expectedAffixes != actualAffixes) {
+        if (!std::equal(expectedAffixes.begin(), expectedAffixes.end(),
+                        actualAffixes.begin(), actualAffixes.end(),
+                        [](int a, int b) { return a == b; })) {
             out << "Affixes do not match!\n"
                 << "  Index:    " << i << "\n"
                 << "  Word:     " << QString::fromUtf8(buf) << "\n"

@@ -143,7 +143,7 @@ net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxy
         qtRules.type = net::ProxyConfig::ProxyRules::Type::EMPTY;
     }
 
-    qtRules.bypass_rules.AddRuleToBypassLocal(); // don't use proxy for connections to localhost
+    qtRules.bypass_rules.PrependRuleToBypassSimpleHostnames(); // don't use proxy for connections to localhost
     m_qtProxyConfig.proxy_rules() = qtRules;
     *config = net::ProxyConfigWithAnnotation(m_qtProxyConfig, config->traffic_annotation());
     return CONFIG_VALID;

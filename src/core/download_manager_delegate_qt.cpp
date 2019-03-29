@@ -112,7 +112,7 @@ void DownloadManagerDelegateQt::pauseDownload(quint32 downloadId)
 void DownloadManagerDelegateQt::resumeDownload(quint32 downloadId)
 {
     if (download::DownloadItem *download = findDownloadById(downloadId))
-        download->Resume();
+        download->Resume(/* user_resume */ true);
 }
 
 void DownloadManagerDelegateQt::removeDownload(quint32 downloadId)
@@ -170,7 +170,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
 
     QFileInfo suggestedFile(defaultDownloadDirectory.absoluteFilePath(suggestedFilename));
     QString suggestedFilePath = suggestedFile.absoluteFilePath();
-    base::FilePath tmpFilePath(toFilePathString(suggestedFilePath));
+    base::FilePath tmpFilePath(toFilePath(suggestedFilePath).NormalizePathSeparatorsTo('/'));
 
     int uniquifier = base::GetUniquePathNumber(tmpFilePath, base::FilePath::StringType());
     if (uniquifier > 0)

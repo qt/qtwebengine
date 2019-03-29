@@ -120,7 +120,7 @@ repack("qtwebengine_repack_resources_devtools") {
   ]
   output = "$root_out_dir/qtwebengine_devtools_resources.pak"
   deps = [
-    "//content/browser/devtools:devtools_resources_grit"
+    "//content/browser/devtools:devtools_resources_grit",
   ]
 }
 

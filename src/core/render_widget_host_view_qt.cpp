@@ -40,6 +40,7 @@
 #include "render_widget_host_view_qt.h"
 
 #include "browser_accessibility_manager_qt.h"
+#include "common/qt_messages.h"
 #include "compositor/compositor.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
@@ -51,6 +52,8 @@
 #include "web_event_factory.h"
 
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+#include "components/viz/host/host_frame_sink_manager.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -279,9 +282,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_emptyPreviousSelection(true)
     , m_wheelAckPending(false)
     , m_mouseWheelPhaseHandler(this)
-    // This frame-sink id is based on what RenderWidgetHostViewChildFrame does:
-    , m_frameSinkId(base::checked_cast<uint32_t>(widget->GetProcess()->GetID()),
-                    base::checked_cast<uint32_t>(widget->GetRoutingID()))
+    , m_frameSinkId(host()->GetFrameSinkId())
 {
     host()->SetView(this);
 
@@ -439,6 +440,7 @@ void RenderWidgetHostViewQt::UpdateBackgroundColor()
     auto color = GetBackgroundColor();
     if (color) {
         m_delegate->setClearColor(toQt(*color));
+        host()->Send(new RenderViewObserverQt_SetBackgroundColor(host()->GetRoutingID(), *color));
     }
 }
 
@@ -720,7 +722,7 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
     ui::TextInputType type = getTextInputType();
     m_delegate->setInputMethodHints(toQtInputMethodHints(getTextInputType()) | Qt::ImhNoPredictiveText | Qt::ImhNoTextHandles | Qt::ImhNoEditMenu);
 
-    m_surroundingText = QString::fromStdString(state->value);
+    m_surroundingText = toQt(state->value);
     // Remove IME composition text from the surrounding text
     if (state->composition_start != -1 && state->composition_end != -1)
         m_surroundingText.remove(state->composition_start, state->composition_end - state->composition_start);
@@ -905,7 +907,7 @@ viz::ScopedSurfaceIdAllocator RenderWidgetHostViewQt::DidUpdateVisualProperties(
 
 void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata)
 {
-    synchronizeVisualProperties(metadata.local_surface_id);
+    synchronizeVisualProperties(metadata.local_surface_id_allocation);
 }
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
@@ -1108,7 +1110,7 @@ void RenderWidgetHostViewQt::closePopup()
     // (hiding the widget and automatic memory cleanup via
     // RenderWidget::CloseWidgetSoon() -> RenderWidgetHostImpl::ShutdownAndDestroyWidget(true).
     host()->SetActive(false);
-    host()->Blur();
+    host()->LostFocus();
 }
 
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
@@ -1631,7 +1633,7 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         ev->accept();
     } else if (ev->lostFocus()) {
         host()->SetActive(false);
-        host()->Blur();
+        host()->LostFocus();
         ev->accept();
     }
 }
@@ -1685,9 +1687,9 @@ const viz::FrameSinkId &RenderWidgetHostViewQt::GetFrameSinkId() const
     return m_frameSinkId;
 }
 
-const viz::LocalSurfaceId &RenderWidgetHostViewQt::GetLocalSurfaceId() const
+const viz::LocalSurfaceIdAllocation &RenderWidgetHostViewQt::GetLocalSurfaceIdAllocation() const
 {
-    return m_localSurfaceIdAllocator.GetCurrentLocalSurfaceId();
+    return m_localSurfaceIdAllocator.GetCurrentLocalSurfaceIdAllocation();
 }
 
 void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostView *view)
@@ -1699,7 +1701,7 @@ void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostVi
         SetBackgroundColor(*color);
 }
 
-void RenderWidgetHostViewQt::EnsureSurfaceSynchronizedForLayoutTest()
+void RenderWidgetHostViewQt::EnsureSurfaceSynchronizedForWebTest()
 {
     NOTIMPLEMENTED();
 }
@@ -1711,7 +1713,6 @@ uint32_t RenderWidgetHostViewQt::GetCaptureSequenceNumber() const
 
 void RenderWidgetHostViewQt::ResetFallbackToFirstNavigationSurface()
 {
-    Q_UNIMPLEMENTED();
 }
 
 void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation()
@@ -1726,7 +1727,7 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation()
     }
 }
 
-void RenderWidgetHostViewQt::synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceId> &childSurfaceId)
+void RenderWidgetHostViewQt::synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceIdAllocation> &childSurfaceId)
 {
     if (childSurfaceId)
         m_localSurfaceIdAllocator.UpdateFromChild(*childSurfaceId);

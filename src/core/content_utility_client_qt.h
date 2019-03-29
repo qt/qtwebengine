@@ -53,7 +53,9 @@ public:
     ~ContentUtilityClientQt() override;
 
     // content::ContentUtilityClient:
-    void RegisterServices(StaticServiceMap *services) override;
+    bool HandleServiceRequest(const std::string &service_name,
+                              service_manager::mojom::ServiceRequest request) override;
+
 };
 
 } // namespace
