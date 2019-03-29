@@ -40,8 +40,8 @@
     cross-browser Javascript API that enables a web page to request that one of
     its HTML elements be made to occupy the user's entire screen. It is
     commonly used for full screen video playback via the \c <video> element, but
-    can in principle be used to display any HTML content in full screen mode. Qt
-    WebEngine supports this API, however it is disabled by default. This example
+    can in principle be used to display any HTML content in full screen mode.
+    \QWE supports this API, however it is disabled by default. This example
     shows the steps needed to switch it on, including:
 
     \list
@@ -94,7 +94,7 @@
     \skipto MainWindow::MainWindow
     \printuntil setCentralWidget
 
-    We then configure Qt WebEngine to advertise support for the Fullscreen API:
+    We then configure \QWE to advertise support for the Fullscreen API:
 
     \printline QWebEngineSettings
 

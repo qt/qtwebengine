@@ -438,7 +438,7 @@
 /*!
     \fn void QWebEnginePage::triggerAction(WebAction action, bool checked = false)
     This function can be called to trigger the specified \a action.
-    It is also called by Qt WebEngine if the user triggers the action, for example
+    It is also called by \QWE if the user triggers the action, for example
     through a context menu item.
 
     If \a action is a checkable action, then \a checked specifies whether the action

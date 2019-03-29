@@ -29,9 +29,9 @@
     \page qtwebenginecore-index.html
     \title Qt WebEngine Core
 
-    \brief Provides common API shared by Qt WebEngine and Qt WebEngine Widgets.
+    \brief Provides common API shared by \QWE and \QWE Widgets.
 
-    Qt WebEngine Core provides API shared by \l {Qt WebEngine} and \l {Qt WebEngine Widgets}.
+    \QWE Core provides API shared by \l {Qt WebEngine} and \l {Qt WebEngine Widgets}.
 
     \section1 Getting Started
 
@@ -61,7 +61,7 @@
     This is a snapshot of the integration of Chromium into Qt.
 
     Qt Commercial Edition licensees that wish to distribute applications that
-    use the Qt WebEngine module need to be aware of their obligations under the
+    use the \QWE module need to be aware of their obligations under the
     GNU Library General Public License (LGPLv2).
 
     Developers using the Open Source Edition can choose to redistribute

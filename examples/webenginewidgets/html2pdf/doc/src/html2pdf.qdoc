@@ -29,11 +29,11 @@
     \example webenginewidgets/html2pdf
     \title WebEngine Widgets Html2Pdf Example
     \ingroup webengine-widgetexamples
-    \brief Converts web pages to PDF documents using Qt WebEngine.
+    \brief Converts web pages to PDF documents using \QWE.
 
     \image html2pdf-example.png
 
-    \e {Html2Pdf} demonstrates how to use Qt WebEngine to implement a
+    \e {Html2Pdf} demonstrates how to use \QWE to implement a
     command-line application for converting web pages into PDF documents.
 
     \include examples-run.qdocinc
@@ -90,7 +90,7 @@
     \skipto int main
     \printuntil /^\}/
 
-    Note that to use Qt WebEngine Widgets we need to create a \l QApplication
+    Note that to use \QWE Widgets we need to create a \l QApplication
     and not a \l QCoreApplication, even though this is a command line
     application.
 */

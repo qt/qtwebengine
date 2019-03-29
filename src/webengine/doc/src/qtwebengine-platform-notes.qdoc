@@ -29,9 +29,9 @@
     \page qtwebengine-platform-notes.html
     \title Qt WebEngine Platform Notes
 
-    \brief Contains information about issues that are specific to the Qt WebEngine module.
+    \brief Contains information about issues that are specific to the \QWE module.
 
-    \section1 Building Qt WebEngine from Source
+    \section1 Building \QWE from Source
 
     Static builds are not supported.
 
@@ -53,7 +53,7 @@
         \li \l {macOS}
     \endlist
 
-    The tests for skipping the Qt WebEngine build are located in the
+    The tests for skipping the \QWE build are located in the
     \c qtwebengine repository, in the \c tools\qmake\mkspecs subdirectory.
     They can be found by searching for \c skipBuild.
 
@@ -71,8 +71,8 @@
 
     On Windows, Visual Studio 2017 and Windows 10 SDK are required.
 
-    Qt WebEngine can only be built on 64-bit Windows, with a x64-bit toolchain.
-    For building Qt WebEngine for x86 applications, you need to configure
+    \QWE can only be built on 64-bit Windows, with a x64-bit toolchain.
+    For building \QWE for x86 applications, you need to configure
     and compile Qt with the Visual Studio 2017 x64 to x86 cross-compile
     toolchain. This toolchain can be set up on the command line by running
     \c{vcvarsall.bat amd64_x86}.
@@ -82,7 +82,7 @@
     On Linux, Clang or GCC version 5 or later is required.
     Supported configurations are \c linux-g++ and \c{linux-clang}.
 
-    Qt WebEngine requires \c pkg-config to detect most of its dependencies. The
+    \QWE requires \c pkg-config to detect most of its dependencies. The
     following \c pkg-config files are required:
 
     \list
@@ -115,13 +115,13 @@
         \li \macos 10.12 SDK or later
     \endlist
 
-    \note Qt WebEngine cannot be built for the 32-bit mode of \macos (using the
+    \note \QWE cannot be built for the 32-bit mode of \macos (using the
     \c macx-clang-32 \c mkspec).
 
-    \section1 Using Earlier Qt Versions to Build Qt WebEngine
+    \section1 Using Earlier Qt Versions to Build \QWE
 
-    Building Qt WebEngine with earlier Qt versions (down to the last LTS
-    version) is supported. It means that Qt WebEngine 5.11 can be built with
+    Building \QWE with earlier Qt versions (down to the last LTS
+    version) is supported. It means that \QWE 5.11 can be built with
     Qt 5.9.x, Qt 5.10.x, and Qt 5.11.
 
     To use an earlier Qt version to build Qt Webengine:
@@ -134,7 +134,7 @@
 
     \section1 Mac App Store Compatibility
 
-    Applications using Qt WebEngine are not compatible with the Mac App Store, because:
+    Applications using \QWE are not compatible with the Mac App Store, because:
 
     \list
         \li The Chromium part of the code uses several private API methods, which are prohibited by
@@ -150,7 +150,7 @@
 
     \section1 macOS Airplay Support on MacBooks with Dual GPUs
 
-    To make Qt WebEngine work correctly when streaming to an AppleTV from a MacBook that supports
+    To make \QWE work correctly when streaming to an AppleTV from a MacBook that supports
     GPU switching, it is important to add the \c NSSupportsAutomaticGraphicsSwitching option to the
     application Info.plist file, with the value set to \c YES. Otherwise rendering issues might
     occur when creating new web engine view instances after Airplay is switched on or off.
@@ -167,9 +167,9 @@
 
     \section1 Sandboxing Support
 
-    Qt WebEngine provides out-of-the-box sandboxing support for Chromium render processes on Linux
+    \QWE provides out-of-the-box sandboxing support for Chromium render processes on Linux
     and \macos. Sandboxing is currently not supported on Windows due to a limitation in how
-    the sandbox is set up and how it interacts with the host process provided by the Qt WebEngine
+    the sandbox is set up and how it interacts with the host process provided by the \QWE
     libraries.
 
     On \macos, there are no special requirements for enabling sandbox support.
@@ -184,7 +184,7 @@
 
     \section1 Accessibility and Performance
 
-    Qt WebEngine enables accessibility support for web pages when the following conditions
+    \QWE enables accessibility support for web pages when the following conditions
     are met:
 
     \list
@@ -197,7 +197,7 @@
     Due to some limitations, the Linux QPA plugin almost always reports that accessibility should
     be activated. On big HTML pages, this can cause a significant slowdown in rendering speed.
 
-    Because of that, from Qt 5.9 onwards, Qt WebEngine accessibility support is disabled by default
+    Because of that, from Qt 5.9 onwards, \QWE accessibility support is disabled by default
     on Linux.
     It can be re-enabled by setting the \c QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY environment
     variable to a non-empty value.

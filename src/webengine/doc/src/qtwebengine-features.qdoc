@@ -29,9 +29,9 @@
     \page qtwebengine-features.html
     \title Qt WebEngine Features
 
-    \brief Summarizes Qt WebEngine features.
+    \brief Summarizes \QWE features.
 
-    Qt WebEngine supports the following features:
+    \QWE supports the following features:
 
     \list
         \li \l{Audio and Video Codecs}
@@ -54,7 +54,7 @@
 
     \section1 Audio and Video Codecs
 
-    Qt WebEngine supports the MPEG-4 Part 14 (MP4) file format only if the
+    \QWE supports the MPEG-4 Part 14 (MP4) file format only if the
     required proprietary audio and video codecs, such as H.264 and MPEG layer-3
     (MP3), have been enabled. Proprietary codecs can be enabled by passing the
     following option to the \c configure tool when configuring Qt:
@@ -72,8 +72,8 @@
 
     For more information, see \l{Qt Configure Options}.
 
-    When using qmake to build just the Qt WebEngine module, the following
-    command can be used (in this example, the Qt WebEngine source code is
+    When using qmake to build just the \QWE module, the following
+    command can be used (in this example, the \QWE source code is
     located in \c {C:\qt\qtwebengine}):
 
     \code
@@ -94,7 +94,7 @@
     The Chromium DevTools provide the ability to inspect and debug layout and
     performance issues of any web content.
 
-    This feature can be tested by launching a Qt WebEngine application with the
+    This feature can be tested by launching a \QWE application with the
     command line option \c {--remote-debugging-port=[your-port]} or by setting
     the environment variable \c QTWEBENGINE_REMOTE_DEBUGGING, and then using a
     Chromium based browser (such as \l{WebEngine Widgets Simple Browser Example}
@@ -115,12 +115,12 @@
     \section1 Client Certificates
 
     Some web servers, in particular many intranet sites, require the client to
-    authenticate itself with a certificate, called a \e {client certificate}. Qt WebEngine
+    authenticate itself with a certificate, called a \e {client certificate}. \QWE
     will read the client certificates installed in the system settings in macOS and
     Windows, and on Linux those installed into the NSS database. Certificates can
     be installed into the NSS database using the \c pk12util tool.
 
-    By default, QtWebEngine will not offer any client certificates to servers, as doing
+    By default, \QWE will not offer any client certificates to servers, as doing
     so uniquely identifies the user and might violate privacy expectations.
 
     To activate support for client certificates, an application needs to listen to
@@ -131,7 +131,7 @@
 
     \section1 Custom Schemes
 
-    Qt WebEngine makes it possible for the application to define its own custom
+    \QWE makes it possible for the application to define its own custom
     URL schemes with specialized security policies and transport mechanisms.
 
     Custom schemes can be used to implement alternative network protocols with
@@ -144,7 +144,7 @@
 
     \section1 Drag and Drop
 
-    Qt WebEngine supports HTML5 drag and drop.
+    \QWE supports HTML5 drag and drop.
 
     This feature can be tested by opening an HTML5 drag and drop demo, such as
     \l{HTML5 Demos - Drag and Drop}, \l{HTML5 Demos - Simple Drag and Drop}, or
@@ -159,7 +159,7 @@
 
     \section1 Fullscreen
 
-    Qt WebEngine supports viewing web content in fullscreen mode. For more
+    \QWE supports viewing web content in fullscreen mode. For more
     information, see \l{WebEngineSettings::fullscreenSupportEnabled}
     {WebEngineSettings.fullscreenSupportEnabled},
     \l{WebEngineView::fullScreenRequested}{WebEngineView.fullScreenRequested},
@@ -175,7 +175,7 @@
 
     \section1 HTML5 DRM
 
-    Qt WebEngine supports viewing DRM protected videos if the \l{Widevine DRM}
+    \QWE supports viewing DRM protected videos if the \l{Widevine DRM}
     plugin has been installed.
 
     The video format most commonly used by DRM services, H.264, requires
@@ -190,12 +190,12 @@
 
     \section1 HTML5 Geolocation
 
-    Qt WebEngine supports JavaScript Geolocation API with \l {Qt Location} as a
+    \QWE supports JavaScript Geolocation API with \l {Qt Location} as a
     backend. The application has to explicitly allow the feature by using
     QWebEnginePage::Geolocation or \l{WebEngineView::Feature}
     {WebEngineView.Feature}.
 
-    If Qt Location has been built before Qt WebEngine then this feature can be
+    If Qt Location has been built before \QWE then this feature can be
     tested by using \l{WebEngine Widgets Maps Example}{Maps} and allowing it to
     find the current position of the user. Note that on Windows an external GPS
     receiver must be connected to the application. For more information, see
@@ -205,7 +205,7 @@
 
     \section1 HTTP/2 Protocol
 
-    Qt WebEngine supports the Chromium implementation of the \l{HTTP/2}
+    \QWE supports the Chromium implementation of the \l{HTTP/2}
     protocol.
 
     This feature can be tested by opening an HTTP/2 demo, such as the
@@ -224,7 +224,7 @@
         \li Displaying form validation messages
     \endlist
 
-    Qt WebEngine provides standard dialogs for these functions. In widget-based
+    \QWE provides standard dialogs for these functions. In widget-based
     applications, the standard dialogs are based on QDialog, whereas in Qt Quick
     applications, they can be based either on Qt Quick Controls 1 or Qt Quick
     Controls 2 (since Qt 5.8). The latter are used only on \c eglfs platforms.
@@ -233,7 +233,7 @@
     Controls 2, set the \c QTWEBENGINE_DIALOG_SET environment variable to either
     \c{QtQuickControls1} or \c{QtQuickControls2}.
 
-    Qt WebEngine Widgets dialogs can be customized by reimplementing the
+    \QWE Widgets dialogs can be customized by reimplementing the
     QWebEnginePage::chooseFiles(), QWebEnginePage::javaScriptAlert(),
     QWebEnginePage::javaScriptConfirm(), and QWebEnginePage::javaScriptPrompt()
     functions.
@@ -248,7 +248,7 @@
 
     \section1 Pepper Plugin API
 
-    Qt WebEngine supports loading Pepper Plugin API (PPAPI) plugins if
+    \QWE supports loading Pepper Plugin API (PPAPI) plugins if
     WebEngineSettings::pluginsEnabled or QWebEngineSettings::PluginsEnabled
     is set.
 
@@ -320,7 +320,7 @@
 
     \section1 Print to PDF
 
-    Qt WebEngine supports printing a web page to a PDF file. For more
+    \QWE supports printing a web page to a PDF file. For more
     information, see QWebEnginePage::printToPdf() and
     \l{WebEngineView::printToPdf}{WebEngineView.printToPdf}.
 
@@ -331,7 +331,7 @@
 
     \section1 Process Models
 
-    Qt WebEngine uses multiple OS processes to isolate web sites from each other
+    \QWE uses multiple OS processes to isolate web sites from each other
     and from the client application, improving security and robustness. The
     following process models, or ways to divide web sites between OS processes,
     are supported:
@@ -354,7 +354,7 @@
     and \c{https://de.wikipedia.org/} would belong to the same site.
 
     A site instance is a collection of web pages belonging to the same site.
-    When the application explicitly loads a URL into Qt WebEngine (via \l
+    When the application explicitly loads a URL into \QWE (via \l
     QWebEnginePage::setUrl, for example), a new site instance is created for the
     page. However, when the user clicks same-site links on the page, the
     existing site instance is merely extended with more pages.
@@ -387,7 +387,7 @@
 
     \section1 Spellchecker
 
-    Qt WebEngine supports integrating spellchecking support into HTML forms to
+    \QWE supports integrating spellchecking support into HTML forms to
     enable users to submit spellchecked messages. When the user clicks on
     an underlined misspelled word, the default context menu displays up to four
     suggestions. Selecting one will replace the misspelled word.
@@ -407,7 +407,7 @@
 
     These two files can be converted into the \c bdic format by using the
     \c qwebengine_convert_dict tool that is shipped together with Qt.
-    When the Qt WebEngine spellchecker initializes, it will try to load the
+    When the \QWE spellchecker initializes, it will try to load the
     \c bdict dictionaries and to check them for consistency.
 
     If \c QTWEBENGINE_DICTIONARIES_PATH is set, the spellchecker uses the
@@ -416,7 +416,7 @@
     executable if it exists. If it does not exist, it will look in \c
     QT_INSTALL_PREFIX/qtwebengine_dictionaries.
 
-    On macOS, depending on how Qt WebEngine is configured at build time, there
+    On macOS, depending on how \QWE is configured at build time, there
     are two possibilities how spellchecking data is found:
 
     \list
@@ -426,7 +426,7 @@
             means the results will depend on the installed OS dictionaries)
     \endlist
 
-    Thus, in the macOS Hunspell case, Qt WebEngine will look in the \e
+    Thus, in the macOS Hunspell case, \QWE will look in the \e
     qtwebengine_dictionaries subdirectory located inside the application bundle
     \c Resources directory, and also in the \c Resources directory located
     inside the Qt framework bundle.
@@ -460,7 +460,7 @@
 
     \section1 Touch
 
-    Qt WebEngine supports touch devices for navigating and interacting with web pages.
+    \QWE supports touch devices for navigating and interacting with web pages.
 
     Applications can prohibit the use of touch events in the following ways:
 
@@ -476,7 +476,7 @@
 
     \section1 View Source
 
-    Qt WebEngine supports viewing the HTML source of a web page.
+    \QWE supports viewing the HTML source of a web page.
 
     This feature can be used from custom menus or assigned to custom events.
     For more information, see WebEngineView::WebAction, and QWebEnginePage::WebAction.

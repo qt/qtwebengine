@@ -28,7 +28,7 @@
 /*!
     \page qtwebenginewidgets-qtwebkitportingguide.html
     \title Porting from Qt WebKit to Qt WebEngine
-    \brief Overview of the differences between the Qt WebKit and Qt WebEngine API.
+    \brief Overview of the differences between the Qt \WebKit and \QWE API.
 
     The following sections contain information about porting an application that uses the
     \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
@@ -37,17 +37,17 @@
 
     \section1 Architecture
 
-    Chromium provides its own network and painting engines, which Qt WebEngine uses. This, among
-    other things, allows Qt WebEngine to provide better and more reliable support for the latest
-    HTML5 specification than Qt WebKit. However, Qt WebEngine is thus also heavier than Qt WebKit
+    Chromium provides its own network and painting engines, which \QWE uses. This, among
+    other things, allows \QWE to provide better and more reliable support for the latest
+    HTML5 specification than Qt \WebKit. However, \QWE is thus also heavier than Qt \WebKit
     and does not provide direct access to the network stack and the HTML document through C++ APIs.
 
     \section1 Class Names
 
-    The Qt WebEngine equivalent of Qt WebKit C++ classes are prefixed by
+    The \QWE equivalent of Qt \WebKit C++ classes are prefixed by
     "\e QWebEngine" instead of "\e QWeb".
 
-    \b {Qt WebKit}
+    \b {Qt \WebKit}
     \code
         #include <QWebHistory>
         #include <QWebHistoryItem>
@@ -59,7 +59,7 @@
         QWebPage
         QWebView
     \endcode
-    \b {Qt WebEngine}
+    \b {\QWE}
     \code
         #include <QWebEngineHistory>
         #include <QWebEngineHistoryItem>
@@ -77,23 +77,23 @@
 
     \section2 In qmake Project Files
 
-    \b {Qt WebKit}
+    \b {Qt \WebKit}
     \code
         QT += webkitwidgets
     \endcode
-    \b {Qt WebEngine}
+    \b {\QWE}
     \code
         QT += webenginewidgets
     \endcode
 
     \section2 Including the Module in Source Files
 
-    \b {Qt WebKit}
+    \b {Qt \WebKit}
     \code
         #include <QtWebKit/QtWebKit>
         #include <QtWebKitWidgets/QtWebKitWidgets> // With Qt >= 4.8
     \endcode
-    \b {Qt WebEngine}
+    \b {\QWE}
     \code
         #include <QtWebEngineWidgets/QtWebEngineWidgets>
     \endcode
@@ -104,22 +104,22 @@
     HTML frames can be used to divide web pages into several areas where the content can be
     represented individually.
 
-    In Qt WebKit, QWebFrame represents a frame inside a web page. Each QWebPage object contains at
+    In Qt \WebKit, QWebFrame represents a frame inside a web page. Each QWebPage object contains at
     least one frame, the main frame, obtained using QWebPage::mainFrame(). Additional frames will
     be created for the HTML \c <frame> element, which defines the appearance and contents of a
     single frame, or the \c <iframe> element, which inserts a frame within a block of text.
 
-    In Qt WebEngine, frame handling has been merged into the QWebEnginePage class. All child frames
+    In \QWE, frame handling has been merged into the QWebEnginePage class. All child frames
     are now considered part of the content, and only accessible through JavaScript. Methods of the
     QWebFrame class, such as \c load() are now available directly through the QWebEnginePage itself.
 
-    \b {Qt WebKit}
+    \b {Qt \WebKit}
     \code
         QWebPage page;
         connect(page.mainFrame(), SIGNAL(urlChanged(const QUrl&)), SLOT(mySlotName()));
         page.mainFrame()->load(url);
     \endcode
-    \b {Qt WebEngine}
+    \b {\QWE}
     \code
         QWebEnginePage page;
         connect(&page, SIGNAL(urlChanged(const QUrl&)), SLOT(mySlotName()));
@@ -129,12 +129,12 @@
 
     \section1 Some Methods Now Return Their Result Asynchronously
 
-    Because Qt WebEngine uses a multi-process architecture, calls to some methods from applications
+    Because \QWE uses a multi-process architecture, calls to some methods from applications
     will return immediately, while the results should be received asynchronously via a callback
     mechanism. A function pointer, a functor, or a lambda expression must be provided to handle the
     results when they become available.
 
-    \b {Qt WebKit}
+    \b {Qt \WebKit}
     \code
         QWebPage *page = new QWebPage;
         QTextEdit *textEdit = new QTextEdit;
@@ -142,7 +142,7 @@
         textEdit->setPlainText(page->toHtml());
         textEdit->setPlainText(page->toPlainText());
     \endcode
-    \b {Qt WebEngine (with a lambda function in C++11)}
+    \b {\QWE (with a lambda function in C++11)}
     \code
         QWebEnginePage *page = new QWebEnginePage;
         QTextEdit *textEdit = new QTextEdit;
@@ -150,7 +150,7 @@
         page->toHtml([textEdit](const QString &result){ textEdit->setPlainText(result); });
         page->toPlainText([textEdit](const QString &result){ textEdit->setPlainText(result); });
     \endcode
-    \b {Qt WebEngine (with a functor template wrapping a member function)}
+    \b {\QWE (with a functor template wrapping a member function)}
     \code
         template<typename Arg, typename R, typename C>
         struct InvokeWrapper {
@@ -174,7 +174,7 @@
         page->toHtml(invoke(textEdit, &QTextEdit::setPlainText));
         page->toPlainText(invoke(textEdit, &QTextEdit::setPlainText));
     \endcode
-    \b {Qt WebEngine (with a regular functor)}
+    \b {\QWE (with a regular functor)}
     \code
         struct SetPlainTextFunctor {
             QTextEdit *textEdit;
@@ -192,29 +192,29 @@
     \endcode
 
 
-    \section1 Qt WebEngine Does Not Interact with QNetworkAccessManager
+    \section1 \QWE Does Not Interact with QNetworkAccessManager
 
     Some classes of Qt Network such as QAuthenticator were reused for their interface
-    but, unlike Qt WebKit, Qt WebEngine has its own HTTP implementation and cannot
+    but, unlike Qt \WebKit, \QWE has its own HTTP implementation and cannot
     go through a QNetworkAccessManager.
 
     The signals and methods of QNetworkAccessManager that are still supported were
     moved to the QWebEnginePage class.
 
-    \b {Qt WebKit}
+    \b {Qt \WebKit}
     \code
         QNetworkAccessManager qnam;
         QWebPage page;
         page.setNetworkAccessManager(&qnam);
         connect(&qnam, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticate(QNetworkReply*,QAuthenticator*)));
     \endcode
-    \b {Qt WebEngine}
+    \b {\QWE}
     \code
         QWebEnginePage page;
         connect(&page, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticate(QNetworkReply*,QAuthenticator*)));
     \endcode
 
-    \note In Qt WebEngine, the QAuthenticator must be explicitly set to null to
+    \note In \QWE, the QAuthenticator must be explicitly set to null to
     cancel authentication:
 
     \code
@@ -233,12 +233,12 @@
     It is currently only possible to run JavaScript on the main frame of a page and the
     result is returned asynchronously to the provided functor.
 
-    \b {Qt WebKit}
+    \b {Qt \WebKit}
     \code
         QWebPage *page = new QWebPage;
         qDebug() << page->mainFrame()->evaluateJavaScript("'Java' + 'Script'");
     \endcode
-    \b {Qt WebEngine (with lambda expressions in C++11)}
+    \b {\QWE (with lambda expressions in C++11)}
     \code
         QWebEnginePage *page = new QWebEnginePage;
         page->runJavaScript("'Java' + 'Script'", [](const QVariant &result){ qDebug() << result; });
@@ -255,12 +255,12 @@
     the contentEditable attribute in the latest HTML standard. Therefore, QWebEnginePage::runJavaScript
     is all that is needed.
 
-    \b {Qt WebKit}
+    \b {Qt \WebKit}
     \code
         QWebPage page;
         page.setContentEditable(true);
     \endcode
-    \b {Qt WebEngine}
+    \b {\QWE}
     \code
         QWebEnginePage page;
         page.runJavaScript("document.documentElement.contentEditable = true");
@@ -269,35 +269,35 @@
 
     \section1 Unavailable Qt WebKit API
 
-    The Qt WebKit classes and methods in this list will not be available in Qt WebEngine.
+    The Qt \WebKit classes and methods in this list will not be available in \QWE.
 
     \table
     \row
         \li QGraphicsWebView
-        \li Qt WebEngine is designed for being used with hardware acceleration. Because we could not
+        \li \QWE is designed for being used with hardware acceleration. Because we could not
             support a web view class in a QGraphicsView unless it would be attached to a QGLWidget
             viewport, this feature is out of scope.
     \row
         \li QWebElement
-        \li Qt WebEngine uses a multi-process architecture and this means that
+        \li \QWE uses a multi-process architecture and this means that
             any access to the internal structure of the page has to be done
             asynchronously, any query result must be returned through callbacks.
             The QWebElement API was designed for synchronous access and this
             would require a complete redesign.
     \row
         \li QWebDatabase
-        \li The Web SQL Database feature that this API was wrapping in Qt WebKit
+        \li The Web SQL Database feature that this API was wrapping in Qt \WebKit
             was dropped from the HTML5 standard.
     \row
         \li QWebPluginDatabase, QWebPluginFactory, QWebPluginInfo, QWebPage::setPalette,
             QWebView::setRenderHints
-        \li Qt WebEngine renders web pages using Skia and is not using QPainter
+        \li \QWE renders web pages using Skia and is not using QPainter
             or Qt for this purpose. The HTML5 standard also now offers much
             better alternatives that were not available when native controls
-            plugins were introduced in Qt WebKit.
+            plugins were introduced in Qt \WebKit.
     \row
         \li QWebHistoryInterface
-        \li Visited links are persisted automatically by Qt WebEngine.
+        \li Visited links are persisted automatically by \QWE.
     \row
         \li QWebPage::setContentEditable
         \li In the latest HTML standard, any document element can be made editable through the

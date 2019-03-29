@@ -29,7 +29,7 @@
     \example webengine/minimal
     \title WebEngine Qt Quick Minimal Example
     \ingroup webengine-examples
-    \brief Displays a web page using the Qt Quick integration of Qt WebEngine.
+    \brief Displays a web page using the Qt Quick integration of \QWE.
 
     \image minimal-example.png
 
@@ -52,7 +52,7 @@
 
     In the \c main function we first set the
     \l{QCoreApplication::organizationName} property. This affects the locations
-    where Qt WebEngine stores persistent and cached data (see also
+    where \QWE stores persistent and cached data (see also
     \l{WebEngineProfile::cachePath} and
     \l{WebEngineProfile::persistentStoragePath}).
 

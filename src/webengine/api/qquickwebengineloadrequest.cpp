@@ -127,7 +127,7 @@ QString QQuickWebEngineLoadRequest::errorString() const
     \value  WebEngineView.NoErrorDomain
             Error type is not known.
     \value  WebEngineView.InternalErrorDomain
-            Content cannot be interpreted by Qt WebEngine.
+            Content cannot be interpreted by \QWE.
     \value  WebEngineView.ConnectionErrorDomain
             Error results from a faulty network connection.
     \value  WebEngineView.CertificateErrorDomain

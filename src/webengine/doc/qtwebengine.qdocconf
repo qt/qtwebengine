@@ -81,4 +81,7 @@ navigation.landingpage = "Qt WebEngine"
 navigation.cppclassespage = "Qt WebEngine C++ Classes and Namespaces"
 navigation.qmltypespage = "Qt WebEngine QML Types"
 
+# \QWE macro expands to 'Qt WebEngine' without auto-linking anywhere.
+macro.QWE    = "Qt \\WebEngine"
+
 Cpp.ignoretokens += Q_WEBENGINE_EXPORT QWEBENGINEWIDGETS_EXPORT

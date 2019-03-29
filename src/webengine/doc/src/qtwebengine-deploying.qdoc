@@ -34,7 +34,7 @@
     \l{Deploying Applications on macOS}{macdeployqt} automate the steps to
     generate a stand-alone application package.
 
-    When manually deploying applications that depend on Qt WebEngine, all the
+    When manually deploying applications that depend on \QWE, all the
     files that are required to run the application have to be included:
     libraries, QML imports, plugins, and translations.
 
@@ -42,27 +42,27 @@
 
     \section1 Target Platforms
 
-    Qt WebEngine does try to support all \l{Supported Platforms} of Qt. However,
+    \QWE does try to support all \l{Supported Platforms} of Qt. However,
     due to different requirements of Chromium this is not always possible. Known
     limitations are:
 
     \list
-        \li Qt WebEngine currently supports only Windows, Linux, and \macos.
+        \li \QWE currently supports only Windows, Linux, and \macos.
 
-        \li On Windows, Qt WebEngine only supports Windows Vista or newer as
+        \li On Windows, \QWE only supports Windows Vista or newer as
             target platform. Due to use of newer API in Chromium, Windows XP is
             not supported. WinRT is not supported, either.
     \endlist
 
     \section1 Deploying Applications Manually
 
-    When  manually deploying applications that depend on Qt WebEngine, the
+    When  manually deploying applications that depend on \QWE, the
     following files might have to be deployed:
 
     \list
         \li Libraries
         \li QML imports
-        \li Qt WebEngine process
+        \li \QWE process
         \li Resources
         \li Translations
         \li Audio and video codecs
@@ -71,7 +71,7 @@
     \section2 Deploying Libraries
 
     The following libraries must be deployed with applications that depend on
-    Qt WebEngine:
+    \QWE:
 
     \list
         \li QtWebEngineCore library
@@ -84,10 +84,10 @@
     If Qt Quick integration is used in the application, the QtWebEngine import
     directory needs to be deployed.
 
-    \section2 Deploying Qt WebEngine Processes
+    \section2 Deploying \QWE Processes
 
-    Qt WebEngine takes advantage of the multi-process model that the Chromium
-    project offers. The multi-process model requires that the Qt WebEngine
+    \QWE takes advantage of the multi-process model that the Chromium
+    project offers. The multi-process model requires that the \QWE
     Process executable be deployed alongside your application.
 
     The WebEngine process is executed for each QWebEngineView or WebEngineView
@@ -96,18 +96,18 @@
     running. This is a common approach used by most modern web engines to
     provide a stable browsing experience.
 
-    At runtime, Qt WebEngine looks for the \c QtWebEngineProcess executable in
+    At runtime, \QWE looks for the \c QtWebEngineProcess executable in
     the directory that
     QLibraryInfo::location(QLibraryInfo::LibraryExecutablesPath) returns.
     For Qt installations, this is \c QTDIR/libexec (Linux) or \c QTDIR\bin
     (Windows). The path can be changed by defining a \c qt.conf file, for
     example. Alternatively, an executable path can be set as a value of the
-    \c QTWEBENGINEPROCESS_PATH environment variable. On \macos, Qt WebEngine
+    \c QTWEBENGINEPROCESS_PATH environment variable. On \macos, \QWE
     looks for the executable in \c .app/Helpers/QtWebEngineProcess.
 
     \section2 Deploying Resources
 
-    Qt WebEngine requires the following resource files:
+    \QWE requires the following resource files:
 
     \list
         \li \c qtwebengine_resources.pak contains the resources needed by
@@ -120,7 +120,7 @@
             DPI displays.
         \li \c icudtl.dat provides support for International Components for
             Unicode (ICU). It is the Chromium version of ICU, which is not
-            needed if Qt WebEngine was configured to use the system ICU.
+            needed if \QWE was configured to use the system ICU.
     \endlist
 
     Resources are searched from the following locations:

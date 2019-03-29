@@ -88,7 +88,7 @@ public:
   URLs.
 
   Custom URL schemes must be configured early at application startup, before
-  creating any Qt WebEngine classes. In general this means the schemes need to be configured before
+  creating any \QWE classes. In general this means the schemes need to be configured before
   a QGuiApplication or QApplication instance is created.
 
   Every registered scheme configuration applies globally to all profiles.
