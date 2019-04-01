@@ -1059,6 +1059,9 @@ void tst_QWebEngineDownloadItem::downloadToNonExistentDir()
 
 void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
 {
+#ifdef Q_OS_WIN
+    QSKIP("Cannot change file permissions on Windows.");
+#endif
     QString baseName("test(1.test)");
     QString extension("txt");
     QString fileName = QString("%1.%2").arg(baseName).arg(extension);
