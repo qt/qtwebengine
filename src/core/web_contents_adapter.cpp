@@ -630,12 +630,12 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
                                            "HTTP-POST data can only be sent over HTTP(S) protocol"));
             return;
         }
+
+        params.post_data = network::ResourceRequestBody::CreateFromBytes(
+                    (const char*)request.postData().constData(),
+                    request.postData().length());
         break;
     }
-
-    params.post_data = network::ResourceRequestBody::CreateFromBytes(
-                (const char*)request.postData().constData(),
-                request.postData().length());
 
     // convert the custom headers into the format that chromium expects
     QVector<QByteArray> headers = request.headers();
