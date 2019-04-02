@@ -138,7 +138,6 @@ public:
 private:
     // RenderFrameObserver implementation.
     void DidCommitProvisionalLoad(bool is_new_navigation, bool is_same_document_navigation) override;
-    void DidClearWindowObject() override;
     void DidFinishDocumentLoad() override;
     void DidFinishLoad() override;
     void FrameDetached() override;
@@ -241,14 +240,10 @@ void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad
     // that the WebChannelTransportHost is ready to receive messages.
 
     m_runner.reset(new Runner(render_frame()->GetWebFrame()));
-}
 
-void UserResourceController::RenderFrameObserverHelper::DidClearWindowObject()
-{
-    // This is called both before and after DidCommitProvisionalLoad, non-null
-    // m_runner means it's after.
-    if (m_runner)
-        m_runner->run(UserScriptData::DocumentElementCreation);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::DocumentElementCreation));
 }
 
 void UserResourceController::RenderFrameObserverHelper::DidFinishDocumentLoad()

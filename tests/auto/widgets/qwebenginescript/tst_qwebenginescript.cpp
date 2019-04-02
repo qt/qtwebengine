@@ -23,6 +23,7 @@
 #include <qwebengineprofile.h>
 #include <qwebenginescript.h>
 #include <qwebenginescriptcollection.h>
+#include <qwebenginesettings.h>
 #include <qwebengineview.h>
 #include "../util.h"
 #if QT_CONFIG(webengine_webchannel)
@@ -37,6 +38,8 @@ private Q_SLOTS:
     void loadEvents();
     void scriptWorld_data();
     void scriptWorld();
+    void scriptDisabled();
+    void viewSource();
     void scriptModifications();
 #if QT_CONFIG(webengine_webchannel)
     void webChannel_data();
@@ -216,6 +219,50 @@ void tst_QWebEngineScript::scriptWorld()
     QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "typeof(userScriptTest) == \"undefined\""), QVariant::fromValue(true));
     QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "typeof(userScriptTest) != \"undefined\" && userScriptTest == 1;", worldId), QVariant::fromValue(true));
+}
+
+// Based on QTBUG-74304
+void tst_QWebEngineScript::scriptDisabled()
+{
+    QWebEnginePage page;
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, false);
+    QWebEngineScript script;
+    script.setInjectionPoint(QWebEngineScript::DocumentCreation);
+    script.setWorldId(QWebEngineScript::MainWorld);
+    script.setSourceCode("var foo = 42");
+    page.scripts().insert(script);
+    page.load(QUrl("about:blank"));
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().value(0).toBool(), true);
+    // MainWorld scripts are disabled by the setting...
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "foo", QWebEngineScript::MainWorld), QVariant());
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "foo", QWebEngineScript::ApplicationWorld), QVariant());
+    script.setWorldId(QWebEngineScript::ApplicationWorld);
+    page.scripts().clear();
+    page.scripts().insert(script);
+    page.load(QUrl("about:blank"));
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().value(0).toBool(), true);
+    // ...but ApplicationWorld scripts should still work
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "foo", QWebEngineScript::MainWorld), QVariant());
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "foo", QWebEngineScript::ApplicationWorld), QVariant(42));
+}
+
+// Based on QTBUG-66011
+void tst_QWebEngineScript::viewSource()
+{
+    QWebEnginePage page;
+    QWebEngineScript script;
+    script.setInjectionPoint(QWebEngineScript::DocumentCreation);
+    script.setWorldId(QWebEngineScript::MainWorld);
+    script.setSourceCode("var foo = 42");
+    page.scripts().insert(script);
+    page.load(QUrl("view-source:about:blank"));
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().value(0).toBool(), true);
+    QCOMPARE(evaluateJavaScriptSync(&page, "foo"), QVariant(42));
 }
 
 void tst_QWebEngineScript::scriptModifications()
