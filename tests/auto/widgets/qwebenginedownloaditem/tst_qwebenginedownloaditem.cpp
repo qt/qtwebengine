@@ -920,7 +920,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilename()
 void tst_QWebEngineDownloadItem::downloadUniqueFileNameWithTimeStamp()
 {
 #ifdef Q_OS_WIN
-    QSKIP("QTBUG-74764: The download completes after the test fails thus would ruin subsequent tests on Windows.")
+    QSKIP("QTBUG-74764: The download completes after the test fails thus would ruin subsequent tests on Windows.");
 #endif
     // Set up HTTP server
     QString baseName("test(1.test)");
