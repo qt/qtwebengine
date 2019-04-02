@@ -77,7 +77,7 @@ public:
     }
 
     // UserNotificationController::Client:
-    virtual void notificationClosed(const UserNotificationController *) Q_DECL_OVERRIDE
+    virtual void notificationClosed(const UserNotificationController *) override
     {
         Q_EMIT q->closed();
     }

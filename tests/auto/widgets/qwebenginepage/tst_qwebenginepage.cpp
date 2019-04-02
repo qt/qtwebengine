@@ -1550,7 +1550,7 @@ public:
     JavaScriptCallback() { }
     JavaScriptCallback(const QVariant& _expected) : expected(_expected) { }
 
-    void check(const QVariant& result) Q_DECL_OVERRIDE
+    void check(const QVariant& result) override
     {
         QVERIFY(result.isValid());
         QCOMPARE(result, expected);
@@ -1563,7 +1563,7 @@ private:
 class JavaScriptCallbackNull : public JavaScriptCallbackBase
 {
 public:
-    void check(const QVariant& result) Q_DECL_OVERRIDE
+    void check(const QVariant& result) override
     {
         QVERIFY(result.isNull());
 // FIXME: Returned null values are currently invalid QVariants.
@@ -1574,7 +1574,7 @@ public:
 class JavaScriptCallbackUndefined : public JavaScriptCallbackBase
 {
 public:
-    void check(const QVariant& result) Q_DECL_OVERRIDE
+    void check(const QVariant& result) override
     {
         QVERIFY(result.isNull());
         QVERIFY(!result.isValid());

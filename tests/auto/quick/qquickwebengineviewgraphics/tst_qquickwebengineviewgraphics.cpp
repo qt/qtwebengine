@@ -46,7 +46,7 @@ public:
                 Qt::QueuedConnection);
     }
 
-    virtual void exposeEvent(QExposeEvent *e) Q_DECL_OVERRIDE {
+    virtual void exposeEvent(QExposeEvent *e) override {
         QQuickView::exposeEvent(e);
         emit _q_exposeChanged();
     }

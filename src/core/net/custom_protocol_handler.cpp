@@ -54,7 +54,7 @@ CustomProtocolHandler::CustomProtocolHandler(QPointer<ProfileAdapter> profileAda
 net::URLRequestJob *CustomProtocolHandler::MaybeCreateJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate) const
 {
     if (!networkDelegate)
-        return new net::URLRequestErrorJob(request, Q_NULLPTR, net::ERR_ACCESS_DENIED);
+        return new net::URLRequestErrorJob(request, nullptr, net::ERR_ACCESS_DENIED);
 
     return new URLRequestCustomJob(request, networkDelegate, request->url().scheme(), m_profileAdapter);
 }

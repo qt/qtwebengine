@@ -588,8 +588,8 @@ class KeyEventRecordingWidget : public QWidget {
 public:
     QList<QKeyEvent> pressEvents;
     QList<QKeyEvent> releaseEvents;
-    void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE { pressEvents << *e; }
-    void keyReleaseEvent(QKeyEvent *e) Q_DECL_OVERRIDE { releaseEvents << *e; }
+    void keyPressEvent(QKeyEvent *e) override { pressEvents << *e; }
+    void keyReleaseEvent(QKeyEvent *e) override { releaseEvents << *e; }
 };
 
 void tst_QWebEngineView::unhandledKeyEventPropagation()
@@ -879,7 +879,7 @@ public:
     explicit KeyboardAndMouseEventRecordingWidget(QWidget *parent = 0) :
         QWidget(parent), m_eventCounter(0) {}
 
-    bool event(QEvent *event) Q_DECL_OVERRIDE
+    bool event(QEvent *event) override
     {
         QString eventString;
         switch (event->type()) {

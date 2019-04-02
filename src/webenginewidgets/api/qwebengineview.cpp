@@ -119,7 +119,7 @@ static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *obje
 {
     if (QWebEngineView *v = qobject_cast<QWebEngineView*>(object))
         return new QWebEngineViewAccessible(v);
-    return Q_NULLPTR;
+    return nullptr;
 }
 #endif // QT_NO_ACCESSIBILITY
 
@@ -459,7 +459,7 @@ QAccessibleInterface *QWebEngineViewAccessible::child(int index) const
 {
     if (index == 0 && view() && view()->page())
         return view()->page()->d_func()->adapter->browserAccessible();
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 int QWebEngineViewAccessible::indexOfChild(const QAccessibleInterface *c) const
