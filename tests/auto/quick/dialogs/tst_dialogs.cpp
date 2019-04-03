@@ -218,6 +218,7 @@ void tst_Dialogs::javaScriptDialogRequested()
     QCOMPARE(dialog->type(), type);
     QCOMPARE(dialog->message(), message);
     QCOMPARE(dialog->defaultText(), defaultText);
+    QTRY_VERIFY(m_listner->ready()); // make sure javascript executes no longer
 }
 
 #include "tst_dialogs.moc"
