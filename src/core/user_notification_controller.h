@@ -58,7 +58,7 @@ namespace QtWebEngineCore {
 class UserNotificationControllerPrivate;
 
 // Works as an accessor and owner of chromium objects related to showing desktop notifications.
-class QWEBENGINECORE_EXPORT UserNotificationController : public QEnableSharedFromThis<UserNotificationController> {
+class Q_WEBENGINECORE_EXPORT UserNotificationController : public QEnableSharedFromThis<UserNotificationController> {
 public:
     struct Delegate {
         virtual ~Delegate() { }
@@ -86,7 +86,7 @@ public:
     void closeNotification();
 
     QUrl origin() const;
-    QIcon icon() const;
+    QImage icon() const;
     QImage image() const;
     QImage badge() const;
     QString title() const;

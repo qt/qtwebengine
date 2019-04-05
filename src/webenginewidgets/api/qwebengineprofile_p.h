@@ -100,7 +100,7 @@ private:
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
     QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
     QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
-    std::function<void(const QWebEngineNotification &)> m_notificationPresenter;
+    std::function<void(std::unique_ptr<QWebEngineNotification>)> m_notificationPresenter;
 };
 
 QT_END_NAMESPACE

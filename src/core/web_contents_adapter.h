@@ -91,7 +91,7 @@ class RenderViewObserverHostQt;
 class WebChannelIPCTransportHost;
 class WebEngineContext;
 
-class QWEBENGINECORE_PRIVATE_EXPORT WebContentsAdapter : public QEnableSharedFromThis<WebContentsAdapter> {
+class Q_WEBENGINECORE_PRIVATE_EXPORT WebContentsAdapter : public QEnableSharedFromThis<WebContentsAdapter> {
 public:
     static QSharedPointer<WebContentsAdapter> createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient);
     WebContentsAdapter();

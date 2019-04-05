@@ -152,7 +152,7 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
 */
 
 /*!
-    \fn QQuickWebEngineProfile::userNotification(QWebEngineNotification *notification)
+    \fn QQuickWebEngineProfile::presentNotification(QWebEngineNotification *notification)
 
     This signal is emitted whenever there is a newly created user notification.
     The \a notification argument holds the notification instance to query data and interact with.
@@ -304,7 +304,7 @@ void QQuickWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineC
     Q_Q(QQuickWebEngineProfile);
     auto notification = new QWebEngineNotification(controller);
     QQmlEngine::setObjectOwnership(notification, QQmlEngine::JavaScriptOwnership);
-    Q_EMIT q->userNotification(notification);
+    Q_EMIT q->presentNotification(notification);
 }
 
 void QQuickWebEngineProfilePrivate::userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script)
@@ -387,7 +387,7 @@ void QQuickWebEngineProfilePrivate::userScripts_clear(QQmlListProperty<QQuickWeb
 */
 
 /*!
-    \qmlsignal WebEngineProfile::userNotification(WebEngineNotification notification)
+    \qmlsignal WebEngineProfile::presentNotification(WebEngineNotification notification)
     \since QtWebEngine 1.9
 
     This signal is emitted whenever there is a newly created user notification.

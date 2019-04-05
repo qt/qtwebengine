@@ -40,6 +40,7 @@ public:
     explicit Server(QObject *parent = nullptr);
 
     bool isListening();
+    void setReply(const QByteArray &reply);
 
 public slots:
     void run();
@@ -50,6 +51,7 @@ private slots:
 
 private:
     QByteArray m_data;
+    QByteArray m_reply;
     QTcpServer m_server;
 
 };

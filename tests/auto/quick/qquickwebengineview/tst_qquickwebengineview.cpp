@@ -878,7 +878,7 @@ public:
         setAcceptHoverEvents(true);
     }
 
-    bool event(QEvent *event) Q_DECL_OVERRIDE
+    bool event(QEvent *event) override
     {
         switch (event->type()) {
         case QEvent::TabletPress:

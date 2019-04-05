@@ -82,7 +82,7 @@ namespace QtWebEngineCore {
 class WebContentsAdapterClient;
 
 // Based on src/3rdparty/chromium/content/public/common/favicon_url.h
-class QWEBENGINECORE_PRIVATE_EXPORT FaviconInfo {
+class Q_WEBENGINECORE_PRIVATE_EXPORT FaviconInfo {
 public:
     enum FaviconTypeFlag {
         InvalidIcon = 0,
@@ -109,7 +109,7 @@ public:
 };
 
 
-class QWEBENGINECORE_PRIVATE_EXPORT FaviconManager {
+class Q_WEBENGINECORE_PRIVATE_EXPORT FaviconManager {
 
 public:
     FaviconManager(content::WebContents *, WebContentsAdapterClient *);

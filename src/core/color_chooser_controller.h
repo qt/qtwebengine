@@ -62,7 +62,7 @@ namespace QtWebEngineCore {
 
 class ColorChooserControllerPrivate;
 
-class QWEBENGINECORE_PRIVATE_EXPORT ColorChooserController : public QObject {
+class Q_WEBENGINECORE_PRIVATE_EXPORT ColorChooserController : public QObject {
     Q_OBJECT
 public:
     ~ColorChooserController();

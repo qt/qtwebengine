@@ -141,10 +141,12 @@ using QtWebEngineCore::ProfileAdapter;
             Both session and persistent cookies are saved to and restored from disk.
 */
 
-void QWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &notification)
+void QWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller)
 {
-    if (m_notificationPresenter)
-        m_notificationPresenter(QWebEngineNotification(notification));
+    if (m_notificationPresenter) {
+        std::unique_ptr<QWebEngineNotification> notification(new QWebEngineNotification(controller));
+        m_notificationPresenter(std::move(notification));
+    }
 }
 
 /*!
@@ -668,7 +670,7 @@ QWebEngineScriptCollection *QWebEngineProfile::scripts() const
     \since 5.13
     \sa QWebEngineNotification
 */
-void QWebEngineProfile::setNotificationPresenter(std::function<void(const QWebEngineNotification &)> notificationPresenter)
+void QWebEngineProfile::setNotificationPresenter(std::function<void(std::unique_ptr<QWebEngineNotification>)> notificationPresenter)
 {
     Q_D(QWebEngineProfile);
     d->m_notificationPresenter = std::move(notificationPresenter);

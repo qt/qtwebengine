@@ -374,17 +374,17 @@ public:
     {
     }
 
-    qint64 readData(char *, qint64) Q_DECL_OVERRIDE
+    qint64 readData(char *, qint64) override
     {
         m_job->fail(QWebEngineUrlRequestJob::RequestFailed);
         return -1;
     }
-    qint64 writeData(const char *, qint64) Q_DECL_OVERRIDE
+    qint64 writeData(const char *, qint64) override
     {
         m_job->fail(QWebEngineUrlRequestJob::RequestFailed);
         return -1;
     }
-    void close() Q_DECL_OVERRIDE
+    void close() override
     {
         QIODevice::close();
         deleteLater();

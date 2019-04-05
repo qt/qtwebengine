@@ -45,7 +45,7 @@
 
 namespace QtWebEngineCore {
 
-class QWEBENGINECORE_PRIVATE_EXPORT TouchHandleDrawableClient {
+class Q_WEBENGINECORE_PRIVATE_EXPORT TouchHandleDrawableClient {
 public:
     virtual ~TouchHandleDrawableClient() { }
 

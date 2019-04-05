@@ -134,7 +134,7 @@ void tst_Accessibility::hierarchy()
     QVERIFY(windowRect.contains(inputRect));
     QPoint inputCenter = inputRect.center();
     QAccessibleInterface *hitTest = view;
-    QAccessibleInterface *child = Q_NULLPTR;
+    QAccessibleInterface *child = nullptr;
     while (hitTest) {
         child = hitTest;
         hitTest = hitTest->childAt(inputCenter.x(), inputCenter.y());

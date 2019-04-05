@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(ssl)
 
-class QWEBENGINECORE_EXPORT QWebEngineClientCertificateStore {
+class Q_WEBENGINECORE_EXPORT QWebEngineClientCertificateStore {
 
 public:
     void add(const QSslCertificate &certificate, const QSslKey &privateKey);

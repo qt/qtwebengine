@@ -1019,6 +1019,7 @@ QSGTexture *DelegatedFrameNode::initAndHoldTexture(const CompositorResource *res
         texture->setFiltering(filtering);
         return texture.data();
     } else {
+#if QT_CONFIG(opengl)
         QSharedPointer<MailboxTexture> &texture =
             findTexture(m_sgObjects.mailboxTextures, m_previousSGObjects.mailboxTextures, resource->id);
         if (texture)
@@ -1026,6 +1027,10 @@ QSGTexture *DelegatedFrameNode::initAndHoldTexture(const CompositorResource *res
         texture = createMailboxTexture(resource, hasAlphaChannel, target);
         texture->setFiltering(filtering);
         return texture.data();
+#else
+        Q_UNREACHABLE();
+        return nullptr;
+#endif
     }
 }
 

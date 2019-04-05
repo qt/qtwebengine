@@ -64,7 +64,7 @@ namespace content {
 
 namespace QtWebEngineCore {
 
-class QWEBENGINECORE_PRIVATE_EXPORT FilePickerController : public QObject {
+class Q_WEBENGINECORE_PRIVATE_EXPORT FilePickerController : public QObject {
     Q_OBJECT
 public:
     enum FileChooserMode {

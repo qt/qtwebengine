@@ -86,7 +86,7 @@ public:
     std::unique_ptr<UserNotificationController::Delegate> m_delegate;
     blink::NotificationResources m_resources;
     UserNotificationController::Client *m_client;
-    QIcon m_icon;
+    QImage m_icon;
     QImage m_image;
     QImage m_badge;
     bool m_iconGenerated;
@@ -155,15 +155,12 @@ QUrl UserNotificationController::origin() const
     return toQt(d->m_origin);
 }
 
-QIcon UserNotificationController::icon() const
+QImage UserNotificationController::icon() const
 {
     if (!d->m_iconGenerated) {
         d->m_iconGenerated = true;
-        if (!d->m_resources.notification_icon.isNull()) {
-            QImage image = toQImage(d->m_resources.notification_icon);
-            if (!image.isNull())
-                d->m_icon = QIcon(QPixmap::fromImage(std::move(image), Qt::NoFormatConversion));
-        }
+        if (!d->m_resources.notification_icon.isNull())
+            d->m_icon = toQImage(d->m_resources.notification_icon);
     }
     return d->m_icon;
 }

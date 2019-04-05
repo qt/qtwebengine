@@ -75,7 +75,7 @@ namespace QtWebEngineCore {
 static const char* const kCookieableSchemes[] =
     { "http", "https", "qrc", "ws", "wss" };
 
-class QWEBENGINECORE_PRIVATE_EXPORT CookieMonsterDelegateQt : public base::RefCountedThreadSafe<CookieMonsterDelegateQt> {
+class Q_WEBENGINECORE_PRIVATE_EXPORT CookieMonsterDelegateQt : public base::RefCountedThreadSafe<CookieMonsterDelegateQt> {
     QPointer<QWebEngineCookieStore> m_client;
     net::CookieMonster *m_cookieMonster;
     std::vector<std::unique_ptr<net::CookieChangeSubscription>> m_subscriptions;

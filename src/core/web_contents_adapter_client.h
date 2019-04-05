@@ -343,7 +343,7 @@ private:
 };
 
 
-class QWEBENGINECORE_PRIVATE_EXPORT WebContentsAdapterClient {
+class Q_WEBENGINECORE_PRIVATE_EXPORT WebContentsAdapterClient {
 public:
     // This must match window_open_disposition_list.h.
     enum WindowOpenDisposition {

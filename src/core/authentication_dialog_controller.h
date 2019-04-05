@@ -59,7 +59,7 @@ namespace QtWebEngineCore {
 
 class AuthenticationDialogControllerPrivate;
 
-class QWEBENGINECORE_PRIVATE_EXPORT AuthenticationDialogController : public QObject {
+class Q_WEBENGINECORE_PRIVATE_EXPORT AuthenticationDialogController : public QObject {
     Q_OBJECT
 public:
     ~AuthenticationDialogController();

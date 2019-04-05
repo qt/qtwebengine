@@ -107,7 +107,7 @@ TestWebEngineView {
             verify(permissionRequested)
 
             let title = 'Title', message = 'Message', notification = null
-            view.profile.userNotification.connect(function (n) { notification = n })
+            view.profile.presentNotification.connect(function (n) { notification = n })
 
             view.runJavaScript('sendNotification("' + title + '", "' + message + '")')
             tryVerify(function () { return notification !== null })

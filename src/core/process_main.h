@@ -52,6 +52,6 @@
 
 namespace QtWebEngine {
 
-QWEBENGINECORE_PRIVATE_EXPORT int processMain(int argc, const char **argv);
+Q_WEBENGINECORE_PRIVATE_EXPORT int processMain(int argc, const char **argv);
 
 } // namespace

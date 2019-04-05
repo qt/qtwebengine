@@ -68,7 +68,7 @@ namespace QtWebEngineCore {
 
 class WebContentsAdapter;
 
-class QWEBENGINECORE_PRIVATE_EXPORT WebEngineSettings {
+class Q_WEBENGINECORE_PRIVATE_EXPORT WebEngineSettings {
 public:
     // Attributes. Names match the ones from the public widgets API.
     enum Attribute {
