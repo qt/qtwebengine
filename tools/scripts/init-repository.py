@@ -110,7 +110,7 @@ def initUpstreamSubmodules():
 
     gnSubmodule = GitSubmodule.Submodule()
     gnSubmodule.path = 'src/3rdparty_upstream/gn'
-    gnSubmodule.ref = 'master'
+    gnSubmodule.ref = 'origin/master'
     gnSubmodule.url = gn_url
     gnSubmodule.os = 'all'
     gnSubmodule.initialize()
