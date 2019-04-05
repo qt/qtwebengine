@@ -61,7 +61,7 @@ namespace QtWebEngineCore {
 class WebContentsAdapterClient;
 class UserNotificationController;
 
-class QWEBENGINECORE_PRIVATE_EXPORT ProfileAdapterClient
+class Q_WEBENGINECORE_PRIVATE_EXPORT ProfileAdapterClient
 {
 public:
     // Keep in sync with content::DownloadItem::DownloadState

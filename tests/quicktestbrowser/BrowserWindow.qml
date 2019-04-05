@@ -511,7 +511,7 @@ ApplicationWindow {
         standardButtons: StandardButton.Ok
     }
 
-    function onUserNotification(notification) {
+    function onPresentNotification(notification) {
         notificationDialog.title = notification.title
         notificationDialog.text = notification.origin.toString() + '\n' + notification.message
         notificationDialog.open()

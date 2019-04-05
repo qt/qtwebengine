@@ -41,10 +41,12 @@
 #define DEVTOOLS_FRONTEND_QT_H
 
 #include <memory>
+#include <set>
 
 #include "web_contents_delegate_qt.h"
 
 #include "base/compiler_specific.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -52,7 +54,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 namespace base {
 class Value;
@@ -69,8 +70,7 @@ class PersistentPrefStore;
 namespace QtWebEngineCore {
 
 class DevToolsFrontendQt : public content::WebContentsObserver
-                         , public content::DevToolsAgentHostClient
-                         , public net::URLFetcherDelegate {
+                         , public content::DevToolsAgentHostClient {
 public:
     static DevToolsFrontendQt *Show(QSharedPointer<WebContentsAdapter> frontendAdapter, content::WebContents *inspectedContents);
 
@@ -108,9 +108,6 @@ private:
     void DocumentAvailableInMainFrame() override;
     void WebContentsDestroyed() override;
 
-    // net::URLFetcherDelegate overrides.
-    void OnURLFetchComplete(const net::URLFetcher* source) override;
-
     void SendMessageAck(int request_id, const base::Value* arg1);
     void SetPreference(const std::string &name, const std::string &value);
     void RemovePreference(const std::string &name);
@@ -125,8 +122,10 @@ private:
     int m_inspect_element_at_x;
     int m_inspect_element_at_y;
     std::unique_ptr<content::DevToolsFrontendHost> m_frontendHost;
-    using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
-    PendingRequestsMap m_pendingRequests;
+
+    class NetworkResourceLoader;
+    std::set<std::unique_ptr<NetworkResourceLoader>, base::UniquePtrComparator> m_loaders;
+
     base::DictionaryValue m_preferences;
     scoped_refptr<PersistentPrefStore> m_prefStore;
     base::WeakPtrFactory<DevToolsFrontendQt> m_weakFactory;

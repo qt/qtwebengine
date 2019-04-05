@@ -324,7 +324,7 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
         return;
     }
 
-    QQmlComponent *dialogComponent = Q_NULLPTR;
+    QQmlComponent *dialogComponent = nullptr;
     switch (dialogComponentType) {
     FOR_EACH_COMPONENT_TYPE(ASSIGN_DIALOG_COMPONENT_DATA_CASE_STATEMENT, NO_SEPARATOR)
     default:

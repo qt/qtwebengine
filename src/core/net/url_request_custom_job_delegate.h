@@ -64,7 +64,7 @@ namespace QtWebEngineCore {
 
 class URLRequestCustomJobProxy;
 
-class QWEBENGINECORE_PRIVATE_EXPORT URLRequestCustomJobDelegate : public QObject {
+class Q_WEBENGINECORE_PRIVATE_EXPORT URLRequestCustomJobDelegate : public QObject {
     Q_OBJECT
 public:
     ~URLRequestCustomJobDelegate();

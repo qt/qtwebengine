@@ -197,7 +197,7 @@ void RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete()
 {
     // Unset the parent, because parent is being destroyed, but the owner of this
     // RenderWidgetHostViewQtDelegateWidget is actually a RenderWidgetHostViewQt instance.
-    setParent(Q_NULLPTR);
+    setParent(nullptr);
 
     // If this widget represents a popup window, make sure to close it, so that if the popup was the
     // last visible top level window, the application event loop can quit if it deems it necessarry.

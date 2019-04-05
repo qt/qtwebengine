@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class CertificateErrorControllerPrivate;
 
-class QWEBENGINECORE_PRIVATE_EXPORT CertificateErrorController {
+class Q_WEBENGINECORE_PRIVATE_EXPORT CertificateErrorController {
 public:
     CertificateErrorController(CertificateErrorControllerPrivate *p);
     ~CertificateErrorController();

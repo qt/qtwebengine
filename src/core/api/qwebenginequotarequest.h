@@ -51,7 +51,7 @@ class QuotaRequestController;
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINECORE_EXPORT QWebEngineQuotaRequest {
+class Q_WEBENGINECORE_EXPORT QWebEngineQuotaRequest {
     Q_GADGET
     Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
     Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)

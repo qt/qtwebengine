@@ -63,7 +63,7 @@ namespace QtWebEngineCore {
 
 class UserResourceControllerHost;
 
-class QWEBENGINECORE_PRIVATE_EXPORT UserScript : public QSharedData {
+class Q_WEBENGINECORE_PRIVATE_EXPORT UserScript : public QSharedData {
 public:
     enum InjectionPoint {
         AfterLoad,

@@ -33,13 +33,17 @@
 
 Server::Server(QObject *parent) : QObject(parent)
 {
-    m_data.clear();
     connect(&m_server, &QTcpServer::newConnection, this, &Server::handleNewConnection);
 }
 
 bool Server::isListening()
 {
     return m_server.isListening();
+}
+
+void Server::setReply(const QByteArray &reply)
+{
+    m_reply = reply;
 }
 
 void Server::run()
@@ -69,12 +73,7 @@ void Server::handleReadReady()
     if (!m_data.endsWith("\r\n\r\n"))
         return;
 
-    if (m_data.contains(QByteArrayLiteral("OPEN_AUTH")))
-        socket->write("HTTP/1.1 401 Unauthorized\nWWW-Authenticate: "
-                      "Basic realm=\"Very Restricted Area\"\r\n\r\n");
-    if (m_data.contains(QByteArrayLiteral("OPEN_PROXY")))
-        socket->write("HTTP/1.1 407 Proxy Auth Required\nProxy-Authenticate: "
-                      "Basic realm=\"Proxy requires authentication\"\r\n\r\n");
+    socket->write(m_reply);
     m_data.clear();
     socket->disconnectFromHost();
 }

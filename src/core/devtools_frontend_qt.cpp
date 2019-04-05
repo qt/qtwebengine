@@ -48,6 +48,7 @@
 #include "profile_qt.h"
 #include "web_contents_adapter.h"
 
+#include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
@@ -73,12 +74,10 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_channel.h"
-#include "net/base/io_buffer.h"
-#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_response_writer.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 
 #include <QDebug>
 using namespace QtWebEngineCore;
@@ -103,58 +102,6 @@ std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(const net::HttpRes
     return response;
 }
 
-// ResponseWriter -------------------------------------------------------------
-
-class ResponseWriter : public net::URLFetcherResponseWriter {
-public:
-    ResponseWriter(base::WeakPtr<DevToolsFrontendQt> shell_devtools_, int stream_id);
-    ~ResponseWriter() override;
-
-    // URLFetcherResponseWriter overrides:
-    int Initialize(net::CompletionOnceCallback callback) override;
-    int Write(net::IOBuffer *buffer, int num_bytes, net::CompletionOnceCallback callback) override;
-    int Finish(int net_error, net::CompletionOnceCallback callback) override;
-
-private:
-    base::WeakPtr<DevToolsFrontendQt> shell_devtools_;
-    int stream_id_;
-
-    DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
-};
-
-ResponseWriter::ResponseWriter(base::WeakPtr<DevToolsFrontendQt> shell_devtools, int stream_id)
-        : shell_devtools_(shell_devtools), stream_id_(stream_id)
-{}
-
-ResponseWriter::~ResponseWriter() {}
-
-int ResponseWriter::Initialize(net::CompletionOnceCallback callback)
-{
-    return net::OK;
-}
-
-int ResponseWriter::Write(net::IOBuffer *buffer, int num_bytes, net::CompletionOnceCallback callback)
-{
-    std::string chunk = std::string(buffer->data(), num_bytes);
-    if (!base::IsStringUTF8(chunk))
-        return num_bytes;
-
-    base::Value *id = new base::Value(stream_id_);
-    base::Value *chunkValue = new base::Value(chunk);
-
-    base::PostTaskWithTraits(
-                FROM_HERE, {content::BrowserThread::UI},
-                base::BindOnce(&DevToolsFrontendQt::CallClientFunction,
-                               shell_devtools_, "DevToolsAPI.streamWrite",
-                               base::Owned(id), base::Owned(chunkValue), nullptr));
-    return num_bytes;
-}
-
-int ResponseWriter::Finish(int net_error, net::CompletionOnceCallback callback)
-{
-    return net::OK;
-}
-
 static std::string GetFrontendURL()
 {
     return "chrome-devtools://devtools/bundled/devtools_app.html";
@@ -163,6 +110,69 @@ static std::string GetFrontendURL()
 }  // namespace
 
 namespace QtWebEngineCore {
+
+class DevToolsFrontendQt::NetworkResourceLoader
+        : public network::SimpleURLLoaderStreamConsumer {
+public:
+    NetworkResourceLoader(int stream_id,
+                          int request_id,
+                          DevToolsFrontendQt *bindings,
+                          std::unique_ptr<network::SimpleURLLoader> loader,
+                          network::mojom::URLLoaderFactory *url_loader_factory)
+        : stream_id_(stream_id),
+          request_id_(request_id),
+          bindings_(bindings),
+          loader_(std::move(loader))
+    {
+        loader_->SetOnResponseStartedCallback(base::BindOnce(
+                                                  &NetworkResourceLoader::OnResponseStarted, base::Unretained(this)));
+        loader_->DownloadAsStream(url_loader_factory, this);
+    }
+
+private:
+    void OnResponseStarted(const GURL &final_url,
+                           const network::ResourceResponseHead &response_head)
+    {
+        response_headers_ = response_head.headers;
+    }
+
+    void OnDataReceived(base::StringPiece chunk, base::OnceClosure resume) override
+    {
+        base::Value chunkValue;
+
+        bool encoded = !base::IsStringUTF8(chunk);
+        if (encoded) {
+            std::string encoded_string;
+            base::Base64Encode(chunk, &encoded_string);
+            chunkValue = base::Value(std::move(encoded_string));
+        } else {
+            chunkValue = base::Value(chunk);
+        }
+        base::Value id(stream_id_);
+        base::Value encodedValue(encoded);
+
+        bindings_->CallClientFunction("DevToolsAPI.streamWrite", &id, &chunkValue, &encodedValue);
+        std::move(resume).Run();
+    }
+
+    void OnComplete(bool success) override
+    {
+        Q_UNUSED(success);
+        auto response = BuildObjectForResponse(response_headers_.get());
+        bindings_->SendMessageAck(request_id_, response.get());
+        bindings_->m_loaders.erase(bindings_->m_loaders.find(this));
+    }
+
+    void OnRetry(base::OnceClosure start_retry) override { NOTREACHED(); }
+
+    const int stream_id_;
+    const int request_id_;
+    DevToolsFrontendQt *const bindings_;
+    std::unique_ptr<network::SimpleURLLoader> loader_;
+    scoped_refptr<net::HttpResponseHeaders> response_headers_;
+
+    DISALLOW_COPY_AND_ASSIGN(NetworkResourceLoader);
+};
 
 // This constant should be in sync with
 // the constant at devtools_ui_bindings.cc.
@@ -222,8 +232,6 @@ DevToolsFrontendQt::DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webCon
 
 DevToolsFrontendQt::~DevToolsFrontendQt()
 {
-    for (const auto &pair : m_pendingRequests)
-        delete pair.first;
 }
 
 void DevToolsFrontendQt::Activate()
@@ -400,20 +408,29 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
                   setting:
                     "It's not possible to disable this feature from settings."
                   chrome_policy {
-                    DeveloperToolsDisabled {
+                    DeveloperToolsAvailability {
                       policy_options {mode: MANDATORY}
-                      DeveloperToolsDisabled: true
+                      DeveloperToolsAvailability: 2
                     }
                   }
                 })");
-        net::URLFetcher *fetcher = net::URLFetcher::Create(gurl, net::URLFetcher::GET, this, traffic_annotation).release();
-        m_pendingRequests[fetcher] = request_id;
-        fetcher->SetRequestContext(content::BrowserContext::GetDefaultStoragePartition(
-                                       web_contents()->GetBrowserContext())->GetURLRequestContext());
-        fetcher->SetExtraRequestHeaders(headers);
-        fetcher->SaveResponseWithWriter(std::unique_ptr<net::URLFetcherResponseWriter>(
-                                            new ResponseWriter(m_weakFactory.GetWeakPtr(), stream_id)));
-        fetcher->Start();
+        auto resource_request = std::make_unique<network::ResourceRequest>();
+        resource_request->url = gurl;
+        // TODO(caseq): this preserves behavior of URLFetcher-based implementation.
+        // We really need to pass proper first party origin from the front-end.
+        resource_request->site_for_cookies = gurl;
+        resource_request->headers.AddHeadersFromString(headers);
+
+        auto *partition = content::BrowserContext::GetStoragePartitionForSite(
+                    web_contents()->GetBrowserContext(), gurl);
+        auto factory = partition->GetURLLoaderFactoryForBrowserProcess();
+
+        auto simple_url_loader = network::SimpleURLLoader::Create(
+                    std::move(resource_request), traffic_annotation);
+        auto resource_loader = std::make_unique<NetworkResourceLoader>(
+                    stream_id, request_id, this, std::move(simple_url_loader),
+                    factory.get());
+        m_loaders.insert(std::move(resource_loader));
         return;
     } else if (method == "getPreferences") {
         m_preferences = std::move(*m_prefStore->GetValues());
@@ -491,21 +508,6 @@ void DevToolsFrontendQt::DispatchProtocolMessage(content::DevToolsAgentHost *age
         base::string16 javascript = base::UTF8ToUTF16(code);
         web_contents()->GetMainFrame()->ExecuteJavaScript(javascript);
     }
-}
-
-void DevToolsFrontendQt::OnURLFetchComplete(const net::URLFetcher *source)
-{
-    // TODO(pfeldman): this is a copy of chrome's devtools_ui_bindings.cc.
-    // We should handle some of the commands including this one in content.
-    DCHECK(source);
-    PendingRequestsMap::iterator it = m_pendingRequests.find(source);
-    DCHECK(it != m_pendingRequests.end());
-
-    auto response = BuildObjectForResponse(source->GetResponseHeaders());
-
-    SendMessageAck(it->second, response.get());
-    m_pendingRequests.erase(it);
-    delete source;
 }
 
 void DevToolsFrontendQt::CallClientFunction(const std::string &function_name,

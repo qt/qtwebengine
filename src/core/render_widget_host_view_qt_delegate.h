@@ -74,7 +74,7 @@ namespace QtWebEngineCore {
 
 class WebContentsAdapterClient;
 
-class QWEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegateClient {
+class Q_WEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegateClient {
 public:
     virtual ~RenderWidgetHostViewQtDelegateClient() { }
     virtual QSGNode *updatePaintNode(QSGNode *) = 0;
@@ -86,7 +86,7 @@ public:
     virtual void closePopup() = 0;
 };
 
-class QWEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegate {
+class Q_WEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegate {
 public:
     virtual ~RenderWidgetHostViewQtDelegate() { }
     virtual void initAsPopup(const QRect&) = 0;

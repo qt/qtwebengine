@@ -145,12 +145,19 @@ void tst_Dialogs::authenticationDialogRequested_data()
     QTest::addColumn<QUrl>("url");
     QTest::addColumn<QQuickWebEngineAuthenticationDialogRequest::AuthenticationType>("type");
     QTest::addColumn<QString>("realm");
-    QTest::newRow("Http Authentication Dialog") << QUrl("http://localhost:5555/OPEN_AUTH")
+    QTest::addColumn<QByteArray>("reply");
+    QTest::newRow("Http Authentication Dialog") << QUrl("http://localhost:5555/")
                                                 << QQuickWebEngineAuthenticationDialogRequest::AuthenticationTypeHTTP
-                                                << QStringLiteral("Very Restricted Area");
-    QTest::newRow("Proxy Authentication Dialog") << QUrl("http://localhost.:5555/OPEN_PROXY")
+                                                << QStringLiteral("Very Restricted Area")
+                                                << QByteArrayLiteral("HTTP/1.1 401 Unauthorized\nWWW-Authenticate: "
+                                                                     "Basic realm=\"Very Restricted Area\"\r\n\r\n");
+    QTest::newRow("Proxy Authentication Dialog")<< QUrl("http://qt.io/")
                                                 << QQuickWebEngineAuthenticationDialogRequest::AuthenticationTypeProxy
-                                                << QStringLiteral("Proxy requires authentication");
+                                                << QStringLiteral("Proxy requires authentication")
+                                                << QByteArrayLiteral("HTTP/1.1 407 Proxy Auth Required\nProxy-Authenticate: "
+                                                                "Basic realm=\"Proxy requires authentication\"\r\n"
+                                                                "content-length: 0\r\n\r\n");
+
 }
 
 void tst_Dialogs::authenticationDialogRequested()
@@ -159,7 +166,9 @@ void tst_Dialogs::authenticationDialogRequested()
     QFETCH(QQuickWebEngineAuthenticationDialogRequest::AuthenticationType, type);
     QFETCH(QString, realm);
 
+    QFETCH(QByteArray, reply);
     Server server;
+    server.setReply(reply);
     server.run();
     QTRY_VERIFY2(server.isListening(), "Could not setup authentication server");
 

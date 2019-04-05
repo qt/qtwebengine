@@ -47,7 +47,7 @@ namespace QtWebEngineCore {
 
 class TouchSelectionControllerClientQt;
 
-class QWEBENGINECORE_PRIVATE_EXPORT TouchSelectionMenuController : public QObject {
+class Q_WEBENGINECORE_PRIVATE_EXPORT TouchSelectionMenuController : public QObject {
     Q_OBJECT
 public:
     enum TouchSelectionCommand {
