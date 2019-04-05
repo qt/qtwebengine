@@ -26,6 +26,8 @@ isEmpty(GN_FILE): GN_FILE = $$system_path($$_PRO_FILE_PWD_/BUILD.gn)
 isEmpty(GN_RUN_BINARY_SCRIPT): GN_RUN_BINARY_SCRIPT = "//build/gn_run_binary.py"
 isEmpty(GN_FIND_MOCABLES_SCRIPT): GN_FIND_MOCABLES_SCRIPT = "//build/gn_find_mocables.py"
 
+GN_CONTENTS += "import(\"//build/config/jumbo.gni\")"
+
 # MOC SETUP
 
 GN_CONTENTS += "moc_source_h_files = exec_script(\"$$GN_FIND_MOCABLES_SCRIPT\","
@@ -169,6 +171,26 @@ GN_CONTENTS += "}"
 
 # TARGET SETUP
 
+GN_CONTENTS += "jumbo_source_set(\"$${TARGET}_MOC\") {"
+GN_CONTENTS += "  configs += [ \":$${TARGET}_config\" ]"
+GN_CONTENTS += "  configs += [ \"//build/config:precompiled_headers\" ]"
+GN_CONTENTS += "  sources = []"
+GN_CONTENTS += "  deps = []"
+GN_CONTENTS += "  if (moc_source_h_files != []) {"
+GN_CONTENTS += "    deps += ["
+GN_CONTENTS += "        \":generate_h_mocs\","
+GN_CONTENTS += "    ]"
+# Add moc output files to compile
+GN_CONTENTS += "    sources += get_target_outputs(\":generate_h_mocs\")"
+GN_CONTENTS += "  }"
+GN_CONTENTS += "  if (moc_source_cpp_files != []) {"
+GN_CONTENTS += "    deps += ["
+GN_CONTENTS += "        \":generate_cpp_mocs\","
+GN_CONTENTS += "    ]"
+GN_CONTENTS += "  }"
+GN_CONTENTS += "}"
+
+
 TARGET_TYPE = $$getTargetType()
 
 GN_CONTENTS += "$${TARGET_TYPE}(\"$$TARGET\") {"
@@ -221,18 +243,7 @@ win32 {
     CONFIG(rtti): GN_CONTENTS += "  configs += [\"//build/config/compiler:rtti\"]"
 }
 
-GN_CONTENTS += "  if (moc_source_h_files != []) {"
-GN_CONTENTS += "    deps += ["
-GN_CONTENTS += "        \":generate_h_mocs\","
-GN_CONTENTS += "    ]"
-# Add moc output files to compile
-GN_CONTENTS += "    sources += get_target_outputs(\":generate_h_mocs\")"
-GN_CONTENTS += "  }"
-GN_CONTENTS += "  if (moc_source_cpp_files != []) {"
-GN_CONTENTS += "    deps += ["
-GN_CONTENTS += "        \":generate_cpp_mocs\","
-GN_CONTENTS += "    ]"
-GN_CONTENTS += "  }"
+GN_CONTENTS += "  deps += [ \":$${TARGET}_MOC\" ]"
 GN_CONTENTS += "}"
 GN_CONTENTS += ""
 GN_CONTENTS += "if (!defined(core_include_dirs)) {"\
