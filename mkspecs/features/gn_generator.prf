@@ -177,7 +177,8 @@ GN_CONTENTS += "$${TARGET_TYPE}(\"$$TARGET\") {"
     for (imp, GN_IMPORTS): GN_CONTENTS += "  import(\"$$imp\")"
 }
 
-GN_CONTENTS += "  configs += [ \":$${TARGET}_config\" ] "
+GN_CONTENTS += "  configs += [ \":$${TARGET}_config\" ]"
+GN_CONTENTS += "  configs += [ \"//build/config:precompiled_headers\" ]"
 
 # Source files to compile
 GN_CONTENTS += "  sources = ["
