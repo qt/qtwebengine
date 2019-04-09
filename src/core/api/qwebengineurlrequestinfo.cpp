@@ -82,7 +82,7 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
     The QWebEngineUrlRequestInfo is useful for setting extra header fields for requests
     or for redirecting certain requests without payload data to another URL.
     This class cannot be instantiated or copied by the user, instead it will
-    be created by Qt WebEngine and sent through the virtual function
+    be created by \QWE and sent through the virtual function
     QWebEngineUrlRequestInterceptor::interceptRequest() if an interceptor has been set.
 */
 

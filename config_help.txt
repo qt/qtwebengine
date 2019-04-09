@@ -1,4 +1,5 @@
-Webengine options:
+WebEngine options:
+
   -webengine-alsa ................ Enable ALSA support [auto] (Linux only)
   -webengine-pulseaudio .......... Enable PulseAudio support [auto]
                                    (Linux only)

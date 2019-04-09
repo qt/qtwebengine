@@ -31,7 +31,7 @@
     \brief Exposes C++ functionality to Qt Quick.
     \ingroup modules
 
-    The Qt WebEngine module exposes C++ functionality to Qt Quick.
+    The \QWE module exposes C++ functionality to Qt Quick.
 
     To include the definitions of the module's classes, use the
     following directive:

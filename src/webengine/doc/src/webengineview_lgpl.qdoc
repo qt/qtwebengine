@@ -213,7 +213,7 @@
 
     An internal URL for accessing the currently displayed web site icon,
     also known as favicon or shortcut icon. The icon is already downloaded
-    and stored by the Qt WebEngine's favicon manager.
+    and stored by the \QWE's favicon manager.
     This read-only URL corresponds to the image used within a mobile browser
     application to represent a bookmarked page on the device's home screen.
 
@@ -230,7 +230,7 @@
     \endqml
 
     Specifying the \c{sourceSize} property of the \c{Image} element informs
-    the Qt WebEngine's favicon provider about the requested size. The
+    the \QWE's favicon provider about the requested size. The
     favicon provider tries to find the best fit among the web page candidate
     icons. If \c{sourceSize} property is not specified, the provider provides
     the icon with the largest resolution.
@@ -629,7 +629,7 @@
 
     \value WebEngineView.NoErrorDomain
     \value WebEngineView.InternalErrorDomain
-            Content fails to be interpreted by Qt WebEngine.
+            Content fails to be interpreted by \QWE.
     \value WebEngineView.ConnectionErrorDomain
             Error results from faulty network connection.
     \value WebEngineView.CertificateErrorDomain

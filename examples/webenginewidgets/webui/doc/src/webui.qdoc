@@ -35,8 +35,8 @@
 
     \e {WebUI} demonstrates how to implement a custom scheme in a secure way.
 
-    Aside from the built-in URL schemes, such as \c {http} and \c {qrc}, Qt
-    WebEngine may be extended with \e {custom schemes} by creating \e {custom
+    Aside from the built-in URL schemes, such as \c {http} and \c {qrc},
+    \QWE may be extended with \e {custom schemes} by creating \e {custom
     scheme handlers}. This example shows:
 
     \list
@@ -111,7 +111,7 @@
     made already at the top of the \c {main} function. This is so because custom
     schemes need to be registered as early as possible so that that they can be
     passed to all subprocesses. Specifically, custom schemes need to be registered
-    before any other Qt WebEngine classes are instantiated by the application.
+    before any other \QWE classes are instantiated by the application.
 
     \section1 Handling Requests
 

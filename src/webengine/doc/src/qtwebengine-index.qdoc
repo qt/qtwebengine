@@ -31,9 +31,9 @@
 
     \brief Provides functionality for rendering regions of dynamic web content.
 
-    \e {Qt WebEngine} provides functionality for rendering regions of dynamic web content.
+    \QWE provides functionality for rendering regions of dynamic web content.
 
-    The functionality in Qt WebEngine is divided into the following modules:
+    The functionality in \QWE is divided into the following modules:
 
     \annotatedlist qtwebengine-modules
 

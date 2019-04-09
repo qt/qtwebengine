@@ -33,7 +33,7 @@
     \ingroup qtwebengine-modules
     \qtvariable webenginewidgets
 
-    The Qt WebEngineWidgets module provides a web browser engine as well as C++ classes to render
+    The \QWEWidgets module provides a web browser engine as well as C++ classes to render
     and interact with web content.
 
     To include the definitions of the module's classes, use the

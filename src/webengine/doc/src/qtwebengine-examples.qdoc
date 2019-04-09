@@ -28,7 +28,7 @@
 /*!
     \group webengine-examples
     \title Qt WebEngine Examples
-    \brief Examples demonstrating the Qt WebEngine usage.
+    \brief Examples demonstrating the \QWE usage.
     \ingroup all-examples
 
     These examples and demonstrations show a range of different uses for \l{Qt WebEngine},

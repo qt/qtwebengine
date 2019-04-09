@@ -175,8 +175,15 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
     int uniquifier = base::GetUniquePathNumber(tmpFilePath, base::FilePath::StringType());
     if (uniquifier > 0)
         suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier)).AsUTF8Unsafe());
-    else if (uniquifier == -1)
-        suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(base::StringPrintf(" - %s", base::TimeToISO8601(item->GetStartTime()).c_str())).AsUTF8Unsafe());
+    else if (uniquifier == -1) {
+        base::Time::Exploded exploded;
+        item->GetStartTime().LocalExplode(&exploded);
+        std::string suffix = base::StringPrintf(
+                    " - %04d-%02d-%02dT%02d%02d%02d.%03d", exploded.year, exploded.month,
+                    exploded.day_of_month, exploded.hour, exploded.minute,
+                    exploded.second, exploded.millisecond);
+        suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(suffix).AsUTF8Unsafe());
+    }
 
     item->AddObserver(this);
     QList<ProfileAdapterClient*> clients = m_profileAdapter->clients();

@@ -41,7 +41,7 @@
     \section1 Dictionaries
 
     To be able to check the spelling, we need to provide the spellchecker with
-    dictionaries. The Qt WebEngine spellchecker supports dictionaries provided by the
+    dictionaries. The \QWE spellchecker supports dictionaries provided by the
     \l {Hunspell project} on all platforms and native dictionaries provided by macOS.
     In this example, we want to support the English and German languages.
 
@@ -102,7 +102,7 @@
     the actual language display name. We will use that mapping to display names
     of dictionaries in the context menu. Spellchecking is disabled by default.
     Therefore we also enable spellchecker and set the \e English dictionary.
-    When Qt WebEngine's spellcheck service initializes, it will try to load the
+    When \QWE's spellcheck service initializes, it will try to load the
     \c bdict dictionaries and to check them for consistency.
     Any errors are logged by using the qWarning() function.
 

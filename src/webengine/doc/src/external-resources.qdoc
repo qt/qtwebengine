@@ -95,18 +95,6 @@
     \title Hunspell Project
 */
 
-/*
-    This prevents autolinking of each occurrence of 'WebEngine'
-    To link to the WebEngine QML type, use explicit linking:
-        \l [QML] WebEngine
-        \sa {QtWebEngine::}{WebEngine}
-*/
-/*!
-    \externalpage nolink
-    \title WebEngine
-    \internal
-*/
-
 /*!
     \externalpage https://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html#sec19.5.1
     \title RFC 2616 section 19.5.1

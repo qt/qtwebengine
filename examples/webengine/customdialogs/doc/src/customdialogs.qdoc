@@ -29,7 +29,7 @@
     \example webengine/customdialogs
     \title WebEngine Qt Quick Custom Dialogs Example
     \ingroup webengine-examples
-    \brief Customizes UI elements of Qt WebEngine's dialogs.
+    \brief Customizes UI elements of \QWE's dialogs.
 
     \image customdialogs.png
 
