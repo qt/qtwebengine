@@ -666,9 +666,9 @@ void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom:
 void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, base::Optional<viz::HitTestRegionList>)
 {
     bool scrollOffsetChanged = (m_lastScrollOffset != frame.metadata.root_scroll_offset);
-    bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.scrollable_viewport_size);
+    bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);
     m_lastScrollOffset = frame.metadata.root_scroll_offset;
-    m_lastContentsSize = frame.metadata.scrollable_viewport_size;
+    m_lastContentsSize = frame.metadata.root_layer_size;
 
     // Force to process swap messages
     uint32_t frame_token = frame.metadata.frame_token;
