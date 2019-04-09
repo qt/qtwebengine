@@ -56,7 +56,7 @@ Compositor::Compositor(content::RenderWidgetHost *host)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    m_taskRunner = base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI});
+    m_taskRunner = base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE});
     m_beginFrameSource =
         std::make_unique<viz::DelayBasedBeginFrameSource>(
             std::make_unique<viz::DelayBasedTimeSource>(m_taskRunner.get()),

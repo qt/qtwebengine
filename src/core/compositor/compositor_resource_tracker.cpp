@@ -244,7 +244,7 @@ void CompositorResourceTracker::updateMailboxes(std::vector<CompositorResource *
 void CompositorResourceTracker::scheduleRunSubmitCallback()
 {
     base::PostTaskWithTraits(
-        FROM_HERE, { content::BrowserThread::UI },
+        FROM_HERE, { content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE },
         base::BindOnce(&CompositorResourceTracker::runSubmitCallback,
                        m_weakPtrFactory.GetWeakPtr()));
 }
