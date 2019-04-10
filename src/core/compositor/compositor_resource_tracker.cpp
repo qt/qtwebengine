@@ -213,6 +213,9 @@ void CompositorResourceTracker::scheduleUpdateMailboxes(std::vector<CompositorRe
 #if QT_CONFIG(opengl)
     scoped_refptr<base::SingleThreadTaskRunner> gpuTaskRunner = gpu_task_runner();
     DCHECK(gpuTaskRunner);
+    thread_local bool currentThreadIsGpu = gpuTaskRunner->BelongsToCurrentThread();
+    if (currentThreadIsGpu)
+        return updateMailboxes(std::move(resources));
     gpuTaskRunner->PostTask(
         FROM_HERE,
         base::BindOnce(&CompositorResourceTracker::updateMailboxes,
@@ -243,6 +246,9 @@ void CompositorResourceTracker::updateMailboxes(std::vector<CompositorResource *
 
 void CompositorResourceTracker::scheduleRunSubmitCallback()
 {
+    thread_local bool currentThreadIsUi = content::BrowserThread::CurrentlyOn(content::BrowserThread::UI);
+    if (currentThreadIsUi)
+        return runSubmitCallback();
     base::PostTaskWithTraits(
         FROM_HERE, { content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE },
         base::BindOnce(&CompositorResourceTracker::runSubmitCallback,
