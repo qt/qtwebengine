@@ -573,14 +573,15 @@ void tst_QWebEngineProfile::initiator()
 void tst_QWebEngineProfile::qtbug_72299()
 {
     QWebEngineView view;
+    QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
     view.setUrl(QUrl("https://www.qt.io"));
     view.show();
-    QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
     view.page()->profile()->clearHttpCache();
     view.page()->profile()->setHttpCacheType(QWebEngineProfile::NoCache);
     view.page()->profile()->cookieStore()->deleteAllCookies();
     view.page()->profile()->setPersistentCookiesPolicy(QWebEngineProfile::NoPersistentCookies);
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
+    QVERIFY(loadSpy.front().front().toBool());
 }
 
 
