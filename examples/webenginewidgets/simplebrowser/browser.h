@@ -73,6 +73,6 @@ public:
 private:
     QVector<BrowserWindow*> m_windows;
     DownloadManagerWidget m_downloadManagerWidget;
-    QWebEngineProfile m_otrProfile;
+    QScopedPointer<QWebEngineProfile> m_otrProfile;
 };
 #endif // BROWSER_H
