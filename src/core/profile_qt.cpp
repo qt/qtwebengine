@@ -194,7 +194,9 @@ content::BackgroundSyncController* ProfileQt::GetBackgroundSyncController()
 
 content::BrowsingDataRemoverDelegate *ProfileQt::GetBrowsingDataRemoverDelegate()
 {
-    return new BrowsingDataRemoverDelegateQt();
+    if (!m_removerDelegate)
+        m_removerDelegate.reset(new BrowsingDataRemoverDelegateQt);
+    return m_removerDelegate.get();
 }
 
 content::PermissionControllerDelegate *ProfileQt::GetPermissionControllerDelegate()
