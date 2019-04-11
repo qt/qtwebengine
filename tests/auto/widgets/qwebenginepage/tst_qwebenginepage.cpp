@@ -200,6 +200,7 @@ private Q_SLOTS:
     void notificationRequest_data();
     void notificationRequest();
     void sendNotification();
+    void contentsSize();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -3355,6 +3356,34 @@ void tst_QWebEnginePage::sendNotification()
     QTRY_VERIFY2(page.messages.contains("onclick"), page.messages.join("\n").toLatin1().constData());
     activeNotification->close();
     QTRY_VERIFY2(page.messages.contains("onclose"), page.messages.join("\n").toLatin1().constData());
+}
+
+void tst_QWebEnginePage::contentsSize()
+{
+    m_view->resize(800, 600);
+    m_view->show();
+
+    QSignalSpy loadSpy(m_page, &QWebEnginePage::loadFinished);
+    QSignalSpy contentsSizeChangedSpy(m_page, &QWebEnginePage::contentsSizeChanged);
+
+    m_view->setHtml(QString("<html><body style=\"width: 1600px; height: 1200px;\"><p>hi</p></body></html>"));
+
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(contentsSizeChangedSpy.count(), 1);
+
+    // Verify the page's contents size is not limited by the view's size.
+    QCOMPARE(m_page->contentsSize().width(), 1608);
+    QCOMPARE(m_page->contentsSize().height(), 1216);
+
+    // Verify resizing the view does not affect the contents size.
+    m_view->resize(2400, 1800);
+    QCOMPARE(m_page->contentsSize().width(), 1608);
+    QCOMPARE(m_page->contentsSize().height(), 1216);
+
+    // Verify resizing the view does not affect the contents size.
+    m_view->resize(1600, 1200);
+    QCOMPARE(m_page->contentsSize().width(), 1608);
+    QCOMPARE(m_page->contentsSize().height(), 1216);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
