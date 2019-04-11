@@ -158,21 +158,12 @@ static base::DictionaryValue *createPrintSettingsFromQPageLayout(const QPageLayo
                                                                  bool useCustomMargins)
 {
     base::DictionaryValue *printSettings = createPrintSettings();
-
-    //Set page size attributes, chromium expects these in micrometers
-    QRectF pageSizeInMillimeter = pageLayout.pageSize().rect(QPageSize::Millimeter);
-    if (!useCustomMargins) {
-        // QPrinter will extend this size with its margins
-        QMarginsF margins = pageLayout.margins(QPageLayout::Millimeter);
-        pageSizeInMillimeter = pageSizeInMillimeter.marginsRemoved(margins);
-    }
-    std::unique_ptr<base::DictionaryValue> sizeDict(new base::DictionaryValue);
-    sizeDict->SetInteger(printing::kSettingMediaSizeWidthMicrons, pageSizeInMillimeter.width() * kMicronsToMillimeter);
-    sizeDict->SetInteger(printing::kSettingMediaSizeHeightMicrons, pageSizeInMillimeter.height() * kMicronsToMillimeter);
-    printSettings->Set(printing::kSettingMediaSize, std::move(sizeDict));
+    QRectF pageSizeInMillimeter;
 
     if (useCustomMargins) {
         // Apply page margins when printing to PDF
+        pageSizeInMillimeter = pageLayout.pageSize().rect(QPageSize::Millimeter);
+
         QMargins pageMarginsInPoints = pageLayout.marginsPoints();
         std::unique_ptr<base::DictionaryValue> marginsDict(new base::DictionaryValue);
         marginsDict->SetInteger(printing::kSettingMarginTop, pageMarginsInPoints.top());
@@ -182,12 +173,23 @@ static base::DictionaryValue *createPrintSettingsFromQPageLayout(const QPageLayo
 
         printSettings->Set(printing::kSettingMarginsCustom, std::move(marginsDict));
         printSettings->SetInteger(printing::kSettingMarginsType, printing::CUSTOM_MARGINS);
+
+        // pageSizeInMillimeter is in portrait orientation. Transpose it if necessary.
+        printSettings->SetBoolean(printing::kSettingLandscape, pageLayout.orientation() == QPageLayout::Landscape);
     } else {
         // QPrinter will handle margins
+        pageSizeInMillimeter = pageLayout.paintRect(QPageLayout::Millimeter);
         printSettings->SetInteger(printing::kSettingMarginsType, printing::NO_MARGINS);
+
+        // pageSizeInMillimeter already contains the orientation.
+        printSettings->SetBoolean(printing::kSettingLandscape, false);
     }
 
-    printSettings->SetBoolean(printing::kSettingLandscape, pageLayout.orientation() == QPageLayout::Landscape);
+    //Set page size attributes, chromium expects these in micrometers
+    std::unique_ptr<base::DictionaryValue> sizeDict(new base::DictionaryValue);
+    sizeDict->SetInteger(printing::kSettingMediaSizeWidthMicrons, pageSizeInMillimeter.width() * kMicronsToMillimeter);
+    sizeDict->SetInteger(printing::kSettingMediaSizeHeightMicrons, pageSizeInMillimeter.height() * kMicronsToMillimeter);
+    printSettings->Set(printing::kSettingMediaSize, std::move(sizeDict));
 
     return printSettings;
 }
