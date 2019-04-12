@@ -171,11 +171,11 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     qRegisterMetaType<QWebEngineQuotaRequest>();
     qRegisterMetaType<QWebEngineRegisterProtocolHandlerRequest>();
 
-    // See wasShown() and wasHidden().
+    // See setVisible().
     wasShownTimer.setSingleShot(true);
     QObject::connect(&wasShownTimer, &QTimer::timeout, [this](){
         ensureInitialized();
-        wasShown();
+        adapter->setVisible(true);
     });
 
     profile->d_ptr->addWebContentsAdapterClient(this);
@@ -214,6 +214,8 @@ void QWebEnginePagePrivate::initializationFinished()
         adapter->setAudioMuted(defaultAudioMuted);
     if (!qFuzzyCompare(adapter->currentZoomFactor(), defaultZoomFactor))
         adapter->setZoomFactor(defaultZoomFactor);
+    if (view)
+        adapter->setVisible(view->isVisible());
 
     scriptCollection.d->initializationFinished(adapter);
 
@@ -627,8 +629,6 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
         adapter = std::move(newWebContents);
         adapter->setClient(this);
         adapter->loadDefault();
-        if (view && view->isVisible())
-            wasShown();
     }
 }
 
@@ -1585,31 +1585,6 @@ bool QWebEnginePage::event(QEvent *e)
     return QObject::event(e);
 }
 
-void QWebEnginePagePrivate::wasShown()
-{
-    if (!adapter->isInitialized()) {
-        // On the one hand, it is too early to initialize here. The application
-        // may call show() before load(), or it may call show() from
-        // createWindow(), and then we would create an unnecessary blank
-        // WebContents here. On the other hand, if the application calls show()
-        // then it expects something to be shown, so we have to initialize.
-        // Therefore we have to delay the initialization via the event loop.
-        wasShownTimer.start();
-        return;
-    }
-    adapter->wasShown();
-}
-
-void QWebEnginePagePrivate::wasHidden()
-{
-    if (!adapter->isInitialized()) {
-        // Cancel timer from wasShown() above.
-        wasShownTimer.stop();
-        return;
-    }
-    adapter->wasHidden();
-}
-
 void QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
 #if QT_CONFIG(action)
@@ -1818,6 +1793,26 @@ void QWebEnginePagePrivate::printRequested()
     QTimer::singleShot(0, q, [q](){
         Q_EMIT q->printRequested();
     });
+}
+
+void QWebEnginePagePrivate::lifecycleStateChanged(LifecycleState state)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->lifecycleStateChanged(static_cast<QWebEnginePage::LifecycleState>(state));
+}
+
+void QWebEnginePagePrivate::recommendedStateChanged(LifecycleState state)
+{
+    Q_Q(QWebEnginePage);
+    QTimer::singleShot(0, q, [q, state]() {
+        Q_EMIT q->recommendedStateChanged(static_cast<QWebEnginePage::LifecycleState>(state));
+    });
+}
+
+void QWebEnginePagePrivate::visibleChanged(bool visible)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->visibleChanged(visible);
 }
 
 /*!
@@ -2105,6 +2100,10 @@ void QWebEnginePage::runJavaScript(const QString &scriptSource)
 {
     Q_D(QWebEnginePage);
     d->ensureInitialized();
+    if (d->adapter->lifecycleState() == WebContentsAdapter::LifecycleState::Discarded) {
+        qWarning("runJavaScript: disabled in Discarded state");
+        return;
+    }
     d->adapter->runJavaScript(scriptSource, QWebEngineScript::MainWorld);
 }
 
@@ -2112,6 +2111,11 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngine
 {
     Q_D(QWebEnginePage);
     d->ensureInitialized();
+    if (d->adapter->lifecycleState() == WebContentsAdapter::LifecycleState::Discarded) {
+        qWarning("runJavaScript: disabled in Discarded state");
+        d->m_callbacks.invokeEmpty(resultCallback);
+        return;
+    }
     quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, QWebEngineScript::MainWorld);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 }
@@ -2488,6 +2492,120 @@ const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
 {
     Q_D(const QWebEnginePage);
     return d->contextData;
+}
+
+/*!
+  \enum QWebEnginePage::LifecycleState
+  \since 5.14
+
+  This enum describes the lifecycle state of the page:
+
+  \value  Active
+  Normal state.
+  \value  Frozen
+  Low CPU usage state where most HTML task sources are suspended.
+  \value  Discarded
+  Very low resource usage state where the entire browsing context is discarded.
+
+  \sa lifecycleState, {WebEngine Lifecycle Example}
+*/
+
+/*!
+  \property QWebEnginePage::lifecycleState
+  \since 5.14
+
+  \brief The current lifecycle state of the page.
+
+  The following restrictions are enforced by the setter:
+
+  \list
+  \li A \l{visible} page must remain in the \c{Active} state.
+  \li If the page is being inspected by a \l{devToolsPage} then both pages must
+      remain in the \c{Active} states.
+  \li A page in the \c{Discarded} state can only transition to the \c{Active}
+      state. This will cause a reload of the page.
+  \endlist
+
+  These are the only hard limits on the lifecycle state, but see also
+  \l{recommendedState} for the recommended soft limits.
+
+  \sa recommendedState, {WebEngine Lifecycle Example}
+*/
+
+QWebEnginePage::LifecycleState QWebEnginePage::lifecycleState() const
+{
+    Q_D(const QWebEnginePage);
+    return static_cast<LifecycleState>(d->adapter->lifecycleState());
+}
+
+void QWebEnginePage::setLifecycleState(LifecycleState state)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->setLifecycleState(static_cast<WebContentsAdapterClient::LifecycleState>(state));
+}
+
+/*!
+  \property QWebEnginePage::recommendedState
+  \since 5.14
+
+  \brief The recommended limit for the lifecycle state of the page.
+
+  Setting the lifecycle state to a lower resource usage state than the
+  recommended state may cause side-effects such as stopping background audio
+  playback or loss of HTML form input. Setting the lifecycle state to a higher
+  resource state is however completely safe.
+
+  \sa lifecycleState
+*/
+
+QWebEnginePage::LifecycleState QWebEnginePage::recommendedState() const
+{
+    Q_D(const QWebEnginePage);
+    return static_cast<LifecycleState>(d->adapter->recommendedState());
+}
+
+/*!
+  \property QWebEnginePage::visible
+  \since 5.14
+
+  \brief Whether the page is considered visible in the Page Visibility API.
+
+  Setting this property changes the \c{Document.hidden} and the
+  \c{Document.visibilityState} properties in JavaScript which web sites can use
+  to voluntarily reduce their resource usage if they are not visible to the
+  user.
+
+  If the page is connected to a \l{view} then this property will be managed
+  automatically by the view according to it's own visibility.
+
+  \sa lifecycleState
+*/
+
+bool QWebEnginePage::isVisible() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->isVisible();
+}
+
+void QWebEnginePage::setVisible(bool visible)
+{
+    Q_D(QWebEnginePage);
+
+    if (!d->adapter->isInitialized()) {
+        // On the one hand, it is too early to initialize here. The application
+        // may call show() before load(), or it may call show() from
+        // createWindow(), and then we would create an unnecessary blank
+        // WebContents here. On the other hand, if the application calls show()
+        // then it expects something to be shown, so we have to initialize.
+        // Therefore we have to delay the initialization via the event loop.
+        if (visible)
+            d->wasShownTimer.start();
+        else
+            d->wasShownTimer.stop();
+        return;
+    }
+
+    d->adapter->setVisible(visible);
 }
 
 #if QT_CONFIG(action)

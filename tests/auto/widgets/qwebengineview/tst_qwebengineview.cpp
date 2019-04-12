@@ -201,6 +201,7 @@ private Q_SLOTS:
     void setViewDeletesImplicitPage();
     void setPagePreservesExplicitPage();
     void setViewPreservesExplicitPage();
+    void closeDiscardsPage();
 };
 
 // This will be called before the first test function is executed.
@@ -2194,6 +2195,22 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
 
+    // Select text by ctrl+a
+    QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 3);
+    QVERIFY(view.hasSelection());
+    QCOMPARE(view.page()->selectedText(), QString("This is a text"));
+
+    // Deselect text via discard+undiscard
+    view.hide();
+    view.page()->setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
+    view.show();
+    QVERIFY(loadFinishedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 4);
+    QVERIFY(!view.hasSelection());
+    QVERIFY(view.page()->selectedText().isEmpty());
+
     selectionChangedSpy.clear();
     view.setHtml("<html><body>"
                  "  This is a text"
@@ -3256,6 +3273,22 @@ void tst_QWebEngineView::setViewPreservesExplicitPage()
     explicitPage2->setView(&view);
     QCOMPARE(view.page(), explicitPage2.data());
     QVERIFY(explicitPage1); // should not be deleted
+}
+
+void tst_QWebEngineView::closeDiscardsPage()
+{
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    QWebEngineView view;
+    view.setPage(&page);
+    view.resize(300, 300);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QCOMPARE(page.isVisible(), true);
+    QCOMPARE(page.lifecycleState(), QWebEnginePage::LifecycleState::Active);
+    view.close();
+    QCOMPARE(page.isVisible(), false);
+    QCOMPARE(page.lifecycleState(), QWebEnginePage::LifecycleState::Discarded);
 }
 
 QTEST_MAIN(tst_QWebEngineView)

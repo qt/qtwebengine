@@ -104,6 +104,8 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
     , m_lastReceivedFindReply(0)
     , m_faviconManager(new FaviconManager(webContents, adapterClient))
     , m_lastLoadProgress(-1)
+    , m_loadingState(determineLoadingState(webContents))
+    , m_didStartLoadingSeen(m_loadingState == LoadingState::Loading)
 {
     webContents->SetDelegate(this);
     Observe(webContents);
@@ -267,6 +269,18 @@ void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_
     m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
 }
 
+void WebContentsDelegateQt::RenderProcessGone(base::TerminationStatus status)
+{
+    // Based one TabLoadTracker::RenderProcessGone
+
+    if (status == base::TerminationStatus::TERMINATION_STATUS_NORMAL_TERMINATION
+        || status == base::TerminationStatus::TERMINATION_STATUS_STILL_RUNNING) {
+        return;
+    }
+
+    setLoadingState(LoadingState::Unloaded);
+}
+
 void WebContentsDelegateQt::RenderViewHostChanged(content::RenderViewHost *, content::RenderViewHost *newHost)
 {
     if (newHost && newHost->GetWidget() && newHost->GetWidget()->GetView()) {
@@ -354,6 +368,46 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
     }
 }
 
+void WebContentsDelegateQt::DidStartLoading()
+{
+    // Based on TabLoadTracker::DidStartLoading
+
+    if (!web_contents()->IsLoadingToDifferentDocument())
+        return;
+    if (m_loadingState == LoadingState::Loading) {
+        DCHECK(m_didStartLoadingSeen);
+        return;
+    }
+    m_didStartLoadingSeen = true;
+}
+
+void WebContentsDelegateQt::DidReceiveResponse()
+{
+    // Based on TabLoadTracker::DidReceiveResponse
+
+    if (m_loadingState == LoadingState::Loading) {
+        DCHECK(m_didStartLoadingSeen);
+        return;
+    }
+
+    // A transition to loading requires both DidStartLoading (navigation
+    // committed) and DidReceiveResponse (data has been transmitted over the
+    // network) events to occur. This is because NavigationThrottles can block
+    // actual network requests, but not the rest of the state machinery.
+    if (m_didStartLoadingSeen)
+        setLoadingState(LoadingState::Loading);
+}
+
+void WebContentsDelegateQt::DidStopLoading()
+{
+    // Based on TabLoadTracker::DidStopLoading
+
+    // NOTE: PageAlmostIdle feature not implemented
+
+    if (m_loadingState == LoadingState::Loading)
+        setLoadingState(LoadingState::Loaded);
+}
+
 void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QString &errorDescription)
 {
     m_viewClient->iconChanged(QUrl());
@@ -362,6 +416,9 @@ void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QS
 
 void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description)
 {
+    if (m_loadingState == LoadingState::Loading)
+        setLoadingState(LoadingState::Loaded);
+
     if (render_frame_host != web_contents()->GetMainFrame())
         return;
 
@@ -722,6 +779,82 @@ WebEngineSettings *WebContentsDelegateQt::webEngineSettings() const {
 WebContentsAdapter *WebContentsDelegateQt::webContentsAdapter() const
 {
     return m_viewClient->webContentsAdapter();
+}
+
+void WebContentsDelegateQt::copyStateFrom(WebContentsDelegateQt *source)
+{
+    m_url = source->m_url;
+    m_title = source->m_title;
+    NavigationStateChanged(web_contents(), content::INVALIDATE_TYPE_URL);
+    m_faviconManager->copyStateFrom(source->m_faviconManager.data());
+}
+
+WebContentsDelegateQt::LoadingState WebContentsDelegateQt::determineLoadingState(content::WebContents *contents)
+{
+    // Based on TabLoadTracker::DetermineLoadingState
+
+    if (contents->IsLoadingToDifferentDocument() && !contents->IsWaitingForResponse())
+        return LoadingState::Loading;
+
+    content::NavigationController &controller = contents->GetController();
+    if (controller.GetLastCommittedEntry() != nullptr && !controller.IsInitialNavigation() && !controller.NeedsReload())
+        return LoadingState::Loaded;
+
+    return LoadingState::Unloaded;
+}
+
+void WebContentsDelegateQt::setLoadingState(LoadingState state)
+{
+    if (m_loadingState == state)
+        return;
+
+    m_loadingState = state;
+
+    webContentsAdapter()->updateRecommendedState();
+}
+
+int &WebContentsDelegateQt::streamCount(blink::MediaStreamType type)
+{
+    // Based on MediaStreamCaptureIndicator::WebContentsDeviceUsage::GetStreamCount
+    switch (type) {
+    case blink::MEDIA_DEVICE_AUDIO_CAPTURE:
+        return m_audioStreamCount;
+
+    case blink::MEDIA_DEVICE_VIDEO_CAPTURE:
+        return m_videoStreamCount;
+
+    case blink::MEDIA_GUM_TAB_AUDIO_CAPTURE:
+    case blink::MEDIA_GUM_TAB_VIDEO_CAPTURE:
+        return m_mirroringStreamCount;
+
+    case blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+    case blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE:
+    case blink::MEDIA_DISPLAY_VIDEO_CAPTURE:
+        return m_desktopStreamCount;
+
+    case blink::MEDIA_NO_SERVICE:
+    case blink::NUM_MEDIA_TYPES:
+        NOTREACHED();
+        return m_videoStreamCount;
+    }
+    NOTREACHED();
+    return m_videoStreamCount;
+}
+
+void WebContentsDelegateQt::addDevices(const blink::MediaStreamDevices &devices)
+{
+    for (const auto &device : devices)
+        ++streamCount(device.type);
+
+    webContentsAdapter()->updateRecommendedState();
+}
+
+void WebContentsDelegateQt::removeDevices(const blink::MediaStreamDevices &devices)
+{
+    for (const auto &device : devices)
+        ++streamCount(device.type);
+
+    webContentsAdapter()->updateRecommendedState();
 }
 
 } // namespace QtWebEngineCore

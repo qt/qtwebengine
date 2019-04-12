@@ -101,6 +101,9 @@ public:
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
     void initializationFinished() override;
+    void lifecycleStateChanged(LifecycleState state) override;
+    void recommendedStateChanged(LifecycleState state) override;
+    void visibleChanged(bool visible) override;
     void titleChanged(const QString&) override;
     void urlChanged(const QUrl&) override;
     void iconChanged(const QUrl&) override;

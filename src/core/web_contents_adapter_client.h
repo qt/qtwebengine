@@ -412,11 +412,26 @@ public:
     };
     Q_DECLARE_FLAGS(MediaRequestFlags, MediaRequestFlag)
 
+    enum class LifecycleState {
+        Active,
+        Frozen,
+        Discarded,
+    };
+
+    enum class LoadingState {
+        Unloaded,
+        Loading,
+        Loaded,
+    };
+
     virtual ~WebContentsAdapterClient() { }
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client) = 0;
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client) = 0;
     virtual void initializationFinished() = 0;
+    virtual void lifecycleStateChanged(LifecycleState) = 0;
+    virtual void recommendedStateChanged(LifecycleState) = 0;
+    virtual void visibleChanged(bool) = 0;
     virtual void titleChanged(const QString&) = 0;
     virtual void urlChanged(const QUrl&) = 0;
     virtual void iconChanged(const QUrl&) = 0;

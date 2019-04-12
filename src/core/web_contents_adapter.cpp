@@ -478,32 +478,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
         m_webContents = content::WebContents::Create(create_params);
     }
 
-    content::RendererPreferences* rendererPrefs = m_webContents->GetMutableRendererPrefs();
-    rendererPrefs->use_custom_colors = true;
-    // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
-    const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
-    rendererPrefs->caret_blink_interval = base::TimeDelta::FromMillisecondsD(0.5 * static_cast<double>(qtCursorFlashTime));
-    rendererPrefs->user_agent_override = m_profileAdapter->httpUserAgent().toStdString();
-    rendererPrefs->accept_languages = m_profileAdapter->httpAcceptLanguageWithoutQualities().toStdString();
-#if QT_CONFIG(webengine_webrtc)
-    base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
-    if (commandLine->HasSwitch(switches::kForceWebRtcIPHandlingPolicy))
-        rendererPrefs->webrtc_ip_handling_policy = commandLine->GetSwitchValueASCII(switches::kForceWebRtcIPHandlingPolicy);
-    else
-        rendererPrefs->webrtc_ip_handling_policy = m_adapterClient->webEngineSettings()->testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly)
-                                                    ? content::kWebRTCIPHandlingDefaultPublicInterfaceOnly
-                                                    : content::kWebRTCIPHandlingDefault;
-#endif
-    // Set web-contents font settings to the default font settings as Chromium constantly overrides
-    // the global font defaults with the font settings of the latest web-contents created.
-    static const gfx::FontRenderParams params = gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
-    rendererPrefs->should_antialias_text = params.antialiasing;
-    rendererPrefs->use_subpixel_positioning = params.subpixel_positioning;
-    rendererPrefs->hinting = params.hinting;
-    rendererPrefs->use_autohinter = params.autohinter;
-    rendererPrefs->use_bitmaps = params.use_bitmaps;
-    rendererPrefs->subpixel_rendering = params.subpixel_rendering;
-    m_webContents->GetRenderViewHost()->SyncRendererPrefs();
+    initializeRenderPrefs();
 
     // Create and attach observers to the WebContents.
     m_webContentsDelegate.reset(new WebContentsDelegateQt(m_webContents.get(), m_adapterClient));
@@ -540,6 +515,40 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     m_adapterClient->initializationFinished();
 }
 
+void WebContentsAdapter::initializeRenderPrefs()
+{
+    content::RendererPreferences *rendererPrefs = m_webContents->GetMutableRendererPrefs();
+    rendererPrefs->use_custom_colors = true;
+    // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in
+    // seconds
+    const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
+    rendererPrefs->caret_blink_interval =
+            base::TimeDelta::FromMillisecondsD(0.5 * static_cast<double>(qtCursorFlashTime));
+    rendererPrefs->user_agent_override = m_profileAdapter->httpUserAgent().toStdString();
+    rendererPrefs->accept_languages = m_profileAdapter->httpAcceptLanguageWithoutQualities().toStdString();
+#if QT_CONFIG(webengine_webrtc)
+    base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
+    if (commandLine->HasSwitch(switches::kForceWebRtcIPHandlingPolicy))
+        rendererPrefs->webrtc_ip_handling_policy =
+                commandLine->GetSwitchValueASCII(switches::kForceWebRtcIPHandlingPolicy);
+    else
+        rendererPrefs->webrtc_ip_handling_policy =
+                m_adapterClient->webEngineSettings()->testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly)
+                ? content::kWebRTCIPHandlingDefaultPublicInterfaceOnly
+                : content::kWebRTCIPHandlingDefault;
+#endif
+    // Set web-contents font settings to the default font settings as Chromium constantly overrides
+    // the global font defaults with the font settings of the latest web-contents created.
+    static const gfx::FontRenderParams params = gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
+    rendererPrefs->should_antialias_text = params.antialiasing;
+    rendererPrefs->use_subpixel_positioning = params.subpixel_positioning;
+    rendererPrefs->hinting = params.hinting;
+    rendererPrefs->use_autohinter = params.autohinter;
+    rendererPrefs->use_bitmaps = params.use_bitmaps;
+    rendererPrefs->subpixel_rendering = params.subpixel_rendering;
+    m_webContents->GetRenderViewHost()->SyncRendererPrefs();
+}
+
 bool WebContentsAdapter::canGoBack() const
 {
     CHECK_INITIALIZED(false);
@@ -568,16 +577,22 @@ void WebContentsAdapter::stop()
 void WebContentsAdapter::reload()
 {
     CHECK_INITIALIZED();
+    bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
+    setLifecycleState(LifecycleState::Active);
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
-    m_webContents->GetController().Reload(content::ReloadType::NORMAL, /*checkRepost = */false);
+    if (!wasDiscarded) // undiscard() already triggers a reload
+        m_webContents->GetController().Reload(content::ReloadType::NORMAL, /*checkRepost = */false);
     focusIfNecessary();
 }
 
 void WebContentsAdapter::reloadAndBypassCache()
 {
     CHECK_INITIALIZED();
+    bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
+    setLifecycleState(LifecycleState::Active);
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
-    m_webContents->GetController().Reload(content::ReloadType::BYPASSING_CACHE, /*checkRepost = */false);
+    if (!wasDiscarded) // undiscard() already triggers a reload
+        m_webContents->GetController().Reload(content::ReloadType::BYPASSING_CACHE, /*checkRepost = */false);
     focusIfNecessary();
 }
 
@@ -600,6 +615,8 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         scoped_refptr<content::SiteInstance> site =
             content::SiteInstance::CreateForURL(m_profileAdapter->profile(), gurl);
         initialize(site.get());
+    } else {
+        setLifecycleState(LifecycleState::Active);
     }
 
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
@@ -691,6 +708,8 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
 {
     if (!isInitialized())
         loadDefault();
+    else
+        setLifecycleState(LifecycleState::Active);
 
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
 
@@ -1106,7 +1125,7 @@ void WebContentsAdapter::setAudioMuted(bool muted)
     m_webContents->SetAudioMuted(muted);
 }
 
-bool WebContentsAdapter::recentlyAudible()
+bool WebContentsAdapter::recentlyAudible() const
 {
     CHECK_INITIALIZED(false);
     return m_webContents->IsCurrentlyAudible();
@@ -1167,6 +1186,18 @@ bool WebContentsAdapter::hasInspector() const
     return false;
 }
 
+bool WebContentsAdapter::isInspector() const
+{
+    return m_inspector;
+}
+
+void WebContentsAdapter::setInspector(bool inspector)
+{
+    m_inspector = inspector;
+    if (inspector)
+        setLifecycleState(LifecycleState::Active);
+}
+
 void WebContentsAdapter::openDevToolsFrontend(QSharedPointer<WebContentsAdapter> frontendAdapter)
 {
     Q_ASSERT(isInitialized());
@@ -1179,7 +1210,10 @@ void WebContentsAdapter::openDevToolsFrontend(QSharedPointer<WebContentsAdapter>
         m_devToolsFrontend->Close();
     }
 
+    setLifecycleState(LifecycleState::Active);
+
     m_devToolsFrontend = DevToolsFrontendQt::Show(frontendAdapter, m_webContents.get());
+    updateRecommendedState();
 }
 
 void WebContentsAdapter::closeDevToolsFrontend()
@@ -1195,6 +1229,7 @@ void WebContentsAdapter::devToolsFrontendDestroyed(DevToolsFrontendQt *frontend)
     Q_ASSERT(frontend == m_devToolsFrontend);
     Q_UNUSED(frontend);
     m_devToolsFrontend = nullptr;
+    updateRecommendedState();
 }
 
 void WebContentsAdapter::exitFullScreen()
@@ -1654,8 +1689,7 @@ WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
         break;
     case base::TERMINATION_STATUS_STILL_RUNNING:
     case base::TERMINATION_STATUS_MAX_ENUM:
-        // should be unreachable since Chromium asserts status != TERMINATION_STATUS_STILL_RUNNING
-        // before calling this method
+        Q_UNREACHABLE();
         break;
     }
 
@@ -1678,6 +1712,230 @@ bool WebContentsAdapter::canViewSource()
 {
     CHECK_INITIALIZED(false);
     return m_webContents->GetController().CanViewSource();
+}
+
+WebContentsAdapter::LifecycleState WebContentsAdapter::lifecycleState() const
+{
+    return m_lifecycleState;
+}
+
+void WebContentsAdapter::setLifecycleState(LifecycleState state)
+{
+    CHECK_INITIALIZED();
+
+    LifecycleState from = m_lifecycleState;
+    LifecycleState to = state;
+
+    const auto warn = [from, to](const char *reason) {
+        static const char *names[] { "Active", "Frozen", "Discarded" };
+        qWarning("setLifecycleState: failed to transition from %s to %s state: %s",
+                 names[(int)from], names[(int)to], reason);
+    };
+
+    if (from == to)
+        return;
+
+    if (from == LifecycleState::Active) {
+        if (isVisible()) {
+            warn("page is visible");
+            return;
+        }
+        if (hasInspector() || isInspector()) {
+            warn("DevTools open");
+            return;
+        }
+    }
+
+    if (from == LifecycleState::Discarded && to != LifecycleState::Active) {
+        warn("illegal transition");
+        return;
+    }
+
+    // Prevent recursion due to initializationFinished() in undiscard().
+    m_lifecycleState = to;
+
+    switch (to) {
+    case LifecycleState::Active:
+        if (from == LifecycleState::Frozen)
+            unfreeze();
+        else
+            undiscard();
+        break;
+    case LifecycleState::Frozen:
+        freeze();
+        break;
+    case LifecycleState::Discarded:
+        discard();
+        break;
+    }
+
+    m_adapterClient->lifecycleStateChanged(to);
+    updateRecommendedState();
+}
+
+WebContentsAdapter::LifecycleState WebContentsAdapter::recommendedState() const
+{
+    return m_recommendedState;
+}
+
+WebContentsAdapter::LifecycleState WebContentsAdapter::determineRecommendedState() const
+{
+    CHECK_INITIALIZED(LifecycleState::Active);
+
+    if (m_lifecycleState == LifecycleState::Discarded)
+        return LifecycleState::Discarded;
+
+    if (isVisible())
+        return LifecycleState::Active;
+
+    if (m_webContentsDelegate->loadingState() != WebContentsDelegateQt::LoadingState::Loaded)
+        return LifecycleState::Active;
+
+    if (recentlyAudible())
+        return LifecycleState::Active;
+
+    if (m_webContents->GetSiteInstance()->GetRelatedActiveContentsCount() > 1U)
+        return LifecycleState::Active;
+
+    if (hasInspector() || isInspector())
+        return LifecycleState::Active;
+
+    if (m_webContentsDelegate->isCapturingAudio() || m_webContentsDelegate->isCapturingVideo()
+        || m_webContentsDelegate->isMirroring() || m_webContentsDelegate->isCapturingDesktop())
+        return LifecycleState::Active;
+
+    if (m_webContents->IsCrashed())
+        return LifecycleState::Active;
+
+    if (m_lifecycleState == LifecycleState::Active)
+        return LifecycleState::Frozen;
+
+    // Form input is not saved.
+    if (m_webContents->GetPageImportanceSignals().had_form_interaction)
+        return LifecycleState::Frozen;
+
+    // Do not discard PDFs as they might contain entry that is not saved and they
+    // don't remember their scrolling positions. See crbug.com/547286 and
+    // crbug.com/65244.
+    if (m_webContents->GetContentsMimeType() == "application/pdf")
+        return LifecycleState::Frozen;
+
+    return LifecycleState::Discarded;
+}
+
+void WebContentsAdapter::updateRecommendedState()
+{
+    LifecycleState newState = determineRecommendedState();
+    if (m_recommendedState == newState)
+        return;
+
+    m_recommendedState = newState;
+    m_adapterClient->recommendedStateChanged(newState);
+}
+
+bool WebContentsAdapter::isVisible() const
+{
+    CHECK_INITIALIZED(false);
+
+    // Visibility::OCCLUDED is not used
+    return m_webContents->GetVisibility() == content::Visibility::VISIBLE;
+}
+
+void WebContentsAdapter::setVisible(bool visible)
+{
+    CHECK_INITIALIZED();
+
+    if (isVisible() == visible)
+        return;
+
+    if (visible) {
+        setLifecycleState(LifecycleState::Active);
+        wasShown();
+    } else {
+        Q_ASSERT(m_lifecycleState == LifecycleState::Active);
+        wasHidden();
+    }
+
+    m_adapterClient->visibleChanged(visible);
+    updateRecommendedState();
+}
+
+void WebContentsAdapter::freeze()
+{
+    m_webContents->SetPageFrozen(true);
+}
+
+void WebContentsAdapter::unfreeze()
+{
+    m_webContents->SetPageFrozen(false);
+}
+
+void WebContentsAdapter::discard()
+{
+    // Based on TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard
+
+    if (m_webContents->IsLoading()) {
+        m_webContentsDelegate->didFailLoad(m_webContentsDelegate->url(), net::Error::ERR_ABORTED,
+                                           QStringLiteral("Discarded"));
+    }
+
+    content::WebContents::CreateParams createParams(m_profileAdapter->profile());
+    createParams.initially_hidden = true;
+    createParams.desired_renderer_state = content::WebContents::CreateParams::kNoRendererProcess;
+    createParams.last_active_time = m_webContents->GetLastActiveTime();
+    std::unique_ptr<content::WebContents> nullContents = content::WebContents::Create(createParams);
+    std::unique_ptr<WebContentsDelegateQt> nullDelegate(new WebContentsDelegateQt(nullContents.get(), m_adapterClient));
+    nullContents->GetController().CopyStateFrom(&m_webContents->GetController(),
+                                                /* needs_reload */ false);
+    nullDelegate->copyStateFrom(m_webContentsDelegate.get());
+    nullContents->SetWasDiscarded(true);
+
+    // Kill render process if this is the only page it's got.
+    content::RenderProcessHost *renderProcessHost = m_webContents->GetMainFrame()->GetProcess();
+    renderProcessHost->FastShutdownIfPossible(/* page_count */ 1u,
+                                              /* skip_unload_handlers */ false);
+
+#if QT_CONFIG(webengine_webchannel)
+    if (m_webChannel)
+        m_webChannel->disconnectFrom(m_webChannelTransport.get());
+    m_webChannelTransport.reset();
+    m_webChannel = nullptr;
+    m_webChannelWorld = 0;
+#endif
+    m_renderViewObserverHost.reset();
+    m_webContentsDelegate.reset();
+    m_webContents.reset();
+
+    m_webContents = std::move(nullContents);
+    initializeRenderPrefs();
+    m_webContentsDelegate = std::move(nullDelegate);
+    m_renderViewObserverHost.reset(new RenderViewObserverHostQt(m_webContents.get(), m_adapterClient));
+    WebContentsViewQt *contentsView =
+            static_cast<WebContentsViewQt *>(static_cast<content::WebContentsImpl *>(m_webContents.get())->GetView());
+    contentsView->setClient(m_adapterClient);
+#if QT_CONFIG(webengine_printing_and_pdf)
+    PrintViewManagerQt::CreateForWebContents(webContents());
+#endif
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::ExtensionWebContentsObserverQt::CreateForWebContents(webContents());
+#endif
+}
+
+void WebContentsAdapter::undiscard()
+{
+    m_webContents->GetController().SetNeedsReload();
+    m_webContents->GetController().LoadIfNecessary();
+    // Create a RenderView with the initial empty document
+    content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
+    Q_ASSERT(rvh);
+    if (!rvh->IsRenderViewLive())
+        static_cast<content::WebContentsImpl *>(m_webContents.get())
+                ->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+                                                   base::UnguessableToken::Create(),
+                                                   content::FrameReplicationState());
+    m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
+    m_adapterClient->initializationFinished();
+    m_adapterClient->selectionChanged();
 }
 
 ASSERT_ENUMS_MATCH(WebContentsAdapterClient::UnknownDisposition, WindowOpenDisposition::UNKNOWN)

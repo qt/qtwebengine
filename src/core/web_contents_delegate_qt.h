@@ -40,6 +40,7 @@
 #ifndef WEB_CONTENTS_DELEGATE_QT_H
 #define WEB_CONTENTS_DELEGATE_QT_H
 
+#include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -133,9 +134,13 @@ public:
 
     // WebContentsObserver overrides
     void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) override;
+    void RenderProcessGone(base::TerminationStatus status) override;
     void RenderViewHostChanged(content::RenderViewHost *old_host, content::RenderViewHost *new_host) override;
     void DidStartNavigation(content::NavigationHandle *navigation_handle) override;
     void DidFinishNavigation(content::NavigationHandle *navigation_handle) override;
+    void DidStartLoading() override;
+    void DidReceiveResponse() override;
+    void DidStopLoading() override;
     void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
     void BeforeUnloadFired(bool proceed, const base::TimeTicks& proceed_time) override;
@@ -160,11 +165,31 @@ public:
     WebContentsAdapter *webContentsAdapter() const;
     WebContentsAdapterClient *adapterClient() const { return m_viewClient; }
 
+    void copyStateFrom(WebContentsDelegateQt *source);
+
+    using LoadingState = WebContentsAdapterClient::LoadingState;
+    LoadingState loadingState() const { return m_loadingState; }
+
+    void addDevices(const blink::MediaStreamDevices &devices);
+    void removeDevices(const blink::MediaStreamDevices &devices);
+
+    bool isCapturingAudio() const { return m_audioStreamCount > 0; }
+    bool isCapturingVideo() const { return m_videoStreamCount > 0; }
+    bool isMirroring() const { return m_mirroringStreamCount > 0; }
+    bool isCapturingDesktop() const { return m_desktopStreamCount > 0; }
+
+    base::WeakPtr<WebContentsDelegateQt> AsWeakPtr() { return m_weakPtrFactory.GetWeakPtr(); }
+
 private:
     QWeakPointer<WebContentsAdapter> createWindow(std::unique_ptr<content::WebContents> new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
     void EmitLoadStarted(const QUrl &url, bool isErrorPage = false);
     void EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString());
     void EmitLoadCommitted();
+
+    LoadingState determineLoadingState(content::WebContents *contents);
+    void setLoadingState(LoadingState state);
+
+    int &streamCount(blink::MediaStreamType type);
 
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;
@@ -175,9 +200,16 @@ private:
     QSharedPointer<FilePickerController> m_filePickerController;
     QUrl m_initialTargetUrl;
     int m_lastLoadProgress;
-
+    LoadingState m_loadingState;
+    bool m_didStartLoadingSeen;
     QUrl m_url;
     QString m_title;
+    int m_audioStreamCount = 0;
+    int m_videoStreamCount = 0;
+    int m_mirroringStreamCount = 0;
+    int m_desktopStreamCount = 0;
+
+    base::WeakPtrFactory<WebContentsDelegateQt> m_weakPtrFactory { this };
 };
 
 } // namespace QtWebEngineCore

@@ -362,6 +362,11 @@ void FaviconManager::generateCandidateIcon(bool touchIconsEnabled)
     }
 }
 
+void FaviconManager::copyStateFrom(FaviconManager *source)
+{
+    m_faviconInfoMap = source->m_faviconInfoMap;
+    m_icons = source->m_icons;
+}
 
 FaviconInfo::FaviconInfo()
     : url(QUrl())

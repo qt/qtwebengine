@@ -118,6 +118,7 @@ public:
     QIcon getIcon(const QUrl &url = QUrl()) const;
     FaviconInfo getFaviconInfo(const QUrl &) const;
     QList<FaviconInfo> getFaviconInfoList(bool) const;
+    void copyStateFrom(FaviconManager *source);
 
 private:
     void update(const QList<FaviconInfo> &);

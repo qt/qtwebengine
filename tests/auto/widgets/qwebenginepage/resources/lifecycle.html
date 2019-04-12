@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Lifecycle</title>
+        <script>
+         let frozenness = 0;
+         document.addEventListener("freeze", function() {
+             frozenness += 1;
+         });
+         document.addEventListener("resume", function() {
+             frozenness -= 1;
+         });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

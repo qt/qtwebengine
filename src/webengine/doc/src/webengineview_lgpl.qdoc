@@ -1505,3 +1505,56 @@
 
     \sa TooltipRequest
 */
+
+/*!
+    \qmlproperty enumeration WebEngineView::LifecycleState
+    \since QtWebEngine 1.11
+
+    This enum describes the lifecycle state of the page:
+
+    \value  WebEngineView.LifecycleState.Active
+    Normal state.
+    \value  WebEngineView.LifecycleState.Frozen
+    Low CPU usage state where most HTML task sources are suspended.
+    \value  WebEngineView.LifecycleState.Discarded
+    Very low resource usage state where the entire browsing context is discarded.
+
+    \sa lifecycleState
+*/
+
+/*!
+    \qmlproperty LifecycleState WebEngineView::lifecycleState
+    \since QtWebEngine 1.11
+
+    \brief The current lifecycle state of the page.
+
+    The following restrictions are enforced by the setter:
+
+    \list
+    \li A visible page must remain in the \c{Active} state.
+    \li If the page is being inspected by a \l{devToolsView} then both pages must
+        remain in the \c{Active} states.
+    \li A page in the \c{Discarded} state can only transition to the \c{Active}
+        state. This will cause a reload of the page.
+    \endlist
+
+    These are the only hard limits on the lifecycle state, but see also
+    \l{recommendedState} for the recommended soft limits.
+
+    \sa recommendedState, {WebEngine Lifecycle Example}
+*/
+
+/*!
+    \qmlproperty LifecycleState WebEngineView::recommendedState
+    \since QtWebEngine 1.11
+
+    \brief The recommended limit for the lifecycle state of the page.
+
+    Setting the lifecycle state to a lower resource usage state than the
+    recommended state may cause side-effects such as stopping background audio
+    playback or loss of HTML form input. Setting the lifecycle state to a higher
+    resource state is however completely safe.
+
+    \sa lifecycleState, {WebEngine Lifecycle Example}
+
+*/

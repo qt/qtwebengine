@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>WebBrowser.qml</file>
+        <file>WebTab.qml</file>
+        <file>WebTabBar.qml</file>
+        <file>WebTabButton.qml</file>
+        <file>WebTabStack.qml</file>
+        <file>WebToolButton.qml</file>
+        <file>qtquickcontrols2.conf</file>
+    </qresource>
+</RCC>

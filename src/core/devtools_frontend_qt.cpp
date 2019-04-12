@@ -190,6 +190,8 @@ DevToolsFrontendQt *DevToolsFrontendQt::Show(QSharedPointer<WebContentsAdapter> 
         frontendAdapter->initialize(site.get());
     }
 
+    frontendAdapter->setInspector(true);
+
     content::WebContents *contents = frontendAdapter->webContents();
     if (contents == inspectedContents) {
         qWarning() << "You can not inspect youself";
@@ -232,6 +234,8 @@ DevToolsFrontendQt::DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webCon
 
 DevToolsFrontendQt::~DevToolsFrontendQt()
 {
+    if (QSharedPointer<WebContentsAdapter> p = m_webContentsAdapter)
+        p->setInspector(false);
 }
 
 void DevToolsFrontendQt::Activate()

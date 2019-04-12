@@ -214,8 +214,10 @@ void WebChannelIPCTransport::ResetWorldId()
 
 void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t> &binaryJson, uint32_t worldId)
 {
-    DCHECK(m_canUseContext);
     DCHECK(m_worldId == worldId);
+
+    if (!m_canUseContext)
+        return;
 
     QJsonDocument doc = QJsonDocument::fromRawData(reinterpret_cast<const char *>(binaryJson.data()),
                                                    binaryJson.size(), QJsonDocument::BypassValidation);

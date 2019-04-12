@@ -705,6 +705,25 @@ const QObject *QQuickWebEngineViewPrivate::holdingQObject() const
     return q;
 }
 
+void QQuickWebEngineViewPrivate::lifecycleStateChanged(LifecycleState state)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->lifecycleStateChanged(static_cast<QQuickWebEngineView::LifecycleState>(state));
+}
+
+void QQuickWebEngineViewPrivate::recommendedStateChanged(LifecycleState state)
+{
+    Q_Q(QQuickWebEngineView);
+    QTimer::singleShot(0, q, [q, state]() {
+        Q_EMIT q->recommendedStateChanged(static_cast<QQuickWebEngineView::LifecycleState>(state));
+    });
+}
+
+void QQuickWebEngineViewPrivate::visibleChanged(bool visible)
+{
+    Q_UNUSED(visible);
+}
+
 #ifndef QT_NO_ACCESSIBILITY
 QQuickWebEngineViewAccessible::QQuickWebEngineViewAccessible(QQuickWebEngineView *o)
     : QAccessibleObject(o)
@@ -844,8 +863,8 @@ void QQuickWebEngineViewPrivate::initializationFinished()
     for (QQuickWebEngineScript *script : qAsConst(m_userScripts))
         script->d_func()->bind(profileAdapter()->userResourceController(), adapter.data());
 
-    if (q->window() && q->isVisible())
-        adapter->wasShown();
+    if (q->window())
+        adapter->setVisible(q->isVisible());
 
     if (!m_isBeingAdopted)
         return;
@@ -1617,10 +1636,8 @@ void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &va
     Q_D(QQuickWebEngineView);
     if (d && d->profileInitialized() && d->adapter->isInitialized()
             && (change == ItemSceneChange || change == ItemVisibleHasChanged)) {
-        if (window() && isVisible())
-            d->adapter->wasShown();
-        else
-            d->adapter->wasHidden();
+        if (window())
+            d->adapter->setVisible(isVisible());
     }
     QQuickItem::itemChange(change, value);
 }
@@ -2130,6 +2147,24 @@ void QQuickWebEngineView::lazyInitialize()
 {
     Q_D(QQuickWebEngineView);
     d->ensureContentsAdapter();
+}
+
+QQuickWebEngineView::LifecycleState QQuickWebEngineView::lifecycleState() const
+{
+    Q_D(const QQuickWebEngineView);
+    return static_cast<LifecycleState>(d->adapter->lifecycleState());
+}
+
+void QQuickWebEngineView::setLifecycleState(LifecycleState state)
+{
+    Q_D(QQuickWebEngineView);
+    d->adapter->setLifecycleState(static_cast<WebContentsAdapterClient::LifecycleState>(state));
+}
+
+QQuickWebEngineView::LifecycleState QQuickWebEngineView::recommendedState() const
+{
+    Q_D(const QQuickWebEngineView);
+    return static_cast<LifecycleState>(d->adapter->recommendedState());
 }
 
 QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest()

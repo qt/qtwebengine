@@ -159,6 +159,14 @@ void tst_QWebEngineScript::loadEvents()
     QCOMPARE(page.eval("window.log", QWebEngineScript::MainWorld).toStringList(), expected);
     QCOMPARE(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
 
+    // After discard
+    page.setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
+    page.setLifecycleState(QWebEnginePage::LifecycleState::Active);
+    QTRY_COMPARE(page.spy.count(), 1);
+    QCOMPARE(page.spy.takeFirst().value(0).toBool(), true);
+    QCOMPARE(page.eval("window.log", QWebEngineScript::MainWorld).toStringList(), expected);
+    QCOMPARE(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
+
     // Multiple frames
     page.load(QUrl("qrc:/resources/test_iframe_main.html"));
     QTRY_COMPARE(page.spy.count(), 1);
@@ -531,6 +539,11 @@ void tst_QWebEngineScript::navigation()
     page.setUrl(url3);
     QTRY_COMPARE(spyTextChanged.count(), 3);
     QCOMPARE(testObject.text(), url3);
+
+    page.setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
+    page.setUrl(url1);
+    QTRY_COMPARE(spyTextChanged.count(), 4);
+    QCOMPARE(testObject.text(), url1);
 }
 
 // Try to set TestObject::text to an invalid UTF-16 string.

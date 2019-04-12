@@ -634,7 +634,8 @@ void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range&, const
 void RenderWidgetHostViewQt::RenderProcessGone(base::TerminationStatus terminationStatus,
                                                int exitCode)
 {
-    if (m_adapterClient) {
+    // RenderProcessHost::FastShutdownIfPossible results in TERMINATION_STATUS_STILL_RUNNING
+    if (m_adapterClient && terminationStatus != base::TERMINATION_STATUS_STILL_RUNNING) {
         m_adapterClient->renderProcessTerminated(
                     m_adapterClient->renderProcessExitStatus(terminationStatus),
                     exitCode);

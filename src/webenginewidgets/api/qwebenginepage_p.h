@@ -92,6 +92,9 @@ public:
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override;
     QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) override { return CreateRenderWidgetHostViewQtDelegate(client); }
     void initializationFinished() override;
+    void lifecycleStateChanged(LifecycleState state) override;
+    void recommendedStateChanged(LifecycleState state) override;
+    void visibleChanged(bool visible) override;
     void titleChanged(const QString&) override;
     void urlChanged(const QUrl&) override;
     void iconChanged(const QUrl&) override;
@@ -165,9 +168,6 @@ public:
 
     void updateAction(QWebEnginePage::WebAction) const;
     void _q_webActionTriggered(bool checked);
-
-    void wasShown();
-    void wasHidden();
 
     QtWebEngineCore::WebContentsAdapter *webContents() { return adapter.data(); }
     void recreateFromSerializedHistory(QDataStream &input);

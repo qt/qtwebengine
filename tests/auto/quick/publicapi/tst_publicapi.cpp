@@ -606,6 +606,9 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.LetterExtra --> PrintedPageSizeId"
     << "QQuickWebEngineView.LetterPlus --> PrintedPageSizeId"
     << "QQuickWebEngineView.LetterSmall --> PrintedPageSizeId"
+    << "QQuickWebEngineView.LifecycleState.Active --> LifecycleState"
+    << "QQuickWebEngineView.LifecycleState.Discarded --> LifecycleState"
+    << "QQuickWebEngineView.LifecycleState.Frozen --> LifecycleState"
     << "QQuickWebEngineView.LinkClickedNavigation --> NavigationType"
     << "QQuickWebEngineView.LoadFailedStatus --> LoadStatus"
     << "QQuickWebEngineView.LoadStartedStatus --> LoadStatus"
@@ -703,6 +706,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.isFullScreenChanged() --> void"
     << "QQuickWebEngineView.javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString) --> void"
     << "QQuickWebEngineView.javaScriptDialogRequested(QQuickWebEngineJavaScriptDialogRequest*) --> void"
+    << "QQuickWebEngineView.lifecycleState --> LifecycleState"
+    << "QQuickWebEngineView.lifecycleStateChanged(LifecycleState) --> void"
     << "QQuickWebEngineView.linkHovered(QUrl) --> void"
     << "QQuickWebEngineView.loadHtml(QString) --> void"
     << "QQuickWebEngineView.loadHtml(QString,QUrl) --> void"
@@ -726,6 +731,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.quotaRequested(QWebEngineQuotaRequest) --> void"
     << "QQuickWebEngineView.recentlyAudible --> bool"
     << "QQuickWebEngineView.recentlyAudibleChanged(bool) --> void"
+    << "QQuickWebEngineView.recommendedState --> LifecycleState"
+    << "QQuickWebEngineView.recommendedStateChanged(LifecycleState) --> void"
     << "QQuickWebEngineView.registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest) --> void"
     << "QQuickWebEngineView.reload() --> void"
     << "QQuickWebEngineView.reloadAndBypassCache() --> void"
@@ -823,8 +830,9 @@ static void checkKnownType(const QByteArray &typeName)
 
 static void gatherAPI(const QString &prefix, const QMetaEnum &metaEnum, QStringList *output)
 {
+    const auto format = metaEnum.isScoped() ? "%1%3.%2 --> %3" : "%1%2 --> %3";
     for (int i = 0; i < metaEnum.keyCount(); ++i)
-        *output << QString::fromLatin1("%1%2 --> %3").arg(prefix).arg(metaEnum.key(i)).arg(metaEnum.name());
+        *output << QString::fromLatin1(format).arg(prefix).arg(metaEnum.key(i)).arg(metaEnum.name());
 }
 
 static void gatherAPI(const QString &prefix, const QMetaProperty &property, QStringList *output)

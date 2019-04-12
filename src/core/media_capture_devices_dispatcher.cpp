@@ -45,6 +45,7 @@
 
 #include "javascript_dialog_manager_qt.h"
 #include "type_conversion.h"
+#include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_settings.h"
 
@@ -166,6 +167,40 @@ WebContentsAdapterClient::MediaRequestFlags mediaRequestFlagsForRequest(const co
     return requestFlags;
 }
 
+// Based on MediaStreamCaptureIndicator::UIDelegate
+class MediaStreamUIQt : public content::MediaStreamUI
+{
+public:
+    MediaStreamUIQt(content::WebContents *webContents, const blink::MediaStreamDevices &devices)
+        : m_delegate(static_cast<WebContentsDelegateQt *>(webContents->GetDelegate())->AsWeakPtr())
+        , m_devices(devices)
+    {
+        DCHECK(!m_devices.empty());
+    }
+
+    ~MediaStreamUIQt() override
+    {
+        if (m_started && m_delegate)
+            m_delegate->removeDevices(m_devices);
+    }
+
+private:
+    gfx::NativeViewId OnStarted(base::OnceClosure, base::RepeatingClosure) override
+    {
+        DCHECK(!m_started);
+        m_started = true;
+        if (m_delegate)
+            m_delegate->addDevices(m_devices);
+        return 0;
+    }
+
+    base::WeakPtr<WebContentsDelegateQt> m_delegate;
+    const blink::MediaStreamDevices m_devices;
+    bool m_started = false;
+
+    DISALLOW_COPY_AND_ASSIGN(MediaStreamUIQt);
+};
+
 } // namespace
 
 MediaCaptureDevicesDispatcher::PendingAccessRequest::PendingAccessRequest(const content::MediaStreamRequest &request,
@@ -237,8 +272,12 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
                                                 base::Unretained(this), webContents));
     }
 
-    std::move(callback).Run(devices, devices.empty() ? blink::MEDIA_DEVICE_INVALID_STATE : blink::MEDIA_DEVICE_OK,
-                            std::unique_ptr<content::MediaStreamUI>());
+    if (devices.empty())
+        std::move(callback).Run(devices, blink::MEDIA_DEVICE_INVALID_STATE,
+                                std::unique_ptr<content::MediaStreamUI>());
+    else
+        std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK,
+                                std::make_unique<MediaStreamUIQt>(webContents, devices));
 }
 
 MediaCaptureDevicesDispatcher *MediaCaptureDevicesDispatcher::GetInstance()
@@ -336,8 +375,12 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
 
     getDevicesForDesktopCapture(&devices, mediaId, capture_audio);
 
-    std::move(callback).Run(devices, devices.empty() ? blink::MEDIA_DEVICE_INVALID_STATE : blink::MEDIA_DEVICE_OK,
-                            std::unique_ptr<content::MediaStreamUI>());
+    if (devices.empty())
+        std::move(callback).Run(devices, blink::MEDIA_DEVICE_INVALID_STATE,
+                                std::unique_ptr<content::MediaStreamUI>());
+    else
+        std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK,
+                                std::make_unique<MediaStreamUIQt>(webContents, devices));
 }
 
 void MediaCaptureDevicesDispatcher::enqueueMediaAccessRequest(content::WebContents *webContents,

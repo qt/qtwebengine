@@ -378,7 +378,7 @@ void QWebEngineView::contextMenuEvent(QContextMenuEvent *event)
 void QWebEngineView::showEvent(QShowEvent *event)
 {
     QWidget::showEvent(event);
-    page()->d_ptr->wasShown();
+    page()->setVisible(true);
 }
 
 /*!
@@ -387,7 +387,17 @@ void QWebEngineView::showEvent(QShowEvent *event)
 void QWebEngineView::hideEvent(QHideEvent *event)
 {
     QWidget::hideEvent(event);
-    page()->d_ptr->wasHidden();
+    page()->setVisible(false);
+}
+
+/*!
+ * \reimp
+ */
+void QWebEngineView::closeEvent(QCloseEvent *event)
+{
+    QWidget::closeEvent(event);
+    page()->setVisible(false);
+    page()->setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
 }
 
 #if QT_CONFIG(draganddrop)
