@@ -403,6 +403,8 @@ QString QWebEngineProfile::downloadPath() const
 }
 
 /*!
+    \since 5.13
+
     Overrides the default path used for download location, setting it to \a path.
 
     If set to the null string, the default path is restored.
