@@ -77,6 +77,7 @@ public:
 
     QWebEnginePage *page;
     bool m_dragEntered;
+    mutable bool m_ownsPage;
 };
 
 #ifndef QT_NO_ACCESSIBILITY

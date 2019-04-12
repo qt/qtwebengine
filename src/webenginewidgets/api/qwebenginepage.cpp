@@ -775,6 +775,13 @@ void QWebEnginePagePrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
         view->d_func()->pageChanged(oldPage, page);
         if (oldWidget != widget)
             view->d_func()->widgetChanged(oldWidget, widget);
+
+        // At this point m_ownsPage should still refer to oldPage,
+        // it is only set for the new page after binding.
+        if (view->d_func()->m_ownsPage) {
+            delete oldPage;
+            view->d_func()->m_ownsPage = false;
+        }
     }
 }
 
