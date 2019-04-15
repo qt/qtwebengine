@@ -96,7 +96,7 @@ static inline QQuickWebEngineDownloadItem::DownloadInterruptReason toDownloadInt
     return static_cast<QQuickWebEngineDownloadItem::DownloadInterruptReason>(reason);
 }
 
-QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfile *p)
+QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfile *p, const QUrl &url)
     : profile(p)
     , downloadId(-1)
     , downloadState(QQuickWebEngineDownloadItem::DownloadCancelled)
@@ -108,6 +108,7 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
     , downloadFinished(false)
     , downloadPaused(false)
     , view(nullptr)
+    , downloadUrl(url)
 {
 }
 
@@ -383,6 +384,20 @@ qint64 QQuickWebEngineDownloadItem::receivedBytes() const
 {
     Q_D(const QQuickWebEngineDownloadItem);
     return d->receivedBytes;
+}
+
+/*!
+    \qmlproperty url WebEngineDownloadItem::url
+    \readonly
+    \since QtWebEngine 1.10
+
+    Returns the download's origin URL.
+*/
+
+QUrl QQuickWebEngineDownloadItem::url() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->downloadUrl;
 }
 
 /*!

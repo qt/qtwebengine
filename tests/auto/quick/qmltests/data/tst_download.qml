@@ -28,7 +28,7 @@
 
 import QtQuick 2.0
 import QtTest 1.0
-import QtWebEngine 1.9
+import QtWebEngine 1.10
 import Qt.labs.platform 1.0
 
 TestWebEngineView {
@@ -42,6 +42,7 @@ TestWebEngineView {
     property bool cancelDownload: false
     property var downloadState: []
     property var downloadInterruptReason: null
+    property url downloadUrl: ""
 
     function urlToPath(url) {
         var path = url.toString()
@@ -81,6 +82,7 @@ TestWebEngineView {
                 download.path = "testfile.zip"
                 download.accept()
             }
+            downloadUrl = download.url
         }
         onDownloadFinished: {
             receivedBytes = download.receivedBytes;
@@ -106,6 +108,7 @@ TestWebEngineView {
             webEngineView.url = Qt.resolvedUrl("download.zip")
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
+            compare(downloadUrl, webEngineView.url)
             compare(downloadState[0], WebEngineDownloadItem.DownloadRequested)
             verify(!downloadInterruptReason)
         }
@@ -115,6 +118,7 @@ TestWebEngineView {
             webEngineView.url = Qt.resolvedUrl("download.zip")
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
+            compare(downloadUrl, webEngineView.url)
             compare(totalBytes, 325)
             verify(!downloadInterruptReason)
         }
@@ -124,6 +128,7 @@ TestWebEngineView {
             webEngineView.url = Qt.resolvedUrl("download.zip")
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
+            compare(downloadUrl, webEngineView.url)
             compare(downloadState[0], WebEngineDownloadItem.DownloadRequested)
             tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadInProgress)
             downloadFinishedSpy.wait()
@@ -138,6 +143,7 @@ TestWebEngineView {
             webEngineView.url = Qt.resolvedUrl("download.zip")
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
+            compare(downloadUrl, webEngineView.url)
             compare(downloadFinishedSpy.count, 1)
             tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadCancelled)
             tryCompare(webEngineView, "downloadInterruptReason", WebEngineDownloadItem.UserCanceled)
