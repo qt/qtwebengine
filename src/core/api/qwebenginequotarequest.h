@@ -47,7 +47,7 @@
 namespace QtWebEngineCore {
 class QuotaPermissionContextQt;
 class QuotaRequestController;
-}
+} // namespace QtWebEngineCore
 
 QT_BEGIN_NAMESPACE
 
@@ -63,6 +63,7 @@ public:
     qint64 requestedSize() const;
     bool operator==(const QWebEngineQuotaRequest &that) const { return d_ptr == that.d_ptr; }
     bool operator!=(const QWebEngineQuotaRequest &that) const { return d_ptr != that.d_ptr; }
+
 private:
     QWebEngineQuotaRequest(QSharedPointer<QtWebEngineCore::QuotaRequestController>);
     friend QtWebEngineCore::QuotaPermissionContextQt;

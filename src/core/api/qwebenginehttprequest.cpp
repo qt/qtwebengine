@@ -67,8 +67,7 @@ QT_BEGIN_NAMESPACE
     \value Post The POST method.
 */
 
-class QWebEngineHttpRequestPrivate : public QSharedData
-{
+class QWebEngineHttpRequestPrivate : public QSharedData {
 public:
     QUrl url;
     QWebEngineHttpRequest::Method method;
@@ -77,23 +76,18 @@ public:
     Headers headers;
     QByteArray postData;
 
-    inline QWebEngineHttpRequestPrivate()
-    {
-    }
+    QWebEngineHttpRequestPrivate() {}
 
-    ~QWebEngineHttpRequestPrivate()
-    {
-    }
+    ~QWebEngineHttpRequestPrivate() {}
 
-    QWebEngineHttpRequestPrivate(const QWebEngineHttpRequestPrivate &other)
-        : QSharedData(other)
+    QWebEngineHttpRequestPrivate(const QWebEngineHttpRequestPrivate &other) : QSharedData(other)
     {
         method = other.method;
         url = other.url;
         headers = other.headers;
     }
 
-    inline bool operator==(const QWebEngineHttpRequestPrivate &other) const
+    bool operator==(const QWebEngineHttpRequestPrivate &other) const
     {
         return method == other.method
             && url == other.url
@@ -128,10 +122,7 @@ QWebEngineHttpRequest::QWebEngineHttpRequest(const QUrl &url,
 /*!
     Creates a copy of \a other.
 */
-QWebEngineHttpRequest::QWebEngineHttpRequest(const QWebEngineHttpRequest &other)
-    : d(other.d)
-{
-}
+QWebEngineHttpRequest::QWebEngineHttpRequest(const QWebEngineHttpRequest &other) : d(other.d) {}
 
 /*!
     Disposes of the QWebEngineHttpRequest object.
@@ -206,7 +197,6 @@ QWebEngineHttpRequest QWebEngineHttpRequest::postRequest(const QUrl &url,
                      QByteArrayLiteral("application/x-www-form-urlencoded"));
     return result;
 }
-
 
 /*!
     Returns the method this WebEngine request is using.
@@ -291,8 +281,7 @@ bool QWebEngineHttpRequest::hasHeader(const QByteArray &headerName) const
 */
 QByteArray QWebEngineHttpRequest::header(const QByteArray &headerName) const
 {
-    QWebEngineHttpRequestPrivate::Headers::ConstIterator it =
-        d->findHeader(headerName);
+    QWebEngineHttpRequestPrivate::Headers::ConstIterator it = d->findHeader(headerName);
     if (it != d->headers.constEnd())
         return it->second;
     return QByteArray();
@@ -334,16 +323,15 @@ void QWebEngineHttpRequest::unsetHeader(const QByteArray &key)
     d->setHeader(key, QByteArray());
 }
 
-QWebEngineHttpRequestPrivate::Headers::ConstIterator
-QWebEngineHttpRequestPrivate::findHeader(const QByteArray &key) const
+QWebEngineHttpRequestPrivate::Headers::ConstIterator QWebEngineHttpRequestPrivate::findHeader(const QByteArray &key) const
 {
     Headers::ConstIterator it = headers.constBegin();
     Headers::ConstIterator end = headers.constEnd();
-    for ( ; it != end; ++it)
+    for (; it != end; ++it)
         if (qstricmp(it->first.constData(), key.constData()) == 0)
             return it;
 
-    return end;                 // not found
+    return end; // not found
 }
 
 QWebEngineHttpRequestPrivate::Headers QWebEngineHttpRequestPrivate::allHeaders() const
@@ -355,9 +343,8 @@ QVector<QByteArray> QWebEngineHttpRequestPrivate::headersKeys() const
 {
     QVector<QByteArray> result;
     result.reserve(headers.size());
-    Headers::ConstIterator it = headers.constBegin(),
-                               end = headers.constEnd();
-    for ( ; it != end; ++it)
+    Headers::ConstIterator it = headers.constBegin(), end = headers.constEnd();
+    for (; it != end; ++it)
         result << it->first;
 
     return result;
@@ -385,8 +372,7 @@ void QWebEngineHttpRequestPrivate::unsetHeader(const QByteArray &key)
     auto firstEqualsKey = [&key](const HeaderPair &header) {
         return qstricmp(header.first.constData(), key.constData()) == 0;
     };
-    headers.erase(std::remove_if(headers.begin(), headers.end(), firstEqualsKey),
-                  headers.end());
+    headers.erase(std::remove_if(headers.begin(), headers.end(), firstEqualsKey), headers.end());
 }
 
 /*!
@@ -408,7 +394,7 @@ void QWebEngineHttpRequestPrivate::setHeaderInternal(const QByteArray &key, cons
     unsetHeader(key);
 
     if (value.isNull())
-        return;                 // only wanted to erase key
+        return; // only wanted to erase key
 
     HeaderPair pair;
     pair.first = key;

@@ -61,9 +61,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QWebEngineClientCertificateStore::QWebEngineClientCertificateStore(QtWebEngineCore::ClientCertificateStoreData *storeData)
-        : m_storeData(storeData)
-{
-}
+    : m_storeData(storeData)
+{}
 
 /*!
     Destroys this QWebEngineClientCertificateStore object.

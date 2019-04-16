@@ -50,15 +50,11 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_EXPORT QWebEngineUrlRequestInterceptor : public QObject
-{
+class Q_WEBENGINECORE_EXPORT QWebEngineUrlRequestInterceptor : public QObject {
     Q_OBJECT
     Q_DISABLE_COPY(QWebEngineUrlRequestInterceptor)
 public:
-    explicit QWebEngineUrlRequestInterceptor(QObject *p = nullptr)
-        : QObject (p)
-    {
-    }
+    explicit QWebEngineUrlRequestInterceptor(QObject *p = nullptr) : QObject(p) {}
 
     virtual void interceptRequest(QWebEngineUrlRequestInfo &info) = 0;
 };

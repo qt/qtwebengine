@@ -90,13 +90,11 @@ public:
 */
 QWebEngineNotification::QWebEngineNotification(const QSharedPointer<UserNotificationController> &controller)
     : d_ptr(new QWebEngineNotificationPrivate(this, controller))
-{ }
+{}
 
 /*! \internal
 */
-QWebEngineNotification::~QWebEngineNotification()
-{
-}
+QWebEngineNotification::~QWebEngineNotification() {}
 
 /*!
     Returns \c true if the two notifications belong to the same message chain.

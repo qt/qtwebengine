@@ -46,7 +46,9 @@
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
 
-namespace QtWebEngineCore { class WebEngineContext; }
+namespace QtWebEngineCore {
+class WebEngineContext;
+}
 
 QT_BEGIN_NAMESPACE
 

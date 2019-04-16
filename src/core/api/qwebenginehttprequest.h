@@ -49,11 +49,9 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QWebEngineHttpRequestPrivate;
 
-class Q_WEBENGINECORE_EXPORT QWebEngineHttpRequest
-{
+class Q_WEBENGINECORE_EXPORT QWebEngineHttpRequest {
 public:
     enum Method {
         Get,
@@ -61,22 +59,23 @@ public:
     };
 
     explicit QWebEngineHttpRequest(const QUrl &url = QUrl(),
-                          const QWebEngineHttpRequest::Method &method = QWebEngineHttpRequest::Get);
+                                   const QWebEngineHttpRequest::Method &method = QWebEngineHttpRequest::Get);
     QWebEngineHttpRequest(const QWebEngineHttpRequest &other);
     ~QWebEngineHttpRequest();
 #ifdef Q_COMPILER_RVALUE_REFS
-    QWebEngineHttpRequest &operator=(QWebEngineHttpRequest &&other) Q_DECL_NOTHROW { swap(other);
-                                                                                     return *this; }
+    QWebEngineHttpRequest &operator=(QWebEngineHttpRequest &&other) Q_DECL_NOTHROW
+    {
+        swap(other);
+        return *this;
+    }
 #endif
     QWebEngineHttpRequest &operator=(const QWebEngineHttpRequest &other);
 
-    static QWebEngineHttpRequest postRequest(const QUrl &url,
-                                             const QMap<QString, QString> &postData);
+    static QWebEngineHttpRequest postRequest(const QUrl &url, const QMap<QString, QString> &postData);
     void swap(QWebEngineHttpRequest &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     bool operator==(const QWebEngineHttpRequest &other) const;
-    inline bool operator!=(const QWebEngineHttpRequest &other) const
-    { return !operator==(other); }
+    inline bool operator!=(const QWebEngineHttpRequest &other) const { return !operator==(other); }
 
     Method method() const;
     void setMethod(QWebEngineHttpRequest::Method method);

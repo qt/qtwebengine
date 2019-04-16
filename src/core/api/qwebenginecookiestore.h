@@ -52,7 +52,7 @@
 namespace QtWebEngineCore {
 class ProfileAdapter;
 class CookieMonsterDelegateQt;
-}
+} // namespace QtWebEngineCore
 
 QT_BEGIN_NAMESPACE
 
@@ -93,6 +93,6 @@ private:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QWebEngineCookieStore*)
+Q_DECLARE_METATYPE(QWebEngineCookieStore *)
 
 #endif // QWEBENGINECOOKIESTORE_H

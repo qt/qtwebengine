@@ -64,8 +64,7 @@ QT_BEGIN_NAMESPACE
 /*! \internal */
 QWebEngineQuotaRequest::QWebEngineQuotaRequest(QSharedPointer<QtWebEngineCore::QuotaRequestController> controller)
     : d_ptr(controller)
-{
-}
+{}
 
 /*!
     Rejects a request for larger persistent storage.
