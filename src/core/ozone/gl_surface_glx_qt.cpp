@@ -68,7 +68,7 @@ bool GLSurfaceGLX::IsCreateContextSupported()
 
 bool GLSurfaceGLX::IsCreateContextRobustnessSupported()
 {
-    return false; // ExtensionsContain(g_extensions, "GLX_ARB_create_context_robustness");
+    return GLContextHelper::isCreateContextRobustnessSupported() && HasGLXExtension("GLX_ARB_create_context_robustness");
 }
 
 bool GLSurfaceGLX::IsEXTSwapControlSupported()
