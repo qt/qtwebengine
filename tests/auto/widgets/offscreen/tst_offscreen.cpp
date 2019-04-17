@@ -49,10 +49,11 @@ void tst_OffScreen::offscreen()
     QWebEngineView view;
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     view.setPage(&page);
-    page.load(QUrl("http://qt.io"));
+    page.load(QUrl("qrc:/test.html"));
     view.show();
     QTRY_COMPARE(view.isVisible(), true);
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count() > 0, true, 20000);
+    QCOMPARE(loadFinishedSpy.takeFirst().at(0).toBool(), true);
 }
 
 #include "tst_offscreen.moc"

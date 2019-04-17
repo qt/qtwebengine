@@ -43,7 +43,6 @@ boot2qt: SUBDIRS -= accessibility defaultsurfaceformat devtools \
                     qwebenginepage \
                     qwebengineprofile  \
                     qwebengineview  \
-                    qwebenginescript \
-                    offscreen
+                    qwebenginescript
 
 win32: SUBDIRS -= offscreen
