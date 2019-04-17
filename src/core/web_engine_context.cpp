@@ -196,9 +196,9 @@ void WebEngineContext::destroyProfileAdapter()
 {
     if (content::RenderProcessHost::run_renderer_in_process()) {
         Q_ASSERT(m_profileAdapters.count() == 1);
-        // this might be default profile
-        m_defaultProfileAdapter.release();
-        delete m_profileAdapters.first();
+        // this is a default profile
+        m_defaultProfileAdapter.reset();
+        Q_ASSERT(m_profileAdapters.isEmpty());
     }
 }
 
@@ -216,9 +216,11 @@ void WebEngineContext::addProfileAdapter(ProfileAdapter *profileAdapter)
         }
     }
 
-    if (content::RenderProcessHost::run_renderer_in_process() &&
-            !m_profileAdapters.isEmpty()) {
-        qFatal("Single mode supports only single profile.");
+    if (content::RenderProcessHost::run_renderer_in_process()){
+        if (!m_profileAdapters.isEmpty())
+            qFatal("Single mode supports only single profile.");
+        // there is only one profle therefore make it 'default'
+        m_defaultProfileAdapter.reset(profileAdapter);
     }
     m_profileAdapters.append(profileAdapter);
 }
@@ -307,8 +309,13 @@ WebEngineContext *WebEngineContext::current()
 ProfileAdapter *WebEngineContext::createDefaultProfileAdapter()
 {
     Q_ASSERT(!m_destroyed);
-    if (!m_defaultProfileAdapter)
-        m_defaultProfileAdapter.reset(new ProfileAdapter(QStringLiteral("Default")));
+    if (!m_defaultProfileAdapter) {
+        ProfileAdapter *profile = new ProfileAdapter(QStringLiteral("Default"));
+        // profile when added to m_profileAdapters might be set default
+        // profile in case of single-process
+        if (!m_defaultProfileAdapter)
+            m_defaultProfileAdapter.reset(profile);
+    }
     return m_defaultProfileAdapter.get();
 }
 
