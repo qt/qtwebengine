@@ -1,7 +1,10 @@
 TEMPLATE = lib
 # Fake project to make QtCreator happy.
 
-include(core_common.pri)
+include(core_chromium.pri)
+
+HEADERS =
+SOURCES =
 
 linking_pri = $$OUT_PWD/$$getConfigDir()/$${TARGET}.pri
 
