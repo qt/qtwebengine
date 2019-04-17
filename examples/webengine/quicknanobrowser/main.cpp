@@ -89,7 +89,10 @@ int main(int argc, char **argv)
     Utils utils;
     appEngine.rootContext()->setContextProperty("utils", &utils);
     appEngine.load(QUrl("qrc:/ApplicationRoot.qml"));
-    QMetaObject::invokeMethod(appEngine.rootObjects().first(), "load", Q_ARG(QVariant, startupUrl()));
+    if (!appEngine.rootObjects().isEmpty())
+        QMetaObject::invokeMethod(appEngine.rootObjects().first(), "load", Q_ARG(QVariant, startupUrl()));
+    else
+        qFatal("Failed to load sources");
 
     return app.exec();
 }

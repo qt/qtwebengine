@@ -50,7 +50,7 @@
 
 import QtQuick 2.1
 import QtQuick.Window 2.2
-import QtWebEngine 1.7
+import QtWebEngine 1.9
 
 Window {
     id: window
