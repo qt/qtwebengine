@@ -211,9 +211,8 @@ public:
 
     void requestStarted(QWebEngineUrlRequestJob *job)
     {
-        QBuffer *buffer = new QBuffer;
+        QBuffer *buffer = new QBuffer(job);
         buffer->setData(job->requestUrl().toString().toUtf8());
-        connect(buffer, &QIODevice::aboutToClose, buffer, &QObject::deleteLater);
         m_buffers.append(buffer);
         job->reply("text/plain;charset=utf-8", buffer);
     }
