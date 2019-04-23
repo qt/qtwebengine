@@ -257,34 +257,6 @@ QString dictionariesPath()
 }
 #endif // QT_CONFIG(webengine_spellchecker)
 
-QString icuDataPath()
-{
-    static bool initialized = false;
-    static QString potentialResourcesPath =
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
-            getResourcesPath(frameworkBundle());
-#else
-            QLibraryInfo::location(QLibraryInfo::DataPath) % QLatin1String("/resources");
-#endif
-    if (!initialized) {
-        initialized = true;
-        if (!QFileInfo::exists(potentialResourcesPath % QLatin1String("/icudtl.dat"))) {
-            qWarning("Qt WebEngine ICU data not found at %s. Trying parent directory...", qPrintable(potentialResourcesPath));
-            potentialResourcesPath = QLibraryInfo::location(QLibraryInfo::DataPath);
-        }
-        if (!QFileInfo::exists(potentialResourcesPath % QLatin1String("/icudtl.dat"))) {
-            qWarning("Qt WebEngine ICU data not found at %s. Trying application directory...", qPrintable(potentialResourcesPath));
-            potentialResourcesPath = QCoreApplication::applicationDirPath();
-        }
-        if (!QFileInfo::exists(potentialResourcesPath % QLatin1String("/icudtl.dat"))) {
-            qWarning("Qt WebEngine ICU data not found at %s. Trying fallback directory... The application MAY NOT work.", qPrintable(potentialResourcesPath));
-            potentialResourcesPath = fallbackDir();
-        }
-    }
-
-    return potentialResourcesPath;
-}
-
 QString resourcesDataPath()
 {
     static bool initialized = false;
@@ -341,7 +313,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         directory = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
         break;
     case base::DIR_QT_LIBRARY_DATA:
-        return toFilePath(icuDataPath());
+        return toFilePath(resourcesDataPath());
     case ui::DIR_LOCALES:
         return toFilePath(localesPath());
 #if QT_CONFIG(webengine_spellchecker)

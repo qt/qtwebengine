@@ -226,9 +226,7 @@ static void SafeOverridePathImpl(const char *keyName, int key, const base::FileP
 bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
 {
     SafeOverridePath(base::FILE_EXE, WebEngineLibraryInfo::getPath(base::FILE_EXE));
-#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
     SafeOverridePath(base::DIR_QT_LIBRARY_DATA, WebEngineLibraryInfo::getPath(base::DIR_QT_LIBRARY_DATA));
-#endif
     SafeOverridePath(ui::DIR_LOCALES, WebEngineLibraryInfo::getPath(ui::DIR_LOCALES));
 #if QT_CONFIG(webengine_spellchecker)
     SafeOverridePath(base::DIR_APP_DICTIONARIES, WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES));
