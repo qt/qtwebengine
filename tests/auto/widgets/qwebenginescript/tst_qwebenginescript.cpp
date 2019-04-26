@@ -546,7 +546,9 @@ void tst_QWebEngineScript::webChannelWithBadString()
     page.setWebChannel(&channel);
     page.setUrl(QStringLiteral("qrc:/resources/webChannelWithBadString.html"));
     QVERIFY(hostSpy.wait(20000));
-    QCOMPARE(host.text(), QString(QChar(QChar::ReplacementCharacter)));
+    // expect 0xD800 see https://chromium-review.googlesource.com/c/1282993
+    QChar data(0xd800);
+    QCOMPARE(host.text(), data);
 }
 #endif
 QTEST_MAIN(tst_QWebEngineScript)

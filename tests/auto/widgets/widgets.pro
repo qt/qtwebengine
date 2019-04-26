@@ -42,7 +42,6 @@ qtConfig(webengine-spellchecker):!cross_compile {
 boot2qt: SUBDIRS -= accessibility defaultsurfaceformat devtools \
                     qwebenginepage \
                     qwebengineprofile  \
-                    qwebengineview  \
-                    qwebenginescript
+                    qwebengineview
 
 win32: SUBDIRS -= offscreen
