@@ -4,6 +4,10 @@ load(functions)
 load(platform)
 
 defineTest(runConfigure) {
+    !qtHaveModule(gui) {
+        skipBuild("QtWebEngine requires QtGui.")
+        return(false)
+    }
 
     !exists(src/3rdparty/chromium) {
         skipBuild("Submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
