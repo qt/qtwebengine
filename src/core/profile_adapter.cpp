@@ -44,6 +44,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager.h"
 
+#include "api/qwebengineurlscheme.h"
 #include "content_client_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "net/url_request_context_getter_qt.h"
@@ -440,16 +441,50 @@ bool ProfileAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *ha
 
 QWebEngineUrlSchemeHandler *ProfileAdapter::takeCustomUrlSchemeHandler(const QByteArray &scheme)
 {
-    QWebEngineUrlSchemeHandler *handler = m_customUrlSchemeHandlers.take(scheme);
+    QWebEngineUrlSchemeHandler *handler = m_customUrlSchemeHandlers.take(scheme.toLower());
     if (handler)
         updateCustomUrlSchemeHandlers();
     return handler;
 }
 
-void ProfileAdapter::addCustomUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
+bool ProfileAdapter::addCustomUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
 {
-    m_customUrlSchemeHandlers.insert(scheme, handler);
+    static const QSet<QByteArray> blacklist{
+        QByteArrayLiteral("about"),
+        QByteArrayLiteral("blob"),
+        QByteArrayLiteral("data"),
+        QByteArrayLiteral("javascript"),
+        QByteArrayLiteral("qrc"),
+        // See also kStandardURLSchemes in url/url_util.cc (through url::IsStandard below)
+    };
+
+    static const QSet<QByteArray> whitelist{
+        QByteArrayLiteral("gopher"),
+    };
+
+    const QByteArray canonicalScheme = scheme.toLower();
+    bool standardSyntax = url::IsStandard(canonicalScheme.data(), url::Component(0, canonicalScheme.size()));
+    bool customScheme = QWebEngineUrlScheme::schemeByName(canonicalScheme) != QWebEngineUrlScheme();
+    bool blacklisted = blacklist.contains(canonicalScheme) || (standardSyntax && !customScheme);
+    bool whitelisted = whitelist.contains(canonicalScheme);
+
+    if (blacklisted && !whitelisted) {
+        qWarning("Cannot install a URL scheme handler overriding internal scheme: %s", scheme.constData());
+        return false;
+    }
+
+    if (m_customUrlSchemeHandlers.value(canonicalScheme, handler) != handler) {
+        qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
+        return false;
+    }
+
+    if (!whitelisted && !customScheme)
+        qWarning("Please register the custom scheme '%s' via QWebEngineUrlScheme::registerScheme() "
+                 "before installing the custom scheme handler.", scheme.constData());
+
+    m_customUrlSchemeHandlers.insert(canonicalScheme, handler);
     updateCustomUrlSchemeHandlers();
+    return true;
 }
 
 void ProfileAdapter::clearCustomUrlSchemeHandlers()

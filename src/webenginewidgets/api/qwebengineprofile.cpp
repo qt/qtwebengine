@@ -688,20 +688,7 @@ QWebEngineSettings *QWebEngineProfile::settings() const
 const QWebEngineUrlSchemeHandler *QWebEngineProfile::urlSchemeHandler(const QByteArray &scheme) const
 {
     const Q_D(QWebEngineProfile);
-    if (d->profileAdapter()->customUrlSchemeHandlers().contains(scheme))
-        return d->profileAdapter()->customUrlSchemeHandlers().value(scheme);
-    return 0;
-}
-
-static bool checkInternalScheme(const QByteArray &scheme)
-{
-    static QSet<QByteArray> internalSchemes;
-    if (internalSchemes.isEmpty()) {
-        internalSchemes << QByteArrayLiteral("qrc") << QByteArrayLiteral("data") << QByteArrayLiteral("blob")
-                        << QByteArrayLiteral("http") << QByteArrayLiteral("https") << QByteArrayLiteral("ftp")
-                        << QByteArrayLiteral("javascript");
-    }
-    return internalSchemes.contains(scheme);
+    return d->profileAdapter()->customUrlSchemeHandlers().value(scheme.toLower());
 }
 
 /*!
@@ -716,23 +703,8 @@ void QWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEn
 {
     Q_D(QWebEngineProfile);
     Q_ASSERT(handler);
-    QByteArray canonicalScheme = scheme.toLower();
-    if (checkInternalScheme(canonicalScheme)) {
-        qWarning("Cannot install a URL scheme handler overriding internal scheme: %s", scheme.constData());
+    if (!d->profileAdapter()->addCustomUrlSchemeHandler(scheme, handler))
         return;
-    }
-
-    if (d->profileAdapter()->customUrlSchemeHandlers().contains(canonicalScheme)) {
-        if (d->profileAdapter()->customUrlSchemeHandlers().value(canonicalScheme) != handler)
-            qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
-        return;
-    }
-
-    if (QWebEngineUrlScheme::schemeByName(canonicalScheme) == QWebEngineUrlScheme())
-        qWarning("Please register the custom scheme '%s' via QWebEngineUrlScheme::registerScheme() "
-                 "before installing the custom scheme handler.", scheme.constData());
-
-    d->profileAdapter()->addCustomUrlSchemeHandler(canonicalScheme, handler);
     connect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
 }
 

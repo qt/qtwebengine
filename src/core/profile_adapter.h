@@ -179,7 +179,7 @@ public:
     const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &customUrlSchemeHandlers() const;
     const QList<QByteArray> customUrlSchemes() const;
     void clearCustomUrlSchemeHandlers();
-    void addCustomUrlSchemeHandler(const QByteArray &, QWebEngineUrlSchemeHandler *);
+    bool addCustomUrlSchemeHandler(const QByteArray &, QWebEngineUrlSchemeHandler *);
     bool removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     QWebEngineUrlSchemeHandler *takeCustomUrlSchemeHandler(const QByteArray &);
     UserResourceControllerHost *userResourceController();

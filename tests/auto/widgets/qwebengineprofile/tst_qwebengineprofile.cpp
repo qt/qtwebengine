@@ -55,6 +55,7 @@ private Q_SLOTS:
     void urlSchemeHandlerFailRequest();
     void urlSchemeHandlerFailOnRead();
     void urlSchemeHandlerStreaming();
+    void urlSchemeHandlerInstallation();
     void customUserAgent();
     void httpAcceptLanguage();
     void downloadItem();
@@ -464,6 +465,46 @@ void tst_QWebEngineProfile::urlSchemeHandlerStreaming()
     QByteArray result;
     result.append(1000, 'c');
     QCOMPARE(toPlainTextSync(view.page()), QString::fromLatin1(result));
+}
+
+void tst_QWebEngineProfile::urlSchemeHandlerInstallation()
+{
+    FailingUrlSchemeHandler handler;
+    QWebEngineProfile profile;
+
+    // Builtin schemes that *cannot* be overridden.
+    for (auto scheme : { "about", "blob", "data", "javascript", "qrc", "https", "http", "file",
+                         "ftp", "wss", "ws", "filesystem", "FileSystem" }) {
+        QTest::ignoreMessage(
+                QtWarningMsg,
+                QRegularExpression("Cannot install a URL scheme handler overriding internal scheme.*"));
+        profile.installUrlSchemeHandler(scheme, &handler);
+        QCOMPARE(profile.urlSchemeHandler(scheme), nullptr);
+    }
+
+    // Builtin schemes that *can* be overridden.
+    for (auto scheme : { "gopher", "GOPHER" }) {
+        profile.installUrlSchemeHandler(scheme, &handler);
+        QCOMPARE(profile.urlSchemeHandler(scheme), &handler);
+        profile.removeUrlScheme(scheme);
+    }
+
+    // Other schemes should be registered with QWebEngineUrlScheme first, but
+    // handler installation still succeeds to preserve backwards compatibility.
+    QTest::ignoreMessage(
+            QtWarningMsg,
+            QRegularExpression("Please register the custom scheme.*"));
+    profile.installUrlSchemeHandler("tst", &handler);
+    QCOMPARE(profile.urlSchemeHandler("tst"), &handler);
+
+    // Existing handler cannot be overridden.
+    FailingUrlSchemeHandler handler2;
+    QTest::ignoreMessage(
+            QtWarningMsg,
+            QRegularExpression("URL scheme handler already installed.*"));
+    profile.installUrlSchemeHandler("tst", &handler2);
+    QCOMPARE(profile.urlSchemeHandler("tst"), &handler);
+    profile.removeUrlScheme("tst");
 }
 
 void tst_QWebEngineProfile::customUserAgent()
