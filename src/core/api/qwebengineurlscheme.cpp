@@ -378,6 +378,11 @@ void QWebEngineUrlScheme::registerScheme(const QWebEngineUrlScheme &scheme)
         return;
     }
 
+    if (url::IsStandard(scheme.d->name.data(), url::Component(0, scheme.d->name.size()))) {
+        qWarning() << "QWebEngineUrlScheme::registerScheme: Scheme" << scheme.name() << "is a standard scheme";
+        return;
+    }
+
     if (g_schemesLocked) {
         qWarning() << "QWebEngineUrlScheme::registerScheme: Too late to register scheme" << scheme.name();
         return;
