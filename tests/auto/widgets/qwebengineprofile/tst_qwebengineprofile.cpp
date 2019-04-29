@@ -31,6 +31,7 @@
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
 #include <QtWebEngineCore/qwebenginecookiestore.h>
+#include <QtWebEngineCore/qwebengineurlscheme.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
@@ -43,6 +44,7 @@ class tst_QWebEngineProfile : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void initTestCase();
     void init();
     void cleanup();
     void privateProfile();
@@ -60,6 +62,23 @@ private Q_SLOTS:
     void initiator();
     void qtbug_72299(); // this should be the last test
 };
+
+void tst_QWebEngineProfile::initTestCase()
+{
+    QWebEngineUrlScheme foo("foo");
+    QWebEngineUrlScheme stream("stream");
+    QWebEngineUrlScheme letterto("letterto");
+    QWebEngineUrlScheme aviancarrier("aviancarrier");
+    foo.setSyntax(QWebEngineUrlScheme::Syntax::Host);
+    stream.setSyntax(QWebEngineUrlScheme::Syntax::HostAndPort);
+    stream.setDefaultPort(8080);
+    letterto.setSyntax(QWebEngineUrlScheme::Syntax::Path);
+    aviancarrier.setSyntax(QWebEngineUrlScheme::Syntax::Path);
+    QWebEngineUrlScheme::registerScheme(foo);
+    QWebEngineUrlScheme::registerScheme(stream);
+    QWebEngineUrlScheme::registerScheme(letterto);
+    QWebEngineUrlScheme::registerScheme(aviancarrier);
+}
 
 void tst_QWebEngineProfile::init()
 {
@@ -82,6 +101,7 @@ void tst_QWebEngineProfile::cleanup()
     profile->setCachePath(QString());
     profile->setPersistentStoragePath(QString());
     profile->setHttpCacheType(QWebEngineProfile::DiskHttpCache);
+    profile->removeAllUrlSchemeHandlers();
 }
 
 void tst_QWebEngineProfile::privateProfile()
