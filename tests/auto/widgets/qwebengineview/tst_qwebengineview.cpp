@@ -196,6 +196,7 @@ private Q_SLOTS:
     void closeOpenerTab();
     void switchPage();
     void setPageDeletesImplicitPage();
+    void setPageDeletesImplicitPage2();
     void setViewDeletesImplicitPage();
     void setPagePreservesExplicitPage();
     void setViewPreservesExplicitPage();
@@ -3207,6 +3208,20 @@ void tst_QWebEngineView::setPageDeletesImplicitPage()
     QWebEnginePage explicitPage;
     view.setPage(&explicitPage);
     QCOMPARE(view.page(), &explicitPage);
+    QVERIFY(!implicitPage); // should be deleted
+}
+
+void tst_QWebEngineView::setPageDeletesImplicitPage2()
+{
+    QWebEngineView view1;
+    QWebEngineView view2;
+    QPointer<QWebEnginePage> implicitPage = view1.page();
+    view2.setPage(view1.page());
+    QVERIFY(implicitPage);
+    QVERIFY(view1.page() != implicitPage);
+    QWebEnginePage explicitPage;
+    view2.setPage(&explicitPage);
+    QCOMPARE(view2.page(), &explicitPage);
     QVERIFY(!implicitPage); // should be deleted
 }
 

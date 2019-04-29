@@ -746,17 +746,26 @@ void QWebEnginePagePrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
     auto oldView = page ? page->d_func()->view : nullptr;
     auto oldPage = view ? view->d_func()->page : nullptr;
 
+    bool ownNewPage = false;
+    bool deleteOldPage = false;
+
     // Change pointers first.
 
     if (page && oldView != view) {
-        if (oldView)
+        if (oldView) {
+            ownNewPage = oldView->d_func()->m_ownsPage;
             oldView->d_func()->page = nullptr;
+            oldView->d_func()->m_ownsPage = false;
+        }
         page->d_func()->view = view;
     }
 
     if (view && oldPage != page) {
-        if (oldPage)
+        if (oldPage) {
             oldPage->d_func()->view = nullptr;
+            deleteOldPage = view->d_func()->m_ownsPage;
+        }
+        view->d_func()->m_ownsPage = ownNewPage;
         view->d_func()->page = page;
     }
 
@@ -775,14 +784,9 @@ void QWebEnginePagePrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
         view->d_func()->pageChanged(oldPage, page);
         if (oldWidget != widget)
             view->d_func()->widgetChanged(oldWidget, widget);
-
-        // At this point m_ownsPage should still refer to oldPage,
-        // it is only set for the new page after binding.
-        if (view->d_func()->m_ownsPage) {
-            delete oldPage;
-            view->d_func()->m_ownsPage = false;
-        }
     }
+    if (deleteOldPage)
+        delete oldPage;
 }
 
 void QWebEnginePagePrivate::bindPageAndWidget(QWebEnginePage *page, RenderWidgetHostViewQtDelegateWidget *widget)
