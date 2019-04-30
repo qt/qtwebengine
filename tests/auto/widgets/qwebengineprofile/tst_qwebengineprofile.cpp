@@ -213,9 +213,8 @@ public:
 
     void requestStarted(QWebEngineUrlRequestJob *job)
     {
-        QBuffer *buffer = new QBuffer;
+        QBuffer *buffer = new QBuffer(job);
         buffer->setData(job->requestUrl().toString().toUtf8());
-        connect(buffer, &QIODevice::aboutToClose, buffer, &QObject::deleteLater);
         m_buffers.append(buffer);
         job->reply("text/plain;charset=utf-8", buffer);
     }
@@ -634,14 +633,15 @@ void tst_QWebEngineProfile::initiator()
 void tst_QWebEngineProfile::qtbug_71895()
 {
     QWebEngineView view;
+    QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
     view.setUrl(QUrl("https://www.qt.io"));
     view.show();
-    QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
     view.page()->profile()->clearHttpCache();
     view.page()->profile()->setHttpCacheType(QWebEngineProfile::NoCache);
     view.page()->profile()->cookieStore()->deleteAllCookies();
     view.page()->profile()->setPersistentCookiesPolicy(QWebEngineProfile::NoPersistentCookies);
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
+    QVERIFY(loadSpy.front().front().toBool());
 }
 
 

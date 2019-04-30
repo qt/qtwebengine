@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -48,31 +48,29 @@
 **
 ****************************************************************************/
 
-#ifndef BROWSER_H
-#define BROWSER_H
+#include "printhandler.h"
+#include <QApplication>
+#include <QShortcut>
+#include <QWebEngineView>
 
-#include "downloadmanagerwidget.h"
-
-#include <QVector>
-#include <QWebEngineProfile>
-
-class BrowserWindow;
-
-class Browser
+int main(int argc, char *argv[])
 {
-public:
-    Browser();
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication app(argc, argv);
 
-    QVector<BrowserWindow*> windows() { return m_windows; }
+    QWebEngineView view;
+    view.setUrl(QUrl(QStringLiteral("qrc:/index.html")));
+    view.resize(1024, 750);
+    view.show();
 
-    BrowserWindow *createWindow(bool offTheRecord = false);
-    BrowserWindow *createDevToolsWindow();
+    PrintHandler handler;
+    handler.setPage(view.page());
 
-    DownloadManagerWidget &downloadManagerWidget() { return m_downloadManagerWidget; }
+    auto printPreviewShortCut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_P), &view);
+    auto printShortCut = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_P), &view);
 
-private:
-    QVector<BrowserWindow*> m_windows;
-    DownloadManagerWidget m_downloadManagerWidget;
-    QScopedPointer<QWebEngineProfile> m_otrProfile;
-};
-#endif // BROWSER_H
+    QObject::connect(printPreviewShortCut, &QShortcut::activated, &handler, &PrintHandler::printPreview);
+    QObject::connect(printShortCut, &QShortcut::activated, &handler, &PrintHandler::print);
+
+    return app.exec();
+}

@@ -172,6 +172,7 @@ private Q_SLOTS:
     void cleanupTestCase();
 
     void jsUrlCanon();
+    void jsUrlRelative();
     void jsUrlOrigin();
     void subdirWithAccess();
     void subdirWithoutAccess();
@@ -279,6 +280,54 @@ void tst_Origins::jsUrlCanon()
              QVariant(QSL("hostportanduserinformationsyntax://foo/bar")));
     QCOMPARE(eval(QSL("new URL(\"HostPortAndUserInformationSyntax:a:b@foo/bar\").href")),
              QVariant(QSL("hostportanduserinformationsyntax://a:b@foo/bar")));
+}
+
+// Test relative URL resolution.
+void tst_Origins::jsUrlRelative()
+{
+    QVERIFY(load(QSL("about:blank")));
+
+    // Schemes with hosts, like http, work as expected.
+    QCOMPARE(eval(QSL("new URL('bar', 'http://foo').href")), QVariant(QSL("http://foo/bar")));
+    QCOMPARE(eval(QSL("new URL('baz', 'http://foo/bar').href")), QVariant(QSL("http://foo/baz")));
+    QCOMPARE(eval(QSL("new URL('baz', 'http://foo/bar/').href")), QVariant(QSL("http://foo/bar/baz")));
+    QCOMPARE(eval(QSL("new URL('/baz', 'http://foo/bar/').href")), QVariant(QSL("http://foo/baz")));
+    QCOMPARE(eval(QSL("new URL('./baz', 'http://foo/bar/').href")), QVariant(QSL("http://foo/bar/baz")));
+    QCOMPARE(eval(QSL("new URL('../baz', 'http://foo/bar/').href")), QVariant(QSL("http://foo/baz")));
+    QCOMPARE(eval(QSL("new URL('../../baz', 'http://foo/bar/').href")), QVariant(QSL("http://foo/baz")));
+    QCOMPARE(eval(QSL("new URL('//baz', 'http://foo/bar/').href")), QVariant(QSL("http://baz/")));
+
+    // In the case of schemes without hosts, relative URLs only work if the URL
+    // starts with a single slash -- and canonicalization does not guarantee
+    // this. The following cases all fail with TypeErrors.
+    QCOMPARE(eval(QSL("new URL('bar', 'tst:foo').href")), QVariant());
+    QCOMPARE(eval(QSL("new URL('baz', 'tst:foo/bar').href")), QVariant());
+    QCOMPARE(eval(QSL("new URL('bar', 'tst://foo').href")), QVariant());
+    QCOMPARE(eval(QSL("new URL('bar', 'tst:///foo').href")), QVariant());
+
+    // However, registered custom schemes have been patched to allow relative
+    // URLs even without an initial slash.
+    QCOMPARE(eval(QSL("new URL('bar', 'qrc:foo').href")), QVariant(QSL("qrc:bar")));
+    QCOMPARE(eval(QSL("new URL('baz', 'qrc:foo/bar').href")), QVariant(QSL("qrc:foo/baz")));
+    QCOMPARE(eval(QSL("new URL('bar', 'qrc://foo').href")), QVariant());
+    QCOMPARE(eval(QSL("new URL('bar', 'qrc:///foo').href")), QVariant());
+
+    // With a slash it works the same as http except 'foo' is part of the path and not the host.
+    QCOMPARE(eval(QSL("new URL('bar', 'qrc:/foo').href")), QVariant(QSL("qrc:/bar")));
+    QCOMPARE(eval(QSL("new URL('bar', 'qrc:/foo/').href")), QVariant(QSL("qrc:/foo/bar")));
+    QCOMPARE(eval(QSL("new URL('baz', 'qrc:/foo/bar').href")), QVariant(QSL("qrc:/foo/baz")));
+    QCOMPARE(eval(QSL("new URL('baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc:/foo/bar/baz")));
+    QCOMPARE(eval(QSL("new URL('/baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc:/baz")));
+    QCOMPARE(eval(QSL("new URL('./baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc:/foo/bar/baz")));
+    QCOMPARE(eval(QSL("new URL('../baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc:/foo/baz")));
+    QCOMPARE(eval(QSL("new URL('../../baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc:/baz")));
+    QCOMPARE(eval(QSL("new URL('../../../baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc:/baz")));
+
+    // If the relative URL begins with >= 2 slashes, then the scheme is treated
+    // not as a Syntax::Path scheme but as a Syntax::HostPortAndUserInformation
+    // scheme.
+    QCOMPARE(eval(QSL("new URL('//baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc://baz/")));
+    QCOMPARE(eval(QSL("new URL('///baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc://baz/")));
 }
 
 // Test origin serialization in Blink, implemented by blink::KURL and

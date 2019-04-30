@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -48,31 +48,32 @@
 **
 ****************************************************************************/
 
-#ifndef BROWSER_H
-#define BROWSER_H
+#ifndef PRINTHANDLER_H
+#define PRINTHANDLER_H
 
-#include "downloadmanagerwidget.h"
+#include <QObject>
 
-#include <QVector>
-#include <QWebEngineProfile>
+QT_BEGIN_NAMESPACE
+class QPainter;
+class QPrinter;
+class QWebEnginePage;
+QT_END_NAMESPACE
 
-class BrowserWindow;
-
-class Browser
+class PrintHandler : public QObject
 {
+    Q_OBJECT
 public:
-    Browser();
+    PrintHandler(QObject *parent = nullptr);
+    void setPage(QWebEnginePage *page);
 
-    QVector<BrowserWindow*> windows() { return m_windows; }
-
-    BrowserWindow *createWindow(bool offTheRecord = false);
-    BrowserWindow *createDevToolsWindow();
-
-    DownloadManagerWidget &downloadManagerWidget() { return m_downloadManagerWidget; }
+public slots:
+    void print();
+    void printPreview();
+    void printDocument(QPrinter *printer);
 
 private:
-    QVector<BrowserWindow*> m_windows;
-    DownloadManagerWidget m_downloadManagerWidget;
-    QScopedPointer<QWebEngineProfile> m_otrProfile;
+    QWebEnginePage *m_page = nullptr;
+    bool m_inPrintPreview = false;
 };
-#endif // BROWSER_H
+
+#endif // PRINTHANDLER_H

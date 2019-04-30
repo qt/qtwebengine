@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -48,31 +48,68 @@
 **
 ****************************************************************************/
 
-#ifndef BROWSER_H
-#define BROWSER_H
+#include "printhandler.h"
+#include <QEventLoop>
+#include <QPrintDialog>
+#include <QPrinter>
+#include <QPainter>
+#include <QPrintPreviewDialog>
+#include <QWebEnginePage>
 
-#include "downloadmanagerwidget.h"
-
-#include <QVector>
-#include <QWebEngineProfile>
-
-class BrowserWindow;
-
-class Browser
+PrintHandler::PrintHandler(QObject *parent)
+    : QObject(parent)
 {
-public:
-    Browser();
 
-    QVector<BrowserWindow*> windows() { return m_windows; }
+}
 
-    BrowserWindow *createWindow(bool offTheRecord = false);
-    BrowserWindow *createDevToolsWindow();
+void PrintHandler::setPage(QWebEnginePage *page)
+{
+    Q_ASSERT(!m_page);
+    m_page = page;
+    connect(m_page, &QWebEnginePage::printRequested, this, &PrintHandler::printPreview);
+}
 
-    DownloadManagerWidget &downloadManagerWidget() { return m_downloadManagerWidget; }
+void PrintHandler::print()
+{
+    QPrinter printer(QPrinter::HighResolution);
+    QPrintDialog dialog(&printer, m_page->view());
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    printDocument(&printer);
+}
 
-private:
-    QVector<BrowserWindow*> m_windows;
-    DownloadManagerWidget m_downloadManagerWidget;
-    QScopedPointer<QWebEngineProfile> m_otrProfile;
-};
-#endif // BROWSER_H
+void PrintHandler::printDocument(QPrinter *printer)
+{
+    QEventLoop loop;
+    bool result;
+    auto printPreview = [&](bool success) { result = success; loop.quit(); };
+    m_page->print(printer, std::move(printPreview));
+    loop.exec();
+    if (!result) {
+        QPainter painter;
+        if (painter.begin(printer)) {
+            QFont font = painter.font();
+            font.setPixelSize(20);
+            painter.setFont(font);
+            painter.drawText(QPointF(10,25),
+                             QStringLiteral("Could not generate print preview."));
+
+            painter.end();
+        }
+    }
+}
+
+void PrintHandler::printPreview()
+{
+    if (!m_page)
+        return;
+    if (m_inPrintPreview)
+        return;
+    m_inPrintPreview = true;
+    QPrinter printer;
+    QPrintPreviewDialog preview(&printer, m_page->view());
+    connect(&preview, &QPrintPreviewDialog::paintRequested,
+            this, &PrintHandler::printDocument);
+    preview.exec();
+    m_inPrintPreview = false;
+}
