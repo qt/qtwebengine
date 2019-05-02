@@ -49,13 +49,6 @@ QT_BEGIN_NAMESPACE
 #if QT_CONFIG(ssl)
 
 /*!
-    \class QWebEngineClientCertificateStore::Entry
-    \inmodule QtWebEngineCore
-    \since 5.13
-    \brief This structure holds the certificate and the private key.
-*/
-
-/*!
     \class QWebEngineClientCertificateStore
     \inmodule QtWebEngineCore
     \since 5.13

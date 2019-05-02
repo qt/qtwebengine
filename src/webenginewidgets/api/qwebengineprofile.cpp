@@ -834,8 +834,8 @@ void QWebEngineProfile::removeAllUrlSchemeHandlers()
 
     Currently only affects Linux/NSS installations where it enables OCSP.
 
-    As long as one profile has this option enabled, all other profiles will be
-    able to use it for their certificate verification.
+    As long as one profile has \a enabled set to \c true, all other profiles
+    will be able to use it for their certificate verification.
 
     \sa isUsedForGlobalCertificateVerification(), httpCacheType()
 */
