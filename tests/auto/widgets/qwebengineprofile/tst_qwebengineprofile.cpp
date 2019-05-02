@@ -62,7 +62,7 @@ private Q_SLOTS:
     void changePersistentPath();
     void initiator();
     void badDeleteOrder();
-    void qtbug_72299(); // this should be the last test
+    void qtbug_71895(); // this should be the last test
 };
 
 void tst_QWebEngineProfile::initTestCase()
@@ -649,7 +649,7 @@ void tst_QWebEngineProfile::badDeleteOrder()
     delete view;
 }
 
-void tst_QWebEngineProfile::qtbug_72299()
+void tst_QWebEngineProfile::qtbug_71895()
 {
     QWebEngineView view;
     QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
@@ -659,8 +659,9 @@ void tst_QWebEngineProfile::qtbug_72299()
     view.page()->profile()->setHttpCacheType(QWebEngineProfile::NoCache);
     view.page()->profile()->cookieStore()->deleteAllCookies();
     view.page()->profile()->setPersistentCookiesPolicy(QWebEngineProfile::NoPersistentCookies);
-    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
-    QVERIFY(loadSpy.front().front().toBool());
+    bool gotSignal = loadSpy.count() || loadSpy.wait(20000);
+    if (!gotSignal)
+        QSKIP("Couldn't load page from network, skipping test.");
 }
 
 
