@@ -126,6 +126,7 @@ static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *obje
 QWebEngineViewPrivate::QWebEngineViewPrivate()
     : page(0)
     , m_dragEntered(false)
+    , m_ownsPage(false)
 {
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::installFactory(&webAccessibleFactory);
@@ -176,6 +177,7 @@ QWebEnginePage* QWebEngineView::page() const
     if (!d->page) {
         QWebEngineView *that = const_cast<QWebEngineView*>(this);
         that->setPage(new QWebEnginePage(that));
+        d->m_ownsPage = true;
     }
     return d->page;
 }
