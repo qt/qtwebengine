@@ -485,7 +485,7 @@ void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<Authentication
 
 void QWebEnginePagePrivate::releaseProfile()
 {
-    qDebug("Release of profile requested but WebEnginePage still not deleted. Expect troubles !");
+    qWarning("Release of profile requested but WebEnginePage still not deleted. Expect troubles !");
     // this is not the way to go, but might avoid the crash if user code does not make any calls to page.
     delete q_ptr->d_ptr.take();
 }
