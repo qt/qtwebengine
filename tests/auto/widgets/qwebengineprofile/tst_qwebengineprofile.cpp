@@ -60,6 +60,7 @@ private Q_SLOTS:
     void downloadItem();
     void changePersistentPath();
     void initiator();
+    void badDeleteOrder();
     void qtbug_72299(); // this should be the last test
 };
 
@@ -587,6 +588,24 @@ void tst_QWebEngineProfile::initiator()
     page.load(QUrl("foo:bar"));
     QVERIFY(loadFinishedSpy.wait());
     QCOMPARE(handler.initiator, QUrl());
+}
+
+void tst_QWebEngineProfile::badDeleteOrder()
+{
+    QWebEngineProfile *profile = new QWebEngineProfile();
+    QWebEngineView *view = new QWebEngineView();
+    view->resize(640, 480);
+    view->show();
+    QVERIFY(QTest::qWaitForWindowExposed(view));
+    QWebEnginePage *page = new QWebEnginePage(profile, view);
+    view->setPage(page);
+
+    QSignalSpy spyLoadFinished(page, SIGNAL(loadFinished(bool)));
+    page->setHtml(QStringLiteral("<html><body><h1>Badly handled page!</h1></body></html>"));
+    QTRY_COMPARE(spyLoadFinished.count(), 1);
+
+    delete profile;
+    delete view;
 }
 
 void tst_QWebEngineProfile::qtbug_72299()
