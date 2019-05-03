@@ -49,6 +49,7 @@
 #include "content/public/common/content_features.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
@@ -99,13 +100,6 @@
 #endif
 
 namespace QtWebEngineCore {
-
-static const char* const kDefaultAuthSchemes[] = { net::kBasicAuthScheme,
-                                                   net::kDigestAuthScheme,
-#if QT_CONFIG(webengine_kerberos)
-                                                   net::kNegotiateAuthScheme,
-#endif
-                                                   net::kNtlmAuthScheme };
 
 static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first,
                                         const net::HttpNetworkSession::Params &second)
@@ -345,8 +339,14 @@ void ProfileIODataQt::generateStorage()
     m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::DefaultCTPolicyEnforcer()));
     m_storage->set_host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
     m_storage->set_ssl_config_service(std::make_unique<net::SSLConfigServiceDefaults>());
+    if (!m_httpAuthPreferences) {
+        m_httpAuthPreferences.reset(new net::HttpAuthPreferences());
+        std::string serverWhitelist = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kAuthServerWhitelist);
+        m_httpAuthPreferences->SetServerWhitelist(serverWhitelist);
+    }
     m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(
-                                                 m_urlRequestContext->host_resolver()));
+                                                 m_urlRequestContext->host_resolver(),
+                                                 m_httpAuthPreferences.get()));
     m_storage->set_transport_security_state(std::make_unique<net::TransportSecurityState>());
 
     if (!m_dataPath.isEmpty()) {
