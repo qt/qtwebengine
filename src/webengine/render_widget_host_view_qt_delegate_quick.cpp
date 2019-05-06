@@ -104,6 +104,13 @@ QRectF RenderWidgetHostViewQtDelegateQuick::viewGeometry() const
     return QRectF(mapToGlobal(QPointF(0, 0)), size());
 }
 
+QRect RenderWidgetHostViewQtDelegateQuick::windowGeometry() const
+{
+    if (!window())
+        return QRect();
+    return window()->frameGeometry();
+}
+
 void RenderWidgetHostViewQtDelegateQuick::setKeyboardFocus()
 {
     setFocus(true);

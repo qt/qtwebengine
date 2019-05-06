@@ -934,9 +934,9 @@ void RenderWidgetHostViewQt::visualPropertiesChanged()
     m_viewRectInDips = toGfx(m_delegate->viewGeometry().toAlignedRect());
 
     gfx::Rect oldWindowRect = m_windowRectInDips;
-    QWindow *window = m_delegate->window();
-    m_windowRectInDips = window ? toGfx(window->frameGeometry()) : gfx::Rect();
+    m_windowRectInDips = toGfx(m_delegate->windowGeometry());
 
+    QWindow *window = m_delegate->window();
     content::ScreenInfo oldScreenInfo = m_screenInfo;
     m_screenInfo = screenInfoFromQScreen(window ? window->screen() : nullptr);
 

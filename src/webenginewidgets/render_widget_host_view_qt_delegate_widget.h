@@ -67,6 +67,7 @@ public:
 
     void initAsPopup(const QRect&) override;
     QRectF viewGeometry() const override;
+    QRect windowGeometry() const override;
     void setKeyboardFocus() override;
     bool hasKeyboardFocus() override;
     void lockMouse() override;

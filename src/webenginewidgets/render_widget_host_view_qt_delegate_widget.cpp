@@ -238,6 +238,13 @@ QRectF RenderWidgetHostViewQtDelegateWidget::viewGeometry() const
     return QRectF(mapToGlobal(pos()), size());
 }
 
+QRect RenderWidgetHostViewQtDelegateWidget::windowGeometry() const
+{
+    if (!window())
+        return QRect();
+    return window()->frameGeometry();
+}
+
 void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
 {
     // The root item always has focus within the root focus scope:
