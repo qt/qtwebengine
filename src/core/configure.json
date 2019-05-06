@@ -5,6 +5,7 @@
         "gui-private",
         "printsupport"
     ],
+    "condition": "module.gui",
     "testDir": "../../config.tests",
     "commandline": {
         "options": {
