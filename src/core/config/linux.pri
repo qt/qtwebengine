@@ -36,6 +36,7 @@ clang {
     gn_args += \
         is_clang=true \
         clang_use_chrome_plugins=false \
+        clang_use_default_sample_profile=false \
         clang_base_path=\"$${clang_prefix}\"
 
     linux-clang-libc++: gn_args += use_libcxx=true
