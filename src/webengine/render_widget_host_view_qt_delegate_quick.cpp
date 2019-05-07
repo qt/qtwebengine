@@ -101,7 +101,13 @@ void RenderWidgetHostViewQtDelegateQuick::initAsPopup(const QRect &r)
 
 QRectF RenderWidgetHostViewQtDelegateQuick::viewGeometry() const
 {
-    return QRectF(mapToGlobal(QPointF(0, 0)), size());
+    // Transform the entire rect to find the correct top left corner.
+    const QPointF p1 = mapToGlobal(mapFromScene(QPointF(0, 0)));
+    const QPointF p2 = mapToGlobal(mapFromScene(QPointF(width(), height())));
+    QRectF geometry = QRectF(p1, p2).normalized();
+    // But keep the size untransformed to behave like other QQuickItems.
+    geometry.setSize(size());
+    return geometry;
 }
 
 QRect RenderWidgetHostViewQtDelegateQuick::windowGeometry() const
