@@ -443,18 +443,32 @@ void ProfileAdapter::setHttpCacheMaxSize(int maxSize)
         m_profile->m_profileIOData->updateHttpCache();
 }
 
-static bool isInternalScheme(const QByteArray &scheme)
+enum class SchemeType { Protected, Overridable, Custom };
+static SchemeType schemeType(const QByteArray &canonicalScheme)
 {
-    static QSet<QByteArray> internalSchemes{
-        QByteArrayLiteral("qrc"),
-        QByteArrayLiteral("data"),
+    static const QSet<QByteArray> blacklist{
+        QByteArrayLiteral("about"),
         QByteArrayLiteral("blob"),
-        QByteArrayLiteral("http"),
-        QByteArrayLiteral("https"),
-        QByteArrayLiteral("ftp"),
+        QByteArrayLiteral("data"),
         QByteArrayLiteral("javascript"),
+        QByteArrayLiteral("qrc"),
+        // See also kStandardURLSchemes in url/url_util.cc (through url::IsStandard below)
     };
-    return internalSchemes.contains(scheme);
+
+    static const QSet<QByteArray> whitelist{
+        QByteArrayLiteral("gopher"),
+    };
+
+    bool standardSyntax = url::IsStandard(canonicalScheme.data(), url::Component(0, canonicalScheme.size()));
+    bool customScheme = QWebEngineUrlScheme::schemeByName(canonicalScheme) != QWebEngineUrlScheme();
+    bool blacklisted = blacklist.contains(canonicalScheme);
+    bool whitelisted = whitelist.contains(canonicalScheme);
+
+    if (whitelisted)
+        return SchemeType::Overridable;
+    if (blacklisted || (standardSyntax && !customScheme))
+        return SchemeType::Protected;
+    return SchemeType::Custom;
 }
 
 QWebEngineUrlSchemeHandler *ProfileAdapter::urlSchemeHandler(const QByteArray &scheme)
@@ -480,7 +494,7 @@ void ProfileAdapter::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
     auto it = m_customUrlSchemeHandlers.begin();
     while (it != m_customUrlSchemeHandlers.end()) {
         if (it.value() == handler) {
-            if (isInternalScheme(it.key())) {
+            if (schemeType(it.key()) == SchemeType::Protected) {
                 qWarning("Cannot remove the URL scheme handler for an internal scheme: %s", it.key().constData());
                 continue;
             }
@@ -497,7 +511,7 @@ void ProfileAdapter::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 void ProfileAdapter::removeUrlScheme(const QByteArray &scheme)
 {
     QByteArray canonicalScheme = scheme.toLower();
-    if (isInternalScheme(canonicalScheme)) {
+    if (schemeType(canonicalScheme) == SchemeType::Protected) {
         qWarning("Cannot remove the URL scheme handler for an internal scheme: %s", scheme.constData());
         return;
     }
@@ -509,15 +523,19 @@ void ProfileAdapter::installUrlSchemeHandler(const QByteArray &scheme, QWebEngin
 {
     Q_ASSERT(handler);
     QByteArray canonicalScheme = scheme.toLower();
-    if (isInternalScheme(canonicalScheme)) {
+    SchemeType type = schemeType(canonicalScheme);
+
+    if (type == SchemeType::Protected) {
         qWarning("Cannot install a URL scheme handler overriding internal scheme: %s", scheme.constData());
         return;
     }
+
     if (m_customUrlSchemeHandlers.value(canonicalScheme, handler) != handler) {
         qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
         return;
     }
-    if (QWebEngineUrlScheme::schemeByName(canonicalScheme) == QWebEngineUrlScheme())
+
+    if (type == SchemeType::Custom)
         qWarning("Please register the custom scheme '%s' via QWebEngineUrlScheme::registerScheme() "
                  "before installing the custom scheme handler.", scheme.constData());
 

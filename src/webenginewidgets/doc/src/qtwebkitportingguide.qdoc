@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -266,7 +266,6 @@
         page.runJavaScript("document.documentElement.contentEditable = true");
     \endcode
 
-
     \section1 Unavailable Qt WebKit API
 
     The Qt \WebKit classes and methods in this list will not be available in \QWE.
@@ -310,5 +309,11 @@
             engine process them by overloading the QWebEnginePage::acceptNavigationRequest()
             function. This is necessary when an HTML document is used as part of the user interface,
             and not to display external data, for example, when displaying a list of results.
+
+            \note \l{QWebEnginePage::}{acceptNavigationRequest()} starts the
+            loading process and emits the \l{QWebEnginePage::}{loadStarted()}
+            signal \e before the request is accepted or rejected. Therefore, a
+            \l{QWebEnginePage::}{loadFinished()} signal that returns \c false
+            is to be expected even after delegating the request.
     \endtable
 */
