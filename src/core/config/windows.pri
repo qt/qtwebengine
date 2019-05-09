@@ -1,13 +1,28 @@
 include(common.pri)
 
 gn_args += \
-    is_clang=false \
     use_sysroot=false \
     enable_session_service=false \
     ninja_use_custom_environment_files=false \
     is_multi_dll_chrome=false \
     win_linker_timing=true \
     com_init_check_hook_disabled=true
+
+use_lld_linker: gn_args += use_lld=true
+else: gn_args += use_lld=false
+
+clang_cl {
+    clang_full_path = $$system_path($$which($${QMAKE_CXX}))
+    # Remove the "\bin\clang-cl.exe" part:
+    clang_dir = $$dirname(clang_full_path)
+    clang_prefix = $$join(clang_dir,,,"\..")
+    gn_args += \
+        is_clang=true \
+        clang_use_chrome_plugins=false \
+        clang_base_path=$$system_quote($$system_path($$clean_path($$clang_prefix)))
+} else {
+    gn_args += is_clang=false
+}
 
 isDeveloperBuild() {
     gn_args += \
@@ -56,6 +71,8 @@ msvc:contains(QT_ARCH, "i386"):!usingMSVC32BitCrossCompiler() {
 msvc {
     equals(MSVC_VER, 15.0) {
         MSVS_VERSION = 2017
+    } else: equals(MSVC_VER, 16.0) {
+        MSVS_VERSION = 2019
     } else {
         error("Visual Studio compiler version \"$$MSVC_VER\" is not supported by Qt WebEngine")
     }
@@ -69,7 +86,6 @@ msvc {
 
     GN_TARGET_CPU = $$gnArch($$QT_ARCH)
     gn_args += target_cpu=\"$$GN_TARGET_CPU\"
-
 } else {
-    error("Qt WebEngine for Windows can only be built with the Microsoft Visual Studio C++ compiler")
+    error("Qt WebEngine for Windows can only be built with a Microsoft Visual Studio C++ compatible compiler")
 }

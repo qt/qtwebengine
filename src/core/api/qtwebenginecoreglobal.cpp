@@ -58,7 +58,8 @@ QT_END_NAMESPACE
 
 #ifndef QT_NO_OPENGL
 #ifdef Q_OS_MACOS
-static bool needsOfflineRendererWorkaround() {
+static bool needsOfflineRendererWorkaround()
+{
     size_t hwmodelsize = 0;
 
     if (sysctlbyname("hw.model", nullptr, &hwmodelsize, nullptr, 0) == -1)
@@ -134,4 +135,3 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
 #endif // QT_NO_OPENGL
 }
 } // namespace QtWebEngineCore
-

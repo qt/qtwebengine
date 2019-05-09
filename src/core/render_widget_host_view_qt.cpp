@@ -666,9 +666,9 @@ void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom:
 void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, base::Optional<viz::HitTestRegionList>)
 {
     bool scrollOffsetChanged = (m_lastScrollOffset != frame.metadata.root_scroll_offset);
-    bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.scrollable_viewport_size);
+    bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);
     m_lastScrollOffset = frame.metadata.root_scroll_offset;
-    m_lastContentsSize = frame.metadata.scrollable_viewport_size;
+    m_lastContentsSize = frame.metadata.root_layer_size;
 
     // Force to process swap messages
     uint32_t frame_token = frame.metadata.frame_token;
@@ -934,9 +934,9 @@ void RenderWidgetHostViewQt::visualPropertiesChanged()
     m_viewRectInDips = toGfx(m_delegate->viewGeometry().toAlignedRect());
 
     gfx::Rect oldWindowRect = m_windowRectInDips;
-    QWindow *window = m_delegate->window();
-    m_windowRectInDips = window ? toGfx(window->frameGeometry()) : gfx::Rect();
+    m_windowRectInDips = toGfx(m_delegate->windowGeometry());
 
+    QWindow *window = m_delegate->window();
     content::ScreenInfo oldScreenInfo = m_screenInfo;
     m_screenInfo = screenInfoFromQScreen(window ? window->screen() : nullptr);
 

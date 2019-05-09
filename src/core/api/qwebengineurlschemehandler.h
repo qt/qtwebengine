@@ -58,7 +58,7 @@ public:
     QWebEngineUrlSchemeHandler(QObject *parent = Q_NULLPTR);
     ~QWebEngineUrlSchemeHandler();
 
-    virtual void requestStarted(QWebEngineUrlRequestJob*) = 0;
+    virtual void requestStarted(QWebEngineUrlRequestJob *) = 0;
 
 private:
     Q_DISABLE_COPY(QWebEngineUrlSchemeHandler)

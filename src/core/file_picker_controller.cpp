@@ -63,24 +63,35 @@ FilePickerController::~FilePickerController() = default;
 
 void FilePickerController::accepted(const QStringList &files)
 {
-    FilePickerController::filesSelectedInChooser(files);
+    QStringList stringList;
+
+    for (const QString &file : files) {
+        if (QDir(file).isAbsolute())
+            stringList.append(file);
+        else
+            qWarning("Ignore invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(file));
+    }
+
+    FilePickerController::filesSelectedInChooser(stringList);
 }
 
 void FilePickerController::accepted(const QVariant &files)
 {
     QStringList stringList;
+    QList<QUrl> urlList = QUrl::fromStringList(files.toStringList());
 
-    if (files.canConvert(QVariant::StringList)) {
-        stringList = files.toStringList();
-    } else if (files.canConvert<QList<QUrl> >()) {
-        const QList<QUrl> urls = files.value<QList<QUrl>>();
-        for (const QUrl &url : urls)
-            stringList.append(url.toLocalFile());
+    if (urlList.isEmpty()) {
+        FilePickerController::accepted(stringList);
     } else {
-        qWarning("An unhandled type '%s' was provided in FilePickerController::accepted(QVariant)", files.typeName());
-    }
+        for (const QUrl &url : qAsConst(urlList)) {
+            if (url.isValid() && url.scheme() == "file" && !url.path().isEmpty())
+                stringList.append(url.path());
+            else
+                qWarning("Ignore invalid item in FilePickerController::accepted(QVariant): %s", qPrintable(url.toString()));
+        }
 
-    FilePickerController::filesSelectedInChooser(stringList);
+        FilePickerController::accepted(stringList);
+    }
 }
 
 void FilePickerController::rejected()

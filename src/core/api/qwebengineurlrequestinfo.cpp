@@ -68,8 +68,10 @@ ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeLast, content::RESOURCE
 
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::LinkNavigation, QWebEngineUrlRequestInfo::NavigationTypeLink)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::TypedNavigation, QWebEngineUrlRequestInfo::NavigationTypeTyped)
-ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::FormSubmittedNavigation, QWebEngineUrlRequestInfo::NavigationTypeFormSubmitted)
-ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::BackForwardNavigation, QWebEngineUrlRequestInfo::NavigationTypeBackForward)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::FormSubmittedNavigation,
+                   QWebEngineUrlRequestInfo::NavigationTypeFormSubmitted)
+ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::BackForwardNavigation,
+                   QWebEngineUrlRequestInfo::NavigationTypeBackForward)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::ReloadNavigation, QWebEngineUrlRequestInfo::NavigationTypeReload)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, QWebEngineUrlRequestInfo::NavigationTypeOther)
 
@@ -82,7 +84,7 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
     The QWebEngineUrlRequestInfo is useful for setting extra header fields for requests
     or for redirecting certain requests without payload data to another URL.
     This class cannot be instantiated or copied by the user, instead it will
-    be created by Qt WebEngine and sent through the virtual function
+    be created by \QWE and sent through the virtual function
     QWebEngineUrlRequestInterceptor::interceptRequest() if an interceptor has been set.
 */
 
@@ -124,8 +126,9 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
     execution of this function is finished.
 */
 
-
-QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource, QWebEngineUrlRequestInfo::NavigationType navigation, const QUrl &u, const QUrl &fpu, const QByteArray &m)
+QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource,
+                                                                 QWebEngineUrlRequestInfo::NavigationType navigation,
+                                                                 const QUrl &u, const QUrl &fpu, const QByteArray &m)
     : resourceType(resource)
     , navigationType(navigation)
     , shouldBlockRequest(false)
@@ -133,31 +136,24 @@ QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRe
     , firstPartyUrl(fpu)
     , method(m)
     , changed(false)
-{
-}
+{}
 
 /*!
     \internal
 */
-QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfo &&p)
-    : d_ptr(p.d_ptr.take())
-{
-}
+QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfo &&p) : d_ptr(p.d_ptr.take()) {}
 
 /*!
     \internal
 */
 
-QWebEngineUrlRequestInfo::~QWebEngineUrlRequestInfo()
-{
-}
+QWebEngineUrlRequestInfo::~QWebEngineUrlRequestInfo() {}
 
 /*!
     \internal
 */
 
-QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPrivate *p)
-    : d_ptr(p)
+QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPrivate *p) : d_ptr(p)
 {
     d_ptr->q_ptr = this;
 }
@@ -246,7 +242,6 @@ QUrl QWebEngineUrlRequestInfo::firstPartyUrl() const
 {
     return d_ptr->firstPartyUrl;
 }
-
 
 /*!
     Returns the HTTP method of the request (for example, GET or POST).

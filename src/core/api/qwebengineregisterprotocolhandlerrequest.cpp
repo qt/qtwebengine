@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 /*! \internal */
 QWebEngineRegisterProtocolHandlerRequest::QWebEngineRegisterProtocolHandlerRequest(
-    QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerRequestController> d_ptr)
+        QSharedPointer<QtWebEngineCore::RegisterProtocolHandlerRequestController> d_ptr)
     : d_ptr(std::move(d_ptr))
 {}
 

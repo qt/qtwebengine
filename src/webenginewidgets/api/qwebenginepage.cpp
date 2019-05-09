@@ -485,7 +485,7 @@ void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<Authentication
 
 void QWebEnginePagePrivate::releaseProfile()
 {
-    qDebug("Release of profile requested but WebEnginePage still not deleted. Expect troubles !");
+    qWarning("Release of profile requested but WebEnginePage still not deleted. Expect troubles !");
     // this is not the way to go, but might avoid the crash if user code does not make any calls to page.
     delete q_ptr->d_ptr.take();
 }
@@ -715,6 +715,13 @@ void QWebEnginePagePrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
         view->d_func()->pageChanged(oldPage, page);
         if (oldWidget != widget)
             view->d_func()->widgetChanged(oldWidget, widget);
+
+        // At this point m_ownsPage should still refer to oldPage,
+        // it is only set for the new page after binding.
+        if (view->d_func()->m_ownsPage) {
+            delete oldPage;
+            view->d_func()->m_ownsPage = false;
+        }
     }
 }
 

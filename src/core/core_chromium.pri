@@ -37,6 +37,11 @@ qtConfig(egl): CONFIG += egl
 
 INCLUDEPATH += $$PWD $$PWD/api
 
+clang_cl {
+    QMAKE_CFLAGS -= $$QMAKE_CFLAGS_MSVC_COMPAT
+    QMAKE_CXXFLAGS -= $$QMAKE_CFLAGS_MSVC_COMPAT
+}
+
 SOURCES = \
         accessibility_activation_observer.cpp \
         accessibility_tree_formatter_qt.cpp \
@@ -149,6 +154,7 @@ HEADERS = \
         certificate_error_controller_p.h \
         certificate_error_controller.h \
         client_cert_select_controller.h \
+        clipboard_change_observer.h \
         clipboard_qt.h \
         command_line_pref_store_qt.h \
         color_chooser_qt.h \

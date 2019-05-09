@@ -116,7 +116,7 @@ void tst_Dialogs::colorDialogRequested()
 void tst_Dialogs::contextMenuRequested()
 {
     m_listner->load(QUrl("qrc:/index.html"));
-    QTRY_VERIFY(m_listner->ready());
+    QTRY_COMPARE_WITH_TIMEOUT(m_listner->ready(), true, 20000);
     QSignalSpy dialogSpy(m_listner, &TestHandler::requestChanged);
     QTest::mouseClick(m_widnow, Qt::RightButton);
     QTRY_COMPARE(dialogSpy.count(), 1);
@@ -226,6 +226,7 @@ void tst_Dialogs::javaScriptDialogRequested()
     QCOMPARE(dialog->type(), type);
     QCOMPARE(dialog->message(), message);
     QCOMPARE(dialog->defaultText(), defaultText);
+    QTRY_VERIFY(m_listner->ready()); // make sure javascript executes no longer
 }
 
 #include "tst_dialogs.moc"

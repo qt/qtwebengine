@@ -26,7 +26,7 @@ defineTest(isPlatformSupported) {
       skipBuild("Qt WebEngine on Windows must be built on a 64-bit machine.")
     }
     !msvc|intel_icl {
-      skipBuild("Qt WebEngine on Windows requires MSVC.")
+      skipBuild("Qt WebEngine on Windows requires MSVC or Clang (MSVC mode).")
       return(false)
     }
     !isMinWinSDKVersion(10, 16299): {

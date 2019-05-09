@@ -48,7 +48,7 @@
 namespace QtWebEngineCore {
 class NetworkDelegateQt;
 class URLRequestNotification;
-}
+} // namespace QtWebEngineCore
 
 QT_BEGIN_NAMESPACE
 

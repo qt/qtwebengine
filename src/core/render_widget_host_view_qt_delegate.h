@@ -91,6 +91,7 @@ public:
     virtual ~RenderWidgetHostViewQtDelegate() { }
     virtual void initAsPopup(const QRect&) = 0;
     virtual QRectF viewGeometry() const = 0;
+    virtual QRect windowGeometry() const = 0;
     virtual void setKeyboardFocus() = 0;
     virtual bool hasKeyboardFocus() = 0;
     virtual void lockMouse() = 0;

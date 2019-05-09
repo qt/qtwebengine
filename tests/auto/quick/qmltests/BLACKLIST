@@ -4,15 +4,6 @@ osx
 [WebViewGeopermission::test_geoPermissionRequest]
 osx
 
-[WebEngineViewSingleFileUpload::test_acceptDirectory]
-*
-
-[WebEngineViewSingleFileUpload::test_acceptMultipleFilesSelection]
-*
-
-[WebEngineViewSingleFileUpload::test_acceptSingleFileSelection]
-*
-
 [WebViewFindText::test_findTextInterruptedByLoad]
 *
 

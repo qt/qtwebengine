@@ -67,6 +67,11 @@ QRectF RenderWidgetHostViewQtDelegateQuickWindow::viewGeometry() const
     return m_realDelegate->viewGeometry();
 }
 
+QRect RenderWidgetHostViewQtDelegateQuickWindow::windowGeometry() const
+{
+    return frameGeometry();
+}
+
 void RenderWidgetHostViewQtDelegateQuickWindow::show()
 {
     QQuickWindow::show();

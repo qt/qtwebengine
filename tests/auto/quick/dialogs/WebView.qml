@@ -59,6 +59,8 @@ Window {
         onLoadingChanged: function(reqeust) {
             if (reqeust.status === WebEngineView.LoadSucceededStatus) {
                 handler.ready = true
+            } else {
+                console.log("Wooohooo loading page from qrc failed !")
             }
         }
 

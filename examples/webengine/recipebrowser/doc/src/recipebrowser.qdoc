@@ -101,7 +101,7 @@
     width.
 
     \skipto WebEngineView
-    \printuntil KeyNavigation.priority
+    \printuntil Layout.fillHeight
 
     We then disable the \l{WebEngineSettings::focusOnNavigationEnabled}{focusOnNavigationEnabled}
     setting to make sure that the \l{WebEngineView} does not steal focus from the \c RecipeList
@@ -110,19 +110,25 @@
     ContextMenuRequest.
 
     \skipto focusOnNavigationEnabled
-    \printto firstLoadComplete
+    \printuntil }
 
     When the application starts, instead of directly showing the \l{WebEngineView}, we show a
     placeholder \l{Rectangle} with a \l{BusyIndicator} to provide a nicer user experience while the
-    application is loading. Once the first page in the view is loaded, we start a \l{Timer} that
+    application is loading.
+
+    \printuntil }
+    \dots 12
+    \skipto Rectangle
+    \printuntil }
+
+    Once the first page in the view is loaded, we start a \l{Timer} that
     will hide the placeholder and show the actual page. The delay provides more time for the recipe
     images to load, so that when the view is shown, the page is completely rendered. The timer also
     shows a help \l{ToolTip} that informs the user on how to navigate the recipes.
 
-    \printuntil busy.running = true
-    \printline }
-    \printline }
-    \printline }
+    \quotefromfile webengine/recipebrowser/resources/qml/main.qml
+    \skipto Timer {
+    \printuntil }
 
     Let's see what the \c RecipeList item looks like from the inside. The root item is a
     FocusScope to allow transferring focus to the child ListView whenever the root item receives

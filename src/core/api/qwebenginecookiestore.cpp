@@ -47,15 +47,14 @@
 #include <QByteArray>
 #include <QUrl>
 
-
 namespace {
 
-inline GURL toGurl(const QUrl& url)
+inline GURL toGurl(const QUrl &url)
 {
     return GURL(url.toString().toStdString());
 }
 
-}
+} // namespace
 
 QT_BEGIN_NAMESPACE
 
@@ -68,8 +67,7 @@ QWebEngineCookieStorePrivate::QWebEngineCookieStorePrivate(QWebEngineCookieStore
     , m_deleteAllCookiesPending(false)
     , m_getAllCookiesPending(false)
     , delegate(0)
-{
-}
+{}
 
 void QWebEngineCookieStorePrivate::processPendingUserCookies()
 {
@@ -112,7 +110,8 @@ void QWebEngineCookieStorePrivate::rejectPendingUserCookies()
     m_pendingUserCookies.clear();
 }
 
-void QWebEngineCookieStorePrivate::setCookie(const QWebEngineCallback<bool> &callback, const QNetworkCookie &cookie, const QUrl &origin)
+void QWebEngineCookieStorePrivate::setCookie(const QWebEngineCallback<bool> &callback, const QNetworkCookie &cookie,
+                                             const QUrl &origin)
 {
     const quint64 currentCallbackId = callback ? m_nextCallbackId++ : static_cast<quint64>(CallbackDirectory::NoCallbackId);
 
@@ -201,7 +200,7 @@ bool QWebEngineCookieStorePrivate::canAccessCookies(const QUrl &firstPartyUrl, c
                                                                 toGurl(firstPartyUrl),
                                                                 net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
-    QWebEngineCookieStore::FilterRequest request = { firstPartyUrl, url, thirdParty, false, 0};
+    QWebEngineCookieStore::FilterRequest request = { firstPartyUrl, url, thirdParty, false, 0 };
     return filterCallback(request);
 }
 
@@ -249,10 +248,7 @@ QWebEngineCookieStore::QWebEngineCookieStore(QObject *parent)
     Destroys this QWebEngineCookieStore object.
 */
 
-QWebEngineCookieStore::~QWebEngineCookieStore()
-{
-
-}
+QWebEngineCookieStore::~QWebEngineCookieStore() {}
 
 /*!
     Adds \a cookie to the cookie store.
@@ -298,7 +294,8 @@ void QWebEngineCookieStore::loadAllCookies()
     //TODO: use callbacks or delete dummy ones
     if (d_ptr->m_getAllCookiesPending)
         return;
-    d_ptr->callbackDirectory.registerCallback(CallbackDirectory::GetAllCookiesCallbackId, QWebEngineCallback<const QByteArray&>());
+    d_ptr->callbackDirectory.registerCallback(CallbackDirectory::GetAllCookiesCallbackId,
+                                              QWebEngineCallback<const QByteArray &>());
     //this will trigger cookieAdded signal
     d_ptr->getAllCookies();
 }

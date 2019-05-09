@@ -65,15 +65,12 @@ class URLRequest;
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineUrlRequestInfoPrivate
-{
+class QWebEngineUrlRequestInfoPrivate {
     Q_DECLARE_PUBLIC(QWebEngineUrlRequestInfo)
 public:
-    QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource
-                                    , QWebEngineUrlRequestInfo::NavigationType navigation
-                                    , const QUrl &u
-                                    , const QUrl &fpu
-                                    , const QByteArray &m);
+    QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource,
+                                    QWebEngineUrlRequestInfo::NavigationType navigation, const QUrl &u, const QUrl &fpu,
+                                    const QByteArray &m);
 
     QWebEngineUrlRequestInfo::ResourceType resourceType;
     QWebEngineUrlRequestInfo::NavigationType navigationType;

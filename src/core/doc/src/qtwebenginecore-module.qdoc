@@ -39,7 +39,7 @@
 
     \snippet qtwebenginecore_build_snippet.qdoc 1
 
-    If you use qmake to build your projects, Qt WebEngine Core is usually
+    If you use qmake to build your projects, \QWE Core is usually
     indirectly included through the \l{Qt WebEngine QML Types}{Qt WebEngine} or
     \l{Qt WebEngine Widgets C++ Classes}{Qt WebEngine Widgets} modules.
 

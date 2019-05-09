@@ -152,7 +152,14 @@ void ContentRendererClientQt::RenderThreadStarted()
     blink::WebString file(blink::WebString::FromASCII("file"));
     blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(qrc, file, blink::WebString(), true,
                                                             network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+    // Allow the pdf viewer extension to access chrome resources
+    blink::WebURL pdfViewerExtension(blink::KURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"));
+    blink::WebString chromeResources(blink::WebString::FromASCII("chrome"));
+    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(pdfViewerExtension, chromeResources, blink::WebString(), true,
+                                                            network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
+
     ExtensionsRendererClientQt::GetInstance()->RenderThreadStarted();
 #endif
 }

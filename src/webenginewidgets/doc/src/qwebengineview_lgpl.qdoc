@@ -33,7 +33,7 @@
 
     \inmodule QtWebEngineWidgets
 
-    A \e {web view} is the main widget component of the Qt WebEngine web browsing module.
+    A \e {web view} is the main widget component of the \QWE web browsing module.
     It can be used in various applications to display web content live from the
     Internet.
 
@@ -129,7 +129,7 @@
 
     The HTML document is loaded immediately, whereas external objects are loaded asynchronously.
 
-    When using this method, Qt WebEngine assumes that external resources, such as
+    When using this method, \QWE assumes that external resources, such as
     JavaScript programs or style sheets, are encoded in UTF-8 unless otherwise
     specified. For example, the encoding of an external script can be specified
     through the \c charset attribute of the HTML script tag. Alternatively, the

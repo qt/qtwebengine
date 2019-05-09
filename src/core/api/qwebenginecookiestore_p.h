@@ -66,8 +66,7 @@ class CookieMonsterDelegateQt;
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineCookieStorePrivate
-{
+class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineCookieStorePrivate {
     Q_DECLARE_PUBLIC(QWebEngineCookieStore)
     struct CookieData {
         quint64 callbackId;
@@ -76,9 +75,10 @@ class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineCookieStorePrivate
     };
     friend class QTypeInfo<CookieData>;
     QWebEngineCookieStore *q_ptr;
+
 public:
     QtWebEngineCore::CallbackDirectory callbackDirectory;
-    std::function<bool(const QWebEngineCookieStore::FilterRequest&)> filterCallback;
+    std::function<bool(const QWebEngineCookieStore::FilterRequest &)> filterCallback;
     QVector<CookieData> m_pendingUserCookies;
     quint64 m_nextCallbackId;
     bool m_deleteSessionCookiesPending;

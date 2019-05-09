@@ -60,6 +60,7 @@ class ExtensionSystemQt;
 
 namespace QtWebEngineCore {
 
+class BrowsingDataRemoverDelegateQt;
 class ProfileAdapter;
 class PermissionManagerQt;
 class SSLHostStateDelegateQt;
@@ -130,6 +131,7 @@ private:
     friend class ContentBrowserClientQt;
     friend class WebContentsAdapter;
     scoped_refptr<net::URLRequestContextGetter> m_urlRequestContextGetter;
+    std::unique_ptr<BrowsingDataRemoverDelegateQt> m_removerDelegate;
     std::unique_ptr<PermissionManagerQt> m_permissionManager;
     std::unique_ptr<SSLHostStateDelegateQt> m_sslHostStateDelegate;
     std::unique_ptr<PrefService> m_prefService;

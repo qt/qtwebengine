@@ -29,10 +29,10 @@
     \page qtwebengine-overview.html
     \title Qt WebEngine Overview
 
-    The Qt WebEngine module provides a web browser engine that makes it easy to embed content from
+    The \QWE module provides a web browser engine that makes it easy to embed content from
     the World Wide Web into your Qt application on platforms that do not have a native web engine.
 
-    Qt WebEngine provides C++ classes and QML types for rendering HTML, XHTML, and SVG documents,
+    \QWE provides C++ classes and QML types for rendering HTML, XHTML, and SVG documents,
     styled using Cascading Style Sheets (CSS) and scripted with JavaScript. HTML documents can be
     made fully editable by the user through the use of the \c{contenteditable} attribute on HTML
     elements.
@@ -41,7 +41,7 @@
 
     \image qtwebengine-architecture.png
 
-    The functionality in Qt WebEngine is divided into the following modules:
+    The functionality in \QWE is divided into the following modules:
 
     \list
         \li \l{Qt WebEngine Widgets Module} for creating widget-based web applications
@@ -49,7 +49,7 @@
         \li \l{Qt WebEngine Core Module} for interacting with Chromium
     \endlist
 
-    Page rendering and JavaScript execution are separated from the GUI process into the Qt WebEngine
+    Page rendering and JavaScript execution are separated from the GUI process into the \QWE
     Process. It is a library that must be shipped with the application if the Qt libraries are
     bundled into the application.
 
@@ -57,7 +57,7 @@
 
     \image qtwebenginewidgets-model.png
 
-    A \e {web engine view} is the main widget component of the Qt WebEngine module. It can be used
+    A \e {web engine view} is the main widget component of the \QWE module. It can be used
     in various applications to load web content. Within a view, a \e {web engine page} holds a main
     frame that is responsible for web content, the \e history of navigated links, and \e actions.
     The view and page are quite similar, as they provide a set of common functions.
@@ -66,7 +66,7 @@
     \e cookies. Profiles can be used to isolate pages from each other. A typical use case is a
     dedicated profile for a \e {private browsing} mode, where no information is permanently saved.
 
-    \note The Qt WebEngine Widgets module uses the \l{Qt Quick Scene Graph}{Qt Quick scene graph}
+    \note The \QWE Widgets module uses the \l{Qt Quick Scene Graph}{Qt Quick scene graph}
     to compose the elements of a web page into one view. This means that the UI process
     requires OpenGL ES 2.0 or OpenGL 2.0 for its rendering.
 
@@ -74,27 +74,27 @@
 
     \image qtwebengine-model.png
 
-    The Qt WebEngine QML implementation contains the same elements as the Qt WebEngine Widgets
+    The \QWE QML implementation contains the same elements as the \QWE Widgets
     implementation, except that there is no separately accessible web engine page.
     The supported page functionality is integrated into the web engine view.
 
     \section2 Qt WebEngine Core Module
 
-    The Qt WebEngine core is based on the \l {Chromium Project}. Chromium provides its own network
+    The \QWE core is based on the \l {Chromium Project}. Chromium provides its own network
     and painting engines and is developed tightly together with its dependent modules.
 
-    \note Qt WebEngine is based on Chromium, but does not contain or use any services
+    \note \QWE is based on Chromium, but does not contain or use any services
     or add-ons that might be part of the Chrome browser that is built and delivered by Google.
     You can find more detailed information about the differences between Chromium and Chrome in this
     \l{https://chromium.googlesource.com/chromium/src/+/master/docs/chromium_browser_vs_google_chrome.md}{overview}
     that is part of the documentation in the \l {Chromium Project} upstream source tree.
 
-    This version of Qt WebEngine is based on Chromium version 69.0.3497.128, with
-    additional security fixes from newer versions.
+    This version of \QWE is based on Chromium version 73.0.3683, with additional security
+    fixes from newer versions.
 
     \section2 Qt WebEngine Process
 
-    The Qt WebEngine Process is a separate executable that is used to render web pages and
+    The \QWE Process is a separate executable that is used to render web pages and
     execute JavaScript. This mitigates security issues and isolates crashes caused by specific
     content.
 
@@ -177,7 +177,7 @@
 
     \section1 Script Injection
 
-    Qt WebEngine does not allow direct access to the document object model (DOM) of a page.
+    \QWE does not allow direct access to the document object model (DOM) of a page.
     However, the DOM can be inspected and adapted by injecting scripts.
 
     The DOM of a page is constructed when the document is ready, typically
@@ -191,7 +191,7 @@
     script to run, the injection point, and the world where the script is run. This enables
     accessing the DOM to manipulate it within a world.
 
-    Since Qt 5.8, Qt WebEngine supports augmenting a script by using the
+    Since Qt 5.8, \QWE supports augmenting a script by using the
     following \l{Metadata Block}{Greasemonkey-like attributes}:
 
     \list
@@ -221,8 +221,8 @@
 
     \section1 Managing Certificates
 
-    Qt WebEngine uses its own network stack, and therefore QSslConfiguration is not used to
-    open SSL connections. Instead, Qt WebEngine uses the root CA certificates from the operating
+    \QWE uses its own network stack, and therefore QSslConfiguration is not used to
+    open SSL connections. Instead, \QWE uses the root CA certificates from the operating
     system to validate the peer's certificate.
 
     The \l{WebEngineCertificateError::error} and \l{QWebEngineCertificateError::Error} enumerations
@@ -232,9 +232,9 @@
 
     \section1 Proxy Support
 
-    Qt WebEngine uses the proxy settings from \l{Qt Network}, and forwards them to Chromium's
-    networking stack. If QNetworkProxy::applicationProxy is set, it will also be used for Qt
-    WebEngine. If QNetworkProxyFactory::usesSystemConfiguration() is enabled, the proxy settings
+    \QWE uses the proxy settings from \l{Qt Network}, and forwards them to Chromium's
+    networking stack. If QNetworkProxy::applicationProxy is set, it will also be used for \QWE.
+    If QNetworkProxyFactory::usesSystemConfiguration() is enabled, the proxy settings
     are automatically retrieved from the system. Settings from an installed QNetworkProxyFactory
     will be ignored, though.
 
@@ -246,7 +246,7 @@
     QWebEnginePage::proxyAuthenticationRequired is emitted.
     For Qt Quick, a dialog is shown.
 
-    Not all properties of QNetworkProxy are supported by Qt WebEngine. That is,
+    Not all properties of QNetworkProxy are supported by \QWE. That is,
     QNetworkProxy::type(), QNetworkProxy::hostName() and QNetworkProxy::port() are taken into
     account. All other proxy settings such as QNetworkProxy::rawHeader() are ignored.
 
@@ -254,7 +254,7 @@
 
     To support High DPI devices, it is recommended that the application attribute
     Qt::AA_EnableHighDpiScaling is set to enable automatic scaling based on the
-    pixel density of the monitor. In Qt WebEngine applications, the scaling
+    pixel density of the monitor. In \QWE applications, the scaling
     affects the default zooming factor and scrollbar size.
 
     For example:
@@ -268,7 +268,7 @@
     }
     \endcode
 
-    Qt WebEngine bundles images for normal and high-dpi resolutions into
+    \QWE bundles images for normal and high-dpi resolutions into
     \e qtwebengine_resources_100p.pak and \e qtwebengine_resources_200p.pak
     files. Depending on the target resolutions, one or both of these files need
     to be deployed.
@@ -277,7 +277,7 @@
 
     \section1 Using WebEngine Core
 
-    Qt WebEngine Core provides an API shared by Qt WebEngine and Qt WebEngine Widgets for handling
+    \QWE Core provides an API shared by \QWE and \QWE Widgets for handling
     URL requests issued for the networking stack of Chromium and for accessing its HTTP cookies.
 
     Implementing the QWebEngineUrlRequestInterceptor interface and installing the interceptor on a
@@ -294,17 +294,17 @@
 
     \section1 Platform Notes
 
-    Qt WebEngine currently supports only Windows, Linux, and \macos. Due to Chromium build
+    \QWE currently supports only Windows, Linux, and \macos. Due to Chromium build
     requirements it also often requires a newer compiler than the rest of Qt. See
     \l{Qt WebEngine Platform Notes} for further details.
 
     \section1 Related Modules
 
-    Qt WebEngine supersedes the \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
+    \QWE supersedes the \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
     module, which is based on the
     WebKit project, but has not been actively synchronized with the upstream WebKit code since
-    Qt 5.2 and has been deprecated in Qt 5.5. For tips on how to change a Qt WebKit widgets
-    application to use Qt WebEngine widgets, see \l{Porting from Qt WebKit to Qt WebEngine}.
+    Qt 5.2 and has been deprecated in Qt 5.5. For tips on how to change a Qt \WebKit widgets
+    application to use \QWE widgets, see \l{Porting from Qt WebKit to Qt WebEngine}.
 
     The \l{Qt WebView} module allows to use a native web browser on platforms where one is
     available.

@@ -84,11 +84,10 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
  */
-QWebEngineUrlRequestJob::QWebEngineUrlRequestJob(URLRequestCustomJobDelegate * p)
+QWebEngineUrlRequestJob::QWebEngineUrlRequestJob(URLRequestCustomJobDelegate *p)
     : QObject(p) // owned by the jobdelegate and deleted when the job is done
     , d_ptr(p)
-{
-}
+{}
 
 /*!
     \internal

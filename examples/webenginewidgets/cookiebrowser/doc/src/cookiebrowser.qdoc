@@ -29,7 +29,7 @@
     \example webenginewidgets/cookiebrowser
     \title WebEngine Cookie Browser Example
     \ingroup webengine-widgetexamples
-    \brief A cookie browser based on Qt WebEngine Widgets.
+    \brief A cookie browser based on \QWE Widgets.
 
     \image cookiebrowser.png
 

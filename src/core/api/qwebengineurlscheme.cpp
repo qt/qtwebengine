@@ -48,8 +48,7 @@ QT_BEGIN_NAMESPACE
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::Syntax::Path, url::SCHEME_WITHOUT_AUTHORITY)
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::Syntax::Host, url::SCHEME_WITH_HOST)
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::Syntax::HostAndPort, url::SCHEME_WITH_HOST_AND_PORT)
-ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::Syntax::HostPortAndUserInformation,
-                   url::SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION)
+ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::Syntax::HostPortAndUserInformation, url::SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION)
 
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::PortUnspecified, url::PORT_UNSPECIFIED)
 
@@ -88,7 +87,7 @@ public:
   URLs.
 
   Custom URL schemes must be configured early at application startup, before
-  creating any Qt WebEngine classes. In general this means the schemes need to be configured before
+  creating any \QWE classes. In general this means the schemes need to be configured before
   a QGuiApplication or QApplication instance is created.
 
   Every registered scheme configuration applies globally to all profiles.
@@ -193,10 +192,7 @@ public:
   Content-Security-Policy checks.
 */
 
-QWebEngineUrlScheme::QWebEngineUrlScheme(QWebEngineUrlSchemePrivate *d)
-    : d(d)
-{
-}
+QWebEngineUrlScheme::QWebEngineUrlScheme(QWebEngineUrlSchemePrivate *d) : d(d) {}
 
 /*!
   Constructs a web engine URL scheme with default values.
@@ -378,6 +374,11 @@ void QWebEngineUrlScheme::registerScheme(const QWebEngineUrlScheme &scheme)
         return;
     }
 
+    if (url::IsStandard(scheme.d->name.data(), url::Component(0, scheme.d->name.size()))) {
+        qWarning() << "QWebEngineUrlScheme::registerScheme: Scheme" << scheme.name() << "is a standard scheme";
+        return;
+    }
+
     if (g_schemesLocked) {
         qWarning() << "QWebEngineUrlScheme::registerScheme: Too late to register scheme" << scheme.name();
         return;
@@ -394,7 +395,7 @@ void QWebEngineUrlScheme::registerScheme(const QWebEngineUrlScheme &scheme)
 */
 QWebEngineUrlScheme QWebEngineUrlScheme::schemeByName(const QByteArray &name)
 {
-    base::StringPiece namePiece{name.data(), static_cast<size_t>(name.size())};
+    base::StringPiece namePiece{ name.data(), static_cast<size_t>(name.size()) };
     if (const url::CustomScheme *cs = url::CustomScheme::FindScheme(namePiece))
         return QWebEngineUrlScheme(new QWebEngineUrlSchemePrivate(*cs));
     return QWebEngineUrlScheme();

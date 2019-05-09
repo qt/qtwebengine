@@ -62,11 +62,11 @@
 #include <type_traits>
 
 // keep in sync with Q_DECLARE_SHARED... in qwebenginecallback.h
-#define FOR_EACH_TYPE(F) \
-    F(bool) \
-    F(int) \
-    F(const QString &) \
-    F(const QByteArray &) \
+#define FOR_EACH_TYPE(F)                                                                                               \
+    F(bool)                                                                                                            \
+    F(int)                                                                                                             \
+    F(const QString &)                                                                                                 \
+    F(const QByteArray &)                                                                                              \
     F(const QVariant &)
 
 namespace QtWebEngineCore {
@@ -82,7 +82,7 @@ public:
     {
         // "Cancel" pending callbacks by calling them with an invalid value.
         // This guarantees that each callback is called exactly once.
-        for (CallbackSharedDataPointerBase * const sharedPtrBase: m_callbackMap) {
+        for (CallbackSharedDataPointerBase *const sharedPtrBase : m_callbackMap) {
             Q_ASSERT(sharedPtrBase);
             sharedPtrBase->invokeEmpty();
             delete sharedPtrBase;
@@ -106,20 +106,18 @@ public:
     template<typename T>
     void invokeEmpty(const QWebEngineCallback<T> &callback);
 
-#define DEFINE_INVOKE_FOR_TYPE(Type) \
-    void invoke(quint64 callbackId, Type result) { \
-        invokeInternal<Type>(callbackId, std::forward<Type>(result)); \
-    }
+#define DEFINE_INVOKE_FOR_TYPE(Type)                                                                                   \
+    void invoke(quint64 callbackId, Type result) { invokeInternal<Type>(callbackId, std::forward<Type>(result)); }
     FOR_EACH_TYPE(DEFINE_INVOKE_FOR_TYPE)
 #undef DEFINE_INVOKE_FOR_TYPE
 
-    template <typename A>
+    template<typename A>
     void invokeDirectly(const QWebEngineCallback<typename std::remove_reference<A>::type &> &callback, A &argument)
     {
         return callback.d.data()->operator()(argument);
     }
 
-    template <typename A>
+    template<typename A>
     void invokeDirectly(const QWebEngineCallback<typename std::remove_reference<A>::type> &callback, const A &argument)
     {
         return callback.d.data()->operator()(std::forward<const A &>(argument));
@@ -127,39 +125,45 @@ public:
 
 private:
     struct CallbackSharedDataPointerBase {
-        virtual ~CallbackSharedDataPointerBase() { }
+        virtual ~CallbackSharedDataPointerBase() {}
         virtual void invokeEmpty() = 0;
         virtual void doRef() = 0;
         virtual void doDeref() = 0;
-        virtual operator bool () const = 0;
+        virtual operator bool() const = 0;
     };
 
-    template <typename T>
+    template<typename T>
     struct CallbackSharedDataPointer : public CallbackSharedDataPointerBase {
-        CallbackDirectory* parent;
+        CallbackDirectory *parent;
         QtWebEnginePrivate::QWebEngineCallbackPrivateBase<T> *callback;
 
         ~CallbackSharedDataPointer() { doDeref(); }
-        CallbackSharedDataPointer() : parent(0), callback(0) { }
+        CallbackSharedDataPointer() : parent(0), callback(0) {}
         CallbackSharedDataPointer(const CallbackSharedDataPointer<T> &other)
-            : parent(other.parent), callback(other.callback) { doRef(); }
+            : parent(other.parent), callback(other.callback)
+        {
+            doRef();
+        }
         CallbackSharedDataPointer(CallbackDirectory *p, QtWebEnginePrivate::QWebEngineCallbackPrivateBase<T> *c)
-            : parent(p), callback(c) { Q_ASSERT(callback); doRef(); }
+            : parent(p), callback(c)
+        {
+            Q_ASSERT(callback);
+            doRef();
+        }
 
         void invokeEmpty() override;
-        operator bool () const override { return callback; }
+        operator bool() const override { return callback; }
 
     private:
         void doRef() override;
         void doDeref() override;
     };
 
-    QHash<quint64, CallbackSharedDataPointerBase*> m_callbackMap;
+    QHash<quint64, CallbackSharedDataPointerBase *> m_callbackMap;
 };
 
 template<typename T>
-inline
-void CallbackDirectory::registerCallback(quint64 callbackId, const QWebEngineCallback<T> &callback)
+inline void CallbackDirectory::registerCallback(quint64 callbackId, const QWebEngineCallback<T> &callback)
 {
     if (!callback.d)
         return;
@@ -167,10 +171,9 @@ void CallbackDirectory::registerCallback(quint64 callbackId, const QWebEngineCal
 }
 
 template<typename T>
-inline
-void CallbackDirectory::invokeInternal(quint64 callbackId, T result)
+inline void CallbackDirectory::invokeInternal(quint64 callbackId, T result)
 {
-    CallbackSharedDataPointerBase * const sharedPtrBase = m_callbackMap.take(callbackId);
+    CallbackSharedDataPointerBase *const sharedPtrBase = m_callbackMap.take(callbackId);
     if (!sharedPtrBase)
         return;
 
@@ -181,8 +184,7 @@ void CallbackDirectory::invokeInternal(quint64 callbackId, T result)
 }
 
 template<typename T>
-inline
-void CallbackDirectory::invokeEmptyInternal(QtWebEnginePrivate::QWebEngineCallbackPrivateBase<T> *callback)
+inline void CallbackDirectory::invokeEmptyInternal(QtWebEnginePrivate::QWebEngineCallbackPrivateBase<T> *callback)
 {
     Q_ASSERT(callback);
     using NoRefT = typename std::remove_reference<T>::type;
@@ -192,24 +194,21 @@ void CallbackDirectory::invokeEmptyInternal(QtWebEnginePrivate::QWebEngineCallba
 }
 
 template<>
-inline
-void CallbackDirectory::invokeEmptyInternal(QtWebEnginePrivate::QWebEngineCallbackPrivateBase<bool> *callback)
+inline void CallbackDirectory::invokeEmptyInternal(QtWebEnginePrivate::QWebEngineCallbackPrivateBase<bool> *callback)
 {
     Q_ASSERT(callback);
     (*callback)(false);
 }
 
 template<>
-inline
-void CallbackDirectory::invokeEmptyInternal(QtWebEnginePrivate::QWebEngineCallbackPrivateBase<int> *callback)
+inline void CallbackDirectory::invokeEmptyInternal(QtWebEnginePrivate::QWebEngineCallbackPrivateBase<int> *callback)
 {
     Q_ASSERT(callback);
     (*callback)(0);
 }
 
 template<typename T>
-inline
-void CallbackDirectory::invokeEmpty(const QWebEngineCallback<T> &callback)
+inline void CallbackDirectory::invokeEmpty(const QWebEngineCallback<T> &callback)
 {
     if (!callback.d)
         return;
@@ -217,9 +216,8 @@ void CallbackDirectory::invokeEmpty(const QWebEngineCallback<T> &callback)
     invokeEmptyInternal(callback.d.data());
 }
 
-template <typename T>
-inline
-void CallbackDirectory::CallbackSharedDataPointer<T>::doRef()
+template<typename T>
+inline void CallbackDirectory::CallbackSharedDataPointer<T>::doRef()
 {
     if (!callback)
         return;
@@ -227,9 +225,8 @@ void CallbackDirectory::CallbackSharedDataPointer<T>::doRef()
     callback->ref.ref();
 }
 
-template <typename T>
-inline
-void CallbackDirectory::CallbackSharedDataPointer<T>::doDeref()
+template<typename T>
+inline void CallbackDirectory::CallbackSharedDataPointer<T>::doDeref()
 {
     if (!callback)
         return;
@@ -237,9 +234,8 @@ void CallbackDirectory::CallbackSharedDataPointer<T>::doDeref()
         delete callback;
 }
 
-template <typename T>
-inline
-void CallbackDirectory::CallbackSharedDataPointer<T>::invokeEmpty()
+template<typename T>
+inline void CallbackDirectory::CallbackSharedDataPointer<T>::invokeEmpty()
 {
     if (!callback)
         return;
@@ -248,8 +244,7 @@ void CallbackDirectory::CallbackSharedDataPointer<T>::invokeEmpty()
     parent->invokeEmptyInternal(callback);
 }
 
-#define CHECK_RELOCATABLE(x) \
-  Q_STATIC_ASSERT((QTypeInfoQuery<QWebEngineCallback< x > >::isRelocatable));
+#define CHECK_RELOCATABLE(x) Q_STATIC_ASSERT((QTypeInfoQuery<QWebEngineCallback<x>>::isRelocatable));
 FOR_EACH_TYPE(CHECK_RELOCATABLE)
 #undef CHECK_RELOCATABLE
 

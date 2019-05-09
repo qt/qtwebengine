@@ -49,7 +49,7 @@
 namespace QtWebEngineCore {
 struct ClientCertificateStoreData;
 class ProfileAdapter;
-}
+} // namespace QtWebEngineCore
 
 QT_BEGIN_NAMESPACE
 

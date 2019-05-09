@@ -29,7 +29,7 @@
     \example webenginewidgets/simplebrowser
     \title WebEngine Widgets Simple Browser Example
     \ingroup webengine-widgetexamples
-    \brief A simple browser based on Qt WebEngine Widgets.
+    \brief A simple browser based on \QWE Widgets.
 
     \image simplebrowser.png
 
@@ -267,10 +267,10 @@
     Alternatively we could implement private browsing on the tab-level, with
     some tabs in a window in normal mode, others in private mode.
 
-    Implementing private browsing is quite easy using Qt WebEngine. All one has
+    Implementing private browsing is quite easy using \QWE. All one has
     to do is to create a new \l{QWebEngineProfile} and use it in the
     \l{QWebEnginePage} instead of the default profile. In the example this new
-    profile is created and owned by the \c Browser object:
+    profile is owned by the \c Browser object:
 
     \quotefromfile webenginewidgets/simplebrowser/browser.h
     \skipto /^class Browser$/
@@ -285,15 +285,24 @@
     \printline m_otrProfile
     \printline /^\};$/
 
-    The default constructor for \l{QWebEngineProfile} already puts it in
-    \e{off-the-record} mode. All that is left to do is to pass the appropriate
-    profile down to the appropriate \l QWebEnginePage objects. The \c Browser
-    object will hand to each new \c BrowserWindow either the global default
-    profile (see \l{QWebEngineProfile::defaultProfile}) or its own
-    off-the-record profile:
+    Required profile for \e{private browsing} is created together with its
+    first window. The default constructor for \l{QWebEngineProfile} already
+    puts it in \e{off-the-record} mode.
 
     \quotefromfile webenginewidgets/simplebrowser/browser.cpp
+
     \skipto Browser::createWindow
+    \printuntil m_otrProfile.reset
+    \dots
+
+    All that is left to do is to pass the appropriate profile down to the
+    appropriate \l QWebEnginePage objects. The \c Browser object will hand to
+    each new \c BrowserWindow either the global default profile
+    (see \l{QWebEngineProfile::defaultProfile}) or one shared
+    \e{off-the-record} profile instance:
+
+    \dots
+    \skipto m_otrProfile.get
     \printuntil mainWindow = new BrowserWindow
     \skipto return mainWindow
     \printuntil /^\}/
