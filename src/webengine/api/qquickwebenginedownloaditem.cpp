@@ -446,6 +446,18 @@ void QQuickWebEngineDownloadItem::setPath(QString path)
         Q_EMIT pathChanged();
     }
 }
+/*!
+    \qmlproperty string WebEngineDownloadItem::suggestedFileName
+    \since QtWebEngine 1.10
+
+    Returns the suggested file name.
+*/
+
+QString QQuickWebEngineDownloadItem::suggestedFileName() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->suggestedFileName;
+}
 
 /*!
     \qmlproperty enumeration WebEngineDownloadItem::savePageFormat

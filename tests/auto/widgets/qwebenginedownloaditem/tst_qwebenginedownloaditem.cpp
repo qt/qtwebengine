@@ -868,6 +868,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilename()
     QFETCH(QString, extension);
     QString fileName = QString("%1.%2").arg(baseName).arg(extension);
     QString downloadedFilePath;
+    QString suggestedFileName;
     bool downloadFinished = false;
 
     QTemporaryDir tmpDir;
@@ -889,6 +890,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilename()
 
     // Set up profile and download handler
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+        suggestedFileName = item->suggestedFileName();
         item->accept();
         connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
@@ -914,6 +916,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilename()
         QTRY_VERIFY(downloadFinished);
         QVERIFY(QFile(downloadedFilePath).exists());
         QCOMPARE(downloadedFilePath, m_profile->downloadPath() + "/" + baseName + " (" + QString::number(i) + ")." + extension);
+        QCOMPARE(suggestedFileName, fileName);
     }
 }
 
@@ -924,6 +927,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilenameWithTimestamp()
     QString extension("txt");
     QString fileName = QString("%1.%2").arg(baseName).arg(extension);
     QString downloadedFilePath;
+    QString suggestedFileName;
     bool downloadFinished = false;
 
     QTemporaryDir tmpDir;
@@ -944,6 +948,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilenameWithTimestamp()
 
     // Set up profile and download handler
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+        suggestedFileName = item->suggestedFileName();
         item->accept();
         connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
@@ -974,6 +979,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilenameWithTimestamp()
     QTRY_VERIFY(downloadFinished);
     QVERIFY(QFile(downloadedFilePath).exists());
     QCOMPARE(downloadedFilePath, m_profile->downloadPath() + "/" + baseName + " (100)." + extension);
+    QCOMPARE(suggestedFileName, fileName);
 
     // Check if the downloaded files are suffixed with timestamp after the 100th download.
     for (int i = 101; i < 103; i++) {
@@ -987,6 +993,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilenameWithTimestamp()
         // ISO 8601 Date and time in UTC
         QRegExp timestamp("^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9])([0-5][0-9])([0-5][0-9])([.][0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9])[0-5][0-9])?$");
         QVERIFY(timestamp.exactMatch(match.captured(1)));
+        QCOMPARE(suggestedFileName, fileName);
     }
 }
 
@@ -1013,6 +1020,7 @@ void tst_QWebEngineDownloadItem::downloadToNonExistentDir()
     QString extension("txt");
     QString fileName = QString("%1.%2").arg(baseName).arg(extension);
     QString downloadedFilePath;
+    QString suggestedFileName;
     bool downloadFinished = false;
 
     QTemporaryDir tmpDir;
@@ -1034,6 +1042,7 @@ void tst_QWebEngineDownloadItem::downloadToNonExistentDir()
 
     // Set up profile and download handler
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+        suggestedFileName = item->suggestedFileName();
         item->accept();
         connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
@@ -1055,6 +1064,7 @@ void tst_QWebEngineDownloadItem::downloadToNonExistentDir()
     QTRY_VERIFY(downloadFinished);
     QVERIFY(QFile(downloadedFilePath).exists());
     QCOMPARE(downloadedFilePath, nonExistentDownloadPath + "/" + fileName);
+    QCOMPARE(suggestedFileName, fileName);
 }
 
 void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
@@ -1066,6 +1076,7 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
     QString extension("txt");
     QString fileName = QString("%1.%2").arg(baseName).arg(extension);
     QString downloadedFilePath;
+    QString suggestedFileName;
     bool downloadAccepted = false;
     bool downloadFinished = false;
 
@@ -1088,6 +1099,7 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
 
     QPointer<QWebEngineDownloadItem> downloadItem;
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+        suggestedFileName = item->suggestedFileName();
         downloadItem = item;
         item->accept();
         connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
@@ -1108,6 +1120,7 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
     QCOMPARE(downloadItem->isFinished(), false);
     QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::FileAccessDenied);
     QVERIFY(!QFile(downloadedFilePath).exists());
+    QCOMPARE(suggestedFileName, fileName);
 
     // Clear m_requestedDownloads explicitly because download is accepted but never finished.
     m_requestedDownloads.clear();

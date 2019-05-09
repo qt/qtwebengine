@@ -138,6 +138,7 @@ public:
     Q_PROPERTY(bool isSavePageDownload READ isSavePageDownload CONSTANT REVISION 6 FINAL)
     Q_PROPERTY(QQuickWebEngineView *view READ view CONSTANT REVISION 7 FINAL)
     Q_PROPERTY(QUrl url READ url CONSTANT REVISION 8 FINAL)
+    Q_PROPERTY(QString suggestedFileName READ suggestedFileName CONSTANT REVISION 8 FINAL)
 
     Q_INVOKABLE void accept();
     Q_INVOKABLE void cancel();
@@ -161,6 +162,7 @@ public:
     bool isSavePageDownload() const;
     QQuickWebEngineView *view() const;
     QUrl url() const;
+    QString suggestedFileName() const;
 
 Q_SIGNALS:
     void stateChanged();

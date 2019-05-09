@@ -43,6 +43,7 @@ TestWebEngineView {
     property var downloadState: []
     property var downloadInterruptReason: null
     property url downloadUrl: ""
+    property string suggestedFileName: ""
 
     function urlToPath(url) {
         var path = url.toString()
@@ -83,6 +84,7 @@ TestWebEngineView {
                 download.accept()
             }
             downloadUrl = download.url
+            suggestedFileName = download.suggestedFileName
         }
         onDownloadFinished: {
             receivedBytes = download.receivedBytes;
@@ -109,6 +111,7 @@ TestWebEngineView {
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
             compare(downloadUrl, webEngineView.url)
+            compare(suggestedFileName, "download.zip")
             compare(downloadState[0], WebEngineDownloadItem.DownloadRequested)
             verify(!downloadInterruptReason)
         }
@@ -119,6 +122,7 @@ TestWebEngineView {
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
             compare(downloadUrl, webEngineView.url)
+            compare(suggestedFileName, "download.zip")
             compare(totalBytes, 325)
             verify(!downloadInterruptReason)
         }
@@ -129,6 +133,7 @@ TestWebEngineView {
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
             compare(downloadUrl, webEngineView.url)
+            compare(suggestedFileName, "download.zip")
             compare(downloadState[0], WebEngineDownloadItem.DownloadRequested)
             tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadInProgress)
             downloadFinishedSpy.wait()
@@ -144,6 +149,7 @@ TestWebEngineView {
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
             compare(downloadUrl, webEngineView.url)
+            compare(suggestedFileName, "download.zip")
             compare(downloadFinishedSpy.count, 1)
             tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadCancelled)
             tryCompare(webEngineView, "downloadInterruptReason", WebEngineDownloadItem.UserCanceled)

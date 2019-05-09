@@ -78,6 +78,7 @@ public:
     const QUrl downloadUrl;
     QString mimeType;
     bool downloadPaused;
+    QString suggestedFileName;
 
     qint64 totalBytes;
     qint64 receivedBytes;

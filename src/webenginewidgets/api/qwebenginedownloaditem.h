@@ -128,6 +128,7 @@ public:
     DownloadInterruptReason interruptReason() const;
     QString interruptReasonString() const;
     bool isSavePageDownload() const;
+    QString suggestedFileName() const;
 
     QWebEnginePage *page() const;
 

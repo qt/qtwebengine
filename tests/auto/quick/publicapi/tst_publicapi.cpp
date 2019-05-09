@@ -261,6 +261,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineDownloadItem.typeChanged() --> void"
     << "QQuickWebEngineDownloadItem.view --> QQuickWebEngineView*"
     << "QQuickWebEngineDownloadItem.url --> QUrl"
+    << "QQuickWebEngineDownloadItem.suggestedFileName --> QString"
     << "QQuickWebEngineFileDialogRequest.FileModeOpen --> FileMode"
     << "QQuickWebEngineFileDialogRequest.FileModeOpenMultiple --> FileMode"
     << "QQuickWebEngineFileDialogRequest.FileModeSave --> FileMode"

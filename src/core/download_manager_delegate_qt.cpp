@@ -208,7 +208,8 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
             false /* done */,
             downloadType,
             item->GetLastReason(),
-            adapterClient
+            adapterClient,
+            suggestedFilename
         };
 
         for (ProfileAdapterClient *client : qAsConst(clients)) {
@@ -309,7 +310,9 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         false, /* done */
         ProfileAdapterClient::SavePage,
         ProfileAdapterClient::NoReason,
-        adapterClient
+        adapterClient,
+        QFileInfo(suggestedFilePath).fileName()
+
     };
 
     for (ProfileAdapterClient *client : qAsConst(clients)) {
@@ -375,7 +378,8 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(download::DownloadItem *downlo
             download->IsDone(),
             0 /* downloadType (unused) */,
             download->GetLastReason(),
-            adapterClient
+            adapterClient,
+            toQt(download->GetSuggestedFilename())
         };
 
         for (ProfileAdapterClient *client : qAsConst(clients)) {

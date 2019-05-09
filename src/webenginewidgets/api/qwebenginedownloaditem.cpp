@@ -536,6 +536,17 @@ void QWebEngineDownloadItem::setPath(QString path)
 
     d->downloadPath = path;
 }
+/*!
+    \since 5.14
+
+    Returns the suggested file name.
+*/
+
+QString QWebEngineDownloadItem::suggestedFileName() const
+{
+    Q_D(const QWebEngineDownloadItem);
+    return d->suggestedFileName;
+}
 
 /*!
     Returns whether this download is finished (completed, cancelled, or non-resumable interrupted state).

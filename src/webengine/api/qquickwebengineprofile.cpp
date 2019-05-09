@@ -243,6 +243,7 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->totalBytes = info.totalBytes;
     itemPrivate->mimeType = info.mimeType;
     itemPrivate->downloadPath = info.path;
+    itemPrivate->suggestedFileName = info.suggestedFileName;
     itemPrivate->savePageFormat = static_cast<QQuickWebEngineDownloadItem::SavePageFormat>(
                 info.savePageFormat);
     itemPrivate->type = static_cast<QQuickWebEngineDownloadItem::DownloadType>(info.downloadType);

@@ -83,6 +83,7 @@ public:
     bool downloadPaused;
     QQuickWebEngineView *view;
     QUrl downloadUrl;
+    QString suggestedFileName;
 
     void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
     void updateState(QQuickWebEngineDownloadItem::DownloadState newState);

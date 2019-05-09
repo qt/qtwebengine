@@ -138,6 +138,7 @@ public:
         int downloadType;
         int downloadInterruptReason;
         WebContentsAdapterClient *page;
+        QString suggestedFileName;
     };
 
     virtual ~ProfileAdapterClient() { }
