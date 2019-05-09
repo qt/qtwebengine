@@ -24,7 +24,6 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/chrome/browser_resources.pak",
     "$root_gen_dir/chrome/common_resources.pak",
     "$root_gen_dir/chrome/quota_internals_resources.pak",
-    "$root_gen_dir/chrome/task_scheduler_internals_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
@@ -36,7 +35,6 @@ repack("qtwebengine_repack_resources") {
   deps = [
      "//qtwebengine/browser:qt_webengine_resources",
      "//chrome/browser/resources:quota_internals_resources",
-     "//chrome/browser/resources:task_scheduler_internals_resources",
      "//chrome/browser:resources_grit",
      "//chrome/common:resources_grit",
      "//components/resources:components_resources_grit",

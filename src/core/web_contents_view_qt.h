@@ -111,8 +111,7 @@ public:
     void FocusThroughTabTraversal(bool reverse) override;
 
 #if defined(OS_MACOSX)
-    void CloseTabAfterEventTracking() override { QT_NOT_YET_IMPLEMENTED }
-    bool IsEventTracking() const override { QT_NOT_YET_IMPLEMENTED; return false; }
+    bool CloseTabAfterEventTrackingIfNeeded() override { QT_NOT_YET_IMPLEMENTED return false; }
 #endif // defined(OS_MACOSX)
 
     // content::RenderViewHostDelegateView overrides:

@@ -40,11 +40,12 @@
 #ifndef COMPOSITOR_RESOURCE_TRACKER_H
 #define COMPOSITOR_RESOURCE_TRACKER_H
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/containers/flat_set.h"
+
 #include "compositor_resource.h"
 #include "locked_ptr.h"
-
-#include <base/callback.h>
-#include <base/containers/flat_set.h>
 
 #include <atomic>
 #include <vector>

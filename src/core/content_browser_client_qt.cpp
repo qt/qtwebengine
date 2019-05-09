@@ -346,7 +346,7 @@ void ContentBrowserClientQt::GetQuotaSettings(content::BrowserContext* context,
                                               content::StoragePartition* partition,
                                               storage::OptionalQuotaSettingsCallback callback)
 {
-    storage::GetNominalDynamicSettings(partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
+    storage::GetNominalDynamicSettings(partition->GetPath(), context->IsOffTheRecord(), storage::GetDefaultDiskInfoHelper(), std::move(callback));
 }
 
 // Copied from chrome/browser/ssl/ssl_error_handler.cc:
@@ -530,7 +530,7 @@ public:
     { }
 
 private:
-    WEB_CONTENTS_USER_DATA_KEY_DECL()
+    WEB_CONTENTS_USER_DATA_KEY_DECL();
     explicit ServiceDriver(content::WebContents* /*web_contents*/) { }
     friend class content::WebContentsUserData<ServiceDriver>;
     mojo::BindingSet<blink::mojom::InsecureInputService> m_insecureInputServiceBindings;
@@ -765,18 +765,17 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
     return true;
 }
 
-scoped_refptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegate(
+std::unique_ptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegate(
         net::AuthChallengeInfo *authInfo,
-        content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-        const content::GlobalRequestID &request_id,
+        content::WebContents *web_contents,
+        const content::GlobalRequestID & /*request_id*/,
         bool /*is_main_frame*/,
         const GURL &url,
-        scoped_refptr<net::HttpResponseHeaders> response_headers,
+        scoped_refptr<net::HttpResponseHeaders> /*response_headers*/,
         bool first_auth_attempt,
         LoginAuthRequiredCallback auth_required_callback)
 {
-    auto loginDelegate = base::MakeRefCounted<LoginDelegateQt>(authInfo, web_contents_getter, url, first_auth_attempt, std::move(auth_required_callback));
-    loginDelegate->triggerDialog();
+    auto loginDelegate = std::make_unique<LoginDelegateQt>(authInfo, web_contents, url, first_auth_attempt, std::move(auth_required_callback));
     return loginDelegate;
 }
 

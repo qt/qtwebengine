@@ -98,8 +98,8 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
 #if QT_CONFIG(webengine_spellchecker)
     // Initial spellcheck settings
     registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
-    registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries, std::make_unique<base::ListValue>());
-    registry->RegisterListPref(spellcheck::prefs::kSpellCheckForcedDictionaries, std::make_unique<base::ListValue>());
+    registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries);
+    registry->RegisterListPref(spellcheck::prefs::kSpellCheckForcedDictionaries);
     registry->RegisterStringPref(spellcheck::prefs::kSpellCheckDictionary, std::string());
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckEnable, false);
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);

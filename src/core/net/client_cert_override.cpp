@@ -145,9 +145,9 @@ void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert
     if (base::PostTaskWithTraitsAndReplyWithResult(
             FROM_HERE, { content::BrowserThread::UI },
             base::BindOnce(&ClientCertOverrideStore::GetClientCertsOnUIThread,
-                           base::Unretained(this), base::ConstRef(cert_request_info)),
+                           base::Unretained(this), std::cref(cert_request_info)),
             base::BindOnce(&ClientCertOverrideStore::GetClientCertsReturn,
-                           base::Unretained(this), base::ConstRef(cert_request_info), callback))
+                           base::Unretained(this), std::cref(cert_request_info), callback))
        ) {
         return;
     }

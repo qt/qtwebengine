@@ -43,24 +43,22 @@
 #include "content/public/browser/browser_main_parts.h"
 
 namespace base {
-class MessageLoop;
+class MessagePump;
 }
 
 namespace content {
 class ServiceManagerConnection;
 }
 
-namespace resource_coordinator {
-class ProcessResourceCoordinator;
-}
-
 namespace QtWebEngineCore {
+
+std::unique_ptr<base::MessagePump> messagePumpFactory();
 
 class BrowserMainPartsQt : public content::BrowserMainParts
 {
 public:
-    BrowserMainPartsQt();
-    ~BrowserMainPartsQt();
+    BrowserMainPartsQt() = default;
+    ~BrowserMainPartsQt() override = default;
 
     int PreEarlyInitialization() override;
     void PreMainMessageLoopStart() override;
@@ -71,8 +69,6 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
-    std::unique_ptr<resource_coordinator::ProcessResourceCoordinator> m_processResourceCoordinator;
-    std::unique_ptr<base::MessageLoop> m_mainMessageLoop;
 };
 
 } // namespace QtWebEngineCore

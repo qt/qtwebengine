@@ -23,6 +23,8 @@ source_set("qtwebengine_spellcheck_sources") {
     "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h",
     "//chrome/browser/spellchecker/spellcheck_service.cc",
     "//chrome/browser/spellchecker/spellcheck_service.h",
+    "//components/language/core/browser/pref_names.cc",
+    "//components/language/core/browser/pref_names.h",
   ]
   deps = [
     "//components/spellcheck/browser",
@@ -72,8 +74,6 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/ui/webui/quota_internals/quota_internals_types.h",
     "//chrome/browser/ui/webui/quota_internals/quota_internals_ui.cc",
     "//chrome/browser/ui/webui/quota_internals/quota_internals_ui.h",
-    "//chrome/browser/ui/webui/task_scheduler_internals/task_scheduler_internals_ui.cc",
-    "//chrome/browser/ui/webui/task_scheduler_internals/task_scheduler_internals_ui.h",
     "//chrome/common/custom_handlers/protocol_handler.cc",
     "//chrome/common/custom_handlers/protocol_handler.h",
     "//chrome/common/chrome_switches.cc",

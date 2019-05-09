@@ -49,10 +49,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
-#include "media/base/media_switches.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
+#include "media/base/media_switches.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/events/event_switches.h"
 
 #include <QFont>
@@ -401,7 +401,7 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->default_encoding = defaultTextEncoding().toStdString();
 }
 
-bool WebEngineSettings::applySettingsToRendererPreferences(content::RendererPreferences *prefs)
+bool WebEngineSettings::applySettingsToRendererPreferences(blink::mojom::RendererPreferences *prefs)
 {
     bool changed = false;
 #if QT_CONFIG(webengine_webrtc)

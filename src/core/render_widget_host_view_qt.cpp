@@ -56,6 +56,7 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
@@ -1736,6 +1737,11 @@ void RenderWidgetHostViewQt::synchronizeVisualProperties(const base::Optional<vi
         m_localSurfaceIdAllocator.GenerateId();
 
     host()->SynchronizeVisualProperties();
+}
+
+std::unique_ptr<content::SyntheticGestureTarget> RenderWidgetHostViewQt::CreateSyntheticGestureTarget()
+{
+    return nullptr;
 }
 
 } // namespace QtWebEngineCore

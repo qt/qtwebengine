@@ -64,6 +64,7 @@ ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePing, content::RESOURCE
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker, content::RESOURCE_TYPE_SERVICE_WORKER)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeCspReport, content::RESOURCE_TYPE_CSP_REPORT)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePluginResource, content::RESOURCE_TYPE_PLUGIN_RESOURCE)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreload, content::RESOURCE_TYPE_NAVIGATION_PRELOAD)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeLast, content::RESOURCE_TYPE_LAST_TYPE)
 
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::LinkNavigation, QWebEngineUrlRequestInfo::NavigationTypeLink)

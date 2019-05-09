@@ -63,6 +63,7 @@ private:
     const std::string GetAllowEmptyString() override;
     const std::string GetAllowString() override;
     const std::string GetDenyString() override;
+    const std::string GetDenyNodeString() override;
     void AddProperties(const BrowserAccessibility &node, base::DictionaryValue* dict) override;
     base::string16 ProcessTreeForOutput(const base::DictionaryValue &node, base::DictionaryValue * = nullptr) override;
 };
@@ -196,6 +197,11 @@ const std::string AccessibilityTreeFormatterQt::GetAllowString()
 const std::string AccessibilityTreeFormatterQt::GetDenyString()
 {
     return "@QT-DENY:";
+}
+
+const std::string AccessibilityTreeFormatterQt::GetDenyNodeString()
+{
+    return "@QT-DENY-NODE:";
 }
 
 #endif // QT_NO_ACCESSIBILITY

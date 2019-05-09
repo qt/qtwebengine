@@ -175,6 +175,7 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/fuschsia-sdk/')
             or file_path.startswith('third_party/glslang/src/Test/')
             or file_path.startswith('third_party/google_')
+            or file_path.startswith('third_party/grpc/')
             or file_path.startswith('third_party/hunspell_dictionaries')
             or (file_path.startswith('third_party/icu') and file_path.endswith('icudtl_dat.S'))
             or file_path.startswith('third_party/icu/android')
@@ -243,6 +244,7 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('mock_chrome_application_mac.h') and
             not file_path.endswith('perftimer.h') and
             not file_path.endswith('test-torque.tq') and
+            not file_path.endswith('fonts.conf') and
             not 'ozone' in file_path and
             not 'clang_coverage' in file_path and
             not 'crypto/test/trampoline' in file_path and

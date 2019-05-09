@@ -72,36 +72,25 @@
 
 namespace QtWebEngineCore {
 
-LoginDelegateQt::LoginDelegateQt(
-        net::AuthChallengeInfo *authInfo,
-        content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+LoginDelegateQt::LoginDelegateQt(net::AuthChallengeInfo *authInfo,
+        content::WebContents *web_contents,
         GURL url,
-        bool first_auth_attempt,
+        bool /*first_auth_attempt*/,
         LoginAuthRequiredCallback auth_required_callback)
-    : m_authInfo(authInfo)
+    : content::WebContentsObserver(web_contents)
+    , m_authInfo(authInfo)
     , m_url(url)
     , m_auth_required_callback(std::move(auth_required_callback))
-    , m_webContentsGetter(web_contents_getter)
+    , m_weakFactory(this)
 {
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    base::PostTaskWithTraits(
+            FROM_HERE, { content::BrowserThread::UI },
+            base::BindOnce(&LoginDelegateQt::triggerDialog, m_weakFactory.GetWeakPtr()));
 }
 
 LoginDelegateQt::~LoginDelegateQt()
 {
-    Q_ASSERT(m_dialogController.isNull());
-}
-
-void LoginDelegateQt::triggerDialog()
-{
-    base::PostTaskWithTraits(
-            FROM_HERE, { content::BrowserThread::UI },
-            base::BindOnce(&LoginDelegateQt::triggerDialogOnUI, this));
-}
-
-void LoginDelegateQt::OnRequestCancelled()
-{
     destroy();
-    // TODO: this should close native dialog, since page can be navigated somewhere else
 }
 
 QUrl LoginDelegateQt::url() const
@@ -129,39 +118,37 @@ bool LoginDelegateQt::isProxy() const
     return m_authInfo->is_proxy;
 }
 
-void LoginDelegateQt::triggerDialogOnUI()
+void LoginDelegateQt::triggerDialog()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+    if (!web_contents())
+        return sendAuthToRequester(false, QString(), QString());
 
     if (isProxy()) {
         // workaround for 'ws' redefined symbols when including QNetworkProxy
         auto authentication = WebEngineContext::qProxyNetworkAuthentication(host(), port());
-        if (std::get<0>(authentication)) {
-            base::PostTaskWithTraits(
-                    FROM_HERE, { content::BrowserThread::IO },
-                    base::BindOnce(&LoginDelegateQt::sendAuthToRequester, this, true,
-                                   std::get<1>(authentication), std::get<2>(authentication)));
-
-            return;
-        }
+        if (std::get<0>(authentication))
+            return sendAuthToRequester(true, std::get<1>(authentication), std::get<2>(authentication));
     }
-    content::WebContentsImpl *webContents =
-            static_cast<content::WebContentsImpl *>(m_webContentsGetter.Run());
+    content::WebContentsImpl *webContents = static_cast<content::WebContentsImpl *>(web_contents());
     if (!webContents)
         return;
     WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
 
-    AuthenticationDialogControllerPrivate *dialogControllerData = new AuthenticationDialogControllerPrivate(this);
+    AuthenticationDialogControllerPrivate *dialogControllerData = new AuthenticationDialogControllerPrivate(m_weakFactory.GetWeakPtr());
+    dialogControllerData->url = url();
+    dialogControllerData->host = host();
+    dialogControllerData->realm = realm();
+    dialogControllerData->isProxy = isProxy();
     m_dialogController.reset(new AuthenticationDialogController(dialogControllerData));
     client->authenticationRequired(m_dialogController);
 }
 
 void LoginDelegateQt::sendAuthToRequester(bool success, const QString &user, const QString &password)
 {
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-
     if (!m_auth_required_callback.is_null()) {
-        if (success)
+        if (success && web_contents())
             std::move(m_auth_required_callback).Run(net::AuthCredentials(toString16(user), toString16(password)));
         else
             std::move(m_auth_required_callback).Run(base::nullopt);

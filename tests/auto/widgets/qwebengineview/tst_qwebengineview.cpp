@@ -3085,7 +3085,6 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("supervised-user-internals") << QUrl("chrome://supervised-user-internals") << false;
     QTest::newRow("sync-internals") << QUrl("chrome://sync-internals") << false;
     QTest::newRow("system") << QUrl("chrome://system") << false;
-    QTest::newRow("taskscheduler-internals") << QUrl("chrome://taskscheduler-internals") << true;
     QTest::newRow("terms") << QUrl("chrome://terms") << false;
     QTest::newRow("thumbnails") << QUrl("chrome://thumbnails") << false;
     QTest::newRow("tracing") << QUrl("chrome://tracing") << false;

@@ -51,14 +51,14 @@
 
 namespace QtWebEngineCore {
 
-static Qt::LayoutDirection toDirection(blink::PlatformNotificationData::Direction direction)
+static Qt::LayoutDirection toDirection(blink::mojom::NotificationDirection direction)
 {
     switch (direction) {
-        case blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
+        case blink::mojom::NotificationDirection::LEFT_TO_RIGHT:
             return Qt::LeftToRight;
-        case blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
+        case blink::mojom::NotificationDirection::RIGHT_TO_LEFT:
             return Qt::RightToLeft;
-        case blink::PlatformNotificationData::DIRECTION_AUTO:
+        case blink::mojom::NotificationDirection::AUTO:
         default:
             break;
     }

@@ -137,7 +137,7 @@ private:
     void PrintPreviewDone();
 
 private:
-    WEB_CONTENTS_USER_DATA_KEY_DECL()
+    WEB_CONTENTS_USER_DATA_KEY_DECL();
     content::RenderFrameHost *m_printPreviewRfh;
     base::FilePath m_pdfOutputPath;
     PrintToPDFCallback m_pdfPrintCallback;

@@ -40,7 +40,7 @@
 #ifndef AUTHENTICATION_DIALOG_CONTROLLER_P_H
 #define AUTHENTICATION_DIALOG_CONTROLLER_P_H
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 
 #include "login_delegate_qt.h"
 
@@ -49,10 +49,14 @@ namespace QtWebEngineCore {
 class AuthenticationDialogControllerPrivate {
 
 public:
-    AuthenticationDialogControllerPrivate(LoginDelegateQt *loginDelegate);
+    AuthenticationDialogControllerPrivate(base::WeakPtr<LoginDelegateQt> loginDelegate);
     void dialogFinished(bool accepted, const QString &user = QString(), const QString &password = QString());
 
-    scoped_refptr<LoginDelegateQt> loginDelegate;
+    base::WeakPtr<LoginDelegateQt> loginDelegate;
+    QUrl url;
+    QString host;
+    QString realm;
+    bool isProxy;
 };
 
 } // namespace QtWebEngineCore

@@ -76,6 +76,7 @@ public:
         ResourceTypeServiceWorker,  // the main resource of a service worker.
         ResourceTypeCspReport,      // Content Security Policy (CSP) violation report
         ResourceTypePluginResource, // A resource requested by a plugin
+        ResourceTypeNavigationPreload, // A service worker navigation preload request.
 #ifndef Q_QDOC
         ResourceTypeLast,
 #endif

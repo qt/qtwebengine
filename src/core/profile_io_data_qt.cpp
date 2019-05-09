@@ -345,7 +345,6 @@ void ProfileIODataQt::generateStorage()
         m_httpAuthPreferences->SetServerWhitelist(serverWhitelist);
     }
     m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(
-                                                 m_urlRequestContext->host_resolver(),
                                                  m_httpAuthPreferences.get()));
     m_storage->set_transport_security_state(std::make_unique<net::TransportSecurityState>());
 

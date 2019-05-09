@@ -109,7 +109,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_profileIOData);
-    const content::ResourceRequestInfo *resourceInfo = content::ResourceRequestInfo::ForRequest(request);
+    content::ResourceRequestInfo *resourceInfo = content::ResourceRequestInfo::ForRequest(request);
 
     content::ResourceType resourceType = content::RESOURCE_TYPE_LAST_TYPE;
     WebContentsAdapterClient::NavigationType navigationType = WebContentsAdapterClient::OtherNavigation;

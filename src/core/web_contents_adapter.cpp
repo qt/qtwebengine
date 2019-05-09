@@ -61,9 +61,10 @@
 #include "web_engine_settings.h"
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_impl.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/sequence_manager/sequence_manager_impl.h"
+#include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -81,13 +82,11 @@
 #include "content/public/common/drop_data.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
-//#include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -517,7 +516,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
 
 void WebContentsAdapter::initializeRenderPrefs()
 {
-    content::RendererPreferences *rendererPrefs = m_webContents->GetMutableRendererPrefs();
+    blink::mojom::RendererPreferences *rendererPrefs = m_webContents->GetMutableRendererPrefs();
     rendererPrefs->use_custom_colors = true;
     // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in
     // seconds
@@ -1597,7 +1596,12 @@ void WebContentsAdapter::waitForUpdateDragActionCalled()
     const qint64 timeout = 3000;
     QElapsedTimer t;
     t.start();
-    base::MessagePump::Delegate *delegate = static_cast<base::MessageLoopImpl *>(base::MessageLoopCurrent::Get().ToMessageLoopBaseDeprecated());
+    auto backend = static_cast<base::sequence_manager::internal::SequenceManagerImpl *>(
+            base::MessageLoopCurrent::Get().ToMessageLoopBaseDeprecated());
+    base::MessagePump::Delegate *delegate =
+            static_cast<base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
+                backend->controller_.get());
+
     DCHECK(delegate);
     m_updateDragActionCalled = false;
     for (;;) {

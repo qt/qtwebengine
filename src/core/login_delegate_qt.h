@@ -43,6 +43,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
 #include "web_contents_adapter_client.h"
@@ -56,20 +57,17 @@ namespace QtWebEngineCore {
 
 class AuthenticationDialogController;
 
-class LoginDelegateQt : public content::LoginDelegate {
+class LoginDelegateQt : public content::LoginDelegate,
+                        public content::WebContentsObserver
+{
 public:
     LoginDelegateQt(net::AuthChallengeInfo *authInfo,
-                    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+                    content::WebContents *web_contents,
                     GURL url,
                     bool first_auth_attempt,
                     LoginAuthRequiredCallback auth_required_callback);
 
-    ~LoginDelegateQt();
-
-    void triggerDialog();
-
-    // LoginDelegate implementation
-    void OnRequestCancelled() override;
+    ~LoginDelegateQt() override;
 
     QUrl url() const;
     QString realm() const;
@@ -80,14 +78,14 @@ public:
     void sendAuthToRequester(bool success, const QString &user, const QString &password);
 
 private:
-    void triggerDialogOnUI();
+    void triggerDialog();
     void destroy();
 
     scoped_refptr<net::AuthChallengeInfo> m_authInfo;
 
     GURL m_url;
     LoginAuthRequiredCallback m_auth_required_callback;
-    content::ResourceRequestInfo::WebContentsGetter m_webContentsGetter;
+    base::WeakPtrFactory<LoginDelegateQt> m_weakFactory;
 
     // This member is used to keep authentication dialog controller alive until
     // authorization is sent or cancelled.

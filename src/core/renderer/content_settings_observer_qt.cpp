@@ -45,7 +45,6 @@
 #include "content_settings_observer_qt.h"
 
 #include "content/public/renderer/render_frame.h"
-#include "third_party/blink/public/platform/web_content_setting_callbacks.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -53,7 +52,6 @@
 
 #include "common/qt_messages.h"
 
-using blink::WebContentSettingCallbacks;
 using blink::WebSecurityOrigin;
 using blink::WebString;
 
@@ -115,9 +113,7 @@ void ContentSettingsObserverQt::OnDestruct()
     delete this;
 }
 
-bool ContentSettingsObserverQt::AllowDatabase(const WebString &name,
-                                              const WebString &display_name,
-                                              unsigned /*estimated_size*/)
+bool ContentSettingsObserverQt::AllowDatabase()
 {
     blink::WebFrame *frame = render_frame()->GetWebFrame();
     if (IsUniqueFrame(frame))
@@ -126,21 +122,20 @@ bool ContentSettingsObserverQt::AllowDatabase(const WebString &name,
     bool result = false;
     Send(new QtWebEngineHostMsg_AllowDatabase(
              routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
-             url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), name.Utf16(),
-             display_name.Utf16(), &result));
+             url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(),
+             &result));
     return result;
 }
 
-void ContentSettingsObserverQt::RequestFileSystemAccessAsync(const WebContentSettingCallbacks &callbacks)
+void ContentSettingsObserverQt::RequestFileSystemAccessAsync(base::OnceCallback<void(bool)> callback)
 {
     blink::WebFrame *frame = render_frame()->GetWebFrame();
     if (IsUniqueFrame(frame)) {
-        WebContentSettingCallbacks permissionCallbacks(callbacks);
-        permissionCallbacks.DoDeny();
+        std::move(callback).Run(false);
         return;
     }
     ++m_currentRequestId;
-    bool inserted = m_permissionRequests.insert(std::make_pair(m_currentRequestId, callbacks)).second;
+    bool inserted = m_permissionRequests.insert(std::make_pair(m_currentRequestId, std::move(callback))).second;
 
     // Verify there are no duplicate insertions.
     DCHECK(inserted);
@@ -190,14 +185,10 @@ void ContentSettingsObserverQt::OnRequestFileSystemAccessAsyncResponse(int reque
     if (it == m_permissionRequests.end())
         return;
 
-    WebContentSettingCallbacks callbacks = it->second;
+    base::OnceCallback<void(bool)> callback = std::move(it->second);
     m_permissionRequests.erase(it);
 
-    if (allowed) {
-        callbacks.DoAllow();
-        return;
-    }
-    callbacks.DoDeny();
+    std::move(callback).Run(allowed);
 }
 
 void ContentSettingsObserverQt::ClearBlockedContentSettings()

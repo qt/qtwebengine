@@ -51,7 +51,6 @@
 #include "url/gurl.h"
 
 namespace blink {
-class WebContentSettingCallbacks;
 class WebSecurityOrigin;
 }
 
@@ -68,10 +67,8 @@ public:
     ~ContentSettingsObserverQt() override;
 
     // blink::WebContentSettingsClient:
-    bool AllowDatabase(const blink::WebString &name,
-                       const blink::WebString &display_name,
-                       unsigned estimated_size) override;
-    void RequestFileSystemAccessAsync(const blink::WebContentSettingCallbacks &callbacks) override;
+    bool AllowDatabase() override;
+    void RequestFileSystemAccessAsync(base::OnceCallback<void(bool)> callback) override;
     bool AllowIndexedDB(const blink::WebSecurityOrigin &origin) override;
     bool AllowStorage(bool local) override;
 
@@ -94,7 +91,7 @@ private:
     base::flat_map<StoragePermissionsKey, bool> m_cachedStoragePermissions;
 
     int m_currentRequestId;
-    base::flat_map<int, blink::WebContentSettingCallbacks> m_permissionRequests;
+    base::flat_map<int, base::OnceCallback<void(bool)>> m_permissionRequests;
 
     DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserverQt);
 };

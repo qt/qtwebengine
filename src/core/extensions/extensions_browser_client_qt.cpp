@@ -69,6 +69,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/mime_util.h"
 #include "net/url_request/url_request_simple_job.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #include "component_extension_resource_manager_qt.h"
@@ -108,12 +109,12 @@ public:
     URLRequestResourceBundleJob(net::URLRequest *request,
                                 net::NetworkDelegate *network_delegate,
                                 const base::FilePath &filename,
-                                int resource_id,
+                                const extensions::ComponentExtensionResourceInfo &resource_info,
                                 const std::string &content_security_policy,
                                 bool send_cors_header)
             : net::URLRequestSimpleJob(request, network_delegate)
             , filename_(filename)
-            , resource_id_(resource_id)
+            , resource_info_(resource_info)
             , weak_factory_(this)
     {
         // Leave cache headers out of resource bundle requests.
@@ -125,7 +126,7 @@ public:
                           net::CompletionOnceCallback callback) const override
     {
         const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-        *data = rb.LoadDataResourceBytes(resource_id_);
+        *data = rb.LoadDataResourceBytes(resource_info_.resource_id);
 
         // Add the Content-Length header now that we know the resource length.
         response_info_.headers->AddHeader(
@@ -171,8 +172,8 @@ private:
     // We need the filename of the resource to determine the mime type.
     base::FilePath filename_;
 
-    // The resource bundle id to load.
-    int resource_id_;
+    // The resource to load.
+    const extensions::ComponentExtensionResourceInfo resource_info_;
 
     net::HttpResponseInfo response_info_;
 
@@ -266,14 +267,14 @@ net::URLRequestJob *ExtensionsBrowserClientQt::MaybeCreateResourceBundleRequestJ
             // extension relative path against resources_path.
             resources_path.AppendRelativePath(directory_path, &relative_path)) {
         base::FilePath request_path = extensions::file_util::ExtensionURLToRelativeFilePath(request->url());
-        int resource_id = 0;
-        if (GetComponentExtensionResourceManager()->IsComponentExtensionResource(directory_path, request_path, &resource_id)) {
+        ComponentExtensionResourceInfo resource_info;
+        if (GetComponentExtensionResourceManager()->IsComponentExtensionResource(directory_path, request_path, &resource_info)) {
             relative_path = relative_path.Append(request_path);
             relative_path = relative_path.NormalizePathSeparators();
             return new URLRequestResourceBundleJob(request,
                                                    network_delegate,
                                                    relative_path,
-                                                   resource_id,
+                                                   resource_info,
                                                    content_security_policy,
                                                    send_cors_header);
         }
@@ -284,9 +285,9 @@ net::URLRequestJob *ExtensionsBrowserClientQt::MaybeCreateResourceBundleRequestJ
 // Return the resource relative path and id for the given request.
 base::FilePath ExtensionsBrowserClientQt::GetBundleResourcePath(const network::ResourceRequest &request,
                                                                 const base::FilePath &extension_resources_path,
-                                                                int *resource_id) const
+                                                                ComponentExtensionResourceInfo *resource_info) const
 {
-    *resource_id = 0;
+    *resource_info = {};
     // |chrome_resources_path| corresponds to src/chrome/browser/resources in
     // source tree.
     base::FilePath resources_path;
@@ -303,10 +304,10 @@ base::FilePath ExtensionsBrowserClientQt::GetBundleResourcePath(const network::R
     const base::FilePath request_relative_path =
             extensions::file_util::ExtensionURLToRelativeFilePath(request.url);
     if (!ExtensionsBrowserClient::Get()->GetComponentExtensionResourceManager()->IsComponentExtensionResource(
-                extension_resources_path, request_relative_path, resource_id)) {
+                extension_resources_path, request_relative_path, resource_info)) {
         return base::FilePath();
     }
-    DCHECK_NE(0, *resource_id);
+    DCHECK_NE(0, resource_info->resource_id);
 
     return request_relative_path;
 }
@@ -316,7 +317,7 @@ base::FilePath ExtensionsBrowserClientQt::GetBundleResourcePath(const network::R
 void ExtensionsBrowserClientQt::LoadResourceFromResourceBundle(const network::ResourceRequest &request,
                                                                network::mojom::URLLoaderRequest loader,
                                                                const base::FilePath &resource_relative_path,
-                                                               int resource_id,
+                                                               const ComponentExtensionResourceInfo &resource_info,
                                                                const std::string &content_security_policy,
                                                                network::mojom::URLLoaderClientPtr client,
                                                                bool send_cors_header)

@@ -77,7 +77,7 @@ public:
 
     // Retrieves the ids of all currently displaying notifications and
     // posts |callback| with the result.
-    void GetDisplayedNotifications(content::BrowserContext* browser_context, const DisplayedNotificationsCallback& callback) override;
+    void GetDisplayedNotifications(content::BrowserContext* browser_context, DisplayedNotificationsCallback callback) override;
 
     // Reads the value of the next persistent notification ID from the profile and
     // increments the value, as it is called once per notification write.

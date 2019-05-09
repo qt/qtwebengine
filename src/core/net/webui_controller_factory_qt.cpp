@@ -52,7 +52,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
-#include "chrome/browser/ui/webui/task_scheduler_internals/task_scheduler_internals_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -129,8 +128,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
     // after the host name.
     if (url.host() == chrome::kChromeUIQuotaInternalsHost)
         return &NewWebUI<QuotaInternalsUI>;
-    if (url.host_piece() == chrome::kChromeUITaskSchedulerInternalsHost)
-        return &NewWebUI<TaskSchedulerInternalsUI>;
 
     if (url.SchemeIs(content::kChromeDevToolsScheme)) {
 //        if (!DevToolsUIBindings::IsValidFrontendURL(url))

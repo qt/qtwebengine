@@ -60,7 +60,7 @@ ComponentExtensionResourceManagerQt::~ComponentExtensionResourceManagerQt() {}
 
 bool ComponentExtensionResourceManagerQt::IsComponentExtensionResource(const base::FilePath &extension_path,
                                                                        const base::FilePath &resource_path,
-                                                                       int *resource_id) const
+                                                                       ComponentExtensionResourceInfo* resource_info) const
 {
     base::FilePath directory_path = extension_path;
     base::FilePath resources_dir;
@@ -73,11 +73,13 @@ bool ComponentExtensionResourceManagerQt::IsComponentExtensionResource(const bas
     relative_path = relative_path.Append(resource_path);
     relative_path = relative_path.NormalizePathSeparators();
 
-    std::map<base::FilePath, int>::const_iterator entry = path_to_resource_id_.find(relative_path);
-    if (entry != path_to_resource_id_.end())
-        *resource_id = entry->second;
+    auto entry = path_to_resource_info_.find(relative_path);
+    if (entry != path_to_resource_info_.end()) {
+        *resource_info = entry->second;
+        return true;
+    }
 
-    return entry != path_to_resource_id_.end();
+    return false;
 }
 
 const ui::TemplateReplacements *ComponentExtensionResourceManagerQt::GetTemplateReplacementsForExtension(const std::string &) const
@@ -85,14 +87,15 @@ const ui::TemplateReplacements *ComponentExtensionResourceManagerQt::GetTemplate
     return nullptr;
 }
 
-void ComponentExtensionResourceManagerQt::AddComponentResourceEntries(const GritResourceMap *entries, size_t size)
+void ComponentExtensionResourceManagerQt::AddComponentResourceEntries(const GzippedGritResourceMap *entries, size_t size)
 {
     for (size_t i = 0; i < size; ++i) {
         base::FilePath resource_path = base::FilePath().AppendASCII(entries[i].name);
         resource_path = resource_path.NormalizePathSeparators();
 
-        DCHECK(path_to_resource_id_.find(resource_path) == path_to_resource_id_.end());
-        path_to_resource_id_[resource_path] = entries[i].value;
+        DCHECK(!base::ContainsKey(path_to_resource_info_, resource_path));
+        path_to_resource_info_[resource_path] = { entries[i].value,
+                                                  entries[i].gzipped };
     }
 }
 

@@ -44,9 +44,9 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop_impl.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -77,6 +77,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "net/base/port_util.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -241,7 +242,8 @@ void WebEngineContext::destroy()
     destroyGpuProcess();
 
     base::MessagePump::Delegate *delegate =
-            static_cast<base::MessageLoopImpl *>(m_runLoop->delegate_);
+            static_cast<base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
+                m_runLoop->delegate_);
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
 
@@ -499,8 +501,11 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(disableFeatures, features::kMojoVideoCapture.name);
     // Breaks WebEngineNewViewRequest.userInitiated API (since 73)
     appendToFeatureList(disableFeatures, features::kUserActivationV2.name);
+    appendToFeatureList(disableFeatures, features::kWebAuth.name);
 
     appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
+
+    appendToFeatureList(disableFeatures, network::features::kNetworkService.name);
 
 #if QT_CONFIG(webengine_printing_and_pdf)
     appendToFeatureList(disableFeatures, printing::features::kUsePdfCompositorServiceForPrint.name);
@@ -612,11 +617,6 @@ WebEngineContext::WebEngineContext()
 
     SetContentClient(new ContentClientQt);
 
-    content::StartBrowserTaskScheduler();
-    content::BrowserTaskExecutor::Create();
-
-    mojo::core::Init();
-
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
 #if defined(OS_WIN)
     sandbox::SandboxInterfaceInfo sandbox_info = {0};
@@ -624,11 +624,23 @@ WebEngineContext::WebEngineContext()
     contentMainParams.sandbox_info = &sandbox_info;
 #endif
     m_contentRunner->Initialize(contentMainParams);
-    m_browserRunner->Initialize(content::MainFunctionParams(*base::CommandLine::ForCurrentProcess()));
+
+    mojo::core::Init();
+
+    // This block mirrors ContentMainRunnerImpl::RunServiceManager():
+    m_mainDelegate->PreCreateMainMessageLoop();
+    base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
+    content::BrowserTaskExecutor::Create();
+    m_mainDelegate->PostEarlyInitialization(false);
+    content::StartBrowserTaskScheduler();
+    content::BrowserTaskExecutor::PostFeatureListSetup();
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);
     m_runLoop->BeforeRun();
+
+    content::MainFunctionParams mainParams(*base::CommandLine::ForCurrentProcess());
+    m_browserRunner->Initialize(mainParams);
 
     m_devtoolsServer.reset(new DevToolsServerQt());
     m_devtoolsServer->start();

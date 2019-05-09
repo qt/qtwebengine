@@ -79,8 +79,6 @@ bool BrowserMessageFilterQt::OnMessageReceived(const IPC::Message& message)
 void BrowserMessageFilterQt::OnAllowDatabase(int /*render_frame_id*/,
                                              const GURL &origin_url,
                                              const GURL &top_origin_url,
-                                             const base::string16 &/*name*/,
-                                             const base::string16 &/*display_name*/,
                                              bool* allowed)
 {
     NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(m_profile->GetRequestContext()->GetURLRequestContext()->network_delegate());

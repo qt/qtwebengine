@@ -179,21 +179,21 @@ void PlatformNotificationServiceQt::ClosePersistentNotification(
 
 void PlatformNotificationServiceQt::GetDisplayedNotifications(
         content::BrowserContext *browser_context,
-        const DisplayedNotificationsCallback &callback)
+        DisplayedNotificationsCallback callback)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     ProfileQt *profile = static_cast<ProfileQt *>(browser_context);
 
-    std::unique_ptr<std::set<std::string>> movableStdStringSet = std::make_unique<std::set<std::string>>();
+    std::set<std::string> movableStdStringSet;
     auto it = profile->profileAdapter()->persistentNotifications().constBegin();
     const auto end = profile->profileAdapter()->persistentNotifications().constEnd();
     while (it != end) {
         if (it.value()->isShown())
-            movableStdStringSet->insert(it.key().toStdString());
+            movableStdStringSet.insert(it.key().toStdString());
         ++it;
     }
 
-    callback.Run(std::move(movableStdStringSet), true /* supports_synchronization */);
+    std::move(callback).Run(std::move(movableStdStringSet), true /* supports_synchronization */);
 }
 
 int64_t PlatformNotificationServiceQt::ReadNextPersistentNotificationId(content::BrowserContext *browser_context)

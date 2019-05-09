@@ -170,6 +170,7 @@ public:
     uint32_t GetCaptureSequenceNumber() const override;
     void ResetFallbackToFirstNavigationSurface() override;
     void DidStopFlinging() override;
+    std::unique_ptr<content::SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;

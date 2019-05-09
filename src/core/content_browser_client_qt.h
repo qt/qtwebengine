@@ -185,11 +185,11 @@ public:
     void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
 #endif
 
-    scoped_refptr<content::LoginDelegate> CreateLoginDelegate(
+    std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
             net::AuthChallengeInfo *auth_info,
-            content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+            content::WebContents *web_contents,
             const content::GlobalRequestID &request_id,
-            bool is_main_frame,
+            bool is_request_for_main_frame,
             const GURL &url,
             scoped_refptr<net::HttpResponseHeaders> response_headers,
             bool first_auth_attempt,

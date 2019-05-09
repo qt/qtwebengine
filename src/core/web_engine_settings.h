@@ -60,9 +60,13 @@
 #include <QTimer>
 
 namespace content {
-struct RendererPreferences;
 class WebContents;
 struct WebPreferences;
+}
+namespace blink {
+namespace mojom {
+class RendererPreferences;
+}
 }
 namespace QtWebEngineCore {
 
@@ -169,7 +173,7 @@ public:
 private:
     void doApply();
     void applySettingsToWebPreferences(content::WebPreferences *);
-    bool applySettingsToRendererPreferences(content::RendererPreferences *);
+    bool applySettingsToRendererPreferences(blink::mojom::RendererPreferences *);
     void setWebContentsAdapter(WebContentsAdapter *adapter) { m_adapter = adapter; }
 
     WebContentsAdapter* m_adapter;

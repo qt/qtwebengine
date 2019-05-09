@@ -120,7 +120,7 @@ bool ResourceDispatcherHostDelegateQt::ShouldInterceptResourceAsStream(net::URLR
                                                                        GURL *origin,
                                                                        std::string *payload)
 {
-    const content::ResourceRequestInfo* info =
+    content::ResourceRequestInfo* info =
         content::ResourceRequestInfo::ForRequest(request);
 
     int render_process_host_id = -1;
@@ -162,7 +162,7 @@ bool ResourceDispatcherHostDelegateQt::ShouldInterceptResourceAsStream(net::URLR
 void ResourceDispatcherHostDelegateQt::OnStreamCreated(net::URLRequest *request,
                                                        std::unique_ptr<content::StreamInfo> stream)
 {
-    const content::ResourceRequestInfo *info = content::ResourceRequestInfo::ForRequest(request);
+    content::ResourceRequestInfo *info = content::ResourceRequestInfo::ForRequest(request);
     std::map<net::URLRequest *, StreamTargetInfo>::iterator ix = stream_target_info_.find(request);
     CHECK(ix != stream_target_info_.end());
     int render_frame_id = -1;

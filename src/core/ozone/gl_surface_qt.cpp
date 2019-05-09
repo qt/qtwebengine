@@ -107,7 +107,7 @@ bool GLSurfaceQt::IsOffscreen()
     return true;
 }
 
-gfx::SwapResult GLSurfaceQt::SwapBuffers(const PresentationCallback &callback)
+gfx::SwapResult GLSurfaceQt::SwapBuffers(PresentationCallback callback)
 {
     LOG(ERROR) << "Attempted to call SwapBuffers on a pbuffer.";
     Q_UNREACHABLE();

@@ -107,12 +107,13 @@ private:
     void DeleteSessionCookiesOnIOThread(net::CookieMonster::DeleteCallback callback);
     void DeleteAllOnIOThread(net::CookieMonster::DeleteCallback callback);
 
-    void GetAllCookiesCallbackOnIOThread(qint64 callbackId, const net::CookieList &cookies);
-    void SetCookieCallbackOnIOThread(qint64 callbackId, bool success);
+    void GetCookiesToDeleteCallback(const std::string& cookie_name, const net::CookieList &cookies, const net::CookieStatusList &statusList);
+    void GetAllCookiesCallbackOnIOThread(qint64 callbackId, const net::CookieList &cookies, const net::CookieStatusList &statusList);
+    void SetCookieCallbackOnIOThread(qint64 callbackId, net::CanonicalCookie::CookieInclusionStatus status);
     void DeleteCookiesCallbackOnIOThread(qint64 callbackId, uint numCookies);
 
     void GetAllCookiesCallbackOnUIThread(qint64 callbackId, const QByteArray &cookies);
-    void SetCookieCallbackOnUIThread(qint64 callbackId, bool success);
+    void SetCookieCallbackOnUIThread(qint64 callbackId, net::CanonicalCookie::CookieInclusionStatus status);
     void DeleteCookiesCallbackOnUIThread(qint64 callbackId, uint numCookies);
 };
 
