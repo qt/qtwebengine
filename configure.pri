@@ -1,3 +1,5 @@
+include(src/core/config/functions.pri)
+
 # this must be done outside any function
 QTWEBENGINE_SOURCE_TREE = $$PWD
 
@@ -297,12 +299,12 @@ defineTest(qtConfTest_isWindowsHostCompiler64) {
 
 # Fixme QTBUG-71772
 defineTest(qtConfTest_hasThumbFlag) {
-    FLAG = $$extractCFlag("-mthumb")
+    FLAG = $$qtwebengine_extractCFlag("-mthumb")
     !isEmpty(FLAG): return(true)
-    FLAG = $$extractCFlag("-marm")
+    FLAG = $$qtwebengine_extractCFlag("-marm")
     !isEmpty(FLAG): return(false)
 
-    MARCH = $$extractCFlag("-march=.*")
+    MARCH = $$qtwebengine_extractCFlag("-march=.*")
     MARMV = $$replace(MARCH, "armv",)
     !isEmpty(MARMV) {
         MARMV = $$split(MARMV,)
