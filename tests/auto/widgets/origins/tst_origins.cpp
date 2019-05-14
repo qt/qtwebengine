@@ -346,11 +346,7 @@ void tst_Origins::jsUrlOrigin()
     QCOMPARE(eval(QSL("new URL(\"file:/etc/passwd\").origin")), QVariant(QSL("file://")));
     QCOMPARE(eval(QSL("new URL(\"file://foo.com/etc/passwd\").origin")), QVariant(QSL("file://")));
 
-    // The qrc scheme should behave like file.
-    QCOMPARE(eval(QSL("new URL(\"qrc:/crysis.css\").origin")), QVariant(QSL("qrc://")));
-    QCOMPARE(eval(QSL("new URL(\"qrc://foo.com/crysis.css\").origin")), QVariant(QSL("qrc://")));
-
-    // Unregistered schemes behaves like opaque origins.
+    // Unregistered schemes behave like file.
     QCOMPARE(eval(QSL("new URL(\"tst:/banana\").origin")), QVariant(QSL("tst://")));
     QCOMPARE(eval(QSL("new URL(\"tst://foo.com/banana\").origin")), QVariant(QSL("tst://")));
 
@@ -367,8 +363,9 @@ void tst_Origins::jsUrlOrigin()
              QVariant(QSL("hostportanduserinformationsyntax://foo")));
 
     // A PathSyntax scheme should have a 'universal' origin.
-    QCOMPARE(eval(QSL("new URL(\"PathSyntax:foo\").origin")),
-             QVariant(QSL("pathsyntax://")));
+    QCOMPARE(eval(QSL("new URL(\"PathSyntax:foo\").origin")), QVariant(QSL("pathsyntax:")));
+    QCOMPARE(eval(QSL("new URL(\"qrc:/crysis.css\").origin")), QVariant(QSL("qrc:")));
+    QCOMPARE(eval(QSL("new URL(\"qrc://foo.com/crysis.css\").origin")), QVariant(QSL("qrc:")));
 
     // The NoAccessAllowed flag forces opaque origins.
     QCOMPARE(eval(QSL("new URL(\"PathSyntax-NoAccessAllowed:foo\").origin")),
@@ -709,7 +706,7 @@ void tst_Origins::serviceWorker()
     QVERIFY(load(QSL("qrc:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("The URL protocol of the current origin ('qrc://') is not supported.")));
+            .contains(QSL("The URL protocol of the current origin ('qrc:') is not supported.")));
 
     QVERIFY(load(QSL("tst:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
@@ -724,7 +721,7 @@ void tst_Origins::serviceWorker()
     QVERIFY(load(QSL("PathSyntax-Secure:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("The URL protocol of the current origin ('pathsyntax-secure://') is not supported.")));
+            .contains(QSL("The URL protocol of the current origin ('pathsyntax-secure:') is not supported.")));
 
     QVERIFY(load(QSL("PathSyntax-ServiceWorkersAllowed:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
