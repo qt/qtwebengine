@@ -65,8 +65,7 @@ void PrinterWorker::print()
         return;
     }
 
-    QSize pageSize = m_printer->pageRect().size();
-    PdfiumDocumentWrapperQt pdfiumWrapper(m_data->constData(), m_data->size(), pageSize);
+    PdfiumDocumentWrapperQt pdfiumWrapper(m_data->constData(), m_data->size());
 
     int toPage = m_printer->toPage();
     int fromPage = m_printer->fromPage();
@@ -95,6 +94,10 @@ void PrinterWorker::print()
         documentCopies = 1;
     }
 
+    bool isLandscape = pdfiumWrapper.pageIsLandscape(0);
+    QPageLayout::Orientation prevOrientation = m_printer->pageLayout().orientation();
+    m_printer->setPageOrientation(isLandscape ? QPageLayout::Landscape : QPageLayout::Portrait);
+
     QPainter painter;
     if (!painter.begin(m_printer)) {
         qWarning("Failure to print on printer %ls: Could not open printer for painting.",
@@ -104,8 +107,21 @@ void PrinterWorker::print()
     }
 
     for (int printedDocuments = 0; printedDocuments < documentCopies; printedDocuments++) {
+        if (printedDocuments > 0)
+            m_printer->newPage();
+
         int currentPageIndex = fromPage;
-        while (true) {
+
+        for (int i = 0; true; i++) {
+            prevOrientation = m_printer->pageLayout().orientation();
+            isLandscape = pdfiumWrapper.pageIsLandscape(currentPageIndex - 1);
+            m_printer->setPageOrientation(isLandscape ? QPageLayout::Landscape : QPageLayout::Portrait);
+
+            QSize pageSize = m_printer->pageRect().size();
+
+            if (i > 0)
+                m_printer->newPage();
+
             for (int printedPages = 0; printedPages < pageCopies; printedPages++) {
                 if (m_printer->printerState() == QPrinter::Aborted
                         || m_printer->printerState() == QPrinter::Error) {
@@ -113,16 +129,24 @@ void PrinterWorker::print()
                     return;
                 }
 
+                if (printedPages > 0)
+                    m_printer->newPage();
+
                 QImage currentImage = pdfiumWrapper.pageAsQImage(currentPageIndex - 1);
                 if (currentImage.isNull()) {
                     Q_EMIT resultReady(false);
                     return;
                 }
 
+                QRect targetRect = currentImage.rect();
+                // Scale down currentImage by both width and height to fit into the drawable area of the page.
+                float scaleFactor = (float)pageSize.width() / (float)targetRect.width();
+                targetRect = QRect(0, 0, targetRect.width() * scaleFactor, targetRect.height() * scaleFactor);
+                scaleFactor = (float)pageSize.height() / (float)targetRect.height();
+                targetRect = QRect(0, 0, targetRect.width() * scaleFactor, targetRect.height() * scaleFactor);
+
                 // Painting operations are automatically clipped to the bounds of the drawable part of the page.
-                painter.drawImage(QRect(0, 0, pageSize.width(), pageSize.height()), currentImage, currentImage.rect());
-                if (printedPages < pageCopies - 1)
-                    m_printer->newPage();
+                painter.drawImage(targetRect, currentImage, currentImage.rect());
             }
 
             if (currentPageIndex == toPage)
@@ -133,10 +157,8 @@ void PrinterWorker::print()
             else
                 currentPageIndex--;
 
-            m_printer->newPage();
+            m_printer->setPageOrientation(prevOrientation);
         }
-        if (printedDocuments < documentCopies - 1)
-            m_printer->newPage();
     }
     painter.end();
 
