@@ -1,0 +1,89 @@
+Qt 5.13 introduces many new features and improvements as well as bugfixes
+over the 5.12.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.13 series is binary compatible with the 5.12.x series.
+Applications compiled for 5.12 will continue to run with 5.13.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                                 General                                  *
+****************************************************************************
+
+Behavioral Changes
+------------------
+
+ - [QTBUG-74586] Qt WebEngine will assume that the resources and the icu
+   data files are in the same directory when deploying the application.
+
+
+Chromium Snapshot
+-----------------
+
+ - Updated the Chromium version to 73.0.3683.105
+ - Applied security fixes from Chrome up to version 74.0.3729.108
+
+
+Platforms
+---------
+
+ - [QTBUG-71126] A single-threaded GPU mode has been implemented, enabling
+   WebGL and hardware acceleration with OpenGL drivers with buggy
+   multithreading, such as ANGLE on Windows and Nouveau on Linux.
+ - Windows: Qt WebEngine can now be build with both MSVC 2017 and clang_cl.
+
+
+****************************************************************************
+*                                Libraries                                 *
+****************************************************************************
+
+Qt WebEngineCore
+----------------
+
+ - [QTBUG-50556] The PDF Viewer extension has been implemented and enabled,
+   so that PDFs can now be viewed directly in Qt WebEngine.
+ - [QTBUG-50995] Support for Web Notifications API for end-user
+   notifications through QWebEngineNotification.
+ - [QTBUG-58232] Will now use credentials from QNetworkProxy if set.
+ - [QTBUG-69844] Added QWebEngineUrlRequestJob::requestHeaders() to read
+   extra HTTP headers set on a URL request.
+ - [QTBUG-71229] Will now parse Chrome command-line switches for initial
+   proxy settings.
+ - [QTBUG-75539] Will now parse --auth-server-whitelist switch.
+ - Added in-memory client cert store for installing application specific
+   client certificates.
+
+
+Qt WebEngine (QML)
+------------------
+
+ - [QTBUG-66262][QTBUG-72176] Added property to set the default download
+   location in QQuickWebEngineProfile.
+ - Added WebEngineSettings.pdfViewerEnabled to control if the internal PDF
+   viewer is enabled.
+
+
+Qt WebEngineWidgets
+-------------------
+
+ - [QTBUG-66262][QTBUG-72176] Added methods to set the default download
+   location in QWebEngineProfile.
+ - [QTBUG-58059][QTBUG-71164] A profile can now be designated to download
+   OCSP records and thus enable OCSP verification on Linux.
+ - Added QWebEngineProfile::setUrlRequestInterceptor, similar to
+   setRequestInterceptor except it operates on the UI-thread. The old
+   QWebEngineProfile::setRequestInterceptor is deprecated for not being
+   thread-safe.
+ - Added QWebEnginePage::setUrlRequestInterceptor, similar to the same call on
+   profile except it operates on a per-page basis.
+ - Added QWebEngineSettings::PdfViewerEnabled to control if the internal PDF
+   viewer is enabled.
