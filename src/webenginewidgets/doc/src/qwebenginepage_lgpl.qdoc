@@ -112,8 +112,7 @@
     Actions only have an effect when they are applicable.
 
     The availability of actions can be be determined by checking
-    \l{QAction::}{isEnabled()} on the action returned by action(). Context-dependent
-    actions are always enabled.
+    \l{QAction::}{isEnabled()} on the action returned by action().
 
     \value NoWebAction No action is triggered.
     \value Back Navigate back in the history of navigated links.
@@ -126,7 +125,10 @@
     \value Paste Paste content from the clipboard.
     \value Undo Undo the last editing action.
     \value Redo Redo the last editing action.
-    \value SelectAll Select all content.
+    \value SelectAll Select all content. This action is only enabled when the page's content is focused.
+           The focus can be forced by the JavaScript \c{window.focus()} call, or the
+           \l{QWebEngineSettings::FocusOnNavigationEnabled} {FocusOnNavigationEnabled} setting
+           should be enabled to get automatic focus.
     \value PasteAndMatchStyle Paste content from the clipboard with current style.
 
     \value OpenLinkInThisWindow Open the current link in the current window. (Added in Qt 5.6)

@@ -78,7 +78,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_response_writer.h"
 
-#include <QDebug>
 using namespace QtWebEngineCore;
 
 namespace {
@@ -180,7 +179,7 @@ DevToolsFrontendQt *DevToolsFrontendQt::Show(QSharedPointer<WebContentsAdapter> 
 
     content::WebContents *contents = frontendAdapter->webContents();
     if (contents == inspectedContents) {
-        qWarning() << "You can not inspect youself";
+        LOG(WARNING) << "You can not inspect yourself";
         return nullptr;
     }
 

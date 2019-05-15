@@ -756,6 +756,10 @@
             Redo the last editing action.
     \value  WebEngineView.SelectAll
             Select all content.
+            This action is only enabled when the page's content is focused.
+            The focus can be forced by the JavaScript \c{window.focus()} call, or the
+            \l{WebEngineSettings::focusOnNavigationEnabled} {focusOnNavigationEnabled} setting
+            should be enabled to get automatic focus.
     \value  WebEngineView.PasteAndMatchStyle
             Paste content from the clipboard with current style.
     \value  WebEngineView.OpenLinkInThisWindow

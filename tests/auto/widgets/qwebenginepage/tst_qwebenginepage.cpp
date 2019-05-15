@@ -227,6 +227,10 @@ private Q_SLOTS:
     void triggerActionWithoutMenu();
     void dynamicFrame();
 
+    void editActionsWithExplicitFocus();
+    void editActionsWithInitialFocus();
+    void editActionsWithFocusOnIframe();
+
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
 
@@ -1137,8 +1141,8 @@ void tst_QWebEnginePage::textSelection()
     QCOMPARE(page->action(QWebEnginePage::SelectEndOfDocument)->isEnabled(), false);
 #endif
 
-    // ..but SelectAll is awalys enabled
-    QCOMPARE(page->action(QWebEnginePage::SelectAll)->isEnabled(), true);
+    // ..but SelectAll is disabled because the page has no focus due to disabled FocusOnNavigationEnabled.
+    QCOMPARE(page->action(QWebEnginePage::SelectAll)->isEnabled(), false);
 
     // Verify hasSelection returns false since there is no selection yet...
     QCOMPARE(page->hasSelection(), false);
@@ -4501,6 +4505,93 @@ void tst_QWebEnginePage::dynamicFrame()
     page.load(QStringLiteral("qrc:/resources/dynamicFrame.html"));
     QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(toPlainTextSync(&page).trimmed(), QStringLiteral("foo"));
+}
+
+void tst_QWebEnginePage::editActionsWithExplicitFocus()
+{
+    QWebEngineView view;
+    QWebEnginePage *page = view.page();
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
+
+    QSignalSpy loadFinishedSpy(page, &QWebEnginePage::loadFinished);
+    QSignalSpy selectionChangedSpy(page, &QWebEnginePage::selectionChanged);
+    QSignalSpy actionChangedSpy(page->action(QWebEnginePage::SelectAll), &QAction::changed);
+
+    // The view is hidden and no focus on the page. Edit actions should be disabled.
+    QVERIFY(!view.isVisible());
+    QVERIFY(!page->action(QWebEnginePage::SelectAll)->isEnabled());
+
+    page->setHtml(QString("<html><body><div>foo bar</div></body></html>"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+
+    // Still no focus because focus on navigation is disabled. Edit actions don't do anything (should not crash).
+    QVERIFY(!page->action(QWebEnginePage::SelectAll)->isEnabled());
+    view.page()->triggerAction(QWebEnginePage::SelectAll);
+    QCOMPARE(selectionChangedSpy.count(), 0);
+    QCOMPARE(page->hasSelection(), false);
+
+    // Focus content by focusing window from JavaScript. Edit actions should be enabled and functional.
+    evaluateJavaScriptSync(page, "window.focus();");
+    QTRY_COMPARE(actionChangedSpy.count(), 1);
+    QVERIFY(page->action(QWebEnginePage::SelectAll)->isEnabled());
+    view.page()->triggerAction(QWebEnginePage::SelectAll);
+    QTRY_COMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(page->hasSelection(), true);
+    QCOMPARE(page->selectedText(), QStringLiteral("foo bar"));
+}
+
+void tst_QWebEnginePage::editActionsWithInitialFocus()
+{
+    QWebEngineView view;
+    QWebEnginePage *page = view.page();
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+
+    QSignalSpy loadFinishedSpy(page, &QWebEnginePage::loadFinished);
+    QSignalSpy selectionChangedSpy(page, &QWebEnginePage::selectionChanged);
+    QSignalSpy actionChangedSpy(page->action(QWebEnginePage::SelectAll), &QAction::changed);
+
+    // The view is hidden and no focus on the page. Edit actions should be disabled.
+    QVERIFY(!view.isVisible());
+    QVERIFY(!page->action(QWebEnginePage::SelectAll)->isEnabled());
+
+    page->setHtml(QString("<html><body><div>foo bar</div></body></html>"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+
+    // Content gets initial focus.
+    QTRY_COMPARE(actionChangedSpy.count(), 1);
+    QVERIFY(page->action(QWebEnginePage::SelectAll)->isEnabled());
+    view.page()->triggerAction(QWebEnginePage::SelectAll);
+    QTRY_COMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(page->hasSelection(), true);
+    QCOMPARE(page->selectedText(), QStringLiteral("foo bar"));
+}
+
+void tst_QWebEnginePage::editActionsWithFocusOnIframe()
+{
+    QWebEngineView view;
+    QWebEnginePage *page = view.page();
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
+
+    QSignalSpy loadFinishedSpy(page, &QWebEnginePage::loadFinished);
+    QSignalSpy selectionChangedSpy(page, &QWebEnginePage::selectionChanged);
+    QSignalSpy actionChangedSpy(page->action(QWebEnginePage::SelectAll), &QAction::changed);
+
+    // The view is hidden and no focus on the page. Edit actions should be disabled.
+    QVERIFY(!view.isVisible());
+    QVERIFY(!page->action(QWebEnginePage::SelectAll)->isEnabled());
+
+    page->load(QUrl("qrc:///resources/iframe2.html"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QVERIFY(!page->action(QWebEnginePage::SelectAll)->isEnabled());
+
+    // Focusing an iframe.
+    evaluateJavaScriptSync(page, "document.getElementsByTagName('iframe')[0].contentWindow.focus()");
+    QTRY_COMPARE(actionChangedSpy.count(), 1);
+    QVERIFY(page->action(QWebEnginePage::SelectAll)->isEnabled());
+    view.page()->triggerAction(QWebEnginePage::SelectAll);
+    QTRY_COMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(page->hasSelection(), true);
+    QCOMPARE(page->selectedText(), QStringLiteral("inner"));
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
