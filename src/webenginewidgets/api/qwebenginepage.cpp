@@ -686,24 +686,34 @@ void QWebEnginePagePrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
     auto oldView = page ? page->d_func()->view : nullptr;
     auto oldPage = view ? view->d_func()->page : nullptr;
 
+    bool ownNewPage = false;
+    bool deleteOldPage = false;
+
     // Change pointers first.
 
     if (page && oldView != view) {
-        if (oldView)
+        if (oldView) {
+            ownNewPage = oldView->d_func()->m_ownsPage;
             oldView->d_func()->page = nullptr;
+            oldView->d_func()->m_ownsPage = false;
+        }
         page->d_func()->view = view;
     }
 
     if (view && oldPage != page) {
-        if (oldPage)
-            oldPage->d_func()->view = nullptr;
+        if (oldPage) {
+            if (oldPage->d_func())
+                oldPage->d_func()->view = nullptr;
+            deleteOldPage = view->d_func()->m_ownsPage;
+        }
+        view->d_func()->m_ownsPage = ownNewPage;
         view->d_func()->page = page;
     }
 
     // Then notify.
 
     auto widget = page ? page->d_func()->widget : nullptr;
-    auto oldWidget = oldPage ? oldPage->d_func()->widget : nullptr;
+    auto oldWidget = (oldPage && oldPage->d_func()) ? oldPage->d_func()->widget : nullptr;
 
     if (page && oldView != view && oldView) {
         oldView->d_func()->pageChanged(page, nullptr);
@@ -712,17 +722,15 @@ void QWebEnginePagePrivate::bindPageAndView(QWebEnginePage *page, QWebEngineView
     }
 
     if (view && oldPage != page) {
-        view->d_func()->pageChanged(oldPage, page);
+        if (oldPage && oldPage->d_func())
+            view->d_func()->pageChanged(oldPage, page);
+        else
+            view->d_func()->pageChanged(nullptr, page);
         if (oldWidget != widget)
             view->d_func()->widgetChanged(oldWidget, widget);
-
-        // At this point m_ownsPage should still refer to oldPage,
-        // it is only set for the new page after binding.
-        if (view->d_func()->m_ownsPage) {
-            delete oldPage;
-            view->d_func()->m_ownsPage = false;
-        }
     }
+    if (deleteOldPage)
+        delete oldPage;
 }
 
 void QWebEnginePagePrivate::bindPageAndWidget(QWebEnginePage *page, RenderWidgetHostViewQtDelegateWidget *widget)
@@ -733,7 +741,7 @@ void QWebEnginePagePrivate::bindPageAndWidget(QWebEnginePage *page, RenderWidget
     // Change pointers first.
 
     if (widget && oldPage != page) {
-        if (oldPage)
+        if (oldPage && oldPage->d_func())
             oldPage->d_func()->widget = nullptr;
         widget->m_page = page;
     }
@@ -746,7 +754,7 @@ void QWebEnginePagePrivate::bindPageAndWidget(QWebEnginePage *page, RenderWidget
 
     // Then notify.
 
-    if (widget && oldPage != page && oldPage) {
+    if (widget && oldPage != page && oldPage && oldPage->d_func()) {
         if (auto oldView = oldPage->d_func()->view)
             oldView->d_func()->widgetChanged(widget, nullptr);
     }
