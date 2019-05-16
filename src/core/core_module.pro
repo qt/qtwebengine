@@ -25,14 +25,17 @@ isEmpty(NINJA_LIBS): error("Missing library files from QtWebEngineCore linking p
 NINJA_OBJECTS = $$eval($$list($$NINJA_OBJECTS))
 # Do manual response file linking for macOS and Linux
 
-RSP_FILE = $$OUT_PWD/$$getConfigDir()/$${TARGET}.rsp
-for(object, NINJA_OBJECTS): RSP_CONTENT += $$object
-write_file($$RSP_FILE, RSP_CONTENT)
-macos:LIBS_PRIVATE += -Wl,-filelist,$$shell_quote($$RSP_FILE)
-linux:LIBS_PRIVATE += @$$RSP_FILE
+RSP_OBJECT_FILE = $$OUT_PWD/$$getConfigDir()/$${TARGET}_o.rsp
+for(object, NINJA_OBJECTS): RSP_O_CONTENT += $$object
+write_file($$RSP_OBJECT_FILE, RSP_O_CONTENT)
+RSP_ARCHIVE_FILE = $$OUT_PWD/$$getConfigDir()/$${TARGET}_a.rsp
+for(archive, NINJA_ARCHIVES): RSP_A_CONTENT += $$archive
+write_file($$RSP_ARCHIVE_FILE, RSP_A_CONTENT)
+macos:LIBS_PRIVATE += -Wl,-filelist,$$shell_quote($$RSP_OBJECT_FILE)
+linux:LIBS_PRIVATE += @$${RSP_OBJECT_FILE}
 # QTBUG-58710 add main rsp file on windows
-win32:QMAKE_LFLAGS += @$$RSP_FILE
-linux: LIBS_PRIVATE += -Wl,--start-group $$NINJA_ARCHIVES -Wl,--end-group
+win32:QMAKE_LFLAGS += @$${RSP_OBJECT_FILE}
+linux: LIBS_PRIVATE += -Wl,--start-group @$${RSP_ARCHIVE_FILE} -Wl,--end-group
 else: LIBS_PRIVATE += $$NINJA_ARCHIVES
 LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
 # GN's LFLAGS doesn't always work across all the Linux configurations we support.
