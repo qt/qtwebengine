@@ -10,8 +10,6 @@ linking_pri = $$OUT_PWD/$$getConfigDir()/$${TARGET}.pri
     error("Could not find the linking information that gn should have generated.")
 }
 
-load(qt_module)
-
 api_library_name = qtwebenginecoreapi$$qtPlatformTargetSuffix()
 api_library_path = $$OUT_PWD/api/$$getConfigDir()
 
@@ -32,10 +30,10 @@ RSP_ARCHIVE_FILE = $$OUT_PWD/$$getConfigDir()/$${TARGET}_a.rsp
 for(archive, NINJA_ARCHIVES): RSP_A_CONTENT += $$archive
 write_file($$RSP_ARCHIVE_FILE, RSP_A_CONTENT)
 macos:LIBS_PRIVATE += -Wl,-filelist,$$shell_quote($$RSP_OBJECT_FILE)
-linux:LIBS_PRIVATE += @$${RSP_OBJECT_FILE}
+linux:QMAKE_LFLAGS += @$${RSP_OBJECT_FILE}
 # QTBUG-58710 add main rsp file on windows
 win32:QMAKE_LFLAGS += @$${RSP_OBJECT_FILE}
-linux: LIBS_PRIVATE += -Wl,--start-group @$${RSP_ARCHIVE_FILE} -Wl,--end-group
+linux:QMAKE_LFLAGS += -Wl,--start-group @$${RSP_ARCHIVE_FILE} -Wl,--end-group
 else: LIBS_PRIVATE += $$NINJA_ARCHIVES
 LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
 # GN's LFLAGS doesn't always work across all the Linux configurations we support.
@@ -74,7 +72,7 @@ osx {
     # API library as response file to the linker.
     QMAKE_LFLAGS += @$${api_library_path}$${QMAKE_DIR_SEP}$${api_library_name}.lib.objects
 } else {
-    LIBS_PRIVATE += -Wl,-whole-archive -l$$api_library_name -Wl,-no-whole-archive
+    QMAKE_LFLAGS += -Wl,-whole-archive -l$$api_library_name -Wl,-no-whole-archive
 }
 
 win32-msvc* {
@@ -86,8 +84,6 @@ win32-msvc* {
 # Using -Wl,-Bsymbolic-functions seems to confuse the dynamic linker
 # and doesn't let Chromium get access to libc symbols through dlsym.
 CONFIG -= bsymbolic_functions
-
-qtConfig(egl): CONFIG += egl
 
 linux:qtConfig(separate_debug_info): QMAKE_POST_LINK="cd $(DESTDIR) && $(STRIP) --strip-unneeded $(TARGET)"
 
@@ -157,3 +153,6 @@ OTHER_FILES = \
     $$files(../3rdparty/chromium/*.gypi, true) \
     $$files(../3rdparty/chromium/*.gn, true) \
     $$files(../3rdparty/chromium/*.gni, true)
+
+load(qt_module)
+
