@@ -115,7 +115,7 @@ ApplicationWindow {
     Action {
         shortcut: StandardKey.AddTab
         onTriggered: {
-            tabs.createEmptyTab(currentWebView.profile);
+            tabs.createEmptyTab(tabs.count != 0 ? currentWebView.profile : defaultProfile);
             tabs.currentIndex = tabs.count - 1;
             addressBar.forceActiveFocus();
             addressBar.selectAll();
@@ -294,18 +294,22 @@ ApplicationWindow {
                             id: offTheRecordEnabled
                             text: "Off The Record"
                             checkable: true
-                            checked: currentWebView.profile === otrProfile
+                            checked: currentWebView && currentWebView.profile === otrProfile
                             onToggled: function(checked) {
-                                currentWebView.profile = checked ? otrProfile : defaultProfile;
+                                if (currentWebView) {
+                                    currentWebView.profile = checked ? otrProfile : defaultProfile;
+                                }
                             }
                         }
                         MenuItem {
                             id: httpDiskCacheEnabled
                             text: "HTTP Disk Cache"
-                            checkable: !currentWebView.profile.offTheRecord
-                            checked: (currentWebView.profile.httpCacheType === WebEngineProfile.DiskHttpCache)
+                            checkable: currentWebView && !currentWebView.profile.offTheRecord
+                            checked: currentWebView && (currentWebView.profile.httpCacheType === WebEngineProfile.DiskHttpCache)
                             onToggled: function(checked) {
-                                currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
+                                if (currentWebView) {
+                                    currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
+                                }
                             }
                         }
                         MenuItem {
@@ -372,6 +376,52 @@ ApplicationWindow {
         anchors.left: parent.left
         anchors.right: parent.right
         Component.onCompleted: createEmptyTab(defaultProfile)
+
+        // Add custom tab view style so we can customize the tabs to include a close button
+        style: TabViewStyle {
+            property color frameColor: "#999"
+            property color fillColor: "#eee"
+            property color nonSelectedColor: "#ddd"
+            frameOverlap: 1
+            frame: Rectangle {
+                color: "#eee"
+                border.color: frameColor
+            }
+            tab: Rectangle {
+                id: tabRectangle
+                color: styleData.selected ? fillColor : nonSelectedColor
+                border.width: 1
+                border.color: frameColor
+                implicitWidth: Math.max(text.width + 30, 80)
+                implicitHeight: Math.max(text.height + 10, 20)
+                Rectangle { height: 1 ; width: parent.width ; color: frameColor}
+                Rectangle { height: parent.height ; width: 1; color: frameColor}
+                Rectangle { x: parent.width - 2; height: parent.height ; width: 1; color: frameColor}
+                Text {
+                    id: text
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.leftMargin: 6
+                    text: styleData.title
+                    elide: Text.ElideRight
+                    color: styleData.selected ? "black" : frameColor
+                }
+                Button {
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.rightMargin: 4
+                    height: 12
+                    style: ButtonStyle {
+                        background: Rectangle {
+                            implicitWidth: 12
+                            implicitHeight: 12
+                            color: control.hovered ? "#ccc" : tabRectangle.color
+                            Text {text: "x" ; anchors.centerIn: parent ; color: "gray"}
+                        }}
+                    onClicked: tabs.removeTab(styleData.index);
+                }
+            }
+        }
 
         Component {
             id: tabComponent
