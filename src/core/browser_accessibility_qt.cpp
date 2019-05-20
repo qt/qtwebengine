@@ -386,6 +386,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::ListItem;
     case ax::mojom::Role::kListItem:
         return QAccessible::ListItem;
+    case ax::mojom::Role::kListGrid:
+        return  QAccessible::List;
     case ax::mojom::Role::kListMarker:
         return QAccessible::StaticText;
     case ax::mojom::Role::kLog:
@@ -727,7 +729,11 @@ void BrowserAccessibilityQt::scrollToSubstring(int startIndex, int endIndex)
 {
     int count = characterCount();
     if (startIndex < endIndex && endIndex < count)
-        manager()->ScrollToMakeVisible(*this, GetPageBoundsForRange(startIndex, endIndex - startIndex));
+        manager()->ScrollToMakeVisible(*this,
+                                       GetRootFrameRangeBoundsRect(
+                                           startIndex,
+                                           endIndex - startIndex,
+                                           ui::AXClippingBehavior::kUnclipped));
 }
 
 QVariant BrowserAccessibilityQt::currentValue() const

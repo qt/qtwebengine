@@ -105,12 +105,13 @@ struct PersistentNotificationDelegate : UserNotificationController::Delegate {
 };
 
 
-PlatformNotificationServiceQt::PlatformNotificationServiceQt() {}
+PlatformNotificationServiceQt::PlatformNotificationServiceQt(content::BrowserContext *browserContext)
+        : browser_context(browserContext)
+{}
 
 PlatformNotificationServiceQt::~PlatformNotificationServiceQt() {}
 
 void PlatformNotificationServiceQt::DisplayNotification(
-        content::BrowserContext *browser_context,
         const std::string &notification_id,
         const GURL &origin,
         const blink::PlatformNotificationData &notificationData,
@@ -131,7 +132,6 @@ void PlatformNotificationServiceQt::DisplayNotification(
 }
 
 void PlatformNotificationServiceQt::DisplayPersistentNotification(
-        content::BrowserContext *browser_context,
         const std::string &notification_id,
         const GURL &service_worker_origin,
         const GURL &origin,
@@ -151,9 +151,7 @@ void PlatformNotificationServiceQt::DisplayPersistentNotification(
         client->showNotification(controller);
 }
 
-void PlatformNotificationServiceQt::CloseNotification(
-        content::BrowserContext *browser_context,
-        const std::string &notification_id)
+void PlatformNotificationServiceQt::CloseNotification(const std::string &notification_id)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     ProfileQt *profile = static_cast<ProfileQt*>(browser_context);
@@ -164,9 +162,7 @@ void PlatformNotificationServiceQt::CloseNotification(
         notificationController->closeNotification();
 }
 
-void PlatformNotificationServiceQt::ClosePersistentNotification(
-        content::BrowserContext *browser_context,
-        const std::string &notification_id)
+void PlatformNotificationServiceQt::ClosePersistentNotification(const std::string &notification_id)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     ProfileQt *profile = static_cast<ProfileQt*>(browser_context);
@@ -177,9 +173,7 @@ void PlatformNotificationServiceQt::ClosePersistentNotification(
         notificationController->closeNotification();
 }
 
-void PlatformNotificationServiceQt::GetDisplayedNotifications(
-        content::BrowserContext *browser_context,
-        DisplayedNotificationsCallback callback)
+void PlatformNotificationServiceQt::GetDisplayedNotifications(DisplayedNotificationsCallback callback)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     ProfileQt *profile = static_cast<ProfileQt *>(browser_context);
@@ -196,13 +190,24 @@ void PlatformNotificationServiceQt::GetDisplayedNotifications(
     std::move(callback).Run(std::move(movableStdStringSet), true /* supports_synchronization */);
 }
 
-int64_t PlatformNotificationServiceQt::ReadNextPersistentNotificationId(content::BrowserContext *browser_context)
+int64_t PlatformNotificationServiceQt::ReadNextPersistentNotificationId()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     auto prefs = static_cast<ProfileQt *>(browser_context)->GetPrefs();
     int64_t nextId = prefs->GetInteger(prefs::kNotificationNextPersistentId) + 1;
     prefs->SetInteger(prefs::kNotificationNextPersistentId, nextId);
     return nextId;
+}
+
+void PlatformNotificationServiceQt::ScheduleTrigger(base::Time /*timestamp*/)
+{
+    Q_UNIMPLEMENTED();
+}
+
+base::Time PlatformNotificationServiceQt::ReadNextTriggerTimestamp()
+{
+    Q_UNIMPLEMENTED();
+    return base::Time::Max();
 }
 
 } // namespace QtWebEngineCore

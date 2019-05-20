@@ -165,6 +165,11 @@ void ContentMainDelegateQt::PreSandboxStartup()
                 logging::SetMinLogLevel(level);
         }
     }
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+    if (parsedCommandLine->HasSwitch(switches::kSingleProcess))
+        setlocale(LC_NUMERIC, "C");
+#endif
 }
 
 content::ContentBrowserClient *ContentMainDelegateQt::CreateContentBrowserClient()

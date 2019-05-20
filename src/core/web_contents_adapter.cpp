@@ -213,10 +213,10 @@ static QVariant fromJSValue(const base::Value *result)
     return ret;
 }
 
-static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint64 requestId, const base::Value *result)
+static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint64 requestId, base::Value result)
 {
     if (requestId)
-        adapterClient->didRunJavaScript(requestId, fromJSValue(result));
+        adapterClient->didRunJavaScript(requestId, fromJSValue(&result));
 }
 
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -560,6 +560,12 @@ bool WebContentsAdapter::canGoForward() const
     return m_webContents->GetController().CanGoForward();
 }
 
+bool WebContentsAdapter::canGoToOffset(int offset) const
+{
+    CHECK_INITIALIZED(false);
+    return m_webContents->GetController().CanGoToOffset(offset);
+}
+
 void WebContentsAdapter::stop()
 {
     CHECK_INITIALIZED();
@@ -845,6 +851,26 @@ void WebContentsAdapter::unselect()
     m_webContents->CollapseSelection();
 }
 
+void WebContentsAdapter::navigateBack()
+{
+    CHECK_INITIALIZED();
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    if (!m_webContents->GetController().CanGoBack())
+        return;
+    m_webContents->GetController().GoBack();
+    focusIfNecessary();
+}
+
+void WebContentsAdapter::navigateForward()
+{
+    CHECK_INITIALIZED();
+    CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    if (!m_webContents->GetController().CanGoForward())
+        return;
+    m_webContents->GetController().GoForward();
+    focusIfNecessary();
+}
+
 void WebContentsAdapter::navigateToIndex(int offset)
 {
     CHECK_INITIALIZED();
@@ -978,13 +1004,14 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldI
     CHECK_INITIALIZED();
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
+//    static_cast<content::RenderFrameHostImpl *>(rvh->GetMainFrame())->NotifyUserActivation();
     if (worldId == 0) {
-        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript));
+        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), base::NullCallback());
         return;
     }
 
-    content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, m_adapterClient, CallbackDirectory::NoCallbackId);
-    rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), callback, worldId);
+    content::RenderFrameHost::JavaScriptResultCallback callback = base::BindOnce(&callbackOnEvaluateJS, m_adapterClient, CallbackDirectory::NoCallbackId);
+    rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(callback), worldId);
 }
 
 quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId)
@@ -992,11 +1019,12 @@ quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScrip
     CHECK_INITIALIZED(0);
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, m_adapterClient, m_nextRequestId);
+//    static_cast<content::RenderFrameHostImpl *>(rvh->GetMainFrame())->NotifyUserActivation();
+    content::RenderFrameHost::JavaScriptResultCallback callback = base::BindOnce(&callbackOnEvaluateJS, m_adapterClient, m_nextRequestId);
     if (worldId == 0)
-        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), callback);
+        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), std::move(callback));
     else
-        rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), callback, worldId);
+        rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), std::move(callback), worldId);
     return m_nextRequestId++;
 }
 
@@ -1596,11 +1624,10 @@ void WebContentsAdapter::waitForUpdateDragActionCalled()
     const qint64 timeout = 3000;
     QElapsedTimer t;
     t.start();
-    auto backend = static_cast<base::sequence_manager::internal::SequenceManagerImpl *>(
-            base::MessageLoopCurrent::Get().ToMessageLoopBaseDeprecated());
+    auto seqMan = base::MessageLoopCurrent::GetCurrentSequenceManagerImpl();
     base::MessagePump::Delegate *delegate =
             static_cast<base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
-                backend->controller_.get());
+                seqMan->controller_.get());
 
     DCHECK(delegate);
     m_updateDragActionCalled = false;

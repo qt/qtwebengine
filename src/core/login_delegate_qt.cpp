@@ -72,11 +72,11 @@
 
 namespace QtWebEngineCore {
 
-LoginDelegateQt::LoginDelegateQt(net::AuthChallengeInfo *authInfo,
-        content::WebContents *web_contents,
-        GURL url,
-        bool /*first_auth_attempt*/,
-        LoginAuthRequiredCallback auth_required_callback)
+LoginDelegateQt::LoginDelegateQt(const net::AuthChallengeInfo &authInfo,
+                                 content::WebContents *web_contents,
+                                 GURL url,
+                                 bool /*first_auth_attempt*/,
+                                 LoginAuthRequiredCallback auth_required_callback)
     : content::WebContentsObserver(web_contents)
     , m_authInfo(authInfo)
     , m_url(url)
@@ -100,22 +100,22 @@ QUrl LoginDelegateQt::url() const
 
 QString LoginDelegateQt::realm() const
 {
-    return QString::fromStdString(m_authInfo->realm);
+    return QString::fromStdString(m_authInfo.realm);
 }
 
 QString LoginDelegateQt::host() const
 {
-    return QString::fromStdString(m_authInfo->challenger.host());
+    return QString::fromStdString(m_authInfo.challenger.host());
 }
 
 int LoginDelegateQt::port() const
 {
-    return m_authInfo->challenger.port();
+    return m_authInfo.challenger.port();
 }
 
 bool LoginDelegateQt::isProxy() const
 {
-    return m_authInfo->is_proxy;
+    return m_authInfo.is_proxy;
 }
 
 void LoginDelegateQt::triggerDialog()

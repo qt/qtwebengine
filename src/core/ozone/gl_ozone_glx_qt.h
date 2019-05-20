@@ -60,7 +60,8 @@ public:
     void SetDisabledExtensionsPlatform(
         const std::string& disabled_extensions) override;
     bool GetGLWindowSystemBindingInfo(
-            gl::GLWindowSystemBindingInfo* info) override;
+        const gl::GLVersionInfo &gl_info,
+        gl::GLWindowSystemBindingInfo *info) override;
 
     scoped_refptr<gl::GLContext> CreateGLContext(
             gl::GLShareGroup* share_group,

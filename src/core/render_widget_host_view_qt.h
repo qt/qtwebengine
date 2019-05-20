@@ -125,18 +125,18 @@ public:
     void InitAsFullscreen(content::RenderWidgetHostView*) override;
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
-    gfx::NativeView GetNativeView() const override;
+    gfx::NativeView GetNativeView() override;
     gfx::NativeViewAccessible GetNativeViewAccessible() override;
     void Focus() override;
-    bool HasFocus() const override;
-    bool IsSurfaceAvailableForCopy() const override;
+    bool HasFocus() override;
+    bool IsSurfaceAvailableForCopy() override;
     void CopyFromSurface(const gfx::Rect &src_rect,
                          const gfx::Size &output_size,
                          base::OnceCallback<void(const SkBitmap &)> callback) override;
     void Show() override;
     void Hide() override;
     bool IsShowing() override;
-    gfx::Rect GetViewBounds() const override;
+    gfx::Rect GetViewBounds() override;
     void UpdateBackgroundColor() override;
     bool LockMouse() override;
     void UnlockMouse() override;
@@ -156,7 +156,7 @@ public:
     viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata) override;
     void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);
 
-    void GetScreenInfo(content::ScreenInfo* results) const override;
+    void GetScreenInfo(content::ScreenInfo *results) override;
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) override;
     void ClearCompositorFrame() override;

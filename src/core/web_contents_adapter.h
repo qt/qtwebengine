@@ -119,6 +119,7 @@ public:
 
     bool canGoBack() const;
     bool canGoForward() const;
+    bool canGoToOffset(int) const;
     void stop();
     void reload();
     void reloadAndBypassCache();
@@ -138,6 +139,8 @@ public:
     void selectAll();
     void unselect();
 
+    void navigateBack();
+    void navigateForward();
     void navigateToIndex(int);
     void navigateToOffset(int);
     int navigationEntryCount();

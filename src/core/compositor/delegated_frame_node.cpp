@@ -953,7 +953,7 @@ void DelegatedFrameNode::handleQuad(
             initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate, GL_TEXTURE_EXTERNAL_OES));
 
         QMatrix4x4 qMatrix;
-        convertToQt(squad->matrix.matrix(), qMatrix);
+//        convertToQt(squad->matrix.matrix(), qMatrix);
         nodeHandler->setupStreamVideoNode(texture, toQt(squad->rect), qMatrix, currentLayerChain);
         break;
 #endif // GL_OES_EGL_image_external

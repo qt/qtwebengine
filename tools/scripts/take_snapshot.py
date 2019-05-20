@@ -167,7 +167,6 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/catapult/tracing/test_data/')
             or file_path.startswith('third_party/chromevox')
             or file_path.startswith('third_party/chromite')
-            or file_path.startswith('third_party/cld_3')
             or file_path.startswith('third_party/closure_compiler')
             or file_path.startswith('third_party/colorama')
             or file_path.startswith('third_party/depot_tools')
@@ -202,6 +201,7 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/pylint')
             or file_path.startswith('third_party/sfntly/src/cpp/data/fonts')
             or file_path.startswith('third_party/sfntly/src/java')
+            or file_path.startswith('third_party/skia/docs/')
             or file_path.startswith('third_party/skia/infra')
             or file_path.startswith('third_party/sqlite/sqlite-src-')
             or file_path.startswith('third_party/speech-dispatcher')
@@ -233,6 +233,7 @@ def isInChromiumBlacklist(file_path):
         or ('/fuzz' in file_path and (
           '/fuzz/' in file_path
           or '/fuzzer/' in file_path
+          or '/fuzzers/' in file_path
           or '/fuzzing/' in file_path
         ))
         or ('/test' in file_path and (

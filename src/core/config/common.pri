@@ -12,6 +12,7 @@ gn_args += \
     enable_nacl=false \
     enable_remoting=false \
     enable_reporting=false \
+    enable_resource_whitelist_generation=false \
     enable_swiftshader=false \
     enable_web_auth=false \
     enable_web_speech=false \
@@ -93,11 +94,15 @@ CONFIG(release, debug|release) {
 CONFIG(debug, debug|release) {
     gn_args += is_debug=true
     gn_args += use_debug_fission=false
-    # MSVC requires iterator debug to always match and Qt has leaves it default on.
+    # MSVC requires iterator debug to always match and Qt leaves it default on.
     msvc: gn_args += enable_iterator_debugging=true
+
+    # We also can not have optimized V8 binaries for MSVC as iterator debugging
+    # would mismatch.
+    msvc|v8base_debug: gn_args += v8_optimized_debug=false
 }
 
-!webcore_debug: gn_args += remove_webcore_debug_symbols=true
+!webcore_debug: gn_args += blink_symbol_level=0
 !v8base_debug: gn_args += remove_v8base_debug_symbols=true
 
 # Compiling with -Os makes a huge difference in binary size

@@ -146,8 +146,7 @@ private:
     void ensureDelegate()
     {
         if (!m_delegate) {
-            auto messageLoop = base::MessageLoopCurrentForUI::Get().ToMessageLoopBaseDeprecated();
-            auto seqMan = static_cast<base::sequence_manager::internal::SequenceManagerImpl *>(messageLoop);
+            auto seqMan = base::MessageLoopCurrent::GetCurrentSequenceManagerImpl();
             m_delegate = static_cast<base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
                              seqMan->controller_.get());
         }

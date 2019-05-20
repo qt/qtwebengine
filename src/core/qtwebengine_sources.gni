@@ -84,13 +84,12 @@ source_set("qtwebengine_sources") {
     "//chrome/common/url_constants.h",
     "//chrome/common/webui_url_constants.cc",
     "//chrome/common/webui_url_constants.h",
-    "//components/prefs/in_memory_pref_store.cc",
-    "//components/prefs/in_memory_pref_store.h",
   ]
 
   if (enable_extensions) {
     deps += [
       ":qtwebengine_extensions_features",
+      "//chrome/app:generated_resources",
       "//chrome/browser/resources:component_extension_resources_grit",
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:extensions_features",

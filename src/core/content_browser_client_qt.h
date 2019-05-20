@@ -89,7 +89,7 @@ public:
     void ResourceDispatcherHostCreated() override;
     gl::GLShareGroup* GetInProcessGpuShareGroup() override;
     content::MediaObserver* GetMediaObserver() override;
-    content::QuotaPermissionContext *CreateQuotaPermissionContext() override;
+    scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext() override;
     void GetQuotaSettings(content::BrowserContext *context,
                         content::StoragePartition *partition,
                         storage::OptionalQuotaSettingsCallback callback) override;
@@ -108,7 +108,7 @@ public:
                                          std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
     std::unique_ptr<net::ClientCertStore> CreateClientCertStore(content::ResourceContext *resource_context) override;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() override;
-    content::PlatformNotificationService *GetPlatformNotificationService() override;
+    content::PlatformNotificationService * GetPlatformNotificationService(content::BrowserContext *browser_context) override;
 
     std::string GetApplicationLocale() override;
     std::string GetAcceptLangs(content::BrowserContext* context) override;
@@ -186,9 +186,9 @@ public:
 #endif
 
     std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
-            net::AuthChallengeInfo *auth_info,
+            const net::AuthChallengeInfo &auth_info,
             content::WebContents *web_contents,
-            const content::GlobalRequestID &request_id,
+            const content::GlobalRequestID& request_id,
             bool is_request_for_main_frame,
             const GURL &url,
             scoped_refptr<net::HttpResponseHeaders> response_headers,
@@ -203,7 +203,9 @@ public:
             ui::PageTransition page_transition,
             bool has_user_gesture,
             const std::string &method,
-            const net::HttpRequestHeaders &headers) override;
+            const net::HttpRequestHeaders &headers,
+            network::mojom::URLLoaderFactoryRequest *factory_request,
+            network::mojom::URLLoaderFactory *&out_factory) override;
 
     static std::string getUserAgent();
 
@@ -216,7 +218,6 @@ private:
 
     BrowserMainPartsQt* m_browserMainParts;
     std::unique_ptr<content::ResourceDispatcherHostDelegate> m_resourceDispatcherHostDelegate;
-    std::unique_ptr<content::PlatformNotificationService> m_platformNotificationService;
     scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
     std::unique_ptr<service_manager::BinderRegistry> m_frameInterfaces;
     std::unique_ptr<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>> m_frameInterfacesParameterized;

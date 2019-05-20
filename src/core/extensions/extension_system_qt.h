@@ -49,12 +49,12 @@
 
 #include <string>
 
+#include "base/one_shot_event.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/one_shot_event.h"
 
 namespace extensions {
 
@@ -120,7 +120,7 @@ public:
 
     void Init(bool extensions_enabled);
 
-    const OneShotEvent &ready() const override { return ready_; }
+    const base::OneShotEvent &ready() const override { return ready_; }
 
 private:
     void OnExtensionRegisteredWithRequestContexts(scoped_refptr<const extensions::Extension> extension);
@@ -141,7 +141,7 @@ private:
 
     // For verifying the contents of extensions read from disk.
     scoped_refptr<ContentVerifier> content_verifier_;
-    OneShotEvent ready_;
+    base::OneShotEvent ready_;
 
     content::BrowserContext *browser_context_;
     scoped_refptr<ValueStoreFactory> store_factory_;

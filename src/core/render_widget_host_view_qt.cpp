@@ -357,7 +357,7 @@ void RenderWidgetHostViewQt::SetBounds(const gfx::Rect &windowRectInDips)
     m_delegate->resize(windowRectInDips.width(), windowRectInDips.height());
 }
 
-gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
+gfx::NativeView RenderWidgetHostViewQt::GetNativeView()
 {
     // gfx::NativeView is a typedef to a platform specific view
     // pointer (HWND, NSView*, GtkWidget*) and other ports use
@@ -394,12 +394,12 @@ void RenderWidgetHostViewQt::Focus()
     host()->Focus();
 }
 
-bool RenderWidgetHostViewQt::HasFocus() const
+bool RenderWidgetHostViewQt::HasFocus()
 {
     return m_delegate->hasKeyboardFocus();
 }
 
-bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy() const
+bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy()
 {
     return true;
 }
@@ -431,7 +431,7 @@ bool RenderWidgetHostViewQt::IsShowing()
 }
 
 // Retrieve the bounds of the View, in screen coordinates.
-gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
+gfx::Rect RenderWidgetHostViewQt::GetViewBounds()
 {
     return m_viewRectInDips;
 }
@@ -468,8 +468,7 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
 
 void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
 {
-    content::CursorInfo cursorInfo;
-    webCursor.GetCursorInfo(&cursorInfo);
+    const content::CursorInfo &cursorInfo = webCursor.info();
     Qt::CursorShape shape = Qt::ArrowCursor;
 #if defined(USE_AURA)
     ui::CursorType auraType = ui::CursorType::kNull;
@@ -694,7 +693,7 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
 }
 
-void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo *results) const
+void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo *results)
 {
     *results = m_screenInfo;
 }

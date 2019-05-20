@@ -389,6 +389,7 @@ void tst_Accessibility::roles()
 
     QWebEngineView webView;
     webView.setHtml("<html><body>" + html + "</body></html>");
+    webView.show();
     QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
     QVERIFY(spyFinished.wait());
 

@@ -315,16 +315,6 @@ QString ProfileAdapter::cookiesPath() const
     return QString();
 }
 
-QString ProfileAdapter::channelIdPath() const
-{
-    if (m_offTheRecord)
-        return QString();
-    QString basePath = dataPath();
-    if (!basePath.isEmpty())
-        return basePath % QLatin1String("/Origin Bound Certs");
-    return QString();
-}
-
 QString ProfileAdapter::httpCachePath() const
 {
     if (m_offTheRecord)

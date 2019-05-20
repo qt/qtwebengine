@@ -124,7 +124,6 @@ public:
 
     QString httpCachePath() const;
     QString cookiesPath() const;
-    QString channelIdPath() const;
 
     QString httpUserAgent() const;
     void setHttpUserAgent(const QString &userAgent);

@@ -78,7 +78,7 @@ public:
         ResourceTypePluginResource, // A resource requested by a plugin
         ResourceTypeNavigationPreload, // A service worker navigation preload request.
 #ifndef Q_QDOC
-        ResourceTypeLast,
+        ResourceTypeLast = ResourceTypeNavigationPreload,
 #endif
         ResourceTypeUnknown = 255
     };

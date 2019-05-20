@@ -164,6 +164,11 @@ bool GLSurfaceEGL::IsCreateContextClientArraysSupported()
     return false;
 }
 
+bool GLSurfaceEGL::IsPixelFormatFloatSupported()
+{
+    return false;
+}
+
 void GLSurfaceEGL::ShutdownOneOff()
 {
 }

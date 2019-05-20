@@ -580,10 +580,10 @@ void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 
     switch (action) {
     case QWebEnginePage::Back:
-        enabled = adapter->canGoBack();
+        enabled = adapter->canGoToOffset(-1);
         break;
     case QWebEnginePage::Forward:
-        enabled = adapter->canGoForward();
+        enabled = adapter->canGoToOffset(1);
         break;
     case QWebEnginePage::Stop:
         enabled = isLoading;
@@ -1347,10 +1347,10 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     const QtWebEngineCore::WebEngineContextMenuData *menuData = d->contextData.d;
     switch (action) {
     case Back:
-        d->adapter->navigateToOffset(-1);
+        d->adapter->navigateBack();
         break;
     case Forward:
-        d->adapter->navigateToOffset(1);
+        d->adapter->navigateForward();
         break;
     case Stop:
         d->adapter->stop();

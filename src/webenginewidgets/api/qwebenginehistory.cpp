@@ -191,13 +191,13 @@ QList<QWebEngineHistoryItem> QWebEngineHistory::forwardItems(int maxItems) const
 bool QWebEngineHistory::canGoBack() const
 {
     Q_D(const QWebEngineHistory);
-    return d->page->webContents()->canGoBack();
+    return d->page->webContents()->canGoToOffset(-1);
 }
 
 bool QWebEngineHistory::canGoForward() const
 {
     Q_D(const QWebEngineHistory);
-    return d->page->webContents()->canGoForward();
+    return d->page->webContents()->canGoToOffset(1);
 }
 
 void QWebEngineHistory::back()

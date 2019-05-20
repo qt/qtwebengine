@@ -46,6 +46,7 @@
 #include "net/ssl_host_state_delegate_qt.h"
 #include "net/url_request_context_getter_qt.h"
 #include "permission_manager_qt.h"
+#include "platform_notification_service_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "type_conversion.h"
 #include "web_engine_library_info.h"
@@ -317,5 +318,12 @@ const PrefServiceAdapter &ProfileQt::prefServiceAdapter() const
     return m_prefServiceAdapter;
 }
 
+
+content::PlatformNotificationService *ProfileQt::platformNotificationService()
+{
+    if (!m_platformNotificationService)
+        m_platformNotificationService = std::make_unique<PlatformNotificationServiceQt>(this);
+    return m_platformNotificationService.get();
+}
 
 } // namespace QtWebEngineCore

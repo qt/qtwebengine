@@ -170,7 +170,6 @@ private:
     ClientCertificateStoreData *m_clientCertificateStoreData;
 #endif
     QString m_cookiesPath;
-    QString m_channelIdPath;
     QString m_httpAcceptLanguage;
     QString m_httpUserAgent;
     ProfileAdapter::HttpCacheType m_httpCacheType;

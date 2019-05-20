@@ -100,6 +100,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries);
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckForcedDictionaries);
+    registry->RegisterListPref(spellcheck::prefs::kSpellCheckBlacklistedDictionaries);
     registry->RegisterStringPref(spellcheck::prefs::kSpellCheckDictionary, std::string());
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckEnable, false);
     registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
@@ -112,7 +113,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterListPref(extensions::pref_names::kInstallAllowList);
     registry->RegisterListPref(extensions::pref_names::kInstallDenyList);
     registry->RegisterDictionaryPref(extensions::pref_names::kInstallForceList);
-    registry->RegisterDictionaryPref(extensions::pref_names::kInstallLoginScreenAppList);
+    registry->RegisterDictionaryPref(extensions::pref_names::kLoginScreenExtensions);
     registry->RegisterListPref(extensions::pref_names::kAllowedTypes);
     registry->RegisterBooleanPref(extensions::pref_names::kStorageGarbageCollect, false);
     registry->RegisterListPref(extensions::pref_names::kAllowedInstallSites);
@@ -120,6 +121,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterListPref(extensions::pref_names::kNativeMessagingBlacklist);
     registry->RegisterListPref(extensions::pref_names::kNativeMessagingWhitelist);
     registry->RegisterBooleanPref(extensions::pref_names::kNativeMessagingUserLevelHosts, true);
+    registry->RegisterBooleanPref(extensions::pref_names::kInsecureExtensionUpdatesEnabled, false);
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
     // Media device salt id key

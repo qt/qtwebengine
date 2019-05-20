@@ -101,8 +101,8 @@ public:
                                             int http_status,
                                             std::string *error_html) override;
 
-    unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) override;
-    bool IsLinkVisited(unsigned long long linkHash) override;
+    uint64_t VisitedLinkHash(const char *canonical_url, size_t length) override;
+    bool IsLinkVisited(uint64_t linkHash) override;
     blink::WebPrescientNetworking* GetPrescientNetworking() override;
     void AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) override;
 

@@ -57,12 +57,12 @@ public:
     ClientCertOverrideStore(ClientCertificateStoreData *storeData);
     virtual ~ClientCertOverrideStore() override;
     void GetClientCerts(const net::SSLCertRequestInfo &cert_request_info,
-                        const ClientCertListCallback &callback) override;
+                        ClientCertListCallback callback) override;
 private:
     static std::unique_ptr<net::ClientCertStore> createNativeStore();
     net::ClientCertIdentityList GetClientCertsOnUIThread(const net::SSLCertRequestInfo &request);
     void GetClientCertsReturn(const net::SSLCertRequestInfo &cert_request_info,
-                              const ClientCertListCallback &callback,
+                              ClientCertListCallback callback,
                               net::ClientCertIdentityList &&result);
     ClientCertificateStoreData *m_storeData;
     std::unique_ptr<net::ClientCertStore> m_nativeStore;

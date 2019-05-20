@@ -1051,13 +1051,13 @@ void QQuickWebEngineView::loadHtml(const QString &html, const QUrl &baseUrl)
 void QQuickWebEngineView::goBack()
 {
     Q_D(QQuickWebEngineView);
-    d->adapter->navigateToOffset(-1);
+    d->adapter->navigateBack();
 }
 
 void QQuickWebEngineView::goForward()
 {
     Q_D(QQuickWebEngineView);
-    d->adapter->navigateToOffset(1);
+    d->adapter->navigateForward();
 }
 
 void QQuickWebEngineView::reload()
@@ -1716,10 +1716,10 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
     Q_D(QQuickWebEngineView);
     switch (action) {
     case Back:
-        d->adapter->navigateToOffset(-1);
+        d->adapter->navigateBack();
         break;
     case Forward:
-        d->adapter->navigateToOffset(1);
+        d->adapter->navigateForward();
         break;
     case Stop:
         d->adapter->stop();

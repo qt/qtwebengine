@@ -1428,7 +1428,7 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev)
     webKitEvent.SetPositionInScreen(WebFloatPoint(ev->screenPos().x(),
                                                   ev->screenPos().y()));
 
-    webKitEvent.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+    webKitEvent.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
 
     Qt::NativeGestureType gestureType = ev->gestureType();
     switch (gestureType) {

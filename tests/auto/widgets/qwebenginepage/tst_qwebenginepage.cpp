@@ -302,9 +302,9 @@ protected:
     {
         Q_UNUSED(url);
         Q_UNUSED(isMainFrame);
-        if (type == QWebEnginePage::NavigationTypeFormSubmitted)
-            return m_acceptNavigationRequest;
-        return true;
+        if (type == QWebEnginePage::NavigationTypeTyped)
+            return true;
+        return m_acceptNavigationRequest;
     }
 };
 

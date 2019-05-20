@@ -74,6 +74,7 @@
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/host/gpu_switches.h"
 #include "media/audio/audio_manager.h"
+#include "media/base/media_switches.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/base/port_util.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -81,6 +82,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 #include "ui/gl/gl_switches.h"
@@ -388,7 +390,7 @@ WebEngineContext::WebEngineContext()
     : m_mainDelegate(new ContentMainDelegateQt)
     , m_globalQObject(new QObject())
 {
-    base::TaskScheduler::Create("Browser");
+    base::ThreadPool::Create("Browser");
     m_contentRunner.reset(content::ContentMainRunner::Create());
     m_browserRunner = content::BrowserMainRunner::Create();
 
@@ -501,21 +503,29 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(disableFeatures, features::kMojoVideoCapture.name);
     // Breaks WebEngineNewViewRequest.userInitiated API (since 73)
     appendToFeatureList(disableFeatures, features::kUserActivationV2.name);
-    appendToFeatureList(disableFeatures, features::kWebAuth.name);
 
-    appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
-
+    // We do not yet support the network-service, but it is enabled by default since 75.
     appendToFeatureList(disableFeatures, network::features::kNetworkService.name);
+    // VideoSurfaceLayer is enabled by default since 75. We don't support it.
+    appendToFeatureList(disableFeatures, media::kUseSurfaceLayerForVideo.name);
+    // BlinkGenPropertyTrees is enabled by default in 75, but causes regressions.
+    appendToFeatureList(disableFeatures, blink::features::kBlinkGenPropertyTrees.name);
 
 #if QT_CONFIG(webengine_printing_and_pdf)
     appendToFeatureList(disableFeatures, printing::features::kUsePdfCompositorServiceForPrint.name);
 #endif
 
+    // Explicitly tell Chromium about default-on features we do not support
+    appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
+    appendToFeatureList(disableFeatures, features::kOriginTrials.name);
+    appendToFeatureList(disableFeatures, features::kWebAuth.name);
+    appendToFeatureList(disableFeatures, features::kWebAuthCable.name);
+    appendToFeatureList(disableFeatures, features::kWebPayments.name);
+    appendToFeatureList(disableFeatures, features::kWebUsb.name);
+
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         appendToFeatureList(enableFeatures, features::kOverlayScrollbar.name);
-        if (!parsedCommandLine->HasSwitch(switches::kDisablePinch))
-            parsedCommandLine->AppendSwitch(switches::kEnablePinch);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
         parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
@@ -632,7 +642,7 @@ WebEngineContext::WebEngineContext()
     base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
     content::BrowserTaskExecutor::Create();
     m_mainDelegate->PostEarlyInitialization(false);
-    content::StartBrowserTaskScheduler();
+    content::StartBrowserThreadPool();
     content::BrowserTaskExecutor::PostFeatureListSetup();
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.

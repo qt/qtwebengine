@@ -61,7 +61,7 @@ class LoginDelegateQt : public content::LoginDelegate,
                         public content::WebContentsObserver
 {
 public:
-    LoginDelegateQt(net::AuthChallengeInfo *authInfo,
+    LoginDelegateQt(const net::AuthChallengeInfo &authInfo,
                     content::WebContents *web_contents,
                     GURL url,
                     bool first_auth_attempt,
@@ -81,7 +81,7 @@ private:
     void triggerDialog();
     void destroy();
 
-    scoped_refptr<net::AuthChallengeInfo> m_authInfo;
+    net::AuthChallengeInfo m_authInfo;
 
     GURL m_url;
     LoginAuthRequiredCallback m_auth_required_callback;

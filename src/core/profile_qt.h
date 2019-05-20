@@ -118,6 +118,8 @@ public:
 
     ProfileAdapter *profileAdapter() { return m_profileAdapter; }
 
+    content::PlatformNotificationService *platformNotificationService();
+
 #if QT_CONFIG(webengine_spellchecker)
     void FailedToLoadDictionary(const std::string &language) override;
 #endif
@@ -142,6 +144,7 @@ private:
     std::unique_ptr<SSLHostStateDelegateQt> m_sslHostStateDelegate;
     scoped_refptr<content::SharedCorsOriginAccessList> m_sharedCorsOriginAccessList;
     std::unique_ptr<ProfileIODataQt> m_profileIOData;
+    std::unique_ptr<content::PlatformNotificationService> m_platformNotificationService;
     ProfileAdapter *m_profileAdapter;
     PrefServiceAdapter m_prefServiceAdapter;
 

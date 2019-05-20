@@ -90,7 +90,7 @@ WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::Page
 
 static QWebEngineUrlRequestInfo::ResourceType toQt(content::ResourceType resourceType)
 {
-    if (resourceType >= 0 && resourceType < content::ResourceType(QWebEngineUrlRequestInfo::ResourceTypeLast))
+    if (resourceType >= content::ResourceType::kMainFrame && resourceType <= content::ResourceType::kMaxValue)
         return static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType);
     return QWebEngineUrlRequestInfo::ResourceTypeUnknown;
 }
@@ -111,7 +111,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
     Q_ASSERT(m_profileIOData);
     content::ResourceRequestInfo *resourceInfo = content::ResourceRequestInfo::ForRequest(request);
 
-    content::ResourceType resourceType = content::RESOURCE_TYPE_LAST_TYPE;
+    content::ResourceType resourceType = content::ResourceType::kMaxValue;
     WebContentsAdapterClient::NavigationType navigationType = WebContentsAdapterClient::OtherNavigation;
 
     if (resourceInfo) {
@@ -122,7 +122,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
     const QUrl qUrl = toQt(request->url());
 
     QUrl firstPartyUrl = QUrl();
-    if (resourceType == content::ResourceType::RESOURCE_TYPE_SUB_FRAME)
+    if (resourceType == content::ResourceType::kSubFrame)
         firstPartyUrl = toQt(request->first_party_url());
     else
         firstPartyUrl = toQt(request->site_for_cookies());

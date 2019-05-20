@@ -851,6 +851,7 @@ int &WebContentsDelegateQt::streamCount(blink::MediaStreamType type)
     case blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
     case blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE:
     case blink::MEDIA_DISPLAY_VIDEO_CAPTURE:
+    case blink::MEDIA_DISPLAY_AUDIO_CAPTURE:
         return m_desktopStreamCount;
 
     case blink::MEDIA_NO_SERVICE:

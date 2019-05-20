@@ -375,7 +375,8 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
             return;
         m_agentHost->DispatchProtocolMessage(this, protocol_message);
     } else if (method == "loadCompleted") {
-        web_contents()->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"));
+        web_contents()->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"),
+                                                          base::NullCallback());
     } else if (method == "loadNetworkResource" && params->GetSize() == 3) {
         // TODO(pfeldman): handle some of the embedder messages in content.
         std::string url;
@@ -453,7 +454,8 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
     } else if (method == "clearPreferences") {
         ClearPreferences();
     } else if (method == "requestFileSystems") {
-        web_contents()->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16("DevToolsAPI.fileSystemsLoaded([]);"));
+        web_contents()->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16("DevToolsAPI.fileSystemsLoaded([]);"),
+                                                          base::NullCallback());
     } else if (method == "reattach") {
         m_agentHost->DetachClient(this);
         m_agentHost->AttachClient(this);
@@ -498,7 +500,7 @@ void DevToolsFrontendQt::DispatchProtocolMessage(content::DevToolsAgentHost *age
         base::EscapeJSONString(message, true, &param);
         std::string code = "DevToolsAPI.dispatchMessage(" + param + ");";
         base::string16 javascript = base::UTF8ToUTF16(code);
-        web_contents()->GetMainFrame()->ExecuteJavaScript(javascript);
+        web_contents()->GetMainFrame()->ExecuteJavaScript(javascript, base::NullCallback());
         return;
     }
 
@@ -509,7 +511,7 @@ void DevToolsFrontendQt::DispatchProtocolMessage(content::DevToolsAgentHost *age
         std::string code = "DevToolsAPI.dispatchMessageChunk(" + param + ","
                          + std::to_string(pos ? 0 : total_size) + ");";
         base::string16 javascript = base::UTF8ToUTF16(code);
-        web_contents()->GetMainFrame()->ExecuteJavaScript(javascript);
+        web_contents()->GetMainFrame()->ExecuteJavaScript(javascript, base::NullCallback());
     }
 }
 
@@ -533,7 +535,7 @@ void DevToolsFrontendQt::CallClientFunction(const std::string &function_name,
         }
     }
     javascript.append(");");
-    web_contents()->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16(javascript));
+    web_contents()->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16(javascript), base::NullCallback());
 }
 
 void DevToolsFrontendQt::SendMessageAck(int request_id, const base::Value *arg)

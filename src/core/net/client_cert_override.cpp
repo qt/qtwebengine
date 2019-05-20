@@ -78,9 +78,9 @@ public:
             : net::ClientCertIdentity(std::move(cert)), m_key(std::move(key)) {}
     ~ClientCertIdentityOverride() override = default;
 
-    void AcquirePrivateKey(const base::Callback<void(scoped_refptr<net::SSLPrivateKey>)> &private_key_callback) override
+    void AcquirePrivateKey(base::OnceCallback<void(scoped_refptr<net::SSLPrivateKey>)> private_key_callback) override
     {
-        private_key_callback.Run(m_key);
+        std::move(private_key_callback).Run(m_key);
     }
 
 #if defined(OS_MACOSX)
@@ -125,20 +125,20 @@ net::ClientCertIdentityList ClientCertOverrideStore::GetClientCertsOnUIThread(co
 }
 
 void ClientCertOverrideStore::GetClientCertsReturn(const net::SSLCertRequestInfo &cert_request_info,
-                                                   const ClientCertListCallback &callback,
+                                                   ClientCertListCallback callback,
                                                    net::ClientCertIdentityList &&result)
 {
     // Continue with native cert store if matching certificatse were not found in memory
     if (result.empty() && m_nativeStore)
-        m_nativeStore->GetClientCerts(cert_request_info, callback);
+        m_nativeStore->GetClientCerts(cert_request_info, std::move(callback));
     else
-        callback.Run(std::move(result));
+        std::move(callback).Run(std::move(result));
 }
 
 #endif // QT_CONFIG(ssl)
 
 void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert_request_info,
-                                             const ClientCertListCallback &callback)
+                                             ClientCertListCallback callback)
 {
 #if QT_CONFIG(ssl)
     // Access the user-provided data from the UI thread, but return on whatever thread this is.
@@ -147,7 +147,7 @@ void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert
             base::BindOnce(&ClientCertOverrideStore::GetClientCertsOnUIThread,
                            base::Unretained(this), std::cref(cert_request_info)),
             base::BindOnce(&ClientCertOverrideStore::GetClientCertsReturn,
-                           base::Unretained(this), std::cref(cert_request_info), callback))
+                           base::Unretained(this), std::cref(cert_request_info), std::move(callback)))
        ) {
         return;
     }
@@ -155,9 +155,9 @@ void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert
 
     // Continue with native cert store if we failed to post task
     if (m_nativeStore)
-        m_nativeStore->GetClientCerts(cert_request_info, callback);
+        m_nativeStore->GetClientCerts(cert_request_info, std::move(callback));
     else
-        callback.Run(net::ClientCertIdentityList());
+        std::move(callback).Run(net::ClientCertIdentityList());
 }
 
 // static

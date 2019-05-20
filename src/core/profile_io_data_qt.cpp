@@ -55,7 +55,7 @@
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
-#include "net/extras/sqlite/sqlite_channel_id_store.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_auth_preferences.h"
@@ -68,6 +68,7 @@
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -106,8 +107,6 @@ static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &f
 {
     if (first.ignore_certificate_errors != second.ignore_certificate_errors)
         return false;
-    if (first.enable_channel_id != second.enable_channel_id)
-        return false;
     return true;
 }
 
@@ -118,13 +117,13 @@ static bool doNetworkSessionContextMatch(const net::HttpNetworkSession::Context 
         return false;
     if (first.cert_verifier != second.cert_verifier)
         return false;
-    if (first.channel_id_service != second.channel_id_service)
-        return false;
     if (first.proxy_resolution_service != second.proxy_resolution_service)
         return false;
     if (first.ssl_config_service != second.ssl_config_service)
         return false;
     if (first.http_auth_handler_factory != second.http_auth_handler_factory)
+        return false;
+    if (first.http_user_agent_settings != second.http_user_agent_settings)
         return false;
     if (first.http_server_properties != second.http_server_properties)
         return false;
@@ -142,10 +141,10 @@ static net::HttpNetworkSession::Context generateNetworkSessionContext(net::URLRe
     net::HttpNetworkSession::Context network_session_context;
     network_session_context.transport_security_state = urlRequestContext->transport_security_state();
     network_session_context.cert_verifier = urlRequestContext->cert_verifier();
-    network_session_context.channel_id_service = urlRequestContext->channel_id_service();
     network_session_context.proxy_resolution_service = urlRequestContext->proxy_resolution_service();
     network_session_context.ssl_config_service = urlRequestContext->ssl_config_service();
     network_session_context.http_auth_handler_factory = urlRequestContext->http_auth_handler_factory();
+    network_session_context.http_user_agent_settings = urlRequestContext->http_user_agent_settings();
     network_session_context.http_server_properties = urlRequestContext->http_server_properties();
     network_session_context.host_resolver = urlRequestContext->host_resolver();
     network_session_context.cert_transparency_verifier = urlRequestContext->cert_transparency_verifier();
@@ -296,6 +295,7 @@ void ProfileIODataQt::generateStorage()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
+//    Q_ASSERT(!m_mutex.tryLock()); // assert locked
 
     // We must stop all requests before deleting their backends.
     if (m_storage) {
@@ -337,7 +337,11 @@ void ProfileIODataQt::generateStorage()
     ct_verifier->AddLogs(ct_logs);
     m_storage->set_cert_transparency_verifier(std::move(ct_verifier));
     m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::DefaultCTPolicyEnforcer()));
-    m_storage->set_host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
+//    static std::unique_ptr<net::HostResolverManager> s_hostResolverManager =
+//            std::make_unique<net::HostResolverManager>(net::HostResolver::Options(), nullptr);
+//    m_storage->set_host_resolver(net::HostResolver::CreateResolver(s_hostResolverManager.get()));
+    m_storage->set_host_resolver(net::HostResolver::CreateStandaloneResolver(nullptr));
+
     m_storage->set_ssl_config_service(std::make_unique<net::SSLConfigServiceDefaults>());
     if (!m_httpAuthPreferences) {
         m_httpAuthPreferences.reset(new net::HttpAuthPreferences());
@@ -388,17 +392,9 @@ void ProfileIODataQt::generateCookieStore()
 
     QMutexLocker lock(&m_mutex);
 
-    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db;
-    if (!m_channelIdPath.isEmpty() && m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies) {
-        channel_id_db = new net::SQLiteChannelIDStore(
-                toFilePath(m_channelIdPath),
-                base::CreateSequencedTaskRunnerWithTraits(
-                                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
-    }
-
+    // FIXME: Add code to remove the old database.
     m_storage->set_channel_id_service(
-            base::WrapUnique(new net::ChannelIDService(
-                    new net::DefaultChannelIDStore(channel_id_db.get()))));
+            std::make_unique<net::ChannelIDService>(new net::DefaultChannelIDStore(nullptr)));
 
     std::unique_ptr<net::CookieStore> cookieStore;
     switch (m_persistentCookiesPolicy) {
@@ -438,7 +434,7 @@ void ProfileIODataQt::generateCookieStore()
 
     const std::vector<std::string> cookieableSchemes(kCookieableSchemes,
                                                      kCookieableSchemes + base::size(kCookieableSchemes));
-    cookieMonster->SetCookieableSchemes(cookieableSchemes);
+    cookieMonster->SetCookieableSchemes(cookieableSchemes, base::DoNothing());
 }
 
 void ProfileIODataQt::generateUserAgent()
@@ -615,7 +611,6 @@ void ProfileIODataQt::setFullConfiguration()
     m_requestInterceptor = m_profileAdapter->requestInterceptor();
     m_persistentCookiesPolicy = m_profileAdapter->persistentCookiesPolicy();
     m_cookiesPath = m_profileAdapter->cookiesPath();
-    m_channelIdPath = m_profileAdapter->channelIdPath();
     m_httpAcceptLanguage = m_profileAdapter->httpAcceptLanguage();
     m_httpUserAgent = m_profileAdapter->httpUserAgent();
     m_httpCacheType = m_profileAdapter->httpCacheType();
@@ -680,7 +675,6 @@ void ProfileIODataQt::updateCookieStore()
     QMutexLocker lock(&m_mutex);
     m_persistentCookiesPolicy = m_profileAdapter->persistentCookiesPolicy();
     m_cookiesPath = m_profileAdapter->cookiesPath();
-    m_channelIdPath = m_profileAdapter->channelIdPath();
     if (!m_pendingStorageRequestGeneration)
         requestStorageGeneration();
 }

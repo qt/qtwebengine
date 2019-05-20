@@ -24,6 +24,7 @@ system("$${QMAKE_CLANG_PATH} --version")
 gn_args += \
     is_clang=true \
     use_sysroot=false \
+    use_system_xcode=true \
     clang_base_path=\"$${QMAKE_CLANG_DIR}\" \
     clang_use_chrome_plugins=false \
     mac_deployment_target=\"$${QMAKE_MACOSX_DEPLOYMENT_TARGET}\" \

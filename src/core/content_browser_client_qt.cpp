@@ -87,7 +87,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
-#include "third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
+#include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_context.h"
@@ -337,7 +337,7 @@ void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, c
     }
 }
 
-content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionContext()
+scoped_refptr<content::QuotaPermissionContext> ContentBrowserClientQt::CreateQuotaPermissionContext()
 {
     return new QuotaPermissionContextQt;
 }
@@ -484,11 +484,12 @@ content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDele
     return new DevToolsManagerDelegateQt;
 }
 
-content::PlatformNotificationService *ContentBrowserClientQt::GetPlatformNotificationService()
+content::PlatformNotificationService *ContentBrowserClientQt::GetPlatformNotificationService(content::BrowserContext *browser_context)
 {
-    if (!m_platformNotificationService)
-        m_platformNotificationService = std::make_unique<PlatformNotificationServiceQt>();
-    return m_platformNotificationService.get();
+    ProfileQt *profile = static_cast<ProfileQt *>(browser_context);
+    if (!profile)
+        return nullptr;
+    return profile->platformNotificationService();
 }
 
 // This is a really complicated way of doing absolutely nothing, but Mojo demands it:
@@ -542,7 +543,7 @@ void ContentBrowserClientQt::InitFrameInterfaces()
 {
     m_frameInterfaces = std::make_unique<service_manager::BinderRegistry>();
     m_frameInterfacesParameterized = std::make_unique<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
-    m_frameInterfacesParameterized->AddInterface(base::Bind(&ServiceDriver::BindInsecureInputService));
+    m_frameInterfacesParameterized->AddInterface(base::BindRepeating(&ServiceDriver::BindInsecureInputService));
 }
 
 void ContentBrowserClientQt::BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,
@@ -747,7 +748,9 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
         ui::PageTransition page_transition,
         bool has_user_gesture,
         const std::string &method,
-        const net::HttpRequestHeaders &headers)
+        const net::HttpRequestHeaders &headers,
+        network::mojom::URLLoaderFactoryRequest *factory_request,
+        network::mojom::URLLoaderFactory *&out_factory)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_UNUSED(child_id);
@@ -766,7 +769,7 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
 }
 
 std::unique_ptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegate(
-        net::AuthChallengeInfo *authInfo,
+        const net::AuthChallengeInfo &authInfo,
         content::WebContents *web_contents,
         const content::GlobalRequestID & /*request_id*/,
         bool /*is_main_frame*/,

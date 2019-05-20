@@ -180,7 +180,7 @@ void tst_QWebEngineScript::loadEvents()
 
     // Cross-process navigation
     page.load(QUrl("chrome://gpu"));
-    QTRY_COMPARE(page.spy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(page.spy.count(), 1, 20000);
     QCOMPARE(page.spy.takeFirst().value(0).toBool(), true);
     QCOMPARE(page.eval("window.log", QWebEngineScript::MainWorld).toStringList(), expected);
     QCOMPARE(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList(), expected);

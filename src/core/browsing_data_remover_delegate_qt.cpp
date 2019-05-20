@@ -49,7 +49,7 @@
 namespace QtWebEngineCore {
 
 bool DoesOriginMatchEmbedderMask(int origin_type_mask,
-                                 const GURL &origin,
+                                 const url::Origin &origin,
                                  storage::SpecialStoragePolicy *policy) {
     Q_UNUSED(origin_type_mask);
     Q_UNUSED(origin);
@@ -58,7 +58,7 @@ bool DoesOriginMatchEmbedderMask(int origin_type_mask,
 }
 
 content::BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher BrowsingDataRemoverDelegateQt::GetOriginTypeMatcher() const {
-    return base::Bind(&DoesOriginMatchEmbedderMask);
+    return base::BindRepeating(&DoesOriginMatchEmbedderMask);
 }
 
 bool BrowsingDataRemoverDelegateQt::MayRemoveDownloadHistory() const {
