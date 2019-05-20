@@ -147,9 +147,9 @@
             ]
         },
         "webengine-icu": {
-            "label": "icu >= 53",
+            "label": "icu >= 63",
             "sources": [
-                { "type": "pkgConfig", "args": "icu-uc >= 53 icu-i18n >= 53" }
+                { "type": "pkgConfig", "args": "icu-uc >= 63 icu-i18n >= 63" }
             ]
         },
         "webengine-ffmpeg": {
