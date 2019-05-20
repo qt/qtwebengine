@@ -34,6 +34,9 @@
 #include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginesettings.h>
 
+#include <httpserver.h>
+#include <httpreqrep.h>
+
 class tst_QWebEngineUrlRequestInterceptor : public QObject
 {
     Q_OBJECT
@@ -59,6 +62,7 @@ private Q_SLOTS:
     void requestInterceptorByResourceType_data();
     void requestInterceptorByResourceType();
     void firstPartyUrlHttp();
+    void passRefererHeader();
 };
 
 tst_QWebEngineUrlRequestInterceptor::tst_QWebEngineUrlRequestInterceptor()
@@ -97,6 +101,9 @@ struct RequestInfo {
     int resourceType;
 };
 
+static const QByteArray kHttpHeaderReferrerValue = QByteArrayLiteral("http://somereferrer.com/");
+static const QByteArray kHttpHeaderRefererName = QByteArrayLiteral("referer");
+
 class TestRequestInterceptor : public QWebEngineUrlRequestInterceptor
 {
 public:
@@ -111,6 +118,9 @@ public:
         info.block(info.requestMethod() != QByteArrayLiteral("GET"));
         if (shouldIntercept && info.requestUrl().toString().endsWith(QLatin1String("__placeholder__")))
             info.redirect(QUrl("qrc:///resources/content.html"));
+
+        // Set referrer header
+        info.setHttpHeader(kHttpHeaderRefererName, kHttpHeaderReferrerValue);
 
         requestInfos.append(info);
     }
@@ -485,6 +495,39 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlHttp()
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeXhr);
     foreach (auto info, infos)
         QCOMPARE(info.firstPartyUrl, firstPartyUrl);
+}
+
+void tst_QWebEngineUrlRequestInterceptor::passRefererHeader()
+{
+    // Create HTTP Server to parse the request.
+    HttpServer httpServer;
+
+    if (!httpServer.start())
+        QSKIP("Failed to start http server");
+
+    bool succeeded = false;
+    connect(&httpServer, &HttpServer::newRequest, [&succeeded](HttpReqRep *rr) {
+        const QByteArray headerValue = rr->requestHeader(kHttpHeaderRefererName);
+        QCOMPARE(headerValue, kHttpHeaderReferrerValue);
+        succeeded = headerValue == kHttpHeaderReferrerValue;
+        rr->setResponseStatus(200);
+        rr->sendResponse();
+    });
+
+    QWebEngineProfile profile;
+    TestRequestInterceptor interceptor(true);
+    profile.setRequestInterceptor(&interceptor);
+
+    QWebEnginePage page(&profile);
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    QWebEngineHttpRequest httpRequest;
+    QUrl requestUrl = httpServer.url();
+    httpRequest.setUrl(requestUrl);
+    page.load(httpRequest);
+
+    QVERIFY(spy.wait());
+    (void) httpServer.stop();
+    QVERIFY(succeeded);
 }
 
 QTEST_MAIN(tst_QWebEngineUrlRequestInterceptor)
