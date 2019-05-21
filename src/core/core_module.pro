@@ -60,7 +60,7 @@ osx {
         # Remove unused functions and data in debug non-developer builds, because the binaries will
         # be smaller in the shipped packages.
         QMAKE_LFLAGS += /OPT:REF
-    } else:CONFIG(debug, debug|release) {
+    } else:CONFIG(debug, debug|release):!clang_cl {
         # Make sure to override qtbase's QMAKE_LFLAGS_DEBUG option in debug developer builds,
         # because qmake chooses and overrides the option when it gets appended to QMAKE_LFLAGS in
         # qtbase\mkspecs\features\default_post.prf, regardless of what Chromium passes back from GN.
