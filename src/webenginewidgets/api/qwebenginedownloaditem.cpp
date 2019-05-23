@@ -43,6 +43,7 @@
 #include "profile_adapter.h"
 #include "qwebengineprofile_p.h"
 
+#include "QFileInfo"
 
 QT_BEGIN_NAMESPACE
 
@@ -531,6 +532,16 @@ void QWebEngineDownloadItem::setPath(QString path)
     Q_D(QWebEngineDownloadItem);
     if (d->downloadState != QWebEngineDownloadItem::DownloadRequested) {
         qWarning("Setting the download path is not allowed after the download has been accepted.");
+        return;
+    }
+
+    if (QFileInfo(path).fileName().isEmpty()) {
+        qWarning("The download path does not include file name.");
+        return;
+    }
+
+    if (QFileInfo(path).isDir()) {
+        qWarning("The download path matches with an already existing directory path.");
         return;
     }
 
