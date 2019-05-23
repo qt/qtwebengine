@@ -1,4 +1,10 @@
 include(common.pri)
+include(functions.pri)
+
+defineReplace(extractCFlag) {
+    return($$qtwebengine_extractCFlag($$1))
+}
+
 QT_FOR_CONFIG += gui-private webenginecore-private
 
 gn_args += \
