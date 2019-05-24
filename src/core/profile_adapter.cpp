@@ -126,6 +126,7 @@ void ProfileAdapter::setStorageName(const QString &storageName)
         return;
     m_name = storageName;
     if (!m_offTheRecord) {
+        m_profile->setupPrefService();
         if (m_profile->m_urlRequestContextGetter.get())
             m_profile->m_profileIOData->updateStorageSettings();
         if (m_visitedLinksManager)
@@ -138,6 +139,7 @@ void ProfileAdapter::setOffTheRecord(bool offTheRecord)
     if (offTheRecord == m_offTheRecord)
         return;
     m_offTheRecord = offTheRecord;
+    m_profile->setupPrefService();
     if (m_profile->m_urlRequestContextGetter.get())
         m_profile->m_profileIOData->updateStorageSettings();
     if (m_visitedLinksManager)
@@ -263,6 +265,7 @@ void ProfileAdapter::setDataPath(const QString &path)
         return;
     m_dataPath = path;
     if (!m_offTheRecord) {
+        m_profile->setupPrefService();
         if (m_profile->m_urlRequestContextGetter.get())
             m_profile->m_profileIOData->updateStorageSettings();
         if (m_visitedLinksManager)
@@ -614,14 +617,14 @@ void ProfileAdapter::clearHttpCache()
 void ProfileAdapter::setSpellCheckLanguages(const QStringList &languages)
 {
 #if QT_CONFIG(webengine_spellchecker)
-    m_profile->setSpellCheckLanguages(languages);
+    m_profile->prefServiceAdapter().setSpellCheckLanguages(languages);
 #endif
 }
 
 QStringList ProfileAdapter::spellCheckLanguages() const
 {
 #if QT_CONFIG(webengine_spellchecker)
-    return m_profile->spellCheckLanguages();
+    return m_profile->prefServiceAdapter().spellCheckLanguages();
 #else
     return QStringList();
 #endif
@@ -630,14 +633,14 @@ QStringList ProfileAdapter::spellCheckLanguages() const
 void ProfileAdapter::setSpellCheckEnabled(bool enabled)
 {
 #if QT_CONFIG(webengine_spellchecker)
-    m_profile->setSpellCheckEnabled(enabled);
+    m_profile->prefServiceAdapter().setSpellCheckEnabled(enabled);
 #endif
 }
 
 bool ProfileAdapter::isSpellCheckEnabled() const
 {
 #if QT_CONFIG(webengine_spellchecker)
-    return m_profile->isSpellCheckEnabled();
+    return m_profile->prefServiceAdapter().isSpellCheckEnabled();
 #else
     return false;
 #endif

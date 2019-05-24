@@ -61,6 +61,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/in_memory_pref_store.h"
+#include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -92,41 +93,7 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
     , m_extensionSystem(nullptr)
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 {
-    PrefServiceFactory factory;
-    factory.set_user_prefs(new InMemoryPrefStore);
-    factory.set_command_line_prefs(base::MakeRefCounted<CommandLinePrefStoreQt>(
-            WebEngineContext::commandLine()));
-    PrefRegistrySimple *registry = new PrefRegistrySimple();
-    PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
-#if QT_CONFIG(webengine_spellchecker)
-    // Initial spellcheck settings
-    registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
-    registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries, std::make_unique<base::ListValue>());
-    registry->RegisterListPref(spellcheck::prefs::kSpellCheckForcedDictionaries, std::make_unique<base::ListValue>());
-    registry->RegisterStringPref(spellcheck::prefs::kSpellCheckDictionary, std::string());
-    registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckEnable, false);
-    registry->RegisterBooleanPref(spellcheck::prefs::kSpellCheckUseSpellingService, false);
-#endif // QT_CONFIG(webengine_spellchecker)
-    registry->RegisterBooleanPref(prefs::kShowInternalAccessibilityTree, false);
-    registry->RegisterIntegerPref(prefs::kNotificationNextPersistentId, 10000);
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    registry->RegisterDictionaryPref(extensions::pref_names::kExtensions);
-    registry->RegisterListPref(extensions::pref_names::kInstallAllowList);
-    registry->RegisterListPref(extensions::pref_names::kInstallDenyList);
-    registry->RegisterDictionaryPref(extensions::pref_names::kInstallForceList);
-    registry->RegisterDictionaryPref(extensions::pref_names::kInstallLoginScreenAppList);
-    registry->RegisterListPref(extensions::pref_names::kAllowedTypes);
-    registry->RegisterBooleanPref(extensions::pref_names::kStorageGarbageCollect, false);
-    registry->RegisterListPref(extensions::pref_names::kAllowedInstallSites);
-    registry->RegisterStringPref(extensions::pref_names::kLastChromeVersion, std::string());
-    registry->RegisterListPref(extensions::pref_names::kNativeMessagingBlacklist);
-    registry->RegisterListPref(extensions::pref_names::kNativeMessagingWhitelist);
-    registry->RegisterBooleanPref(extensions::pref_names::kNativeMessagingUserLevelHosts, true);
-#endif // BUILDFLAG(ENABLE_EXTENSIONS)
-
-    m_prefService = factory.Create(registry);
-    user_prefs::UserPrefs::Set(this, m_prefService.get());
+    setupPrefService();
 
     // Mark the context as live. This prevents the use-after-free DCHECK in
     // AssertBrowserContextWasntDestroyed from being triggered when a new
@@ -143,6 +110,7 @@ ProfileQt::ProfileQt(ProfileAdapter *profileAdapter)
 ProfileQt::~ProfileQt()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    m_prefServiceAdapter.commit();
     content::BrowserContext::NotifyWillBeDestroyed(this);
     BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(this);
     ShutdownStoragePartitions();
@@ -153,12 +121,12 @@ ProfileQt::~ProfileQt()
 
 PrefService* ProfileQt::GetPrefs()
 {
-    return m_prefService.get();
+    return m_prefServiceAdapter.prefService();
 }
 
 const PrefService* ProfileQt::GetPrefs() const
 {
-    return m_prefService.get();
+    return m_prefServiceAdapter.prefService();
 }
 
 base::FilePath ProfileQt::GetPath() const
@@ -313,39 +281,6 @@ void ProfileQt::FailedToLoadDictionary(const std::string &language)
     LOG(WARNING) << "Could not load dictionary for:" << language;
     LOG(INFO) << "Make sure that correct bdic file is in:" << WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES);
 }
-
-void ProfileQt::setSpellCheckLanguages(const QStringList &languages)
-{
-    StringListPrefMember dictionaries_pref;
-    dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries, m_prefService.get());
-    std::vector<std::string> dictionaries;
-    dictionaries.reserve(languages.size());
-    for (const auto &language : languages)
-        dictionaries.push_back(language.toStdString());
-    dictionaries_pref.SetValue(dictionaries);
-}
-
-QStringList ProfileQt::spellCheckLanguages() const
-{
-    QStringList spellcheck_dictionaries;
-    for (const auto &value : *m_prefService->GetList(spellcheck::prefs::kSpellCheckDictionaries)) {
-        std::string dictionary;
-        if (value.GetAsString(&dictionary))
-            spellcheck_dictionaries.append(QString::fromStdString(dictionary));
-    }
-
-    return spellcheck_dictionaries;
-}
-
-void ProfileQt::setSpellCheckEnabled(bool enabled)
-{
-    m_prefService->SetBoolean(spellcheck::prefs::kSpellCheckEnable, enabled);
-}
-
-bool ProfileQt::isSpellCheckEnabled() const
-{
-    return m_prefService->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
-}
 #endif // QT_CONFIG(webengine_spellchecker)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -354,5 +289,33 @@ extensions::ExtensionSystemQt* ProfileQt::GetExtensionSystem()
     return m_extensionSystem;
 }
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
+
+std::string ProfileQt::GetMediaDeviceIDSalt()
+{
+    return m_prefServiceAdapter.mediaDeviceIdSalt();
+}
+
+void ProfileQt::setupPrefService()
+{
+    // Remove previous handler before we set a new one or we will assert
+    // TODO: Remove in Qt6
+    if (m_prefServiceAdapter.prefService() != nullptr) {
+        user_prefs::UserPrefs::Remove(this);
+        m_prefServiceAdapter.commit();
+    }
+    m_prefServiceAdapter.setup(*m_profileAdapter);
+    user_prefs::UserPrefs::Set(this, m_prefServiceAdapter.prefService());
+}
+
+PrefServiceAdapter &ProfileQt::prefServiceAdapter()
+{
+    return m_prefServiceAdapter;
+}
+
+const PrefServiceAdapter &ProfileQt::prefServiceAdapter() const
+{
+    return m_prefServiceAdapter;
+}
+
 
 } // namespace QtWebEngineCore

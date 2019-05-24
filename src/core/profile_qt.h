@@ -45,6 +45,7 @@
 #include "content/public/browser/resource_context.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/url_request/url_request_context.h"
+#include "pref_service_adapter.h"
 #include "profile_io_data_qt.h"
 #include <QtGlobal>
 
@@ -107,6 +108,7 @@ public:
                                           std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
                                           base::OnceClosure closure) override;
     const content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList() const override;
+    std::string GetMediaDeviceIDSalt() override;
 
     // Profile implementation:
     PrefService *GetPrefs() override;
@@ -118,14 +120,18 @@ public:
 
 #if QT_CONFIG(webengine_spellchecker)
     void FailedToLoadDictionary(const std::string &language) override;
-    void setSpellCheckLanguages(const QStringList &languages);
-    QStringList spellCheckLanguages() const;
-    void setSpellCheckEnabled(bool enabled);
-    bool isSpellCheckEnabled() const;
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionSystemQt* GetExtensionSystem();
 #endif // defined(ENABLE_EXTENSIONS)
+
+    // Build/Re-build the preference service. Call when updating the storage
+    // data path.
+    void setupPrefService();
+
+    PrefServiceAdapter &prefServiceAdapter();
+
+    const PrefServiceAdapter &prefServiceAdapter() const;
 
 private:
     friend class ContentBrowserClientQt;
@@ -134,10 +140,11 @@ private:
     std::unique_ptr<BrowsingDataRemoverDelegateQt> m_removerDelegate;
     std::unique_ptr<PermissionManagerQt> m_permissionManager;
     std::unique_ptr<SSLHostStateDelegateQt> m_sslHostStateDelegate;
-    std::unique_ptr<PrefService> m_prefService;
     scoped_refptr<content::SharedCorsOriginAccessList> m_sharedCorsOriginAccessList;
     std::unique_ptr<ProfileIODataQt> m_profileIOData;
     ProfileAdapter *m_profileAdapter;
+    PrefServiceAdapter m_prefServiceAdapter;
+
     friend class ProfileAdapter;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionSystemQt *m_extensionSystem;

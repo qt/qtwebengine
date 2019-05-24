@@ -109,6 +109,7 @@ SOURCES = \
         profile_io_data_qt.cpp \
         quota_permission_context_qt.cpp \
         quota_request_controller_impl.cpp \
+        pref_service_adapter.cpp \
         register_protocol_handler_request_controller_impl.cpp \
         render_view_context_menu_qt.cpp \
         render_widget_host_view_qt.cpp \
@@ -205,6 +206,7 @@ HEADERS = \
         ozone/surface_factory_qt.h \
         permission_manager_qt.h \
         platform_notification_service_qt.h \
+        pref_service_adapter.h \
         process_main.h \
         profile_adapter.h \
         profile_adapter_client.h \
@@ -246,7 +248,6 @@ HEADERS = \
         web_engine_library_info.h \
         web_engine_settings.h \
         web_event_factory.h
-
 
 qtConfig(webengine-system-x11): hasX11Dependencies() {
     HEADERS += ozone/gl_ozone_glx_qt.h \
