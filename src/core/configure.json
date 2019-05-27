@@ -312,7 +312,7 @@
             "type": "compile"
         },
         "webengine-glibc": {
-            "label": "glibc > 2.16",
+            "label": "glibc > 2.26",
             "type": "detectGlibc"
         },
         "webengine-libxml2-compatible": {

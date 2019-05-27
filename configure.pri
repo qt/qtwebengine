@@ -96,10 +96,10 @@ defineTest(qtConfTest_detectGlibc) {
         qtLog("Found libc version: $$version")
         version = $$split(version,'.')
         version = $$member(version, 1)
-        greaterThan(version, 16) {
+        greaterThan(version, 26) {
             return(true)
         }
-        qtLog("Detected too old version of glibc. Required min 2.17.")
+        qtLog("Detected too old version of glibc. Required min 2.27.")
         return(false)
     }
     qtLog("No ldd found. Assuming right version of glibc.")
