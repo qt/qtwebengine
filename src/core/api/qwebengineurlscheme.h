@@ -76,6 +76,7 @@ public:
         ServiceWorkersAllowed = 0x10,
         ViewSourceAllowed = 0x20,
         ContentSecurityPolicyIgnored = 0x40,
+        CorsEnabled = 0x80,
     };
     Q_DECLARE_FLAGS(Flags, Flag)
     Q_FLAG(Flags)
