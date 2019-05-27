@@ -109,7 +109,8 @@ void URLRequestNotification::notify()
 
         if (m_profileAdapter) {
             QWebEngineUrlRequestInterceptor* interceptor = m_profileAdapter->requestInterceptor();
-            interceptor->interceptRequest(m_requestInfo);
+            if (!interceptor->property("deprecated").toBool())
+                interceptor->interceptRequest(m_requestInfo);
         }
 
         WebContentsAdapterClient *client =
@@ -171,8 +172,14 @@ void URLRequestNotification::complete(int error)
 
             if (!m_requestInfo.d_ptr->extraHeaders.isEmpty()) {
                 auto end = m_requestInfo.d_ptr->extraHeaders.constEnd();
-                for (auto header = m_requestInfo.d_ptr->extraHeaders.constBegin(); header != end; ++header)
-                    m_request->SetExtraRequestHeaderByName(header.key().toStdString(), header.value().toStdString(), /* overwrite */ true);
+                for (auto header = m_requestInfo.d_ptr->extraHeaders.constBegin(); header != end; ++header) {
+                    std::string h = header.key().toStdString();
+                    if (base::LowerCaseEqualsASCII(h, "referer")) {
+                        m_request->SetReferrer(header.value().toStdString());
+                    } else {
+                        m_request->SetExtraRequestHeaderByName(h, header.value().toStdString(), /* overwrite */ true);
+                    }
+                }
             }
         }
 

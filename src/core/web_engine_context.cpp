@@ -363,7 +363,15 @@ ProxyAuthentication WebEngineContext::qProxyNetworkAuthentication(QString host, 
 const static char kChromiumFlagsEnv[] = "QTWEBENGINE_CHROMIUM_FLAGS";
 const static char kDisableSandboxEnv[] = "QTWEBENGINE_DISABLE_SANDBOX";
 
-static void appendToFeatureSwitch(base::CommandLine *commandLine, const char *featureSwitch, const char *feature)
+static void appendToFeatureList(std::string &featureList, const char *feature)
+{
+    if (featureList.empty())
+        featureList = feature;
+    else
+        featureList = featureList + "," + feature;
+}
+
+static void appendToFeatureSwitch(base::CommandLine *commandLine, const char *featureSwitch, std::string feature)
 {
     if (!commandLine->HasSwitch(featureSwitch)) {
         commandLine->AppendSwitchASCII(featureSwitch, feature);
@@ -475,35 +483,41 @@ WebEngineContext::WebEngineContext()
     if (isDesktopGLOrSoftware || isGLES2Context)
         parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
+
+    std::string disableFeatures;
+    std::string enableFeatures;
     // Needed to allow navigations within pages that were set using setHtml(). One example is
     // tst_QWebEnginePage::acceptNavigationRequest.
     // This is deprecated behavior, and will be removed in a future Chromium version, as per
     // upstream Chromium commit ba52f56207a4b9d70b34880fbff2352e71a06422.
-    appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kAllowContentInitiatedDataUrlNavigations.name);
+    appendToFeatureList(enableFeatures, features::kAllowContentInitiatedDataUrlNavigations.name);
     // Surface synchronization breaks our current graphics integration (since 65)
-    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kEnableSurfaceSynchronization.name);
+    appendToFeatureList(disableFeatures, features::kEnableSurfaceSynchronization.name);
     // Viz Display Compositor is enabled by default since 73. Doesn't work for us (also implies SurfaceSynchronization)
-    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kVizDisplayCompositor.name);
+    appendToFeatureList(disableFeatures, features::kVizDisplayCompositor.name);
     // The video-capture service is not functioning at this moment (since 69)
-    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kMojoVideoCapture.name);
+    appendToFeatureList(disableFeatures, features::kMojoVideoCapture.name);
     // Breaks WebEngineNewViewRequest.userInitiated API (since 73)
-    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kUserActivationV2.name);
+    appendToFeatureList(disableFeatures, features::kUserActivationV2.name);
 
-    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, features::kBackgroundFetch.name);
+    appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
 
 #if QT_CONFIG(webengine_printing_and_pdf)
-    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, printing::features::kUsePdfCompositorServiceForPrint.name);
+    appendToFeatureList(disableFeatures, printing::features::kUsePdfCompositorServiceForPrint.name);
 #endif
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
-        appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, features::kOverlayScrollbar.name);
+        appendToFeatureList(enableFeatures, features::kOverlayScrollbar.name);
         if (!parsedCommandLine->HasSwitch(switches::kDisablePinch))
             parsedCommandLine->AppendSwitch(switches::kEnablePinch);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
         parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
+
+    appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, disableFeatures);
+    appendToFeatureSwitch(parsedCommandLine, switches::kEnableFeatures, enableFeatures);
     base::FeatureList::InitializeInstance(
         parsedCommandLine->GetSwitchValueASCII(switches::kEnableFeatures),
         parsedCommandLine->GetSwitchValueASCII(switches::kDisableFeatures));

@@ -8,9 +8,6 @@ gn_args += \
     win_linker_timing=true \
     com_init_check_hook_disabled=true
 
-use_lld_linker: gn_args += use_lld=true
-else: gn_args += use_lld=false
-
 clang_cl {
     clang_full_path = $$system_path($$which($${QMAKE_CXX}))
     # Remove the "\bin\clang-cl.exe" part:
@@ -18,10 +15,11 @@ clang_cl {
     clang_prefix = $$join(clang_dir,,,"\..")
     gn_args += \
         is_clang=true \
+        use_ldd=true \
         clang_use_chrome_plugins=false \
-        clang_base_path=$$system_quote($$system_path($$clean_path($$clang_prefix)))
+        clang_base_path=\"$$system_path($$clean_path($$clang_prefix))\"
 } else {
-    gn_args += is_clang=false
+    gn_args += is_clang=false use_lld=false
 }
 
 isDeveloperBuild() {

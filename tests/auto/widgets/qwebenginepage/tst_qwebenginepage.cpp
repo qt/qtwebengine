@@ -1669,6 +1669,18 @@ void tst_QWebEnginePage::runJavaScript()
     JavaScriptCallbackUndefined callbackUndefined;
     page.runJavaScript("undefined", QWebEngineCallback<const QVariant&>(callbackUndefined));
 
+    JavaScriptCallback callbackDate(QVariant(42.0));
+    page.runJavaScript("new Date(42000)", QWebEngineCallback<const QVariant&>(callbackDate));
+
+    JavaScriptCallback callbackBlob(QVariant(QByteArray(8, 0)));
+    page.runJavaScript("new ArrayBuffer(8)", QWebEngineCallback<const QVariant&>(callbackBlob));
+
+    JavaScriptCallbackUndefined callbackFunction;
+    page.runJavaScript("(function(){})", QWebEngineCallback<const QVariant&>(callbackFunction));
+
+    JavaScriptCallback callbackPromise(QVariant(QVariantMap{}));
+    page.runJavaScript("new Promise(function(){})", QWebEngineCallback<const QVariant&>(callbackPromise));
+
     QVERIFY(watcher.wait());
 }
 
