@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Qt Company Ltd.
+ * Copyright (C) 2019 The Qt Company Ltd.
  * Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (c) 2012 Hewlett-Packard Development Company, L.P.
  *
@@ -395,6 +395,11 @@
     runJavaScript("document.title", function(result) { console.log(result); });
     \endcode
 
+    Only "plain data" can be returned from JavaScript as the result value.
+    Supported data types include all of the JSON data types as well as, for
+    example, \c{Date} and \c{ArrayBuffer}. Unsupported data types include, for
+    example, \c{Function} and \c{Promise}.
+
     The script will run in the same \e world as other scripts that are
     part of the loaded site.
 
@@ -486,7 +491,8 @@
     a web engine view can be used to create a UI element that should not get focus. This can be
     useful in a hybrid UI.
 
-    \sa activeFocusOnPressChanged, WebEngineSettings::focusOnNavigationEnabled
+    \sa activeFocusOnPress, activeFocusOnPressChanged,
+    WebEngineSettings::focusOnNavigationEnabled
 */
 
 /*!
@@ -524,7 +530,8 @@
     \qmlsignal WebEngineView::certificateError(WebEngineCertificateError error)
     \since QtWebEngine 1.1
 
-    This signal is emitted when an invalid certificate error is raised while loading a given request.
+    This signal is emitted when an invalid certificate error, \a error, is
+    raised while loading a given request.
 
     The certificate error can be handled by using the methods of the WebEngineCertificateError
     type.
@@ -560,7 +567,7 @@
     \qmlsignal WebEngineView::newViewRequested(WebEngineNewViewRequest request)
     \since QtWebEngine 1.1
 
-    This signal is emitted when a page load is requested to happen in a separate
+    This signal is emitted when \a request is issued to load a page in a separate
     web engine view. This can either be because the current page requested it explicitly
     through a JavaScript call to \c window.open, or because the user clicked on a link
     while holding Shift, Ctrl, or a built-in combination that triggers the page to open
@@ -579,8 +586,8 @@
     \qmlsignal WebEngineView::fullScreenRequested(FullScreenRequest request)
     \since QtWebEngine 1.1
 
-    This signal is emitted when the web page requests fullscreen mode through the
-    JavaScript API.
+    This signal is emitted when the web page issues the \a request for
+    fullscreen mode through the JavaScript API.
 
     \sa isFullScreen
 */
@@ -589,10 +596,10 @@
     \qmlsignal WebEngineView::activeFocusOnPressChanged(bool activeFocusOnPress)
     \since QtWebEngine 1.2
 
-    This signal is emitted when the ability of the web engine view to get focus when clicked
-    changes.
+    This signal is emitted when the value of \a activeFocusOnPress changes.
+    It specifies whether the view should gain active focus when pressed.
 
-    \sa setActiveFocusOnPress()
+    \sa activeFocusOnPress, setActiveFocusOnPress()
 */
 
 /*!
@@ -1109,7 +1116,8 @@
     \qmlsignal WebEngineView::audioMutedChanged(bool muted)
     \since QtWebEngine 1.3
 
-    This signal is emitted when the page's audio is (un)muted using audioMuted property.
+    This signal is emitted when the value of \a muted changes. The value is
+    specified using the \l audioMuted property.
     \note Not to be confused with a specific HTML5 audio / video element being muted.
 
     \sa audioMuted, recentlyAudibleChanged
@@ -1127,10 +1135,10 @@
     \qmlsignal WebEngineView::recentlyAudibleChanged(bool recentlyAudible)
     \since QtWebEngine 1.3
 
-    This signal is emitted when the page's audible state is changed, due to audio
-    being played or stopped.
+    This signal is emitted when the page's audible state, specified by
+    \a recentlyAudible, is changed, due to audio being played or stopped.
 
-    \note The signal is also emitted when the audioMuted property changes.
+    \note The signal is also emitted when the \l audioMuted property changes.
     Also if the audio is paused, this signal is emitted with an approximate \b{two-second
     delay}, from the moment the audio is paused.
 
@@ -1176,7 +1184,7 @@
     PDF and returns immediately. To be informed about the result of the
     request, connect to the signal pdfPrintingFinished().
 
-    If you leave out \a pageSizeID, it defaults to \c A4. If you leave out
+    If you leave out \a pageSizeId, it defaults to \c A4. If you leave out
     \a orientation, it defaults to \c Portrait.
 
     \sa pdfPrintingFinished()
@@ -1192,7 +1200,7 @@
     The \a resultCallback must take a string parameter. This string will contain the document's data upon successful printing and an empty
     string otherwise.
 
-    If you leave out \a pageSizeID, it defaults to \c A4. If you leave out
+    If you leave out \a pageSizeId, it defaults to \c A4. If you leave out
     \a orientation, it defaults to \c Portrait.
 */
 
@@ -1207,8 +1215,8 @@
     \qmlsignal WebEngineView::wasRecentlyAudibleChanged(bool wasRecentlyAudible)
     \since QtWebEngine 1.3
 
-    This signal is emitted when the page's audible state is changed, due to audio
-    being played or stopped.
+    This signal is emitted when the page's audible state, specified by
+    \a wasRecentlyAudible, is changed, due to audio being played or stopped.
 
     \note The signal is also emitted when calling the setAudioMuted method.
     Also if the audio is paused, this signal is emitted with an approximate \b{2 second
@@ -1221,7 +1229,7 @@
 
     This signal is emitted when an authentication dialog is requested.
 
-    The request can be handled by using the methods of the AuthenticationDialogRequest
+    The \a request can be handled by using the methods of the AuthenticationDialogRequest
     type.
 
     \note Signal handlers need to call \c{request.accepted = true} to prevent a
@@ -1236,7 +1244,7 @@
 
     This signal is emitted when a JavaScript dialog is requested.
 
-    The request can be handled by using the methods of the JavaScriptDialogRequest
+    The \a request can be handled by using the methods of the JavaScriptDialogRequest
     type.
 
     \note Signal handlers need to call \c{request.accepted = true} to prevent a
@@ -1251,7 +1259,7 @@
 
     This signal is emitted when a color picker dialog is requested.
 
-    The request can be handled by using the methods of the ColorDialogRequest
+    The \a request can be handled by using the methods of the ColorDialogRequest
     type.
 
     \note Signal handlers need to call \c{request.accepted = true} to prevent a
@@ -1265,7 +1273,7 @@
 
     This signal is emitted when a file picker dialog is requested.
 
-    The request error can be handled by using the methods of the FileDialogRequest
+    The \a request can be handled by using the methods of the FileDialogRequest
     type.
 
     \note Signal handlers need to call \c{request.accepted = true} to prevent a
@@ -1287,7 +1295,7 @@
 
     This signal is emitted when a context menu is requested.
 
-    The request can be handled by using the properties of the ContextMenuRequest
+    The \a request can be handled by using the properties of the ContextMenuRequest
     type.
 
     \note Signal handlers need to call \c{request.accepted = true} to prevent a
@@ -1302,7 +1310,7 @@
     \qmlsignal WebEngineView::quotaRequested(QuotaRequest request)
     \since QtWebEngine 1.7
 
-    This signal is emitted when the web page requests larger persistent storage
+    This signal is emitted when the web page issues a \a request for a larger persistent storage
     than the application's current allocation in File System API. The default quota
     is 0 bytes.
 
@@ -1361,7 +1369,7 @@
     \since QtWebEngine 1.7
 
     This signal is emitted when the web page tries to register a custom protocol
-    using the \l registerProtocolHandler API.
+    by issuing a \l registerProtocolHandler \a request.
 
     \sa RegisterProtocolHandlerRequest
 */
@@ -1457,7 +1465,7 @@
     \qmlmethod WebEngineAction WebEngineView::action(WebAction action)
     \since 5.12
 
-    Returns a \l WebEngineAction for the specified \l WebAction action.
+    Returns a \l WebEngineAction for the specified \l WebAction \a action.
     WebEngineView also takes care of implementing the action,
     so that upon triggering the corresponding action is performed on the view.
 

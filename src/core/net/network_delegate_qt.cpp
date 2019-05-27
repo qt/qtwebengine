@@ -150,8 +150,14 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
 
                 if (!infoPrivate->extraHeaders.isEmpty()) {
                     auto end = infoPrivate->extraHeaders.constEnd();
-                    for (auto header = infoPrivate->extraHeaders.constBegin(); header != end; ++header)
-                        request->SetExtraRequestHeaderByName(header.key().toStdString(), header.value().toStdString(), /* overwrite */ true);
+                    for (auto header = infoPrivate->extraHeaders.constBegin(); header != end; ++header) {
+                        std::string h = header.key().toStdString();
+                        if (base::LowerCaseEqualsASCII(h, "referer")) {
+                            request->SetReferrer(header.value().toStdString());
+                        } else {
+                            request->SetExtraRequestHeaderByName(h, header.value().toStdString(), /* overwrite */ true);
+                        }
+                    }
                 }
 
                 if (result != net::OK)
