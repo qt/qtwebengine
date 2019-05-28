@@ -109,6 +109,7 @@ private:
     bool m_nextDownloadIsUserRequested;
 
     friend class DownloadManagerDelegateInstance;
+    friend class ProfileAdapter;
     DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateQt);
 };
 

@@ -55,6 +55,7 @@
 #include <QSharedPointer>
 #include <QString>
 #include <QUrl>
+#include <time.h>
 
 namespace QtWebEngineCore {
 
@@ -139,6 +140,7 @@ public:
         int downloadInterruptReason;
         WebContentsAdapterClient *page;
         QString suggestedFileName;
+        time_t startTime;
     };
 
     virtual ~ProfileAdapterClient() { }

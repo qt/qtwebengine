@@ -139,6 +139,8 @@ public:
     Q_PROPERTY(QQuickWebEngineView *view READ view CONSTANT REVISION 7 FINAL)
     Q_PROPERTY(QUrl url READ url CONSTANT REVISION 8 FINAL)
     Q_PROPERTY(QString suggestedFileName READ suggestedFileName CONSTANT REVISION 8 FINAL)
+    Q_PROPERTY(QString downloadDirectory READ downloadDirectory WRITE setDownloadDirectory NOTIFY downloadDirectoryChanged REVISION 8 FINAL)
+    Q_PROPERTY(QString downloadFileName READ downloadFileName WRITE setDownloadFileName NOTIFY downloadFileNameChanged REVISION 8 FINAL)
 
     Q_INVOKABLE void accept();
     Q_INVOKABLE void cancel();
@@ -150,8 +152,8 @@ public:
     qint64 totalBytes() const;
     qint64 receivedBytes() const;
     QString mimeType() const;
-    QString path() const;
-    void setPath(QString path);
+    QString Q_DECL_DEPRECATED path() const;
+    void Q_DECL_DEPRECATED setPath(QString path);
     SavePageFormat savePageFormat() const;
     void setSavePageFormat(SavePageFormat format);
     DownloadType Q_DECL_DEPRECATED type() const;
@@ -163,6 +165,10 @@ public:
     QQuickWebEngineView *view() const;
     QUrl url() const;
     QString suggestedFileName() const;
+    QString downloadDirectory() const;
+    void setDownloadDirectory(QString directory);
+    QString downloadFileName() const;
+    void setDownloadFileName(QString fileName);
 
 Q_SIGNALS:
     void stateChanged();
@@ -170,11 +176,13 @@ Q_SIGNALS:
     void receivedBytesChanged();
     void totalBytesChanged();
     Q_REVISION(1) void mimeTypeChanged();
-    void pathChanged();
+    void Q_DECL_DEPRECATED pathChanged();
     Q_REVISION(3) void typeChanged();
     Q_REVISION(4) void interruptReasonChanged();
     Q_REVISION(5) void isFinishedChanged();
     Q_REVISION(5) void isPausedChanged();
+    Q_REVISION(8) void downloadDirectoryChanged();
+    Q_REVISION(8) void downloadFileNameChanged();
 
 private:
     QQuickWebEngineDownloadItem(QQuickWebEngineDownloadItemPrivate*, QObject *parent = 0);

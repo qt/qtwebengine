@@ -43,6 +43,7 @@
 #include "profile_adapter.h"
 #include "qquickwebengineprofile_p.h"
 
+#include <QDir>
 #include "QFileInfo"
 
 using QtWebEngineCore::ProfileAdapterClient;
@@ -417,6 +418,7 @@ QString QQuickWebEngineDownloadItem::mimeType() const
 
 /*!
     \qmlproperty string WebEngineDownloadItem::path
+    \obsolete
 
     Holds the full target path where data is being downloaded to.
 
@@ -433,7 +435,7 @@ QString QQuickWebEngineDownloadItem::mimeType() const
 QString QQuickWebEngineDownloadItem::path() const
 {
     Q_D(const QQuickWebEngineDownloadItem);
-    return d->downloadPath;
+    return QDir::cleanPath(QDir(d->downloadDirectory).filePath(d->downloadFileName));
 }
 
 void QQuickWebEngineDownloadItem::setPath(QString path)
@@ -443,7 +445,7 @@ void QQuickWebEngineDownloadItem::setPath(QString path)
         qWarning("Setting the download path is not allowed after the download has been accepted.");
         return;
     }
-    if (d->downloadPath != path) {
+    if (QDir(d->downloadDirectory).filePath(d->downloadFileName) != path) {
         if (QFileInfo(path).fileName().isEmpty()) {
             qWarning("The download path does not include file name.");
             return;
@@ -454,10 +456,113 @@ void QQuickWebEngineDownloadItem::setPath(QString path)
             return;
         }
 
-        d->downloadPath = path;
-        Q_EMIT pathChanged();
+        QString newDirectory;
+        QString newFileName;
+
+        if (QFileInfo(path).fileName() == path) {
+            newDirectory = QStringLiteral("");
+            newFileName = path;
+        } else {
+            newDirectory = QFileInfo(path).filePath();
+            newFileName = QFileInfo(path).fileName();
+        }
+
+        if (d->downloadDirectory != newDirectory) {
+            d->downloadDirectory = newDirectory;
+            Q_EMIT pathChanged();
+            Q_EMIT downloadDirectoryChanged();
+        }
+
+        if (d->downloadFileName != newFileName) {
+            d->downloadFileName = newFileName;
+            Q_EMIT pathChanged();
+            Q_EMIT downloadFileNameChanged();
+        }
     }
 }
+
+/*!
+    \qmlproperty string WebEngineDownloadItem::downloadDirectory
+    \since QtWebEngine 1.10
+
+    Holds the full target path without file name where data is being downloaded to.
+
+    The download directory can only be set in the
+    \l{WebEngineProfile::downloadRequested}{downloadRequested} handler before
+    the download is accepted.
+
+    \sa WebEngineProfile::downloadRequested(), accept()
+*/
+
+QString QQuickWebEngineDownloadItem::downloadDirectory() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->downloadDirectory;
+}
+
+void QQuickWebEngineDownloadItem::setDownloadDirectory(QString directory)
+{
+    Q_D(QQuickWebEngineDownloadItem);
+    if (d->downloadState != QQuickWebEngineDownloadItem::DownloadRequested) {
+        qWarning("Setting the download directory is not allowed after the download has been accepted.");
+        return;
+    }
+
+    QString changeDirectory = d->downloadDirectory;
+    if (!directory.isEmpty() && changeDirectory != directory) {
+        changeDirectory = directory;
+
+        if (d->downloadDirectory != changeDirectory) {
+            d->downloadDirectory = changeDirectory;
+            Q_EMIT pathChanged();
+            Q_EMIT downloadDirectoryChanged();
+        }
+
+        QString newFileName = QFileInfo(d->profile->d_ptr->profileAdapter()->updateDownloadPath(d->downloadId,
+                                                                                                d->downloadDirectory,
+                                                                                                d->suggestedFileName)).fileName();
+        if (d->downloadFileName != newFileName) {
+            d->downloadFileName = newFileName;
+            Q_EMIT pathChanged();
+            Q_EMIT downloadFileNameChanged();
+        }
+    }
+}
+
+/*!
+    \qmlproperty string WebEngineDownloadItem::downloadFileName
+    \since QtWebEngine 1.10
+
+    Holds the name of the file to which data is being downloaded.
+
+    The download file name can only be set in the
+    \l{WebEngineProfile::downloadRequested}{downloadRequested} handler before
+    the download is accepted.
+
+    \sa WebEngineProfile::downloadRequested(), accept()
+*/
+
+QString QQuickWebEngineDownloadItem::downloadFileName() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->downloadFileName;
+}
+
+void QQuickWebEngineDownloadItem::setDownloadFileName(QString fileName)
+{
+    Q_D(QQuickWebEngineDownloadItem);
+    if (d->downloadState != QQuickWebEngineDownloadItem::DownloadRequested) {
+        qWarning("Setting the download file name is not allowed after the download has been accepted.");
+        return;
+    }
+
+    if (d->downloadFileName != fileName && !fileName.isEmpty()) {
+        d->downloadFileName = fileName;
+        Q_EMIT pathChanged();
+        Q_EMIT downloadFileNameChanged();
+    }
+}
+
 /*!
     \qmlproperty string WebEngineDownloadItem::suggestedFileName
     \since QtWebEngine 1.10

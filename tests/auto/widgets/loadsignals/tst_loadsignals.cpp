@@ -238,7 +238,8 @@ void tst_LoadSignals::fileDownloadDoesNotTriggerLoadSignals_qtbug66661()
             connect(item, &QWebEngineDownloadItem::stateChanged, [&downloadState](QWebEngineDownloadItem::DownloadState newState){
                 downloadState = newState;
             });
-            item->setPath(tempDir.filePath(QFileInfo(item->path()).fileName()));
+            item->setDownloadDirectory(tempDir.filePath(QFileInfo(item->path()).path()));
+            item->setDownloadFileName(QFileInfo(item->path()).fileName());
             item->accept();
         });
 

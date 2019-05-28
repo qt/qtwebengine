@@ -101,7 +101,7 @@ Rectangle {
                 }
                 Label {
                     id: label
-                    text: path
+                    text: downloadDirectory + "/" + downloadFileName
                     anchors {
                         verticalCenter: cancelButton.verticalCenter
                         left: parent.left

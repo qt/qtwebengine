@@ -53,6 +53,7 @@
 #include "visited_links_manager_qt.h"
 #include "web_engine_settings.h"
 
+#include <QDir>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
 
 QT_BEGIN_NAMESPACE
@@ -226,7 +227,8 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->downloadId = info.id;
     itemPrivate->downloadState = info.accepted ? QWebEngineDownloadItem::DownloadInProgress
                                                : QWebEngineDownloadItem::DownloadRequested;
-    itemPrivate->downloadPath = info.path;
+    itemPrivate->downloadDirectory = QFileInfo(info.path).path();
+    itemPrivate->downloadFileName = QFileInfo(info.path).fileName();
     itemPrivate->suggestedFileName = info.suggestedFileName;
     itemPrivate->mimeType = info.mimeType;
     itemPrivate->savePageFormat = static_cast<QWebEngineDownloadItem::SavePageFormat>(info.savePageFormat);
@@ -245,7 +247,7 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
 
     QWebEngineDownloadItem::DownloadState state = download->state();
 
-    info.path = download->path();
+    info.path = QDir(download->downloadDirectory()).filePath(download->downloadFileName());
     info.savePageFormat = static_cast<QtWebEngineCore::ProfileAdapterClient::SavePageFormat>(
                 download->savePageFormat());
     info.accepted = state != QWebEngineDownloadItem::DownloadCancelled;

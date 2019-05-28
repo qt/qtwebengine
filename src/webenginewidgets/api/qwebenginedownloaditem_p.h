@@ -79,6 +79,8 @@ public:
     QString mimeType;
     bool downloadPaused;
     QString suggestedFileName;
+    QString downloadDirectory;
+    QString downloadFileName;
 
     qint64 totalBytes;
     qint64 receivedBytes;

@@ -60,7 +60,7 @@ DownloadWidget::DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent
     , m_timeAdded(QTime::currentTime())
 {
     setupUi(this);
-    m_dstName->setText(QFileInfo(m_download->path()).fileName());
+    m_dstName->setText(m_download->downloadFileName());
     m_srcUrl->setText(m_download->url().toDisplayString());
 
     connect(m_cancelButton, &QPushButton::clicked,

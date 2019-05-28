@@ -168,22 +168,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
 
     QDir defaultDownloadDirectory(m_profileAdapter->downloadPath());
 
-    QFileInfo suggestedFile(defaultDownloadDirectory.absoluteFilePath(suggestedFilename));
-    QString suggestedFilePath = suggestedFile.absoluteFilePath();
-    base::FilePath tmpFilePath(toFilePath(suggestedFilePath).NormalizePathSeparatorsTo('/'));
-
-    int uniquifier = base::GetUniquePathNumber(tmpFilePath, base::FilePath::StringType());
-    if (uniquifier > 0)
-        suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier)).AsUTF8Unsafe());
-    else if (uniquifier == -1) {
-        base::Time::Exploded exploded;
-        item->GetStartTime().LocalExplode(&exploded);
-        std::string suffix = base::StringPrintf(
-                    " - %04d-%02d-%02dT%02d%02d%02d.%03d", exploded.year, exploded.month,
-                    exploded.day_of_month, exploded.hour, exploded.minute,
-                    exploded.second, exploded.millisecond);
-        suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(suffix).AsUTF8Unsafe());
-    }
+    QString suggestedFilePath = m_profileAdapter->determineDownloadPath(defaultDownloadDirectory.absolutePath(), suggestedFilename, item->GetStartTime().ToTimeT());
 
     item->AddObserver(this);
     QList<ProfileAdapterClient*> clients = m_profileAdapter->clients();
@@ -209,7 +194,8 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
             downloadType,
             item->GetLastReason(),
             adapterClient,
-            suggestedFilename
+            suggestedFilename,
+            item->GetStartTime().ToTimeT()
         };
 
         for (ProfileAdapterClient *client : qAsConst(clients)) {
@@ -218,7 +204,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
                 break;
         }
 
-        suggestedFile.setFile(info.path);
+        QFileInfo suggestedFile(info.path);
 
         if (info.accepted && !suggestedFile.absoluteDir().mkpath(suggestedFile.absolutePath())) {
             qWarning("Creating download path failed, download cancelled: %s", suggestedFile.absolutePath().toUtf8().data());
@@ -279,7 +265,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         acceptedByDefault = true;
     }
     if (QFileInfo(suggestedFilePath).isRelative()) {
-        const QDir downloadDir(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation));
+        const QDir downloadDir(m_profileAdapter->downloadPath());
         suggestedFilePath = downloadDir.absoluteFilePath(suggestedFilePath);
     }
 
@@ -311,8 +297,8 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         ProfileAdapterClient::SavePage,
         ProfileAdapterClient::NoReason,
         adapterClient,
-        QFileInfo(suggestedFilePath).fileName()
-
+        QFileInfo(suggestedFilePath).fileName(),
+        time_t(QDateTime::currentMSecsSinceEpoch())
     };
 
     for (ProfileAdapterClient *client : qAsConst(clients)) {
@@ -379,7 +365,8 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(download::DownloadItem *downlo
             0 /* downloadType (unused) */,
             download->GetLastReason(),
             adapterClient,
-            toQt(download->GetSuggestedFilename())
+            toQt(download->GetSuggestedFilename()),
+            download->GetStartTime().ToTimeT()
         };
 
         for (ProfileAdapterClient *client : qAsConst(clients)) {

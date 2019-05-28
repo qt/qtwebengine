@@ -84,6 +84,8 @@ public:
     QQuickWebEngineView *view;
     QUrl downloadUrl;
     QString suggestedFileName;
+    QString downloadDirectory;
+    QString downloadFileName;
 
     void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
     void updateState(QQuickWebEngineDownloadItem::DownloadState newState);

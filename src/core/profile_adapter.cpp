@@ -57,6 +57,8 @@
 #include "web_engine_context.h"
 #include "web_contents_adapter_client.h"
 
+#include "base/files/file_util.h"
+#include "base/time/time_to_iso8601.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -689,6 +691,34 @@ void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
 bool ProfileAdapter::isUsedForGlobalCertificateVerification() const
 {
     return m_usedForGlobalCertificateVerification;
+}
+
+QString ProfileAdapter::determineDownloadPath(const QString &downloadDirectory, const QString &suggestedFilename, const time_t &startTime)
+{
+    QFileInfo suggestedFile(QDir(downloadDirectory).absoluteFilePath(suggestedFilename));
+    QString suggestedFilePath = suggestedFile.absoluteFilePath();
+    base::FilePath tmpFilePath(toFilePath(suggestedFilePath).NormalizePathSeparatorsTo('/'));
+
+    int uniquifier = base::GetUniquePathNumber(tmpFilePath, base::FilePath::StringType());
+    if (uniquifier > 0)
+        suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier)).AsUTF8Unsafe());
+    else if (uniquifier == -1) {
+        base::Time::Exploded exploded;
+        base::Time::FromTimeT(startTime).LocalExplode(&exploded);
+        std::string suffix = base::StringPrintf(
+                    " - %04d-%02d-%02dT%02d%02d%02d.%03d", exploded.year, exploded.month,
+                    exploded.day_of_month, exploded.hour, exploded.minute,
+                    exploded.second, exploded.millisecond);
+        suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(suffix).AsUTF8Unsafe());
+    }
+    return suggestedFilePath;
+}
+
+QString ProfileAdapter::updateDownloadPath(int downloadId, const QString &directory, const QString &fileName)
+{
+    download::DownloadItem *download = m_downloadManagerDelegate->findDownloadById(downloadId);
+    Q_ASSERT(download);
+    return determineDownloadPath(directory, fileName, download->GetStartTime().ToTimeT());
 }
 
 #if QT_CONFIG(ssl)

@@ -44,6 +44,12 @@ TestWebEngineView {
     property var downloadInterruptReason: null
     property url downloadUrl: ""
     property string suggestedFileName: ""
+    property string downloadDirectory: ""
+    property string downloadFileName: ""
+    property string downloadedPath: ""
+    property int downloadDirectoryChanged: 0
+    property int downloadFileNameChanged: 0
+    property int downloadPathChanged: 0
 
     function urlToPath(url) {
         var path = url.toString()
@@ -68,23 +74,36 @@ TestWebEngineView {
         ignoreUnknownSignals: true
         onStateChanged: downloadState.push(target.state)
         onInterruptReasonChanged: downloadInterruptReason = target.interruptReason
+        onDownloadDirectoryChanged: downloadDirectoryChanged++
+        onDownloadFileNameChanged: downloadFileNameChanged++
+        onPathChanged: downloadPathChanged++
     }
 
     WebEngineProfile {
         id: testDownloadProfile
 
         onDownloadRequested: {
+            testDownloadProfile.downloadPath = urlToPath(StandardPaths.writableLocation(StandardPaths.TempLocation))
             downloadState.push(download.state)
             downloadItemConnections.target = download
             if (cancelDownload) {
                 download.cancel()
             } else {
                 totalBytes = download.totalBytes
-                download.path = "testfile.zip"
+                download.downloadDirectory = testDownloadProfile.downloadPath
+                download.downloadFileName = "testfile.zip"
+
+                if (downloadDirectory.length != 0)
+                    download.downloadDirectory = testDownloadProfile.downloadPath + downloadDirectory
+
+                if (downloadFileName.length != 0)
+                    download.downloadFileName = downloadFileName
+
                 download.accept()
             }
             downloadUrl = download.url
             suggestedFileName = download.suggestedFileName
+            downloadedPath = download.downloadDirectory + download.downloadFileName
         }
         onDownloadFinished: {
             receivedBytes = download.receivedBytes;
@@ -103,6 +122,9 @@ TestWebEngineView {
             downloadItemConnections.target = null
             downloadState = []
             downloadInterruptReason = null
+            downloadDirectoryChanged = 0
+            downloadFileNameChanged = 0
+            downloadPathChanged = 0
         }
 
         function test_downloadRequest() {
@@ -164,6 +186,29 @@ TestWebEngineView {
 
             testDownloadProfile.downloadPath = downloadPath;
             compare(testDownloadProfile.downloadPath, downloadPath);
+        }
+
+        function test_downloadToDirectoryWithFileName() {
+            compare(downLoadRequestedSpy.count, 0);
+            compare(downloadDirectoryChanged, 0);
+            compare(downloadFileNameChanged, 0);
+            downloadDirectory = "/test/";
+            downloadFileName = "test.zip";
+            webEngineView.url = Qt.resolvedUrl("download.zip");
+            downLoadRequestedSpy.wait();
+            compare(downLoadRequestedSpy.count, 1);
+            compare(downloadUrl, webEngineView.url);
+            compare(suggestedFileName, "download.zip");
+            compare(downloadState[0], WebEngineDownloadItem.DownloadRequested);
+            tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadInProgress);
+            compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + downloadFileName);
+            compare(downloadDirectoryChanged, 1);
+            compare(downloadFileNameChanged, 3);
+            compare(downloadPathChanged, 4);
+            downloadFinishedSpy.wait();
+            compare(totalBytes, receivedBytes);
+            tryCompare(downloadState, "2", WebEngineDownloadItem.DownloadCompleted);
+            verify(!downloadInterruptReason);
         }
     }
 }

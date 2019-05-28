@@ -48,6 +48,8 @@
 #include "qwebenginecookiestore.h"
 #include "qwebenginenotification.h"
 
+#include <QFileInfo>
+#include <QDir>
 #include <QQmlEngine>
 
 #include "profile_adapter.h"
@@ -242,7 +244,8 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->downloadState = QQuickWebEngineDownloadItem::DownloadRequested;
     itemPrivate->totalBytes = info.totalBytes;
     itemPrivate->mimeType = info.mimeType;
-    itemPrivate->downloadPath = info.path;
+    itemPrivate->downloadDirectory = QFileInfo(info.path).path();
+    itemPrivate->downloadFileName = QFileInfo(info.path).fileName();
     itemPrivate->suggestedFileName = info.suggestedFileName;
     itemPrivate->savePageFormat = static_cast<QQuickWebEngineDownloadItem::SavePageFormat>(
                 info.savePageFormat);
@@ -261,7 +264,7 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     Q_EMIT q->downloadRequested(download);
 
     QQuickWebEngineDownloadItem::DownloadState state = download->state();
-    info.path = download->path();
+    info.path = QDir(download->downloadDirectory()).filePath(download->downloadFileName());
     info.savePageFormat = itemPrivate->savePageFormat;
     info.accepted = state != QQuickWebEngineDownloadItem::DownloadCancelled
                       && state != QQuickWebEngineDownloadItem::DownloadRequested;

@@ -55,6 +55,7 @@
 #include "downloadwidget.h"
 
 #include <QFileDialog>
+#include <QDir>
 #include <QWebEngineDownloadItem>
 
 DownloadManagerWidget::DownloadManagerWidget(QWidget *parent)
@@ -68,11 +69,12 @@ void DownloadManagerWidget::downloadRequested(QWebEngineDownloadItem *download)
 {
     Q_ASSERT(download && download->state() == QWebEngineDownloadItem::DownloadRequested);
 
-    QString path = QFileDialog::getSaveFileName(this, tr("Save as"), download->path());
+    QString path = QFileDialog::getSaveFileName(this, tr("Save as"), QDir(download->downloadDirectory()).filePath(download->downloadFileName()));
     if (path.isEmpty())
         return;
 
-    download->setPath(path);
+    download->setDownloadDirectory(QFileInfo(path).path());
+    download->setDownloadFileName(QFileInfo(path).fileName());
     download->accept();
     add(new DownloadWidget(download));
 

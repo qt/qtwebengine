@@ -118,8 +118,8 @@ public:
     qint64 receivedBytes() const;
     QUrl url() const;
     QString mimeType() const;
-    QString path() const;
-    void setPath(QString path);
+    QString Q_DECL_DEPRECATED path() const;
+    void Q_DECL_DEPRECATED setPath(QString path);
     bool isFinished() const;
     bool isPaused() const;
     SavePageFormat savePageFormat() const;
@@ -129,6 +129,10 @@ public:
     QString interruptReasonString() const;
     bool isSavePageDownload() const;
     QString suggestedFileName() const;
+    QString downloadDirectory() const;
+    void setDownloadDirectory(QString directory);
+    QString downloadFileName() const;
+    void setDownloadFileName(QString fileName);
 
     QWebEnginePage *page() const;
 

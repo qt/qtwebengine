@@ -43,6 +43,7 @@
 #include "profile_adapter.h"
 #include "qwebengineprofile_p.h"
 
+#include <QDir>
 #include "QFileInfo"
 
 QT_BEGIN_NAMESPACE
@@ -508,6 +509,7 @@ QString QWebEngineDownloadItem::mimeType() const
 }
 
 /*!
+    \obsolete
     Returns the full target path where data is being downloaded to.
 
     The path includes the file name. The default suggested path is the standard download location
@@ -517,7 +519,7 @@ QString QWebEngineDownloadItem::mimeType() const
 QString QWebEngineDownloadItem::path() const
 {
     Q_D(const QWebEngineDownloadItem);
-    return d->downloadPath;
+    return QDir::cleanPath(QDir(d->downloadDirectory).filePath(d->downloadFileName));
 }
 
 /*!
@@ -534,19 +536,99 @@ void QWebEngineDownloadItem::setPath(QString path)
         qWarning("Setting the download path is not allowed after the download has been accepted.");
         return;
     }
+    if (QDir(d->downloadDirectory).filePath(d->downloadFileName) != path) {
+        if (QFileInfo(path).fileName().isEmpty()) {
+            qWarning("The download path does not include file name.");
+            return;
+        }
 
-    if (QFileInfo(path).fileName().isEmpty()) {
-        qWarning("The download path does not include file name.");
-        return;
+        if (QFileInfo(path).isDir()) {
+            qWarning("The download path matches with an already existing directory path.");
+            return;
+        }
+
+        if (QFileInfo(path).fileName() == path) {
+            d->downloadDirectory = QStringLiteral("");
+            d->downloadFileName = path;
+        } else {
+            d->downloadDirectory = QFileInfo(path).filePath();
+            d->downloadFileName = QFileInfo(path).fileName();
+        }
     }
-
-    if (QFileInfo(path).isDir()) {
-        qWarning("The download path matches with an already existing directory path.");
-        return;
-    }
-
-    d->downloadPath = path;
 }
+
+/*!
+    \since 5.14
+
+    Returns the download directory path.
+*/
+
+QString QWebEngineDownloadItem::downloadDirectory() const
+{
+    Q_D(const QWebEngineDownloadItem);
+    return d->downloadDirectory;
+}
+
+/*!
+    \since 5.14
+
+    Sets the directory path to download the file to.
+
+    The download directory path can only be set in response to the QWebEngineProfile::downloadRequested()
+    signal before the download is accepted. Past that point, this function has no effect on the
+    download item's state.
+*/
+
+void QWebEngineDownloadItem::setDownloadDirectory(QString directory)
+{
+    Q_D(QWebEngineDownloadItem);
+    if (d->downloadState != QWebEngineDownloadItem::DownloadRequested) {
+        qWarning("Setting the download directory is not allowed after the download has been accepted.");
+        return;
+     }
+
+    if (!directory.isEmpty() && d->downloadDirectory != directory)
+        d->downloadDirectory = directory;
+
+    d->downloadFileName = QFileInfo(d->profile->profileAdapter()->updateDownloadPath(d->downloadId,
+                                                                                     d->downloadDirectory,
+                                                                                     d->suggestedFileName)).fileName();
+}
+
+/*!
+    \since 5.14
+
+    Returns the suggested file name.
+*/
+
+QString QWebEngineDownloadItem::downloadFileName() const
+{
+    Q_D(const QWebEngineDownloadItem);
+    return d->downloadFileName;
+}
+
+/*!
+    \since 5.14
+
+    Sets the file name to download the file to.
+
+    The download file name can only be set in response to the QWebEngineProfile::downloadRequested()
+    signal before the download is accepted. Past that point, this function has no effect on the
+    download item's state.
+*/
+
+void QWebEngineDownloadItem::setDownloadFileName(QString fileName)
+{
+    Q_D(QWebEngineDownloadItem);
+    if (d->downloadState != QWebEngineDownloadItem::DownloadRequested) {
+        qWarning("Setting the download file name is not allowed after the download has been accepted.");
+        return;
+    }
+
+    if (!fileName.isEmpty())
+        d->downloadFileName = fileName;
+}
+
 /*!
     \since 5.14
 
