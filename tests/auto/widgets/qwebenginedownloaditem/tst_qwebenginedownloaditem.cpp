@@ -1124,6 +1124,7 @@ void tst_QWebEngineDownloadItem::downloadPathValidation()
 
     QTemporaryDir tmpDir;
     QVERIFY(tmpDir.isValid());
+    m_profile->setDownloadPath(tmpDir.path());
 
     // Set up HTTP server
     ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
@@ -1145,12 +1146,7 @@ void tst_QWebEngineDownloadItem::downloadPathValidation()
         originalDownloadPath = item->path();
 
         item->setPath(downloadPath);
-        // TODO: Do not cancel download from 5.13. This is for not messing up system download path.
-        // Use m_profile->setDownloadPath(tmpDir.path()) at initialization.
-        if (item->path() != downloadPath)
-            item->cancel();
-        else
-            item->accept();
+        item->accept();
 
         connect(item, &QWebEngineDownloadItem::stateChanged, [&, item](QWebEngineDownloadItem::DownloadState downloadState) {
             if (downloadState == QWebEngineDownloadItem::DownloadInterrupted) {
@@ -1185,8 +1181,8 @@ void tst_QWebEngineDownloadItem::downloadPathValidation()
     downloadPath = tmpDir.path();
     m_page->setUrl(m_server->url("/" + fileName));
     QTRY_VERIFY(downloadItem);
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCancelled);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::UserCanceled);
+    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCompleted);
+    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::NoReason);
     QCOMPARE(downloadItem->path(), originalDownloadPath);
 
     // Set only the directory path with separator.
@@ -1195,8 +1191,8 @@ void tst_QWebEngineDownloadItem::downloadPathValidation()
     downloadPath = tmpDir.path() + QDir::separator();
     m_page->setUrl(m_server->url("/" + fileName));
     QTRY_VERIFY(downloadItem);
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCancelled);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::UserCanceled);
+    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCompleted);
+    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::NoReason);
     QCOMPARE(downloadItem->path(), originalDownloadPath);
 
     // Set only the directory with the current directory path without ending separator.
@@ -1205,8 +1201,8 @@ void tst_QWebEngineDownloadItem::downloadPathValidation()
     downloadPath = ".";
     m_page->setUrl(m_server->url("/" + fileName));
     QTRY_VERIFY(downloadItem);
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCancelled);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::UserCanceled);
+    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCompleted);
+    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::NoReason);
     QCOMPARE(downloadItem->path(), originalDownloadPath);
 
     // Set only the directory with the current directory path with ending separator.
@@ -1215,24 +1211,23 @@ void tst_QWebEngineDownloadItem::downloadPathValidation()
     downloadPath = "./";
     m_page->setUrl(m_server->url("/" + fileName));
     QTRY_VERIFY(downloadItem);
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCancelled);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::UserCanceled);
+    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCompleted);
+    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::NoReason);
     QCOMPARE(downloadItem->path(), originalDownloadPath);
-
-
 
     downloadItem.clear();
     originalDownloadPath = "";
     downloadPath = "...";
     m_page->setUrl(m_server->url("/" + fileName));
     QTRY_VERIFY(downloadItem);
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCancelled);
 #if !defined(Q_OS_WIN)
+    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCancelled);
     QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::FileFailed);
     QCOMPARE(downloadItem->path(), downloadPath);
 #else
     // Windows interprets the "..." path as a valid path. It will be the current path.
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::UserCanceled);
+    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCompleted);
+    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::NoReason);
     QCOMPARE(downloadItem->path(), originalDownloadPath);
 #endif // !defined(Q_OS_WIN)
     QDir::setCurrent(oldPath);
