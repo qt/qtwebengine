@@ -1,9 +1,4 @@
-include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-QT_FOR_CONFIG += webenginecore webenginecore-private
-
 qtConfig(debug_and_release): CONFIG += debug_and_release
-
-include(core_common.pri)
 
 macos {
     # This fixes namespace builds on macOS. Specifically namespace ambiguity issues between Qt and
