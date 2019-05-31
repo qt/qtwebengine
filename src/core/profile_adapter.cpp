@@ -443,7 +443,7 @@ void ProfileAdapter::setHttpCacheMaxSize(int maxSize)
         m_profile->m_profileIOData->updateHttpCache();
 }
 
-enum class SchemeType { Protected, Overridable, Custom };
+enum class SchemeType { Protected, Overridable, Custom, Unknown };
 static SchemeType schemeType(const QByteArray &canonicalScheme)
 {
     static const QSet<QByteArray> blacklist{
@@ -468,7 +468,9 @@ static SchemeType schemeType(const QByteArray &canonicalScheme)
         return SchemeType::Overridable;
     if (blacklisted || (standardSyntax && !customScheme))
         return SchemeType::Protected;
-    return SchemeType::Custom;
+    if (customScheme)
+        return SchemeType::Custom;
+    return SchemeType::Unknown;
 }
 
 QWebEngineUrlSchemeHandler *ProfileAdapter::urlSchemeHandler(const QByteArray &scheme)
@@ -535,7 +537,7 @@ void ProfileAdapter::installUrlSchemeHandler(const QByteArray &scheme, QWebEngin
         return;
     }
 
-    if (type == SchemeType::Custom)
+    if (type == SchemeType::Unknown)
         qWarning("Please register the custom scheme '%s' via QWebEngineUrlScheme::registerScheme() "
                  "before installing the custom scheme handler.", scheme.constData());
 
