@@ -97,6 +97,7 @@ public:
 
     QUrl requestUrl() const;
     QUrl firstPartyUrl() const;
+    QUrl initiator() const;
     QByteArray requestMethod() const;
     bool changed() const;
 

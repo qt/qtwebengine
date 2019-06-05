@@ -127,10 +127,13 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
     else
         firstPartyUrl = toQt(request->site_for_cookies());
 
+    const QUrl initiator = request->initiator().has_value() ? toQt(request->initiator()->GetURL()) : QUrl();
+
     QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(toQt(resourceType),
                                                                                        toQt(navigationType),
                                                                                        qUrl,
                                                                                        firstPartyUrl,
+                                                                                       initiator,
                                                                                        QByteArray::fromStdString(request->method()));
     QWebEngineUrlRequestInfo requestInfo(infoPrivate);
 

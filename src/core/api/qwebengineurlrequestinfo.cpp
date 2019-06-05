@@ -129,12 +129,13 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::RedirectNavigation
 
 QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource,
                                                                  QWebEngineUrlRequestInfo::NavigationType navigation,
-                                                                 const QUrl &u, const QUrl &fpu, const QByteArray &m)
+                                                                 const QUrl &u, const QUrl &fpu, const QUrl &i, const QByteArray &m)
     : resourceType(resource)
     , navigationType(navigation)
     , shouldBlockRequest(false)
     , url(u)
     , firstPartyUrl(fpu)
+    , initiator(i)
     , method(m)
     , changed(false)
 {}
@@ -243,6 +244,16 @@ QUrl QWebEngineUrlRequestInfo::requestUrl() const
 QUrl QWebEngineUrlRequestInfo::firstPartyUrl() const
 {
     return d_ptr->firstPartyUrl;
+}
+
+/*!
+    Returns the origin url of the document which initiated
+    the navigation when a frame navigates another frame.
+ */
+
+QUrl QWebEngineUrlRequestInfo::initiator() const
+{
+    return d_ptr->initiator;
 }
 
 /*!
