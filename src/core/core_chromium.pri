@@ -33,8 +33,6 @@ RCC_DIR = $$OUT_PWD/$$getConfigDir()/.rcc
 # whenever we are cross compiling.
 qtConfig(webengine-embedded-build): DEFINES += QTWEBENGINE_EMBEDDED_SWITCHES
 
-qtConfig(egl): CONFIG += egl
-
 INCLUDEPATH += $$PWD $$PWD/api
 
 clang_cl {

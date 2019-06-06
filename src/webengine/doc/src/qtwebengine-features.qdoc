@@ -44,6 +44,7 @@
         \li \l{HTTP/2 Protocol}
         \li \l{Native Dialogs}
         \li \l{Pepper Plugin API}
+        \li \l{PDF File Viewing}
         \li \l{Print to PDF}
         \li \l{Process Models}
         \li \l{Spellchecker}
@@ -318,6 +319,21 @@
     plugin is installed and plugins are enabled in the browser. To test the
     feature, the \c https://helpx.adobe.com/flash-player.html page can be opened
     in the browser.
+
+    \section1 PDF File Viewing
+
+    \QWE supports viewing PDF documents by navigating to them. This feature uses the Chromium
+    extensions API and PDF viewer plugin to display the PDF documents.
+    It can be tested in \l{WebEngine Widgets Simple Browser Example}{Simple Browser} or
+    \l{WebEngine Quick Nano Browser}{Nano Browser}.
+
+    Loading plugins needs to be enabled using QWebEngineSettings::PluginsEnabled or
+    WebEngineSettings::pluginsEnabled in order to use this feature.
+
+    This feature can be turned on (default) or off via the QWebEngineSettings::PdfViewerEnabled or
+    WebEngineSettings::pdfViewerEnabled setting.
+
+    Support for this feature was added in Qt 5.13.0.
 
     \section1 Print to PDF
 
