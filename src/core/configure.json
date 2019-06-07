@@ -327,6 +327,11 @@
         "webengine-arm-thumb" : {
             "label": "thumb instruction set",
             "type": "hasThumbFlag"
+        },
+        "webengine-noexecstack" : {
+            "label": "linker supports -z noexecstack",
+            "type": "linkerSupportsFlag",
+            "flag": "-z,noexecstack"
         }
     },
 
@@ -657,6 +662,11 @@
         "webengine-arm-thumb": {
             "label": "Thumb instruction set",
             "condition": "config.linux && features.webengine-embedded-build && arch.arm && tests.webengine-arm-thumb",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-noexecstack": {
+            "label": "linker supports -z noexecstack",
+            "condition": "config.unix && tests.webengine-noexecstack",
             "output": [ "privateFeature" ]
         }
     },

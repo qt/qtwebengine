@@ -2,8 +2,8 @@
 # gyp/ninja will take care of the compilation, qmake/make will finish with linking and install.
 
 TARGET = QtWebEngineCore
-QT += qml quick
-QT_PRIVATE += quick-private gui-private core-private webenginecoreheaders-private
+QT += qml-private quick-private gui-private core-private
+QT_PRIVATE += webenginecoreheaders-private
 
 qtConfig(webengine-geolocation): QT += positioning
 qtConfig(webengine-webchannel): QT += webchannel
