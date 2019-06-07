@@ -231,6 +231,8 @@ private Q_SLOTS:
     void editActionsWithInitialFocus();
     void editActionsWithFocusOnIframe();
 
+    void customUserAgentInNewTab();
+
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
 
@@ -4592,6 +4594,69 @@ void tst_QWebEnginePage::editActionsWithFocusOnIframe()
     QTRY_COMPARE(selectionChangedSpy.count(), 1);
     QCOMPARE(page->hasSelection(), true);
     QCOMPARE(page->selectedText(), QStringLiteral("inner"));
+}
+
+void tst_QWebEnginePage::customUserAgentInNewTab()
+{
+    HttpServer server;
+    QByteArray lastUserAgent;
+    connect(&server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        QCOMPARE(rr->requestMethod(), "GET");
+        lastUserAgent = rr->requestHeader("user-agent");
+        rr->setResponseBody(QByteArrayLiteral("<html><body>Test</body></html>"));
+        rr->sendResponse();
+    });
+    QVERIFY(server.start());
+
+    class Page : public QWebEnginePage {
+    public:
+        QWebEngineProfile *targetProfile = nullptr;
+        QScopedPointer<QWebEnginePage> newPage;
+        Page(QWebEngineProfile *profile) : QWebEnginePage(profile) {}
+    private:
+        QWebEnginePage *createWindow(WebWindowType) override
+        {
+            newPage.reset(new QWebEnginePage(targetProfile ? targetProfile : profile(), nullptr));
+            return newPage.data();
+        }
+    };
+    QWebEngineProfile profile1, profile2;
+    profile1.setHttpUserAgent(QStringLiteral("custom 1"));
+    profile2.setHttpUserAgent(QStringLiteral("custom 2"));
+    Page page(&profile1);
+    QWebEngineView view;
+    view.resize(500, 500);
+    view.setPage(&page);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+
+    // First check we can get the user-agent passed through normally
+    page.setHtml(QString("<html><body><a id='link' target='_blank' href='") +
+                 server.url("/test1").toEncoded() +
+                 QString("'>link</a></body></html>"));
+    QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(spy.takeFirst().value(0).toBool());
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), profile1.httpUserAgent());
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, elementCenter(&page, "link"));
+    QTRY_VERIFY(page.newPage);
+    QTRY_VERIFY(!lastUserAgent.isEmpty());
+    QCOMPARE(lastUserAgent, profile1.httpUserAgent().toUtf8());
+
+    // Now check we can get the new user-agent of the profile
+    page.newPage.reset();
+    page.targetProfile = &profile2;
+    spy.clear();
+    lastUserAgent = { };
+    page.setHtml(QString("<html><body><a id='link' target='_blank' href='") +
+                 server.url("/test2").toEncoded() +
+                 QString("'>link</a></body></html>"));
+    QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(spy.takeFirst().value(0).toBool());
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, elementCenter(&page, "link"));
+    QTRY_VERIFY(page.newPage);
+    QTRY_VERIFY(!lastUserAgent.isEmpty());
+    QCOMPARE(lastUserAgent, profile2.httpUserAgent().toUtf8());
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
