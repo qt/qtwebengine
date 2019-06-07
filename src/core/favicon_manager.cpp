@@ -229,11 +229,10 @@ QList<FaviconInfo> FaviconManager::getFaviconInfoList(bool candidatesOnly) const
     QList<FaviconInfo> faviconInfoList = m_faviconInfoMap.values();
 
     if (candidatesOnly) {
-        QMutableListIterator<FaviconInfo> it(faviconInfoList);
-        while (it.hasNext()) {
-            if (!it.next().candidate)
-                it.remove();
-        }
+        const auto hasNoCandidate = [](const FaviconInfo &info) { return !info.candidate; };
+        faviconInfoList.erase(std::remove_if(faviconInfoList.begin(), faviconInfoList.end(),
+                                             hasNoCandidate),
+                              faviconInfoList.end());
     }
 
     return faviconInfoList;
