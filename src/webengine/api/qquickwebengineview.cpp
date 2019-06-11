@@ -942,6 +942,16 @@ void QQuickWebEngineViewPrivate::updateAction(QQuickWebEngineView::WebAction act
     case QQuickWebEngineView::ViewSource:
         enabled = adapter->canViewSource();
         break;
+    case QQuickWebEngineView::Cut:
+    case QQuickWebEngineView::Copy:
+    case QQuickWebEngineView::Paste:
+    case QQuickWebEngineView::Undo:
+    case QQuickWebEngineView::Redo:
+    case QQuickWebEngineView::SelectAll:
+    case QQuickWebEngineView::PasteAndMatchStyle:
+    case QQuickWebEngineView::Unselect:
+        enabled = adapter->hasFocusedFrame();
+        break;
     default:
         break;
     }
@@ -957,6 +967,18 @@ void QQuickWebEngineViewPrivate::updateNavigationActions()
     updateAction(QQuickWebEngineView::Reload);
     updateAction(QQuickWebEngineView::ReloadAndBypassCache);
     updateAction(QQuickWebEngineView::ViewSource);
+}
+
+void QQuickWebEngineViewPrivate::updateEditActions()
+{
+    updateAction(QQuickWebEngineView::Cut);
+    updateAction(QQuickWebEngineView::Copy);
+    updateAction(QQuickWebEngineView::Paste);
+    updateAction(QQuickWebEngineView::Undo);
+    updateAction(QQuickWebEngineView::Redo);
+    updateAction(QQuickWebEngineView::SelectAll);
+    updateAction(QQuickWebEngineView::PasteAndMatchStyle);
+    updateAction(QQuickWebEngineView::Unselect);
 }
 
 QUrl QQuickWebEngineView::url() const

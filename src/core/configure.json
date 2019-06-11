@@ -335,6 +335,11 @@
         "webengine-extensions-gcc-version" : {
             "label": "GCC 6 or newer",
             "type": "hasGcc6OrNewer"
+        },
+        "webengine-noexecstack" : {
+            "label": "linker supports -z noexecstack",
+            "type": "linkerSupportsFlag",
+            "flag": "-z,noexecstack"
         }
     },
 
@@ -677,6 +682,11 @@
             "label": "Qt WebEngine Qml",
             "purpose": "Provides WebEngine Qml support.",
             "section": "WebEngine",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-noexecstack": {
+            "label": "linker supports -z noexecstack",
+            "condition": "config.unix && tests.webengine-noexecstack",
             "output": [ "privateFeature" ]
         }
     },

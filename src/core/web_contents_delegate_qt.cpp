@@ -64,6 +64,7 @@
 
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -104,6 +105,7 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
     , m_lastReceivedFindReply(0)
     , m_faviconManager(new FaviconManager(webContents, adapterClient))
     , m_lastLoadProgress(-1)
+    , m_frameFocusedObserver(adapterClient)
 {
     webContents->SetDelegate(this);
     Observe(webContents);
@@ -262,9 +264,28 @@ bool WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const co
     return true;
 }
 
+void WebContentsDelegateQt::RenderFrameCreated(content::RenderFrameHost *render_frame_host)
+{
+    content::FrameTreeNode *node = static_cast<content::RenderFrameHostImpl *>(render_frame_host)->frame_tree_node();
+    m_frameFocusedObserver.addNode(node);
+}
+
 void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
 {
     m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
+}
+
+void WebContentsDelegateQt::RenderFrameHostChanged(content::RenderFrameHost *old_host, content::RenderFrameHost *new_host)
+{
+    if (old_host) {
+        content::FrameTreeNode *old_node = static_cast<content::RenderFrameHostImpl *>(old_host)->frame_tree_node();
+        m_frameFocusedObserver.removeNode(old_node);
+    }
+
+    if (new_host) {
+        content::FrameTreeNode *new_node = static_cast<content::RenderFrameHostImpl *>(new_host)->frame_tree_node();
+        m_frameFocusedObserver.addNode(new_node);
+    }
 }
 
 void WebContentsDelegateQt::RenderViewHostChanged(content::RenderViewHost *, content::RenderViewHost *newHost)
@@ -722,6 +743,44 @@ WebEngineSettings *WebContentsDelegateQt::webEngineSettings() const {
 WebContentsAdapter *WebContentsDelegateQt::webContentsAdapter() const
 {
     return m_viewClient->webContentsAdapter();
+}
+
+
+FrameFocusedObserver::FrameFocusedObserver(WebContentsAdapterClient *adapterClient)
+    : m_viewClient(adapterClient)
+{}
+
+void FrameFocusedObserver::addNode(content::FrameTreeNode *node)
+{
+   if (m_observedNodes.contains(node))
+       return;
+
+   node->AddObserver(this);
+   m_observedNodes.append(node);
+}
+
+void FrameFocusedObserver::removeNode(content::FrameTreeNode *node)
+{
+    node->RemoveObserver(this);
+    m_observedNodes.removeOne(node);
+}
+
+void FrameFocusedObserver::OnFrameTreeNodeFocused(content::FrameTreeNode *node)
+{
+    Q_UNUSED(node);
+    m_viewClient->updateEditActions();
+}
+
+void FrameFocusedObserver::OnFrameTreeNodeDestroyed(content::FrameTreeNode *node)
+{
+    m_observedNodes.removeOne(node);
+    m_viewClient->updateEditActions();
+}
+
+FrameFocusedObserver::~FrameFocusedObserver()
+{
+    for (content::FrameTreeNode *node : m_observedNodes)
+        node->RemoveObserver(this);
 }
 
 } // namespace QtWebEngineCore

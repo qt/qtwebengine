@@ -1630,6 +1630,12 @@ bool WebContentsAdapter::isFindTextInProgress() const
     return m_lastFindRequestId != m_webContentsDelegate->lastReceivedFindReply();
 }
 
+bool WebContentsAdapter::hasFocusedFrame() const
+{
+    CHECK_INITIALIZED(false);
+    return m_webContents->GetFocusedFrame() != nullptr;
+}
+
 WebContentsAdapterClient::RenderProcessTerminationStatus
 WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
     auto status = WebContentsAdapterClient::RenderProcessTerminationStatus(-1);
