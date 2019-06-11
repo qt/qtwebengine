@@ -79,7 +79,6 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 
-#include <QDebug>
 using namespace QtWebEngineCore;
 
 namespace {
@@ -192,7 +191,7 @@ DevToolsFrontendQt *DevToolsFrontendQt::Show(QSharedPointer<WebContentsAdapter> 
 
     content::WebContents *contents = frontendAdapter->webContents();
     if (contents == inspectedContents) {
-        qWarning() << "You can not inspect youself";
+        LOG(WARNING) << "You can not inspect yourself";
         return nullptr;
     }
 

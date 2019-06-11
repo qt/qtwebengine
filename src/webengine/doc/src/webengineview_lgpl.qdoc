@@ -376,7 +376,8 @@
     which references HTML pages via URL.
 
     External objects, such as stylesheets or images referenced in the HTML
-    document, should be located relative to \a baseUrl. For example, if \a html
+    document, should be located relative to \a baseUrl. For external objects to
+    be loaded, \c baseUrl cannot be empty. For example, if \a html
     is retrieved from \c http://www.example.com/documents/overview.html, which
     is the base URL, then an image referenced with the relative URL, \c diagram.png,
     should be at \c{http://www.example.com/documents/diagram.png}.
@@ -756,6 +757,10 @@
             Redo the last editing action.
     \value  WebEngineView.SelectAll
             Select all content.
+            This action is only enabled when the page's content is focused.
+            The focus can be forced by the JavaScript \c{window.focus()} call, or the
+            \l{WebEngineSettings::focusOnNavigationEnabled} {focusOnNavigationEnabled} setting
+            should be enabled to get automatic focus.
     \value  WebEngineView.PasteAndMatchStyle
             Paste content from the clipboard with current style.
     \value  WebEngineView.OpenLinkInThisWindow

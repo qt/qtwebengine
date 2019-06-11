@@ -469,6 +469,7 @@ public:
     virtual void updateScrollPosition(const QPointF &position) = 0;
     virtual void updateContentsSize(const QSizeF &size) = 0;
     virtual void updateNavigationActions() = 0;
+    virtual void updateEditActions() = 0;
     virtual void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
                                const QPixmap &pixmap, const QPoint &offset) = 0;
     virtual bool supportsDragging() const = 0;
