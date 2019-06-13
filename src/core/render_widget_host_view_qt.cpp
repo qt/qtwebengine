@@ -637,7 +637,8 @@ void RenderWidgetHostViewQt::Destroy()
 
 void RenderWidgetHostViewQt::SetTooltipText(const base::string16 &tooltip_text)
 {
-    m_adapterClient->setToolTip(toQt(tooltip_text));
+    if (m_adapterClient)
+        m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
 void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, const content::ReadbackRequestCallback& callback, const SkColorType color_type)

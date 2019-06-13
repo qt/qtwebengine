@@ -120,6 +120,12 @@
 #define GL_LINE_LOOP                      0x0002
 #endif
 
+#ifndef QT_NO_OPENGL
+QT_BEGIN_NAMESPACE
+Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
+QT_END_NAMESPACE
+#endif
+
 namespace QtWebEngineCore {
 #ifndef QT_NO_OPENGL
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
@@ -243,8 +249,14 @@ public:
                                  QSGNode *) override
     {
         QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
-        if (textureNode->texture() != texture)
+        if (textureNode->texture() != texture) {
+            // Chromium sometimes uses textures that doesn't completely fit
+            // in which case the geometry needs to be recalculated even if
+            // rect and src-rect matches.
+            if (textureNode->texture()->textureSize() != texture->textureSize())
+                textureNode->markDirty(QSGImageNode::DirtyGeometry);
             textureNode->setTexture(texture);
+        }
         if (textureNode->textureCoordinatesTransform() != texCoordTransForm)
             textureNode->setTextureCoordinatesTransform(texCoordTransForm);
         if (textureNode->rect() != rect)
@@ -258,15 +270,20 @@ public:
                                QSGTexture::Filtering filtering, QSGNode *) override
     {
         QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
-
+        if (textureNode->texture() != texture) {
+            // Chromium sometimes uses textures that doesn't completely fit
+            // in which case the geometry needs to be recalculated even if
+            // rect and src-rect matches.
+            if (textureNode->texture()->textureSize() != texture->textureSize())
+                textureNode->markDirty(QSGImageNode::DirtyGeometry);
+            textureNode->setTexture(texture);
+        }
         if (textureNode->rect() != rect)
             textureNode->setRect(rect);
         if (textureNode->sourceRect() != sourceRect)
             textureNode->setSourceRect(sourceRect);
         if (textureNode->filtering() != filtering)
             textureNode->setFiltering(filtering);
-        if (textureNode->texture() != texture)
-            textureNode->setTexture(texture);
     }
     void setupSolidColorNode(const QRect &rect, const QColor &color, QSGNode *) override
     {
