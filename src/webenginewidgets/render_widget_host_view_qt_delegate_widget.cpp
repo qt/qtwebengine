@@ -77,14 +77,6 @@ protected:
     {
         m_client->forwardEvent(event);
     }
-    void keyPressEvent(QKeyEvent *event) override
-    {
-        m_client->forwardEvent(event);
-    }
-    void keyReleaseEvent(QKeyEvent *event) override
-    {
-        m_client->forwardEvent(event);
-    }
     void inputMethodEvent(QInputMethodEvent *event) override
     {
         m_client->forwardEvent(event);
