@@ -487,6 +487,8 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 
     if (!handled)
         return QQuickWidget::event(event);
+    // Most events are accepted by default, but tablet events are not:
+    event->accept();
     return true;
 }
 
