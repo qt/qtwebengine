@@ -32,7 +32,7 @@
 #error glibc versions below 2.27 are not supported
 #endif
 
-int main(int , char *) {
+int main(int , char **) {
   return 0;
 }
 
