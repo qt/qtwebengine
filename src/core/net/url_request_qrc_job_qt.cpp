@@ -120,14 +120,14 @@ void URLRequestQrcJobQt::startGetHead()
     QMimeType mimeType = mimeDatabase.mimeTypeForFile(qrcFileInfo);
     m_mimeType = mimeType.name().toStdString();
     // Open file
-    if (m_file.open(QIODevice::ReadOnly)) {
+    if (m_file.open(QIODevice::ReadOnly) && m_file.size() > 0) {
         m_remainingBytes = m_file.size();
         set_expected_content_size(m_remainingBytes);
         // Notify that the headers are complete
         NotifyHeadersComplete();
-    } else {
-        NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, ERR_INVALID_URL));
+        return;
     }
+    qWarning("Resource %s not found or is empty", qUtf8Printable(qrcFilePath));
+    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, ERR_INVALID_URL));
 }
-
 } // namespace QtWebEngineCore
