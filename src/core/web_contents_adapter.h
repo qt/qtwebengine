@@ -192,9 +192,8 @@ public:
     void devToolsFrontendDestroyed(DevToolsFrontendQt *frontend);
 
     void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);
-    void runGeolocationRequestCallback(const QUrl &securityOrigin, bool allowed);
     void grantMouseLockPermission(bool granted);
-    void runUserNotificationRequestCallback(const QUrl &securityOrigin, bool allowed);
+    void runFeatureRequestCallback(const QUrl &securityOrigin, ProfileAdapter::PermissionType feature, bool allowed);
 
     void setBackgroundColor(const QColor &color);
     QAccessibleInterface *browserAccessible();

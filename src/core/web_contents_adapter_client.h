@@ -53,6 +53,8 @@
 
 #include "qtwebenginecoreglobal_p.h"
 
+#include "profile_adapter.h"
+
 #include <QFlags>
 #include <QRect>
 #include <QSharedPointer>
@@ -76,7 +78,6 @@ struct DropData;
 namespace QtWebEngineCore {
 
 class AuthenticationDialogController;
-class ProfileAdapter;
 class ColorChooserController;
 class FilePickerController;
 class JavaScriptDialogController;
@@ -489,12 +490,11 @@ public:
     virtual QObject *accessibilityParentObject() = 0;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) = 0;
     virtual void authenticationRequired(QSharedPointer<AuthenticationDialogController>) = 0;
-    virtual void runGeolocationPermissionRequest(const QUrl &securityOrigin) = 0;
+    virtual void runFeaturePermissionRequest(ProfileAdapter::PermissionType, const QUrl &securityOrigin) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runQuotaRequest(QWebEngineQuotaRequest) = 0;
     virtual void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) = 0;
-    virtual void runUserNotificationPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual WebEngineSettings *webEngineSettings() const = 0;
     RenderProcessTerminationStatus renderProcessExitStatus(int);
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;

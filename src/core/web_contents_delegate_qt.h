@@ -172,8 +172,7 @@ public:
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &);
     void selectClientCert(const QSharedPointer<ClientCertSelectController> &);
-    void requestGeolocationPermission(const QUrl &requestingOrigin);
-    void requestUserNotificationPermission(const QUrl &requestingOrigin);
+    void requestFeaturePermission(ProfileAdapter::PermissionType feature, const QUrl &requestingOrigin);
     void launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture);
     FaviconManager *faviconManager();
     FindTextHelper *findTextHelper();
