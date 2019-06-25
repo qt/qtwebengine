@@ -136,7 +136,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     memset(actions, 0, sizeof(actions));
 
     QString platform = qApp->platformName().toLower();
-    if (platform == QLatin1Literal("eglfs"))
+    if (platform == QLatin1String("eglfs"))
         m_ui2Enabled = true;
 
     const QByteArray dialogSet = qgetenv("QTWEBENGINE_DIALOG_SET");

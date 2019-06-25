@@ -166,7 +166,7 @@ QFunctionPointer GLContextHelper::getEglGetProcAddress()
 bool GLContextHelper::isCreateContextRobustnessSupported()
 {
 #if QT_CONFIG(opengl)
-    if (QGuiApplication::platformName() == QLatin1Literal("offscreen"))
+    if (QGuiApplication::platformName() == QLatin1String("offscreen"))
         return false;
 
     if (QOpenGLContext *context = qt_gl_global_share_context())

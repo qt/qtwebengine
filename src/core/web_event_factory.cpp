@@ -92,24 +92,24 @@ static KeyboardDriver keyboardDriverImpl()
 {
     QString platformName = QGuiApplication::platformName();
 
-    if (platformName == QLatin1Literal("windows"))
+    if (platformName == QLatin1String("windows"))
         return KeyboardDriver::Windows;
 
-    if (platformName == QLatin1Literal("cocoa"))
+    if (platformName == QLatin1String("cocoa"))
         return KeyboardDriver::Cocoa;
 
-    if (platformName == QLatin1Literal("xcb") || platformName == QLatin1Literal("wayland"))
+    if (platformName == QLatin1String("xcb") || platformName == QLatin1String("wayland"))
         return KeyboardDriver::Xkb;
 
 #if QT_CONFIG(libinput)
     // Based on QEglFSIntegration::createInputHandlers and QLibInputKeyboard::processKey.
-    if (platformName == QLatin1Literal("eglfs") && !qEnvironmentVariableIntValue("QT_QPA_EGLFS_NO_LIBINPUT"))
+    if (platformName == QLatin1String("eglfs") && !qEnvironmentVariableIntValue("QT_QPA_EGLFS_NO_LIBINPUT"))
         return KeyboardDriver::Xkb;
 #endif
 
 #if QT_CONFIG(evdev)
     // Based on QEglFSIntegration::createInputHandlers.
-    if (platformName == QLatin1Literal("eglfs"))
+    if (platformName == QLatin1String("eglfs"))
         return KeyboardDriver::Evdev;
 #endif
 
