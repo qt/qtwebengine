@@ -1,11 +1,7 @@
-[WebViewGeopermission::test_deniedGeolocationByUser]
-osx
-
-[WebViewGeopermission::test_geoPermissionRequest]
-osx
-
 [WebViewFindText::test_findTextInterruptedByLoad]
-*
-
+linux
+qemu
+b2qt
+windows
 [WebEngineViewSource::test_viewSourceURL]
 *

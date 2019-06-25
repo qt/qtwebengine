@@ -1,11 +1,5 @@
-[doNotSendMouseKeyboardEventsWhenDisabled]
-windows
-
 [microFocusCoordinates]
 osx
 
 [textSelectionOutOfInputField]
 *
-
-[inputContextQueryInput]
-windows
