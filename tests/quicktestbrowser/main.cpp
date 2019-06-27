@@ -88,7 +88,7 @@ int main(int argc, char **argv)
     index = rootMeta->indexOfProperty("testProfile");
     Q_ASSERT(index != -1);
     QMetaProperty profileProperty = rootMeta->property(index);
-    profileProperty.write(rootObject, qVariantFromValue(profile));
+    profileProperty.write(rootObject, QVariant::fromValue(profile));
 
     QMetaObject::invokeMethod(rootObject, "load", Q_ARG(QVariant, startupUrl()));
 
