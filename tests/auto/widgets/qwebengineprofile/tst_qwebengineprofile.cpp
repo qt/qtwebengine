@@ -40,6 +40,8 @@
 #include <QtWebEngineWidgets/qwebengineview.h>
 #include <QtWebEngineWidgets/qwebenginedownloaditem.h>
 
+#include <mutex>
+
 class tst_QWebEngineProfile : public QObject
 {
     Q_OBJECT
@@ -255,18 +257,18 @@ public:
     bool isSequential() const override { return true; }
     qint64 bytesAvailable() const override
     {
-        QMutexLocker lock(&m_mutex);
+        const std::lock_guard<QRecursiveMutex> lock(m_mutex);
         return m_bytesAvailable;
     }
     bool atEnd() const override
     {
-        QMutexLocker lock(&m_mutex);
+        const std::lock_guard<QRecursiveMutex> lock(m_mutex);
         return (m_data.size() >= 1000 && m_bytesRead >= 1000);
     }
 protected:
     void timerEvent(QTimerEvent *) override
     {
-        QMutexLocker lock(&m_mutex);
+        const std::lock_guard<QRecursiveMutex> lock(m_mutex);
         m_bytesAvailable += 200;
         m_data.append(200, 'c');
         emit readyRead();
@@ -278,7 +280,7 @@ protected:
 
     qint64 readData(char *data, qint64 maxlen) override
     {
-        QMutexLocker lock(&m_mutex);
+        const std::lock_guard<QRecursiveMutex> lock(m_mutex);
         qint64 len = qMin(qint64(m_bytesAvailable), maxlen);
         if (len) {
             memcpy(data, m_data.constData() + m_bytesRead, len);
@@ -295,7 +297,12 @@ protected:
     }
 
 private:
-    mutable QMutex m_mutex{QMutex::Recursive};
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+    mutable QMutex m_mutex{QMutex::Recursive}
+    using QRecursiveMutex = QMutex;
+#else
+    mutable QRecursiveMutex m_mutex;
+#endif
     QByteArray m_data;
     QBasicTimer m_timer;
     int m_bytesRead;
