@@ -413,6 +413,11 @@ void QQuickWebEngineViewPrivate::didUpdateTargetURL(const QUrl &hoveredUrl)
     Q_EMIT q->linkHovered(hoveredUrl);
 }
 
+void QQuickWebEngineViewPrivate::selectionChanged()
+{
+    updateEditActions();
+}
+
 void QQuickWebEngineViewPrivate::recentlyAudibleChanged(bool recentlyAudible)
 {
     Q_Q(QQuickWebEngineView);
@@ -963,12 +968,14 @@ void QQuickWebEngineViewPrivate::updateAction(QQuickWebEngineView::WebAction act
         break;
     case QQuickWebEngineView::Cut:
     case QQuickWebEngineView::Copy:
+    case QQuickWebEngineView::Unselect:
+        enabled = adapter->hasFocusedFrame() && !adapter->selectedText().isEmpty();
+        break;
     case QQuickWebEngineView::Paste:
     case QQuickWebEngineView::Undo:
     case QQuickWebEngineView::Redo:
     case QQuickWebEngineView::SelectAll:
     case QQuickWebEngineView::PasteAndMatchStyle:
-    case QQuickWebEngineView::Unselect:
         enabled = adapter->hasFocusedFrame();
         break;
     default:

@@ -51,8 +51,8 @@ TestWebEngineView {
                    { webAction: WebEngineView.Forward, text: "Forward", iconName: "go-next", enabled: false },
                    { webAction: WebEngineView.Stop, text: "Stop", iconName: "", enabled: false },
                    { webAction: WebEngineView.Reload, text: "Reload", iconName: "view-refresh", enabled: true },
-                   { webAction: WebEngineView.Cut, text: "Cut", iconName: "Cut", enabled: true },
-                   { webAction: WebEngineView.Copy, text: "Copy", iconName: "", enabled: true },
+                   { webAction: WebEngineView.Cut, text: "Cut", iconName: "Cut", enabled: false },
+                   { webAction: WebEngineView.Copy, text: "Copy", iconName: "", enabled: false },
                    { webAction: WebEngineView.Paste, text: "Paste", iconName: "", enabled: true },
                    { webAction: WebEngineView.Undo, text: "Undo", iconName: "", enabled: true },
                    { webAction: WebEngineView.Redo, text: "Redo", iconName: "", enabled: true },
@@ -76,7 +76,7 @@ TestWebEngineView {
                    { webAction: WebEngineView.InspectElement, text: "Inspect", iconName: "", enabled: true },
                    { webAction: WebEngineView.ExitFullScreen, text: "Exit full screen", iconName: "", enabled: true },
                    { webAction: WebEngineView.RequestClose, text: "Close Page", iconName: "", enabled: true },
-                   { webAction: WebEngineView.Unselect, text: "Unselect", iconName: "", enabled: true },
+                   { webAction: WebEngineView.Unselect, text: "Unselect", iconName: "", enabled: false },
                    { webAction: WebEngineView.SavePage, text: "Save page", iconName: "", enabled: true },
                    { webAction: WebEngineView.ViewSource, text: "View page source", iconName: "view-source", enabled: true },
                    { webAction: WebEngineView.ToggleBold, text: "&Bold", iconName: "", enabled: true },
@@ -110,17 +110,17 @@ TestWebEngineView {
             webEngineView.url = Qt.resolvedUrl("test1.html");
             verify(webEngineView.waitForLoadSucceeded());
 
-            var copyAction = webEngineView.action(WebEngineView.Copy);
-            verify(copyAction);
+            var selectAction = webEngineView.action(WebEngineView.SelectAll);
+            verify(selectAction);
 
             var stopAction = webEngineView.action(WebEngineView.Stop);
             verify(stopAction);
 
-            var triggerSpy = createTemporaryObject(signalSpy, actionTests, {target: copyAction, signalName: "triggered"});
+            var triggerSpy = createTemporaryObject(signalSpy, actionTests, {target: selectAction, signalName: "triggered"});
             var stopTriggerSpy = createTemporaryObject(signalSpy, actionTests, {target: stopAction, signalName: "triggered"});
 
-            verify(copyAction.enabled);
-            copyAction.trigger();
+            verify(selectAction.enabled);
+            selectAction.trigger();
             compare(triggerSpy.count, 1);
 
             verify(!stopAction.enabled);

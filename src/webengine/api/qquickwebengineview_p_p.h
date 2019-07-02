@@ -109,7 +109,7 @@ public:
     void iconChanged(const QUrl&) override;
     void loadProgressChanged(int progress) override;
     void didUpdateTargetURL(const QUrl&) override;
-    void selectionChanged() override { }
+    void selectionChanged() override;
     void recentlyAudibleChanged(bool recentlyAudible) override;
     QRectF viewportRect() const override;
     QColor backgroundColor() const override;

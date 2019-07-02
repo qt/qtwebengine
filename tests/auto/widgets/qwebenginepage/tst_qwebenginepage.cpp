@@ -218,6 +218,7 @@ private Q_SLOTS:
     void editActionsWithExplicitFocus();
     void editActionsWithInitialFocus();
     void editActionsWithFocusOnIframe();
+    void editActionsWithoutSelection();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4139,6 +4140,44 @@ void tst_QWebEnginePage::editActionsWithFocusOnIframe()
     QTRY_COMPARE(selectionChangedSpy.count(), 1);
     QCOMPARE(page->hasSelection(), true);
     QCOMPARE(page->selectedText(), QStringLiteral("inner"));
+}
+
+void tst_QWebEnginePage::editActionsWithoutSelection()
+{
+    QWebEngineView view;
+    QWebEnginePage *page = view.page();
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+
+    QSignalSpy loadFinishedSpy(page, &QWebEnginePage::loadFinished);
+    QSignalSpy selectionChangedSpy(page, &QWebEnginePage::selectionChanged);
+    QSignalSpy actionChangedSpy(page->action(QWebEnginePage::SelectAll), &QAction::changed);
+
+    page->setHtml(QString("<html><body><div>foo bar</div></body></html>"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(actionChangedSpy.count(), 1);
+
+    QVERIFY(!page->action(QWebEnginePage::Cut)->isEnabled());
+    QVERIFY(!page->action(QWebEnginePage::Copy)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::Paste)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::Undo)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::Redo)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::SelectAll)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::PasteAndMatchStyle)->isEnabled());
+    QVERIFY(!page->action(QWebEnginePage::Unselect)->isEnabled());
+
+    page->triggerAction(QWebEnginePage::SelectAll);
+    QTRY_COMPARE(selectionChangedSpy.count(), 1);
+    QCOMPARE(page->hasSelection(), true);
+    QCOMPARE(page->selectedText(), QStringLiteral("foo bar"));
+
+    QVERIFY(page->action(QWebEnginePage::Cut)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::Copy)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::Paste)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::Undo)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::Redo)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::SelectAll)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::PasteAndMatchStyle)->isEnabled());
+    QVERIFY(page->action(QWebEnginePage::Unselect)->isEnabled());
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

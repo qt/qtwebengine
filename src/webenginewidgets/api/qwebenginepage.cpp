@@ -260,7 +260,10 @@ void QWebEnginePagePrivate::didUpdateTargetURL(const QUrl &hoveredUrl)
 void QWebEnginePagePrivate::selectionChanged()
 {
     Q_Q(QWebEnginePage);
-    QTimer::singleShot(0, q, &QWebEnginePage::selectionChanged);
+    QTimer::singleShot(0, q, [this, q]() {
+        updateEditActions();
+        Q_EMIT q->selectionChanged();
+    });
 }
 
 void QWebEnginePagePrivate::recentlyAudibleChanged(bool recentlyAudible)
@@ -594,12 +597,14 @@ void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
         break;
     case QWebEnginePage::Cut:
     case QWebEnginePage::Copy:
+    case QWebEnginePage::Unselect:
+        enabled = adapter->hasFocusedFrame() && !adapter->selectedText().isEmpty();
+        break;
     case QWebEnginePage::Paste:
     case QWebEnginePage::Undo:
     case QWebEnginePage::Redo:
     case QWebEnginePage::SelectAll:
     case QWebEnginePage::PasteAndMatchStyle:
-    case QWebEnginePage::Unselect:
         enabled = adapter->hasFocusedFrame();
         break;
     default:
