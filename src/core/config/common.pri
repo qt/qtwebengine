@@ -108,10 +108,7 @@ optimize_size: gn_args += optimize_for_size=true
     sanitize_address: gn_args += is_asan=true
     sanitize_thread: gn_args += is_tsan=true
     sanitize_memory: gn_args += is_msan=true
-    # rtti is required for a specific check of ubsan, -fsanitize=vptr, which uses the runtime
-    # type information to check that correct derived objects are assigned to base pointers. Without
-    # rtti, linking would fail at build time.
-    sanitize_undefined: gn_args += is_ubsan=true use_rtti=true
+    sanitize_undefined: gn_args += is_ubsan=true is_ubsan_vptr=true
 }
 
 qtConfig(webengine-v8-snapshot) {

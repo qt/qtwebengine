@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,41 +37,37 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+// based on chrome/renderer/chrome_render_thread_observer.cc:
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#ifndef PDFIUM_DOCUMENT_WRAPPER_QT_H
-#define PDFIUM_DOCUMENT_WRAPPER_QT_H
+#include "renderer/render_thread_observer_qt.h"
 
-#include "qtwebenginecoreglobal_p.h"
-
-#include <QtGui/qimage.h>
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
 namespace QtWebEngineCore {
-class PdfiumPageWrapperQt;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT PdfiumDocumentWrapperQt
+bool RenderThreadObserverQt::m_isIncognitoProcess = false;
+
+void RenderThreadObserverQt::RegisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
-public:
-    PdfiumDocumentWrapperQt(const void *pdfData, size_t size, const char *password = nullptr);
-    virtual ~PdfiumDocumentWrapperQt();
-    QImage pageAsQImage(size_t index);
-    bool pageIsLandscape(size_t index);
-    int pageCount() const { return m_pageCount; }
+    associated_interfaces->AddInterface(base::Bind(&RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest, base::Unretained(this)));
+}
 
-private:
-    static int m_libraryUsers;
-    int m_pageCount;
-    void *m_documentHandle;
-};
+void RenderThreadObserverQt::UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces)
+{
+    associated_interfaces->RemoveInterface(qtwebengine::mojom::RendererConfiguration::Name_);
+}
 
-} // namespace QtWebEngineCore
-#endif // PDFIUM_DOCUMENT_WRAPPER_QT_H
+void RenderThreadObserverQt::SetInitialConfiguration(bool is_incognito_process)
+{
+    m_isIncognitoProcess = is_incognito_process;
+}
+
+void RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest(qtwebengine::mojom::RendererConfigurationAssociatedRequest request)
+{
+    m_rendererConfigurationBindings.AddBinding(this, std::move(request));
+}
+
+} // namespace

@@ -40,6 +40,7 @@ deps = [
   "//ui/gl",
   "//qtwebengine/browser:interfaces",
   "//qtwebengine/browser:service_manifests",
+  "//qtwebengine/common:mojo_bindings",
   ":qtwebengine_sources",
   ":qtwebengine_resources",
 ]

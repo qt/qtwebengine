@@ -72,6 +72,8 @@ class SpellCheck;
 
 namespace QtWebEngineCore {
 
+class RenderThreadObserverQt;
+
 class ContentRendererClientQt : public content::ContentRendererClient
                               , public service_manager::Service
                               , public service_manager::LocalInterfaceProvider
@@ -138,6 +140,7 @@ private:
     void GetNavigationErrorStringsInternal(content::RenderFrame* renderFrame, const std::string &httpMethod,
                                            const error_page::Error& error, std::string* errorHtml);
 
+    QScopedPointer<RenderThreadObserverQt> m_renderThreadObserver;
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
     QScopedPointer<web_cache::WebCacheImpl> m_webCacheImpl;
 #if QT_CONFIG(webengine_spellchecker)

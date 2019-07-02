@@ -127,5 +127,59 @@ TestWebEngineView {
             stopAction.trigger();
             compare(stopTriggerSpy.count, 0);
         }
+
+        function test_editActionsWithExplicitFocus() {
+            var webView = Qt.createQmlObject("TestWebEngineView { visible: false; }", webEngineView);
+            webView.settings.focusOnNavigationEnabled = false;
+
+            // The view is hidden and no focus on the page. Edit actions should be disabled.
+            var selectAllAction = webView.action(WebEngineView.SelectAll);
+            verify(selectAllAction);
+            verify(!selectAllAction.enabled);
+
+            var triggerSpy = createTemporaryObject(signalSpy, webEngineView, {target: selectAllAction, signalName: "triggered"});
+            var enabledSpy = createTemporaryObject(signalSpy, webEngineView, {target: selectAllAction, signalName: "enabledChanged"});
+
+            webView.loadHtml("<html><body><div>foo bar</div></body></html>");
+            verify(webView.waitForLoadSucceeded());
+
+            // Still no focus because focus on navigation is disabled. Edit actions don't do anything (should not crash).
+            verify(!selectAllAction.enabled);
+            compare(enabledSpy.count, 0);
+            selectAllAction.trigger();
+            compare(triggerSpy.count, 0);
+            compare(getTextSelection(), "");
+
+            // Focus content by focusing window from JavaScript. Edit actions should be enabled and functional.
+            webView.runJavaScript("window.focus();");
+            tryVerify(function() { return enabledSpy.count === 1 });
+            verify(selectAllAction.enabled);
+            selectAllAction.trigger();
+            compare(triggerSpy.count, 1);
+            tryVerify(function() { return webView.getTextSelection() === "foo bar" });
+        }
+
+        function test_editActionsWithInitialFocus() {
+            var webView = Qt.createQmlObject("TestWebEngineView { visible: false; }", webEngineView);
+            webView.settings.focusOnNavigationEnabled = true;
+
+            // The view is hidden and no focus on the page. Edit actions should be disabled.
+            var selectAllAction = webView.action(WebEngineView.SelectAll);
+            verify(selectAllAction);
+            verify(!selectAllAction.enabled);
+
+            var triggerSpy = createTemporaryObject(signalSpy, webEngineView, {target: selectAllAction, signalName: "triggered"});
+            var enabledSpy = createTemporaryObject(signalSpy, webEngineView, {target: selectAllAction, signalName: "enabledChanged"});
+
+            webView.loadHtml("<html><body><div>foo bar</div></body></html>");
+            verify(webView.waitForLoadSucceeded());
+
+            // Content gets initial focus.
+            tryVerify(function() { return enabledSpy.count === 1 });
+            verify(selectAllAction.enabled);
+            selectAllAction.trigger();
+            compare(triggerSpy.count, 1);
+            tryVerify(function() { return webView.getTextSelection() === "foo bar" });
+        }
     }
 }

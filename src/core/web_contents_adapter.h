@@ -225,6 +225,7 @@ public:
     bool canViewSource();
     void focusIfNecessary();
     bool isFindTextInProgress() const;
+    bool hasFocusedFrame() const;
 
     // meant to be used within WebEngineCore only
     void initialize(content::SiteInstance *site);
