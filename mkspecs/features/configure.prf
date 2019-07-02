@@ -76,7 +76,7 @@ defineTest(runConfigure) {
         }
 
         !qtConfig(webengine-system-glibc) {
-            skipBuild("A suitable version of libc could not be found. See: https://sourceware.org/bugzilla/show_bug.cgi?id=14898")
+            skipBuild("A suitable version >= 2.27 of libc could not be found.")
             return(false)
         }
 

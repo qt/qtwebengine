@@ -86,6 +86,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -95,6 +96,7 @@
 #include "ui/gl/gpu_timing.h"
 #include "url/url_util_qt.h"
 
+#include "qtwebengine/common/renderer_configuration.mojom.h"
 #include "qtwebengine/grit/qt_webengine_resources.h"
 
 #include "profile_adapter.h"
@@ -282,6 +284,11 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     host->AddFilter(new extensions::IOThreadExtensionMessageFilter(host->GetID(), host->GetBrowserContext()));
     host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(host->GetID(), host->GetBrowserContext()));
 #endif //ENABLE_EXTENSIONS
+
+    bool is_incognito_process = profile->IsOffTheRecord();
+    qtwebengine::mojom::RendererConfigurationAssociatedPtr renderer_configuration;
+    host->GetChannel()->GetRemoteAssociatedInterface(&renderer_configuration);
+    renderer_configuration->SetInitialConfiguration(is_incognito_process);
 
     service_manager::mojom::ServicePtr service;
     *service_request = mojo::MakeRequest(&service);

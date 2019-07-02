@@ -86,26 +86,6 @@ defineTest(qtConfTest_detectFlex) {
     return(true)
 }
 
-defineTest(qtConfTest_detectGlibc) {
-    ldd = $$qtConfFindInPath("ldd")
-    !isEmpty(ldd) {
-        qtLog("Found ldd from path: $$ldd")
-        qtRunLoggedCommand("$$ldd --version", version)|return(true)
-        version ~= 's/^.*[^0-9]\([0-9]*\.[0-9]*\).*$/\1/'
-        version = $$first(version)
-        qtLog("Found libc version: $$version")
-        version = $$split(version,'.')
-        version = $$member(version, 1)
-        greaterThan(version, 16) {
-            return(true)
-        }
-        qtLog("Detected too old version of glibc. Required min 2.17.")
-        return(false)
-    }
-    qtLog("No ldd found. Assuming right version of glibc.")
-    return(true)
-}
-
 defineTest(qtConfTest_detectNinja) {
     ninja = $$qtConfFindInPath("ninja$$EXE_SUFFIX")
     !isEmpty(ninja) {

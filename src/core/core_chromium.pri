@@ -1,9 +1,4 @@
-include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-QT_FOR_CONFIG += webenginecore webenginecore-private
-
 qtConfig(debug_and_release): CONFIG += debug_and_release
-
-include(core_common.pri)
 
 macos {
     # This fixes namespace builds on macOS. Specifically namespace ambiguity issues between Qt and
@@ -117,6 +112,7 @@ SOURCES = \
         renderer/content_settings_observer_qt.cpp \
         renderer/render_frame_observer_qt.cpp \
         renderer/render_view_observer_qt.cpp \
+        renderer/render_thread_observer_qt.cpp \
         renderer/user_resource_controller.cpp \
         renderer_host/render_view_observer_host_qt.cpp \
         renderer_host/user_resource_controller_host.cpp \
@@ -225,6 +221,7 @@ HEADERS = \
         renderer/content_settings_observer_qt.h \
         renderer/render_frame_observer_qt.h \
         renderer/render_view_observer_qt.h \
+        renderer/render_thread_observer_qt.h \
         renderer/user_resource_controller.h \
         renderer_host/render_view_observer_host_qt.h \
         renderer_host/user_resource_controller_host.h \

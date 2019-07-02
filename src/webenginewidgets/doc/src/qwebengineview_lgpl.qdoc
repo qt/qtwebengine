@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2015 The Qt Company Ltd.
+    Copyright (C) 2019 The Qt Company Ltd.
     Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
     Copyright (C) 2008 Holger Hans Peter Freyther
     Copyright (C) 2009 Girish Ramakrishnan <girish@forwardbias.in>
@@ -125,7 +125,11 @@
     Sets the content of the web view to the specified \a html content.
 
     External objects, such as stylesheets or images referenced in the HTML
-    document, are located relative to \a baseUrl.
+    document, are located relative to \a baseUrl. For external objects to
+    be loaded, \c baseUrl cannot be empty. For example, if \a html
+    is retrieved from \c http://www.example.com/documents/overview.html, which
+    is the base URL, then an image referenced with the relative URL, \c diagram.png,
+    should be at \c{http://www.example.com/documents/diagram.png}.
 
     The HTML document is loaded immediately, whereas external objects are loaded asynchronously.
 
@@ -156,6 +160,7 @@
     is empty, it is assumed that the content is \c{text/plain,charset=US-ASCII}.
 
     External objects referenced in the content are located relative to \a baseUrl.
+    For external objects to be loaded, \c baseUrl cannot be empty.
 
     The data is loaded immediately; external objects are loaded asynchronously.
 

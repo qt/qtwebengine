@@ -592,6 +592,16 @@ void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
     case QWebEnginePage::ViewSource:
         enabled = adapter->canViewSource();
         break;
+    case QWebEnginePage::Cut:
+    case QWebEnginePage::Copy:
+    case QWebEnginePage::Paste:
+    case QWebEnginePage::Undo:
+    case QWebEnginePage::Redo:
+    case QWebEnginePage::SelectAll:
+    case QWebEnginePage::PasteAndMatchStyle:
+    case QWebEnginePage::Unselect:
+        enabled = adapter->hasFocusedFrame();
+        break;
     default:
         break;
     }
@@ -608,6 +618,18 @@ void QWebEnginePagePrivate::updateNavigationActions()
     updateAction(QWebEnginePage::Reload);
     updateAction(QWebEnginePage::ReloadAndBypassCache);
     updateAction(QWebEnginePage::ViewSource);
+}
+
+void QWebEnginePagePrivate::updateEditActions()
+{
+    updateAction(QWebEnginePage::Cut);
+    updateAction(QWebEnginePage::Copy);
+    updateAction(QWebEnginePage::Paste);
+    updateAction(QWebEnginePage::Undo);
+    updateAction(QWebEnginePage::Redo);
+    updateAction(QWebEnginePage::SelectAll);
+    updateAction(QWebEnginePage::PasteAndMatchStyle);
+    updateAction(QWebEnginePage::Unselect);
 }
 
 #ifndef QT_NO_ACTION

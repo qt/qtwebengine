@@ -147,9 +147,9 @@
             ]
         },
         "webengine-icu": {
-            "label": "icu >= 53",
+            "label": "icu >= 63",
             "sources": [
-                { "type": "pkgConfig", "args": "icu-uc >= 53 icu-i18n >= 53" }
+                { "type": "pkgConfig", "args": "icu-uc >= 63 icu-i18n >= 63" }
             ]
         },
         "webengine-ffmpeg": {
@@ -312,8 +312,9 @@
             "type": "compile"
         },
         "webengine-glibc": {
-            "label": "glibc > 2.16",
-            "type": "detectGlibc"
+            "label": "glibc > 2.26",
+            "type": "compile",
+            "test": "glibc"
         },
         "webengine-libxml2-compatible": {
             "label" : "compatible system libxml2",
@@ -335,6 +336,11 @@
         "webengine-extensions-gcc-version" : {
             "label": "GCC 6 or newer",
             "type": "hasGcc6OrNewer"
+        },
+        "webengine-noexecstack" : {
+            "label": "linker supports -z noexecstack",
+            "type": "linkerSupportsFlag",
+            "flag": "-z,noexecstack"
         }
     },
 
@@ -677,6 +683,11 @@
             "label": "Qt WebEngine Qml",
             "purpose": "Provides WebEngine Qml support.",
             "section": "WebEngine",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-noexecstack": {
+            "label": "linker supports -z noexecstack",
+            "condition": "config.unix && tests.webengine-noexecstack",
             "output": [ "privateFeature" ]
         }
     },

@@ -109,7 +109,7 @@ void OnPdfStreamIntercepted(
     content::NavigationController::LoadURLParams params(
               GURL(base::StringPrintf("%s://%s/index.html?%s", extensions::kExtensionScheme,
                    extension_id.c_str(),
-                   net::EscapeUrlEncodedData(original_url.spec(), false).c_str())));
+                   original_url.spec().c_str())));
 
     params.frame_tree_node_id = frame_tree_node_id;
     web_contents->GetController().LoadURLWithParams(params);

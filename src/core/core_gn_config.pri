@@ -1,6 +1,3 @@
-include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-QT_FOR_CONFIG += webenginecore webenginecore-private
-
 CONFIG = gn_generator $$CONFIG
 GN_SRC_DIR = $$PWD
 GN_FILE = $$OUT_PWD/$$getConfigDir()/BUILD.gn

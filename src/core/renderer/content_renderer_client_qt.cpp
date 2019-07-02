@@ -84,6 +84,7 @@
 
 #include "renderer/render_frame_observer_qt.h"
 #include "renderer/render_view_observer_qt.h"
+#include "renderer/render_thread_observer_qt.h"
 #include "renderer/user_resource_controller.h"
 #if QT_CONFIG(webengine_webchannel)
 #include "renderer/web_channel_ipc_transport.h"
@@ -129,6 +130,7 @@ void ContentRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *renderThread = content::RenderThread::Get();
     (void)GetConnector();
+    m_renderThreadObserver.reset(new RenderThreadObserverQt());
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheImpl.reset(new web_cache::WebCacheImpl());
 
@@ -140,6 +142,7 @@ void ContentRendererClientQt::RenderThreadStarted()
     content::ChildThread::Get()->GetServiceManagerConnection()->AddConnectionFilter(
                 std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
 
+    renderThread->AddObserver(m_renderThreadObserver.data());
     renderThread->AddObserver(UserResourceController::instance());
 
 #if QT_CONFIG(webengine_spellchecker)
@@ -285,7 +288,7 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
 
         error_page::LocalizedError::GetStrings(
             error.reason(), error.domain(), error.url(), isPost,
-            error.stale_copy_in_cache(), false, false,
+            error.stale_copy_in_cache(), false, RenderThreadObserverQt::is_incognito_process(),
             error_page::LocalizedError::OfflineContentOnNetErrorFeatureState::kDisabled,
             false, locale, std::unique_ptr<error_page::ErrorPageParams>(), &errorStrings);
         resourceId = IDR_NET_ERROR_HTML;

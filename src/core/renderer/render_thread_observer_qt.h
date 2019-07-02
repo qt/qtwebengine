@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,41 +37,41 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef RENDER_THREAD_OBSERVER_QT_H
+#define RENDER_THREAD_OBSERVER_QT_H
 
-#ifndef PDFIUM_DOCUMENT_WRAPPER_QT_H
-#define PDFIUM_DOCUMENT_WRAPPER_QT_H
-
-#include "qtwebenginecoreglobal_p.h"
-
-#include <QtGui/qimage.h>
+#include "content/public/renderer/render_thread_observer.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "qtwebengine/common/renderer_configuration.mojom.h"
 
 namespace QtWebEngineCore {
-class PdfiumPageWrapperQt;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT PdfiumDocumentWrapperQt
-{
+class RenderThreadObserverQt : public content::RenderThreadObserver,
+                               public qtwebengine::mojom::RendererConfiguration {
 public:
-    PdfiumDocumentWrapperQt(const void *pdfData, size_t size, const char *password = nullptr);
-    virtual ~PdfiumDocumentWrapperQt();
-    QImage pageAsQImage(size_t index);
-    bool pageIsLandscape(size_t index);
-    int pageCount() const { return m_pageCount; }
+
+    RenderThreadObserverQt() = default;
+    ~RenderThreadObserverQt() override = default;
+
+    static bool is_incognito_process() { return m_isIncognitoProcess; }
 
 private:
-    static int m_libraryUsers;
-    int m_pageCount;
-    void *m_documentHandle;
+    // content::RenderThreadObserver:
+    void RegisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces) override;
+    void UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces) override;
+
+    // qtwebengine::mojom::RendererConfiguration:
+    void SetInitialConfiguration(bool is_incognito_process) override;
+
+    void OnRendererConfigurationAssociatedRequest(qtwebengine::mojom::RendererConfigurationAssociatedRequest request);
+
+    static bool m_isIncognitoProcess;
+
+    mojo::AssociatedBindingSet<qtwebengine::mojom::RendererConfiguration> m_rendererConfigurationBindings;
+
+    DISALLOW_COPY_AND_ASSIGN(RenderThreadObserverQt);
 };
 
 } // namespace QtWebEngineCore
-#endif // PDFIUM_DOCUMENT_WRAPPER_QT_H
+
+#endif // RENDER_THREAD_OBSERVER_QT_H

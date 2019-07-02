@@ -39,6 +39,8 @@ LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
 # GN's LFLAGS doesn't always work across all the Linux configurations we support.
 # The Windows and macOS ones from GN does provide a few useful flags however
 
+unix:qtConfig(webengine-noexecstack): \
+    QMAKE_LFLAGS += -Wl,-z,noexecstack
 linux {
     QMAKE_LFLAGS += -Wl,--gc-sections -Wl,-O1 -Wl,-z,now
     # Embedded address sanitizer symbols are undefined and are picked up by the dynamic link loader
