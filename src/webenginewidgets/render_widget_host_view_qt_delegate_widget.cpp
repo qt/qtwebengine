@@ -471,7 +471,7 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
         // where we can simply ignore the DblClick event.
         QMouseEvent *dblClick = static_cast<QMouseEvent *>(event);
         QMouseEvent press(QEvent::MouseButtonPress, dblClick->localPos(), dblClick->windowPos(), dblClick->screenPos(),
-            dblClick->button(), dblClick->buttons(), dblClick->modifiers());
+            dblClick->button(), dblClick->buttons(), dblClick->modifiers(), dblClick->source());
         press.setTimestamp(dblClick->timestamp());
         handled = m_client->forwardEvent(&press);
     } else
