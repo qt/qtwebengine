@@ -79,6 +79,8 @@ static QOpenGLContext *shareContext;
 
 static void deleteShareContext()
 {
+    if (qt_gl_global_share_context() == shareContext)
+        qt_gl_set_global_share_context(nullptr);
     delete shareContext;
     shareContext = 0;
 }
