@@ -57,8 +57,9 @@
 DownloadWidget::DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent)
     : QFrame(parent)
     , m_download(download)
-    , m_timeAdded(QTime::currentTime())
+    , m_timeAdded()
 {
+    m_timeAdded.start();
     setupUi(this);
     m_dstName->setText(m_download->downloadFileName());
     m_srcUrl->setText(m_download->url().toDisplayString());

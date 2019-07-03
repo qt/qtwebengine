@@ -510,7 +510,7 @@
     \fn QWebEngineSettings *QWebEnginePage::settings() const
     Returns a pointer to the page's settings object.
 
-    \sa QWebEngineSettings::globalSettings()
+    \sa QWebEngineSettings::defaultSettings()
 */
 
 /*!

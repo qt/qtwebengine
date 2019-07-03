@@ -101,7 +101,7 @@ using QtWebEngineCore::ProfileAdapter;
     web pages not specifically created with another profile belong to.
 
     Implementing the QWebEngineUrlRequestInterceptor interface and registering the interceptor on a
-    profile by setRequestInterceptor() enables intercepting, blocking, and modifying URL
+    profile by setUrlRequestInterceptor() enables intercepting, blocking, and modifying URL
     requests (QWebEngineUrlRequestInfo) before they reach the networking stack of Chromium.
 
     A QWebEngineUrlSchemeHandler can be registered for a profile by installUrlSchemeHandler()
