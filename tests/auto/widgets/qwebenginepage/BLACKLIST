@@ -10,9 +10,6 @@ osx
 [mouseMovementProperties]
 windows
 
-[getUserMediaRequest]
-windows
-
 [getUserMediaRequestDesktopVideoManyPages]
 windows
 
