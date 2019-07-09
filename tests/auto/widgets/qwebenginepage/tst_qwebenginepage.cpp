@@ -1807,6 +1807,7 @@ void tst_QWebEnginePage::findText()
     QTRY_COMPARE(loadSpy.count(), 1);
 
     // Select whole page contents.
+    QTRY_VERIFY(m_view->page()->action(QWebEnginePage::SelectAll)->isEnabled());
     m_view->page()->triggerAction(QWebEnginePage::SelectAll);
     QTRY_COMPARE(m_view->hasSelection(), true);
 
