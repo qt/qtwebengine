@@ -11,6 +11,7 @@
         "options": {
             "webengine-alsa": "boolean",
             "webengine-embedded-build": "boolean",
+            "webengine-full-debug-info": "boolean",
             "webengine-icu": { "type": "enum", "name": "webengine-system-icu", "values": { "system": "yes", "qt": "no" } },
             "webengine-ffmpeg": { "type": "enum", "name": "webengine-system-ffmpeg", "values": { "system": "yes", "qt": "no" } },
             "webengine-opus": { "type": "enum", "name": "webengine-system-opus", "values": { "system": "yes", "qt": "no" } },
@@ -675,6 +676,16 @@
             "condition": "config.linux && features.webengine-embedded-build && arch.arm && tests.webengine-arm-thumb",
             "output": [ "privateFeature" ]
         },
+        "webengine-full-debug-info": {
+            "label": "Full debug information",
+            "purpose": "Enables debug information for Blink and V8.",
+            "autoDetect": false,
+            "condition": "config.debug || features.debug_and_release || features.force_debug_info",
+            "output": [
+              { "type": "privateConfig", "name": "v8base_debug" },
+              { "type": "privateConfig", "name": "webcore_debug" }
+            ]
+        },
         "webengine-noexecstack": {
             "label": "linker supports -z noexecstack",
             "condition": "config.unix && tests.webengine-noexecstack",
@@ -730,6 +741,7 @@
             "section": "Qt WebEngine",
             "entries": [
                 "webengine-embedded-build",
+                "webengine-full-debug-info",
                 "webengine-pepper-plugins",
                 "webengine-printing-and-pdf",
                 "webengine-proprietary-codecs",
