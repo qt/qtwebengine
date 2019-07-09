@@ -72,10 +72,7 @@ class tst_Spellchecking : public QObject
 private Q_SLOTS:
     void init();
     void cleanup();
-    void initTestCase();
-    void spellCheckLanguage();
-    void spellCheckLanguages();
-    void spellCheckEnabled();
+    void settings();
     void spellcheck();
     void spellcheck_data();
 
@@ -84,19 +81,8 @@ private:
     WebView *m_view;
 };
 
-void tst_Spellchecking::initTestCase()
-{
-    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
-    QVERIFY(profile);
-    QVERIFY(!profile->isSpellCheckEnabled());
-    QVERIFY(profile->spellCheckLanguages().isEmpty());
-}
-
 void tst_Spellchecking::init()
 {
-    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
-    profile->setSpellCheckEnabled(false);
-    profile->setSpellCheckLanguages(QStringList());
     m_view = new WebView();
 }
 
@@ -106,7 +92,6 @@ void tst_Spellchecking::load()
     m_view->show();
     QSignalSpy spyFinished(m_view->page(), &QWebEnginePage::loadFinished);
     QVERIFY(spyFinished.wait());
-
 }
 
 void tst_Spellchecking::cleanup()
@@ -114,29 +99,57 @@ void tst_Spellchecking::cleanup()
     delete m_view;
 }
 
-void tst_Spellchecking::spellCheckLanguage()
+void tst_Spellchecking::settings()
 {
-    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
-    QVERIFY(profile);
-    profile->setSpellCheckLanguages({"en-US"});
-    QVERIFY(profile->spellCheckLanguages() == QStringList({"en-US"}));
-}
+    // Default profile has spellchecking disabled
 
-void tst_Spellchecking::spellCheckLanguages()
-{
-    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
-    QVERIFY(profile);
-    profile->setSpellCheckLanguages({"en-US","de-DE"});
-    QVERIFY(profile->spellCheckLanguages() == QStringList({"en-US","de-DE"}));
-}
+    QVERIFY(!QWebEngineProfile::defaultProfile()->isSpellCheckEnabled());
+    QVERIFY(QWebEngineProfile::defaultProfile()->spellCheckLanguages().isEmpty());
 
+    // New named profiles have spellchecking disabled
 
-void tst_Spellchecking::spellCheckEnabled()
-{
-    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
-    QVERIFY(profile);
-    profile->setSpellCheckEnabled(true);
-    QVERIFY(profile->isSpellCheckEnabled());
+    auto profile1 = std::make_unique<QWebEngineProfile>(QStringLiteral("Profile1"));
+    QVERIFY(!profile1->isSpellCheckEnabled());
+    QVERIFY(profile1->spellCheckLanguages().isEmpty());
+
+    auto profile2 = std::make_unique<QWebEngineProfile>(QStringLiteral("Profile2"));
+    QVERIFY(!profile2->isSpellCheckEnabled());
+    QVERIFY(profile2->spellCheckLanguages().isEmpty());
+
+    // New otr profiles have spellchecking disabled
+
+    auto profile3 = std::make_unique<QWebEngineProfile>();
+    QVERIFY(!profile2->isSpellCheckEnabled());
+    QVERIFY(profile2->spellCheckLanguages().isEmpty());
+
+    // Settings can be changed
+
+    profile1->setSpellCheckEnabled(true);
+    QVERIFY(profile1->isSpellCheckEnabled());
+
+    profile1->setSpellCheckLanguages({"en-US"});
+    QVERIFY(profile1->spellCheckLanguages() == QStringList({"en-US"}));
+
+    profile1->setSpellCheckLanguages({"en-US","de-DE"});
+    QVERIFY(profile1->spellCheckLanguages() == QStringList({"en-US","de-DE"}));
+
+    // Settings are per profile
+
+    QVERIFY(!profile2->isSpellCheckEnabled());
+    QVERIFY(profile2->spellCheckLanguages().isEmpty());
+
+    QVERIFY(!profile3->isSpellCheckEnabled());
+    QVERIFY(profile3->spellCheckLanguages().isEmpty());
+
+    // Settings are not persisted
+
+    // TODO(juvaldma): Write from dtor currently usually happens *after* the
+    // read from the ctor, so this test would pass even if settings were
+    // persisted. It would start to fail on the second run though.
+    profile1.reset();
+    profile1 = std::make_unique<QWebEngineProfile>(QStringLiteral("Profile1"));
+    QVERIFY(!profile1->isSpellCheckEnabled());
+    QVERIFY(profile1->spellCheckLanguages().isEmpty());
 }
 
 void tst_Spellchecking::spellcheck()
