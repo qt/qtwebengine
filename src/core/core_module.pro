@@ -42,11 +42,15 @@ LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
 unix:qtConfig(webengine-noexecstack): \
     QMAKE_LFLAGS += -Wl,-z,noexecstack
 linux {
-    QMAKE_LFLAGS += -Wl,--gc-sections -Wl,-O1 -Wl,-z,now
-    # Embedded address sanitizer symbols are undefined and are picked up by the dynamic link loader
-    # at runtime. Thus we do not to pass the linker flag below, because the linker would complain
-    # about the undefined sanitizer symbols.
-    !sanitizer: QMAKE_LFLAGS += -Wl,-z,defs
+    # add chromium flags
+    for(flag, NINJA_LFLAGS) {
+        # filter out some flags
+        !contains(flag, .*noexecstack$): \
+        !contains(flag, .*as-needed$): \
+        !contains(flag, ^-B.*): \
+        !contains(flag, ^-fuse-ld.*): \
+        QMAKE_LFLAGS += $$flag
+    }
 } else {
     QMAKE_LFLAGS += $$NINJA_LFLAGS
 }

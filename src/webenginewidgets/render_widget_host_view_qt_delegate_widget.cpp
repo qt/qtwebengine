@@ -77,14 +77,6 @@ protected:
     {
         m_client->forwardEvent(event);
     }
-    void keyPressEvent(QKeyEvent *event) override
-    {
-        m_client->forwardEvent(event);
-    }
-    void keyReleaseEvent(QKeyEvent *event) override
-    {
-        m_client->forwardEvent(event);
-    }
     void inputMethodEvent(QInputMethodEvent *event) override
     {
         m_client->forwardEvent(event);
@@ -479,7 +471,7 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
         // where we can simply ignore the DblClick event.
         QMouseEvent *dblClick = static_cast<QMouseEvent *>(event);
         QMouseEvent press(QEvent::MouseButtonPress, dblClick->localPos(), dblClick->windowPos(), dblClick->screenPos(),
-            dblClick->button(), dblClick->buttons(), dblClick->modifiers());
+            dblClick->button(), dblClick->buttons(), dblClick->modifiers(), dblClick->source());
         press.setTimestamp(dblClick->timestamp());
         handled = m_client->forwardEvent(&press);
     } else
@@ -487,6 +479,8 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 
     if (!handled)
         return QQuickWidget::event(event);
+    // Most events are accepted by default, but tablet events are not:
+    event->accept();
     return true;
 }
 
