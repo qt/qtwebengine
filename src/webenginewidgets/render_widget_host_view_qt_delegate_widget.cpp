@@ -309,12 +309,6 @@ QSGLayer *RenderWidgetHostViewQtDelegateWidget::createLayer()
     return renderContext->sceneGraphContext()->createLayer(renderContext);
 }
 
-QSGInternalImageNode *RenderWidgetHostViewQtDelegateWidget::createInternalImageNode()
-{
-    QSGRenderContext *renderContext = QQuickWindowPrivate::get(quickWindow())->context;
-    return renderContext->sceneGraphContext()->createInternalImageNode();
-}
-
 QSGImageNode *RenderWidgetHostViewQtDelegateWidget::createImageNode()
 {
     return quickWindow()->createImageNode();
