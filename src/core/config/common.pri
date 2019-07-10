@@ -95,6 +95,10 @@ CONFIG(debug, debug|release) {
     gn_args += use_debug_fission=false
     # MSVC requires iterator debug to always match and Qt has leaves it default on.
     msvc: gn_args += enable_iterator_debugging=true
+
+    # We also can not have optimized V8 binaries for MSVC as iterator debugging
+    # would mismatch.
+    msvc|v8base_debug: gn_args += v8_optimized_debug=false
 }
 
 !webcore_debug: gn_args += remove_webcore_debug_symbols=true
