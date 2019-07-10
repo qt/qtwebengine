@@ -174,7 +174,8 @@ quint32 CompositorResourceTracker::consumeMailbox(const gpu::MailboxHolder &mail
     DCHECK(mailboxManager);
     if (mailboxHolder.sync_token.HasData())
         mailboxManager->PullTextureUpdates(mailboxHolder.sync_token);
-    return service_id(mailboxManager->ConsumeTexture(mailboxHolder.mailbox));
+    gpu::TextureBase *tex = mailboxManager->ConsumeTexture(mailboxHolder.mailbox);
+    return tex ? service_id(tex) : 0;
 #else
     NOTREACHED();
 #endif // QT_CONFIG(OPENGL)
