@@ -127,6 +127,7 @@ private Q_SLOTS:
     void findText();
     void findTextResult();
     void findTextSuccessiveShouldCallAllCallbacks();
+    void findTextCalledOnMatch();
     void deleteQWebEngineViewTwice();
     void loadSignalsOrder_data();
     void loadSignalsOrder();
@@ -1022,6 +1023,28 @@ void tst_QWebEnginePage::findTextSuccessiveShouldCallAllCallbacks()
     QVERIFY(spy3.wasCalled());
     QVERIFY(spy4.wasCalled());
     QVERIFY(spy5.wasCalled());
+}
+
+void tst_QWebEnginePage::findTextCalledOnMatch()
+{
+    QSignalSpy loadSpy(m_view->page(), &QWebEnginePage::loadFinished);
+
+    // findText will abort in blink if the view has an empty size.
+    m_view->resize(800, 600);
+    m_view->show();
+    m_view->setHtml(QString("<html><head></head><body><div>foo bar</div></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    bool callbackCalled = false;
+    m_view->page()->findText("foo", 0, [this, &callbackCalled](bool found) {
+        QVERIFY(found);
+
+        m_view->page()->findText("bar", 0, [&callbackCalled](bool found) {
+            QVERIFY(found);
+            callbackCalled = true;
+        });
+    });
+    QTRY_VERIFY(callbackCalled);
 }
 
 static QWindow *findNewTopLevelWindow(const QWindowList &oldTopLevelWindows)

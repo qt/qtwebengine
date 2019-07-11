@@ -43,6 +43,7 @@
 #include "profile_adapter.h"
 #include "certificate_error_controller.h"
 #include "file_picker_controller.h"
+#include "find_text_helper.h"
 #include "javascript_dialog_controller.h"
 #include "touch_selection_menu_controller.h"
 
@@ -164,7 +165,6 @@ QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
 {
     Q_ASSERT(m_profileInitialized);
     m_profile->d_ptr->removeWebContentsAdapterClient(this);
-    adapter->stopFinding();
     if (faviconProvider)
         faviconProvider->detach(q_ptr);
     // q_ptr->d_ptr might be null due to destroy()
@@ -273,8 +273,8 @@ void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const Q
     Q_EMIT q->navigationRequested(&navigationRequest);
 
     navigationRequestAction = navigationRequest.action();
-    if ((navigationRequestAction == WebContentsAdapterClient::AcceptRequest) && adapter->isFindTextInProgress())
-        adapter->stopFinding();
+    if ((navigationRequestAction == WebContentsAdapterClient::AcceptRequest) && adapter->findTextHelper()->isFindTextInProgress())
+        adapter->findTextHelper()->stopFinding();
 }
 
 void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> dialog)
@@ -1185,14 +1185,6 @@ void QQuickWebEngineViewPrivate::didRunJavaScript(quint64 requestId, const QVari
     callback.call(args);
 }
 
-void QQuickWebEngineViewPrivate::didFindText(quint64 requestId, int matchCount)
-{
-    QJSValue callback = m_callbacks.take(requestId);
-    QJSValueList args;
-    args.append(QJSValue(matchCount));
-    callback.call(args);
-}
-
 void QQuickWebEngineViewPrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
 {
     Q_Q(QQuickWebEngineView);
@@ -1464,18 +1456,8 @@ void QQuickWebEngineView::findText(const QString &subString, FindFlags options, 
     Q_D(QQuickWebEngineView);
     if (!d->adapter->isInitialized())
         return;
-    if (subString.isEmpty()) {
-        d->adapter->stopFinding();
-        if (!callback.isUndefined()) {
-            QJSValueList args;
-            args.append(QJSValue(0));
-            const_cast<QJSValue&>(callback).call(args);
-        }
-    } else {
-        quint64 requestId = d->adapter->findText(subString, options & FindCaseSensitively, options & FindBackward);
-        if (!callback.isUndefined())
-            d->m_callbacks.insert(requestId, callback);
-    }
+
+    d->adapter->findTextHelper()->startFinding(subString, options & FindCaseSensitively, options & FindBackward, callback);
 }
 
 QQuickWebEngineHistory *QQuickWebEngineView::navigationHistory() const

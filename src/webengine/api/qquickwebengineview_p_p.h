@@ -133,7 +133,6 @@ public:
     void didRunJavaScript(quint64, const QVariant&) override;
     void didFetchDocumentMarkup(quint64, const QString&) override { }
     void didFetchDocumentInnerText(quint64, const QString&) override { }
-    void didFindText(quint64, int) override;
     void didPrintPage(quint64 requestId, QSharedPointer<QByteArray>) override;
     void didPrintPageToPdf(const QString &filePath, bool success) override;
     bool passOnFocus(bool reverse) override;

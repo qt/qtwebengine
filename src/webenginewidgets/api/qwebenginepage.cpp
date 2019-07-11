@@ -45,6 +45,7 @@
 #include "certificate_error_controller.h"
 #include "color_chooser_controller.h"
 #include "favicon_manager.h"
+#include "find_text_helper.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -418,11 +419,6 @@ void QWebEnginePagePrivate::didFetchDocumentMarkup(quint64 requestId, const QStr
 void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const QString& result)
 {
     m_callbacks.invoke(requestId, result);
-}
-
-void QWebEnginePagePrivate::didFindText(quint64 requestId, int matchCount)
-{
-    m_callbacks.invoke(requestId, matchCount > 0);
 }
 
 void QWebEnginePagePrivate::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
@@ -963,7 +959,6 @@ QWebEnginePage::~QWebEnginePage()
     if (d_ptr) {
         // d_ptr might be exceptionally null if profile adapter got deleted first
         setDevToolsPage(nullptr);
-        d_ptr->adapter->stopFinding();
         QWebEnginePagePrivate::bindPageAndView(this, nullptr);
         QWebEnginePagePrivate::bindPageAndWidget(this, nullptr);
     }
@@ -1592,16 +1587,11 @@ void QWebEnginePage::findText(const QString &subString, FindFlags options, const
 {
     Q_D(QWebEnginePage);
     if (!d->adapter->isInitialized()) {
-        d->m_callbacks.invokeEmpty(resultCallback);
+        QtWebEngineCore::CallbackDirectory().invokeEmpty(resultCallback);
         return;
     }
-    if (subString.isEmpty()) {
-        d->adapter->stopFinding();
-        d->m_callbacks.invokeEmpty(resultCallback);
-    } else {
-        quint64 requestId = d->adapter->findText(subString, options & FindCaseSensitively, options & FindBackward);
-        d->m_callbacks.registerCallback(requestId, resultCallback);
-    }
+
+    d->adapter->findTextHelper()->startFinding(subString, options & FindCaseSensitively, options & FindBackward, resultCallback);
 }
 
 /*!
@@ -1652,8 +1642,8 @@ void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &
 {
     Q_Q(QWebEnginePage);
     bool accepted = q->acceptNavigationRequest(url, static_cast<QWebEnginePage::NavigationType>(navigationType), isMainFrame);
-    if (accepted && adapter->isFindTextInProgress())
-        adapter->stopFinding();
+    if (accepted && adapter->findTextHelper()->isFindTextInProgress())
+        adapter->findTextHelper()->stopFinding();
     navigationRequestAction = accepted ? WebContentsAdapterClient::AcceptRequest : WebContentsAdapterClient::IgnoreRequest;
 }
 

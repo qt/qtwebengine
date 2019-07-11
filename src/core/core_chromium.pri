@@ -73,6 +73,7 @@ SOURCES = \
         download_manager_delegate_qt.cpp \
         favicon_manager.cpp \
         file_picker_controller.cpp \
+        find_text_helper.cpp \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
         login_delegate_qt.cpp \
@@ -180,6 +181,7 @@ HEADERS = \
         download_manager_delegate_qt.h \
         favicon_manager.h \
         file_picker_controller.h \
+        find_text_helper.h \
         global_descriptors_qt.h \
         javascript_dialog_controller_p.h \
         javascript_dialog_controller.h \

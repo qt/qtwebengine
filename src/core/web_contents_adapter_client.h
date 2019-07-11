@@ -461,7 +461,6 @@ public:
     virtual void didRunJavaScript(quint64 requestId, const QVariant& result) = 0;
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) = 0;
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) = 0;
-    virtual void didFindText(quint64 requestId, int matchCount) = 0;
     virtual void didPrintPage(quint64 requestId, QSharedPointer<QByteArray>) = 0;
     virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;
     virtual bool passOnFocus(bool reverse) = 0;
