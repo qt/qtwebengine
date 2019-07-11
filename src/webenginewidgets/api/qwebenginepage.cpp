@@ -2183,7 +2183,7 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId,
     In addition, a page might also execute scripts
     added through QWebEngineProfile::scripts().
 
-    \sa QWebEngineScriptCollection, QWebEngineScript
+    \sa QWebEngineScriptCollection, QWebEngineScript, {Script Injection}
 */
 
 QWebEngineScriptCollection &QWebEnginePage::scripts()

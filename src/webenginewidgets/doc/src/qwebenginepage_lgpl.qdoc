@@ -759,10 +759,15 @@
     \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback)
     \since 5.7
 
-    Runs the JavaScript code contained in \a scriptSource in the world specified by \a worldId.
-    The world ID values are the same as provided by QWebEngineScript::ScriptWorldId, and between \c 0
-    and \c 256. Using the \e runJavaScript() versions without the world ID is the same as running the
-    script in the \c MainWorld.
+    Runs the JavaScript code contained in \a scriptSource without checking
+    whether the DOM of the page has been constructed. If you need more
+    control over how the script is run, consider using \l scripts() instead.
+
+    To avoid conflicts with other scripts executed on the page, the world in
+    which the script is run is specified by \a worldId. The world ID values are
+    the same as provided by QWebEngineScript::ScriptWorldId, and between \c 0
+    and \c 256. If you leave out the \c world ID, the script is run in the
+    \c MainWorld.
 
     When the script has been executed, \a resultCallback is called with the result of the last
     executed statement. \c resultCallback can be any of a function pointer, a functor or a lambda,
@@ -772,7 +777,7 @@
     page.runJavaScript("document.title", [](const QVariant &v) { qDebug() << v.toString(); });
     \endcode
 
-    Only "plain data" can be returned from JavaScript as the result value.
+    Only plain data can be returned from JavaScript as the result value.
     Supported data types include all of the JSON data types as well as, for
     example, \c{Date} and \c{ArrayBuffer}. Unsupported data types include, for
     example, \c{Function} and \c{Promise}.
@@ -784,9 +789,7 @@
     during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
     value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
 
-    See scripts() for an alternative API to inject scripts.
-
-    \sa QWebEngineScript::ScriptWorldId
+    \sa scripts(), QWebEngineScript::ScriptWorldId, {Script Injection}
 */
 
 /*!
