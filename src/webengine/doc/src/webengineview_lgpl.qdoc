@@ -438,14 +438,13 @@
 
     To clear the search highlight, just pass an empty string.
 
-    The \a resultCallback must take a boolean parameter. It will be called with
-    a value of true if the \a subString was found; otherwise the callback value
-    will be false.
+    The \a resultCallback must take an integer parameter. It will be called with
+    the number of found occurrences of the \a subString.
 
     \code
-    findText("Qt", WebEngineView.FindCaseSensitively, function(success) {
-        if (success)
-            console.log("Qt was found!");
+    findText("Qt", WebEngineView.FindCaseSensitively, function(matchCount) {
+        if (matchCount > 0)
+            console.log("'Qt' tokens found:", matchCount);
     });
     \endcode
 */
