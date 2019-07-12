@@ -642,6 +642,17 @@
             "condition": "config.unix && libs.webengine-x11",
             "output": [ "privateFeature" ]
         },
+        "webengine-ozone-x11" : {
+             "label": "Support qpa-xcb",
+             "condition": "config.unix
+                          && features.webengine-system-x11
+                          && features.webengine-system-libdrm
+                          && features.webengine-system-xcomposite
+                          && features.webengine-system-xcursor
+                          && features.webengine-system-xi
+                          && features.webengine-system-xtst",
+             "output": [ "privateFeature" ]
+        },
         "webengine-sanitizer" : {
             "label": "Sanitizer",
             "autoDetect": "config.sanitizer && tests.webengine-sanitizer",
@@ -732,6 +743,11 @@
                 "webengine-kerberos",
                 {
                     "type": "feature",
+                    "args": "webengine-ozone-x11",
+                    "condition": "config.unix"
+                },
+                {
+                    "type": "feature",
                     "args": "webengine-v8-snapshot-support",
                     "condition": "config.unix && config.cross_compile && features.webengine-v8-snapshot"
                 },
@@ -802,8 +818,7 @@
                         "webengine-system-png",
                         "webengine-system-jpeg",
                         "webengine-system-harfbuzz",
-                        "webengine-system-freetype",
-                        "webengine-system-x11"
+                        "webengine-system-freetype"
                     ]
                 },
                 {
@@ -821,6 +836,7 @@
                    "section": "Required system libraries for qpa-xcb",
                    "condition": "config.unix && !config.macos",
                    "entries": [
+                        "webengine-system-x11",
                         "webengine-system-libdrm",
                         "webengine-system-xcomposite",
                         "webengine-system-xcursor",
