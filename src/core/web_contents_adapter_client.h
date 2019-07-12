@@ -64,6 +64,7 @@ QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 QT_FORWARD_DECLARE_CLASS(ClientCertSelectController)
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
+QT_FORWARD_DECLARE_CLASS(QWebEngineFindTextResult)
 QT_FORWARD_DECLARE_CLASS(QWebEngineQuotaRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineRegisterProtocolHandlerRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInfo)
@@ -498,6 +499,7 @@ public:
     virtual TouchHandleDrawableClient *createTouchHandle(const QMap<int, QImage> &images) = 0;
     virtual void showTouchSelectionMenu(TouchSelectionMenuController *menuController, const QRect &bounds, const QSize &handleSize) = 0;
     virtual void hideTouchSelectionMenu() = 0;
+    virtual void findTextFinished(const QWebEngineFindTextResult &result) = 0;
 
     virtual ProfileAdapter *profileAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;

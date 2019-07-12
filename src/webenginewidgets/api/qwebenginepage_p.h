@@ -72,6 +72,7 @@ class WebContentsAdapter;
 }
 
 QT_BEGIN_NAMESPACE
+class QWebEngineFindTextResult;
 class QWebEngineHistory;
 class QWebEnginePage;
 class QWebEngineProfile;
@@ -162,6 +163,7 @@ public:
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
     void interceptRequest(QWebEngineUrlRequestInfo &) override;
     void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegate *newWidget) override;
+    void findTextFinished(const QWebEngineFindTextResult &result) override;
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;

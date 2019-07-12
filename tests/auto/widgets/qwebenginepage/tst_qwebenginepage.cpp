@@ -47,6 +47,7 @@
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
 #include <qwebenginedownloaditem.h>
+#include <qwebenginefindtextresult.h>
 #include <qwebenginefullscreenrequest.h>
 #include <qwebenginehistory.h>
 #include <qwebenginenotification.h>
@@ -128,6 +129,7 @@ private Q_SLOTS:
     void findTextResult();
     void findTextSuccessiveShouldCallAllCallbacks();
     void findTextCalledOnMatch();
+    void findTextActiveMatchOrdinal();
     void deleteQWebEngineViewTwice();
     void loadSignalsOrder_data();
     void loadSignalsOrder();
@@ -942,18 +944,24 @@ void tst_QWebEnginePage::findText()
     // Invoking a stopFinding operation will not change or clear the currently selected text,
     // if nothing was found beforehand.
     {
-        CallbackSpy<bool> spy;
-        m_view->findText("", 0, spy.ref());
-        QVERIFY(spy.wasCalled());
+        CallbackSpy<bool> callbackSpy;
+        QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
+        m_view->findText("", 0, callbackSpy.ref());
+        QVERIFY(callbackSpy.wasCalled());
+        QCOMPARE(signalSpy.count(), 1);
         QTRY_COMPARE(m_view->selectedText(), QString("foo bar"));
     }
 
     // Invoking a startFinding operation with text that won't be found, will clear the current
     // selection.
     {
-        CallbackSpy<bool> spy;
-        m_view->findText("Will not be found", 0, spy.ref());
-        QCOMPARE(spy.waitForResult(), false);
+        CallbackSpy<bool> callbackSpy;
+        QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
+        m_view->findText("Will not be found", 0, callbackSpy.ref());
+        QCOMPARE(callbackSpy.waitForResult(), false);
+        QTRY_COMPARE(signalSpy.count(), 1);
+        auto result = signalSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
+        QCOMPARE(result.numberOfMatches(), 0);
         QTRY_VERIFY(m_view->selectedText().isEmpty());
     }
 
@@ -964,24 +972,36 @@ void tst_QWebEnginePage::findText()
     // Invoking a startFinding operation with text that will be found, will clear the current
     // selection as well.
     {
-        CallbackSpy<bool> spy;
-        m_view->findText("foo", 0, spy.ref());
-        QVERIFY(spy.waitForResult());
+        CallbackSpy<bool> callbackSpy;
+        QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
+        m_view->findText("foo", 0, callbackSpy.ref());
+        QVERIFY(callbackSpy.waitForResult());
+        QTRY_COMPARE(signalSpy.count(), 1);
         QTRY_VERIFY(m_view->selectedText().isEmpty());
     }
 
     // Invoking a stopFinding operation after text was found, will set the selected text to the
     // found text.
     {
-        CallbackSpy<bool> spy;
-        m_view->findText("", 0, spy.ref());
-        QTRY_VERIFY(spy.wasCalled());
+        CallbackSpy<bool> callbackSpy;
+        QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
+        m_view->findText("", 0, callbackSpy.ref());
+        QTRY_VERIFY(callbackSpy.wasCalled());
+        QTRY_COMPARE(signalSpy.count(), 1);
         QTRY_COMPARE(m_view->selectedText(), QString("foo"));
     }
 }
 
 void tst_QWebEnginePage::findTextResult()
 {
+    QSignalSpy findTextSpy(m_view->page(), &QWebEnginePage::findTextFinished);
+    auto signalResult = [&findTextSpy]() -> QVector<int> {
+        if (findTextSpy.count() != 1)
+            return QVector<int>({-1, -1});
+        auto r = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
+        return QVector<int>({ r.numberOfMatches(), r.activeMatchOrdinal() });
+    };
+
     // findText will abort in blink if the view has an empty size.
     m_view->resize(800, 600);
     m_view->show();
@@ -991,15 +1011,21 @@ void tst_QWebEnginePage::findTextResult()
     QTRY_COMPARE(loadSpy.count(), 1);
 
     QCOMPARE(findTextSync(m_page, ""), false);
+    QCOMPARE(signalResult(), QVector<int>({0, 0}));
 
     const QStringList words = { "foo", "bar" };
     for (const QString &subString : words) {
         QCOMPARE(findTextSync(m_page, subString), true);
+        QCOMPARE(signalResult(), QVector<int>({1, 1}));
+
         QCOMPARE(findTextSync(m_page, ""), false);
+        QCOMPARE(signalResult(), QVector<int>({0, 0}));
     }
 
     QCOMPARE(findTextSync(m_page, "blahhh"), false);
+    QCOMPARE(signalResult(), QVector<int>({0, 0}));
     QCOMPARE(findTextSync(m_page, ""), false);
+    QCOMPARE(signalResult(), QVector<int>({0, 0}));
 }
 
 void tst_QWebEnginePage::findTextSuccessiveShouldCallAllCallbacks()
@@ -1035,6 +1061,7 @@ void tst_QWebEnginePage::findTextCalledOnMatch()
     m_view->setHtml(QString("<html><head></head><body><div>foo bar</div></body></html>"));
     QTRY_COMPARE(loadSpy.count(), 1);
 
+    // CALLBACK
     bool callbackCalled = false;
     m_view->page()->findText("foo", 0, [this, &callbackCalled](bool found) {
         QVERIFY(found);
@@ -1045,6 +1072,68 @@ void tst_QWebEnginePage::findTextCalledOnMatch()
         });
     });
     QTRY_VERIFY(callbackCalled);
+
+    // SIGNAL
+    int findTextFinishedCount = 0;
+    connect(m_view->page(), &QWebEnginePage::findTextFinished, [this, &findTextFinishedCount](QWebEngineFindTextResult result) {
+        QCOMPARE(result.numberOfMatches(), 1);
+        if (findTextFinishedCount == 0)
+            m_view->page()->findText("bar");
+        findTextFinishedCount++;
+    });
+
+    m_view->page()->findText("foo");
+    QTRY_COMPARE(findTextFinishedCount, 2);
+}
+
+void tst_QWebEnginePage::findTextActiveMatchOrdinal()
+{
+    QSignalSpy loadSpy(m_view->page(), &QWebEnginePage::loadFinished);
+    QSignalSpy findTextSpy(m_view->page(), &QWebEnginePage::findTextFinished);
+    QWebEngineFindTextResult result;
+
+    // findText will abort in blink if the view has an empty size.
+    m_view->resize(800, 600);
+    m_view->show();
+    m_view->setHtml(QString("<html><head></head><body><div>foo bar foo bar foo</div></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    // Iterate over all "foo" matches.
+    for (int i = 1; i <= 3; ++i) {
+        m_view->page()->findText("foo", 0);
+        QTRY_COMPARE(findTextSpy.count(), 1);
+        result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
+        QCOMPARE(result.numberOfMatches(), 3);
+        QCOMPARE(result.activeMatchOrdinal(), i);
+    }
+
+    // The last match is followed by the fist one.
+    m_view->page()->findText("foo", 0);
+    QTRY_COMPARE(findTextSpy.count(), 1);
+    result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
+    QCOMPARE(result.numberOfMatches(), 3);
+    QCOMPARE(result.activeMatchOrdinal(), 1);
+
+    // The first match is preceded by the last one.
+    m_view->page()->findText("foo", QWebEnginePage::FindBackward);
+    QTRY_COMPARE(findTextSpy.count(), 1);
+    result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
+    QCOMPARE(result.numberOfMatches(), 3);
+    QCOMPARE(result.activeMatchOrdinal(), 3);
+
+    // Finding another word resets the activeMatchOrdinal.
+    m_view->page()->findText("bar", 0);
+    QTRY_COMPARE(findTextSpy.count(), 1);
+    result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
+    QCOMPARE(result.numberOfMatches(), 2);
+    QCOMPARE(result.activeMatchOrdinal(), 1);
+
+    // If no match activeMatchOrdinal is 0.
+    m_view->page()->findText("bla", 0);
+    QTRY_COMPARE(findTextSpy.count(), 1);
+    result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
+    QCOMPARE(result.numberOfMatches(), 0);
+    QCOMPARE(result.activeMatchOrdinal(), 0);
 }
 
 static QWindow *findNewTopLevelWindow(const QWindowList &oldTopLevelWindows)

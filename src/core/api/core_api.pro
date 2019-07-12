@@ -37,6 +37,7 @@ HEADERS = \
     qtwebenginecoreglobal_p.h \
     qwebenginecookiestore.h \
     qwebenginecookiestore_p.h \
+    qwebenginefindtextresult.h \
     qwebenginehttprequest.h \
     qwebenginemessagepumpscheduler_p.h \
     qwebenginenotification.h \
@@ -53,6 +54,7 @@ SOURCES = \
     qtwebenginecoreglobal.cpp \
     qwebengineclientcertificatestore.cpp \
     qwebenginecookiestore.cpp \
+    qwebenginefindtextresult.cpp \
     qwebenginehttprequest.cpp \
     qwebenginemessagepumpscheduler.cpp \
     qwebenginenotification.cpp \

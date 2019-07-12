@@ -489,6 +489,7 @@
 /*!
     \fn void QWebEnginePage::findText(const QString &subString, QWebEnginePage::FindFlags options = FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>())
     Finds the specified string, \a subString, in the page, using the given \a options.
+    The findTextFinished() signal is emitted when a string search is completed.
 
     To clear the search highlight, just pass an empty string.
 
@@ -501,6 +502,8 @@
 
     For example:
     \snippet qtwebengine_qwebenginepage_snippet.cpp 0
+
+    \sa findTextFinished()
 */
 
 /*!

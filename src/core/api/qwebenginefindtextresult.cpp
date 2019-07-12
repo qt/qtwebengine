@@ -37,66 +37,80 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "qwebenginefindtextresult.h"
 
-#ifndef FIND_TEXT_HELPER_H
-#define FIND_TEXT_HELPER_H
+QT_BEGIN_NAMESPACE
 
-#include "qtwebenginecoreglobal_p.h"
-
-#include "qwebenginecallback_p.h"
-#include <QJSValue>
-
-namespace content {
-class WebContents;
-}
-
-namespace gfx {
-class Rect;
-}
-
-namespace QtWebEngineCore {
-
-class WebContentsAdapterClient;
-
-class Q_WEBENGINECORE_PRIVATE_EXPORT FindTextHelper {
+class QWebEngineFindTextResultPrivate : public QSharedData {
 public:
-    FindTextHelper(content::WebContents *webContents, WebContentsAdapterClient *viewClient);
-    ~FindTextHelper();
-
-    void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const QWebEngineCallback<bool> resultCallback);
-    void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const QJSValue &resultCallback);
-    void startFinding(const QString &findText, bool caseSensitively, bool findBackward);
-    void stopFinding();
-    bool isFindTextInProgress() const;
-    void handleFindReply(content::WebContents *source, int requestId, int numberOfMatches, const gfx::Rect &selectionRect, int activeMatchOrdinal, bool finalUpdate);
-    void handleLoadCommitted();
-
-private:
-    void invokeResultCallback(int requestId, int numberOfMatches);
-
-    content::WebContents *m_webContents;
-    WebContentsAdapterClient *m_viewClient;
-
-    static int m_findRequestIdCounter;
-    int m_currentFindRequestId;
-    int m_lastCompletedFindRequestId;
-
-    QString m_previousFindText;
-
-    QMap<int, QJSValue> m_quickCallbacks;
-    CallbackDirectory m_widgetCallbacks;
+    int numberOfMatches = 0;
+    int activeMatchOrdinal = 0;
 };
 
-} // namespace QtWebEngineCore
+/*!
+    \class QWebEngineFindTextResult
+    \brief The QWebEngineFindTextResult class encapsulates the result of a string search on a page.
+    \since 5.14
 
-#endif // FIND_TEXT_HELPER_H
+    \inmodule QtWebEngineCore
+
+    Results are passed to the user in the
+    \l QWebEnginePage::findTextFinished() and
+    \l{WebEngineView::findTextFinished()}{WebEngineView.findTextFinished()} signals.
+*/
+
+/*! \internal
+*/
+QWebEngineFindTextResult::QWebEngineFindTextResult()
+    : d(new QWebEngineFindTextResultPrivate)
+{}
+
+/*! \internal
+*/
+QWebEngineFindTextResult::QWebEngineFindTextResult(int numberOfMatches, int activeMatchOrdinal)
+    : d(new QWebEngineFindTextResultPrivate)
+{
+    d->numberOfMatches = numberOfMatches;
+    d->activeMatchOrdinal = activeMatchOrdinal;
+}
+
+/*! \internal
+*/
+QWebEngineFindTextResult::QWebEngineFindTextResult(const QWebEngineFindTextResult &other)
+    : d(other.d)
+{}
+
+/*! \internal
+*/
+QWebEngineFindTextResult &QWebEngineFindTextResult::operator=(const QWebEngineFindTextResult &other)
+{
+    d = other.d;
+    return *this;
+}
+
+/*! \internal
+*/
+QWebEngineFindTextResult::~QWebEngineFindTextResult()
+{}
+
+/*!
+    \property QWebEngineFindTextResult::numberOfMatches
+    \brief The number of matches found.
+*/
+int QWebEngineFindTextResult::numberOfMatches() const
+{
+    return d->numberOfMatches;
+}
+
+/*!
+    \property QWebEngineFindTextResult::activeMatchOrdinal
+    \brief The index of the currently highlighted match.
+*/
+int QWebEngineFindTextResult::activeMatchOrdinal() const
+{
+    return d->activeMatchOrdinal;
+}
+
+QT_END_NAMESPACE
+
+#include "moc_qwebenginefindtextresult.cpp"

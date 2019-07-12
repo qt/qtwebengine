@@ -62,6 +62,7 @@
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescript_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
+#include "qwebenginefindtextresult.h"
 #include "qwebenginequotarequest.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
 
@@ -697,6 +698,12 @@ void QQuickWebEngineViewPrivate::widgetChanged(RenderWidgetHostViewQtDelegate *n
 {
     Q_Q(QQuickWebEngineView);
     bindViewAndWidget(q, static_cast<RenderWidgetHostViewQtDelegateQuick *>(newWidgetBase));
+}
+
+void QQuickWebEngineViewPrivate::findTextFinished(const QWebEngineFindTextResult &result)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->findTextFinished(result);
 }
 
 WebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const

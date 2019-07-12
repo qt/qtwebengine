@@ -103,7 +103,7 @@ static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptCo
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
     , m_faviconManager(new FaviconManager(webContents, adapterClient))
-    , m_findTextHelper(new FindTextHelper(webContents))
+    , m_findTextHelper(new FindTextHelper(webContents, adapterClient))
     , m_lastLoadProgress(-1)
     , m_loadingState(determineLoadingState(webContents))
     , m_didStartLoadingSeen(m_loadingState == LoadingState::Loading)

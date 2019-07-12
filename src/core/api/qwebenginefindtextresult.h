@@ -37,66 +37,45 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef QWEBENGINEFINDTEXTRESULT_H
+#define QWEBENGINEFINDTEXTRESULT_H
 
-#ifndef FIND_TEXT_HELPER_H
-#define FIND_TEXT_HELPER_H
-
-#include "qtwebenginecoreglobal_p.h"
-
-#include "qwebenginecallback_p.h"
-#include <QJSValue>
-
-namespace content {
-class WebContents;
-}
-
-namespace gfx {
-class Rect;
-}
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtCore/QObject>
+#include <QtCore/QSharedData>
 
 namespace QtWebEngineCore {
+class FindTextHelper;
+}
 
-class WebContentsAdapterClient;
+QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT FindTextHelper {
+class QWebEngineFindTextResultPrivate;
+
+class Q_WEBENGINECORE_EXPORT QWebEngineFindTextResult {
+    Q_GADGET
+    Q_PROPERTY(int numberOfMatches READ numberOfMatches CONSTANT FINAL)
+    Q_PROPERTY(int activeMatchOrdinal READ activeMatchOrdinal CONSTANT FINAL)
+
 public:
-    FindTextHelper(content::WebContents *webContents, WebContentsAdapterClient *viewClient);
-    ~FindTextHelper();
+    int numberOfMatches() const;
+    int activeMatchOrdinal() const;
 
-    void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const QWebEngineCallback<bool> resultCallback);
-    void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const QJSValue &resultCallback);
-    void startFinding(const QString &findText, bool caseSensitively, bool findBackward);
-    void stopFinding();
-    bool isFindTextInProgress() const;
-    void handleFindReply(content::WebContents *source, int requestId, int numberOfMatches, const gfx::Rect &selectionRect, int activeMatchOrdinal, bool finalUpdate);
-    void handleLoadCommitted();
+    QWebEngineFindTextResult();
+    QWebEngineFindTextResult(const QWebEngineFindTextResult &other);
+    QWebEngineFindTextResult &operator=(const QWebEngineFindTextResult &other);
+    ~QWebEngineFindTextResult();
 
 private:
-    void invokeResultCallback(int requestId, int numberOfMatches);
+    QWebEngineFindTextResult(int numberOfMatches, int activeMatchOrdinal);
 
-    content::WebContents *m_webContents;
-    WebContentsAdapterClient *m_viewClient;
+    QSharedDataPointer<QWebEngineFindTextResultPrivate> d;
 
-    static int m_findRequestIdCounter;
-    int m_currentFindRequestId;
-    int m_lastCompletedFindRequestId;
-
-    QString m_previousFindText;
-
-    QMap<int, QJSValue> m_quickCallbacks;
-    CallbackDirectory m_widgetCallbacks;
+    friend class QtWebEngineCore::FindTextHelper;
 };
 
-} // namespace QtWebEngineCore
+QT_END_NAMESPACE
 
-#endif // FIND_TEXT_HELPER_H
+Q_DECLARE_METATYPE(QWebEngineFindTextResult)
+
+#endif // QWEBENGINEFINDTEXTRESULT_H

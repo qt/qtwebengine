@@ -80,6 +80,7 @@ class QQuickWebEngineSettings;
 class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineTouchHandleProvider;
+class QWebEngineFindTextResult;
 
 QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event);
 
@@ -169,6 +170,7 @@ public:
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
     void printRequested() override;
     void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegate *newWidgetBase) override;
+    void findTextFinished(const QWebEngineFindTextResult &result) override;
 
     void updateAction(QQuickWebEngineView::WebAction) const;
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);

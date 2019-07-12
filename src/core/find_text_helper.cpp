@@ -38,7 +38,9 @@
 ****************************************************************************/
 
 #include "find_text_helper.h"
+#include "qwebenginefindtextresult.h"
 #include "type_conversion.h"
+#include "web_contents_adapter_client.h"
 
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
@@ -48,8 +50,9 @@ namespace QtWebEngineCore {
 // static
 int FindTextHelper::m_findRequestIdCounter = -1;
 
-FindTextHelper::FindTextHelper(content::WebContents *webContents)
+FindTextHelper::FindTextHelper(content::WebContents *webContents, WebContentsAdapterClient *viewClient)
     : m_webContents(webContents)
+    , m_viewClient(viewClient)
     , m_currentFindRequestId(m_findRequestIdCounter++)
     , m_lastCompletedFindRequestId(m_currentFindRequestId)
 {
@@ -65,6 +68,7 @@ void FindTextHelper::startFinding(const QString &findText, bool caseSensitively,
 {
     if (findText.isEmpty()) {
         stopFinding();
+        m_viewClient->findTextFinished(QWebEngineFindTextResult());
         m_widgetCallbacks.invokeEmpty(resultCallback);
         return;
     }
@@ -77,6 +81,7 @@ void FindTextHelper::startFinding(const QString &findText, bool caseSensitively,
 {
     if (findText.isEmpty()) {
         stopFinding();
+        m_viewClient->findTextFinished(QWebEngineFindTextResult());
         if (!resultCallback.isUndefined()) {
             QJSValueList args;
             args.append(QJSValue(0));
@@ -103,6 +108,7 @@ void FindTextHelper::startFinding(const QString &findText, bool caseSensitively,
         // waiting for it forever.
         // Assume that any unfinished find has been unsuccessful when a new one is started
         // to cover that case.
+        m_viewClient->findTextFinished(QWebEngineFindTextResult());
         invokeResultCallback(m_currentFindRequestId, 0);
     }
 
@@ -132,7 +138,6 @@ void FindTextHelper::handleFindReply(content::WebContents *source, int requestId
                                      const gfx::Rect &selectionRect, int activeMatchOrdinal, bool finalUpdate)
 {
     Q_UNUSED(selectionRect);
-    Q_UNUSED(activeMatchOrdinal);
 
     Q_ASSERT(source == m_webContents);
 
@@ -141,6 +146,7 @@ void FindTextHelper::handleFindReply(content::WebContents *source, int requestId
 
     Q_ASSERT(m_currentFindRequestId == requestId);
     m_lastCompletedFindRequestId = requestId;
+    m_viewClient->findTextFinished(QWebEngineFindTextResult(numberOfMatches, activeMatchOrdinal));
     invokeResultCallback(requestId, numberOfMatches);
 }
 

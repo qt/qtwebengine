@@ -10,6 +10,7 @@ OTHER_FILES += ApplicationRoot.qml \
                BrowserDialog.qml \
                BrowserWindow.qml \
                DownloadView.qml \
+               FindBar.qml \
                FullScreenNotification.qml
 
 RESOURCES += resources.qrc

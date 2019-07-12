@@ -52,6 +52,7 @@
 #include "printer_worker.h"
 #endif
 #include "qwebenginecertificateerror.h"
+#include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
@@ -171,6 +172,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
 
     qRegisterMetaType<QWebEngineQuotaRequest>();
     qRegisterMetaType<QWebEngineRegisterProtocolHandlerRequest>();
+    qRegisterMetaType<QWebEngineFindTextResult>();
 
     // See setVisible().
     wasShownTimer.setSingleShot(true);
@@ -698,6 +700,12 @@ void QWebEnginePagePrivate::widgetChanged(RenderWidgetHostViewQtDelegate *newWid
     bindPageAndWidget(q, static_cast<RenderWidgetHostViewQtDelegateWidget *>(newWidgetBase));
 }
 
+void QWebEnginePagePrivate::findTextFinished(const QWebEngineFindTextResult &result)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->findTextFinished(result);
+}
+
 void QWebEnginePagePrivate::ensureInitialized() const
 {
     if (!adapter->isInitialized())
@@ -796,6 +804,16 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
     d->q_ptr = this;
     d->adapter->setClient(d);
 }
+
+/*!
+    \fn void QWebEnginePage::findTextFinished(const QWebEngineFindTextResult &result)
+    \since 5.14
+
+    This signal is emitted when a search string search on a page is completed. \a result is
+    the result of the string search.
+
+    \sa findText()
+*/
 
 /*!
     \fn void QWebEnginePage::printRequested()
