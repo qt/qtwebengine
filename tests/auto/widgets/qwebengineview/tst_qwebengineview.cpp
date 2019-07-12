@@ -1829,10 +1829,13 @@ void tst_QWebEngineView::softwareInputPanel()
 
 void tst_QWebEngineView::inputContextQueryInput()
 {
-    TestInputContext testContext;
     QWebEngineView view;
     view.resize(640, 480);
     view.show();
+
+    // testContext will be destroyed before the view, so no events are sent accidentally
+    // when the view is destroyed.
+    TestInputContext testContext;
 
     QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
