@@ -237,7 +237,10 @@ public:
     float GetHistoricalTouchMajor(size_t pointer_index, size_t historical_index) const override { return 0; }
     float GetHistoricalX(size_t pointer_index, size_t historical_index) const override { return 0; }
     float GetHistoricalY(size_t pointer_index, size_t historical_index) const override { return 0; }
-    ToolType GetToolType(size_t pointer_index) const override { return ui::MotionEvent::ToolType::FINGER; }
+    ToolType GetToolType(size_t pointer_index) const override {
+        return (touchPoints.at(pointer_index).flags() & QTouchEvent::TouchPoint::InfoFlag::Pen) ? ui::MotionEvent::ToolType::STYLUS
+                                                                                                : ui::MotionEvent::ToolType::FINGER;
+    }
     int GetButtonState() const override { return 0; }
 
 private:
