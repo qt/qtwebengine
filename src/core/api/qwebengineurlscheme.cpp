@@ -382,7 +382,7 @@ void QWebEngineUrlScheme::registerScheme(const QWebEngineUrlScheme &scheme)
         return;
     }
 
-    if (url::IsStandard(scheme.d->name.data(), url::Component(0, scheme.d->name.size()))) {
+    if (url::IsStandard(scheme.d->name.data(), url::Component(0, static_cast<int>(scheme.d->name.size())))) {
         qWarning() << "QWebEngineUrlScheme::registerScheme: Scheme" << scheme.name() << "is a standard scheme";
         return;
     }
