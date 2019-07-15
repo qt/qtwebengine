@@ -987,6 +987,7 @@ quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitiv
         // waiting for it forever.
         // Assume that any unfinished find has been unsuccessful when a new one is started
         // to cover that case.
+        m_webContentsDelegate->setLastReceivedFindReply(m_lastFindRequestId);
         m_adapterClient->didFindText(m_lastFindRequestId, 0);
     }
 
@@ -1007,6 +1008,7 @@ quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitiv
 void WebContentsAdapter::stopFinding()
 {
     CHECK_INITIALIZED();
+    m_webContentsDelegate->setLastReceivedFindReply(m_lastFindRequestId);
     m_webContentsDelegate->setLastSearchedString(QString());
     m_webContents->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }

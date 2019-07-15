@@ -222,6 +222,10 @@ TestWebEngineView {
             expectFailContinue('', 'No unexpected findText callback calls occurred.')
             tryVerify(function() { return webEngineView.findCallbackCalled() })
             verify(!webEngineView.findCallbackCalled())
+
+            webEngineView.clear();
+            webEngineView.findText('New page', findFlags, webEngineView.findTextCallback)
+            tryCompare(webEngineView, 'matchCount', 1)
         }
     }
 }

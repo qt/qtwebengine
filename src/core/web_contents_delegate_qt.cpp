@@ -510,7 +510,7 @@ void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_
     Q_UNUSED(source)
     Q_UNUSED(selection_rect)
     Q_UNUSED(active_match_ordinal)
-    if (final_update) {
+    if (final_update && request_id > m_lastReceivedFindReply) {
         m_lastReceivedFindReply = request_id;
         m_viewClient->didFindText(request_id, number_of_matches);
     }
