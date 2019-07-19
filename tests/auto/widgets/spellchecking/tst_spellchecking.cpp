@@ -174,14 +174,41 @@ void tst_Spellchecking::spellcheck()
     QString result = evaluateJavaScriptSync(m_view->page(), "text();").toString();
     QVERIFY(result == text);
 
-    // open menu on misspelled word
-    m_view->activateMenu(m_view->focusWidget(), rect.center());
-    QSignalSpy spyMenuReady(m_view, &WebView::menuReady);
-    QVERIFY(spyMenuReady.wait());
+    bool gotMisspelledWord = false; // clumsy QTRY_VERIFY still execs expr after first success
+    QString detail;
 
-    // check if menu is valid
-    QVERIFY(m_view->data().isValid());
-    QVERIFY(m_view->data().isContentEditable());
+    // check that spellchecker has done text processing and filled misspelled word
+    QTRY_VERIFY2([&] () {
+        detail.clear();
+        if (gotMisspelledWord)
+            return true;
+
+        // open menu on misspelled word
+        m_view->activateMenu(m_view->focusWidget(), rect.center());
+        QSignalSpy spyMenuReady(m_view, &WebView::menuReady);
+        if (!spyMenuReady.wait()) {
+            detail = "menu was not shown";
+            return false;
+        }
+
+        if (!m_view->data().isValid()) {
+            detail = "invalid data";
+            return false;
+        }
+
+        if (!m_view->data().isContentEditable()) {
+            detail = "content is not editable";
+            return false;
+        }
+
+        if (m_view->data().misspelledWord().isEmpty()) {
+            detail = "no misspelled word";
+            return false;
+        };
+
+        gotMisspelledWord = true;
+        return true;
+    } (), qPrintable(QString("Context menu: %1").arg(detail)));
 
     // check misspelled word
     QCOMPARE(m_view->data().misspelledWord(), QStringLiteral("lowe"));
