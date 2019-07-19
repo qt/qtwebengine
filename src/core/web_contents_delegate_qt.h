@@ -114,6 +114,7 @@ public:
     QString lastSearchedString() const { return m_lastSearchedString; }
     void setLastSearchedString(const QString &s) { m_lastSearchedString = s; }
     int lastReceivedFindReply() const { return m_lastReceivedFindReply; }
+    void setLastReceivedFindReply(int id) { m_lastReceivedFindReply = id; }
 
     QUrl url() const { return m_url; }
     QString title() const { return m_title; }
