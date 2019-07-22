@@ -926,7 +926,7 @@ static ui::DomKey domKeyForQtKey(int qtKey)
         return ui::DomKey::ZENKAKU;
     case Qt::Key_Zenkaku_Hankaku:
         return ui::DomKey::ZENKAKU_HANKAKU;
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     // Dead keys (ui/events/keycodes/keyboard_code_conversion_xkb.cc)
     case Qt::Key_Dead_Grave:
         return ui::DomKey::DeadKeyFromCombiningCharacter(0x0300);
@@ -994,7 +994,7 @@ static ui::DomKey domKeyForQtKey(int qtKey)
         return ui::DomKey::DeadKeyFromCombiningCharacter(0x00A4);
     case Qt::Key_Dead_Greek:
         return ui::DomKey::DeadKeyFromCombiningCharacter(0x037E);
-
+#endif
     // General-Purpose Function Keys
     case Qt::Key_F1:
         return ui::DomKey::F1;
