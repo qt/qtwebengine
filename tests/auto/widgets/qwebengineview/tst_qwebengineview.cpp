@@ -1894,7 +1894,7 @@ void tst_QWebEngineView::inputContextQueryInput()
         QApplication::sendEvent(view.focusProxy(), &event);
     }
     QTRY_COMPARE(testContext.infos.count(), 2);
-    QCOMPARE(selectionChangedSpy.count(), 1);
+    QTRY_COMPARE(selectionChangedSpy.count(), 1);
 
     // As a first step, Chromium moves the cursor to the start of the selection.
     // We don't filter this in QtWebEngine because we don't know yet if this is part of a selection.
@@ -1920,7 +1920,7 @@ void tst_QWebEngineView::inputContextQueryInput()
         QApplication::sendEvent(view.focusProxy(), &event);
     }
     QTRY_COMPARE(testContext.infos.count(), 1);
-    QCOMPARE(selectionChangedSpy.count(), 1);
+    QTRY_COMPARE(selectionChangedSpy.count(), 1);
     QCOMPARE(testContext.infos[0].cursorPosition, 0);
     QCOMPARE(testContext.infos[0].anchorPosition, 0);
     QCOMPARE(testContext.infos[0].surroundingText, QStringLiteral("QtWebEngine!"));

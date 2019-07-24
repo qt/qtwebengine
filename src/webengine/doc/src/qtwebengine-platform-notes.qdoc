@@ -69,7 +69,12 @@
 
     \section2 Windows
 
-    On Windows, Visual Studio 2017 and Windows 10 SDK are required.
+    On Windows, the following additional tools are required:
+
+    \list
+        \li Visual Studio 2017 version 15.8 or later
+        \li Windows 10 SDK
+    \endlist
 
     \QWE can only be built on 64-bit Windows, with a x64-bit toolchain.
     For building \QWE for x86 applications, you need to configure

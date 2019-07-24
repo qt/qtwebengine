@@ -127,3 +127,7 @@ qtConfig(webengine-kerberos) {
 } else {
     gn_args += use_kerberos=false
 }
+
+ccache {
+    gn_args += cc_wrapper=\"ccache\"
+}
