@@ -438,7 +438,7 @@ void QWebEnginePagePrivate::didPrintPage(quint64 requestId, QSharedPointer<QByte
     printerThread->start();
 
     PrinterWorker *printerWorker = new PrinterWorker(result, currentPrinter);
-    QObject::connect(printerWorker, &PrinterWorker::resultReady, q, [=](bool success) {
+    QObject::connect(printerWorker, &PrinterWorker::resultReady, q, [requestId, this](bool success) {
         currentPrinter = nullptr;
         m_callbacks.invoke(requestId, success);
     });
