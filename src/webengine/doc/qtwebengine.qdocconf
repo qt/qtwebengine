@@ -61,12 +61,14 @@ depends += qtcore \
            qtwidgets
 
 headerdirs  += .. \
-               ../../core \
-               ../../webenginewidgets
+               ../../core/api \
+               ../../webenginewidgets/api
 
 sourcedirs  += .. \
-                ../../core/ \
-               ../../webenginewidgets \
+                ../../core/api \
+                ../../core/doc \
+               ../../webenginewidgets/api \
+               ../../webenginewidgets/doc
 
 exampledirs +=  . \
                 ../../../examples \
@@ -85,4 +87,4 @@ navigation.qmltypespage = "Qt WebEngine QML Types"
 # \QWE macro expands to 'Qt WebEngine' without auto-linking anywhere.
 macro.QWE    = "Qt \\WebEngine"
 
-Cpp.ignoretokens += Q_WEBENGINE_EXPORT QWEBENGINEWIDGETS_EXPORT
+Cpp.ignoretokens += Q_WEBENGINE_EXPORT Q_WEBENGINECORE_EXPORT QWEBENGINEWIDGETS_EXPORT

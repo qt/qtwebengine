@@ -43,13 +43,21 @@ TestWebEngineView {
         matchCount = -1
     }
 
+    function findCallbackCalled() { return matchCount != -1 }
+
     function findTextCallback(matchCount) {
+        // If this starts to fail then either clear was not called before findText
+        // or unexpected callback was triggered from some search.
+        // On c++ side callback id can be checked to verify
+        testcase.verify(!findCallbackCalled(), 'Unexpected callback call or uncleared state before findText call!')
+
         webEngineView.matchCount = matchCount
         findFailed = matchCount == 0
     }
 
 
     TestCase {
+        id: testcase
         name: "WebViewFindText"
 
         function getBodyInnerHTML() {
@@ -207,13 +215,17 @@ TestWebEngineView {
             webEngineView.findText("hello", findFlags, webEngineView.findTextCallback);
 
             // This should not crash.
-            webEngineView.url = "https://www.qt.io";
-            if (!webEngineView.waitForLoadSucceeded(12000))
-                skip("Couldn't load page from network, skipping test.");
+            webEngineView.loadHtml("<html><body>New page with same hello text</body></html>")
+            verify(webEngineView.waitForLoadSucceeded())
 
             // The callback is not supposed to be called, see QTBUG-61506.
-            // Check whether the callback was called (-1 = no, other values = yes).
-            tryVerify(function() { return webEngineView.matchCount == -1; }, 20000);
+            expectFailContinue('', 'No unexpected findText callback calls occurred.')
+            tryVerify(function() { return webEngineView.findCallbackCalled() })
+            verify(!webEngineView.findCallbackCalled())
+
+            webEngineView.clear();
+            webEngineView.findText('New page', findFlags, webEngineView.findTextCallback)
+            tryCompare(webEngineView, 'matchCount', 1)
         }
     }
 }
