@@ -137,6 +137,11 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
                 content::BrowserContext::CreateRandomMediaDeviceIDSalt());
     }
 
+#if QT_CONFIG(webengine_spellchecker)
+    // Ignore stored values for these options to preserve backwards compatibility.
+    m_prefService->ClearPref(spellcheck::prefs::kSpellCheckEnable);
+    m_prefService->ClearPref(spellcheck::prefs::kSpellCheckDictionaries);
+#endif // QT_CONFIG(webengine_spellchecker)
 }
 
 void PrefServiceAdapter::commit()

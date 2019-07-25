@@ -72,10 +72,7 @@ class tst_Spellchecking : public QObject
 private Q_SLOTS:
     void init();
     void cleanup();
-    void initTestCase();
-    void spellCheckLanguage();
-    void spellCheckLanguages();
-    void spellCheckEnabled();
+    void settings();
     void spellcheck();
     void spellcheck_data();
 
@@ -84,19 +81,8 @@ private:
     WebView *m_view;
 };
 
-void tst_Spellchecking::initTestCase()
-{
-    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
-    QVERIFY(profile);
-    QVERIFY(!profile->isSpellCheckEnabled());
-    QVERIFY(profile->spellCheckLanguages().isEmpty());
-}
-
 void tst_Spellchecking::init()
 {
-    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
-    profile->setSpellCheckEnabled(false);
-    profile->setSpellCheckLanguages(QStringList());
     m_view = new WebView();
 }
 
@@ -106,7 +92,6 @@ void tst_Spellchecking::load()
     m_view->show();
     QSignalSpy spyFinished(m_view->page(), &QWebEnginePage::loadFinished);
     QVERIFY(spyFinished.wait());
-
 }
 
 void tst_Spellchecking::cleanup()
@@ -114,29 +99,57 @@ void tst_Spellchecking::cleanup()
     delete m_view;
 }
 
-void tst_Spellchecking::spellCheckLanguage()
+void tst_Spellchecking::settings()
 {
-    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
-    QVERIFY(profile);
-    profile->setSpellCheckLanguages({"en-US"});
-    QVERIFY(profile->spellCheckLanguages() == QStringList({"en-US"}));
-}
+    // Default profile has spellchecking disabled
 
-void tst_Spellchecking::spellCheckLanguages()
-{
-    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
-    QVERIFY(profile);
-    profile->setSpellCheckLanguages({"en-US","de-DE"});
-    QVERIFY(profile->spellCheckLanguages() == QStringList({"en-US","de-DE"}));
-}
+    QVERIFY(!QWebEngineProfile::defaultProfile()->isSpellCheckEnabled());
+    QVERIFY(QWebEngineProfile::defaultProfile()->spellCheckLanguages().isEmpty());
 
+    // New named profiles have spellchecking disabled
 
-void tst_Spellchecking::spellCheckEnabled()
-{
-    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
-    QVERIFY(profile);
-    profile->setSpellCheckEnabled(true);
-    QVERIFY(profile->isSpellCheckEnabled());
+    auto profile1 = std::make_unique<QWebEngineProfile>(QStringLiteral("Profile1"));
+    QVERIFY(!profile1->isSpellCheckEnabled());
+    QVERIFY(profile1->spellCheckLanguages().isEmpty());
+
+    auto profile2 = std::make_unique<QWebEngineProfile>(QStringLiteral("Profile2"));
+    QVERIFY(!profile2->isSpellCheckEnabled());
+    QVERIFY(profile2->spellCheckLanguages().isEmpty());
+
+    // New otr profiles have spellchecking disabled
+
+    auto profile3 = std::make_unique<QWebEngineProfile>();
+    QVERIFY(!profile2->isSpellCheckEnabled());
+    QVERIFY(profile2->spellCheckLanguages().isEmpty());
+
+    // Settings can be changed
+
+    profile1->setSpellCheckEnabled(true);
+    QVERIFY(profile1->isSpellCheckEnabled());
+
+    profile1->setSpellCheckLanguages({"en-US"});
+    QVERIFY(profile1->spellCheckLanguages() == QStringList({"en-US"}));
+
+    profile1->setSpellCheckLanguages({"en-US","de-DE"});
+    QVERIFY(profile1->spellCheckLanguages() == QStringList({"en-US","de-DE"}));
+
+    // Settings are per profile
+
+    QVERIFY(!profile2->isSpellCheckEnabled());
+    QVERIFY(profile2->spellCheckLanguages().isEmpty());
+
+    QVERIFY(!profile3->isSpellCheckEnabled());
+    QVERIFY(profile3->spellCheckLanguages().isEmpty());
+
+    // Settings are not persisted
+
+    // TODO(juvaldma): Write from dtor currently usually happens *after* the
+    // read from the ctor, so this test would pass even if settings were
+    // persisted. It would start to fail on the second run though.
+    profile1.reset();
+    profile1 = std::make_unique<QWebEngineProfile>(QStringLiteral("Profile1"));
+    QVERIFY(!profile1->isSpellCheckEnabled());
+    QVERIFY(profile1->spellCheckLanguages().isEmpty());
 }
 
 void tst_Spellchecking::spellcheck()
@@ -174,14 +187,41 @@ void tst_Spellchecking::spellcheck()
     QString result = evaluateJavaScriptSync(m_view->page(), "text();").toString();
     QVERIFY(result == text);
 
-    // open menu on misspelled word
-    m_view->activateMenu(m_view->focusWidget(), rect.center());
-    QSignalSpy spyMenuReady(m_view, &WebView::menuReady);
-    QVERIFY(spyMenuReady.wait());
+    bool gotMisspelledWord = false; // clumsy QTRY_VERIFY still execs expr after first success
+    QString detail;
 
-    // check if menu is valid
-    QVERIFY(m_view->data().isValid());
-    QVERIFY(m_view->data().isContentEditable());
+    // check that spellchecker has done text processing and filled misspelled word
+    QTRY_VERIFY2([&] () {
+        detail.clear();
+        if (gotMisspelledWord)
+            return true;
+
+        // open menu on misspelled word
+        m_view->activateMenu(m_view->focusWidget(), rect.center());
+        QSignalSpy spyMenuReady(m_view, &WebView::menuReady);
+        if (!spyMenuReady.wait()) {
+            detail = "menu was not shown";
+            return false;
+        }
+
+        if (!m_view->data().isValid()) {
+            detail = "invalid data";
+            return false;
+        }
+
+        if (!m_view->data().isContentEditable()) {
+            detail = "content is not editable";
+            return false;
+        }
+
+        if (m_view->data().misspelledWord().isEmpty()) {
+            detail = "no misspelled word";
+            return false;
+        };
+
+        gotMisspelledWord = true;
+        return true;
+    } (), qPrintable(QString("Context menu: %1").arg(detail)));
 
     // check misspelled word
     QCOMPARE(m_view->data().misspelledWord(), QStringLiteral("lowe"));

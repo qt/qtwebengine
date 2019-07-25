@@ -59,6 +59,11 @@ void QrcUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *job)
     QUrl requestUrl = job->requestUrl();
     QString requestPath = requestUrl.path();
     QScopedPointer<QFile> file(new QFile(':' + requestPath, job));
+    if (!file->exists() || file->size() == 0) {
+        qWarning("QResource '%s' not found or is empty", qUtf8Printable(requestPath));
+        job->fail(QWebEngineUrlRequestJob::UrlNotFound);
+        return;
+    }
     QFileInfo fileInfo(*file);
     QMimeDatabase mimeDatabase;
     QMimeType mimeType = mimeDatabase.mimeTypeForFile(fileInfo);

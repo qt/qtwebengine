@@ -122,6 +122,18 @@ void registerSchemes()
         scheme.setDefaultPort(42);
         QWebEngineUrlScheme::registerScheme(scheme);
     }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("redirect1"));
+        scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("redirect2"));
+        scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
 }
 Q_CONSTRUCTOR_FUNCTION(registerSchemes)
 
@@ -145,13 +157,26 @@ public:
         profile->installUrlSchemeHandler(QBAL("HostSyntax-ContentSecurityPolicyIgnored"), this);
         profile->installUrlSchemeHandler(QBAL("HostAndPortSyntax"), this);
         profile->installUrlSchemeHandler(QBAL("HostPortAndUserInformationSyntax"), this);
+        profile->installUrlSchemeHandler(QBAL("redirect1"), this);
+        profile->installUrlSchemeHandler(QBAL("redirect2"), this);
     }
+
+    QVector<QUrl> &requests() { return m_requests; }
 
 private:
     void requestStarted(QWebEngineUrlRequestJob *job) override
     {
+        QUrl url = job->requestUrl();
+        m_requests << url;
+
+        if (url.scheme() == QBAL("redirect1")) {
+            url.setScheme(QBAL("redirect2"));
+            job->redirect(url);
+            return;
+        }
+
         QString pathPrefix = QSL(THIS_DIR);
-        QString pathSuffix = job->requestUrl().path();
+        QString pathSuffix = url.path();
         QFile *file = new QFile(pathPrefix + pathSuffix, job);
         if (!file->open(QIODevice::ReadOnly)) {
             job->fail(QWebEngineUrlRequestJob::RequestFailed);
@@ -160,8 +185,12 @@ private:
         QByteArray mimeType = QBAL("text/html");
         if (pathSuffix.endsWith(QSL(".js")))
             mimeType = QBAL("application/javascript");
+        else if (pathSuffix.endsWith(QSL(".css")))
+            mimeType = QBAL("text/css");
         job->reply(mimeType, file);
     }
+
+    QVector<QUrl> m_requests;
 };
 
 class tst_Origins final : public QObject {
@@ -169,6 +198,7 @@ class tst_Origins final : public QObject {
 
 private Q_SLOTS:
     void initTestCase();
+    void cleanup();
     void cleanupTestCase();
 
     void jsUrlCanon();
@@ -187,6 +217,7 @@ private Q_SLOTS:
     void serviceWorker();
     void viewSource();
     void createObjectURL();
+    void redirect();
 
 private:
     bool load(const QUrl &url)
@@ -209,8 +240,17 @@ private:
 
 void tst_Origins::initTestCase()
 {
+    QTest::ignoreMessage(
+            QtWarningMsg,
+            QRegularExpression("Please register the custom scheme 'tst'.*"));
+
     m_page = new QWebEnginePage(&m_profile, nullptr);
     m_handler = new TstUrlSchemeHandler(&m_profile);
+}
+
+void tst_Origins::cleanup()
+{
+    m_handler->requests().clear();
 }
 
 void tst_Origins::cleanupTestCase()
@@ -346,11 +386,7 @@ void tst_Origins::jsUrlOrigin()
     QCOMPARE(eval(QSL("new URL(\"file:/etc/passwd\").origin")), QVariant(QSL("file://")));
     QCOMPARE(eval(QSL("new URL(\"file://foo.com/etc/passwd\").origin")), QVariant(QSL("file://")));
 
-    // The qrc scheme should behave like file.
-    QCOMPARE(eval(QSL("new URL(\"qrc:/crysis.css\").origin")), QVariant(QSL("qrc://")));
-    QCOMPARE(eval(QSL("new URL(\"qrc://foo.com/crysis.css\").origin")), QVariant(QSL("qrc://")));
-
-    // Unregistered schemes behaves like opaque origins.
+    // Unregistered schemes behave like file.
     QCOMPARE(eval(QSL("new URL(\"tst:/banana\").origin")), QVariant(QSL("tst://")));
     QCOMPARE(eval(QSL("new URL(\"tst://foo.com/banana\").origin")), QVariant(QSL("tst://")));
 
@@ -367,8 +403,9 @@ void tst_Origins::jsUrlOrigin()
              QVariant(QSL("hostportanduserinformationsyntax://foo")));
 
     // A PathSyntax scheme should have a 'universal' origin.
-    QCOMPARE(eval(QSL("new URL(\"PathSyntax:foo\").origin")),
-             QVariant(QSL("pathsyntax://")));
+    QCOMPARE(eval(QSL("new URL(\"PathSyntax:foo\").origin")), QVariant(QSL("pathsyntax:")));
+    QCOMPARE(eval(QSL("new URL(\"qrc:/crysis.css\").origin")), QVariant(QSL("qrc:")));
+    QCOMPARE(eval(QSL("new URL(\"qrc://foo.com/crysis.css\").origin")), QVariant(QSL("qrc:")));
 
     // The NoAccessAllowed flag forces opaque origins.
     QCOMPARE(eval(QSL("new URL(\"PathSyntax-NoAccessAllowed:foo\").origin")),
@@ -709,7 +746,7 @@ void tst_Origins::serviceWorker()
     QVERIFY(load(QSL("qrc:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("The URL protocol of the current origin ('qrc://') is not supported.")));
+            .contains(QSL("The URL protocol of the current origin ('qrc:') is not supported.")));
 
     QVERIFY(load(QSL("tst:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
@@ -724,7 +761,7 @@ void tst_Origins::serviceWorker()
     QVERIFY(load(QSL("PathSyntax-Secure:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
     QVERIFY(eval(QSL("error")).toString()
-            .contains(QSL("The URL protocol of the current origin ('pathsyntax-secure://') is not supported.")));
+            .contains(QSL("The URL protocol of the current origin ('pathsyntax-secure:') is not supported.")));
 
     QVERIFY(load(QSL("PathSyntax-ServiceWorkersAllowed:/resources/serviceWorker.html")));
     QTRY_VERIFY(eval(QSL("done")).toBool());
@@ -773,6 +810,19 @@ void tst_Origins::createObjectURL()
     // Also legal for unregistered schemes (since Chromium 71)
     QVERIFY(load(QSL("tst:/resources/createObjectURL.html")));
     QVERIFY(eval(QSL("result")).toString().startsWith(QSL("blob:tst:")));
+}
+
+void tst_Origins::redirect()
+{
+    QVERIFY(load(QSL("redirect1:/resources/redirect.html")));
+    QTRY_COMPARE(m_handler->requests().size(), 7);
+    QCOMPARE(m_handler->requests()[0], QUrl(QStringLiteral("redirect1:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[1], QUrl(QStringLiteral("redirect2:/resources/redirect.html")));
+    QCOMPARE(m_handler->requests()[2], QUrl(QStringLiteral("redirect1:/resources/redirect.css")));
+    QCOMPARE(m_handler->requests()[3], QUrl(QStringLiteral("redirect2:/resources/redirect.css")));
+    QCOMPARE(m_handler->requests()[4], QUrl(QStringLiteral("redirect1:/resources/Akronim-Regular.woff2")));
+    QCOMPARE(m_handler->requests()[5], QUrl(QStringLiteral("redirect1:/resources/Akronim-Regular.woff2")));
+    QCOMPARE(m_handler->requests()[6], QUrl(QStringLiteral("redirect2:/resources/Akronim-Regular.woff2")));
 }
 
 QTEST_MAIN(tst_Origins)

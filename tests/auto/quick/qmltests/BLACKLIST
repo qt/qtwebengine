@@ -1,7 +1,2 @@
-[WebViewFindText::test_findTextInterruptedByLoad]
-linux
-qemu
-b2qt
-windows
 [WebEngineViewSource::test_viewSourceURL]
 *

@@ -195,12 +195,10 @@ public:
     {
         Q_ASSERT(layer);
         Q_ASSERT(m_nodeIterator != m_sceneGraphNodes->end());
-        QSGInternalImageNode *imageNode = static_cast<QSGInternalImageNode*>(*m_nodeIterator++);
-        imageNode->setTargetRect(rect);
-        imageNode->setInnerTargetRect(rect);
-        imageNode->setSubSourceRect(layer->convertToNormalizedSourceRect(sourceRect));
+        QSGImageNode *imageNode = static_cast<QSGImageNode*>(*m_nodeIterator++);
+        imageNode->setRect(rect);
+        imageNode->setSourceRect(sourceRect);
         imageNode->setTexture(layer);
-        imageNode->update();
     }
 
     void setupTextureContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
@@ -281,13 +279,10 @@ public:
                              QSGNode *layerChain) override
     {
         Q_ASSERT(layer);
-        // Only QSGInternalImageNode currently supports QSGLayer textures.
-        QSGInternalImageNode *imageNode = m_apiDelegate->createInternalImageNode();
-        imageNode->setTargetRect(rect);
-        imageNode->setInnerTargetRect(rect);
-        imageNode->setSubSourceRect(layer->convertToNormalizedSourceRect(sourceRect));
+        QSGImageNode *imageNode = m_apiDelegate->createImageNode();
+        imageNode->setRect(rect);
+        imageNode->setSourceRect(sourceRect);
         imageNode->setTexture(layer);
-        imageNode->update();
 
         layerChain->appendChildNode(imageNode);
         m_sceneGraphNodes->append(imageNode);

@@ -234,6 +234,11 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, std::un
 {
     Q_UNUSED(source)
     QSharedPointer<WebContentsAdapter> newAdapter = createWindow(std::move(new_contents), disposition, initial_pos, user_gesture);
+    // Chromium can forget to pass user-agent override settings to new windows (see QTBUG-61774 and QTBUG-76249),
+    // so set it here. Note the actual value doesn't really matter here. Only the second value does, but we try
+    // to give the correct user-agent anyway.
+    if (newAdapter)
+        newAdapter->webContents()->SetUserAgentOverride(newAdapter->profileAdapter()->httpUserAgent().toStdString(), true);
     if (newAdapter && !newAdapter->isInitialized())
         newAdapter->loadDefault();
     if (was_blocked)
@@ -575,7 +580,7 @@ void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_
     Q_UNUSED(source)
     Q_UNUSED(selection_rect)
     Q_UNUSED(active_match_ordinal)
-    if (final_update) {
+    if (final_update && request_id > m_lastReceivedFindReply) {
         m_lastReceivedFindReply = request_id;
         m_viewClient->didFindText(request_id, number_of_matches);
     }

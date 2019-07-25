@@ -121,11 +121,3 @@ defineReplace(pkgConfigHostExecutable) {
     return($$system_quote($$system_path($$wrapper_name)))
 }
 
-defineTest(hasX11Dependencies) {
-    for(package, $$list("libdrm xcomposite xcursor xi xtst")) {
-        !qtConfig(webengine-system-$$package) {
-            return(false)
-        }
-    }
-    return(true)
-}
