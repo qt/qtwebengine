@@ -59,6 +59,7 @@ ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::NoAccessAllowed, url::CustomScheme::NoAc
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::ServiceWorkersAllowed, url::CustomScheme::ServiceWorkersAllowed)
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::ViewSourceAllowed, url::CustomScheme::ViewSourceAllowed)
 ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::ContentSecurityPolicyIgnored, url::CustomScheme::ContentSecurityPolicyIgnored)
+ASSERT_ENUMS_MATCH(QWebEngineUrlScheme::CorsEnabled, url::CustomScheme::CorsEnabled)
 
 static bool g_schemesLocked = false;
 
@@ -190,6 +191,13 @@ public:
   \value ContentSecurityPolicyIgnored
   Indicates that accesses to this scheme should bypass all
   Content-Security-Policy checks.
+
+  \value CorsEnabled
+  Enables cross-origin resource sharing (CORS) for this scheme. This flag is
+  required in order to, for example, use the scheme with the \l
+  {https://fetch.spec.whatwg.org/}{Fetch API}, or to deliver CSS fonts to a
+  different origin. The appropriate CORS headers are generated automatically by
+  the QWebEngineUrlRequestJob class. (Added in Qt 5.14)
 */
 
 QWebEngineUrlScheme::QWebEngineUrlScheme(QWebEngineUrlSchemePrivate *d) : d(d) {}
@@ -374,7 +382,7 @@ void QWebEngineUrlScheme::registerScheme(const QWebEngineUrlScheme &scheme)
         return;
     }
 
-    if (url::IsStandard(scheme.d->name.data(), url::Component(0, scheme.d->name.size()))) {
+    if (url::IsStandard(scheme.d->name.data(), url::Component(0, static_cast<int>(scheme.d->name.size())))) {
         qWarning() << "QWebEngineUrlScheme::registerScheme: Scheme" << scheme.name() << "is a standard scheme";
         return;
     }

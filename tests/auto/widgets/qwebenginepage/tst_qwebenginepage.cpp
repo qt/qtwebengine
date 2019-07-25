@@ -220,6 +220,8 @@ private Q_SLOTS:
     void editActionsWithFocusOnIframe();
     void editActionsWithoutSelection();
 
+    void customUserAgentInNewTab();
+
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
 
@@ -932,6 +934,7 @@ void tst_QWebEnginePage::findText()
     QTRY_COMPARE(loadSpy.count(), 1);
 
     // Select whole page contents.
+    QTRY_VERIFY(m_view->page()->action(QWebEnginePage::SelectAll)->isEnabled());
     m_view->page()->triggerAction(QWebEnginePage::SelectAll);
     QTRY_COMPARE(m_view->hasSelection(), true);
 
@@ -1709,12 +1712,15 @@ void tst_QWebEnginePage::runJavaScriptFromSlot()
 {
     QWebEngineProfile profile;
     QWebEnginePage page(&profile);
+    page.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
 
     QSignalSpy loadFinishedSpy(&page, &QWebEnginePage::loadFinished);
     page.setHtml("<html><body>"
                  "  <input type='text' id='input1' value='QtWebEngine' size='50' />"
                  "</body></html>");
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    // Workaround for QTBUG-74718
+    QTRY_VERIFY(page.action(QWebEnginePage::SelectAll)->isEnabled());
 
     QVariant result(-1);
     connect(&page, &QWebEnginePage::selectionChanged, [&]() {
@@ -4178,6 +4184,69 @@ void tst_QWebEnginePage::editActionsWithoutSelection()
     QVERIFY(page->action(QWebEnginePage::SelectAll)->isEnabled());
     QVERIFY(page->action(QWebEnginePage::PasteAndMatchStyle)->isEnabled());
     QVERIFY(page->action(QWebEnginePage::Unselect)->isEnabled());
+}
+
+void tst_QWebEnginePage::customUserAgentInNewTab()
+{
+    HttpServer server;
+    QByteArray lastUserAgent;
+    connect(&server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        QCOMPARE(rr->requestMethod(), "GET");
+        lastUserAgent = rr->requestHeader("user-agent");
+        rr->setResponseBody(QByteArrayLiteral("<html><body>Test</body></html>"));
+        rr->sendResponse();
+    });
+    QVERIFY(server.start());
+
+    class Page : public QWebEnginePage {
+    public:
+        QWebEngineProfile *targetProfile = nullptr;
+        QScopedPointer<QWebEnginePage> newPage;
+        Page(QWebEngineProfile *profile) : QWebEnginePage(profile) {}
+    private:
+        QWebEnginePage *createWindow(WebWindowType) override
+        {
+            newPage.reset(new QWebEnginePage(targetProfile ? targetProfile : profile(), nullptr));
+            return newPage.data();
+        }
+    };
+    QWebEngineProfile profile1, profile2;
+    profile1.setHttpUserAgent(QStringLiteral("custom 1"));
+    profile2.setHttpUserAgent(QStringLiteral("custom 2"));
+    Page page(&profile1);
+    QWebEngineView view;
+    view.resize(500, 500);
+    view.setPage(&page);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+
+    // First check we can get the user-agent passed through normally
+    page.setHtml(QString("<html><body><a id='link' target='_blank' href='") +
+                 server.url("/test1").toEncoded() +
+                 QString("'>link</a></body></html>"));
+    QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(spy.takeFirst().value(0).toBool());
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), profile1.httpUserAgent());
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, elementCenter(&page, "link"));
+    QTRY_VERIFY(page.newPage);
+    QTRY_VERIFY(!lastUserAgent.isEmpty());
+    QCOMPARE(lastUserAgent, profile1.httpUserAgent().toUtf8());
+
+    // Now check we can get the new user-agent of the profile
+    page.newPage.reset();
+    page.targetProfile = &profile2;
+    spy.clear();
+    lastUserAgent = { };
+    page.setHtml(QString("<html><body><a id='link' target='_blank' href='") +
+                 server.url("/test2").toEncoded() +
+                 QString("'>link</a></body></html>"));
+    QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(spy.takeFirst().value(0).toBool());
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, elementCenter(&page, "link"));
+    QTRY_VERIFY(page.newPage);
+    QTRY_VERIFY(!lastUserAgent.isEmpty());
+    QCOMPARE(lastUserAgent, profile2.httpUserAgent().toUtf8());
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
