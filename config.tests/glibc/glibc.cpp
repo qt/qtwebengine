@@ -28,8 +28,8 @@
 
 #include <features.h>
 
-#if __GLIBC__ < 2 || __GLIBC_MINOR__ < 27
-#error glibc versions below 2.27 are not supported
+#if __GLIBC__ < 2 || __GLIBC_MINOR__ < 17
+#error glibc versions below 2.17 are not supported
 #endif
 
 int main(int , char **) {

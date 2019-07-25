@@ -313,7 +313,7 @@
             "type": "compile"
         },
         "webengine-glibc": {
-            "label": "glibc > 2.26",
+            "label": "glibc > 2.16",
             "type": "compile",
             "test": "glibc"
         },
