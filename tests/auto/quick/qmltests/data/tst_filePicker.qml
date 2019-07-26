@@ -72,27 +72,25 @@ TestWebEngineView {
 
         function test_acceptSingleFileSelection_data() {
             return [
-                   { tag: "/test.txt)", input: "/test.txt", passDefaultDialog: false, passCustomDialog: true },
-                   { tag: "/tést.txt", input: "/tést.txt", passDefaultDialog: false, passCustomDialog: true },
-                   { tag: "file:///test.txt", input: "file:///test.txt", passDefaultDialog: true, passCustomDialog: false },
-                   { tag: "file:///tést.txt", input: "file:///tést.txt", passDefaultDialog: true, passCustomDialog: false  },
-                   { tag: "file:///t%C3%A9st.txt", input: "file:///t%C3%A9st.txt", passDefaultDialog: true, passCustomDialog: false },
-                   { tag: "file://test.txt", input: "file://test.txt", passDefaultDialog: false, passCustomDialog: false },
-                   { tag: "file:/test.txt", input: "file:/test.txt", passDefaultDialog: true, passCustomDialog: false },
-                   { tag: "file:test//test.txt", input: "file:test//test.txt", passDefaultDialog: false, passCustomDialog: false },
-                   { tag: "http://test.txt", input: "http://test.txt", passDefaultDialog: false, passCustomDialog: false },
-                   { tag: "qrc:/test.txt", input: "qrc:/test.txt", passDefaultDialog: false, passCustomDialog: false },
+                   { tag: "/test.txt", input: "/test.txt", expected: "test.txt" },
+                   { tag: "test.txt", input: "test.txt", expected: "Failed to Upload" },
+                   { tag: "/tést.txt", input: "/tést.txt", expected: "tést.txt" },
+                   { tag: "/t%65st.txt", input: "/t%65st.txt", expected: "t%65st.txt" },
+                   { tag: "file:///test.txt", input: "file:///test.txt", expected: "test.txt" },
+                   { tag: "file:///tést.txt", input: "file:///tést.txt", expected: "tést.txt" },
+                   { tag: "file:///t%65st.txt", input: "file:///t%65st.txt", expected: "test.txt" },
+                   { tag: "file://test.txt", input: "file://test.txt", expected: "test.txt" },
+                   { tag: "file:/test.txt", input: "file:/test.txt", expected: "test.txt"},
+                   { tag: "file:test//test.txt", input: "file:test//test.txt", expected: "Failed to Upload" },
+                   { tag: "http://test.txt", input: "http://test.txt", expected: "Failed to Upload" },
+                   { tag: "qrc:/test.txt", input: "qrc:/test.txt", expected: "Failed to Upload" },
             ];
         }
 
         function test_acceptSingleFileSelection(row) {
             var expectedFileName;
 
-            // Default dialog (expects URL).
-            expectedFileName = "Failed to Upload";
-            if (row.passDefaultDialog)
-                expectedFileName = row.input.slice(row.input.lastIndexOf('/') + 1);
-
+            // Default dialog
             webEngineView.url = Qt.resolvedUrl("singlefileupload.html");
             verify(webEngineView.waitForLoadSucceeded());
 
@@ -101,15 +99,11 @@ TestWebEngineView {
 
             keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
             tryCompare(FilePickerParams, "filePickerOpened", true);
-            tryCompare(webEngineView, "title", decodeURIComponent(expectedFileName));
+            tryCompare(webEngineView, "title", row.expected);
 
 
-            // Custom dialog (expects absolute path).
+            // Custom dialog
             var finished = false;
-
-            expectedFileName = "Failed to Upload";
-            if (row.passCustomDialog)
-                expectedFileName = row.input.slice(row.input.lastIndexOf('/') + 1);
 
             function acceptedFileHandler(request) {
                 request.accepted = true;
@@ -123,7 +117,7 @@ TestWebEngineView {
 
             keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
             tryVerify(function() { return finished; });
-            tryCompare(webEngineView, "title", expectedFileName);
+            tryCompare(webEngineView, "title", row.expected);
             webEngineView.fileDialogRequested.disconnect(acceptedFileHandler);
         }
 
@@ -165,14 +159,14 @@ TestWebEngineView {
 
         function test_acceptMultipleFilesWithCustomDialog_data() {
             return [
-                   { tag: "path", input: ["/test1.txt", "/test2.txt"], expectedValueForDefaultDialog: "Failed to Upload", expectedValueForCustomDialog: "test1.txt,test2.txt" },
-                   { tag: "file", input: ["file:///test1.txt", "file:///test2.txt"], expectedValueForDefaultDialog: "test1.txt,test2.txt", expectedValueForCustomDialog: "Failed to Upload" },
-                   { tag: "mixed", input: ["file:///test1.txt", "/test2.txt"], expectedValueForDefaultDialog: "test1.txt", expectedValueForCustomDialog: "test2.txt" },
+                   { tag: "path", input: ["/test1.txt", "/test2.txt"], expectedValue: "test1.txt,test2.txt" },
+                   { tag: "file", input: ["file:///test1.txt", "file:/test2.txt"], expectedValue: "test1.txt,test2.txt" },
+                   { tag: "mixed", input: ["file:///test1.txt", "/test2.txt"], expectedValue: "test1.txt,test2.txt" },
             ];
         }
 
         function test_acceptMultipleFilesWithCustomDialog(row) {
-            // Default dialog (expects URL).
+            // Default dialog
             webEngineView.url = Qt.resolvedUrl("multifileupload.html");
             verify(webEngineView.waitForLoadSucceeded());
 
@@ -181,10 +175,10 @@ TestWebEngineView {
 
             keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
             tryCompare(FilePickerParams, "filePickerOpened", true);
-            tryCompare(webEngineView, "title", row.expectedValueForDefaultDialog);
+            tryCompare(webEngineView, "title", row.expectedValue);
 
 
-            // Custom dialog (expects absolute path).
+            // Custom dialog
             var finished = false;
 
             function acceptedFileHandler(request) {
@@ -199,7 +193,7 @@ TestWebEngineView {
 
             keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
             tryVerify(function() { return finished; });
-            tryCompare(webEngineView, "title", row.expectedValueForCustomDialog);
+            tryCompare(webEngineView, "title", row.expectedValue);
             webEngineView.fileDialogRequested.disconnect(acceptedFileHandler);
         }
     }
