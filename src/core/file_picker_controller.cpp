@@ -39,6 +39,9 @@
 
 #include "file_picker_controller.h"
 #include "type_conversion.h"
+#if defined(OS_WIN)
+#include "base/files/file_path.h"
+#endif
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/file_select_listener.h"
@@ -69,12 +72,24 @@ void FilePickerController::accepted(const QStringList &files)
     for (const QString &urlString : files) {
         // We accept strings on both absolute-path and file-URL form:
         if (QDir::isAbsolutePath(urlString)) {
-            stringList.append(QDir::fromNativeSeparators(urlString));
+            QString absolutePath = QDir::fromNativeSeparators(urlString);
+#if defined(OS_WIN)
+            if (absolutePath.at(0).isLetter() && absolutePath.at(1) == QLatin1Char(':') && !base::FilePath::IsSeparator(absolutePath.at(2).toLatin1()))
+                qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
+            else
+#endif
+                stringList.append(absolutePath);
         } else {
             QUrl url(urlString, QUrl::StrictMode);
-            if (url.isLocalFile() && QDir::isAbsolutePath(url.toLocalFile()))
-                stringList.append(url.toLocalFile());
-            else
+            if (url.isLocalFile() && QDir::isAbsolutePath(url.toLocalFile())) {
+                QString absolutePath = url.toLocalFile();
+#if defined(OS_WIN)
+                if (absolutePath.at(0).isLetter() && absolutePath.at(1) == QLatin1Char(':') && !base::FilePath::IsSeparator(absolutePath.at(2).toLatin1()))
+                    qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
+                else
+#endif
+                    stringList.append(absolutePath);
+            } else
                 qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
         }
     }

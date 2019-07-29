@@ -36,6 +36,12 @@ TestWebEngineView {
     width: 400
     height: 300
 
+    function driveLetter() {
+        if (Qt.platform.os !== "windows")
+            return "";
+        return "C:/";
+    }
+
     SignalSpy {
         id: titleSpy
         target: webEngineView
@@ -72,15 +78,15 @@ TestWebEngineView {
 
         function test_acceptSingleFileSelection_data() {
             return [
-                   { tag: "/test.txt", input: "/test.txt", expected: "test.txt" },
-                   { tag: "test.txt", input: "test.txt", expected: "Failed to Upload" },
-                   { tag: "/tést.txt", input: "/tést.txt", expected: "tést.txt" },
-                   { tag: "/t%65st.txt", input: "/t%65st.txt", expected: "t%65st.txt" },
-                   { tag: "file:///test.txt", input: "file:///test.txt", expected: "test.txt" },
-                   { tag: "file:///tést.txt", input: "file:///tést.txt", expected: "tést.txt" },
-                   { tag: "file:///t%65st.txt", input: "file:///t%65st.txt", expected: "test.txt" },
-                   { tag: "file://test.txt", input: "file://test.txt", expected: "test.txt" },
-                   { tag: "file:/test.txt", input: "file:/test.txt", expected: "test.txt"},
+                   { tag: driveLetter() + "/test.txt", input: driveLetter() + "/test.txt", expected: "test.txt" },
+                   { tag: driveLetter() + "test.txt", input: driveLetter() + "test.txt", expected: "Failed to Upload" },
+                   { tag: driveLetter() + "/tést.txt", input: driveLetter() + "/tést.txt", expected: "tést.txt" },
+                   { tag: driveLetter() + "/t%65st.txt", input: driveLetter() + "/t%65st.txt", expected: "t%65st.txt" },
+                   { tag: "file:///" + driveLetter() + "test.txt", input: "file:///" + driveLetter() + "test.txt", expected: "test.txt" },
+                   { tag: "file:///" + driveLetter() + "tést.txt", input: "file:///" + driveLetter() + "tést.txt", expected: "tést.txt" },
+                   { tag: "file:///" + driveLetter() + "t%65st.txt", input: "file:///" + driveLetter() + "t%65st.txt", expected: "test.txt" },
+                   { tag: "file://" + driveLetter() + "test.txt", input: "file://" + driveLetter() + "test.txt", expected: "test.txt" },
+                   { tag: "file:/" + driveLetter() + "test.txt", input: "file:/" + driveLetter() + "test.txt", expected: "test.txt"},
                    { tag: "file:test//test.txt", input: "file:test//test.txt", expected: "Failed to Upload" },
                    { tag: "http://test.txt", input: "http://test.txt", expected: "Failed to Upload" },
                    { tag: "qrc:/test.txt", input: "qrc:/test.txt", expected: "Failed to Upload" },
@@ -159,9 +165,9 @@ TestWebEngineView {
 
         function test_acceptMultipleFilesWithCustomDialog_data() {
             return [
-                   { tag: "path", input: ["/test1.txt", "/test2.txt"], expectedValue: "test1.txt,test2.txt" },
-                   { tag: "file", input: ["file:///test1.txt", "file:/test2.txt"], expectedValue: "test1.txt,test2.txt" },
-                   { tag: "mixed", input: ["file:///test1.txt", "/test2.txt"], expectedValue: "test1.txt,test2.txt" },
+                   { tag: "path", input: [driveLetter() + "/test1.txt", driveLetter() + "/test2.txt"], expectedValue: "test1.txt,test2.txt" },
+                   { tag: "file", input: ["file:///" + driveLetter() + "test1.txt", "file:/" + driveLetter() + "test2.txt"], expectedValue: "test1.txt,test2.txt" },
+                   { tag: "mixed", input: ["file:///" + driveLetter() + "test1.txt", driveLetter() + "/test2.txt"], expectedValue: "test1.txt,test2.txt" },
             ];
         }
 
@@ -194,6 +200,64 @@ TestWebEngineView {
             keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
             tryVerify(function() { return finished; });
             tryCompare(webEngineView, "title", row.expectedValue);
+            webEngineView.fileDialogRequested.disconnect(acceptedFileHandler);
+        }
+
+        function test_acceptFileOnWindows_data() {
+            return [
+                   { tag: "C:test.txt", input: "C:test.txt", expected: "Failed to Upload"},
+                   { tag: "C:test:txt", input: "C:test:txt", expected: "Failed to Upload"},
+                   { tag: "C:/test.txt", input: "C:/test.txt", expected: "test.txt"},
+                   { tag: "C:\\test.txt", input: "C:\\test.txt", expected: "test.txt"},
+                   { tag: "C:\\Documents and Settings\\test\\test.txt", input: "C:\\Documents and Settings\\test\\test.txt", expected: "test.txt"},
+                   { tag: "\\\\applib\\products\\a%2Db\\ abc%5F9\\t.est\\test.txt", input: "file://applib/products/a%2Db/ abc%5F9/4148.920a/media/test.txt", expected: "test.txt"},
+                   { tag: "file://applib/products/a%2Db/ abc%5F9/t.est/test.txt", input: "file://applib/products/a%2Db/ abc%5F9/4148.920a/media/test.txt", expected: "test.txt"},
+                   { tag: "file://applib/products/a-b/abc_1/t.est/test.txt", input: "file://applib/products/a-b/abc_1/t.est/test.txt", expected: "test.txt"},
+                   { tag: "file:\\\\applib\\products\\a-b\\abc_1\\t:est\\test.txt", input: "file:\\\\applib\\products\\a-b\\abc_1\\t:est\\test.txt", expected: "test.txt"},
+                   { tag: "file:C:/test.txt", input: "file:C:/test.txt", expected: "Failed to Upload"},
+                   { tag: "file:/C:/test.txt", input: "file:/C:/test.txt", expected: "Failed to Upload"},
+                   { tag: "file://C:/test.txt", input: "file://C:/test.txt", expected: "Failed to Upload"},
+                   { tag: "file:///C:test.txt", input: "file:///C:test.txt", expected: "Failed to Upload"},
+                   { tag: "file:///C:/test.txt", input: "file:///C:/test.txt", expected: "test.txt"},
+                   { tag: "file:///C:\\test.txt", input: "file:///C:\\test.txt", expected: "test.txt"},
+                   { tag: "file:\\//C:/test.txt", input: "file:\\//C:/test.txt", expected: "test.txt"},
+                   { tag: "file:\\\\/C:\\test.txt", input: "file:\\\\/C:\\test.txt", expected: "test.txt"},
+                   { tag: "\\\\?\\C:/test.txt", input: "\\\\?\\C:/test.txt", expected: "Failed to Upload"},
+            ];
+        }
+
+        function test_acceptFileOnWindows(row) {
+            if (Qt.platform.os !== "windows")
+                skip("Windows-only test");
+
+            // Default dialog
+            webEngineView.url = Qt.resolvedUrl("singlefileupload.html");
+            verify(webEngineView.waitForLoadSucceeded());
+
+            FilePickerParams.selectFiles = true;
+            FilePickerParams.selectedFilesUrl.push(row.input);
+
+            keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
+            tryCompare(FilePickerParams, "filePickerOpened", true);
+            tryCompare(webEngineView, "title", row.expected);
+
+
+            // Custom dialog
+            var finished = false;
+
+            function acceptedFileHandler(request) {
+                request.accepted = true;
+                request.dialogAccept(row.input);
+                finished = true;
+            }
+
+            webEngineView.fileDialogRequested.connect(acceptedFileHandler);
+            webEngineView.url = Qt.resolvedUrl("singlefileupload.html");
+            verify(webEngineView.waitForLoadSucceeded());
+
+            keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
+            tryVerify(function() { return finished; });
+            tryCompare(webEngineView, "title", row.expected);
             webEngineView.fileDialogRequested.disconnect(acceptedFileHandler);
         }
     }
