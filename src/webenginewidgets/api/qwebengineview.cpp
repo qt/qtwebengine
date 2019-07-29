@@ -61,6 +61,7 @@ void QWebEngineViewPrivate::pageChanged(QWebEnginePage *oldPage, QWebEnginePage 
     Q_Q(QWebEngineView);
 
     if (oldPage) {
+        oldPage->d_ptr->wasHidden();
         oldPage->disconnect(q);
     }
 
@@ -74,6 +75,8 @@ void QWebEngineViewPrivate::pageChanged(QWebEnginePage *oldPage, QWebEnginePage 
         QObject::connect(newPage, &QWebEnginePage::loadFinished, q, &QWebEngineView::loadFinished);
         QObject::connect(newPage, &QWebEnginePage::selectionChanged, q, &QWebEngineView::selectionChanged);
         QObject::connect(newPage, &QWebEnginePage::renderProcessTerminated, q, &QWebEngineView::renderProcessTerminated);
+        if (q->isVisible())
+            newPage->d_ptr->wasShown();
     }
 
     auto oldUrl = oldPage ? oldPage->url() : QUrl();

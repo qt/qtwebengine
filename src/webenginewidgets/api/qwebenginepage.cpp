@@ -175,7 +175,6 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     wasShownTimer.setSingleShot(true);
     QObject::connect(&wasShownTimer, &QTimer::timeout, [this](){
         ensureInitialized();
-        wasShown();
     });
 
     profile->d_ptr->addWebContentsAdapterClient(this);
@@ -214,6 +213,9 @@ void QWebEnginePagePrivate::initializationFinished()
         adapter->setAudioMuted(defaultAudioMuted);
     if (!qFuzzyCompare(adapter->currentZoomFactor(), defaultZoomFactor))
         adapter->setZoomFactor(defaultZoomFactor);
+
+    if (view && view->isVisible())
+        adapter->wasShown();
 
     scriptCollection.d->initializationFinished(adapter);
 

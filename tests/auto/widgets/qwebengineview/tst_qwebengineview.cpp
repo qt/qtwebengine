@@ -192,6 +192,8 @@ private Q_SLOTS:
     void webUIURLs_data();
     void webUIURLs();
     void visibilityState();
+    void visibilityState2();
+    void visibilityState3();
     void jsKeyboardEvent();
     void deletePage();
     void closeOpenerTab();
@@ -3104,6 +3106,38 @@ void tst_QWebEngineView::visibilityState()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QCOMPARE(evaluateJavaScriptSync(view.page(), "document.visibilityState").toString(), QStringLiteral("visible"));
+}
+
+void tst_QWebEngineView::visibilityState2()
+{
+    QWebEngineView view;
+    QSignalSpy spy(&view, &QWebEngineView::loadFinished);
+    view.show();
+    view.load(QStringLiteral("about:blank"));
+    view.hide();
+    QVERIFY(spy.count() || spy.wait());
+    QVERIFY(spy.takeFirst().takeFirst().toBool());
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.visibilityState").toString(), QStringLiteral("hidden"));
+}
+
+void tst_QWebEngineView::visibilityState3()
+{
+    QWebEnginePage page1;
+    QWebEnginePage page2;
+    QSignalSpy spy1(&page1, &QWebEnginePage::loadFinished);
+    QSignalSpy spy2(&page2, &QWebEnginePage::loadFinished);
+    page1.load(QStringLiteral("about:blank"));
+    page2.load(QStringLiteral("about:blank"));
+    QVERIFY(spy1.count() || spy1.wait());
+    QVERIFY(spy2.count() || spy2.wait());
+    QWebEngineView view;
+    view.setPage(&page1);
+    view.show();
+    QCOMPARE(evaluateJavaScriptSync(&page1, "document.visibilityState").toString(), QStringLiteral("visible"));
+    QCOMPARE(evaluateJavaScriptSync(&page2, "document.visibilityState").toString(), QStringLiteral("hidden"));
+    view.setPage(&page2);
+    QCOMPARE(evaluateJavaScriptSync(&page1, "document.visibilityState").toString(), QStringLiteral("hidden"));
+    QCOMPARE(evaluateJavaScriptSync(&page2, "document.visibilityState").toString(), QStringLiteral("visible"));
 }
 
 void tst_QWebEngineView::jsKeyboardEvent()
