@@ -159,7 +159,7 @@ void URLRequestCustomJob::GetResponseInfo(HttpResponseInfo* info)
         headers += "Access-Control-Allow-Credentials: true\n";
     }
 
-    info->headers = new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+    info->headers = new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(headers));
 }
 
 bool URLRequestCustomJob::IsRedirectResponse(GURL* location, int* http_status_code, bool* /*insecure_scheme_was_upgraded*/)

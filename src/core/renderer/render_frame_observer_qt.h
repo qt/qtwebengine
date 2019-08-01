@@ -50,6 +50,9 @@
 namespace content {
 class RenderFrame;
 }
+namespace web_cache {
+class WebCacheImpl;
+}
 
 namespace QtWebEngineCore {
 
@@ -58,7 +61,8 @@ class RenderFrameObserverQt
         , public content::RenderFrameObserverTracker<RenderFrameObserverQt>
 {
 public:
-    explicit RenderFrameObserverQt(content::RenderFrame* render_frame);
+    explicit RenderFrameObserverQt(content::RenderFrame* render_frame,
+                                   web_cache::WebCacheImpl* web_cache_impl);
     ~RenderFrameObserverQt();
 
 #if QT_CONFIG(webengine_pepper_plugins)
@@ -74,8 +78,11 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(RenderFrameObserverQt);
 
+    void ReadyToCommitNavigation(blink::WebDocumentLoader *);
+
     bool m_isFrameDetached;
     service_manager::BinderRegistry registry_;
+    web_cache::WebCacheImpl *m_web_cache_impl;
 };
 
 } // namespace QtWebEngineCore

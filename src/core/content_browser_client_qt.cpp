@@ -76,6 +76,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "printing/buildflags/buildflags.h"
 #include "qtwebengine/browser/qtwebengine_content_browser_overlay_manifest.h"
 #include "qtwebengine/browser/qtwebengine_content_renderer_overlay_manifest.h"
@@ -148,6 +149,11 @@
 #include "extensions/common/constants.h"
 #include "common/extensions/extensions_client_qt.h"
 #include "renderer_host/resource_dispatcher_host_delegate_qt.h"
+#endif
+
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#include "media/mojo/interfaces/constants.mojom.h"
+#include "media/mojo/services/media_service_factory.h"
 #endif
 
 #include <QGuiApplication>
@@ -249,7 +255,6 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
 }
 
 ContentBrowserClientQt::ContentBrowserClientQt()
-    : m_browserMainParts(0)
 {
 }
 
@@ -257,10 +262,9 @@ ContentBrowserClientQt::~ContentBrowserClientQt()
 {
 }
 
-content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const content::MainFunctionParams&)
+std::unique_ptr<content::BrowserMainParts> ContentBrowserClientQt::CreateBrowserMainParts(const content::MainFunctionParams&)
 {
-    m_browserMainParts = new BrowserMainPartsQt();
-    return m_browserMainParts;
+    return std::make_unique<BrowserMainPartsQt>();
 }
 
 void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost* host,
@@ -291,16 +295,16 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     host->GetChannel()->GetRemoteAssociatedInterface(&renderer_configuration);
     renderer_configuration->SetInitialConfiguration(is_incognito_process);
 
-    service_manager::mojom::ServicePtr service;
-    *service_request = mojo::MakeRequest(&service);
-    service_manager::mojom::PIDReceiverPtr pid_receiver;
+    mojo::PendingRemote<service_manager::mojom::Service> service;
+    *service_request = service.InitWithNewPipeAndPassReceiver();
     service_manager::Identity renderer_identity = host->GetChildIdentity();
+    mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
     ServiceQt::GetInstance()->connector()->RegisterServiceInstance(
                 service_manager::Identity("qtwebengine_renderer",
                                           renderer_identity.instance_group(),
                                           renderer_identity.instance_id(),
                                           base::Token::CreateRandom()),
-                std::move(service), mojo::MakeRequest(&pid_receiver));
+                std::move(service), metadata.BindNewPipeAndPassReceiver());
 }
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()
@@ -380,7 +384,7 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
                                                    int cert_error,
                                                    const net::SSLInfo &ssl_info,
                                                    const GURL &request_url,
-                                                   content::ResourceType resource_type,
+                                                   bool is_main_frame_request,
                                                    bool strict_enforcement,
                                                    bool expired_previous_decision,
                                                    const base::Callback<void(content::CertificateRequestResultType)> &callback)
@@ -393,7 +397,7 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
                             cert_error,
                             ssl_info,
                             request_url,
-                            resource_type,
+                            is_main_frame_request,
                             IsCertErrorFatal(cert_error),
                             strict_enforcement,
                             callback)));
@@ -558,37 +562,45 @@ void ContentBrowserClientQt::BindInterfaceRequestFromFrame(content::RenderFrameH
         m_frameInterfaces->TryBindInterface(interface_name, &interface_pipe);
 }
 
-void ContentBrowserClientQt::RegisterIOThreadServiceHandlers(content::ServiceManagerConnection *connection)
+void ContentBrowserClientQt::RunServiceInstance(const service_manager::Identity &identity,
+                                                mojo::PendingReceiver<service_manager::mojom::Service> *receiver)
 {
-    connection->AddServiceRequestHandler(
-            "qtwebengine",
-            ServiceQt::GetInstance()->CreateServiceQtRequestHandler());
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+    if (identity.name() == media::mojom::kMediaServiceName) {
+        service_manager::Service::RunAsyncUntilTermination(media::CreateMediaService(std::move(*receiver)));
+        return;
+    }
+#endif
+
+    content::ContentBrowserClient::RunServiceInstance(identity, receiver);
 }
 
-void ContentBrowserClientQt::RegisterOutOfProcessServices(content::ContentBrowserClient::OutOfProcessServiceMap *services)
+void ContentBrowserClientQt::RunServiceInstanceOnIOThread(const service_manager::Identity &identity,
+                                                          mojo::PendingReceiver<service_manager::mojom::Service> *receiver)
 {
-    (*services)[proxy_resolver::mojom::kProxyResolverServiceName] =
-            base::BindRepeating(&base::ASCIIToUTF16, "V8 Proxy Resolver");
+    if (identity.name() == "qtwebengine") {
+        ServiceQt::GetInstance()->CreateServiceQtRequestHandler().Run(std::move(*receiver));
+        return;
+    }
+
+    content::ContentBrowserClient::RunServiceInstance(identity, receiver);
 }
 
 base::Optional<service_manager::Manifest> ContentBrowserClientQt::GetServiceManifestOverlay(base::StringPiece name)
 {
-    if (name == content::mojom::kBrowserServiceName) {
+    if (name == content::mojom::kBrowserServiceName)
         return GetQtWebEngineContentBrowserOverlayManifest();
-    } else if (name == content::mojom::kPackagedServicesServiceName) {
-        service_manager::Manifest overlay;
-        overlay.packaged_services = GetQtWebEnginePackagedServiceManifests();
-        return overlay;
-    } else if (name == content::mojom::kRendererServiceName) {
+    else if (name == content::mojom::kRendererServiceName)
         return GetQtWebEngineContentRendererOverlayManifest();
-    }
 
     return base::nullopt;
 }
 
 std::vector<service_manager::Manifest> ContentBrowserClientQt::GetExtraServiceManifests()
 {
-    return std::vector<service_manager::Manifest>{GetQtWebEngineRendererManifest()};
+    auto manifests = GetQtWebEnginePackagedServiceManifests();
+    manifests.push_back(GetQtWebEngineRendererManifest());
+    return manifests;
 }
 
 bool ContentBrowserClientQt::CanCreateWindow(
@@ -748,16 +760,12 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
         bool is_main_frame,
         ui::PageTransition page_transition,
         bool has_user_gesture,
-        const std::string &method,
-        const net::HttpRequestHeaders &headers,
         network::mojom::URLLoaderFactoryRequest *factory_request,
         network::mojom::URLLoaderFactory *&out_factory)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_UNUSED(child_id);
     Q_UNUSED(navigation_data);
-    Q_UNUSED(method);
-    Q_UNUSED(headers);
 
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                              base::BindOnce(&LaunchURL,

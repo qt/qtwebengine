@@ -32,6 +32,7 @@ win32: DEFINES += NOMINMAX
 
 CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
 INCLUDEPATH += $$CHROMIUM_SRC_DIR \
+               $$CHROMIUM_SRC_DIR/third_party/boringssl/src/include \
                $$OUT_PWD/../../core/$$getConfigDir()/gen
 
 SOURCES += \

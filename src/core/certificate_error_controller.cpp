@@ -78,14 +78,14 @@ void CertificateErrorControllerPrivate::accept(bool accepted)
 CertificateErrorControllerPrivate::CertificateErrorControllerPrivate(int cert_error,
                                                                      const net::SSLInfo& ssl_info,
                                                                      const GURL &request_url,
-                                                                     content::ResourceType resource_type,
+                                                                     bool main_frame,
                                                                      bool fatal_error,
                                                                      bool strict_enforcement,
                                                                      const base::Callback<void(content::CertificateRequestResultType)>& cb
                                                                     )
     : certError(CertificateErrorController::CertificateError(cert_error))
     , requestUrl(toQt(request_url))
-    , resourceType(CertificateErrorController::ResourceType(resource_type))
+    , resourceType(main_frame ? CertificateErrorController::ResourceTypeMainFrame : CertificateErrorController::ResourceTypeOther)
     , fatalError(fatal_error)
     , strictEnforcement(strict_enforcement)
     , callback(cb)

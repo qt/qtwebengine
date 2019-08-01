@@ -65,10 +65,6 @@ if (enable_extensions) {
   ]
 }
 
-assert_no_deps = [
-  "//ui/views/mus",
-]
-
 defines = [
   "CHROMIUM_VERSION=\"" + chromium_version[0] + "\""
 ]

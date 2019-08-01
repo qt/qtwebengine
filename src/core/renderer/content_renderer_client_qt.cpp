@@ -153,14 +153,18 @@ void ContentRendererClientQt::RenderThreadStarted()
     // Allow XMLHttpRequests from qrc to file.
     blink::WebURL qrc(blink::KURL("qrc:"));
     blink::WebString file(blink::WebString::FromASCII("file"));
-    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(qrc, file, blink::WebString(), true,
+    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(qrc, file, blink::WebString(), 0,
+                                                            network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+                                                            network::mojom::CorsPortMatchMode::kAllowAnyPort,
                                                             network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // Allow the pdf viewer extension to access chrome resources
     blink::WebURL pdfViewerExtension(blink::KURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"));
     blink::WebString chromeResources(blink::WebString::FromASCII("chrome"));
-    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(pdfViewerExtension, chromeResources, blink::WebString(), true,
+    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(pdfViewerExtension, chromeResources, blink::WebString(), 0,
+                                                            network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+                                                            network::mojom::CorsPortMatchMode::kAllowAnyPort,
                                                             network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
     ExtensionsRendererClientQt::GetInstance()->RenderThreadStarted();
@@ -170,13 +174,14 @@ void ContentRendererClientQt::RenderThreadStarted()
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
 {
     // RenderViewObservers destroy themselves with their RenderView.
-    new RenderViewObserverQt(render_view, m_webCacheImpl.data());
+    new RenderViewObserverQt(render_view);
     UserResourceController::instance()->renderViewCreated(render_view);
 }
 
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)
 {
-    QtWebEngineCore::RenderFrameObserverQt *render_frame_observer = new QtWebEngineCore::RenderFrameObserverQt(render_frame);
+    QtWebEngineCore::RenderFrameObserverQt *render_frame_observer =
+            new QtWebEngineCore::RenderFrameObserverQt(render_frame, m_webCacheImpl.data());
 #if QT_CONFIG(webengine_webchannel)
     if (render_frame->IsMainFrame())
         new WebChannelIPCTransport(render_frame);

@@ -89,15 +89,17 @@
 
 namespace QtWebEngineCore {
 
-// Maps the LogSeverity defines in base/logging.h to the web engines message levels.
-static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32_t messageLevel)
+static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(blink::mojom::ConsoleMessageLevel log_level)
 {
-    if (messageLevel < 1)
+    switch (log_level) {
+    case blink::mojom::ConsoleMessageLevel::kVerbose:
+    case blink::mojom::ConsoleMessageLevel::kInfo:
         return WebContentsAdapterClient::Info;
-    else if (messageLevel > 1)
+    case blink::mojom::ConsoleMessageLevel::kWarning:
+        return WebContentsAdapterClient::Warning;
+    case blink::mojom::ConsoleMessageLevel::kError:
         return WebContentsAdapterClient::Error;
-
-    return WebContentsAdapterClient::Warning;
+    }
 }
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
@@ -566,10 +568,11 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost * /*frameHos
     });
 }
 
-bool WebContentsDelegateQt::DidAddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)
+bool WebContentsDelegateQt::DidAddMessageToConsole(content::WebContents *source, blink::mojom::ConsoleMessageLevel log_level,
+                                                   const base::string16 &message, int32_t line_no, const base::string16 &source_id)
 {
     Q_UNUSED(source)
-    m_viewClient->javaScriptConsoleMessage(mapToJavascriptConsoleMessageLevel(level), toQt(message), static_cast<int>(line_no), toQt(source_id));
+    m_viewClient->javaScriptConsoleMessage(mapToJavascriptConsoleMessageLevel(log_level), toQt(message), static_cast<int>(line_no), toQt(source_id));
     return false;
 }
 

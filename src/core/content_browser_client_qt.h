@@ -83,7 +83,7 @@ class ContentBrowserClientQt : public content::ContentBrowserClient {
 public:
     ContentBrowserClientQt();
     ~ContentBrowserClientQt();
-    content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) override;
+    std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(const content::MainFunctionParams&) override;
     void RenderProcessWillLaunch(content::RenderProcessHost *host,
                                  service_manager::mojom::ServiceRequest* service_request) override;
     void ResourceDispatcherHostCreated() override;
@@ -98,7 +98,7 @@ public:
                                int cert_error,
                                const net::SSLInfo &ssl_info,
                                const GURL &request_url,
-                               content::ResourceType resource_type,
+                               bool is_main_frame_request,
                                bool strict_enforcement,
                                bool expired_previous_decision,
                                const base::Callback<void(content::CertificateRequestResultType)> &callback) override;
@@ -120,8 +120,11 @@ public:
     void BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,
                                        const std::string& interface_name,
                                        mojo::ScopedMessagePipeHandle interface_pipe) override;
-    void RegisterIOThreadServiceHandlers(content::ServiceManagerConnection *connection) override;
-    void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
+    void RunServiceInstance(const service_manager::Identity &identity,
+                            mojo::PendingReceiver<service_manager::mojom::Service> *receiver) override;
+    void RunServiceInstanceOnIOThread(const service_manager::Identity &identity,
+                                      mojo::PendingReceiver<service_manager::mojom::Service> *receiver) override;
+
     std::vector<service_manager::Manifest> GetExtraServiceManifests() override;
     base::Optional<service_manager::Manifest> GetServiceManifestOverlay(base::StringPiece name) override;
     bool CanCreateWindow(content::RenderFrameHost *opener,
@@ -202,8 +205,6 @@ public:
             bool is_main_frame,
             ui::PageTransition page_transition,
             bool has_user_gesture,
-            const std::string &method,
-            const net::HttpRequestHeaders &headers,
             network::mojom::URLLoaderFactoryRequest *factory_request,
             network::mojom::URLLoaderFactory *&out_factory) override;
 
@@ -226,7 +227,6 @@ private:
     void InitFrameInterfaces();
     void AddNetworkHintsMessageFilter(int render_process_id, net::URLRequestContext *context);
 
-    BrowserMainPartsQt* m_browserMainParts;
     std::unique_ptr<content::ResourceDispatcherHostDelegate> m_resourceDispatcherHostDelegate;
     scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
     std::unique_ptr<service_manager::BinderRegistry> m_frameInterfaces;

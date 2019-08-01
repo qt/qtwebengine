@@ -252,8 +252,8 @@ void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t
     v8::Local<v8::Object> messageObject(v8::Object::New(isolate));
     v8::Maybe<bool> wasSet = messageObject->DefineOwnProperty(
                 context,
-                v8::String::NewFromUtf8(isolate, "data"),
-                v8::String::NewFromUtf8(isolate, json.constData(), v8::String::kNormalString, json.size()),
+                v8::String::NewFromUtf8(isolate, "data").ToLocalChecked(),
+                v8::String::NewFromUtf8(isolate, json.constData(), v8::NewStringType::kNormal, json.size()).ToLocalChecked(),
                 v8::PropertyAttribute(v8::ReadOnly | v8::DontDelete));
     DCHECK(!wasSet.IsNothing() && wasSet.FromJust());
 

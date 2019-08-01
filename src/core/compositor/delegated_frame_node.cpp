@@ -570,10 +570,10 @@ static bool areRenderPassStructuresEqual(const viz::CompositorFrame *frameData,
             if (quad->material != prevQuad->material)
                 return false;
 #ifndef QT_NO_OPENGL
-            if (quad->material == viz::DrawQuad::YUV_VIDEO_CONTENT)
+            if (quad->material == viz::DrawQuad::Material::kYuvVideoContent)
                 return false;
 #ifdef GL_OES_EGL_image_external
-            if (quad->material == viz::DrawQuad::STREAM_VIDEO_CONTENT)
+            if (quad->material == viz::DrawQuad::Material::kStreamVideoContent)
                 return false;
 #endif // GL_OES_EGL_image_external
 #endif // QT_NO_OPENGL
@@ -840,7 +840,7 @@ void DelegatedFrameNode::handleQuad(
     RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     switch (quad->material) {
-    case viz::DrawQuad::RENDER_PASS: {
+    case viz::DrawQuad::Material::kRenderPass: {
         const viz::RenderPassDrawQuad *renderPassQuad = viz::RenderPassDrawQuad::MaterialCast(quad);
         if (!renderPassQuad->mask_texture_size.IsEmpty()) {
             const CompositorResource *resource = findAndHoldResource(renderPassQuad->mask_resource_id(), resourceTracker);
@@ -854,7 +854,7 @@ void DelegatedFrameNode::handleQuad(
 
         break;
     }
-    case viz::DrawQuad::TEXTURE_CONTENT: {
+    case viz::DrawQuad::Material::kTextureContent: {
         const viz::TextureDrawQuad *tquad = viz::TextureDrawQuad::MaterialCast(quad);
         const CompositorResource *resource = findAndHoldResource(tquad->resource_id(), resourceTracker);
         QSGTexture *texture =
@@ -872,7 +872,7 @@ void DelegatedFrameNode::handleQuad(
             currentLayerChain);
         break;
     }
-    case viz::DrawQuad::SOLID_COLOR: {
+    case viz::DrawQuad::Material::kSolidColor: {
         const viz::SolidColorDrawQuad *scquad = viz::SolidColorDrawQuad::MaterialCast(quad);
         // Qt only supports MSAA and this flag shouldn't be needed.
         // If we ever want to use QSGRectangleNode::setAntialiasing for this we should
@@ -882,7 +882,7 @@ void DelegatedFrameNode::handleQuad(
         break;
 #ifndef QT_NO_OPENGL
     }
-    case viz::DrawQuad::DEBUG_BORDER: {
+    case viz::DrawQuad::Material::kDebugBorder: {
         const viz::DebugBorderDrawQuad *dbquad = viz::DebugBorderDrawQuad::MaterialCast(quad);
 
         QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 4);
@@ -905,7 +905,7 @@ void DelegatedFrameNode::handleQuad(
         break;
 #endif
     }
-    case viz::DrawQuad::TILED_CONTENT: {
+    case viz::DrawQuad::Material::kTiledContent: {
         const viz::TileDrawQuad *tquad = viz::TileDrawQuad::MaterialCast(quad);
         const CompositorResource *resource = findAndHoldResource(tquad->resource_id(), resourceTracker);
         nodeHandler->setupTextureContentNode(
@@ -915,7 +915,7 @@ void DelegatedFrameNode::handleQuad(
         break;
 #ifndef QT_NO_OPENGL
     }
-    case viz::DrawQuad::YUV_VIDEO_CONTENT: {
+    case viz::DrawQuad::Material::kYuvVideoContent: {
         const viz::YUVVideoDrawQuad *vquad = viz::YUVVideoDrawQuad::MaterialCast(quad);
         const CompositorResource *yResource =
             findAndHoldResource(vquad->y_plane_resource_id(), resourceTracker);
@@ -941,7 +941,7 @@ void DelegatedFrameNode::handleQuad(
         break;
 #ifdef GL_OES_EGL_image_external
     }
-    case viz::DrawQuad::STREAM_VIDEO_CONTENT: {
+    case viz::DrawQuad::Material::kStreamVideoContent: {
         const viz::StreamVideoDrawQuad *squad = viz::StreamVideoDrawQuad::MaterialCast(quad);
         const CompositorResource *resource = findAndHoldResource(squad->resource_id(), resourceTracker);
         MailboxTexture *texture = static_cast<MailboxTexture *>(
@@ -954,10 +954,10 @@ void DelegatedFrameNode::handleQuad(
 #endif // GL_OES_EGL_image_external
 #endif // QT_NO_OPENGL
     }
-    case viz::DrawQuad::SURFACE_CONTENT:
+    case viz::DrawQuad::Material::kSurfaceContent:
         Q_UNREACHABLE();
     default:
-        qWarning("Unimplemented quad material: %d", quad->material);
+        qWarning("Unimplemented quad material: %d", (int)quad->material);
     }
 }
 

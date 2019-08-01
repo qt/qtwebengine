@@ -730,7 +730,7 @@ void BrowserAccessibilityQt::scrollToSubstring(int startIndex, int endIndex)
     int count = characterCount();
     if (startIndex < endIndex && endIndex < count)
         manager()->ScrollToMakeVisible(*this,
-                                       GetRootFrameRangeBoundsRect(
+                                       GetRootFrameHypertextRangeBoundsRect(
                                            startIndex,
                                            endIndex - startIndex,
                                            ui::AXClippingBehavior::kUnclipped));

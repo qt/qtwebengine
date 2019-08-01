@@ -102,15 +102,6 @@ public:
     // Returns false if content scripts are forbidden from running on |url|.
     bool IsScriptableURL(const GURL &url, std::string *error) const override;
 
-    // Determines if certain fatal extensions errors should be surpressed
-    // (i.e., only logged) or allowed (i.e., logged before crashing).
-    bool ShouldSuppressFatalErrors() const override;
-
-    // Records that a fatal error was caught and suppressed. It is expected that
-    // embedders will only do so if ShouldSuppressFatalErrors at some point
-    // returned true.
-    void RecordDidSuppressFatalError() override;
-
     // Returns the base webstore URL prefix.
     const GURL &GetWebstoreBaseURL() const override;
 

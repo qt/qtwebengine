@@ -50,13 +50,13 @@ public:
     BrowsingDataRemoverDelegateQt() {}
     ~BrowsingDataRemoverDelegateQt() override {}
 
-    content::BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher GetOriginTypeMatcher() const override;
-    bool MayRemoveDownloadHistory() const override;
+    content::BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher GetOriginTypeMatcher() override;
+    bool MayRemoveDownloadHistory() override;
     void RemoveEmbedderData(
         const base::Time &delete_begin,
         const base::Time &delete_end,
         int remove_mask,
-        const content::BrowsingDataFilterBuilder &filter_builder,
+        content::BrowsingDataFilterBuilder *filter_builder,
         int origin_type_mask,
         base::OnceClosure callback) override;
 };

@@ -72,7 +72,6 @@
 #include "content/public/common/main_function_params.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/ipc/host/gpu_switches.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "mojo/core/embedder/embedder.h"
@@ -90,6 +89,10 @@
 #include "sandbox/win/src/sandbox_types.h"
 #include "content/public/app/sandbox_helper_win.h"
 #endif // OS_WIN
+
+#if defined(Q_OS_MACOS)
+#include "base/mac/foundation_util.h"
+#endif
 
 #ifndef QT_NO_ACCESSIBILITY
 #include "accessibility_activation_observer.h"
@@ -390,7 +393,13 @@ WebEngineContext::WebEngineContext()
     : m_mainDelegate(new ContentMainDelegateQt)
     , m_globalQObject(new QObject())
 {
-    base::ThreadPool::Create("Browser");
+#if defined(Q_OS_MACOS)
+    // The bundled handling is currently both completely broken in Chromium,
+    // and unnecessary for us.
+    base::mac::SetOverrideAmIBundled(false);
+#endif
+
+    base::ThreadPoolInstance::Create("Browser");
     m_contentRunner.reset(content::ContentMainRunner::Create());
     m_browserRunner = content::BrowserMainRunner::Create();
 
@@ -460,8 +469,6 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
     // Same problem with Pepper using OpenGL images.
     parsedCommandLine->AppendSwitch(switches::kDisablePepper3DImageChromium);
-    // Same problem with select popups.
-    parsedCommandLine->AppendSwitch(switches::kDisableNativeGpuMemoryBuffers);
 #endif
 
 #if defined(Q_OS_WIN)
@@ -646,7 +653,7 @@ WebEngineContext::WebEngineContext()
 
     // This block mirrors ContentMainRunnerImpl::RunServiceManager():
     m_mainDelegate->PreCreateMainMessageLoop();
-    base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
+    base::MessagePump::OverrideMessagePumpForUIFactory(messagePumpFactory);
     content::BrowserTaskExecutor::Create();
     m_mainDelegate->PostEarlyInitialization(false);
     content::StartBrowserThreadPool();

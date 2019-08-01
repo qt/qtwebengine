@@ -55,6 +55,7 @@
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
+#include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_scheme.h"
@@ -67,8 +68,6 @@
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -103,6 +102,8 @@
 #include <mutex>
 
 namespace QtWebEngineCore {
+
+static scoped_refptr<net::CertNetFetcherImpl> s_certNetFetcher;
 
 static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first,
                                         const net::HttpNetworkSession::Params &second)
@@ -182,9 +183,10 @@ ProfileIODataQt::~ProfileIODataQt()
 #if defined(USE_NSS_CERTS)
         net::SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
-#if defined(OS_LINUX) ||defined(OS_MACOSX)
-        net::ShutdownGlobalCertNetFetcher();
-#endif
+        if (s_certNetFetcher) {
+            s_certNetFetcher->Shutdown();
+            s_certNetFetcher.reset();
+        }
     }
 
     if (m_urlRequestContext && m_urlRequestContext->proxy_resolution_service())
@@ -242,7 +244,7 @@ void ProfileIODataQt::initializeOnIOThread()
     m_hostResolver = net::HostResolver::CreateStandaloneResolver(nullptr);
     m_urlRequestContext.reset(new net::URLRequestContext());
     m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
-    m_urlRequestContext->set_enable_brotli(base::FeatureList::IsEnabled(features::kBrotliEncoding));
+    m_urlRequestContext->set_enable_brotli(true);
     m_urlRequestContext->set_host_resolver(m_hostResolver.get());
     // this binds factory to io thread
     m_weakPtr = m_weakPtrFactory.GetWeakPtr();
@@ -316,7 +318,7 @@ void ProfileIODataQt::generateStorage()
     net::ProxyConfigService *proxyConfigService = m_proxyConfigService.fetchAndStoreAcquire(0);
     Q_ASSERT(proxyConfigService);
 
-    std::unique_ptr<net::CertVerifier> cert_verifier = net::CertVerifier::CreateDefault();
+    std::unique_ptr<net::CertVerifier> cert_verifier = net::CertVerifier::CreateDefault(s_certNetFetcher);
     net::CertVerifier::Config config;
     // Enable revocation checking:
     config.enable_rev_checking = true;
@@ -330,8 +332,7 @@ void ProfileIODataQt::generateStorage()
     for (const auto &ct_log : certificate_transparency::GetKnownLogs()) {
         scoped_refptr<const net::CTLogVerifier> log_verifier =
                 net::CTLogVerifier::Create(std::string(ct_log.log_key, ct_log.log_key_length),
-                                           ct_log.log_name,
-                                           ct_log.log_dns_domain);
+                                           ct_log.log_name);
         if (!log_verifier)
             continue;
         ct_logs.push_back(std::move(log_verifier));
@@ -389,9 +390,7 @@ void ProfileIODataQt::generateCookieStore()
 
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
 
-    // FIXME: Add code to remove the old database.
-    m_storage->set_channel_id_service(
-            std::make_unique<net::ChannelIDService>(new net::DefaultChannelIDStore(nullptr)));
+//    // FIXME: Add code to remove the old channel-id database.
 
     std::unique_ptr<net::CookieStore> cookieStore;
     switch (m_persistentCookiesPolicy) {
@@ -425,7 +424,6 @@ void ProfileIODataQt::generateCookieStore()
     }
 
     net::CookieMonster * const cookieMonster = static_cast<net::CookieMonster*>(cookieStore.get());
-    cookieStore->SetChannelIDServiceID(m_urlRequestContext->channel_id_service()->GetUniqueID());
     m_cookieDelegate->setCookieMonster(cookieMonster);
     m_storage->set_cookie_store(std::move(cookieStore));
 
@@ -582,9 +580,9 @@ void ProfileIODataQt::setGlobalCertificateVerification()
         // Set request context used by NSS for OCSP requests.
         net::SetURLRequestContextForNSSHttpIO(m_urlRequestContext.get());
 #endif
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-        net::SetGlobalCertNetFetcher(net::CreateCertNetFetcher(m_urlRequestContext.get()));
-#endif
+        if (!s_certNetFetcher)
+            s_certNetFetcher = base::MakeRefCounted<net::CertNetFetcherImpl>();
+        s_certNetFetcher->SetURLRequestContext(m_urlRequestContext.get());
     }
 }
 
@@ -765,6 +763,8 @@ void ProfileIODataQt::updateUsedForGlobalCertificateVerification()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
+    if (m_useForGlobalCertificateVerification == m_profileAdapter->isUsedForGlobalCertificateVerification())
+        return;
     m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
 
     if (m_useForGlobalCertificateVerification)
