@@ -43,6 +43,19 @@
     },
 
     "libraries": {
+        "webengine-alsa": {
+            "label": "alsa",
+            "test": {
+                "tail": [
+                    "#if SND_LIB_VERSION < 0x1000a  // 1.0.10",
+                    "#error Alsa version found too old, require >= 1.0.10",
+                    "#endif"
+                ]
+            },
+            "headers" : ["alsa/asoundlib.h"],
+            "sources" : [{ "type": "pkgConfig", "args": "alsa" }
+            ]
+        },
         "webengine-dbus": {
             "label": "d-bus",
             "sources": [
@@ -236,11 +249,6 @@
         }
     },
     "tests" : {
-        "webengine-alsa": {
-            "label": "alsa",
-            "test": "alsa",
-            "type": "compile"
-        },
         "webengine-host-compiler": {
             "label": "host compiler",
             "test": "hostcompiler",
@@ -465,7 +473,7 @@
         },
         "webengine-alsa": {
             "label": "Use ALSA",
-            "condition": "config.unix && tests.webengine-alsa",
+            "condition": "config.unix && libs.webengine-alsa",
             "output": [ "privateFeature" ]
         },
         "webengine-v8-snapshot": {
