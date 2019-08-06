@@ -1,0 +1,28 @@
+{
+    "module": "webenginewidgets",
+    "condition": "module.webenginecore && features.webengine-widgets",
+    "depends": [
+        "webenginecore-private"
+    ],
+    "commandline": {
+        "options": {
+            "webengine-widgets": "boolean"
+        }
+    },
+    "features": {
+       "webengine-widgets": {
+            "label": "Support Qt WebEngine Widgets",
+            "purpose": "Provides WebEngine Widgets support.",
+            "condition": "module.widgets",
+            "output": [ "privateFeature" ]
+        }
+    },
+    "summary": [
+        {
+            "section": "Qt WebEngineWidgets",
+            "entries": [
+                "webengine-widgets"
+            ]
+        }
+    ]
+}
