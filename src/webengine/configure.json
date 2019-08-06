@@ -3,6 +3,7 @@
     "depends": [
         "webenginecore-private"
     ],
+    "condition": "module.webenginecore",
     "features": {
         "webengine-ui-delegates": {
             "label": "UI Delegates",
