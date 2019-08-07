@@ -250,6 +250,19 @@
                 { "type": "pkgConfig", "args": "freetype2" }
             ]
         },
+        "webengine-snappy": {
+            "label": "snappy",
+            "test": {
+                "main": [
+                     "snappy::Source *src = 0;",
+                     "snappy::Sink *sink = 0;"
+                ]
+            },
+            "headers": "snappy.h",
+            "sources": [
+                "-lsnappy"
+            ]
+        },
         "webengine-x11" : {
             "label" : "x11",
             "sources": [
@@ -272,11 +285,6 @@
         "webengine-libvpx": {
             "label": "libvpx",
             "test": "libvpx",
-            "type": "compile"
-        },
-        "webengine-snappy": {
-            "label": "snappy",
-            "test": "snappy",
             "type": "compile"
         },
         "webengine-winversion": {
@@ -510,7 +518,7 @@
         },
         "webengine-system-snappy" : {
             "label": "snappy",
-            "condition": "config.unix && tests.webengine-snappy",
+            "condition": "config.unix && libs.webengine-snappy",
             "output": [ "privateFeature" ]
         },
         "webengine-winversion" : {
