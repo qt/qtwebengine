@@ -318,8 +318,14 @@
         },
         "webengine-winversion": {
             "label": "winversion",
-            "test": "winversion",
-            "type": "compile"
+            "type": "compile",
+            "test": {
+                 "head" : [
+                    "#if !defined(__clang__) && _MSC_FULL_VER < 191426428",
+                    "#error unsupported Visual Studio version",
+                    "#endif"
+                 ]
+            }
         },
         "webengine-protoc": {
             "label": "protoc",
