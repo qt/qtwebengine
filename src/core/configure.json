@@ -294,8 +294,14 @@
         },
         "webengine-khr": {
             "label": "khr",
-            "test": "khr",
-            "type": "compile"
+            "type": "compile",
+            "test": {
+                "include": "KHR/khrplatform.h",
+                "qmake" : [
+                    "!isEmpty(QMAKE_INCDIR_EGL): INCLUDEPATH += $$QMAKE_INCDIR_EGL",
+                    "!isEmpty(QMAKE_INCDIR_OPENGL): INCLUDEPATH += $$QMAKE_INCDIR_OPENGL"
+                ]
+            }
         },
         "webengine-winversion": {
             "label": "winversion",
