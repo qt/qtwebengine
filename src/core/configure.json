@@ -146,10 +146,23 @@
                 { "type": "pkgConfig", "args": "poppler-cpp" }
             ]
         },
-        "pulseaudio": {
+        "webengine-pulseaudio": {
             "label": "pulseaudio >= 0.9.10",
             "sources": [
                 { "type": "pkgConfig", "args": "libpulse >= 0.9.10 libpulse-mainloop-glib" }
+            ]
+        },
+        "webengine-re2": {
+            "label": "re2",
+            "test" : {
+                "main": [
+                    "std::string s;",
+                    "RE2 re2(s);"
+                ]
+            },
+            "headers": "re2/re2.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "re2" }
             ]
         },
         "webengine-icu": {
@@ -345,11 +358,6 @@
         "webengine-embedded-build": {
             "label": "embedded",
             "type": "embedded"
-        },
-        "webengine-re2": {
-            "label": "re2",
-            "test": "re2",
-            "type": "compile"
         },
         "webengine-glibc": {
             "label": "glibc > 2.26",
@@ -550,7 +558,7 @@
         "webengine-pulseaudio": {
             "label": "Use PulseAudio",
             "autoDetect": "config.unix",
-            "condition": "libs.pulseaudio",
+            "condition": "libs.webengine-pulseaudio",
             "output": [ "privateFeature" ]
         },
         "webengine-pepper-plugins": {
@@ -650,7 +658,7 @@
         "webengine-system-re2": {
             "label": "re2",
             "autoDetect": "config.unix",
-            "condition": "tests.webengine-re2",
+            "condition": "libs.webengine-re2",
             "output": [ "privateFeature" ]
         },
         "webengine-system-ninja": {
