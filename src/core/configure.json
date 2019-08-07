@@ -268,6 +268,21 @@
             "sources": [
                 { "type": "pkgConfig", "args": "x11" }
             ]
+        },
+        "webengine-libvpx": {
+            "label": "libvpx",
+            "test": {
+                "main": [
+                    "vpx_codec_cx_pkt pkt;",
+                    "pkt.data.frame.width[0] = 0u;",
+                    "pkt.data.frame.height[0] = 0u;"
+                ]
+            },
+            "headers": "vpx/vpx_encoder.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "vpx" },
+                "-lvpx"
+            ]
         }
     },
     "tests" : {
@@ -280,11 +295,6 @@
         "webengine-khr": {
             "label": "khr",
             "test": "khr",
-            "type": "compile"
-        },
-        "webengine-libvpx": {
-            "label": "libvpx",
-            "test": "libvpx",
             "type": "compile"
         },
         "webengine-winversion": {
@@ -513,7 +523,7 @@
         },
         "webengine-system-libvpx" : {
             "label": "libvpx",
-            "condition": "config.unix && tests.webengine-libvpx",
+            "condition": "config.unix && libs.webengine-libvpx",
             "output": [ "privateFeature" ]
         },
         "webengine-system-snappy" : {
