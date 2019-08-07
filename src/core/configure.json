@@ -128,12 +128,6 @@
                 { "type": "pkgConfig", "args": "libevent" }
             ]
         },
-        "webengine-libxml2": {
-            "label": "libxml2 and libxslt",
-            "sources": [
-                { "type": "pkgConfig", "args": "libxml-2.0 libxslt" }
-            ]
-        },
         "webengine-jsoncpp": {
             "label": "jsoncpp",
             "sources": [
@@ -214,6 +208,21 @@
             "sources": [
                 { "type": "pkgConfig", "args": "libjpeg" },
                 "-ljpeg"
+            ]
+        },
+        "webengine-libxml2": {
+            "label": "compatible libxml2 and libxslt",
+            "type": "compile",
+            "test": {
+                "tail": [
+                    "#if !defined(LIBXML_ICU_ENABLED)",
+                    "#error libxml icu not enabled",
+                    "#endif"
+                ]
+            },
+            "headers": "libxml/xmlversion.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "libxml-2.0 libxslt" }
             ]
         },
         "webengine-lcms2": {
@@ -321,12 +330,14 @@
         "webengine-glibc": {
             "label": "glibc > 2.26",
             "type": "compile",
-            "test": "glibc"
-        },
-        "webengine-libxml2-compatible": {
-            "label" : "compatible system libxml2",
-            "test" : "xml2",
-            "type": "compile"
+            "test": {
+                "include": "features.h",
+                "tail": [
+                    "#if __GLIBC__ < 2 || __GLIBC_MINOR__ < 27",
+                    "#error glibc versions below 2.27 are not supported",
+                    "#endif"
+                ]
+            }
         },
         "webengine-sanitizer": {
             "label" : "sanitizer support",
@@ -636,9 +647,7 @@
         },
         "webengine-system-libxml2": {
             "label": "libxml2 and libxslt",
-            "condition": "config.unix
-                         && libs.webengine-libxml2
-                         && tests.webengine-libxml2-compatible",
+            "condition": "config.unix && libs.webengine-libxml2",
             "output": [ "privateFeature" ]
         },
         "webengine-system-lcms2" : {
