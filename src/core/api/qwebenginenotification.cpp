@@ -58,6 +58,9 @@ using QtWebEngineCore::UserNotificationController;
 
     Web engine notifications are passed to the user in the
     \l WebEngineProfile::presentNotification() signal.
+
+    For more information about how to handle web notification, see the
+    \l{WebEngine Notifications Example}{Notification Example}.
 */
 
 /*!
@@ -71,6 +74,9 @@ using QtWebEngineCore::UserNotificationController;
 
     Web engine notifications are passed to the user through the custom handler
     provided with the \l QWebEngineProfile::setNotificationPresenter() call.
+
+    For more information about how to handle web notification, see the
+    \l{WebEngine Notifications Example}{Notification Example}.
 */
 
 class QWebEngineNotificationPrivate : public UserNotificationController::Client {
