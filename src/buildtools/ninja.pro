@@ -2,7 +2,7 @@ TEMPLATE = aux
 
 !debug_and_release: CONFIG += release
 
-include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
+include($$QTWEBENGINE_OUT_ROOT/src/qtwebengine-main-config.pri)
 QT_FOR_CONFIG += webenginecore-private
 
 build_pass|!debug_and_release {

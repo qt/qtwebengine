@@ -1,5 +1,4 @@
-include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-QT_FOR_CONFIG += webenginecore-private
+include($$QTWEBENGINE_OUT_ROOT/src/qtwebengine-main-config.pri)
 
 defineTest(isQtMinimum) {
     !equals(QT_MAJOR_VERSION, $$1): return(false)
@@ -24,6 +23,7 @@ defineTest(isPlatformSupported) {
     }
     isBuildingOnWin32() {
       skipBuild("Qt WebEngine on Windows must be built on a 64-bit machine.")
+      return(false)
     }
     !msvc|intel_icl {
       skipBuild("Qt WebEngine on Windows requires MSVC or Clang (MSVC mode).")

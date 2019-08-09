@@ -120,12 +120,26 @@ defineTest(qtConfTest_detectGn) {
     return(false)
 }
 
-defineTest(qtConfTest_embedded) {
+defineTest(qtConfTest_detectEmbedded) {
     lessThan(QT_MINOR_VERSION, 9) {
         cross_compile: return(true)
         return(false)
     }
     $$qtConfEvaluate("features.cross_compile"): return(true)
+    return(false)
+}
+
+defineTest(qtConfTest_detectXcb) {
+    #workaround for for not working 'depends' in main configure when no 'module'
+    QT_FOR_CONFIG += gui-private
+    qtConfig(xcb): return(true)
+    return(false)
+}
+
+defineTest(qtConfTest_detectDeveloperBuild) {
+    #workaround for for not working 'depends' in main configure when no 'module'
+    QT_FOR_CONFIG += core-private
+    qtConfig(private_tests): return(true) # enabled for developer-build
     return(false)
 }
 

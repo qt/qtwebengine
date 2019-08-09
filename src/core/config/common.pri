@@ -73,11 +73,11 @@ precompile_header {
     gn_args += enable_precompiled_headers=false
 }
 
-CONFIG(release, debug|release):!isDeveloperBuild() {
+CONFIG(release, debug|release):!qtConfig(webengine-developer-build) {
     gn_args += is_official_build=true
 } else {
     gn_args += is_official_build=false
-    !isDeveloperBuild(): gn_args += is_unsafe_developer_build=false
+    !qtConfig(webengine-developer-build): gn_args += is_unsafe_developer_build=false
 }
 
 CONFIG(release, debug|release) {
@@ -116,7 +116,7 @@ optimize_size: gn_args += optimize_for_size=true
     sanitize_undefined: gn_args += is_ubsan=true is_ubsan_vptr=true
 }
 
-qtConfig(webengine-v8-snapshot) {
+qtConfig(webengine-v8-snapshot):qtConfig(webengine-v8-snapshot-support) {
     gn_args += v8_use_snapshot=true
 } else {
     gn_args += v8_use_snapshot=false
