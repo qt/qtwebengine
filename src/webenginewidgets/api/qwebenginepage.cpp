@@ -1827,7 +1827,7 @@ void QWebEnginePagePrivate::setToolTip(const QString &toolTipText)
     }
 
     // Update tooltip if text was changed.
-    QString wrappedTip = QLatin1String("<p style=\"white-space:pre\">")
+    QString wrappedTip = QLatin1String("<p style=\"white-space:pre-wrap\">")
             % toolTipText.toHtmlEscaped().left(MaxTooltipLength)
             % QLatin1String("</p>");
     if (view->toolTip() != wrappedTip)
@@ -2159,7 +2159,7 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId,
     In addition, a page might also execute scripts
     added through QWebEngineProfile::scripts().
 
-    \sa QWebEngineScriptCollection, QWebEngineScript
+    \sa QWebEngineScriptCollection, QWebEngineScript, {Script Injection}
 */
 
 QWebEngineScriptCollection &QWebEnginePage::scripts()
