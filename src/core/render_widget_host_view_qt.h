@@ -40,10 +40,11 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_H
 #define RENDER_WIDGET_HOST_VIEW_QT_H
 
+#include "compositor/display_frame_sink.h"
+#include "delegated_frame_host_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 
 #include "base/memory/weak_ptr.h"
-#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_client.h"
@@ -53,7 +54,7 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
-#include "qtwebenginecoreglobal_p.h"
+
 #include <QMap>
 #include <QPoint>
 #include <QtGlobal>
@@ -104,6 +105,7 @@ class RenderWidgetHostViewQt
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
     , public content::TextInputManager::Observer
+    , public DisplayConsumer
 {
 public:
     enum LoadVisuallyCommittedState {
@@ -222,6 +224,9 @@ public:
     // Overridden from content::RenderFrameMetadataProvider::Observer
     void OnRenderFrameMetadataChangedAfterActivation() override;
 
+    // Overridden from DisplayConsumer
+    void scheduleUpdate() override;
+
     gfx::SizeF lastContentsSize() const { return m_lastContentsSize; }
     gfx::Vector2dF lastScrollOffset() const { return m_lastScrollOffset; }
 
@@ -231,6 +236,8 @@ public:
     ui::TextInputType getTextInputType() const;
 
 private:
+    friend class DelegatedFrameHostClientQt;
+
     void processMotionEvent(const ui::MotionEvent &motionEvent);
     void clearPreviousTouchMotionState();
     QList<QTouchEvent::TouchPoint> mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints);
@@ -250,6 +257,8 @@ private:
     gfx::Rect m_windowRectInDips;
     content::ScreenInfo m_screenInfo;
 
+    scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
+
     ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
     bool m_sendMotionActionDown;
@@ -258,6 +267,13 @@ private:
     QList<QTouchEvent::TouchPoint> m_previousTouchPoints;
     std::unique_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
+    const bool m_enableViz;
+    bool m_visible;
+    DelegatedFrameHostClientQt m_delegatedFrameHostClient{this};
+    std::unique_ptr<content::DelegatedFrameHost> m_delegatedFrameHost;
+    std::unique_ptr<ui::Layer> m_rootLayer;
+    std::unique_ptr<ui::Compositor> m_uiCompositor;
+    scoped_refptr<DisplayFrameSink> m_displayFrameSink;
     std::unique_ptr<Compositor> m_compositor;
     LoadVisuallyCommittedState m_loadVisuallyCommittedState;
 
@@ -271,7 +287,8 @@ private:
 
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
-    viz::ParentLocalSurfaceIdAllocator m_localSurfaceIdAllocator;
+    viz::ParentLocalSurfaceIdAllocator m_dfhLocalSurfaceIdAllocator;
+    viz::ParentLocalSurfaceIdAllocator m_uiCompositorLocalSurfaceIdAllocator;
 
     uint m_imState;
     int m_anchorPositionWithinSelection;
@@ -293,6 +310,8 @@ private:
     std::unique_ptr<ui::TouchSelectionController> m_touchSelectionController;
     gfx::SelectionBound m_selectionStart;
     gfx::SelectionBound m_selectionEnd;
+
+    base::WeakPtrFactory<RenderWidgetHostViewQt> m_weakPtrFactory{this};
 };
 
 } // namespace QtWebEngineCore

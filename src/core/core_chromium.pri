@@ -59,10 +59,14 @@ SOURCES = \
         compositor/compositor_resource_tracker.cpp \
         compositor/content_gpu_client_qt.cpp \
         compositor/delegated_frame_node.cpp \
+        compositor/display_frame_sink.cpp \
+        compositor/display_overrides.cpp \
+        compositor/display_software_output_surface.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
         content_utility_client_qt.cpp \
+        delegated_frame_host_client_qt.cpp \
         desktop_screen_qt.cpp \
         devtools_frontend_qt.cpp \
         devtools_manager_delegate_qt.cpp \
@@ -163,10 +167,13 @@ HEADERS = \
         compositor/compositor_resource_tracker.h \
         compositor/content_gpu_client_qt.h \
         compositor/delegated_frame_node.h \
+        compositor/display_frame_sink.h \
+        compositor/display_software_output_surface.h \
         content_client_qt.h \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \
         content_utility_client_qt.h \
+        delegated_frame_host_client_qt.h \
         desktop_screen_qt.h \
         devtools_frontend_qt.h \
         devtools_manager_delegate_qt.h \
@@ -292,11 +299,13 @@ qtConfig(webengine-printing-and-pdf) {
 contains(QT_CONFIG, opengl) {
     SOURCES += \
         compositor/compositor_resource_fence.cpp \
+        compositor/display_gl_output_surface.cpp \
+        compositor/display_gl_output_surface_qsg.cpp \
         compositor/stream_video_node.cpp \
         compositor/yuv_video_node.cpp
-
     HEADERS += \
         compositor/compositor_resource_fence.h \
+        compositor/display_gl_output_surface.h \
         compositor/stream_video_node.h \
         compositor/yuv_video_node.h
 }

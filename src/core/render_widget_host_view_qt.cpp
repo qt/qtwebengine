@@ -51,6 +51,9 @@
 #include "web_contents_adapter_client.h"
 #include "web_event_factory.h"
 
+#include "base/threading/thread_task_runner_handle.h"
+#include "components/viz/common/features.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -271,10 +274,12 @@ static content::ScreenInfo screenInfoFromQScreen(QScreen *screen)
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
     : content::RenderWidgetHostViewBase::RenderWidgetHostViewBase(widget)
+    , m_taskRunner(base::ThreadTaskRunnerHandle::Get())
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_sendMotionActionDown(false)
     , m_touchMotionStarted(false)
-    , m_compositor(new Compositor(widget))
+    , m_enableViz(features::IsVizDisplayCompositorEnabled())
+    , m_visible(false)
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
     , m_imeInProgress(false)
@@ -288,13 +293,38 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_mouseWheelPhaseHandler(this)
     , m_frameSinkId(host()->GetFrameSinkId())
 {
-    host()->SetView(this);
-
     if (GetTextInputManager())
         GetTextInputManager()->AddObserver(this);
 
     const QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
     m_imeHasHiddenTextCapability = context && context->hasCapability(QPlatformInputContext::HiddenTextCapability);
+
+    if (m_enableViz) {
+        m_rootLayer.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
+        m_rootLayer->SetColor(SK_ColorTRANSPARENT);
+
+        m_delegatedFrameHost.reset(new content::DelegatedFrameHost(
+                                           host()->GetFrameSinkId(),
+                                           &m_delegatedFrameHostClient,
+                                           true /* should_register_frame_sink_id */));
+
+        content::ImageTransportFactory *imageTransportFactory = content::ImageTransportFactory::GetInstance();
+        ui::ContextFactory *contextFactory = imageTransportFactory->GetContextFactory();
+        ui::ContextFactoryPrivate *contextFactoryPrivate = imageTransportFactory->GetContextFactoryPrivate();
+        m_uiCompositor.reset(new ui::Compositor(
+                                     contextFactoryPrivate->AllocateFrameSinkId(),
+                                     contextFactory,
+                                     contextFactoryPrivate,
+                                     m_taskRunner,
+                                     false /* enable_pixel_canvas */));
+        m_uiCompositor->SetAcceleratedWidget(gfx::kNullAcceleratedWidget); // null means offscreen
+        m_uiCompositor->SetRootLayer(m_rootLayer.get());
+
+        m_displayFrameSink = DisplayFrameSink::findOrCreate(m_uiCompositor->frame_sink_id());
+        m_displayFrameSink->connect(this);
+    } else {
+        m_compositor.reset(new Compositor(widget));
+    }
 
     if (host()->delegate() && host()->delegate()->GetInputEventRouter())
         host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(GetFrameSinkId(), this);
@@ -307,11 +337,19 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     m_touchSelectionController.reset(new ui::TouchSelectionController(m_touchSelectionControllerClient.get(), config));
 
     host()->render_frame_metadata_provider()->ReportAllFrameSubmissionsForTesting(true);
+
+    // May call SetNeedsBeginFrames
+    host()->SetView(this);
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+    m_delegate.reset();
+
     QObject::disconnect(m_adapterClientDestroyedConnection);
+
+    if (m_enableViz)
+        m_displayFrameSink->disconnect(this);
 
     if (text_input_manager_)
         text_input_manager_->RemoveObserver(this);
@@ -406,6 +444,8 @@ bool RenderWidgetHostViewQt::HasFocus()
 
 bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy()
 {
+    if (m_enableViz)
+        return m_delegatedFrameHost->CanCopyFromCompositingSurface();
     return true;
 }
 
@@ -413,6 +453,11 @@ void RenderWidgetHostViewQt::CopyFromSurface(const gfx::Rect &src_rect,
                                              const gfx::Size &output_size,
                                              base::OnceCallback<void(const SkBitmap &)> callback)
 {
+    if (m_enableViz) {
+        m_delegatedFrameHost->CopyFromCompositingSurface(src_rect, output_size, std::move(callback));
+        return;
+    }
+
     QImage image;
     if (m_delegate->copySurface(toQt(src_rect), toQt(output_size), image))
         std::move(callback).Run(toSkBitmap(image));
@@ -443,6 +488,18 @@ gfx::Rect RenderWidgetHostViewQt::GetViewBounds()
 
 void RenderWidgetHostViewQt::UpdateBackgroundColor()
 {
+    if (m_enableViz) {
+        DCHECK(GetBackgroundColor());
+        SkColor color = *GetBackgroundColor();
+        bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
+        m_rootLayer->SetFillsBoundsOpaquely(opaque);
+        m_rootLayer->SetColor(color);
+        m_uiCompositor->SetBackgroundColor(color);
+        m_delegate->setClearColor(toQt(color));
+        host()->Send(new RenderViewObserverQt_SetBackgroundColor(host()->GetRoutingID(), color));
+        return;
+    }
+
     auto color = GetBackgroundColor();
     if (color) {
         m_delegate->setClearColor(toQt(*color));
@@ -664,13 +721,16 @@ void RenderWidgetHostViewQt::DisplayTooltipText(const base::string16 &tooltip_te
         m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
-void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient *frameSink)
+void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient *frameSinkClient)
 {
-    m_compositor->setFrameSinkClient(frameSink);
+    DCHECK(!m_enableViz);
+    m_compositor->setFrameSinkClient(frameSinkClient);
 }
 
-void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, base::Optional<viz::HitTestRegionList>)
+void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, base::Optional<viz::HitTestRegionList> hit_test_region_list)
 {
+    DCHECK(!m_enableViz);
+
     // Force to process swap messages
     uint32_t frame_token = frame.metadata.frame_token;
     if (frame_token)
@@ -891,7 +951,7 @@ viz::ScopedSurfaceIdAllocator RenderWidgetHostViewQt::DidUpdateVisualProperties(
     base::OnceCallback<void()> allocation_task =
         base::BindOnce(&RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete,
                        base::Unretained(this), metadata);
-    return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
+    return viz::ScopedSurfaceIdAllocator(&m_dfhLocalSurfaceIdAllocator, std::move(allocation_task));
 }
 
 void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata)
@@ -909,6 +969,14 @@ void RenderWidgetHostViewQt::OnDidFirstVisuallyNonEmptyPaint()
     }
 }
 
+void RenderWidgetHostViewQt::scheduleUpdate()
+{
+    DCHECK(m_enableViz);
+    m_taskRunner->PostTask(
+            FROM_HERE,
+            base::BindOnce(&RenderWidgetHostViewQt::callUpdate, m_weakPtrFactory.GetWeakPtr()));
+}
+
 void RenderWidgetHostViewQt::callUpdate()
 {
     m_delegate->update();
@@ -923,17 +991,39 @@ void RenderWidgetHostViewQt::callUpdate()
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 {
+    if (m_enableViz)
+        return m_displayFrameSink->updatePaintNode(oldNode, m_delegate.get());
     return m_compositor->updatePaintNode(oldNode, m_delegate.get());
 }
 
 void RenderWidgetHostViewQt::notifyShown()
 {
-    host()->WasShown(false);
+    if (m_enableViz) {
+        if (m_visible)
+            return;
+        m_visible = true;
+        m_delegatedFrameHost->AttachToCompositor(m_uiCompositor.get());
+        m_delegatedFrameHost->WasShown(GetLocalSurfaceIdAllocation().local_surface_id(),
+                                       m_viewRectInDips.size(),
+                                       false /* record_presentation_time */);
+        host()->WasShown(false);
+    } else {
+        host()->WasShown(false);
+    }
 }
 
 void RenderWidgetHostViewQt::notifyHidden()
 {
-    host()->WasHidden();
+    if (m_enableViz) {
+        if (!m_visible)
+            return;
+        m_visible = false;
+        host()->WasHidden();
+        m_delegatedFrameHost->WasHidden();
+        m_delegatedFrameHost->DetachFromCompositor();
+    } else {
+        host()->WasHidden();
+    }
 }
 
 void RenderWidgetHostViewQt::visualPropertiesChanged()
@@ -1651,6 +1741,7 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
 
 void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
 {
+    DCHECK(!m_enableViz);
     m_compositor->setNeedsBeginFrames(needs_begin_frames);
 }
 
@@ -1690,26 +1781,35 @@ void RenderWidgetHostViewQt::SetWantsAnimateOnlyBeginFrames()
 
 viz::SurfaceId RenderWidgetHostViewQt::GetCurrentSurfaceId() const
 {
+    if (m_enableViz)
+        return m_delegatedFrameHost->GetCurrentSurfaceId();
     return viz::SurfaceId();
 }
 
 const viz::FrameSinkId &RenderWidgetHostViewQt::GetFrameSinkId() const
 {
+    if (m_enableViz)
+        return m_delegatedFrameHost->frame_sink_id();
     return m_frameSinkId;
 }
 
 const viz::LocalSurfaceIdAllocation &RenderWidgetHostViewQt::GetLocalSurfaceIdAllocation() const
 {
-    return m_localSurfaceIdAllocator.GetCurrentLocalSurfaceIdAllocation();
+    return m_dfhLocalSurfaceIdAllocator.GetCurrentLocalSurfaceIdAllocation();
 }
 
 void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostView *view)
 {
     DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)->IsRenderWidgetHostViewChildFrame());
     DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)->IsRenderWidgetHostViewGuest());
-    base::Optional<SkColor> color = view->GetBackgroundColor();
+    RenderWidgetHostViewQt *viewQt = static_cast<RenderWidgetHostViewQt *>(view);
+    base::Optional<SkColor> color = viewQt->GetBackgroundColor();
     if (color)
         SetBackgroundColor(*color);
+    if (m_enableViz) {
+        m_delegatedFrameHost->TakeFallbackContentFrom(viewQt->m_delegatedFrameHost.get());
+        host()->GetContentRenderingTimeoutFrom(viewQt->host());
+    }
 }
 
 void RenderWidgetHostViewQt::EnsureSurfaceSynchronizedForWebTest()
@@ -1750,9 +1850,24 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation()
 void RenderWidgetHostViewQt::synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceIdAllocation> &childSurfaceId)
 {
     if (childSurfaceId)
-        m_localSurfaceIdAllocator.UpdateFromChild(*childSurfaceId);
+        m_dfhLocalSurfaceIdAllocator.UpdateFromChild(*childSurfaceId);
     else
-        m_localSurfaceIdAllocator.GenerateId();
+        m_dfhLocalSurfaceIdAllocator.GenerateId();
+
+    if (m_enableViz) {
+        gfx::Size viewSizeInDips = GetRequestedRendererSize();
+        gfx::Size viewSizeInPixels = GetCompositorViewportPixelSize();
+        m_rootLayer->SetBounds(gfx::Rect(gfx::Point(), viewSizeInPixels));
+        m_uiCompositorLocalSurfaceIdAllocator.GenerateId();
+        m_uiCompositor->SetScaleAndSize(
+                m_screenInfo.device_scale_factor,
+                viewSizeInPixels,
+                m_uiCompositorLocalSurfaceIdAllocator.GetCurrentLocalSurfaceIdAllocation());
+        m_delegatedFrameHost->EmbedSurface(
+                m_dfhLocalSurfaceIdAllocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+                viewSizeInDips,
+                cc::DeadlinePolicy::UseDefaultDeadline());
+    }
 
     host()->SynchronizeVisualProperties();
 }
