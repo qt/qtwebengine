@@ -22,6 +22,26 @@ defineTest(isPythonVersionSupported) {
     return(false)
 }
 
+defineTest(qtConfTest_detectJumboBuild) {
+    mergeLimit = $$eval(config.input.merge_limit)
+    mergeLimit = $$find(mergeLimit, "\\d")
+    isEmpty(mergeLimit): mergeLimit = 0
+    qtLog("Setting jumbo build merge batch limit to $${mergeLimit}.")
+    $${1}.merge_limit = $$mergeLimit
+    export($${1}.merge_limit)
+    $${1}.cache += merge_limit
+    export($${1}.cache)
+
+    return(true)
+}
+
+defineTest(qtConfReport_jumboBuild) {
+    mergeLimit = $$eval(config.input.merge_limit)
+    mergeLimit = $$find(mergeLimit, "\d")
+    isEmpty(mergeLimit): mergeLimit = "no"
+    qtConfReportPadded($${1}, $$mergeLimit)
+}
+
 defineTest(qtConfTest_detectPython2) {
     python = $$qtConfFindInPath("python2$$EXE_SUFFIX")
     isEmpty(python) {

@@ -28,10 +28,15 @@ gn_args += \
     safe_browsing_mode=0 \
     optimize_webui=false
 
-!win32: gn_args += \
-    use_jumbo_build=true \
-    jumbo_file_merge_limit=8 \
-    jumbo_build_excluded="[\"browser\"]"
+greaterThan(QMAKE_JUMBO_MERGE_LIMIT,0) {
+    gn_args += \
+        use_jumbo_build=true \
+        jumbo_file_merge_limit=$$QMAKE_JUMBO_MERGE_LIMIT
+}
+
+!greaterThan(QMAKE_JUMBO_MERGE_LIMIT,8) {
+    gn_args += jumbo_build_excluded="[\"browser\"]"
+}
 
 qtConfig(webengine-printing-and-pdf) {
     gn_args += enable_basic_printing=true enable_print_preview=true

@@ -10,7 +10,8 @@
     ],
     "commandline": {
         "options": {
-            "webengine-core": "boolean"
+            "webengine-core": "boolean",
+            "webengine-jumbo-build": { "type": "optionalString", "name": "merge_limit"}
         }
     },
     "libraries": {
@@ -139,6 +140,11 @@
         "webengine-xcb": {
             "label": "qtbase xcb",
             "type": "detectXcb"
+        },
+        "webengine-jumbo-build": {
+            "label": "jumbo build merge limit",
+            "type": "detectJumboBuild",
+            "log": "merge_limit"
         }
     },
     "features": {
@@ -266,6 +272,14 @@
             "label": "winversion",
             "condition": "config.win32 && tests.webengine-winversion",
             "output": [ "privateFeature" ]
+        },
+        "webengine-jumbo-build": {
+            "label": "jumbo build merge batch",
+            "condition": "tests.webengine-jumbo-build",
+            "output": [
+                "privateFeature",
+                { "type": "varAssign", "name": "QMAKE_JUMBO_MERGE_LIMIT", "value": "tests.webengine-jumbo-build.merge_limit" }
+            ]
         }
     },
     "report": [
@@ -305,7 +319,11 @@
             "section": "Build Tools",
             "entries": [
                 "webengine-system-ninja",
-                "webengine-system-gn"
+                "webengine-system-gn",
+                 {
+                    "message": "Jumbo Build Merge Limit",
+                    "type": "jumboBuild"
+                }
             ]
         },
         {
