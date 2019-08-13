@@ -305,6 +305,8 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     config.tap_slop = ui::GestureConfiguration::GetInstance()->max_touch_move_in_pixels_for_click();
     config.enable_longpress_drag_selection = false;
     m_touchSelectionController.reset(new ui::TouchSelectionController(m_touchSelectionControllerClient.get(), config));
+
+    host()->render_frame_metadata_provider()->ReportAllFrameSubmissionsForTesting(true);
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
@@ -669,11 +671,6 @@ void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom:
 
 void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, base::Optional<viz::HitTestRegionList>)
 {
-    bool scrollOffsetChanged = (m_lastScrollOffset != frame.metadata.root_scroll_offset);
-    bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);
-    m_lastScrollOffset = frame.metadata.root_scroll_offset;
-    m_lastContentsSize = frame.metadata.root_layer_size;
-
     // Force to process swap messages
     uint32_t frame_token = frame.metadata.frame_token;
     if (frame_token)
@@ -681,19 +678,7 @@ void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &lo
 
     m_compositor->submitFrame(
         std::move(frame),
-        base::BindOnce(&RenderWidgetHostViewQtDelegate::update, base::Unretained(m_delegate.get())));
-
-    if (m_loadVisuallyCommittedState == NotCommitted) {
-        m_loadVisuallyCommittedState = DidFirstCompositorFrameSwap;
-    } else if (m_loadVisuallyCommittedState == DidFirstVisuallyNonEmptyPaint) {
-        m_adapterClient->loadVisuallyCommitted();
-        m_loadVisuallyCommittedState = NotCommitted;
-    }
-
-    if (scrollOffsetChanged)
-        m_adapterClient->updateScrollPosition(toQt(m_lastScrollOffset));
-    if (contentsSizeChanged)
-        m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
+        base::BindOnce(&RenderWidgetHostViewQt::callUpdate, base::Unretained(this)));
 }
 
 void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo *results)
@@ -912,6 +897,28 @@ viz::ScopedSurfaceIdAllocator RenderWidgetHostViewQt::DidUpdateVisualProperties(
 void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata)
 {
     synchronizeVisualProperties(metadata.local_surface_id_allocation);
+}
+
+void RenderWidgetHostViewQt::OnDidFirstVisuallyNonEmptyPaint()
+{
+    if (m_loadVisuallyCommittedState == NotCommitted) {
+        m_loadVisuallyCommittedState = DidFirstVisuallyNonEmptyPaint;
+    } else if (m_loadVisuallyCommittedState == DidFirstCompositorFrameSwap) {
+        m_adapterClient->loadVisuallyCommitted();
+        m_loadVisuallyCommittedState = NotCommitted;
+    }
+}
+
+void RenderWidgetHostViewQt::callUpdate()
+{
+    m_delegate->update();
+
+    if (m_loadVisuallyCommittedState == NotCommitted) {
+        m_loadVisuallyCommittedState = DidFirstCompositorFrameSwap;
+    } else if (m_loadVisuallyCommittedState == DidFirstVisuallyNonEmptyPaint) {
+        m_adapterClient->loadVisuallyCommitted();
+        m_loadVisuallyCommittedState = NotCommitted;
+    }
 }
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
@@ -1729,6 +1736,15 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation()
         m_selectionEnd = metadata.selection.end;
         m_touchSelectionControllerClient->UpdateClientSelectionBounds(m_selectionStart, m_selectionEnd);
     }
+
+    gfx::Vector2dF scrollOffset = metadata.root_scroll_offset.value_or(gfx::Vector2dF());
+    gfx::SizeF contentsSize = metadata.root_layer_size;
+    std::swap(m_lastScrollOffset, scrollOffset);
+    std::swap(m_lastContentsSize, contentsSize);
+    if (scrollOffset != m_lastScrollOffset)
+        m_adapterClient->updateScrollPosition(toQt(m_lastScrollOffset));
+    if (contentsSize != m_lastContentsSize)
+        m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
 }
 
 void RenderWidgetHostViewQt::synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceIdAllocation> &childSurfaceId)

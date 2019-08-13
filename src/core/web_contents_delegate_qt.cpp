@@ -623,13 +623,7 @@ void WebContentsDelegateQt::DidFirstVisuallyNonEmptyPaint()
     if (!rwhv)
         return;
 
-    RenderWidgetHostViewQt::LoadVisuallyCommittedState loadVisuallyCommittedState = rwhv->getLoadVisuallyCommittedState();
-    if (loadVisuallyCommittedState == RenderWidgetHostViewQt::NotCommitted) {
-        rwhv->setLoadVisuallyCommittedState(RenderWidgetHostViewQt::DidFirstVisuallyNonEmptyPaint);
-    } else if (loadVisuallyCommittedState == RenderWidgetHostViewQt::DidFirstCompositorFrameSwap) {
-        m_viewClient->loadVisuallyCommitted();
-        rwhv->setLoadVisuallyCommittedState(RenderWidgetHostViewQt::NotCommitted);
-    }
+    rwhv->OnDidFirstVisuallyNonEmptyPaint();
 }
 
 void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)

@@ -215,8 +215,9 @@ public:
 
     // Overridden from content::BrowserAccessibilityDelegate
     content::BrowserAccessibilityManager* CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
-    LoadVisuallyCommittedState getLoadVisuallyCommittedState() const { return m_loadVisuallyCommittedState; }
-    void setLoadVisuallyCommittedState(LoadVisuallyCommittedState state) { m_loadVisuallyCommittedState = state; }
+
+    // Called from WebContentsDelegateQt
+    void OnDidFirstVisuallyNonEmptyPaint();
 
     // Overridden from content::RenderFrameMetadataProvider::Observer
     void OnRenderFrameMetadataChangedAfterActivation() override;
@@ -240,6 +241,8 @@ private:
     content::RenderFrameHost *getFocusedFrameHost();
 
     void synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceIdAllocation> &childSurfaceId);
+
+    void callUpdate();
 
     // Geometry of the view in screen DIPs.
     gfx::Rect m_viewRectInDips;
