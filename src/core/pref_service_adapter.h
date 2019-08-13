@@ -38,8 +38,8 @@
 **
 ****************************************************************************/
 
-#ifndef PREF_SRVICE_ADAPTER_H
-#define PREF_SERIVE_ADAPTER_H
+#ifndef PREF_SERVICE_ADAPTER_H
+#define PREF_SERVICE_ADAPTER_H
 
 #include "components/prefs/pref_service.h"
 #include "qtwebenginecoreglobal_p.h"
@@ -82,4 +82,4 @@ private:
 
 }
 
-#endif // PREF_SERIVE_ADAPTER_H
+#endif // PREF_SERVICE_ADAPTER_H
