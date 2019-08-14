@@ -42,11 +42,12 @@
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
 
+class CertificateErrorController;
 class QWebEngineCertificateErrorPrivate;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineCertificateError {
@@ -78,10 +79,20 @@ public:
     bool isOverridable() const;
     QString errorDescription() const;
 
+    QWebEngineCertificateError(const QWebEngineCertificateError &other);
+    QWebEngineCertificateError& operator=(const QWebEngineCertificateError &other);
+
+    void defer();
+    bool deferred() const;
+
+    void rejectCertificate();
+    void ignoreCertificateError();
+    bool answered() const;
+
 private:
-    Q_DISABLE_COPY(QWebEngineCertificateError)
-    Q_DECLARE_PRIVATE(QWebEngineCertificateError)
-    QScopedPointer<QWebEngineCertificateErrorPrivate> d_ptr;
+    friend class QWebEnginePagePrivate;
+    QWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller);
+    QExplicitlySharedDataPointer<QWebEngineCertificateErrorPrivate> d;
 };
 
 QT_END_NAMESPACE

@@ -31,9 +31,21 @@
 
 Q_LOGGING_CATEGORY(gHttpServerLog, "HttpServer")
 
-HttpServer::HttpServer(QObject *parent) : QObject(parent)
+HttpServer::HttpServer(QObject *parent) : HttpServer(new QTcpServer, "http", parent)
 {
-    connect(&m_tcpServer, &QTcpServer::newConnection, this, &HttpServer::handleNewConnection);
+}
+
+HttpServer::HttpServer(QTcpServer *tcpServer, const QString &protocol, QObject *parent)
+    : QObject(parent), m_tcpServer(tcpServer)
+{
+    m_url.setHost(QStringLiteral("127.0.0.1"));
+    m_url.setScheme(protocol);
+    connect(tcpServer, &QTcpServer::newConnection, this, &HttpServer::handleNewConnection);
+}
+
+HttpServer::~HttpServer()
+{
+    delete m_tcpServer;
 }
 
 bool HttpServer::start()
@@ -41,21 +53,18 @@ bool HttpServer::start()
     m_error = false;
     m_expectingError = false;
 
-    if (!m_tcpServer.listen()) {
-        qCWarning(gHttpServerLog).noquote() << m_tcpServer.errorString();
+    if (!m_tcpServer->listen()) {
+        qCWarning(gHttpServerLog).noquote() << m_tcpServer->errorString();
         return false;
     }
 
-    m_url.setScheme(QStringLiteral("http"));
-    m_url.setHost(QStringLiteral("127.0.0.1"));
-    m_url.setPort(m_tcpServer.serverPort());
-
+    m_url.setPort(m_tcpServer->serverPort());
     return true;
 }
 
 bool HttpServer::stop()
 {
-    m_tcpServer.close();
+    m_tcpServer->close();
     return m_error == m_expectingError;
 }
 
@@ -73,12 +82,12 @@ QUrl HttpServer::url(const QString &path) const
 
 void HttpServer::handleNewConnection()
 {
-    auto rr = new HttpReqRep(m_tcpServer.nextPendingConnection(), this);
+    auto rr = new HttpReqRep(m_tcpServer->nextPendingConnection(), this);
     connect(rr, &HttpReqRep::requestReceived, [this, rr]() {
         Q_EMIT newRequest(rr);
         rr->close();
     });
-    connect(rr, &HttpReqRep::responseSent, [this, rr]() {
+    connect(rr, &HttpReqRep::responseSent, [rr]() {
         qCInfo(gHttpServerLog).noquote() << rr->requestMethod() << rr->requestPath()
                                          << rr->responseStatus() << rr->responseBody().size();
     });

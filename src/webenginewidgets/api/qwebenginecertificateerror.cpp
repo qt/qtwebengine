@@ -39,6 +39,8 @@
 
 #include "qwebenginecertificateerror.h"
 
+#include "certificate_error_controller.h"
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -51,14 +53,37 @@ QT_BEGIN_NAMESPACE
     QWebEnginePage::certificateError().
 */
 
-class QWebEngineCertificateErrorPrivate {
+class QWebEngineCertificateErrorPrivate : public QSharedData {
 public:
     QWebEngineCertificateErrorPrivate(int error, QUrl url, bool overridable, QString errorDescription);
+
+    ~QWebEngineCertificateErrorPrivate() {
+        if (deferred && !answered)
+            rejectCertificate();
+    }
+
+    void resolveError(bool accept) {
+        if (answered)
+            return;
+        answered = true;
+        if (overridable) {
+            if (auto ctl = controller.lock())
+                ctl->accept(accept);
+        }
+    }
+
+    void ignoreCertificateError() { resolveError(true); }
+    void rejectCertificate() { resolveError(false); }
 
     QWebEngineCertificateError::Error error;
     QUrl url;
     bool overridable;
     QString errorDescription;
+
+    bool answered = false, deferred = false;
+    QWeakPointer<CertificateErrorController> controller;
+
+    Q_DISABLE_COPY(QWebEngineCertificateErrorPrivate)
 };
 
 QWebEngineCertificateErrorPrivate::QWebEngineCertificateErrorPrivate(int error, QUrl url, bool overridable, QString errorDescription)
@@ -68,17 +93,30 @@ QWebEngineCertificateErrorPrivate::QWebEngineCertificateErrorPrivate(int error, 
     , errorDescription(errorDescription)
 { }
 
-
 /*! \internal
 */
 QWebEngineCertificateError::QWebEngineCertificateError(int error, QUrl url, bool overridable, QString errorDescription)
-    : d_ptr(new QWebEngineCertificateErrorPrivate(error, url, overridable, errorDescription))
+    : d(new QWebEngineCertificateErrorPrivate(error, url, overridable, errorDescription))
 { }
+
+/*! \internal
+*/
+QWebEngineCertificateError::QWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller)
+    : d(new QWebEngineCertificateErrorPrivate(controller->error(), controller->url(),
+                                              controller->overridable(), controller->errorString()))
+{
+    d->controller = controller;
+}
+
+QWebEngineCertificateError::QWebEngineCertificateError(const QWebEngineCertificateError &other) = default;
+
+QWebEngineCertificateError& QWebEngineCertificateError::operator=(const QWebEngineCertificateError &other) = default;
 
 /*! \internal
 */
 QWebEngineCertificateError::~QWebEngineCertificateError()
 {
+
 }
 
 /*!
@@ -116,7 +154,6 @@ QWebEngineCertificateError::~QWebEngineCertificateError()
 */
 bool QWebEngineCertificateError::isOverridable() const
 {
-    const Q_D(QWebEngineCertificateError);
     return d->overridable;
 }
 
@@ -127,7 +164,6 @@ bool QWebEngineCertificateError::isOverridable() const
 */
 QUrl QWebEngineCertificateError::url() const
 {
-    const Q_D(QWebEngineCertificateError);
     return d->url;
 }
 
@@ -138,7 +174,6 @@ QUrl QWebEngineCertificateError::url() const
 */
 QWebEngineCertificateError::Error QWebEngineCertificateError::error() const
 {
-    const Q_D(QWebEngineCertificateError);
     return d->error;
 }
 
@@ -149,8 +184,56 @@ QWebEngineCertificateError::Error QWebEngineCertificateError::error() const
 */
 QString QWebEngineCertificateError::errorDescription() const
 {
-    const Q_D(QWebEngineCertificateError);
     return d->errorDescription;
+}
+
+/*!
+    Marks the certificate error for delayed handling.
+
+    This function should be called when there is a need to postpone the decision whether to ignore a
+    certificate error, for example, while waiting for user input. When called, the function pauses the
+    URL request until ignoreCertificateError() or rejectCertificate() is called.
+
+    \note It is only possible to defer overridable certificate errors.
+
+    \sa isOverridable(), deferred()
+*/
+void QWebEngineCertificateError::defer()
+{
+    if (isOverridable())
+        d->deferred = true;
+}
+
+/*!
+    Returns whether the decision for error handling was delayed and the URL load was halted.
+*/
+bool QWebEngineCertificateError::deferred() const
+{
+    return d->deferred;
+}
+
+/*!
+    Ignores the certificate error and continues the loading of the requested URL.
+*/
+void QWebEngineCertificateError::ignoreCertificateError()
+{
+    d->ignoreCertificateError();
+}
+
+/*!
+    Rejects the certificate and aborts the loading of the requested URL.
+*/
+void QWebEngineCertificateError::rejectCertificate()
+{
+    d->rejectCertificate();
+}
+
+/*!
+    Returns \c true if the error was explicitly rejected or accepted.
+*/
+bool QWebEngineCertificateError::answered() const
+{
+    return d->answered;
 }
 
 QT_END_NAMESPACE
