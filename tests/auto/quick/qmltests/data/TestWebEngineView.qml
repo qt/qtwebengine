@@ -111,5 +111,12 @@ WebEngineView {
     onWindowCloseRequested: {
         windowCloseRequestedSignalEmitted = true;
     }
+
+    function getBodyText() {
+        let text
+        runJavaScript('document.body.innerText', function(t) { text = t })
+        testCase.tryVerify(function() { return text !== undefined })
+        return text
+    }
 }
 
