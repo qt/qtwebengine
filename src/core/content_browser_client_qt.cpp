@@ -355,7 +355,7 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
                             ssl_info,
                             request_url,
                             resource_type,
-                            !IsCertErrorFatal(cert_error),
+                            IsCertErrorFatal(cert_error),
                             strict_enforcement,
                             callback)));
     contentsDelegate->allowCertificateError(errorController);
