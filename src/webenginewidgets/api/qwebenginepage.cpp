@@ -1789,9 +1789,7 @@ void QWebEnginePagePrivate::allowCertificateError(const QSharedPointer<Certifica
 
     QWebEngineCertificateError error(controller->error(), controller->url(), controller->overridable(), controller->errorString());
     accepted = q->certificateError(error);
-
-    if (error.isOverridable())
-        controller->accept(accepted);
+    controller->accept(error.isOverridable() && accepted);
 }
 
 void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)
