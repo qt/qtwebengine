@@ -1,4 +1,4 @@
-include(src/core/config/functions.pri)
+include(src/buildtools/config/functions.pri)
 
 # this must be done outside any function
 QTWEBENGINE_SOURCE_TREE = $$PWD
