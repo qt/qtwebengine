@@ -1,6 +1,7 @@
 load(platform)
 
-include($$QTWEBENGINE_OUT_ROOT/src/qtwebengine-main-config.pri)
+include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
+QT_FOR_CONFIG += buildtools-private
 
 TEMPLATE = subdirs
 

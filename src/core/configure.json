@@ -1,6 +1,7 @@
 {
     "module": "webenginecore",
     "depends": [
+        "buildtools-private",
         "core-private",
         "gui-private",
         "printsupport"
@@ -56,78 +57,6 @@
             "sources" : [{ "type": "pkgConfig", "args": "alsa" }
             ]
         },
-        "webengine-libdrm": {
-            "label": "libdrm",
-            "sources": [
-                { "type": "pkgConfig", "args": "libdrm" }
-            ]
-        },
-        "webengine-xcomposite": {
-            "label": "xcomposite",
-            "sources": [
-                { "type": "pkgConfig", "args": "xcomposite" }
-            ]
-        },
-        "webengine-xcursor": {
-            "label": "xcursor",
-            "sources": [
-                { "type": "pkgConfig", "args": "xcursor" }
-            ]
-        },
-        "webengine-xi": {
-            "label": "xi",
-            "sources": [
-                { "type": "pkgConfig", "args": "xi" }
-            ]
-        },
-        "webengine-xtst": {
-            "label": "xtst",
-            "sources": [
-                { "type": "pkgConfig", "args": "xtst" }
-            ]
-        },
-        "webengine-harfbuzz": {
-            "label": "harfbuzz >= 2.2.0",
-            "sources": [
-                { "type": "pkgConfig", "args": "harfbuzz >= 2.2.0" }
-            ]
-        },
-        "webengine-glib": {
-            "label": "glib-2.0 >= 2.32.0",
-            "sources": [
-                { "type": "pkgConfig", "args": "glib-2.0 >= 2.32.0" }
-            ]
-        },
-        "webengine-zlib": {
-            "label": "zlib",
-            "sources": [
-                { "type": "pkgConfig", "args": "zlib" }
-            ]
-        },
-        "webengine-minizip": {
-            "label": "minizip",
-            "sources": [
-                { "type": "pkgConfig", "args": "minizip" }
-            ]
-        },
-        "webengine-libevent": {
-            "label": "libevent",
-            "sources": [
-                { "type": "pkgConfig", "args": "libevent" }
-            ]
-        },
-        "webengine-jsoncpp": {
-            "label": "jsoncpp",
-            "sources": [
-                { "type": "pkgConfig", "args": "jsoncpp" }
-            ]
-        },
-        "webengine-protobuf": {
-            "label": "protobuf",
-            "sources": [
-                { "type": "pkgConfig", "args": "protobuf" }
-            ]
-        },
         "webengine-poppler-cpp": {
             "label": "poppler-cpp",
             "sources": [
@@ -139,139 +68,6 @@
             "sources": [
                 { "type": "pkgConfig", "args": "libpulse >= 0.9.10 libpulse-mainloop-glib" }
             ]
-        },
-        "webengine-re2": {
-            "label": "re2",
-            "test" : {
-                "main": [
-                    "std::string s;",
-                    "RE2 re2(s);"
-                ]
-            },
-            "headers": "re2/re2.h",
-            "sources": [
-                { "type": "pkgConfig", "args": "re2" }
-            ]
-        },
-        "webengine-icu": {
-            "label": "icu >= 63",
-            "sources": [
-                { "type": "pkgConfig", "args": "icu-uc >= 63 icu-i18n >= 63" }
-            ]
-        },
-        "webengine-ffmpeg": {
-            "label": "libavcodec libavformat libavutil",
-            "sources": [
-                { "type": "pkgConfig", "args": "libavcodec libavformat libavutil" }
-            ]
-        },
-        "webengine-opus": {
-            "label": "opus",
-            "sources": [
-                { "type": "pkgConfig", "args": "opus" }
-            ]
-        },
-        "webengine-webp": {
-            "label": "libwebp, libwebpmux and libwebpdemux",
-            "sources": [
-                { "type": "pkgConfig", "args": "libwebp libwebpmux libwebpdemux" }
-            ]
-        },
-        "webengine-png": {
-            "label": "libpng >= 1.6.0",
-            "sources": [
-                { "type": "pkgConfig", "args": "libpng >= 1.6.0" }
-            ]
-        },
-        "webengine-jpeglib": {
-            "label": "compatible jpeglib",
-            "type": "compile",
-            "test": {
-                "head": [
-                    "#include <cstdio>",
-                    "#include <cstring>",
-                    "extern \"C\" {",
-                    "    #include <jpeglib.h>",
-                    "}"
-                ],
-                "main": [
-                    "JDIMENSION dummy;",
-                    "jpeg_crop_scanline(nullptr, &dummy, &dummy);",
-                    "jpeg_skip_scanlines(nullptr, dummy);"
-                ]
-            },
-            "sources": [
-                { "type": "pkgConfig", "args": "libjpeg" },
-                "-ljpeg"
-            ]
-        },
-        "webengine-libxml2": {
-            "label": "compatible libxml2 and libxslt",
-            "type": "compile",
-            "test": {
-                "tail": [
-                    "#if !defined(LIBXML_ICU_ENABLED)",
-                    "#error libxml icu not enabled",
-                    "#endif"
-                ]
-            },
-            "headers": "libxml/xmlversion.h",
-            "sources": [
-                { "type": "pkgConfig", "args": "libxml-2.0 libxslt" }
-            ]
-        },
-        "webengine-lcms2": {
-            "label": "lcms2",
-            "sources": [
-                { "type": "pkgConfig", "args": "lcms2" }
-            ]
-        },
-        "webengine-freetype": {
-            "label": "freetype >= 2.4.2",
-            "test": {
-                "head": [
-                    "#include <ft2build.h>",
-                    "#include FT_FREETYPE_H",
-                    "#if ((FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) < 20402)",
-                    "#  error This version of freetype is too old.",
-                    "#endif"
-                ],
-                "main": [
-                   "FT_Face ft_face = 0;",
-                   "FT_Reference_Face(ft_face);"
-                ]
-            },
-            "sources": [
-                { "type": "pkgConfig", "args": "freetype2" }
-            ]
-        },
-        "webengine-snappy": {
-            "label": "snappy",
-            "test": {
-                "main": [
-                     "snappy::Source *src = 0;",
-                     "snappy::Sink *sink = 0;"
-                ]
-            },
-            "headers": "snappy.h",
-            "sources": [
-                "-lsnappy"
-            ]
-        },
-        "webengine-libvpx": {
-            "label": "libvpx",
-            "test": {
-                "main": [
-                    "vpx_codec_cx_pkt pkt;",
-                    "pkt.data.frame.width[0] = 0u;",
-                    "pkt.data.frame.height[0] = 0u;"
-                ]
-            },
-            "headers": "vpx/vpx_encoder.h",
-            "sources": [
-                { "type": "pkgConfig", "args": "vpx" },
-                "-lvpx"
-            ]
         }
     },
     "tests" : {
@@ -280,10 +76,6 @@
             "test": "hostcompiler",
             "host": "true",
             "type": "compile"
-        },
-        "webengine-protoc": {
-            "label": "protoc",
-            "type": "detectProtoc"
         },
         "webengine-host-pkg-config": {
             "label": "host pkg-config",
@@ -294,17 +86,9 @@
             "label": "embedded build",
             "type": "detectEmbedded"
         },
-        "webengine-developer-build": {
-            "label": "developer build",
-            "type": "detectDeveloperBuild"
-        },
         "webengine-sanitizer": {
             "label" : "sanitizer support",
             "type": "isSanitizerSupported"
-        },
-        "webengine-win-compiler64": {
-            "label": "64bit compiler",
-            "type": "isWindowsHostCompiler64"
         },
         "webengine-arm-thumb" : {
             "label": "thumb instruction set",
@@ -321,76 +105,6 @@
         }
     },
     "features": {
-        "webengine-system-libdrm": {
-            "label": "libdrm",
-            "condition": "libs.webengine-libdrm",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-xcomposite": {
-            "label": "xcomposite",
-            "condition": "libs.webengine-xcomposite",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-xcursor": {
-            "label": "xcursor",
-            "condition": "libs.webengine-xcursor",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-xi": {
-            "label": "xi",
-            "condition": "libs.webengine-xi",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-xtst": {
-            "label": "xtst",
-            "condition": "libs.webengine-xtst",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-harfbuzz": {
-            "label": "harfbuzz",
-            "condition": "config.unix && features.system-harfbuzz && libs.webengine-harfbuzz",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-glib" : {
-            "label": "glib",
-            "condition": "config.unix && libs.webengine-glib",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-minizip" : {
-            "label": "minizip",
-            "condition": "config.unix && libs.webengine-minizip",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-zlib" : {
-            "label": "zlib",
-            "condition": "config.unix && features.system-zlib && libs.webengine-zlib",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-libevent" : {
-            "label": "libevent",
-            "condition": "config.unix && libs.webengine-libevent",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-jsoncpp" : {
-            "label": "jsoncpp",
-            "condition": "config.unix && libs.webengine-jsoncpp",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-protobuf" : {
-            "label": "protobuf",
-            "condition": "config.unix && libs.webengine-protobuf && tests.webengine-protoc",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-png" : {
-            "label": "png",
-            "condition": "config.unix && features.system-png && libs.webengine-png",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-jpeg" : {
-            "label": "JPEG",
-            "condition": "config.unix && features.system-jpeg && libs.webengine-jpeglib",
-            "output": [ "privateFeature" ]
-        },
         "webengine-embedded-build": {
             "label": "Embedded build",
             "purpose": "Enables the embedded build configuration.",
@@ -402,7 +116,7 @@
         "webengine-developer-build": {
             "label": "Developer build",
             "purpose": "Enables the developer build configuration.",
-            "autoDetect": "tests.webengine-developer-build",
+            "autoDetect": "features.private_tests",
             "output": [ "privateFeature" ]
         },
         "webengine-alsa": {
@@ -419,16 +133,6 @@
             "label" : "Building v8 snapshot supported",
             "autoDetect": "features.webengine-v8-snapshot",
             "condition": "!config.unix || !features.cross_compile || arch.arm64 || tests.webengine-host-compiler",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-libvpx" : {
-            "label": "libvpx",
-            "condition": "config.unix && libs.webengine-libvpx",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-snappy" : {
-            "label": "snappy",
-            "condition": "config.unix && libs.webengine-snappy",
             "output": [ "privateFeature" ]
         },
         "webengine-geolocation": {
@@ -507,52 +211,6 @@
             "autoDetect": "!features.webengine-embedded-build",
             "output": [ "privateFeature" ]
         },
-        "webengine-system-libwebp": {
-            "label": "libwebp, libwebpmux and libwebpdemux",
-            "autoDetect": "config.unix",
-            "condition": "libs.webengine-webp",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-opus": {
-            "label": "opus",
-            "autoDetect": "config.unix",
-            "condition": "libs.webengine-opus",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-ffmpeg": {
-            "label": "ffmpeg",
-            "autoDetect": false,
-            "condition": "libs.webengine-ffmpeg && features.webengine-system-opus && features.webengine-system-libwebp",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-icu": {
-            "label": "icu",
-            "autoDetect": false,
-            "condition": "libs.webengine-icu",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-re2": {
-            "label": "re2",
-            "autoDetect": "config.unix",
-            "condition": "libs.webengine-re2",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-libxml2": {
-            "label": "libxml2 and libxslt",
-            "condition": "config.unix && libs.webengine-libxml2",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-lcms2" : {
-            "label": "lcms2",
-            "autoDetect": "features.webengine-printing-and-pdf",
-            "condition": "config.unix && libs.webengine-lcms2",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-freetype" : {
-            "label": "freetype",
-            "condition": "config.unix && features.system-freetype && libs.webengine-freetype",
-            "output": [ "privateFeature" ]
-        },
         "webengine-ozone-x11" : {
              "label": "Support qpa-xcb",
              "condition": "config.unix
@@ -574,11 +232,6 @@
             "label": "poppler-cpp",
             "autoDetect": "config.unix",
             "condition": "libs.webengine-poppler-cpp",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-win-compiler64": {
-            "label": "64bit compiler",
-            "condition": "config.win32 && tests.webengine-win-compiler64",
             "output": [ "privateFeature" ]
         },
         "webengine-arm-thumb": {
@@ -616,11 +269,6 @@
         },
         {
             "type": "warning",
-            "condition": "config.win32 && !features.webengine-win-compiler64",
-            "message": "64-bit cross-building or native toolchain is required to build QtWebEngine."
-        },
-        {
-            "type": "warning",
             "condition": "config.linux && features.webengine-embedded-build && !features.webengine-system-ffmpeg && arch.arm && !features.webengine-arm-thumb",
             "message": "Thumb instruction set is required to build ffmpeg for QtWebEngine."
         },
@@ -632,31 +280,6 @@
     ],
 
     "summary": [
-        {
-           "section": "Optional system libraries used",
-           "condition": "config.unix",
-           "entries": [
-                "webengine-system-re2",
-                "webengine-system-icu",
-                "webengine-system-libwebp",
-                "webengine-system-opus",
-                "webengine-system-ffmpeg",
-                "webengine-system-libvpx",
-                "webengine-system-snappy",
-                "webengine-system-glib",
-                "webengine-system-zlib",
-                "webengine-system-minizip",
-                "webengine-system-libevent",
-                "webengine-system-jsoncpp",
-                "webengine-system-protobuf",
-                "webengine-system-libxml2",
-                "webengine-system-lcms2",
-                "webengine-system-png",
-                "webengine-system-jpeg",
-                "webengine-system-harfbuzz",
-                "webengine-system-freetype"
-            ]
-        },
         {
             "section": "Qt WebEngineCore",
             "condition": "features.webengine-core",

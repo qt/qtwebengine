@@ -1,0 +1,716 @@
+{
+    "module": "buildtools",
+    "depends": [
+        "core-private",
+        "gui-private",
+        "printsupport"
+    ],
+    "commandline": {
+        "options": {
+            "webengine-core": "boolean",
+            "webengine-jumbo-build": { "type": "optionalString", "name": "merge_limit"}
+        }
+    },
+    "libraries": {
+        "webengine-dbus": {
+            "label": "d-bus",
+            "sources": [
+                { "type": "pkgConfig", "args": "dbus-1" }
+            ]
+        },
+        "webengine-fontconfig": {
+            "label": "fontconfig",
+            "sources": [
+                { "type": "pkgConfig", "args": "fontconfig" }
+            ]
+        },
+        "webengine-libdrm": {
+            "label": "libdrm",
+            "sources": [
+                { "type": "pkgConfig", "args": "libdrm" }
+            ]
+        },
+        "webengine-xcomposite": {
+            "label": "xcomposite",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcomposite" }
+            ]
+        },
+        "webengine-xcursor": {
+            "label": "xcursor",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcursor" }
+            ]
+        },
+        "webengine-xi": {
+            "label": "xi",
+            "sources": [
+                { "type": "pkgConfig", "args": "xi" }
+            ]
+        },
+        "webengine-xtst": {
+            "label": "xtst",
+            "sources": [
+                { "type": "pkgConfig", "args": "xtst" }
+            ]
+        },
+        "webengine-nss": {
+            "label": "nss >= 3.26",
+            "sources": [
+                { "type": "pkgConfig", "args": "nss >= 3.26" }
+            ]
+        },
+        "webengine-x11" : {
+            "label" : "x11",
+            "sources": [
+                { "type": "pkgConfig", "args": "x11" }
+            ]
+        },
+        "webengine-glib": {
+            "label": "glib-2.0 >= 2.32.0",
+            "sources": [
+                { "type": "pkgConfig", "args": "glib-2.0 >= 2.32.0" }
+            ]
+        },
+        "webengine-harfbuzz": {
+            "label": "harfbuzz >= 2.2.0",
+            "sources": [
+                { "type": "pkgConfig", "args": "harfbuzz >= 2.2.0" }
+            ]
+        },
+        "webengine-jpeglib": {
+            "label": "compatible jpeglib",
+            "type": "compile",
+            "test": {
+                "head": [
+                    "#include <cstdio>",
+                    "#include <cstring>",
+                    "extern \"C\" {",
+                    "    #include <jpeglib.h>",
+                    "}"
+                ],
+                "main": [
+                    "JDIMENSION dummy;",
+                    "jpeg_crop_scanline(nullptr, &dummy, &dummy);",
+                    "jpeg_skip_scanlines(nullptr, dummy);"
+                ]
+            },
+            "sources": [
+                { "type": "pkgConfig", "args": "libjpeg" },
+                "-ljpeg"
+            ]
+        },
+        "webengine-jsoncpp": {
+            "label": "jsoncpp",
+            "sources": [
+                { "type": "pkgConfig", "args": "jsoncpp" }
+            ]
+        },
+        "webengine-libevent": {
+            "label": "libevent",
+            "sources": [
+                { "type": "pkgConfig", "args": "libevent" }
+            ]
+        },
+        "webengine-minizip": {
+            "label": "minizip",
+            "sources": [
+                { "type": "pkgConfig", "args": "minizip" }
+            ]
+        },
+        "webengine-png": {
+            "label": "libpng >= 1.6.0",
+            "sources": [
+                { "type": "pkgConfig", "args": "libpng >= 1.6.0" }
+            ]
+        },
+        "webengine-protobuf": {
+            "label": "protobuf",
+            "sources": [
+                { "type": "pkgConfig", "args": "protobuf" }
+            ]
+        },
+        "webengine-zlib": {
+            "label": "zlib",
+            "sources": [
+                { "type": "pkgConfig", "args": "zlib" }
+            ]
+        },
+        "webengine-re2": {
+            "label": "re2",
+            "test" : {
+                "main": [
+                    "std::string s;",
+                    "RE2 re2(s);"
+                ]
+            },
+            "headers": "re2/re2.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "re2" }
+            ]
+        },
+        "webengine-icu": {
+            "label": "icu >= 63",
+            "sources": [
+                { "type": "pkgConfig", "args": "icu-uc >= 63 icu-i18n >= 63" }
+            ]
+        },
+        "webengine-webp": {
+            "label": "libwebp, libwebpmux and libwebpdemux",
+            "sources": [
+                { "type": "pkgConfig", "args": "libwebp libwebpmux libwebpdemux" }
+            ]
+        },
+        "webengine-lcms2": {
+            "label": "lcms2",
+            "sources": [
+                { "type": "pkgConfig", "args": "lcms2" }
+            ]
+        },
+        "webengine-freetype": {
+            "label": "freetype >= 2.4.2",
+            "test": {
+                "head": [
+                    "#include <ft2build.h>",
+                    "#include FT_FREETYPE_H",
+                    "#if ((FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) < 20402)",
+                    "#  error This version of freetype is too old.",
+                    "#endif"
+                ],
+                "main": [
+                   "FT_Face ft_face = 0;",
+                   "FT_Reference_Face(ft_face);"
+                ]
+            },
+            "sources": [
+                { "type": "pkgConfig", "args": "freetype2" }
+            ]
+        },
+        "webengine-libxml2": {
+            "label": "compatible libxml2 and libxslt",
+            "type": "compile",
+            "test": {
+                "tail": [
+                    "#if !defined(LIBXML_ICU_ENABLED)",
+                    "#error libxml icu not enabled",
+                    "#endif"
+                ]
+            },
+            "headers": "libxml/xmlversion.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "libxml-2.0 libxslt" }
+            ]
+        },
+        "webengine-libdrm": {
+            "label": "libdrm",
+            "sources": [
+                { "type": "pkgConfig", "args": "libdrm" }
+            ]
+        },
+        "webengine-xcomposite": {
+            "label": "xcomposite",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcomposite" }
+            ]
+        },
+        "webengine-xcursor": {
+            "label": "xcursor",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcursor" }
+            ]
+        },
+        "webengine-xi": {
+            "label": "xi",
+            "sources": [
+                { "type": "pkgConfig", "args": "xi" }
+            ]
+        },
+        "webengine-xtst": {
+            "label": "xtst",
+            "sources": [
+                { "type": "pkgConfig", "args": "xtst" }
+            ]
+        },
+        "webengine-ffmpeg": {
+            "label": "libavcodec libavformat libavutil",
+            "sources": [
+                { "type": "pkgConfig", "args": "libavcodec libavformat libavutil" }
+            ]
+        },
+        "webengine-opus": {
+            "label": "opus",
+            "sources": [
+                { "type": "pkgConfig", "args": "opus" }
+            ]
+        },
+        "webengine-snappy": {
+            "label": "snappy",
+            "test": {
+                "main": [
+                     "snappy::Source *src = 0;",
+                     "snappy::Sink *sink = 0;"
+                ]
+            },
+            "headers": "snappy.h",
+            "sources": [
+                "-lsnappy"
+            ]
+        },
+        "webengine-libvpx": {
+            "label": "libvpx",
+            "test": {
+                "main": [
+                    "vpx_codec_cx_pkt pkt;",
+                    "pkt.data.frame.width[0] = 0u;",
+                    "pkt.data.frame.height[0] = 0u;"
+                ]
+            },
+            "headers": "vpx/vpx_encoder.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "vpx" },
+                "-lvpx"
+            ]
+        }
+    },
+
+    "testDir": "config.tests",
+    "tests" : {
+        "webengine-bison": {
+            "label": "bison",
+            "type": "detectBison"
+        },
+        "webengine-flex": {
+            "label": "flex",
+            "type": "detectFlex"
+        },
+        "webengine-gn": {
+            "label": "system gn",
+            "type": "detectGn"
+        },
+        "webengine-glibc": {
+            "label": "glibc > 2.26",
+            "type": "compile",
+            "test": {
+                "include": "features.h",
+                "tail": [
+                    "#if __GLIBC__ < 2 || __GLIBC_MINOR__ < 27",
+                    "#error glibc versions below 2.27 are not supported",
+                    "#endif"
+                ]
+            }
+        },
+        "webengine-gperf": {
+            "label": "gperf",
+            "type": "detectGperf"
+        },
+        "webengine-khr": {
+            "label": "khr",
+            "type": "compile",
+            "test": {
+                "include": "KHR/khrplatform.h",
+                "qmake" : [
+                    "!isEmpty(QMAKE_INCDIR_EGL): INCLUDEPATH += $$QMAKE_INCDIR_EGL",
+                    "!isEmpty(QMAKE_INCDIR_OPENGL): INCLUDEPATH += $$QMAKE_INCDIR_OPENGL"
+                ]
+            }
+        },
+        "webengine-ninja": {
+            "label": "system ninja",
+            "type": "detectNinja"
+        },
+        "webengine-python2": {
+            "label": "python2",
+            "type": "detectPython2",
+            "log": "location"
+        },
+        "webengine-winversion": {
+            "label": "winversion",
+            "type": "compile",
+            "test": {
+                 "head" : [
+                    "#if !defined(__clang__) && _MSC_FULL_VER < 191426428",
+                    "#error unsupported Visual Studio version",
+                    "#endif"
+                 ]
+            }
+        },
+        "webengine-host-pkg-config": {
+                   "label": "host pkg-config",
+                   "type": "detectHostPkgConfig",
+                   "log": "path"
+        },
+        "webengine-jumbo-build": {
+            "label": "jumbo build merge limit",
+            "type": "detectJumboBuild",
+            "log": "merge_limit"
+        },
+        "webengine-protoc": {
+            "label": "protoc",
+            "type": "detectProtoc"
+        },
+        "webengine-win-compiler64": {
+            "label": "64bit compiler",
+            "type": "isWindowsHostCompiler64"
+        }
+    },
+    "features": {
+        "webengine-core": {
+            "label": "Support Qt WebEngine Core",
+            "purpose": "Provides WebEngine Core support.",
+            "condition": "module.gui
+                         && features.webengine-python2
+                         && features.webengine-gperf
+                         && features.webengine-bison
+                         && features.webengine-flex
+                         && (!features.xcb || features.webengine-ozone-x11)",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-python2": {
+            "label": "python2",
+            "condition": "tests.webengine-python2",
+            "output": [
+                "privateFeature",
+                { "type": "varAssign", "name": "QMAKE_PYTHON2", "value": "tests.webengine-python2.location" }
+            ]
+        },
+        "webengine-gperf": {
+            "label": "gperf",
+            "condition": "tests.webengine-gperf",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-bison": {
+            "label": "bison",
+            "condition": "tests.webengine-bison",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-flex": {
+            "label": "flex",
+            "condition": "tests.webengine-flex",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-ninja": {
+            "label": "Use System Ninja",
+            "condition": "tests.webengine-ninja",
+            "output": [ "privateFeature" ]
+        },
+           "webengine-system-fontconfig": {
+            "label": "fontconfig",
+            "condition": "libs.webengine-fontconfig",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-dbus": {
+            "label": "dbus",
+            "condition": "libs.webengine-dbus",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-libdrm": {
+            "label": "libdrm",
+            "condition": "libs.webengine-libdrm",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-xcomposite": {
+            "label": "xcomposite",
+            "condition": "libs.webengine-xcomposite",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-xcursor": {
+            "label": "xcursor",
+            "condition": "libs.webengine-xcursor",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-xi": {
+            "label": "xi",
+            "condition": "libs.webengine-xi",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-xtst": {
+            "label": "xtst",
+            "condition": "libs.webengine-xtst",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-gn": {
+            "label": "Use System Gn",
+            "autoDetect": "false",
+            "condition": "tests.webengine-gn",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-khr" : {
+            "label": "khr",
+            "condition": "config.unix && tests.webengine-khr",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-nss": {
+            "label": "nss",
+            "condition": "config.unix && !config.darwin && libs.webengine-nss",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-glibc": {
+            "label": "glibc",
+            "condition": "config.linux && tests.webengine-glibc",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-x11" : {
+            "label": "x11",
+            "condition": "config.unix && libs.webengine-x11",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-host-pkg-config": {
+            "label": "host-pkg-config",
+            "condition": "config.unix && tests.webengine-host-pkg-config",
+            "output": [
+                "privateFeature",
+                { "type": "varAssign", "name": "QMAKE_PKG_CONFIG_HOST", "value": "tests.webengine-host-pkg-config.path" }
+            ]
+        },
+        "webengine-ozone-x11" : {
+             "label": "Support qpa-xcb",
+             "condition": "config.unix
+                          && features.xcb
+                          && features.webengine-system-x11
+                          && features.webengine-system-libdrm
+                          && features.webengine-system-xcomposite
+                          && features.webengine-system-xcursor
+                          && features.webengine-system-xi
+                          && features.webengine-system-xtst",
+             "output": [ "privateFeature" ]
+        },
+        "webengine-jumbo-build": {
+            "label": "jumbo build merge batch",
+            "condition": "tests.webengine-jumbo-build",
+            "output": [
+                "privateFeature",
+                { "type": "varAssign", "name": "QMAKE_JUMBO_MERGE_LIMIT", "value": "tests.webengine-jumbo-build.merge_limit" }
+            ]
+        },
+        "webengine-system-libdrm": {
+            "label": "libdrm",
+            "condition": "libs.webengine-libdrm",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-xcomposite": {
+            "label": "xcomposite",
+            "condition": "libs.webengine-xcomposite",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-xcursor": {
+            "label": "xcursor",
+            "condition": "libs.webengine-xcursor",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-xi": {
+            "label": "xi",
+            "condition": "libs.webengine-xi",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-xtst": {
+            "label": "xtst",
+            "condition": "libs.webengine-xtst",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-harfbuzz": {
+            "label": "harfbuzz",
+            "condition": "config.unix && features.system-harfbuzz && libs.webengine-harfbuzz",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-glib" : {
+            "label": "glib",
+            "condition": "config.unix && libs.webengine-glib",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-minizip" : {
+            "label": "minizip",
+            "condition": "config.unix && libs.webengine-minizip",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-zlib" : {
+            "label": "zlib",
+            "condition": "config.unix && features.system-zlib && libs.webengine-zlib",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-libevent" : {
+            "label": "libevent",
+            "condition": "config.unix && libs.webengine-libevent",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-jsoncpp" : {
+            "label": "jsoncpp",
+            "condition": "config.unix && libs.webengine-jsoncpp",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-protobuf" : {
+            "label": "protobuf",
+            "condition": "config.unix && libs.webengine-protobuf && tests.webengine-protoc",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-png" : {
+            "label": "png",
+            "condition": "config.unix && features.system-png && libs.webengine-png",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-jpeg" : {
+            "label": "JPEG",
+            "condition": "config.unix && features.system-jpeg && libs.webengine-jpeglib",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-re2": {
+            "label": "re2",
+            "condition": "config.unix && libs.webengine-re2",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-icu": {
+            "label": "icu",
+            "autoDetect": "false",
+            "condition": "libs.webengine-icu",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-libwebp": {
+            "label": "libwebp, libwebpmux and libwebpdemux",
+            "condition": "config.unix && libs.webengine-webp",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-opus": {
+            "label": "opus",
+            "condition": "config.unix && libs.webengine-opus",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-ffmpeg": {
+            "label": "ffmpeg",
+            "autoDetect": "false",
+            "condition": "libs.webengine-ffmpeg && features.webengine-system-opus && features.webengine-system-libwebp",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-libxml2": {
+            "label": "libxml2 and libxslt",
+            "condition": "config.unix && libs.webengine-libxml2",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-lcms2" : {
+            "label": "lcms2",
+            "condition": "config.unix && libs.webengine-lcms2",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-freetype" : {
+            "label": "freetype",
+            "condition": "config.unix && features.system-freetype && libs.webengine-freetype",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-libvpx" : {
+            "label": "libvpx",
+            "condition": "config.unix && libs.webengine-libvpx",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-system-snappy" : {
+            "label": "snappy",
+            "condition": "config.unix && libs.webengine-snappy",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-winversion" : {
+            "label": "winversion",
+            "condition": "config.win32 && tests.webengine-winversion",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-win-compiler64": {
+            "label": "64bit compiler",
+            "condition": "config.win32 && tests.webengine-win-compiler64",
+            "output": [ "privateFeature" ]
+        }
+    },
+    "report": [
+        {
+            "type": "warning",
+            "condition": "!module.gui",
+            "message": "QtWebEngine requires QtGui."
+        },
+        {
+            "type": "warning",
+            "condition": "!features.webengine-python2",
+            "message": "Python version 2 (2.7.5 or later) is required to build QtWebEngine."
+        },
+        {
+            "type": "warning",
+            "condition": "!features.webengine-gperf",
+            "message": "gperf is required to build QtWebEngine."
+        },
+        {
+            "type": "warning",
+            "condition": "!features.webengine-bison",
+            "message": "bison is required to build QtWebEngine."
+        },
+        {
+            "type": "warning",
+            "condition": "!features.webengine-flex",
+            "message": "flex is required to build QtWebEngine."
+        },
+        {
+            "type": "warning",
+            "condition": "config.linux && !features.webengine-ozone-x11 && features.xcb",
+            "message": "Could not find all necessary libraries for qpa-xcb support."
+        },
+        {
+            "type": "warning",
+            "condition": "config.win32 && !features.webengine-win-compiler64",
+            "message": "64-bit cross-building or native toolchain is required to build QtWebEngine."
+        }
+    ],
+    "summary": [
+        {
+            "section": "Qt WebEngine Build Tools",
+            "entries": [
+                "webengine-system-ninja",
+                "webengine-system-gn",
+                 {
+                    "message": "Jumbo Build Merge Limit",
+                    "type": "jumboBuild"
+                },
+                {
+                    "section": "Required system libraries",
+                    "condition": "config.unix && !config.macos && features.webengine-core",
+                    "entries": [
+                        "webengine-system-fontconfig",
+                        "webengine-system-dbus",
+                        "webengine-system-nss",
+                        "webengine-system-khr",
+                        "webengine-system-glibc"
+                    ]
+                },
+                {
+                    "section": "Required system libraries for qpa-xcb",
+                    "condition": "config.unix && !config.macos && features.webengine-core",
+                    "entries": [
+                        "webengine-system-x11",
+                        "webengine-system-libdrm",
+                        "webengine-system-xcomposite",
+                        "webengine-system-xcursor",
+                        "webengine-system-xi",
+                        "webengine-system-xtst"
+                     ]
+                 },
+                {
+                    "section": "Optional system libraries used",
+                    "condition": "config.unix",
+                    "entries": [
+                        "webengine-system-re2",
+                        "webengine-system-icu",
+                        "webengine-system-libwebp",
+                        "webengine-system-opus",
+                        "webengine-system-ffmpeg",
+                        "webengine-system-libvpx",
+                        "webengine-system-snappy",
+                        "webengine-system-glib",
+                        "webengine-system-zlib",
+                        "webengine-system-minizip",
+                        "webengine-system-libevent",
+                        "webengine-system-jsoncpp",
+                        "webengine-system-protobuf",
+                        "webengine-system-libxml2",
+                        "webengine-system-lcms2",
+                        "webengine-system-png",
+                        "webengine-system-jpeg",
+                        "webengine-system-harfbuzz",
+                        "webengine-system-freetype"
+                     ]
+                 }
+             ]
+         }
+    ]
+}

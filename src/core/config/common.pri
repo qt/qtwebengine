@@ -1,6 +1,7 @@
 # Shared configuration for all our supported platforms
+include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
 include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-QT_FOR_CONFIG += webenginecore
+QT_FOR_CONFIG += buildtools-private webenginecore webenginecore-private
 
 gn_args += \
     use_qt=true \

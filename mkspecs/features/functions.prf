@@ -130,8 +130,8 @@ defineTest(isWebEngineCoreBuild) {
         return(false)
     }
 
-    include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-    QT_FOR_CONFIG += webenginecore-private
+    include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
+    QT_FOR_CONFIG += buildtools-private
 
     win32:!qtConfig(webengine-win-compiler64) {
         skipBuild("Required 64-bit cross-building or native toolchain could not be found.")

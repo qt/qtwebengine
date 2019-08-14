@@ -149,20 +149,6 @@ defineTest(qtConfTest_detectEmbedded) {
     return(false)
 }
 
-defineTest(qtConfTest_detectXcb) {
-    #workaround for for not working 'depends' in main configure when no 'module'
-    QT_FOR_CONFIG += gui-private
-    qtConfig(xcb): return(true)
-    return(false)
-}
-
-defineTest(qtConfTest_detectDeveloperBuild) {
-    #workaround for for not working 'depends' in main configure when no 'module'
-    QT_FOR_CONFIG += core-private
-    qtConfig(private_tests): return(true) # enabled for developer-build
-    return(false)
-}
-
 defineTest(qtConfTest_detectHostPkgConfig) {
    PKG_CONFIG = $$qtConfPkgConfig(true)
    isEmpty(PKG_CONFIG) {
