@@ -694,7 +694,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
     }
 
     auto navigate = [](QWeakPointer<WebContentsAdapter> weakAdapter, const content::NavigationController::LoadURLParams &params) {
-        WebContentsAdapter *adapter = weakAdapter.toStrongRef().data();
+        const auto adapter = weakAdapter.toStrongRef();
         if (!adapter)
             return;
         adapter->webContents()->GetController().LoadURLWithParams(params);
