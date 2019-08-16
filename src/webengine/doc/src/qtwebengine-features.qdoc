@@ -126,7 +126,9 @@
     so uniquely identifies the user and might violate privacy expectations.
 
     To activate support for client certificates, an application needs to listen to
-    the QWebEnginePage::selectClientCertificate signal and select one of the offered
+    the QWebEnginePage::selectClientCertificate or
+    \l{WebEnginePage::selectClientCertificate}{WebEnginePage.selectClientCertificate}
+    signals and select one of the offered
     certificates. For applications that can navigate to untrusted web sites, it is
     recommended to always give the user a choice before uniquely identifying them
     to a remote server.
