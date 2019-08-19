@@ -27,7 +27,7 @@ depends += qtcore \
            qtdoc \
            qmake
 
-headerdirs  += ..
+headerdirs  += ../api
 
 sourcedirs  += ..
 
