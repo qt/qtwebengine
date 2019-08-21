@@ -64,7 +64,8 @@ ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePing, content::Resource
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker, content::ResourceType::kServiceWorker)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeCspReport, content::ResourceType::kCspReport)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePluginResource, content::ResourceType::kPluginResource)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreload, content::ResourceType::kNavigationPreload)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadMainFrame, content::ResourceType::kNavigationPreloadMainFrame)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadSubFrame, content::ResourceType::kNavigationPreloadSubFrame)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeLast, content::ResourceType::kMaxValue)
 
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::LinkNavigation, QWebEngineUrlRequestInfo::NavigationTypeLink)
@@ -186,8 +187,8 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPriva
            violations. CSP reports are in JSON format and they are delivered by
            HTTP POST requests to specified servers. (Added in Qt 5.7)
     \value ResourceTypePluginResource  A resource requested by a plugin. (Added in Qt 5.7)
-    \value ResourceTypeNavigationPreload  A service worker navigation preload
-           request. (Added in Qt 5.14)
+    \value ResourceTypeNavigationPreloadMainFrame  A main-frame service worker navigation preload request. (Added in Qt 5.14)
+    \value ResourceTypeNavigationPreloadSubFrame  A sub-frame service worker navigation preload request. (Added in Qt 5.14)
     \value ResourceTypeUnknown  Unknown request type.
 
     \note For forward compatibility all values not matched should be treated as unknown,

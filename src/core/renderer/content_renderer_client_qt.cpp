@@ -298,7 +298,8 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
 
         resourceId = IDR_NET_ERROR_HTML;
 
-        const base::StringPiece template_html(ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resourceId));
+        std::string extracted_string = ui::ResourceBundle::GetSharedInstance().DecompressDataResource(resourceId);
+        const base::StringPiece template_html(extracted_string.data(), extracted_string.size());
         if (template_html.empty())
             NOTREACHED() << "unable to load template. ID: " << resourceId;
         else // "t" is the id of the templates root node.
@@ -523,7 +524,7 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
     }
 
     // Session types.
-    bool cdm_supports_temporary_session = base::ContainsValue(capability->session_types, media::CdmSessionType::kTemporary);
+    bool cdm_supports_temporary_session = base::Contains(capability->session_types, media::CdmSessionType::kTemporary);
     if (!cdm_supports_temporary_session) {
         DVLOG(1) << "Temporary session must be supported.";
         return;

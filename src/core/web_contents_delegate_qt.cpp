@@ -539,7 +539,7 @@ void WebContentsDelegateQt::ExitFullscreenModeForTab(content::WebContents *web_c
         m_viewClient->requestFullScreenMode(toQt(web_contents->GetLastCommittedURL().GetOrigin()), false);
 }
 
-bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebContents* web_contents) const
+bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebContents* web_contents)
 {
     Q_UNUSED(web_contents);
     return m_viewClient->isFullScreenMode();
@@ -729,12 +729,12 @@ void WebContentsDelegateQt::BeforeUnloadFired(bool proceed, const base::TimeTick
     Q_UNUSED(proceed_time);
 }
 
-bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *, const GURL& security_origin, blink::MediaStreamType type)
+bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *, const GURL& security_origin, blink::mojom::MediaStreamType type)
 {
     switch (type) {
-    case blink::MEDIA_DEVICE_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:
         return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::AudioCapturePermission);
-    case blink::MEDIA_DEVICE_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
         return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::VideoCapturePermission);
     default:
         LOG(INFO) << "WebContentsDelegateQt::CheckMediaAccessPermission: "
@@ -833,28 +833,28 @@ void WebContentsDelegateQt::setLoadingState(LoadingState state)
     webContentsAdapter()->updateRecommendedState();
 }
 
-int &WebContentsDelegateQt::streamCount(blink::MediaStreamType type)
+int &WebContentsDelegateQt::streamCount(blink::mojom::MediaStreamType type)
 {
     // Based on MediaStreamCaptureIndicator::WebContentsDeviceUsage::GetStreamCount
     switch (type) {
-    case blink::MEDIA_DEVICE_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:
         return m_audioStreamCount;
 
-    case blink::MEDIA_DEVICE_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
         return m_videoStreamCount;
 
-    case blink::MEDIA_GUM_TAB_AUDIO_CAPTURE:
-    case blink::MEDIA_GUM_TAB_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
         return m_mirroringStreamCount;
 
-    case blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
-    case blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE:
-    case blink::MEDIA_DISPLAY_VIDEO_CAPTURE:
-    case blink::MEDIA_DISPLAY_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE:
         return m_desktopStreamCount;
 
-    case blink::MEDIA_NO_SERVICE:
-    case blink::NUM_MEDIA_TYPES:
+    case blink::mojom::MediaStreamType::NO_SERVICE:
+    case blink::mojom::MediaStreamType::NUM_MEDIA_TYPES:
         NOTREACHED();
         return m_videoStreamCount;
     }

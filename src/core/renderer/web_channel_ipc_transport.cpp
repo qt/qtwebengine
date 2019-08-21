@@ -92,15 +92,18 @@ void WebChannelTransport::Install(blink::WebLocalFrame *frame, uint worldId)
     gin::Handle<WebChannelTransport> transport = gin::CreateHandle(isolate, new WebChannelTransport);
 
     v8::Local<v8::Object> global = context->Global();
-    v8::Local<v8::Value> qtObjectValue = global->Get(gin::StringToV8(isolate, "qt"));
+    v8::MaybeLocal<v8::Value> qtObjectValue = global->Get(context, gin::StringToV8(isolate, "qt"));
     v8::Local<v8::Object> qtObject;
-    if (qtObjectValue.IsEmpty() || !qtObjectValue->IsObject()) {
+    if (qtObjectValue.IsEmpty() || !qtObjectValue.ToLocalChecked()->IsObject()) {
         qtObject = v8::Object::New(isolate);
-        global->Set(gin::StringToV8(isolate, "qt"), qtObject);
+        auto whocares = global->Set(context, gin::StringToV8(isolate, "qt"), qtObject);
+        // FIXME: Perhaps error out, but the return value is V8 internal...
+        Q_UNUSED(whocares);
     } else {
-        qtObject = v8::Local<v8::Object>::Cast(qtObjectValue);
+        qtObject = v8::Local<v8::Object>::Cast(qtObjectValue.ToLocalChecked());
     }
-    qtObject->Set(gin::StringToV8(isolate, "webChannelTransport"), transport.ToV8());
+    auto whocares = qtObject->Set(context, gin::StringToV8(isolate, "webChannelTransport"), transport.ToV8());
+    Q_UNUSED(whocares);
 }
 
 void WebChannelTransport::Uninstall(blink::WebLocalFrame *frame, uint worldId)
@@ -115,11 +118,11 @@ void WebChannelTransport::Uninstall(blink::WebLocalFrame *frame, uint worldId)
     v8::Context::Scope contextScope(context);
 
     v8::Local<v8::Object> global(context->Global());
-    v8::Local<v8::Value> qtObjectValue = global->Get(gin::StringToV8(isolate, "qt"));
-    if (qtObjectValue.IsEmpty() || !qtObjectValue->IsObject())
+    v8::MaybeLocal<v8::Value> qtObjectValue = global->Get(context, gin::StringToV8(isolate, "qt"));
+    if (qtObjectValue.IsEmpty() || !qtObjectValue.ToLocalChecked()->IsObject())
         return;
-    v8::Local<v8::Object> qtObject = v8::Local<v8::Object>::Cast(qtObjectValue);
-    // FIXME: ?
+    v8::Local<v8::Object> qtObject = v8::Local<v8::Object>::Cast(qtObjectValue.ToLocalChecked());
+    // FIXME: We can't do anything about a failure, so why the .. is it nodiscard?
     auto whocares = qtObject->Delete(context, gin::StringToV8(isolate, "webChannelTransport"));
     Q_UNUSED(whocares);
 }
@@ -235,16 +238,16 @@ void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t
     v8::Context::Scope contextScope(context);
 
     v8::Local<v8::Object> global(context->Global());
-    v8::Local<v8::Value> qtObjectValue(global->Get(gin::StringToV8(isolate, "qt")));
-    if (qtObjectValue.IsEmpty() || !qtObjectValue->IsObject())
+    v8::MaybeLocal<v8::Value> qtObjectValue(global->Get(context, gin::StringToV8(isolate, "qt")));
+    if (qtObjectValue.IsEmpty() || !qtObjectValue.ToLocalChecked()->IsObject())
         return;
-    v8::Local<v8::Object> qtObject = v8::Local<v8::Object>::Cast(qtObjectValue);
-    v8::Local<v8::Value> webChannelObjectValue(qtObject->Get(gin::StringToV8(isolate, "webChannelTransport")));
-    if (webChannelObjectValue.IsEmpty() || !webChannelObjectValue->IsObject())
+    v8::Local<v8::Object> qtObject = v8::Local<v8::Object>::Cast(qtObjectValue.ToLocalChecked());
+    v8::MaybeLocal<v8::Value> webChannelObjectValue(qtObject->Get(context, gin::StringToV8(isolate, "webChannelTransport")));
+    if (webChannelObjectValue.IsEmpty() || !webChannelObjectValue.ToLocalChecked()->IsObject())
         return;
-    v8::Local<v8::Object> webChannelObject = v8::Local<v8::Object>::Cast(webChannelObjectValue);
-    v8::Local<v8::Value> callbackValue(webChannelObject->Get(gin::StringToV8(isolate, "onmessage")));
-    if (callbackValue.IsEmpty() || !callbackValue->IsFunction()) {
+    v8::Local<v8::Object> webChannelObject = v8::Local<v8::Object>::Cast(webChannelObjectValue.ToLocalChecked());
+    v8::MaybeLocal<v8::Value> callbackValue(webChannelObject->Get(context, gin::StringToV8(isolate, "onmessage")));
+    if (callbackValue.IsEmpty() || !callbackValue.ToLocalChecked()->IsFunction()) {
         LOG(WARNING) << "onmessage is not a callable property of qt.webChannelTransport. Some things might not work as expected.";
         return;
     }
@@ -257,7 +260,7 @@ void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t
                 v8::PropertyAttribute(v8::ReadOnly | v8::DontDelete));
     DCHECK(!wasSet.IsNothing() && wasSet.FromJust());
 
-    v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(callbackValue);
+    v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(callbackValue.ToLocalChecked());
     v8::Local<v8::Value> argv[] = { messageObject };
     frame->CallFunctionEvenIfScriptDisabled(callback, webChannelObject, 1, argv);
 }

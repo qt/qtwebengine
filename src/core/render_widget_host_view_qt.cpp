@@ -120,8 +120,7 @@ static inline ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& even
   if (!event.TimeStamp().is_null()) {
     latency_info.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-        event.TimeStamp(),
-        1);
+        event.TimeStamp());
   }
   return latency_info;
 }
@@ -539,110 +538,110 @@ void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
     ui::CursorType auraType = ui::CursorType::kNull;
 #endif
     switch (cursorInfo.type) {
-    case blink::WebCursorInfo::kTypePointer:
+    case ui::CursorType::kPointer:
         shape = Qt::ArrowCursor;
         break;
-    case blink::WebCursorInfo::kTypeCross:
+    case ui::CursorType::kCross:
         shape = Qt::CrossCursor;
         break;
-    case blink::WebCursorInfo::kTypeHand:
+    case ui::CursorType::kHand:
         shape = Qt::PointingHandCursor;
         break;
-    case blink::WebCursorInfo::kTypeIBeam:
+    case ui::CursorType::kIBeam:
         shape = Qt::IBeamCursor;
         break;
-    case blink::WebCursorInfo::kTypeWait:
+    case ui::CursorType::kWait:
         shape = Qt::WaitCursor;
         break;
-    case blink::WebCursorInfo::kTypeHelp:
+    case ui::CursorType::kHelp:
         shape = Qt::WhatsThisCursor;
         break;
-    case blink::WebCursorInfo::kTypeEastResize:
-    case blink::WebCursorInfo::kTypeWestResize:
-    case blink::WebCursorInfo::kTypeEastWestResize:
-    case blink::WebCursorInfo::kTypeEastPanning:
-    case blink::WebCursorInfo::kTypeWestPanning:
+    case ui::CursorType::kEastResize:
+    case ui::CursorType::kWestResize:
+    case ui::CursorType::kEastWestResize:
+    case ui::CursorType::kEastPanning:
+    case ui::CursorType::kWestPanning:
         shape = Qt::SizeHorCursor;
         break;
-    case blink::WebCursorInfo::kTypeNorthResize:
-    case blink::WebCursorInfo::kTypeSouthResize:
-    case blink::WebCursorInfo::kTypeNorthSouthResize:
-    case blink::WebCursorInfo::kTypeNorthPanning:
-    case blink::WebCursorInfo::kTypeSouthPanning:
+    case ui::CursorType::kNorthResize:
+    case ui::CursorType::kSouthResize:
+    case ui::CursorType::kNorthSouthResize:
+    case ui::CursorType::kNorthPanning:
+    case ui::CursorType::kSouthPanning:
         shape = Qt::SizeVerCursor;
         break;
-    case blink::WebCursorInfo::kTypeNorthEastResize:
-    case blink::WebCursorInfo::kTypeSouthWestResize:
-    case blink::WebCursorInfo::kTypeNorthEastSouthWestResize:
-    case blink::WebCursorInfo::kTypeNorthEastPanning:
-    case blink::WebCursorInfo::kTypeSouthWestPanning:
+    case ui::CursorType::kNorthEastResize:
+    case ui::CursorType::kSouthWestResize:
+    case ui::CursorType::kNorthEastSouthWestResize:
+    case ui::CursorType::kNorthEastPanning:
+    case ui::CursorType::kSouthWestPanning:
         shape = Qt::SizeBDiagCursor;
         break;
-    case blink::WebCursorInfo::kTypeNorthWestResize:
-    case blink::WebCursorInfo::kTypeSouthEastResize:
-    case blink::WebCursorInfo::kTypeNorthWestSouthEastResize:
-    case blink::WebCursorInfo::kTypeNorthWestPanning:
-    case blink::WebCursorInfo::kTypeSouthEastPanning:
+    case ui::CursorType::kNorthWestResize:
+    case ui::CursorType::kSouthEastResize:
+    case ui::CursorType::kNorthWestSouthEastResize:
+    case ui::CursorType::kNorthWestPanning:
+    case ui::CursorType::kSouthEastPanning:
         shape = Qt::SizeFDiagCursor;
         break;
-    case blink::WebCursorInfo::kTypeColumnResize:
+    case ui::CursorType::kColumnResize:
         shape = Qt::SplitHCursor;
         break;
-    case blink::WebCursorInfo::kTypeRowResize:
+    case ui::CursorType::kRowResize:
         shape = Qt::SplitVCursor;
         break;
-    case blink::WebCursorInfo::kTypeMiddlePanning:
-    case blink::WebCursorInfo::kTypeMove:
+    case ui::CursorType::kMiddlePanning:
+    case ui::CursorType::kMove:
         shape = Qt::SizeAllCursor;
         break;
-    case blink::WebCursorInfo::kTypeProgress:
+    case ui::CursorType::kProgress:
         shape = Qt::BusyCursor;
         break;
-    case blink::WebCursorInfo::kTypeCopy:
+    case ui::CursorType::kCopy:
         shape = Qt::DragCopyCursor;
         break;
-    case blink::WebCursorInfo::kTypeAlias:
+    case ui::CursorType::kAlias:
         shape = Qt::DragLinkCursor;
         break;
 #if defined(USE_AURA)
-    case blink::WebCursorInfo::kTypeVerticalText:
+    case ui::CursorType::kVerticalText:
         auraType = ui::CursorType::kVerticalText;
         break;
-    case blink::WebCursorInfo::kTypeCell:
+    case ui::CursorType::kCell:
         auraType = ui::CursorType::kCell;
         break;
-    case blink::WebCursorInfo::kTypeContextMenu:
+    case ui::CursorType::kContextMenu:
         auraType = ui::CursorType::kContextMenu;
         break;
-    case blink::WebCursorInfo::kTypeZoomIn:
+    case ui::CursorType::kZoomIn:
         auraType = ui::CursorType::kZoomIn;
         break;
-    case blink::WebCursorInfo::kTypeZoomOut:
+    case ui::CursorType::kZoomOut:
         auraType = ui::CursorType::kZoomOut;
         break;
 #else
-    case blink::WebCursorInfo::kTypeVerticalText:
-    case blink::WebCursorInfo::kTypeCell:
-    case blink::WebCursorInfo::kTypeContextMenu:
-    case blink::WebCursorInfo::kTypeZoomIn:
-    case blink::WebCursorInfo::kTypeZoomOut:
+    case ui::CursorType::kVerticalText:
+    case ui::CursorType::kCell:
+    case ui::CursorType::kContextMenu:
+    case ui::CursorType::kZoomIn:
+    case ui::CursorType::kZoomOut:
         // FIXME: Support on OS X
         break;
 #endif
-    case blink::WebCursorInfo::kTypeNoDrop:
-    case blink::WebCursorInfo::kTypeNotAllowed:
+    case ui::CursorType::kNoDrop:
+    case ui::CursorType::kNotAllowed:
         shape = Qt::ForbiddenCursor;
         break;
-    case blink::WebCursorInfo::kTypeNone:
+    case ui::CursorType::kNone:
         shape = Qt::BlankCursor;
         break;
-    case blink::WebCursorInfo::kTypeGrab:
+    case ui::CursorType::kGrab:
         shape = Qt::OpenHandCursor;
         break;
-    case blink::WebCursorInfo::kTypeGrabbing:
+    case ui::CursorType::kGrabbing:
         shape = Qt::ClosedHandCursor;
         break;
-    case blink::WebCursorInfo::kTypeCustom:
+    case ui::CursorType::kCustom:
         if (cursorInfo.custom_image.colorType() == SkColorType::kN32_SkColorType) {
             QImage cursor = toQImage(cursorInfo.custom_image, QImage::Format_ARGB32);
             m_delegate->updateCursor(QCursor(QPixmap::fromImage(cursor), cursorInfo.hotspot.x(), cursorInfo.hotspot.y()));
@@ -835,7 +834,7 @@ void RenderWidgetHostViewQt::OnTextSelectionChanged(content::TextInputManager *t
 #if defined(USE_OZONE)
     if (!selection->selected_text().empty() && selection->user_initiated()) {
         // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
-        ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
+        ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kSelection);
         clipboard_writer.WriteText(selection->selected_text());
     }
 #endif // defined(USE_OZONE)
@@ -1016,7 +1015,7 @@ void RenderWidgetHostViewQt::notifyShown()
         m_delegatedFrameHost->AttachToCompositor(m_uiCompositor.get());
         m_delegatedFrameHost->WasShown(GetLocalSurfaceIdAllocation().local_surface_id(),
                                        m_viewRectInDips.size(),
-                                       false /* record_presentation_time */);
+                                       base::nullopt);
     }
     host()->WasShown(base::nullopt);
 }
@@ -1028,7 +1027,7 @@ void RenderWidgetHostViewQt::notifyHidden()
             return;
         m_visible = false;
         host()->WasHidden();
-        m_delegatedFrameHost->WasHidden();
+        m_delegatedFrameHost->WasHidden(content::DelegatedFrameHost::HiddenCause::kOther);
         m_delegatedFrameHost->DetachFromCompositor();
     } else {
         host()->WasHidden();

@@ -102,10 +102,10 @@ public:
                                bool strict_enforcement,
                                bool expired_previous_decision,
                                const base::Callback<void(content::CertificateRequestResultType)> &callback) override;
-    void SelectClientCertificate(content::WebContents* web_contents,
-                                         net::SSLCertRequestInfo* cert_request_info,
-                                         net::ClientCertIdentityList client_certs,
-                                         std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
+    base::OnceClosure SelectClientCertificate(content::WebContents* web_contents,
+                                              net::SSLCertRequestInfo* cert_request_info,
+                                              net::ClientCertIdentityList client_certs,
+                                              std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
     std::unique_ptr<net::ClientCertStore> CreateClientCertStore(content::ResourceContext *resource_context) override;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() override;
     content::PlatformNotificationService * GetPlatformNotificationService(content::BrowserContext *browser_context) override;
@@ -142,26 +142,24 @@ public:
                          bool *no_javascript_access) override;
     bool ShouldEnableStrictSiteIsolation() override;
 
-    bool AllowGetCookie(const GURL& url,
-                        const GURL& first_party,
-                        const net::CookieList& cookie_list,
-                        content::ResourceContext* context,
-                        int render_process_id,
-                        int render_frame_id) override;
+    bool WillCreateRestrictedCookieManager(network::mojom::RestrictedCookieManagerRole role,
+                                           content::BrowserContext *browser_context,
+                                           const url::Origin& origin,
+                                           bool is_service_worker,
+                                           int process_id,
+                                           int routing_id,
+                                           network::mojom::RestrictedCookieManagerRequest *request) override;
 
-    bool AllowSetCookie(const GURL& url,
-                        const GURL& first_party,
-                        const net::CanonicalCookie& cookie,
-                        content::ResourceContext* context,
-                        int render_process_id,
-                        int render_frame_id) override;
-
+    bool AllowAppCacheOnIO(const GURL& manifest_url,
+                           const GURL& first_party,
+                           content::ResourceContext* context) override;
     bool AllowAppCache(const GURL& manifest_url,
                        const GURL& first_party,
-                       content::ResourceContext* context) override;
+                       content::BrowserContext* context) override;
 
     bool AllowServiceWorker(const GURL& scope,
                             const GURL& first_party,
+                            const GURL& script_url,
                             content::ResourceContext* context,
                             base::RepeatingCallback<content::WebContents*()> wc_getter) override;
 
@@ -197,6 +195,7 @@ public:
             scoped_refptr<net::HttpResponseHeaders> response_headers,
             bool first_auth_attempt,
             LoginAuthRequiredCallback auth_required_callback) override;
+
     bool HandleExternalProtocol(
             const GURL &url,
             content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
@@ -205,8 +204,7 @@ public:
             bool is_main_frame,
             ui::PageTransition page_transition,
             bool has_user_gesture,
-            network::mojom::URLLoaderFactoryRequest *factory_request,
-            network::mojom::URLLoaderFactory *&out_factory) override;
+            network::mojom::URLLoaderFactoryPtr *out_factory) override;
 
     std::vector<std::unique_ptr<content::URLLoaderThrottle>> CreateURLLoaderThrottlesOnIO(
             const network::ResourceRequest &request, content::ResourceContext *resource_context,
@@ -220,8 +218,8 @@ public:
 
     static std::string getUserAgent();
 
-    std::string GetUserAgent() const override { return getUserAgent(); }
-    std::string GetProduct() const override;
+    std::string GetUserAgent() override { return getUserAgent(); }
+    std::string GetProduct() override;
 
 private:
     void InitFrameInterfaces();

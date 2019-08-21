@@ -53,10 +53,13 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "components/printing/browser/features.h"
 #endif
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/viz/common/features.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/app/service_manager_environment.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/browser/scheduler/browser_task_executor.h"
+#include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_helper.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
@@ -81,6 +84,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme_features.h"
@@ -280,6 +284,11 @@ void WebEngineContext::destroy()
 
     // Destroy the main runner, this stops main message loop
     m_browserRunner.reset();
+
+    // These would normally be in the content-runner, but we allocated them separately:
+    m_startupData.reset();
+    m_serviceManagerEnvironment.reset();
+    m_discardableSharedMemoryManager.reset();
 
     // Destroying content-runner will force Chromium at_exit calls to run, and
     // reap child processes.
@@ -512,6 +521,9 @@ WebEngineContext::WebEngineContext()
     // This is deprecated behavior, and will be removed in a future Chromium version, as per
     // upstream Chromium commit ba52f56207a4b9d70b34880fbff2352e71a06422.
     appendToFeatureList(enableFeatures, features::kAllowContentInitiatedDataUrlNavigations.name);
+
+    appendToFeatureList(enableFeatures, features::kTracingServiceInProcess.name);
+
     // The video-capture service is not functioning at this moment (since 69)
     appendToFeatureList(disableFeatures, features::kMojoVideoCapture.name);
 
@@ -527,6 +539,7 @@ WebEngineContext::WebEngineContext()
     // Explicitly tell Chromium about default-on features we do not support
     appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
     appendToFeatureList(disableFeatures, features::kOriginTrials.name);
+    appendToFeatureList(disableFeatures, features::kSmsReceiver.name);
     appendToFeatureList(disableFeatures, features::kWebAuth.name);
     appendToFeatureList(disableFeatures, features::kWebAuthCable.name);
     appendToFeatureList(disableFeatures, features::kWebPayments.name);
@@ -541,8 +554,6 @@ WebEngineContext::WebEngineContext()
     }
 
     if (!enableViz) {
-        // Surface synchronization breaks our current graphics integration (since 65)
-        appendToFeatureList(disableFeatures, features::kEnableSurfaceSynchronization.name);
         // Viz Display Compositor is enabled by default since 73. Doesn't work for us (also implies SurfaceSynchronization)
         appendToFeatureList(disableFeatures, features::kVizDisplayCompositor.name);
         // VideoSurfaceLayer is enabled by default since 75. We don't support it.
@@ -649,7 +660,9 @@ WebEngineContext::WebEngineContext()
 #endif
     m_contentRunner->Initialize(contentMainParams);
 
-    mojo::core::Init();
+    mojo::core::Configuration mojoConfiguration;
+    mojoConfiguration.is_broker_process = true;
+    mojo::core::Init(mojoConfiguration);
 
     // This block mirrors ContentMainRunnerImpl::RunServiceManager():
     m_mainDelegate->PreCreateMainMessageLoop();
@@ -658,12 +671,16 @@ WebEngineContext::WebEngineContext()
     m_mainDelegate->PostEarlyInitialization(false);
     content::StartBrowserThreadPool();
     content::BrowserTaskExecutor::PostFeatureListSetup();
+    m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+    m_serviceManagerEnvironment = std::make_unique<content::ServiceManagerEnvironment>(content::BrowserTaskExecutor::CreateIOThread());
+    m_startupData = m_serviceManagerEnvironment->CreateBrowserStartupData();
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);
     m_runLoop->BeforeRun();
 
     content::MainFunctionParams mainParams(*base::CommandLine::ForCurrentProcess());
+    mainParams.startup_data = m_startupData.get();
     m_browserRunner->Initialize(mainParams);
 
     m_devtoolsServer.reset(new DevToolsServerQt());

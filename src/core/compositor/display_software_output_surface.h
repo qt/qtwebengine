@@ -47,7 +47,7 @@ namespace QtWebEngineCore {
 class DisplaySoftwareOutputSurface final : public viz::SoftwareOutputSurface
 {
 public:
-    DisplaySoftwareOutputSurface(viz::UpdateVSyncParametersCallback callback);
+    DisplaySoftwareOutputSurface();
     ~DisplaySoftwareOutputSurface() override;
 
     // Overridden from viz::SoftwareOutputSurface.

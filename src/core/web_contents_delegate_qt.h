@@ -130,7 +130,7 @@ public:
     content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) override;
     void EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL &origin, const blink::WebFullscreenOptions &) override;
     void ExitFullscreenModeForTab(content::WebContents*) override;
-    bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const override;
+    bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) override;
     void RunFileChooser(content::RenderFrameHost* render_frame_host,
                         std::unique_ptr<content::FileSelectListener> listener,
                         const blink::mojom::FileChooserParams& params) override;
@@ -144,7 +144,7 @@ public:
     void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
     void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) override;
     void BeforeUnloadFired(content::WebContents* tab, bool proceed, bool* proceed_to_fire_unload) override;
-    bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host, const GURL& security_origin, blink::MediaStreamType type) override;
+    bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host, const GURL& security_origin, blink::mojom::MediaStreamType type) override;
     void RegisterProtocolHandler(content::WebContents* web_contents, const std::string& protocol, const GURL& url, bool user_gesture) override;
     void UnregisterProtocolHandler(content::WebContents* web_contents, const std::string& protocol, const GURL& url, bool user_gesture) override;
     bool TakeFocus(content::WebContents *source, bool reverse) override;
@@ -209,7 +209,7 @@ private:
     LoadingState determineLoadingState(content::WebContents *contents);
     void setLoadingState(LoadingState state);
 
-    int &streamCount(blink::MediaStreamType type);
+    int &streamCount(blink::mojom::MediaStreamType type);
 
     WebContentsAdapterClient *m_viewClient;
     QVector<int64_t> m_loadingErrorFrameList;

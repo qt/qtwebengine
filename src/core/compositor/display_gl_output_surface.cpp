@@ -53,20 +53,19 @@
 
 namespace QtWebEngineCore {
 
-DisplayGLOutputSurface::DisplayGLOutputSurface(
-        scoped_refptr<viz::VizProcessContextProvider> contextProvider,
-        viz::UpdateVSyncParametersCallback callback)
+DisplayGLOutputSurface::DisplayGLOutputSurface(scoped_refptr<viz::VizProcessContextProvider> contextProvider)
     : OutputSurface(contextProvider)
     , m_commandBuffer(contextProvider->command_buffer())
     , m_gl(contextProvider->ContextGL())
+    , m_vizContextProvider(contextProvider)
 {
     capabilities_.uses_default_gl_framebuffer = false;
     m_gl->GenFramebuffers(1, &m_fboId);
-    contextProvider->SetUpdateVSyncParametersCallback(std::move(callback));
 }
 
 DisplayGLOutputSurface::~DisplayGLOutputSurface()
 {
+    m_vizContextProvider->SetUpdateVSyncParametersCallback(viz::UpdateVSyncParametersCallback());
     m_gl->DeleteFramebuffers(1, &m_fboId);
     if (m_sink)
         m_sink->disconnect(this);
@@ -224,20 +223,15 @@ void DisplayGLOutputSurface::swapBuffersOnVizThread()
         m_backBuffer = std::move(m_middleBuffer);
     }
 
-    m_display->DidReceiveSwapBuffersAck();
+    const auto now = base::TimeTicks::Now();
+    m_display->DidReceiveSwapBuffersAck(gfx::SwapTimings{now, now});
     m_display->DidReceivePresentationFeedback(
-            gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(),
+            gfx::PresentationFeedback(now, base::TimeDelta(),
                                       gfx::PresentationFeedback::Flags::kVSync));
 }
 
 void DisplayGLOutputSurface::SetDrawRectangle(const gfx::Rect &)
 {
-}
-
-// Returning nullptr here effectively disables viz::OverlayProcessor.
-viz::OverlayCandidateValidator *DisplayGLOutputSurface::GetOverlayCandidateValidator() const
-{
-    return nullptr;
 }
 
 // Returning true here will cause viz::GLRenderer to try to render the output
@@ -287,6 +281,20 @@ unsigned DisplayGLOutputSurface::UpdateGpuFence()
 {
     NOTREACHED();
     return 0;
+}
+
+void DisplayGLOutputSurface::SetUpdateVSyncParametersCallback(viz::UpdateVSyncParametersCallback callback)
+{
+    m_vizContextProvider->SetUpdateVSyncParametersCallback(std::move(callback));
+}
+
+void DisplayGLOutputSurface::SetDisplayTransformHint(gfx::OverlayTransform)
+{
+}
+
+gfx::OverlayTransform DisplayGLOutputSurface::GetDisplayTransform()
+{
+    return gfx::OVERLAY_TRANSFORM_NONE;
 }
 
 } // namespace QtWebEngineCore

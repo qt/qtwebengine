@@ -78,6 +78,9 @@ ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::PAYMENT_HANDLER:
     case content::PermissionType::BACKGROUND_FETCH:
     case content::PermissionType::IDLE_DETECTION:
+    case content::PermissionType::PERIODIC_BACKGROUND_SYNC:
+    case content::PermissionType::WAKE_LOCK_SCREEN:
+    case content::PermissionType::WAKE_LOCK_SYSTEM:
     case content::PermissionType::NUM:
         NOTIMPLEMENTED() << "Unsupported permission type: " << static_cast<int>(type);
         break;

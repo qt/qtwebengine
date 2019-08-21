@@ -84,7 +84,6 @@
 #include "qtwebengine/browser/qtwebengine_renderer_manifest.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
-#include "services/proxy_resolver/proxy_resolver_service.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -125,6 +124,8 @@
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
+#include "api/qwebenginecookiestore.h"
+#include "api/qwebenginecookiestore_p.h"
 
 #if defined(Q_OS_LINUX)
 #include "global_descriptors_qt.h"
@@ -158,8 +159,9 @@
 
 #include <QGuiApplication>
 #include <QLocale>
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 # include <QOpenGLContext>
+# include <QOpenGLExtraFunctions>
 #endif
 #include <qpa/qplatformnativeinterface.h>
 
@@ -202,13 +204,15 @@ public:
     }
 
     void* GetHandle() override { return m_handle; }
-    bool WasAllocatedUsingRobustnessExtension() override
+    unsigned int CheckStickyGraphicsResetStatus() override
     {
 #if QT_CONFIG(opengl)
-        if (QOpenGLContext *context = qt_gl_global_share_context())
-            return context->format().testOption(QSurfaceFormat::ResetNotification);
+        if (QOpenGLContext *context = qt_gl_global_share_context()) {
+            if (context->format().testOption(QSurfaceFormat::ResetNotification))
+                return context->extraFunctions()->glGetGraphicsResetStatus();
+        }
 #endif
-        return false;
+        return 0 /*GL_NO_ERROR*/;
     }
 
     // We don't care about the rest, this context shouldn't be used except for its handle.
@@ -404,10 +408,11 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
     contentsDelegate->allowCertificateError(errorController);
 }
 
-void ContentBrowserClientQt::SelectClientCertificate(content::WebContents *webContents,
-                                                     net::SSLCertRequestInfo *certRequestInfo,
-                                                     net::ClientCertIdentityList clientCerts,
-                                                     std::unique_ptr<content::ClientCertificateDelegate> delegate)
+
+base::OnceClosure ContentBrowserClientQt::SelectClientCertificate(content::WebContents *webContents,
+                                                                  net::SSLCertRequestInfo *certRequestInfo,
+                                                                  net::ClientCertIdentityList clientCerts,
+                                                                  std::unique_ptr<content::ClientCertificateDelegate> delegate)
 {
     if (!clientCerts.empty()) {
         WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
@@ -419,6 +424,8 @@ void ContentBrowserClientQt::SelectClientCertificate(content::WebContents *webCo
     } else {
         delegate->ContinueWithCertificate(nullptr, nullptr);
     }
+    // This is consistent with AwContentBrowserClient and CastContentBrowserClient:
+    return base::OnceClosure();
 }
 
 std::unique_ptr<net::ClientCertStore> ContentBrowserClientQt::CreateClientCertStore(content::ResourceContext *resource_context)
@@ -652,13 +659,6 @@ std::unique_ptr<device::LocationProvider> ContentBrowserClientQt::OverrideSystem
 }
 #endif
 
-scoped_refptr<net::URLRequestContextGetter> GetSystemRequestContextOnUIThread()
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    return scoped_refptr<net::URLRequestContextGetter>(
-                ProfileAdapter::createDefaultProfileAdapter()->profile()->GetRequestContext());
-}
-
 void ContentBrowserClientQt::AddNetworkHintsMessageFilter(int render_process_id, net::URLRequestContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -679,38 +679,42 @@ bool ContentBrowserClientQt::ShouldEnableStrictSiteIsolation()
     return false;
 }
 
-bool ContentBrowserClientQt::AllowGetCookie(const GURL &url,
-                                            const GURL &first_party,
-                                            const net::CookieList & /*cookie_list*/,
-                                            content::ResourceContext *context,
-                                            int /*render_process_id*/,
-                                            int /*render_frame_id*/)
+bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::RestrictedCookieManagerRole role,
+                                                               content::BrowserContext *browser_context,
+                                                               const url::Origin &origin,
+                                                               bool is_service_worker,
+                                                               int process_id,
+                                                               int routing_id,
+                                                               network::mojom::RestrictedCookieManagerRequest *request)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    return ProfileIODataQt::FromResourceContext(context)->canGetCookies(toQt(first_party), toQt(url));
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
+        base::BindOnce(&ProfileIODataQt::CreateRestrictedCookieManager,
+                       ProfileIODataQt::FromBrowserContext(browser_context)->getWeakPtrOnUIThread(),
+                       std::move(*request),
+                       role, origin, is_service_worker, process_id, routing_id));
+    return true;
 }
 
-bool ContentBrowserClientQt::AllowSetCookie(const GURL &url,
-                                            const GURL &first_party,
-                                            const net::CanonicalCookie& /*cookie*/,
-                                            content::ResourceContext *context,
-                                            int /*render_process_id*/,
-                                            int /*render_frame_id*/)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    return ProfileIODataQt::FromResourceContext(context)->canSetCookie(toQt(first_party), QByteArray(), toQt(url));
-}
-
-bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
-                                           const GURL &first_party,
-                                           content::ResourceContext *context)
+bool ContentBrowserClientQt::AllowAppCacheOnIO(const GURL &manifest_url,
+                                               const GURL &first_party,
+                                               content::ResourceContext *context)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     return ProfileIODataQt::FromResourceContext(context)->canGetCookies(toQt(first_party), toQt(manifest_url));
 }
 
+bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
+                                           const GURL &first_party,
+                                           content::BrowserContext *context)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(first_party), toQt(manifest_url));
+}
+
 bool ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
                                                 const GURL &first_party,
+                                                const GURL & /*script_url*/,
                                                 content::ResourceContext *context,
                                                 base::RepeatingCallback<content::WebContents*()> wc_getter)
 {
@@ -760,12 +764,12 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
         bool is_main_frame,
         ui::PageTransition page_transition,
         bool has_user_gesture,
-        network::mojom::URLLoaderFactoryRequest *factory_request,
-        network::mojom::URLLoaderFactory *&out_factory)
+        network::mojom::URLLoaderFactoryPtr *out_factory)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_UNUSED(child_id);
     Q_UNUSED(navigation_data);
+    Q_UNUSED(out_factory);
 
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                              base::BindOnce(&LaunchURL,
@@ -877,7 +881,7 @@ std::string ContentBrowserClientQt::getUserAgent()
     return content::BuildUserAgentFromProduct("QtWebEngine/" QTWEBENGINECORE_VERSION_STR " Chrome/" CHROMIUM_VERSION);
 }
 
-std::string ContentBrowserClientQt::GetProduct() const
+std::string ContentBrowserClientQt::GetProduct()
 {
     QString productName(qApp->applicationName() % '/' % qApp->applicationVersion());
     return productName.toStdString();

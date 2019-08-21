@@ -63,7 +63,7 @@ public:
 
     // Overridden from viz::SoftwareOutputDevice.
     void Resize(const gfx::Size &sizeInPixels, float devicePixelRatio) override;
-    void OnSwapBuffers(base::OnceClosure swapCompletionCallback) override;
+    void OnSwapBuffers(SwapBuffersCallback swap_ack_callback) override;
 
     // Overridden from DisplayProducer.
     QSGNode *updatePaintNode(QSGNode *oldNode, RenderWidgetHostViewQtDelegate *delegate) override;
@@ -73,7 +73,7 @@ private:
     scoped_refptr<DisplayFrameSink> m_sink;
     float m_devicePixelRatio = 1.0;
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
-    base::OnceClosure m_swapCompletionCallback;
+    SwapBuffersCallback m_swapCompletionCallback;
     QImage m_image;
     float m_imageDevicePixelRatio = 1.0;
 };
@@ -99,11 +99,11 @@ void DisplaySoftwareOutputSurface::Device::Resize(const gfx::Size &sizeInPixels,
     surface_ = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(sizeInPixels.width(), sizeInPixels.height()));
 }
 
-void DisplaySoftwareOutputSurface::Device::OnSwapBuffers(base::OnceClosure swapCompletionCallback)
+void DisplaySoftwareOutputSurface::Device::OnSwapBuffers(SwapBuffersCallback swap_ack_callback)
 {
     QMutexLocker locker(&m_mutex);
     m_taskRunner = base::ThreadTaskRunnerHandle::Get();
-    m_swapCompletionCallback = std::move(swapCompletionCallback);
+    m_swapCompletionCallback = std::move(swap_ack_callback);
     m_sink->scheduleUpdate();
 }
 
@@ -143,7 +143,7 @@ QSGNode *DisplaySoftwareOutputSurface::Device::updatePaintNode(
             m_image.detach();
         }
         m_imageDevicePixelRatio = m_devicePixelRatio;
-        m_taskRunner->PostTask(FROM_HERE, std::move(m_swapCompletionCallback));
+        m_taskRunner->PostTask(FROM_HERE, base::BindOnce(std::move(m_swapCompletionCallback), toGfx(m_image.size())));
         m_taskRunner.reset();
     }
 
@@ -155,8 +155,8 @@ QSGNode *DisplaySoftwareOutputSurface::Device::updatePaintNode(
     return node;
 }
 
-DisplaySoftwareOutputSurface::DisplaySoftwareOutputSurface(viz::UpdateVSyncParametersCallback callback)
-    : SoftwareOutputSurface(std::make_unique<Device>(), std::move(callback))
+DisplaySoftwareOutputSurface::DisplaySoftwareOutputSurface()
+    : SoftwareOutputSurface(std::make_unique<Device>())
 {}
 
 DisplaySoftwareOutputSurface::~DisplaySoftwareOutputSurface() {}

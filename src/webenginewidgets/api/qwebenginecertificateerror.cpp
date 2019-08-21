@@ -110,9 +110,9 @@ QWebEngineCertificateError::QWebEngineCertificateError(const QSharedPointer<Cert
     d->chain = controller->chain();
 }
 
-QWebEngineCertificateError::QWebEngineCertificateError(const QWebEngineCertificateError &other) = default;
+QWebEngineCertificateError::QWebEngineCertificateError(const QWebEngineCertificateError &) = default;
 
-QWebEngineCertificateError& QWebEngineCertificateError::operator=(const QWebEngineCertificateError &other) = default;
+QWebEngineCertificateError& QWebEngineCertificateError::operator=(const QWebEngineCertificateError &) = default;
 
 /*! \internal
 */

@@ -46,6 +46,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "services/network/cookie_settings.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 #include <QtCore/QString>
@@ -145,11 +148,22 @@ public:
     void updateUsedForGlobalCertificateVerification(); // runs on ui thread
     bool hasPageInterceptors();
 
+    void CreateRestrictedCookieManager(network::mojom::RestrictedCookieManagerRequest request,
+                                       network::mojom::RestrictedCookieManagerRole role,
+                                       const url::Origin &origin,
+                                       bool is_service_worker,
+                                       int32_t process_id,
+                                       int32_t routing_id);
+
 #if QT_CONFIG(ssl)
     ClientCertificateStoreData *clientCertificateStoreData();
 #endif
     std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
+    static ProfileIODataQt *FromBrowserContext(content::BrowserContext *browser_context);
     static ProfileIODataQt *FromResourceContext(content::ResourceContext *resource_context);
+
+    base::WeakPtr<ProfileIODataQt> getWeakPtrOnUIThread();
+
 private:
     void removeBrowsingDataRemoverObserver();
 
@@ -175,6 +189,8 @@ private:
     QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
     QPointer<ProfileAdapter> m_profileAdapter; // never dereferenced in IO thread and it is passed by qpointer
     ProfileAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;
+    mojo::StrongBindingSet<network::mojom::RestrictedCookieManager> m_restrictedCookieManagerBindings;
+
 #if QT_CONFIG(ssl)
     ClientCertificateStoreData *m_clientCertificateStoreData;
 #endif
@@ -186,6 +202,7 @@ private:
     QList<QByteArray> m_customUrlSchemes;
     QList<QByteArray> m_installedCustomSchemes;
     QWebEngineUrlRequestInterceptor* m_requestInterceptor = nullptr;
+    network::CookieSettings m_cookieSettings;
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
     QMutex m_mutex{QMutex::Recursive};
     using QRecursiveMutex = QMutex;
