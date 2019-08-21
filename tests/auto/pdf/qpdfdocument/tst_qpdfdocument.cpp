@@ -316,13 +316,12 @@ void tst_QPdfDocument::status()
 
     doc.load(reply.data());
 
-    QTime stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
     forever {
         QCoreApplication::instance()->processEvents();
         if (statusChangedSpy.count() == 2)
             break;
-
         if (stopWatch.elapsed() >= 30000)
             break;
     }
