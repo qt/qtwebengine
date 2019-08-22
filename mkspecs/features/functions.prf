@@ -104,8 +104,8 @@ defineTest(skipBuild) {
 
 defineTest(isWebEngineCoreBuild) {
 
-    static{
-       skipBuild("Static builds of QtWebEngine aren't supported.")
+    static {
+       skipBuild("Static builds of QtWebEngine are not supported.")
        return(false)
     }
 
@@ -146,6 +146,11 @@ defineTest(isWebEngineCoreBuild) {
 
     win32:!qtConfig(webengine-win-compiler64) {
         skipBuild("Required 64-bit cross-building or native toolchain could not be found.")
+        return(false)
+    }
+
+    win32:!qtConfig(webengine-winversion) {
+        skipBuild("Needs Visual Studio 2017 or higher")
         return(false)
     }
 

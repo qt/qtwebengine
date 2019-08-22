@@ -351,6 +351,14 @@
         "webengine-win-compiler64": {
             "label": "64bit compiler",
             "type": "isWindowsHostCompiler64"
+        },
+        "webengine-platform": {
+            "label": "platform supported",
+            "type": "detectPlatform"
+        },
+        "webengine-architecture": {
+            "label": "architecture supported",
+            "type": "detectArch"
         }
     },
     "features": {
@@ -362,7 +370,9 @@
                          && features.webengine-gperf
                          && features.webengine-bison
                          && features.webengine-flex
-                         && (!features.xcb || features.webengine-ozone-x11)",
+                         && (!features.xcb || features.webengine-ozone-x11)
+                         && tests.webengine-platform
+                         && tests.webengine-architecture",
             "output": [ "privateFeature" ]
         },
         "webengine-python2": {
@@ -650,6 +660,16 @@
             "type": "warning",
             "condition": "config.win32 && !features.webengine-win-compiler64",
             "message": "64-bit cross-building or native toolchain is required to build QtWebEngine."
+        },
+        {
+            "type": "skipBuildWarning",
+            "condition": "tests.webengine-platform",
+            "message": "isPlatformSupported"
+        },
+        {
+            "type": "skipBuildWarning",
+            "condition": "tests.webengine-architecture",
+            "message": "isArchSupported"
         }
     ],
     "summary": [

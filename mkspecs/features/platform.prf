@@ -1,6 +1,3 @@
-include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
-QT_FOR_CONFIG += buildtools-private
-
 defineTest(isQtMinimum) {
     !equals(QT_MAJOR_VERSION, $$1): return(false)
     count(ARGS, 1, greaterThan) {
@@ -37,10 +34,6 @@ defineTest(isWindowsPlatformSupported) {
     }
     !isMinWinSDKVersion(10, 17763): {
         skipBuild("Qt WebEngine on Windows requires a Windows SDK version 10.0.17763 or newer.")
-        return(false)
-    }
-    !qtConfig(webengine-winversion) {
-        skipBuild("Needs Visual Studio 2017 or higher")
         return(false)
     }
     return(true)

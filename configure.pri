@@ -1,3 +1,5 @@
+load(platform)
+
 include(src/buildtools/config/functions.pri)
 
 # this must be done outside any function
@@ -33,6 +35,11 @@ defineTest(qtConfTest_detectJumboBuild) {
     export($${1}.cache)
 
     return(true)
+}
+
+defineTest(qtConfReport_skipBuildWarning) {
+    $${1}()
+    !isEmpty(skipBuildReason):qtConfAddWarning($${skipBuildReason})
 }
 
 defineTest(qtConfReport_jumboBuild) {
@@ -96,6 +103,21 @@ defineTest(qtConfTest_detectBison) {
     return(true)
 }
 
+defineTest(qtConfTest_detectPlatform) {
+   !isPlatformSupported() {
+        qtLog("Platform not supported".)
+        return(false)
+   }
+   return(true)
+}
+
+defineTest(qtConfTest_detectArch) {
+   !isArchSupported() {
+        qtLog("Architecture not supported".)
+        return(false)
+   }
+   return(true)
+}
 defineTest(qtConfTest_detectFlex) {
     flex = $$qtConfFindGnuTool("flex$$EXE_SUFFIX")
     isEmpty(flex) {
