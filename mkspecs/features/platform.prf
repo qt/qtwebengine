@@ -9,40 +9,48 @@ defineTest(isQtMinimum) {
     return(true)
 }
 
-defineTest(isPlatformSupported) {
-  QT_FOR_CONFIG += gui-private
-  linux {
-    if(!gcc:!clang)|intel_icc {
-      skipBuild("Qt WebEngine on Linux requires clang or GCC.")
-      return(false)
+defineTest(isLinuxPlatformSupported) {
+    !gcc|intel_icc {
+        skipBuild("Qt WebEngine on Linux requires clang or GCC.")
+        return(false)
     }
     gcc:!clang:!isGCCVersionSupported(): return(false)
-  } else:win32 {
+    gcc:!contains(QT_CONFIG, c++14) {
+        skipBuild("C++14 support is required in order to build chromium.")
+        return(false)
+    }
+    return(true)
+}
+
+defineTest(isWindowsPlatformSupported) {
     winrt {
-      skipBuild("WinRT is not supported.")
-      return(false)
+        skipBuild("WinRT is not supported.")
+        return(false)
     }
     isBuildingOnWin32() {
-      skipBuild("Qt WebEngine on Windows must be built on a 64-bit machine.")
-      return(false)
+        skipBuild("Qt WebEngine on Windows must be built on a 64-bit machine.")
+        return(false)
     }
     !msvc|intel_icl {
-      skipBuild("Qt WebEngine on Windows requires MSVC or Clang (MSVC mode).")
-      return(false)
+        skipBuild("Qt WebEngine on Windows requires MSVC or Clang (MSVC mode).")
+        return(false)
     }
     !isMinWinSDKVersion(10, 17763): {
-      skipBuild("Qt WebEngine on Windows requires a Windows SDK version 10.0.17763 or newer.")
-      return(false)
+        skipBuild("Qt WebEngine on Windows requires a Windows SDK version 10.0.17763 or newer.")
+        return(false)
     }
     !qtConfig(webengine-winversion) {
-         skipBuild("Needs Visual Studio 2017 or higher")
-         return(false)
+        skipBuild("Needs Visual Studio 2017 or higher")
+        return(false)
     }
-  } else:osx {
+    return(true)
+}
+
+defineTest(isMacOsPlatformSupported) {
     # FIXME: Try to get it back down to 8.2 for building on OS X 10.11
     !isMinXcodeVersion(8, 3, 3) {
-      skipBuild("Using Xcode version $$QMAKE_XCODE_VERSION, but at least version 8.3.3 is required to build Qt WebEngine.")
-      return(false)
+        skipBuild("Using Xcode version $$QMAKE_XCODE_VERSION, but at least version 8.3.3 is required to build Qt WebEngine.")
+        return(false)
     }
     !clang|intel_icc {
         skipBuild("Qt WebEngine on macOS requires Clang.")
@@ -51,29 +59,26 @@ defineTest(isPlatformSupported) {
     # We require macOS 10.12 (darwin version 16.0.0) or newer.
     darwin_major_version = $$section(QMAKE_HOST.version, ., 0, 0)
     lessThan(darwin_major_version, 16) {
-      skipBuild("Building Qt WebEngine requires macOS version 10.12 or newer.")
-      return(false)
+        skipBuild("Building Qt WebEngine requires macOS version 10.12 or newer.")
+        return(false)
     }
     !isMinOSXSDKVersion(10, 12): {
-      skipBuild("Building Qt WebEngine requires a macOS SDK version of 10.12 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
-      return(false)
+        skipBuild("Building Qt WebEngine requires a macOS SDK version of 10.12 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
+        return(false)
     }
-  } else {
-    skipBuild("Unknown platform. Qt WebEngine only supports Linux, Windows, and macOS.")
-    return(false)
-  }
+    return(true)
+}
 
-  # QMAKE doesn't set c++14 for MSVC2017, so only test for gcc and clang (which pretends to be gcc)
-  gcc:!contains(QT_CONFIG, c++14) {
-    skipBuild("C++14 support is required in order to build chromium.")
+defineTest(isPlatformSupported) {
+    QT_FOR_CONFIG += gui-private
+    !linux:!win32:!macos {
+        skipBuild("Unknown platform. Qt WebEngine only supports Linux, Windows, and macOS.")
+        return(false)
+    }
+    linux:isLinuxPlatformSupported(): return(true)
+    win32:isWindowsPlatformSupported(): return(true)
+    macos:isMacOsPlatformSupported(): return(true)
     return(false)
-  }
-  static {
-    skipBuild("Static builds of QtWebEngine aren't supported.")
-    return(false)
-  }
-  !isArchSupported(): return(false)
-  return(true)
 }
 
 defineTest(isArchSupported) {

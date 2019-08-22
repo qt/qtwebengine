@@ -103,6 +103,12 @@ defineTest(skipBuild) {
 }
 
 defineTest(isWebEngineCoreBuild) {
+
+    static{
+       skipBuild("Static builds of QtWebEngine aren't supported.")
+       return(false)
+    }
+
     !qtHaveModule(gui) {
         skipBuild("QtWebEngine requires QtGui.")
         return(false)
@@ -121,7 +127,12 @@ defineTest(isWebEngineCoreBuild) {
 
     !isPlatformSupported() {
         # make sure we have skipBuildReason
-        isEmpty(skipBuildReason): skipBuild("Unknow error. Platform unspported")
+        isEmpty(skipBuildReason): skipBuild("Unknow error. Platform unspported.")
+        return(false)
+    }
+
+    !isArchSupported() {
+        isEmpty(skipBuildReason): skipBuild("Unknown error. Architecture unsupported.")
         return(false)
     }
 
