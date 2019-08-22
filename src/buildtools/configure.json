@@ -370,9 +370,10 @@
                          && features.webengine-gperf
                          && features.webengine-bison
                          && features.webengine-flex
-                         && (!features.xcb || features.webengine-ozone-x11)
                          && tests.webengine-platform
-                         && tests.webengine-architecture",
+                         && tests.webengine-architecture
+                         && (!features.xcb || features.webengine-ozone-x11)
+                         && (!config.win32 || features.webengine-winversion)",
             "output": [ "privateFeature" ]
         },
         "webengine-python2": {
@@ -655,6 +656,11 @@
             "type": "warning",
             "condition": "config.linux && !features.webengine-ozone-x11 && features.xcb",
             "message": "Could not find all necessary libraries for qpa-xcb support."
+        },
+        {
+            "type": "warning",
+            "condition": "config.win32 && !features.webengine-winversion",
+            "message": "Needs Visual Studio 2017 or higher."
         },
         {
             "type": "warning",
