@@ -1575,7 +1575,12 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
     eventTimestamp += m_eventsToNowDelta;
 
     QList<QTouchEvent::TouchPoint> touchPoints = mapTouchPointIds(ev->touchPoints());
-    {
+    // Make sure that ACTION_POINTER_DOWN is delivered before ACTION_MOVE,
+    // and ACTION_MOVE before ACTION_POINTER_UP.
+    std::sort(touchPoints.begin(), touchPoints.end(), compareTouchPoints);
+
+    // Check first if the touch event should be routed to the selectionController
+    if (!touchPoints.isEmpty()) {
         ui::MotionEvent::Action action;
         switch (touchPoints[0].state()) {
         case Qt::TouchPointPressed:
@@ -1594,6 +1599,23 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 
         MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), 0);
         if (m_touchSelectionController->WillHandleTouchEvent(motionEvent)) {
+            m_previousTouchPoints = touchPoints;
+            ev->accept();
+            return;
+        }
+    } else {
+        // An empty touchPoints always corresponds to a TouchCancel event.
+        // We can't forward touch cancellations without a previously processed touch event,
+        // as Chromium expects the previous touchPoints for Action::CANCEL.
+        // If both are empty that means the TouchCancel was sent without an ongoing touch,
+        // so there's nothing to cancel anyway.
+        touchPoints = m_previousTouchPoints;
+        if (touchPoints.isEmpty())
+            return;
+
+        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::Action::CANCEL, ev->modifiers());
+        if (m_touchSelectionController->WillHandleTouchEvent(cancelEvent)) {
+            m_previousTouchPoints.clear();
             ev->accept();
             return;
         }
@@ -1610,21 +1632,13 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         break;
     case QEvent::TouchCancel:
     {
-        // Don't process a TouchCancel event if no motion was started beforehand, or if there are
-        // no touch points in the current event or in the previously processed event.
-        if (!m_touchMotionStarted || (touchPoints.isEmpty() && m_previousTouchPoints.isEmpty())) {
-            clearPreviousTouchMotionState();
-            return;
+        // Only process TouchCancel events received following a TouchBegin or TouchUpdate event
+        if (m_touchMotionStarted) {
+            MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::Action::CANCEL, ev->modifiers());
+            processMotionEvent(cancelEvent);
         }
 
-        // Use last saved touch points for the cancel event, to get rid of a QList assert,
-        // because Chromium expects a MotionEvent::ACTION_CANCEL instance to contain at least
-        // one touch point, whereas a QTouchCancel may not contain any touch points at all.
-        if (touchPoints.isEmpty())
-            touchPoints = m_previousTouchPoints;
         clearPreviousTouchMotionState();
-        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::Action::CANCEL, ev->modifiers());
-        processMotionEvent(cancelEvent);
         return;
     }
     case QEvent::TouchEnd:
@@ -1648,11 +1662,6 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 #endif
     }
 
-    // Make sure that ACTION_POINTER_DOWN is delivered before ACTION_MOVE,
-    // and ACTION_MOVE before ACTION_POINTER_UP.
-    std::sort(touchPoints.begin(), touchPoints.end(), compareTouchPoints);
-
-    m_previousTouchPoints = touchPoints;
     for (int i = 0; i < touchPoints.size(); ++i) {
         ui::MotionEvent::Action action;
         switch (touchPoints[i].state()) {
@@ -1679,6 +1688,8 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), i);
         processMotionEvent(motionEvent);
     }
+
+    m_previousTouchPoints = touchPoints;
 }
 
 #if QT_CONFIG(tabletevent)
