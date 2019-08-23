@@ -1,4 +1,4 @@
-load(platform)
+load(functions)
 
 include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
 include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)

@@ -1,3 +1,5 @@
+include($$QTWEBENGINE_ROOT/src/buildtools/config/platform.pri)
+
 defineReplace(getConfigDir) {
   CONFIG(release, debug|release):return("release")
   return("debug")
@@ -96,48 +98,42 @@ defineReplace(gnOS) {
     return(unknown)
 }
 
-defineTest(skipBuild) {
-    isEmpty(skipBuildReason): skipBuildReason = $$1
-    else: skipBuildReason = "$$skipBuildReason $${EOL}$$1"
-    export(skipBuildReason)
-}
-
 defineTest(isWebEngineCoreBuild) {
 
     static {
-       skipBuild("Static builds of QtWebEngine are not supported.")
+       qtwebengine_skipBuild("Static builds of QtWebEngine are not supported.")
        return(false)
     }
 
     !qtHaveModule(gui) {
-        skipBuild("QtWebEngine requires QtGui.")
+        qtwebengine_skipBuild("QtWebEngine requires QtGui.")
         return(false)
     }
 
     !exists($$QTWEBENGINE_ROOT/src/3rdparty/chromium) {
-        skipBuild("Submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
+        qtwebengine_skipBuild("Submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
         return(false)
     }
 
     WSPC = $$find(OUT_PWD, \\s)
     !isEmpty(WSPC) {
-        skipBuild("QtWebEngine cannot be built in a path that contains whitespace characters.")
+        qtwebengine_skipBuild("QtWebEngine cannot be built in a path that contains whitespace characters.")
         return(false)
     }
 
-    !isPlatformSupported() {
+    !qtwebengine_isPlatformSupported() {
         # make sure we have skipBuildReason
-        isEmpty(skipBuildReason): skipBuild("Unknow error. Platform unspported.")
+        isEmpty(skipBuildReason): qtwebengine_skipBuild("Unknow error. Platform unspported.")
         return(false)
     }
 
-    !isArchSupported() {
-        isEmpty(skipBuildReason): skipBuild("Unknown error. Architecture unsupported.")
+    !qtwebengine_isArchSupported() {
+        isEmpty(skipBuildReason): qtwebengine_skipBuild("Unknown error. Architecture unsupported.")
         return(false)
     }
 
     linux:contains(QT_CONFIG,no-pkg-config) {
-        skipBuild("pkg-config is required")
+        qtwebengine_skipBuild("pkg-config is required")
         return(false)
     }
 
@@ -145,65 +141,65 @@ defineTest(isWebEngineCoreBuild) {
     QT_FOR_CONFIG += buildtools-private
 
     win32:!qtConfig(webengine-win-compiler64) {
-        skipBuild("Required 64-bit cross-building or native toolchain could not be found.")
+        qtwebengine_skipBuild("Required 64-bit cross-building or native toolchain could not be found.")
         return(false)
     }
 
     win32:!qtConfig(webengine-winversion) {
-        skipBuild("Needs Visual Studio 2017 or higher")
+        qtwebengine_skipBuild("Needs Visual Studio 2017 or higher")
         return(false)
     }
 
     !qtConfig(webengine-gperf) {
-        skipBuild("Required gperf could not be found.")
+        qtwebengine_skipBuild("Required gperf could not be found.")
         return(false)
     }
     !qtConfig(webengine-bison) {
-        skipBuild("Required bison could not be found.")
+        qtwebengine_skipBuild("Required bison could not be found.")
         return(false)
     }
     !qtConfig(webengine-flex) {
-        skipBuild("Required flex could not be found.")
+        qtwebengine_skipBuild("Required flex could not be found.")
         return(false)
     }
     !qtConfig(webengine-python2) {
-        skipBuild("A suitable version of python2 could not be found.")
+        qtwebengine_skipBuild("A suitable version of python2 could not be found.")
         return(false)
     }
 
     sanitizer: !qtConfig(webengine-sanitizer) {
-        skipBuild("Chosen sanitizer configuration is not supported. Check config.log for details or use -feature-webengine-sanitizer to force build with the chosen sanitizer configuration.")
+        qtwebengine_skipBuild("Chosen sanitizer configuration is not supported. Check config.log for details or use -feature-webengine-sanitizer to force build with the chosen sanitizer configuration.")
         return(false);
     }
 
     linux {
 
         !qtConfig(webengine-host-pkg-config) {
-            skipBuild("Host pkg-config is required")
+            qtwebengine_skipBuild("Host pkg-config is required")
             return(false)
         }
 
         !qtConfig(webengine-system-glibc) {
-            skipBuild("A suitable version >= 2.27 of libc could not be found.")
+            qtwebengine_skipBuild("A suitable version >= 2.27 of libc could not be found.")
             return(false)
         }
 
         QT_FOR_CONFIG += gui-private
 
         !qtConfig(webengine-system-khr) {
-            skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
+            qtwebengine_skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
             return(false)
         }
 
         for(package, $$list("nss dbus fontconfig")) {
             !qtConfig(webengine-system-$$package) {
-                skipBuild("A suitable version of $$package could not be found.")
+                qtwebengine_skipBuild("A suitable version of $$package could not be found.")
                 return(false)
             }
          }
 
         qtConfig(xcb) : !qtConfig(webengine-ozone-x11) {
-            skipBuild("Could not find all necessary libraries for qpa-xcb support")
+            qtwebengine_skipBuild("Could not find all necessary libraries for qpa-xcb support")
             return(false)
         }
     }

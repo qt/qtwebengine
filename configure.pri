@@ -1,5 +1,4 @@
-load(platform)
-
+include(src/buildtools/config/platform.pri)
 include(src/buildtools/config/functions.pri)
 
 # this must be done outside any function
@@ -104,7 +103,7 @@ defineTest(qtConfTest_detectBison) {
 }
 
 defineTest(qtConfTest_detectPlatform) {
-   !isPlatformSupported() {
+   !qtwebengine_isPlatformSupported() {
         qtLog("Platform not supported".)
         return(false)
    }
@@ -112,7 +111,7 @@ defineTest(qtConfTest_detectPlatform) {
 }
 
 defineTest(qtConfTest_detectArch) {
-   !isArchSupported() {
+   !qtwebengine_isArchSupported() {
         qtLog("Architecture not supported".)
         return(false)
    }

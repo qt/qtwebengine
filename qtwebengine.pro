@@ -1,6 +1,5 @@
 load(qt_parts)
 load(functions)
-load(platform)
 
 QMAKE_DISTCLEAN += .qmake.cache
 

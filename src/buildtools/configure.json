@@ -685,12 +685,12 @@
         {
             "type": "skipBuildWarning",
             "condition": "tests.webengine-platform",
-            "message": "isPlatformSupported"
+            "message": "qtwebengine_isPlatformSupported"
         },
         {
             "type": "skipBuildWarning",
             "condition": "tests.webengine-architecture",
-            "message": "isArchSupported"
+            "message": "qtwebengine_isArchSupported"
         }
     ],
     "summary": [
