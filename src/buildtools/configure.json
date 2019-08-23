@@ -413,7 +413,14 @@
                             && features.webengine-python2
                             && features.webengine-gperf
                             && features.webengine-bison
-                            && features.webengine-flex",
+                            && features.webengine-flex
+                            && features.webengine-submodule
+                            && features.webengine-nowhitespace
+                            && features.webengine-arch-support
+                            && !features.webengine-no-platform-support
+                            && !config.static
+                            && (!config.linux || features.pkg-config)
+                            && (!config.win32 || features.webengine-winversion)",
              "output": [ "privateFeature" ]
         },
         "webengine-developer-build": {
