@@ -8,9 +8,40 @@
     "tests": {
     },
     "features": {
-         "pdf-info": {
-             "label": "Support Qt PDF rendering module",
-             "purpose": "Enables building the Qt PDF rendering module.",
+         "pdf-v8": {
+             "label": "Support V8",
+             "purpose": "Enables javascript support.",
+             "autoDetect": "false",
+             "output": ["privateFeature" ]
+          },
+         "pdf-xfa": {
+             "label": "Support XFA",
+             "purpose": "Enables XFA support.",
+             "condition": "features.pdf-v8",
+             "output": ["privateFeature" ]
+          },
+         "pdf-xfa-bmp": {
+             "label": "Support XFA-BMP",
+             "purpose": "Enables XFA-BMP support.",
+             "condition": "features.pdf-xfa",
+             "output": ["privateFeature" ]
+          },
+         "pdf-xfa-gif": {
+             "label": "Support XFA-GIF",
+             "purpose": "Enables XFA-GIF support.",
+             "condition": "features.pdf-xfa",
+             "output": ["privateFeature" ]
+          },
+         "pdf-xfa-png": {
+             "label": "Support XFA-PNG",
+             "purpose": "Enables XFA-PNG support.",
+             "condition": "features.pdf-xfa",
+             "output": ["privateFeature" ]
+          },
+         "pdf-xfa-tiff": {
+             "label": "Support XFA-TIFF",
+             "purpose": "Enables XFA-TIFF support.",
+             "condition": "features.pdf-xfa",
              "output": ["privateFeature" ]
           }
     },
@@ -20,7 +51,12 @@
         {
             "section": "Qt PDF",
             "entries": [
-                "pdf-info"
+                "pdf-v8",
+                "pdf-xfa",
+                "pdf-xfa-bmp",
+                "pdf-xfa-gif",
+                "pdf-xfa-png",
+                "pdf-xfa-tiff"
             ]
         }
     ]
