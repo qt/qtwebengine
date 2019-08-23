@@ -372,6 +372,7 @@
                          && features.webengine-flex
                          && tests.webengine-platform
                          && tests.webengine-architecture
+                         && (!config.linux || features.pkg-config)
                          && (!features.xcb || features.webengine-ozone-x11)
                          && (!config.win32 || features.webengine-winversion)",
             "output": [ "privateFeature" ]
@@ -660,7 +661,15 @@
         },
         {
             "type": "warning",
-            "condition": "config.linux && !features.webengine-ozone-x11 && features.xcb",
+            "condition": "config.linux && !features.pkg-config",
+            "message": "Could not find pkg-config."
+        },
+        {
+            "type": "warning",
+            "condition": "config.linux
+                          && features.pkg-config
+                          && features.xcb
+                          && !features.webengine-ozone-x11",
             "message": "Could not find all necessary libraries for qpa-xcb support."
         },
         {
@@ -696,8 +705,8 @@
                 },
                 "webengine-developer-build",
                 {
-                    "section": "Required system libraries",
-                    "condition": "config.unix && !config.macos && features.build-qtwebengine-core",
+                    "section": "QtWebEngine required system libraries",
+                    "condition": "config.unix && !config.macos",
                     "entries": [
                         "webengine-system-fontconfig",
                         "webengine-system-dbus",
@@ -707,8 +716,8 @@
                     ]
                 },
                 {
-                    "section": "Required system libraries for qpa-xcb",
-                    "condition": "config.unix && !config.macos && features.build-qtwebengine-core",
+                    "section": "QtWebEngine required system libraries for qpa-xcb",
+                    "condition": "config.unix && !config.macos && features.xcb",
                     "entries": [
                         "webengine-system-x11",
                         "webengine-system-libdrm",
