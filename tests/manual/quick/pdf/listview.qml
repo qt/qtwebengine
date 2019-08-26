@@ -48,19 +48,48 @@
 **
 ****************************************************************************/
 import QtQuick 2.14
+import QtQuick.Window 2.14
+import QtQuick.Pdf 5.15
 
-Image {
-    id: image
-    source: "test.pdf"
-    fillMode: Image.PreserveAspectFit
-    Shortcut {
-        sequence: StandardKey.MoveToNextPage
-        enabled: image.currentFrame < image.frameCount - 1
-        onActivated: image.currentFrame++
+Window {
+    width: 600
+    height: 440
+    color: "lightgrey"
+    title: doc.source
+    visible: true
+
+    PdfDocument {
+        id: doc
+        source: "test.pdf"
     }
-    Shortcut {
-        sequence: StandardKey.MoveToPreviousPage
-        enabled: image.currentFrame > 0
-        onActivated: image.currentFrame--
+
+    ListView {
+        id: listView
+        anchors.fill: parent
+        model: doc.pageCount
+        spacing: 6
+        delegate: Column {
+            Rectangle {
+                id: paper
+                width: image.width
+                height: image.height
+                Image {
+                    id: image
+                    objectName: "PDF page " + index
+                    source: doc.source
+                    currentFrame: index
+                    asynchronous: true
+                }
+            }
+            Text {
+                text: "Page " + (image.currentFrame + 1)
+            }
+        }
+    }
+
+    Text {
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        text: "page " + Math.max(1, (listView.indexAt(0, listView.contentY) + 1)) + " of " + doc.pageCount
     }
 }

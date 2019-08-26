@@ -5,10 +5,12 @@ gn_run.file = gn_run.pro
 
 gn_run.depends = pdfcore_generator
 pdfcore.depends = gn_run
+quick.depends = pdfcore
 
 SUBDIRS += \
     pdfcore_generator \
     gn_run \
-    pdfcore
+    pdfcore \
+    quick
 
 

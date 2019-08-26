@@ -68,6 +68,7 @@ public:
     enum DocumentError {
         NoError,
         UnknownError,
+        DataNotYetAvailableError,
         FileNotFoundError,
         InvalidFileFormatError,
         IncorrectPasswordError,

@@ -39,7 +39,12 @@
 
 #include "third_party/pdfium/public/fpdf_doc.h"
 
+#include <QDateTime>
+#include <QDebug>
+#include <QElapsedTimer>
 #include <QFile>
+#include <QHash>
+#include <QLoggingCategory>
 #include <QMutex>
 
 QT_BEGIN_NAMESPACE
@@ -47,6 +52,7 @@ QT_BEGIN_NAMESPACE
 // The library is not thread-safe at all, it has a lot of global variables.
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, pdfMutex, (QMutex::Recursive));
 static int libraryRefCount;
+Q_LOGGING_CATEGORY(qLcDoc, "qt.pdf.document")
 
 QPdfMutexLocker::QPdfMutexLocker()
     : QMutexLocker(pdfMutex())
@@ -237,9 +243,19 @@ void QPdfDocumentPrivate::_q_copyFromSequentialSourceDevice()
 void QPdfDocumentPrivate::tryLoadDocument()
 {
     QPdfMutexLocker lock;
-
-    if (!FPDFAvail_IsDocAvail(avail, this))
-        return;
+    switch (FPDFAvail_IsDocAvail(avail, this)) {
+        case PDF_DATA_ERROR:
+            qCDebug(qLcDoc) << "error loading";
+            break;
+        case PDF_DATA_NOTAVAIL:
+            qCDebug(qLcDoc) << "data not yet available";
+            lastError = QPdfDocument::DataNotYetAvailableError;
+            setStatus(QPdfDocument::Error);
+            break;
+        case PDF_DATA_AVAIL:
+            // all good
+            break;
+    }
 
     Q_ASSERT(!doc);
 
@@ -570,6 +586,9 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
 
     const QPdfMutexLocker lock;
 
+    QElapsedTimer timer;
+    if (Q_UNLIKELY(qLcDoc().isDebugEnabled()))
+        timer.start();
     FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
     if (!pdfPage)
         return QImage();
@@ -616,7 +635,7 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
     FPDFBitmap_Destroy(bitmap);
 
     FPDF_ClosePage(pdfPage);
-
+    qCDebug(qLcDoc) << "page" << page << imageSize << "took" << timer.elapsed() << "ms";
     return result;
 }
 
