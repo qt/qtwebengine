@@ -41,7 +41,7 @@
 struct SslTcpServer : QTcpServer
 {
     SslTcpServer() {
-        sslconf.setLocalCertificate(QSslCertificate::fromPath(":/resources/cert.pem").first());
+        sslconf.setLocalCertificateChain(QSslCertificate::fromPath(":/resources/cert.pem"));
         sslconf.setPrivateKey(readKey(":/resources/key.pem"));
     }
 

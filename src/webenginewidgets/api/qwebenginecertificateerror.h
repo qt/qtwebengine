@@ -44,6 +44,7 @@
 
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qurl.h>
+#include <QtNetwork/QSslCertificate>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,6 +89,8 @@ public:
     void rejectCertificate();
     void ignoreCertificateError();
     bool answered() const;
+
+    QList<QSslCertificate> chain() const;
 
 private:
     friend class QWebEnginePagePrivate;
