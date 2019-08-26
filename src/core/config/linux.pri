@@ -163,9 +163,21 @@ host_build {
         gn_args += use_system_libpng=true
         qtConfig(webengine-printing-and-pdf): gn_args += pdfium_use_system_libpng=true
     }
-    qtConfig(webengine-system-jpeg): gn_args += use_system_libjpeg=true
-    qtConfig(webengine-system-freetype): gn_args += use_system_freetype=true
-    qtConfig(webengine-system-harfbuzz): gn_args += use_system_harfbuzz=true
+    qtConfig(webengine-system-jpeg) {
+        gn_args += use_system_libjpeg=true
+    } else {
+        gn_args += use_system_libjpeg=false
+    }
+    qtConfig(webengine-system-freetype) {
+        gn_args += use_system_freetype=true
+    } else {
+        gn_args += use_system_freetype=false
+    }
+    qtConfig(webengine-system-harfbuzz) {
+        gn_args += use_system_harfbuzz=true
+    } else {
+        gn_args += use_system_harfbuzz=false
+    }
     !qtConfig(webengine-system-glib): gn_args += use_glib=false
     qtConfig(webengine-pulseaudio) {
         gn_args += use_pulseaudio=true
