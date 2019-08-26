@@ -3,7 +3,7 @@
 ** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtPDF module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL3$
 ** Commercial License Usage
@@ -34,58 +34,36 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqml.h>
-#include <QtQml/qqmlcomponent.h>
-#include <QtQml/qqmlengine.h>
-#include <QtQml/qqmlextensionplugin.h>
-#include "qquickpdfdocument_p.h"
-#include "qquickpdfsearchmodel_p.h"
 
-QT_BEGIN_NAMESPACE
+#include <QtTest/QtTest>
 
-/*!
-    \qmlmodule QtQuick.Pdf 5.15
-    \title Qt Quick PDF QML Types
-    \ingroup qmlmodules
-    \brief Provides QML types for handling PDF documents.
+#include <QPdfDocument>
+#include <QPdfSearchModel>
 
-    This QML module contains types for handling PDF documents.
-
-    To use the types in this module, import the module with the following line:
-
-    \code
-    import QtQuick.Pdf 5.15
-    \endcode
-*/
-
-class QtQuick2PdfPlugin : public QQmlExtensionPlugin
+class tst_QPdfSearchModel: public QObject
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
 
 public:
-    QtQuick2PdfPlugin() : QQmlExtensionPlugin() { }
+    tst_QPdfSearchModel() {}
 
-    void initializeEngine(QQmlEngine *engine, const char *uri) override {
-        Q_UNUSED(uri);
-#ifndef QT_STATIC
-        engine->addImportPath(QStringLiteral("qrc:/"));
-#endif
-    }
-
-    void registerTypes(const char *uri) override {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtQuick.Pdf"));
-
-        // Register the latest version, even if there are no new types or new revisions for existing types yet.
-        qmlRegisterModule(uri, 2, QT_VERSION_MINOR);
-
-        qmlRegisterType<QQuickPdfDocument>(uri, 5, 15, "PdfDocument");
-        qmlRegisterType<QQuickPdfSearchModel>(uri, 5, 15, "PdfSearchModel");
-
-        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
-    }
+private slots:
+    void findText();
 };
 
-QT_END_NAMESPACE
+void tst_QPdfSearchModel::findText()
+{
+    QPdfDocument document;
+    QCOMPARE(document.load(QFINDTESTDATA("test.pdf")), QPdfDocument::NoError);
 
-#include "plugin.moc"
+    QPdfSearchModel model;
+    model.setDocument(&document);
+    QVector<QRectF> matches = model.matches(1, "ai");
+
+    qDebug() << matches;
+    QCOMPARE(matches.count(), 3);
+}
+
+QTEST_MAIN(tst_QPdfSearchModel)
+
+#include "tst_qpdfsearchmodel.moc"

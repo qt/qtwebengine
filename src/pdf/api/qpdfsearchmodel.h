@@ -34,58 +34,41 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqml.h>
-#include <QtQml/qqmlcomponent.h>
-#include <QtQml/qqmlengine.h>
-#include <QtQml/qqmlextensionplugin.h>
-#include "qquickpdfdocument_p.h"
-#include "qquickpdfsearchmodel_p.h"
+#ifndef QPDFSEARCHMODEL_H
+#define QPDFSEARCHMODEL_H
+
+#include "qtpdfglobal.h"
+#include "qpdfdocument.h"
+
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \qmlmodule QtQuick.Pdf 5.15
-    \title Qt Quick PDF QML Types
-    \ingroup qmlmodules
-    \brief Provides QML types for handling PDF documents.
+class QPdfSearchModelPrivate;
 
-    This QML module contains types for handling PDF documents.
-
-    To use the types in this module, import the module with the following line:
-
-    \code
-    import QtQuick.Pdf 5.15
-    \endcode
-*/
-
-class QtQuick2PdfPlugin : public QQmlExtensionPlugin
+class Q_PDF_EXPORT QPdfSearchModel : public QObject // TODO QAIM?
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
+    Q_PROPERTY(QPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
 
 public:
-    QtQuick2PdfPlugin() : QQmlExtensionPlugin() { }
+    explicit QPdfSearchModel(QObject *parent = nullptr);
+    ~QPdfSearchModel();
 
-    void initializeEngine(QQmlEngine *engine, const char *uri) override {
-        Q_UNUSED(uri);
-#ifndef QT_STATIC
-        engine->addImportPath(QStringLiteral("qrc:/"));
-#endif
-    }
+    QVector<QRectF> matches(int page, const QString &searchString);
 
-    void registerTypes(const char *uri) override {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtQuick.Pdf"));
+    QPdfDocument *document() const;
 
-        // Register the latest version, even if there are no new types or new revisions for existing types yet.
-        qmlRegisterModule(uri, 2, QT_VERSION_MINOR);
+public Q_SLOTS:
+    void setDocument(QPdfDocument *document);
 
-        qmlRegisterType<QQuickPdfDocument>(uri, 5, 15, "PdfDocument");
-        qmlRegisterType<QQuickPdfSearchModel>(uri, 5, 15, "PdfSearchModel");
+Q_SIGNALS:
+    void documentChanged();
 
-        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
-    }
+private:
+    QScopedPointer<QPdfSearchModelPrivate> d;
 };
 
 QT_END_NAMESPACE
 
-#include "plugin.moc"
+#endif // QPDFSEARCHMODEL_H

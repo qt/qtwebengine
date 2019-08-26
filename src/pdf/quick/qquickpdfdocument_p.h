@@ -64,6 +64,7 @@ class QQuickPdfDocument : public QObject, public QQmlParserStatus
     Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged FINAL)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged FINAL)
     Q_PROPERTY(QPdfDocument::Status status READ status NOTIFY statusChanged FINAL)
+    Q_PROPERTY(QString error READ error NOTIFY statusChanged FINAL)
 
     Q_PROPERTY(QString title READ title NOTIFY metaDataChanged)
     Q_PROPERTY(QString subject READ subject NOTIFY metaDataChanged)
@@ -85,6 +86,8 @@ public:
 
     int pageCount() const { return m_doc.pageCount(); }
     QPdfDocument::Status status() const { return m_doc.status(); }
+
+    QString error() const;
 
     QString password() const { return m_doc.password(); }
     void setPassword(const QString &password);
@@ -115,6 +118,7 @@ private:
     QUrl m_source;
     QPdfDocument m_doc;
 
+    friend class QQuickPdfSearchModel;
     friend class QQuickPdfSelection;
 
     Q_DISABLE_COPY(QQuickPdfDocument)

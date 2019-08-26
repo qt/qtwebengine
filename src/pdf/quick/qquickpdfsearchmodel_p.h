@@ -34,58 +34,70 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqml.h>
-#include <QtQml/qqmlcomponent.h>
-#include <QtQml/qqmlengine.h>
-#include <QtQml/qqmlextensionplugin.h>
+#ifndef QQUICKPDFSEARCHMODEL_P_H
+#define QQUICKPDFSEARCHMODEL_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "qquickpdfdocument_p.h"
-#include "qquickpdfsearchmodel_p.h"
+#include "../api/qpdfsearchmodel.h"
+
+#include <QVariant>
+#include <QtQml/qqml.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \qmlmodule QtQuick.Pdf 5.15
-    \title Qt Quick PDF QML Types
-    \ingroup qmlmodules
-    \brief Provides QML types for handling PDF documents.
-
-    This QML module contains types for handling PDF documents.
-
-    To use the types in this module, import the module with the following line:
-
-    \code
-    import QtQuick.Pdf 5.15
-    \endcode
-*/
-
-class QtQuick2PdfPlugin : public QQmlExtensionPlugin
+class QQuickPdfSearchModel : public QPdfSearchModel
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
+    Q_PROPERTY(QQuickPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
+    Q_PROPERTY(int page READ page WRITE setPage NOTIFY pageChanged)
+    Q_PROPERTY(QString searchString READ searchString WRITE setSearchString NOTIFY searchStringChanged)
+    Q_PROPERTY(QVector<QPolygonF> matchGeometry READ matchGeometry NOTIFY matchGeometryChanged)
 
 public:
-    QtQuick2PdfPlugin() : QQmlExtensionPlugin() { }
+    explicit QQuickPdfSearchModel(QObject *parent = nullptr);
 
-    void initializeEngine(QQmlEngine *engine, const char *uri) override {
-        Q_UNUSED(uri);
-#ifndef QT_STATIC
-        engine->addImportPath(QStringLiteral("qrc:/"));
-#endif
-    }
+    QQuickPdfDocument *document() const;
+    void setDocument(QQuickPdfDocument * document);
 
-    void registerTypes(const char *uri) override {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtQuick.Pdf"));
+    int page() const;
+    void setPage(int page);
 
-        // Register the latest version, even if there are no new types or new revisions for existing types yet.
-        qmlRegisterModule(uri, 2, QT_VERSION_MINOR);
+    QString searchString() const;
+    void setSearchString(QString searchString);
 
-        qmlRegisterType<QQuickPdfDocument>(uri, 5, 15, "PdfDocument");
-        qmlRegisterType<QQuickPdfSearchModel>(uri, 5, 15, "PdfSearchModel");
+    QVector<QPolygonF> matchGeometry() const;
 
-        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
-    }
+signals:
+    void documentChanged();
+    void pageChanged();
+    void searchStringChanged();
+    void matchGeometryChanged();
+
+private:
+    void updateResults();
+
+private:
+    QQuickPdfDocument *m_quickDocument = nullptr;
+    QString m_searchString;
+    QVector<QPolygonF> m_matchGeometry;
+    int m_page;
+
+    Q_DISABLE_COPY(QQuickPdfSearchModel)
 };
 
 QT_END_NAMESPACE
 
-#include "plugin.moc"
+QML_DECLARE_TYPE(QQuickPdfSearchModel)
+
+#endif // QQUICKPDFSEARCHMODEL_P_H

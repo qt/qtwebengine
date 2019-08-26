@@ -95,6 +95,41 @@ void QQuickPdfDocument::setSource(QUrl source)
 }
 
 /*!
+    \qmlproperty string Document::error
+
+    This property holds a translated string representation of the current
+    error, if any.
+
+    \sa status
+*/
+QString QQuickPdfDocument::error() const
+{
+    switch (m_doc.error()) {
+    case QPdfDocument::NoError:
+        return tr("no error");
+        break;
+    case QPdfDocument::UnknownError:
+        break;
+    case QPdfDocument::DataNotYetAvailableError:
+        return tr("data not yet available");
+        break;
+    case QPdfDocument::FileNotFoundError:
+        return tr("file not found");
+        break;
+    case QPdfDocument::InvalidFileFormatError:
+        return tr("invalid file format");
+        break;
+    case QPdfDocument::IncorrectPasswordError:
+        return tr("incorrect password");
+        break;
+    case QPdfDocument::UnsupportedSecuritySchemeError:
+        return tr("unsupported security scheme");
+        break;
+    }
+    return tr("unknown error");
+}
+
+/*!
     \qmlproperty bool Document::password
 
     This property holds the document password. If the passwordRequired()
