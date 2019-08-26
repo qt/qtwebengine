@@ -193,15 +193,35 @@ ApplicationWindow {
     }
 
     Dialog {
-        id: errorDialog
-        title: "Error loading " + document.source
-        standardButtons: Dialog.Ok
+        id: passwordDialog
+        title: "Password"
+        standardButtons: Dialog.Ok | Dialog.Cancel
         modal: true
         closePolicy: Popup.CloseOnEscape
         anchors.centerIn: parent
         width: 300
 
-        Label {
+        contentItem: TextField {
+            id: passwordField
+            placeholderText: qsTr("Please provide the password")
+            echoMode: TextInput.Password
+            width: parent.width
+            onAccepted: passwordDialog.accept()
+        }
+        onOpened: function() { passwordField.forceActiveFocus() }
+        onAccepted: document.password = passwordField.text
+    }
+
+    Dialog {
+        id: errorDialog
+        title: "Error loading " + document.source
+        standardButtons: Dialog.Close
+        modal: true
+        closePolicy: Popup.CloseOnEscape
+        anchors.centerIn: parent
+        width: 300
+
+        contentItem: Label {
             id: errorField
             text: document.error
         }
@@ -215,6 +235,7 @@ ApplicationWindow {
             id: document
             source: Qt.resolvedUrl(root.source)
             onStatusChanged: if (status === PdfDocument.Error) errorDialog.open()
+            onPasswordRequired: passwordDialog.open()
         }
         searchString: searchField.text
     }

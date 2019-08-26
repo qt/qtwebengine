@@ -64,6 +64,7 @@ Window {
     PdfDocument {
         id: doc
         source: "test.pdf"
+        onPasswordRequired: function() { passwordDialog.open() }
     }
 
     Platform.FileDialog {
@@ -71,6 +72,26 @@ Window {
         title: "Open a PDF file"
         nameFilters: [ "PDF files (*.pdf)" ]
         onAccepted: doc.source = file
+    }
+
+    Dialog {
+        id: passwordDialog
+        title: "Password"
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        modal: true
+        closePolicy: Popup.CloseOnEscape
+        anchors.centerIn: parent
+        width: 300
+
+        contentItem: TextField {
+            id: passwordField
+            placeholderText: qsTr("Please provide the password")
+            echoMode: TextInput.Password
+            width: parent.width
+            onAccepted: passwordDialog.accept()
+        }
+        onOpened: function() { passwordField.forceActiveFocus() }
+        onAccepted: doc.password = passwordField.text
     }
 
     PdfSelection {

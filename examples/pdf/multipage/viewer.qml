@@ -199,26 +199,27 @@ ApplicationWindow {
         anchors.centerIn: parent
         width: 300
 
-        TextField {
+        contentItem: TextField {
             id: passwordField
             placeholderText: qsTr("Please provide the password")
             echoMode: TextInput.Password
             width: parent.width
             onAccepted: passwordDialog.accept()
         }
+        onOpened: function() { passwordField.forceActiveFocus() }
         onAccepted: document.password = passwordField.text
     }
 
     Dialog {
         id: errorDialog
         title: "Error loading " + document.source
-        standardButtons: Dialog.Ok
+        standardButtons: Dialog.Close
         modal: true
         closePolicy: Popup.CloseOnEscape
         anchors.centerIn: parent
         width: 300
 
-        Label {
+        contentItem: Label {
             id: errorField
             text: document.error
         }
@@ -231,10 +232,7 @@ ApplicationWindow {
             if (status === PdfDocument.Error) errorDialog.open()
             view.document = (status === PdfDocument.Ready ? document : null)
         }
-        onPasswordRequired: {
-            passwordDialog.open()
-            passwordField.forceActiveFocus()
-        }
+        onPasswordRequired: function() { passwordDialog.open() }
     }
 
     PdfMultiPageView {
