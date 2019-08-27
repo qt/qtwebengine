@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -250,8 +250,10 @@ QUrl QWebEngineUrlRequestInfo::firstPartyUrl() const
 }
 
 /*!
-    Returns the origin url of the document which initiated
-    the navigation when a frame navigates another frame.
+    Returns the origin URL of the document that initiated
+    the navigation of a frame to another frame.
+
+    \since 5.14
  */
 
 QUrl QWebEngineUrlRequestInfo::initiator() const
