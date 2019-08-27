@@ -185,7 +185,9 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPriva
     \value ResourceTypeCspReport  A report of Content Security Policy (CSP)
            violations. CSP reports are in JSON format and they are delivered by
            HTTP POST requests to specified servers. (Added in Qt 5.7)
-   \value ResourceTypePluginResource  A resource requested by a plugin. (Added in Qt 5.7)
+    \value ResourceTypePluginResource  A resource requested by a plugin. (Added in Qt 5.7)
+    \value ResourceTypeNavigationPreload  A service worker navigation preload
+           request. (Added in Qt 5.14)
     \value ResourceTypeUnknown  Unknown request type.
 
     \note For forward compatibility all values not matched should be treated as unknown,
