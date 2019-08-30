@@ -9,6 +9,3 @@ windows
 
 [getUserMediaRequestDesktopVideoManyRequests]
 windows
-
-[runJavaScriptFromSlot]
-osx
