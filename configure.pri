@@ -340,3 +340,14 @@ defineTest(qtConfTest_hasGcc6OrNewer) {
     greaterThan(QMAKE_GCC_MAJOR_VERSION, 5):return(true)
     return(false)
 }
+
+defineTest(qtConfTest_detectSubmodule) {
+    !exists($$QTWEBENGINE_ROOT/src/3rdparty/chromium):return(false)
+    return(true)
+}
+
+defineTest(qtConfTest_detectNoWhitespace) {
+    WSPC = $$find(OUT_PWD, \\s)
+    !isEmpty(WSPC):return(false)
+    return(true)
+}
