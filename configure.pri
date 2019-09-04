@@ -342,6 +342,10 @@ defineTest(qtConfTest_hasGcc6OrNewer) {
 }
 
 defineTest(qtConfTest_detectSubmodule) {
+    isEmpty(QTWEBENGINE_ROOT) {
+        # topLevel build , add poor man's workaround
+        QTWEBENGINE_ROOT=$$PWD/../../../qtwebengine
+    }
     !exists($$QTWEBENGINE_ROOT/src/3rdparty/chromium):return(false)
     return(true)
 }
@@ -350,4 +354,9 @@ defineTest(qtConfTest_detectNoWhitespace) {
     WSPC = $$find(OUT_PWD, \\s)
     !isEmpty(WSPC):return(false)
     return(true)
+}
+
+defineTest(qtwebengine_confCheckError) {
+    QT_FOR_CONFIG += buildtools-private gui-private
+    return($$qtwebengine_checkError())
 }

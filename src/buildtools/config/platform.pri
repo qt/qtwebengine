@@ -163,10 +163,7 @@ defineTest(qtwebengine_skipBuild) {
     export(skipBuildReason)
 }
 
-defineTest(qtwebengine_checkError) {
-
-    include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
-    QT_FOR_CONFIG += buildtools-private gui-private
+defineReplace(qtwebengine_checkError) {
 
     static {
        qtwebengine_skipBuild("Static builds of QtWebEngine are not supported.")
@@ -276,4 +273,10 @@ defineTest(qtwebengine_checkErrorForWindows) {
         return(false)
     }
     return(true)
+}
+
+defineTest(qtwebengine_makeCheckError) {
+    include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
+    QT_FOR_CONFIG += buildtools-private gui-private
+    return($$qtwebengine_checkError())
 }

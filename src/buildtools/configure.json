@@ -377,10 +377,10 @@
                          && features.webengine-gperf
                          && features.webengine-bison
                          && features.webengine-flex
+                         && features.webengine-submodule
+                         && features.webengine-nowhitespace
                          && tests.webengine-platform
                          && tests.webengine-architecture
-                         && tests.webengine-submodule
-                         && tests.webengine-nowhitespace
                          && !config.static
                          && (!config.linux || features.pkg-config)
                          && (!features.xcb || features.webengine-ozone-x11)
@@ -654,7 +654,7 @@
         },
         "webengine-submodule": {
             "label": "submodule",
-            "condtion": "tests.webengine-submodule",
+            "condition": "tests.webengine-submodule",
             "output": [ "privateFeature" ]
         },
         "webengine-nowhitespace": {
@@ -667,7 +667,7 @@
         {
             "type": "skipBuildWarning",
             "condition": "!features.webengine-core-support && (features.build-qtwebengine-core || features.build-qtpdf)",
-            "message": "qtwebengine_checkError"
+            "message": "qtwebengine_confCheckError"
         },
         {
             "type": "note",
