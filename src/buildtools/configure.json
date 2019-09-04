@@ -356,7 +356,7 @@
             "label": "platform supported",
             "type": "detectPlatform"
         },
-        "webengine-architecture": {
+        "webengine-arch-support": {
             "label": "architecture supported",
             "type": "detectArch"
         },
@@ -379,8 +379,8 @@
                          && features.webengine-flex
                          && features.webengine-submodule
                          && features.webengine-nowhitespace
+                         && features.webengine-arch-support
                          && tests.webengine-platform
-                         && tests.webengine-architecture
                          && !config.static
                          && (!config.linux || features.pkg-config)
                          && (!features.xcb || features.webengine-ozone-x11)
@@ -660,6 +660,11 @@
         "webengine-nowhitespace": {
             "label": "nowhitespace",
             "condition" : "tests.webengine-nowhitespace",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-arch-support": {
+            "label": "architecture",
+            "condition" : "tests.webengine-arch-support",
             "output": [ "privateFeature" ]
         }
     },

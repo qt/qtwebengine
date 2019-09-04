@@ -104,19 +104,20 @@ defineTest(qtConfTest_detectBison) {
 
 defineTest(qtConfTest_detectPlatform) {
    !qtwebengine_isPlatformSupported() {
-        qtLog("Platform not supported".)
+        qtLog("Platform not supported.")
         return(false)
    }
    return(true)
 }
 
 defineTest(qtConfTest_detectArch) {
-   !qtwebengine_isArchSupported() {
-        qtLog("Architecture not supported".)
-        return(false)
-   }
-   return(true)
+    contains(QT_ARCH, "i386")|contains(QT_ARCH, "x86_64"): return(true)
+    contains(QT_ARCH, "arm")|contains(QT_ARCH, "arm64"): return(true)
+    contains(QT_ARCH, "mips"): return(true)
+    qtLog("Architecture not supported.")
+    return(false)
 }
+
 defineTest(qtConfTest_detectFlex) {
     flex = $$qtConfFindGnuTool("flex$$EXE_SUFFIX")
     isEmpty(flex) {

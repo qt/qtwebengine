@@ -66,16 +66,6 @@ defineTest(qtwebengine_isPlatformSupported) {
     return(false)
 }
 
-defineTest(qtwebengine_isArchSupported) {
-    contains(QT_ARCH, "i386")|contains(QT_ARCH, "x86_64"): return(true)
-    contains(QT_ARCH, "arm")|contains(QT_ARCH, "arm64"): return(true)
-    contains(QT_ARCH, "mips"): return(true)
-#     contains(QT_ARCH, "mips64"): return(true)
-
-    qtwebengine_skipBuild("QtWebEngine can only be built for x86, x86-64, ARM, Aarch64, and MIPSel architectures.")
-    return(false)
-}
-
 defineTest(qtwebengine_isGCCVersionSupported) {
   # Keep in sync with src/webengine/doc/src/qtwebengine-platform-notes.qdoc
   greaterThan(QMAKE_GCC_MAJOR_VERSION, 4):return(true)
@@ -190,8 +180,8 @@ defineReplace(qtwebengine_checkError) {
         return(false)
     }
 
-    !qtwebengine_isArchSupported() {
-        isEmpty(skipBuildReason): qtwebengine_skipBuild("Unknown error. Architecture unsupported.")
+    !qtConfig(webengine-arch-support) {
+        qtwebengine_skipBuild("QtWebEngine can only be built for x86, x86-64, ARM, Aarch64, and MIPSel architectures.")
         return(false)
     }
 
