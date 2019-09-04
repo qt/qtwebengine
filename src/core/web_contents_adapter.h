@@ -85,6 +85,7 @@ namespace QtWebEngineCore {
 
 class DevToolsFrontendQt;
 class FaviconManager;
+class FindTextHelper;
 class MessagePassingInterface;
 class ProfileQt;
 class RenderViewObserverHostQt;
@@ -158,8 +159,6 @@ public:
     quint64 runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId);
     quint64 fetchDocumentMarkup();
     quint64 fetchDocumentInnerText();
-    quint64 findText(const QString &subString, bool caseSensitively, bool findBackward);
-    void stopFinding();
     void updateWebPreferences(const content::WebPreferences &webPreferences);
     void download(const QUrl &url, const QString &suggestedFileName,
                   const QUrl &referrerUrl = QUrl(),
@@ -205,6 +204,7 @@ public:
     void setWebChannel(QWebChannel *, uint worldId);
 #endif
     FaviconManager *faviconManager();
+    FindTextHelper *findTextHelper();
 
     QPointF lastScrollOffset() const;
     QSizeF lastContentsSize() const;
@@ -263,7 +263,6 @@ private:
 #endif
     WebContentsAdapterClient *m_adapterClient;
     quint64 m_nextRequestId;
-    int m_lastFindRequestId;
     std::unique_ptr<content::DropData> m_currentDropData;
     uint m_currentDropAction;
     bool m_updateDragActionCalled;

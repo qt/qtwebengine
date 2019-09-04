@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage
@@ -48,69 +48,99 @@
 **
 ****************************************************************************/
 
-#ifndef BROWSERWINDOW_H
-#define BROWSERWINDOW_H
+import QtQuick 2.5
+import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
+import QtQuick.Layouts 1.0
 
-#include <QMainWindow>
-#include <QTime>
-#include <QWebEnginePage>
+Rectangle {
+    id: root
 
-QT_BEGIN_NAMESPACE
-class QLineEdit;
-class QProgressBar;
-QT_END_NAMESPACE
+    property int numberOfMatches: 0
+    property int activeMatchOrdinal: 0
+    property alias text: findTextField.text
 
-class Browser;
-class TabWidget;
-class WebView;
+    function reset() {
+        numberOfMatches = 0;
+        activeMatchOrdinal = 0;
+        visible = false;
+    }
 
-class BrowserWindow : public QMainWindow
-{
-    Q_OBJECT
+    signal findNext()
+    signal findPrevious()
 
-public:
-    BrowserWindow(Browser *browser, QWebEngineProfile *profile, bool forDevTools = false);
-    QSize sizeHint() const override;
-    TabWidget *tabWidget() const;
-    WebView *currentTab() const;
-    Browser *browser() { return m_browser; }
+    width: 250
+    height: 35
+    radius: 2
 
-protected:
-    void closeEvent(QCloseEvent *event) override;
+    border.width: 1
+    border.color: "black"
+    color: "white"
 
-private slots:
-    void handleNewWindowTriggered();
-    void handleNewIncognitoWindowTriggered();
-    void handleFileOpenTriggered();
-    void handleFindActionTriggered();
-    void handleShowWindowTriggered();
-    void handleWebViewLoadProgress(int);
-    void handleWebViewTitleChanged(const QString &title);
-    void handleWebActionEnabledChanged(QWebEnginePage::WebAction action, bool enabled);
-    void handleDevToolsRequested(QWebEnginePage *source);
-    void handleFindTextFinished(const QWebEngineFindTextResult &result);
+    onVisibleChanged: {
+        if (visible)
+            findTextField.forceActiveFocus();
+    }
 
-private:
-    QMenu *createFileMenu(TabWidget *tabWidget);
-    QMenu *createEditMenu();
-    QMenu *createViewMenu(QToolBar *toolBar);
-    QMenu *createWindowMenu(TabWidget *tabWidget);
-    QMenu *createHelpMenu();
-    QToolBar *createToolBar();
 
-private:
-    Browser *m_browser;
-    QWebEngineProfile *m_profile;
-    TabWidget *m_tabWidget;
-    QProgressBar *m_progressBar;
-    QAction *m_historyBackAction;
-    QAction *m_historyForwardAction;
-    QAction *m_stopAction;
-    QAction *m_reloadAction;
-    QAction *m_stopReloadAction;
-    QLineEdit *m_urlLineEdit;
-    QAction *m_favAction;
-    QString m_lastSearch;
-};
+    RowLayout {
+        anchors.fill: parent
+        anchors.topMargin: 5
+        anchors.bottomMargin: 5
+        anchors.leftMargin: 10
+        anchors.rightMargin: 10
 
-#endif // BROWSERWINDOW_H
+        spacing: 5
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            TextField {
+                id: findTextField
+                anchors.fill: parent
+
+                style: TextFieldStyle {
+                    background: Rectangle {
+                        color: "transparent"
+                    }
+                }
+
+                onAccepted: root.findNext()
+                onTextChanged: root.findNext()
+                onActiveFocusChanged: activeFocus ? selectAll() : deselect()
+            }
+        }
+
+        Label {
+            text: activeMatchOrdinal + "/" + numberOfMatches
+            visible: findTextField.text != ""
+        }
+
+        Rectangle {
+            border.width: 1
+            border.color: "#ddd"
+            width: 2
+            height: parent.height
+            anchors.topMargin: 5
+            anchors.bottomMargin: 5
+        }
+
+        ToolButton {
+            text: "<"
+            enabled: numberOfMatches > 0
+            onClicked: root.findPrevious()
+        }
+
+        ToolButton {
+            text: ">"
+            enabled: numberOfMatches > 0
+            onClicked: root.findNext()
+        }
+
+        ToolButton {
+            text: "x"
+            onClicked: root.visible = false
+        }
+    }
+}

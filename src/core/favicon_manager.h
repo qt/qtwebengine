@@ -90,7 +90,7 @@ public:
         TouchIcon = 1 << 1,
         TouchPrecomposedIcon = 1 << 2
     };
-    Q_DECLARE_FLAGS(FaviconTypeFlags, FaviconTypeFlag);
+    Q_DECLARE_FLAGS(FaviconTypeFlags, FaviconTypeFlag)
 
     FaviconInfo();
     FaviconInfo(const FaviconInfo &);

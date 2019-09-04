@@ -200,6 +200,10 @@ void TabWidget::setupView(WebView *webView)
             closeTab(index);
     });
     connect(webView, &WebView::devToolsRequested, this, &TabWidget::devToolsRequested);
+    connect(webPage, &QWebEnginePage::findTextFinished, [this, webView](const QWebEngineFindTextResult &result) {
+        if (currentIndex() == indexOf(webView))
+            emit findTextFinished(result);
+    });
 }
 
 WebView *TabWidget::createTab()

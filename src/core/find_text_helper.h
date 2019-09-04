@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,35 +37,66 @@
 **
 ****************************************************************************/
 
-#ifndef COMPOSITOR_RESOURCE_FENCE_H
-#define COMPOSITOR_RESOURCE_FENCE_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <base/memory/ref_counted.h>
-#include <ui/gl/gl_fence.h>
+#ifndef FIND_TEXT_HELPER_H
+#define FIND_TEXT_HELPER_H
+
+#include "qtwebenginecoreglobal_p.h"
+
+#include "qwebenginecallback_p.h"
+#include <QJSValue>
+
+namespace content {
+class WebContents;
+}
+
+namespace gfx {
+class Rect;
+}
 
 namespace QtWebEngineCore {
 
-// Sync object created on GPU thread and consumed on render thread.
-class CompositorResourceFence final : public base::RefCountedThreadSafe<CompositorResourceFence>
-{
+class WebContentsAdapterClient;
+
+class Q_WEBENGINECORE_PRIVATE_EXPORT FindTextHelper {
 public:
-    REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+    FindTextHelper(content::WebContents *webContents, WebContentsAdapterClient *viewClient);
+    ~FindTextHelper();
 
-    CompositorResourceFence() {}
-    CompositorResourceFence(const gl::TransferableFence &sync) : m_sync(sync) {};
-    ~CompositorResourceFence() { release(); }
-
-    // May be used only by Qt Quick render thread.
-    void wait();
-    void release();
-
-    // May be used only by GPU thread.
-    static scoped_refptr<CompositorResourceFence> create(std::unique_ptr<gl::GLFence> glFence = nullptr);
+    void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const QWebEngineCallback<bool> resultCallback);
+    void startFinding(const QString &findText, bool caseSensitively, bool findBackward, const QJSValue &resultCallback);
+    void startFinding(const QString &findText, bool caseSensitively, bool findBackward);
+    void stopFinding();
+    bool isFindTextInProgress() const;
+    void handleFindReply(content::WebContents *source, int requestId, int numberOfMatches, const gfx::Rect &selectionRect, int activeMatchOrdinal, bool finalUpdate);
+    void handleLoadCommitted();
 
 private:
-    gl::TransferableFence m_sync;
+    void invokeResultCallback(int requestId, int numberOfMatches);
+
+    content::WebContents *m_webContents;
+    WebContentsAdapterClient *m_viewClient;
+
+    static int m_findRequestIdCounter;
+    int m_currentFindRequestId;
+    int m_lastCompletedFindRequestId;
+
+    QString m_previousFindText;
+
+    QMap<int, QJSValue> m_quickCallbacks;
+    CallbackDirectory m_widgetCallbacks;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // !COMPOSITOR_RESOURCE_FENCE_H
+#endif // FIND_TEXT_HELPER_H

@@ -488,6 +488,16 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
 
+    bool threadedGpu = true;
+#ifndef QT_NO_OPENGL
+    threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
+#endif
+
+    bool enableViz = ((threadedGpu && !parsedCommandLine->HasSwitch("disable-viz-display-compositor"))
+                      || parsedCommandLine->HasSwitch("enable-viz-display-compositor"));
+    parsedCommandLine->RemoveSwitch("disable-viz-display-compositor");
+    parsedCommandLine->RemoveSwitch("enable-viz-display-compositor");
+
     std::string disableFeatures;
     std::string enableFeatures;
     // Needed to allow navigations within pages that were set using setHtml(). One example is
@@ -495,10 +505,6 @@ WebEngineContext::WebEngineContext()
     // This is deprecated behavior, and will be removed in a future Chromium version, as per
     // upstream Chromium commit ba52f56207a4b9d70b34880fbff2352e71a06422.
     appendToFeatureList(enableFeatures, features::kAllowContentInitiatedDataUrlNavigations.name);
-    // Surface synchronization breaks our current graphics integration (since 65)
-    appendToFeatureList(disableFeatures, features::kEnableSurfaceSynchronization.name);
-    // Viz Display Compositor is enabled by default since 73. Doesn't work for us (also implies SurfaceSynchronization)
-    appendToFeatureList(disableFeatures, features::kVizDisplayCompositor.name);
     // The video-capture service is not functioning at this moment (since 69)
     appendToFeatureList(disableFeatures, features::kMojoVideoCapture.name);
     // Breaks WebEngineNewViewRequest.userInitiated API (since 73)
@@ -506,8 +512,6 @@ WebEngineContext::WebEngineContext()
 
     // We do not yet support the network-service, but it is enabled by default since 75.
     appendToFeatureList(disableFeatures, network::features::kNetworkService.name);
-    // VideoSurfaceLayer is enabled by default since 75. We don't support it.
-    appendToFeatureList(disableFeatures, media::kUseSurfaceLayerForVideo.name);
     // BlinkGenPropertyTrees is enabled by default in 75, but causes regressions.
     appendToFeatureList(disableFeatures, blink::features::kBlinkGenPropertyTrees.name);
 
@@ -529,6 +533,15 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
         parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
+    }
+
+    if (!enableViz) {
+        // Surface synchronization breaks our current graphics integration (since 65)
+        appendToFeatureList(disableFeatures, features::kEnableSurfaceSynchronization.name);
+        // Viz Display Compositor is enabled by default since 73. Doesn't work for us (also implies SurfaceSynchronization)
+        appendToFeatureList(disableFeatures, features::kVizDisplayCompositor.name);
+        // VideoSurfaceLayer is enabled by default since 75. We don't support it.
+        appendToFeatureList(disableFeatures, media::kUseSurfaceLayerForVideo.name);
     }
 
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, disableFeatures);
@@ -619,10 +632,6 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     }
 
-    bool threadedGpu = true;
-#ifndef QT_NO_OPENGL
-    threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
-#endif
     registerMainThreadFactories(threadedGpu);
 
     SetContentClient(new ContentClientQt);

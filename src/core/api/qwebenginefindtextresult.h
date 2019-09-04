@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,35 +37,45 @@
 **
 ****************************************************************************/
 
-#ifndef COMPOSITOR_RESOURCE_FENCE_H
-#define COMPOSITOR_RESOURCE_FENCE_H
+#ifndef QWEBENGINEFINDTEXTRESULT_H
+#define QWEBENGINEFINDTEXTRESULT_H
 
-#include <base/memory/ref_counted.h>
-#include <ui/gl/gl_fence.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtCore/QObject>
+#include <QtCore/QSharedData>
 
 namespace QtWebEngineCore {
+class FindTextHelper;
+}
 
-// Sync object created on GPU thread and consumed on render thread.
-class CompositorResourceFence final : public base::RefCountedThreadSafe<CompositorResourceFence>
-{
+QT_BEGIN_NAMESPACE
+
+class QWebEngineFindTextResultPrivate;
+
+class Q_WEBENGINECORE_EXPORT QWebEngineFindTextResult {
+    Q_GADGET
+    Q_PROPERTY(int numberOfMatches READ numberOfMatches CONSTANT FINAL)
+    Q_PROPERTY(int activeMatchOrdinal READ activeMatchOrdinal CONSTANT FINAL)
+
 public:
-    REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+    int numberOfMatches() const;
+    int activeMatchOrdinal() const;
 
-    CompositorResourceFence() {}
-    CompositorResourceFence(const gl::TransferableFence &sync) : m_sync(sync) {};
-    ~CompositorResourceFence() { release(); }
-
-    // May be used only by Qt Quick render thread.
-    void wait();
-    void release();
-
-    // May be used only by GPU thread.
-    static scoped_refptr<CompositorResourceFence> create(std::unique_ptr<gl::GLFence> glFence = nullptr);
+    QWebEngineFindTextResult();
+    QWebEngineFindTextResult(const QWebEngineFindTextResult &other);
+    QWebEngineFindTextResult &operator=(const QWebEngineFindTextResult &other);
+    ~QWebEngineFindTextResult();
 
 private:
-    gl::TransferableFence m_sync;
+    QWebEngineFindTextResult(int numberOfMatches, int activeMatchOrdinal);
+
+    QSharedDataPointer<QWebEngineFindTextResultPrivate> d;
+
+    friend class QtWebEngineCore::FindTextHelper;
 };
 
-} // namespace QtWebEngineCore
+QT_END_NAMESPACE
 
-#endif // !COMPOSITOR_RESOURCE_FENCE_H
+Q_DECLARE_METATYPE(QWebEngineFindTextResult)
+
+#endif // QWEBENGINEFINDTEXTRESULT_H
