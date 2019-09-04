@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,35 +37,44 @@
 **
 ****************************************************************************/
 
-#ifndef COMPOSITOR_RESOURCE_FENCE_H
-#define COMPOSITOR_RESOURCE_FENCE_H
+#include "display_gl_output_surface.h"
+#include "display_software_output_surface.h"
 
-#include <base/memory/ref_counted.h>
-#include <ui/gl/gl_fence.h>
+#include "components/viz/service/display_embedder/gpu_display_provider.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 
-namespace QtWebEngineCore {
-
-// Sync object created on GPU thread and consumed on render thread.
-class CompositorResourceFence final : public base::RefCountedThreadSafe<CompositorResourceFence>
+std::unique_ptr<viz::OutputSurface>
+viz::GpuDisplayProvider::CreateGLOutputSurface(
+        scoped_refptr<VizProcessContextProvider> context_provider,
+        UpdateVSyncParametersCallback update_vsync_callback)
 {
-public:
-    REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+    return std::make_unique<QtWebEngineCore::DisplayGLOutputSurface>(
+            std::move(context_provider), std::move(update_vsync_callback));
+}
 
-    CompositorResourceFence() {}
-    CompositorResourceFence(const gl::TransferableFence &sync) : m_sync(sync) {};
-    ~CompositorResourceFence() { release(); }
+std::unique_ptr<viz::OutputSurface>
+viz::GpuDisplayProvider::CreateSoftwareOutputSurface(
+        UpdateVSyncParametersCallback update_vsync_callback)
+{
+    return std::make_unique<QtWebEngineCore::DisplaySoftwareOutputSurface>(std::move(update_vsync_callback));
+}
 
-    // May be used only by Qt Quick render thread.
-    void wait();
-    void release();
+void gpu::InProcessCommandBuffer::GetTextureQt(
+        unsigned int client_id,
+        GetTextureCallback callback,
+        const std::vector<SyncToken>& sync_token_fences)
+{
+    ScheduleGpuTask(base::BindOnce(&InProcessCommandBuffer::GetTextureQtOnGpuThread,
+                                   gpu_thread_weak_ptr_factory_.GetWeakPtr(),
+                                   client_id,
+                                   std::move(callback)),
+                    sync_token_fences);
+}
 
-    // May be used only by GPU thread.
-    static scoped_refptr<CompositorResourceFence> create(std::unique_ptr<gl::GLFence> glFence = nullptr);
-
-private:
-    gl::TransferableFence m_sync;
-};
-
-} // namespace QtWebEngineCore
-
-#endif // !COMPOSITOR_RESOURCE_FENCE_H
+void gpu::InProcessCommandBuffer::GetTextureQtOnGpuThread(
+        unsigned int client_id, GetTextureCallback callback)
+{
+    MakeCurrent();
+    gpu::TextureBase *texture = decoder_->GetTextureBase(client_id);
+    std::move(callback).Run(texture ? texture->service_id() : 0, gl::GLFence::Create());
+}

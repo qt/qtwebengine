@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,35 +37,26 @@
 **
 ****************************************************************************/
 
-#ifndef COMPOSITOR_RESOURCE_FENCE_H
-#define COMPOSITOR_RESOURCE_FENCE_H
+#ifndef DISPLAY_CONSUMER_H
+#define DISPLAY_CONSUMER_H
 
-#include <base/memory/ref_counted.h>
-#include <ui/gl/gl_fence.h>
+#include "qtwebenginecoreglobal_p.h"
 
 namespace QtWebEngineCore {
 
-// Sync object created on GPU thread and consumed on render thread.
-class CompositorResourceFence final : public base::RefCountedThreadSafe<CompositorResourceFence>
+// Receives composited frames for display.
+class DisplayConsumer
 {
 public:
-    REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+    // Schedule a call to updatePaintNode soon.
+    //
+    // Called on the consumer thread.
+    virtual void scheduleUpdate() = 0;
 
-    CompositorResourceFence() {}
-    CompositorResourceFence(const gl::TransferableFence &sync) : m_sync(sync) {};
-    ~CompositorResourceFence() { release(); }
-
-    // May be used only by Qt Quick render thread.
-    void wait();
-    void release();
-
-    // May be used only by GPU thread.
-    static scoped_refptr<CompositorResourceFence> create(std::unique_ptr<gl::GLFence> glFence = nullptr);
-
-private:
-    gl::TransferableFence m_sync;
+protected:
+    ~DisplayConsumer() {}
 };
 
 } // namespace QtWebEngineCore
 
-#endif // !COMPOSITOR_RESOURCE_FENCE_H
+#endif // !DISPLAY_CONSUMER_H

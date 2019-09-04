@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,35 +37,55 @@
 **
 ****************************************************************************/
 
-#ifndef COMPOSITOR_RESOURCE_FENCE_H
-#define COMPOSITOR_RESOURCE_FENCE_H
+#include "delegated_frame_host_client_qt.h"
 
-#include <base/memory/ref_counted.h>
-#include <ui/gl/gl_fence.h>
+#include "render_widget_host_view_qt.h"
 
 namespace QtWebEngineCore {
 
-// Sync object created on GPU thread and consumed on render thread.
-class CompositorResourceFence final : public base::RefCountedThreadSafe<CompositorResourceFence>
+ui::Layer *DelegatedFrameHostClientQt::DelegatedFrameHostGetLayer() const
 {
-public:
-    REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+    return p->m_rootLayer.get();
+}
 
-    CompositorResourceFence() {}
-    CompositorResourceFence(const gl::TransferableFence &sync) : m_sync(sync) {};
-    ~CompositorResourceFence() { release(); }
+bool DelegatedFrameHostClientQt::DelegatedFrameHostIsVisible() const
+{
+    return !p->host()->is_hidden();
+}
 
-    // May be used only by Qt Quick render thread.
-    void wait();
-    void release();
+SkColor DelegatedFrameHostClientQt::DelegatedFrameHostGetGutterColor() const
+{
+    return p->GetBackgroundColor().value_or(SK_ColorWHITE);
+}
 
-    // May be used only by GPU thread.
-    static scoped_refptr<CompositorResourceFence> create(std::unique_ptr<gl::GLFence> glFence = nullptr);
+void DelegatedFrameHostClientQt::OnBeginFrame(base::TimeTicks frame_time)
+{
+    p->host()->ProgressFlingIfNeeded(frame_time);
+}
 
-private:
-    gl::TransferableFence m_sync;
-};
+void DelegatedFrameHostClientQt::OnFrameTokenChanged(uint32_t frame_token)
+{
+    p->OnFrameTokenChangedForView(frame_token);
+}
+
+float DelegatedFrameHostClientQt::GetDeviceScaleFactor() const
+{
+    return p->m_screenInfo.device_scale_factor;
+}
+
+void DelegatedFrameHostClientQt::InvalidateLocalSurfaceIdOnEviction()
+{
+    p->m_dfhLocalSurfaceIdAllocator.Invalidate();
+}
+
+std::vector<viz::SurfaceId> DelegatedFrameHostClientQt::CollectSurfaceIdsForEviction()
+{
+    return p->host()->CollectSurfaceIdsForEviction();
+}
+
+bool DelegatedFrameHostClientQt::ShouldShowStaleContentOnEviction()
+{
+    return p->host()->ShouldShowStaleContentOnEviction();
+}
 
 } // namespace QtWebEngineCore
-
-#endif // !COMPOSITOR_RESOURCE_FENCE_H

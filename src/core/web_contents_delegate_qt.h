@@ -50,6 +50,7 @@
 
 #include "color_chooser_controller.h"
 #include "favicon_manager.h"
+#include "find_text_helper.h"
 #include "javascript_dialog_manager_qt.h"
 
 #include <QtCore/qvector.h>
@@ -112,10 +113,6 @@ class WebContentsDelegateQt : public content::WebContentsDelegate
 public:
     WebContentsDelegateQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
     ~WebContentsDelegateQt();
-    QString lastSearchedString() const { return m_lastSearchedString; }
-    void setLastSearchedString(const QString &s) { m_lastSearchedString = s; }
-    int lastReceivedFindReply() const { return m_lastReceivedFindReply; }
-    void setLastReceivedFindReply(int id) { m_lastReceivedFindReply = id; }
 
     QUrl url() const { return m_url; }
     QString title() const { return m_title; }
@@ -178,6 +175,7 @@ public:
     void requestUserNotificationPermission(const QUrl &requestingOrigin);
     void launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture);
     FaviconManager *faviconManager();
+    FindTextHelper *findTextHelper();
 
     void setSavePageInfo(const SavePageInfo &spi) { m_savePageInfo = spi; }
     const SavePageInfo &savePageInfo() { return m_savePageInfo; }
@@ -213,10 +211,9 @@ private:
     int &streamCount(blink::MediaStreamType type);
 
     WebContentsAdapterClient *m_viewClient;
-    QString m_lastSearchedString;
-    int m_lastReceivedFindReply;
     QVector<int64_t> m_loadingErrorFrameList;
     QScopedPointer<FaviconManager> m_faviconManager;
+    QScopedPointer<FindTextHelper> m_findTextHelper;
     SavePageInfo m_savePageInfo;
     QSharedPointer<FilePickerController> m_filePickerController;
     QUrl m_initialTargetUrl;

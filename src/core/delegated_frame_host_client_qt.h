@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,35 +37,37 @@
 **
 ****************************************************************************/
 
-#ifndef COMPOSITOR_RESOURCE_FENCE_H
-#define COMPOSITOR_RESOURCE_FENCE_H
+#ifndef DELEGATED_FRAME_HOST_CLIENT_QT_H
+#define DELEGATED_FRAME_HOST_CLIENT_QT_H
 
-#include <base/memory/ref_counted.h>
-#include <ui/gl/gl_fence.h>
+#include "qtwebenginecoreglobal_p.h"
+
+#include "content/browser/renderer_host/delegated_frame_host.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 
 namespace QtWebEngineCore {
 
-// Sync object created on GPU thread and consumed on render thread.
-class CompositorResourceFence final : public base::RefCountedThreadSafe<CompositorResourceFence>
+class RenderWidgetHostViewQt;
+class DelegatedFrameHostClientQt : public content::DelegatedFrameHostClient
 {
 public:
-    REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+    explicit DelegatedFrameHostClientQt(RenderWidgetHostViewQt *p) : p(p) {}
 
-    CompositorResourceFence() {}
-    CompositorResourceFence(const gl::TransferableFence &sync) : m_sync(sync) {};
-    ~CompositorResourceFence() { release(); }
-
-    // May be used only by Qt Quick render thread.
-    void wait();
-    void release();
-
-    // May be used only by GPU thread.
-    static scoped_refptr<CompositorResourceFence> create(std::unique_ptr<gl::GLFence> glFence = nullptr);
+    // Overridden from content::DelegatedFrameHostClient
+    ui::Layer *DelegatedFrameHostGetLayer() const override;
+    bool DelegatedFrameHostIsVisible() const override;
+    SkColor DelegatedFrameHostGetGutterColor() const override;
+    void OnBeginFrame(base::TimeTicks frame_time) override;
+    void OnFrameTokenChanged(uint32_t frame_token) override;
+    float GetDeviceScaleFactor() const override;
+    void InvalidateLocalSurfaceIdOnEviction() override;
+    std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() override;
+    bool ShouldShowStaleContentOnEviction() override;
 
 private:
-    gl::TransferableFence m_sync;
+    RenderWidgetHostViewQt *p;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // !COMPOSITOR_RESOURCE_FENCE_H
+#endif // !DELEGATED_FRAME_HOST_CLIENT_QT_H

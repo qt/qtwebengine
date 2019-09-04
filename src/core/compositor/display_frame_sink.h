@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,35 +37,41 @@
 **
 ****************************************************************************/
 
-#ifndef COMPOSITOR_RESOURCE_FENCE_H
-#define COMPOSITOR_RESOURCE_FENCE_H
+#ifndef DISPLAY_FRAME_SINK_H
+#define DISPLAY_FRAME_SINK_H
 
-#include <base/memory/ref_counted.h>
-#include <ui/gl/gl_fence.h>
+#include "display_consumer.h"
+#include "display_producer.h"
+
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+
+#include <QMutex>
 
 namespace QtWebEngineCore {
 
-// Sync object created on GPU thread and consumed on render thread.
-class CompositorResourceFence final : public base::RefCountedThreadSafe<CompositorResourceFence>
+// Connects a DisplayConsumer with a DisplayProducer.
+class DisplayFrameSink final : public base::RefCountedThreadSafe<DisplayFrameSink>
 {
 public:
-    REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
-
-    CompositorResourceFence() {}
-    CompositorResourceFence(const gl::TransferableFence &sync) : m_sync(sync) {};
-    ~CompositorResourceFence() { release(); }
-
-    // May be used only by Qt Quick render thread.
-    void wait();
-    void release();
-
-    // May be used only by GPU thread.
-    static scoped_refptr<CompositorResourceFence> create(std::unique_ptr<gl::GLFence> glFence = nullptr);
+    static scoped_refptr<DisplayFrameSink> findOrCreate(viz::FrameSinkId frameSinkId);
+    DisplayFrameSink(viz::FrameSinkId frameSinkId);
+    ~DisplayFrameSink();
+    void connect(DisplayConsumer *consumer);
+    void connect(DisplayProducer *producer);
+    void disconnect(DisplayConsumer *consumer);
+    void disconnect(DisplayProducer *producer);
+    void scheduleUpdate();
+    QSGNode *updatePaintNode(QSGNode *oldNode, RenderWidgetHostViewQtDelegate *delegate);
 
 private:
-    gl::TransferableFence m_sync;
+    const viz::FrameSinkId m_frameSinkId;
+    mutable QMutex m_mutex;
+    DisplayProducer *m_producer = nullptr;
+    DisplayConsumer *m_consumer = nullptr;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // !COMPOSITOR_RESOURCE_FENCE_H
+#endif // !DISPLAY_FRAME_SINK_H

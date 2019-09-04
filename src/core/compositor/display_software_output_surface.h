@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,35 +37,26 @@
 **
 ****************************************************************************/
 
-#ifndef COMPOSITOR_RESOURCE_FENCE_H
-#define COMPOSITOR_RESOURCE_FENCE_H
+#ifndef DISPLAY_SOFTWARE_OUTPUT_SURFACE_H
+#define DISPLAY_SOFTWARE_OUTPUT_SURFACE_H
 
-#include <base/memory/ref_counted.h>
-#include <ui/gl/gl_fence.h>
+#include "components/viz/service/display_embedder/software_output_surface.h"
 
 namespace QtWebEngineCore {
 
-// Sync object created on GPU thread and consumed on render thread.
-class CompositorResourceFence final : public base::RefCountedThreadSafe<CompositorResourceFence>
+class DisplaySoftwareOutputSurface final : public viz::SoftwareOutputSurface
 {
 public:
-    REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+    DisplaySoftwareOutputSurface(viz::UpdateVSyncParametersCallback callback);
+    ~DisplaySoftwareOutputSurface() override;
 
-    CompositorResourceFence() {}
-    CompositorResourceFence(const gl::TransferableFence &sync) : m_sync(sync) {};
-    ~CompositorResourceFence() { release(); }
-
-    // May be used only by Qt Quick render thread.
-    void wait();
-    void release();
-
-    // May be used only by GPU thread.
-    static scoped_refptr<CompositorResourceFence> create(std::unique_ptr<gl::GLFence> glFence = nullptr);
+    // Overridden from viz::SoftwareOutputSurface.
+    void BindToClient(viz::OutputSurfaceClient *client) override;
 
 private:
-    gl::TransferableFence m_sync;
+    class Device;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // !COMPOSITOR_RESOURCE_FENCE_H
+#endif // !DISPLAY_SOFTWARE_OUTPUT_SURFACE_H

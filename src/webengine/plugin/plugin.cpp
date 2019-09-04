@@ -55,6 +55,7 @@
 #include <QtWebEngine/private/qquickwebenginetouchhandleprovider_p_p.h>
 #include <QtWebEngine/private/qquickwebengineview_p.h>
 #include <QtWebEngine/private/qquickwebengineaction_p.h>
+#include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginenotification.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
@@ -170,6 +171,8 @@ public:
         qmlRegisterUncreatableType<QWebEngineNotification>(uri, 1, 9, "WebEngineNotification", msgUncreatableType("WebEngineNotification"));
         qmlRegisterUncreatableType<QQuickWebEngineTooltipRequest>(uri, 1, 10, "TooltipRequest",
                                                                   msgUncreatableType("TooltipRequest"));
+        qRegisterMetaType<QWebEngineFindTextResult>();
+        qmlRegisterUncreatableType<QWebEngineFindTextResult>(uri, 1, 11, "FindTextResult", msgUncreatableType("FindTextResult"));
     }
 
 private:

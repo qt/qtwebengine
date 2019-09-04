@@ -102,8 +102,8 @@ static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptCo
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
-    , m_lastReceivedFindReply(0)
     , m_faviconManager(new FaviconManager(webContents, adapterClient))
+    , m_findTextHelper(new FindTextHelper(webContents, adapterClient))
     , m_lastLoadProgress(-1)
     , m_loadingState(determineLoadingState(webContents))
     , m_didStartLoadingSeen(m_loadingState == LoadingState::Loading)
@@ -350,9 +350,7 @@ void WebContentsDelegateQt::EmitLoadFinished(bool success, const QUrl &url, bool
 
 void WebContentsDelegateQt::EmitLoadCommitted()
 {
-    // Make sure that we don't set the findNext WebFindOptions on a new frame.
-    m_lastSearchedString = QString();
-
+    m_findTextHelper->handleLoadCommitted();
     m_viewClient->loadCommitted();
     m_viewClient->updateNavigationActions();
 }
@@ -577,13 +575,7 @@ bool WebContentsDelegateQt::DidAddMessageToConsole(content::WebContents *source,
 
 void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update)
 {
-    Q_UNUSED(source)
-    Q_UNUSED(selection_rect)
-    Q_UNUSED(active_match_ordinal)
-    if (final_update && request_id > m_lastReceivedFindReply) {
-        m_lastReceivedFindReply = request_id;
-        m_viewClient->didFindText(request_id, number_of_matches);
-    }
+    m_findTextHelper->handleFindReply(source, request_id, number_of_matches, selection_rect, active_match_ordinal, final_update);
 }
 
 void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request,  content::MediaResponseCallback callback)
@@ -623,13 +615,7 @@ void WebContentsDelegateQt::DidFirstVisuallyNonEmptyPaint()
     if (!rwhv)
         return;
 
-    RenderWidgetHostViewQt::LoadVisuallyCommittedState loadVisuallyCommittedState = rwhv->getLoadVisuallyCommittedState();
-    if (loadVisuallyCommittedState == RenderWidgetHostViewQt::NotCommitted) {
-        rwhv->setLoadVisuallyCommittedState(RenderWidgetHostViewQt::DidFirstVisuallyNonEmptyPaint);
-    } else if (loadVisuallyCommittedState == RenderWidgetHostViewQt::DidFirstCompositorFrameSwap) {
-        m_viewClient->loadVisuallyCommitted();
-        rwhv->setLoadVisuallyCommittedState(RenderWidgetHostViewQt::NotCommitted);
-    }
+    rwhv->OnDidFirstVisuallyNonEmptyPaint();
 }
 
 void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)
@@ -796,6 +782,11 @@ bool WebContentsDelegateQt::TakeFocus(content::WebContents *source, bool reverse
 FaviconManager *WebContentsDelegateQt::faviconManager()
 {
     return m_faviconManager.data();
+}
+
+FindTextHelper *WebContentsDelegateQt::findTextHelper()
+{
+    return m_findTextHelper.data();
 }
 
 WebEngineSettings *WebContentsDelegateQt::webEngineSettings() const {

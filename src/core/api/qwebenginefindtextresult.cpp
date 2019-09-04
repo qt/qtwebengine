@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,35 +37,80 @@
 **
 ****************************************************************************/
 
-#ifndef COMPOSITOR_RESOURCE_FENCE_H
-#define COMPOSITOR_RESOURCE_FENCE_H
+#include "qwebenginefindtextresult.h"
 
-#include <base/memory/ref_counted.h>
-#include <ui/gl/gl_fence.h>
+QT_BEGIN_NAMESPACE
 
-namespace QtWebEngineCore {
-
-// Sync object created on GPU thread and consumed on render thread.
-class CompositorResourceFence final : public base::RefCountedThreadSafe<CompositorResourceFence>
-{
+class QWebEngineFindTextResultPrivate : public QSharedData {
 public:
-    REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
-
-    CompositorResourceFence() {}
-    CompositorResourceFence(const gl::TransferableFence &sync) : m_sync(sync) {};
-    ~CompositorResourceFence() { release(); }
-
-    // May be used only by Qt Quick render thread.
-    void wait();
-    void release();
-
-    // May be used only by GPU thread.
-    static scoped_refptr<CompositorResourceFence> create(std::unique_ptr<gl::GLFence> glFence = nullptr);
-
-private:
-    gl::TransferableFence m_sync;
+    int numberOfMatches = 0;
+    int activeMatchOrdinal = 0;
 };
 
-} // namespace QtWebEngineCore
+/*!
+    \class QWebEngineFindTextResult
+    \brief The QWebEngineFindTextResult class encapsulates the result of a string search on a page.
+    \since 5.14
 
-#endif // !COMPOSITOR_RESOURCE_FENCE_H
+    \inmodule QtWebEngineCore
+
+    Results are passed to the user in the
+    \l QWebEnginePage::findTextFinished() and
+    \l{WebEngineView::findTextFinished()}{WebEngineView.findTextFinished()} signals.
+*/
+
+/*! \internal
+*/
+QWebEngineFindTextResult::QWebEngineFindTextResult()
+    : d(new QWebEngineFindTextResultPrivate)
+{}
+
+/*! \internal
+*/
+QWebEngineFindTextResult::QWebEngineFindTextResult(int numberOfMatches, int activeMatchOrdinal)
+    : d(new QWebEngineFindTextResultPrivate)
+{
+    d->numberOfMatches = numberOfMatches;
+    d->activeMatchOrdinal = activeMatchOrdinal;
+}
+
+/*! \internal
+*/
+QWebEngineFindTextResult::QWebEngineFindTextResult(const QWebEngineFindTextResult &other)
+    : d(other.d)
+{}
+
+/*! \internal
+*/
+QWebEngineFindTextResult &QWebEngineFindTextResult::operator=(const QWebEngineFindTextResult &other)
+{
+    d = other.d;
+    return *this;
+}
+
+/*! \internal
+*/
+QWebEngineFindTextResult::~QWebEngineFindTextResult()
+{}
+
+/*!
+    \property QWebEngineFindTextResult::numberOfMatches
+    \brief The number of matches found.
+*/
+int QWebEngineFindTextResult::numberOfMatches() const
+{
+    return d->numberOfMatches;
+}
+
+/*!
+    \property QWebEngineFindTextResult::activeMatchOrdinal
+    \brief The index of the currently highlighted match.
+*/
+int QWebEngineFindTextResult::activeMatchOrdinal() const
+{
+    return d->activeMatchOrdinal;
+}
+
+QT_END_NAMESPACE
+
+#include "moc_qwebenginefindtextresult.cpp"

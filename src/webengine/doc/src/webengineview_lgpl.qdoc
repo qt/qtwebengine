@@ -414,26 +414,33 @@
     \qmlmethod void WebEngineView::findText(string subString)
     \since QtWebEngine 1.1
     Finds the specified string, \a subString, in the page.
+    The findTextFinished() signal is emitted when a string search is completed.
 
     To clear the search highlight, just pass an empty string.
+
+    \sa findTextFinished()
 */
 
 /*!
     \qmlmethod void WebEngineView::findText(string subString, FindFlags options)
     \since QtWebEngine 1.1
     Finds the specified string, \a subString, in the page, using the given \a options.
+    The findTextFinished() signal is emitted when a string search is completed.
 
     To clear the search highlight, just pass an empty string.
 
     \code
     findText("Qt", WebEngineView.FindBackward | WebEngineView.FindCaseSensitively);
     \endcode
+
+    \sa findTextFinished()
 */
 
 /*!
     \qmlmethod void WebEngineView::findText(string subString, FindFlags options, variant resultCallback)
     \since QtWebEngine 1.1
     Finds the specified string, \a subString, in the page, using the given \a options.
+    The findTextFinished() signal is emitted when a string search is completed.
 
     To clear the search highlight, just pass an empty string.
 
@@ -447,6 +454,8 @@
             console.log("Qt was found!");
     });
     \endcode
+
+    \sa findTextFinished()
 */
 
 /*!
@@ -1569,5 +1578,39 @@
     resource state is however completely safe.
 
     \sa lifecycleState, {WebEngine Lifecycle Example}
+*/
 
+/*!
+    \qmltype FindTextResult
+    \instantiates QWebEngineFindTextResult
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 1.11
+
+    \brief A utility type for encapsulating the result of a string search on a page.
+
+    \sa WebEngineView::findTextFinished()
+*/
+
+/*!
+    \qmlproperty int FindTextResult::numberOfMatches
+    \readonly
+
+    \brief The number of matches found.
+*/
+
+/*!
+    \qmlproperty int FindTextResult::activeMatchOrdinal
+    \readonly
+
+    \brief The index of the currently highlighted match.
+*/
+
+/*!
+    \qmlsignal WebEngineView::findTextFinished(FindTextResult result)
+    \since QtWebEngine 1.11
+
+    This signal is emitted when a string search on a page is completed. \a result is
+    the result of the string search.
+
+    \sa findText(), FindTextResult
 */
