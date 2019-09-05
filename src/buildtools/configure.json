@@ -352,9 +352,10 @@
             "label": "64bit compiler",
             "type": "isWindowsHostCompiler64"
         },
-        "webengine-platform": {
+        "webengine-platform-support": {
             "label": "platform supported",
-            "type": "detectPlatform"
+            "type": "detectPlatform",
+            "log": "platformSupport"
         },
         "webengine-arch-support": {
             "label": "architecture supported",
@@ -380,7 +381,7 @@
                          && features.webengine-submodule
                          && features.webengine-nowhitespace
                          && features.webengine-arch-support
-                         && tests.webengine-platform
+                         && !features.webengine-no-platform-support
                          && !config.static
                          && (!config.linux || features.pkg-config)
                          && (!features.xcb || features.webengine-ozone-x11)
@@ -666,6 +667,14 @@
             "label": "architecture",
             "condition" : "tests.webengine-arch-support",
             "output": [ "privateFeature" ]
+        },
+        "webengine-no-platform-support": {
+            "label": "platform",
+            "condition" : "!tests.webengine-platform-support",
+            "output": [
+                "privateFeature",
+                { "type": "varAssign", "name": "PLATFORM_ERROR", "value": "tests.webengine-platform-support.platformSupport" }
+            ]
         }
     },
     "report": [

@@ -1,4 +1,4 @@
-include($$QTWEBENGINE_ROOT/src/buildtools/config/platform.pri)
+include($$QTWEBENGINE_ROOT/src/buildtools/config/support.pri)
 
 defineReplace(getConfigDir) {
   CONFIG(release, debug|release):return("release")
