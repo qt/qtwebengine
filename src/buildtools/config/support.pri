@@ -17,7 +17,7 @@ defineReplace(qtwebengine_checkError) {
     }
 
     !qtConfig(webengine-submodule) {
-        qtwebengine_skipBuild("Submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
+        qtwebengine_skipBuild("QtWebEngine required submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
         return(false)
     }
 
@@ -70,7 +70,7 @@ defineReplace(qtwebengine_checkError) {
     win:!qtwebengine_checkErrorForWindows():return(false)
 
     sanitizer: !qtConfig(webengine-sanitizer) {
-        qtwebengine_skipBuild("Chosen sanitizer configuration is not supported. Check config.log for details or use -feature-webengine-sanitizer to force build with the chosen sanitizer configuration.")
+        qtwebengine_skipBuild("Chosen sanitizer configuration is not supported for QtWebEngine. Check config.log for details or use -feature-webengine-sanitizer to force build with the chosen sanitizer configuration.")
         return(false);
     }
 
@@ -80,34 +80,34 @@ defineReplace(qtwebengine_checkError) {
 defineTest(qtwebengine_checkErrorForLinux) {
 
     !qtConfig(pkg-config) {
-        qtwebengine_skipBuild("A pkg-config support is required.")
+        qtwebengine_skipBuild("A pkg-config support is required to build QtWebEngine.")
         return(false)
     }
 
     !qtConfig(webengine-host-pkg-config) {
-        qtwebengine_skipBuild("Host pkg-config is required")
+        qtwebengine_skipBuild("Host pkg-config is required to build QtWebEngine.")
         return(false)
     }
 
     !qtConfig(webengine-system-glibc) {
-        qtwebengine_skipBuild("A suitable version >= 2.27 of libc could not be found.")
+        qtwebengine_skipBuild("A suitable version >= 2.27 of libc required to build QtWebEngine could not be found.")
         return(false)
     }
 
     !qtConfig(webengine-system-khr) {
-        qtwebengine_skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
+        qtwebengine_skipBuild("Khronos development headers required to build QtWebEngine are missing (see mesa/libegl1-mesa-dev)")
         return(false)
     }
 
     for(package, $$list("nss dbus fontconfig")) {
         !qtConfig(webengine-system-$$package) {
-            qtwebengine_skipBuild("A suitable version of $$package could not be found.")
+            qtwebengine_skipBuild("A suitable version of $$package required to build QtWebEngine could not be found.")
             return(false)
         }
     }
 
     qtConfig(pkg-config):qtConfig(xcb):!qtConfig(webengine-ozone-x11) {
-        qtwebengine_skipBuild("Could not find all necessary libraries for qpa-xcb support")
+        qtwebengine_skipBuild("Could not find all necessary libraries for qpa-xcb support in QtWebEngine.")
         return(false)
     }
     return(true)
@@ -115,12 +115,12 @@ defineTest(qtwebengine_checkErrorForLinux) {
 
 defineTest(qtwebengine_checkErrorForWindows) {
     !qtConfig(webengine-win-compiler64) {
-        qtwebengine_skipBuild("Required 64-bit cross-building or native toolchain could not be found.")
+        qtwebengine_skipBuild("64-bit cross-building or native toolchain required to build QtWebEngine could not be found.")
         return(false)
     }
 
     !qtConfig(webengine-winversion) {
-        qtwebengine_skipBuild("Needs Visual Studio 2017 or higher")
+        qtwebengine_skipBuild("QtWebEngine needs Visual Studio 2017 or higher.")
         return(false)
     }
     return(true)
