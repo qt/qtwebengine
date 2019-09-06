@@ -90,9 +90,10 @@ CertificateErrorControllerPrivate::CertificateErrorControllerPrivate(int cert_er
     , strictEnforcement(strict_enforcement)
     , callback(cb)
 {
-    if (ssl_info.cert.get()) {
-        validStart = toQt(ssl_info.cert->valid_start());
-        validExpiry = toQt(ssl_info.cert->valid_expiry());
+    if (auto cert = ssl_info.cert.get()) {
+        validStart = toQt(cert->valid_start());
+        validExpiry = toQt(cert->valid_expiry());
+        chain = toCertificateChain(cert);
     }
 }
 
@@ -184,6 +185,11 @@ QString CertificateErrorController::errorString() const
     }
 
     return getQStringForMessageId(IDS_CERT_ERROR_UNKNOWN_ERROR_DESCRIPTION);
+}
+
+QList<QSslCertificate> CertificateErrorController::chain() const
+{
+    return d->chain;
 }
 
 QT_END_NAMESPACE

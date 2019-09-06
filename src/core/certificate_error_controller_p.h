@@ -71,6 +71,7 @@ public:
     bool overridable;
     bool strictEnforcement;
     const base::Callback<void(content::CertificateRequestResultType)> callback;
+    QList<QSslCertificate> chain;
 };
 
 QT_END_NAMESPACE
