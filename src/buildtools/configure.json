@@ -7,7 +7,7 @@
     ],
     "commandline": {
         "options": {
-            "webengine-core": "boolean",
+            "build-qtwebengine-core": "boolean",
             "webengine-jumbo-build": { "type": "optionalString", "name": "merge_limit"}
         }
     },
@@ -362,7 +362,7 @@
         }
     },
     "features": {
-        "webengine-core": {
+        "build-qtwebengine-core": {
             "label": "Support Qt WebEngine Core",
             "purpose": "Provides WebEngine Core support.",
             "condition": "module.gui
@@ -697,7 +697,7 @@
                 "webengine-developer-build",
                 {
                     "section": "Required system libraries",
-                    "condition": "config.unix && !config.macos && features.webengine-core",
+                    "condition": "config.unix && !config.macos && features.build-qtwebengine-core",
                     "entries": [
                         "webengine-system-fontconfig",
                         "webengine-system-dbus",
@@ -708,7 +708,7 @@
                 },
                 {
                     "section": "Required system libraries for qpa-xcb",
-                    "condition": "config.unix && !config.macos && features.webengine-core",
+                    "condition": "config.unix && !config.macos && features.build-qtwebengine-core",
                     "entries": [
                         "webengine-system-x11",
                         "webengine-system-libdrm",

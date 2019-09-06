@@ -6,7 +6,7 @@
         "gui-private",
         "printsupport"
     ],
-    "condition": "features.webengine-core",
+    "condition": "features.build-qtwebengine-core",
     "testDir": "../../config.tests",
     "commandline": {
         "options": {
@@ -276,7 +276,7 @@
     "summary": [
         {
             "section": "Qt WebEngineCore",
-            "condition": "features.webengine-core",
+            "condition": "features.build-qtwebengine-core",
             "entries": [
                 "webengine-embedded-build",
                 "webengine-full-debug-info",
