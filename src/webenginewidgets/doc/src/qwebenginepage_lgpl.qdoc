@@ -522,6 +522,8 @@
     Return \c true to ignore the error and complete the request. Return \c false to stop loading
     the request.
 
+    \note If the error was successfully deferred then the returned value will be ignored.
+
     \sa QWebEngineCertificateError
 */
 

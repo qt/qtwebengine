@@ -40,11 +40,14 @@
 #include "type_conversion.h"
 
 #include <content/public/common/favicon_url.h>
+#include <net/cert/x509_certificate.h>
+#include <net/cert/x509_util.h>
 #include <ui/events/event_constants.h>
 #include <ui/gfx/image/image_skia.h>
 
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qmatrix4x4.h>
+#include <QtNetwork/qsslcertificate.h>
 
 namespace QtWebEngineCore {
 
@@ -254,6 +257,22 @@ void convertToQt(const SkMatrix44 &m, QMatrix4x4 &c)
         m.get(3, 0), m.get(3, 1), m.get(3, 2), m.get(3, 3));
     qtMatrix.optimize();
     c = qtMatrix;
+}
+
+static QSslCertificate toCertificate(CRYPTO_BUFFER *buffer)
+{
+    auto derCert = net::x509_util::CryptoBufferAsStringPiece(buffer);
+    return QSslCertificate(QByteArray::fromRawData(derCert.data(), derCert.size()), QSsl::Der);
+}
+
+QList<QSslCertificate> toCertificateChain(net::X509Certificate *certificate)
+{
+    // from leaf to root as in QtNetwork
+    QList<QSslCertificate> chain;
+    chain.append(toCertificate(certificate->cert_buffer()));
+    for (auto &&buffer : certificate->intermediate_buffers())
+        chain.append(toCertificate(buffer.get()));
+    return chain;
 }
 
 } // namespace QtWebEngineCore

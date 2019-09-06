@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -124,8 +124,9 @@ static inline QWebEngineDownloadItem::DownloadInterruptReason toDownloadInterrup
     then the download request will be automatically rejected and nothing will be
     written to disk.
 
-    \note Some properties, like the \l path under which the file will be saved,
-    can only be changed before calling accept().
+    \note Some properties, such as setting the path and file name where the file
+    will be saved (see \l downloadDirectory() and \l downloadFileName()), can
+    only be changed before calling accept().
 
     \section2 Object Life Cycle
 
@@ -510,6 +511,10 @@ QString QWebEngineDownloadItem::mimeType() const
 
 /*!
     \obsolete
+
+    Use \l suggestedFileName(), \l downloadDirectory(), and
+    \l downloadFileName() instead.
+
     Returns the full target path where data is being downloaded to.
 
     The path includes the file name. The default suggested path is the standard download location
@@ -523,6 +528,10 @@ QString QWebEngineDownloadItem::path() const
 }
 
 /*!
+    \obsolete
+
+    Use \l setDownloadDirectory() and \l setDownloadFileName() instead.
+
     Sets the full target path to download the file to.
 
     The \a path should also include the file name. The download path can only be set in response
@@ -572,7 +581,7 @@ QString QWebEngineDownloadItem::downloadDirectory() const
 /*!
     \since 5.14
 
-    Sets the directory path to download the file to.
+    Sets \a directory as the directory path to download the file to.
 
     The download directory path can only be set in response to the QWebEngineProfile::downloadRequested()
     signal before the download is accepted. Past that point, this function has no effect on the
@@ -598,7 +607,7 @@ void QWebEngineDownloadItem::setDownloadDirectory(QString directory)
 /*!
     \since 5.14
 
-    Returns the suggested file name.
+    Returns the file name to download the file to.
 */
 
 QString QWebEngineDownloadItem::downloadFileName() const
@@ -610,7 +619,7 @@ QString QWebEngineDownloadItem::downloadFileName() const
 /*!
     \since 5.14
 
-    Sets the file name to download the file to.
+    Sets \a fileName as the file name to download the file to.
 
     The download file name can only be set in response to the QWebEngineProfile::downloadRequested()
     signal before the download is accepted. Past that point, this function has no effect on the
