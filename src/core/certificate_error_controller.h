@@ -55,6 +55,7 @@
 
 #include <QtCore/QDateTime>
 #include <QtCore/QUrl>
+#include <QtNetwork/QSslCertificate>
 
 QT_BEGIN_NAMESPACE
 
@@ -95,6 +96,7 @@ public:
     QString errorString() const;
     QDateTime validStart() const;
     QDateTime validExpiry() const;
+    QList<QSslCertificate> chain() const;
 
     void accept(bool);
 

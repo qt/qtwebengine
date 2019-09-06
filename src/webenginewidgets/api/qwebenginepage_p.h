@@ -210,6 +210,8 @@ public:
 #if QT_CONFIG(webengine_printing_and_pdf)
     QPrinter *currentPrinter;
 #endif
+
+    QList<QSharedPointer<CertificateErrorController>> m_certificateErrorControllers;
 };
 
 class QContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt

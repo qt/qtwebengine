@@ -30,6 +30,26 @@
 #include <QWebChannel>
 #endif
 
+static bool verifyOrder(QStringList orderList)
+{
+    QStringList expected = {
+        "DocumentCreation",
+        "DOMContentLoaded",
+        "DocumentReady",
+        "load",
+        "Deferred"
+    };
+
+    if (orderList.at(4) == "load (timeout)") {
+        if (orderList.at(3) != "Deferred")
+            return false;
+        expected[3] = "Deferred";
+        expected[4] = "load (timeout)";
+    }
+
+    return orderList == expected;
+}
+
 class tst_QWebEngineScript: public QObject {
     Q_OBJECT
 
@@ -101,15 +121,28 @@ void tst_QWebEngineScript::loadEvents()
             script.setRunsOnSubFrames(true);
             if (injectionPoint == QWebEngineScript::DocumentCreation) {
                 script.setSourceCode(QStringLiteral(R"(
-                var log = ["DocumentCreation"];
-                for (let type of ["DOMContentLoaded", "load"]) {
-                    window.addEventListener(type, () => log.push(type));
+                var log = ['DocumentCreation'];
+                var timestamps = {'DocumentCreation': Date.now()};
+                for (let type of ['DOMContentLoaded', 'load']) {
+                    window.addEventListener(type, () => {
+                                                    timestamps[type] = Date.now();
+                                                    if (type === 'load' && log.includes('Deferred') && timestamps['Deferred'] - timestamps['DOMContentLoaded'] > 500)
+                                                        log.push(type + ' (timeout)');
+                                                    else
+                                                        log.push(type);
+                                                    });
                 }
                 )"));
             } else if (injectionPoint == QWebEngineScript::DocumentReady) {
-                script.setSourceCode(QStringLiteral(R"(log.push("DocumentReady"))"));
+                script.setSourceCode(QStringLiteral(R"(
+                                                    timestamps['DocumentReady'] = Date.now();
+                                                    log.push('DocumentReady');
+                                                    )"));
             } else {
-                script.setSourceCode(QStringLiteral(R"(log.push("Deferred"))"));
+                script.setSourceCode(QStringLiteral(R"(
+                                                    timestamps['Deferred'] = Date.now();
+                                                    log.push('Deferred');
+                                                    )"));
             }
             return script;
         }
@@ -144,46 +177,38 @@ void tst_QWebEngineScript::loadEvents()
     profile.pages.emplace_back(profile);
     Page &page = profile.pages.back();
 
-    const QStringList expected = {
-        "DocumentCreation",
-        "DOMContentLoaded",
-        "DocumentReady",
-        "load",
-        "Deferred"
-    };
-
     // Single frame / setHtml
     page.setHtml(QStringLiteral("<!DOCTYPE html><html><head><title>mr</title></head><body></body></html>"));
     QTRY_COMPARE(page.spy.count(), 1);
     QCOMPARE(page.spy.takeFirst().value(0).toBool(), true);
-    QCOMPARE(page.eval("window.log", QWebEngineScript::MainWorld).toStringList(), expected);
-    QCOMPARE(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
+    QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
+    QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
 
     // After discard
     page.setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
     page.setLifecycleState(QWebEnginePage::LifecycleState::Active);
     QTRY_COMPARE(page.spy.count(), 1);
     QCOMPARE(page.spy.takeFirst().value(0).toBool(), true);
-    QCOMPARE(page.eval("window.log", QWebEngineScript::MainWorld).toStringList(), expected);
-    QCOMPARE(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
+    QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
+    QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
 
     // Multiple frames
     page.load(QUrl("qrc:/resources/test_iframe_main.html"));
     QTRY_COMPARE(page.spy.count(), 1);
     QCOMPARE(page.spy.takeFirst().value(0).toBool(), true);
-    QCOMPARE(page.eval("window.log", QWebEngineScript::MainWorld).toStringList(), expected);
-    QCOMPARE(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
-    QCOMPARE(page.eval("window[0].log", QWebEngineScript::MainWorld).toStringList(), expected);
-    QCOMPARE(page.eval("window[0].log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
-    QCOMPARE(page.eval("window[0][0].log", QWebEngineScript::MainWorld).toStringList(), expected);
-    QCOMPARE(page.eval("window[0][0].log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
+    QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
+    QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
+    QVERIFY(verifyOrder(page.eval("window[0].log", QWebEngineScript::MainWorld).toStringList()));
+    QVERIFY(verifyOrder(page.eval("window[0].log", QWebEngineScript::ApplicationWorld).toStringList()));
+    QVERIFY(verifyOrder(page.eval("window[0][0].log", QWebEngineScript::MainWorld).toStringList()));
+    QVERIFY(verifyOrder(page.eval("window[0][0].log", QWebEngineScript::ApplicationWorld).toStringList()));
 
     // Cross-process navigation
     page.load(QUrl("chrome://gpu"));
     QTRY_COMPARE_WITH_TIMEOUT(page.spy.count(), 1, 20000);
     QCOMPARE(page.spy.takeFirst().value(0).toBool(), true);
-    QCOMPARE(page.eval("window.log", QWebEngineScript::MainWorld).toStringList(), expected);
-    QCOMPARE(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
+    QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
+    QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
 
     // Using window.open from JS
     QVERIFY(profile.pages.size() == 1);
@@ -191,10 +216,10 @@ void tst_QWebEngineScript::loadEvents()
     QTRY_VERIFY(profile.pages.size() == 2);
     QTRY_COMPARE(profile.pages.front().spy.count(), 1);
     QTRY_COMPARE(profile.pages.back().spy.count(), 1);
-    QCOMPARE(profile.pages.front().eval("window.log", QWebEngineScript::MainWorld).toStringList(), expected);
-    QCOMPARE(profile.pages.front().eval("window.log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
-    QCOMPARE(profile.pages.back().eval("window.log", QWebEngineScript::MainWorld).toStringList(), expected);
-    QCOMPARE(profile.pages.back().eval("window.log", QWebEngineScript::ApplicationWorld).toStringList(), expected);
+    QVERIFY(verifyOrder(profile.pages.front().eval("window.log", QWebEngineScript::MainWorld).toStringList()));
+    QVERIFY(verifyOrder(profile.pages.front().eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
+    QVERIFY(verifyOrder(profile.pages.back().eval("window.log", QWebEngineScript::MainWorld).toStringList()));
+    QVERIFY(verifyOrder(profile.pages.back().eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
 }
 
 void tst_QWebEngineScript::scriptWorld_data()

@@ -294,6 +294,7 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isError
         return;
 
     isLoading = true;
+    m_certificateErrorControllers.clear();
     QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
 }
 
@@ -1715,10 +1716,11 @@ void QWebEnginePagePrivate::allowCertificateError(const QSharedPointer<Certifica
     Q_Q(QWebEnginePage);
     bool accepted = false;
 
-    QWebEngineCertificateError error(controller->error(), controller->url(), controller->overridable() && !controller->strictEnforcement(), controller->errorString());
+    QWebEngineCertificateError error(controller);
     accepted = q->certificateError(error);
-
-    if (error.isOverridable())
+    if (error.deferred() && !error.answered())
+        m_certificateErrorControllers.append(controller);
+    else if (!error.answered() && error.isOverridable())
         controller->accept(accepted);
 }
 

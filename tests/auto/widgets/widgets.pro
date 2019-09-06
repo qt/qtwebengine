@@ -4,6 +4,7 @@ QT_FOR_CONFIG += webenginecore webenginecore-private
 TEMPLATE = subdirs
 
 SUBDIRS += \
+    certificateerror \
     defaultsurfaceformat \
     devtools \
     faviconmanager \
