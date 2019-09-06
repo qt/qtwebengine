@@ -376,6 +376,12 @@
                          && (!config.win32 || features.webengine-winversion)",
             "output": [ "privateFeature" ]
         },
+        "webengine-developer-build": {
+            "label": "Developer build",
+            "purpose": "Enables the developer build configuration.",
+            "autoDetect": "features.private_tests",
+            "output": [ "privateFeature" ]
+        },
         "webengine-python2": {
             "label": "python2",
             "condition": "tests.webengine-python2",
@@ -404,7 +410,7 @@
             "condition": "tests.webengine-ninja",
             "output": [ "privateFeature" ]
         },
-           "webengine-system-fontconfig": {
+        "webengine-system-fontconfig": {
             "label": "fontconfig",
             "condition": "libs.webengine-fontconfig",
             "output": [ "privateFeature" ]
@@ -688,6 +694,7 @@
                     "message": "Jumbo Build Merge Limit",
                     "type": "jumboBuild"
                 },
+                "webengine-developer-build",
                 {
                     "section": "Required system libraries",
                     "condition": "config.unix && !config.macos && features.webengine-core",

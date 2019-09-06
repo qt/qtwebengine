@@ -113,12 +113,6 @@
             "autoDetect": "tests.webengine-embedded-build",
             "output": [ "privateFeature" ]
         },
-        "webengine-developer-build": {
-            "label": "Developer build",
-            "purpose": "Enables the developer build configuration.",
-            "autoDetect": "features.private_tests",
-            "output": [ "privateFeature" ]
-        },
         "webengine-alsa": {
             "label": "Use ALSA",
             "condition": "config.unix && libs.webengine-alsa",
@@ -285,7 +279,6 @@
             "condition": "features.webengine-core",
             "entries": [
                 "webengine-embedded-build",
-                "webengine-developer-build",
                 "webengine-full-debug-info",
                 "webengine-pepper-plugins",
                 "webengine-printing-and-pdf",
