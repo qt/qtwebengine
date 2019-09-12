@@ -560,7 +560,7 @@ void QWebEngineDownloadItem::setPath(QString path)
             d->downloadDirectory = QStringLiteral("");
             d->downloadFileName = path;
         } else {
-            d->downloadDirectory = QFileInfo(path).filePath();
+            d->downloadDirectory = QFileInfo(path).path();
             d->downloadFileName = QFileInfo(path).fileName();
         }
     }

@@ -463,7 +463,7 @@ void QQuickWebEngineDownloadItem::setPath(QString path)
             newDirectory = QStringLiteral("");
             newFileName = path;
         } else {
-            newDirectory = QFileInfo(path).filePath();
+            newDirectory = QFileInfo(path).path();
             newFileName = QFileInfo(path).fileName();
         }
 
