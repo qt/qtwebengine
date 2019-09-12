@@ -1,6 +1,8 @@
 {
     "subconfigs": [
+        "src/buildtools",
         "src/core",
-        "src/webengine"
+        "src/webengine",
+        "src/webenginewidgets"
     ]
 }

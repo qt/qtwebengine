@@ -1,4 +1,4 @@
-include(src/core/config/functions.pri)
+include(src/buildtools/config/functions.pri)
 
 # this must be done outside any function
 QTWEBENGINE_SOURCE_TREE = $$PWD
@@ -20,6 +20,26 @@ defineTest(isPythonVersionSupported) {
     greaterThan(python_major_version, 1): greaterThan(python_minor_version, 6): greaterThan(python_patch_version, 4): return(true)
     qtLog("Unsupported python version: $${python_major_version}.$${python_minor_version}.$${python_patch_version}.")
     return(false)
+}
+
+defineTest(qtConfTest_detectJumboBuild) {
+    mergeLimit = $$eval(config.input.merge_limit)
+    mergeLimit = $$find(mergeLimit, "\\d")
+    isEmpty(mergeLimit): mergeLimit = 0
+    qtLog("Setting jumbo build merge batch limit to $${mergeLimit}.")
+    $${1}.merge_limit = $$mergeLimit
+    export($${1}.merge_limit)
+    $${1}.cache += merge_limit
+    export($${1}.cache)
+
+    return(true)
+}
+
+defineTest(qtConfReport_jumboBuild) {
+    mergeLimit = $$eval(config.input.merge_limit)
+    mergeLimit = $$find(mergeLimit, "\d")
+    isEmpty(mergeLimit): mergeLimit = "no"
+    qtConfReportPadded($${1}, $$mergeLimit)
 }
 
 defineTest(qtConfTest_detectPython2) {
@@ -120,7 +140,7 @@ defineTest(qtConfTest_detectGn) {
     return(false)
 }
 
-defineTest(qtConfTest_embedded) {
+defineTest(qtConfTest_detectEmbedded) {
     lessThan(QT_MINOR_VERSION, 9) {
         cross_compile: return(true)
         return(false)

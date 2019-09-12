@@ -62,6 +62,7 @@ class QWebChannel;
 class QWebEngineCertificateError;
 class QWebEngineClientCertificateSelection;
 class QWebEngineContextMenuData;
+class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
 class QWebEnginePage;
@@ -368,6 +369,8 @@ Q_SIGNALS:
 
     void lifecycleStateChanged(LifecycleState state);
     void recommendedStateChanged(LifecycleState state);
+
+    void findTextFinished(const QWebEngineFindTextResult &result);
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);

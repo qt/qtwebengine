@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -185,7 +185,9 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPriva
     \value ResourceTypeCspReport  A report of Content Security Policy (CSP)
            violations. CSP reports are in JSON format and they are delivered by
            HTTP POST requests to specified servers. (Added in Qt 5.7)
-   \value ResourceTypePluginResource  A resource requested by a plugin. (Added in Qt 5.7)
+    \value ResourceTypePluginResource  A resource requested by a plugin. (Added in Qt 5.7)
+    \value ResourceTypeNavigationPreload  A service worker navigation preload
+           request. (Added in Qt 5.14)
     \value ResourceTypeUnknown  Unknown request type.
 
     \note For forward compatibility all values not matched should be treated as unknown,
@@ -248,8 +250,10 @@ QUrl QWebEngineUrlRequestInfo::firstPartyUrl() const
 }
 
 /*!
-    Returns the origin url of the document which initiated
-    the navigation when a frame navigates another frame.
+    Returns the origin URL of the document that initiated
+    the navigation of a frame to another frame.
+
+    \since 5.14
  */
 
 QUrl QWebEngineUrlRequestInfo::initiator() const

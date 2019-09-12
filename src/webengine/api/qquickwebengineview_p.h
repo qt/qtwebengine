@@ -79,6 +79,7 @@ class QQuickWebEngineSettings;
 class QQuickWebEngineTooltipRequest;
 class QQuickWebEngineFormValidationMessageRequest;
 class QQuickWebEngineViewPrivate;
+class QWebEngineFindTextResult;
 class QWebEngineQuotaRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
 
@@ -574,6 +575,7 @@ Q_SIGNALS:
     Q_REVISION(10) void tooltipRequested(QQuickWebEngineTooltipRequest *request);
     Q_REVISION(11) void lifecycleStateChanged(LifecycleState state);
     Q_REVISION(11) void recommendedStateChanged(LifecycleState state);
+    Q_REVISION(11) void findTextFinished(const QWebEngineFindTextResult &result);
 
 #if QT_CONFIG(webengine_testsupport)
     void testSupportChanged();

@@ -177,7 +177,7 @@ void tst_QWebEngineSettings::setInAcceptNavigationRequest()
 {
     NavigationRequestOverride page;
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
-    QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::JavascriptEnabled, false);
+    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::JavascriptEnabled, false);
     QVERIFY(!page.settings()->testAttribute(QWebEngineSettings::JavascriptEnabled));
 
     page.load(QUrl("about:blank"));

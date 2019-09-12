@@ -86,7 +86,6 @@
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "extensions/buildflags/buildflags.h"
-#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -416,7 +415,6 @@ WebContentsAdapter::WebContentsAdapter()
 #endif
   , m_adapterClient(nullptr)
   , m_nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
-  , m_lastFindRequestId(0)
   , m_currentDropAction(blink::kWebDragOperationNone)
   , m_devToolsFrontend(nullptr)
 {
@@ -433,7 +431,6 @@ WebContentsAdapter::WebContentsAdapter(std::unique_ptr<content::WebContents> web
 #endif
   , m_adapterClient(nullptr)
   , m_nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
-  , m_lastFindRequestId(0)
   , m_currentDropAction(blink::kWebDragOperationNone)
   , m_devToolsFrontend(nullptr)
 {
@@ -694,7 +691,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
     }
 
     auto navigate = [](QWeakPointer<WebContentsAdapter> weakAdapter, const content::NavigationController::LoadURLParams &params) {
-        WebContentsAdapter *adapter = weakAdapter.data();
+        const auto adapter = weakAdapter.toStrongRef();
         if (!adapter)
             return;
         adapter->webContents()->GetController().LoadURLWithParams(params);
@@ -1044,41 +1041,6 @@ quint64 WebContentsAdapter::fetchDocumentInnerText()
     CHECK_INITIALIZED(0);
     m_renderViewObserverHost->fetchDocumentInnerText(m_nextRequestId);
     return m_nextRequestId++;
-}
-
-quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitively, bool findBackward)
-{
-    CHECK_INITIALIZED(0);
-    if (m_lastFindRequestId > m_webContentsDelegate->lastReceivedFindReply()) {
-        // There are cases where the render process will overwrite a previous request
-        // with the new search and we'll have a dangling callback, leaving the application
-        // waiting for it forever.
-        // Assume that any unfinished find has been unsuccessful when a new one is started
-        // to cover that case.
-        m_webContentsDelegate->setLastReceivedFindReply(m_lastFindRequestId);
-        m_adapterClient->didFindText(m_lastFindRequestId, 0);
-    }
-
-    blink::mojom::FindOptionsPtr options = blink::mojom::FindOptions::New();
-    options->forward = !findBackward;
-    options->match_case = caseSensitively;
-    options->find_next = subString == m_webContentsDelegate->lastSearchedString();
-    m_webContentsDelegate->setLastSearchedString(subString);
-
-    // Find already allows a request ID as input, but only as an int.
-    // Use the same counter but mod it to MAX_INT, this keeps the same likeliness of request ID clashing.
-    int shrunkRequestId = m_nextRequestId++ & 0x7fffffff;
-    m_webContents->Find(shrunkRequestId, toString16(subString), std::move(options));
-    m_lastFindRequestId = shrunkRequestId;
-    return shrunkRequestId;
-}
-
-void WebContentsAdapter::stopFinding()
-{
-    CHECK_INITIALIZED();
-    m_webContentsDelegate->setLastReceivedFindReply(m_lastFindRequestId);
-    m_webContentsDelegate->setLastSearchedString(QString());
-    m_webContents->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }
 
 void WebContentsAdapter::updateWebPreferences(const content::WebPreferences & webPreferences)
@@ -1696,12 +1658,6 @@ void WebContentsAdapter::focusIfNecessary()
         m_webContents->Focus();
 }
 
-bool WebContentsAdapter::isFindTextInProgress() const
-{
-    CHECK_INITIALIZED(false);
-    return m_lastFindRequestId != m_webContentsDelegate->lastReceivedFindReply();
-}
-
 bool WebContentsAdapter::hasFocusedFrame() const
 {
     CHECK_INITIALIZED(false);
@@ -1743,6 +1699,12 @@ FaviconManager *WebContentsAdapter::faviconManager()
 {
     CHECK_INITIALIZED(nullptr);
     return m_webContentsDelegate->faviconManager();
+}
+
+FindTextHelper *WebContentsAdapter::findTextHelper()
+{
+    CHECK_INITIALIZED(nullptr);
+    return m_webContentsDelegate->findTextHelper();
 }
 
 void WebContentsAdapter::viewSource()

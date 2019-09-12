@@ -4,6 +4,7 @@
         <file>BrowserDialog.qml</file>
         <file>BrowserWindow.qml</file>
         <file>DownloadView.qml</file>
+        <file>FindBar.qml</file>
         <file>FullScreenNotification.qml</file>
     </qresource>
     <qresource prefix="icons">

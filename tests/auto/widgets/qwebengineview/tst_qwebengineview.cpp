@@ -237,30 +237,45 @@ void tst_QWebEngineView::renderHints()
     QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
     QVERIFY(webView.renderHints() & QPainter::TextAntialiasing);
     QVERIFY(webView.renderHints() & QPainter::SmoothPixmapTransform);
+#if QT_DEPRECATED_SINCE(5, 14)
     QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
+#endif
+    QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
 
     webView.setRenderHint(QPainter::Antialiasing, true);
     QVERIFY(webView.renderHints() & QPainter::Antialiasing);
     QVERIFY(webView.renderHints() & QPainter::TextAntialiasing);
     QVERIFY(webView.renderHints() & QPainter::SmoothPixmapTransform);
+#if QT_DEPRECATED_SINCE(5, 14)
     QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
+#endif
+    QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
 
     webView.setRenderHint(QPainter::Antialiasing, false);
     QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
     QVERIFY(webView.renderHints() & QPainter::TextAntialiasing);
     QVERIFY(webView.renderHints() & QPainter::SmoothPixmapTransform);
+#if QT_DEPRECATED_SINCE(5, 14)
     QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
+#endif
+    QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
 
     webView.setRenderHint(QPainter::SmoothPixmapTransform, true);
     QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
     QVERIFY(webView.renderHints() & QPainter::TextAntialiasing);
     QVERIFY(webView.renderHints() & QPainter::SmoothPixmapTransform);
+#if QT_DEPRECATED_SINCE(5, 14)
     QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
+#endif
+    QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
 
     webView.setRenderHint(QPainter::SmoothPixmapTransform, false);
     QVERIFY(webView.renderHints() & QPainter::TextAntialiasing);
     QVERIFY(!(webView.renderHints() & QPainter::SmoothPixmapTransform));
+#if QT_DEPRECATED_SINCE(5, 14)
     QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
+#endif
+    QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
 #endif
 }
 
@@ -480,14 +495,14 @@ void tst_QWebEngineView::microFocusCoordinates()
     evaluateJavaScriptSync(webView.page(), "document.getElementById('input1').focus()");
     QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
 
-    QTRY_VERIFY(webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus).isValid());
-    QVariant initialMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus);
+    QTRY_VERIFY(webView.focusProxy()->inputMethodQuery(Qt::ImCursorRectangle).isValid());
+    QVariant initialMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImCursorRectangle);
 
     evaluateJavaScriptSync(webView.page(), "window.scrollBy(0, 50)");
     QTRY_VERIFY(scrollSpy.count() > 0);
 
-    QTRY_VERIFY(webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus).isValid());
-    QVariant currentMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImMicroFocus);
+    QTRY_VERIFY(webView.focusProxy()->inputMethodQuery(Qt::ImCursorRectangle).isValid());
+    QVariant currentMicroFocus = webView.focusProxy()->inputMethodQuery(Qt::ImCursorRectangle);
 
     QCOMPARE(initialMicroFocus.toRect().translated(QPoint(0,-50)), currentMicroFocus.toRect());
 }
@@ -2989,7 +3004,7 @@ void tst_QWebEngineView::mouseLeave()
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setAlignment(Qt::AlignTop);
     layout->setSpacing(0);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(label);
     layout->addWidget(view);
     containerWidget->setLayout(layout);

@@ -35,6 +35,7 @@
 #include <QtTest/QtTest>
 #include <QtWebEngine/QQuickWebEngineProfile>
 #include <QtWebEngine/QQuickWebEngineScript>
+#include <QtWebEngineCore/QWebEngineFindTextResult>
 #include <QtWebEngineCore/QWebEngineNotification>
 #include <QtWebEngineCore/QWebEngineQuotaRequest>
 #include <QtWebEngineCore/QWebEngineRegisterProtocolHandlerRequest>
@@ -85,6 +86,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QWebEngineQuotaRequest::staticMetaObject
     << &QWebEngineRegisterProtocolHandlerRequest::staticMetaObject
     << &QWebEngineNotification::staticMetaObject
+    << &QWebEngineFindTextResult::staticMetaObject
     ;
 
 static QList<const char *> knownEnumNames = QList<const char *>();
@@ -276,6 +278,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineFileDialogRequest.dialogAccept(QStringList) --> void"
     << "QQuickWebEngineFileDialogRequest.dialogReject() --> void"
     << "QQuickWebEngineFileDialogRequest.mode --> FileMode"
+    << "QWebEngineFindTextResult.numberOfMatches --> int"
+    << "QWebEngineFindTextResult.activeMatchOrdinal --> int"
     << "QQuickWebEngineFormValidationMessageRequest.Hide --> RequestType"
     << "QQuickWebEngineFormValidationMessageRequest.Move --> RequestType"
     << "QQuickWebEngineFormValidationMessageRequest.Show --> RequestType"
@@ -694,6 +698,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.findText(QString) --> void"
     << "QQuickWebEngineView.findText(QString,FindFlags) --> void"
     << "QQuickWebEngineView.findText(QString,FindFlags,QJSValue) --> void"
+    << "QQuickWebEngineView.findTextFinished(QWebEngineFindTextResult) --> void"
     << "QQuickWebEngineView.formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest*) --> void"
     << "QQuickWebEngineView.fullScreenCancelled() --> void"
     << "QQuickWebEngineView.fullScreenRequested(QQuickWebEngineFullScreenRequest) --> void"

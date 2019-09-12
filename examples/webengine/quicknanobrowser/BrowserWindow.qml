@@ -57,7 +57,7 @@ import QtQuick.Controls.Styles 1.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 import QtQuick.Window 2.1
-import QtWebEngine 1.10
+import QtWebEngine 1.11
 
 ApplicationWindow {
     id: browserWindow
@@ -72,6 +72,10 @@ ApplicationWindow {
 
     // Make sure the Qt.WindowFullscreenButtonHint is set on OS X.
     Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
+
+    onCurrentWebViewChanged: {
+        findBar.reset();
+    }
 
     // Create a styleItem to determine the platform.
     // When using style "mac", ToolButtons are not supposed to accept focus.
@@ -136,6 +140,9 @@ ApplicationWindow {
                 fullScreenNotification.hide();
                 currentWebView.triggerWebAction(WebEngineView.ExitFullScreen);
             }
+
+            if (findBar.visible)
+                findBar.visible = false;
         }
     }
     Action {
@@ -186,6 +193,21 @@ ApplicationWindow {
     Action {
         shortcut: StandardKey.Forward
         onTriggered: currentWebView.triggerWebAction(WebEngineView.Forward)
+    }
+    Action {
+        shortcut: StandardKey.Find
+        onTriggered: {
+            if (!findBar.visible)
+                findBar.visible = true;
+        }
+    }
+    Action {
+        shortcut: StandardKey.FindNext
+        onTriggered: findBar.findNext()
+    }
+    Action {
+        shortcut: StandardKey.FindPrevious
+        onTriggered: findBar.findPrevious()
     }
 
     toolBar: ToolBar {
@@ -553,6 +575,19 @@ ApplicationWindow {
                     selection.certificates[0].select();
                 }
 
+                onFindTextFinished: function(result) {
+                    if (!findBar.visible)
+                        findBar.visible = true;
+
+                    findBar.numberOfMatches = result.numberOfMatches;
+                    findBar.activeMatchOrdinal = result.activeMatchOrdinal;
+                }
+
+                onLoadingChanged: function(loadRequest) {
+                    if (loadRequest.status == WebEngineView.LoadStartedStatus)
+                        findBar.reset();
+                }
+
                 Timer {
                     id: reloadTimer
                     interval: 0
@@ -624,6 +659,28 @@ ApplicationWindow {
         downloadView.append(download);
         download.accept();
     }
+
+    FindBar {
+        id: findBar
+        visible: false
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        anchors.top: parent.top
+
+        onFindNext: {
+            if (text)
+                currentWebView && currentWebView.findText(text);
+            else if (!visible)
+                visible = true;
+        }
+        onFindPrevious: {
+            if (text)
+                currentWebView && currentWebView.findText(text, WebEngineView.FindBackward);
+            else if (!visible)
+                visible = true;
+        }
+    }
+
 
     Rectangle {
         id: statusBubble

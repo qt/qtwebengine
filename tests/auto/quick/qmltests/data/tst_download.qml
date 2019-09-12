@@ -53,7 +53,10 @@ TestWebEngineView {
 
     function urlToPath(url) {
         var path = url.toString()
-        path = path.replace(/^(file:\/{2})/,"")
+        if (Qt.platform.os !== "windows")
+            path = path.replace(/^(file:\/{2})/, "")
+        else
+            path = path.replace(/^(file:\/{3})/, "")
         return path
     }
 
@@ -90,14 +93,9 @@ TestWebEngineView {
                 download.cancel()
             } else {
                 totalBytes = download.totalBytes
-                download.downloadDirectory = testDownloadProfile.downloadPath
-                download.downloadFileName = "testfile.zip"
 
-                if (downloadDirectory.length != 0)
-                    download.downloadDirectory = testDownloadProfile.downloadPath + downloadDirectory
-
-                if (downloadFileName.length != 0)
-                    download.downloadFileName = downloadFileName
+                download.downloadDirectory = downloadDirectory.length != 0 ? testDownloadProfile.downloadPath + downloadDirectory : testDownloadProfile.downloadPath
+                download.downloadFileName = downloadFileName.length != 0 ? downloadFileName : "testfile.zip"
 
                 download.accept()
             }
@@ -125,6 +123,9 @@ TestWebEngineView {
             downloadDirectoryChanged = 0
             downloadFileNameChanged = 0
             downloadPathChanged = 0
+            downloadDirectory = ""
+            downloadFileName = ""
+            downloadedPath = ""
         }
 
         function test_downloadRequest() {
@@ -203,8 +204,8 @@ TestWebEngineView {
             tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadInProgress);
             compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + downloadFileName);
             compare(downloadDirectoryChanged, 1);
-            compare(downloadFileNameChanged, 3);
-            compare(downloadPathChanged, 4);
+            compare(downloadFileNameChanged, 1);
+            compare(downloadPathChanged, 2);
             downloadFinishedSpy.wait();
             compare(totalBytes, receivedBytes);
             tryCompare(downloadState, "2", WebEngineDownloadItem.DownloadCompleted);

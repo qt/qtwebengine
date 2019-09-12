@@ -100,6 +100,8 @@
 #include "net/cert_net/cert_net_fetcher_impl.h"
 #endif
 
+#include <mutex>
+
 namespace QtWebEngineCore {
 
 static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first,
@@ -164,7 +166,6 @@ ProfileIODataQt::ProfileIODataQt(ProfileQt *profile)
 #if QT_CONFIG(ssl)
       m_clientCertificateStoreData(new ClientCertificateStoreData),
 #endif
-      m_mutex(QMutex::Recursive),
       m_removerObserver(this),
       m_weakPtrFactory(this)
 {
@@ -243,7 +244,7 @@ void ProfileIODataQt::initializeOnIOThread()
     m_urlRequestContext->set_enable_brotli(base::FeatureList::IsEnabled(features::kBrotliEncoding));
     // this binds factory to io thread
     m_weakPtr = m_weakPtrFactory.GetWeakPtr();
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     generateAllStorage();
     generateJobFactory();
     setGlobalCertificateVerification();
@@ -283,7 +284,7 @@ void ProfileIODataQt::cancelAllUrlRequests()
 void ProfileIODataQt::generateAllStorage()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     generateStorage();
     generateCookieStore();
     generateUserAgent();
@@ -390,7 +391,7 @@ void ProfileIODataQt::generateCookieStore()
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
 
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
 
     // FIXME: Add code to remove the old database.
     m_storage->set_channel_id_service(
@@ -443,7 +444,7 @@ void ProfileIODataQt::generateUserAgent()
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
 
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     m_storage->set_http_user_agent_settings(std::unique_ptr<net::HttpUserAgentSettings>(
         new net::StaticHttpUserAgentSettings(m_httpAcceptLanguage.toStdString(),
                                              m_httpUserAgent.toStdString())));
@@ -455,7 +456,7 @@ void ProfileIODataQt::generateHttpCache()
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
 
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
 
     net::HttpCache::DefaultBackend* main_backend = 0;
     switch (m_httpCacheType) {
@@ -508,7 +509,7 @@ void ProfileIODataQt::generateJobFactory()
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(!m_jobFactory);
 
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     m_updateJobFactory = false;
 
     std::unique_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
@@ -563,7 +564,7 @@ void ProfileIODataQt::regenerateJobFactory()
     Q_ASSERT(m_jobFactory);
     Q_ASSERT(m_baseJobFactory);
 
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     m_updateJobFactory = false;
 
     if (m_customUrlSchemes == m_installedCustomSchemes)
@@ -584,7 +585,7 @@ void ProfileIODataQt::regenerateJobFactory()
 void ProfileIODataQt::setGlobalCertificateVerification()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     if (m_useForGlobalCertificateVerification) {
 #if defined(USE_NSS_CERTS)
         // Set request context used by NSS for OCSP requests.
@@ -623,7 +624,7 @@ void ProfileIODataQt::setFullConfiguration()
 
 void ProfileIODataQt::requestStorageGeneration() {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     if (m_initialized && !m_updateAllStorage) {
         m_updateAllStorage = true;
         createProxyConfig();
@@ -636,7 +637,7 @@ void ProfileIODataQt::requestStorageGeneration() {
 void ProfileIODataQt::createProxyConfig()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     // We must create the proxy config service on the UI loop on Linux because it
     // must synchronously run on the glib message loop. This will be passed to
     // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
@@ -657,7 +658,7 @@ void ProfileIODataQt::updateStorageSettings()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     setFullConfiguration();
 
     base::Token groupId = content::BrowserContext::GetServiceInstanceGroupFor(m_profile);
@@ -672,7 +673,7 @@ void ProfileIODataQt::updateStorageSettings()
 void ProfileIODataQt::updateCookieStore()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     m_persistentCookiesPolicy = m_profileAdapter->persistentCookiesPolicy();
     m_cookiesPath = m_profileAdapter->cookiesPath();
     if (!m_pendingStorageRequestGeneration)
@@ -682,7 +683,7 @@ void ProfileIODataQt::updateCookieStore()
 void ProfileIODataQt::updateUserAgent()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     m_httpAcceptLanguage = m_profileAdapter->httpAcceptLanguage();
     m_httpUserAgent = m_profileAdapter->httpUserAgent();
     if (!m_pendingStorageRequestGeneration)
@@ -692,7 +693,7 @@ void ProfileIODataQt::updateUserAgent()
 void ProfileIODataQt::updateHttpCache()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     m_httpCacheType = m_profileAdapter->httpCacheType();
     m_httpCachePath = m_profileAdapter->httpCachePath();
     m_httpCacheMaxSize = m_profileAdapter->httpCacheMaxSize();
@@ -716,7 +717,7 @@ void ProfileIODataQt::updateHttpCache()
 void ProfileIODataQt::updateJobFactory()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
 
     m_customUrlSchemes = m_profileAdapter->customUrlSchemes();
 
@@ -730,7 +731,7 @@ void ProfileIODataQt::updateJobFactory()
 void ProfileIODataQt::updateRequestInterceptor()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     m_requestInterceptor = m_profileAdapter->requestInterceptor();
     m_hasPageInterceptors = m_profileAdapter->hasPageRequestInterceptor();
     // We in this case do not need to regenerate any Chromium classes.
@@ -772,7 +773,7 @@ bool ProfileIODataQt::canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) 
 void ProfileIODataQt::updateUsedForGlobalCertificateVerification()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    QMutexLocker lock(&m_mutex);
+    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
 
     if (m_useForGlobalCertificateVerification)

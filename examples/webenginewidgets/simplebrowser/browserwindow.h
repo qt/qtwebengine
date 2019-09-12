@@ -88,6 +88,7 @@ private slots:
     void handleWebViewTitleChanged(const QString &title);
     void handleWebActionEnabledChanged(QWebEnginePage::WebAction action, bool enabled);
     void handleDevToolsRequested(QWebEnginePage *source);
+    void handleFindTextFinished(const QWebEngineFindTextResult &result);
 
 private:
     QMenu *createFileMenu(TabWidget *tabWidget);

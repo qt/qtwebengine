@@ -2,8 +2,8 @@ TEMPLATE = aux
 
 !debug_and_release: CONFIG += release
 
-include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-QT_FOR_CONFIG += webenginecore-private
+include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
+QT_FOR_CONFIG += buildtools-private
 
 build_pass|!debug_and_release {
     !qtConfig(webengine-system-ninja): CONFIG(release, debug|release) {

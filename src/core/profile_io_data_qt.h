@@ -177,7 +177,12 @@ private:
     QList<QByteArray> m_customUrlSchemes;
     QList<QByteArray> m_installedCustomSchemes;
     QWebEngineUrlRequestInterceptor* m_requestInterceptor = nullptr;
-    QMutex m_mutex;
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+    QMutex m_mutex{QMutex::Recursive};
+    using QRecursiveMutex = QMutex;
+#else
+    QRecursiveMutex m_mutex;
+#endif
     int m_httpCacheMaxSize = 0;
     bool m_initialized = false;
     bool m_updateAllStorage = false;

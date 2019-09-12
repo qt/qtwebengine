@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include <qlibrary.h>
+#include <qoperatingsystemversion.h>
 #include <qsysinfo.h>
 #include <qt_windows.h>
 #include <Tlhelp32.h>
@@ -80,7 +81,7 @@ public:
     ShcoreDLL()
         : getProcessDpiAwareness(0), setProcessDpiAwareness(0)
     {
-        if (QSysInfo::windowsVersion() < QSysInfo::WV_WINDOWS8_1)
+        if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8_1)
             return;
         library.setFileName(QStringLiteral("SHCore"));
         if (!library.load())

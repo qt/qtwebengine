@@ -64,6 +64,7 @@
 #include "url/gurl.h"
 
 QT_FORWARD_DECLARE_CLASS(QMatrix4x4)
+QT_FORWARD_DECLARE_CLASS(QSslCertificate)
 
 namespace content {
 struct FaviconURL;
@@ -71,6 +72,10 @@ struct FaviconURL;
 
 namespace gfx {
 class ImageSkiaRep;
+}
+
+namespace net {
+class X509Certificate;
 }
 
 namespace QtWebEngineCore {
@@ -290,6 +295,8 @@ inline QStringList fromVector(const std::vector<base::string16> &vector)
 }
 
 FaviconInfo toFaviconInfo(const content::FaviconURL &);
+
+QList<QSslCertificate> toCertificateChain(net::X509Certificate *certificate);
 
 } // namespace QtWebEngineCore
 

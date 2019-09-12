@@ -80,6 +80,7 @@ class QQuickWebEngineSettings;
 class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineTouchHandleProvider;
+class QWebEngineFindTextResult;
 
 QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event);
 
@@ -133,7 +134,6 @@ public:
     void didRunJavaScript(quint64, const QVariant&) override;
     void didFetchDocumentMarkup(quint64, const QString&) override { }
     void didFetchDocumentInnerText(quint64, const QString&) override { }
-    void didFindText(quint64, int) override;
     void didPrintPage(quint64 requestId, QSharedPointer<QByteArray>) override;
     void didPrintPageToPdf(const QString &filePath, bool success) override;
     bool passOnFocus(bool reverse) override;
@@ -170,6 +170,7 @@ public:
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
     void printRequested() override;
     void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegate *newWidgetBase) override;
+    void findTextFinished(const QWebEngineFindTextResult &result) override;
 
     void updateAction(QQuickWebEngineView::WebAction) const;
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
