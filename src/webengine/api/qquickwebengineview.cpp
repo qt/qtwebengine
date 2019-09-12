@@ -296,7 +296,7 @@ void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<Cert
     // mark the object for gc by creating temporary jsvalue
     qmlEngine(q)->newQObject(quickController);
     Q_EMIT q->certificateError(quickController);
-    if (!quickController->deferred() && !quickController->answered())
+    if (!quickController->overridable() || (!quickController->deferred() && !quickController->answered()))
         quickController->rejectCertificate();
     else
         m_certificateErrorControllers.append(errorController);

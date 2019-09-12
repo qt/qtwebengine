@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 class CertificateErrorControllerPrivate {
 public:
-    CertificateErrorControllerPrivate(int cert_error, const net::SSLInfo& ssl_info, const GURL& request_url, content::ResourceType resource_type, bool overridable, bool strict_enforcement, const base::Callback<void(content::CertificateRequestResultType)>& callback);
+    CertificateErrorControllerPrivate(int cert_error, const net::SSLInfo& ssl_info, const GURL& request_url, content::ResourceType resource_type, bool fatal_error, bool strict_enforcement, const base::Callback<void(content::CertificateRequestResultType)>& callback);
 
     void accept(bool accepted);
 
@@ -68,7 +68,7 @@ public:
     QDateTime validStart;
     QDateTime validExpiry;
     CertificateErrorController::ResourceType resourceType;
-    bool overridable;
+    bool fatalError;
     bool strictEnforcement;
     const base::Callback<void(content::CertificateRequestResultType)> callback;
 };
