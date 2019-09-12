@@ -60,7 +60,7 @@ public:
     void release();
 
     // May be used only by GPU thread.
-    static scoped_refptr<CompositorResourceFence> create();
+    static scoped_refptr<CompositorResourceFence> create(std::unique_ptr<gl::GLFence> glFence = nullptr);
 
 private:
     gl::TransferableFence m_sync;

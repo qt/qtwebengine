@@ -72,6 +72,7 @@ class WebContentsAdapter;
 }
 
 QT_BEGIN_NAMESPACE
+class QWebEngineFindTextResult;
 class QWebEngineHistory;
 class QWebEnginePage;
 class QWebEngineProfile;
@@ -127,7 +128,6 @@ public:
     void didRunJavaScript(quint64 requestId, const QVariant& result) override;
     void didFetchDocumentMarkup(quint64 requestId, const QString& result) override;
     void didFetchDocumentInnerText(quint64 requestId, const QString& result) override;
-    void didFindText(quint64 requestId, int matchCount) override;
     void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result) override;
     void didPrintPageToPdf(const QString &filePath, bool success) override;
     bool passOnFocus(bool reverse) override;
@@ -163,6 +163,7 @@ public:
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
     void interceptRequest(QWebEngineUrlRequestInfo &) override;
     void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegate *newWidget) override;
+    void findTextFinished(const QWebEngineFindTextResult &result) override;
 
     QtWebEngineCore::ProfileAdapter *profileAdapter() override;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() override;
@@ -209,6 +210,8 @@ public:
 #if QT_CONFIG(webengine_printing_and_pdf)
     QPrinter *currentPrinter;
 #endif
+
+    QList<QSharedPointer<CertificateErrorController>> m_certificateErrorControllers;
 };
 
 class QContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt

@@ -30,9 +30,9 @@
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QOperatingSystemVersion>
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QScreen>
 #include <QtGui/QSurfaceFormat>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QMainWindow>
@@ -104,7 +104,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 QSize MainWindow::sizeHint() const
 {
-    const QRect desktopRect = QApplication::desktop()->screenGeometry();
+    const QRect desktopRect = QGuiApplication::primaryScreen()->geometry();
     const QSize size = desktopRect.size() * qreal(0.9);
     return size;
 }
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
     MainWindow w;
 
     // Move middle-ish.
-    const QRect desktopRect = QApplication::desktop()->screenGeometry();
+    const QRect desktopRect = QGuiApplication::primaryScreen()->geometry();
     const QSize pos = desktopRect.size() * qreal(0.1);
     w.move(pos.width(), pos.height());
 

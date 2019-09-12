@@ -38,9 +38,16 @@ TestWebEngineView {
     property int matchCount: 0
     property bool findFailed: false
 
+    SignalSpy {
+        id: findTextSpy
+        target: webEngineView
+        signalName: "findTextFinished"
+    }
+
     function clear() {
         findFailed = false
         matchCount = -1
+        findTextSpy.clear()
     }
 
     function findCallbackCalled() { return matchCount != -1 }
@@ -104,6 +111,9 @@ TestWebEngineView {
             webEngineView.findText("Hello", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 1)
             verify(!findFailed)
+            tryCompare(findTextSpy, "count", 1)
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 1)
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 1)
         }
 
         function test_findTextCaseInsensitive() {
@@ -115,6 +125,9 @@ TestWebEngineView {
             webEngineView.findText("heLLo", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 1)
             verify(!findFailed)
+            tryCompare(findTextSpy, "count", 1)
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 1)
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 1)
         }
 
         function test_findTextManyMatches() {
@@ -126,6 +139,9 @@ TestWebEngineView {
             webEngineView.findText("bla", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 100, 20000)
             verify(!findFailed)
+            tryCompare(findTextSpy, "count", 1)
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 100)
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 1)
         }
 
 
@@ -138,6 +154,9 @@ TestWebEngineView {
             webEngineView.findText("heLLo", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 0)
             verify(findFailed)
+            tryCompare(findTextSpy, "count", 1)
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 0)
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 0)
         }
 
         function test_findTextNotFound() {
@@ -149,6 +168,9 @@ TestWebEngineView {
             webEngineView.findText("string-that-is-not-threre", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 0)
             verify(findFailed)
+            tryCompare(findTextSpy, "count", 1)
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 0)
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 0)
         }
 
         function test_findTextAfterNotFound() {
@@ -160,6 +182,9 @@ TestWebEngineView {
             webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 0)
             verify(findFailed)
+            tryCompare(findTextSpy, "count", 1)
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 0)
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 0)
 
             webEngineView.url = Qt.resolvedUrl("test1.html")
             verify(webEngineView.waitForLoadSucceeded())
@@ -168,6 +193,9 @@ TestWebEngineView {
             webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 1)
             verify(!findFailed)
+            tryCompare(findTextSpy, "count", 1)
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 1)
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 1)
         }
 
         function test_findTextInModifiedDOMAfterNotFound() {
@@ -182,6 +210,9 @@ TestWebEngineView {
             webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 0, 20000)
             verify(findFailed)
+            tryCompare(findTextSpy, "count", 1)
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 0)
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 0)
 
             runJavaScript("document.body.innerHTML = 'blahellobla'");
             tryVerify(function() { return getBodyInnerHTML() == "blahellobla"; }, 20000);
@@ -190,6 +221,9 @@ TestWebEngineView {
             webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 1)
             verify(!findFailed)
+            tryCompare(findTextSpy, "count", 1)
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 1)
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 1)
         }
 
         function test_findTextInterruptedByLoad() {
@@ -226,6 +260,56 @@ TestWebEngineView {
             webEngineView.clear();
             webEngineView.findText('New page', findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, 'matchCount', 1)
+        }
+
+        function test_findTextActiveMatchOrdinal() {
+            webEngineView.loadHtml(
+                        "<html><body>" +
+                        "foo bar foo bar foo" +
+                        "</body></html>");
+            verify(webEngineView.waitForLoadSucceeded());
+
+            // Iterate over all "foo" matches.
+            webEngineView.clear();
+            for (var i = 1; i <= 3; ++i) {
+                webEngineView.findText("foo");
+                findTextSpy.wait();
+                compare(findTextSpy.count, i);
+                compare(findTextSpy.signalArguments[i-1][0].numberOfMatches, 3);
+                compare(findTextSpy.signalArguments[i-1][0].activeMatchOrdinal, i);
+            }
+
+            // The last match is followed by the fist one.
+            webEngineView.clear();
+            webEngineView.findText("foo");
+            findTextSpy.wait();
+            compare(findTextSpy.count, 1);
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 3);
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 1);
+
+            // The first match is preceded by the last one.
+            webEngineView.clear();
+            webEngineView.findText("foo", WebEngineView.FindBackward);
+            findTextSpy.wait();
+            compare(findTextSpy.count, 1);
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 3);
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 3);
+
+            // Finding another word resets the activeMatchOrdinal.
+            webEngineView.clear();
+            webEngineView.findText("bar");
+            findTextSpy.wait();
+            compare(findTextSpy.count, 1);
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 2);
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 1);
+
+            // If no match activeMatchOrdinal is 0.
+            webEngineView.clear();
+            webEngineView.findText("bla");
+            findTextSpy.wait();
+            compare(findTextSpy.count, 1);
+            compare(findTextSpy.signalArguments[0][0].numberOfMatches, 0);
+            compare(findTextSpy.signalArguments[0][0].activeMatchOrdinal, 0);
         }
     }
 }

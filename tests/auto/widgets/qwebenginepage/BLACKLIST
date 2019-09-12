@@ -7,3 +7,6 @@ windows
 [runJavaScriptFromSlot]
 osx
 linux
+
+[fullScreenRequested]
+windows

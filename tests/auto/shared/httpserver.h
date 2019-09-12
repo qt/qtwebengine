@@ -59,19 +59,22 @@ class HttpServer : public QObject
     Q_OBJECT
 public:
     explicit HttpServer(QObject *parent = nullptr);
+    explicit HttpServer(QTcpServer *server, const QString &protocol, QObject *parent = nullptr);
+
+    ~HttpServer() override;
 
     // Must be called to start listening.
     //
     // Returns true if a TCP port has been successfully bound.
-    Q_REQUIRED_RESULT bool start();
+    Q_INVOKABLE Q_REQUIRED_RESULT bool start();
 
     // Stops listening and performs final error checks.
-    Q_REQUIRED_RESULT bool stop();
+    Q_INVOKABLE Q_REQUIRED_RESULT bool stop();
 
-    void setExpectError(bool b);
+    Q_INVOKABLE void setExpectError(bool b);
 
     // Full URL for given relative path
-    QUrl url(const QString &path = QStringLiteral("/")) const;
+    Q_INVOKABLE QUrl url(const QString &path = QStringLiteral("/")) const;
 
 Q_SIGNALS:
     // Emitted after a HTTP request has been successfully parsed.
@@ -81,7 +84,7 @@ private Q_SLOTS:
     void handleNewConnection();
 
 private:
-    QTcpServer m_tcpServer;
+    QTcpServer *m_tcpServer;
     QUrl m_url;
     bool m_error = false;
     bool m_expectingError = false;

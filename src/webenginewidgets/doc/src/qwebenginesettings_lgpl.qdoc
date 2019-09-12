@@ -22,12 +22,14 @@
 // by its LGPL license. Documentation written from scratch for new methods should be
 // placed inline in the code as usual.
 
+#if QT_DEPRECATED_SINCE(5, 5)
 /*!
     \fn static QWebEngineSettings *QWebEngineSettings::globalSettings()
     \obsolete
 
     Use defaultSettings() instead.
 */
+#endif
 
 /*!
     \class QWebEngineSettings

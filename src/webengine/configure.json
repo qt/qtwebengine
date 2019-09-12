@@ -1,9 +1,20 @@
 {
     "module": "webengine",
+    "condition": "module.webenginecore && features.webengine-qml",
     "depends": [
         "webenginecore-private"
     ],
+    "commandline": {
+        "options": {
+            "webengine-qml": "boolean"
+        }
+    },
     "features": {
+        "webengine-qml": {
+            "label": "Support Qt WebEngine Qml",
+            "purpose": "Provides WebEngine Qml support.",
+            "output": [ "privateFeature" ]
+        },
         "webengine-ui-delegates": {
             "label": "UI Delegates",
             "section": "WebEngine",
@@ -18,8 +29,8 @@
     "summary": [
         {
             "section": "Qt WebEngineQml",
-            "condition": "features.webengine-qml",
             "entries": [
+                "webengine-qml",
                 "webengine-ui-delegates",
                 "webengine-testsupport"
             ]

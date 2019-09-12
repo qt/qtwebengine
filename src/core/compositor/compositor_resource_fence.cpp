@@ -146,12 +146,12 @@ void CompositorResourceFence::release()
 }
 
 // static
-scoped_refptr<CompositorResourceFence> CompositorResourceFence::create()
+scoped_refptr<CompositorResourceFence> CompositorResourceFence::create(std::unique_ptr<gl::GLFence> glFence)
 {
-    if (gl::GLContext::GetCurrent() && gl::GLFence::IsSupported()) {
-        std::unique_ptr<gl::GLFence> glFence{gl::GLFence::Create()};
+    if (!glFence && gl::GLContext::GetCurrent() && gl::GLFence::IsSupported())
+        glFence = gl::GLFence::Create();
+    if (glFence)
         return base::MakeRefCounted<CompositorResourceFence>(glFence->Transfer());
-    }
     return nullptr;
 }
 
