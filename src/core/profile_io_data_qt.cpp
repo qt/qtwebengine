@@ -261,8 +261,7 @@ void ProfileIODataQt::initializeOnUIThread()
     ProtocolHandlerRegistry* protocolHandlerRegistry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(m_profile);
     DCHECK(protocolHandlerRegistry);
-    m_protocolHandlerInterceptor =
-        protocolHandlerRegistry->CreateJobInterceptorFactory();
+    m_protocolHandlerRegistryIOThreadDelegate = protocolHandlerRegistry->io_thread_delegate();
     m_cookieDelegate = new CookieMonsterDelegateQt();
     m_cookieDelegate->setClient(m_profile->profileAdapter()->cookieStore());
     createProxyConfig();
@@ -543,11 +542,6 @@ void ProfileIODataQt::generateJobFactory()
     }
 
     m_requestInterceptors.clear();
-
-    if (m_protocolHandlerInterceptor) {
-        m_protocolHandlerInterceptor->Chain(std::move(topJobFactory));
-        topJobFactory = std::move(m_protocolHandlerInterceptor);
-    }
 
     m_jobFactory = std::move(topJobFactory);
 

@@ -42,6 +42,7 @@
 
 #include "profile_adapter.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "extensions/buildflags/buildflags.h"
@@ -104,6 +105,11 @@ public:
     extensions::ExtensionSystemQt* GetExtensionSystem();
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
+    ProtocolHandlerRegistry::IOThreadDelegate *protocolHandlerRegistryIOThreadDelegate()
+    {
+        return m_protocolHandlerRegistryIOThreadDelegate.get();
+    }
+
     void initializeOnIOThread();
     void initializeOnUIThread(); // runs on ui thread
     void shutdownOnUIThread(); // runs on ui thread
@@ -153,7 +159,8 @@ private:
     std::unique_ptr<content::ResourceContext> m_resourceContext;
     std::unique_ptr<net::URLRequestContext> m_urlRequestContext;
     std::unique_ptr<net::HttpNetworkSession> m_httpNetworkSession;
-    std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> m_protocolHandlerInterceptor;
+    scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>
+            m_protocolHandlerRegistryIOThreadDelegate;
     std::unique_ptr<net::DhcpPacFileFetcherFactory> m_dhcpPacFileFetcherFactory;
     std::unique_ptr<net::HttpAuthPreferences> m_httpAuthPreferences;
     std::unique_ptr<net::URLRequestJobFactory> m_jobFactory;

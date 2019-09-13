@@ -207,6 +207,16 @@ public:
             network::mojom::URLLoaderFactoryRequest *factory_request,
             network::mojom::URLLoaderFactory *&out_factory) override;
 
+    std::vector<std::unique_ptr<content::URLLoaderThrottle>> CreateURLLoaderThrottlesOnIO(
+            const network::ResourceRequest &request, content::ResourceContext *resource_context,
+            const base::RepeatingCallback<content::WebContents *()> &wc_getter,
+            content::NavigationUIData *navigation_ui_data, int frame_tree_node_id) override;
+
+    std::vector<std::unique_ptr<content::URLLoaderThrottle>> CreateURLLoaderThrottles(
+            const network::ResourceRequest &request, content::BrowserContext *browser_context,
+            const base::RepeatingCallback<content::WebContents *()> &wc_getter,
+            content::NavigationUIData *navigation_ui_data, int frame_tree_node_id) override;
+
     static std::string getUserAgent();
 
     std::string GetUserAgent() const override { return getUserAgent(); }

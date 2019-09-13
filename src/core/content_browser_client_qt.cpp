@@ -45,6 +45,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #endif
@@ -766,6 +767,71 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
                                             is_main_frame,
                                             has_user_gesture));
     return true;
+}
+
+namespace {
+// Copied from chrome/browser/chrome_content_browser_client.cc
+template<class HandlerRegistry>
+class ProtocolHandlerThrottle : public content::URLLoaderThrottle
+{
+public:
+    explicit ProtocolHandlerThrottle(const HandlerRegistry &protocol_handler_registry)
+        : protocol_handler_registry_(protocol_handler_registry)
+    {
+    }
+    ~ProtocolHandlerThrottle() override = default;
+
+    void WillStartRequest(network::ResourceRequest *request, bool *defer) override
+    {
+        TranslateUrl(&request->url);
+    }
+
+    void WillRedirectRequest(net::RedirectInfo *redirect_info,
+                             const network::ResourceResponseHead &response_head, bool *defer,
+                             std::vector<std::string> *to_be_removed_headers,
+                             net::HttpRequestHeaders *modified_headers) override
+    {
+        TranslateUrl(&redirect_info->new_url);
+    }
+
+private:
+    void TranslateUrl(GURL *url)
+    {
+        if (!protocol_handler_registry_->IsHandledProtocol(url->scheme()))
+            return;
+        GURL translated_url = protocol_handler_registry_->Translate(*url);
+        if (!translated_url.is_empty())
+            *url = translated_url;
+    }
+
+    HandlerRegistry protocol_handler_registry_;
+};
+} // namespace
+
+std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+ContentBrowserClientQt::CreateURLLoaderThrottlesOnIO(
+        const network::ResourceRequest & /*request*/, content::ResourceContext *resource_context,
+        const base::RepeatingCallback<content::WebContents *()> & /*wc_getter*/,
+        content::NavigationUIData * /*navigation_ui_data*/, int /*frame_tree_node_id*/)
+{
+    std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
+    ProfileIODataQt *ioData = ProfileIODataQt::FromResourceContext(resource_context);
+    result.push_back(std::make_unique<ProtocolHandlerThrottle<
+                             scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>>>(
+            ioData->protocolHandlerRegistryIOThreadDelegate()));
+    return result;
+}
+
+std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+ContentBrowserClientQt::CreateURLLoaderThrottles(
+        const network::ResourceRequest &request, content::BrowserContext *browser_context,
+        const base::RepeatingCallback<content::WebContents *()> &wc_getter,
+        content::NavigationUIData *navigation_ui_data, int frame_tree_node_id)
+{
+    std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
+    result.push_back(std::make_unique<ProtocolHandlerThrottle<ProtocolHandlerRegistry *>>(
+            ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)));
+    return result;
 }
 
 std::unique_ptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegate(
