@@ -1490,8 +1490,15 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev)
     webEvent.SetType(webEventTypeForEvent(ev));
     webEvent.SetModifiers(modifiersForEvent(ev));
     webEvent.SetTimeStamp(base::TimeTicks::Now());
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
     webEvent.SetPositionInWidget(ev->x(), ev->y());
     webEvent.SetPositionInScreen(ev->globalX(), ev->globalY());
+#else
+    webEvent.SetPositionInWidget(static_cast<float>(ev->position().x()),
+                                 static_cast<float>(ev->position().y()));
+    webEvent.SetPositionInScreen(static_cast<float>(ev->globalPosition().x()),
+                                 static_cast<float>(ev->globalPosition().y()));
+#endif
 
     webEvent.wheel_ticks_x = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
     webEvent.wheel_ticks_y = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
@@ -1520,8 +1527,15 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
 #endif
 
     webEvent.SetTimeStamp(base::TimeTicks::Now());
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
     webEvent.SetPositionInWidget(ev->x(), ev->y());
     webEvent.SetPositionInScreen(ev->globalX(), ev->globalY());
+#else
+    webEvent.SetPositionInWidget(static_cast<float>(ev->position().x()),
+                                 static_cast<float>(ev->position().y()));
+    webEvent.SetPositionInScreen(static_cast<float>(ev->globalPosition().x()),
+                                 static_cast<float>(ev->globalPosition().y()));
+#endif
 
     webEvent.wheel_ticks_x += static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
     webEvent.wheel_ticks_y += static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
