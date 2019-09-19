@@ -214,6 +214,7 @@ public:
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_MACOSX)
 
+    void UpdateNeedsBeginFramesInternal();
 
     // Overridden from content::BrowserAccessibilityDelegate
     content::BrowserAccessibilityManager* CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
@@ -269,6 +270,7 @@ private:
 
     const bool m_enableViz;
     bool m_visible;
+    bool m_needsBeginFrames;
     DelegatedFrameHostClientQt m_delegatedFrameHostClient{this};
     std::unique_ptr<content::DelegatedFrameHost> m_delegatedFrameHost;
     std::unique_ptr<ui::Layer> m_rootLayer;

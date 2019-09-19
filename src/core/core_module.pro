@@ -63,7 +63,7 @@ CONFIG *= no_smart_library_merge
 osx {
     LIBS_PRIVATE += -Wl,-force_load,$${api_library_path}$${QMAKE_DIR_SEP}lib$${api_library_name}.a
 } else: win32 {
-    !isDeveloperBuild() {
+    !qtConfig(webengine-developer-build) {
         # Remove unused functions and data in debug non-developer builds, because the binaries will
         # be smaller in the shipped packages.
         QMAKE_LFLAGS += /OPT:REF

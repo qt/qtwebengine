@@ -280,6 +280,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_touchMotionStarted(false)
     , m_enableViz(features::IsVizDisplayCompositorEnabled())
     , m_visible(false)
+    , m_needsBeginFrames(false)
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
     , m_imeInProgress(false)
@@ -1741,8 +1742,8 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
 
 void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
 {
-    DCHECK(!m_enableViz);
-    m_compositor->setNeedsBeginFrames(needs_begin_frames);
+    m_needsBeginFrames = needs_begin_frames;
+    UpdateNeedsBeginFramesInternal();
 }
 
 content::RenderFrameHost *RenderWidgetHostViewQt::getFocusedFrameHost()
@@ -1777,6 +1778,8 @@ ui::TextInputType RenderWidgetHostViewQt::getTextInputType() const
 
 void RenderWidgetHostViewQt::SetWantsAnimateOnlyBeginFrames()
 {
+    if (m_enableViz)
+        m_delegatedFrameHost->SetWantsAnimateOnlyBeginFrames();
 }
 
 viz::SurfaceId RenderWidgetHostViewQt::GetCurrentSurfaceId() const
@@ -1875,6 +1878,14 @@ void RenderWidgetHostViewQt::synchronizeVisualProperties(const base::Optional<vi
 std::unique_ptr<content::SyntheticGestureTarget> RenderWidgetHostViewQt::CreateSyntheticGestureTarget()
 {
     return nullptr;
+}
+
+void RenderWidgetHostViewQt::UpdateNeedsBeginFramesInternal()
+{
+    if (m_enableViz)
+        m_delegatedFrameHost->SetNeedsBeginFrames(m_needsBeginFrames);
+    else
+        m_compositor->setNeedsBeginFrames(m_needsBeginFrames);
 }
 
 } // namespace QtWebEngineCore

@@ -1,5 +1,6 @@
+include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
 include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-QT_FOR_CONFIG += webenginecore-private
+QT_FOR_CONFIG += buildtools-private webenginecore-private core-private gui-private
 
 TEMPLATE = aux
 

@@ -61,6 +61,7 @@ SkColor DelegatedFrameHostClientQt::DelegatedFrameHostGetGutterColor() const
 void DelegatedFrameHostClientQt::OnBeginFrame(base::TimeTicks frame_time)
 {
     p->host()->ProgressFlingIfNeeded(frame_time);
+    p->UpdateNeedsBeginFramesInternal();
 }
 
 void DelegatedFrameHostClientQt::OnFrameTokenChanged(uint32_t frame_token)

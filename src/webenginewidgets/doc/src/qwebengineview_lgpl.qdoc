@@ -393,5 +393,5 @@
 
     \snippet qtwebengine_qwebengineview_snippet.cpp 6
 
-    \sa QWebEngineSettings::globalSettings()
+    \sa QWebEngineSettings::defaultSettings()
 */

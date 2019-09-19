@@ -1,3 +1,5 @@
+include($$QTWEBENGINE_ROOT/src/buildtools/config/support.pri)
+
 defineReplace(getConfigDir) {
   CONFIG(release, debug|release):return("release")
   return("debug")
@@ -70,9 +72,9 @@ defineReplace(gnPath) {
 }
 
 defineReplace(gnArgs) {
-    linux: include($$QTWEBENGINE_ROOT/src/core/config/linux.pri)
-    macos: include($$QTWEBENGINE_ROOT/src/core/config/mac_osx.pri)
-    win32: include($$QTWEBENGINE_ROOT/src/core/config/windows.pri)
+    linux: include($$QTWEBENGINE_ROOT/src/buildtools/config/linux.pri)
+    macos: include($$QTWEBENGINE_ROOT/src/buildtools/config/mac_osx.pri)
+    win32: include($$QTWEBENGINE_ROOT/src/buildtools/config/windows.pri)
     isEmpty(gn_args): error(No gn_args found please make sure you have valid configuration.)
     return($$gn_args)
 }
@@ -94,16 +96,6 @@ defineReplace(gnOS) {
     linux: return(linux)
     error(Unsupported platform)
     return(unknown)
-}
-
-defineTest(isDeveloperBuild) {
-    qtConfig(private_tests): return(true) # enabled for developer-build
-    return(false)
-}
-
-defineTest(skipBuild) {
-    skipBuildReason = "$$skipBuildReason $${EOL}$$1"
-    export(skipBuildReason)
 }
 
 defineReplace(pkgConfigHostExecutable) {

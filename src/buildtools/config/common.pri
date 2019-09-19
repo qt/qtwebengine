@@ -1,6 +1,7 @@
 # Shared configuration for all our supported platforms
+include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
 include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-QT_FOR_CONFIG += webenginecore
+QT_FOR_CONFIG += buildtools-private webenginecore webenginecore-private
 
 gn_args += \
     use_qt=true \
@@ -28,10 +29,15 @@ gn_args += \
     safe_browsing_mode=0 \
     optimize_webui=false
 
-!win32: gn_args += \
-    use_jumbo_build=true \
-    jumbo_file_merge_limit=8 \
-    jumbo_build_excluded="[\"browser\"]"
+greaterThan(QMAKE_JUMBO_MERGE_LIMIT,0) {
+    gn_args += \
+        use_jumbo_build=true \
+        jumbo_file_merge_limit=$$QMAKE_JUMBO_MERGE_LIMIT
+}
+
+!greaterThan(QMAKE_JUMBO_MERGE_LIMIT,8) {
+    gn_args += jumbo_build_excluded="[\"browser\"]"
+}
 
 qtConfig(webengine-printing-and-pdf) {
     gn_args += enable_basic_printing=true enable_print_preview=true
@@ -73,11 +79,11 @@ precompile_header {
     gn_args += enable_precompiled_headers=false
 }
 
-CONFIG(release, debug|release):!isDeveloperBuild() {
+CONFIG(release, debug|release):!qtConfig(webengine-developer-build) {
     gn_args += is_official_build=true
 } else {
     gn_args += is_official_build=false
-    !isDeveloperBuild(): gn_args += is_unsafe_developer_build=false
+    !qtConfig(webengine-developer-build): gn_args += is_unsafe_developer_build=false
 }
 
 CONFIG(release, debug|release) {
@@ -116,7 +122,7 @@ optimize_size: gn_args += optimize_for_size=true
     sanitize_undefined: gn_args += is_ubsan=true is_ubsan_vptr=true
 }
 
-qtConfig(webengine-v8-snapshot) {
+qtConfig(webengine-v8-snapshot):qtConfig(webengine-v8-snapshot-support) {
     gn_args += v8_use_snapshot=true
 } else {
     gn_args += v8_use_snapshot=false

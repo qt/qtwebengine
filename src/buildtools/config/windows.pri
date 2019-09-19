@@ -22,7 +22,7 @@ clang_cl {
     gn_args += is_clang=false use_lld=false
 }
 
-isDeveloperBuild() {
+qtConfig(webengine-developer-build) {
     gn_args += \
         is_win_fastlink=true
 
