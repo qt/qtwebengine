@@ -507,8 +507,6 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(enableFeatures, features::kAllowContentInitiatedDataUrlNavigations.name);
     // The video-capture service is not functioning at this moment (since 69)
     appendToFeatureList(disableFeatures, features::kMojoVideoCapture.name);
-    // Breaks WebEngineNewViewRequest.userInitiated API (since 73)
-    appendToFeatureList(disableFeatures, features::kUserActivationV2.name);
 
     // We do not yet support the network-service, but it is enabled by default since 75.
     appendToFeatureList(disableFeatures, network::features::kNetworkService.name);
