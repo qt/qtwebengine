@@ -164,10 +164,12 @@ public:
         qmlRegisterUncreatableType<QWebEngineRegisterProtocolHandlerRequest>(uri, 1, 7, "RegisterProtocolHandlerRequest",
                                                                              msgUncreatableType("RegisterProtocolHandlerRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineAction>(uri, 1, 8, "WebEngineAction", msgUncreatableType("WebEngineAction"));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         qmlRegisterUncreatableType<QQuickWebEngineClientCertificateSelection>(uri, 1, 9, "WebEngineClientCertificateSelection",
                                                                               msgUncreatableType("WebEngineClientCertificateSelection"));
         qmlRegisterUncreatableType<QQuickWebEngineClientCertificateOption>(uri, 1, 9, "WebEngineClientCertificateOption",
                                                                            msgUncreatableType("WebEngineClientCertificateOption"));
+#endif
         qmlRegisterUncreatableType<QWebEngineNotification>(uri, 1, 9, "WebEngineNotification", msgUncreatableType("WebEngineNotification"));
         qmlRegisterUncreatableType<QQuickWebEngineTooltipRequest>(uri, 1, 10, "TooltipRequest",
                                                                   msgUncreatableType("TooltipRequest"));

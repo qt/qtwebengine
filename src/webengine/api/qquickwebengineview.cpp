@@ -297,7 +297,7 @@ void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<Cert
     // mark the object for gc by creating temporary jsvalue
     qmlEngine(q)->newQObject(quickController);
     Q_EMIT q->certificateError(quickController);
-    if (!quickController->deferred() && !quickController->answered())
+    if (!quickController->overridable() || (!quickController->deferred() && !quickController->answered()))
         quickController->rejectCertificate();
     else
         m_certificateErrorControllers.append(errorController);
@@ -1152,9 +1152,7 @@ void QQuickWebEngineViewPrivate::updateAdapter()
     adapter->setClient(this);
     if (wasInitialized) {
         if (!m_html.isEmpty())
-            adapter->setContent(m_html.toUtf8(), defaultMimeType, m_url);
-        else if (m_url.isValid())
-            adapter->load(m_url);
+            adapter->setContent(m_html.toUtf8(), defaultMimeType, activeUrl);
         else if (activeUrl.isValid())
             adapter->load(activeUrl);
         else

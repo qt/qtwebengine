@@ -56,11 +56,13 @@
 #include <QWebEngineProfile>
 #include <QWebEngineView>
 
-class WebEnginePage : public QWebEnginePage {
+class WebEnginePage : public QWebEnginePage
+{
 public:
     WebEnginePage(QWidget *parent) : QWebEnginePage(parent) { }
 
-    bool acceptNavigationRequest(const QUrl &url, NavigationType, bool) override {
+    bool acceptNavigationRequest(const QUrl &url, NavigationType, bool) override
+    {
         if (url.scheme() != "https")
             return true;
         QDesktopServices::openUrl(url);
@@ -81,16 +83,15 @@ int main(int argc, char *argv[])
 
     QObject::connect(view.page(), &QWebEnginePage::featurePermissionRequested,
                      [&] (const QUrl &origin, QWebEnginePage::Feature feature) {
-        if (feature != QWebEnginePage::Notifications)
-            return;
-        view.page()->setFeaturePermission(origin, feature, QWebEnginePage::PermissionGrantedByUser);
-    });
+                         if (feature != QWebEnginePage::Notifications)
+                             return;
+                         view.page()->setFeaturePermission(origin, feature, QWebEnginePage::PermissionGrantedByUser);
+                     });
 
     auto profile = view.page()->profile();
     auto popup = new NotificationPopup(&view);
-    profile->setNotificationPresenter([&] (std::unique_ptr<QWebEngineNotification> notification) {
-        popup->present(notification);
-    });
+    profile->setNotificationPresenter([&] (std::unique_ptr<QWebEngineNotification> notification)
+                                      { popup->present(notification); });
 
     view.resize(640, 480);
     view.show();

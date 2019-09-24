@@ -91,6 +91,7 @@ private Q_SLOTS:
     void userScripts();
     void javascriptClipboard_data();
     void javascriptClipboard();
+    void setProfile();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -1146,6 +1147,19 @@ void tst_QQuickWebEngineView::javascriptClipboard()
     QTRY_COMPARE(evaluateJavaScriptSync(view, "accessGranted").toBool(), pasteResult);
     QTRY_COMPARE(evaluateJavaScriptSync(view, "accessDenied").toBool(), !javascriptCanAccessClipboard || !javascriptCanPaste);
     QTRY_COMPARE(evaluateJavaScriptSync(view, "accessPrompt").toBool(), false);
+}
+
+void tst_QQuickWebEngineView::setProfile() {
+    QSignalSpy loadSpy(webEngineView(), SIGNAL(loadingChanged(QQuickWebEngineLoadRequest*)));
+    webEngineView()->setUrl(urlFromTestPath("html/basic_page.html"));
+    QVERIFY(waitForLoadSucceeded(webEngineView()));
+    QCOMPARE(loadSpy.size(), 2);
+    webEngineView()->setUrl(urlFromTestPath("html/basic_page2.html"));
+    QVERIFY(waitForLoadSucceeded(webEngineView()));
+    QCOMPARE(loadSpy.size(), 4);
+    QQuickWebEngineProfile *profile = new QQuickWebEngineProfile();
+    webEngineView()->setProfile(profile);
+    QTRY_COMPARE(webEngineView()->url() ,urlFromTestPath("html/basic_page2.html"));
 }
 
 QTEST_MAIN(tst_QQuickWebEngineView)

@@ -250,7 +250,7 @@ bool QQuickWebEngineSettings::pluginsEnabled() const
 
     Tells the web engine whether fullscreen is supported in this application or not.
 
-    Enabled by default.
+    Disabled by default.
 */
 bool QQuickWebEngineSettings::fullScreenSupportEnabled() const
 {
