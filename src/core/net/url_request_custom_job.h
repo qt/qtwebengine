@@ -64,6 +64,7 @@ public:
     int ReadRawData(net::IOBuffer *buf, int buf_size)  override;
     bool GetMimeType(std::string *mimeType) const override;
     bool GetCharset(std::string *charset) override;
+    void GetResponseInfo(net::HttpResponseInfo* info) override;
     bool IsRedirectResponse(GURL* location, int* http_status_code, bool* insecure_scheme_was_upgraded) override;
 
 protected:

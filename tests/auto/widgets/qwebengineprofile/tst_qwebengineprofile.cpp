@@ -40,6 +40,12 @@
 #include <QtWebEngineWidgets/qwebengineview.h>
 #include <QtWebEngineWidgets/qwebenginedownloaditem.h>
 
+#if QT_CONFIG(webengine_webchannel)
+#include <QWebChannel>
+#endif
+
+#include <map>
+
 class tst_QWebEngineProfile : public QObject
 {
     Q_OBJECT
@@ -58,6 +64,7 @@ private Q_SLOTS:
     void urlSchemeHandlerStreaming();
     void urlSchemeHandlerRequestHeaders();
     void urlSchemeHandlerInstallation();
+    void urlSchemeHandlerXhrStatus();
     void customUserAgent();
     void httpAcceptLanguage();
     void downloadItem();
@@ -566,6 +573,109 @@ void tst_QWebEngineProfile::urlSchemeHandlerInstallation()
     profile.installUrlSchemeHandler("tst", &handler2);
     QCOMPARE(profile.urlSchemeHandler("tst"), &handler);
     profile.removeUrlScheme("tst");
+}
+
+#if QT_CONFIG(webengine_webchannel)
+class XhrStatusHost : public QObject
+{
+    Q_OBJECT
+public:
+    std::map<QUrl, int> requests;
+
+    bool isReady()
+    {
+        static const auto sig = QMetaMethod::fromSignal(&XhrStatusHost::load);
+        return isSignalConnected(sig);
+    }
+
+Q_SIGNALS:
+    void load(QUrl url);
+
+public Q_SLOTS:
+    void loadFinished(QUrl url, int status)
+    {
+        requests[url] = status;
+    }
+
+private:
+};
+
+class XhrStatusUrlSchemeHandler : public QWebEngineUrlSchemeHandler
+{
+public:
+    void requestStarted(QWebEngineUrlRequestJob *job)
+    {
+        QString path = job->requestUrl().path();
+        if (path == "/") {
+            QBuffer *buffer = new QBuffer(job);
+            buffer->open(QBuffer::ReadWrite);
+            buffer->write(QByteArrayLiteral(R"(
+<html>
+  <body>
+    <script src="qwebchannel.js"></script>
+    <script>
+      new QWebChannel(qt.webChannelTransport, (channel) => {
+        const host = channel.objects.host;
+        host.load.connect((url) => {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = () => { host.loadFinished(url, xhr.status); };
+          xhr.onerror = () => { host.loadFinished(url, -1); };
+          xhr.open("GET", url, true);
+          xhr.send();
+        });
+      });
+    </script>
+  </body>
+</html>
+)"));
+            buffer->seek(0);
+            job->reply("text/html", buffer);
+        } else if (path == "/qwebchannel.js") {
+            QFile *file = new QFile(":/qtwebchannel/qwebchannel.js", job);
+            file->open(QFile::ReadOnly);
+            job->reply("application/javascript", file);
+        } else if (path == "/ok") {
+            QBuffer *buffer = new QBuffer(job);
+            buffer->buffer() = QByteArrayLiteral("ok");
+            job->reply("text/plain", buffer);
+        } else if (path == "/redirect") {
+            QUrl url = job->requestUrl();
+            url.setPath("/ok");
+            job->redirect(url);
+        } else if (path == "/fail") {
+            job->fail(QWebEngineUrlRequestJob::RequestFailed);
+        } else {
+            job->fail(QWebEngineUrlRequestJob::UrlNotFound);
+        }
+    }
+};
+#endif
+
+void tst_QWebEngineProfile::urlSchemeHandlerXhrStatus()
+{
+#if QT_CONFIG(webengine_webchannel)
+    XhrStatusUrlSchemeHandler handler;
+    XhrStatusHost host;
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    QWebChannel channel;
+    channel.registerObject("host", &host);
+    profile.installUrlSchemeHandler("aviancarrier", &handler);
+    page.setWebChannel(&channel);
+    page.load(QUrl("aviancarrier:/"));
+    QTRY_VERIFY(host.isReady());
+    host.load(QUrl("aviancarrier:/ok"));
+    host.load(QUrl("aviancarrier:/redirect"));
+    host.load(QUrl("aviancarrier:/fail"));
+    host.load(QUrl("aviancarrier:/notfound"));
+    QTRY_COMPARE(host.requests.size(), 4u);
+    QCOMPARE(host.requests[QUrl("aviancarrier:/ok")], 200);
+    QCOMPARE(host.requests[QUrl("aviancarrier:/redirect")], 200);
+    QCOMPARE(host.requests[QUrl("aviancarrier:/fail")], -1);
+    QCOMPARE(host.requests[QUrl("aviancarrier:/notfound")], -1);
+#else
+    QSKIP("No QtWebChannel");
+#endif
 }
 
 void tst_QWebEngineProfile::customUserAgent()

@@ -40,10 +40,12 @@
 #include "url_request_custom_job.h"
 #include "url_request_custom_job_proxy.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
+#include "net/http/http_util.h"
 
 #include <QIODevice>
 
@@ -134,6 +136,22 @@ bool URLRequestCustomJob::GetCharset(std::string* charset)
         return true;
     }
     return false;
+}
+
+void URLRequestCustomJob::GetResponseInfo(HttpResponseInfo* info)
+{
+    if (m_error)
+        return;
+
+    std::string headers;
+    if (m_redirect.is_valid()) {
+        headers += "HTTP/1.1 303 See Other\n";
+        headers += base::StringPrintf("Location: %s\n", m_redirect.spec().c_str());
+    } else {
+        headers += "HTTP/1.1 200 OK\n";
+    }
+
+    info->headers = new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
 }
 
 bool URLRequestCustomJob::IsRedirectResponse(GURL* location, int* http_status_code, bool* /*insecure_scheme_was_upgraded*/)
