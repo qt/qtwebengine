@@ -661,7 +661,8 @@ bool QWebEngineProfile::visitedLinksContainsUrl(const QUrl &url) const
     Returns the collection of scripts that are injected into all pages that share
     this profile.
 
-    \sa QWebEngineScriptCollection, QWebEngineScript, QWebEnginePage::scripts()
+    \sa QWebEngineScriptCollection, QWebEngineScript, QWebEnginePage::scripts(),
+        {Script Injection}
 */
 QWebEngineScriptCollection *QWebEngineProfile::scripts() const
 {

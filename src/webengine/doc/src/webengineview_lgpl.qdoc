@@ -396,7 +396,7 @@
     runJavaScript("document.title", function(result) { console.log(result); });
     \endcode
 
-    Only "plain data" can be returned from JavaScript as the result value.
+    Only plain data can be returned from JavaScript as the result value.
     Supported data types include all of the JSON data types as well as, for
     example, \c{Date} and \c{ArrayBuffer}. Unsupported data types include, for
     example, \c{Function} and \c{Promise}.
@@ -407,7 +407,8 @@
     \warning Do not execute lengthy routines in the callback function, because it might block the
     rendering of the web content.
 
-    See WebEngineView::userScripts for an alternative API to inject scripts.
+    For more information about injecting scripts, see \l {Script Injection}.
+    For an alternative way to inject scripts, see WebEngineView::userScripts.
 */
 
 /*!
@@ -444,14 +445,13 @@
 
     To clear the search highlight, just pass an empty string.
 
-    The \a resultCallback must take a boolean parameter. It will be called with
-    a value of true if the \a subString was found; otherwise the callback value
-    will be false.
+    The \a resultCallback must take an integer parameter. It will be called with
+    the number of found occurrences of the \a subString.
 
     \code
-    findText("Qt", WebEngineView.FindCaseSensitively, function(success) {
-        if (success)
-            console.log("Qt was found!");
+    findText("Qt", WebEngineView.FindCaseSensitively, function(matchCount) {
+        if (matchCount > 0)
+            console.log("'Qt' tokens found:", matchCount);
     });
     \endcode
 

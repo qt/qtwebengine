@@ -4,9 +4,5 @@ osx
 [mouseMovementProperties]
 windows
 
-[runJavaScriptFromSlot]
-osx
-linux
-
 [fullScreenRequested]
 windows

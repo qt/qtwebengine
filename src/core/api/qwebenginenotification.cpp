@@ -48,6 +48,22 @@ QT_BEGIN_NAMESPACE
 using QtWebEngineCore::UserNotificationController;
 
 /*!
+    \qmltype WebEngineNotification
+    \instantiates QWebEngineNotification
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 1.9
+    \brief Encapsulates the data of an HTML5 web notification.
+
+    This type contains the information and API for HTML5 desktop and push notifications.
+
+    Web engine notifications are passed to the user in the
+    \l WebEngineProfile::presentNotification() signal.
+
+    For more information about how to handle web notification, see the
+    \l{WebEngine Notifications Example}{Notification Example}.
+*/
+
+/*!
     \class QWebEngineNotification
     \brief The QWebEngineNotification class encapsulates the data of an HTML5 web notification.
     \since 5.13
@@ -56,10 +72,11 @@ using QtWebEngineCore::UserNotificationController;
 
     This class contains the information and API for HTML5 desktop and push notifications.
 
-    Web engine notifications are passed to the user in the
-    \l QWebEngineProfile::setNotificationPresenter() and
-    \l QQuickWebEngineProfile::presentNotification() calls and the
-    \l WebEngineProfile::presentNotification() signal.
+    Web engine notifications are passed to the user through the custom handler
+    provided with the \l QWebEngineProfile::setNotificationPresenter() call.
+
+    For more information about how to handle web notification, see the
+    \l{WebEngine Notifications Example}{Notification Example}.
 */
 
 class QWebEngineNotificationPrivate : public UserNotificationController::Client {
@@ -115,6 +132,10 @@ bool QWebEngineNotification::matches(const QWebEngineNotification *other) const
 }
 
 /*!
+    \qmlproperty bool WebEngineNotification::title
+    \brief The title of the notification.
+*/
+/*!
     \property QWebEngineNotification::title
     \brief The title of the notification.
     \sa message()
@@ -125,6 +146,10 @@ QString QWebEngineNotification::title() const
     return d ? d->controller->title() : QString();
 }
 
+/*!
+    \qmlproperty string WebEngineNotification::message
+    \brief The body of the notification message.
+*/
 /*!
     \property QWebEngineNotification::message
     \brief The body of the notification message.
@@ -137,6 +162,13 @@ QString QWebEngineNotification::message() const
     return d ? d->controller->body() : QString();
 }
 
+/*!
+    \qmlproperty string WebEngineNotification::tag
+    \brief The tag of the notification message.
+
+    New notifications that have the same tag and origin URL as an existing
+    one should replace or update the old notification with the same tag.
+*/
 /*!
     \property QWebEngineNotification::tag
     \brief The tag of the notification message.
@@ -152,6 +184,10 @@ QString QWebEngineNotification::tag() const
     return d ? d->controller->tag() : QString();
 }
 
+/*!
+    \qmlproperty url WebEngineNotification::origin
+    \brief The URL of the page sending the notification.
+*/
 /*!
     \property QWebEngineNotification::origin
     \brief The URL of the page sending the notification.
@@ -175,6 +211,12 @@ QImage QWebEngineNotification::icon() const
 }
 
 /*!
+    \qmlproperty string WebEngineNotification::language
+    \brief The primary language for the notification's title and body.
+
+    Its value is a valid BCP 47 language tag, or the empty string.
+*/
+/*!
     \property QWebEngineNotification::language
     \brief The primary language for the notification's title and body.
 
@@ -189,6 +231,14 @@ QString QWebEngineNotification::language() const
 }
 
 /*!
+    \qmlproperty enumeration WebEngineNotification::direction
+    \brief The text direction for the notification's title and body.
+
+    \value Qt.LeftToRight Items are laid out from left to right.
+    \value Qt.RightToLeft Items are laid out from right to left.
+    \value Qt.LayoutDirectionAuto The direction to lay out items is determined automatically.
+*/
+/*!
     \property QWebEngineNotification::direction
     \brief The text direction for the notification's title and body.
     \sa title(), message()
@@ -199,6 +249,12 @@ Qt::LayoutDirection QWebEngineNotification::direction() const
     return d ? d->controller->direction() : Qt::LayoutDirectionAuto;
 }
 
+/*!
+    \qmlmethod void WebEngineNotification::show()
+    Creates and dispatches a JavaScript \e {show event} on notification.
+
+    Should be called by the notification platform when the notification has been shown to user.
+*/
 /*!
     Creates and dispatches a JavaScript \e {show event} on notification.
 
@@ -212,6 +268,12 @@ void QWebEngineNotification::show() const
 }
 
 /*!
+    \qmlmethod void WebEngineNotification::click()
+    Creates and dispatches a JavaScript \e {click event} on notification.
+
+    Should be called by the notification platform when the notification is activated by the user.
+*/
+/*!
     Creates and dispatches a JavaScript \e {click event} on notification.
 
     Should be called by the notification platform when the notification is activated by the user.
@@ -223,6 +285,13 @@ void QWebEngineNotification::click() const
         d->controller->notificationClicked();
 }
 
+/*!
+    \qmlmethod void WebEngineNotification::close()
+    Creates and dispatches a JavaScript \e {close event} on notification.
+
+    Should be called by the notification platform when the notification is closed,
+    either by the underlying platform or by the user.
+*/
 /*!
     Creates and dispatches a JavaScript \e {close event} on notification.
 
@@ -236,6 +305,12 @@ void QWebEngineNotification::close() const
         d->controller->notificationClosed();
 }
 
+/*!
+    \qmlsignal WebEngineNotification::closed()
+
+    This signal is emitted when the web page calls close steps for the notification,
+    and it no longer needs to be shown.
+*/
 /*!
     \fn void QWebEngineNotification::closed()
 
