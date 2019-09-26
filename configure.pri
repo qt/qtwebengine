@@ -26,7 +26,10 @@ defineTest(isPythonVersionSupported) {
 defineTest(qtConfTest_detectJumboBuild) {
     mergeLimit = $$eval(config.input.merge_limit)
     mergeLimit = $$find(mergeLimit, "\\d")
-    isEmpty(mergeLimit): mergeLimit = 0
+    isEmpty(mergeLimit) {
+       win32: mergeLimit = 0
+       else: mergeLimit = 8
+    }
     qtLog("Setting jumbo build merge batch limit to $${mergeLimit}.")
     $${1}.merge_limit = $$mergeLimit
     export($${1}.merge_limit)
@@ -42,9 +45,10 @@ defineTest(qtConfReport_skipBuildWarning) {
 }
 
 defineTest(qtConfReport_jumboBuild) {
-    mergeLimit = $$eval(config.input.merge_limit)
-    mergeLimit = $$find(mergeLimit, "\d")
-    isEmpty(mergeLimit): mergeLimit = "no"
+    mergeLimit = $$eval(cache.webengine-jumbo-build.merge_limit)
+    isEmpty(mergeLimit)|!greaterThan(mergeLimit,0) {
+       mergeLimit = "no"
+    }
     qtConfReportPadded($${1}, $$mergeLimit)
 }
 
