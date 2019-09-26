@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \qmlmodule QtWebEngine 1.9
+    \qmlmodule QtWebEngine 1.10
     \title Qt WebEngine QML Types
     \brief Provides QML types for rendering web content within a QML application.
     \ingroup qtwebengine-modules
@@ -36,7 +36,7 @@
     your .qml file:
 
     \badcode
-    import QtWebEngine 1.9
+    import QtWebEngine 1.10
     \endcode
 
     To link against the module, add the following QT variable to your qmake .pro
