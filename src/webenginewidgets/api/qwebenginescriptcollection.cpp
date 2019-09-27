@@ -55,6 +55,8 @@ using QtWebEngineCore::UserScript;
     Use QWebEnginePage::scripts() and QWebEngineProfile::scripts() to access
     the collection of scripts associated with a single page or a
     number of pages sharing the same profile.
+
+    \sa {Script Injection}
 */
 
 /*!

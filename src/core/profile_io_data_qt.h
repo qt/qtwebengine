@@ -56,6 +56,7 @@ class ClientCertStore;
 class DhcpPacFileFetcherFactory;
 class HttpAuthPreferences;
 class HttpNetworkSession;
+class HostResolver;
 class NetworkDelegate;
 class ProxyConfigService;
 class URLRequestContext;
@@ -157,6 +158,7 @@ private:
     std::unique_ptr<net::HttpAuthPreferences> m_httpAuthPreferences;
     std::unique_ptr<net::URLRequestJobFactory> m_jobFactory;
     std::unique_ptr<net::TransportSecurityPersister> m_transportSecurityPersister;
+    std::unique_ptr<net::HostResolver> m_hostResolver;
     base::WeakPtr<ProfileIODataQt> m_weakPtr;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;

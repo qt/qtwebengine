@@ -239,9 +239,11 @@ extensions::ExtensionSystemQt* ProfileIODataQt::GetExtensionSystem()
 void ProfileIODataQt::initializeOnIOThread()
 {
     m_networkDelegate.reset(new NetworkDelegateQt(this));
+    m_hostResolver = net::HostResolver::CreateStandaloneResolver(nullptr);
     m_urlRequestContext.reset(new net::URLRequestContext());
     m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
     m_urlRequestContext->set_enable_brotli(base::FeatureList::IsEnabled(features::kBrotliEncoding));
+    m_urlRequestContext->set_host_resolver(m_hostResolver.get());
     // this binds factory to io thread
     m_weakPtr = m_weakPtrFactory.GetWeakPtr();
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
@@ -338,11 +340,6 @@ void ProfileIODataQt::generateStorage()
     ct_verifier->AddLogs(ct_logs);
     m_storage->set_cert_transparency_verifier(std::move(ct_verifier));
     m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::DefaultCTPolicyEnforcer()));
-//    static std::unique_ptr<net::HostResolverManager> s_hostResolverManager =
-//            std::make_unique<net::HostResolverManager>(net::HostResolver::Options(), nullptr);
-//    m_storage->set_host_resolver(net::HostResolver::CreateResolver(s_hostResolverManager.get()));
-    m_storage->set_host_resolver(net::HostResolver::CreateStandaloneResolver(nullptr));
-
     m_storage->set_ssl_config_service(std::make_unique<net::SSLConfigServiceDefaults>());
     if (!m_httpAuthPreferences) {
         m_httpAuthPreferences.reset(new net::HttpAuthPreferences());
