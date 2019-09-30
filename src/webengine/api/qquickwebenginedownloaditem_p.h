@@ -137,10 +137,10 @@ public:
     Q_PROPERTY(bool isPaused READ isPaused NOTIFY isPausedChanged REVISION 5 FINAL)
     Q_PROPERTY(bool isSavePageDownload READ isSavePageDownload CONSTANT REVISION 6 FINAL)
     Q_PROPERTY(QQuickWebEngineView *view READ view CONSTANT REVISION 7 FINAL)
-    Q_PROPERTY(QUrl url READ url CONSTANT REVISION 8 FINAL)
-    Q_PROPERTY(QString suggestedFileName READ suggestedFileName CONSTANT REVISION 8 FINAL)
-    Q_PROPERTY(QString downloadDirectory READ downloadDirectory WRITE setDownloadDirectory NOTIFY downloadDirectoryChanged REVISION 8 FINAL)
-    Q_PROPERTY(QString downloadFileName READ downloadFileName WRITE setDownloadFileName NOTIFY downloadFileNameChanged REVISION 8 FINAL)
+    Q_PROPERTY(QUrl url READ url CONSTANT REVISION 10 FINAL)
+    Q_PROPERTY(QString suggestedFileName READ suggestedFileName CONSTANT REVISION 10 FINAL)
+    Q_PROPERTY(QString downloadDirectory READ downloadDirectory WRITE setDownloadDirectory NOTIFY downloadDirectoryChanged REVISION 10 FINAL)
+    Q_PROPERTY(QString downloadFileName READ downloadFileName WRITE setDownloadFileName NOTIFY downloadFileNameChanged REVISION 10 FINAL)
 
     Q_INVOKABLE void accept();
     Q_INVOKABLE void cancel();
@@ -181,8 +181,8 @@ Q_SIGNALS:
     Q_REVISION(4) void interruptReasonChanged();
     Q_REVISION(5) void isFinishedChanged();
     Q_REVISION(5) void isPausedChanged();
-    Q_REVISION(8) void downloadDirectoryChanged();
-    Q_REVISION(8) void downloadFileNameChanged();
+    Q_REVISION(10) void downloadDirectoryChanged();
+    Q_REVISION(10) void downloadFileNameChanged();
 
 private:
     QQuickWebEngineDownloadItem(QQuickWebEngineDownloadItemPrivate*, QObject *parent = 0);
