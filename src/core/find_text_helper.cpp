@@ -135,7 +135,7 @@ bool FindTextHelper::isFindTextInProgress() const
 }
 
 void FindTextHelper::handleFindReply(content::WebContents *source, int requestId, int numberOfMatches,
-                                     const gfx::Rect &selectionRect, int activeMatchOrdinal, bool finalUpdate)
+                                     const gfx::Rect &selectionRect, int activeMatch, bool finalUpdate)
 {
     Q_UNUSED(selectionRect);
 
@@ -146,7 +146,7 @@ void FindTextHelper::handleFindReply(content::WebContents *source, int requestId
 
     Q_ASSERT(m_currentFindRequestId == requestId);
     m_lastCompletedFindRequestId = requestId;
-    m_viewClient->findTextFinished(QWebEngineFindTextResult(numberOfMatches, activeMatchOrdinal));
+    m_viewClient->findTextFinished(QWebEngineFindTextResult(numberOfMatches, activeMatch));
     invokeResultCallback(requestId, numberOfMatches);
 }
 

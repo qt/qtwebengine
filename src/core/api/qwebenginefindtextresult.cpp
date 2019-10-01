@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
 class QWebEngineFindTextResultPrivate : public QSharedData {
 public:
     int numberOfMatches = 0;
-    int activeMatchOrdinal = 0;
+    int activeMatch = 0;
 };
 
 /*!
@@ -53,6 +53,18 @@ public:
     \since 5.14
 
     \inmodule QtWebEngineCore
+
+    The string search can be initiated by the \l QWebEnginePage::findText() or
+    \l{WebEngineView::findText()}{WebEngineView.findText()} method. The results of the search
+    are highlighted in the view. The details of this result are passed as a
+    QWebEngineFindTextResult object that can be used to show a status message,
+    such as "2 of 2 matches". For example:
+
+    \code
+    QObject::connect(view.page(), &QWebEnginePage::findTextFinished, [](const QWebEngineFindTextResult &result) {
+        qInfo() << result.activeMatch() << "of" << result.numberOfMatches() << "matches";
+    });
+    \endcode
 
     Results are passed to the user in the
     \l QWebEnginePage::findTextFinished() and
@@ -67,11 +79,11 @@ QWebEngineFindTextResult::QWebEngineFindTextResult()
 
 /*! \internal
 */
-QWebEngineFindTextResult::QWebEngineFindTextResult(int numberOfMatches, int activeMatchOrdinal)
+QWebEngineFindTextResult::QWebEngineFindTextResult(int numberOfMatches, int activeMatch)
     : d(new QWebEngineFindTextResultPrivate)
 {
     d->numberOfMatches = numberOfMatches;
-    d->activeMatchOrdinal = activeMatchOrdinal;
+    d->activeMatch = activeMatch;
 }
 
 /*! \internal
@@ -103,12 +115,12 @@ int QWebEngineFindTextResult::numberOfMatches() const
 }
 
 /*!
-    \property QWebEngineFindTextResult::activeMatchOrdinal
+    \property QWebEngineFindTextResult::activeMatch
     \brief The index of the currently highlighted match.
 */
-int QWebEngineFindTextResult::activeMatchOrdinal() const
+int QWebEngineFindTextResult::activeMatch() const
 {
-    return d->activeMatchOrdinal;
+    return d->activeMatch;
 }
 
 QT_END_NAMESPACE

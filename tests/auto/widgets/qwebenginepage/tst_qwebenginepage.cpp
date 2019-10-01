@@ -999,7 +999,7 @@ void tst_QWebEnginePage::findTextResult()
         if (findTextSpy.count() != 1)
             return QVector<int>({-1, -1});
         auto r = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
-        return QVector<int>({ r.numberOfMatches(), r.activeMatchOrdinal() });
+        return QVector<int>({ r.numberOfMatches(), r.activeMatch() });
     };
 
     // findText will abort in blink if the view has an empty size.
@@ -1104,7 +1104,7 @@ void tst_QWebEnginePage::findTextActiveMatchOrdinal()
         QTRY_COMPARE(findTextSpy.count(), 1);
         result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
         QCOMPARE(result.numberOfMatches(), 3);
-        QCOMPARE(result.activeMatchOrdinal(), i);
+        QCOMPARE(result.activeMatch(), i);
     }
 
     // The last match is followed by the fist one.
@@ -1112,28 +1112,28 @@ void tst_QWebEnginePage::findTextActiveMatchOrdinal()
     QTRY_COMPARE(findTextSpy.count(), 1);
     result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
     QCOMPARE(result.numberOfMatches(), 3);
-    QCOMPARE(result.activeMatchOrdinal(), 1);
+    QCOMPARE(result.activeMatch(), 1);
 
     // The first match is preceded by the last one.
     m_view->page()->findText("foo", QWebEnginePage::FindBackward);
     QTRY_COMPARE(findTextSpy.count(), 1);
     result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
     QCOMPARE(result.numberOfMatches(), 3);
-    QCOMPARE(result.activeMatchOrdinal(), 3);
+    QCOMPARE(result.activeMatch(), 3);
 
-    // Finding another word resets the activeMatchOrdinal.
+    // Finding another word resets the activeMatch.
     m_view->page()->findText("bar", 0);
     QTRY_COMPARE(findTextSpy.count(), 1);
     result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
     QCOMPARE(result.numberOfMatches(), 2);
-    QCOMPARE(result.activeMatchOrdinal(), 1);
+    QCOMPARE(result.activeMatch(), 1);
 
-    // If no match activeMatchOrdinal is 0.
+    // If no match activeMatch is 0.
     m_view->page()->findText("bla", 0);
     QTRY_COMPARE(findTextSpy.count(), 1);
     result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
     QCOMPARE(result.numberOfMatches(), 0);
-    QCOMPARE(result.activeMatchOrdinal(), 0);
+    QCOMPARE(result.activeMatch(), 0);
 }
 
 static QWindow *findNewTopLevelWindow(const QWindowList &oldTopLevelWindows)
