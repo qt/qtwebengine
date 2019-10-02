@@ -2671,16 +2671,13 @@ void QContextMenuBuilder::addMenuItem(ContextMenuItem menuItem)
 
     switch (menuItem) {
     case ContextMenuItem::Back:
-        action = new QAction(QIcon::fromTheme(QStringLiteral("go-previous")), QWebEnginePage::tr("&Back"), m_menu);
-        QObject::connect(action, &QAction::triggered, thisRef->d_ptr->view, &QWebEngineView::back);
+        action = thisRef->action(QWebEnginePage::Back);
         break;
     case ContextMenuItem::Forward:
-        action = new QAction(QIcon::fromTheme(QStringLiteral("go-next")), QWebEnginePage::tr("&Forward"), m_menu);
-        QObject::connect(action, &QAction::triggered, thisRef->d_ptr->view, &QWebEngineView::forward);
+        action = thisRef->action(QWebEnginePage::Forward);
         break;
     case ContextMenuItem::Reload:
-        action = new QAction(QIcon::fromTheme(QStringLiteral("view-refresh")), QWebEnginePage::tr("&Reload"), m_menu);
-        QObject::connect(action, &QAction::triggered, thisRef->d_ptr->view, &QWebEngineView::reload);
+        action = thisRef->action(QWebEnginePage::Reload);
         break;
     case ContextMenuItem::Cut:
         action = thisRef->action(QWebEnginePage::Cut);
