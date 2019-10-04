@@ -90,7 +90,7 @@ public:
     void ignoreCertificateError();
     bool answered() const;
 
-    QList<QSslCertificate> chain() const;
+    QList<QSslCertificate> certificateChain() const;
 
 private:
     friend class QWebEnginePagePrivate;

@@ -79,7 +79,7 @@ public:
     QUrl url;
     bool overridable;
     QString errorDescription;
-    QList<QSslCertificate> chain;
+    QList<QSslCertificate> certificateChain;
 
     bool answered = false, deferred = false;
     QWeakPointer<CertificateErrorController> controller;
@@ -107,7 +107,7 @@ QWebEngineCertificateError::QWebEngineCertificateError(const QSharedPointer<Cert
                                               controller->overridable(), controller->errorString()))
 {
     d->controller = controller;
-    d->chain = controller->chain();
+    d->certificateChain = controller->certificateChain();
 }
 
 QWebEngineCertificateError::QWebEngineCertificateError(const QWebEngineCertificateError &) = default;
@@ -255,9 +255,9 @@ bool QWebEngineCertificateError::answered() const
 
     Chain starts with the peer's immediate certificate and ending with the CA's certificate.
 */
-QList<QSslCertificate> QWebEngineCertificateError::chain() const
+QList<QSslCertificate> QWebEngineCertificateError::certificateChain() const
 {
-    return d->chain;
+    return d->certificateChain;
 }
 
 QT_END_NAMESPACE
