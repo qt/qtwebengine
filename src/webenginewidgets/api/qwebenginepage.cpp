@@ -2543,7 +2543,7 @@ const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
   \value  Discarded
   Very low resource usage state where the entire browsing context is discarded.
 
-  \sa lifecycleState, {WebEngine Lifecycle Example}
+  \sa lifecycleState, {Page Lifecycle API}, {WebEngine Lifecycle Example}
 */
 
 /*!
@@ -2565,7 +2565,7 @@ const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
   These are the only hard limits on the lifecycle state, but see also
   \l{recommendedState} for the recommended soft limits.
 
-  \sa recommendedState, {WebEngine Lifecycle Example}
+  \sa recommendedState, {Page Lifecycle API}, {WebEngine Lifecycle Example}
 */
 
 QWebEnginePage::LifecycleState QWebEnginePage::lifecycleState() const
@@ -2591,7 +2591,7 @@ void QWebEnginePage::setLifecycleState(LifecycleState state)
   playback or loss of HTML form input. Setting the lifecycle state to a higher
   resource state is however completely safe.
 
-  \sa lifecycleState
+  \sa lifecycleState, {Page Lifecycle API}, {WebEngine Lifecycle Example}
 */
 
 QWebEnginePage::LifecycleState QWebEnginePage::recommendedState() const
