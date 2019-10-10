@@ -1253,16 +1253,21 @@ public:
         load(QUrl("qrc:///resources/content.html"));
     }
 
-    void jsGetUserMedia(const QString & constraints)
+    void jsGetMedia(const QString &call)
     {
         evaluateJavaScriptSync(this,
             QStringLiteral(
                 "var promiseFulfilled = false;"
                 "var promiseRejected = false;"
-                "navigator.mediaDevices.getUserMedia(%1)"
+                "navigator.mediaDevices.%1"
                 ".then(stream => { promiseFulfilled = true})"
                 ".catch(err => { promiseRejected = true})")
-            .arg(constraints));
+            .arg(call));
+    }
+
+    void jsGetUserMedia(const QString &constraints)
+    {
+        jsGetMedia(QStringLiteral("getUserMedia(%1)").arg(constraints));
     }
 
     bool jsPromiseFulfilled()
@@ -1319,32 +1324,34 @@ private:
 
 void tst_QWebEnginePage::getUserMediaRequest_data()
 {
-    QTest::addColumn<QString>("constraints");
+    QTest::addColumn<QString>("call");
     QTest::addColumn<QWebEnginePage::Feature>("feature");
 
     QTest::addRow("device audio")
-        << "{audio: true}" << QWebEnginePage::MediaAudioCapture;
+        << "getUserMedia({audio: true})" << QWebEnginePage::MediaAudioCapture;
     QTest::addRow("device video")
-        << "{video: true}" << QWebEnginePage::MediaVideoCapture;
+        << "getUserMedia({video: true})" << QWebEnginePage::MediaVideoCapture;
     QTest::addRow("device audio+video")
-        << "{audio: true, video: true}" << QWebEnginePage::MediaAudioVideoCapture;
+        << "getUserMedia({audio: true, video: true})" << QWebEnginePage::MediaAudioVideoCapture;
     QTest::addRow("desktop video")
-        << "{video: { mandatory: { chromeMediaSource: 'desktop' }}}"
+        << "getUserMedia({video: { mandatory: { chromeMediaSource: 'desktop' }}})"
         << QWebEnginePage::DesktopVideoCapture;
     QTest::addRow("desktop audio+video")
-        << "{audio: { mandatory: { chromeMediaSource: 'desktop' }}, video: { mandatory: { chromeMediaSource: 'desktop' }}}"
+        << "getUserMedia({audio: { mandatory: { chromeMediaSource: 'desktop' }}, video: { mandatory: { chromeMediaSource: 'desktop' }}})"
         << QWebEnginePage::DesktopAudioVideoCapture;
+    QTest::addRow("display video")
+        << "getDisplayMedia()" << QWebEnginePage::DesktopVideoCapture;
 }
 
 void tst_QWebEnginePage::getUserMediaRequest()
 {
-    QFETCH(QString, constraints);
+    QFETCH(QString, call);
     QFETCH(QWebEnginePage::Feature, feature);
 
     GetUserMediaTestPage page;
+    QWebEngineView view;
     if (feature == QWebEnginePage::DesktopVideoCapture || feature == QWebEnginePage::DesktopAudioVideoCapture) {
         // Desktop capture needs to be on a desktop.
-        QWebEngineView view;
         view.setPage(&page);
         view.resize(640, 480);
         view.show();
@@ -1355,7 +1362,7 @@ void tst_QWebEnginePage::getUserMediaRequest()
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
 
     // 1. Rejecting request on C++ side should reject promise on JS side.
-    page.jsGetUserMedia(constraints);
+    page.jsGetMedia(call);
     QTRY_VERIFY(page.gotFeatureRequest(feature));
     page.rejectPendingRequest();
     QTRY_VERIFY(!page.jsPromiseFulfilled() && page.jsPromiseRejected());
@@ -1365,13 +1372,13 @@ void tst_QWebEnginePage::getUserMediaRequest()
     // deeper in the content layer we cannot guarantee that the promise will
     // always be fulfilled, however in this case an error should be returned to
     // JS instead of leaving the Promise in limbo.
-    page.jsGetUserMedia(constraints);
+    page.jsGetMedia(call);
     QTRY_VERIFY(page.gotFeatureRequest(feature));
     page.acceptPendingRequest();
     QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
 
     // 3. Media feature permissions are not remembered.
-    page.jsGetUserMedia(constraints);
+    page.jsGetMedia(call);
     QTRY_VERIFY(page.gotFeatureRequest(feature));
     page.acceptPendingRequest();
     QTRY_VERIFY(page.jsPromiseFulfilled() || page.jsPromiseRejected());
