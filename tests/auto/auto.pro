@@ -1,9 +1,9 @@
 TEMPLATE = subdirs
 
-SUBDIRS = quick
+qtHaveModule(webengine) {
+    SUBDIRS += quick
+}
 
 qtHaveModule(webenginewidgets) {
-    SUBDIRS += widgets
-# core tests depend on widgets for now
-    SUBDIRS += core
+    SUBDIRS += core widgets
 }

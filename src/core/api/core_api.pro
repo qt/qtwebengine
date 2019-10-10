@@ -65,13 +65,6 @@ SOURCES = \
     qwebengineurlscheme.cpp \
     qwebengineurlschemehandler.cpp
 
-### Qt6 Remove this workaround
-unix:!isEmpty(QMAKE_LFLAGS_VERSION_SCRIPT):!static {
-    CONFIG -= warning_clean
-    SOURCES += qtbug-60565.cpp \
-               qtbug-61521.cpp
-}
-
 msvc {
     # Create a list of object files that can be used as response file for the linker.
     # This is done to simulate -whole-archive on MSVC.

@@ -196,8 +196,8 @@ void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink:
     if (!renderView)
         return;
 
-    QList<uint64_t> scriptsToRun = m_viewUserScriptMap.value(0).toList();
-    scriptsToRun.append(m_viewUserScriptMap.value(renderView).toList());
+    QList<uint64_t> scriptsToRun = m_viewUserScriptMap.value(0).values();
+    scriptsToRun.append(m_viewUserScriptMap.value(renderView).values());
 
     for (uint64_t id : qAsConst(scriptsToRun)) {
         const UserScriptData &script = m_scripts.value(id);

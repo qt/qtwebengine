@@ -526,7 +526,7 @@ void tst_QWebEngineProfile::urlSchemeHandlerRequestHeaders()
 
     QWebEngineProfile profile;
     profile.installUrlSchemeHandler("myscheme", &handler);
-    profile.setRequestInterceptor(&interceptor);
+    profile.setUrlRequestInterceptor(&interceptor);
 
     QWebEnginePage page(&profile);
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));

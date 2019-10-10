@@ -1,5 +1,6 @@
+include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
 include($$QTWEBENGINE_OUT_ROOT/src/core/qtwebenginecore-config.pri)
-QT_FOR_CONFIG += webenginecore webenginecore-private
+QT_FOR_CONFIG += buildtools-private webenginecore webenginecore-private
 
 # NOTE: The TARGET, QT, QT_PRIVATE variables are used in both core_module.pro and core_gyp_generator.pro
 # gyp/ninja will take care of the compilation, qmake/make will finish with linking and install.
