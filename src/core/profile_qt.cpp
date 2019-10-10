@@ -272,6 +272,7 @@ net::URLRequestContextGetter *ProfileQt::CreateRequestContext(
 
     m_profileIOData->setRequestContextData(protocol_handlers, std::move(request_interceptors));
     m_profileIOData->updateStorageSettings();
+    m_profileIOData->updateRequestInterceptor();
     m_urlRequestContextGetter = new URLRequestContextGetterQt(m_profileIOData.get());
     return m_urlRequestContextGetter.get();
 }

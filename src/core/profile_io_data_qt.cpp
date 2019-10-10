@@ -614,7 +614,6 @@ void ProfileIODataQt::setRequestContextData(content::ProtocolHandlerMap *protoco
 void ProfileIODataQt::setFullConfiguration()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    m_requestInterceptor = m_profileAdapter->requestInterceptor();
     m_persistentCookiesPolicy = m_profileAdapter->persistentCookiesPolicy();
     m_cookiesPath = m_profileAdapter->cookiesPath();
     m_channelIdPath = m_profileAdapter->channelIdPath();
