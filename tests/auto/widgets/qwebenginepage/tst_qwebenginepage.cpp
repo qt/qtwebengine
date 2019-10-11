@@ -1051,6 +1051,12 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
     auto jsViewPosition = [&view]() {
         QLatin1String script("(function() { return [window.screenX, window.screenY]; })()");
         QVariantList posList = evaluateJavaScriptSync(view.page(), script).toList();
+
+        if (posList.count() != 2) {
+            qWarning("jsViewPosition failed.");
+            return QPoint();
+        }
+
         return QPoint(posList.at(0).toInt(), posList.at(1).toInt());
     };
 
