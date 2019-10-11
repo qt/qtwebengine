@@ -44,6 +44,7 @@
 #include "net/base/completion_once_callback.h"
 #include "qwebengineurlrequestinfo.h"
 #include <QPointer>
+#include <QVariant>
 
 class GURL;
 
