@@ -51,7 +51,7 @@
         \li \l{Spellchecker}
         \li \l{Touch}
         \li \l{View Source}
-        \li \l{WebRTC}
+        \li \l{webrtc_feature}{WebRTC}
         \li \l{Web Notifications}
     \endlist
 
@@ -599,6 +599,7 @@
 
     Support for this feature was added in Qt 5.8.0.
 
+    \target webrtc_feature
     \section1 WebRTC
 
     WebRTC provides browsers with Real-Time Communications (RTC) capabilities
