@@ -1190,6 +1190,8 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
     QTRY_VERIFY(QGuiApplication::topLevelWindows().contains(popup));
     QTRY_VERIFY(!popup->position().isNull());
     QCOMPARE(popupPos + offset, popup->position());
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(), QPoint(1, 1));
+    QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
 }
 
 void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
