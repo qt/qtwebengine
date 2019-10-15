@@ -178,7 +178,7 @@ host_build {
     } else {
         gn_args += use_system_harfbuzz=false
     }
-    !qtConfig(webengine-system-glib): gn_args += use_glib=false
+    gn_args += use_glib=false
     qtConfig(webengine-pulseaudio) {
         gn_args += use_pulseaudio=true
     } else {
