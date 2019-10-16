@@ -187,10 +187,10 @@ public:
                 m_rootNode->appendChild(childBookmarkNode);
             }
 
-            const unsigned long titleLength = FPDFBookmark_GetTitle(bookmark, nullptr, 0);
+            const int titleLength = int(FPDFBookmark_GetTitle(bookmark, nullptr, 0));
 
             QVector<ushort> titleBuffer(titleLength);
-            FPDFBookmark_GetTitle(bookmark, titleBuffer.data(), titleBuffer.length());
+            FPDFBookmark_GetTitle(bookmark, titleBuffer.data(), quint32(titleBuffer.length()));
 
             const FPDF_DEST dest = FPDFBookmark_GetDest(document, bookmark);
             const int pageNumber = FPDFDest_GetDestPageIndex(document, dest);
