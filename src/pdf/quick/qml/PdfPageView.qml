@@ -42,7 +42,6 @@ Rectangle {
     id: paper
     width: image.width
     height: image.height
-    transformOrigin: Item.TopLeft
 
     // public API
     // TODO 5.15: required property

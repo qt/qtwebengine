@@ -101,6 +101,20 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
+                    shortcut: "Ctrl+L"
+                    icon.source: "resources/rotate-left.svg"
+                    onTriggered: pageView.rotation -= 90
+                }
+            }
+            ToolButton {
+                action: Action {
+                    shortcut: "Ctrl+R"
+                    icon.source: "resources/rotate-right.svg"
+                    onTriggered: pageView.rotation += 90
+                }
+            }
+            ToolButton {
+                action: Action {
                     shortcut: StandardKey.MoveToPreviousPage
                     icon.source: "resources/go-previous-view-page.svg"
                     enabled: pageView.currentPage > 0
