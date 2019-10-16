@@ -1530,7 +1530,7 @@
 
 /*!
     \qmlproperty enumeration WebEngineView::LifecycleState
-    \since QtWebEngine 1.11
+    \since QtWebEngine 1.10
 
     This enum describes the lifecycle state of the page:
 
@@ -1541,12 +1541,12 @@
     \value  WebEngineView.LifecycleState.Discarded
     Very low resource usage state where the entire browsing context is discarded.
 
-    \sa lifecycleState
+    \sa lifecycleState, {Page Lifecycle API}, {WebEngine Lifecycle Example}
 */
 
 /*!
     \qmlproperty LifecycleState WebEngineView::lifecycleState
-    \since QtWebEngine 1.11
+    \since QtWebEngine 1.10
 
     \brief The current lifecycle state of the page.
 
@@ -1563,12 +1563,12 @@
     These are the only hard limits on the lifecycle state, but see also
     \l{recommendedState} for the recommended soft limits.
 
-    \sa recommendedState, {WebEngine Lifecycle Example}
+    \sa recommendedState, {Page Lifecycle API}, {WebEngine Lifecycle Example}
 */
 
 /*!
     \qmlproperty LifecycleState WebEngineView::recommendedState
-    \since QtWebEngine 1.11
+    \since QtWebEngine 1.10
 
     \brief The recommended limit for the lifecycle state of the page.
 
@@ -1577,14 +1577,14 @@
     playback or loss of HTML form input. Setting the lifecycle state to a higher
     resource state is however completely safe.
 
-    \sa lifecycleState, {WebEngine Lifecycle Example}
+    \sa lifecycleState, {Page Lifecycle API}, {WebEngine Lifecycle Example}
 */
 
 /*!
     \qmltype FindTextResult
     \instantiates QWebEngineFindTextResult
     \inqmlmodule QtWebEngine
-    \since QtWebEngine 1.11
+    \since QtWebEngine 1.10
 
     \brief A utility type for encapsulating the result of a string search on a page.
 

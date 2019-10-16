@@ -120,7 +120,7 @@ void SSLHostStateDelegateQt::HostRanInsecureContent(const std::string &host, int
 }
 
 // Returns whether the specified host ran insecure content.
-bool SSLHostStateDelegateQt::DidHostRunInsecureContent(const std::string &host, int pid, InsecureContentType content_type) const
+bool SSLHostStateDelegateQt::DidHostRunInsecureContent(const std::string &host, int pid, InsecureContentType content_type)
 {
     return false;
 }
@@ -136,7 +136,7 @@ void SSLHostStateDelegateQt::RevokeUserAllowExceptions(const std::string &host)
 // |host|. This does not mean that *all* certificate errors are allowed, just
 // that there exists an exception. To see if a particular certificate and
 // error combination exception is allowed, use QueryPolicy().
-bool SSLHostStateDelegateQt::HasAllowException(const std::string &host) const
+bool SSLHostStateDelegateQt::HasAllowException(const std::string &host)
 {
     auto policy_iterator = m_certPolicyforHost.find(host);
     return policy_iterator != m_certPolicyforHost.end() &&

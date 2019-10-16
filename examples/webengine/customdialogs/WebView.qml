@@ -49,13 +49,39 @@
 ****************************************************************************/
 
 import QtQuick 2.0
-import QtWebEngine 1.4
+import QtWebEngine 1.10
 
 WebEngineView {
 
     url: "qrc:/index.html"
     property bool useDefaultDialogs: true
     signal openForm(var form)
+
+    Rectangle {
+        id: tooltip
+        width: 200
+        height: 30
+        z: 50
+        visible: false
+        color: "gray"
+        border.color: "black"
+        border.width: 2
+        radius: 3
+
+        property string text: ""
+
+        Text {
+            x: 0
+            y: 0
+            color: "#ffffff"
+            text: parent.text
+            font.pointSize: 12
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            font.bold: false
+        }
+
+    }
 
     onContextMenuRequested: function(request) {
         // we only show menu for links with #openMenu
@@ -70,6 +96,22 @@ WebEngineView {
         request.accepted = true;
         openForm({item: Qt.resolvedUrl("forms/Menu.qml"),
                      properties: {"request": request}});
+    }
+
+    onTooltipRequested: function(request) {
+        if (useDefaultDialogs)
+            return;
+
+        if (request.type == TooltipRequest.Show) {
+            tooltip.visible = true;
+            tooltip.x = request.x;
+            tooltip.y = request.y;
+            tooltip.text = request.text;
+        } else {
+            tooltip.visible = false;
+        }
+
+        request.accepted = true;
     }
 
     onAuthenticationDialogRequested: function(request) {

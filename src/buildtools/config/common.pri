@@ -9,7 +9,6 @@ gn_args += \
     is_component_build=false \
     is_shared=true \
     enable_message_center=false \
-    enable_mus=false \
     enable_nacl=false \
     enable_remoting=false \
     enable_reporting=false \
@@ -27,7 +26,8 @@ gn_args += \
     toolkit_views=false \
     treat_warnings_as_errors=false \
     safe_browsing_mode=0 \
-    optimize_webui=false
+    optimize_webui=false \
+    forbid_non_component_debug_builds=false
 
 greaterThan(QMAKE_JUMBO_MERGE_LIMIT,0) {
     gn_args += \

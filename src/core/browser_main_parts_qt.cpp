@@ -51,6 +51,7 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/buildflags/buildflags.h"
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -278,10 +279,10 @@ int BrowserMainPartsQt::PreCreateThreads()
     return 0;
 }
 
-void BrowserMainPartsQt::ServiceManagerConnectionStarted(content::ServiceManagerConnection *connection)
+void BrowserMainPartsQt::PostCreateThreads()
 {
     ServiceQt::GetInstance()->InitConnector();
-    connection->GetConnector()->WarmService(service_manager::ServiceFilter::ByName("qtwebengine"));
+    content::GetSystemConnector()->WarmService(service_manager::ServiceFilter::ByName("qtwebengine"));
 }
 
 } // namespace QtWebEngineCore

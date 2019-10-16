@@ -418,8 +418,8 @@ defineTest(qtwebengine_isWindowsPlatformSupported) {
         qtwebengine_platformError("Qt WebEngine on Windows requires MSVC or Clang (MSVC mode).")
         return(false)
     }
-    !qtwebengine_isMinWinSDKVersion(10, 17763): {
-        qtwebengine_platformError("Qt WebEngine on Windows requires a Windows SDK version 10.0.17763 or newer.")
+    !qtwebengine_isMinWinSDKVersion(10, 18362): {
+        qtwebengine_platformError("Qt WebEngine on Windows requires a Windows SDK version 10.0.18362 or newer.")
         return(false)
     }
     return(true)

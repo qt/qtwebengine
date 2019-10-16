@@ -414,21 +414,27 @@ void ContentClientQt::AddAdditionalSchemes(Schemes* schemes)
     schemes->standard_schemes.push_back("chrome-extension");
 }
 
-base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ScaleFactor scale_factor) const {
+base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ScaleFactor scale_factor)
+{
     return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(resource_id, scale_factor);
 }
 
-base::RefCountedMemory *ContentClientQt::GetDataResourceBytes(int resource_id) const
+base::RefCountedMemory *ContentClientQt::GetDataResourceBytes(int resource_id)
 {
     return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
 }
 
-gfx::Image &ContentClientQt::GetNativeImageNamed(int resource_id) const
+gfx::Image &ContentClientQt::GetNativeImageNamed(int resource_id)
 {
     return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }
 
-base::string16 ContentClientQt::GetLocalizedString(int message_id) const
+bool ContentClientQt::IsDataResourceGzipped(int resource_id)
+{
+    return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
+}
+
+base::string16 ContentClientQt::GetLocalizedString(int message_id)
 {
     return l10n_util::GetStringUTF16(message_id);
 }

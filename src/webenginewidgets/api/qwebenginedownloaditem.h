@@ -130,9 +130,9 @@ public:
     bool isSavePageDownload() const;
     QString suggestedFileName() const;
     QString downloadDirectory() const;
-    void setDownloadDirectory(QString directory);
+    void setDownloadDirectory(const QString &directory);
     QString downloadFileName() const;
-    void setDownloadFileName(QString fileName);
+    void setDownloadFileName(const QString &fileName);
 
     QWebEnginePage *page() const;
 

@@ -98,7 +98,7 @@ void OnPdfStreamIntercepted(
         // external viewer, trigger the download.
         std::unique_ptr<download::DownloadUrlParameters> params(
                     content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
-                        web_contents, original_url, NO_TRAFFIC_ANNOTATION_YET));
+                        web_contents, original_url, MISSING_TRAFFIC_ANNOTATION));
         content::BrowserContext::GetDownloadManager(web_contents->GetBrowserContext())
                 ->DownloadUrl(std::move(params));
         return;

@@ -42,9 +42,13 @@
 
 #include "profile_adapter.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "services/network/cookie_settings.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 #include <QtCore/QString>
@@ -104,6 +108,11 @@ public:
     extensions::ExtensionSystemQt* GetExtensionSystem();
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
+    ProtocolHandlerRegistry::IOThreadDelegate *protocolHandlerRegistryIOThreadDelegate()
+    {
+        return m_protocolHandlerRegistryIOThreadDelegate.get();
+    }
+
     void initializeOnIOThread();
     void initializeOnUIThread(); // runs on ui thread
     void shutdownOnUIThread(); // runs on ui thread
@@ -139,11 +148,22 @@ public:
     void updateUsedForGlobalCertificateVerification(); // runs on ui thread
     bool hasPageInterceptors();
 
+    void CreateRestrictedCookieManager(network::mojom::RestrictedCookieManagerRequest request,
+                                       network::mojom::RestrictedCookieManagerRole role,
+                                       const url::Origin &origin,
+                                       bool is_service_worker,
+                                       int32_t process_id,
+                                       int32_t routing_id);
+
 #if QT_CONFIG(ssl)
     ClientCertificateStoreData *clientCertificateStoreData();
 #endif
     std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
+    static ProfileIODataQt *FromBrowserContext(content::BrowserContext *browser_context);
     static ProfileIODataQt *FromResourceContext(content::ResourceContext *resource_context);
+
+    base::WeakPtr<ProfileIODataQt> getWeakPtrOnUIThread();
+
 private:
     void removeBrowsingDataRemoverObserver();
 
@@ -153,7 +173,8 @@ private:
     std::unique_ptr<content::ResourceContext> m_resourceContext;
     std::unique_ptr<net::URLRequestContext> m_urlRequestContext;
     std::unique_ptr<net::HttpNetworkSession> m_httpNetworkSession;
-    std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> m_protocolHandlerInterceptor;
+    scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>
+            m_protocolHandlerRegistryIOThreadDelegate;
     std::unique_ptr<net::DhcpPacFileFetcherFactory> m_dhcpPacFileFetcherFactory;
     std::unique_ptr<net::HttpAuthPreferences> m_httpAuthPreferences;
     std::unique_ptr<net::URLRequestJobFactory> m_jobFactory;
@@ -168,6 +189,8 @@ private:
     QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
     QPointer<ProfileAdapter> m_profileAdapter; // never dereferenced in IO thread and it is passed by qpointer
     ProfileAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;
+    mojo::StrongBindingSet<network::mojom::RestrictedCookieManager> m_restrictedCookieManagerBindings;
+
 #if QT_CONFIG(ssl)
     ClientCertificateStoreData *m_clientCertificateStoreData;
 #endif
@@ -179,6 +202,7 @@ private:
     QList<QByteArray> m_customUrlSchemes;
     QList<QByteArray> m_installedCustomSchemes;
     QWebEngineUrlRequestInterceptor* m_requestInterceptor = nullptr;
+    network::CookieSettings m_cookieSettings;
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
     QMutex m_mutex{QMutex::Recursive};
     using QRecursiveMutex = QMutex;

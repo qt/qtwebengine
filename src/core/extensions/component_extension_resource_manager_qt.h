@@ -49,7 +49,7 @@
 #include "base/files/file_path.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 
-struct GzippedGritResourceMap;
+struct GritResourceMap;
 
 namespace extensions {
 
@@ -62,15 +62,15 @@ public:
     // Overridden from ComponentExtensionResourceManager:
     bool IsComponentExtensionResource(const base::FilePath &extension_path,
                                       const base::FilePath &resource_path,
-                                      ComponentExtensionResourceInfo *resource_info) const override;
-    const ui::TemplateReplacements *GetTemplateReplacementsForExtension(const std::string& extension_id) const override;
+                                      int *resource_id) const override;
+    const ui::TemplateReplacements *GetTemplateReplacementsForExtension(const std::string &extension_id) const override;
 
 private:
-    void AddComponentResourceEntries(const GzippedGritResourceMap* entries, size_t size);
+    void AddComponentResourceEntries(const GritResourceMap *entries, size_t size);
 
     // A map from a resource path to the resource ID.  Used by
     // IsComponentExtensionResource.
-    std::map<base::FilePath, ComponentExtensionResourceInfo> path_to_resource_info_;
+    std::map<base::FilePath, int> path_to_resource_id_;
 
     DISALLOW_COPY_AND_ASSIGN(ComponentExtensionResourceManagerQt);
 };

@@ -71,6 +71,7 @@ private Q_SLOTS:
 #endif
     void noTransportWithoutWebChannel();
     void scriptsInNestedIframes();
+    void matchQrcUrl();
 };
 
 void tst_QWebEngineScript::domEditing()
@@ -589,6 +590,33 @@ void tst_QWebEngineScript::webChannelWithBadString()
     QCOMPARE(host.text(), data);
 }
 #endif
+
+void tst_QWebEngineScript::matchQrcUrl()
+{
+    QWebEnginePage page;
+    QWebEngineView view;
+    view.setPage(&page);
+    QWebEngineScript s;
+    s.setInjectionPoint(QWebEngineScript::DocumentReady);
+    s.setWorldId(QWebEngineScript::MainWorld);
+
+
+    s.setSourceCode(QStringLiteral(R"(
+// ==UserScript==
+// @match qrc:/*main.html
+// ==/UserScript==
+
+document.title = 'New title';
+    )"));
+
+    page.scripts().insert(s);
+    page.load(QUrl("qrc:/resources/test_iframe_main.html"));
+    view.show();
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
+    QCOMPARE(page.title(), "New title");
+}
+
 QTEST_MAIN(tst_QWebEngineScript)
 
 #include "tst_qwebenginescript.moc"
