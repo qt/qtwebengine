@@ -196,7 +196,7 @@ public:
 
     void* GetHandle() override { return m_handle; }
     // Qt currently never creates contexts using robustness attributes.
-    bool WasAllocatedUsingRobustnessExtension() override { return false; }
+    unsigned int CheckStickyGraphicsResetStatus() override { return 0 /*GL_NO_ERROR*/; }
 
     // We don't care about the rest, this context shouldn't be used except for its handle.
     bool Initialize(gl::GLSurface *, const gl::GLContextAttribs &) override { Q_UNREACHABLE(); return false; }
