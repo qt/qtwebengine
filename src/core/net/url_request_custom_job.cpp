@@ -156,6 +156,12 @@ void URLRequestCustomJob::GetResponseInfo(HttpResponseInfo* info)
         headers += base::StringPrintf("Location: %s\n", m_redirect.spec().c_str());
     } else {
         headers += base::StringPrintf("HTTP/1.1 %i OK\n", m_httpStatusCode);
+        if (m_mimeType.size() > 0) {
+            headers += base::StringPrintf("Content-Type: %s", m_mimeType.c_str());
+            if (m_charset.size() > 0)
+                headers += base::StringPrintf("; charset=%s", m_charset.c_str());
+            headers += "\n";
+        }
     }
     if (m_corsEnabled) {
         std::string origin;

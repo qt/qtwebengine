@@ -66,6 +66,7 @@ private Q_SLOTS:
     void urlSchemeHandlerRequestHeaders();
     void urlSchemeHandlerInstallation();
     void urlSchemeHandlerXhrStatus();
+    void urlSchemeHandlerScriptModule();
     void customUserAgent();
     void httpAcceptLanguage();
     void downloadItem();
@@ -86,6 +87,7 @@ void tst_QWebEngineProfile::initTestCase()
     stream.setDefaultPort(8080);
     letterto.setSyntax(QWebEngineUrlScheme::Syntax::Path);
     aviancarrier.setSyntax(QWebEngineUrlScheme::Syntax::Path);
+    aviancarrier.setFlags(QWebEngineUrlScheme::CorsEnabled);
     QWebEngineUrlScheme::registerScheme(foo);
     QWebEngineUrlScheme::registerScheme(stream);
     QWebEngineUrlScheme::registerScheme(letterto);
@@ -682,6 +684,34 @@ void tst_QWebEngineProfile::urlSchemeHandlerXhrStatus()
 #else
     QSKIP("No QtWebChannel");
 #endif
+}
+
+class ScriptsUrlSchemeHandler : public QWebEngineUrlSchemeHandler
+{
+public:
+    void requestStarted(QWebEngineUrlRequestJob *job)
+    {
+        auto *script = new QBuffer(job);
+        script->setData(QByteArrayLiteral("window.test = 'SUCCESS';"));
+        job->reply("text/javascript", script);
+    }
+};
+
+void tst_QWebEngineProfile::urlSchemeHandlerScriptModule()
+{
+    ScriptsUrlSchemeHandler handler;
+    QWebEngineProfile profile;
+    profile.installUrlSchemeHandler("aviancarrier", &handler);
+    QWebEnginePage page(&profile);
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.setHtml(QStringLiteral("<html><head><script src=\"aviancarrier:///\"></script></head><body>Test1</body></html>"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("test")).toString(), QStringLiteral("SUCCESS"));
+
+    loadFinishedSpy.clear();
+    page.setHtml(QStringLiteral("<html><head><script type=\"module\" src=\"aviancarrier:///\"></script></head><body>Test2</body></html>"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("test")).toString(), QStringLiteral("SUCCESS"));
 }
 
 void tst_QWebEngineProfile::customUserAgent()
