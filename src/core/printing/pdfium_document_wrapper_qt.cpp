@@ -48,64 +48,6 @@
 namespace QtWebEngineCore {
 int PdfiumDocumentWrapperQt::m_libraryUsers = 0;
 
-class PdfiumPageWrapperQt {
-public:
-    PdfiumPageWrapperQt(FPDF_DOCUMENT data, int pageIndex)
-        : m_pageData(FPDF_LoadPage(data, pageIndex))
-        , m_width(FPDF_GetPageWidth(m_pageData))
-        , m_height(FPDF_GetPageHeight(m_pageData))
-        , m_image(createImage())
-    {
-    }
-
-    PdfiumPageWrapperQt()
-        : m_pageData(nullptr)
-        , m_width(-1)
-        , m_height(-1)
-        , m_image(QImage())
-    {
-    }
-
-    virtual ~PdfiumPageWrapperQt()
-    {
-        FPDF_ClosePage(m_pageData);
-    }
-
-    QImage image()
-    {
-        return m_image;
-    }
-
-private:
-    QImage createImage()
-    {
-        Q_ASSERT(m_pageData);
-
-        QImage image(m_width * 2, m_height * 2, QImage::Format_ARGB32);
-        Q_ASSERT(!image.isNull());
-        image.fill(0xFFFFFFFF);
-
-        FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(image.width(), image.height(),
-                                                 FPDFBitmap_BGRA,
-                                                 image.scanLine(0), image.bytesPerLine());
-        Q_ASSERT(bitmap);
-
-        FPDF_RenderPageBitmap(bitmap, m_pageData,
-                              0, 0, image.width(), image.height(),
-                              0, 0);
-        FPDFBitmap_Destroy(bitmap);
-        bitmap = nullptr;
-        return image;
-    }
-
-private:
-    FPDF_PAGE m_pageData;
-    int m_width;
-    int m_height;
-    QImage m_image;
-};
-
-
 PdfiumDocumentWrapperQt::PdfiumDocumentWrapperQt(const void *pdfData, size_t size,
                                                  const char *password)
 {
@@ -118,27 +60,41 @@ PdfiumDocumentWrapperQt::PdfiumDocumentWrapperQt(const void *pdfData, size_t siz
     m_pageCount = FPDF_GetPageCount((FPDF_DOCUMENT)m_documentHandle);
 }
 
-QImage PdfiumDocumentWrapperQt::pageAsQImage(size_t index)
+QImage PdfiumDocumentWrapperQt::pageAsQImage(size_t pageIndex,int width , int height)
 {
     if (!m_documentHandle || !m_pageCount) {
         qWarning("Failure to generate QImage from invalid or empty PDF document.");
         return QImage();
     }
 
-    if (static_cast<int>(index) >= m_pageCount) {
+    if (static_cast<int>(pageIndex) >= m_pageCount) {
         qWarning("Failure to generate QImage from PDF data: index out of bounds.");
         return QImage();
     }
 
-    PdfiumPageWrapperQt pageWrapper((FPDF_DOCUMENT)m_documentHandle, index);
-    return pageWrapper.image();
+    FPDF_PAGE pageData(FPDF_LoadPage((FPDF_DOCUMENT)m_documentHandle, pageIndex));
+    QImage image(width, height, QImage::Format_ARGB32);
+    Q_ASSERT(!image.isNull());
+    image.fill(0xFFFFFFFF);
+
+    FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(width, height,
+                                             FPDFBitmap_BGRA,
+                                             image.scanLine(0), image.bytesPerLine());
+    Q_ASSERT(bitmap);
+    FPDF_RenderPageBitmap(bitmap, pageData,
+                          0, 0, width, height,
+                          0, 0);
+    FPDFBitmap_Destroy(bitmap);
+    bitmap = nullptr;
+    FPDF_ClosePage(pageData);
+    return image;
 }
 
-bool PdfiumDocumentWrapperQt::pageIsLandscape(size_t index)
+QSizeF PdfiumDocumentWrapperQt::pageSize(size_t index)
 {
-    double width = 0, height = 0;
-    FPDF_GetPageSizeByIndex((FPDF_DOCUMENT)m_documentHandle, index, &width, &height);
-    return (width > height);
+    QSizeF size;
+    FPDF_GetPageSizeByIndex((FPDF_DOCUMENT)m_documentHandle, index, &size.rwidth(), &size.rheight());
+    return size;
 }
 
 PdfiumDocumentWrapperQt::~PdfiumDocumentWrapperQt()
@@ -147,5 +103,4 @@ PdfiumDocumentWrapperQt::~PdfiumDocumentWrapperQt()
     if (--m_libraryUsers == 0)
         FPDF_DestroyLibrary();
 }
-
 }
