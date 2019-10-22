@@ -1531,7 +1531,7 @@ void tst_QWebEngineView::postData()
             eventloop.quit();
         });
 
-        connect(socket, &QIODevice::readyRead, this, [this, socket, &server, &postData](){
+        connect(socket, &QIODevice::readyRead, this, [socket, &server, &postData](){
             QByteArray rawData = socket->readAll();
             QStringList lines = QString::fromLocal8Bit(rawData).split("\r\n");
 

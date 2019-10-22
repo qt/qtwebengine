@@ -47,7 +47,7 @@ class StreamVideoMaterialShader : public QSGMaterialShader
 {
 public:
     StreamVideoMaterialShader(TextureTarget target) : m_target(target) { }
-    virtual void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial);
+    virtual void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial) override;
 
     char const *const *attributeNames() const override {
         static const char *names[] = {
@@ -100,7 +100,7 @@ protected:
             return shader2DRect;
     }
 
-    virtual void initialize() {
+    virtual void initialize() override {
         m_id_matrix = program()->uniformLocation("matrix");
         m_id_sTexture = program()->uniformLocation("s_texture");
         m_id_texMatrix = program()->uniformLocation("texMatrix");

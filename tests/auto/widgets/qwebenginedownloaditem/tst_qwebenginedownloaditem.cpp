@@ -1109,7 +1109,7 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
         suggestedFileName = item->suggestedFileName();
         downloadItem = item;
         item->accept();
-        connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
+        connect(item, &QWebEngineDownloadItem::finished, [&]() {
             downloadFinished = true;
         });
         downloadAccepted = true;

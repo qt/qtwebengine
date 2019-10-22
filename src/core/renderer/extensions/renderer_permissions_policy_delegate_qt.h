@@ -58,8 +58,6 @@ public:
     bool IsRestrictedUrl(const GURL &, std::string *) override;
 
 private:
-    extensions::Dispatcher *m_dispatcher;
-
     DISALLOW_COPY_AND_ASSIGN(RendererPermissionsPolicyDelegateQt);
 };
 

@@ -538,6 +538,7 @@ void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
     ui::CursorType auraType = ui::CursorType::kNull;
 #endif
     switch (cursorInfo.type) {
+    case ui::CursorType::kNull:
     case ui::CursorType::kPointer:
         shape = Qt::ArrowCursor;
         break;
@@ -561,6 +562,7 @@ void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
     case ui::CursorType::kEastWestResize:
     case ui::CursorType::kEastPanning:
     case ui::CursorType::kWestPanning:
+    case ui::CursorType::kMiddlePanningHorizontal:
         shape = Qt::SizeHorCursor;
         break;
     case ui::CursorType::kNorthResize:
@@ -568,6 +570,7 @@ void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
     case ui::CursorType::kNorthSouthResize:
     case ui::CursorType::kNorthPanning:
     case ui::CursorType::kSouthPanning:
+    case ui::CursorType::kMiddlePanningVertical:
         shape = Qt::SizeVerCursor;
         break;
     case ui::CursorType::kNorthEastResize:
@@ -597,9 +600,15 @@ void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
     case ui::CursorType::kProgress:
         shape = Qt::BusyCursor;
         break;
+    case ui::CursorType::kDndNone:
+    case ui::CursorType::kDndMove:
+        shape = Qt::DragMoveCursor;
+        break;
+    case ui::CursorType::kDndCopy:
     case ui::CursorType::kCopy:
         shape = Qt::DragCopyCursor;
         break;
+    case ui::CursorType::kDndLink:
     case ui::CursorType::kAlias:
         shape = Qt::DragLinkCursor;
         break;

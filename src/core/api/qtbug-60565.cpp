@@ -68,20 +68,20 @@ void __ShimCppDeleteArray(void* address)
     SHIM_ALIAS_SYMBOL(ShimCppDeleteArray);
 
 __asm__(".symver __ShimCppNewNoThrow, _Znw" SIZE_T_MANGLING "RKSt9nothrow_t@Qt_5");
-void __ShimCppNewNoThrow(size_t size, const std::nothrow_t&) noexcept
-    SHIM_ALIAS_SYMBOL(ShimCppNew);
+void *__ShimCppNewNoThrow(size_t size, const std::nothrow_t&) noexcept
+    SHIM_ALIAS_SYMBOL(ShimCppNewNoThrow);
 
 __asm__(".symver __ShimCppNewArrayNoThrow, _Zna" SIZE_T_MANGLING "RKSt9nothrow_t@Qt_5");
-void __ShimCppNewArrayNoThrow(size_t size, const std::nothrow_t&) noexcept
-    SHIM_ALIAS_SYMBOL(ShimCppNewArray);
+void *__ShimCppNewArrayNoThrow(size_t size, const std::nothrow_t&) noexcept
+    SHIM_ALIAS_SYMBOL(ShimCppNewArrayNoThrow);
 
 __asm__(".symver __ShimCppDeleteNoThrow, _ZdlPvRKSt9nothrow_t@Qt_5");
 void __ShimCppDeleteNoThrow(void* address, const std::nothrow_t&) noexcept
-    SHIM_ALIAS_SYMBOL(ShimCppDelete);
+    SHIM_ALIAS_SYMBOL(ShimCppDeleteNoThrow);
 
 __asm__(".symver __ShimCppDeleteArrayNoThrow, _ZdaPvRKSt9nothrow_t@Qt_5");
 void __ShimCppDeleteArrayNoThrow(void* address, const std::nothrow_t&) noexcept
-    SHIM_ALIAS_SYMBOL(ShimCppDeleteArray);
+    SHIM_ALIAS_SYMBOL(ShimCppDeleteArrayNoThrow);
 
 static void* __shimCppNew(size_t size);
 static void* __shimCppNewArray(size_t size);
@@ -92,7 +92,15 @@ SHIM_HIDDEN void* ShimCppNew(size_t size) {
     return __shimCppNew(size);
 }
 
+SHIM_HIDDEN void* ShimCppNewNoThrow(size_t size, const std::nothrow_t&) noexcept {
+    return __shimCppNew(size);
+}
+
 SHIM_HIDDEN void* ShimCppNewArray(size_t size) {
+    return __shimCppNewArray(size);
+}
+
+SHIM_HIDDEN void* ShimCppNewArrayNoThrow(size_t size, const std::nothrow_t&) noexcept {
     return __shimCppNewArray(size);
 }
 
@@ -100,7 +108,15 @@ SHIM_HIDDEN void ShimCppDelete(void* address) {
     __shimCppDelete(address);
 }
 
+SHIM_HIDDEN void ShimCppDeleteNoThrow(void* address, const std::nothrow_t&) noexcept {
+    __shimCppDelete(address);
+}
+
 SHIM_HIDDEN void ShimCppDeleteArray(void* address) {
+    __shimCppDeleteArray(address);
+}
+
+SHIM_HIDDEN void ShimCppDeleteArrayNoThrow(void* address, const std::nothrow_t&) noexcept {
     __shimCppDeleteArray(address);
 }
 } // extern "C"
