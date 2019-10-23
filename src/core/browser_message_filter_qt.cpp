@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -40,19 +40,19 @@
 #include "browser_message_filter_qt.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "common/qt_messages.h"
 #include "content/public/browser/plugin_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "type_conversion.h"
 
-#include "net/network_delegate_qt.h"
+#include "common/qt_messages.h"
+#include "profile_io_data_qt.h"
+#include "type_conversion.h"
 
 namespace QtWebEngineCore {
 
 BrowserMessageFilterQt::BrowserMessageFilterQt(int /*render_process_id*/, Profile *profile)
     : BrowserMessageFilter(QtMsgStart)
-    , m_profile(profile)
+    , m_profileData(ProfileIODataQt::FromBrowserContext(profile))
 {
 }
 
@@ -81,8 +81,7 @@ void BrowserMessageFilterQt::OnAllowDatabase(int /*render_frame_id*/,
                                              const GURL &top_origin_url,
                                              bool* allowed)
 {
-    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(m_profile->GetRequestContext()->GetURLRequestContext()->network_delegate());
-    *allowed = networkDelegate->canGetCookies(top_origin_url, origin_url);
+    *allowed = m_profileData->canGetCookies(toQt(top_origin_url), toQt(origin_url));
 }
 
 void BrowserMessageFilterQt::OnAllowDOMStorage(int /*render_frame_id*/,
@@ -91,8 +90,7 @@ void BrowserMessageFilterQt::OnAllowDOMStorage(int /*render_frame_id*/,
                                                bool /*local*/,
                                                bool *allowed)
 {
-    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(m_profile->GetRequestContext()->GetURLRequestContext()->network_delegate());
-    *allowed = networkDelegate->canGetCookies(top_origin_url, origin_url);
+    *allowed = m_profileData->canGetCookies(toQt(top_origin_url), toQt(origin_url));
 }
 
 void BrowserMessageFilterQt::OnAllowIndexedDB(int /*render_frame_id*/,
@@ -100,8 +98,7 @@ void BrowserMessageFilterQt::OnAllowIndexedDB(int /*render_frame_id*/,
                                               const GURL &top_origin_url,
                                               bool *allowed)
 {
-    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(m_profile->GetRequestContext()->GetURLRequestContext()->network_delegate());
-    *allowed = networkDelegate->canGetCookies(top_origin_url, origin_url);
+    *allowed = m_profileData->canGetCookies(toQt(top_origin_url), toQt(origin_url));
 }
 
 void BrowserMessageFilterQt::OnRequestFileSystemAccessSync(int render_frame_id,
@@ -153,9 +150,7 @@ void BrowserMessageFilterQt::OnRequestFileSystemAccess(int /*render_frame_id*/,
                                                        base::Callback<void(bool)> callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-    NetworkDelegateQt *networkDelegate = static_cast<NetworkDelegateQt *>(m_profile->GetRequestContext()->GetURLRequestContext()->network_delegate());
-    bool allowed = networkDelegate->canGetCookies(top_origin_url, origin_url);
+    bool allowed = m_profileData->canGetCookies(toQt(top_origin_url), toQt(origin_url));
 
     callback.Run(allowed);
 }
