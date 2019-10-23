@@ -134,6 +134,13 @@ void registerSchemes()
         scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
         QWebEngineUrlScheme::registerScheme(scheme);
     }
+
+    {
+        QWebEngineUrlScheme scheme(QBAL("cors"));
+        scheme.setFlags(QWebEngineUrlScheme::CorsEnabled);
+        QWebEngineUrlScheme::registerScheme(scheme);
+    }
+
 }
 Q_CONSTRUCTOR_FUNCTION(registerSchemes)
 
@@ -159,6 +166,7 @@ public:
         profile->installUrlSchemeHandler(QBAL("HostPortAndUserInformationSyntax"), this);
         profile->installUrlSchemeHandler(QBAL("redirect1"), this);
         profile->installUrlSchemeHandler(QBAL("redirect2"), this);
+        profile->installUrlSchemeHandler(QBAL("cors"), this);
     }
 
     QVector<QUrl> &requests() { return m_requests; }
@@ -569,7 +577,9 @@ void tst_Origins::mixedSchemesWithCsp()
 // Load the main page over one scheme, then make an XMLHttpRequest to a
 // different scheme.
 //
-// XMLHttpRequests can only be made to http, https, data, and chrome.
+// Cross-origin XMLHttpRequests can only be made to CORS-enabled schemes. These
+// include the builtin schemes http, https, data, and chrome, as well as custom
+// schemes with the CorsEnabled flag.
 void tst_Origins::mixedXHR()
 {
     QVERIFY(load(QSL("file:" THIS_DIR "resources/mixedXHR.html")));
@@ -581,6 +591,8 @@ void tst_Origins::mixedXHR()
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("error")));
     eval(QSL("sendXHR('data:,ok')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
+    eval(QSL("sendXHR('cors:/resources/mixedXHR.txt')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 
     QVERIFY(load(QSL("qrc:/resources/mixedXHR.html")));
     eval(QSL("sendXHR('file:" THIS_DIR "resources/mixedXHR.txt')"));
@@ -591,6 +603,8 @@ void tst_Origins::mixedXHR()
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("error")));
     eval(QSL("sendXHR('data:,ok')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
+    eval(QSL("sendXHR('cors:/resources/mixedXHR.txt')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 
     QVERIFY(load(QSL("tst:/resources/mixedXHR.html")));
     eval(QSL("sendXHR('file:" THIS_DIR "resources/mixedXHR.txt')"));
@@ -600,6 +614,8 @@ void tst_Origins::mixedXHR()
     eval(QSL("sendXHR('tst:/resources/mixedXHR.txt')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
     eval(QSL("sendXHR('data:,ok')"));
+    QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
+    eval(QSL("sendXHR('cors:/resources/mixedXHR.txt')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("ok")));
 }
 
