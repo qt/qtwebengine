@@ -68,7 +68,6 @@ URLRequestCustomJob::URLRequestCustomJob(URLRequest *request,
     , m_pendingReadBuffer(nullptr)
     , m_corsEnabled(QWebEngineUrlScheme::schemeByName(QByteArray::fromStdString(scheme))
                     .flags().testFlag(QWebEngineUrlScheme::CorsEnabled))
-    , m_httpStatusCode(500)
 {
 }
 
@@ -155,7 +154,7 @@ void URLRequestCustomJob::GetResponseInfo(HttpResponseInfo* info)
         headers += "HTTP/1.1 303 See Other\n";
         headers += base::StringPrintf("Location: %s\n", m_redirect.spec().c_str());
     } else {
-        headers += base::StringPrintf("HTTP/1.1 %i OK\n", m_httpStatusCode);
+        headers += base::StringPrintf("HTTP/1.1 %i OK\n", 200);
         if (m_mimeType.size() > 0) {
             headers += base::StringPrintf("Content-Type: %s", m_mimeType.c_str());
             if (m_charset.size() > 0)

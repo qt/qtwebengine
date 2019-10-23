@@ -82,7 +82,6 @@ private:
     int m_pendingReadPos;
     net::IOBuffer *m_pendingReadBuffer;
     const bool m_corsEnabled;
-    int m_httpStatusCode;
 
     friend class URLRequestCustomJobProxy;
 
