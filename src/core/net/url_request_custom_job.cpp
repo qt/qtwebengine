@@ -60,20 +60,21 @@ URLRequestCustomJob::URLRequestCustomJob(URLRequest *request,
                                          const std::string &scheme,
                                          QPointer<ProfileAdapter> profileAdapter)
     : URLRequestJob(request, networkDelegate)
+    , m_taskRunner(base::CreateSingleThreadTaskRunner({ content::BrowserThread::IO }))
     , m_proxy(new URLRequestCustomJobProxy(this, scheme, profileAdapter))
-    , m_device(nullptr)
-    , m_error(0)
     , m_pendingReadSize(0)
     , m_pendingReadPos(0)
     , m_pendingReadBuffer(nullptr)
     , m_corsEnabled(QWebEngineUrlScheme::schemeByName(QByteArray::fromStdString(scheme))
                     .flags().testFlag(QWebEngineUrlScheme::CorsEnabled))
 {
+    m_device = nullptr;
+    m_error = 0;
 }
 
 URLRequestCustomJob::~URLRequestCustomJob()
 {
-    m_proxy->m_job = nullptr;
+    m_proxy->m_client = nullptr;
     if (m_device && m_device->isOpen())
         m_device->close();
     m_device = nullptr;
@@ -106,7 +107,7 @@ void URLRequestCustomJob::Start()
 void URLRequestCustomJob::Kill()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    m_proxy->m_job = nullptr;
+    m_proxy->m_client = nullptr;
     if (m_device && m_device->isOpen())
         m_device->close();
     if (m_pendingReadBuffer) {
@@ -214,6 +215,31 @@ int URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize)
     }
 }
 
+void URLRequestCustomJob::notifyExpectedContentSize(qint64 size)
+{
+    set_expected_content_size(size);
+}
+
+void URLRequestCustomJob::notifyHeadersComplete()
+{
+    NotifyHeadersComplete();
+}
+
+void URLRequestCustomJob::notifyCanceled()
+{
+    NotifyCanceled();
+}
+
+void URLRequestCustomJob::notifyAborted()
+{
+    NotifyStartError(URLRequestStatus(URLRequestStatus::CANCELED, net::ERR_ABORTED));
+}
+
+void URLRequestCustomJob::notifyStartFailure(int error)
+{
+    NotifyStartError(URLRequestStatus::FromError(error));
+}
+
 void URLRequestCustomJob::notifyReadyRead()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -248,6 +274,11 @@ void URLRequestCustomJob::notifyReadyRead()
     m_pendingReadPos = 0;
     ReadRawDataComplete(rv);
     buf->Release();
+}
+
+base::TaskRunner *URLRequestCustomJob::taskRunner()
+{
+    return m_taskRunner.get();
 }
 
 } // namespace

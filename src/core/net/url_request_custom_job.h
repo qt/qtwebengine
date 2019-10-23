@@ -42,6 +42,9 @@
 
 #include "net/url_request/url_request_job.h"
 #include "url/gurl.h"
+
+#include "url_request_custom_job_proxy.h"
+
 #include <QtCore/QPointer>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
@@ -53,13 +56,14 @@ class URLRequestCustomJobDelegate;
 class URLRequestCustomJobProxy;
 
 // A request job that handles reading custom URL schemes
-class URLRequestCustomJob : public net::URLRequestJob
+class URLRequestCustomJob : public net::URLRequestJob, private URLRequestCustomJobProxy::Client
 {
 public:
     URLRequestCustomJob(net::URLRequest *request,
                         net::NetworkDelegate *networkDelegate,
                         const std::string &scheme,
                         QPointer<ProfileAdapter> profileAdapter);
+    // net::URLRequestJob:
     void Start() override;
     void Kill() override;
     int ReadRawData(net::IOBuffer *buf, int buf_size) override;
@@ -72,13 +76,17 @@ protected:
     virtual ~URLRequestCustomJob();
 
 private:
-    void notifyReadyRead();
+    // URLRequestCustomJobProxy::Client:
+    void notifyExpectedContentSize(qint64 size) override;
+    void notifyHeadersComplete() override;
+    void notifyCanceled() override;
+    void notifyAborted() override;
+    void notifyStartFailure(int error) override;
+    void notifyReadyRead() override;
+    base::TaskRunner *taskRunner() override;
+
+    scoped_refptr<base::TaskRunner> m_taskRunner;
     scoped_refptr<URLRequestCustomJobProxy> m_proxy;
-    std::string m_mimeType;
-    std::string m_charset;
-    GURL m_redirect;
-    QIODevice *m_device;
-    int m_error;
     int m_pendingReadSize;
     int m_pendingReadPos;
     net::IOBuffer *m_pendingReadBuffer;
