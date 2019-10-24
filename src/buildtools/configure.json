@@ -150,9 +150,9 @@
             ]
         },
         "webengine-icu": {
-            "label": "icu >= 63",
+            "label": "icu >= 64",
             "sources": [
-                { "type": "pkgConfig", "args": "icu-uc >= 63 icu-i18n >= 63" }
+                { "type": "pkgConfig", "args": "icu-uc >= 64 icu-i18n >= 64" }
             ]
         },
         "webengine-webp": {

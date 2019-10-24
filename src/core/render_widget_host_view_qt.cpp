@@ -1009,15 +1009,22 @@ QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 void RenderWidgetHostViewQt::notifyShown()
 {
     if (m_enableViz) {
+        // Handle possible frame eviction:
+        if (!m_dfhLocalSurfaceIdAllocator.HasValidLocalSurfaceIdAllocation())
+            m_dfhLocalSurfaceIdAllocator.GenerateId();
         if (m_visible)
             return;
         m_visible = true;
+    }
+
+    host()->WasShown(base::nullopt);
+
+    if (m_enableViz) {
         m_delegatedFrameHost->AttachToCompositor(m_uiCompositor.get());
         m_delegatedFrameHost->WasShown(GetLocalSurfaceIdAllocation().local_surface_id(),
                                        m_viewRectInDips.size(),
                                        base::nullopt);
     }
-    host()->WasShown(base::nullopt);
 }
 
 void RenderWidgetHostViewQt::notifyHidden()

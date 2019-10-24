@@ -55,11 +55,11 @@ class QWebEngineFindTextResultPrivate;
 class Q_WEBENGINECORE_EXPORT QWebEngineFindTextResult {
     Q_GADGET
     Q_PROPERTY(int numberOfMatches READ numberOfMatches CONSTANT FINAL)
-    Q_PROPERTY(int activeMatchOrdinal READ activeMatchOrdinal CONSTANT FINAL)
+    Q_PROPERTY(int activeMatch READ activeMatch CONSTANT FINAL)
 
 public:
     int numberOfMatches() const;
-    int activeMatchOrdinal() const;
+    int activeMatch() const;
 
     QWebEngineFindTextResult();
     QWebEngineFindTextResult(const QWebEngineFindTextResult &other);
@@ -67,7 +67,7 @@ public:
     ~QWebEngineFindTextResult();
 
 private:
-    QWebEngineFindTextResult(int numberOfMatches, int activeMatchOrdinal);
+    QWebEngineFindTextResult(int numberOfMatches, int activeMatch);
 
     QSharedDataPointer<QWebEngineFindTextResultPrivate> d;
 

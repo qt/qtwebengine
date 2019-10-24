@@ -279,7 +279,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineFileDialogRequest.dialogReject() --> void"
     << "QQuickWebEngineFileDialogRequest.mode --> FileMode"
     << "QWebEngineFindTextResult.numberOfMatches --> int"
-    << "QWebEngineFindTextResult.activeMatchOrdinal --> int"
+    << "QWebEngineFindTextResult.activeMatch --> int"
     << "QQuickWebEngineFormValidationMessageRequest.Hide --> RequestType"
     << "QQuickWebEngineFormValidationMessageRequest.Move --> RequestType"
     << "QQuickWebEngineFormValidationMessageRequest.Show --> RequestType"

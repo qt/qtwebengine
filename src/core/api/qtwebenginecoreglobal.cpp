@@ -108,7 +108,7 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
 
     QCoreApplication *app = QCoreApplication::instance();
     if (!app) {
-        qFatal("QtWebEngine::initialize() must be called after the construction of the application object.");
+        qFatal("QtWebEngine::initialize() but no core application instance.");
         return;
     }
 

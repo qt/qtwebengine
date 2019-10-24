@@ -41,6 +41,7 @@
 #include "url_request_custom_job_proxy.h"
 
 #include "api/qwebengineurlscheme.h"
+
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -146,17 +147,28 @@ void URLRequestCustomJob::GetResponseInfo(HttpResponseInfo* info)
 {
     // Based on net::URLRequestRedirectJob::StartAsync()
 
-    if (!m_corsEnabled)
+    if (m_error)
         return;
 
     std::string headers;
-    headers += base::StringPrintf("HTTP/1.1 %i OK\n", m_httpStatusCode);
-    if (m_redirect.is_valid())
+    if (m_redirect.is_valid()) {
+        headers += "HTTP/1.1 303 See Other\n";
         headers += base::StringPrintf("Location: %s\n", m_redirect.spec().c_str());
-    std::string origin;
-    if (request_->extra_request_headers().GetHeader("Origin", &origin)) {
-        headers += base::StringPrintf("Access-Control-Allow-Origin: %s\n", origin.c_str());
-        headers += "Access-Control-Allow-Credentials: true\n";
+    } else {
+        headers += base::StringPrintf("HTTP/1.1 %i OK\n", m_httpStatusCode);
+        if (m_mimeType.size() > 0) {
+            headers += base::StringPrintf("Content-Type: %s", m_mimeType.c_str());
+            if (m_charset.size() > 0)
+                headers += base::StringPrintf("; charset=%s", m_charset.c_str());
+            headers += "\n";
+        }
+    }
+    if (m_corsEnabled) {
+        std::string origin;
+        if (request_->extra_request_headers().GetHeader("Origin", &origin)) {
+            headers += base::StringPrintf("Access-Control-Allow-Origin: %s\n", origin.c_str());
+            headers += "Access-Control-Allow-Credentials: true\n";
+        }
     }
 
     info->headers = new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(headers));

@@ -137,3 +137,5 @@ qtConfig(webengine-kerberos) {
 ccache {
     gn_args += cc_wrapper=\"ccache\"
 }
+
+qtConfig(force_asserts): gn_args += dcheck_always_on=true

@@ -180,23 +180,23 @@ void tst_QWebEngineScript::loadEvents()
 
     // Single frame / setHtml
     page.setHtml(QStringLiteral("<!DOCTYPE html><html><head><title>mr</title></head><body></body></html>"));
-    QTRY_COMPARE(page.spy.count(), 1);
-    QCOMPARE(page.spy.takeFirst().value(0).toBool(), true);
+    QTRY_COMPARE_WITH_TIMEOUT(page.spy.count(), 1, 20000);
+    QVERIFY(page.spy.takeFirst().value(0).toBool());
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
 
     // After discard
     page.setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
     page.setLifecycleState(QWebEnginePage::LifecycleState::Active);
-    QTRY_COMPARE(page.spy.count(), 1);
-    QCOMPARE(page.spy.takeFirst().value(0).toBool(), true);
+    QTRY_COMPARE_WITH_TIMEOUT(page.spy.count(), 1, 20000);
+    QVERIFY(page.spy.takeFirst().value(0).toBool());
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
 
     // Multiple frames
     page.load(QUrl("qrc:/resources/test_iframe_main.html"));
-    QTRY_COMPARE(page.spy.count(), 1);
-    QCOMPARE(page.spy.takeFirst().value(0).toBool(), true);
+    QTRY_COMPARE_WITH_TIMEOUT(page.spy.count(), 1, 20000);
+    QVERIFY(page.spy.takeFirst().value(0).toBool());
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
     QVERIFY(verifyOrder(page.eval("window[0].log", QWebEngineScript::MainWorld).toStringList()));
@@ -207,14 +207,14 @@ void tst_QWebEngineScript::loadEvents()
     // Cross-process navigation
     page.load(QUrl("chrome://gpu"));
     QTRY_COMPARE_WITH_TIMEOUT(page.spy.count(), 1, 20000);
-    QCOMPARE(page.spy.takeFirst().value(0).toBool(), true);
+    QVERIFY(page.spy.takeFirst().value(0).toBool());
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::MainWorld).toStringList()));
     QVERIFY(verifyOrder(page.eval("window.log", QWebEngineScript::ApplicationWorld).toStringList()));
 
     // Using window.open from JS
     QVERIFY(profile.pages.size() == 1);
     page.load(QUrl("qrc:/resources/test_window_open.html"));
-    QTRY_VERIFY(profile.pages.size() == 2);
+    QTRY_COMPARE(profile.pages.size(), 2);
     QTRY_COMPARE(profile.pages.front().spy.count(), 1);
     QTRY_COMPARE(profile.pages.back().spy.count(), 1);
     QVERIFY(verifyOrder(profile.pages.front().eval("window.log", QWebEngineScript::MainWorld).toStringList()));

@@ -71,7 +71,7 @@ public:
     bool fatalError;
     bool strictEnforcement;
     const base::Callback<void(content::CertificateRequestResultType)> callback;
-    QList<QSslCertificate> chain;
+    QList<QSslCertificate> certificateChain;
 };
 
 QT_END_NAMESPACE
