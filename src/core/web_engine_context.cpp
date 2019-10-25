@@ -585,7 +585,7 @@ WebEngineContext::WebEngineContext()
                 || usingANGLE())
             {
                 if (qt_gl_global_share_context()->isOpenGLES()) {
-                    glType = gl::kGLImplementationEGLName;
+                    glType = usingANGLE() ? gl::kGLImplementationANGLEName : gl::kGLImplementationEGLName;
                 } else {
                     QOpenGLContext context;
                     QSurfaceFormat format;

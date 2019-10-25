@@ -140,7 +140,7 @@ bool InitializeGLOneOffPlatform()
 {
     VSyncProviderWin::InitializeOneOff();
 
-    if (GetGLImplementation() == kGLImplementationEGLGLES2)
+    if (GetGLImplementation() == kGLImplementationEGLGLES2 || GetGLImplementation() == kGLImplementationEGLANGLE)
         return GLSurfaceEGLQt::InitializeOneOff();
 
     if (GetGLImplementation() == kGLImplementationDesktopGL) {
@@ -173,6 +173,7 @@ CreateOffscreenGLSurfaceWithFormat(const gfx::Size& size, GLSurfaceFormat format
             return surface;
         break;
     }
+    case kGLImplementationEGLANGLE:
     case kGLImplementationEGLGLES2: {
         surface = new GLSurfaceEGLQt(size);
         if (surface->Initialize(format))
