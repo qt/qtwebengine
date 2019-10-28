@@ -1311,6 +1311,14 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         }
     }
 
+    // Ignore autorepeating KeyRelease events so that the generated web events
+    // conform to the spec, which requires autorepeat to result in a sequence of
+    // keypress events and only one final keyup event:
+    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent#Auto-repeat_handling
+    // https://w3c.github.io/uievents/#dom-keyboardevent-repeat
+    if (ev->type() == QEvent::KeyRelease && ev->isAutoRepeat())
+        return;
+
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(ev);
     if (webEvent.GetType() == blink::WebInputEvent::kRawKeyDown && !m_editCommand.empty()) {
         ui::LatencyInfo latency;
