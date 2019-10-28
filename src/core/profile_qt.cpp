@@ -130,7 +130,7 @@ const PrefService* ProfileQt::GetPrefs() const
     return m_prefServiceAdapter.prefService();
 }
 
-base::FilePath ProfileQt::GetPath() const
+base::FilePath ProfileQt::GetPath()
 {
     return toFilePath(m_profileAdapter->dataPath());
 }
@@ -140,7 +140,7 @@ base::FilePath ProfileQt::GetCachePath() const
     return toFilePath(m_profileAdapter->cachePath());
 }
 
-bool ProfileQt::IsOffTheRecord() const
+bool ProfileQt::IsOffTheRecord()
 {
     return m_profileAdapter->isOffTheRecord();
 }
@@ -153,12 +153,6 @@ net::URLRequestContextGetter *ProfileQt::GetRequestContext()
 net::URLRequestContextGetter *ProfileQt::CreateMediaRequestContext()
 {
     return m_urlRequestContextGetter.get();
-}
-
-net::URLRequestContextGetter *ProfileQt::CreateMediaRequestContextForStoragePartition(const base::FilePath&, bool)
-{
-    Q_UNIMPLEMENTED();
-    return nullptr;
 }
 
 content::ResourceContext *ProfileQt::GetResourceContext()
@@ -234,24 +228,15 @@ net::URLRequestContextGetter *ProfileQt::CreateRequestContext(
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(!m_urlRequestContextGetter.get());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    extensions::InfoMap* extension_info_map = GetExtensionSystem()->info_map();
+    extensions::InfoMap *extension_info_map = GetExtensionSystem()->info_map();
     (*protocol_handlers)[extensions::kExtensionScheme] =
-            extensions::CreateExtensionProtocolHandler(IsOffTheRecord(),extension_info_map);
+            extensions::CreateExtensionProtocolHandler(IsOffTheRecord(), extension_info_map);
 #endif
 
     m_profileIOData->setRequestContextData(protocol_handlers, std::move(request_interceptors));
     m_profileIOData->updateStorageSettings();
     m_urlRequestContextGetter = new URLRequestContextGetterQt(m_profileIOData.get());
     return m_urlRequestContextGetter.get();
-}
-
-net::URLRequestContextGetter *ProfileQt::CreateRequestContextForStoragePartition(
-        const base::FilePath& partition_path, bool in_memory,
-        content::ProtocolHandlerMap* protocol_handlers,
-        content::URLRequestInterceptorScopedVector request_interceptors)
-{
-    Q_UNIMPLEMENTED();
-    return nullptr;
 }
 
 content::ClientHintsControllerDelegate *ProfileQt::GetClientHintsControllerDelegate()
@@ -270,7 +255,7 @@ void ProfileQt::SetCorsOriginAccessListForOrigin(const url::Origin &source_origi
                                                std::move(closure));
 }
 
-const content::SharedCorsOriginAccessList *ProfileQt::GetSharedCorsOriginAccessList() const
+content::SharedCorsOriginAccessList *ProfileQt::GetSharedCorsOriginAccessList()
 {
     return m_sharedCorsOriginAccessList.get();
 }

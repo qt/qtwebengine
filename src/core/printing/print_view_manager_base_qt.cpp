@@ -343,9 +343,10 @@ void PrintViewManagerBaseQt::ShouldQuitFromInnerMessageLoop()
     }
 }
 
-bool PrintViewManagerBaseQt::CreateNewPrintJob(printing::PrinterQuery *job)
+bool PrintViewManagerBaseQt::CreateNewPrintJob(std::unique_ptr<printing::PrinterQuery> query)
 {
     DCHECK(!m_isInsideInnerMessageLoop);
+    DCHECK(query);
 
     // Disconnect the current |m_printJob|.
     DisconnectFromCurrentPrintJob();
@@ -359,12 +360,9 @@ bool PrintViewManagerBaseQt::CreateNewPrintJob(printing::PrinterQuery *job)
     // Ask the renderer to generate the print preview, create the print preview
     // view and switch to it, initialize the printer and show the print dialog.
     DCHECK(!m_printJob.get());
-    DCHECK(job);
-    if (!job)
-        return false;
 
     m_printJob = base::MakeRefCounted<printing::PrintJob>();
-    m_printJob->Initialize(job, RenderSourceName(), number_pages_);
+    m_printJob->Initialize(std::move(query), RenderSourceName(), number_pages_);
     m_registrar.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                     content::Source<printing::PrintJob>(m_printJob.get()));
     m_didPrintingSucceed = false;
@@ -482,13 +480,13 @@ bool PrintViewManagerBaseQt::OpportunisticallyCreatePrintJob(int cookie)
 
     // The job was initiated by a script. Time to get the corresponding worker
     // thread.
-    scoped_refptr<printing::PrinterQuery> queued_query = m_printerQueriesQueue->PopPrinterQuery(cookie);
-    if (!queued_query.get()) {
+    std::unique_ptr<printing::PrinterQuery> queued_query = m_printerQueriesQueue->PopPrinterQuery(cookie);
+    if (!queued_query) {
       NOTREACHED();
       return false;
     }
 
-    if (!CreateNewPrintJob(queued_query.get())) {
+    if (!CreateNewPrintJob(std::move(queued_query))) {
       // Don't kill anything.
       return false;
     }
@@ -512,23 +510,23 @@ void PrintViewManagerBaseQt::ReleasePrinterQuery()
     if (!printJobManager)
         return;
 
-    scoped_refptr<printing::PrinterQuery> printerQuery;
+    std::unique_ptr<printing::PrinterQuery> printerQuery;
     printerQuery = m_printerQueriesQueue->PopPrinterQuery(cookie);
-    if (!printerQuery.get())
+    if (!printerQuery)
         return;
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&printing::PrinterQuery::StopWorker, printerQuery.get()));
+                             base::BindOnce(&printing::PrinterQuery::StopWorker, std::move(printerQuery)));
 }
 
 // Originally from print_preview_message_handler.cc:
 void PrintViewManagerBaseQt::StopWorker(int documentCookie) {
   if (documentCookie <= 0)
     return;
-  scoped_refptr<printing::PrinterQuery> printer_query =
+  std::unique_ptr<printing::PrinterQuery> printer_query =
       m_printerQueriesQueue->PopPrinterQuery(documentCookie);
   if (printer_query.get()) {
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                            base::BindOnce(&printing::PrinterQuery::StopWorker, printer_query));
+                            base::BindOnce(&printing::PrinterQuery::StopWorker, std::move(printer_query)));
   }
 }
 

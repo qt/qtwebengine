@@ -178,7 +178,6 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     wasShownTimer.setSingleShot(true);
     QObject::connect(&wasShownTimer, &QTimer::timeout, [this](){
         ensureInitialized();
-        adapter->setVisible(true);
     });
 
     profile->d_ptr->addWebContentsAdapterClient(this);
@@ -442,7 +441,7 @@ void QWebEnginePagePrivate::didPrintPage(quint64 requestId, QSharedPointer<QByte
     printerThread->start();
 
     PrinterWorker *printerWorker = new PrinterWorker(result, currentPrinter);
-    QObject::connect(printerWorker, &PrinterWorker::resultReady, q, [=](bool success) {
+    QObject::connect(printerWorker, &PrinterWorker::resultReady, q, [requestId, this](bool success) {
         currentPrinter = nullptr;
         m_callbacks.invoke(requestId, success);
     });
@@ -1720,8 +1719,8 @@ void QWebEnginePagePrivate::allowCertificateError(const QSharedPointer<Certifica
     accepted = q->certificateError(error);
     if (error.deferred() && !error.answered())
         m_certificateErrorControllers.append(controller);
-    else if (!error.answered() && error.isOverridable())
-        controller->accept(accepted);
+    else if (!error.answered())
+        controller->accept(error.isOverridable() && accepted);
 }
 
 void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)
@@ -1817,7 +1816,7 @@ void QWebEnginePagePrivate::setToolTip(const QString &toolTipText)
     }
 
     // Update tooltip if text was changed.
-    QString wrappedTip = QLatin1String("<p style=\"white-space:pre\">")
+    QString wrappedTip = QLatin1String("<p style=\"white-space:pre-wrap\">")
             % toolTipText.toHtmlEscaped().left(MaxTooltipLength)
             % QLatin1String("</p>");
     if (view->toolTip() != wrappedTip)
@@ -2178,7 +2177,7 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId,
     In addition, a page might also execute scripts
     added through QWebEngineProfile::scripts().
 
-    \sa QWebEngineScriptCollection, QWebEngineScript
+    \sa QWebEngineScriptCollection, QWebEngineScript, {Script Injection}
 */
 
 QWebEngineScriptCollection &QWebEnginePage::scripts()
@@ -2544,7 +2543,7 @@ const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
   \value  Discarded
   Very low resource usage state where the entire browsing context is discarded.
 
-  \sa lifecycleState, {WebEngine Lifecycle Example}
+  \sa lifecycleState, {Page Lifecycle API}, {WebEngine Lifecycle Example}
 */
 
 /*!
@@ -2566,7 +2565,7 @@ const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
   These are the only hard limits on the lifecycle state, but see also
   \l{recommendedState} for the recommended soft limits.
 
-  \sa recommendedState, {WebEngine Lifecycle Example}
+  \sa recommendedState, {Page Lifecycle API}, {WebEngine Lifecycle Example}
 */
 
 QWebEnginePage::LifecycleState QWebEnginePage::lifecycleState() const
@@ -2592,7 +2591,7 @@ void QWebEnginePage::setLifecycleState(LifecycleState state)
   playback or loss of HTML form input. Setting the lifecycle state to a higher
   resource state is however completely safe.
 
-  \sa lifecycleState
+  \sa lifecycleState, {Page Lifecycle API}, {WebEngine Lifecycle Example}
 */
 
 QWebEnginePage::LifecycleState QWebEnginePage::recommendedState() const

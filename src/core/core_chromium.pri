@@ -86,6 +86,7 @@ SOURCES = \
         net/network_delegate_qt.cpp \
         net/proxy_config_service_qt.cpp \
         net/qrc_url_scheme_handler.cpp \
+        net/restricted_cookie_manager_qt.cpp \
         net/ssl_host_state_delegate_qt.cpp \
         net/url_request_context_getter_qt.cpp \
         net/url_request_custom_job.cpp \
@@ -195,6 +196,7 @@ HEADERS = \
         net/custom_protocol_handler.h \
         net/network_delegate_qt.h \
         net/qrc_url_scheme_handler.h \
+        net/restricted_cookie_manager_qt.h \
         net/ssl_host_state_delegate_qt.h \
         net/url_request_context_getter_qt.h \
         net/url_request_custom_job.h \

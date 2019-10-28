@@ -61,14 +61,16 @@
 
 #include <memory>
 
-class NotificationPopup : public QWidget {
+class NotificationPopup : public QWidget
+{
     Q_OBJECT
 
     QLabel m_icon, m_title, m_message;
     std::unique_ptr<QWebEngineNotification> notification;
 
 public:
-    NotificationPopup(QWidget *parent) : QWidget(parent) {
+    NotificationPopup(QWidget *parent) : QWidget(parent)
+    {
         setWindowFlags(Qt::ToolTip);
         auto rootLayout = new QHBoxLayout(this);
 
@@ -91,7 +93,8 @@ public:
         adjustSize();
     }
 
-    void present(std::unique_ptr<QWebEngineNotification> &newNotification) {
+    void present(std::unique_ptr<QWebEngineNotification> &newNotification)
+    {
         if (notification) {
             notification->close();
             notification.reset();
@@ -114,14 +117,16 @@ public:
     }
 
 protected slots:
-    void onClosed() {
+    void onClosed()
+    {
         hide();
         notification->close();
         notification.reset();
     }
 
 protected:
-    void mouseReleaseEvent(QMouseEvent *event) override {
+    void mouseReleaseEvent(QMouseEvent *event) override
+    {
         QWidget::mouseReleaseEvent(event);
         if (notification && event->button() == Qt::LeftButton) {
             notification->click();

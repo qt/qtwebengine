@@ -38,6 +38,8 @@
     properties of the \l {WebEngineView} can be used to reduce the CPU and
     memory usage of background tabs in a tabbed browser.
 
+    For an overview of the lifecycle feature, see \l {Page Lifecycle API}.
+
     \include examples-run.qdocinc
 
     \section1 UI Elements of the Example
@@ -52,71 +54,6 @@
     the top and a \l {WebEngineView} for displaying web pages. Finally, the main
     window also has a \l {Drawer} for changing settings. The drawer can be
     opened by clicking the "⋮" button on the tool bar.
-
-    \section1 Overview of Lifecycle States
-
-    Each \l {WebEngineView} item can be in one of three \e {lifecycle states}:
-    active, frozen, or discarded. These states, like the sleep states of a CPU,
-    control the resource usage of web views.
-
-    The \e {active} state is the normal, unrestricted state of a web view. All
-    visible web views are always in the active state, as are all web views that
-    have not yet finished loading. Only invisible, idle web views can be
-    transitioned to other lifecycle states.
-
-    The \e {frozen} state is a low CPU usage state. In this state, most HTML
-    task sources are suspended (frozen) and, as a result, most DOM event
-    processing and JavaScript execution will also be suspended. The web view
-    must be invisible in order to be frozen as rendering is not possible in this
-    state.
-
-    The \e {discarded} state is an extreme resource-saving state. In this state,
-    the browsing context of the web view will be discarded and the corresponding
-    renderer subprocess shut down. CPU and memory usage in this state is reduced
-    virtually to zero. On exiting this state the web page will be automatically
-    reloaded. The process of entering and exiting the discarded state is similar
-    to serializing the browsing history of the web view and destroying the view,
-    then creating a new view and restoring its history.
-
-    See also \l {WebEngineView::LifecycleState}. The equivalent in the Widgets
-    API is \l {QWebEnginePage::LifecycleState}.
-
-    \section2 The \c {lifecycleState} and \c {recommendedState} Properties
-
-    The \l {WebEngineView::}{lifecycleState} property of the \l {WebEngineView}
-    type is a read-write property that controls the current lifecycle state of
-    the web view. This property is designed to place as few restrictions as
-    possible on what states can be transitioned to. For example, it is allowed
-    to freeze a web view that is currently playing music in the background,
-    stopping the music. In order to implement a less aggressive resource-saving
-    strategy that avoids interrupting user-visible background activity, the \l
-    {WebEngineView::} {recommendedState} property must be used.
-
-    The \l {WebEngineView::}{recommendedState} property of the \l
-    {WebEngineView} type is a read-only property that calculates a safe limit on
-    the \l {WebEngineView::}{lifecycleState} property, taking into account the
-    current activity of the web view. So, in the example of a web view playing
-    music in the background, the recommended state will be \c {Active} since a
-    more aggressive state would stop the music. If the application wants to
-    avoid interrupting background activity, then it should avoid putting the web
-    view into a more aggressively resource-saving lifecycle state than what's
-    given by \l {WebEngineView::}{recommendedState}.
-
-    See also \l {WebEngineView::lifecycleState} and \l
-    {WebEngineView::recommendedState}. The equivalents in the Widgets API are \l
-    {QWebEnginePage::lifecycleState} and \l {QWebEnginePage::recommendedState}.
-
-    \section2 The Page Lifecycle API
-
-    The \l {WebEngineView::}{lifecycleState} property is connected to the \l
-    {https://wicg.github.io/page-lifecycle/spec.html}{Page Lifecycle API}, a
-    work-in-progress extension to the HTML standard that specifies two new DOM
-    events, \c {freeze} and \c {resume}, and adds a new \c
-    {Document.wasDiscarded} boolean property. The \c {freeze} and \c {resume}
-    events are fired when transitioning from the \c {Active} to the \c {Frozen
-    state}, and vice-versa. The \c {Document.wasDiscarded} property is set to \c
-    {true} when transition from the \c {Discarded} state to the \c {Active}
-    state.
 
     \section1 Lifecycle States in the Example
 

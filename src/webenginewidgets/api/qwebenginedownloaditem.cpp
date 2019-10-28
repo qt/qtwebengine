@@ -560,7 +560,7 @@ void QWebEngineDownloadItem::setPath(QString path)
             d->downloadDirectory = QStringLiteral("");
             d->downloadFileName = path;
         } else {
-            d->downloadDirectory = QFileInfo(path).filePath();
+            d->downloadDirectory = QFileInfo(path).path();
             d->downloadFileName = QFileInfo(path).fileName();
         }
     }
@@ -588,7 +588,7 @@ QString QWebEngineDownloadItem::downloadDirectory() const
     download item's state.
 */
 
-void QWebEngineDownloadItem::setDownloadDirectory(QString directory)
+void QWebEngineDownloadItem::setDownloadDirectory(const QString &directory)
 {
     Q_D(QWebEngineDownloadItem);
     if (d->downloadState != QWebEngineDownloadItem::DownloadRequested) {
@@ -626,7 +626,7 @@ QString QWebEngineDownloadItem::downloadFileName() const
     download item's state.
 */
 
-void QWebEngineDownloadItem::setDownloadFileName(QString fileName)
+void QWebEngineDownloadItem::setDownloadFileName(const QString &fileName)
 {
     Q_D(QWebEngineDownloadItem);
     if (d->downloadState != QWebEngineDownloadItem::DownloadRequested) {

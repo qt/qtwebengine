@@ -40,23 +40,20 @@
 #include "display_gl_output_surface.h"
 #include "display_software_output_surface.h"
 
-#include "components/viz/service/display_embedder/gpu_display_provider.h"
+#include "components/viz/service/display_embedder/output_surface_provider_impl.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 
 std::unique_ptr<viz::OutputSurface>
-viz::GpuDisplayProvider::CreateGLOutputSurface(
-        scoped_refptr<VizProcessContextProvider> context_provider,
-        UpdateVSyncParametersCallback update_vsync_callback)
+viz::OutputSurfaceProviderImpl::CreateGLOutputSurface(
+        scoped_refptr<VizProcessContextProvider> context_provider)
 {
-    return std::make_unique<QtWebEngineCore::DisplayGLOutputSurface>(
-            std::move(context_provider), std::move(update_vsync_callback));
+    return std::make_unique<QtWebEngineCore::DisplayGLOutputSurface>(std::move(context_provider));
 }
 
 std::unique_ptr<viz::OutputSurface>
-viz::GpuDisplayProvider::CreateSoftwareOutputSurface(
-        UpdateVSyncParametersCallback update_vsync_callback)
+viz::OutputSurfaceProviderImpl::CreateSoftwareOutputSurface()
 {
-    return std::make_unique<QtWebEngineCore::DisplaySoftwareOutputSurface>(std::move(update_vsync_callback));
+    return std::make_unique<QtWebEngineCore::DisplaySoftwareOutputSurface>();
 }
 
 void gpu::InProcessCommandBuffer::GetTextureQt(

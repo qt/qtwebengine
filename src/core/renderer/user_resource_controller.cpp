@@ -71,7 +71,7 @@ static const int afterLoadTimeout = 500;
 
 static int validUserScriptSchemes()
 {
-    return URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS | URLPattern::SCHEME_FILE;
+    return URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS | URLPattern::SCHEME_FILE | URLPattern::SCHEME_QRC;
 }
 
 static bool regexMatchesURL(const std::string &pat, const GURL &url) {

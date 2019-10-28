@@ -7,7 +7,7 @@
     ],
     "commandline": {
         "options": {
-            "webengine-core": "boolean",
+            "build-qtwebengine-core": "boolean",
             "webengine-jumbo-build": { "type": "optionalString", "name": "merge_limit"}
         }
     },
@@ -351,18 +351,57 @@
         "webengine-win-compiler64": {
             "label": "64bit compiler",
             "type": "isWindowsHostCompiler64"
+        },
+        "webengine-platform-support": {
+            "label": "platform supported",
+            "type": "detectPlatform",
+            "log": "platformSupport"
+        },
+        "webengine-arch-support": {
+            "label": "architecture supported",
+            "type": "detectArch"
+        },
+        "webengine-submodule" : {
+            "label": "submodule initialized",
+            "type": "detectSubmodule"
+        },
+        "webengine-nowhitespace" : {
+            "label": "build path without whitespace",
+            "type": "detectNoWhitespace"
         }
     },
     "features": {
-        "webengine-core": {
+        "webengine-core-support": {
             "label": "Support Qt WebEngine Core",
-            "purpose": "Provides WebEngine Core support.",
             "condition": "module.gui
                          && features.webengine-python2
                          && features.webengine-gperf
                          && features.webengine-bison
                          && features.webengine-flex
-                         && (!features.xcb || features.webengine-ozone-x11)",
+                         && features.webengine-submodule
+                         && features.webengine-nowhitespace
+                         && features.webengine-arch-support
+                         && !features.webengine-no-platform-support
+                         && !config.static
+                         && (!config.linux || features.pkg-config)
+                         && (!features.xcb || features.webengine-ozone-x11)
+                         && (!config.win32 || features.webengine-winversion)",
+            "output": [ "privateFeature" ]
+        },
+        "build-qtwebengine-core": {
+            "label": "Build Qt WebEngine Core",
+            "purpose": "Provides WebEngine Core support.",
+            "output": [ "privateFeature" ]
+        },
+        "build-qtpdf": {
+             "label": "Support Qt PDF rendering module",
+             "purpose": "Enables building the Qt PDF rendering module.",
+             "output": [ "privateFeature" ]
+        },
+        "webengine-developer-build": {
+            "label": "Developer build",
+            "purpose": "Enables the developer build configuration.",
+            "autoDetect": "features.private_tests",
             "output": [ "privateFeature" ]
         },
         "webengine-python2": {
@@ -393,7 +432,7 @@
             "condition": "tests.webengine-ninja",
             "output": [ "privateFeature" ]
         },
-           "webengine-system-fontconfig": {
+        "webengine-system-fontconfig": {
             "label": "fontconfig",
             "condition": "libs.webengine-fontconfig",
             "output": [ "privateFeature" ]
@@ -613,43 +652,56 @@
             "label": "64bit compiler",
             "condition": "config.win32 && tests.webengine-win-compiler64",
             "output": [ "privateFeature" ]
+        },
+        "webengine-submodule": {
+            "label": "submodule",
+            "condition": "tests.webengine-submodule",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-nowhitespace": {
+            "label": "nowhitespace",
+            "condition" : "tests.webengine-nowhitespace",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-arch-support": {
+            "label": "architecture",
+            "condition" : "tests.webengine-arch-support",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-no-platform-support": {
+            "label": "platform",
+            "condition" : "!tests.webengine-platform-support",
+            "output": [
+                "privateFeature",
+                { "type": "varAssign", "name": "PLATFORM_ERROR", "value": "tests.webengine-platform-support.platformSupport" }
+            ]
         }
     },
     "report": [
         {
-            "type": "warning",
-            "condition": "!module.gui",
-            "message": "QtWebEngine requires QtGui."
+            "type": "skipBuildWarning",
+            "condition": "!features.webengine-core-support && (features.build-qtwebengine-core || features.build-qtpdf)",
+            "message": "qtwebengine_confCheckError"
+        },
+        {
+            "type": "note",
+            "condition": "features.webengine-core-support && !features.build-qtwebengine-core",
+            "message": "QtWebEngine build is disabled by user."
+        },
+        {
+            "type": "note",
+            "condition": "features.webengine-core-support && !features.build-qtpdf",
+            "message": "QtPdf build is disabled by user."
         },
         {
             "type": "warning",
-            "condition": "!features.webengine-python2",
-            "message": "Python version 2 (2.7.5 or later) is required to build QtWebEngine."
+            "condition": "!features.webengine-core-support && features.build-qtwebengine-core",
+            "message": "QtWebEngine will not be built."
         },
         {
             "type": "warning",
-            "condition": "!features.webengine-gperf",
-            "message": "gperf is required to build QtWebEngine."
-        },
-        {
-            "type": "warning",
-            "condition": "!features.webengine-bison",
-            "message": "bison is required to build QtWebEngine."
-        },
-        {
-            "type": "warning",
-            "condition": "!features.webengine-flex",
-            "message": "flex is required to build QtWebEngine."
-        },
-        {
-            "type": "warning",
-            "condition": "config.linux && !features.webengine-ozone-x11 && features.xcb",
-            "message": "Could not find all necessary libraries for qpa-xcb support."
-        },
-        {
-            "type": "warning",
-            "condition": "config.win32 && !features.webengine-win-compiler64",
-            "message": "64-bit cross-building or native toolchain is required to build QtWebEngine."
+            "condition": "!features.webengine-core-support && features.build-qtpdf",
+            "message": "QtPdf will not be built."
         }
     ],
     "summary": [
@@ -662,9 +714,10 @@
                     "message": "Jumbo Build Merge Limit",
                     "type": "jumboBuild"
                 },
+                "webengine-developer-build",
                 {
-                    "section": "Required system libraries",
-                    "condition": "config.unix && !config.macos && features.webengine-core",
+                    "section": "QtWebEngine required system libraries",
+                    "condition": "config.unix && !config.macos",
                     "entries": [
                         "webengine-system-fontconfig",
                         "webengine-system-dbus",
@@ -674,8 +727,8 @@
                     ]
                 },
                 {
-                    "section": "Required system libraries for qpa-xcb",
-                    "condition": "config.unix && !config.macos && features.webengine-core",
+                    "section": "QtWebEngine required system libraries for qpa-xcb",
+                    "condition": "config.unix && !config.macos && features.xcb",
                     "entries": [
                         "webengine-system-x11",
                         "webengine-system-libdrm",

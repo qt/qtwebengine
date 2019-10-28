@@ -56,6 +56,8 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_frame_helper.h"
@@ -118,6 +120,28 @@ void ExtensionsRendererClientQt::OnExtensionLoaded(const extensions::Extension &
 void ExtensionsRendererClientQt::OnExtensionUnloaded(const extensions::ExtensionId &extension_id)
 {
     resource_request_policy_->OnExtensionUnloaded(extension_id);
+}
+
+bool ExtensionsRendererClientQt::ExtensionAPIEnabledForServiceWorkerScript(const GURL &scope, const GURL &script_url) const
+{
+    if (!script_url.SchemeIs(extensions::kExtensionScheme))
+        return false;
+
+    if (!extensions::ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers())
+        return false;
+
+    const extensions::Extension* extension =
+            extensions::RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(script_url);
+
+    if (!extension || !extensions::BackgroundInfo::IsServiceWorkerBased(extension))
+        return false;
+
+    if (scope != extension->url())
+        return false;
+
+    const std::string& sw_script = extensions::BackgroundInfo::GetBackgroundServiceWorkerScript(extension);
+
+    return extension->GetResourceURL(sw_script) == script_url;
 }
 
 void ExtensionsRendererClientQt::RenderThreadStarted()

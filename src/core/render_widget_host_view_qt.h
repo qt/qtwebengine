@@ -52,6 +52,7 @@
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
@@ -101,6 +102,7 @@ struct MultipleMouseClickHelper
 
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
+    , public content::RenderProcessHostObserver
     , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
@@ -147,7 +149,7 @@ public:
     void SetIsLoading(bool) override;
     void ImeCancelComposition() override;
     void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) override;
-    void RenderProcessGone(base::TerminationStatus, int) override;
+    void RenderProcessGone() override;
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
     void DisplayTooltipText(const base::string16& tooltip_text) override;
@@ -173,6 +175,10 @@ public:
     void ResetFallbackToFirstNavigationSurface() override;
     void DidStopFlinging() override;
     std::unique_ptr<content::SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
+
+    // RenderProcessHostObserver implementation.
+    void RenderProcessExited(content::RenderProcessHost *host,
+                             const content::ChildProcessTerminationInfo &info) override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -214,6 +220,7 @@ public:
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_MACOSX)
 
+    void UpdateNeedsBeginFramesInternal();
 
     // Overridden from content::BrowserAccessibilityDelegate
     content::BrowserAccessibilityManager* CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
@@ -269,6 +276,7 @@ private:
 
     const bool m_enableViz;
     bool m_visible;
+    bool m_needsBeginFrames;
     DelegatedFrameHostClientQt m_delegatedFrameHostClient{this};
     std::unique_ptr<content::DelegatedFrameHost> m_delegatedFrameHost;
     std::unique_ptr<ui::Layer> m_rootLayer;

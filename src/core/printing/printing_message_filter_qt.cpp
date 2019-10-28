@@ -92,10 +92,10 @@ bool PrintingMessageFilterQt::OnMessageReceived(const IPC::Message& message) {
 
 void PrintingMessageFilterQt::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  scoped_refptr<printing::PrinterQuery> printer_query;
+  std::unique_ptr<printing::PrinterQuery> printer_query;
 
   printer_query = queue_->PopPrinterQuery(0);
-  if (!printer_query.get()) {
+  if (!printer_query) {
     printer_query =
         queue_->CreatePrinterQuery(render_process_id_, reply_msg->routing_id());
   }
@@ -109,14 +109,14 @@ void PrintingMessageFilterQt::OnGetDefaultPrintSettings(IPC::Message* reply_msg)
       printing::DEFAULT_MARGINS,
       false,
       false,
-      base::Bind(&PrintingMessageFilterQt::OnGetDefaultPrintSettingsReply,
-                 this,
-                 printer_query,
-                 reply_msg));
+      base::BindOnce(&PrintingMessageFilterQt::OnGetDefaultPrintSettingsReply,
+                     this,
+                     std::move(printer_query),
+                     reply_msg));
 }
 
 void PrintingMessageFilterQt::OnGetDefaultPrintSettingsReply(
-    scoped_refptr<printing::PrinterQuery> printer_query,
+    std::unique_ptr<printing::PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
   PrintMsg_Print_Params params;
   if (!printer_query.get() ||
@@ -132,7 +132,7 @@ void PrintingMessageFilterQt::OnGetDefaultPrintSettingsReply(
   if (printer_query.get()) {
     // If user hasn't cancelled.
     if (printer_query->cookie() && printer_query->settings().dpi()) {
-      queue_->QueuePrinterQuery(printer_query.get());
+      queue_->QueuePrinterQuery(std::move(printer_query));
     } else {
       printer_query->StopWorker();
     }
@@ -142,7 +142,7 @@ void PrintingMessageFilterQt::OnGetDefaultPrintSettingsReply(
 void PrintingMessageFilterQt::OnScriptedPrint(
     const PrintHostMsg_ScriptedPrint_Params& params,
     IPC::Message* reply_msg) {
-  scoped_refptr<printing::PrinterQuery> printer_query =
+  std::unique_ptr<printing::PrinterQuery> printer_query =
       queue_->PopPrinterQuery(params.cookie);
   if (!printer_query.get()) {
     printer_query =
@@ -155,14 +155,14 @@ void PrintingMessageFilterQt::OnScriptedPrint(
       params.margin_type,
       params.is_scripted,
       params.is_modifiable,
-      base::Bind(&PrintingMessageFilterQt::OnScriptedPrintReply,
-                 this,
-                 printer_query,
-                 reply_msg));
+      base::BindOnce(&PrintingMessageFilterQt::OnScriptedPrintReply,
+                     this,
+                     std::move(printer_query),
+                     reply_msg));
 }
 
 void PrintingMessageFilterQt::OnScriptedPrintReply(
-    scoped_refptr<printing::PrinterQuery> printer_query,
+    std::unique_ptr<printing::PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
   PrintMsg_PrintPages_Params params;
 
@@ -177,7 +177,7 @@ void PrintingMessageFilterQt::OnScriptedPrintReply(
   PrintHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, params);
   Send(reply_msg);
   if (!params.params.dpi.IsEmpty() && params.params.document_cookie) {
-    queue_->QueuePrinterQuery(printer_query.get());
+    queue_->QueuePrinterQuery(std::move(printer_query));
   } else {
     printer_query->StopWorker();
   }
@@ -186,7 +186,7 @@ void PrintingMessageFilterQt::OnScriptedPrintReply(
 void PrintingMessageFilterQt::OnUpdatePrintSettings(int document_cookie,
                                                     base::Value job_settings,
                                                     IPC::Message* reply_msg) {
-  scoped_refptr<printing::PrinterQuery> printer_query;
+  std::unique_ptr<printing::PrinterQuery> printer_query;
   printer_query = queue_->PopPrinterQuery(document_cookie);
   if (!printer_query.get()) {
     printer_query = queue_->CreatePrinterQuery(
@@ -194,12 +194,11 @@ void PrintingMessageFilterQt::OnUpdatePrintSettings(int document_cookie,
   }
   printer_query->SetSettings(
       std::move(job_settings),
-      base::Bind(&PrintingMessageFilterQt::OnUpdatePrintSettingsReply, this,
-                 printer_query, reply_msg));
+      base::BindOnce(&PrintingMessageFilterQt::OnUpdatePrintSettingsReply, this,
+                     std::move(printer_query), reply_msg));
 }
 
-void PrintingMessageFilterQt::OnUpdatePrintSettingsReply(
-    scoped_refptr<printing::PrinterQuery> printer_query,
+void PrintingMessageFilterQt::OnUpdatePrintSettingsReply(std::unique_ptr<printing::PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
   PrintMsg_PrintPages_Params params;
   if (!printer_query.get() ||
@@ -218,9 +217,9 @@ void PrintingMessageFilterQt::OnUpdatePrintSettingsReply(
           (printer_query->last_status() == printing::PrintingContext::CANCEL));
   Send(reply_msg);
   // If user hasn't cancelled.
-  if (printer_query.get()) {
+  if (printer_query) {
     if (printer_query->cookie() && printer_query->settings().dpi()) {
-      queue_->QueuePrinterQuery(printer_query.get());
+      queue_->QueuePrinterQuery(std::move(printer_query));
     } else {
       printer_query->StopWorker();
     }

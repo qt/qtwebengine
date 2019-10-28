@@ -73,6 +73,8 @@
 
     \list
         \li Visual Studio 2017 version 15.8 or later
+        \li Active Template Library (ATL), usually included in the Visual Studio
+            installation
         \li Windows 10 SDK
     \endlist
 

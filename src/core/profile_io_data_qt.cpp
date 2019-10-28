@@ -55,6 +55,8 @@
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
+#include "net/cert_net/cert_net_fetcher_impl.h"
+#include "net/ftp/ftp_auth_cache.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_scheme.h"
@@ -67,8 +69,6 @@
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -79,6 +79,7 @@
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "services/file/user_id_map.h"
 #include "services/network/proxy_service_mojo.h"
+#include "services/network/restricted_cookie_manager.h"
 
 #include "net/client_cert_override.h"
 #include "net/client_cert_store_data.h"
@@ -86,6 +87,7 @@
 #include "net/custom_protocol_handler.h"
 #include "net/network_delegate_qt.h"
 #include "net/proxy_config_service_qt.h"
+#include "net/restricted_cookie_manager_qt.h"
 #include "net/url_request_context_getter_qt.h"
 #include "profile_qt.h"
 #include "resource_context_qt.h"
@@ -103,6 +105,8 @@
 #include <mutex>
 
 namespace QtWebEngineCore {
+
+static scoped_refptr<net::CertNetFetcherImpl> s_certNetFetcher;
 
 static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first,
                                         const net::HttpNetworkSession::Params &second)
@@ -182,13 +186,18 @@ ProfileIODataQt::~ProfileIODataQt()
 #if defined(USE_NSS_CERTS)
         net::SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
-#if defined(OS_LINUX) ||defined(OS_MACOSX)
-        net::ShutdownGlobalCertNetFetcher();
-#endif
+        if (s_certNetFetcher) {
+            s_certNetFetcher->Shutdown();
+            s_certNetFetcher.reset();
+        }
     }
 
-    if (m_urlRequestContext && m_urlRequestContext->proxy_resolution_service())
-        m_urlRequestContext->proxy_resolution_service()->OnShutdown();
+    if (m_urlRequestContext) {
+        if (m_urlRequestContext->proxy_resolution_service())
+            m_urlRequestContext->proxy_resolution_service()->OnShutdown();
+        m_restrictedCookieManagerBindings.CloseAllBindings();
+        cancelAllUrlRequests();
+    }
 
     m_resourceContext.reset();
     if (m_cookieDelegate)
@@ -236,12 +245,20 @@ extensions::ExtensionSystemQt* ProfileIODataQt::GetExtensionSystem()
 }
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
+base::WeakPtr<ProfileIODataQt> ProfileIODataQt::getWeakPtrOnUIThread()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    return m_weakPtr;
+}
+
 void ProfileIODataQt::initializeOnIOThread()
 {
     m_networkDelegate.reset(new NetworkDelegateQt(this));
+    m_hostResolver = net::HostResolver::CreateStandaloneResolver(nullptr);
     m_urlRequestContext.reset(new net::URLRequestContext());
     m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
-    m_urlRequestContext->set_enable_brotli(base::FeatureList::IsEnabled(features::kBrotliEncoding));
+    m_urlRequestContext->set_enable_brotli(true);
+    m_urlRequestContext->set_host_resolver(m_hostResolver.get());
     // this binds factory to io thread
     m_weakPtr = m_weakPtrFactory.GetWeakPtr();
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
@@ -259,8 +276,7 @@ void ProfileIODataQt::initializeOnUIThread()
     ProtocolHandlerRegistry* protocolHandlerRegistry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(m_profile);
     DCHECK(protocolHandlerRegistry);
-    m_protocolHandlerInterceptor =
-        protocolHandlerRegistry->CreateJobInterceptorFactory();
+    m_protocolHandlerRegistryIOThreadDelegate = protocolHandlerRegistry->io_thread_delegate();
     m_cookieDelegate = new CookieMonsterDelegateQt();
     m_cookieDelegate->setClient(m_profile->profileAdapter()->cookieStore());
     createProxyConfig();
@@ -301,6 +317,7 @@ void ProfileIODataQt::generateStorage()
     // We must stop all requests before deleting their backends.
     if (m_storage) {
         m_urlRequestContext->proxy_resolution_service()->OnShutdown();
+        m_restrictedCookieManagerBindings.CloseAllBindings();
         m_cookieDelegate->setCookieMonster(nullptr);
         m_storage->set_cookie_store(nullptr);
         cancelAllUrlRequests();
@@ -315,7 +332,7 @@ void ProfileIODataQt::generateStorage()
     net::ProxyConfigService *proxyConfigService = m_proxyConfigService.fetchAndStoreAcquire(0);
     Q_ASSERT(proxyConfigService);
 
-    std::unique_ptr<net::CertVerifier> cert_verifier = net::CertVerifier::CreateDefault();
+    std::unique_ptr<net::CertVerifier> cert_verifier = net::CertVerifier::CreateDefault(s_certNetFetcher);
     net::CertVerifier::Config config;
     // Enable revocation checking:
     config.enable_rev_checking = true;
@@ -329,8 +346,7 @@ void ProfileIODataQt::generateStorage()
     for (const auto &ct_log : certificate_transparency::GetKnownLogs()) {
         scoped_refptr<const net::CTLogVerifier> log_verifier =
                 net::CTLogVerifier::Create(std::string(ct_log.log_key, ct_log.log_key_length),
-                                           ct_log.log_name,
-                                           ct_log.log_dns_domain);
+                                           ct_log.log_name);
         if (!log_verifier)
             continue;
         ct_logs.push_back(std::move(log_verifier));
@@ -338,11 +354,6 @@ void ProfileIODataQt::generateStorage()
     ct_verifier->AddLogs(ct_logs);
     m_storage->set_cert_transparency_verifier(std::move(ct_verifier));
     m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::DefaultCTPolicyEnforcer()));
-//    static std::unique_ptr<net::HostResolverManager> s_hostResolverManager =
-//            std::make_unique<net::HostResolverManager>(net::HostResolver::Options(), nullptr);
-//    m_storage->set_host_resolver(net::HostResolver::CreateResolver(s_hostResolverManager.get()));
-    m_storage->set_host_resolver(net::HostResolver::CreateStandaloneResolver(nullptr));
-
     m_storage->set_ssl_config_service(std::make_unique<net::SSLConfigServiceDefaults>());
     if (!m_httpAuthPreferences) {
         m_httpAuthPreferences.reset(new net::HttpAuthPreferences());
@@ -383,6 +394,8 @@ void ProfileIODataQt::generateStorage()
                                                 m_urlRequestContext->host_resolver(),
                                                 nullptr /* NetLog */,
                                                 m_urlRequestContext->network_delegate()));
+
+    m_storage->set_ftp_auth_cache(std::make_unique<net::FtpAuthCache>());
 }
 
 
@@ -393,9 +406,7 @@ void ProfileIODataQt::generateCookieStore()
 
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
 
-    // FIXME: Add code to remove the old database.
-    m_storage->set_channel_id_service(
-            std::make_unique<net::ChannelIDService>(new net::DefaultChannelIDStore(nullptr)));
+    // FIXME: Add code to remove the old channel-id database.
 
     std::unique_ptr<net::CookieStore> cookieStore;
     switch (m_persistentCookiesPolicy) {
@@ -429,7 +440,6 @@ void ProfileIODataQt::generateCookieStore()
     }
 
     net::CookieMonster * const cookieMonster = static_cast<net::CookieMonster*>(cookieStore.get());
-    cookieStore->SetChannelIDServiceID(m_urlRequestContext->channel_id_service()->GetUniqueID());
     m_cookieDelegate->setCookieMonster(cookieMonster);
     m_storage->set_cookie_store(std::move(cookieStore));
 
@@ -492,7 +502,6 @@ void ProfileIODataQt::generateHttpCache()
     if (!m_httpNetworkSession
             || !doNetworkSessionParamsMatch(network_session_params, m_httpNetworkSession->params())
             || !doNetworkSessionContextMatch(network_session_context, m_httpNetworkSession->context())) {
-        cancelAllUrlRequests();
         m_httpNetworkSession.reset(new net::HttpNetworkSession(network_session_params,
                                                                network_session_context));
     }
@@ -526,7 +535,7 @@ void ProfileIODataQt::generateJobFactory()
     jobFactory->SetProtocolHandler(url::kFileScheme,
                                    std::make_unique<net::FileProtocolHandler>(taskRunner));
     jobFactory->SetProtocolHandler(url::kFtpScheme,
-            net::FtpProtocolHandler::Create(m_urlRequestContext->host_resolver()));
+            net::FtpProtocolHandler::Create(m_urlRequestContext->host_resolver(), m_urlRequestContext->ftp_auth_cache()));
 
     m_installedCustomSchemes = m_customUrlSchemes;
     for (const QByteArray &scheme : qAsConst(m_installedCustomSchemes)) {
@@ -546,11 +555,6 @@ void ProfileIODataQt::generateJobFactory()
     }
 
     m_requestInterceptors.clear();
-
-    if (m_protocolHandlerInterceptor) {
-        m_protocolHandlerInterceptor->Chain(std::move(topJobFactory));
-        topJobFactory = std::move(m_protocolHandlerInterceptor);
-    }
 
     m_jobFactory = std::move(topJobFactory);
 
@@ -591,9 +595,9 @@ void ProfileIODataQt::setGlobalCertificateVerification()
         // Set request context used by NSS for OCSP requests.
         net::SetURLRequestContextForNSSHttpIO(m_urlRequestContext.get());
 #endif
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-        net::SetGlobalCertNetFetcher(net::CreateCertNetFetcher(m_urlRequestContext.get()));
-#endif
+        if (!s_certNetFetcher)
+            s_certNetFetcher = base::MakeRefCounted<net::CertNetFetcherImpl>();
+        s_certNetFetcher->SetURLRequestContext(m_urlRequestContext.get());
     }
 }
 
@@ -651,7 +655,7 @@ void ProfileIODataQt::createProxyConfig()
                     base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})),
                     initialConfig, initialConfigState);
     //pass interface to io thread
-    m_proxyResolverFactoryInterface = ChromeMojoProxyResolverFactory::CreateWithStrongBinding().PassInterface();
+    m_proxyResolverFactoryInterface = ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
 }
 
 void ProfileIODataQt::updateStorageSettings()
@@ -774,6 +778,8 @@ void ProfileIODataQt::updateUsedForGlobalCertificateVerification()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
+    if (m_useForGlobalCertificateVerification == m_profileAdapter->isUsedForGlobalCertificateVerification())
+        return;
     m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
 
     if (m_useForGlobalCertificateVerification)
@@ -797,9 +803,34 @@ std::unique_ptr<net::ClientCertStore> ProfileIODataQt::CreateClientCertStore()
 #endif
 }
 
+void ProfileIODataQt::CreateRestrictedCookieManager(network::mojom::RestrictedCookieManagerRequest request,
+                                                    network::mojom::RestrictedCookieManagerRole role,
+                                                    const url::Origin &origin,
+                                                    bool is_service_worker,
+                                                    int32_t process_id,
+                                                    int32_t routing_id)
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    m_restrictedCookieManagerBindings.AddBinding(
+                std::make_unique<RestrictedCookieManagerQt>(
+                        m_weakPtr,
+                        role, urlRequestContext()->cookie_store(),
+                        &m_cookieSettings, origin,
+                        is_service_worker, process_id, routing_id),
+                std::move(request));
+}
+
+// static
+ProfileIODataQt *ProfileIODataQt::FromBrowserContext(content::BrowserContext *browser_context)
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    return static_cast<ProfileQt *>(browser_context)->m_profileIOData.get();
+}
+
 // static
 ProfileIODataQt *ProfileIODataQt::FromResourceContext(content::ResourceContext *resource_context)
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     return static_cast<ResourceContextQt *>(resource_context)->m_io_data;
 }
 

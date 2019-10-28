@@ -1824,24 +1824,22 @@ void tst_QWebEnginePage::runJavaScriptFromSlot()
 {
     QWebEngineProfile profile;
     QWebEnginePage page(&profile);
-    page.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
 
     QSignalSpy loadFinishedSpy(&page, &QWebEnginePage::loadFinished);
     page.setHtml("<html><body>"
                  "  <input type='text' id='input1' value='QtWebEngine' size='50' />"
                  "</body></html>");
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
-    // Workaround for QTBUG-74718
-    QTRY_VERIFY(page.action(QWebEnginePage::SelectAll)->isEnabled());
 
-    QVariant result(-1);
+    bool done = false;
     connect(&page, &QWebEnginePage::selectionChanged, [&]() {
-        result = evaluateJavaScriptSync(&page, QStringLiteral("2+2"));
+        QTRY_COMPARE(evaluateJavaScriptSync(&page, QStringLiteral("2+2")), QVariant(4));
+        done = true;
     });
     evaluateJavaScriptSync(&page, QStringLiteral("const input = document.getElementById('input1');"
                                                  "input.focus();"
                                                  "input.select();"));
-    QTRY_COMPARE(result, QVariant(4));
+    QTRY_VERIFY(done);
 }
 
 void tst_QWebEnginePage::fullScreenRequested()

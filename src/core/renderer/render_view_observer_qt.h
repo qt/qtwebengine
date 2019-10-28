@@ -43,14 +43,9 @@
 
 #include <QtGlobal>
 
-namespace web_cache {
-class WebCacheImpl;
-}
-
 class RenderViewObserverQt : public content::RenderViewObserver {
 public:
-    RenderViewObserverQt(content::RenderView* render_view,
-                         web_cache::WebCacheImpl* web_cache_impl);
+    RenderViewObserverQt(content::RenderView* render_view);
 
 private:
     void onFetchDocumentMarkup(quint64 requestId);
@@ -60,9 +55,6 @@ private:
     void OnDestruct() override;
 
     bool OnMessageReceived(const IPC::Message& message) override;
-    void Navigate(const GURL& url) override;
-
-    web_cache::WebCacheImpl* m_web_cache_impl;
 
     DISALLOW_COPY_AND_ASSIGN(RenderViewObserverQt);
 };

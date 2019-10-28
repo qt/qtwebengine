@@ -41,7 +41,6 @@
 
 #include "common/qt_messages.h"
 
-#include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -52,10 +51,8 @@
 #include "third_party/blink/public/web/web_view.h"
 
 RenderViewObserverQt::RenderViewObserverQt(
-        content::RenderView* render_view,
-        web_cache::WebCacheImpl* web_cache_impl)
+        content::RenderView* render_view)
     : content::RenderViewObserver(render_view)
-    , m_web_cache_impl(web_cache_impl)
 {
 }
 
@@ -98,10 +95,4 @@ bool RenderViewObserverQt::OnMessageReceived(const IPC::Message& message)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
-}
-
-void RenderViewObserverQt::Navigate(const GURL &)
-{
-    if (m_web_cache_impl)
-        m_web_cache_impl->ExecutePendingClearCache();
 }

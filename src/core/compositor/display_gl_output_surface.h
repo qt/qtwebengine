@@ -61,9 +61,7 @@ namespace QtWebEngineCore {
 class DisplayGLOutputSurface final : public viz::OutputSurface, public DisplayProducer
 {
 public:
-    DisplayGLOutputSurface(
-            scoped_refptr<viz::VizProcessContextProvider> contextProvider,
-            viz::UpdateVSyncParametersCallback callback);
+    DisplayGLOutputSurface(scoped_refptr<viz::VizProcessContextProvider> contextProvider);
     ~DisplayGLOutputSurface() override;
 
     // Overridden from viz::OutputSurface.
@@ -72,7 +70,6 @@ public:
     void DiscardBackbuffer() override;
     void BindFramebuffer() override;
     void SetDrawRectangle(const gfx::Rect &drawRect) override;
-    viz::OverlayCandidateValidator *GetOverlayCandidateValidator() const override;
     bool IsDisplayedAsOverlayPlane() const override;
     unsigned GetOverlayTextureId() const override;
     gfx::BufferFormat GetOverlayBufferFormat() const override;
@@ -86,6 +83,9 @@ public:
     uint32_t GetFramebufferCopyTextureFormat() override;
     void SwapBuffers(viz::OutputSurfaceFrame frame) override;
     unsigned UpdateGpuFence() override;
+    void SetUpdateVSyncParametersCallback(viz::UpdateVSyncParametersCallback callback) override;
+    void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
+    gfx::OverlayTransform GetDisplayTransform() override;
 
     // Overridden from DisplayProducer.
     QSGNode *updatePaintNode(QSGNode *oldNode, RenderWidgetHostViewQtDelegate *delegate) override;
@@ -141,6 +141,7 @@ private:
     std::unique_ptr<Buffer> m_middleBuffer;
     std::unique_ptr<Buffer> m_frontBuffer;
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
+    scoped_refptr<viz::VizProcessContextProvider> m_vizContextProvider;
 };
 
 } // namespace QtWebEngineCore

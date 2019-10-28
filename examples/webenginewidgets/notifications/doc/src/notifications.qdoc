@@ -44,22 +44,22 @@
 
     In this example, we create an internal HTML page that is added through
     a resource collection file (.qrc). The page displays buttons for requesting
-    permissions and creating a notification. In addition, it contains JavaScript
-    logic for triggering these actions.
+    permissions and contains necessary JavaScript code to trigger this request:
 
     \quotefromfile webenginewidgets/notifications/data/index.html
     \skipto Notification.requestPermission
     \printline requestPermission
-    \dots
-    \skipto if
-    \printuntil createNotification()
-    \printline /^})$/
+    \skipuntil resetPermission
+    \printuntil /\}\)$/
+
+    Also page contains a button for creating a notification. The following
+    JavaScript constructions are executed on the press event:
 
     \quotefromfile webenginewidgets/notifications/data/index.html
     \skipto createNotification()
-    \printuntil Notification
-    \dots
-    \printline /^})$/
+    \printuntil new Notification
+    \skipuntil Notification was created
+    \printline }
 
     \section1 Main Function
 
@@ -127,7 +127,8 @@
 
     \skipto QWebEngineNotification::closed
     \printuntil QTimer
-    \printline /^\}/
+    \skipto /\}/
+    \printline /\}/
 
     \section2 Closing Active Notification
 
@@ -138,9 +139,7 @@
     destroy the notification object through the \c std::unique_ptr::reset() method.
 
     \skipto onClosed
-    \dots
-    \skipto hide()
-    \printuntil reset
+    \printuntil }
 
     \section2 Implementing User Interaction
 
@@ -152,5 +151,6 @@
 
     \skipto mouseReleaseEvent
     \printuntil onClosed
-    \printuntil /^\}/
+    \printline /\}$/
+    \printline /\}$/
 */
