@@ -614,7 +614,6 @@ void ProfileIODataQt::setRequestContextData(content::ProtocolHandlerMap *protoco
 void ProfileIODataQt::setFullConfiguration()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    m_requestInterceptor = m_profileAdapter->requestInterceptor();
     m_persistentCookiesPolicy = m_profileAdapter->persistentCookiesPolicy();
     m_cookiesPath = m_profileAdapter->cookiesPath();
     m_channelIdPath = m_profileAdapter->channelIdPath();
@@ -741,7 +740,16 @@ void ProfileIODataQt::updateRequestInterceptor()
     QMutexLocker lock(&m_mutex);
     m_requestInterceptor = m_profileAdapter->requestInterceptor();
     m_hasPageInterceptors = m_profileAdapter->hasPageRequestInterceptor();
+    if (m_requestInterceptor)
+        m_isInterceptorDeprecated = m_requestInterceptor->property("deprecated").toBool();
+    else
+        m_isInterceptorDeprecated = false;
     // We in this case do not need to regenerate any Chromium classes.
+}
+
+bool ProfileIODataQt::isInterceptorDeprecated() const
+{
+    return m_isInterceptorDeprecated;
 }
 
 QWebEngineUrlRequestInterceptor *ProfileIODataQt::acquireInterceptor()

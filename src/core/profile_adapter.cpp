@@ -179,7 +179,16 @@ void ProfileAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *inte
 {
     if (m_requestInterceptor == interceptor)
         return;
+
+    if (m_requestInterceptor)
+        disconnect(m_requestInterceptor, &QObject::destroyed, this, nullptr);
     m_requestInterceptor = interceptor;
+    if (m_requestInterceptor)
+        connect(m_requestInterceptor, &QObject::destroyed, this, [this] () {
+            m_profile->m_profileIOData->updateRequestInterceptor();
+            Q_ASSERT(!m_profile->m_profileIOData->requestInterceptor());
+        });
+
     if (m_profile->m_urlRequestContextGetter.get())
         m_profile->m_profileIOData->updateRequestInterceptor();
 }

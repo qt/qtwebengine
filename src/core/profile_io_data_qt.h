@@ -120,7 +120,8 @@ public:
     void setGlobalCertificateVerification();
 
     // Used in NetworkDelegateQt::OnBeforeURLRequest.
-    QWebEngineUrlRequestInterceptor *acquireInterceptor();
+    bool isInterceptorDeprecated() const; // Remove for Qt6
+    QWebEngineUrlRequestInterceptor *acquireInterceptor(); // Remove for Qt6
     void releaseInterceptor();
     QWebEngineUrlRequestInterceptor *requestInterceptor();
 
@@ -191,6 +192,7 @@ private:
     base::WeakPtrFactory<ProfileIODataQt> m_weakPtrFactory; // this should be always the last member
     QString m_dataPath;
     bool m_pendingStorageRequestGeneration = false;
+    volatile bool m_isInterceptorDeprecated = false; // Remove for Qt6
     DISALLOW_COPY_AND_ASSIGN(ProfileIODataQt);
 
     friend class BrowsingDataRemoverObserverQt;

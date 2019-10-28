@@ -136,11 +136,11 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
 
     // Deprecated =begin
     // quick peek if deprecated
-    QWebEngineUrlRequestInterceptor* profileInterceptor = m_profileIOData->requestInterceptor();
-    if (profileInterceptor && profileInterceptor->property("deprecated").toBool()) {
-        profileInterceptor = nullptr;
-        if (QWebEngineUrlRequestInterceptor* interceptor = m_profileIOData->acquireInterceptor()) {
-            interceptor->interceptRequest(requestInfo);
+
+    if (m_profileIOData->isInterceptorDeprecated()) {
+        QWebEngineUrlRequestInterceptor* profileInterceptor = m_profileIOData->acquireInterceptor();
+        if (profileInterceptor && m_profileIOData->isInterceptorDeprecated()) {
+            profileInterceptor->interceptRequest(requestInfo);
             m_profileIOData->releaseInterceptor();
             if (requestInfo.changed()) {
                 int result = infoPrivate->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
@@ -174,7 +174,9 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
     if (!resourceInfo)
         return net::OK;
 
-    if (!m_profileIOData->hasPageInterceptors() && !profileInterceptor && !content::IsResourceTypeFrame(resourceType))
+    // try to bail out
+    if (!m_profileIOData->hasPageInterceptors() && (!m_profileIOData->requestInterceptor() || m_profileIOData->isInterceptorDeprecated()) &&
+            !content::IsResourceTypeFrame(resourceType))
         return net::OK;
 
     auto webContentsGetter = resourceInfo->GetWebContentsGetterForRequest();
@@ -185,7 +187,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
         std::move(requestInfo),
         webContentsGetter,
         std::move(callback),
-        profileInterceptor ? m_profileIOData->profileAdapter() : nullptr
+        m_profileIOData->profileAdapter()
     );
 
     // We'll run the callback after we notified the UI thread.
