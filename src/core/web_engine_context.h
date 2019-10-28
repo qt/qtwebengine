@@ -56,6 +56,12 @@ class ContentMainRunner;
 class GpuProcess;
 class GpuThreadController;
 class InProcessChildThreadParams;
+class ServiceManagerEnvironment;
+struct StartupData;
+}
+
+namespace discardable_memory {
+class DiscardableSharedMemoryManager;
 }
 
 namespace gpu {
@@ -116,6 +122,9 @@ private:
     std::unique_ptr<ContentMainDelegateQt> m_mainDelegate;
     std::unique_ptr<content::ContentMainRunner> m_contentRunner;
     std::unique_ptr<content::BrowserMainRunner> m_browserRunner;
+    std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager> m_discardableSharedMemoryManager;
+    std::unique_ptr<content::StartupData> m_startupData;
+    std::unique_ptr<content::ServiceManagerEnvironment> m_serviceManagerEnvironment;
     std::unique_ptr<QObject> m_globalQObject;
     std::unique_ptr<ProfileAdapter> m_defaultProfileAdapter;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;

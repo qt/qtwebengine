@@ -76,13 +76,10 @@ public:
     base::FilePath GetCachePath() const;
 
     // BrowserContext implementation:
-    base::FilePath GetPath() const override;
-    bool IsOffTheRecord() const override;
+    base::FilePath GetPath() override;
+    bool IsOffTheRecord() override;
 
     net::URLRequestContextGetter *CreateMediaRequestContext() override;
-    net::URLRequestContextGetter *CreateMediaRequestContextForStoragePartition(
-            const base::FilePath &partition_path,
-            bool in_memory) override;
     content::ResourceContext *GetResourceContext() override;
     content::DownloadManagerDelegate *GetDownloadManagerDelegate() override;
     content::BrowserPluginGuestManager *GetGuestManager() override;
@@ -90,10 +87,6 @@ public:
     content::PushMessagingService *GetPushMessagingService() override;
     content::SSLHostStateDelegate *GetSSLHostStateDelegate() override;
     net::URLRequestContextGetter *CreateRequestContext(
-            content::ProtocolHandlerMap *protocol_handlers,
-            content::URLRequestInterceptorScopedVector request_interceptors) override;
-    net::URLRequestContextGetter *CreateRequestContextForStoragePartition(
-            const base::FilePath &partition_path, bool in_memory,
             content::ProtocolHandlerMap *protocol_handlers,
             content::URLRequestInterceptorScopedVector request_interceptors) override;
     std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
@@ -107,7 +100,7 @@ public:
                                           std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
                                           std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
                                           base::OnceClosure closure) override;
-    const content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList() const override;
+    content::SharedCorsOriginAccessList *GetSharedCorsOriginAccessList() override;
     std::string GetMediaDeviceIDSalt() override;
 
     // Profile implementation:
@@ -137,6 +130,7 @@ public:
 
 private:
     friend class ContentBrowserClientQt;
+    friend class ProfileIODataQt;
     friend class WebContentsAdapter;
     scoped_refptr<net::URLRequestContextGetter> m_urlRequestContextGetter;
     std::unique_ptr<BrowsingDataRemoverDelegateQt> m_removerDelegate;

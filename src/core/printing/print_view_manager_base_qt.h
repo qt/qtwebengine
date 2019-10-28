@@ -147,7 +147,7 @@ protected:
     void TerminatePrintJob(bool cancel);
     void DisconnectFromCurrentPrintJob();
 
-    bool CreateNewPrintJob(printing::PrinterQuery *job);
+    bool CreateNewPrintJob(std::unique_ptr<printing::PrinterQuery> query);
     void ReleasePrintJob();
     void ReleasePrinterQuery();
 
@@ -164,7 +164,7 @@ private:
     bool m_didPrintingSucceed;
     scoped_refptr<printing::PrintQueriesQueue> m_printerQueriesQueue;
     // The current RFH that is printing with a system printing dialog.
-    content::RenderFrameHost* m_printingRFH;
+    content::RenderFrameHost *m_printingRFH;
     DISALLOW_COPY_AND_ASSIGN(PrintViewManagerBaseQt);
 };
 

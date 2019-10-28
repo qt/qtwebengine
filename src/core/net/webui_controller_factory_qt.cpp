@@ -175,24 +175,24 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 
 namespace QtWebEngineCore {
 
-WebUI::TypeID WebUIControllerFactoryQt::GetWebUIType(content::BrowserContext *browser_context, const GURL &url) const
+WebUI::TypeID WebUIControllerFactoryQt::GetWebUIType(content::BrowserContext *browser_context, const GURL &url)
 {
     Profile *profile = Profile::FromBrowserContext(browser_context);
     WebUIFactoryFunction function = GetWebUIFactoryFunction(nullptr, profile, url);
     return function ? reinterpret_cast<WebUI::TypeID>(function) : WebUI::kNoWebUI;
 }
 
-bool WebUIControllerFactoryQt::UseWebUIForURL(content::BrowserContext *browser_context, const GURL &url) const
+bool WebUIControllerFactoryQt::UseWebUIForURL(content::BrowserContext *browser_context, const GURL &url)
 {
     return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
 }
 
-bool WebUIControllerFactoryQt::UseWebUIBindingsForURL(content::BrowserContext *browser_context, const GURL &url) const
+bool WebUIControllerFactoryQt::UseWebUIBindingsForURL(content::BrowserContext *browser_context, const GURL &url)
 {
     return UseWebUIForURL(browser_context, url);
 }
 
-std::unique_ptr<WebUIController> WebUIControllerFactoryQt::CreateWebUIControllerForURL(WebUI *web_ui, const GURL &url) const
+std::unique_ptr<WebUIController> WebUIControllerFactoryQt::CreateWebUIControllerForURL(WebUI *web_ui, const GURL &url)
 {
     Profile *profile = Profile::FromWebUI(web_ui);
     WebUIFactoryFunction function = GetWebUIFactoryFunction(web_ui, profile, url);

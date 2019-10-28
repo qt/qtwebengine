@@ -65,7 +65,7 @@ public:
     void PreMainMessageLoopRun() override;
     void PostMainMessageLoopRun() override;
     int PreCreateThreads() override;
-    void ServiceManagerConnectionStarted(content::ServiceManagerConnection *connection) override;
+    void PostCreateThreads() override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);

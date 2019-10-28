@@ -157,7 +157,7 @@ int BrowserAccessibilityQt::indexOfChild(const QAccessibleInterface *iface) cons
 {
 
     const BrowserAccessibilityQt *child = static_cast<const BrowserAccessibilityQt*>(iface);
-    return child->GetIndexInParent();
+    return const_cast<BrowserAccessibilityQt *>(child)->GetIndexInParent();
 }
 
 QString BrowserAccessibilityQt::text(QAccessible::Text t) const
@@ -730,7 +730,7 @@ void BrowserAccessibilityQt::scrollToSubstring(int startIndex, int endIndex)
     int count = characterCount();
     if (startIndex < endIndex && endIndex < count)
         manager()->ScrollToMakeVisible(*this,
-                                       GetRootFrameRangeBoundsRect(
+                                       GetRootFrameHypertextRangeBoundsRect(
                                            startIndex,
                                            endIndex - startIndex,
                                            ui::AXClippingBehavior::kUnclipped));
@@ -796,24 +796,24 @@ QAccessibleInterface *BrowserAccessibilityQt::cellAt(int row, int column) const
     if (row < 0 || row >= rows || column < 0 || column >= columns)
       return 0;
 
-    int cell_id = GetCellId(row, column);
-    BrowserAccessibility* cell = manager()->GetFromID(cell_id);
+    base::Optional<int> cell_id = GetCellId(row, column);
+    BrowserAccessibility* cell = cell_id ? manager()->GetFromID(*cell_id) : nullptr;
     if (cell) {
       QAccessibleInterface *iface = static_cast<BrowserAccessibilityQt*>(cell);
       return iface;
     }
 
-    return 0;
+    return nullptr;
 }
 
 QAccessibleInterface *BrowserAccessibilityQt::caption() const
 {
-    return 0;
+    return nullptr;
 }
 
 QAccessibleInterface *BrowserAccessibilityQt::summary() const
 {
-    return 0;
+    return nullptr;
 }
 
 QString BrowserAccessibilityQt::columnDescription(int column) const

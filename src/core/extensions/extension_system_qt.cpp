@@ -137,8 +137,9 @@ class ContentVerifierDelegateQt
 
   // This should return what verification mode is appropriate for the given
   // extension, if any.
-    Mode ShouldBeVerified(const Extension& extension) override {
-        return NONE;
+    bool ShouldBeVerified(const Extension& extension) override
+    {
+        return false;
     }
 
   // Should return the public key to use for validating signatures via the two
@@ -396,11 +397,6 @@ void ExtensionSystemQt::InitForRegularProfile(bool extensions_enabled)
     info_map();
 
     Init(extensions_enabled);
-}
-
-void ExtensionSystemQt::InitForIncognitoProfile()
-{
-    NOTIMPLEMENTED();
 }
 
 std::unique_ptr<ExtensionSet> ExtensionSystemQt::GetDependentExtensions(const Extension *extension)

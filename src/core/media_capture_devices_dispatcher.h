@@ -81,20 +81,20 @@ private:
                                     int render_frame_id,
                                     int page_request_id,
                                     const GURL &security_origin,
-                                    blink::MediaStreamType stream_type,
+                                    blink::mojom::MediaStreamType stream_type,
                                     content::MediaRequestState state) override;
 
     void OnCreatingAudioStream(int /*render_process_id*/, int /*render_frame_id*/) override {}
     void OnSetCapturingLinkSecured(int /*render_process_id*/,
                                    int /*render_frame_id*/,
                                    int /*page_request_id*/,
-                                   blink::MediaStreamType /*stream_type*/,
+                                   blink::mojom::MediaStreamType /*stream_type*/,
                                    bool /*is_secure*/) override {}
 
     friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
     typedef base::RepeatingCallback<void(const blink::MediaStreamDevices &devices,
-                                         blink::MediaStreamRequestResult result,
+                                         blink::mojom::MediaStreamRequestResult result,
                                          std::unique_ptr<content::MediaStreamUI> ui)>
             RepeatingMediaResponseCallback;
 
@@ -121,7 +121,7 @@ private:
 
     // Called by the MediaObserver() functions, executed on UI thread.
     void updateMediaRequestStateOnUIThread(int render_process_id, int render_frame_id, int page_request_id, const GURL &security_origin,
-                                           blink::MediaStreamType stream_type, content::MediaRequestState state);
+                                           blink::mojom::MediaStreamType stream_type, content::MediaRequestState state);
 
     RequestsQueues m_pendingRequests;
 

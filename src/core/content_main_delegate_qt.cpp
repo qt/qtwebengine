@@ -130,7 +130,7 @@ static logging::LoggingDestination DetermineLogMode(const base::CommandLine& com
         enable_logging = !enable_logging;
 
     if (enable_logging)
-        return logging::LOG_TO_SYSTEM_DEBUG_LOG;
+        return logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
     else
         return logging::LOG_NONE;
 }
@@ -149,7 +149,9 @@ void ContentMainDelegateQt::PreSandboxStartup()
     base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
     logging::LoggingSettings settings;
     settings.logging_dest = DetermineLogMode(*parsedCommandLine);
-    logging::InitLogging(settings);
+    bool success = logging::InitLogging(settings);
+    if (!success)
+        qWarning("Failed to initialize Chromium logging");
     // view the logs with process/thread IDs and timestamps
     logging::SetLogItems(true, //enable_process_id
                          true, //enable_thread_id

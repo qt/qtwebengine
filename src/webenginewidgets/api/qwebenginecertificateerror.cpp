@@ -110,9 +110,9 @@ QWebEngineCertificateError::QWebEngineCertificateError(const QSharedPointer<Cert
     d->chain = controller->chain();
 }
 
-QWebEngineCertificateError::QWebEngineCertificateError(const QWebEngineCertificateError &other) = default;
+QWebEngineCertificateError::QWebEngineCertificateError(const QWebEngineCertificateError &) = default;
 
-QWebEngineCertificateError& QWebEngineCertificateError::operator=(const QWebEngineCertificateError &other) = default;
+QWebEngineCertificateError& QWebEngineCertificateError::operator=(const QWebEngineCertificateError &) = default;
 
 /*! \internal
 */
@@ -190,6 +190,8 @@ QString QWebEngineCertificateError::errorDescription() const
 }
 
 /*!
+    \since 5.14
+
     Marks the certificate error for delayed handling.
 
     This function should be called when there is a need to postpone the decision whether to ignore a
@@ -207,6 +209,8 @@ void QWebEngineCertificateError::defer()
 }
 
 /*!
+    \since 5.14
+
     Returns whether the decision for error handling was delayed and the URL load was halted.
 */
 bool QWebEngineCertificateError::deferred() const
@@ -215,6 +219,8 @@ bool QWebEngineCertificateError::deferred() const
 }
 
 /*!
+    \since 5.14
+
     Ignores the certificate error and continues the loading of the requested URL.
 */
 void QWebEngineCertificateError::ignoreCertificateError()
@@ -223,6 +229,8 @@ void QWebEngineCertificateError::ignoreCertificateError()
 }
 
 /*!
+    \since 5.14
+
     Rejects the certificate and aborts the loading of the requested URL.
 */
 void QWebEngineCertificateError::rejectCertificate()
@@ -231,7 +239,9 @@ void QWebEngineCertificateError::rejectCertificate()
 }
 
 /*!
-    Returns \c true if the error was explicitly rejected or accepted.
+    \since 5.14
+
+    Returns \c true if the error was explicitly rejected or ignored.
 */
 bool QWebEngineCertificateError::answered() const
 {
@@ -239,7 +249,9 @@ bool QWebEngineCertificateError::answered() const
 }
 
 /*!
-    Returns the peer's chain of digital certificates
+    \since 5.14
+
+    Returns the peer's chain of digital certificates.
 
     Chain starts with the peer's immediate certificate and ending with the CA's certificate.
 */

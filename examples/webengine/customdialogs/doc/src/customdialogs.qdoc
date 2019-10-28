@@ -140,6 +140,38 @@
     To keep things simple, we do not provide any logic on component completion,
     and we simply close the form on any action.
 
+    \section2 Tooltip Requests
+
+    \l [QML]{TooltipRequest} is a request object that is passed as a
+    parameter of the WebEngineView::tooltipRequested signal. We use the
+    \c onTooltipRequested signal handler to handle requests for
+    custom tooltip menus at specific positions:
+
+    \quotefromfile webengine/customdialogs/WebView.qml
+    \skipto WebEngineView
+    \printuntil {
+    \dots 4
+    \skipto onTooltipRequested
+    \printuntil }
+    \printuntil }
+    \printuntil }
+    \dots 4
+    \skipuntil onFileDialogRequested
+    \skipuntil }});
+    \skipuntil }
+    \skipto }
+    \printline }
+
+    The second text field from the top on our page triggers the request. Next,
+    we check whether we should use the default menu. If not, we accept the
+    request and show a custom QML element as tooltip:
+
+    \image customdialogs-tooltip.png
+
+    \quotefromfile webengine/customdialogs/WebView.qml
+    \skipto Rectangle
+    \printuntil }
+
     \section2  Authentication Dialog Requests
 
     \image customdialogs-auth1.png

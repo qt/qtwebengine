@@ -315,7 +315,7 @@ void TouchSelectionControllerClientQt::showMenu()
 
     WebContentsAdapterClient *adapterClient = m_rwhv->adapterClient();
     Q_ASSERT(adapterClient);
-    adapterClient->showTouchSelectionMenu(m_menuController.get(),
+    adapterClient->showTouchSelectionMenu(m_menuController.data(),
                                           QRect(toQt(gfx::ToEnclosingRect(anchor_rect))),
                                           QSize(toQt(gfx::ToRoundedSize(max_handle_size))));
     m_menuShowing = true;

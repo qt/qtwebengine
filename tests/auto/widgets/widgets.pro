@@ -4,7 +4,6 @@ QT_FOR_CONFIG += webenginecore webenginecore-private
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    certificateerror \
     defaultsurfaceformat \
     devtools \
     faviconmanager \
@@ -29,6 +28,10 @@ qtConfig(accessibility) {
 
 qtConfig(webengine-printing-and-pdf) {
     SUBDIRS += printing
+}
+
+qtConfig(ssl) {
+    SUBDIRS += certificateerror
 }
 
 qtConfig(webengine-spellchecker):!cross_compile {

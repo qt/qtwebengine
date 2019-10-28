@@ -89,15 +89,17 @@
 
 namespace QtWebEngineCore {
 
-// Maps the LogSeverity defines in base/logging.h to the web engines message levels.
-static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32_t messageLevel)
+static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(blink::mojom::ConsoleMessageLevel log_level)
 {
-    if (messageLevel < 1)
+    switch (log_level) {
+    case blink::mojom::ConsoleMessageLevel::kVerbose:
+    case blink::mojom::ConsoleMessageLevel::kInfo:
         return WebContentsAdapterClient::Info;
-    else if (messageLevel > 1)
+    case blink::mojom::ConsoleMessageLevel::kWarning:
+        return WebContentsAdapterClient::Warning;
+    case blink::mojom::ConsoleMessageLevel::kError:
         return WebContentsAdapterClient::Error;
-
-    return WebContentsAdapterClient::Warning;
+    }
 }
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
@@ -537,7 +539,7 @@ void WebContentsDelegateQt::ExitFullscreenModeForTab(content::WebContents *web_c
         m_viewClient->requestFullScreenMode(toQt(web_contents->GetLastCommittedURL().GetOrigin()), false);
 }
 
-bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebContents* web_contents) const
+bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebContents* web_contents)
 {
     Q_UNUSED(web_contents);
     return m_viewClient->isFullScreenMode();
@@ -566,10 +568,11 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost * /*frameHos
     });
 }
 
-bool WebContentsDelegateQt::DidAddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)
+bool WebContentsDelegateQt::DidAddMessageToConsole(content::WebContents *source, blink::mojom::ConsoleMessageLevel log_level,
+                                                   const base::string16 &message, int32_t line_no, const base::string16 &source_id)
 {
     Q_UNUSED(source)
-    m_viewClient->javaScriptConsoleMessage(mapToJavascriptConsoleMessageLevel(level), toQt(message), static_cast<int>(line_no), toQt(source_id));
+    m_viewClient->javaScriptConsoleMessage(mapToJavascriptConsoleMessageLevel(log_level), toQt(message), static_cast<int>(line_no), toQt(source_id));
     return false;
 }
 
@@ -726,12 +729,12 @@ void WebContentsDelegateQt::BeforeUnloadFired(bool proceed, const base::TimeTick
     Q_UNUSED(proceed_time);
 }
 
-bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *, const GURL& security_origin, blink::MediaStreamType type)
+bool WebContentsDelegateQt::CheckMediaAccessPermission(content::RenderFrameHost *, const GURL& security_origin, blink::mojom::MediaStreamType type)
 {
     switch (type) {
-    case blink::MEDIA_DEVICE_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:
         return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::AudioCapturePermission);
-    case blink::MEDIA_DEVICE_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
         return m_viewClient->profileAdapter()->checkPermission(toQt(security_origin), ProfileAdapter::VideoCapturePermission);
     default:
         LOG(INFO) << "WebContentsDelegateQt::CheckMediaAccessPermission: "
@@ -830,28 +833,28 @@ void WebContentsDelegateQt::setLoadingState(LoadingState state)
     webContentsAdapter()->updateRecommendedState();
 }
 
-int &WebContentsDelegateQt::streamCount(blink::MediaStreamType type)
+int &WebContentsDelegateQt::streamCount(blink::mojom::MediaStreamType type)
 {
     // Based on MediaStreamCaptureIndicator::WebContentsDeviceUsage::GetStreamCount
     switch (type) {
-    case blink::MEDIA_DEVICE_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:
         return m_audioStreamCount;
 
-    case blink::MEDIA_DEVICE_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
         return m_videoStreamCount;
 
-    case blink::MEDIA_GUM_TAB_AUDIO_CAPTURE:
-    case blink::MEDIA_GUM_TAB_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
         return m_mirroringStreamCount;
 
-    case blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
-    case blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE:
-    case blink::MEDIA_DISPLAY_VIDEO_CAPTURE:
-    case blink::MEDIA_DISPLAY_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE:
         return m_desktopStreamCount;
 
-    case blink::MEDIA_NO_SERVICE:
-    case blink::NUM_MEDIA_TYPES:
+    case blink::mojom::MediaStreamType::NO_SERVICE:
+    case blink::mojom::MediaStreamType::NUM_MEDIA_TYPES:
         NOTREACHED();
         return m_videoStreamCount;
     }

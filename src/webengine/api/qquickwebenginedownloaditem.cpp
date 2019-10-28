@@ -420,6 +420,9 @@ QString QQuickWebEngineDownloadItem::mimeType() const
     \qmlproperty string WebEngineDownloadItem::path
     \obsolete
 
+    Use \l suggestedFileName, \l downloadDirectory, and
+    \l downloadFileName instead.
+
     Holds the full target path where data is being downloaded to.
 
     The path includes the file name. The default suggested path is the standard
@@ -463,7 +466,7 @@ void QQuickWebEngineDownloadItem::setPath(QString path)
             newDirectory = QStringLiteral("");
             newFileName = path;
         } else {
-            newDirectory = QFileInfo(path).filePath();
+            newDirectory = QFileInfo(path).path();
             newFileName = QFileInfo(path).fileName();
         }
 
@@ -500,7 +503,7 @@ QString QQuickWebEngineDownloadItem::downloadDirectory() const
     return d->downloadDirectory;
 }
 
-void QQuickWebEngineDownloadItem::setDownloadDirectory(QString directory)
+void QQuickWebEngineDownloadItem::setDownloadDirectory(const QString &directory)
 {
     Q_D(QQuickWebEngineDownloadItem);
     if (d->downloadState != QQuickWebEngineDownloadItem::DownloadRequested) {
@@ -548,7 +551,7 @@ QString QQuickWebEngineDownloadItem::downloadFileName() const
     return d->downloadFileName;
 }
 
-void QQuickWebEngineDownloadItem::setDownloadFileName(QString fileName)
+void QQuickWebEngineDownloadItem::setDownloadFileName(const QString &fileName)
 {
     Q_D(QQuickWebEngineDownloadItem);
     if (d->downloadState != QQuickWebEngineDownloadItem::DownloadRequested) {

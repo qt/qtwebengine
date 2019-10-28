@@ -169,6 +169,11 @@ bool GLSurfaceEGL::IsPixelFormatFloatSupported()
     return false;
 }
 
+bool GLSurfaceEGL::IsANGLEFeatureControlSupported()
+{
+    return false;
+}
+
 void GLSurfaceEGL::ShutdownOneOff()
 {
 }

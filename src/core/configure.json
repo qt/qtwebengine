@@ -6,7 +6,7 @@
         "gui-private",
         "printsupport"
     ],
-    "condition": "features.webengine-core",
+    "condition": "features.build-qtwebengine-core && features.webengine-core-support",
     "testDir": "../../config.tests",
     "commandline": {
         "options": {
@@ -111,12 +111,6 @@
             "section": "WebEngine",
             "condition": "config.unix",
             "autoDetect": "tests.webengine-embedded-build",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-developer-build": {
-            "label": "Developer build",
-            "purpose": "Enables the developer build configuration.",
-            "autoDetect": "features.private_tests",
             "output": [ "privateFeature" ]
         },
         "webengine-alsa": {
@@ -282,10 +276,9 @@
     "summary": [
         {
             "section": "Qt WebEngineCore",
-            "condition": "features.webengine-core",
+            "condition": "features.build-qtwebengine-core",
             "entries": [
                 "webengine-embedded-build",
-                "webengine-developer-build",
                 "webengine-full-debug-info",
                 "webengine-pepper-plugins",
                 "webengine-printing-and-pdf",
