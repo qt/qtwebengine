@@ -158,6 +158,7 @@ private Q_SLOTS:
     void setHtmlWithStylesheetResource();
     void setHtmlWithBaseURL();
     void setHtmlWithJSAlert();
+    void setHtmlWithModuleImport();
     void baseUrl_data();
     void baseUrl();
     void scrollPosition();
@@ -2281,6 +2282,41 @@ void tst_QWebEnginePage::setHtmlWithJSAlert()
     QVERIFY(spyFinished.wait());
     QCOMPARE(page.alerts, 1);
     QCOMPARE(toHtmlSync(&page), html);
+}
+
+void tst_QWebEnginePage::setHtmlWithModuleImport()
+{
+    HttpServer server;
+    connect(&server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        if (rr->requestMethod() == "GET" && rr->requestPath() == "/fibonacci.mjs") {
+            rr->setResponseBody("export function fib(n) {\n"
+                                "    return n < 2 ? n : fib(n-1) + fib(n-2)\n"
+                                "}\n");
+            rr->setResponseHeader("Content-Type", "text/javascript");
+            rr->sendResponse();
+        } else {
+            rr->setResponseStatus(404);
+            rr->sendResponse();
+        }
+    });
+    QVERIFY(server.start());
+
+    QString html("<html>\n"
+                 "  <head>\n"
+                 "    <script type='module'>\n"
+                 "      import {fib} from './fibonacci.mjs'\n"
+                 "      window.fib7 = fib(7)\n"
+                 "    </script>\n"
+                 "  </head>\n"
+                 "  <body></body>\n"
+                 "</html>\n");
+
+    QWebEnginePage page;
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+    page.setHtml(html, server.url());
+    QVERIFY(spy.count() || spy.wait());
+
+    QCOMPARE(evaluateJavaScriptSync(&page, "fib7"), QVariant(13));
 }
 
 void tst_QWebEnginePage::baseUrl_data()
