@@ -134,7 +134,7 @@ namespace QtWebEngineCore {
 
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
-static const int kHistoryStreamVersion = 3;
+static const int kHistoryStreamVersion = 4;
 
 static QVariant fromJSValue(const base::Value *result)
 {
@@ -279,6 +279,9 @@ static void serializeNavigationHistory(content::NavigationController &controller
             output << entry->GetIsOverridingUserAgent();
             output << static_cast<qint64>(entry->GetTimestamp().ToInternalValue());
             output << entry->GetHttpStatusCode();
+            // kHistoryStreamVersion >= 4
+            content::FaviconStatus &favicon = entry->GetFavicon();
+            output << (favicon.valid ? toQt(favicon.url) : QUrl());
         }
     }
 }
@@ -287,8 +290,8 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
 {
     int version;
     input >> version;
-    if (version != kHistoryStreamVersion) {
-        // We do not try to decode previous history stream versions.
+    if (version < 3 || version > kHistoryStreamVersion) {
+        // We do not try to decode history stream versions before 3.
         // Make sure that our history is cleared and mark the rest of the stream as invalid.
         input.setStatus(QDataStream::ReadCorruptData);
         *currentIndex = -1;
@@ -301,7 +304,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
     entries->reserve(count);
     // Logic taken from SerializedNavigationEntry::ReadFromPickle and ToNavigationEntries.
     for (int i = 0; i < count; ++i) {
-        QUrl virtualUrl, referrerUrl, originalRequestUrl;
+        QUrl virtualUrl, referrerUrl, originalRequestUrl, iconUrl;
         QString title;
         QByteArray pageState;
         qint32 transitionType, referrerPolicy;
@@ -319,6 +322,9 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         input >> isOverridingUserAgent;
         input >> timestamp;
         input >> httpStatusCode;
+        // kHistoryStreamVersion >= 4
+        if (version >= 4)
+            input >> iconUrl;
 
         // If we couldn't unpack the entry successfully, abort everything.
         if (input.status() != QDataStream::Ok) {
@@ -351,6 +357,14 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         entry->SetIsOverridingUserAgent(isOverridingUserAgent);
         entry->SetTimestamp(base::Time::FromInternalValue(timestamp));
         entry->SetHttpStatusCode(httpStatusCode);
+        if (iconUrl.isValid()) {
+            // Note: we don't set .image below as we don't have it and chromium will refetch favicon
+            // anyway. However, we set .url and .valid to let QWebEngineHistory items restored from
+            // a stream receive valid icon URLs via our getNavigationEntryIconUrl calls.
+            content::FaviconStatus &favicon = entry->GetFavicon();
+            favicon.url = toGurl(iconUrl);
+            favicon.valid = true;
+        }
         entries->push_back(std::move(entry));
     }
 }
@@ -778,7 +792,7 @@ QUrl WebContentsAdapter::iconUrl() const
 {
     CHECK_INITIALIZED(QUrl());
     if (content::NavigationEntry* entry = m_webContents->GetController().GetVisibleEntry()) {
-        content::FaviconStatus favicon = entry->GetFavicon();
+        content::FaviconStatus &favicon = entry->GetFavicon();
         if (favicon.valid)
             return toQt(favicon.url);
     }
@@ -935,7 +949,7 @@ QUrl WebContentsAdapter::getNavigationEntryIconUrl(int index)
     content::NavigationEntry *entry = m_webContents->GetController().GetEntryAtIndex(index);
     if (!entry)
         return QUrl();
-    content::FaviconStatus favicon = entry->GetFavicon();
+    content::FaviconStatus &favicon = entry->GetFavicon();
     return favicon.valid ? toQt(favicon.url) : QUrl();
 }
 
