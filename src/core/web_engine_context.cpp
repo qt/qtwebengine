@@ -378,6 +378,7 @@ ProxyAuthentication WebEngineContext::qProxyNetworkAuthentication(QString host, 
 
 const static char kChromiumFlagsEnv[] = "QTWEBENGINE_CHROMIUM_FLAGS";
 const static char kDisableSandboxEnv[] = "QTWEBENGINE_DISABLE_SANDBOX";
+const static char kDisableInProcGpuThread[] = "QTWEBENGINE_DISABLE_GPU_THREAD";
 
 static void appendToFeatureList(std::string &featureList, const char *feature)
 {
@@ -508,6 +509,7 @@ WebEngineContext::WebEngineContext()
 #ifndef QT_NO_OPENGL
     threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
 #endif
+    threadedGpu = threadedGpu && !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
 
     bool enableViz = ((threadedGpu && !parsedCommandLine->HasSwitch("disable-viz-display-compositor"))
                       || parsedCommandLine->HasSwitch("enable-viz-display-compositor"));

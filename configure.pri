@@ -367,11 +367,6 @@ defineTest(qtConfTest_hasThumbFlag) {
     return(true)
 }
 
-defineTest(qtConfTest_hasGcc6OrNewer) {
-    greaterThan(QMAKE_GCC_MAJOR_VERSION, 5):return(true)
-    return(false)
-}
-
 defineTest(qtConfTest_detectSubmodule) {
     isEmpty(QTWEBENGINE_ROOT) {
         # topLevel build , add poor man's workaround

@@ -60,6 +60,8 @@ public:
     ~BrowserAccessibilityManagerQt() override;
     void FireBlinkEvent(ax::mojom::Event event_type,
                         BrowserAccessibility* node) override;
+    void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
+                            BrowserAccessibility* node) override;
 
     QAccessibleInterface *rootParentAccessible();
     bool isValid() const { return m_valid; }

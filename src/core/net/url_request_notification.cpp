@@ -107,7 +107,7 @@ void URLRequestNotification::notify()
 
     if (webContents) {
 
-        if (m_profileAdapter) {
+        if (m_profileAdapter && m_profileAdapter->requestInterceptor()) {
             QWebEngineUrlRequestInterceptor* interceptor = m_profileAdapter->requestInterceptor();
             if (!interceptor->property("deprecated").toBool())
                 interceptor->interceptRequest(m_requestInfo);

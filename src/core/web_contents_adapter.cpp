@@ -1439,8 +1439,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     });
 
     QMimeData *mimeData = mimeDataFromDropData(*m_currentDropData);
-    if (handleDropDataFileContents(dropData, mimeData))
-        allowedActions = Qt::MoveAction;
+    handleDropDataFileContents(dropData, mimeData);
 
     drag->setMimeData(mimeData);
     if (!pixmap.isNull()) {

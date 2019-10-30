@@ -90,22 +90,25 @@ const blink::MediaStreamDevice *findDeviceWithId(const blink::MediaStreamDevices
     return 0;
 }
 
-// Based on chrome/browser/media/desktop_capture_access_handler.cc:
-void getDevicesForDesktopCapture(blink::MediaStreamDevices *devices, content::DesktopMediaID mediaId, bool captureAudio)
+// Based on chrome/browser/media/webrtc/desktop_capture_devices_util.cc:
+void getDevicesForDesktopCapture(blink::MediaStreamDevices *devices,
+                                 content::DesktopMediaID mediaId,
+                                 bool captureAudio,
+                                 MediaStreamType videoType,
+                                 MediaStreamType audioType)
 {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Add selected desktop source to the list.
-    devices->push_back(blink::MediaStreamDevice(MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE, mediaId.ToString(), "Screen"));
+    devices->push_back(blink::MediaStreamDevice(videoType, mediaId.ToString(), mediaId.ToString()));
     if (captureAudio) {
         if (mediaId.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
             devices->push_back(
-                    blink::MediaStreamDevice(MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE,
-                                             mediaId.ToString(), "Tab audio"));
+                    blink::MediaStreamDevice(audioType, mediaId.ToString(), "Tab audio"));
         } else {
             // Use the special loopback device ID for system audio capture.
             devices->push_back(blink::MediaStreamDevice(
-                    MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE,
+                    audioType,
                     media::AudioDeviceDescription::kLoopbackInputDeviceId,
                     "System Audio"));
         }
@@ -154,19 +157,27 @@ content::DesktopMediaID getDefaultScreenId()
 
 WebContentsAdapterClient::MediaRequestFlags mediaRequestFlagsForRequest(const content::MediaStreamRequest &request)
 {
-    WebContentsAdapterClient::MediaRequestFlags requestFlags = WebContentsAdapterClient::MediaNone;
+    if (request.audio_type == MediaStreamType::DEVICE_AUDIO_CAPTURE &&
+        request.video_type == MediaStreamType::DEVICE_VIDEO_CAPTURE)
+        return {WebContentsAdapterClient::MediaAudioCapture, WebContentsAdapterClient::MediaVideoCapture};
 
-    if (request.audio_type == MediaStreamType::DEVICE_AUDIO_CAPTURE)
-        requestFlags |= WebContentsAdapterClient::MediaAudioCapture;
-    else if (request.audio_type == MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE)
-        requestFlags |= WebContentsAdapterClient::MediaDesktopAudioCapture;
+    if (request.audio_type == MediaStreamType::DEVICE_AUDIO_CAPTURE &&
+        request.video_type == MediaStreamType::NO_SERVICE)
+        return {WebContentsAdapterClient::MediaAudioCapture};
 
-    if (request.video_type == MediaStreamType::DEVICE_VIDEO_CAPTURE)
-        requestFlags |= WebContentsAdapterClient::MediaVideoCapture;
-    else if (request.video_type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE)
-        requestFlags |= WebContentsAdapterClient::MediaDesktopVideoCapture;
+    if (request.audio_type == MediaStreamType::NO_SERVICE &&
+        request.video_type == MediaStreamType::DEVICE_VIDEO_CAPTURE)
+        return {WebContentsAdapterClient::MediaVideoCapture};
 
-    return requestFlags;
+    if (request.audio_type == MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE &&
+        request.video_type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE)
+        return {WebContentsAdapterClient::MediaDesktopAudioCapture, WebContentsAdapterClient::MediaDesktopVideoCapture};
+
+    if (request.video_type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
+        request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE)
+        return {WebContentsAdapterClient::MediaDesktopVideoCapture};
+
+    return {};
 }
 
 // Based on MediaStreamCaptureIndicator::UIDelegate
@@ -235,14 +246,13 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
     if (!securityOriginsMatch)
         qWarning("Security origin mismatch for media access permission: %s requested and %s provided\n", qPrintable(requestSecurityOrigin.toString()), qPrintable(securityOrigin.toString()));
 
-    bool microphoneRequested =
-            (request.audio_type != MediaStreamType::NO_SERVICE && (authorizationFlags & WebContentsAdapterClient::MediaAudioCapture));
-    bool webcamRequested =
-            (request.video_type != MediaStreamType::NO_SERVICE && (authorizationFlags & WebContentsAdapterClient::MediaVideoCapture));
-    bool desktopAudioRequested =
-            (request.audio_type != MediaStreamType::NO_SERVICE && (authorizationFlags & WebContentsAdapterClient::MediaDesktopAudioCapture));
-    bool desktopVideoRequested =
-            (request.video_type != MediaStreamType::NO_SERVICE && (authorizationFlags & WebContentsAdapterClient::MediaDesktopVideoCapture));
+    WebContentsAdapterClient::MediaRequestFlags requestFlags = mediaRequestFlagsForRequest(request);
+    WebContentsAdapterClient::MediaRequestFlags finalFlags = requestFlags & authorizationFlags;
+
+    bool microphoneRequested = finalFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture);
+    bool webcamRequested = finalFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture);
+    bool desktopAudioRequested = finalFlags.testFlag(WebContentsAdapterClient::MediaDesktopAudioCapture);
+    bool desktopVideoRequested = finalFlags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture);
 
     if (securityOriginsMatch) {
         if (microphoneRequested || webcamRequested) {
@@ -258,7 +268,8 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
                 break;
             }
         } else if (desktopVideoRequested) {
-            getDevicesForDesktopCapture(&devices, getDefaultScreenId(), desktopAudioRequested);
+            getDevicesForDesktopCapture(&devices, getDefaultScreenId(), desktopAudioRequested,
+                                        request.video_type, request.audio_type);
         }
     }
 
@@ -315,13 +326,13 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(WebContentsAdapter
 {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    // Let's not support tab capture for now.
-    if (request.video_type == MediaStreamType::GUM_TAB_VIDEO_CAPTURE || request.audio_type == MediaStreamType::GUM_TAB_AUDIO_CAPTURE) {
+    WebContentsAdapterClient::MediaRequestFlags flags = mediaRequestFlagsForRequest(request);
+    if (!flags) {
         std::move(callback).Run(blink::MediaStreamDevices(), MediaStreamRequestResult::NOT_SUPPORTED, std::unique_ptr<content::MediaStreamUI>());
         return;
     }
 
-    if (request.video_type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE || request.audio_type == MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE) {
+    if (flags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture)) {
         const bool screenCaptureEnabled =
                 adapterClient->webEngineSettings()->testAttribute(WebEngineSettings::ScreenCaptureEnabled);
         const bool originIsSecure = content::IsOriginSecure(request.security_origin);
@@ -339,17 +350,12 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(WebContentsAdapter
 
     enqueueMediaAccessRequest(webContents, request, std::move(callback));
     // We might not require this approval for pepper requests.
-    adapterClient->runMediaAccessPermissionRequest(toQt(request.security_origin), mediaRequestFlagsForRequest(request));
+    adapterClient->runMediaAccessPermissionRequest(toQt(request.security_origin), flags);
 }
 
 void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request, content::MediaResponseCallback callback)
 {
     blink::MediaStreamDevices devices;
-
-    if (request.video_type != MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE || request.requested_video_device_id.empty()) {
-        std::move(callback).Run(devices, MediaStreamRequestResult::INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
-        return;
-    }
 
     content::WebContents *const web_contents_for_stream = content::WebContents::FromRenderFrameHost(
             content::RenderFrameHost::FromID(request.render_process_id, request.render_frame_id));
@@ -375,7 +381,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
     // Audio is only supported for screen capture streams.
     bool capture_audio = (mediaId.type == content::DesktopMediaID::TYPE_SCREEN && request.audio_type == MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE);
 
-    getDevicesForDesktopCapture(&devices, mediaId, capture_audio);
+    getDevicesForDesktopCapture(&devices, mediaId, capture_audio, request.video_type, request.audio_type);
 
     if (devices.empty())
         std::move(callback).Run(devices, MediaStreamRequestResult::INVALID_STATE,
