@@ -52,8 +52,6 @@
 #include <QJsonObject>
 #include <QLoggingCategory>
 
-#include <QtCore/private/qjson_p.h>
-
 namespace QtWebEngineCore {
 
 Q_LOGGING_CATEGORY(log, "qt.webengine.webchanneltransport");
@@ -142,12 +140,8 @@ void WebChannelIPCTransportHost::DispatchWebChannelMessage(const std::vector<uin
         return;
     }
 
-    QJsonDocument doc;
-    // QJsonDocument::fromRawData does not check the length before it starts
-    // parsing the QJsonPrivate::Header and QJsonPrivate::Base structures.
-    if (binaryJson.size() >= sizeof(QJsonPrivate::Header) + sizeof(QJsonPrivate::Base))
-        doc = QJsonDocument::fromRawData(reinterpret_cast<const char *>(binaryJson.data()),
-                                                                        binaryJson.size());
+    QJsonDocument doc = QJsonDocument::fromRawData(
+                reinterpret_cast<const char *>(binaryJson.data()), binaryJson.size());
 
     if (!doc.isObject()) {
         qCCritical(log).nospace() << "received invalid webchannel message from " << frame;
