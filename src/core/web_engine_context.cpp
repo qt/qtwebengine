@@ -182,6 +182,18 @@ void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 
 namespace QtWebEngineCore {
 
+#if defined(Q_OS_WIN)
+sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterfaceInfo *info)
+{
+    static sandbox::SandboxInterfaceInfo *g_info = nullptr;
+    if (info) {
+        Q_ASSERT(g_info == nullptr);
+        g_info = info;
+    }
+    return g_info;
+}
+#endif
+
 extern std::unique_ptr<base::MessagePump> messagePumpFactory();
 
 bool usingSoftwareDynamicGL()
@@ -455,9 +467,7 @@ WebEngineContext::WebEngineContext()
     // Enable sandboxing on OS X and Linux (Desktop / Embedded) by default.
     bool disable_sandbox = qEnvironmentVariableIsSet(kDisableSandboxEnv);
     if (!disable_sandbox) {
-#if defined(Q_OS_WIN)
-        parsedCommandLine->AppendSwitch(service_manager::switches::kNoSandbox);
-#elif defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
         parsedCommandLine->AppendSwitch(service_manager::switches::kDisableSetuidSandbox);
 #endif
     } else {
@@ -656,9 +666,12 @@ WebEngineContext::WebEngineContext()
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
 #if defined(OS_WIN)
+    contentMainParams.sandbox_info = staticSandboxInterfaceInfo();
     sandbox::SandboxInterfaceInfo sandbox_info = {0};
-    content::InitializeSandboxInfo(&sandbox_info);
-    contentMainParams.sandbox_info = &sandbox_info;
+    if (!contentMainParams.sandbox_info) {
+        content::InitializeSandboxInfo(&sandbox_info);
+        contentMainParams.sandbox_info = &sandbox_info;
+    }
 #endif
     m_contentRunner->Initialize(contentMainParams);
 

@@ -40,9 +40,12 @@
 #ifndef WEB_ENGINE_CONTEXT_H
 #define WEB_ENGINE_CONTEXT_H
 
+#include "qtwebenginecoreglobal_p.h"
+
 #include "build_config_qt.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
+
 #include <QVector>
 
 namespace base {
@@ -75,6 +78,12 @@ class PrintJobManager;
 }
 #endif
 
+#ifdef Q_OS_WIN
+namespace sandbox {
+struct SandboxInterfaceInfo;
+}
+#endif
+
 QT_FORWARD_DECLARE_CLASS(QObject)
 
 namespace QtWebEngineCore {
@@ -85,6 +94,10 @@ class DevToolsServerQt;
 class ProfileAdapter;
 
 bool usingSoftwareDynamicGL();
+
+#ifdef Q_OS_WIN
+Q_WEBENGINECORE_PRIVATE_EXPORT sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterfaceInfo *info = nullptr);
+#endif
 
 typedef std::tuple<bool, QString, QString> ProxyAuthentication;
 

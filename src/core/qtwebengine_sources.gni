@@ -179,3 +179,9 @@ source_set("qtwebengine_sources") {
   }
 }
 
+if (is_win) {
+  shared_library("qtwebengine_sandbox_win") {
+    create_pri_file = true
+    public_deps = [ "//sandbox/win:sandbox" ]
+  }
+}
