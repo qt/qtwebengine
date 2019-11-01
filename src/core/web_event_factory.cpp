@@ -1292,6 +1292,7 @@ static inline WebInputEvent::Modifiers modifiersForEvent(const QInputEvent* even
         if (keyEvent->isAutoRepeat())
             result |= WebInputEvent::kIsAutoRepeat;
         result |= modifierForKeyCode(qtKeyForKeyEvent(keyEvent));
+        break;
     }
     default:
         break;

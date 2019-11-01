@@ -52,7 +52,7 @@ public:
     REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
     CompositorResourceFence() {}
-    CompositorResourceFence(const gl::TransferableFence &sync) : m_sync(sync) {};
+    CompositorResourceFence(const gl::TransferableFence &sync) : m_sync(sync) {}
     ~CompositorResourceFence() { release(); }
 
     // May be used only by Qt Quick render thread.

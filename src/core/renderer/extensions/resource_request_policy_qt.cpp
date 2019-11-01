@@ -154,9 +154,9 @@ bool ResourceRequestPolicyQt::CanRequestResource(const GURL &resource_url,
     // hybrid hosted/packaged apps. The one exception is access to icons, since
     // some extensions want to be able to do things like create their own
     // launchers.
-    base::StringPiece resource_root_relative_path =
+    /*base::StringPiece resource_root_relative_path =
             resource_url.path_piece().empty() ? base::StringPiece()
-                                              : resource_url.path_piece().substr(1);
+                                              : resource_url.path_piece().substr(1);*/
     if (extension->is_hosted_app() /*&& !IconsInfo::GetIcons(extension).ContainsPath(resource_root_relative_path)*/) {
         LOG(ERROR) << "Denying load of " << resource_url.spec() << " from "
                    << "hosted app.";

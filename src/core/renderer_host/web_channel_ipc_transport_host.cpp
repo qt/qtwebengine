@@ -54,7 +54,7 @@
 
 namespace QtWebEngineCore {
 
-Q_LOGGING_CATEGORY(log, "qt.webengine.webchanneltransport");
+Q_LOGGING_CATEGORY(log, "qt.webengine.webchanneltransport")
 
 inline QDebug operator<<(QDebug stream, content::RenderFrameHost *frame)
 {

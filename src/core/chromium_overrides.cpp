@@ -118,7 +118,7 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking()
         // TODO(yusukes): Support localized family names.
         font_list->Append(std::move(font_item));
     }
-    return std::move(font_list);
+    return font_list;
 }
 
 } // namespace content
@@ -142,8 +142,8 @@ namespace content {
 std::vector<AccessibilityTreeFormatter::TestPass> AccessibilityTreeFormatter::GetTestPasses()
 {
     return {
-        {"blink", &AccessibilityTreeFormatterBlink::CreateBlink},
-        {"native", &AccessibilityTreeFormatter::Create},
+        {"blink", &AccessibilityTreeFormatterBlink::CreateBlink, nullptr},
+        {"native", &AccessibilityTreeFormatter::Create, nullptr},
     };
 }
 } // namespace content

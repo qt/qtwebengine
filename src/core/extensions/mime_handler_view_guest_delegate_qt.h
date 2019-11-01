@@ -66,8 +66,6 @@ public:
                            const content::ContextMenuParams &params) override;
 
 private:
-    MimeHandlerViewGuest *guest_; // Owns us.
-
     DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuestDelegateQt);
 };
 

@@ -52,7 +52,7 @@
 
 namespace extensions {
 
-MimeHandlerViewGuestDelegateQt::MimeHandlerViewGuestDelegateQt(MimeHandlerViewGuest *guest)
+MimeHandlerViewGuestDelegateQt::MimeHandlerViewGuestDelegateQt(MimeHandlerViewGuest *)
     : MimeHandlerViewGuestDelegate()
 {
 }
