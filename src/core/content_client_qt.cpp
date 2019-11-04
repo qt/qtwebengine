@@ -125,7 +125,8 @@ static QString getLocalAppDataDir()
 static const int32_t kPepperFlashPermissions = ppapi::PERMISSION_DEV |
                                                ppapi::PERMISSION_PRIVATE |
                                                ppapi::PERMISSION_BYPASS_USER_GESTURE |
-                                               ppapi::PERMISSION_FLASH;
+                                               ppapi::PERMISSION_FLASH |
+                                               ppapi::PERMISSION_SOCKET;
 
 namespace switches {
 const char kPpapiFlashPath[]    = "ppapi-flash-path";
