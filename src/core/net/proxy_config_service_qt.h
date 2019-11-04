@@ -51,14 +51,14 @@
 #include <QNetworkProxy>
 
 class ProxyConfigServiceQt
-        : public net::ProxyConfigService
-        , public net::ProxyConfigService::Observer {
+    : public net::ProxyConfigService
+    , public net::ProxyConfigService::Observer
+{
 public:
-
     static net::ProxyServer fromQNetworkProxy(const QNetworkProxy &);
 
     explicit ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService,
-                                  const net::ProxyConfigWithAnnotation& initialConfig,
+                                  const net::ProxyConfigWithAnnotation &initialConfig,
                                   ProxyPrefs::ConfigState initialState);
     ~ProxyConfigServiceQt() override;
 

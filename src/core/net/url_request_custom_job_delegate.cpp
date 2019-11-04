@@ -117,7 +117,7 @@ void URLRequestCustomJobDelegate::redirect(const QUrl &url)
 
 void URLRequestCustomJobDelegate::fail(Error error)
 {
-    int net_error =  0;
+    int net_error = 0;
     switch (error) {
     case NoError:
         break;

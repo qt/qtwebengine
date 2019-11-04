@@ -109,7 +109,7 @@ typedef std::unique_ptr<WebUIController> (*WebUIFactoryFunction)(WebUI *web_ui, 
 
 // Template for defining WebUIFactoryFunction.
 template<class T>
-std::unique_ptr<WebUIController> NewWebUI(WebUI *web_ui, const GURL &/*url*/)
+std::unique_ptr<WebUIController> NewWebUI(WebUI *web_ui, const GURL & /*url*/)
 {
     return std::unique_ptr<WebUIController>(new T(web_ui));
 }
@@ -130,8 +130,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
         return &NewWebUI<QuotaInternalsUI>;
 
     if (url.SchemeIs(content::kChromeDevToolsScheme)) {
-//        if (!DevToolsUIBindings::IsValidFrontendURL(url))
-//            return nullptr;
+        //        if (!DevToolsUIBindings::IsValidFrontendURL(url))
+        //            return nullptr;
         return &NewWebUI<DevToolsUI>;
     }
     if (url.host() == chrome::kChromeUIAccessibilityHost)

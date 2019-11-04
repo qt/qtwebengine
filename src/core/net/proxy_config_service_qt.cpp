@@ -70,14 +70,14 @@ net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qt
 }
 
 ProxyConfigServiceQt::ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService,
-                                           const net::ProxyConfigWithAnnotation& initialConfig, ProxyPrefs::ConfigState initialState)
-    : m_baseService(baseService.release()),
-      m_usesSystemConfiguration(false),
-      m_registeredObserver(false),
-      m_prefConfig(initialConfig),
-      m_perfState(initialState)
-{
-}
+                                           const net::ProxyConfigWithAnnotation &initialConfig,
+                                           ProxyPrefs::ConfigState initialState)
+    : m_baseService(baseService.release())
+    , m_usesSystemConfiguration(false)
+    , m_registeredObserver(false)
+    , m_prefConfig(initialConfig)
+    , m_perfState(initialState)
+{}
 
 ProxyConfigServiceQt::~ProxyConfigServiceQt()
 {

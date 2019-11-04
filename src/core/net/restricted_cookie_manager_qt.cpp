@@ -58,7 +58,8 @@
 
 namespace QtWebEngineCore {
 
-class RestrictedCookieManagerListenerQt : public network::mojom::CookieChangeListener {
+class RestrictedCookieManagerListenerQt : public network::mojom::CookieChangeListener
+{
 public:
     RestrictedCookieManagerListenerQt(const GURL &url,
                                       const GURL &site_for_cookies,
@@ -181,4 +182,4 @@ bool RestrictedCookieManagerQt::allowCookies(const GURL &url, const GURL &site_f
     return m_profileIoData->canGetCookies(toQt(site_for_cookies), toQt(url));
 }
 
-}  // namespace QtWebEngineCore
+} // namespace QtWebEngineCore

@@ -67,19 +67,15 @@ bool CertPolicy::Check(const net::X509Certificate &cert, int error) const
     return false;
 }
 
-void CertPolicy::Allow(const net::X509Certificate& cert, int error)
+void CertPolicy::Allow(const net::X509Certificate &cert, int error)
 {
     net::SHA256HashValue fingerprint = cert.CalculateChainFingerprint256();
     m_allowed[fingerprint] |= error;
 }
 
-SSLHostStateDelegateQt::SSLHostStateDelegateQt()
-{
-}
+SSLHostStateDelegateQt::SSLHostStateDelegateQt() {}
 
-SSLHostStateDelegateQt::~SSLHostStateDelegateQt()
-{
-}
+SSLHostStateDelegateQt::~SSLHostStateDelegateQt() {}
 
 void SSLHostStateDelegateQt::AllowCert(const std::string &host, const net::X509Certificate &cert, int error)
 {
@@ -87,7 +83,7 @@ void SSLHostStateDelegateQt::AllowCert(const std::string &host, const net::X509C
 }
 
 // Clear all allow preferences.
-void SSLHostStateDelegateQt::Clear(const base::Callback<bool(const std::string&)>& host_filter)
+void SSLHostStateDelegateQt::Clear(const base::Callback<bool(const std::string &)> &host_filter)
 {
     if (host_filter.is_null()) {
         m_certPolicyforHost.clear();
@@ -107,9 +103,10 @@ void SSLHostStateDelegateQt::Clear(const base::Callback<bool(const std::string&)
 // Queries whether |cert| is allowed for |host| and |error|. Returns true in
 // |expired_previous_decision| if a previous user decision expired immediately
 // prior to this query, otherwise false.
-content::SSLHostStateDelegate::CertJudgment SSLHostStateDelegateQt::QueryPolicy(
-                                                       const std::string &host, const net::X509Certificate &cert,
-                                                       int error, bool */*expired_previous_decision*/)
+content::SSLHostStateDelegate::CertJudgment SSLHostStateDelegateQt::QueryPolicy(const std::string &host,
+                                                                                const net::X509Certificate &cert,
+                                                                                int error,
+                                                                                bool * /*expired_previous_decision*/)
 {
     return m_certPolicyforHost[host].Check(cert, error) ? SSLHostStateDelegate::ALLOWED : SSLHostStateDelegate::DENIED;
 }

@@ -59,7 +59,8 @@
 
 namespace {
 
-class SSLPlatformKeyOverride : public net::ThreadedSSLPrivateKey::Delegate {
+class SSLPlatformKeyOverride : public net::ThreadedSSLPrivateKey::Delegate
+{
 public:
     SSLPlatformKeyOverride(const QByteArray &sslKeyInBytes)
     {
@@ -126,7 +127,7 @@ scoped_refptr<net::SSLPrivateKey> wrapOpenSSLPrivateKey(const QByteArray &sslKey
                 net::GetSSLPlatformKeyTaskRunner());
 }
 
-}  // namespace
+} // namespace
 
 namespace QtWebEngineCore {
 

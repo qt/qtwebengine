@@ -45,7 +45,8 @@
 
 namespace QtWebEngineCore {
 
-class QrcUrlSchemeHandler final : public QWebEngineUrlSchemeHandler {
+class QrcUrlSchemeHandler final : public QWebEngineUrlSchemeHandler
+{
 public:
     void requestStarted(QWebEngineUrlRequestJob *) override;
 };
