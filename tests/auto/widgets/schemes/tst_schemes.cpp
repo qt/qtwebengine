@@ -103,7 +103,7 @@ void tst_Schemes::unknownUrlSchemePolicy()
             });
         }
 
-        QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 2, 15000);
+        QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 2, 60000);
         QCOMPARE(page.acceptNavigationRequestCalls, shouldAccept ? 1 : 0);
     }
 }
