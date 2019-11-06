@@ -233,7 +233,7 @@ private:
     {
         QSignalSpy spy(m_page, &QWebEnginePage::loadFinished);
         m_page->load(url);
-        [&spy]() { QTRY_VERIFY_WITH_TIMEOUT(!spy.isEmpty(), 30000); }();
+        [&spy]() { QTRY_VERIFY_WITH_TIMEOUT(!spy.isEmpty(), 90000); }();
         return !spy.isEmpty() && spy.front().value(0).toBool();
     }
 
