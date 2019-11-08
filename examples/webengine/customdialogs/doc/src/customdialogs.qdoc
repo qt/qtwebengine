@@ -57,11 +57,10 @@
 
     \section1 Triggering Dialogs
 
-    As mentioned, the \l {webengine/customdialogs/index.html}{index.html} file
-    is responsible for triggering the dialogs from the side of HTML and
-    JavaScript. Additionally, the example program starts a localhost TCP server
-    returning the mocked HTTP responses needed to trigger proxy and HTTP
-    authentication dialogs.
+    As mentioned, the \c index.html file is responsible for triggering the
+    dialogs from the side of HTML and JavaScript. Additionally, the example
+    program starts a localhost TCP server returning the mocked HTTP responses
+    needed to trigger proxy and HTTP authentication dialogs.
 
     \section1 Custom Dialogs
 
