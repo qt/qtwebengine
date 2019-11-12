@@ -216,6 +216,11 @@ public:
             const base::RepeatingCallback<content::WebContents *()> &wc_getter,
             content::NavigationUIData *navigation_ui_data, int frame_tree_node_id) override;
 
+    std::vector<std::unique_ptr<content::NavigationThrottle>> CreateThrottlesForNavigation(
+            content::NavigationHandle *navigation_handle) override;
+
+    bool IsHandledURL(const GURL &url) override;
+
     static std::string getUserAgent();
 
     std::string GetUserAgent() override { return getUserAgent(); }

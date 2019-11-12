@@ -44,11 +44,12 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request.h"
+
+#include "api/qwebengineurlrequestinfo_p.h"
+#include "profile_io_data_qt.h"
+#include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
-#include "profile_io_data_qt.h"
-#include "qwebengineurlrequestinfo_p.h"
-#include "type_conversion.h"
 
 namespace QtWebEngineCore {
 
@@ -65,11 +66,6 @@ private:
 };
 
 const char UserData::key[] = "QtWebEngineCore::URLRequestNotification";
-
-static content::ResourceType fromQt(QWebEngineUrlRequestInfo::ResourceType resourceType)
-{
-    return static_cast<content::ResourceType>(resourceType);
-}
 
 URLRequestNotification::URLRequestNotification(net::URLRequest *request, bool isMainFrameRequest, GURL *newUrl,
                                                QWebEngineUrlRequestInfo &&requestInfo,
@@ -105,7 +101,6 @@ void URLRequestNotification::notify()
     content::WebContents *webContents = m_webContentsGetter.Run();
 
     if (webContents) {
-
         if (m_profileAdapter && m_profileAdapter->requestInterceptor()) {
             QWebEngineUrlRequestInterceptor *interceptor = m_profileAdapter->requestInterceptor();
             if (!interceptor->property("deprecated").toBool())
@@ -122,25 +117,6 @@ void URLRequestNotification::notify()
         if (m_requestInfo.changed()) {
             result = m_requestInfo.d_ptr->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
             // We handle the rest of the changes later when we are back in I/O thread
-        }
-
-        // Only do navigationRequested on MAIN_FRAME and SUB_FRAME resources
-        if (result == net::OK && content::IsResourceTypeFrame(fromQt(m_requestInfo.resourceType()))) {
-            int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
-            client->navigationRequested(m_requestInfo.navigationType(),
-                                        m_requestInfo.requestUrl(),
-                                        navigationRequestAction,
-                                        m_isMainFrameRequest);
-            result = net::ERR_FAILED;
-            switch (static_cast<WebContentsAdapterClient::NavigationRequestAction>(navigationRequestAction)) {
-            case WebContentsAdapterClient::AcceptRequest:
-                result = net::OK;
-                break;
-            case WebContentsAdapterClient::IgnoreRequest:
-                result = net::ERR_ABORTED;
-                break;
-            }
-            DCHECK(result != net::ERR_FAILED);
         }
     }
 

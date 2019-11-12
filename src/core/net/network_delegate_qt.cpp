@@ -178,8 +178,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
         return net::OK;
 
     // try to bail out
-    if (!m_profileIOData->hasPageInterceptors() && (!m_profileIOData->requestInterceptor() || m_profileIOData->isInterceptorDeprecated()) &&
-            !content::IsResourceTypeFrame(resourceType))
+    if (!m_profileIOData->hasPageInterceptors() && (!m_profileIOData->requestInterceptor() || m_profileIOData->isInterceptorDeprecated()))
         return net::OK;
 
     auto webContentsGetter = resourceInfo->GetWebContentsGetterForRequest();

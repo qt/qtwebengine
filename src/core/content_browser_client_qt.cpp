@@ -49,6 +49,8 @@
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #endif
+#include "components/navigation_interception/intercept_navigation_throttle.h"
+#include "components/navigation_interception/navigation_params.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/network_hints/browser/network_hints_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -121,6 +123,7 @@
 #include "renderer_host/user_resource_controller_host.h"
 #include "service/service_qt.h"
 #include "type_conversion.h"
+#include "web_contents_adapter_client.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
@@ -844,6 +847,70 @@ ContentBrowserClientQt::CreateURLLoaderThrottles(
     result.push_back(std::make_unique<ProtocolHandlerThrottle<ProtocolHandlerRegistry *>>(
             ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)));
     return result;
+}
+
+extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition);
+
+static bool navigationThrottleCallback(content::WebContents *source,
+                                       const navigation_interception::NavigationParams &params)
+{
+    // We call navigationRequested later in launchExternalUrl for external protocols.
+    // The is_external_protocol parameter here is not fully accurate though,
+    // and doesn't know about profile specific custom URL schemes.
+    ProfileQt *profile = static_cast<ProfileQt *>(source->GetBrowserContext());
+    if (params.is_external_protocol() && !profile->profileAdapter()->urlSchemeHandler(toQByteArray(params.url().scheme())))
+        return false;
+    int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
+    WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(source->GetDelegate());
+    WebContentsAdapterClient *client = delegate->adapterClient();
+    client->navigationRequested(pageTransitionToNavigationType(params.transition_type()),
+                                toQt(params.url()),
+                                navigationRequestAction,
+                                params.is_main_frame());
+    return navigationRequestAction == static_cast<int>(WebContentsAdapterClient::IgnoreRequest);
+}
+
+std::vector<std::unique_ptr<content::NavigationThrottle>> ContentBrowserClientQt::CreateThrottlesForNavigation(
+        content::NavigationHandle *navigation_handle)
+{
+    std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+    throttles.push_back(std::make_unique<navigation_interception::InterceptNavigationThrottle>(
+                            navigation_handle,
+                            base::BindRepeating(&navigationThrottleCallback),
+                            navigation_interception::SynchronyMode::kSync));
+    return throttles;
+}
+
+bool ContentBrowserClientQt::IsHandledURL(const GURL &url)
+{
+    static const char *const kProtocolList[] = {
+        url::kFileScheme,
+        content::kChromeDevToolsScheme,
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+        extensions::kExtensionScheme,
+#endif
+        content::kChromeUIScheme,
+        url::kDataScheme,
+        url::kAboutScheme,
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+        url::kFtpScheme,
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+        url::kBlobScheme,
+        url::kFileSystemScheme,
+        url::kQrcScheme,
+    };
+
+    // We don't check url.IsCustom() here because we don't
+    // know if the registered protocol is installed in the
+    // profile that will be used to load the URL.
+
+    const std::string scheme = url.scheme();
+
+    for (const char *protocol : kProtocolList) {
+        if (scheme == protocol)
+            return true;
+    }
+    return net::URLRequest::IsHandledProtocol(scheme);
 }
 
 std::unique_ptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDelegate(
