@@ -48,6 +48,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/network/cookie_settings.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
@@ -156,6 +157,8 @@ public:
                                        int32_t process_id,
                                        int32_t routing_id);
 
+    network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
+
 #if QT_CONFIG(ssl)
     ClientCertificateStoreData *clientCertificateStoreData();
 #endif
@@ -163,7 +166,10 @@ public:
     static ProfileIODataQt *FromBrowserContext(content::BrowserContext *browser_context);
     static ProfileIODataQt *FromResourceContext(content::ResourceContext *resource_context);
 
+    base::WeakPtr<ProfileIODataQt> getWeakPtrOnIOThread();
     base::WeakPtr<ProfileIODataQt> getWeakPtrOnUIThread();
+
+    CookieMonsterDelegateQt *cookieDelegate() const { return m_cookieDelegate.get(); }
 
 private:
     void removeBrowsingDataRemoverObserver();

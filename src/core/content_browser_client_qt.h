@@ -223,6 +223,26 @@ public:
 
     bool IsHandledURL(const GURL &url) override;
 
+    bool WillCreateURLLoaderFactory(content::BrowserContext *browser_context,
+                                    content::RenderFrameHost *frame,
+                                    int render_process_id,
+                                    bool is_navigation,
+                                    bool is_download,
+                                    const url::Origin &request_initiator,
+                                    mojo::PendingReceiver<network::mojom::URLLoaderFactory> *factory_receiver,
+                                    network::mojom::TrustedURLLoaderHeaderClientPtrInfo *header_client,
+                                    bool *bypass_redirect_checks) override;
+    scoped_refptr<network::SharedURLLoaderFactory> GetSystemSharedURLLoaderFactory() override;
+    network::mojom::NetworkContext *GetSystemNetworkContext() override;
+    void OnNetworkServiceCreated(network::mojom::NetworkService *network_service) override;
+    network::mojom::NetworkContextPtr CreateNetworkContext(content::BrowserContext *context,
+                                                           bool in_memory,
+                                                           const base::FilePath &relative_partition_path) override;
+    std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
+    void RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id, NonNetworkURLLoaderFactoryMap *factories) override;
+    void RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
+                                                         NonNetworkURLLoaderFactoryMap* factories) override;
+
     static std::string getUserAgent();
 
     std::string GetUserAgent() override { return getUserAgent(); }

@@ -193,8 +193,7 @@ void ProfileAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *inte
             Q_ASSERT(!m_profile->m_profileIOData->requestInterceptor());
         });
 
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateRequestInterceptor();
+    m_profile->m_profileIOData->updateRequestInterceptor();
 }
 
 void ProfileAdapter::addClient(ProfileAdapterClient *adapterClient)
@@ -210,16 +209,14 @@ void ProfileAdapter::removeClient(ProfileAdapterClient *adapterClient)
 void ProfileAdapter::addPageRequestInterceptor()
 {
     ++m_pageRequestInterceptors;
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateRequestInterceptor();
+    m_profile->m_profileIOData->updateRequestInterceptor();
 }
 
 void ProfileAdapter::removePageRequestInterceptor()
 {
     Q_ASSERT(m_pageRequestInterceptors > 0);
     --m_pageRequestInterceptors;
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateRequestInterceptor();
+    m_profile->m_profileIOData->updateRequestInterceptor();
 }
 
 

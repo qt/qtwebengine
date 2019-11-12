@@ -83,11 +83,15 @@ SOURCES = \
         net/client_cert_store_data.cpp \
         net/cookie_monster_delegate_qt.cpp \
         net/custom_protocol_handler.cpp \
+        net/custom_url_loader_factory.cpp \
         net/network_delegate_qt.cpp \
         net/proxy_config_service_qt.cpp \
+        net/proxying_url_loader_factory_qt.cpp \
+        net/proxying_restricted_cookie_manager_qt.cpp \
         net/qrc_url_scheme_handler.cpp \
         net/restricted_cookie_manager_qt.cpp \
         net/ssl_host_state_delegate_qt.cpp \
+        net/system_network_context_manager.cpp \
         net/url_request_context_getter_qt.cpp \
         net/url_request_custom_job.cpp \
         net/url_request_custom_job_delegate.cpp \
@@ -194,10 +198,14 @@ HEADERS = \
         net/client_cert_store_data.h \
         net/cookie_monster_delegate_qt.h \
         net/custom_protocol_handler.h \
+        net/custom_url_loader_factory.h \
         net/network_delegate_qt.h \
+        net/proxying_url_loader_factory_qt.h \
+        net/proxying_restricted_cookie_manager_qt.h \
         net/qrc_url_scheme_handler.h \
         net/restricted_cookie_manager_qt.h \
         net/ssl_host_state_delegate_qt.h \
+        net/system_network_context_manager.h \
         net/url_request_context_getter_qt.h \
         net/url_request_custom_job.h \
         net/url_request_custom_job_delegate.h \

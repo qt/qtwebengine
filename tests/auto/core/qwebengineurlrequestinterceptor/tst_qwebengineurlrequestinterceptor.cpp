@@ -290,18 +290,21 @@ void tst_QWebEngineUrlRequestInterceptor::requestedUrl()
     page.setUrl(QUrl("qrc:///resources/__placeholder__"));
     QVERIFY(spy.wait());
     QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(interceptor.requestInfos.count() >= 1);
     QCOMPARE(interceptor.requestInfos.at(0).requestUrl, QUrl("qrc:///resources/content.html"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
 
     page.setUrl(QUrl("qrc:/non-existent.html"));
     QTRY_COMPARE(spy.count(), 2);
+    QVERIFY(interceptor.requestInfos.count() >= 3);
     QCOMPARE(interceptor.requestInfos.at(2).requestUrl, QUrl("qrc:/non-existent.html"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
 
     page.setUrl(QUrl("http://abcdef.abcdef"));
     QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 3, 15000);
+    QVERIFY(interceptor.requestInfos.count() >= 4);
     QCOMPARE(interceptor.requestInfos.at(3).requestUrl, QUrl("http://abcdef.abcdef/"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
@@ -359,6 +362,7 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrl()
 
     page.setUrl(QUrl("qrc:///resources/firstparty.html"));
     QVERIFY(spy.wait());
+    QVERIFY(interceptor.requestInfos.count() >= 2);
     QCOMPARE(interceptor.requestInfos.at(0).requestUrl, QUrl("qrc:///resources/firstparty.html"));
     QCOMPARE(interceptor.requestInfos.at(1).requestUrl, QUrl("qrc:///resources/content.html"));
     QCOMPARE(interceptor.requestInfos.at(0).firstPartyUrl, QUrl("qrc:///resources/firstparty.html"));
@@ -393,16 +397,19 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlNestedIframes()
     page.setUrl(requestUrl);
     QTRY_COMPARE(loadSpy.count(), 1);
 
+    QVERIFY(interceptor.requestInfos.count() >= 1);
     RequestInfo info = interceptor.requestInfos.at(0);
     QCOMPARE(info.requestUrl, requestUrl);
     QCOMPARE(info.firstPartyUrl, requestUrl);
     QCOMPARE(info.resourceType, QWebEngineUrlRequestInfo::ResourceTypeMainFrame);
 
+    QVERIFY(interceptor.requestInfos.count() >= 2);
     info = interceptor.requestInfos.at(1);
     QCOMPARE(info.requestUrl, QUrl(adjustedUrl + "iframe2.html"));
     QCOMPARE(info.firstPartyUrl, requestUrl);
     QCOMPARE(info.resourceType, QWebEngineUrlRequestInfo::ResourceTypeSubFrame);
 
+    QVERIFY(interceptor.requestInfos.count() >= 3);
     info = interceptor.requestInfos.at(2);
     QCOMPARE(info.requestUrl, QUrl(adjustedUrl + "iframe3.html"));
     QCOMPARE(info.firstPartyUrl, requestUrl);
@@ -456,6 +463,7 @@ void tst_QWebEngineUrlRequestInterceptor::requestInterceptorByResourceType()
 
     QTRY_COMPARE(interceptor.getUrlRequestForType(static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType)).count(), 1);
     QList<RequestInfo> infos = interceptor.getUrlRequestForType(static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType));
+    QVERIFY(infos.count() >= 1);
     QCOMPARE(infos.at(0).requestUrl, requestUrl);
     QCOMPARE(infos.at(0).firstPartyUrl, firstPartyUrl);
     QCOMPARE(infos.at(0).resourceType, resourceType);

@@ -37,32 +37,32 @@
 **
 ****************************************************************************/
 
-#ifndef RESTRICTED_COOKIE_MANAGER_QT_H
-#define RESTRICTED_COOKIE_MANAGER_QT_H
+#ifndef PROXYING_RESTRICTED_COOKIE_MANAGER_QT_H
+#define PROXYING_RESTRICTED_COOKIE_MANAGER_QT_H
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "services/network/restricted_cookie_manager.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "url/gurl.h"
 
 namespace QtWebEngineCore {
 
 class ProfileIODataQt;
 
-class RestrictedCookieManagerQt : public network::RestrictedCookieManager
+class ProxyingRestrictedCookieManagerQt : public network::mojom::RestrictedCookieManager
 {
 public:
-    RestrictedCookieManagerQt(base::WeakPtr<ProfileIODataQt> profileIoData,
-                              network::mojom::RestrictedCookieManagerRole role,
-                              net::CookieStore *cookie_store,
-                              network::CookieSettings *cookie_settings,
-                              const url::Origin &origin,
+    // Expects to be called on the UI thread.
+    static void CreateAndBind(ProfileIODataQt *profileIoData,
+                              network::mojom::RestrictedCookieManagerPtrInfo underlying_rcm,
                               bool is_service_worker,
-                              int32_t process_id,
-                              int32_t frame_id);
-    ~RestrictedCookieManagerQt() override;
+                              int process_id,
+                              int frame_id,
+                              network::mojom::RestrictedCookieManagerRequest request);
 
-    // network::RestrictedCookieManager:
+    ~ProxyingRestrictedCookieManagerQt() override;
+
+    // network::mojom::RestrictedCookieManager interface:
     void GetAllForUrl(const GURL &url,
                       const GURL &site_for_cookies,
                       network::mojom::CookieManagerGetOptionsPtr options,
@@ -75,7 +75,10 @@ public:
                            const GURL &site_for_cookies,
                            network::mojom::CookieChangeListenerPtr listener,
                            AddChangeListenerCallback callback) override;
-
+    void SetCookieFromString(const GURL &url,
+                             const GURL &site_for_cookies,
+                             const std::string &cookie,
+                             SetCookieFromStringCallback callback) override;
     void GetCookiesString(const GURL &url,
                           const GURL &site_for_cookies,
                           GetCookiesStringCallback callback) override;
@@ -88,13 +91,31 @@ public:
     bool allowCookies(const GURL &url, const GURL &site_for_cookies) const;
 
 private:
+    ProxyingRestrictedCookieManagerQt(base::WeakPtr<ProfileIODataQt> profileIoData,
+                                      network::mojom::RestrictedCookieManagerPtr underlyingRestrictedCookieManager,
+                                      bool is_service_worker,
+                                      int32_t process_id,
+                                      int32_t frame_id);
+
+    static void CreateAndBindOnIoThread(ProfileIODataQt *profileIoData,
+                                        network::mojom::RestrictedCookieManagerPtrInfo underlying_rcm,
+                                        bool is_service_worker,
+                                        int process_id,
+                                        int frame_id,
+                                        network::mojom::RestrictedCookieManagerRequest request);
+
     base::WeakPtr<ProfileIODataQt> m_profileIoData;
 
-    base::WeakPtrFactory<RestrictedCookieManagerQt> weak_factory_;
+    network::mojom::RestrictedCookieManagerPtr underlying_restricted_cookie_manager_;
+    bool is_service_worker_;
+    int process_id_;
+    int frame_id_;
 
-    DISALLOW_COPY_AND_ASSIGN(RestrictedCookieManagerQt);
+    base::WeakPtrFactory<ProxyingRestrictedCookieManagerQt> weak_factory_;
+
+    DISALLOW_COPY_AND_ASSIGN(ProxyingRestrictedCookieManagerQt);
 };
 
 } // namespace QtWebEngineCore
 
-#endif // RESTRICTED_COOKIE_MANAGER_QT_H
+#endif  // PROXYING_RESTRICTED_COOKIE_MANAGER_QT_H

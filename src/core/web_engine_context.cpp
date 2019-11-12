@@ -73,6 +73,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/network_service_util.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "media/audio/audio_manager.h"
@@ -529,8 +530,12 @@ WebEngineContext::WebEngineContext()
     // The video-capture service is not functioning at this moment (since 69)
     appendToFeatureList(disableFeatures, features::kMojoVideoCapture.name);
 
-    // We do not yet support the network-service, but it is enabled by default since 75.
-    appendToFeatureList(disableFeatures, network::features::kNetworkService.name);
+    // We do not yet fully support the network-service, but it has been enabled by default since 75.
+    bool enableNetworkService  = parsedCommandLine->HasSwitch("enable-network-service");
+    parsedCommandLine->RemoveSwitch("enable-network-service");
+    if (!enableNetworkService)
+        appendToFeatureList(disableFeatures, network::features::kNetworkService.name);
+
     // BlinkGenPropertyTrees is enabled by default in 75, but causes regressions.
     appendToFeatureList(disableFeatures, blink::features::kBlinkGenPropertyTrees.name);
 
@@ -676,6 +681,9 @@ WebEngineContext::WebEngineContext()
     m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
     m_serviceManagerEnvironment = std::make_unique<content::ServiceManagerEnvironment>(content::BrowserTaskExecutor::CreateIOThread());
     m_startupData = m_serviceManagerEnvironment->CreateBrowserStartupData();
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+        content::ForceInProcessNetworkService(true);
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);

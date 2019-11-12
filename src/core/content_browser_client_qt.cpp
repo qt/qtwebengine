@@ -41,6 +41,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task/post_task.h"
@@ -60,6 +61,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -68,6 +70,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/service_manager_connection.h"
@@ -76,6 +79,8 @@
 #include "content/public/common/user_agent.h"
 #include "media/media_buildflags.h"
 #include "extensions/buildflags/buildflags.h"
+#include "extensions/browser/extension_protocols.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -86,6 +91,8 @@
 #include "qtwebengine/browser/qtwebengine_renderer_manifest.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
+#include "services/network/network_service.h"
+#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -111,8 +118,14 @@
 #include "devtools_manager_delegate_qt.h"
 #include "login_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
+#include "net/cookie_monster_delegate_qt.h"
+#include "net/custom_url_loader_factory.h"
 #include "net/network_delegate_qt.h"
+#include "net/proxying_restricted_cookie_manager_qt.h"
+#include "net/proxying_url_loader_factory_qt.h"
+#include "net/qrc_url_scheme_handler.h"
 #include "net/url_request_context_getter_qt.h"
+#include "net/system_network_context_manager.h"
 #include "platform_notification_service_qt.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "printing/printing_message_filter_qt.h"
@@ -162,6 +175,7 @@
 
 #include <QGuiApplication>
 #include <QLocale>
+#include <QStandardPaths>
 #if QT_CONFIG(opengl)
 # include <QOpenGLContext>
 # include <QOpenGLExtraFunctions>
@@ -279,10 +293,12 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 {
     const int id = host->GetID();
     Profile *profile = Profile::FromBrowserContext(host->GetBrowserContext());
-    base::PostTaskWithTraitsAndReplyWithResult(
-            FROM_HERE, {content::BrowserThread::IO},
-            base::BindOnce(&net::URLRequestContextGetter::GetURLRequestContext, base::Unretained(profile->GetRequestContext())),
-            base::BindOnce(&ContentBrowserClientQt::AddNetworkHintsMessageFilter, base::Unretained(this), id));
+    if (profile->GetRequestContext()) {
+        base::PostTaskWithTraitsAndReplyWithResult(
+                FROM_HERE, {content::BrowserThread::IO},
+                base::BindOnce(&net::URLRequestContextGetter::GetURLRequestContext, base::Unretained(profile->GetRequestContext())),
+                base::BindOnce(&ContentBrowserClientQt::AddNetworkHintsMessageFilter, base::Unretained(this), id));
+    }
 
     // Allow requesting custom schemes.
     const auto policy = content::ChildProcessSecurityPolicy::GetInstance();
@@ -697,13 +713,27 @@ bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::R
                                                                int routing_id,
                                                                network::mojom::RestrictedCookieManagerRequest *request)
 {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&ProfileIODataQt::CreateRestrictedCookieManager,
-                       ProfileIODataQt::FromBrowserContext(browser_context)->getWeakPtrOnUIThread(),
-                       std::move(*request),
-                       role, origin, is_service_worker, process_id, routing_id));
-    return true;
+    if (Profile::FromBrowserContext(browser_context)->GetRequestContext()) {
+        base::PostTaskWithTraits(
+            FROM_HERE, {content::BrowserThread::IO},
+            base::BindOnce(&ProfileIODataQt::CreateRestrictedCookieManager,
+                           ProfileIODataQt::FromBrowserContext(browser_context)->getWeakPtrOnUIThread(),
+                           std::move(*request),
+                           role, origin, is_service_worker, process_id, routing_id));
+        return true;
+    }
+
+    network::mojom::RestrictedCookieManagerRequest orig_request = std::move(*request);
+    network::mojom::RestrictedCookieManagerPtrInfo target_rcm_info;
+    *request = mojo::MakeRequest(&target_rcm_info);
+
+    ProxyingRestrictedCookieManagerQt::CreateAndBind(
+                ProfileIODataQt::FromBrowserContext(browser_context),
+                std::move(target_rcm_info),
+                is_service_worker, process_id, routing_id,
+                std::move(orig_request));
+
+    return false;  // only made a proxy, still need the actual impl to be made.
 }
 
 bool ContentBrowserClientQt::AllowAppCacheOnIO(const GURL &manifest_url,
@@ -776,7 +806,7 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
         bool has_user_gesture,
         network::mojom::URLLoaderFactoryPtr *out_factory)
 {
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+//    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_UNUSED(child_id);
     Q_UNUSED(navigation_data);
     Q_UNUSED(out_factory);
@@ -969,6 +999,124 @@ std::string ContentBrowserClientQt::GetProduct()
 {
     QString productName(qApp->applicationName() % '/' % qApp->applicationVersion());
     return productName.toStdString();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory> ContentBrowserClientQt::GetSystemSharedURLLoaderFactory()
+{
+    if (!SystemNetworkContextManager::GetInstance())
+        return nullptr;
+    return SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
+}
+
+network::mojom::NetworkContext *ContentBrowserClientQt::GetSystemNetworkContext()
+{
+    if (!SystemNetworkContextManager::GetInstance())
+        return nullptr;
+    return SystemNetworkContextManager::GetInstance()->GetContext();
+}
+
+void ContentBrowserClientQt::OnNetworkServiceCreated(network::mojom::NetworkService *network_service)
+{
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+        return;
+
+    if (!SystemNetworkContextManager::GetInstance())
+        SystemNetworkContextManager::CreateInstance();
+
+    // Need to set up global NetworkService state before anything else uses it.
+    SystemNetworkContextManager::GetInstance()->OnNetworkServiceCreated(network_service);
+}
+
+network::mojom::NetworkContextPtr ContentBrowserClientQt::CreateNetworkContext(content::BrowserContext *context,
+                                                                               bool in_memory,
+                                                                               const base::FilePath &relative_partition_path)
+{
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+        return nullptr;
+
+    network::mojom::NetworkContextPtr network_context;
+    // ### do we need to pass in_memory and relative_partition_path to ProfileIODataQt::CreateNetworkContextParams() ?
+    network::mojom::NetworkContextParamsPtr context_params = ProfileIODataQt::FromBrowserContext(context)->CreateNetworkContextParams();
+    content::GetNetworkService()->CreateNetworkContext(mojo::MakeRequest(&network_context), std::move(context_params));
+
+    network::mojom::CookieManagerPtrInfo cookie_manager_info;
+    network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_info));
+    ProfileIODataQt::FromBrowserContext(context)->cookieDelegate()->setMojoCookieManager(std::move(cookie_manager_info));
+
+    return network_context;
+}
+
+std::vector<base::FilePath> ContentBrowserClientQt::GetNetworkContextsParentDirectory()
+{
+    return {
+        toFilePath(QStandardPaths::writableLocation(QStandardPaths::DataLocation)),
+        toFilePath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)) };
+}
+
+void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id,
+                                                                            NonNetworkURLLoaderFactoryMap *factories)
+{
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+    content::WebContents *web_contents = content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+    Profile *profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
+
+    for (const QByteArray &scheme : profileAdapter->customUrlSchemes())
+        factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter));
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    factories->emplace(
+        extensions::kExtensionScheme,
+        extensions::CreateExtensionNavigationURLLoaderFactory(profile,
+                                                              !!extensions::WebViewGuest::FromWebContents(web_contents)));
+#endif
+}
+
+void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
+                                                                             NonNetworkURLLoaderFactoryMap *factories)
+{
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+        return;
+    content::RenderProcessHost *process_host = content::RenderProcessHost::FromID(render_process_id);
+    Profile *profile = Profile::FromBrowserContext(process_host->GetBrowserContext());
+    ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
+
+    for (const QByteArray &scheme : profileAdapter->customUrlSchemes())
+        factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter));
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    auto factory = extensions::CreateExtensionURLLoaderFactory(render_process_id, render_frame_id);
+    if (factory)
+        factories->emplace(extensions::kExtensionScheme, std::move(factory));
+#endif
+}
+
+bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
+        content::BrowserContext *browser_context,
+        content::RenderFrameHost *frame,
+        int render_process_id,
+        bool is_navigation,
+        bool is_download,
+        const url::Origin &request_initiator,
+        mojo::PendingReceiver<network::mojom::URLLoaderFactory> *factory_receiver,
+        network::mojom::TrustedURLLoaderHeaderClientPtrInfo *header_client,
+        bool *bypass_redirect_checks)
+{
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+        return false;
+
+    auto proxied_receiver = std::move(*factory_receiver);
+    network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
+    *factory_receiver = mojo::MakeRequest(&target_factory_info);
+    int process_id = is_navigation ? 0 : render_process_id;
+
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
+        base::BindOnce(&ProxyingURLLoaderFactoryQt::CreateProxy, process_id,
+                       browser_context->GetResourceContext(),
+                       std::move(proxied_receiver),
+                       std::move(target_factory_info)));
+    return true;
 }
 
 } // namespace QtWebEngineCore

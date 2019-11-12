@@ -40,12 +40,14 @@
 #include "profile_io_data_qt.h"
 
 #include "base/task/post_task.h"
+#include "chrome/common/chrome_constants.h"
 #include "components/certificate_transparency/ct_known_logs.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_store_factory.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
@@ -80,6 +82,8 @@
 #include "services/file/user_id_map.h"
 #include "services/network/proxy_service_mojo.h"
 #include "services/network/restricted_cookie_manager.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
 
 #include "net/client_cert_override.h"
 #include "net/client_cert_store_data.h"
@@ -88,6 +92,7 @@
 #include "net/network_delegate_qt.h"
 #include "net/proxy_config_service_qt.h"
 #include "net/restricted_cookie_manager_qt.h"
+#include "net/system_network_context_manager.h"
 #include "net/url_request_context_getter_qt.h"
 #include "profile_qt.h"
 #include "resource_context_qt.h"
@@ -218,6 +223,8 @@ void ProfileIODataQt::shutdownOnUIThread()
     delete m_clientCertificateStoreData;
     m_clientCertificateStoreData = nullptr;
 #endif
+    if (m_cookieDelegate)
+        m_cookieDelegate->unsetMojoCookieManager();
     bool posted = content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, this);
     if (!posted) {
         qWarning() << "Could not delete ProfileIODataQt on io thread !";
@@ -248,7 +255,14 @@ extensions::ExtensionSystemQt* ProfileIODataQt::GetExtensionSystem()
 base::WeakPtr<ProfileIODataQt> ProfileIODataQt::getWeakPtrOnUIThread()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(m_initialized);
     return m_weakPtr;
+}
+
+base::WeakPtr<ProfileIODataQt> ProfileIODataQt::getWeakPtrOnIOThread()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    return m_weakPtrFactory.GetWeakPtr();
 }
 
 void ProfileIODataQt::initializeOnIOThread()
@@ -407,6 +421,11 @@ void ProfileIODataQt::generateCookieStore()
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
 
     // FIXME: Add code to remove the old channel-id database.
+    // TODO(nharper): Remove the following when no longer needed - see
+    // crbug.com/903642.
+//        base::PostTaskWithTraits(
+//                    FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+//                    base::BindOnce(DeleteChannelIDFiles, path.Append(chrome::kChannelIDFilename)));
 
     std::unique_ptr<net::CookieStore> cookieStore;
     switch (m_persistentCookiesPolicy) {
@@ -751,6 +770,7 @@ bool ProfileIODataQt::isInterceptorDeprecated() const
 
 QWebEngineUrlRequestInterceptor *ProfileIODataQt::acquireInterceptor()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     m_mutex.lock();
     return m_requestInterceptor;
 }
@@ -769,6 +789,7 @@ bool ProfileIODataQt::hasPageInterceptors()
 
 void ProfileIODataQt::releaseInterceptor()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     m_mutex.unlock();
 }
 
@@ -826,6 +847,56 @@ void ProfileIODataQt::CreateRestrictedCookieManager(network::mojom::RestrictedCo
                         &m_cookieSettings, origin,
                         is_service_worker, process_id, routing_id),
                 std::move(request));
+}
+
+network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextParams()
+{
+    network::mojom::NetworkContextParamsPtr network_context_params =
+             SystemNetworkContextManager::GetInstance()->CreateDefaultNetworkContextParams();
+
+    network_context_params->context_name = m_profile->profileAdapter()->storageName().toStdString();
+    network_context_params->accept_language = m_httpAcceptLanguage.toStdString();
+
+    network_context_params->enable_referrers = true;
+    network_context_params->enable_encrypted_cookies = false; // ???
+//    network_context_params->proxy_resolver_factory = std::move(m_proxyResolverFactoryInterface);
+
+    network_context_params->http_cache_enabled = m_httpCacheType != ProfileAdapter::NoCache;
+    network_context_params->http_cache_max_size = m_httpCacheMaxSize;
+    if (m_httpCacheType == ProfileAdapter::DiskHttpCache)
+        network_context_params->http_cache_path = toFilePath(m_httpCachePath);
+
+    if (m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies) {
+        base::FilePath cookie_path = toFilePath(m_dataPath);
+        cookie_path = cookie_path.AppendASCII("Cookies");
+        network_context_params->cookie_path = cookie_path;
+
+        network_context_params->restore_old_session_cookies = false;
+        network_context_params->persist_session_cookies = m_persistentCookiesPolicy == ProfileAdapter::ForcePersistentCookies;
+    }
+    if (!m_dataPath.isEmpty()) {
+        network_context_params->http_server_properties_path = toFilePath(m_dataPath).AppendASCII("Network Persistent State");
+        network_context_params->transport_security_persister_path = toFilePath(m_dataPath);
+    }
+
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+    network_context_params->enable_ftp_url_support = true;
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
+//    proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
+
+//    network_context_params->enable_certificate_reporting = true;
+//    network_context_params->enable_expect_ct_reporting = true;
+    network_context_params->enforce_chrome_ct_policy = false;
+    network_context_params->primary_network_context = m_useForGlobalCertificateVerification;
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+        // Should be initialized with existing per-profile CORS access lists.
+        network_context_params->cors_origin_access_list =
+            m_profile->GetSharedCorsOriginAccessList()->GetOriginAccessList().CreateCorsOriginAccessPatternsList();
+    }
+
+    return network_context_params;
 }
 
 // static
