@@ -569,10 +569,8 @@ WebEngineContext::WebEngineContext()
 #endif
     threadedGpu = threadedGpu && !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
 
-    bool enableViz = ((threadedGpu && !parsedCommandLine->HasSwitch("disable-viz-display-compositor"))
-                      || parsedCommandLine->HasSwitch("enable-viz-display-compositor"));
+    bool enableViz = !parsedCommandLine->HasSwitch("disable-viz-display-compositor");
     parsedCommandLine->RemoveSwitch("disable-viz-display-compositor");
-    parsedCommandLine->RemoveSwitch("enable-viz-display-compositor");
 
     std::string disableFeatures;
     std::string enableFeatures;
