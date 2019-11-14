@@ -64,7 +64,8 @@ namespace QtWebEngineCore {
 
 class URLRequestCustomJobProxy;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT URLRequestCustomJobDelegate : public QObject {
+class Q_WEBENGINECORE_PRIVATE_EXPORT URLRequestCustomJobDelegate : public QObject
+{
     Q_OBJECT
 public:
     ~URLRequestCustomJobDelegate();
@@ -84,7 +85,7 @@ public:
     QMap<QByteArray, QByteArray> requestHeaders() const;
 
     void reply(const QByteArray &contentType, QIODevice *device);
-    void redirect(const QUrl& url);
+    void redirect(const QUrl &url);
     void abort();
     void fail(Error);
 

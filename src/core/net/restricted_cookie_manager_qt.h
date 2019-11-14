@@ -85,7 +85,7 @@ public:
                            CookiesEnabledForCallback callback) override;
 
     // Internal:
-    bool allowCookies(const GURL& url, const GURL &site_for_cookies) const;
+    bool allowCookies(const GURL &url, const GURL &site_for_cookies) const;
 
 private:
     base::WeakPtr<ProfileIODataQt> m_profileIoData;
@@ -95,6 +95,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(RestrictedCookieManagerQt);
 };
 
-}  // namespace QtWebEngineCore
+} // namespace QtWebEngineCore
 
-#endif  // RESTRICTED_COOKIE_MANAGER_QT_H
+#endif // RESTRICTED_COOKIE_MANAGER_QT_H

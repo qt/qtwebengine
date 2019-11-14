@@ -45,19 +45,21 @@
 
 namespace QtWebEngineCore {
 
-class CertPolicy {
+class CertPolicy
+{
 public:
     CertPolicy();
     ~CertPolicy();
-    bool Check(const net::X509Certificate& cert, int error) const;
-    void Allow(const net::X509Certificate& cert, int error);
+    bool Check(const net::X509Certificate &cert, int error) const;
+    void Allow(const net::X509Certificate &cert, int error);
     bool HasAllowException() const { return m_allowed.size() > 0; }
 
 private:
     std::map<net::SHA256HashValue, int> m_allowed;
 };
 
-class SSLHostStateDelegateQt : public content::SSLHostStateDelegate {
+class SSLHostStateDelegateQt : public content::SSLHostStateDelegate
+{
 
 public:
     SSLHostStateDelegateQt();
@@ -65,11 +67,11 @@ public:
 
     // content::SSLHostStateDelegate implementation:
     void AllowCert(const std::string &, const net::X509Certificate &cert, int error) override;
-    void Clear(const base::Callback<bool(const std::string&)>& host_filter) override;
-    CertJudgment QueryPolicy(const std::string &host, const net::X509Certificate &cert,
-                             int error, bool *expired_previous_decision) override;
-    void HostRanInsecureContent(const std::string& host, int child_id, InsecureContentType content_type) override;
-    bool DidHostRunInsecureContent(const std::string& host, int child_id, InsecureContentType content_type) override;
+    void Clear(const base::Callback<bool(const std::string &)> &host_filter) override;
+    CertJudgment QueryPolicy(const std::string &host, const net::X509Certificate &cert, int error,
+                             bool *expired_previous_decision) override;
+    void HostRanInsecureContent(const std::string &host, int child_id, InsecureContentType content_type) override;
+    bool DidHostRunInsecureContent(const std::string &host, int child_id, InsecureContentType content_type) override;
     void RevokeUserAllowExceptions(const std::string &host) override;
     bool HasAllowException(const std::string &host) override;
 

@@ -158,6 +158,7 @@ private Q_SLOTS:
     void setHtmlWithStylesheetResource();
     void setHtmlWithBaseURL();
     void setHtmlWithJSAlert();
+    void setHtmlWithModuleImport();
     void baseUrl_data();
     void baseUrl();
     void scrollPosition();
@@ -322,7 +323,7 @@ void tst_QWebEnginePage::acceptNavigationRequest()
 
     page.setHtml(QString("<html><body><form name='tstform' action='data:text/html,foo'method='get'>"
                             "<input type='text'><input type='submit'></form></body></html>"), QUrl());
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
 
     evaluateJavaScriptSync(&page, "tstform.submit();");
     QTRY_COMPARE(loadSpy.count(), 2);
@@ -388,7 +389,7 @@ void tst_QWebEnginePage::geolocationRequestJS()
 
     QSignalSpy spyLoadFinished(newPage, SIGNAL(loadFinished(bool)));
     newPage->setHtml(QString("<html><body>test</body></html>"), QUrl("qrc://secure/origin"));
-    QTRY_COMPARE(spyLoadFinished.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(spyLoadFinished.count(), 1, 20000);
 
     // Geolocation is only enabled for visible WebContents.
     view.show();
@@ -415,7 +416,7 @@ void tst_QWebEnginePage::loadFinished()
     page.load(QUrl("data:text/html,<frameset cols=\"25%,75%\"><frame src=\"data:text/html,"
                                            "<head><meta http-equiv='refresh' content='1'></head>foo \">"
                                            "<frame src=\"data:text/html,bar\"></frameset>"));
-    QTRY_COMPARE(spyLoadFinished.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(spyLoadFinished.count(), 1, 20000);
 
     QEXPECT_FAIL("", "Behavior change: Load signals are emitted only for the main frame in QtWebEngine.", Continue);
     QTRY_VERIFY_WITH_TIMEOUT(spyLoadStarted.count() > 1, 100);
@@ -475,9 +476,9 @@ void tst_QWebEnginePage::pasteImage()
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setImage(origImage);
     QWebEnginePage *page = m_view->page();
-    page->load(QUrl("qrc:///resources/pasteimage.html"));
     QSignalSpy spyFinished(m_view, &QWebEngineView::loadFinished);
-    QVERIFY(spyFinished.wait());
+    page->load(QUrl("qrc:///resources/pasteimage.html"));
+    QTRY_VERIFY_WITH_TIMEOUT(!spyFinished.isEmpty(), 20000);
     page->triggerAction(QWebEnginePage::Paste);
     QTRY_VERIFY(evaluateJavaScriptSync(page,
             "window.myImageDataURL ? window.myImageDataURL.length : 0").toInt() > 0);
@@ -568,11 +569,11 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
 
     page.load(QUrl("qrc:///resources/script.html"));
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
     QTRY_COMPARE(page.navigations.count(), 1);
 
     page.load(QUrl("qrc:///resources/content.html"));
-    QTRY_COMPARE(loadSpy.count(), 2);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 2, 20000);
     QTRY_COMPARE(page.navigations.count(), 2);
 
     page.triggerAction(QWebEnginePage::Stop);
@@ -587,7 +588,7 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
     QTRY_COMPARE(page.navigations.count(), 4);
 
     page.load(QUrl("qrc:///resources/reload.html"));
-    QTRY_COMPARE(loadSpy.count(), 6);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 6, 20000);
     QTRY_COMPARE(page.navigations.count(), 6);
 
     QList<QWebEnginePage::NavigationType> expectedList;
@@ -613,7 +614,7 @@ void tst_QWebEnginePage::popupFormSubmission()
     page.setHtml("<form name='form1' method=get action='' target='myNewWin'>"
                  "  <input type='hidden' name='foo' value='bar'>"
                  "</form>");
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 20000);
 
     page.runJavaScript("window.open('', 'myNewWin', 'width=500,height=300,toolbar=0');");
     evaluateJavaScriptSync(&page, "document.form1.submit();");
@@ -666,8 +667,8 @@ void tst_QWebEnginePage::multipleProfilesAndLocalStorage()
 
         page1.setHtml(QString("<html><body> </body></html>"), QUrl("http://wwww.example.com"));
         page2.setHtml(QString("<html><body> </body></html>"), QUrl("http://wwww.example.com"));
-        QTRY_COMPARE(loadSpy1.count(), 1);
-        QTRY_COMPARE(loadSpy2.count(), 1);
+        QTRY_COMPARE_WITH_TIMEOUT(loadSpy1.count(), 1, 20000);
+        QTRY_COMPARE_WITH_TIMEOUT(loadSpy2.count(), 1, 20000);
 
         evaluateJavaScriptSync(&page1, "localStorage.setItem('test', 'value1');");
         evaluateJavaScriptSync(&page2, "localStorage.setItem('test', 'value2');");
@@ -727,7 +728,7 @@ void tst_QWebEnginePage::textSelection()
     page->setView(&view);
     QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     page->setHtml(content);
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
 
     // these actions must exist
     QVERIFY(page->action(QWebEnginePage::SelectAll) != 0);
@@ -759,7 +760,7 @@ void tst_QWebEnginePage::backActionUpdate()
     QSignalSpy loadSpy(page, SIGNAL(loadFinished(bool)));
     QUrl url = QUrl("qrc:///resources/framedindex.html");
     page->load(url);
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
     QVERIFY(!action->isEnabled());
     QTest::mouseClick(&view, Qt::LeftButton, 0, QPoint(10, 10));
     QEXPECT_FAIL("", "Behavior change: Load signals are emitted only for the main frame in QtWebEngine.", Continue);
@@ -782,8 +783,8 @@ void tst_QWebEnginePage::localStorageVisibility()
     QSignalSpy loadSpy2(&webPage2, &QWebEnginePage::loadFinished);
     webPage1.setHtml(QString("<html><body>test</body></html>"), QUrl("http://www.example.com/"));
     webPage2.setHtml(QString("<html><body>test</body></html>"), QUrl("http://www.example.com/"));
-    QTRY_COMPARE(loadSpy1.count(), 1);
-    QTRY_COMPARE(loadSpy2.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy1.count(), 1, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy2.count(), 1, 20000);
 
     // The attribute determines the visibility of the window.localStorage object.
     QVERIFY(evaluateJavaScriptSync(&webPage1, QString("(window.localStorage != undefined)")).toBool());
@@ -900,7 +901,7 @@ void tst_QWebEnginePage::testJSPrompt()
     bool res;
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
     page.setHtml(QStringLiteral("<html><body></body></html>"));
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
 
     // OK + QString()
     res = evaluateJavaScriptSync(&page,
@@ -1037,7 +1038,7 @@ void tst_QWebEnginePage::findTextSuccessiveShouldCallAllCallbacks()
     CallbackSpy<bool> spy5;
     QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
     m_view->setHtml(QString("<html><head></head><body><div>abcdefg abcdefg abcdefg abcdefg abcdefg</div></body></html>"));
-    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
     m_page->findText("abcde", 0, spy1.ref());
     m_page->findText("abcd", 0, spy2.ref());
     m_page->findText("abc", 0, spy3.ref());
@@ -1339,7 +1340,7 @@ void tst_QWebEnginePage::loadSignalsOrder()
     QSignalSpy spyLoadSpy(&loadSpy, &SpyForLoadSignalsOrder::started);
     QVERIFY(spyLoadSpy.wait(500));
     page.load(url);
-    QTRY_VERIFY(loadSpy.isFinished());
+    QTRY_VERIFY_WITH_TIMEOUT(loadSpy.isFinished(), 20000);
 }
 
 void tst_QWebEnginePage::renderWidgetHostViewNotShowTopLevel()
@@ -1486,7 +1487,7 @@ void tst_QWebEnginePage::getUserMediaRequest()
         QVERIFY(QTest::qWaitForWindowExposed(&view));
     }
 
-    QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 20000);
+    QTRY_VERIFY_WITH_TIMEOUT(page.loadSucceeded(), 60000);
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
 
     // 1. Rejecting request on C++ side should reject promise on JS side.
@@ -1827,7 +1828,7 @@ void tst_QWebEnginePage::runJavaScriptDisabled()
     // Settings changes take effect asynchronously. The load and wait ensure
     // that the settings are applied by the time we start to execute JavaScript.
     page.load(QStringLiteral("about:blank"));
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 20000);
     QCOMPARE(evaluateJavaScriptSyncInWorld(&page, QStringLiteral("1+1"), QWebEngineScript::MainWorld),
              QVariant());
     QCOMPARE(evaluateJavaScriptSyncInWorld(&page, QStringLiteral("1+1"), QWebEngineScript::ApplicationWorld),
@@ -1953,7 +1954,7 @@ void tst_QWebEnginePage::symmetricUrl()
     // loading is _not_ immediate, so the text isn't set just yet.
     QVERIFY(toPlainTextSync(view.page()).isEmpty());
 
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 20000);
 
     QCOMPARE(view.history()->count(), 1);
     QCOMPARE(toPlainTextSync(view.page()), QString("Test"));
@@ -2281,6 +2282,41 @@ void tst_QWebEnginePage::setHtmlWithJSAlert()
     QVERIFY(spyFinished.wait());
     QCOMPARE(page.alerts, 1);
     QCOMPARE(toHtmlSync(&page), html);
+}
+
+void tst_QWebEnginePage::setHtmlWithModuleImport()
+{
+    HttpServer server;
+    connect(&server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        if (rr->requestMethod() == "GET" && rr->requestPath() == "/fibonacci.mjs") {
+            rr->setResponseBody("export function fib(n) {\n"
+                                "    return n < 2 ? n : fib(n-1) + fib(n-2)\n"
+                                "}\n");
+            rr->setResponseHeader("Content-Type", "text/javascript");
+            rr->sendResponse();
+        } else {
+            rr->setResponseStatus(404);
+            rr->sendResponse();
+        }
+    });
+    QVERIFY(server.start());
+
+    QString html("<html>\n"
+                 "  <head>\n"
+                 "    <script type='module'>\n"
+                 "      import {fib} from './fibonacci.mjs'\n"
+                 "      window.fib7 = fib(7)\n"
+                 "    </script>\n"
+                 "  </head>\n"
+                 "  <body></body>\n"
+                 "</html>\n");
+
+    QWebEnginePage page;
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+    page.setHtml(html, server.url());
+    QVERIFY(spy.count() || spy.wait());
+
+    QCOMPARE(evaluateJavaScriptSync(&page, "fib7"), QVariant(13));
 }
 
 void tst_QWebEnginePage::baseUrl_data()

@@ -10,20 +10,21 @@
 
 namespace extensions {
 
-class PDFWebContentsHelperClientQt : public pdf::PDFWebContentsHelperClient {
+class PDFWebContentsHelperClientQt : public pdf::PDFWebContentsHelperClient
+{
 public:
     PDFWebContentsHelperClientQt();
     ~PDFWebContentsHelperClientQt() override;
 
 private:
     // pdf::PDFWebContentsHelperClient:
-    void UpdateContentRestrictions(content::WebContents* contents, int content_restrictions) override;
-    void OnPDFHasUnsupportedFeature(content::WebContents* contents) override;
-    void OnSaveURL(content::WebContents* contents) override;
+    void UpdateContentRestrictions(content::WebContents *contents, int content_restrictions) override;
+    void OnPDFHasUnsupportedFeature(content::WebContents *contents) override;
+    void OnSaveURL(content::WebContents *contents) override;
 
     DISALLOW_COPY_AND_ASSIGN(PDFWebContentsHelperClientQt);
 };
 
-}  // namespace extensions
+} // namespace extensions
 
-#endif  // PDF_WEB_CONTENTS_HELPER_CLIENT_QT_H_
+#endif // PDF_WEB_CONTENTS_HELPER_CLIENT_QT_H_

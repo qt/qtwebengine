@@ -132,7 +132,7 @@ bool URLRequestCustomJob::GetMimeType(std::string *mimeType) const
     return false;
 }
 
-bool URLRequestCustomJob::GetCharset(std::string* charset)
+bool URLRequestCustomJob::GetCharset(std::string *charset)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (m_charset.size() > 0) {
@@ -142,7 +142,7 @@ bool URLRequestCustomJob::GetCharset(std::string* charset)
     return false;
 }
 
-void URLRequestCustomJob::GetResponseInfo(HttpResponseInfo* info)
+void URLRequestCustomJob::GetResponseInfo(HttpResponseInfo *info)
 {
     // Based on net::URLRequestRedirectJob::StartAsync()
 
@@ -173,7 +173,7 @@ void URLRequestCustomJob::GetResponseInfo(HttpResponseInfo* info)
     info->headers = new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(headers));
 }
 
-bool URLRequestCustomJob::IsRedirectResponse(GURL* location, int* http_status_code, bool* /*insecure_scheme_was_upgraded*/)
+bool URLRequestCustomJob::IsRedirectResponse(GURL *location, int *http_status_code, bool * /*insecure_scheme_was_upgraded*/)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (m_redirect.is_valid()) {

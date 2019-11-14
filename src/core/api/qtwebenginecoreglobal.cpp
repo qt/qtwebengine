@@ -126,7 +126,7 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
 
     shareContext = new QOpenGLContext;
     QSurfaceFormat format = QSurfaceFormat::defaultFormat();
-    format.setOption(QSurfaceFormat::ResetNotification);
+//     format.setOption(QSurfaceFormat::ResetNotification);
     shareContext->setFormat(format);
     shareContext->create();
     qAddPostRoutine(deleteShareContext);

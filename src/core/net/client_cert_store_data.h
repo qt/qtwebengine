@@ -57,8 +57,10 @@ class X509Certificate;
 
 namespace QtWebEngineCore {
 
-struct ClientCertificateStoreData {
-    struct Entry {
+struct ClientCertificateStoreData
+{
+    struct Entry
+    {
         QSslKey key;
         QSslCertificate certificate;
         scoped_refptr<net::X509Certificate> certPtr;
@@ -69,7 +71,7 @@ struct ClientCertificateStoreData {
     void remove(const QSslCertificate &certificate);
     void clear();
 
-    QVector<Entry*> extraCerts;
+    QVector<Entry *> extraCerts;
 };
 
 } // namespace QtWebEngineCore

@@ -42,16 +42,13 @@
 #include "extensions/browser/api/generated_api_registration.h"
 
 namespace extensions {
-ExtensionsBrowserAPIProviderQt::ExtensionsBrowserAPIProviderQt() =
-    default;
-ExtensionsBrowserAPIProviderQt::~ExtensionsBrowserAPIProviderQt() =
-    default;
+ExtensionsBrowserAPIProviderQt::ExtensionsBrowserAPIProviderQt() = default;
+ExtensionsBrowserAPIProviderQt::~ExtensionsBrowserAPIProviderQt() = default;
 
-void ExtensionsBrowserAPIProviderQt::RegisterExtensionFunctions(
-    ExtensionFunctionRegistry* registry) {
+void ExtensionsBrowserAPIProviderQt::RegisterExtensionFunctions(ExtensionFunctionRegistry *registry)
+{
     api::GeneratedFunctionRegistry::RegisterAll(registry);
 }
 
 
 }
-

@@ -55,7 +55,8 @@ class RefCountedMemory;
 
 namespace QtWebEngineCore {
 
-class WebUIControllerFactoryQt : public content::WebUIControllerFactory {
+class WebUIControllerFactoryQt : public content::WebUIControllerFactory
+{
 public:
     content::WebUI::TypeID GetWebUIType(content::BrowserContext *browserContext, const GURL &url) override;
     bool UseWebUIForURL(content::BrowserContext *browserContext, const GURL &url) override;
@@ -76,4 +77,4 @@ private:
 
 } // namespace QtWebEngineCore
 
-#endif  // WEB_UI_CONTROLLER_FACTORY_QT_H_
+#endif // WEB_UI_CONTROLLER_FACTORY_QT_H_

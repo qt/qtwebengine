@@ -50,8 +50,8 @@
 namespace extensions {
 
 class ExtensionWebContentsObserverQt
-    : public ExtensionWebContentsObserver,
-      public content::WebContentsUserData<ExtensionWebContentsObserverQt>
+    : public ExtensionWebContentsObserver
+    , public content::WebContentsUserData<ExtensionWebContentsObserverQt>
 {
 public:
     explicit ExtensionWebContentsObserverQt(content::WebContents *web_contents);

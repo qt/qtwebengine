@@ -51,6 +51,7 @@ public Q_SLOTS:
 private Q_SLOTS:
     void title();
     void lastVisited();
+    void iconUrl();
     void count();
     void back();
     void forward();
@@ -124,6 +125,11 @@ void tst_QWebEngineHistory::lastVisited()
 {
     // Check that the conversion from Chromium's internal time format went well.
     QVERIFY(qAbs(hist->itemAt(0).lastVisited().secsTo(QDateTime::currentDateTime())) < 60);
+}
+
+void tst_QWebEngineHistory::iconUrl()
+{
+    QTRY_COMPARE(hist->currentItem().iconUrl(), QUrl("qrc:/qt-project.org/qmessagebox/images/qtlogo-64.png"));
 }
 
 /**
@@ -336,6 +342,7 @@ void tst_QWebEngineHistory::serialize_3()
     QDateTime lastVisited(a.lastVisited());
     QUrl originalUrl(a.originalUrl());
     QUrl url(a.url());
+    QUrl iconUrl(a.iconUrl());
 
     save << *hist;
     QVERIFY(save.status() == QDataStream::Ok);
@@ -351,6 +358,7 @@ void tst_QWebEngineHistory::serialize_3()
     QTRY_COMPARE(b.lastVisited(), lastVisited);
     QTRY_COMPARE(b.originalUrl(), originalUrl);
     QTRY_COMPARE(b.url(), url);
+    QTRY_COMPARE(b.iconUrl(), iconUrl);
 
     //Check if all data was read
     QVERIFY(load.atEnd());
