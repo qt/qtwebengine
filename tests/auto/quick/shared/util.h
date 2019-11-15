@@ -107,21 +107,6 @@ inline bool waitForLoadFailed(QQuickWebEngineView *webEngineView, int timeout = 
     return spy.wait(timeout);
 }
 
-inline bool waitForViewportReady(QQuickWebEngineView *webEngineView, int timeout = 10000)
-{
-#if QT_CONFIG(webengine_testsupport)
-    QSignalSpy spy(reinterpret_cast<QObject *>(webEngineView->testSupport()), SIGNAL(loadVisuallyCommitted()));
-    return spy.wait(timeout);
-#else
-    Q_UNUSED(webEngineView)
-    Q_UNUSED(timeout)
-    qFatal("Test Support API is disabled. The result is not reliable.\
-            Use the following command to build Test Support module and rebuild WebEngineView API:\
-            qmake -r -- --feature-testsupport=yes && make");
-    return false;
-#endif
-}
-
 inline QVariant evaluateJavaScriptSync(QQuickWebEngineView *view, const QString &script)
 {
     QQmlEngine *engine = qmlEngine(view);
