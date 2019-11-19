@@ -225,6 +225,7 @@ private Q_SLOTS:
     void editActionsWithoutSelection();
 
     void customUserAgentInNewTab();
+    void renderProcessCrashed();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4408,6 +4409,26 @@ void tst_QWebEnginePage::customUserAgentInNewTab()
     QTRY_VERIFY(page.newPage);
     QTRY_VERIFY(!lastUserAgent.isEmpty());
     QCOMPARE(lastUserAgent, profile2.httpUserAgent().toUtf8());
+}
+
+void tst_QWebEnginePage::renderProcessCrashed()
+{
+    using Status = QWebEnginePage::RenderProcessTerminationStatus;
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    bool done = false;
+    Status status;
+    connect(&page, &QWebEnginePage::renderProcessTerminated, [&](Status newStatus) {
+        status = newStatus;
+        done = true;
+    });
+    page.load(QUrl("chrome://crash"));
+    QTRY_VERIFY_WITH_TIMEOUT(done, 20000);
+    // The status depends on whether stack traces are enabled. With
+    // --disable-in-process-stack-traces we get an AbnormalTerminationStatus,
+    // otherwise a CrashedTerminationStatus.
+    QVERIFY(status == QWebEnginePage::CrashedTerminationStatus ||
+            status == QWebEnginePage::AbnormalTerminationStatus);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
