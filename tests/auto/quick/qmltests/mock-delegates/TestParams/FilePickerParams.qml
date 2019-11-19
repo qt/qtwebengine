@@ -33,4 +33,5 @@ QtObject {
     property var selectedFilesUrl: [];
     property bool selectFiles: false;
     property bool filePickerOpened: false;
+    property var nameFilters: [];
 }

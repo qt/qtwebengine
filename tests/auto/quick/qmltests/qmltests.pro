@@ -6,6 +6,7 @@ IMPORTPATH += $$PWD/data
 
 OTHER_FILES += \
     $$PWD/data/TestWebEngineView.qml \
+    $$PWD/data/accepttypes.html \
     $$PWD/data/alert.html \
     $$PWD/data/append-document-title.js \
     $$PWD/data/big-user-script.js \

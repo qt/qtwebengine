@@ -1,0 +1,21 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Default title</title>
+</head>
+
+<body>
+<input type="file" name="file" id="upfile" accept="">
+
+<script>
+window.onload = function() {
+    document.getElementById("upfile").focus();
+}
+
+function setAcceptType(acceptType) {
+    document.getElementById("upfile").accept = acceptType;
+    document.title = acceptType;
+}
+</script>
+</body>
+</html>

@@ -80,6 +80,8 @@ public:
     QString defaultFileName() const;
     FileChooserMode mode() const;
 
+    static QStringList nameFilters(const QStringList &acceptedMimeTypes);
+
 public Q_SLOTS:
     void accepted(const QStringList &files);
     void accepted(const QVariant &files);

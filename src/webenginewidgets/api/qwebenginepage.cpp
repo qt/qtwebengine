@@ -2292,14 +2292,12 @@ ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, QWebEnginePage::FileSelec
 QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes)
 {
 #if QT_CONFIG(filedialog)
-    // FIXME: Should we expose this in QWebPage's API ? Right now it is very open and can contain a mix and match of file extensions (which QFileDialog
-    // can work with) and mimetypes ranging from text/plain or images/* to application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-    Q_UNUSED(acceptedMimeTypes);
+    const QStringList &filter = FilePickerController::nameFilters(acceptedMimeTypes);
     QStringList ret;
     QString str;
     switch (static_cast<FilePickerController::FileChooserMode>(mode)) {
     case FilePickerController::OpenMultiple:
-        ret = QFileDialog::getOpenFileNames(view(), QString());
+        ret = QFileDialog::getOpenFileNames(view(), QString(), QString(), filter.join(";;"), nullptr, QFileDialog::HideNameFilterDetails);
         break;
     // Chromium extension, not exposed as part of the public API for now.
     case FilePickerController::UploadFolder:
@@ -2313,7 +2311,7 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
             ret << str;
         break;
     case FilePickerController::Open:
-        str = QFileDialog::getOpenFileName(view(), QString(), oldFiles.first());
+        str = QFileDialog::getOpenFileName(view(), QString(), oldFiles.first(), filter.join(";;"), nullptr, QFileDialog::HideNameFilterDetails);
         if (!str.isNull())
             ret << str;
         break;
