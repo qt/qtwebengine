@@ -992,6 +992,19 @@ void tst_QWebEnginePage::findText()
         QTRY_COMPARE(signalSpy.count(), 1);
         QTRY_COMPARE(m_view->selectedText(), QString("foo"));
     }
+
+    // Invoking startFinding operation for the same text twice. Without any wait, the second one
+    // should interrupt the first one.
+    {
+        QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
+        m_view->findText("foo", 0);
+        m_view->findText("foo", 0);
+        QTRY_COMPARE(signalSpy.count(), 2);
+        QTRY_VERIFY(m_view->selectedText().isEmpty());
+
+        QCOMPARE(signalSpy.at(0).value(0).value<QWebEngineFindTextResult>().numberOfMatches(), 0);
+        QCOMPARE(signalSpy.at(1).value(0).value<QWebEngineFindTextResult>().numberOfMatches(), 1);
+    }
 }
 
 void tst_QWebEnginePage::findTextResult()
