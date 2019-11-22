@@ -113,7 +113,7 @@
     request will be denied.
 
     Finally, we load some HTML (see
-    \l{webenginewidgets/videoplayer/data/index.html}{index.html} included with
+    \c webenginewidgets/videoplayer/data/index.html included with
     the example) into our \l QWebEngineView:
 
     \printline load
