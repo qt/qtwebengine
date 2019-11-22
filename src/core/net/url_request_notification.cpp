@@ -49,6 +49,7 @@
 #include "profile_io_data_qt.h"
 #include "qwebengineurlrequestinfo_p.h"
 #include "type_conversion.h"
+#include <QVariant>
 
 namespace QtWebEngineCore {
 
