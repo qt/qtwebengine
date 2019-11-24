@@ -9,6 +9,8 @@ INCLUDEPATH += ../core
 
 SOURCES = main.cpp
 
+CONFIG -= ltcg
+
 # On windows we need to statically link to the windows sandbox code
 win32 {
     # The Chromium headers we include are not clean
