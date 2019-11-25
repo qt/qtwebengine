@@ -125,7 +125,9 @@ public:
     QUrl linkUrl;
     QUrl unfilteredLinkUrl;
     QUrl mediaUrl;
+    QString altText;
     QString linkText;
+    QString titleText;
     QString selectedText;
     QString suggestedFileName;
     QString misspelledWord;
@@ -215,12 +217,28 @@ public:
         return d->unfilteredLinkUrl;
     }
 
+    void setAltText(const QString &text) {
+        d->altText = text;
+    }
+
+    QString altText() const {
+        return d->altText;
+    }
+
     void setLinkText(const QString &text) {
         d->linkText = text;
     }
 
     QString linkText() const {
         return d->linkText;
+    }
+
+    void setTitleText(const QString &text) {
+        d->titleText = text;
+    }
+
+    QString titleText() const {
+        return d->titleText;
     }
 
     void setSelectedText(const QString &text) {

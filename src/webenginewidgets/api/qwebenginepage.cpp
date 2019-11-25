@@ -1426,10 +1426,14 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case CopyLinkToClipboard:
         if (menuData && !menuData->unfilteredLinkUrl().isEmpty()) {
             QString urlString = menuData->unfilteredLinkUrl().toString(QUrl::FullyEncoded);
-            QString title = menuData->linkText().toHtmlEscaped();
+            QString linkText = menuData->linkText().toHtmlEscaped();
+            QString title = menuData->titleText();
+            if (!title.isEmpty())
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\">") + title + QStringLiteral("</a>");
+            QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral(">")
+                         + linkText + QStringLiteral("</a>");
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << menuData->unfilteredLinkUrl());
             qApp->clipboard()->setMimeData(data);
@@ -1452,12 +1456,15 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case CopyImageUrlToClipboard:
         if (menuData && menuData->mediaUrl().isValid() && menuData->mediaType() == WebEngineContextMenuData::MediaTypeImage) {
             QString urlString = menuData->mediaUrl().toString(QUrl::FullyEncoded);
-            QString title = menuData->linkText();
+            QString alt = menuData->altText();
+            if (!alt.isEmpty())
+                alt = QStringLiteral(" alt=\"%1\"").arg(alt.toHtmlEscaped());
+            QString title = menuData->titleText();
             if (!title.isEmpty())
-                title = QStringLiteral(" alt=\"%1\"").arg(title.toHtmlEscaped());
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral("></img>");
+            QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + alt + QStringLiteral("></img>");
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << menuData->mediaUrl());
             qApp->clipboard()->setMimeData(data);
@@ -1475,12 +1482,17 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
                  menuData->mediaType() == WebEngineContextMenuData::MediaTypeVideo))
         {
             QString urlString = menuData->mediaUrl().toString(QUrl::FullyEncoded);
+            QString title = menuData->titleText();
+            if (!title.isEmpty())
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
             if (menuData->mediaType() == WebEngineContextMenuData::MediaTypeAudio)
-                data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"></audio>"));
+                data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"") + title +
+                              QStringLiteral("></audio>"));
             else
-                data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"></video>"));
+                data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"") + title +
+                              QStringLiteral("></video>"));
             data->setUrls(QList<QUrl>() << menuData->mediaUrl());
             qApp->clipboard()->setMimeData(data);
         }
