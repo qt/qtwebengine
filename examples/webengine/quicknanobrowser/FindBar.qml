@@ -57,12 +57,12 @@ Rectangle {
     id: root
 
     property int numberOfMatches: 0
-    property int activeMatchOrdinal: 0
+    property int activeMatch: 0
     property alias text: findTextField.text
 
     function reset() {
         numberOfMatches = 0;
-        activeMatchOrdinal = 0;
+        activeMatch = 0;
         visible = false;
     }
 
@@ -113,7 +113,7 @@ Rectangle {
         }
 
         Label {
-            text: activeMatchOrdinal + "/" + numberOfMatches
+            text: activeMatch + "/" + numberOfMatches
             visible: findTextField.text != ""
         }
 

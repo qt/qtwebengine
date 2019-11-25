@@ -167,7 +167,7 @@ void tst_InspectorServer::openRemoteDebuggingSession()
     // - The page list didn't return a valid inspector URL
     // - Or the front-end couldn't be loaded through the inspector HTTP server
     // - Or the web socket connection couldn't be established between the front-end and the page through the inspector server
-    QTRY_VERIFY_WITH_TIMEOUT(inspectorWebView->title().startsWith("DevTools -"), 20000);
+    QTRY_VERIFY_WITH_TIMEOUT(inspectorWebView->title().startsWith("DevTools -"), 30000);
 }
 
 QTEST_MAIN(tst_InspectorServer)

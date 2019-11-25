@@ -532,7 +532,7 @@ void BrowserWindow::handleFindTextFinished(const QWebEngineFindTextResult &resul
         statusBar()->showMessage(tr("\"%1\" not found.").arg(m_lastSearch));
     } else {
         statusBar()->showMessage(tr("\"%1\" found: %2/%3").arg(m_lastSearch,
-                                                               QString::number(result.activeMatchOrdinal()),
+                                                               QString::number(result.activeMatch()),
                                                                QString::number(result.numberOfMatches())));
     }
 }

@@ -1599,7 +1599,7 @@
 */
 
 /*!
-    \qmlproperty int FindTextResult::activeMatchOrdinal
+    \qmlproperty int FindTextResult::activeMatch
     \readonly
 
     \brief The index of the currently highlighted match.
@@ -1607,7 +1607,7 @@
 
 /*!
     \qmlsignal WebEngineView::findTextFinished(FindTextResult result)
-    \since QtWebEngine 1.11
+    \since QtWebEngine 1.10
 
     This signal is emitted when a string search on a page is completed. \a result is
     the result of the string search.

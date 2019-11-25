@@ -58,7 +58,8 @@ class ProfileAdapter;
 class ProfileIoDataQt;
 
 // Notifies WebContentsAdapterClient of a new URLRequest.
-class URLRequestNotification {
+class URLRequestNotification
+{
 public:
     URLRequestNotification(net::URLRequest *request,
                            bool isMainFrameRequest,

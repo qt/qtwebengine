@@ -216,7 +216,7 @@ QWebEngineUrlRequestInfo::ResourceType QWebEngineUrlRequestInfo::resourceType() 
     \value NavigationTypeFormSubmitted Navigation submits a form.
     \value NavigationTypeBackForward Navigation initiated by a history action.
     \value NavigationTypeReload Navigation initiated by refreshing the page.
-    \value NavigationTypeRedirect Navigation triggered automatically by page content or remote server.
+    \value NavigationTypeRedirect Navigation triggered automatically by page content or remote server. (Added in Qt 5.14)
     \value NavigationTypeOther None of the above.
 */
 

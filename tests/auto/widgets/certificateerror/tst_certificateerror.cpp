@@ -48,13 +48,13 @@ private Q_SLOTS:
 struct PageWithCertificateErrorHandler : QWebEnginePage
 {
     PageWithCertificateErrorHandler(bool defer, bool accept, QObject *p = nullptr)
-        : QWebEnginePage(p), deferError(defer), acceptCertificate(accept) {
-        connect(this, &QWebEnginePage::loadFinished, [&] (bool result) { spyLoad(result); });
+        : QWebEnginePage(p), deferError(defer), acceptCertificate(accept)
+        , loadSpy(this, &QWebEnginePage::loadFinished) {
     }
 
     bool deferError, acceptCertificate;
 
-    CallbackSpy<bool> spyLoad;
+    QSignalSpy loadSpy;
     QScopedPointer<QWebEngineCertificateError> error;
 
     bool certificateError(const QWebEngineCertificateError &e) override {
@@ -96,7 +96,7 @@ void tst_CertificateError::handleError()
     page.setUrl(server.url());
     QTRY_VERIFY(page.error);
     QVERIFY(page.error->isOverridable());
-    auto chain = page.error->chain();
+    auto chain = page.error->certificateChain();
     QCOMPARE(chain.size(), 2);
     QCOMPARE(chain[0].serialNumber(), "3b:dd:1a:b7:2f:40:32:3b:c1:bf:37:d4:86:bd:56:c1:d0:6b:2a:43");
     QCOMPARE(chain[1].serialNumber(), "6d:52:fb:b4:57:3b:b2:03:c8:62:7b:7e:44:45:5c:d3:08:87:74:17");
@@ -104,7 +104,7 @@ void tst_CertificateError::handleError()
     if (deferError) {
         QVERIFY(page.error->deferred());
         QVERIFY(!page.error->answered());
-        QVERIFY(!page.spyLoad.wasCalled());
+        QCOMPARE(page.loadSpy.count(), 0);
         QCOMPARE(toPlainTextSync(&page), QString());
 
         if (acceptCertificate)
@@ -115,10 +115,8 @@ void tst_CertificateError::handleError()
         QVERIFY(page.error->answered());
         page.error.reset();
     }
-
-    bool loadResult = page.spyLoad.waitForResult();
-    QVERIFY(page.spyLoad.wasCalled());
-    QCOMPARE(loadResult, acceptCertificate);
+    QTRY_COMPARE_WITH_TIMEOUT(page.loadSpy.count(), 1, 30000);
+    QCOMPARE(page.loadSpy.takeFirst().value(0).toBool(), acceptCertificate);
     QCOMPARE(toPlainTextSync(&page), expectedContent);
 }
 

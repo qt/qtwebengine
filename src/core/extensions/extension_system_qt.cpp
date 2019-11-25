@@ -102,8 +102,7 @@ namespace extensions {
 
 namespace {
 
-std::string GenerateId(const base::DictionaryValue *manifest,
-                       const base::FilePath &path)
+std::string GenerateId(const base::DictionaryValue *manifest, const base::FilePath &path)
 {
     std::string raw_key;
     std::string id_input;
@@ -130,49 +129,36 @@ std::unique_ptr<base::DictionaryValue> ParseManifest(const std::string &manifest
 } // namespace
 
 // Dummy Content Verifier Delegate. Added to prevent crashes.
-class ContentVerifierDelegateQt
-        : public ContentVerifierDelegate {
- public:
-  ~ContentVerifierDelegateQt() override {}
+class ContentVerifierDelegateQt : public ContentVerifierDelegate
+{
+public:
+    ~ContentVerifierDelegateQt() override {}
 
-  // This should return what verification mode is appropriate for the given
-  // extension, if any.
-    bool ShouldBeVerified(const Extension& extension) override
+    // This should return what verification mode is appropriate for the given
+    // extension, if any.
+    bool ShouldBeVerified(const Extension &extension) override { return false; }
+
+    // Should return the public key to use for validating signatures via the two
+    // out parameters.
+    ContentVerifierKey GetPublicKey() override { return ContentVerifierKey(); }
+    // This should return a URL that can be used to fetch the
+    // verified_contents.json containing signatures for the given extension
+    // id/version pair.
+    GURL GetSignatureFetchUrl(const std::string &extension_id, const base::Version &version) override { return GURL(); }
+
+    // This should return the set of file paths for images used within the
+    // browser process. (These may get transcoded during the install process).
+    std::set<base::FilePath> GetBrowserImagePaths(const extensions::Extension *extension) override
     {
-        return false;
+        return std::set<base::FilePath>();
     }
 
-  // Should return the public key to use for validating signatures via the two
-  // out parameters.
-    ContentVerifierKey GetPublicKey() override {
-        return ContentVerifierKey();
-    }
-  // This should return a URL that can be used to fetch the
-  // verified_contents.json containing signatures for the given extension
-  // id/version pair.
-  GURL GetSignatureFetchUrl(const std::string& extension_id,
-                            const base::Version& version) override {
-      return GURL();
-  }
+    // Called when the content verifier detects that a read of a file inside
+    // an extension did not match its expected hash.
+    void VerifyFailed(const std::string &extension_id, ContentVerifyJob::FailureReason reason) override {}
 
-  // This should return the set of file paths for images used within the
-  // browser process. (These may get transcoded during the install process).
-  std::set<base::FilePath> GetBrowserImagePaths(
-          const extensions::Extension* extension) override {
-      return std::set<base::FilePath>();
-  }
-
-  // Called when the content verifier detects that a read of a file inside
-  // an extension did not match its expected hash.
-  void VerifyFailed(const std::string& extension_id,
-                            ContentVerifyJob::FailureReason reason) override {
-
-  }
-
-  // Called when ExtensionSystem is shutting down.
-  void Shutdown() override {
-
-  }
+    // Called when ExtensionSystem is shutting down.
+    void Shutdown() override {}
 };
 
 void ExtensionSystemQt::LoadExtension(std::string extension_id, std::unique_ptr<base::DictionaryValue> manifest, const base::FilePath &directory)

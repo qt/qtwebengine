@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qtwebengineglobal.h"
+#include <QCoreApplication>
 
 namespace QtWebEngineCore
 {
@@ -62,8 +63,8 @@ namespace QtWebEngine {
 /*!
     \fn QtWebEngine::initialize()
 
-    Sets up an OpenGL Context that can be shared between threads. This has to be done after
-    QGuiApplication is created, but before a Qt Quick window is created.
+    Sets up an OpenGL Context that can be shared between threads. This has to be done before
+    QGuiApplication is created and before window's QPlatformOpenGLContext is created.
 
     This has the same effect as setting the Qt::AA_ShareOpenGLContexts
     attribute with QCoreApplication::setAttribute before constructing
@@ -71,7 +72,15 @@ namespace QtWebEngine {
 */
 void initialize()
 {
-    QtWebEngineCore::initialize();
+     QCoreApplication *app = QCoreApplication::instance();
+     if (app) {
+        qWarning("QtWebEngine::initialize() called with QCoreApplication object already created and should be call before. "\
+                 "This is depreciated and may fail in the future.");
+        QtWebEngineCore::initialize();
+        return;
+     }
+     // call initialize the same way as widgets do
+     qAddPreRoutine(QtWebEngineCore::initialize);
 }
 } // namespace QtWebEngine
 

@@ -45,7 +45,8 @@
 
 namespace extensions {
 
-class ExtensionsBrowserAPIProviderQt : public ExtensionsBrowserAPIProvider {
+class ExtensionsBrowserAPIProviderQt : public ExtensionsBrowserAPIProvider
+{
 public:
     ExtensionsBrowserAPIProviderQt();
     ~ExtensionsBrowserAPIProviderQt() override;

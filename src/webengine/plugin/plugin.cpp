@@ -97,7 +97,6 @@ public:
         qmlRegisterType<QQuickWebEngineView, 8>(uri, 1, 8, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 9>(uri, 1, 9, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 10>(uri, 1, 10, "WebEngineView");
-        qmlRegisterType<QQuickWebEngineView, 11>(uri, 1, 11, "WebEngineView");
         qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 1>(uri, 1, 2, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 2>(uri, 1, 3, "WebEngineProfile");
@@ -122,7 +121,7 @@ public:
             msgUncreatableType("WebEngineDownloadItem"));
         qmlRegisterUncreatableType<QQuickWebEngineDownloadItem, 7>(uri, 1, 8, "WebEngineDownloadItem",
             msgUncreatableType("WebEngineDownloadItem"));
-        qmlRegisterUncreatableType<QQuickWebEngineDownloadItem, 8>(uri, 1, 10, "WebEngineDownloadItem",
+        qmlRegisterUncreatableType<QQuickWebEngineDownloadItem, 10>(uri, 1, 10, "WebEngineDownloadItem",
             msgUncreatableType("WebEngineDownloadItem"));
         qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 1, "WebEngineNewViewRequest", msgUncreatableType("WebEngineNewViewRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest, 1>(uri, 1, 5, "WebEngineNewViewRequest", tr("Cannot create separate instance of WebEngineNewViewRequest"));
@@ -174,7 +173,7 @@ public:
         qmlRegisterUncreatableType<QQuickWebEngineTooltipRequest>(uri, 1, 10, "TooltipRequest",
                                                                   msgUncreatableType("TooltipRequest"));
         qRegisterMetaType<QWebEngineFindTextResult>();
-        qmlRegisterUncreatableType<QWebEngineFindTextResult>(uri, 1, 11, "FindTextResult", msgUncreatableType("FindTextResult"));
+        qmlRegisterUncreatableType<QWebEngineFindTextResult>(uri, 1, 10, "FindTextResult", msgUncreatableType("FindTextResult"));
     }
 
 private:

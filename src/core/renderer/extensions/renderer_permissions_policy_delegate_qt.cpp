@@ -47,8 +47,7 @@
 
 namespace QtWebEngineCore {
 
-RendererPermissionsPolicyDelegateQt::RendererPermissionsPolicyDelegateQt(extensions::Dispatcher *dispatcher)
-        : m_dispatcher(dispatcher)
+RendererPermissionsPolicyDelegateQt::RendererPermissionsPolicyDelegateQt(extensions::Dispatcher *)
 {
     extensions::PermissionsData::SetPolicyDelegate(this);
 }

@@ -57,7 +57,7 @@ import QtQuick.Controls.Styles 1.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 import QtQuick.Window 2.1
-import QtWebEngine 1.11
+import QtWebEngine 1.10
 
 ApplicationWindow {
     id: browserWindow
@@ -580,7 +580,7 @@ ApplicationWindow {
                         findBar.visible = true;
 
                     findBar.numberOfMatches = result.numberOfMatches;
-                    findBar.activeMatchOrdinal = result.activeMatchOrdinal;
+                    findBar.activeMatch = result.activeMatch;
                 }
 
                 onLoadingChanged: function(loadRequest) {

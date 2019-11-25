@@ -139,8 +139,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport NOTIFY testSupportChanged FINAL)
 #endif
 
-    Q_PROPERTY(LifecycleState lifecycleState READ lifecycleState WRITE setLifecycleState NOTIFY lifecycleStateChanged REVISION 11 FINAL)
-    Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged REVISION 11 FINAL)
+    Q_PROPERTY(LifecycleState lifecycleState READ lifecycleState WRITE setLifecycleState NOTIFY lifecycleStateChanged REVISION 10 FINAL)
+    Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged REVISION 10 FINAL)
 
 public:
     QQuickWebEngineView(QQuickItem *parent = 0);
@@ -573,9 +573,9 @@ Q_SIGNALS:
     Q_REVISION(8) void printRequested();
     Q_REVISION(9) void selectClientCertificate(QQuickWebEngineClientCertificateSelection *clientCertSelection);
     Q_REVISION(10) void tooltipRequested(QQuickWebEngineTooltipRequest *request);
-    Q_REVISION(11) void lifecycleStateChanged(LifecycleState state);
-    Q_REVISION(11) void recommendedStateChanged(LifecycleState state);
-    Q_REVISION(11) void findTextFinished(const QWebEngineFindTextResult &result);
+    Q_REVISION(10) void lifecycleStateChanged(LifecycleState state);
+    Q_REVISION(10) void recommendedStateChanged(LifecycleState state);
+    Q_REVISION(10) void findTextFinished(const QWebEngineFindTextResult &result);
 
 #if QT_CONFIG(webengine_testsupport)
     void testSupportChanged();

@@ -96,7 +96,7 @@ public:
     QString errorString() const;
     QDateTime validStart() const;
     QDateTime validExpiry() const;
-    QList<QSslCertificate> chain() const;
+    QList<QSslCertificate> certificateChain() const;
 
     void accept(bool);
 

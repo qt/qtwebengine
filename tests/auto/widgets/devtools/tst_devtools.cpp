@@ -46,7 +46,7 @@ void tst_DevTools::attachAndDestroyPageFirst()
 
     QSignalSpy spy(page, &QWebEnginePage::loadFinished);
     page->load(QUrl("data:text/plain,foobarbaz"));
-    QTRY_COMPARE(spy.count(),  1);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
 
     inspector->setInspectedPage(page);
     page->triggerAction(QWebEnginePage::InspectElement);
@@ -67,7 +67,7 @@ void tst_DevTools::attachAndDestroyInspectorFirst()
 
     QSignalSpy spy(page, &QWebEnginePage::loadFinished);
     page->setHtml(QStringLiteral("<body><h1>FOO BAR!</h1></body>"));
-    QTRY_COMPARE(spy.count(),  1);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
 
     page->triggerAction(QWebEnginePage::InspectElement);
 

@@ -90,8 +90,7 @@ public:
     void GetEarlyExtensionPrefsObservers(content::BrowserContext *context,
                                          std::vector<EarlyExtensionPrefsObserver *> *observers) const override;
     ProcessManagerDelegate *GetProcessManagerDelegate() const override;
-    std::unique_ptr<ExtensionHostDelegate>
-    CreateExtensionHostDelegate() override;
+    std::unique_ptr<ExtensionHostDelegate> CreateExtensionHostDelegate() override;
     bool DidVersionUpdate(content::BrowserContext *context) override;
     void PermitExternalProtocolHandler() override;
     bool IsRunningInForcedAppMode() override;
@@ -110,8 +109,7 @@ public:
     ExtensionCache *GetExtensionCache() override;
     bool IsBackgroundUpdateAllowed() override;
     bool IsMinBrowserVersionSupported(const std::string &min_version) override;
-    ExtensionWebContentsObserver *GetExtensionWebContentsObserver(
-            content::WebContents *web_contents) override;
+    ExtensionWebContentsObserver *GetExtensionWebContentsObserver(content::WebContents *web_contents) override;
     KioskDelegate *GetKioskDelegate() override;
 
     // Whether the browser context is associated with Chrome OS lock screen.
@@ -138,7 +136,7 @@ public:
     // Returns the locale used by the application.
     std::string GetApplicationLocale() override;
 
-    bool IsScreensaverInDemoMode(const std::string& app_id) override;
+    bool IsScreensaverInDemoMode(const std::string &app_id) override;
 
     // Sets the API client.
     void SetAPIClientForTest(ExtensionsAPIClient *api_client);

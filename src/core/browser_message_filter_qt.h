@@ -49,6 +49,8 @@ class Profile;
 
 namespace QtWebEngineCore {
 
+class ProfileIODataQt;
+
 class BrowserMessageFilterQt : public content::BrowserMessageFilter
 {
 public:
@@ -91,7 +93,7 @@ private:
                                    const GURL &top_origin_url,
                                    base::Callback<void(bool)> callback);
 
-    Profile *m_profile;
+    ProfileIODataQt *m_profileData;
 };
 
 } // namespace QtWebEngineCore

@@ -71,7 +71,8 @@ class ProfileAdapter;
 
 // Implements a ProtocolHandler for custom URL schemes.
 // If |network_delegate_| is NULL then all file requests will fail with ERR_ACCESS_DENIED.
-class Q_WEBENGINECORE_PRIVATE_EXPORT CustomProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
+class Q_WEBENGINECORE_PRIVATE_EXPORT CustomProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler
+{
 
 public:
     CustomProtocolHandler(QPointer<ProfileAdapter> profileAdapter);

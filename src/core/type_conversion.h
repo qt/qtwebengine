@@ -217,7 +217,7 @@ inline QDateTime toQt(base::Time time)
 }
 
 inline base::Time toTime(const QDateTime &dateTime) {
-    return base::Time::FromInternalValue(dateTime.toMSecsSinceEpoch());
+    return base::Time::FromJavaTime(dateTime.toMSecsSinceEpoch());
 }
 
 inline QNetworkCookie toQt(const net::CanonicalCookie & cookie)

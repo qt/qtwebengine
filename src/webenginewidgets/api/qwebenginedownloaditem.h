@@ -118,8 +118,12 @@ public:
     qint64 receivedBytes() const;
     QUrl url() const;
     QString mimeType() const;
-    QString Q_DECL_DEPRECATED path() const;
-    void Q_DECL_DEPRECATED setPath(QString path);
+#if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_VERSION_X(5, 14, "Use downloadDirectory() and downloadFileName() instead")
+    QString path() const;
+    QT_DEPRECATED_VERSION_X(5, 14, "Use setDownloadDirectory() and setDownloadFileName() instead")
+    void setPath(QString path);
+#endif
     bool isFinished() const;
     bool isPaused() const;
     SavePageFormat savePageFormat() const;

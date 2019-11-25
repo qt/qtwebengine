@@ -1531,7 +1531,7 @@ void tst_QWebEngineView::postData()
             eventloop.quit();
         });
 
-        connect(socket, &QIODevice::readyRead, this, [this, socket, &server, &postData](){
+        connect(socket, &QIODevice::readyRead, this, [socket, &server, &postData](){
             QByteArray rawData = socket->readAll();
             QStringList lines = QString::fromLocal8Bit(rawData).split("\r\n");
 
@@ -3125,7 +3125,7 @@ void tst_QWebEngineView::webUIURLs()
     view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.load(url);
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
     QCOMPARE(loadFinishedSpy.takeFirst().at(0).toBool(), supported);
 }
 

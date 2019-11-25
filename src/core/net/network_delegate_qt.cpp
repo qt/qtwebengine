@@ -139,11 +139,11 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
 
     // Deprecated =begin
     // quick peek if deprecated
-    QWebEngineUrlRequestInterceptor* profileInterceptor = m_profileIOData->requestInterceptor();
-    if (profileInterceptor && profileInterceptor->property("deprecated").toBool()) {
-        profileInterceptor = nullptr;
-        if (QWebEngineUrlRequestInterceptor* interceptor = m_profileIOData->acquireInterceptor()) {
-            interceptor->interceptRequest(requestInfo);
+
+    if (m_profileIOData->isInterceptorDeprecated()) {
+        QWebEngineUrlRequestInterceptor *profileInterceptor = m_profileIOData->acquireInterceptor();
+        if (profileInterceptor && m_profileIOData->isInterceptorDeprecated()) {
+            profileInterceptor->interceptRequest(requestInfo);
             m_profileIOData->releaseInterceptor();
             if (requestInfo.changed()) {
                 int result = infoPrivate->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
@@ -177,7 +177,9 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
     if (!resourceInfo)
         return net::OK;
 
-    if (!m_profileIOData->hasPageInterceptors() && !profileInterceptor && !content::IsResourceTypeFrame(resourceType))
+    // try to bail out
+    if (!m_profileIOData->hasPageInterceptors() && (!m_profileIOData->requestInterceptor() || m_profileIOData->isInterceptorDeprecated()) &&
+            !content::IsResourceTypeFrame(resourceType))
         return net::OK;
 
     auto webContentsGetter = resourceInfo->GetWebContentsGetterForRequest();
@@ -188,32 +190,26 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, net::Complet
         std::move(requestInfo),
         webContentsGetter,
         std::move(callback),
-        profileInterceptor ? m_profileIOData->profileAdapter() : nullptr
+        m_profileIOData->profileAdapter()
     );
 
     // We'll run the callback after we notified the UI thread.
     return net::ERR_IO_PENDING;
 }
 
-void NetworkDelegateQt::OnURLRequestDestroyed(net::URLRequest*)
-{
-}
+void NetworkDelegateQt::OnURLRequestDestroyed(net::URLRequest *) {}
 
-void NetworkDelegateQt::OnCompleted(net::URLRequest */*request*/, bool /*started*/, int /*net_error*/)
-{
-}
+void NetworkDelegateQt::OnCompleted(net::URLRequest * /*request*/, bool /*started*/, int /*net_error*/) {}
 
-bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
-                                       const net::CanonicalCookie & /*cookie*/,
-                                       net::CookieOptions*,
-                                       bool allowedFromCaller)
+bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest &request, const net::CanonicalCookie & /*cookie*/,
+                                       net::CookieOptions *, bool allowedFromCaller)
 {
     if (!allowedFromCaller)
         return false;
     return canSetCookies(request.site_for_cookies(), request.url(), std::string());
 }
 
-bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const net::CookieList&, bool allowedFromCaller)
+bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest &request, const net::CookieList &, bool allowedFromCaller)
 {
     if (!allowedFromCaller)
         return false;
@@ -223,8 +219,8 @@ bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest& request, const ne
 bool NetworkDelegateQt::OnForcePrivacyMode(const GURL &url, const GURL &site_for_cookies) const
 {
     return false;
-// FIXME: This is what the NetworkContext implementation does (changes tst_QWebEngineCookieStore tests since 72)
-//    return !canGetCookies(site_for_cookies, url);
+    // FIXME: This is what the NetworkContext implementation does (changes tst_QWebEngineCookieStore tests since 72)
+    //    return !canGetCookies(site_for_cookies, url);
 }
 
 bool NetworkDelegateQt::canSetCookies(const GURL &first_party, const GURL &url, const std::string &cookie_line) const
@@ -244,71 +240,64 @@ int NetworkDelegateQt::OnBeforeStartTransaction(net::URLRequest *, net::Completi
     return net::OK;
 }
 
-void NetworkDelegateQt::OnBeforeSendHeaders(net::URLRequest* request, const net::ProxyInfo& proxy_info,
-                                            const net::ProxyRetryInfoMap& proxy_retry_info, net::HttpRequestHeaders* headers)
-{
-}
+void NetworkDelegateQt::OnBeforeSendHeaders(net::URLRequest *request, const net::ProxyInfo &proxy_info,
+                                            const net::ProxyRetryInfoMap &proxy_retry_info,
+                                            net::HttpRequestHeaders *headers)
+{}
 
-void NetworkDelegateQt::OnStartTransaction(net::URLRequest *request, const net::HttpRequestHeaders &headers)
-{
-}
+void NetworkDelegateQt::OnStartTransaction(net::URLRequest *request, const net::HttpRequestHeaders &headers) {}
 
-int NetworkDelegateQt::OnHeadersReceived(net::URLRequest*, net::CompletionOnceCallback, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*)
+int NetworkDelegateQt::OnHeadersReceived(net::URLRequest *, net::CompletionOnceCallback, const net::HttpResponseHeaders *,
+                                         scoped_refptr<net::HttpResponseHeaders> *, GURL *)
 {
     return net::OK;
 }
 
-void NetworkDelegateQt::OnBeforeRedirect(net::URLRequest*, const GURL&)
-{
-}
+void NetworkDelegateQt::OnBeforeRedirect(net::URLRequest *, const GURL &) {}
 
-void NetworkDelegateQt::OnResponseStarted(net::URLRequest*, int)
-{
-}
+void NetworkDelegateQt::OnResponseStarted(net::URLRequest *, int) {}
 
-void NetworkDelegateQt::OnNetworkBytesReceived(net::URLRequest*, int64_t)
-{
-}
+void NetworkDelegateQt::OnNetworkBytesReceived(net::URLRequest *, int64_t) {}
 
-void NetworkDelegateQt::OnNetworkBytesSent(net::URLRequest*, int64_t)
-{
-}
+void NetworkDelegateQt::OnNetworkBytesSent(net::URLRequest *, int64_t) {}
 
-void NetworkDelegateQt::OnPACScriptError(int, const base::string16&)
-{
-}
+void NetworkDelegateQt::OnPACScriptError(int, const base::string16 &) {}
 
-net::NetworkDelegate::AuthRequiredResponse NetworkDelegateQt::OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, AuthCallback, net::AuthCredentials*)
+net::NetworkDelegate::AuthRequiredResponse NetworkDelegateQt::OnAuthRequired(net::URLRequest *,
+                                                                             const net::AuthChallengeInfo &,
+                                                                             AuthCallback, net::AuthCredentials *)
 {
     return AUTH_REQUIRED_RESPONSE_NO_ACTION;
 }
 
-bool NetworkDelegateQt::OnCanAccessFile(const net::URLRequest&, const base::FilePath&, const base::FilePath&) const
+bool NetworkDelegateQt::OnCanAccessFile(const net::URLRequest &, const base::FilePath &, const base::FilePath &) const
 {
     return true;
 }
 
-bool NetworkDelegateQt::OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const
+bool NetworkDelegateQt::OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest &, const GURL &,
+                                                                            const GURL &) const
 {
     return false;
 }
 
-bool NetworkDelegateQt::OnCanQueueReportingReport(const url::Origin& origin) const
+bool NetworkDelegateQt::OnCanQueueReportingReport(const url::Origin &origin) const
 {
     return false;
 }
 
-void NetworkDelegateQt::OnCanSendReportingReports(std::set<url::Origin> origins, base::OnceCallback<void(std::set<url::Origin>)> result_callback) const
+void NetworkDelegateQt::OnCanSendReportingReports(std::set<url::Origin> origins,
+                                                  base::OnceCallback<void(std::set<url::Origin>)> result_callback) const
 {
     std::move(result_callback).Run(std::set<url::Origin>());
 }
 
-bool NetworkDelegateQt::OnCanSetReportingClient(const url::Origin& origin, const GURL& endpoint) const
+bool NetworkDelegateQt::OnCanSetReportingClient(const url::Origin &origin, const GURL &endpoint) const
 {
     return false;
 }
 
-bool NetworkDelegateQt::OnCanUseReportingClient(const url::Origin& origin, const GURL& endpoint) const
+bool NetworkDelegateQt::OnCanUseReportingClient(const url::Origin &origin, const GURL &endpoint) const
 {
     return false;
 }

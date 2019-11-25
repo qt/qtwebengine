@@ -78,7 +78,7 @@ public:
     void startFinding(const QString &findText, bool caseSensitively, bool findBackward);
     void stopFinding();
     bool isFindTextInProgress() const;
-    void handleFindReply(content::WebContents *source, int requestId, int numberOfMatches, const gfx::Rect &selectionRect, int activeMatchOrdinal, bool finalUpdate);
+    void handleFindReply(content::WebContents *source, int requestId, int numberOfMatches, const gfx::Rect &selectionRect, int activeMatch, bool finalUpdate);
     void handleLoadCommitted();
 
 private:

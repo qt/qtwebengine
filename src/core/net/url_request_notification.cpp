@@ -53,11 +53,13 @@
 namespace QtWebEngineCore {
 
 // Calls cancel() when the URLRequest is destroyed.
-class UserData : public base::SupportsUserData::Data {
+class UserData : public base::SupportsUserData::Data
+{
 public:
     UserData(URLRequestNotification *ptr) : m_ptr(ptr) {}
     ~UserData() { m_ptr->cancel(); }
     static const char key[];
+
 private:
     URLRequestNotification *m_ptr;
 };
@@ -69,13 +71,10 @@ static content::ResourceType fromQt(QWebEngineUrlRequestInfo::ResourceType resou
     return static_cast<content::ResourceType>(resourceType);
 }
 
-URLRequestNotification::URLRequestNotification(net::URLRequest *request,
-                       bool isMainFrameRequest,
-                       GURL *newUrl,
-                       QWebEngineUrlRequestInfo &&requestInfo,
-                       content::ResourceRequestInfo::WebContentsGetter webContentsGetter,
-                       net::CompletionOnceCallback callback,
-                       QPointer<ProfileAdapter> adapter)
+URLRequestNotification::URLRequestNotification(net::URLRequest *request, bool isMainFrameRequest, GURL *newUrl,
+                                               QWebEngineUrlRequestInfo &&requestInfo,
+                                               content::ResourceRequestInfo::WebContentsGetter webContentsGetter,
+                                               net::CompletionOnceCallback callback, QPointer<ProfileAdapter> adapter)
     : m_request(request)
     , m_isMainFrameRequest(isMainFrameRequest)
     , m_newUrl(newUrl)
@@ -107,8 +106,8 @@ void URLRequestNotification::notify()
 
     if (webContents) {
 
-        if (m_profileAdapter) {
-            QWebEngineUrlRequestInterceptor* interceptor = m_profileAdapter->requestInterceptor();
+        if (m_profileAdapter && m_profileAdapter->requestInterceptor()) {
+            QWebEngineUrlRequestInterceptor *interceptor = m_profileAdapter->requestInterceptor();
             if (!interceptor->property("deprecated").toBool())
                 interceptor->interceptRequest(m_requestInfo);
         }
@@ -152,7 +151,7 @@ void URLRequestNotification::notify()
         base::BindOnce(&URLRequestNotification::complete, base::Unretained(this), result));
 }
 
-void  URLRequestNotification::cancel()
+void URLRequestNotification::cancel()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 

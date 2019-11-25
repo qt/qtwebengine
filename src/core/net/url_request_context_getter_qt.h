@@ -46,11 +46,13 @@ namespace QtWebEngineCore {
 
 class ProfileIODataQt;
 
-class URLRequestContextGetterQt : public net::URLRequestContextGetter {
+class URLRequestContextGetterQt : public net::URLRequestContextGetter
+{
 public:
     URLRequestContextGetterQt(ProfileIODataQt *data);
     net::URLRequestContext *GetURLRequestContext() override;
     scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const override;
+
 private:
     virtual ~URLRequestContextGetterQt();
     ProfileIODataQt *m_profileIOData;

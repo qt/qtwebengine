@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -75,7 +75,7 @@
         \li Visual Studio 2017 version 15.8 or later
         \li Active Template Library (ATL), usually included in the Visual Studio
             installation
-        \li Windows 10 SDK
+        \li Windows 10 SDK version 10.0.18362 or later
     \endlist
 
     \QWE can only be built on 64-bit Windows, with a x64-bit toolchain.

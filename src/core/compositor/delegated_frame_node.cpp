@@ -858,7 +858,7 @@ void DelegatedFrameNode::handleQuad(
         const viz::TextureDrawQuad *tquad = viz::TextureDrawQuad::MaterialCast(quad);
         const CompositorResource *resource = findAndHoldResource(tquad->resource_id(), resourceTracker);
         QSGTexture *texture =
-            initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate);
+            initAndHoldTexture(resource, quad->ShouldDrawWithBlending(true), apiDelegate);
         QSizeF textureSize;
         if (texture)
             textureSize = texture->textureSize();
@@ -909,7 +909,7 @@ void DelegatedFrameNode::handleQuad(
         const viz::TileDrawQuad *tquad = viz::TileDrawQuad::MaterialCast(quad);
         const CompositorResource *resource = findAndHoldResource(tquad->resource_id(), resourceTracker);
         nodeHandler->setupTextureContentNode(
-            initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate),
+            initAndHoldTexture(resource, quad->ShouldDrawWithBlending(true), apiDelegate),
             toQt(quad->rect), toQt(tquad->tex_coord_rect),
             QSGImageNode::NoTransform, currentLayerChain);
         break;
@@ -930,10 +930,10 @@ void DelegatedFrameNode::handleQuad(
             aResource = findAndHoldResource(vquad->a_plane_resource_id(), resourceTracker);
 
         nodeHandler->setupYUVVideoNode(
-            initAndHoldTexture(yResource, quad->ShouldDrawWithBlending()),
-            initAndHoldTexture(uResource, quad->ShouldDrawWithBlending()),
-            initAndHoldTexture(vResource, quad->ShouldDrawWithBlending()),
-            aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending()) : 0,
+            initAndHoldTexture(yResource, quad->ShouldDrawWithBlending(true)),
+            initAndHoldTexture(uResource, quad->ShouldDrawWithBlending(true)),
+            initAndHoldTexture(vResource, quad->ShouldDrawWithBlending(true)),
+            aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending(true)) : 0,
             toQt(vquad->ya_tex_coord_rect), toQt(vquad->uv_tex_coord_rect),
             toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size), vquad->video_color_space,
             vquad->resource_multiplier, vquad->resource_offset, toQt(quad->rect),
@@ -945,7 +945,7 @@ void DelegatedFrameNode::handleQuad(
         const viz::StreamVideoDrawQuad *squad = viz::StreamVideoDrawQuad::MaterialCast(quad);
         const CompositorResource *resource = findAndHoldResource(squad->resource_id(), resourceTracker);
         MailboxTexture *texture = static_cast<MailboxTexture *>(
-            initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate, GL_TEXTURE_EXTERNAL_OES));
+            initAndHoldTexture(resource, quad->ShouldDrawWithBlending(true), apiDelegate, GL_TEXTURE_EXTERNAL_OES));
 
         QMatrix4x4 qMatrix;
 //        convertToQt(squad->matrix.matrix(), qMatrix);

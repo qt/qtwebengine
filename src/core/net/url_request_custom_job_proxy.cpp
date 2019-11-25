@@ -100,7 +100,6 @@ void URLRequestCustomJobProxy::reply(std::string mimeType, QIODevice *device)
         m_job->set_expected_content_size(size);
     if (m_job->m_device && m_job->m_device->isReadable()) {
         m_started = true;
-        m_job->m_httpStatusCode = 200;
         m_job->NotifyHeadersComplete();
     } else {
         fail(ERR_INVALID_URL);
@@ -115,7 +114,6 @@ void URLRequestCustomJobProxy::redirect(GURL url)
     if (m_job->m_device || m_job->m_error)
         return;
     m_job->m_redirect = url;
-    m_job->m_httpStatusCode = 303;
     m_started = true;
     m_job->NotifyHeadersComplete();
 }
@@ -140,7 +138,6 @@ void URLRequestCustomJobProxy::fail(int error)
     if (!m_job)
         return;
     m_job->m_error = error;
-    m_job->m_httpStatusCode = 500;
     if (m_job->m_device)
         m_job->m_device->close();
     if (!m_started)

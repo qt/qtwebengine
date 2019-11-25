@@ -85,7 +85,7 @@ public:
 
     T waitForResult() {
         if (!called) {
-            timeoutTimer.start(10000);
+            timeoutTimer.start(20000);
             eventLoop.exec();
         }
         return result;

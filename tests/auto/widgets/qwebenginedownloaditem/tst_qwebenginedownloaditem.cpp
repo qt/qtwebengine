@@ -77,7 +77,9 @@ private Q_SLOTS:
     void downloadToDefaultLocation();
     void downloadToNonExistentDir();
     void downloadToReadOnlyDir();
+#if QT_DEPRECATED_SINCE(5, 14)
     void downloadPathValidation();
+#endif
     void downloadToDirectoryWithFileName();
 
 private:
@@ -1109,7 +1111,7 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
         suggestedFileName = item->suggestedFileName();
         downloadItem = item;
         item->accept();
-        connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
+        connect(item, &QWebEngineDownloadItem::finished, [&]() {
             downloadFinished = true;
         });
         downloadAccepted = true;
@@ -1135,6 +1137,7 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
     QFile(m_profile->downloadPath()).setPermissions(QFileDevice::WriteOwner);
 }
 
+#if QT_DEPRECATED_SINCE(5, 14)
 void tst_QWebEngineDownloadItem::downloadPathValidation()
 {
     const QString fileName = "test.txt";
@@ -1251,6 +1254,7 @@ void tst_QWebEngineDownloadItem::downloadPathValidation()
 #endif // !defined(Q_OS_WIN)
     QDir::setCurrent(oldPath);
 }
+#endif
 
 void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
 {

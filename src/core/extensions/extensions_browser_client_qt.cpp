@@ -97,72 +97,57 @@ void DetermineCharset(const std::string &mime_type,
     if (base::StartsWith(mime_type, "text/", base::CompareCase::INSENSITIVE_ASCII)) {
         // All of our HTML files should be UTF-8 and for other resource types
         // (like images), charset doesn't matter.
-        DCHECK(base::IsStringUTF8(base::StringPiece(reinterpret_cast<const char*>(data->front()), data->size())));
+        DCHECK(base::IsStringUTF8(base::StringPiece(reinterpret_cast<const char *>(data->front()), data->size())));
         *out_charset = "utf-8";
     }
 }
 
 // A request for an extension resource in a Chrome .pak file. These are used
 // by component extensions.
-class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
+class URLRequestResourceBundleJob : public net::URLRequestSimpleJob
+{
 public:
-    URLRequestResourceBundleJob(net::URLRequest *request,
-                                net::NetworkDelegate *network_delegate,
-                                const base::FilePath &filename,
-                                int resource_id,
-                                const std::string &content_security_policy,
-                                bool send_cors_header)
-            : net::URLRequestSimpleJob(request, network_delegate)
-            , filename_(filename)
-            , resource_id_(resource_id)
-            , weak_factory_(this)
+    URLRequestResourceBundleJob(net::URLRequest *request, net::NetworkDelegate *network_delegate,
+                                const base::FilePath &filename, int resource_id,
+                                const std::string &content_security_policy, bool send_cors_header)
+        : net::URLRequestSimpleJob(request, network_delegate)
+        , filename_(filename)
+        , resource_id_(resource_id)
+        , weak_factory_(this)
     {
         // Leave cache headers out of resource bundle requests.
         response_info_.headers = extensions::BuildHttpHeaders(content_security_policy, send_cors_header, base::Time());
     }
-    int GetRefCountedData(std::string* mime_type,
-                          std::string* charset,
-                          scoped_refptr<base::RefCountedMemory>* data,
+    int GetRefCountedData(std::string *mime_type, std::string *charset, scoped_refptr<base::RefCountedMemory> *data,
                           net::CompletionOnceCallback callback) const override
     {
-        const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+        const ui::ResourceBundle &rb = ui::ResourceBundle::GetSharedInstance();
         *data = rb.LoadDataResourceBytes(resource_id_);
 
         // Add the Content-Length header now that we know the resource length.
-        response_info_.headers->AddHeader(
-                    base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentLength,
-                                       base::NumberToString((*data)->size()).c_str()));
+        response_info_.headers->AddHeader(base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentLength,
+                                                             base::NumberToString((*data)->size()).c_str()));
 
-        std::string* read_mime_type = new std::string;
+        std::string *read_mime_type = new std::string;
         base::PostTaskWithTraitsAndReplyWithResult(
-            FROM_HERE, {base::MayBlock()},
-            base::BindOnce(&net::GetMimeTypeFromFile, filename_,
-                           base::Unretained(read_mime_type)),
-            base::BindOnce(&URLRequestResourceBundleJob::OnMimeTypeRead,
-                           weak_factory_.GetWeakPtr(), mime_type, charset, *data,
-                           base::Owned(read_mime_type), std::move(callback)));
+                FROM_HERE, { base::MayBlock() },
+                base::BindOnce(&net::GetMimeTypeFromFile, filename_, base::Unretained(read_mime_type)),
+                base::BindOnce(&URLRequestResourceBundleJob::OnMimeTypeRead, weak_factory_.GetWeakPtr(), mime_type,
+                               charset, *data, base::Owned(read_mime_type), std::move(callback)));
 
         return net::ERR_IO_PENDING;
     }
 
-    void GetResponseInfo(net::HttpResponseInfo* info) override
-    {
-        *info = response_info_;
-    }
+    void GetResponseInfo(net::HttpResponseInfo *info) override { *info = response_info_; }
 
 private:
     ~URLRequestResourceBundleJob() override {}
 
-    void OnMimeTypeRead(std::string *out_mime_type,
-                        std::string *charset,
-                        scoped_refptr<base::RefCountedMemory> data,
-                        std::string *read_mime_type,
-                        net::CompletionOnceCallback callback,
-                        bool read_result)
+    void OnMimeTypeRead(std::string *out_mime_type, std::string *charset, scoped_refptr<base::RefCountedMemory> data,
+                        std::string *read_mime_type, net::CompletionOnceCallback callback, bool read_result)
     {
         response_info_.headers->AddHeader(
-                    base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
-                                       read_mime_type->c_str()));
+                base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType, read_mime_type->c_str()));
         *out_mime_type = *read_mime_type;
         DetermineCharset(*read_mime_type, data.get(), charset);
         int result = read_result ? net::OK : net::ERR_INVALID_URL;
@@ -444,8 +429,7 @@ bool ExtensionsBrowserClientQt::IsBackgroundUpdateAllowed()
     return true;
 }
 
-bool ExtensionsBrowserClientQt::IsMinBrowserVersionSupported(
-        const std::string &min_version)
+bool ExtensionsBrowserClientQt::IsMinBrowserVersionSupported(const std::string &min_version)
 {
     return true;
 }
@@ -482,7 +466,7 @@ KioskDelegate *ExtensionsBrowserClientQt::GetKioskDelegate()
     return nullptr;
 }
 
-bool ExtensionsBrowserClientQt::IsScreensaverInDemoMode(const std::string& app_id)
+bool ExtensionsBrowserClientQt::IsScreensaverInDemoMode(const std::string &app_id)
 {
     return false;
 }
