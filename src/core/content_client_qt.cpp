@@ -286,11 +286,11 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         pluginPaths << ppapiPluginsPath() + QStringLiteral("/") + QString::fromLatin1(kWidevineCdmFileName);
 #endif
 #if defined(Q_OS_OSX)
-    QDir potentialWidevineDir("/Applications/Google Chrome.app/Contents/Versions");
+    QDir potentialWidevineDir("/Applications/Google Chrome.app/Contents/Frameworks");
     if (potentialWidevineDir.exists()) {
         QFileInfoList widevineVersionDirs = potentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot,
                                                                                QDir::Name | QDir::Reversed);
-        const QString library = QLatin1String("/Google Chrome Framework.framework/Versions/A/Libraries/"
+        const QString library = QLatin1String("/Versions/Current/Libraries/"
                                               "WidevineCdm/_platform_specific/mac_x64/libwidevinecdm.dylib");
         for (const QFileInfo &info : widevineVersionDirs)
             pluginPaths << info.absoluteFilePath() + library;
