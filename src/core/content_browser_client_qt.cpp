@@ -284,9 +284,16 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
             base::BindOnce(&net::URLRequestContextGetter::GetURLRequestContext, base::Unretained(profile->GetRequestContext())),
             base::BindOnce(&ContentBrowserClientQt::AddNetworkHintsMessageFilter, base::Unretained(this), id));
 
+    // Allow requesting custom schemes.
+    const auto policy = content::ChildProcessSecurityPolicy::GetInstance();
+    const auto profileQt = static_cast<ProfileQt *>(host->GetBrowserContext());
+    const auto profileAdapter = profileQt->profileAdapter();
+    for (const QByteArray &scheme : profileAdapter->customUrlSchemes())
+        policy->GrantRequestScheme(id, scheme.toStdString());
+
     // FIXME: Add a settings variable to enable/disable the file scheme.
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantRequestScheme(id, url::kFileScheme);
-    static_cast<ProfileQt*>(host->GetBrowserContext())->m_profileAdapter->userResourceController()->renderProcessStartedWithHost(host);
+    policy->GrantRequestScheme(id, url::kFileScheme);
+    profileAdapter->userResourceController()->renderProcessStartedWithHost(host);
     host->AddFilter(new BrowserMessageFilterQt(id, profile));
 #if QT_CONFIG(webengine_printing_and_pdf)
     host->AddFilter(new PrintingMessageFilterQt(host->GetID()));
