@@ -58,6 +58,8 @@
 #include "services/network/public/mojom/ssl_config.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 
+#include "net/proxy_config_monitor.h"
+
 namespace network {
 namespace mojom {
 class URLLoaderFactory;
@@ -176,6 +178,8 @@ private:
     // consumers don't all need to create their own factory.
     scoped_refptr<URLLoaderFactoryForSystem> shared_url_loader_factory_;
     network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+
+    ProxyConfigMonitor proxy_config_monitor_;
 
     DISALLOW_COPY_AND_ASSIGN(SystemNetworkContextManager);
 };

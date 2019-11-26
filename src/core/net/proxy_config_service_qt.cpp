@@ -46,8 +46,9 @@
 #include "proxy_config_service_qt.h"
 
 #include "base/bind.h"
-#include "content/public/browser/browser_thread.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "content/public/browser/browser_thread.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 
 using content::BrowserThread;
 
@@ -69,34 +70,40 @@ net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qt
     }
 }
 
-ProxyConfigServiceQt::ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService,
-                                           const net::ProxyConfigWithAnnotation &initialConfig,
-                                           ProxyPrefs::ConfigState initialState)
-    : m_baseService(baseService.release())
+ProxyConfigServiceQt::ProxyConfigServiceQt(PrefService *prefService,
+                                           const scoped_refptr<base::SingleThreadTaskRunner> &taskRunner)
+    : m_baseService(net::ProxyResolutionService::CreateSystemProxyConfigService(taskRunner))
     , m_usesSystemConfiguration(false)
     , m_registeredObserver(false)
-    , m_prefConfig(initialConfig)
-    , m_perfState(initialState)
-{}
+    , m_prefState(prefService
+                  ? PrefProxyConfigTrackerImpl::ReadPrefConfig(prefService, &m_prefConfig)
+                  : ProxyPrefs::CONFIG_UNSET)
+{
+    DETACH_FROM_SEQUENCE(m_sequenceChecker);
+}
 
 ProxyConfigServiceQt::~ProxyConfigServiceQt()
 {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(m_sequenceChecker);
     if (m_registeredObserver && m_baseService.get())
         m_baseService->RemoveObserver(this);
 }
 
 void ProxyConfigServiceQt::AddObserver(net::ProxyConfigService::Observer *observer)
 {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(m_sequenceChecker);
     m_observers.AddObserver(observer);
 }
 
 void ProxyConfigServiceQt::RemoveObserver(net::ProxyConfigService::Observer *observer)
 {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(m_sequenceChecker);
     m_observers.RemoveObserver(observer);
 }
 
 net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxyConfig(net::ProxyConfigWithAnnotation *config)
 {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(m_sequenceChecker);
     m_usesSystemConfiguration = QNetworkProxyFactory::usesSystemConfiguration();
     if (m_usesSystemConfiguration) {
         // Use Chromium's base service to retrieve system settings
@@ -106,7 +113,7 @@ net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxy
             systemAvailability = m_baseService->GetLatestProxyConfig(&systemConfig);
         ProxyPrefs::ConfigState configState;
         systemAvailability = PrefProxyConfigTrackerImpl::GetEffectiveProxyConfig(
-            m_perfState, m_prefConfig, systemAvailability, systemConfig,
+            m_prefState, m_prefConfig, systemAvailability, systemConfig,
             false, &configState, config);
         RegisterObserver();
         return systemAvailability;
@@ -151,7 +158,7 @@ net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxy
 
 void ProxyConfigServiceQt::OnLazyPoll()
 {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CALLED_ON_VALID_SEQUENCE(m_sequenceChecker);
 
     // We need to update if
     // - setUseSystemConfiguration() was called in between
@@ -168,7 +175,7 @@ void ProxyConfigServiceQt::OnLazyPoll()
 // Called when the base service changed
 void ProxyConfigServiceQt::OnProxyConfigChanged(const net::ProxyConfigWithAnnotation &config, ConfigAvailability availability)
 {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CALLED_ON_VALID_SEQUENCE(m_sequenceChecker);
     Q_UNUSED(config);
 
     if (!m_usesSystemConfiguration)
@@ -180,6 +187,7 @@ void ProxyConfigServiceQt::OnProxyConfigChanged(const net::ProxyConfigWithAnnota
 // Update our observers
 void ProxyConfigServiceQt::Update()
 {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(m_sequenceChecker);
     net::ProxyConfigWithAnnotation actual_config;
     ConfigAvailability availability = GetLatestProxyConfig(&actual_config);
     if (availability == CONFIG_PENDING)
@@ -193,7 +201,7 @@ void ProxyConfigServiceQt::Update()
 // in the constructor.
 void ProxyConfigServiceQt::RegisterObserver()
 {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CALLED_ON_VALID_SEQUENCE(m_sequenceChecker);
     if (!m_registeredObserver && m_baseService.get()) {
         m_baseService->AddObserver(this);
         m_registeredObserver = true;

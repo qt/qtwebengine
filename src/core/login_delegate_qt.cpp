@@ -51,6 +51,8 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/buildflags/buildflags.h"
+#include "services/network/public/cpp/features.h"
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
@@ -153,7 +155,9 @@ void LoginDelegateQt::sendAuthToRequester(bool success, const QString &user, con
             std::move(m_auth_required_callback).Run(base::nullopt);
     }
 
-    destroy();
+    // With network service the auth callback has already deleted us.
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+        destroy();
 }
 
 void LoginDelegateQt::destroy()

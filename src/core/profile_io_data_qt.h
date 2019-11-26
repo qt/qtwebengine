@@ -47,6 +47,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "net/proxy_config_monitor.h"
 #include "services/network/cookie_settings.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -197,6 +198,7 @@ private:
     QPointer<ProfileAdapter> m_profileAdapter; // never dereferenced in IO thread and it is passed by qpointer
     ProfileAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;
     mojo::StrongBindingSet<network::mojom::RestrictedCookieManager> m_restrictedCookieManagerBindings;
+    std::unique_ptr<ProxyConfigMonitor> m_proxyConfigMonitor;
 
 #if QT_CONFIG(ssl)
     ClientCertificateStoreData *m_clientCertificateStoreData;

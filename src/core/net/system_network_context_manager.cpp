@@ -345,7 +345,7 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetwo
 
     network_context_params->primary_network_context = true;
 
-    //    proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
+    proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 
     return network_context_params;
 }

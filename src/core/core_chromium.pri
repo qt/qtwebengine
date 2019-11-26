@@ -85,6 +85,7 @@ SOURCES = \
         net/custom_protocol_handler.cpp \
         net/custom_url_loader_factory.cpp \
         net/network_delegate_qt.cpp \
+        net/proxy_config_monitor.cpp \
         net/proxy_config_service_qt.cpp \
         net/proxying_url_loader_factory_qt.cpp \
         net/proxying_restricted_cookie_manager_qt.cpp \
@@ -227,6 +228,7 @@ HEADERS = \
         profile_adapter_client.h \
         profile_qt.h \
         profile_io_data_qt.h \
+        proxy_config_monitor.h \
         proxy_config_service_qt.h \
         quota_permission_context_qt.h \
         quota_request_controller.h \

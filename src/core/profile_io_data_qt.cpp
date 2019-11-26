@@ -225,6 +225,7 @@ void ProfileIODataQt::shutdownOnUIThread()
 #endif
     if (m_cookieDelegate)
         m_cookieDelegate->unsetMojoCookieManager();
+    m_proxyConfigMonitor.reset();
     bool posted = content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, this);
     if (!posted) {
         qWarning() << "Could not delete ProfileIODataQt on io thread !";
@@ -293,7 +294,10 @@ void ProfileIODataQt::initializeOnUIThread()
     m_protocolHandlerRegistryIOThreadDelegate = protocolHandlerRegistry->io_thread_delegate();
     m_cookieDelegate = new CookieMonsterDelegateQt();
     m_cookieDelegate->setClient(m_profile->profileAdapter()->cookieStore());
-    createProxyConfig();
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+        m_proxyConfigMonitor.reset(new ProxyConfigMonitor(m_profile->GetPrefs()));
+    else
+        createProxyConfig();
 }
 
 void ProfileIODataQt::cancelAllUrlRequests()
@@ -649,7 +653,8 @@ void ProfileIODataQt::requestStorageGeneration() {
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     if (m_initialized && !m_updateAllStorage) {
         m_updateAllStorage = true;
-        createProxyConfig();
+        if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+            createProxyConfig();
         base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
                                  base::BindOnce(&ProfileIODataQt::generateAllStorage, m_weakPtr));
     }
@@ -658,20 +663,17 @@ void ProfileIODataQt::requestStorageGeneration() {
 // TODO(miklocek): mojofy ProxyConfigServiceQt
 void ProfileIODataQt::createProxyConfig()
 {
+    Q_ASSERT(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     // We must create the proxy config service on the UI loop on Linux because it
     // must synchronously run on the glib message loop. This will be passed to
     // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
     Q_ASSERT(m_proxyConfigService == 0);
-    net::ProxyConfigWithAnnotation initialConfig;
-    ProxyPrefs::ConfigState initialConfigState = PrefProxyConfigTrackerImpl::ReadPrefConfig(
-                m_profileAdapter->profile()->GetPrefs(), &initialConfig);
     m_proxyConfigService =
             new ProxyConfigServiceQt(
-                net::ProxyResolutionService::CreateSystemProxyConfigService(
-                    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})),
-                    initialConfig, initialConfigState);
+                    m_profileAdapter->profile()->GetPrefs(),
+                    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO}));
     //pass interface to io thread
     m_proxyResolverFactoryInterface = ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
 }
@@ -895,6 +897,8 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
         network_context_params->cors_origin_access_list =
             m_profile->GetSharedCorsOriginAccessList()->GetOriginAccessList().CreateCorsOriginAccessPatternsList();
     }
+
+    m_proxyConfigMonitor->AddToNetworkContextParams(&*network_context_params);
 
     return network_context_params;
 }
