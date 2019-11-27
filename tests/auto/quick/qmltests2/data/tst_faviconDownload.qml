@@ -29,6 +29,7 @@
 import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.3
+import "../../qmltests/data" 1.0
 
 TestWebEngineView {
     id: webEngineView

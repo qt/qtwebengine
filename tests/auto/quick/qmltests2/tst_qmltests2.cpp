@@ -27,10 +27,8 @@
 ****************************************************************************/
 
 #include <QtCore/QScopedPointer>
-#include <QTemporaryDir>
 #include <QtQuickTest/quicktest.h>
 #include <QtWebEngine/QQuickWebEngineProfile>
-#include <QQmlEngine>
 #include "qt_webengine_quicktest.h"
 
 #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
@@ -97,19 +95,6 @@ static void sigSegvHandler(int signum)
 }
 #endif
 
-class TempDir : public QObject {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE QString path() {
-        Q_ASSERT(tempDir.isValid());
-        return tempDir.isValid() ? tempDir.path() : QString();
-    }
-
-private:
-    QTemporaryDir tempDir;
-};
-
 int main(int argc, char **argv)
 {
 #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
@@ -122,30 +107,21 @@ int main(int argc, char **argv)
     sigaction(SIGSEGV, &sigAction, 0);
 #endif
 
+    // Inject the mock ui delegates module
+    qputenv("QML2_IMPORT_PATH", QByteArray(TESTS_SOURCE_DIR "qmltests2/mock-delegates"));
     QScopedPointer<Application> app;
 
     // Force to use English language for testing due to error message checks
     QLocale::setDefault(QLocale("en"));
 
-    static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
-    QVector<const char *> w_argv(argc); \
-    for (int i = 0; i < argc; ++i) \
-        w_argv[i] = argv[i]; \
-    for (int i = 0; i < params.size(); ++i) \
-        w_argv.append(params[i].data()); \
-    int w_argc = w_argv.size(); \
-
     if (!QCoreApplication::instance()) {
-        app.reset(new Application(w_argc, const_cast<char **>(w_argv.data())));
+        app.reset(new Application(argc, argv));
     }
     QtWebEngine::initialize();
     QQuickWebEngineProfile::defaultProfile()->setOffTheRecord(true);
-    qmlRegisterType<TempDir>("Test.util", 1, 0, "TempDir");
 
     QTEST_SET_MAIN_SOURCE_PATH
 
-    int i = quick_test_main(argc, argv, "qmltests", QUICK_TEST_SOURCE_DIR);
+    int i = quick_test_main(argc, argv, "qmltests2", QUICK_TEST_SOURCE_DIR);
     return i;
 }
-
-#include "tst_qmltests.moc"

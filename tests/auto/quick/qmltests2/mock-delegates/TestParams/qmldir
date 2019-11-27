@@ -2,4 +2,3 @@
 module TestParams
 singleton FilePickerParams 1.0 FilePickerParams.qml
 singleton JSDialogParams 1.0 JSDialogParams.qml
-
