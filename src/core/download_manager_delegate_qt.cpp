@@ -298,7 +298,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         ProfileAdapterClient::NoReason,
         adapterClient,
         QFileInfo(suggestedFilePath).fileName(),
-        time_t(QDateTime::currentMSecsSinceEpoch())
+        QDateTime::currentMSecsSinceEpoch()
     };
 
     for (ProfileAdapterClient *client : qAsConst(clients)) {

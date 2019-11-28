@@ -70,6 +70,7 @@ public:
 
     bool downloadFinished;
     quint32 downloadId;
+    qint64 startTime;
     QWebEngineDownloadItem::DownloadState downloadState;
     QWebEngineDownloadItem::SavePageFormat savePageFormat;
     QWebEngineDownloadItem::DownloadType type;
