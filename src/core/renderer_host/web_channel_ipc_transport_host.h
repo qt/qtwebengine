@@ -53,9 +53,11 @@ QT_FORWARD_DECLARE_CLASS(QString)
 
 namespace QtWebEngineCore {
 
-class WebChannelIPCTransportHost : public QWebChannelAbstractTransport
+class WebChannelIPCTransportHost
+        : public QWebChannelAbstractTransport
         , private content::WebContentsObserver
-        , qtwebchannel::mojom::WebChannelTransportHost {
+        , qtwebchannel::mojom::WebChannelTransportHost
+{
 public:
     WebChannelIPCTransportHost(content::WebContents *webContents, uint32_t worldId = 0, QObject *parent = nullptr);
     ~WebChannelIPCTransportHost() override;

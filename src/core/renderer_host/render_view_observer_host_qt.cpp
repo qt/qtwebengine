@@ -69,7 +69,7 @@ void RenderViewObserverHostQt::fetchDocumentInnerText(quint64 requestId)
                         web_contents()->GetRenderViewHost()->GetRoutingID(), requestId));
 }
 
-bool RenderViewObserverHostQt::OnMessageReceived(const IPC::Message& message)
+bool RenderViewObserverHostQt::OnMessageReceived(const IPC::Message &message)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(RenderViewObserverHostQt, message)
@@ -80,15 +80,14 @@ bool RenderViewObserverHostQt::OnMessageReceived(const IPC::Message& message)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
-
 }
 
-void RenderViewObserverHostQt::onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup)
+void RenderViewObserverHostQt::onDidFetchDocumentMarkup(quint64 requestId, const base::string16 &markup)
 {
     m_adapterClient->didFetchDocumentMarkup(requestId, toQt(markup));
 }
 
-void RenderViewObserverHostQt::onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText)
+void RenderViewObserverHostQt::onDidFetchDocumentInnerText(quint64 requestId, const base::string16 &innerText)
 {
     m_adapterClient->didFetchDocumentInnerText(requestId, toQt(innerText));
 }

@@ -77,17 +77,14 @@
 
 namespace QtWebEngineCore {
 
-void OnPdfStreamIntercepted(
-    const GURL& original_url,
-    std::string extension_id,
-    int frame_tree_node_id,
-    const content::ResourceRequestInfo::WebContentsGetter&
-        web_contents_getter) {
-    content::WebContents* web_contents = web_contents_getter.Run();
+void OnPdfStreamIntercepted(const GURL &original_url, std::string extension_id, int frame_tree_node_id,
+                            const content::ResourceRequestInfo::WebContentsGetter &web_contents_getter)
+{
+    content::WebContents *web_contents = web_contents_getter.Run();
     if (!web_contents)
         return;
 
-    WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(web_contents->GetDelegate());
+    WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(web_contents->GetDelegate());
     if (!contentsDelegate)
         return;
 
@@ -97,19 +94,17 @@ void OnPdfStreamIntercepted(
         // If the applications has been set up to always download PDF files to open them in an
         // external viewer, trigger the download.
         std::unique_ptr<download::DownloadUrlParameters> params(
-                    content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
-                        web_contents, original_url, MISSING_TRAFFIC_ANNOTATION));
-        content::BrowserContext::GetDownloadManager(web_contents->GetBrowserContext())
-                ->DownloadUrl(std::move(params));
+                content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(web_contents, original_url,
+                                                                                     MISSING_TRAFFIC_ANNOTATION));
+        content::BrowserContext::GetDownloadManager(web_contents->GetBrowserContext())->DownloadUrl(std::move(params));
         return;
     }
 
     // The URL passes the original pdf resource url, that will be requested
     // by the pdf viewer extension page.
     content::NavigationController::LoadURLParams params(
-              GURL(base::StringPrintf("%s://%s/index.html?%s", extensions::kExtensionScheme,
-                   extension_id.c_str(),
-                   original_url.spec().c_str())));
+            GURL(base::StringPrintf("%s://%s/index.html?%s", extensions::kExtensionScheme,
+                                    extension_id.c_str(), original_url.spec().c_str())));
 
     params.frame_tree_node_id = frame_tree_node_id;
     web_contents->GetController().LoadURLWithParams(params);
@@ -120,8 +115,7 @@ bool ResourceDispatcherHostDelegateQt::ShouldInterceptResourceAsStream(net::URLR
                                                                        GURL *origin,
                                                                        std::string *payload)
 {
-    content::ResourceRequestInfo* info =
-        content::ResourceRequestInfo::ForRequest(request);
+    content::ResourceRequestInfo *info = content::ResourceRequestInfo::ForRequest(request);
 
     int render_process_host_id = -1;
     int render_frame_id = -1;
@@ -130,7 +124,8 @@ bool ResourceDispatcherHostDelegateQt::ShouldInterceptResourceAsStream(net::URLR
 
     std::vector<std::string> whitelist = MimeTypesHandler::GetMIMETypeWhitelist();
 
-    extensions::ExtensionSystemQt *extensionSystem = ProfileIODataQt::FromResourceContext(info->GetContext())->GetExtensionSystem();
+    extensions::ExtensionSystemQt *extensionSystem =
+            ProfileIODataQt::FromResourceContext(info->GetContext())->GetExtensionSystem();
     if (!extensionSystem)
         return false;
 
@@ -141,7 +136,7 @@ bool ResourceDispatcherHostDelegateQt::ShouldInterceptResourceAsStream(net::URLR
         if (!extension)
             continue;
 
-        MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
+        MimeTypesHandler *handler = MimeTypesHandler::GetHandler(extension);
         if (!handler)
             continue;
         if (handler->CanHandleMIMEType(mime_type)) {
@@ -159,8 +154,7 @@ bool ResourceDispatcherHostDelegateQt::ShouldInterceptResourceAsStream(net::URLR
 
 // Informs the delegate that a Stream was created. The Stream can be read from
 // the blob URL of the Stream, but can only be read once.
-void ResourceDispatcherHostDelegateQt::OnStreamCreated(net::URLRequest *request,
-                                                       std::unique_ptr<content::StreamInfo> stream)
+void ResourceDispatcherHostDelegateQt::OnStreamCreated(net::URLRequest *request, std::unique_ptr<content::StreamInfo> stream)
 {
     content::ResourceRequestInfo *info = content::ResourceRequestInfo::ForRequest(request);
     std::map<net::URLRequest *, StreamTargetInfo>::iterator ix = stream_target_info_.find(request);
@@ -173,13 +167,10 @@ void ResourceDispatcherHostDelegateQt::OnStreamCreated(net::URLRequest *request,
         return;
     }
 
-    base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::UI},
-                base::BindOnce(&OnPdfStreamIntercepted,
-                               request->url(), ix->second.extension_id,
-                               info->GetFrameTreeNodeId(), info->GetWebContentsGetterForRequest()
-                              )
-                );
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(&OnPdfStreamIntercepted,
+                                            request->url(), ix->second.extension_id,
+                                            info->GetFrameTreeNodeId(), info->GetWebContentsGetterForRequest()));
     stream_target_info_.erase(request);
 }
 

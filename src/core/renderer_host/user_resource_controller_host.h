@@ -66,7 +66,8 @@ namespace QtWebEngineCore {
 
 class WebContentsAdapter;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT UserResourceControllerHost {
+class Q_WEBENGINECORE_PRIVATE_EXPORT UserResourceControllerHost
+{
 
 public:
     UserResourceControllerHost();

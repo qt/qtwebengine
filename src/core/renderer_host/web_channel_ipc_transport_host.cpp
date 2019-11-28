@@ -61,7 +61,7 @@ inline QDebug operator<<(QDebug stream, content::RenderFrameHost *frame)
     return stream << "frame " << frame->GetRoutingID() << " in process " << frame->GetProcess()->GetID();
 }
 
-template <class T>
+template<class T>
 inline QDebug operator<<(QDebug stream, const base::Optional<T> &opt)
 {
     if (opt)
@@ -140,8 +140,7 @@ void WebChannelIPCTransportHost::DispatchWebChannelMessage(const std::vector<uin
         return;
     }
 
-    QJsonDocument doc = QJsonDocument::fromRawData(
-                reinterpret_cast<const char *>(binaryJson.data()), binaryJson.size());
+    QJsonDocument doc = QJsonDocument::fromRawData(reinterpret_cast<const char *>(binaryJson.data()), binaryJson.size());
 
     if (!doc.isObject()) {
         qCCritical(log).nospace() << "received invalid webchannel message from " << frame;

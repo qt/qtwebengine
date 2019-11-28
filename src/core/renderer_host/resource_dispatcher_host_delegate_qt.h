@@ -47,7 +47,8 @@
 
 namespace QtWebEngineCore {
 
-class ResourceDispatcherHostDelegateQt : public content::ResourceDispatcherHostDelegate {
+class ResourceDispatcherHostDelegateQt : public content::ResourceDispatcherHostDelegate
+{
 public:
     // If the stream will be rendered in a BrowserPlugin, |payload| will contain
     // the data that should be given to the old ResourceHandler to forward to the
@@ -61,15 +62,16 @@ public:
     // the blob URL of the Stream, but can only be read once.
     void OnStreamCreated(net::URLRequest *request,
                          std::unique_ptr<content::StreamInfo> stream) override;
+
 private:
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    struct StreamTargetInfo {
+    struct StreamTargetInfo
+    {
         std::string extension_id;
         std::string view_id;
     };
     std::map<net::URLRequest *, StreamTargetInfo> stream_target_info_;
 #endif
-
 };
 
 } // namespace QtWebEngineCore
