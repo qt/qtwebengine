@@ -94,9 +94,21 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
+                    icon.source: "resources/zoom-fit-width.svg"
+                    onTriggered: pageView.scaleToWidth(root.contentItem.width, root.contentItem.height)
+                }
+            }
+            ToolButton {
+                action: Action {
+                    icon.source: "resources/zoom-fit-best.svg"
+                    onTriggered: pageView.scaleToPage(root.contentItem.width, root.contentItem.height)
+                }
+            }
+            ToolButton {
+                action: Action {
                     shortcut: "Ctrl+0"
                     icon.source: "resources/zoom-original.svg"
-                    onTriggered: pageView.renderScale = 1
+                    onTriggered: pageView.resetScale()
                 }
             }
             ToolButton {

@@ -56,6 +56,51 @@ Rectangle {
 
     property real __pageScale: image.paintedWidth / document.pagePointSize(image.currentFrame).width
 
+    function resetScale() {
+        image.sourceSize.width = 0
+        image.sourceSize.height = 0
+        paper.x = 0
+        paper.y = 0
+        paper.scale = 1
+    }
+
+    function scaleToWidth(width, height) {
+        var halfRotation = Math.abs(paper.rotation % 180)
+        image.sourceSize = Qt.size((halfRotation > 45 && halfRotation < 135) ? height : width, 0)
+        paper.x = 0
+        paper.y = 0
+        image.centerInSize = Qt.size(width, height)
+        image.centerOnLoad = true
+        image.vCenterOnLoad = (halfRotation > 45 && halfRotation < 135)
+        paper.scale = 1
+    }
+
+    function scaleToPage(width, height) {
+        var windowAspect = width / height
+        var halfRotation = Math.abs(paper.rotation % 180)
+        var pagePointSize = document.pagePointSize(image.currentFrame)
+        if (halfRotation > 45 && halfRotation < 135) {
+            // rotated 90 or 270º
+            var pageAspect = pagePointSize.height / pagePointSize.width
+            if (windowAspect > pageAspect) {
+                image.sourceSize = Qt.size(height, 0)
+            } else {
+                image.sourceSize = Qt.size(0, width)
+            }
+        } else {
+            var pageAspect = pagePointSize.width / pagePointSize.height
+            if (windowAspect > pageAspect) {
+                image.sourceSize = Qt.size(0, height)
+            } else {
+                image.sourceSize = Qt.size(width, 0)
+            }
+        }
+        image.centerInSize = Qt.size(width, height)
+        image.centerOnLoad = true
+        image.vCenterOnLoad = true
+        paper.scale = 1
+    }
+
     PdfSelection {
         id: selection
         document: paper.document
@@ -79,13 +124,23 @@ Rectangle {
         source: document.status === PdfDocument.Ready ? document.source : ""
         asynchronous: true
         fillMode: Image.PreserveAspectFit
+        property bool centerOnLoad: false
+        property bool vCenterOnLoad: false
+        property size centerInSize
+        onStatusChanged:
+            if (status == Image.Ready && centerOnLoad) {
+                paper.x = (centerInSize.width - image.implicitWidth) / 2
+                paper.y = vCenterOnLoad ? (centerInSize.height - image.implicitHeight) / 2 : 0
+                centerOnLoad = false
+                vCenterOnLoad = false
+            }
     }
     function reRenderIfNecessary() {
         var newSourceWidth = image.sourceSize.width * paper.scale
         var ratio = newSourceWidth / image.sourceSize.width
         if (ratio > 1.1 || ratio < 0.9) {
             image.sourceSize.width = newSourceWidth
-            image.sourceSize.height = 1
+            image.sourceSize.height = 0
             paper.scale = 1
         }
     }
