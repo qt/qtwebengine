@@ -791,6 +791,14 @@ static void LaunchURL(const GURL& url,
     content::WebContents* webContents = web_contents_getter.Run();
     if (!webContents)
         return;
+
+    ProtocolHandlerRegistry* protocolHandlerRegistry =
+            ProtocolHandlerRegistryFactory::GetForBrowserContext(
+                    webContents->GetBrowserContext());
+    if (protocolHandlerRegistry &&
+        protocolHandlerRegistry->IsHandledProtocol(url.scheme()))
+        return;
+
     WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
     contentsDelegate->launchExternalURL(toQt(url), page_transition, is_main_frame, has_user_gesture);
 }
