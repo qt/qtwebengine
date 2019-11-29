@@ -226,11 +226,16 @@ void InterceptedRequest::InterceptOnUIThread()
 
     const QUrl initiator = request_.request_initiator.has_value() ? toQt(request_.request_initiator->GetURL()) : QUrl();
 
-    // FIXME: request_.first_party_url is currently always empty.
+    QUrl firstPartyUrl;
+    if (resourceType == content::ResourceType::kSubFrame)
+        firstPartyUrl = toQt(request_.first_party_url);
+    else
+        firstPartyUrl = toQt(request_.site_for_cookies);
+
     QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(toQt(resourceType),
                                                                                        toQt(navigationType),
                                                                                        qUrl,
-                                                                                       toQt(request_.site_for_cookies),
+                                                                                       firstPartyUrl,
                                                                                        initiator,
                                                                                        QByteArray::fromStdString(request_.method));
     QWebEngineUrlRequestInfo requestInfo(infoPrivate);
