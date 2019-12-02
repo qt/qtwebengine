@@ -165,7 +165,7 @@
 #include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/common/constants.h"
 #include "common/extensions/extensions_client_qt.h"
-#include "renderer_host/resource_dispatcher_host_delegate_qt.h"
+#include "net/plugin_response_interceptor_url_loader_throttle.h"
 #endif
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
@@ -339,11 +339,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()
 {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    m_resourceDispatcherHostDelegate.reset(new ResourceDispatcherHostDelegateQt);
-#else
     m_resourceDispatcherHostDelegate.reset(new content::ResourceDispatcherHostDelegate);
-#endif
     content::ResourceDispatcherHost::Get()->SetDelegate(m_resourceDispatcherHostDelegate.get());
 }
 
@@ -870,27 +866,35 @@ private:
 
 std::vector<std::unique_ptr<content::URLLoaderThrottle>>
 ContentBrowserClientQt::CreateURLLoaderThrottlesOnIO(
-        const network::ResourceRequest & /*request*/, content::ResourceContext *resource_context,
+        const network::ResourceRequest &request, content::ResourceContext *resource_context,
         const base::RepeatingCallback<content::WebContents *()> & /*wc_getter*/,
-        content::NavigationUIData * /*navigation_ui_data*/, int /*frame_tree_node_id*/)
+        content::NavigationUIData * /*navigation_ui_data*/, int frame_tree_node_id)
 {
     std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
     ProfileIODataQt *ioData = ProfileIODataQt::FromResourceContext(resource_context);
     result.push_back(std::make_unique<ProtocolHandlerThrottle<
                              scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>>>(
-            ioData->protocolHandlerRegistryIOThreadDelegate()));
+                                 ioData->protocolHandlerRegistryIOThreadDelegate()));
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
+                         resource_context, request.resource_type, frame_tree_node_id));
+#endif
     return result;
 }
 
 std::vector<std::unique_ptr<content::URLLoaderThrottle>>
 ContentBrowserClientQt::CreateURLLoaderThrottles(
         const network::ResourceRequest &request, content::BrowserContext *browser_context,
-        const base::RepeatingCallback<content::WebContents *()> &wc_getter,
-        content::NavigationUIData *navigation_ui_data, int frame_tree_node_id)
+        const base::RepeatingCallback<content::WebContents *()> & /*wc_getter*/,
+        content::NavigationUIData * /*navigation_ui_data*/, int frame_tree_node_id)
 {
     std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
     result.push_back(std::make_unique<ProtocolHandlerThrottle<ProtocolHandlerRegistry *>>(
-            ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)));
+                         ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)));
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
+                         browser_context, request.resource_type, frame_tree_node_id));
+#endif
     return result;
 }
 

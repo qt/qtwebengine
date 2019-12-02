@@ -349,11 +349,11 @@ qtConfig(webengine-extensions) {
         extensions/extensions_browser_api_provider_qt.cpp \
         extensions/extensions_browser_client_qt.cpp \
         extensions/mime_handler_view_guest_delegate_qt.cpp \
+        net/plugin_response_interceptor_url_loader_throttle.cpp \
         renderer/extensions/extensions_dispatcher_delegate_qt.cpp \
         renderer/extensions/extensions_renderer_client_qt.cpp \
         renderer/extensions/renderer_permissions_policy_delegate_qt.cpp \
-        renderer/extensions/resource_request_policy_qt.cpp \
-        renderer_host/resource_dispatcher_host_delegate_qt.cpp
+        renderer/extensions/resource_request_policy_qt.cpp
 
     HEADERS += \
         common/extensions/extensions_api_provider_qt.h \
@@ -366,9 +366,9 @@ qtConfig(webengine-extensions) {
         extensions/extensions_browser_api_provider_qt.h \
         extensions/extensions_browser_client_qt.h \
         extensions/mime_handler_view_guest_delegate_qt.h \
+        net/plugin_response_interceptor_url_loader_throttle.h \
         renderer/extensions/extensions_dispatcher_delegate_qt.h \
         renderer/extensions/extensions_renderer_client_qt.h \
         renderer/extensions/renderer_permissions_policy_delegate_qt.h \
-        renderer/extensions/resource_request_policy_qt.h \
-        renderer_host/resource_dispatcher_host_delegate_qt.h
+        renderer/extensions/resource_request_policy_qt.h
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,43 +37,40 @@
 **
 ****************************************************************************/
 
-#ifndef RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
-#define RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
+#ifndef PLUGIN_RESPONSE_INTERCEPTOR_URL_LOADER_THROTTLE_H_
+#define PLUGIN_RESPONSE_INTERCEPTOR_URL_LOADER_THROTTLE_H_
 
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
-#include "extensions/buildflags/buildflags.h"
+#include "base/macros.h"
+#include "content/public/common/url_loader_throttle.h"
 
-#include "web_contents_adapter_client.h"
+namespace content {
+class BrowserContext;
+class ResourceContext;
+}
 
 namespace QtWebEngineCore {
 
-class ResourceDispatcherHostDelegateQt : public content::ResourceDispatcherHostDelegate
+class PluginResponseInterceptorURLLoaderThrottle : public content::URLLoaderThrottle
 {
 public:
-    // If the stream will be rendered in a BrowserPlugin, |payload| will contain
-    // the data that should be given to the old ResourceHandler to forward to the
-    // renderer process.
-    bool ShouldInterceptResourceAsStream(net::URLRequest *request,
-                                         const std::string &mime_type,
-                                         GURL *origin,
-                                         std::string *payload) override;
-
-    // Informs the delegate that a Stream was created. The Stream can be read from
-    // the blob URL of the Stream, but can only be read once.
-    void OnStreamCreated(net::URLRequest *request,
-                         std::unique_ptr<content::StreamInfo> stream) override;
+    PluginResponseInterceptorURLLoaderThrottle(content::ResourceContext *resource_context,
+                                               int resource_type, int frame_tree_node_id);
+    PluginResponseInterceptorURLLoaderThrottle(content::BrowserContext *browser_context,
+                                               int resource_type, int frame_tree_node_id);
+    ~PluginResponseInterceptorURLLoaderThrottle() override = default;
 
 private:
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    struct StreamTargetInfo
-    {
-        std::string extension_id;
-        std::string view_id;
-    };
-    std::map<net::URLRequest *, StreamTargetInfo> stream_target_info_;
-#endif
+    // content::URLLoaderThrottle overrides;
+    void WillProcessResponse(const GURL &response_url, network::ResourceResponseHead *response_head, bool *defer) override;
+
+    content::ResourceContext *m_resource_context = nullptr;
+    content::BrowserContext *m_browser_context = nullptr;
+    const int m_resource_type;
+    const int m_frame_tree_node_id;
+
+    DISALLOW_COPY_AND_ASSIGN(PluginResponseInterceptorURLLoaderThrottle);
 };
 
 } // namespace QtWebEngineCore
 
-#endif // RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
+#endif // PLUGIN_RESPONSE_INTERCEPTOR_URL_LOADER_THROTTLE_H_
