@@ -52,9 +52,12 @@
 #include <QJsonObject>
 #include <QLoggingCategory>
 
-#include <QtCore/private/qjson_p.h>
-
 namespace QtWebEngineCore {
+
+enum {
+    // sizeof(QJsonPrivate::Header) + sizeof(QJsonPrivate::Base)
+    MinimumBinaryJsonSize = 8 + 12
+};
 
 Q_LOGGING_CATEGORY(log, "qt.webengine.webchanneltransport")
 
@@ -145,7 +148,7 @@ void WebChannelIPCTransportHost::DispatchWebChannelMessage(const std::vector<uin
     QJsonDocument doc;
     // QJsonDocument::fromRawData does not check the length before it starts
     // parsing the QJsonPrivate::Header and QJsonPrivate::Base structures.
-    if (binaryJson.size() >= sizeof(QJsonPrivate::Header) + sizeof(QJsonPrivate::Base))
+    if (binaryJson.size() >= MinimumBinaryJsonSize)
         doc = QJsonDocument::fromRawData(reinterpret_cast<const char *>(binaryJson.data()),
                                                                         binaryJson.size());
 
