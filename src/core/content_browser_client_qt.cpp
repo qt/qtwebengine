@@ -949,6 +949,16 @@ bool ContentBrowserClientQt::ShouldUseProcessPerSite(content::BrowserContext* br
     return ContentBrowserClient::ShouldUseProcessPerSite(browser_context, effective_url);
 }
 
+bool ContentBrowserClientQt::DoesSiteRequireDedicatedProcess(content::BrowserOrResourceContext browser_or_resource_context,
+                                                             const GURL &effective_site_url)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    if (effective_site_url.SchemeIs(extensions::kExtensionScheme))
+       return true;
+#endif
+    return ContentBrowserClient::DoesSiteRequireDedicatedProcess(browser_or_resource_context, effective_site_url);
+}
+
 std::string ContentBrowserClientQt::getUserAgent()
 {
     // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)

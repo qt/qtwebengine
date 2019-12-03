@@ -177,6 +177,8 @@ public:
 #endif
     bool ShouldIsolateErrorPage(bool in_main_frame) override;
     bool ShouldUseProcessPerSite(content::BrowserContext* browser_context, const GURL& effective_url) override;
+    bool DoesSiteRequireDedicatedProcess(content::BrowserOrResourceContext browser_or_resource_contexts,
+                                         const GURL &effective_site_url) override;
 
 #if defined(Q_OS_LINUX)
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;

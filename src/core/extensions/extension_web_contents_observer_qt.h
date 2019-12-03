@@ -59,9 +59,6 @@ public:
 
     static void CreateForWebContents(content::WebContents *web_contents);
 
-    std::string GetExtensionIdFromFrame(content::RenderFrameHost *) const;
-    const Extension *GetExtensionFromFrame(content::RenderFrameHost *, bool) const;
-
     // content::WebContentsObserver overrides.
     void RenderFrameCreated(content::RenderFrameHost *render_frame_host) override;
 
