@@ -116,6 +116,7 @@ public:
 
     void GetAdditionalViewSourceSchemes(std::vector<std::string>* additional_schemes) override;
     void GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes) override;
+    void GetAdditionalAllowedSchemesForFileSystem(std::vector<std::string>* additional_schemes) override;
 
     void BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,
                                        const std::string& interface_name,

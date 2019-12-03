@@ -159,12 +159,15 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/extensions_browser_client_qt.h"
+#include "content/public/browser/file_url_loader.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/common/constants.h"
+
 #include "common/extensions/extensions_client_qt.h"
+#include "extensions/extension_web_contents_observer_qt.h"
+#include "extensions/extensions_browser_client_qt.h"
 #include "net/plugin_response_interceptor_url_loader_throttle.h"
 #endif
 
@@ -481,12 +484,20 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
 
 void ContentBrowserClientQt::GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes)
 {
+    ContentBrowserClient::GetAdditionalWebUISchemes(additional_schemes);
     additional_schemes->push_back(content::kChromeDevToolsScheme);
 }
 
 void ContentBrowserClientQt::GetAdditionalViewSourceSchemes(std::vector<std::string>* additional_schemes)
 {
-   additional_schemes->push_back(content::kChromeDevToolsScheme);
+    ContentBrowserClient::GetAdditionalViewSourceSchemes(additional_schemes);
+}
+
+void ContentBrowserClientQt::GetAdditionalAllowedSchemesForFileSystem(std::vector<std::string>* additional_schemes)
+{
+    ContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(additional_schemes);
+    additional_schemes->push_back(content::kChromeDevToolsScheme);
+    additional_schemes->push_back(content::kChromeUIScheme);
 }
 
 #if defined(Q_OS_LINUX)
@@ -1084,6 +1095,46 @@ void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int 
 #endif
 }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+namespace {
+// The FileURLLoaderFactory provided to the extension background pages.
+// Checks with the ChildProcessSecurityPolicy to validate the file access.
+class FileURLLoaderFactory : public network::mojom::URLLoaderFactory
+{
+public:
+    explicit FileURLLoaderFactory(int child_id) : child_id_(child_id) {}
+
+private:
+    // network::mojom::URLLoaderFactory:
+    void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                              int32_t routing_id,
+                              int32_t request_id,
+                              uint32_t options,
+                              const network::ResourceRequest& request,
+                              network::mojom::URLLoaderClientPtr client,
+                              const net::MutableNetworkTrafficAnnotationTag &traffic_annotation) override
+    {
+        if (!content::ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(child_id_, request.url)) {
+            client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED));
+            return;
+        }
+        content::CreateFileURLLoader(request, std::move(loader), std::move(client),
+                                     /* observer */ nullptr,
+                                     /* allow_directory_listing */ false);
+    }
+
+    void Clone(network::mojom::URLLoaderFactoryRequest loader) override
+    {
+        bindings_.AddBinding(this, std::move(loader));
+    }
+
+    int child_id_;
+    mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+    DISALLOW_COPY_AND_ASSIGN(FileURLLoaderFactory);
+};
+}  // namespace
+#endif
+
 void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
                                                                              NonNetworkURLLoaderFactoryMap *factories)
 {
@@ -1100,6 +1151,38 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
     auto factory = extensions::CreateExtensionURLLoaderFactory(render_process_id, render_frame_id);
     if (factory)
         factories->emplace(extensions::kExtensionScheme, std::move(factory));
+
+    content::RenderFrameHost *frame_host = content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+    content::WebContents *web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+    if (!web_contents)
+        return;
+
+    extensions::ExtensionWebContentsObserverQt *web_observer =
+            extensions::ExtensionWebContentsObserverQt::FromWebContents(web_contents);
+    if (!web_observer)
+        return;
+
+    const extensions::Extension *extension = web_observer->GetExtensionFromFrame(frame_host, false);
+    if (!extension)
+        return;
+
+    std::vector<std::string> allowed_webui_hosts;
+    // Support for chrome:// scheme if appropriate.
+    if ((extension->is_extension() || extension->is_platform_app()) &&
+            extensions::Manifest::IsComponentLocation(extension->location())) {
+        // Components of chrome that are implemented as extensions or platform apps
+        // are allowed to use chrome://resources/ and chrome://theme/ URLs.
+        allowed_webui_hosts.emplace_back(content::kChromeUIResourcesHost);
+    }
+    if (!allowed_webui_hosts.empty()) {
+        factories->emplace(content::kChromeUIScheme,
+                           content::CreateWebUIURLLoader(frame_host,
+                                                         content::kChromeUIScheme,
+                                                         std::move(allowed_webui_hosts)));
+    }
+    // Support for file:// scheme when approved by ChildProcessSecurityPolicy.
+    // FIXME: Not needed after switching to using transferable url loaders and guest views.
+    factories->emplace(url::kFileScheme, std::make_unique<FileURLLoaderFactory>(render_process_id));
 #endif
 }
 
