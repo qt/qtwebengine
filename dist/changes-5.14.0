@@ -1,0 +1,88 @@
+Qt 5.14 introduces many new features and improvements as well as bugfixes
+over the 5.13.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.14 series is binary compatible with the 5.13.x series.
+Applications compiled for 5.13 will continue to run with 5.14.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                                 General                                  *
+****************************************************************************
+
+Chromium Snapshot
+-----------------
+
+ - Updated the Chromium version to 77.0.3865.129
+ - Applied security fixes from Chrome up to version 78.0.3904.108
+
+General
+-------
+
+ - [QTBUG-71885] Qt WebEngine will now use the Viz Display Compositor by
+   default when multithreaded OpenGL is available. Can be turned off using
+   the command line flag --disable-viz-display-compositor.
+ - [QTBUG-68448] WebRTC devices now have persistent IDs.
+ - [QTBUG-76173] Support qrc protocol in UrlPattern.
+ - [QTBUG-78280] Fixed permissions preventing Flash from showing.
+ - [QTBUG-79319] Fixed loading script as modules over custom schemes.
+ - [QTBUG-80352] Updated paths to look for Chrome's Widevine plugin.
+
+Platforms
+---------
+
+ - [QTBUG-78911] Fixed building with newer system ICU. Minimum is now 64.
+ - [QTBUG-79347] Fixed support for prefers-color-scheme CSS query.
+ - [QTBUG-80055] Re-enabled X11 WebRTC support for desktop sharing.
+ - [QTBUG-77072,QTBUG-78084] Fixed flashing when closing popup on macOS.
+
+
+****************************************************************************
+*                                Libraries                                 *
+****************************************************************************
+
+QtWebEngineCore
+----------------
+
+ - [QTBUG-75651] Added the QWebEngineUrlScheme::CorsEnabled flag for enabling
+   cross-origin resource sharing with custom schemes.
+
+
+QtWebEngine + QtWebEngineWidgets
+--------------------------------
+
+ - [QTBUG-55079,QTBUG-74166] Added lifecycle API to WebEngineView and
+   QWebEnginePage that can be used to reduce CPU and memory consumption
+   of non-visible views.
+ - [QTBUG-56978] Added functions and property to get the suggested download
+   file name.
+ - [QTBUG-56978] Added functions and property to change the download
+   directory and file name in QWebEngineDownloadItem and
+   QQuickWebEngineDownloadItem and deprecate the path() and setPath().
+ - [QTBUG-74490] Redirects now have a separate navigation type.
+
+
+Qt WebEngine (QML)
+------------------
+
+ - [QTBUG-50420] Introduced findTextFinished signal and FindTextResult
+   type to provide extra information about the result of a text search.
+
+
+Qt WebEngineWidgets
+-------------------
+
+ - QWebEngineCertificateError:
+   * [QTBUG-51176] New method to get the peer's chain of digital certificates.
+   * [QTBUG-55110] New methods for asynchronous decision on certificate error
+     during load.
+ - [QTBUG-78998] Store favicon URL when serializing QWebEngineHistory.

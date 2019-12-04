@@ -622,14 +622,17 @@ void tst_QWebEngineDownloadItem::downloadTwoLinks()
 
 void tst_QWebEngineDownloadItem::downloadPage_data()
 {
+    QTest::addColumn<bool>("saveWithPageAction");
     QTest::addColumn<QWebEngineDownloadItem::SavePageFormat>("savePageFormat");
-    QTest::newRow("SingleHtmlSaveFormat") << QWebEngineDownloadItem::SingleHtmlSaveFormat;
-    QTest::newRow("CompleteHtmlSaveFormat") << QWebEngineDownloadItem::CompleteHtmlSaveFormat;
-    QTest::newRow("MimeHtmlSaveFormat") << QWebEngineDownloadItem::MimeHtmlSaveFormat;
+    QTest::newRow("SingleHtmlSaveFormat")   << false << QWebEngineDownloadItem::SingleHtmlSaveFormat;
+    QTest::newRow("CompleteHtmlSaveFormat") << false << QWebEngineDownloadItem::CompleteHtmlSaveFormat;
+    QTest::newRow("MimeHtmlSaveFormat")     << false << QWebEngineDownloadItem::MimeHtmlSaveFormat;
+    QTest::newRow("SavePageAction")         << true  << QWebEngineDownloadItem::MimeHtmlSaveFormat;
 }
 
 void tst_QWebEngineDownloadItem::downloadPage()
 {
+    QFETCH(bool, saveWithPageAction);
     QFETCH(QWebEngineDownloadItem::SavePageFormat, savePageFormat);
 
     // Set up HTTP server
@@ -649,12 +652,12 @@ void tst_QWebEngineDownloadItem::downloadPage()
     // Set up profile and download handler
     QTemporaryDir tmpDir;
     QVERIFY(tmpDir.isValid());
-    QString downloadPath = tmpDir.path() + QStringLiteral("/test.html");
+    QString downloadFileName("test.html"), downloadPath = tmpDir.filePath(downloadFileName);
     QUrl downloadUrl = m_server->url("/");
     int acceptedCount = 0;
     int finishedCount = 0;
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
-        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadInProgress);
+        QCOMPARE(item->state(), saveWithPageAction ? QWebEngineDownloadItem::DownloadRequested : QWebEngineDownloadItem::DownloadInProgress);
         QCOMPARE(item->isFinished(), false);
         QCOMPARE(item->totalBytes(), -1);
         QCOMPARE(item->receivedBytes(), 0);
@@ -663,11 +666,19 @@ void tst_QWebEngineDownloadItem::downloadPage()
         QCOMPARE(item->isSavePageDownload(), true);
         // FIXME(juvaldma): why is mimeType always the same?
         QCOMPARE(item->mimeType(), QStringLiteral("application/x-mimearchive"));
-        QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), downloadPath);
         QCOMPARE(item->savePageFormat(), savePageFormat);
         QCOMPARE(item->url(), downloadUrl);
         QCOMPARE(item->page(), m_page);
-        // no need to call item->accept()
+
+        if (saveWithPageAction) {
+            QVERIFY(!item->downloadDirectory().isEmpty());
+            QVERIFY(!item->downloadFileName().isEmpty());
+            item->setDownloadDirectory(tmpDir.path());
+            item->setDownloadFileName(downloadFileName);
+            item->accept();
+        } // save with explicit path accepts download automatically
+
+        QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), downloadPath);
 
         connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
@@ -697,7 +708,11 @@ void tst_QWebEngineDownloadItem::downloadPage()
     QCOMPARE(indexRequestCount, 1);
 
     // Save some HTML
-    m_page->save(downloadPath, savePageFormat);
+    if (saveWithPageAction)
+        m_page->triggerAction(QWebEnginePage::SavePage);
+    else
+        m_page->save(downloadPath, savePageFormat);
+
     QTRY_COMPARE(acceptedCount, 1);
     QTRY_COMPARE(finishedCount, 1);
     QFile file(downloadPath);

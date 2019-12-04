@@ -225,6 +225,7 @@ private Q_SLOTS:
     void editActionsWithoutSelection();
 
     void customUserAgentInNewTab();
+    void renderProcessCrashed();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -990,6 +991,19 @@ void tst_QWebEnginePage::findText()
         QTRY_VERIFY(callbackSpy.wasCalled());
         QTRY_COMPARE(signalSpy.count(), 1);
         QTRY_COMPARE(m_view->selectedText(), QString("foo"));
+    }
+
+    // Invoking startFinding operation for the same text twice. Without any wait, the second one
+    // should interrupt the first one.
+    {
+        QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
+        m_view->findText("foo", 0);
+        m_view->findText("foo", 0);
+        QTRY_COMPARE(signalSpy.count(), 2);
+        QTRY_VERIFY(m_view->selectedText().isEmpty());
+
+        QCOMPARE(signalSpy.at(0).value(0).value<QWebEngineFindTextResult>().numberOfMatches(), 0);
+        QCOMPARE(signalSpy.at(1).value(0).value<QWebEngineFindTextResult>().numberOfMatches(), 1);
     }
 }
 
@@ -4408,6 +4422,26 @@ void tst_QWebEnginePage::customUserAgentInNewTab()
     QTRY_VERIFY(page.newPage);
     QTRY_VERIFY(!lastUserAgent.isEmpty());
     QCOMPARE(lastUserAgent, profile2.httpUserAgent().toUtf8());
+}
+
+void tst_QWebEnginePage::renderProcessCrashed()
+{
+    using Status = QWebEnginePage::RenderProcessTerminationStatus;
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    bool done = false;
+    Status status;
+    connect(&page, &QWebEnginePage::renderProcessTerminated, [&](Status newStatus) {
+        status = newStatus;
+        done = true;
+    });
+    page.load(QUrl("chrome://crash"));
+    QTRY_VERIFY_WITH_TIMEOUT(done, 20000);
+    // The status depends on whether stack traces are enabled. With
+    // --disable-in-process-stack-traces we get an AbnormalTerminationStatus,
+    // otherwise a CrashedTerminationStatus.
+    QVERIFY(status == QWebEnginePage::CrashedTerminationStatus ||
+            status == QWebEnginePage::AbnormalTerminationStatus);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

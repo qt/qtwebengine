@@ -53,7 +53,7 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Controls.Material 2.12
 import QtQuick.Layouts 1.12
-import QtWebEngine 1.11
+import QtWebEngine 1.10
 
 ColumnLayout {
     id: root

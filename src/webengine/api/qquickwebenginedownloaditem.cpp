@@ -521,9 +521,9 @@ void QQuickWebEngineDownloadItem::setDownloadDirectory(const QString &directory)
             Q_EMIT downloadDirectoryChanged();
         }
 
-        QString newFileName = QFileInfo(d->profile->d_ptr->profileAdapter()->updateDownloadPath(d->downloadId,
-                                                                                                d->downloadDirectory,
-                                                                                                d->suggestedFileName)).fileName();
+        QString newFileName = QFileInfo(d->profile->d_ptr->profileAdapter()->determineDownloadPath(d->downloadDirectory,
+                                                                                                   d->suggestedFileName,
+                                                                                                   d->startTime)).fileName();
         if (d->downloadFileName != newFileName) {
             d->downloadFileName = newFileName;
             Q_EMIT pathChanged();

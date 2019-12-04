@@ -340,7 +340,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
 
     // May call SetNeedsBeginFrames
     host()->SetView(this);
-    host()->GetProcess()->AddObserver(this);
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
@@ -354,7 +353,6 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 
     if (text_input_manager_)
         text_input_manager_->RemoveObserver(this);
-    host()->GetProcess()->RemoveObserver(this);
 
     m_touchSelectionController.reset();
     m_touchSelectionControllerClient.reset();
@@ -702,18 +700,6 @@ void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range&, const
 {
     // FIXME: not implemented?
     QT_NOT_YET_IMPLEMENTED
-}
-
-void RenderWidgetHostViewQt::RenderProcessExited(content::RenderProcessHost *host,
-                                                 const content::ChildProcessTerminationInfo &info)
-{
-    Q_UNUSED(host);
-    // RenderProcessHost::FastShutdownIfPossible results in TERMINATION_STATUS_STILL_RUNNING
-    if (m_adapterClient && info.status != base::TERMINATION_STATUS_STILL_RUNNING) {
-        m_adapterClient->renderProcessTerminated(
-                    m_adapterClient->renderProcessExitStatus(info.status),
-                    info.exit_code);
-    }
 }
 
 void RenderWidgetHostViewQt::RenderProcessGone()

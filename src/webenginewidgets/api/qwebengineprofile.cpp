@@ -227,6 +227,7 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->downloadId = info.id;
     itemPrivate->downloadState = info.accepted ? QWebEngineDownloadItem::DownloadInProgress
                                                : QWebEngineDownloadItem::DownloadRequested;
+    itemPrivate->startTime = info.startTime;
     itemPrivate->downloadDirectory = QFileInfo(info.path).path();
     itemPrivate->downloadFileName = QFileInfo(info.path).fileName();
     itemPrivate->suggestedFileName = info.suggestedFileName;

@@ -102,7 +102,6 @@ struct MultipleMouseClickHelper
 
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
-    , public content::RenderProcessHostObserver
     , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
@@ -175,10 +174,6 @@ public:
     void ResetFallbackToFirstNavigationSurface() override;
     void DidStopFlinging() override;
     std::unique_ptr<content::SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
-
-    // RenderProcessHostObserver implementation.
-    void RenderProcessExited(content::RenderProcessHost *host,
-                             const content::ChildProcessTerminationInfo &info) override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;

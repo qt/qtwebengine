@@ -126,7 +126,7 @@ content::DesktopMediaID getDefaultScreenId()
     //
     // [1]: webrtc::InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread
 
-#if QT_CONFIG(webengine_webrtc) && !defined(USE_X11)
+#if QT_CONFIG(webengine_webrtc) && !defined(WEBRTC_USE_X11)
     // Source id patterns are different across platforms.
     // On Linux, the hardcoded value "0" is used.
     // On Windows, the screens are enumerated consecutively in increasing order from 0.
