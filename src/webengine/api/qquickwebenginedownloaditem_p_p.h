@@ -71,6 +71,7 @@ public:
     ~QQuickWebEngineDownloadItemPrivate();
 
     quint32 downloadId;
+    qint64 startTime;
     QQuickWebEngineDownloadItem::DownloadState downloadState;
     QQuickWebEngineDownloadItem::SavePageFormat savePageFormat;
     QQuickWebEngineDownloadItem::DownloadType type;

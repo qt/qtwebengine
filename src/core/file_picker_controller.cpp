@@ -46,10 +46,11 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/file_select_listener.h"
 
-#include <QFileInfo>
 #include <QDir>
-#include <QVariant>
+#include <QFileInfo>
+#include <QMimeDatabase>
 #include <QStringList>
+#include <QVariant>
 
 namespace QtWebEngineCore {
 
@@ -163,6 +164,53 @@ FilePickerController::FileChooserMode FilePickerController::mode() const
 QString FilePickerController::defaultFileName() const
 {
     return m_defaultFileName;
+}
+
+QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTypes)
+{
+    QStringList nameFilters;
+    QStringList acceptedGlobs;
+    QMimeDatabase mimeDatabase;
+
+    for (QString type : acceptedMimeTypes) {
+        if (type.startsWith(".")) {
+            // A single suffix
+            // Filename.type doesn't have to exist and mimeTypeForFile() supports
+            // custom suffixes as valid (but unknown) MIME types.
+            const QMimeType &mimeType = mimeDatabase.mimeTypeForFile("filename" + type);
+            if (mimeType.isValid()) {
+                QString glob = "*" + type;
+                acceptedGlobs.append(glob);
+                nameFilters.append(mimeType.comment() + " (" + glob + ")");
+            }
+        } else if (type.contains("/") && !type.endsWith("*")) {
+            // All suffixes for a given MIME type
+            const QMimeType &mimeType = mimeDatabase.mimeTypeForName(type);
+            if (mimeType.isValid() && !mimeType.globPatterns().isEmpty()) {
+                QString globs = mimeType.globPatterns().join(" ");
+                acceptedGlobs.append(globs);
+                nameFilters.append(mimeType.comment() + " (" + globs + ")");
+            }
+        } else if (type.endsWith("/*")) {
+            // All MIME types for audio/*, image/* or video/*
+            // as separate filters as Chrome does
+            static const QList<QMimeType> &allMimeTypes = mimeDatabase.allMimeTypes();
+            type = type.remove("/*");
+            for (const QMimeType &m : allMimeTypes) {
+                if (m.name().startsWith(type) && !m.globPatterns().isEmpty()) {
+                    QString globs = m.globPatterns().join(" ");
+                    acceptedGlobs.append(globs);
+                    nameFilters.append(m.comment() + " (" + globs + ")");
+                }
+            }
+        } else {
+            NOTREACHED();
+        }
+    }
+
+    nameFilters.prepend(QObject::tr("Accepted types") + " (" + acceptedGlobs.join(" ") + ")");
+
+    return nameFilters;
 }
 
 } // namespace

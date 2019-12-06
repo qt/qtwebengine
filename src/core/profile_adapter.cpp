@@ -712,13 +712,6 @@ QString ProfileAdapter::determineDownloadPath(const QString &downloadDirectory, 
     return suggestedFilePath;
 }
 
-QString ProfileAdapter::updateDownloadPath(int downloadId, const QString &directory, const QString &fileName)
-{
-    download::DownloadItem *download = m_downloadManagerDelegate->findDownloadById(downloadId);
-    Q_ASSERT(download);
-    return determineDownloadPath(directory, fileName, download->GetStartTime().ToTimeT());
-}
-
 #if QT_CONFIG(ssl)
 QWebEngineClientCertificateStore *ProfileAdapter::clientCertificateStore()
 {

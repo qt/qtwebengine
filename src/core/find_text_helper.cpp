@@ -108,6 +108,7 @@ void FindTextHelper::startFinding(const QString &findText, bool caseSensitively,
         // waiting for it forever.
         // Assume that any unfinished find has been unsuccessful when a new one is started
         // to cover that case.
+        m_lastCompletedFindRequestId = m_currentFindRequestId;
         m_viewClient->findTextFinished(QWebEngineFindTextResult());
         invokeResultCallback(m_currentFindRequestId, 0);
     }

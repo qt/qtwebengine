@@ -61,6 +61,7 @@ TestWebEngineView {
             FilePickerParams.filePickerOpened = false
             FilePickerParams.selectFiles = false
             FilePickerParams.selectedFilesUrl = []
+            FilePickerParams.nameFilters = []
             titleSpy.clear()
             terminationSpy.clear()
         }
@@ -259,6 +260,34 @@ TestWebEngineView {
             tryVerify(function() { return finished; });
             tryCompare(webEngineView, "title", row.expected);
             webEngineView.fileDialogRequested.disconnect(acceptedFileHandler);
+        }
+
+        function test_acceptFileTypes_data() {
+            return [
+                   { tag: "CustomSuffix", input: ".pug", expected: ".pug", exactMatch: false},
+                   { tag: "CustomMime", input: "dog/pug", expected: "Accepted types ()", exactMatch: true},
+                   { tag: "CustomGlob", input: "dog/*", expected: "Accepted types ()", exactMatch: true},
+                   { tag: "Invalid", input: "---", expected: "Accepted types ()", exactMatch: true},
+                   { tag: "Jpeg", input: "image/jpeg", expected: ".jpeg", exactMatch: false}
+            ];
+        }
+
+        function test_acceptFileTypes(row) {
+            var expectedFileName;
+
+            webEngineView.url = Qt.resolvedUrl("accepttypes.html");
+            verify(webEngineView.waitForLoadSucceeded());
+
+            webEngineView.runJavaScript("setAcceptType('" + row.input + "');");
+            tryCompare(webEngineView, "title", row.input);
+
+            keyClick(Qt.Key_Enter); // Focus is on the button. Open FileDialog.
+            tryCompare(FilePickerParams, "filePickerOpened", true);
+
+            if (row.exactMatch)
+                compare(FilePickerParams.nameFilters[0], row.expected);
+            else
+                verify(FilePickerParams.nameFilters[0].includes(row.expected));
         }
     }
 }

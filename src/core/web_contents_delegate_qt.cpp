@@ -286,10 +286,17 @@ void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_
 
 void WebContentsDelegateQt::RenderProcessGone(base::TerminationStatus status)
 {
+    // RenderProcessHost::FastShutdownIfPossible results in TERMINATION_STATUS_STILL_RUNNING
+    if (status != base::TERMINATION_STATUS_STILL_RUNNING) {
+        m_viewClient->renderProcessTerminated(
+                m_viewClient->renderProcessExitStatus(status),
+                web_contents()->GetCrashedErrorCode());
+    }
+
     // Based one TabLoadTracker::RenderProcessGone
 
-    if (status == base::TerminationStatus::TERMINATION_STATUS_NORMAL_TERMINATION
-        || status == base::TerminationStatus::TERMINATION_STATUS_STILL_RUNNING) {
+    if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION
+        || status == base::TERMINATION_STATUS_STILL_RUNNING) {
         return;
     }
 

@@ -140,7 +140,7 @@ public:
         int downloadInterruptReason;
         WebContentsAdapterClient *page;
         QString suggestedFileName;
-        time_t startTime;
+        qint64 startTime;
     };
 
     virtual ~ProfileAdapterClient() { }

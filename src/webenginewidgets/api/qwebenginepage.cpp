@@ -1426,10 +1426,14 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case CopyLinkToClipboard:
         if (menuData && !menuData->unfilteredLinkUrl().isEmpty()) {
             QString urlString = menuData->unfilteredLinkUrl().toString(QUrl::FullyEncoded);
-            QString title = menuData->linkText().toHtmlEscaped();
+            QString linkText = menuData->linkText().toHtmlEscaped();
+            QString title = menuData->titleText();
+            if (!title.isEmpty())
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\">") + title + QStringLiteral("</a>");
+            QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral(">")
+                         + linkText + QStringLiteral("</a>");
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << menuData->unfilteredLinkUrl());
             qApp->clipboard()->setMimeData(data);
@@ -1452,12 +1456,15 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case CopyImageUrlToClipboard:
         if (menuData && menuData->mediaUrl().isValid() && menuData->mediaType() == WebEngineContextMenuData::MediaTypeImage) {
             QString urlString = menuData->mediaUrl().toString(QUrl::FullyEncoded);
-            QString title = menuData->linkText();
+            QString alt = menuData->altText();
+            if (!alt.isEmpty())
+                alt = QStringLiteral(" alt=\"%1\"").arg(alt.toHtmlEscaped());
+            QString title = menuData->titleText();
             if (!title.isEmpty())
-                title = QStringLiteral(" alt=\"%1\"").arg(title.toHtmlEscaped());
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral("></img>");
+            QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + alt + QStringLiteral("></img>");
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << menuData->mediaUrl());
             qApp->clipboard()->setMimeData(data);
@@ -1475,12 +1482,17 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
                  menuData->mediaType() == WebEngineContextMenuData::MediaTypeVideo))
         {
             QString urlString = menuData->mediaUrl().toString(QUrl::FullyEncoded);
+            QString title = menuData->titleText();
+            if (!title.isEmpty())
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
             if (menuData->mediaType() == WebEngineContextMenuData::MediaTypeAudio)
-                data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"></audio>"));
+                data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"") + title +
+                              QStringLiteral("></audio>"));
             else
-                data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"></video>"));
+                data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"") + title +
+                              QStringLiteral("></video>"));
             data->setUrls(QList<QUrl>() << menuData->mediaUrl());
             qApp->clipboard()->setMimeData(data);
         }
@@ -2292,14 +2304,12 @@ ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, QWebEnginePage::FileSelec
 QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes)
 {
 #if QT_CONFIG(filedialog)
-    // FIXME: Should we expose this in QWebPage's API ? Right now it is very open and can contain a mix and match of file extensions (which QFileDialog
-    // can work with) and mimetypes ranging from text/plain or images/* to application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-    Q_UNUSED(acceptedMimeTypes);
+    const QStringList &filter = FilePickerController::nameFilters(acceptedMimeTypes);
     QStringList ret;
     QString str;
     switch (static_cast<FilePickerController::FileChooserMode>(mode)) {
     case FilePickerController::OpenMultiple:
-        ret = QFileDialog::getOpenFileNames(view(), QString());
+        ret = QFileDialog::getOpenFileNames(view(), QString(), QString(), filter.join(";;"), nullptr, QFileDialog::HideNameFilterDetails);
         break;
     // Chromium extension, not exposed as part of the public API for now.
     case FilePickerController::UploadFolder:
@@ -2313,7 +2323,7 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
             ret << str;
         break;
     case FilePickerController::Open:
-        str = QFileDialog::getOpenFileName(view(), QString(), oldFiles.first());
+        str = QFileDialog::getOpenFileName(view(), QString(), oldFiles.first(), filter.join(";;"), nullptr, QFileDialog::HideNameFilterDetails);
         if (!str.isNull())
             ret << str;
         break;

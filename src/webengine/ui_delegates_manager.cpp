@@ -486,6 +486,8 @@ void UIDelegatesManager::showFilePicker(QSharedPointer<FilePickerController> con
         Q_UNREACHABLE();
     }
 
+    filePicker->setProperty("nameFilters", FilePickerController::nameFilters(controller->acceptedMimeTypes()));
+
     QQmlProperty filesPickedSignal(filePicker, QStringLiteral("onFilesSelected"));
     CHECK_QML_SIGNAL_PROPERTY(filesPickedSignal, filePickerComponent->url());
     QQmlProperty rejectSignal(filePicker, QStringLiteral("onRejected"));

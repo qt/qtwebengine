@@ -33,12 +33,14 @@ QtObject {
     property bool selectMultiple: false;
     property bool selectExisting: false;
     property bool selectFolder: false;
+    property var nameFilters: [];
 
     signal filesSelected(var fileList);
     signal rejected();
 
     function open() {
         FilePickerParams.filePickerOpened = true;
+        FilePickerParams.nameFilters = nameFilters;
         if (FilePickerParams.selectFiles)
             filesSelected(FilePickerParams.selectedFilesUrl)
         else

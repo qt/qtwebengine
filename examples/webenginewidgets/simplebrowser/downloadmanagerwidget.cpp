@@ -69,12 +69,20 @@ void DownloadManagerWidget::downloadRequested(QWebEngineDownloadItem *download)
 {
     Q_ASSERT(download && download->state() == QWebEngineDownloadItem::DownloadRequested);
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QString path = QFileDialog::getSaveFileName(this, tr("Save as"), QDir(download->downloadDirectory()).filePath(download->downloadFileName()));
+#else
+    QString path = QFileDialog::getSaveFileName(this, tr("Save as"), download->path());
+#endif
     if (path.isEmpty())
         return;
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     download->setDownloadDirectory(QFileInfo(path).path());
     download->setDownloadFileName(QFileInfo(path).fileName());
+#else
+    download->setPath(path);
+#endif
     download->accept();
     add(new DownloadWidget(download));
 

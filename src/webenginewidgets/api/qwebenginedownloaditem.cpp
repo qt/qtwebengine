@@ -599,9 +599,9 @@ void QWebEngineDownloadItem::setDownloadDirectory(const QString &directory)
     if (!directory.isEmpty() && d->downloadDirectory != directory)
         d->downloadDirectory = directory;
 
-    d->downloadFileName = QFileInfo(d->profile->profileAdapter()->updateDownloadPath(d->downloadId,
-                                                                                     d->downloadDirectory,
-                                                                                     d->suggestedFileName)).fileName();
+    d->downloadFileName = QFileInfo(d->profile->profileAdapter()->determineDownloadPath(d->downloadDirectory,
+                                                                                        d->suggestedFileName,
+                                                                                        d->startTime)).fileName();
 }
 
 /*!

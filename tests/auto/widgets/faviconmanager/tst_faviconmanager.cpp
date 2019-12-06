@@ -522,10 +522,10 @@ void tst_FaviconManager::touchIconWithSameURL()
                     "<link rel='icon' type='image/png' href='" + icon + "'/>"
                     "<link rel='apple-touch-icon' type='image/png' href='" + icon + "'/>"
                     "</html>");
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
 
     // The default favicon has to be loaded even if its URL is also set as a touch icon while touch icons are disabled.
-    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
     QCOMPARE(m_page->iconUrl().toString(), icon);
     QTRY_COMPARE(iconChangedSpy.count(), 1);
 

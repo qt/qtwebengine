@@ -51,6 +51,8 @@
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
 
+#include <QVariant>
+
 namespace QtWebEngineCore {
 
 // Calls cancel() when the URLRequest is destroyed.

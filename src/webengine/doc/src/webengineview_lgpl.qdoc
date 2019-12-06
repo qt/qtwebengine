@@ -1520,7 +1520,7 @@
     \qmlsignal WebEngineView::tooltipRequested(TooltipRequest request)
     \since QtWebEngine 1.10
 
-    This signal is emitted when the web page wants to show a tooltip at
+    This signal is emitted when the web page sends a \a request to show a tooltip at
     a specified position.
 
     \note Signal handlers need to call \c{request.accepted = true} to prevent a default tooltip from showing up.
