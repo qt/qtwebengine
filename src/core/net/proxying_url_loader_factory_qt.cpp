@@ -66,6 +66,7 @@
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
+#include <QVariant>
 
 // originally based on aw_proxying_url_loader_factory.cc:
 // Copyright 2018 The Chromium Authors. All rights reserved.

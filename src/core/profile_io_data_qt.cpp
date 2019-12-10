@@ -108,6 +108,7 @@
 #endif
 
 #include <mutex>
+#include <QVariant>
 
 namespace QtWebEngineCore {
 
