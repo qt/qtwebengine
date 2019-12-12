@@ -1901,6 +1901,11 @@ std::unique_ptr<content::SyntheticGestureTarget> RenderWidgetHostViewQt::CreateS
     return nullptr;
 }
 
+ui::Compositor *RenderWidgetHostViewQt::GetCompositor()
+{
+    return m_uiCompositor.get();
+}
+
 void RenderWidgetHostViewQt::UpdateNeedsBeginFramesInternal()
 {
     if (m_enableViz)
