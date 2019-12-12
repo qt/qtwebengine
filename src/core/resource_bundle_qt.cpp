@@ -66,9 +66,7 @@ void ResourceBundle::LoadCommonResources()
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id)
 {
-    LOG(WARNING) << "Unable to load image with id " << resource_id;
-    NOTREACHED();  // Want to assert in debug mode.
-    return GetEmptyImage();
+    return GetImageNamed(resource_id);
 }
 
 // static
