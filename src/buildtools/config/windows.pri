@@ -15,7 +15,7 @@ clang_cl {
     clang_prefix = $$join(clang_dir,,,"\..")
     gn_args += \
         is_clang=true \
-        use_ldd=true \
+        use_lld=true \
         clang_use_chrome_plugins=false \
         clang_base_path=\"$$system_path($$clean_path($$clang_prefix))\"
 } else {
