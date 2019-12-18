@@ -1914,7 +1914,8 @@ void tst_QWebEnginePage::urlChange()
     QUrl testUrl("http://test.qt.io/");
     m_view->setHtml(QStringLiteral("<h1>Test</h1"), testUrl);
 
-    QTRY_COMPARE(urlSpy.size(), 1);
+    QTRY_COMPARE(urlSpy.size(), 2);
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), QUrl("data:text/html;charset=UTF-8,%3Ch1%3ETest%3C%2Fh1"));
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), testUrl);
 }
 
@@ -2711,8 +2712,8 @@ void tst_QWebEnginePage::setUrlThenLoads()
     const QUrl urlToLoad2("qrc:/resources/test1.html");
 
     m_page->load(urlToLoad1);
-    QCOMPARE(m_page->url(), urlToLoad1);
-    QCOMPARE(m_page->requestedUrl(), urlToLoad1);
+    QTRY_COMPARE(m_page->url(), urlToLoad1);
+    QTRY_COMPARE(m_page->requestedUrl(), urlToLoad1);
     // baseUrlSync spins an event loop and this sometimes return the next result.
     // QCOMPARE(baseUrlSync(m_page), baseUrl);
     QTRY_COMPARE(startedSpy.count(), 2);
@@ -2726,8 +2727,8 @@ void tst_QWebEnginePage::setUrlThenLoads()
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
 
     m_page->load(urlToLoad2);
-    QCOMPARE(m_page->url(), urlToLoad2);
-    QCOMPARE(m_page->requestedUrl(), urlToLoad2);
+    QTRY_COMPARE(m_page->url(), urlToLoad2);
+    QTRY_COMPARE(m_page->requestedUrl(), urlToLoad2);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
     QTRY_COMPARE(startedSpy.count(), 3);
 

@@ -230,11 +230,14 @@ void QWebEnginePagePrivate::titleChanged(const QString &title)
     Q_EMIT q->titleChanged(title);
 }
 
-void QWebEnginePagePrivate::urlChanged(const QUrl &url)
+void QWebEnginePagePrivate::urlChanged()
 {
     Q_Q(QWebEnginePage);
-    explicitUrl = QUrl();
-    Q_EMIT q->urlChanged(url);
+    QUrl qurl = adapter->activeUrl();
+    if (url != qurl) {
+        url = qurl;
+        Q_EMIT q->urlChanged(qurl);
+    }
 }
 
 void QWebEnginePagePrivate::iconChanged(const QUrl &url)
@@ -313,8 +316,6 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
     }
 
     isLoading = false;
-    if (success)
-        explicitUrl = QUrl();
     // Delay notifying failure until the error-page is done loading.
     // Error-pages are not loaded on failures due to abort.
     if (success || errorCode == -3 /* ERR_ABORTED*/ || !settings->testAttribute(QWebEngineSettings::ErrorPageEnabled)) {
@@ -2077,14 +2078,17 @@ QString QWebEnginePage::title() const
 void QWebEnginePage::setUrl(const QUrl &url)
 {
     Q_D(QWebEnginePage);
-    d->explicitUrl = url;
+    if (d->url != url) {
+        d->url = url;
+        emit urlChanged(url);
+    }
     load(url);
 }
 
 QUrl QWebEnginePage::url() const
 {
     Q_D(const QWebEnginePage);
-    return d->explicitUrl.isValid() ? d->explicitUrl : d->adapter->activeUrl();
+    return d->url;
 }
 
 QUrl QWebEnginePage::requestedUrl() const

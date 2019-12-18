@@ -710,8 +710,6 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         if (!adapter)
             return;
         adapter->webContents()->GetController().LoadURLWithParams(params);
-        // Follow chrome::Navigate and invalidate the URL immediately.
-        adapter->m_webContentsDelegate->NavigationStateChanged(adapter->webContents(), content::INVALIDATE_TYPE_URL);
         adapter->focusIfNecessary();
     };
 
@@ -769,7 +767,7 @@ void WebContentsAdapter::save(const QString &filePath, int savePageFormat)
 QUrl WebContentsAdapter::activeUrl() const
 {
     CHECK_INITIALIZED(QUrl());
-    return m_webContentsDelegate->url();
+    return m_webContentsDelegate->url(webContents());
 }
 
 QUrl WebContentsAdapter::requestedUrl() const
@@ -1894,7 +1892,7 @@ void WebContentsAdapter::discard()
     // Based on TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard
 
     if (m_webContents->IsLoading()) {
-        m_webContentsDelegate->didFailLoad(m_webContentsDelegate->url(), net::Error::ERR_ABORTED,
+        m_webContentsDelegate->didFailLoad(m_webContentsDelegate->url(webContents()), net::Error::ERR_ABORTED,
                                            QStringLiteral("Discarded"));
     }
 
