@@ -40,7 +40,7 @@ qtConfig(build-qtwebengine-core):qtConfig(webengine-core-support) {
 
 !qtConfig(webengine-core-support): qtConfig(build-qtwebengine-core) {
     !qtwebengine_makeCheckError():!isEmpty(skipBuildReason):!build_pass {
-        errorbuild.commands = @echo Modules will not be built. $${skipBuildReason}
+        errorbuild.commands = @echo $$shell_quote(Modules will not be built. $${skipBuildReason})
         errorbuild.CONFIG = phony
         QMAKE_EXTRA_TARGETS += errorbuild
         first.depends += errorbuild
