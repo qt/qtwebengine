@@ -229,6 +229,9 @@ private Q_SLOTS:
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
+    static bool isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
+    static bool isTrueJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
+    static bool isEmptyListJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
 
     QWebEngineView* m_view;
     QWebEnginePage* m_page;
@@ -1682,34 +1685,51 @@ void tst_QWebEnginePage::openWindowDefaultSize()
     QCOMPARE(requestedGeometry.height(), 100);
 }
 
+bool tst_QWebEnginePage::isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript)
+{
+    QVariant result = evaluateJavaScriptSync(page, javaScript);
+    return !result.isNull() && result.isValid() && result == QVariant(false);
+}
+
+bool tst_QWebEnginePage::isTrueJavaScriptResult(QWebEnginePage *page, const QString &javaScript)
+{
+    QVariant result = evaluateJavaScriptSync(page, javaScript);
+    return !result.isNull() && result.isValid() && result == QVariant(true);
+}
+
+bool tst_QWebEnginePage::isEmptyListJavaScriptResult(QWebEnginePage *page, const QString &javaScript)
+{
+    QVariant result = evaluateJavaScriptSync(page, javaScript);
+    return !result.isNull() && result.isValid() && result == QList<QVariant>();
+}
+
 void tst_QWebEnginePage::runJavaScript()
 {
     TestPage page;
     QVariant result;
-    QVariantList list;
     QVariantMap map;
 
-    QTRY_VERIFY(!evaluateJavaScriptSync(&page, "false").toBool());
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "2").toInt(), 2);
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "2.5").toDouble(), 2.5);
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "\"Test\"").toString(), "Test");
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "[]").toList(), list);
+    QVERIFY(isFalseJavaScriptResult(&page, "false"));
+    QCOMPARE(evaluateJavaScriptSync(&page, "2").toInt(), 2);
+    QCOMPARE(evaluateJavaScriptSync(&page, "2.5").toDouble(), 2.5);
+    QCOMPARE(evaluateJavaScriptSync(&page, "\"Test\"").toString(), "Test");
+    QVERIFY(isEmptyListJavaScriptResult(&page, "[]"));
 
     map.insert(QStringLiteral("test"), QVariant(2));
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "var el = {\"test\": 2}; el").toMap(), map);
+    QCOMPARE(evaluateJavaScriptSync(&page, "var el = {\"test\": 2}; el").toMap(), map);
 
-    QTRY_VERIFY(evaluateJavaScriptSync(&page, "null").isNull());
+    QVERIFY(evaluateJavaScriptSync(&page, "null").isNull());
 
     result = evaluateJavaScriptSync(&page, "undefined");
-    QTRY_VERIFY(result.isNull() && !result.isValid());
+    QVERIFY(result.isNull() && !result.isValid());
 
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "new Date(42000)").toDate(), QVariant(42.0).toDate());
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "new ArrayBuffer(8)").toByteArray(), QByteArray(8, 0));
+    QCOMPARE(evaluateJavaScriptSync(&page, "new Date(42000)").toDate(), QVariant(42.0).toDate());
+    QCOMPARE(evaluateJavaScriptSync(&page, "new ArrayBuffer(8)").toByteArray(), QByteArray(8, 0));
 
     result = evaluateJavaScriptSync(&page, "(function(){})");
-    QTRY_VERIFY(result.isNull() && !result.isValid());
+    QVERIFY(result.isNull() && !result.isValid());
 
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "new Promise(function(){})"), QVariant(QVariantMap{}));
+    QCOMPARE(evaluateJavaScriptSync(&page, "new Promise(function(){})"), QVariant(QVariantMap{}));
 }
 
 void tst_QWebEnginePage::runJavaScriptDisabled()
@@ -1762,8 +1782,8 @@ void tst_QWebEnginePage::fullScreenRequested()
     page->load(QUrl("qrc:///resources/fullscreen.html"));
     QTRY_COMPARE(loadSpy.count(), 1);
 
-    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitFullscreenEnabled").toBool());
-    QTRY_VERIFY(!evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
+    QTRY_VERIFY(isTrueJavaScriptResult(page, "document.webkitFullscreenEnabled"));
+    QVERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 
     // FullscreenRequest must be a user gesture
     bool acceptRequest = true;
@@ -1773,15 +1793,15 @@ void tst_QWebEnginePage::fullScreenRequested()
     });
 
     QTest::keyPress(view.focusProxy(), Qt::Key_Space);
-    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
-    QVariant result = evaluateJavaScriptSync(page, "document.webkitExitFullscreen()");
-    QTRY_VERIFY(result.isNull() && !result.isValid());
+    QTRY_VERIFY(isTrueJavaScriptResult(page, "document.webkitIsFullScreen"));
+    page->runJavaScript("document.webkitExitFullscreen()");
+    QTRY_VERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 
     acceptRequest = false;
 
-    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitFullscreenEnabled").toBool());
+    QVERIFY(isTrueJavaScriptResult(page, "document.webkitFullscreenEnabled"));
     QTest::keyPress(view.focusProxy(), Qt::Key_Space);
-    QTRY_VERIFY(!evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
+    QTRY_VERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 }
 
 void tst_QWebEnginePage::quotaRequested()
