@@ -316,7 +316,8 @@
         },
         "webengine-ninja": {
             "label": "system ninja",
-            "type": "detectNinja"
+            "type": "detectNinja",
+            "log": "path"
         },
         "webengine-python2": {
             "label": "python2",
@@ -430,7 +431,10 @@
         "webengine-system-ninja": {
             "label": "Use System Ninja",
             "condition": "tests.webengine-ninja",
-            "output": [ "privateFeature" ]
+            "output": [
+                "privateFeature",
+                { "type": "varAssign", "name": "QMAKE_NINJA", "value": "tests.webengine-ninja.path" }
+            ]
         },
         "webengine-system-fontconfig": {
             "label": "fontconfig",

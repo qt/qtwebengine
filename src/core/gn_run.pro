@@ -6,11 +6,7 @@ TEMPLATE = aux
 
 qtConfig(debug_and_release): CONFIG += debug_and_release build_all
 
-qtConfig(webengine-system-ninja) {
-    QT_TOOL.ninja.binary = ninja
-} else {
-    QT_TOOL.ninja.binary = $$shell_quote($$shell_path($$ninjaPath()))
-}
+QT_TOOL.ninja.binary = $$shell_quote($$shell_path($$ninjaPath()))
 
 win32 {
     # Add the gnuwin32/bin subdir of qt5.git to PATH. Needed for calling bison and friends.

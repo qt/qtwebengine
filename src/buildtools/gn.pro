@@ -11,8 +11,6 @@ build_pass|!debug_and_release {
         buildgn.target = build_gn
         out = $$gnPath()
         out_path = $$dirname(out)
-        !qtConfig(webengine-system-ninja): ninja_path = $$ninjaPath()
-        else: ninja_path="ninja"
         # check if it is not already build
         !exists($$out) {
             src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
@@ -32,7 +30,7 @@ build_pass|!debug_and_release {
             !system("$$pythonPathForSystem() $$gn_configure") {
                 error("GN generation error!")
             }
-            !system("cd $$system_quote($$system_path($$out_path)) && $$ninja_path $$basename(out)" ) {
+            !system("cd $$system_quote($$system_path($$out_path)) && $$system_quote($$system_path($$ninjaPath())) $$basename(out)" ) {
                 error("GN build error!")
             }
         }

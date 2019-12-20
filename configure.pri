@@ -159,11 +159,17 @@ defineTest(qtConfTest_detectFlex) {
 }
 
 defineTest(qtConfTest_detectNinja) {
-    ninja = $$qtConfFindInPath("ninja$$EXE_SUFFIX")
+    ninja = $$qtConfFindInPath($$(NINJA) "ninja$$EXE_SUFFIX")
     !isEmpty(ninja) {
         qtLog("Found ninja from path: $$ninja")
         qtRunLoggedCommand("$$ninja --version", version)|return(false)
-        contains(version, "1.[7-9].*"): return(true)
+        contains(version, "1.[7-9].*") {
+            $${1}.path = $$ninja
+            export($${1}.path)
+            $${1}.cache += path
+            export($${1}.cache)
+            return(true)
+        }
         qtLog("Ninja version too old")
     }
     qtLog("Building own ninja")

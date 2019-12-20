@@ -57,10 +57,13 @@ defineReplace(pythonPathForSystem) {
 }
 
 defineReplace(ninjaPath) {
-    src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
-    out = $$shadowed($$absolute_path(ninja/ninja, $$src_3rd_party_dir))
-    win32: out = $${out}.exe
-    return($$out)
+    isEmpty(QMAKE_NINJA) {
+        src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
+        out = $$shadowed($$absolute_path(ninja/ninja, $$src_3rd_party_dir))
+        win32: out = $${out}.exe
+        QMAKE_NINJA = $$out
+    }
+    return($$QMAKE_NINJA)
 }
 
 defineReplace(gnPath) {
