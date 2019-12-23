@@ -39,6 +39,7 @@
 
 #include <QtPdf/qpdfnamespace.h>
 #include <QtCore/QObject>
+#include <QtCore/QRect>
 
 QT_BEGIN_NAMESPACE
 
@@ -52,6 +53,12 @@ public:
 
     Q_DECL_CONSTEXPR QPdf::RenderFlags renderFlags() const Q_DECL_NOTHROW { return static_cast<QPdf::RenderFlags>(bits.renderFlags); }
     Q_DECL_RELAXED_CONSTEXPR void setRenderFlags(QPdf::RenderFlags _renderFlags) Q_DECL_NOTHROW { bits.renderFlags = _renderFlags; }
+
+    Q_DECL_CONSTEXPR QRect scaledClipRect() const Q_DECL_NOTHROW { return m_clipRect; }
+    Q_DECL_RELAXED_CONSTEXPR void setScaledClipRect(const QRect &r) Q_DECL_NOTHROW { m_clipRect = r; }
+
+    Q_DECL_CONSTEXPR QSize scaledSize() const Q_DECL_NOTHROW { return m_scaledSize; }
+    Q_DECL_RELAXED_CONSTEXPR void setScaledSize(const QSize &s) Q_DECL_NOTHROW { m_scaledSize = s; }
 
 private:
     friend Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW;
@@ -68,13 +75,16 @@ private:
         Bits bits;
         quint64 data;
     };
+
+    QRect m_clipRect;
+    QSize m_scaledSize;
 };
 
 Q_DECLARE_TYPEINFO(QPdfDocumentRenderOptions, Q_PRIMITIVE_TYPE);
 
 Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW
 {
-    return lhs.data == rhs.data;
+    return lhs.data == rhs.data && lhs.m_clipRect == rhs.m_clipRect && lhs.m_scaledSize == rhs.m_scaledSize;
 }
 
 Q_DECL_CONSTEXPR inline bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW

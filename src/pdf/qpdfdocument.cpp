@@ -46,6 +46,7 @@
 #include <QHash>
 #include <QLoggingCategory>
 #include <QMutex>
+#include <QVector2D>
 
 QT_BEGIN_NAMESPACE
 
@@ -675,12 +676,41 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
     if (renderFlags & QPdf::RenderPathAliased)
         flags |= FPDF_RENDER_NO_SMOOTHPATH;
 
-    FPDF_RenderPageBitmap(bitmap, pdfPage, 0, 0, result.width(), result.height(), rotation, flags);
+    if (renderOptions.scaledClipRect().isValid()) {
+        const QRect &clipRect = renderOptions.scaledClipRect();
+
+        // TODO take rotation into account, like cpdf_page.cpp lines 145-178
+        float x0 = clipRect.left();
+        float y0 = clipRect.top();
+        float x1 = clipRect.left();
+        float y1 = clipRect.bottom();
+        float x2 = clipRect.right();
+        float y2 = clipRect.top();
+        QSizeF origSize = pageSize(page);
+        QVector2D pageScale(1, 1);
+        if (!renderOptions.scaledSize().isNull()) {
+            pageScale = QVector2D(renderOptions.scaledSize().width() / float(origSize.width()),
+                                  renderOptions.scaledSize().height() / float(origSize.height()));
+        }
+        FS_MATRIX matrix {(x2 - x0) / result.width() * pageScale.x(),
+                          (y2 - y0) / result.width() * pageScale.x(),
+                          (x1 - x0) / result.height() * pageScale.y(),
+                          (y1 - y0) / result.height() * pageScale.y(), -x0, -y0};
+
+        FS_RECTF clipRectF { 0, 0, float(imageSize.width()), float(imageSize.height()) };
+
+        FPDF_RenderPageBitmapWithMatrix(bitmap, pdfPage, &matrix, &clipRectF, flags);
+        qCDebug(qLcDoc) << "matrix" << matrix.a << matrix.b << matrix.c << matrix.d << matrix.e << matrix.f;
+        qCDebug(qLcDoc) << "page" << page << "region" << renderOptions.scaledClipRect()
+                        << "size" << imageSize << "took" << timer.elapsed() << "ms";
+    } else {
+        FPDF_RenderPageBitmap(bitmap, pdfPage, 0, 0, result.width(), result.height(), rotation, flags);
+        qCDebug(qLcDoc) << "page" << page << "size" << imageSize << "took" << timer.elapsed() << "ms";
+    }
 
     FPDFBitmap_Destroy(bitmap);
 
     FPDF_ClosePage(pdfPage);
-    qCDebug(qLcDoc) << "page" << page << imageSize << "took" << timer.elapsed() << "ms";
     return result;
 }
 
