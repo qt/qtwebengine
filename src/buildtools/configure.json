@@ -406,29 +406,6 @@
             "autoDetect": "features.private_tests",
             "output": [ "privateFeature" ]
         },
-        "build-qtpdf": {
-             "label": "Support Qt PDF rendering module",
-             "purpose": "Enables building the Qt PDF rendering module.",
-             "condition": "module.gui
-                            && features.webengine-python2
-                            && features.webengine-gperf
-                            && features.webengine-bison
-                            && features.webengine-flex
-                            && features.webengine-submodule
-                            && features.webengine-nowhitespace
-                            && features.webengine-arch-support
-                            && !features.webengine-no-platform-support
-                            && !config.static
-                            && (!config.linux || features.pkg-config)
-                            && (!config.win32 || features.webengine-winversion)",
-             "output": [ "privateFeature" ]
-        },
-        "webengine-developer-build": {
-            "label": "Developer build",
-            "purpose": "Enables the developer build configuration.",
-            "autoDetect": "features.private_tests",
-            "output": [ "privateFeature" ]
-        },
         "webengine-python2": {
             "label": "python2",
             "condition": "tests.webengine-python2",
