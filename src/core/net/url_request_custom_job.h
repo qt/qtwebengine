@@ -67,6 +67,7 @@ public:
     bool GetCharset(std::string *charset) override;
     void GetResponseInfo(net::HttpResponseInfo *info) override;
     bool IsRedirectResponse(GURL *location, int *http_status_code, bool *insecure_scheme_was_upgraded) override;
+    void SetExtraRequestHeaders(const net::HttpRequestHeaders &headers);
 
 protected:
     virtual ~URLRequestCustomJob();
@@ -78,6 +79,7 @@ private:
     std::string m_charset;
     GURL m_redirect;
     QIODevice *m_device;
+    int64_t m_firstBytePosition;
     int m_error;
     int m_pendingReadSize;
     int m_pendingReadPos;

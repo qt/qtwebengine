@@ -62,6 +62,7 @@ URLRequestCustomJob::URLRequestCustomJob(URLRequest *request,
     : URLRequestJob(request, networkDelegate)
     , m_proxy(new URLRequestCustomJobProxy(this, scheme, profileAdapter))
     , m_device(nullptr)
+    , m_firstBytePosition(0)
     , m_error(0)
     , m_pendingReadSize(0)
     , m_pendingReadPos(0)
@@ -182,6 +183,19 @@ bool URLRequestCustomJob::IsRedirectResponse(GURL *location, int *http_status_co
         return true;
     }
     return false;
+}
+
+void URLRequestCustomJob::SetExtraRequestHeaders(const HttpRequestHeaders &headers)
+{
+    std::string rangeHeader;
+    if (headers.GetHeader(HttpRequestHeaders::kRange, &rangeHeader)) {
+        std::vector<HttpByteRange> ranges;
+        if (HttpUtil::ParseRangeHeader(rangeHeader, &ranges)) {
+            // Chromium doesn't support multiple range requests in one single URL request.
+            if (ranges.size() == 1)
+                m_firstBytePosition = ranges[0].first_byte_position();
+        }
+    }
 }
 
 int URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize)
