@@ -40,7 +40,7 @@ qtConfig(build-qtwebengine-core):qtConfig(webengine-core-support) {
     }
 }
 
-qtConfig(build-qtpdf):qtConfig(webengine-core-support) {
+qtConfig(build-qtpdf):qtConfig(webengine-qtpdf-support) {
     pdf.depends = buildtools
     SUBDIRS += buildtools pdf plugins
     qtConfig(pdf-widgets) {
