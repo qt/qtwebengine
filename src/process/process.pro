@@ -46,6 +46,11 @@ qtConfig(build_all): CONFIG += build_all
 qtConfig(framework) {
     # Deploy the QtWebEngineProcess app bundle into the QtWebEngineCore framework.
     DESTDIR = $$MODULE_BASE_OUTDIR/lib/QtWebEngineCore.framework/Versions/5/Helpers
+
+    # Deploy the entitlements file so macdeployqt can use it.
+    entitlements.files = QtWebEngineProcess.entitlements
+    entitlements.path = Contents/Resources/
+    QMAKE_BUNDLE_DATA += entitlements
 } else {
     CONFIG -= app_bundle
     win32: DESTDIR = $$MODULE_BASE_OUTDIR/bin
