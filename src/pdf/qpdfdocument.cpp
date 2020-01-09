@@ -186,7 +186,35 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
     } else {
         device = newDevice;
         initiateAsyncLoadWithTotalSizeKnown(device->size());
-        checkComplete();
+        if (!avail) {
+            setStatus(QPdfDocument::Error);
+            return;
+        }
+
+        if (!doc)
+            tryLoadDocument();
+
+        if (!doc) {
+            updateLastError();
+            setStatus(QPdfDocument::Error);
+            return;
+        }
+
+        QPdfMutexLocker lock;
+        const int newPageCount = FPDF_GetPageCount(doc);
+        lock.unlock();
+        if (newPageCount != pageCount) {
+            pageCount = newPageCount;
+            emit q->pageCountChanged(pageCount);
+        }
+
+        // If it's a local file, and the first page is available, probably the whole document is available.
+        if (checkPageComplete(0)) {
+            setStatus(QPdfDocument::Ready);
+        } else {
+            updateLastError();
+            setStatus(QPdfDocument::Error);
+        }
     }
 }
 
@@ -309,6 +337,23 @@ void QPdfDocumentPrivate::checkComplete()
 
         setStatus(QPdfDocument::Ready);
     }
+}
+
+bool QPdfDocumentPrivate::checkPageComplete(int page)
+{
+    if (loadComplete)
+        return true;
+
+    QPdfMutexLocker lock;
+    int result = PDF_DATA_NOTAVAIL;
+    while (result == PDF_DATA_NOTAVAIL)
+        result = FPDFAvail_IsPageAvail(avail, page, this);
+    lock.unlock();
+
+    if (result == PDF_DATA_ERROR)
+        updateLastError();
+
+    return (result != PDF_DATA_ERROR);
 }
 
 void QPdfDocumentPrivate::setStatus(QPdfDocument::Status documentStatus)
@@ -581,7 +626,7 @@ QSizeF QPdfDocument::pageSize(int page) const
 */
 QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions)
 {
-    if (!d->doc)
+    if (!d->doc || !d->checkPageComplete(page))
         return QImage();
 
     const QPdfMutexLocker lock;

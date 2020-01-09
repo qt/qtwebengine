@@ -98,6 +98,7 @@ public:
     void _q_copyFromSequentialSourceDevice();
     void tryLoadDocument();
     void checkComplete();
+    bool checkPageComplete(int page);
     void setStatus(QPdfDocument::Status status);
 
     static FPDF_BOOL fpdf_IsDataAvail(struct _FX_FILEAVAIL* pThis, size_t offset, size_t size);
