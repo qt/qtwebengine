@@ -12,13 +12,18 @@ defineReplace(getTargetType) {
 
 defineReplace(filter_flag_values) {
     value_to_check = $$1
-    macos:equals(value_to_check, "$(EXPORT_ARCH_ARGS)") {
+    if (macos|ios):equals(value_to_check, "$(EXPORT_ARCH_ARGS)") {
         # EXPORT_ARCH_ARGS comes from qtbase/mkspecs/features/mac/default_post.prf which is a way
         # to figure out the architectures to pass to the compiler at Makefile time. Because this
         # variable expansion is not supported by GN, we filter it out. GN takes care of assigning
         # the architecture itself.
         return("")
     }
+    if (ios) {
+        equals(value_to_check, "$(EXPORT_QMAKE_XARCH_LFLAGS)"): return("")
+        equals(value_to_check, "$(EXPORT_QMAKE_XARCH_CFLAGS)"): return("")
+    }
+
     return($$value_to_check)
 }
 

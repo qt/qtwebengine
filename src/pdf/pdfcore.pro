@@ -56,6 +56,8 @@ msvc {
     QMAKE_CXXFLAGS_WARN_ON += -wd"4100"
 }
 
+ios: OBJECTS += $$NINJA_OBJECTS
+
 SOURCES += \
     qpdfbookmarkmodel.cpp \
     qpdfdocument.cpp \
