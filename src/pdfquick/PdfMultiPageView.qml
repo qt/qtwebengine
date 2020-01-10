@@ -156,10 +156,10 @@ Item {
                 anchors.centerIn: pinch.active ? undefined : parent
                 property size pagePointSize: document.pagePointSize(index)
                 property real pageScale: image.paintedWidth / pagePointSize.width
-                Image {
+                PdfPageImage {
                     id: image
-                    source: document.source
-                    currentFrame: index
+                    document: root.document
+                    currentPage: index
                     asynchronous: true
                     fillMode: Image.PreserveAspectFit
                     width: paper.pagePointSize.width * root.renderScale
@@ -290,7 +290,7 @@ Item {
                     model: PdfLinkModel {
                         id: linkModel
                         document: root.document
-                        page: image.currentFrame
+                        page: image.currentPage
                     }
                     delegate: Shape {
                         required property rect rect
@@ -337,7 +337,7 @@ Item {
                     id: selection
                     anchors.fill: parent
                     document: root.document
-                    page: image.currentFrame
+                    page: image.currentPage
                     renderScale: image.renderScale
                     fromPoint: textSelectionDrag.centroid.pressPosition
                     toPoint: textSelectionDrag.centroid.position

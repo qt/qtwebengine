@@ -497,6 +497,14 @@ QPdfDocument::DocumentError QPdfDocument::load(const QString &fileName)
     return d->lastError;
 }
 
+QString QPdfDocument::fileName() const
+{
+    const QFile *f = qobject_cast<QFile *>(d->device.data());
+    if (f)
+        return f->fileName();
+    return QString();
+}
+
 /*!
     \enum QPdfDocument::Status
 

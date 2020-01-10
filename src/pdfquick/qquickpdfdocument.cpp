@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qquickpdfdocument_p.h"
+#include <private/qpdffile_p.h>
 #include <QtCore/qstandardpaths.h>
 #include <QtQml/qqmlcontext.h>
 #include <QtQml/qqmlengine.h>
@@ -219,6 +220,18 @@ qreal QQuickPdfDocument::heightSumBeforePage(int page, qreal spacing, int facing
         ret += facingPagesHeight + spacing;
     }
     return ret;
+}
+
+/*!
+    \internal
+    Returns a QPdfFile instance that can carry this document down into
+    QPdfIOHandler::load(QIODevice *). It should not be used for other purposes.
+*/
+QPdfFile *QQuickPdfDocument::carrierFile()
+{
+    if (!m_carrierFile)
+        m_carrierFile = new QPdfFile(&m_doc);
+    return m_carrierFile;
 }
 
 void QQuickPdfDocument::updateMaxPageSize()

@@ -18,6 +18,7 @@ qt_internal_add_module(Pdf
         qpdfdestination.cpp qpdfdestination.h qpdfdestination_p.h
         qpdfdocument.cpp qpdfdocument.h qpdfdocument_p.h
         qpdfdocumentrenderoptions.h
+        qpdffile.cpp qpdffile_p.h
         qpdflinkmodel.cpp qpdflinkmodel_p.h qpdflinkmodel_p_p.h
         qpdfpagenavigation.cpp qpdfpagenavigation.h
         qpdfpagerenderer.cpp qpdfpagerenderer.h

@@ -168,10 +168,10 @@ Flickable {
         property real rotationModulus: Math.abs(root.pageRotation % 180)
         property bool rot90: rotationModulus > 45 && rotationModulus < 135
 
-        Image {
+        PdfPageImage {
             id: image
-            currentFrame: navigationStack.currentPage
-            source: document.status === PdfDocument.Ready ? document.source : ""
+            document: root.document
+            currentPage: navigationStack.currentPage
             asynchronous: true
             fillMode: Image.PreserveAspectFit
             rotation: root.pageRotation

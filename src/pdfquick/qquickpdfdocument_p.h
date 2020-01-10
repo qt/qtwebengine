@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QPdfFile;
+
 class Q_PDFQUICK_EXPORT QQuickPdfDocument : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
@@ -128,15 +130,18 @@ Q_SIGNALS:
 
 private:
     QPdfDocument &document() { return m_doc; }
+    QPdfFile *carrierFile();
     void updateMaxPageSize();
 
 private:
     QUrl m_source;
     QUrl m_resolvedSource;
     QPdfDocument m_doc;
+    QPdfFile *m_carrierFile = nullptr;
     QSizeF m_maxPageWidthHeight;
 
     friend class QQuickPdfLinkModel;
+    friend class QQuickPdfPageImage;
     friend class QQuickPdfSearchModel;
     friend class QQuickPdfSelection;
 

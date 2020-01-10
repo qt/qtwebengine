@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFIOHANDLER_H
-#define QPDFIOHANDLER_H
+#ifndef QQUICKPDFPAGEIMAGE_P_H
+#define QQUICKPDFPAGEIMAGE_P_H
 
 //
 //  W A R N I N G
@@ -51,43 +51,39 @@
 // We mean it.
 //
 
-#include <QtGui/qimageiohandler.h>
-#include <QtPdf/QPdfDocument>
+#include <QtPdfQuick/private/qtpdfquickglobal_p.h>
+#include <QtQuick/private/qquickimage_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfIOHandler : public QImageIOHandler
+class QQuickPdfDocument;
+class QQuickPdfPageImagePrivate;
+class Q_PDFQUICK_EXPORT QQuickPdfPageImage : public QQuickImage
 {
+    Q_OBJECT
+    Q_PROPERTY(QQuickPdfDocument* document READ document WRITE setDocument NOTIFY documentChanged FINAL)
+    Q_PROPERTY(int currentPage READ currentFrame WRITE setCurrentFrame NOTIFY currentFrameChanged FINAL)
+    QML_NAMED_ELEMENT(PdfPageImage)
+    QML_ADDED_IN_VERSION(6, 4)
+
 public:
-    QPdfIOHandler();
-    virtual ~QPdfIOHandler();
-    bool canRead() const override;
-    static bool canRead(QIODevice *device);
-    int currentImageNumber() const override;
-    QRect currentImageRect() const override;
-    int imageCount() const override;
-    bool read(QImage *image) override;
-    QVariant option(ImageOption option) const override;
-    void setOption(ImageOption option, const QVariant & value) override;
-    bool supportsOption(ImageOption option) const override;
-    bool jumpToImage(int frame) override;
-    bool jumpToNextImage() override;
+    QQuickPdfPageImage(QQuickItem *parent = nullptr);
+    ~QQuickPdfPageImage();
+
+    void setDocument(QQuickPdfDocument *document);
+    QQuickPdfDocument *document() const;
+
+signals:
+    void documentChanged();
+
+protected:
+    void load() override;
+    void documentStatusChanged();
 
 private:
-    bool load(QIODevice *device);
-
-private:
-    QPdfDocument *m_doc = nullptr;
-    int m_page = -1;
-
-    QRect m_clipRect;
-    QSize m_scaledSize;
-    QRect m_scaledClipRect;
-    QColor m_backColor = Qt::transparent;
-    bool m_loaded = false;
-    bool m_ownsDocument = false;
+    Q_DECLARE_PRIVATE(QQuickPdfPageImage)
 };
 
 QT_END_NAMESPACE
 
-#endif // QPDFIOHANDLER_H
+#endif // QQUICKPDFPAGEIMAGE_P_H

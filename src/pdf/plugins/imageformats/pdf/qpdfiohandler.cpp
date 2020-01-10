@@ -40,6 +40,7 @@
 #include "qpdfiohandler_p.h"
 #include <QLoggingCategory>
 #include <QPainter>
+#include <QtPdf/private/qpdffile_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -47,6 +48,12 @@ Q_LOGGING_CATEGORY(qLcPdf, "qt.imageformat.pdf")
 
 QPdfIOHandler::QPdfIOHandler()
 {
+}
+
+QPdfIOHandler::~QPdfIOHandler()
+{
+    if (m_ownsDocument)
+        delete m_doc;
 }
 
 bool QPdfIOHandler::canRead() const
@@ -76,14 +83,14 @@ int QPdfIOHandler::currentImageNumber() const
 
 QRect QPdfIOHandler::currentImageRect() const
 {
-    return QRect(QPoint(0, 0), m_doc.pageSize(m_page).toSize());
+    return QRect(QPoint(0, 0), m_doc->pageSize(m_page).toSize());
 }
 
 int QPdfIOHandler::imageCount() const
 {
     int ret = 0;
     if (const_cast<QPdfIOHandler *>(this)->load(device()))
-        ret = m_doc.pageCount();
+        ret = m_doc->pageCount();
     qCDebug(qLcPdf) << ret;
     return ret;
 }
@@ -91,12 +98,12 @@ int QPdfIOHandler::imageCount() const
 bool QPdfIOHandler::read(QImage *image)
 {
     if (load(device())) {
-        if (m_page >= m_doc.pageCount())
+        if (m_page >= m_doc->pageCount())
             return false;
         if (m_page < 0)
             m_page = 0;
         const bool xform = (m_clipRect.isValid() || m_scaledSize.isValid() || m_scaledClipRect.isValid());
-        QSize pageSize = m_doc.pageSize(m_page).toSize();
+        QSize pageSize = m_doc->pageSize(m_page).toSize();
         QSize finalSize = pageSize;
         QRectF bounds;
         if (xform && !finalSize.isEmpty()) {
@@ -139,7 +146,7 @@ bool QPdfIOHandler::read(QImage *image)
             options.setScaledSize(pageSize);
             image->fill(m_backColor.rgba());
             QPainter p(image);
-            QImage pageImage = m_doc.render(m_page, finalSize, options);
+            QImage pageImage = m_doc->render(m_page, finalSize, options);
             p.drawImage(0, 0, pageImage);
             p.end();
         }
@@ -156,7 +163,7 @@ QVariant QPdfIOHandler::option(ImageOption option) const
         return QImage::Format_ARGB32_Premultiplied;
     case Size:
         const_cast<QPdfIOHandler *>(this)->load(device());
-        return m_doc.pageSize(qMax(0, m_page));
+        return m_doc->pageSize(qMax(0, m_page));
     case ClipRect:
         return m_clipRect;
     case ScaledSize:
@@ -166,7 +173,7 @@ QVariant QPdfIOHandler::option(ImageOption option) const
     case BackgroundColor:
         return m_backColor;
     case Name:
-        return m_doc.metaData(QPdfDocument::Title);
+        return m_doc->metaData(QPdfDocument::Title);
     default:
         break;
     }
@@ -233,8 +240,18 @@ bool QPdfIOHandler::load(QIODevice *device)
         if (!canRead())
             return false;
 
-    m_doc.load(device);
-    m_loaded = (m_doc.error() == QPdfDocument::DocumentError::NoError);
+    QPdfFile *pdfFile = qobject_cast<QPdfFile *>(device);
+    if (pdfFile) {
+        m_doc = pdfFile->document();
+        m_ownsDocument = false;
+        qCDebug(qLcPdf) << "loading via QPdfFile, reusing document instance" << m_doc;
+    } else {
+        m_doc = new QPdfDocument();
+        m_ownsDocument = true;
+        m_doc->load(device);
+        qCDebug(qLcPdf) << "loading via new document instance" << m_doc;
+    }
+    m_loaded = (m_doc->error() == QPdfDocument::DocumentError::NoError);
 
     return m_loaded;
 }

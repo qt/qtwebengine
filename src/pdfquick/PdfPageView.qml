@@ -146,10 +146,10 @@ Rectangle {
         // TODO deal with horizontal location (need WheelHandler or Flickable probably)
     }
 
-    Image {
+    PdfPageImage {
         id: image
-        currentFrame: navigationStack.currentPage
-        source: document.status === PdfDocument.Ready ? document.source : ""
+        document: root.document
+        currentPage: navigationStack.currentPage
         asynchronous: true
         fillMode: Image.PreserveAspectFit
         property bool centerOnLoad: false

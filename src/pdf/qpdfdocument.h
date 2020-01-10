@@ -129,10 +129,13 @@ Q_SIGNALS:
 
 private:
     friend class QPdfBookmarkModelPrivate;
+    friend class QPdfFile;
     friend class QPdfLinkModelPrivate;
     friend class QPdfSearchModel;
     friend class QPdfSearchModelPrivate;
     friend class QQuickPdfSelection;
+
+    QString fileName() const;
 
     Q_PRIVATE_SLOT(d, void _q_tryLoadingWithSizeFromContentHeader())
     Q_PRIVATE_SLOT(d, void _q_copyFromSequentialSourceDevice())
