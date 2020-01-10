@@ -1829,6 +1829,7 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     view.setHtml(QString("<html><body>"
                          "<button id=\"btn1\" type=\"button\">push it real good</button>"
                          "<input id=\"input1\" type=\"text\" value=\"x\">"
+                         "<input id=\"pass1\" type=\"password\" value=\"x\">"
                          "</body></html>"));
     QVERIFY(loadFinishedSpy.wait());
 
@@ -1838,6 +1839,11 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     auto inputFieldValue = [&view] () -> QString {
         return evaluateJavaScriptSync(view.page(),
                                       "document.getElementById('input1').value").toString();
+    };
+
+    auto passwordFieldValue = [&view] () -> QString {
+        return evaluateJavaScriptSync(view.page(),
+                                      "document.getElementById('pass1').value").toString();
     };
 
     // The input form is not focused. The action is triggered on pressing Shift+Delete.
@@ -1863,8 +1869,20 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     QTRY_COMPARE(inputFieldValue(), QString("yxx"));
     QVERIFY(!actionTriggered);
 
+    // The password input form is focused. The action is not triggered, and the form's text changed.
+    evaluateJavaScriptSync(view.page(), "document.getElementById('pass1').focus();");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("pass1"));
+    actionTriggered = false;
+    QTest::keyClick(view.windowHandle(), Qt::Key_Y);
+    QTRY_COMPARE(passwordFieldValue(), QString("yx"));
+    QTest::keyClick(view.windowHandle(), Qt::Key_X);
+    QTRY_COMPARE(passwordFieldValue(), QString("yxx"));
+    QVERIFY(!actionTriggered);
+
     // The input form is focused. Make sure we don't override all short cuts.
     // A Ctrl-1 action is no default Qt key binding and should be triggerable.
+    evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus();");
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
     action->setShortcut(Qt::CTRL + Qt::Key_1);
     QTest::keyClick(view.windowHandle(), Qt::Key_1, Qt::ControlModifier);
     QTRY_VERIFY(actionTriggered);
