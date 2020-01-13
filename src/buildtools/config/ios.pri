@@ -4,21 +4,8 @@ include($$QTWEBENGINE_OUT_ROOT/src/buildtools/qtbuildtools-config.pri)
 include($$QTWEBENGINE_OUT_ROOT/src/pdf/qtpdf-config.pri)
 QT_FOR_CONFIG += buildtools-private pdf-private
 
-
-QMAKE_MAC_SDK_VERSION = $$eval(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.SDKVersion)
-isEmpty(QMAKE_MAC_SDK_VERSION) {
-    QMAKE_MAC_SDK_VERSION = $$system("/usr/bin/xcodebuild -sdk $${QMAKE_MAC_SDK} -version SDKVersion 2>/dev/null")
-    isEmpty(QMAKE_MAC_SDK_VERSION): error("Could not resolve SDK version for \'$${QMAKE_MAC_SDK}\'")
-}
-QMAKE_CLANG_DIR = "/usr"
-QMAKE_CLANG_PATH = $$eval(QMAKE_MAC_SDK.macx-clang.$${QMAKE_MAC_SDK}.QMAKE_CXX)
-!isEmpty(QMAKE_CLANG_PATH) {
-    clang_dir = $$clean_path("$$dirname(QMAKE_CLANG_PATH)/../")
-    exists($$clang_dir): QMAKE_CLANG_DIR = $$clang_dir
-}
-QMAKE_CLANG_PATH = "$${QMAKE_CLANG_DIR}/bin/clang++"
-message("Using clang++ from $${QMAKE_CLANG_PATH}")
-system("$${QMAKE_CLANG_PATH} --version")
+clang_dir = $$which($${QMAKE_CXX})
+clang_dir = $$clean_path("$$dirname(clang_dir)/../")
 
 gn_args += \
 use_qt=true \
@@ -47,12 +34,9 @@ optimize_webui=false \
 forbid_non_component_debug_builds=false \
 clang_use_chrome_plugins=false \
 use_xcode_clang=true \
-clang_base_path=\"$${QMAKE_CLANG_DIR}\" \
+clang_base_path=\"$${clang_dir}\" \
 ios_enable_code_signing=false \
 target_os=\"ios\" \
-#target_cpu=\"$${QMAKE_APPLE_SIMULATOR_ARCHS}\" \
-#target_cpu=\"$${QMAKE_APPLE_DEVICE_ARCHS}\" \
-target_cpu=\"x64\" \
 ios_deployment_target=\"$${QMAKE_IOS_DEPLOYMENT_TARGET}\" \
 enable_ios_bitcode=true \
 use_jumbo_build=false \
@@ -62,3 +46,27 @@ pdf_enable_xfa_bmp=false \
 pdf_enable_xfa_gif=false \
 pdf_enable_xfa_png=false \
 pdf_enable_xfa_tiff=false
+
+device:simulator {
+  # we do fat libray
+  gn_args+= \
+  target_cpu=\"$${QMAKE_APPLE_DEVICE_ARCHS}\" \
+  use_qt_fat_lib=true \
+  arm_use_neon=false\
+  # note this adds one arch of simulator at the moment, see also additional_target_cpus
+  target_sysroot=\"$$xcodeSDKInfo(Path, $$device.sdk)\" \
+  additional_target_sysroot=[\"$$xcodeSDKInfo(Path, $$simulator.sdk)\"]
+} else {
+  simulator {
+    equals(QMAKE_APPLE_SIMULATOR_ARCHS,"x86_64") {
+      gn_args+=target_cpu=\"x64\"
+    } else {
+      gn_args+=target_cpu=\"$${QMAKE_APPLE_SIMULATOR_ARCHS}\"
+    }
+    gn_args+=target_sysroot=\"$$xcodeSDKInfo(Path, $$simulator.sdk)\"
+  }
+  device {
+    gn_args+=target_cpu=\"$${QMAKE_APPLE_DEVICE_ARCHS}\"
+    gn_args+=target_sysroot=\"$$xcodeSDKInfo(Path, $$device.sdk)\"
+  }
+}

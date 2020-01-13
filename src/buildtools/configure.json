@@ -721,6 +721,11 @@
             "type": "warning",
             "condition": "!features.webengine-qtpdf-support && features.build-qtpdf",
             "message": "QtPdf will not be built."
+        },
+        {
+            "type": "warning",
+            "condition": "config.ios && config.simulator && config.device && features.build-qtpdf",
+            "message": "Building fat libray with device and simulator architectures will disable NEON."
         }
     ],
     "summary": [
