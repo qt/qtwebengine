@@ -280,9 +280,9 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
         // Post a task to process next queued request. It has to be done
         // asynchronously to make sure that calling infobar is not destroyed until
         // after this function returns.
-        base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                 base::BindOnce(&MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest,
-                                                base::Unretained(this), webContents));
+        base::PostTask(FROM_HERE, {BrowserThread::UI},
+                       base::BindOnce(&MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest,
+                                      base::Unretained(this), webContents));
     }
 
     if (devices.empty())
@@ -444,10 +444,10 @@ void MediaCaptureDevicesDispatcher::getDefaultDevices(const std::string &audioDe
 void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(int render_process_id, int render_frame_id, int page_request_id, const GURL &security_origin, blink::mojom::MediaStreamType stream_type, content::MediaRequestState state)
 {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(&MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread,
-                                            base::Unretained(this), render_process_id, render_frame_id,
-                                            page_request_id, security_origin, stream_type, state));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread,
+                                  base::Unretained(this), render_process_id, render_frame_id,
+                                  page_request_id, security_origin, stream_type, state));
 }
 
 void MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread(int render_process_id,

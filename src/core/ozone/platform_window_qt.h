@@ -46,10 +46,9 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
-
-class PlatformWindowDelegate;
 
 class PlatformWindowQt : public PlatformWindow, public PlatformEventDispatcher
 {
@@ -78,6 +77,7 @@ public:
     gfx::Rect GetRestoredBoundsInPixels() const override { return gfx::Rect(); }
     void Activate() override { }
     void Deactivate() override { }
+    void SetUseNativeFrame(bool use_native_frame) override { }
 
     // PlatformEventDispatcher:
     bool CanDispatchEvent(const PlatformEvent& event) override;

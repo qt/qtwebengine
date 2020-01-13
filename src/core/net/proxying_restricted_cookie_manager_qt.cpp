@@ -54,7 +54,7 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace QtWebEngineCore {
 
@@ -62,10 +62,12 @@ class ProxyingRestrictedCookieManagerListenerQt : public network::mojom::CookieC
 public:
     ProxyingRestrictedCookieManagerListenerQt(const GURL &url,
                                               const GURL &site_for_cookies,
+                                              const url::Origin &top_frame_origin,
                                               base::WeakPtr<ProxyingRestrictedCookieManagerQt> restricted_cookie_manager,
-                                              network::mojom::CookieChangeListenerPtr client_listener)
+                                              mojo::PendingRemote<network::mojom::CookieChangeListener> client_listener)
             : url_(url)
             , site_for_cookies_(site_for_cookies)
+            , top_frame_origin_(top_frame_origin)
             , restricted_cookie_manager_(restricted_cookie_manager)
             , client_listener_(std::move(client_listener))
     {}
@@ -79,51 +81,53 @@ public:
 private:
     const GURL url_;
     const GURL site_for_cookies_;
+    const url::Origin top_frame_origin_;
     base::WeakPtr<ProxyingRestrictedCookieManagerQt> restricted_cookie_manager_;
-    network::mojom::CookieChangeListenerPtr client_listener_;
+    mojo::Remote<network::mojom::CookieChangeListener> client_listener_;
 };
 
 // static
 void ProxyingRestrictedCookieManagerQt::CreateAndBind(ProfileIODataQt *profileIoData,
-                                                      network::mojom::RestrictedCookieManagerPtrInfo underlying_rcm,
+                                                      mojo::PendingRemote<network::mojom::RestrictedCookieManager> underlying_rcm,
                                                       bool is_service_worker,
                                                       int process_id,
                                                       int frame_id,
-                                                      network::mojom::RestrictedCookieManagerRequest request)
+                                                      mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&ProxyingRestrictedCookieManagerQt::CreateAndBindOnIoThread,
-                                            profileIoData,
-                                            std::move(underlying_rcm),
-                                            is_service_worker, process_id, frame_id,
-                                            std::move(request)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&ProxyingRestrictedCookieManagerQt::CreateAndBindOnIoThread,
+                                  profileIoData,
+                                  std::move(underlying_rcm),
+                                  is_service_worker, process_id, frame_id,
+                                  std::move(receiver)));
 }
 
 
 // static
 void ProxyingRestrictedCookieManagerQt::CreateAndBindOnIoThread(ProfileIODataQt *profileIoData,
-                                                                network::mojom::RestrictedCookieManagerPtrInfo underlying_rcm,
+                                                                mojo::PendingRemote<network::mojom::RestrictedCookieManager> underlying_rcm,
                                                                 bool is_service_worker,
                                                                 int process_id,
                                                                 int frame_id,
-                                                                network::mojom::RestrictedCookieManagerRequest request)
+                                                                mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     auto wrapper = base::WrapUnique(new ProxyingRestrictedCookieManagerQt(
                                         profileIoData->getWeakPtrOnIOThread(),
-                                        network::mojom::RestrictedCookieManagerPtr(std::move(underlying_rcm)),
+                                        std::move(underlying_rcm),
                                         is_service_worker, process_id, frame_id));
-    mojo::MakeStrongBinding(std::move(wrapper), std::move(request));
+    mojo::MakeSelfOwnedReceiver(std::move(wrapper), std::move(receiver));
 }
 
-ProxyingRestrictedCookieManagerQt::ProxyingRestrictedCookieManagerQt(base::WeakPtr<ProfileIODataQt> profileIoData,
-                                                                     network::mojom::RestrictedCookieManagerPtr underlyingRestrictedCookieManager,
-                                                                     bool is_service_worker,
-                                                                     int32_t process_id,
-                                                                     int32_t frame_id)
+ProxyingRestrictedCookieManagerQt::ProxyingRestrictedCookieManagerQt(
+        base::WeakPtr<ProfileIODataQt> profileIoData,
+        mojo::PendingRemote<network::mojom::RestrictedCookieManager> underlyingRestrictedCookieManager,
+        bool is_service_worker,
+        int32_t process_id,
+        int32_t frame_id)
         : m_profileIoData(std::move(profileIoData))
         , underlying_restricted_cookie_manager_(std::move(underlyingRestrictedCookieManager))
         , is_service_worker_(is_service_worker)
@@ -141,13 +145,14 @@ ProxyingRestrictedCookieManagerQt::~ProxyingRestrictedCookieManagerQt()
 
 void ProxyingRestrictedCookieManagerQt::GetAllForUrl(const GURL &url,
                                                      const GURL &site_for_cookies,
+                                                     const url::Origin &top_frame_origin,
                                                      network::mojom::CookieManagerGetOptionsPtr options,
                                                      GetAllForUrlCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (allowCookies(url, site_for_cookies)) {
-        underlying_restricted_cookie_manager_->GetAllForUrl(url, site_for_cookies, std::move(options), std::move(callback));
+        underlying_restricted_cookie_manager_->GetAllForUrl(url, site_for_cookies, top_frame_origin, std::move(options), std::move(callback));
     } else {
         std::move(callback).Run(std::vector<net::CanonicalCookie>());
     }
@@ -155,13 +160,13 @@ void ProxyingRestrictedCookieManagerQt::GetAllForUrl(const GURL &url,
 
 void ProxyingRestrictedCookieManagerQt::SetCanonicalCookie(const net::CanonicalCookie &cookie,
                                                            const GURL &url,
-                                                           const GURL &site_for_cookies,
+                                                           const GURL &site_for_cookies, const url::Origin &top_frame_origin,
                                                            SetCanonicalCookieCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (allowCookies(url, site_for_cookies)) {
-        underlying_restricted_cookie_manager_->SetCanonicalCookie(cookie, url, site_for_cookies, std::move(callback));
+        underlying_restricted_cookie_manager_->SetCanonicalCookie(cookie, url, site_for_cookies, top_frame_origin, std::move(callback));
     } else {
         std::move(callback).Run(false);
     }
@@ -169,32 +174,35 @@ void ProxyingRestrictedCookieManagerQt::SetCanonicalCookie(const net::CanonicalC
 
 void ProxyingRestrictedCookieManagerQt::AddChangeListener(const GURL &url,
                                                           const GURL &site_for_cookies,
-                                                          network::mojom::CookieChangeListenerPtr listener,
+                                                          const url::Origin &top_frame_origin,
+                                                          mojo::PendingRemote<network::mojom::CookieChangeListener> listener,
                                                           AddChangeListenerCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-    network::mojom::CookieChangeListenerPtr proxy_listener_ptr;
+    mojo::PendingRemote<network::mojom::CookieChangeListener> proxy_listener_remote;
     auto proxy_listener =
           std::make_unique<ProxyingRestrictedCookieManagerListenerQt>(
-                url, site_for_cookies, weak_factory_.GetWeakPtr(),
+                url, site_for_cookies, top_frame_origin,
+                weak_factory_.GetWeakPtr(),
                 std::move(listener));
 
-    mojo::MakeStrongBinding(std::move(proxy_listener),
-                            mojo::MakeRequest(&proxy_listener_ptr));
+    mojo::MakeSelfOwnedReceiver(std::move(proxy_listener),
+                                proxy_listener_remote.InitWithNewPipeAndPassReceiver());
 
-    underlying_restricted_cookie_manager_->AddChangeListener(url, site_for_cookies, std::move(proxy_listener_ptr), std::move(callback));
+    underlying_restricted_cookie_manager_->AddChangeListener(url, site_for_cookies, top_frame_origin, std::move(proxy_listener_remote), std::move(callback));
 }
 
 void ProxyingRestrictedCookieManagerQt::SetCookieFromString(const GURL &url,
                                                             const GURL &site_for_cookies,
+                                                            const url::Origin &top_frame_origin,
                                                             const std::string &cookie,
                                                             SetCookieFromStringCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (allowCookies(url, site_for_cookies)) {
-        underlying_restricted_cookie_manager_->SetCookieFromString(url, site_for_cookies, cookie, std::move(callback));
+        underlying_restricted_cookie_manager_->SetCookieFromString(url, site_for_cookies, top_frame_origin, cookie, std::move(callback));
     } else {
         std::move(callback).Run();
     }
@@ -202,12 +210,13 @@ void ProxyingRestrictedCookieManagerQt::SetCookieFromString(const GURL &url,
 
 void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
                                                          const GURL &site_for_cookies,
+                                                         const url::Origin &top_frame_origin,
                                                          GetCookiesStringCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (allowCookies(url, site_for_cookies)) {
-        underlying_restricted_cookie_manager_->GetCookiesString(url, site_for_cookies, std::move(callback));
+        underlying_restricted_cookie_manager_->GetCookiesString(url, site_for_cookies, top_frame_origin, std::move(callback));
     } else {
         std::move(callback).Run("");
     }
@@ -215,6 +224,7 @@ void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
 
 void ProxyingRestrictedCookieManagerQt::CookiesEnabledFor(const GURL &url,
                                                           const GURL &site_for_cookies,
+                                                          const url::Origin & /*top_frame_origin*/,
                                                           CookiesEnabledForCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);

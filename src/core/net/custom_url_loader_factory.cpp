@@ -49,6 +49,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -93,8 +94,8 @@ public:
         scoped_refptr<URLRequestCustomJobProxy> proxy = new URLRequestCustomJobProxy(this, m_proxy->m_scheme, m_proxy->m_profileAdapter);
         m_proxy->m_client = nullptr;
 //        m_taskRunner->PostTask(FROM_HERE, base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
-        base::PostTaskWithTraits(FROM_HERE, { content::BrowserThread::UI },
-                                 base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
+        base::PostTask(FROM_HERE, { content::BrowserThread::UI },
+                       base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
         m_proxy = std::move(proxy);
         if (new_url)
             m_request.url = *new_url;
@@ -109,7 +110,6 @@ public:
     void SetPriority(net::RequestPriority priority, int32_t intra_priority_value) override { }
     void PauseReadingBodyFromNet() override { }
     void ResumeReadingBodyFromNet() override { }
-    void ProceedWithResponse() override { }
 
 private:
     CustomURLLoader(const network::ResourceRequest &request,
@@ -161,9 +161,9 @@ private:
         }
 
 //        m_taskRunner->PostTask(FROM_HERE,
-        base::PostTaskWithTraits(FROM_HERE, { content::BrowserThread::UI },
-                                 base::BindOnce(&URLRequestCustomJobProxy::initialize, m_proxy,
-                                                m_request.url, m_request.method, m_request.request_initiator, std::move(headers)));
+        base::PostTask(FROM_HERE, { content::BrowserThread::UI },
+                       base::BindOnce(&URLRequestCustomJobProxy::initialize, m_proxy,
+                                      m_request.url, m_request.method, m_request.request_initiator, std::move(headers)));
     }
 
     void CompleteWithFailure(net::Error net_error)
@@ -207,8 +207,8 @@ private:
             m_device->close();
         m_device = nullptr;
 //        m_taskRunner->PostTask(FROM_HERE, base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
-        base::PostTaskWithTraits(FROM_HERE, { content::BrowserThread::UI },
-                                 base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
+        base::PostTask(FROM_HERE, { content::BrowserThread::UI },
+                       base::BindOnce(&URLRequestCustomJobProxy::release, m_proxy));
         if (!wait_for_loader_error || !m_binding.is_bound())
             delete this;
     }

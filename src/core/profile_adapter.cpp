@@ -43,6 +43,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
 
 #include "api/qwebengineurlscheme.h"
 #include "content_browser_client_qt.h"
@@ -104,6 +106,17 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     if (!storageName.isEmpty())
         extensions::ExtensionSystem::Get(m_profile.data())->InitForRegularProfile(true);
 #endif
+
+    // Allow XMLHttpRequests from qrc to file.
+    // ### consider removing for Qt6
+    url::Origin qrc = url::Origin::Create(GURL("qrc://"));
+    auto pattern = network::mojom::CorsOriginPattern::New("file", "", 0,
+                                                          network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+                                                          network::mojom::CorsPortMatchMode::kAllowAnyPort,
+                                                          network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
+    std::vector<network::mojom::CorsOriginPatternPtr> list;
+    list.push_back(std::move(pattern));
+    m_profile->GetSharedCorsOriginAccessList()->SetForOrigin(qrc, std::move(list), {}, base::BindOnce([]{}));
 }
 
 ProfileAdapter::~ProfileAdapter()
@@ -485,8 +498,8 @@ const QList<QByteArray> ProfileAdapter::customUrlSchemes() const
 
 void ProfileAdapter::updateCustomUrlSchemeHandlers()
 {
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateJobFactory();
+//    if (m_profile->m_urlRequestContextGetter.get())
+//        m_profile->m_profileIOData->updateJobFactory();
 }
 
 void ProfileAdapter::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
@@ -695,7 +708,7 @@ QString ProfileAdapter::determineDownloadPath(const QString &downloadDirectory, 
     QString suggestedFilePath = suggestedFile.absoluteFilePath();
     base::FilePath tmpFilePath(toFilePath(suggestedFilePath).NormalizePathSeparatorsTo('/'));
 
-    int uniquifier = base::GetUniquePathNumber(tmpFilePath, base::FilePath::StringType());
+    int uniquifier = base::GetUniquePathNumber(tmpFilePath);
     if (uniquifier > 0)
         suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier)).AsUTF8Unsafe());
     else if (uniquifier == -1) {

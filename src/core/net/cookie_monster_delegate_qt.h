@@ -64,7 +64,7 @@ QT_WARNING_DISABLE_CLANG("-Wunused-parameter")
 #undef signals
 #endif
 #include "base/memory/ref_counted.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
@@ -91,7 +91,7 @@ class Q_WEBENGINECORE_PRIVATE_EXPORT CookieMonsterDelegateQt : public base::RefC
 
     network::mojom::CookieManagerPtr m_mojoCookieManager;
     std::unique_ptr<network::mojom::CookieChangeListener> m_listener;
-    mojo::Binding<network::mojom::CookieChangeListener> m_binding;
+    mojo::Receiver<network::mojom::CookieChangeListener> m_receiver;
 public:
     CookieMonsterDelegateQt();
     ~CookieMonsterDelegateQt();

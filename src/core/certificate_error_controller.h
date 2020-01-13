@@ -85,8 +85,7 @@ public:
         CertificateValidityTooLong = -213,
         CertificateTransparencyRequired = -214,
         CertificateSymantecLegacy = -215,
-
-        CertificateErrorEnd = -216 // not an error, just an enum boundary
+        CertificateErrorEnd = -217 // not an error, just an enum boundary
     };
 
     CertificateError error() const;

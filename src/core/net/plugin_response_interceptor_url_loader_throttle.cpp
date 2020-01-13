@@ -125,11 +125,11 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     if (extension_id.empty())
         return;
 
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(&onPdfStreamIntercepted,
-                                            response_url,
-                                            extension_id,
-                                            m_frame_tree_node_id));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&onPdfStreamIntercepted,
+                                  response_url,
+                                  extension_id,
+                                  m_frame_tree_node_id));
 }
 
 } // namespace QtWebEngineCore

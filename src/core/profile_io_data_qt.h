@@ -43,7 +43,6 @@
 #include "profile_adapter.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/proxy_config_monitor.h"
 #include "services/network/cookie_settings.h"
@@ -98,11 +97,6 @@ public:
     extensions::ExtensionSystemQt* GetExtensionSystem();
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
-    ProtocolHandlerRegistry::IOThreadDelegate *protocolHandlerRegistryIOThreadDelegate()
-    {
-        return m_protocolHandlerRegistryIOThreadDelegate.get();
-    }
-
     void initializeOnIOThread();
     void initializeOnUIThread(); // runs on ui thread
     void shutdownOnUIThread(); // runs on ui thread
@@ -154,8 +148,6 @@ private:
 
     ProfileQt *m_profile;
     std::unique_ptr<content::ResourceContext> m_resourceContext;
-    scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>
-            m_protocolHandlerRegistryIOThreadDelegate;
     base::WeakPtr<ProfileIODataQt> m_weakPtr;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;

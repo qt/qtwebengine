@@ -51,7 +51,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_utils.h"
@@ -105,8 +104,8 @@ public:
     void InterceptOnUIThread();
 
     // network::mojom::URLLoaderClient
-    void OnReceiveResponse(const network::ResourceResponseHead &head) override;
-    void OnReceiveRedirect(const net::RedirectInfo &redirect_info, const network::ResourceResponseHead &head) override;
+    void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
+    void OnReceiveRedirect(const net::RedirectInfo &redirect_info, network::mojom::URLResponseHeadPtr head) override;
     void OnUploadProgress(int64_t current_position, int64_t total_size, OnUploadProgressCallback callback) override;
     void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
     void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
@@ -116,7 +115,6 @@ public:
     // network::mojom::URLLoader
     void FollowRedirect(const std::vector<std::string> &removed_headers,
                         const net::HttpRequestHeaders &modified_headers, const base::Optional<GURL> &new_url) override;
-    void ProceedWithResponse() override;
     void SetPriority(net::RequestPriority priority, int32_t intra_priority_value) override;
     void PauseReadingBodyFromNet() override;
     void ResumeReadingBodyFromNet() override;
@@ -206,7 +204,7 @@ void InterceptedRequest::Restart()
     // FIXME: Support deprecated interceptors here
 
     // FIXME: unretained post?
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&InterceptedRequest::InterceptOnUIThread, base::Unretained(this)));
 }
@@ -266,7 +264,7 @@ void InterceptedRequest::InterceptOnUIThread()
         }
 
         if (result != net::OK) {
-            base::PostTaskWithTraits(
+            base::PostTask(
                 FROM_HERE, {content::BrowserThread::IO},
                 base::BindOnce(&InterceptedRequest::SendErrorAndCompleteImmediately, m_weakPtr, result));
             return;
@@ -286,7 +284,7 @@ void InterceptedRequest::InterceptOnUIThread()
                 // FIXME: Should probably create a new header.
                 current_response_.encoded_data_length = 0;
                 // FIXME: unretained post.
-                base::PostTaskWithTraits(
+                base::PostTask(
                     FROM_HERE, {content::BrowserThread::IO},
                     base::BindOnce(&network::mojom::URLLoaderClientProxy::OnReceiveRedirect, base::Unretained(&(*target_client_)), redirectInfo, current_response_));
                 request_.method = redirectInfo.new_method;
@@ -312,7 +310,7 @@ void InterceptedRequest::InterceptOnUIThread()
             }
         }
     }
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InterceptedRequest::ContinueAfterIntercept, m_weakPtr));
 }
@@ -330,19 +328,19 @@ void InterceptedRequest::ContinueAfterIntercept()
 
 // URLLoaderClient methods.
 
-void InterceptedRequest::OnReceiveResponse(const network::ResourceResponseHead &head)
+void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr head)
 {
     current_response_ = head;
 
-    target_client_->OnReceiveResponse(head);
+    target_client_->OnReceiveResponse(std::move(head));
 }
 
-void InterceptedRequest::OnReceiveRedirect(const net::RedirectInfo &redirect_info, const network::ResourceResponseHead &head)
+void InterceptedRequest::OnReceiveRedirect(const net::RedirectInfo &redirect_info, network::mojom::URLResponseHeadPtr head)
 {
     // TODO(timvolodine): handle redirect override.
     request_was_redirected_ = true;
     current_response_ = head;
-    target_client_->OnReceiveRedirect(redirect_info, head);
+    target_client_->OnReceiveRedirect(redirect_info, std::move(head));
     request_.url = redirect_info.new_url;
     request_.method = redirect_info.new_method;
     request_.site_for_cookies = redirect_info.new_site_for_cookies;
@@ -394,12 +392,6 @@ void InterceptedRequest::FollowRedirect(const std::vector<std::string> &removed_
         return;
 
     Restart();
-}
-
-void InterceptedRequest::ProceedWithResponse()
-{
-    if (target_loader_)
-        target_loader_->ProceedWithResponse();
 }
 
 void InterceptedRequest::SetPriority(net::RequestPriority priority, int32_t intra_priority_value)

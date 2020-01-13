@@ -97,6 +97,7 @@
 
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 #include "components/grit/components_resources.h"
 
@@ -113,7 +114,7 @@ namespace QtWebEngineCore {
 
 static const char kHttpErrorDomain[] = "http";
 
-ContentRendererClientQt::ContentRendererClientQt() : m_serviceBinding(this)
+ContentRendererClientQt::ContentRendererClientQt()
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionsClient::Set(extensions::ExtensionsClientQt::GetInstance());
@@ -126,7 +127,6 @@ ContentRendererClientQt::~ContentRendererClientQt() {}
 void ContentRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *renderThread = content::RenderThread::Get();
-    (void)GetConnector();
     m_renderThreadObserver.reset(new RenderThreadObserverQt());
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheImpl.reset(new web_cache::WebCacheImpl());
@@ -147,6 +147,7 @@ void ContentRendererClientQt::RenderThreadStarted()
 #endif
 
     // Allow XMLHttpRequests from qrc to file.
+    // ### consider removing for Qt6
     blink::WebURL qrc(blink::KURL("qrc:"));
     blink::WebString file(blink::WebString::FromASCII("file"));
     blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
@@ -343,18 +344,16 @@ content::BrowserPluginDelegate *ContentRendererClientQt::CreateBrowserPluginDele
 #endif
 }
 
-void ContentRendererClientQt::OnBindInterface(const service_manager::BindSourceInfo &remote_info,
-                                              const std::string &name,
-                                              mojo::ScopedMessagePipeHandle handle)
+void ContentRendererClientQt::BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver)
 {
-    Q_UNUSED(remote_info);
-    m_registry.TryBindInterface(name, &handle);
+    std::string interface_name = *receiver.interface_name();
+    auto pipe = receiver.PassPipe();
+    m_registry.TryBindInterface(interface_name, &pipe);
 }
 
 void ContentRendererClientQt::GetInterface(const std::string &interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {
-    m_serviceBinding.GetConnector()->BindInterface(service_manager::ServiceFilter::ByName("qtwebengine"),
-                                                   interface_name, std::move(interface_pipe));
+    content::RenderThread::Get()->BindHostReceiver(mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
 }
 
 // The following is based on chrome/renderer/media/chrome_key_systems.cc:
@@ -579,15 +578,4 @@ void ContentRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
                                                     attach_same_site_cookies);
 }
 
-void ContentRendererClientQt::CreateRendererService(service_manager::mojom::ServiceRequest service_request)
-{
-    DCHECK(!m_serviceBinding.is_bound());
-    m_serviceBinding.Bind(std::move(service_request));
-}
-
-service_manager::Connector *ContentRendererClientQt::GetConnector()
-{
-    return m_serviceBinding.GetConnector();
-}
-
-} // namespace
+} // namespace QtWebEngineCore

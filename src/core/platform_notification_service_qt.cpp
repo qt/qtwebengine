@@ -201,12 +201,11 @@ int64_t PlatformNotificationServiceQt::ReadNextPersistentNotificationId()
 
 void PlatformNotificationServiceQt::ScheduleTrigger(base::Time /*timestamp*/)
 {
-    Q_UNIMPLEMENTED();
+    QT_NOT_YET_IMPLEMENTED
 }
 
 base::Time PlatformNotificationServiceQt::ReadNextTriggerTimestamp()
 {
-    Q_UNIMPLEMENTED();
     return base::Time::Max();
 }
 

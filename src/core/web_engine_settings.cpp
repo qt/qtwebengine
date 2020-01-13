@@ -248,7 +248,7 @@ void WebEngineSettings::initDefaults()
         s_defaultAttributes.insert(LinksIncludedInFocusChain, true);
         s_defaultAttributes.insert(LocalStorageEnabled, true);
         s_defaultAttributes.insert(LocalContentCanAccessRemoteUrls, false);
-        s_defaultAttributes.insert(XSSAuditingEnabled, true);
+        s_defaultAttributes.insert(XSSAuditingEnabled, false);
         s_defaultAttributes.insert(SpatialNavigationEnabled, false);
         s_defaultAttributes.insert(LocalContentCanAccessFileUrls, true);
         s_defaultAttributes.insert(HyperlinkAuditingEnabled, false);
@@ -366,7 +366,6 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->local_storage_enabled = testAttribute(LocalStorageEnabled);
     prefs->databases_enabled = testAttribute(LocalStorageEnabled);
     prefs->allow_universal_access_from_file_urls = testAttribute(LocalContentCanAccessRemoteUrls);
-    prefs->xss_auditor_enabled = testAttribute(XSSAuditingEnabled);
     prefs->spatial_navigation_enabled = testAttribute(SpatialNavigationEnabled);
     prefs->allow_file_access_from_file_urls = testAttribute(LocalContentCanAccessFileUrls);
     prefs->hyperlink_auditing_enabled = testAttribute(HyperlinkAuditingEnabled);

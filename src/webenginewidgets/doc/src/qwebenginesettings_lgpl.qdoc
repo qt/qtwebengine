@@ -114,8 +114,7 @@
             subresources, such as scripts, and therefore disabling this setting is not a safety
             mechanism.
     \value  XSSAuditingEnabled
-            Monitors load requests for cross-site scripting attempts. Suspicious scripts are blocked
-            and reported in the inspector's JavaScript console. Enabled by default.
+            Obsolete and has no effect.
     \value  SpatialNavigationEnabled
             Enables the Spatial Navigation feature, which means the ability to navigate between
             focusable elements, such as hyperlinks and form controls, on a web page by using the

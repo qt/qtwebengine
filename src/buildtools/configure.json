@@ -264,10 +264,11 @@
                 "main": [
                     "vpx_codec_cx_pkt pkt;",
                     "pkt.data.frame.width[0] = 0u;",
-                    "pkt.data.frame.height[0] = 0u;"
+                    "pkt.data.frame.height[0] = 0u;",
+                    "auto a = CONSTRAINED_FROM_ABOVE_DROP;"
                 ]
             },
-            "headers": "vpx/vpx_encoder.h",
+            "headers": [ "vpx/vpx_encoder.h", "vpx/vp8cx.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "vpx" },
                 "-lvpx"

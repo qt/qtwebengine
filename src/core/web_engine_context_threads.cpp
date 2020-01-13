@@ -65,13 +65,13 @@ struct GpuThreadControllerQt : content::GpuThreadController
 {
     GpuThreadControllerQt(const content::InProcessChildThreadParams &params, const gpu::GpuPreferences &gpuPreferences)
     {
-        base::PostTaskWithTraits(
+        base::PostTask(
                 FROM_HERE, { content::BrowserThread::UI },
                 base::BindOnce(&GpuThreadControllerQt::createGpuProcess, params, gpuPreferences));
     }
     ~GpuThreadControllerQt() override
     {
-        base::PostTaskWithTraits(
+        base::PostTask(
                 FROM_HERE, { content::BrowserThread::UI },
                 base::BindOnce(&GpuThreadControllerQt::destroyGpuProcess));
     }

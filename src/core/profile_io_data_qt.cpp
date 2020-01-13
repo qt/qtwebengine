@@ -40,7 +40,6 @@
 #include "profile_io_data_qt.h"
 
 #include "base/task/post_task.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -163,10 +162,6 @@ void ProfileIODataQt::initializeOnUIThread()
     m_profileAdapter = m_profile->profileAdapter();
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     m_resourceContext.reset(new ResourceContextQt(this));
-    ProtocolHandlerRegistry* protocolHandlerRegistry =
-        ProtocolHandlerRegistryFactory::GetForBrowserContext(m_profile);
-    DCHECK(protocolHandlerRegistry);
-    m_protocolHandlerRegistryIOThreadDelegate = protocolHandlerRegistry->io_thread_delegate();
     m_cookieDelegate = new CookieMonsterDelegateQt();
     m_cookieDelegate->setClient(m_profile->profileAdapter()->cookieStore());
     if (base::FeatureList::IsEnabled(network::features::kNetworkService))
@@ -244,8 +239,8 @@ void ProfileIODataQt::requestStorageGeneration() {
         m_updateAllStorage = true;
         if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
             createProxyConfig();
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                                 base::BindOnce(&ProfileIODataQt::generateAllStorage, m_weakPtr));
+        base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                       base::BindOnce(&ProfileIODataQt::generateAllStorage, m_weakPtr));
     }
 }
 
@@ -262,7 +257,7 @@ void ProfileIODataQt::createProxyConfig()
     m_proxyConfigService =
             new ProxyConfigServiceQt(
                     m_profileAdapter->profile()->GetPrefs(),
-                    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO}));
+                    base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}));
     //pass interface to io thread
     m_proxyResolverFactoryInterface = ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
 }
@@ -336,8 +331,8 @@ void ProfileIODataQt::updateJobFactory()
 
     if (m_initialized && !m_updateJobFactory) {
         m_updateJobFactory = true;
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                                 base::BindOnce(&ProfileIODataQt::regenerateJobFactory, m_weakPtr));
+        base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                       base::BindOnce(&ProfileIODataQt::regenerateJobFactory, m_weakPtr));
     }
 }
 
@@ -403,8 +398,8 @@ void ProfileIODataQt::updateUsedForGlobalCertificateVerification()
     m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
 
     if (m_useForGlobalCertificateVerification)
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                                 base::BindOnce(&ProfileIODataQt::setGlobalCertificateVerification, m_weakPtr));
+        base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                       base::BindOnce(&ProfileIODataQt::setGlobalCertificateVerification, m_weakPtr));
 }
 
 #if QT_CONFIG(ssl)

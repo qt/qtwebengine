@@ -41,7 +41,7 @@
 #define PLUGIN_RESPONSE_INTERCEPTOR_URL_LOADER_THROTTLE_H_
 
 #include "base/macros.h"
-#include "content/public/common/url_loader_throttle.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 class BrowserContext;
@@ -50,7 +50,7 @@ class ResourceContext;
 
 namespace QtWebEngineCore {
 
-class PluginResponseInterceptorURLLoaderThrottle : public content::URLLoaderThrottle
+class PluginResponseInterceptorURLLoaderThrottle : public blink::URLLoaderThrottle
 {
 public:
     PluginResponseInterceptorURLLoaderThrottle(content::ResourceContext *resource_context,

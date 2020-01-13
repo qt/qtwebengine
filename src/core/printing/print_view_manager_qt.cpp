@@ -106,8 +106,8 @@ static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
     base::File file(path,
                     base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
     bool success = file.IsValid() && metafile.SaveTo(&file);
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(saveCallback, success));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(saveCallback, success));
 }
 
 static base::DictionaryValue *createPrintSettings()
@@ -216,16 +216,16 @@ void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayou
         return;
 
     if (m_printSettings || !filePath.length()) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(callback, false));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(callback, false));
         return;
     }
 
     m_pdfOutputPath = toFilePath(filePath);
     m_pdfSaveCallback = callback;
     if (!PrintToPDFInternal(pageLayout, printInColor)) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(callback, false));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(callback, false));
         resetPdfState();
     }
 }
@@ -240,15 +240,15 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
 
     // If there already is a pending print in progress, don't try starting another one.
     if (m_printSettings) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                base::BindOnce(callback, QSharedPointer<QByteArray>()));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(callback, QSharedPointer<QByteArray>()));
         return;
     }
 
     m_pdfPrintCallback = callback;
     if (!PrintToPDFInternal(pageLayout, printInColor, useCustomMargins)) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(callback, QSharedPointer<QByteArray>()));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(callback, QSharedPointer<QByteArray>()));
 
         resetPdfState();
     }
@@ -359,12 +359,12 @@ void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rf
 
     if (!pdf_print_callback.is_null()) {
         QSharedPointer<QByteArray> data_array = GetStdVectorFromHandle(params.content.metafile_data_region);
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(pdf_print_callback, data_array));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(pdf_print_callback, data_array));
     } else {
         scoped_refptr<base::RefCountedBytes> data_bytes = GetBytesFromHandle(params.content.metafile_data_region);
-        base::PostTaskWithTraits(FROM_HERE, {base::MayBlock()},
-                                 base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
+        base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                       base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
     }
 }
 
@@ -382,8 +382,8 @@ void PrintViewManagerQt::DidStartLoading()
 void PrintViewManagerQt::NavigationStopped()
 {
     if (!m_pdfPrintCallback.is_null()) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(m_pdfPrintCallback, QSharedPointer<QByteArray>()));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(m_pdfPrintCallback, QSharedPointer<QByteArray>()));
     }
     resetPdfState();
     PrintViewManagerBaseQt::NavigationStopped();
@@ -393,8 +393,8 @@ void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
 {
     PrintViewManagerBaseQt::RenderProcessGone(status);
     if (!m_pdfPrintCallback.is_null()) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(m_pdfPrintCallback, QSharedPointer<QByteArray>()));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(m_pdfPrintCallback, QSharedPointer<QByteArray>()));
     }
     resetPdfState();
 }

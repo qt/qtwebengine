@@ -250,7 +250,7 @@ void CompositorResourceTracker::scheduleRunSubmitCallback()
     thread_local bool currentThreadIsUi = content::BrowserThread::CurrentlyOn(content::BrowserThread::UI);
     if (currentThreadIsUi)
         return runSubmitCallback();
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, { content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE },
         base::BindOnce(&CompositorResourceTracker::runSubmitCallback,
                        m_weakPtrFactory.GetWeakPtr()));

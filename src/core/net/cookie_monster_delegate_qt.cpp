@@ -80,15 +80,14 @@ static GURL sourceUrlForCookie(const QNetworkCookie &cookie)
 }
 
 CookieMonsterDelegateQt::CookieMonsterDelegateQt()
-    : m_client(0)
+    : m_client(nullptr)
     , m_listener(new CookieChangeListener(this))
-    , m_binding(m_listener.get())
+    , m_receiver(m_listener.get())
 {
 }
 
 CookieMonsterDelegateQt::~CookieMonsterDelegateQt()
 {
-
 }
 
 void CookieMonsterDelegateQt::AddStore(net::CookieStore *store)
@@ -123,9 +122,11 @@ void CookieMonsterDelegateQt::setCookie(quint64 callbackId, const QNetworkCookie
 
     if (callbackId != CallbackDirectory::NoCallbackId)
         callback = base::BindOnce(&CookieMonsterDelegateQt::SetCookieCallbackOnUIThread, this, callbackId);
+    net::CanonicalCookie::CookieInclusionStatus inclusion;
+    auto canonCookie = net::CanonicalCookie::Create(gurl, cookie_line, base::Time::Now(), base::nullopt, &inclusion);
     net::CookieOptions options;
-    options.set_include_httponly();
-    auto canonCookie = net::CanonicalCookie::Create(gurl, cookie_line, base::Time::Now(), options);
+    if (!inclusion.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY))
+        options.set_include_httponly();
     m_mojoCookieManager->SetCanonicalCookie(*canonCookie.get(), gurl.scheme(), options, std::move(callback));
 }
 
@@ -167,17 +168,15 @@ void CookieMonsterDelegateQt::deleteAllCookies(quint64 callbackId)
 
 void CookieMonsterDelegateQt::setMojoCookieManager(network::mojom::CookieManagerPtrInfo cookie_manager_info)
 {
-//    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-    if (m_binding)
+    if (m_mojoCookieManager.is_bound())
         unsetMojoCookieManager();
+
+    Q_ASSERT(!m_mojoCookieManager.is_bound());
+    Q_ASSERT(!m_receiver.is_bound());
 
     m_mojoCookieManager.Bind(std::move(cookie_manager_info));
 
-    network::mojom::CookieChangeListenerPtr listener_ptr;
-    m_binding.Bind(mojo::MakeRequest(&listener_ptr));
-
-    m_mojoCookieManager->AddGlobalChangeListener(std::move(listener_ptr));
+    m_mojoCookieManager->AddGlobalChangeListener(m_receiver.BindNewPipeAndPassRemote());
 
     if (m_client)
         m_client->d_func()->processPendingUserCookies();
@@ -185,7 +184,7 @@ void CookieMonsterDelegateQt::setMojoCookieManager(network::mojom::CookieManager
 
 void CookieMonsterDelegateQt::unsetMojoCookieManager()
 {
-    m_binding.Close();
+    m_receiver.reset();
     m_mojoCookieManager.reset();
 }
 
@@ -244,8 +243,7 @@ void CookieMonsterDelegateQt::GetAllCookiesResultOnUIThread(qint64 callbackId, c
 void CookieMonsterDelegateQt::SetCookieCallbackOnUIThread(qint64 callbackId, net::CanonicalCookie::CookieInclusionStatus status)
 {
     if (m_client)
-        m_client->d_func()->onSetCallbackResult(callbackId,
-                                                status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+        m_client->d_func()->onSetCallbackResult(callbackId, status.IsInclude());
 }
 
 void CookieMonsterDelegateQt::DeleteCookiesCallbackOnUIThread(qint64 callbackId, uint numCookies)

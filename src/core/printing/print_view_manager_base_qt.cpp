@@ -50,6 +50,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -150,7 +151,8 @@ printing::PrintedDocument *PrintViewManagerBaseQt::GetDocument(int cookie)
 
 // IPC handlers
 void PrintViewManagerBaseQt::OnDidPrintDocument(content::RenderFrameHost* /*render_frame_host*/,
-                                                const PrintHostMsg_DidPrintDocument_Params &params)
+                                                const PrintHostMsg_DidPrintDocument_Params &params,
+                                                std::unique_ptr<DelayedFrameDispatchHelper> helper)
 {
     printing::PrintedDocument *document = GetDocument(params.document_cookie);
     if (!document)
@@ -172,6 +174,21 @@ void PrintViewManagerBaseQt::OnDidPrintDocument(content::RenderFrameHost* /*rend
 
     PrintDocument(document, data, params.page_size, params.content_area,
                   params.physical_offsets);
+    if (helper)
+        helper->SendCompleted();
+}
+
+void PrintViewManagerBaseQt::OnGetDefaultPrintSettings(content::RenderFrameHost *render_frame_host,
+                                                       IPC::Message *reply_msg)
+{
+    NOTREACHED() << "should be handled by printing::PrintingMessageFilter";
+}
+
+void PrintViewManagerBaseQt::OnScriptedPrint(content::RenderFrameHost *render_frame_host,
+                                             const PrintHostMsg_ScriptedPrint_Params &params,
+                                             IPC::Message *reply_msg)
+{
+    NOTREACHED() << "should be handled by printing::PrintingMessageFilter";
 }
 
 void PrintViewManagerBaseQt::OnShowInvalidPrinterSettingsError()
@@ -212,13 +229,6 @@ bool PrintViewManagerBaseQt::OnMessageReceived(const IPC::Message& message,
                                                content::RenderFrameHost* render_frame_host)
 {
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintViewManagerBaseQt, message, render_frame_host)
-        IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintDocument, OnDidPrintDocument)
-        IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    if (handled)
-        return true;
-    handled = true;
     IPC_BEGIN_MESSAGE_MAP(PrintViewManagerBaseQt, message)
         IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError,
                             OnShowInvalidPrinterSettingsError);
@@ -514,20 +524,21 @@ void PrintViewManagerBaseQt::ReleasePrinterQuery()
     printerQuery = m_printerQueriesQueue->PopPrinterQuery(cookie);
     if (!printerQuery)
         return;
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&printing::PrinterQuery::StopWorker, std::move(printerQuery)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&printing::PrinterQuery::StopWorker, std::move(printerQuery)));
 }
 
 // Originally from print_preview_message_handler.cc:
-void PrintViewManagerBaseQt::StopWorker(int documentCookie) {
-  if (documentCookie <= 0)
-    return;
-  std::unique_ptr<printing::PrinterQuery> printer_query =
-      m_printerQueriesQueue->PopPrinterQuery(documentCookie);
-  if (printer_query.get()) {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                            base::BindOnce(&printing::PrinterQuery::StopWorker, std::move(printer_query)));
-  }
+void PrintViewManagerBaseQt::StopWorker(int documentCookie)
+{
+    if (documentCookie <= 0)
+        return;
+    std::unique_ptr<printing::PrinterQuery> printer_query =
+            m_printerQueriesQueue->PopPrinterQuery(documentCookie);
+    if (printer_query.get()) {
+        base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                       base::BindOnce(&printing::PrinterQuery::StopWorker, std::move(printer_query)));
+    }
 }
 
 void PrintViewManagerBaseQt::SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh)

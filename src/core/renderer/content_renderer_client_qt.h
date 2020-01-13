@@ -43,10 +43,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 #include <QScopedPointer>
 
@@ -76,7 +73,6 @@ class RenderThreadObserverQt;
 
 class ContentRendererClientQt
     : public content::ContentRendererClient
-    , public service_manager::Service
     , public service_manager::LocalInterfaceProvider
 {
 public:
@@ -125,19 +121,12 @@ public:
                          GURL *new_url,
                          bool *attach_same_site_cookies) override;
 
-    void CreateRendererService(service_manager::mojom::ServiceRequest service_request) override;
+    void BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver) override;
 
 private:
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     void InitSpellCheck();
 #endif
-    service_manager::Connector *GetConnector();
-
-    // service_manager::Service:
-    void OnBindInterface(const service_manager::BindSourceInfo &remote_info,
-                         const std::string &name,
-                         mojo::ScopedMessagePipeHandle handle) override;
-
     // service_manager::LocalInterfaceProvider:
     void GetInterface(const std::string &name, mojo::ScopedMessagePipeHandle request_handle) override;
 
@@ -151,8 +140,6 @@ private:
     QScopedPointer<SpellCheck> m_spellCheck;
 #endif
 
-    service_manager::mojom::ConnectorRequest m_connectorRequest;
-    service_manager::ServiceBinding m_serviceBinding;
     service_manager::BinderRegistry m_registry;
     std::unique_ptr<network_hints::PrescientNetworkingDispatcher> m_prescientNetworkingDispatcher;
 

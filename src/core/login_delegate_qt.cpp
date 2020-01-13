@@ -48,8 +48,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 
@@ -84,7 +82,7 @@ LoginDelegateQt::LoginDelegateQt(const net::AuthChallengeInfo &authInfo,
     , m_auth_required_callback(std::move(auth_required_callback))
     , m_weakFactory(this)
 {
-    base::PostTaskWithTraits(
+    base::PostTask(
             FROM_HERE, { content::BrowserThread::UI },
             base::BindOnce(&LoginDelegateQt::triggerDialog, m_weakFactory.GetWeakPtr()));
 }

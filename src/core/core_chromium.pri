@@ -123,7 +123,6 @@ SOURCES = \
         renderer_host/user_resource_controller_host.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
-        service/service_qt.cpp \
         touch_handle_drawable_qt.cpp \
         touch_selection_controller_client_qt.cpp \
         touch_selection_menu_controller.cpp \
@@ -236,7 +235,6 @@ HEADERS = \
         renderer_host/user_resource_controller_host.h \
         request_controller.h \
         resource_context_qt.h \
-        service/service_qt.h \
         touch_handle_drawable_client.h \
         touch_handle_drawable_qt.h \
         touch_selection_controller_client_qt.h \

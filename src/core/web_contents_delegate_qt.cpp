@@ -483,11 +483,12 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     Q_ASSERT(validated_url.is_valid());
     if (validated_url.spec() == content::kUnreachableWebDataURL) {
         m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
-        m_viewClient->iconChanged(QUrl());
 
         // Trigger LoadFinished signal for main frame's error page only.
-        if (!render_frame_host->GetParent())
+        if (!render_frame_host->GetParent()) {
+            m_viewClient->iconChanged(QUrl());
             EmitLoadFinished(true /* success */, toQt(validated_url), true /* isErrorPage */);
+        }
 
         return;
     }

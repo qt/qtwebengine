@@ -67,7 +67,7 @@ ProxyConfigMonitor::ProxyConfigMonitor(PrefService *prefs)
 
     proxy_config_service_.reset(
             new ProxyConfigServiceQt(
-                    prefs, base::CreateSingleThreadTaskRunnerWithTraits({ BrowserThread::UI })));
+                    prefs, base::CreateSingleThreadTaskRunner({ BrowserThread::UI })));
 
     proxy_config_service_->AddObserver(this);
 }

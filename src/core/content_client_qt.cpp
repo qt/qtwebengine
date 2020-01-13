@@ -435,11 +435,6 @@ gfx::Image &ContentClientQt::GetNativeImageNamed(int resource_id)
     return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }
 
-bool ContentClientQt::IsDataResourceGzipped(int resource_id)
-{
-    return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
-}
-
 base::string16 ContentClientQt::GetLocalizedString(int message_id)
 {
     return l10n_util::GetStringUTF16(message_id);

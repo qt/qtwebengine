@@ -725,8 +725,8 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
 
     if (resizeNeeded) {
         // Schedule navigation on the event loop.
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(&NavigateTask, sharedFromThis().toWeakRef(), std::move(params)));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(&NavigateTask, sharedFromThis().toWeakRef(), std::move(params)));
     } else {
         Navigate(this, params);
     }

@@ -84,8 +84,8 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/events/event_switches.h"
@@ -538,18 +538,15 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(enableFeatures, features::kAllowContentInitiatedDataUrlNavigations.name);
 
     appendToFeatureList(enableFeatures, features::kTracingServiceInProcess.name);
+    appendToFeatureList(enableFeatures, features::kNetworkServiceInProcess.name);
 
     // The video-capture service is not functioning at this moment (since 69)
     appendToFeatureList(disableFeatures, features::kMojoVideoCapture.name);
 
-    // We do not yet fully support the network-service, but it has been enabled by default since 75.
-    bool enableNetworkService  = !parsedCommandLine->HasSwitch("disable-network-service");
-    parsedCommandLine->RemoveSwitch("disable-network-service");
-    if (!enableNetworkService)
-        appendToFeatureList(disableFeatures, network::features::kNetworkService.name);
-
-    // BlinkGenPropertyTrees is enabled by default in 75, but causes regressions.
-    appendToFeatureList(disableFeatures, blink::features::kBlinkGenPropertyTrees.name);
+#if defined(Q_OS_LINUX)
+    // broken and crashy (even upstream):
+    appendToFeatureList(disableFeatures, features::kFontSrcLocalMatching.name);
+#endif
 
 #if QT_CONFIG(webengine_printing_and_pdf)
     appendToFeatureList(disableFeatures, printing::features::kUsePdfCompositorServiceForPrint.name);
@@ -557,7 +554,6 @@ WebEngineContext::WebEngineContext()
 
     // Explicitly tell Chromium about default-on features we do not support
     appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
-    appendToFeatureList(disableFeatures, features::kOriginTrials.name);
     appendToFeatureList(disableFeatures, features::kSmsReceiver.name);
     appendToFeatureList(disableFeatures, features::kWebAuth.name);
     appendToFeatureList(disableFeatures, features::kWebAuthCable.name);
@@ -708,12 +704,10 @@ WebEngineContext::WebEngineContext()
     m_mainDelegate->PostEarlyInitialization(false);
     content::StartBrowserThreadPool();
     content::BrowserTaskExecutor::PostFeatureListSetup();
+    tracing::InitTracingPostThreadPoolStartAndFeatureList();
     m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
     m_serviceManagerEnvironment = std::make_unique<content::ServiceManagerEnvironment>(content::BrowserTaskExecutor::CreateIOThread());
     m_startupData = m_serviceManagerEnvironment->CreateBrowserStartupData();
-
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-        content::ForceInProcessNetworkService(true);
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);

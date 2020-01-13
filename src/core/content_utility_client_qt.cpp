@@ -40,6 +40,7 @@
 #include "content_utility_client_qt.h"
 
 #include "base/no_destructor.h"
+#include "mojo/public/cpp/bindings/service_factory.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 
 namespace QtWebEngineCore {
@@ -50,12 +51,17 @@ ContentUtilityClientQt::ContentUtilityClientQt()
 
 ContentUtilityClientQt::~ContentUtilityClientQt() = default;
 
-void ContentUtilityClientQt::RunIOThreadService(mojo::GenericPendingReceiver *receiver)
+auto RunProxyResolver(mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolverFactory> receiver)
 {
-    if (auto factory_receiver = receiver->As<proxy_resolver::mojom::ProxyResolverFactory>()) {
-        static base::NoDestructor<proxy_resolver::ProxyResolverFactoryImpl> factory(std::move(factory_receiver));
-        return;
-    }
+    return std::make_unique<proxy_resolver::ProxyResolverFactoryImpl>(std::move(receiver));
+}
+
+mojo::ServiceFactory *ContentUtilityClientQt::GetIOThreadServiceFactory()
+{
+    static base::NoDestructor<mojo::ServiceFactory> factory {
+        RunProxyResolver,
+    };
+    return factory.get();
 }
 
 } // namespace
