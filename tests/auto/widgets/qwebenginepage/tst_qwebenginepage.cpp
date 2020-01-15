@@ -763,7 +763,7 @@ void tst_QWebEnginePage::backActionUpdate()
     page->load(url);
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
     QVERIFY(!action->isEnabled());
-    QTest::mouseClick(&view, Qt::LeftButton, 0, QPoint(10, 10));
+    QTest::mouseClick(&view, Qt::LeftButton, {}, QPoint(10, 10));
     QEXPECT_FAIL("", "Behavior change: Load signals are emitted only for the main frame in QtWebEngine.", Continue);
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 2, 100);
 
@@ -948,7 +948,7 @@ void tst_QWebEnginePage::findText()
     {
         CallbackSpy<bool> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
-        m_view->findText("", 0, callbackSpy.ref());
+        m_view->findText("", {}, callbackSpy.ref());
         QVERIFY(callbackSpy.wasCalled());
         QCOMPARE(signalSpy.count(), 1);
         QTRY_COMPARE(m_view->selectedText(), QString("foo bar"));
@@ -959,7 +959,7 @@ void tst_QWebEnginePage::findText()
     {
         CallbackSpy<bool> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
-        m_view->findText("Will not be found", 0, callbackSpy.ref());
+        m_view->findText("Will not be found", {}, callbackSpy.ref());
         QCOMPARE(callbackSpy.waitForResult(), false);
         QTRY_COMPARE(signalSpy.count(), 1);
         auto result = signalSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
@@ -976,7 +976,7 @@ void tst_QWebEnginePage::findText()
     {
         CallbackSpy<bool> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
-        m_view->findText("foo", 0, callbackSpy.ref());
+        m_view->findText("foo", {}, callbackSpy.ref());
         QVERIFY(callbackSpy.waitForResult());
         QTRY_COMPARE(signalSpy.count(), 1);
         QTRY_VERIFY(m_view->selectedText().isEmpty());
@@ -987,7 +987,7 @@ void tst_QWebEnginePage::findText()
     {
         CallbackSpy<bool> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
-        m_view->findText("", 0, callbackSpy.ref());
+        m_view->findText("", {}, callbackSpy.ref());
         QTRY_VERIFY(callbackSpy.wasCalled());
         QTRY_COMPARE(signalSpy.count(), 1);
         QTRY_COMPARE(m_view->selectedText(), QString("foo"));
@@ -997,8 +997,8 @@ void tst_QWebEnginePage::findText()
     // should interrupt the first one.
     {
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
-        m_view->findText("foo", 0);
-        m_view->findText("foo", 0);
+        m_view->findText("foo", {});
+        m_view->findText("foo", {});
         QTRY_COMPARE(signalSpy.count(), 2);
         QTRY_VERIFY(m_view->selectedText().isEmpty());
 
@@ -1053,11 +1053,11 @@ void tst_QWebEnginePage::findTextSuccessiveShouldCallAllCallbacks()
     QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
     m_view->setHtml(QString("<html><head></head><body><div>abcdefg abcdefg abcdefg abcdefg abcdefg</div></body></html>"));
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
-    m_page->findText("abcde", 0, spy1.ref());
-    m_page->findText("abcd", 0, spy2.ref());
-    m_page->findText("abc", 0, spy3.ref());
-    m_page->findText("ab", 0, spy4.ref());
-    m_page->findText("a", 0, spy5.ref());
+    m_page->findText("abcde", {}, spy1.ref());
+    m_page->findText("abcd", {}, spy2.ref());
+    m_page->findText("abc", {}, spy3.ref());
+    m_page->findText("ab", {}, spy4.ref());
+    m_page->findText("a", {}, spy5.ref());
     spy5.waitForResult();
     QVERIFY(spy1.wasCalled());
     QVERIFY(spy2.wasCalled());
@@ -1078,10 +1078,10 @@ void tst_QWebEnginePage::findTextCalledOnMatch()
 
     // CALLBACK
     bool callbackCalled = false;
-    m_view->page()->findText("foo", 0, [this, &callbackCalled](bool found) {
+    m_view->page()->findText("foo", {}, [this, &callbackCalled](bool found) {
         QVERIFY(found);
 
-        m_view->page()->findText("bar", 0, [&callbackCalled](bool found) {
+        m_view->page()->findText("bar", {}, [&callbackCalled](bool found) {
             QVERIFY(found);
             callbackCalled = true;
         });
@@ -1115,7 +1115,7 @@ void tst_QWebEnginePage::findTextActiveMatchOrdinal()
 
     // Iterate over all "foo" matches.
     for (int i = 1; i <= 3; ++i) {
-        m_view->page()->findText("foo", 0);
+        m_view->page()->findText("foo", {});
         QTRY_COMPARE(findTextSpy.count(), 1);
         result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
         QCOMPARE(result.numberOfMatches(), 3);
@@ -1123,7 +1123,7 @@ void tst_QWebEnginePage::findTextActiveMatchOrdinal()
     }
 
     // The last match is followed by the fist one.
-    m_view->page()->findText("foo", 0);
+    m_view->page()->findText("foo", {});
     QTRY_COMPARE(findTextSpy.count(), 1);
     result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
     QCOMPARE(result.numberOfMatches(), 3);
@@ -1137,14 +1137,14 @@ void tst_QWebEnginePage::findTextActiveMatchOrdinal()
     QCOMPARE(result.activeMatch(), 3);
 
     // Finding another word resets the activeMatch.
-    m_view->page()->findText("bar", 0);
+    m_view->page()->findText("bar", {});
     QTRY_COMPARE(findTextSpy.count(), 1);
     result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
     QCOMPARE(result.numberOfMatches(), 2);
     QCOMPARE(result.activeMatch(), 1);
 
     // If no match activeMatch is 0.
-    m_view->page()->findText("bla", 0);
+    m_view->page()->findText("bla", {});
     QTRY_COMPARE(findTextSpy.count(), 1);
     result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
     QCOMPARE(result.numberOfMatches(), 0);
@@ -3366,7 +3366,7 @@ void tst_QWebEnginePage::dataURLFragment()
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
 
     QSignalSpy urlChangedSpy(m_page, SIGNAL(urlChanged(QUrl)));
-    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, 0, elementCenter(m_page, "link"));
+    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, {}, elementCenter(m_page, "link"));
     QVERIFY(urlChangedSpy.wait());
     QCOMPARE(m_page->url().fragment(), QStringLiteral("anchor"));
 
@@ -3376,7 +3376,7 @@ void tst_QWebEnginePage::dataURLFragment()
                     "</body></html>", QUrl("http://test.qt.io/mytest.html"));
     QTRY_COMPARE(loadFinishedSpy.count(), 2);
 
-    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, 0, elementCenter(m_page, "link"));
+    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, {}, elementCenter(m_page, "link"));
     QVERIFY(urlChangedSpy.wait());
     QCOMPARE(m_page->url(), QUrl("http://test.qt.io/mytest.html#anchor"));
 }
@@ -3446,7 +3446,7 @@ void tst_QWebEnginePage::openLinkInDifferentProfile()
     QTRY_COMPARE(spy1.count(), 1);
     QVERIFY(spy1.takeFirst().value(0).toBool());
     page1.targetPage = &page2;
-    QTest::mouseClick(view.focusProxy(), Qt::MiddleButton, 0, elementCenter(&page1, "link"));
+    QTest::mouseClick(view.focusProxy(), Qt::MiddleButton, {}, elementCenter(&page1, "link"));
     QTRY_COMPARE(spy2.count(), 1);
     QVERIFY(spy2.takeFirst().value(0).toBool());
 }
@@ -4403,7 +4403,7 @@ void tst_QWebEnginePage::customUserAgentInNewTab()
     QTRY_COMPARE(spy.count(), 1);
     QVERIFY(spy.takeFirst().value(0).toBool());
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), profile1.httpUserAgent());
-    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, elementCenter(&page, "link"));
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
     QTRY_VERIFY(page.newPage);
     QTRY_VERIFY(!lastUserAgent.isEmpty());
     QCOMPARE(lastUserAgent, profile1.httpUserAgent().toUtf8());
@@ -4418,7 +4418,7 @@ void tst_QWebEnginePage::customUserAgentInNewTab()
                  QString("'>link</a></body></html>"));
     QTRY_COMPARE(spy.count(), 1);
     QVERIFY(spy.takeFirst().value(0).toBool());
-    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, elementCenter(&page, "link"));
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
     QTRY_VERIFY(page.newPage);
     QTRY_VERIFY(!lastUserAgent.isEmpty());
     QCOMPARE(lastUserAgent, profile2.httpUserAgent().toUtf8());

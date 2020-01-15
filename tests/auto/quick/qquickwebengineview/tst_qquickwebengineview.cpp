@@ -582,7 +582,7 @@ void tst_QQuickWebEngineView::interruptImeTextComposition()
     QFETCH(QString, eventType);
     if (eventType == "MouseButton") {
         QPoint textInputCenter = elementCenter(view, QStringLiteral("input2"));
-        QTest::mouseClick(view->window(), Qt::LeftButton, 0, textInputCenter);
+        QTest::mouseClick(view->window(), Qt::LeftButton, {}, textInputCenter);
     } else if (eventType == "Touch") {
         QPoint textInputCenter = elementCenter(view, QStringLiteral("input2"));
         QTouchDevice *touchDevice = QTest::createTouchDevice();
@@ -619,7 +619,7 @@ void tst_QQuickWebEngineView::inputContextQueryInput()
 
     // Set focus on an input field.
     QPoint textInputCenter = elementCenter(view, "input1");
-    QTest::mouseClick(view->window(), Qt::LeftButton, 0, textInputCenter);
+    QTest::mouseClick(view->window(), Qt::LeftButton, {}, textInputCenter);
     QTRY_COMPARE(testContext.infos.count(), 2);
     QCOMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input1"));
     foreach (const InputMethodInfo &info, testContext.infos) {

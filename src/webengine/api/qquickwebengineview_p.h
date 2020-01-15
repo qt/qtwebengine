@@ -520,7 +520,7 @@ public Q_SLOTS:
     void reload();
     Q_REVISION(1) void reloadAndBypassCache();
     void stop();
-    Q_REVISION(1) void findText(const QString &subString, FindFlags options = 0, const QJSValue &callback = QJSValue());
+    Q_REVISION(1) void findText(const QString &subString, FindFlags options = { }, const QJSValue &callback = QJSValue());
     Q_REVISION(1) void fullScreenCancelled();
     Q_REVISION(1) void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
     Q_REVISION(2) void setActiveFocusOnPress(bool arg);

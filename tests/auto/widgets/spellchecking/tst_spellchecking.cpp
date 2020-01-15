@@ -41,10 +41,10 @@ public:
     void activateMenu(QWidget *widget, const QPoint &position)
     {
         QTest::mouseMove(widget, position);
-        QTest::mousePress(widget, Qt::RightButton, 0, position);
+        QTest::mousePress(widget, Qt::RightButton, {}, position);
         QContextMenuEvent evcont(QContextMenuEvent::Mouse, position, mapToGlobal(position));
         event(&evcont);
-        QTest::mouseRelease(widget, Qt::RightButton, 0, position);
+        QTest::mouseRelease(widget, Qt::RightButton, {}, position);
     }
 
     const QWebEngineContextMenuData& data()
@@ -175,8 +175,8 @@ void tst_Spellchecking::spellcheck()
 
     //type text, spellchecker needs time
     QTest::mouseMove(m_view->focusWidget(), QPoint(20,20));
-    QTest::mousePress(m_view->focusWidget(), Qt::LeftButton, 0, QPoint(20,20));
-    QTest::mouseRelease(m_view->focusWidget(), Qt::LeftButton, 0, QPoint(20,20));
+    QTest::mousePress(m_view->focusWidget(), Qt::LeftButton, {}, QPoint(20,20));
+    QTest::mouseRelease(m_view->focusWidget(), Qt::LeftButton, {}, QPoint(20,20));
     QString text("I lowe Qt ....");
     for (int i = 0; i < text.length(); i++) {
         QTest::keyClicks(m_view->focusWidget(), text.at(i));
