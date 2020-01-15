@@ -92,6 +92,8 @@ private Q_SLOTS:
     void javascriptClipboard_data();
     void javascriptClipboard();
     void setProfile();
+    void focusChild();
+    void focusChild_data();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -1162,5 +1164,71 @@ void tst_QQuickWebEngineView::setProfile() {
     QTRY_COMPARE(webEngineView()->url() ,urlFromTestPath("html/basic_page2.html"));
 }
 
-QTEST_MAIN(tst_QQuickWebEngineView)
+void tst_QQuickWebEngineView::focusChild_data()
+{
+    QTest::addColumn<QString>("interfaceName");
+    QTest::addColumn<QVector<QAccessible::Role>>("ancestorRoles");
+
+    QTest::newRow("QQuickWebEngineView") << QString("QQuickWebEngineView") << QVector<QAccessible::Role>({QAccessible::Client});
+    QTest::newRow("RenderWidgetHostViewQtDelegate") << QString("RenderWidgetHostViewQtDelegate") << QVector<QAccessible::Role>({QAccessible::Client});
+    QTest::newRow("QQuickView") << QString("QQuickView") << QVector<QAccessible::Role>({QAccessible::Window, QAccessible::Client /* view */});
+}
+
+void tst_QQuickWebEngineView::focusChild()
+{
+    auto traverseToWebDocumentAccessibleInterface = [](QAccessibleInterface *iface) -> QAccessibleInterface * {
+        QFETCH(QVector<QAccessible::Role>, ancestorRoles);
+        for (int i = 0; i < ancestorRoles.size(); ++i) {
+            if (iface->childCount() == 0 || iface->role() != ancestorRoles[i])
+                return nullptr;
+            iface = iface->child(0);
+        }
+
+        if (iface->role() != QAccessible::WebDocument)
+            return nullptr;
+
+        return iface;
+    };
+
+    QQuickWebEngineView *view = webEngineView();
+    m_window->show();
+    view->settings()->setFocusOnNavigationEnabled(true);
+    view->setSize(QSizeF(640, 480));
+    view->loadHtml("<html><body>"
+                   "<input id='input1' type='text'>"
+                   "</body></html>");
+    QVERIFY(waitForLoadSucceeded(view));
+
+    QAccessibleInterface *iface = nullptr;
+    QFETCH(QString, interfaceName);
+    if (interfaceName == "QQuickWebEngineView")
+        iface = QAccessible::queryAccessibleInterface(view);
+    else if (interfaceName == "RenderWidgetHostViewQtDelegate")
+        iface = QAccessible::queryAccessibleInterface(m_window->focusObject());
+    else if (interfaceName == "QQuickView")
+        iface = QAccessible::queryAccessibleInterface(m_window.data());
+    QVERIFY(iface);
+
+    // Make sure the input field does not have the focus.
+    runJavaScript("document.getElementById('input1').blur();");
+    QTRY_VERIFY(evaluateJavaScriptSync(view, "document.activeElement.id").toString().isEmpty());
+
+    QVERIFY(iface->focusChild());
+    QTRY_COMPARE(iface->focusChild()->role(), QAccessible::WebDocument);
+    QCOMPARE(traverseToWebDocumentAccessibleInterface(iface), iface->focusChild());
+
+    // Set active focus on the input field.
+    runJavaScript("document.getElementById('input1').focus();");
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input1"));
+
+    QVERIFY(iface->focusChild());
+    QTRY_COMPARE(iface->focusChild()->role(), QAccessible::EditableText);
+    // <html> -> <body> -> <input>
+    QCOMPARE(traverseToWebDocumentAccessibleInterface(iface)->child(0)->child(0), iface->focusChild());
+}
+
+static QByteArrayList params = QByteArrayList()
+    << "--force-renderer-accessibility";
+
+W_QTEST_MAIN(tst_QQuickWebEngineView, params)
 #include "tst_qquickwebengineview.moc"

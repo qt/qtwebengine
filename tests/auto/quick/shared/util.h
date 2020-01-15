@@ -168,11 +168,19 @@ inline QString activeElementId(QQuickWebEngineView *webEngineView)
     return arguments.at(1).toString();
 }
 
-#define W_QTEST_MAIN(TestObject) \
+#define W_QTEST_MAIN(TestObject, params) \
 int main(int argc, char *argv[]) \
 { \
     QtWebEngine::initialize(); \
-    QGuiApplication app(argc, argv); \
+    \
+    QVector<const char *> w_argv(argc); \
+    for (int i = 0; i < argc; ++i) \
+        w_argv[i] = argv[i]; \
+    for (int i = 0; i < params.size(); ++i) \
+        w_argv.append(params[i].data()); \
+    int w_argc = w_argv.size(); \
+    \
+    QGuiApplication app(w_argc, const_cast<char **>(w_argv.data())); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \

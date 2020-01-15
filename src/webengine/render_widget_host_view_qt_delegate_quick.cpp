@@ -373,4 +373,53 @@ bool RenderWidgetHostViewQtDelegateQuick::copySurface(const QRect &rect, const Q
     return true;
 }
 
+#if QT_CONFIG(accessibility)
+RenderWidgetHostViewQtDelegateQuickAccessible::RenderWidgetHostViewQtDelegateQuickAccessible(RenderWidgetHostViewQtDelegateQuick *o, QQuickWebEngineView *view)
+    : QAccessibleObject(o)
+    , m_view(view)
+{
+}
+
+QAccessibleInterface *RenderWidgetHostViewQtDelegateQuickAccessible::parent() const
+{
+    return QAccessible::queryAccessibleInterface(m_view)->parent();
+}
+
+QString RenderWidgetHostViewQtDelegateQuickAccessible::text(QAccessible::Text) const
+{
+    return QString();
+}
+
+QAccessible::Role RenderWidgetHostViewQtDelegateQuickAccessible::role() const
+{
+    return QAccessible::Client;
+}
+
+QAccessible::State RenderWidgetHostViewQtDelegateQuickAccessible::state() const
+{
+    return QAccessible::queryAccessibleInterface(m_view)->state();
+}
+
+QAccessibleInterface *RenderWidgetHostViewQtDelegateQuickAccessible::focusChild() const
+{
+    return QAccessible::queryAccessibleInterface(m_view)->focusChild();
+}
+
+int RenderWidgetHostViewQtDelegateQuickAccessible::childCount() const
+{
+    return QAccessible::queryAccessibleInterface(m_view)->childCount();
+}
+
+QAccessibleInterface *RenderWidgetHostViewQtDelegateQuickAccessible::child(int index) const
+{
+    return QAccessible::queryAccessibleInterface(m_view)->child(index);
+}
+
+int RenderWidgetHostViewQtDelegateQuickAccessible::indexOfChild(const QAccessibleInterface *c) const
+{
+    return QAccessible::queryAccessibleInterface(m_view)->indexOfChild(c);
+}
+
+#endif // QT_CONFIG(accessibility)
+
 } // namespace QtWebEngineCore
