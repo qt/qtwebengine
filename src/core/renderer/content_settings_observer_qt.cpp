@@ -63,40 +63,37 @@ bool IsUniqueFrame(blink::WebFrame *frame)
            frame->Top()->GetSecurityOrigin().IsUnique();
 }
 
-}  // namespace
+} // namespace
 
 namespace QtWebEngineCore {
 
 ContentSettingsObserverQt::ContentSettingsObserverQt(content::RenderFrame *render_frame)
-        : content::RenderFrameObserver(render_frame)
-        , content::RenderFrameObserverTracker<ContentSettingsObserverQt>(render_frame)
-        , m_currentRequestId(0)
+    : content::RenderFrameObserver(render_frame)
+    , content::RenderFrameObserverTracker<ContentSettingsObserverQt>(render_frame)
+    , m_currentRequestId(0)
 {
     ClearBlockedContentSettings();
     render_frame->GetWebFrame()->SetContentSettingsClient(this);
 }
 
-ContentSettingsObserverQt::~ContentSettingsObserverQt() {
-}
+ContentSettingsObserverQt::~ContentSettingsObserverQt() {}
 
-bool ContentSettingsObserverQt::OnMessageReceived(const IPC::Message& message)
+bool ContentSettingsObserverQt::OnMessageReceived(const IPC::Message &message)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(ContentSettingsObserverQt, message)
-        IPC_MESSAGE_HANDLER(QtWebEngineMsg_RequestFileSystemAccessAsyncResponse,
-                            OnRequestFileSystemAccessAsyncResponse)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+        IPC_MESSAGE_HANDLER(QtWebEngineMsg_RequestFileSystemAccessAsyncResponse, OnRequestFileSystemAccessAsyncResponse)
+        IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 
     return handled;
 }
 
-void ContentSettingsObserverQt::DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                                         ui::PageTransition /*transition*/)
+void ContentSettingsObserverQt::DidCommitProvisionalLoad(bool is_same_document_navigation, ui::PageTransition /*transition*/)
 {
-    blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+    blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     if (frame->Parent())
-        return;  // Not a top-level navigation.
+        return; // Not a top-level navigation.
 
     if (!is_same_document_navigation)
         ClearBlockedContentSettings();
@@ -104,8 +101,7 @@ void ContentSettingsObserverQt::DidCommitProvisionalLoad(bool is_same_document_n
     GURL url = frame->GetDocument().Url();
     // If we start failing this DCHECK, please makes sure we don't regress
     // this bug: http://code.google.com/p/chromium/issues/detail?id=79304
-    DCHECK(frame->GetDocument().GetSecurityOrigin().ToString() == "null" ||
-           !url.SchemeIs(url::kDataScheme));
+    DCHECK(frame->GetDocument().GetSecurityOrigin().ToString() == "null" || !url.SchemeIs(url::kDataScheme));
 }
 
 void ContentSettingsObserverQt::OnDestruct()
@@ -120,10 +116,8 @@ bool ContentSettingsObserverQt::AllowDatabase()
         return false;
 
     bool result = false;
-    Send(new QtWebEngineHostMsg_AllowDatabase(
-             routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
-             url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(),
-             &result));
+    Send(new QtWebEngineHostMsg_AllowDatabase(routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
+                                              url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), &result));
     return result;
 }
 
@@ -140,10 +134,9 @@ void ContentSettingsObserverQt::RequestFileSystemAccessAsync(base::OnceCallback<
     // Verify there are no duplicate insertions.
     DCHECK(inserted);
 
-    Send(new QtWebEngineHostMsg_RequestFileSystemAccessAsync(
-             routing_id(), m_currentRequestId,
-             url::Origin(frame->GetSecurityOrigin()).GetURL(),
-             url::Origin(frame->Top()->GetSecurityOrigin()).GetURL()));
+    Send(new QtWebEngineHostMsg_RequestFileSystemAccessAsync(routing_id(), m_currentRequestId,
+                                                             url::Origin(frame->GetSecurityOrigin()).GetURL(),
+                                                             url::Origin(frame->Top()->GetSecurityOrigin()).GetURL()));
 }
 
 bool ContentSettingsObserverQt::AllowIndexedDB(const WebSecurityOrigin &origin)
@@ -153,10 +146,8 @@ bool ContentSettingsObserverQt::AllowIndexedDB(const WebSecurityOrigin &origin)
         return false;
 
     bool result = false;
-    Send(new QtWebEngineHostMsg_AllowIndexedDB(
-             routing_id(), url::Origin(origin).GetURL(),
-             url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(),
-             &result));
+    Send(new QtWebEngineHostMsg_AllowIndexedDB(routing_id(), url::Origin(origin).GetURL(),
+                                               url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), &result));
     return result;
 }
 
@@ -172,9 +163,8 @@ bool ContentSettingsObserverQt::AllowStorage(bool local)
         return permissions->second;
 
     bool result = false;
-    Send(new QtWebEngineHostMsg_AllowDOMStorage(
-             routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
-             url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), local, &result));
+    Send(new QtWebEngineHostMsg_AllowDOMStorage(routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
+                                                url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), local, &result));
     m_cachedStoragePermissions[key] = result;
     return result;
 }

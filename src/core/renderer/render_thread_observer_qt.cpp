@@ -52,7 +52,8 @@ bool RenderThreadObserverQt::m_isIncognitoProcess = false;
 
 void RenderThreadObserverQt::RegisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
-    associated_interfaces->AddInterface(base::Bind(&RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest, base::Unretained(this)));
+    associated_interfaces->AddInterface(
+            base::Bind(&RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest, base::Unretained(this)));
 }
 
 void RenderThreadObserverQt::UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces)
@@ -65,7 +66,8 @@ void RenderThreadObserverQt::SetInitialConfiguration(bool is_incognito_process)
     m_isIncognitoProcess = is_incognito_process;
 }
 
-void RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest(qtwebengine::mojom::RendererConfigurationAssociatedRequest request)
+void RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest(
+        qtwebengine::mojom::RendererConfigurationAssociatedRequest request)
 {
     m_rendererConfigurationBindings.AddBinding(this, std::move(request));
 }

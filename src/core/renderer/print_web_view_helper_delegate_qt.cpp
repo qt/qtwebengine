@@ -52,21 +52,17 @@
 #include "web_engine_library_info.h"
 
 namespace QtWebEngineCore {
-PrintWebViewHelperDelegateQt::~PrintWebViewHelperDelegateQt()
-{
-
-}
+PrintWebViewHelperDelegateQt::~PrintWebViewHelperDelegateQt() {}
 
 bool PrintWebViewHelperDelegateQt::CancelPrerender(content::RenderFrame *)
 {
     return false;
 }
 
-blink::WebElement PrintWebViewHelperDelegateQt::GetPdfElement(blink::WebLocalFrame* frame)
+blink::WebElement PrintWebViewHelperDelegateQt::GetPdfElement(blink::WebLocalFrame *frame)
 {
     GURL url = frame->GetDocument().Url();
-    if (url.SchemeIs(extensions::kExtensionScheme) && url.host() == extension_misc::kPdfExtensionId)
-    {
+    if (url.SchemeIs(extensions::kExtensionScheme) && url.host() == extension_misc::kPdfExtensionId) {
         // <object> with id="plugin" is created in
         // chrome/browser/resources/pdf/pdf.js.
         auto plugin_element = frame->GetDocument().GetElementById("plugin");
@@ -81,7 +77,7 @@ bool PrintWebViewHelperDelegateQt::IsPrintPreviewEnabled()
     return true;
 }
 
-bool PrintWebViewHelperDelegateQt::OverridePrint(blink::WebLocalFrame* frame)
+bool PrintWebViewHelperDelegateQt::OverridePrint(blink::WebLocalFrame *frame)
 {
     return false;
 }

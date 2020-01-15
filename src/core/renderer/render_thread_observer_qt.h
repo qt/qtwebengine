@@ -46,10 +46,11 @@
 
 namespace QtWebEngineCore {
 
-class RenderThreadObserverQt : public content::RenderThreadObserver,
-                               public qtwebengine::mojom::RendererConfiguration {
+class RenderThreadObserverQt
+    : public content::RenderThreadObserver
+    , public qtwebengine::mojom::RendererConfiguration
+{
 public:
-
     RenderThreadObserverQt() = default;
     ~RenderThreadObserverQt() override = default;
 

@@ -55,30 +55,25 @@
 
 namespace QtWebEngineCore {
 
-RenderFrameObserverQt::RenderFrameObserverQt(content::RenderFrame* render_frame,
-                                             web_cache::WebCacheImpl* web_cache_impl)
+RenderFrameObserverQt::RenderFrameObserverQt(content::RenderFrame *render_frame, web_cache::WebCacheImpl *web_cache_impl)
     : RenderFrameObserver(render_frame)
     , RenderFrameObserverTracker<RenderFrameObserverQt>(render_frame)
     , m_isFrameDetached(false)
     , m_web_cache_impl(web_cache_impl)
-{
-}
+{}
 
-RenderFrameObserverQt::~RenderFrameObserverQt()
-{
-}
+RenderFrameObserverQt::~RenderFrameObserverQt() {}
 
-void RenderFrameObserverQt::OnDestruct() {
+void RenderFrameObserverQt::OnDestruct()
+{
     delete this;
 }
 
 #if QT_CONFIG(webengine_pepper_plugins)
-void RenderFrameObserverQt::DidCreatePepperPlugin(content::RendererPpapiHost* host)
+void RenderFrameObserverQt::DidCreatePepperPlugin(content::RendererPpapiHost *host)
 {
-    host->GetPpapiHost()->AddHostFactoryFilter(
-                base::WrapUnique(new PepperRendererHostFactoryQt(host)));
-    host->GetPpapiHost()->AddInstanceMessageFilter(
-                base::WrapUnique(new PepperSharedMemoryMessageFilter(host)));
+    host->GetPpapiHost()->AddHostFactoryFilter(base::WrapUnique(new PepperRendererHostFactoryQt(host)));
+    host->GetPpapiHost()->AddInstanceMessageFilter(base::WrapUnique(new PepperSharedMemoryMessageFilter(host)));
 }
 #endif
 

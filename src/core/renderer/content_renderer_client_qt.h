@@ -74,9 +74,10 @@ namespace QtWebEngineCore {
 
 class RenderThreadObserverQt;
 
-class ContentRendererClientQt : public content::ContentRendererClient
-                              , public service_manager::Service
-                              , public service_manager::LocalInterfaceProvider
+class ContentRendererClientQt
+    : public content::ContentRendererClient
+    , public service_manager::Service
+    , public service_manager::LocalInterfaceProvider
 {
 public:
     ContentRendererClientQt();
@@ -85,7 +86,7 @@ public:
     // content::ContentRendererClient:
     void RenderThreadStarted() override;
     void RenderViewCreated(content::RenderView *render_view) override;
-    void RenderFrameCreated(content::RenderFrame* render_frame) override;
+    void RenderFrameCreated(content::RenderFrame *render_frame) override;
     bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) override;
     bool HasErrorPage(int http_status_code) override;
 
@@ -103,16 +104,19 @@ public:
 
     uint64_t VisitedLinkHash(const char *canonical_url, size_t length) override;
     bool IsLinkVisited(uint64_t linkHash) override;
-    blink::WebPrescientNetworking* GetPrescientNetworking() override;
-    void AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) override;
+    blink::WebPrescientNetworking *GetPrescientNetworking() override;
+    void AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>> *key_systems) override;
 
     void RunScriptsAtDocumentStart(content::RenderFrame *render_frame) override;
     void RunScriptsAtDocumentEnd(content::RenderFrame *render_frame) override;
     void RunScriptsAtDocumentIdle(content::RenderFrame *render_frame) override;
-    bool OverrideCreatePlugin(content::RenderFrame* render_frame,
-        const blink::WebPluginParams& params, blink::WebPlugin** plugin) override;
-    content::BrowserPluginDelegate* CreateBrowserPluginDelegate(content::RenderFrame* render_frame,
-        const content::WebPluginInfo& info, const std::string& mime_type, const GURL& original_url) override;
+    bool OverrideCreatePlugin(content::RenderFrame *render_frame,
+                              const blink::WebPluginParams &params,
+                              blink::WebPlugin **plugin) override;
+    content::BrowserPluginDelegate *CreateBrowserPluginDelegate(content::RenderFrame *render_frame,
+                                                                const content::WebPluginInfo &info,
+                                                                const std::string &mime_type,
+                                                                const GURL &original_url) override;
 
     void WillSendRequest(blink::WebLocalFrame *frame,
                          ui::PageTransition transition_type,
@@ -135,10 +139,10 @@ private:
                          mojo::ScopedMessagePipeHandle handle) override;
 
     // service_manager::LocalInterfaceProvider:
-    void GetInterface(const std::string& name, mojo::ScopedMessagePipeHandle request_handle) override;
+    void GetInterface(const std::string &name, mojo::ScopedMessagePipeHandle request_handle) override;
 
-    void GetNavigationErrorStringsInternal(content::RenderFrame* renderFrame, const std::string &httpMethod,
-                                           const error_page::Error& error, std::string* errorHtml);
+    void GetNavigationErrorStringsInternal(content::RenderFrame *renderFrame, const std::string &httpMethod,
+                                           const error_page::Error &error, std::string *errorHtml);
 
     QScopedPointer<RenderThreadObserverQt> m_renderThreadObserver;
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;

@@ -58,9 +58,9 @@ namespace QtWebEngineCore {
 
 // Handles blocking content per content settings for each RenderFrame.
 class ContentSettingsObserverQt
-        : public content::RenderFrameObserver
-        , public content::RenderFrameObserverTracker<ContentSettingsObserverQt>
-        , public blink::WebContentSettingsClient
+    : public content::RenderFrameObserver
+    , public content::RenderFrameObserverTracker<ContentSettingsObserverQt>
+    , public blink::WebContentSettingsClient
 {
 public:
     ContentSettingsObserverQt(content::RenderFrame *render_frame);
@@ -73,11 +73,9 @@ public:
     bool AllowStorage(bool local) override;
 
 private:
-
     // RenderFrameObserver implementation:
     bool OnMessageReceived(const IPC::Message &message) override;
-    void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                  ui::PageTransition transition) override;
+    void DidCommitProvisionalLoad(bool is_same_document_navigation, ui::PageTransition transition) override;
     void OnDestruct() override;
 
     // Message handlers.
@@ -98,4 +96,4 @@ private:
 
 } // namespace QtWebEngineCore
 
-#endif  // RENDERER_CONTENT_SETTINGS_OBSERVER_QT_H
+#endif // RENDERER_CONTENT_SETTINGS_OBSERVER_QT_H
