@@ -122,6 +122,7 @@ Q_SIGNALS:
 
 private:
     friend class QPdfBookmarkModelPrivate;
+    friend class QPdfLinkModelPrivate;
     friend class QPdfSearchModel;
 
     Q_PRIVATE_SLOT(d, void _q_tryLoadingWithSizeFromContentHeader())

@@ -118,6 +118,32 @@ Rectangle {
             }
         }
     }
+
+    Repeater {
+        model: PdfLinkModel {
+            id: linkModel
+            document: paper.document
+            page: image.currentFrame
+        }
+        delegate: Rectangle {
+            color: "transparent"
+            border.color: "lightgrey"
+            x: rect.x * paper.__pageScale
+            y: rect.y * paper.__pageScale
+            width: rect.width * paper.__pageScale
+            height: rect.height * paper.__pageScale
+            HoverHandler { cursorShape: Qt.PointingHandCursor } // 5.15 onward (QTBUG-68073)
+            TapHandler {
+                onTapped: {
+                    if (page >= 0)
+                        image.currentFrame = page
+                    else
+                        Qt.openUrlExternally(url)
+                }
+            }
+        }
+    }
+
     PinchHandler {
         id: pinch
         minimumScale: 0.1

@@ -171,6 +171,31 @@ Window {
                         }
                     }
                 }
+
+                Repeater {
+                    model: PdfLinkModel {
+                        id: linkModel
+                        document: doc
+                        page: image.currentFrame
+                    }
+                    delegate: Rectangle {
+                        color: "transparent"
+                        border.color: "lightgrey"
+                        x: rect.x
+                        y: rect.y
+                        width: rect.width
+                        height: rect.height
+//                        HoverHandler { cursorShape: Qt.PointingHandCursor } // 5.15 onward (QTBUG-68073)
+                        TapHandler {
+                            onTapped: {
+                                if (page >= 0)
+                                    image.currentFrame = page
+                                else
+                                    Qt.openUrlExternally(url)
+                            }
+                        }
+                    }
+                }
             }
         }
     }

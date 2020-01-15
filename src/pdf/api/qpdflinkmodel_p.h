@@ -34,62 +34,73 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqml.h>
-#include <QtQml/qqmlcomponent.h>
-#include <QtQml/qqmlengine.h>
-#include <QtQml/qqmlextensionplugin.h>
-#include "qquickpdfdocument_p.h"
-#include "qquickpdflinkmodel_p.h"
-#include "qquickpdfsearchmodel_p.h"
-#include "qquickpdfselection_p.h"
+#ifndef QPDFLINKMODEL_P_H
+#define QPDFLINKMODEL_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qtpdfglobal.h"
+#include "qpdfdocument.h"
+
+#include <QObject>
+#include <QAbstractListModel>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \qmlmodule QtQuick.Pdf 5.15
-    \title Qt Quick PDF QML Types
-    \ingroup qmlmodules
-    \brief Provides QML types for handling PDF documents.
+class QPdfLinkModelPrivate;
 
-    This QML module contains types for handling PDF documents.
-
-    To use the types in this module, import the module with the following line:
-
-    \code
-    import QtQuick.Pdf 5.15
-    \endcode
-*/
-
-class QtQuick2PdfPlugin : public QQmlExtensionPlugin
+class Q_PDF_EXPORT QPdfLinkModel : public QAbstractListModel
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
+    Q_PROPERTY(QPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
+    Q_PROPERTY(int page READ page WRITE setPage NOTIFY pageChanged)
 
 public:
-    QtQuick2PdfPlugin() : QQmlExtensionPlugin() { }
+    enum class Role : int {
+        Rect = Qt::UserRole,
+        Url,
+        Page,
+        Location,
+        Zoom,
+        _Count
+    };
+    Q_ENUM(Role)
+    explicit QPdfLinkModel(QObject *parent = nullptr);
+    ~QPdfLinkModel();
 
-    void initializeEngine(QQmlEngine *engine, const char *uri) override {
-        Q_UNUSED(uri);
-#ifndef QT_STATIC
-        engine->addImportPath(QStringLiteral("qrc:/"));
-#endif
-    }
+    QPdfDocument *document() const;
 
-    void registerTypes(const char *uri) override {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtQuick.Pdf"));
+    QHash<int, QByteArray> roleNames() const override;
+    int rowCount(const QModelIndex &parent) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
 
-        // Register the latest version, even if there are no new types or new revisions for existing types yet.
-        qmlRegisterModule(uri, 2, QT_VERSION_MINOR);
+    int page() const;
 
-        qmlRegisterType<QQuickPdfDocument>(uri, 5, 15, "PdfDocument");
-        qmlRegisterType<QQuickPdfLinkModel>(uri, 5, 15, "PdfLinkModel");
-        qmlRegisterType<QQuickPdfSearchModel>(uri, 5, 15, "PdfSearchModel");
-        qmlRegisterType<QQuickPdfSelection>(uri, 5, 15, "PdfSelection");
+public Q_SLOTS:
+    void setDocument(QPdfDocument *document);
+    void setPage(int page);
 
-        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
-    }
+Q_SIGNALS:
+    void documentChanged();
+    void pageChanged(int page);
+
+private Q_SLOTS:
+    void onStatusChanged(QPdfDocument::Status status);
+
+private:
+    QHash<int, QByteArray> m_roleNames;
+    Q_DECLARE_PRIVATE(QPdfLinkModel)
 };
 
 QT_END_NAMESPACE
 
-#include "plugin.moc"
+#endif // QPDFLINKMODEL_P_H

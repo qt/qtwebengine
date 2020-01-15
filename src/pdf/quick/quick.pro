@@ -15,11 +15,13 @@ RESOURCES += resources.qrc
 SOURCES += \
     plugin.cpp \
     qquickpdfdocument.cpp \
+    qquickpdflinkmodel.cpp \
     qquickpdfsearchmodel.cpp \
     qquickpdfselection.cpp \
 
 HEADERS += \
     qquickpdfdocument_p.h \
+    qquickpdflinkmodel_p.h \
     qquickpdfsearchmodel_p.h \
     qquickpdfselection_p.h \
 

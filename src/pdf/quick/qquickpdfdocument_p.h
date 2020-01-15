@@ -118,6 +118,7 @@ private:
     QUrl m_source;
     QPdfDocument m_doc;
 
+    friend class QQuickPdfLinkModel;
     friend class QQuickPdfSearchModel;
     friend class QQuickPdfSelection;
 

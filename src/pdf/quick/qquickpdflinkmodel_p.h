@@ -34,62 +34,54 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqml.h>
-#include <QtQml/qqmlcomponent.h>
-#include <QtQml/qqmlengine.h>
-#include <QtQml/qqmlextensionplugin.h>
+#ifndef QQUICKPDFLINKMODEL_P_H
+#define QQUICKPDFLINKMODEL_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "qquickpdfdocument_p.h"
-#include "qquickpdflinkmodel_p.h"
-#include "qquickpdfsearchmodel_p.h"
-#include "qquickpdfselection_p.h"
+#include "../api/qpdflinkmodel_p.h"
+
+#include <QVariant>
+#include <QtQml/qqml.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \qmlmodule QtQuick.Pdf 5.15
-    \title Qt Quick PDF QML Types
-    \ingroup qmlmodules
-    \brief Provides QML types for handling PDF documents.
-
-    This QML module contains types for handling PDF documents.
-
-    To use the types in this module, import the module with the following line:
-
-    \code
-    import QtQuick.Pdf 5.15
-    \endcode
-*/
-
-class QtQuick2PdfPlugin : public QQmlExtensionPlugin
+class QQuickPdfLinkModel : public QPdfLinkModel
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
+    Q_PROPERTY(QQuickPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
 
 public:
-    QtQuick2PdfPlugin() : QQmlExtensionPlugin() { }
+    explicit QQuickPdfLinkModel(QObject *parent = nullptr);
 
-    void initializeEngine(QQmlEngine *engine, const char *uri) override {
-        Q_UNUSED(uri);
-#ifndef QT_STATIC
-        engine->addImportPath(QStringLiteral("qrc:/"));
-#endif
-    }
+    QQuickPdfDocument *document() const;
+    void setDocument(QQuickPdfDocument *document);
 
-    void registerTypes(const char *uri) override {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtQuick.Pdf"));
+signals:
+    void documentChanged();
 
-        // Register the latest version, even if there are no new types or new revisions for existing types yet.
-        qmlRegisterModule(uri, 2, QT_VERSION_MINOR);
+private:
+    void updateResults();
 
-        qmlRegisterType<QQuickPdfDocument>(uri, 5, 15, "PdfDocument");
-        qmlRegisterType<QQuickPdfLinkModel>(uri, 5, 15, "PdfLinkModel");
-        qmlRegisterType<QQuickPdfSearchModel>(uri, 5, 15, "PdfSearchModel");
-        qmlRegisterType<QQuickPdfSelection>(uri, 5, 15, "PdfSelection");
+private:
+    QQuickPdfDocument *m_quickDocument;
+    QVector<QPolygonF> m_linksGeometry;
 
-        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
-    }
+    Q_DISABLE_COPY(QQuickPdfLinkModel)
 };
 
 QT_END_NAMESPACE
 
-#include "plugin.moc"
+QML_DECLARE_TYPE(QQuickPdfLinkModel)
+
+#endif // QQUICKPDFLINKMODEL_P_H
