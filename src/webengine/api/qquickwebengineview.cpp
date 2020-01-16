@@ -428,6 +428,12 @@ void QQuickWebEngineViewPrivate::recentlyAudibleChanged(bool recentlyAudible)
     Q_EMIT q->recentlyAudibleChanged(recentlyAudible);
 }
 
+void QQuickWebEngineViewPrivate::renderProcessPidChanged(qint64 pid)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->renderProcessPidChanged(pid);
+}
+
 QRectF QQuickWebEngineViewPrivate::viewportRect() const
 {
     Q_Q(const QQuickWebEngineView);
@@ -1401,6 +1407,12 @@ bool QQuickWebEngineView::recentlyAudible() const
 {
     const Q_D(QQuickWebEngineView);
     return d->adapter->recentlyAudible();
+}
+
+qint64 QQuickWebEngineView::renderProcessPid() const
+{
+    const Q_D(QQuickWebEngineView);
+    return d->adapter->renderProcessPid();
 }
 
 void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)

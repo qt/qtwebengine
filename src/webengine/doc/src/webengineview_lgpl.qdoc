@@ -1614,3 +1614,27 @@
 
     \sa findText(), FindTextResult
 */
+
+/*!
+    \qmlproperty qint64 WebEngineView::renderProcessPid
+    \brief Returns the process ID (PID) of the render process assigned to the
+           current page's main frame.
+    \since QtWebEngine 1.11
+    \readonly
+
+    If no render process is available yet, \c 0 is returned.
+
+    \sa renderProcessPidChanged
+*/
+
+/*!
+    \qmlsignal WebEngineView::renderProcessPidChanged(qint64 pid)
+    \since QtWebEngine 1.11
+    \readonly
+
+    If no render process is available yet, \c 0 is returned.
+    This signal is emitted when the PID (process ID) of the page's underlying
+    render process changed.
+
+    \sa renderProcessPid
+*/

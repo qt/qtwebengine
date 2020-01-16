@@ -277,6 +277,12 @@ void QWebEnginePagePrivate::recentlyAudibleChanged(bool recentlyAudible)
     Q_EMIT q->recentlyAudibleChanged(recentlyAudible);
 }
 
+void QWebEnginePagePrivate::renderProcessPidChanged(qint64 pid)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->renderProcessPidChanged(pid);
+}
+
 QRectF QWebEnginePagePrivate::viewportRect() const
 {
     return view ? view->rect() : QRectF();
@@ -937,6 +943,13 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
+  \fn void QWebEnginePage::renderProcessPidChanged(qint64 pid);
+  \since 5.15
+
+  This signal is emitted when the underlying render process PID, \a renderProcessPid, changes.
+*/
+
+/*!
     \fn void QWebEnginePage::iconUrlChanged(const QUrl &url)
 
     This signal is emitted when the URL of the icon ("favicon") associated with the
@@ -1147,6 +1160,20 @@ bool QWebEnginePage::recentlyAudible() const
 {
     Q_D(const QWebEnginePage);
     return d->adapter->isInitialized() && d->adapter->recentlyAudible();
+}
+
+/*!
+  \property QWebEnginePage::renderProcessPid
+  \brief The process ID (PID) of the render process assigned to the current
+  page's main frame.
+  \since 5.15
+
+  If no render process is available yet, \c 0 is returned.
+*/
+qint64 QWebEnginePage::renderProcessPid() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->renderProcessPid();
 }
 
 void QWebEnginePage::setView(QWidget *newViewBase)

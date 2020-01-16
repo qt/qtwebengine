@@ -741,6 +741,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.quotaRequested(QWebEngineQuotaRequest) --> void"
     << "QQuickWebEngineView.recentlyAudible --> bool"
     << "QQuickWebEngineView.recentlyAudibleChanged(bool) --> void"
+    << "QQuickWebEngineView.renderProcessPid --> qlonglong"
+    << "QQuickWebEngineView.renderProcessPidChanged(qlonglong) --> void"
     << "QQuickWebEngineView.recommendedState --> LifecycleState"
     << "QQuickWebEngineView.recommendedStateChanged(LifecycleState) --> void"
     << "QQuickWebEngineView.registerProtocolHandlerRequested(QWebEngineRegisterProtocolHandlerRequest) --> void"

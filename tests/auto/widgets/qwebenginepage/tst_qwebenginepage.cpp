@@ -226,6 +226,7 @@ private Q_SLOTS:
 
     void customUserAgentInNewTab();
     void renderProcessCrashed();
+    void renderProcessPid();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4356,6 +4357,24 @@ void tst_QWebEnginePage::renderProcessCrashed()
     // otherwise a CrashedTerminationStatus.
     QVERIFY(status == QWebEnginePage::CrashedTerminationStatus ||
             status == QWebEnginePage::AbnormalTerminationStatus);
+}
+
+void tst_QWebEnginePage::renderProcessPid()
+{
+    QCOMPARE(m_page->renderProcessPid(), 0);
+
+    m_page->load(QUrl("about:blank"));
+    QSignalSpy spyFinished(m_page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
+
+    QVERIFY(m_page->renderProcessPid() > 1);
+
+    bool crashed = false;
+    connect(m_page, &QWebEnginePage::renderProcessTerminated, [&]() { crashed = true; });
+    m_page->load(QUrl("chrome://crash"));
+    QTRY_VERIFY_WITH_TIMEOUT(crashed, 20000);
+
+    QCOMPARE(m_page->renderProcessPid(), 0);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

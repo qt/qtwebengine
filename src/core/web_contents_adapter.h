@@ -166,6 +166,7 @@ public:
     bool isAudioMuted() const;
     void setAudioMuted(bool mute);
     bool recentlyAudible() const;
+    qint64 renderProcessPid() const;
 
     // Must match blink::WebMediaPlayerAction::Type.
     enum MediaPlayerAction {

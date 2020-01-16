@@ -313,6 +313,14 @@ void WebContentsDelegateQt::RenderFrameHostChanged(content::RenderFrameHost *old
     if (new_host) {
         content::FrameTreeNode *new_node = static_cast<content::RenderFrameHostImpl *>(new_host)->frame_tree_node();
         m_frameFocusedObserver.addNode(new_node);
+
+        // Is this a main frame?
+        if (new_host->GetFrameOwnerElementType() == blink::FrameOwnerElementType::kNone) {
+            content::RenderProcessHost *renderProcessHost = new_host->GetProcess();
+            const base::Process &process = renderProcessHost->GetProcess();
+            if (process.IsValid())
+                m_viewClient->renderProcessPidChanged(process.Pid());
+        }
     }
 }
 

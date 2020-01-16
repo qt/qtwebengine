@@ -458,6 +458,7 @@ public:
     virtual void didUpdateTargetURL(const QUrl&) = 0;
     virtual void selectionChanged() = 0;
     virtual void recentlyAudibleChanged(bool recentlyAudible) = 0;
+    virtual void renderProcessPidChanged(qint64 pid) = 0;
     virtual QRectF viewportRect() const = 0;
     virtual QColor backgroundColor() const = 0;
     virtual void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) = 0;

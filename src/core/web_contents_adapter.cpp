@@ -1139,6 +1139,17 @@ bool WebContentsAdapter::recentlyAudible() const
     return m_webContents->IsCurrentlyAudible();
 }
 
+qint64 WebContentsAdapter::renderProcessPid() const
+{
+    CHECK_INITIALIZED(0);
+
+    content::RenderProcessHost *renderProcessHost = m_webContents->GetMainFrame()->GetProcess();
+    const base::Process &process = renderProcessHost->GetProcess();
+    if (!process.IsValid())
+        return 0;
+    return process.Pid();
+}
+
 void WebContentsAdapter::copyImageAt(const QPoint &location)
 {
     CHECK_INITIALIZED();

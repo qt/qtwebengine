@@ -92,6 +92,7 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
     Q_PROPERTY(LifecycleState lifecycleState READ lifecycleState WRITE setLifecycleState NOTIFY lifecycleStateChanged)
     Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged)
+    Q_PROPERTY(qint64 renderProcessPid READ renderProcessPid NOTIFY renderProcessPidChanged)
 
 public:
     enum WebAction {
@@ -305,6 +306,7 @@ public:
     bool isAudioMuted() const;
     void setAudioMuted(bool muted);
     bool recentlyAudible() const;
+    qint64 renderProcessPid() const;
 
     void printToPdf(const QString &filePath, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
     void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
@@ -361,6 +363,7 @@ Q_SIGNALS:
     void contentsSizeChanged(const QSizeF &size);
     void audioMutedChanged(bool muted);
     void recentlyAudibleChanged(bool recentlyAudible);
+    void renderProcessPidChanged(qint64 pid);
 
     void pdfPrintingFinished(const QString &filePath, bool success);
     void printRequested();
