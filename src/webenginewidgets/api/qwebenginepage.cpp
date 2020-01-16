@@ -2313,7 +2313,7 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
     QString str;
     switch (static_cast<FilePickerController::FileChooserMode>(mode)) {
     case FilePickerController::OpenMultiple:
-        ret = QFileDialog::getOpenFileNames(view(), QString(), QString(), filter.join(";;"), nullptr, QFileDialog::HideNameFilterDetails);
+        ret = QFileDialog::getOpenFileNames(view(), QString(), QString(), filter.join(QStringLiteral(";;")), nullptr, QFileDialog::HideNameFilterDetails);
         break;
     // Chromium extension, not exposed as part of the public API for now.
     case FilePickerController::UploadFolder:
@@ -2327,7 +2327,7 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
             ret << str;
         break;
     case FilePickerController::Open:
-        str = QFileDialog::getOpenFileName(view(), QString(), oldFiles.first(), filter.join(";;"), nullptr, QFileDialog::HideNameFilterDetails);
+        str = QFileDialog::getOpenFileName(view(), QString(), oldFiles.first(), filter.join(QStringLiteral(";;")), nullptr, QFileDialog::HideNameFilterDetails);
         if (!str.isNull())
             ret << str;
         break;

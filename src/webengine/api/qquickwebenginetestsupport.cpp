@@ -157,7 +157,7 @@ void QQuickWebEngineTestEvent::mouseEvent(QEvent::Type type, QWindow *window, QO
     if (sgitem)
         pos = sgitem->mapToScene(_pos).toPoint();
 
-    QMouseEvent me(type, pos, window->mapFromGlobal(pos), Qt::LeftButton, Qt::LeftButton, 0);
+    QMouseEvent me(type, pos, window->mapFromGlobal(pos), Qt::LeftButton, Qt::LeftButton, {});
     me.setTimestamp(++QTest::lastMouseTimestamp);
 
     QSpontaneKeyEvent::setSpontaneous(&me);

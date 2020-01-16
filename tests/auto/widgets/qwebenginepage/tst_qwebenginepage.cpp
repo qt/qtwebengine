@@ -1975,7 +1975,7 @@ private Q_SLOTS:
 
     void continueError()
     {
-        emit error(this->error());
+        emit error(this->networkError());
         emit finished();
     }
 };
