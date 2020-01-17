@@ -50,7 +50,7 @@
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
 
-namespace QtWebEngine {
+namespace QtWebEngineCore {
 
 Q_WEBENGINECORE_PRIVATE_EXPORT int processMain(int argc, const char **argv);
 

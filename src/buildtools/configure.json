@@ -5,6 +5,7 @@
         "gui-private",
         "printsupport"
     ],
+    "condition": "module.gui",
     "commandline": {
         "options": {
             "build-qtwebengine-core": "boolean",

@@ -80,6 +80,7 @@ private Q_SLOTS:
 #if QT_DEPRECATED_SINCE(5, 14)
     void downloadPathValidation();
 #endif
+    void downloadToDirectoryWithFileName_data();
     void downloadToDirectoryWithFileName();
 
 private:
@@ -1271,8 +1272,17 @@ void tst_QWebEngineDownloadItem::downloadPathValidation()
 }
 #endif
 
+void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName_data()
+{
+    QTest::addColumn<bool>("setDirectoryFirst");
+
+    QTest::newRow("setDirectoryFirst") << true;
+    QTest::newRow("setFileNameFirst") << false;
+}
+
 void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
 {
+    QFETCH(bool, setDirectoryFirst);
     QString downloadDirectory;
     QString downloadFileName;
     QString downloadedFilePath;
@@ -1302,7 +1312,7 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
     // Set up profile and download handler
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
 
-        if (!downloadDirectory.isEmpty()) {
+        if (!downloadDirectory.isEmpty() && setDirectoryFirst) {
             item->setDownloadDirectory(downloadDirectory);
             QCOMPARE(item->downloadDirectory(), downloadDirectory);
         }
@@ -1310,6 +1320,11 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
         if (!downloadFileName.isEmpty()) {
             item->setDownloadFileName(downloadFileName);
             QCOMPARE(item->downloadFileName(), downloadFileName);
+        }
+
+        if (!downloadDirectory.isEmpty() && !setDirectoryFirst) {
+            item->setDownloadDirectory(downloadDirectory);
+            QCOMPARE(item->downloadDirectory(), downloadDirectory);
         }
 
         QCOMPARE(item->path(), QDir(item->downloadDirectory()).filePath(item->downloadFileName()));

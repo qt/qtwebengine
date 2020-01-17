@@ -60,6 +60,8 @@ do { \
     QCOMPARE((__expr), __expected); \
 } while (0)
 
+static QTouchDevice* s_touchDevice = nullptr;
+
 static QPoint elementCenter(QWebEnginePage *page, const QString &id)
 {
     const QString jsCode(
@@ -165,6 +167,9 @@ private Q_SLOTS:
     void keyboardEvents();
     void keyboardFocusAfterPopup();
     void mouseClick();
+    void touchTap();
+    void touchTapAndHold();
+    void touchTapAndHoldCancelled();
     void postData();
     void inputFieldOverridesShortcuts();
 
@@ -210,6 +215,7 @@ private Q_SLOTS:
 // It is only called once.
 void tst_QWebEngineView::initTestCase()
 {
+    s_touchDevice = QTest::createTouchDevice();
 }
 
 // This will be called after the last test function is executed.
@@ -1511,6 +1517,172 @@ void tst_QWebEngineView::mouseClick()
     QVERIFY(selectionChangedSpy.wait());
     QCOMPARE(selectionChangedSpy.count(), 3);
     QVERIFY(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString().isEmpty());
+}
+
+void tst_QWebEngineView::touchTap()
+{
+#if defined(Q_OS_MACOS)
+    QSKIP("Synthetic touch events are not supported on macOS");
+#endif
+
+    QWebEngineView view;
+    view.show();
+    view.resize(200, 200);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QSignalSpy loadFinishedSpy(&view, &QWebEngineView::loadFinished);
+
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
+    view.setHtml("<html><body>"
+                 "<p id='text' style='width: 150px;'>The Qt Company</p>"
+                 "<div id='notext' style='width: 150px; height: 100px; background-color: #f00;'></div>"
+                 "<form><input id='input' width='150px' type='text' value='The Qt Company2' /></form>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
+
+    auto singleTap = [](QWidget* target, const QPoint& tapCoords) -> void {
+        QTest::touchEvent(target, s_touchDevice).press(1, tapCoords, target);
+        QTest::touchEvent(target, s_touchDevice).stationary(1);
+        QTest::touchEvent(target, s_touchDevice).release(1, tapCoords, target);
+    };
+
+    // Single tap on text doesn't trigger a selection
+    singleTap(view.focusProxy(), elementCenter(view.page(), "text"));
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
+    QTRY_VERIFY(!view.hasSelection());
+
+    // Single tap inside the input field focuses it without selecting the text
+    singleTap(view.focusProxy(), elementCenter(view.page(), "input"));
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
+    QTRY_VERIFY(!view.hasSelection());
+
+    // Single tap on the div clears the input field focus
+    singleTap(view.focusProxy(), elementCenter(view.page(), "notext"));
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
+
+    // Double tap on text still doesn't trigger a selection
+    singleTap(view.focusProxy(), elementCenter(view.page(), "text"));
+    singleTap(view.focusProxy(), elementCenter(view.page(), "text"));
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
+    QTRY_VERIFY(!view.hasSelection());
+
+    // Double tap inside the input field focuses it and selects the word under it
+    singleTap(view.focusProxy(), elementCenter(view.page(), "input"));
+    singleTap(view.focusProxy(), elementCenter(view.page(), "input"));
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
+    QTRY_COMPARE(view.selectedText(), QStringLiteral("Company2"));
+
+    // Double tap outside the input field behaves like a single tap: clears its focus and selection
+    singleTap(view.focusProxy(), elementCenter(view.page(), "notext"));
+    singleTap(view.focusProxy(), elementCenter(view.page(), "notext"));
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
+    QTRY_VERIFY(!view.hasSelection());
+}
+
+void tst_QWebEngineView::touchTapAndHold()
+{
+#if defined(Q_OS_MACOS)
+    QSKIP("Synthetic touch events are not supported on macOS");
+#endif
+
+    QWebEngineView view;
+    view.show();
+    view.resize(200, 200);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QSignalSpy loadFinishedSpy(&view, &QWebEngineView::loadFinished);
+
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
+    view.setHtml("<html><body>"
+                 "<p id='text' style='width: 150px;'>The Qt Company</p>"
+                 "<div id='notext' style='width: 150px; height: 100px; background-color: #f00;'></div>"
+                 "<form><input id='input' width='150px' type='text' value='The Qt Company2' /></form>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
+
+    auto tapAndHold = [](QWidget* target, const QPoint& tapCoords) -> void {
+        QTest::touchEvent(target, s_touchDevice).press(1, tapCoords, target);
+        QTest::touchEvent(target, s_touchDevice).stationary(1);
+        QTest::qWait(1000);
+        QTest::touchEvent(target, s_touchDevice).release(1, tapCoords, target);
+    };
+
+    // Tap-and-hold on text selects the word under it
+    tapAndHold(view.focusProxy(), elementCenter(view.page(), "text"));
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
+    QTRY_COMPARE(view.selectedText(), QStringLiteral("Company"));
+
+    // Tap-and-hold inside the input field focuses it and selects the word under it
+    tapAndHold(view.focusProxy(), elementCenter(view.page(), "input"));
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input"));
+    QTRY_COMPARE(view.selectedText(), QStringLiteral("Company2"));
+
+    // Only test the page context menu on Windows, as Linux doesn't handle context menus consistently
+    // and other non-desktop platforms like Android may not even support context menus at all
+#if defined(Q_OS_WIN)
+    // Tap-and-hold clears the text selection and shows the page's context menu
+    QVERIFY(QApplication::activePopupWidget() == nullptr);
+    tapAndHold(view.focusProxy(), elementCenter(view.page(), "notext"));
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
+    QTRY_VERIFY(!view.hasSelection());
+    QTRY_VERIFY(QApplication::activePopupWidget() != nullptr);
+
+    QApplication::activePopupWidget()->close();
+    QVERIFY(QApplication::activePopupWidget() == nullptr);
+#endif
+}
+
+void tst_QWebEngineView::touchTapAndHoldCancelled()
+{
+#if defined(Q_OS_MACOS)
+    QSKIP("Synthetic touch events are not supported on macOS");
+#endif
+
+    QWebEngineView view;
+    view.show();
+    view.resize(200, 200);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QSignalSpy loadFinishedSpy(&view, &QWebEngineView::loadFinished);
+
+    view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
+    view.setHtml("<html><body>"
+                 "<p id='text' style='width: 150px;'>The Qt Company</p>"
+                 "<div id='notext' style='width: 150px; height: 100px; background-color: #f00;'></div>"
+                 "<form><input id='input' width='150px' type='text' value='The Qt Company2' /></form>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
+
+    auto cancelledTapAndHold = [](QWidget* target, const QPoint& tapCoords) -> void {
+        QTest::touchEvent(target, s_touchDevice).press(1, tapCoords, target);
+        QTest::touchEvent(target, s_touchDevice).stationary(1);
+        QTest::qWait(1000);
+        QWindowSystemInterface::handleTouchCancelEvent(target->windowHandle(), s_touchDevice);
+    };
+
+    // A cancelled tap-and-hold should cancel text selection, but currently doesn't
+    cancelledTapAndHold(view.focusProxy(), elementCenter(view.page(), "text"));
+    QEXPECT_FAIL("", "Incorrect Chromium selection behavior when cancelling tap-and-hold on text", Continue);
+    QTRY_VERIFY_WITH_TIMEOUT(!view.hasSelection(), 100);
+
+    // A cancelled tap-and-hold should cancel input field focusing and selection, but currently doesn't
+    cancelledTapAndHold(view.focusProxy(), elementCenter(view.page(), "input"));
+    QEXPECT_FAIL("", "Incorrect Chromium selection behavior when cancelling tap-and-hold on input field", Continue);
+    QTRY_VERIFY_WITH_TIMEOUT(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty(), 100);
+    QEXPECT_FAIL("", "Incorrect Chromium focus behavior when cancelling tap-and-hold on input field", Continue);
+    QTRY_VERIFY_WITH_TIMEOUT(!view.hasSelection(), 100);
+
+    // Only test the page context menu on Windows, as Linux doesn't handle context menus consistently
+    // and other non-desktop platforms like Android may not even support context menus at all
+#if defined(Q_OS_WIN)
+    // A cancelled tap-and-hold cancels the context menu
+    QVERIFY(QApplication::activePopupWidget() == nullptr);
+    cancelledTapAndHold(view.focusProxy(), elementCenter(view.page(), "notext"));
+    QVERIFY(QApplication::activePopupWidget() == nullptr);
+#endif
 }
 
 void tst_QWebEngineView::postData()

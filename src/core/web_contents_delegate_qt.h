@@ -114,7 +114,7 @@ public:
     WebContentsDelegateQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
     ~WebContentsDelegateQt();
 
-    QUrl url() const { return m_url; }
+    QUrl url(content::WebContents *source) const;
     QString title() const { return m_title; }
 
     // WebContentsDelegate overrides
@@ -223,12 +223,12 @@ private:
     bool m_didStartLoadingSeen;
     FrameFocusedObserver m_frameFocusedObserver;
 
-    QUrl m_url;
     QString m_title;
     int m_audioStreamCount = 0;
     int m_videoStreamCount = 0;
     int m_mirroringStreamCount = 0;
     int m_desktopStreamCount = 0;
+    mutable bool m_pendingUrlUpdate = false;
 
     base::WeakPtrFactory<WebContentsDelegateQt> m_weakPtrFactory { this };
 };

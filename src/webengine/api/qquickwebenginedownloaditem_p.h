@@ -169,6 +169,7 @@ public:
     void setDownloadDirectory(const QString &directory);
     QString downloadFileName() const;
     void setDownloadFileName(const QString &fileName);
+    bool isCustomFileName;
 
 Q_SIGNALS:
     void stateChanged();

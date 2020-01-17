@@ -97,7 +97,7 @@ public:
     void recommendedStateChanged(LifecycleState state) override;
     void visibleChanged(bool visible) override;
     void titleChanged(const QString&) override;
-    void urlChanged(const QUrl&) override;
+    void urlChanged() override;
     void iconChanged(const QUrl&) override;
     void loadProgressChanged(int progress) override;
     void didUpdateTargetURL(const QUrl&) override;
@@ -186,7 +186,7 @@ public:
     QWebEngineProfile *profile;
     QWebEngineSettings *settings;
     QWebEngineView *view;
-    QUrl explicitUrl;
+    QUrl url;
     QWebEngineContextMenuData contextData;
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;

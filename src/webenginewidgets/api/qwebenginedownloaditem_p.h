@@ -82,6 +82,7 @@ public:
     QString suggestedFileName;
     QString downloadDirectory;
     QString downloadFileName;
+    bool isCustomFileName;
 
     qint64 totalBytes;
     qint64 receivedBytes;

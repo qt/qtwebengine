@@ -87,6 +87,7 @@ public:
     QString suggestedFileName;
     QString downloadDirectory;
     QString downloadFileName;
+    bool isCustomFileName;
 
     void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
     void updateState(QQuickWebEngineDownloadItem::DownloadState newState);

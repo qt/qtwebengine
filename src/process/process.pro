@@ -9,7 +9,30 @@ INCLUDEPATH += ../core
 
 SOURCES = main.cpp
 
+CONFIG -= ltcg
+
+# On windows we need to statically link to the windows sandbox code
 win32 {
+    # The Chromium headers we include are not clean
+    CONFIG -= warnings_are_errors
+
+    # Look for linking information produced by GN
+    linking_pri = $$OUT_PWD/../core/$$getConfigDir()/qtwebengine_sandbox_win.pri
+
+    !include($$linking_pri) {
+        error("Could not find the linking information that gn should have generated.")
+    }
+    isEmpty(NINJA_OBJECTS): error("//sandbox/win:sandbox linking changed, update process.pro")
+    isEmpty(NINJA_ARCHIVES): error("//sandbox/win:sandbox linking changed, update process.pro")
+
+    LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS $$NINJA_ARCHIVES $$NINJA_OBJECTS
+    QMAKE_LFLAGS += $$NINJA_LFLAGS
+    POST_TARGETDEPS += $$eval($$NINJA_TARGETDEPS)
+
+    CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
+    INCLUDEPATH += $$CHROMIUM_SRC_DIR \
+                   $$OUT_PWD/../core/$$getConfigDir()/gen
+
     SOURCES += \
         support_win.cpp
 
