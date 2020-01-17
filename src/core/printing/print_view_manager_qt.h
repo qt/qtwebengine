@@ -47,14 +47,17 @@
 #include "print_view_manager_base_qt.h"
 
 #include "qtwebenginecoreglobal_p.h"
+
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/prefs/pref_member.h"
 #include "components/printing/browser/print_manager.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 #include <QSharedPointer>
 
@@ -132,6 +135,11 @@ protected:
 
 private:
     void resetPdfState();
+
+    // Helper method to fetch the PrintRenderFrame associated remote interface
+    // pointer.
+    const mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> &GetPrintRenderFrame(content::RenderFrameHost *rfh);
+
     // content::WebContentsObserver implementation.
     void DidStartLoading() override;
     void PrintPreviewDone();
@@ -143,6 +151,9 @@ private:
     PrintToPDFCallback m_pdfPrintCallback;
     PrintToPDFFileCallback m_pdfSaveCallback;
     std::unique_ptr<base::DictionaryValue> m_printSettings;
+
+    std::map<content::RenderFrameHost*,mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>> m_printRenderFrames;
+
     friend class content::WebContentsUserData<PrintViewManagerQt>;
     DISALLOW_COPY_AND_ASSIGN(PrintViewManagerQt);
     struct FrameDispatchHelper;

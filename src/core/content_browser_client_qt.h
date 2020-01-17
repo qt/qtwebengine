@@ -89,8 +89,8 @@ public:
     content::MediaObserver* GetMediaObserver() override;
     scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext() override;
     void GetQuotaSettings(content::BrowserContext *context,
-                        content::StoragePartition *partition,
-                        storage::OptionalQuotaSettingsCallback callback) override;
+                          content::StoragePartition *partition,
+                          base::OnceCallback<void(base::Optional<storage::QuotaSettings>)> callback) override;
     void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) override;
     void AllowCertificateError(content::WebContents *web_contents,
                                int cert_error,
@@ -144,6 +144,8 @@ public:
             network::mojom::RestrictedCookieManagerRole role,
             content::BrowserContext *browser_context,
             const url::Origin &origin,
+            const GURL &site_for_cookies,
+            const url::Origin &top_frame_origin,
             bool is_service_worker,
             int process_id,
             int routing_id,
@@ -154,13 +156,15 @@ public:
                        content::BrowserContext *context) override;
 
     bool AllowServiceWorkerOnIO(const GURL &scope,
-                                const GURL &first_party,
+                                const GURL &site_for_cookies,
+                                const base::Optional<url::Origin> &top_frame_origin,
                                 const GURL &script_url,
                                 content::ResourceContext *context,
                                 base::RepeatingCallback<content::WebContents*()> wc_getter) override;
 
     bool AllowServiceWorkerOnUI(const GURL &scope,
-                                const GURL &first_party,
+                                const GURL &site_for_cookies,
+                                const base::Optional<url::Origin> &top_frame_origin,
                                 const GURL &script_url,
                                 content::BrowserContext *context,
                                 base::RepeatingCallback<content::WebContents*()> wc_getter) override;
@@ -204,12 +208,13 @@ public:
 
     bool HandleExternalProtocol(
             const GURL &url,
-            content::WebContents::Getter web_contents_getter,
+            base::Callback<content::WebContents*(void)> web_contents_getter,
             int child_id,
             content::NavigationUIData *navigation_data,
             bool is_main_frame,
             ui::PageTransition page_transition,
             bool has_user_gesture,
+            const base::Optional<url::Origin> &initiating_origin,
             network::mojom::URLLoaderFactoryPtr *out_factory) override;
 
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> CreateURLLoaderThrottles(
@@ -233,13 +238,15 @@ public:
     scoped_refptr<network::SharedURLLoaderFactory> GetSystemSharedURLLoaderFactory() override;
     network::mojom::NetworkContext *GetSystemNetworkContext() override;
     void OnNetworkServiceCreated(network::mojom::NetworkService *network_service) override;
-    network::mojom::NetworkContextPtr CreateNetworkContext(content::BrowserContext *context,
-                                                           bool in_memory,
-                                                           const base::FilePath &relative_partition_path) override;
+    mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(content::BrowserContext *context,
+                                                                      bool in_memory,
+                                                                      const base::FilePath &relative_partition_path) override;
     std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
     void RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id, NonNetworkURLLoaderFactoryMap *factories) override;
     void RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
                                                          NonNetworkURLLoaderFactoryMap* factories) override;
+    void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(content::BrowserContext* browser_context,
+                                                                NonNetworkURLLoaderFactoryMap* factories) override;
 
     static std::string getUserAgent();
 

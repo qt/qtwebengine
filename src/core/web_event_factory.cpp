@@ -1510,8 +1510,9 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev)
     webEvent.wheel_ticks_y = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
     webEvent.phase = toBlinkPhase(ev);
 #if defined(Q_OS_DARWIN)
-    // has_precise_scrolling_deltas is a macOS term meaning it is a system scroll gesture, see qnsview_mouse.mm
-    webEvent.has_precise_scrolling_deltas = (ev->source() == Qt::MouseEventSynthesizedBySystem);
+    // PrecisePixel is a macOS term meaning it is a system scroll gesture, see qnsview_mouse.mm
+    if (ev->source() == Qt::MouseEventSynthesizedBySystem)
+        webEvent.delta_units = ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
 #endif
 
     setBlinkWheelEventDelta(webEvent);
@@ -1528,7 +1529,8 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
     if (toBlinkPhase(ev) != webEvent.phase)
         return false;
 #if defined(Q_OS_DARWIN)
-    if (webEvent.has_precise_scrolling_deltas != (ev->source() == Qt::MouseEventSynthesizedBySystem))
+    if ((webEvent.delta_units == ui::input_types::ScrollGranularity::kScrollByPrecisePixel)
+            != (ev->source() == Qt::MouseEventSynthesizedBySystem))
         return false;
 #endif
 

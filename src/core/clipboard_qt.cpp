@@ -105,13 +105,13 @@ Clipboard *Clipboard::Create()
 
 namespace QtWebEngineCore {
 
-void ClipboardQt::WriteObjects(ui::ClipboardBuffer type, const ObjectMap &objects)
+void ClipboardQt::WritePortableRepresentations(ui::ClipboardBuffer type, const ObjectMap &objects)
 {
     DCHECK(CalledOnValidThread());
     DCHECK(IsSupportedClipboardBuffer(type));
 
-    for (ObjectMap::const_iterator iter = objects.begin(); iter != objects.end(); ++iter)
-        DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
+    for (const auto &object : objects)
+        DispatchPortableRepresentation(object.first, object.second);
 
     // Commit the accumulated data.
     if (uncommittedData)
@@ -120,13 +120,20 @@ void ClipboardQt::WriteObjects(ui::ClipboardBuffer type, const ObjectMap &object
                                                                                           : QClipboard::Selection);
 
     if (type == ui::ClipboardBuffer::kCopyPaste && IsSupportedClipboardBuffer(ui::ClipboardBuffer::kSelection)) {
-        ObjectMap::const_iterator text_iter = objects.find(ObjectType::kText);
+        ObjectMap::const_iterator text_iter = objects.find(PortableFormat::kText);
         if (text_iter != objects.end()) {
             // Copy text and SourceTag to the selection clipboard.
-            ObjectMap::const_iterator next_iter = text_iter;
-            WriteObjects(ui::ClipboardBuffer::kSelection, ObjectMap(text_iter, ++next_iter, base::KEEP_FIRST_OF_DUPES));
+            WritePortableRepresentations(ui::ClipboardBuffer::kSelection,
+                                         ObjectMap(text_iter, text_iter + 1));
         }
     }
+}
+
+void ClipboardQt::WritePlatformRepresentations(ui::ClipboardBuffer buffer, std::vector<ui::Clipboard::PlatformRepresentation> platform_representations)
+{
+    DCHECK(CalledOnValidThread());
+    DCHECK(IsSupportedClipboardBuffer(buffer));
+    DispatchPlatformRepresentations(std::move(platform_representations));
 }
 
 void ClipboardQt::WriteText(const char *text_data, size_t text_len)

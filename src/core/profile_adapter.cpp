@@ -45,6 +45,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
+#include "url/url_util.h"
 
 #include "api/qwebengineurlscheme.h"
 #include "content_browser_client_qt.h"
@@ -610,7 +611,7 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
         if (web_contents->GetBrowserContext() == m_profile.data()) {
             blink::mojom::RendererPreferences *rendererPrefs = web_contents->GetMutableRendererPrefs();
             rendererPrefs->accept_languages = httpAcceptLanguageWithoutQualities().toStdString();
-            web_contents->GetRenderViewHost()->SyncRendererPrefs();
+            web_contents->SyncRendererPrefs();
         }
     }
 

@@ -51,7 +51,6 @@
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "services/file/user_id_map.h"
 #include "services/network/proxy_service_mojo.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
@@ -269,11 +268,6 @@ void ProfileIODataQt::updateStorageSettings()
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     setFullConfiguration();
 
-    base::Token groupId = content::BrowserContext::GetServiceInstanceGroupFor(m_profile);
-    if (file::GetUserDirForInstanceGroup(groupId) != toFilePath(m_profileAdapter->dataPath())) {
-        file::ForgetServiceInstanceGroupUserDirAssociation(groupId);
-        file::AssociateServiceInstanceGroupWithUserDir(groupId, toFilePath(m_profileAdapter->dataPath()));
-    }
     if (!m_pendingStorageRequestGeneration)
         requestStorageGeneration();
 }
@@ -429,7 +423,8 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
     network_context_params->accept_language = m_httpAcceptLanguage.toStdString();
 
     network_context_params->enable_referrers = true;
-    network_context_params->enable_encrypted_cookies = false; // ???
+    // Encrypted cookies requires os_crypt, which currently has issues for us on Linux.
+    network_context_params->enable_encrypted_cookies = false;
 //    network_context_params->proxy_resolver_factory = std::move(m_proxyResolverFactoryInterface);
 
     network_context_params->http_cache_enabled = m_httpCacheType != ProfileAdapter::NoCache;

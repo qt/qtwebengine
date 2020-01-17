@@ -46,8 +46,7 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -61,6 +60,7 @@
 // found in the LICENSE file.
 
 namespace content {
+class RenderFrameHostImpl;
 class ResourceContext;
 }
 
@@ -70,14 +70,15 @@ class ProxyingURLLoaderFactoryQt : public network::mojom::URLLoaderFactory
 {
 public:
     ProxyingURLLoaderFactoryQt(int process_id, content::ResourceContext *resourceContext,
-                               network::mojom::URLLoaderFactoryRequest loader_request,
+                               content::RenderFrameHostImpl *host,
+                               mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
                                network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
 
     ~ProxyingURLLoaderFactoryQt() override;
 
-    // static
     static void CreateProxy(int process_id, content::ResourceContext *resourceContext,
-                            network::mojom::URLLoaderFactoryRequest loader,
+                            content::RenderFrameHostImpl *host,
+                            mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
                             network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
 
     void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader, int32_t routing_id, int32_t request_id,
@@ -85,17 +86,18 @@ public:
                               network::mojom::URLLoaderClientPtr client,
                               const net::MutableNetworkTrafficAnnotationTag &traffic_annotation) override;
 
-    void Clone(network::mojom::URLLoaderFactoryRequest loader_request) override;
+    void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) override;
 
 private:
     void OnTargetFactoryError();
     void OnProxyBindingError();
 
     const int m_processId;
-    mojo::BindingSet<network::mojom::URLLoaderFactory> m_proxyBindings;
+    mojo::ReceiverSet<network::mojom::URLLoaderFactory> m_proxyReceivers;
     network::mojom::URLLoaderFactoryPtr m_targetFactory;
 
     content::ResourceContext *m_resourceContext;
+    content::RenderFrameHostImpl *m_renderFrameHost;
 
     base::WeakPtrFactory<ProxyingURLLoaderFactoryQt> m_weakFactory;
 

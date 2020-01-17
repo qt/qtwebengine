@@ -72,10 +72,10 @@ public:
             , client_listener_(std::move(client_listener))
     {}
 
-    void OnCookieChange(const net::CanonicalCookie &cookie, network::mojom::CookieChangeCause cause) override
+    void OnCookieChange(const net::CookieChangeInfo &change) override
     {
         if (restricted_cookie_manager_ && restricted_cookie_manager_->allowCookies(url_, site_for_cookies_))
-            client_listener_->OnCookieChange(cookie, cause);
+            client_listener_->OnCookieChange(change);
     }
 
 private:

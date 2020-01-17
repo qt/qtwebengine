@@ -250,10 +250,8 @@ bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *fram
 void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame *renderFrame,
                                                const blink::WebURLError &web_error,
                                                const std::string &httpMethod,
-                                               bool ignoring_cache,
                                                std::string *errorHtml)
 {
-    Q_UNUSED(ignoring_cache);
     GetNavigationErrorStringsInternal(
             renderFrame, httpMethod,
             error_page::Error::NetError(web_error.url(), web_error.reason(), web_error.has_copy_in_cache()), errorHtml);
@@ -262,11 +260,9 @@ void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame *renderFrame
 void ContentRendererClientQt::PrepareErrorPageForHttpStatusError(content::RenderFrame *renderFrame,
                                                                  const GURL &unreachable_url,
                                                                  const std::string &httpMethod,
-                                                                 bool ignoring_cache,
                                                                  int http_status,
                                                                  std::string *errorHtml)
 {
-    Q_UNUSED(ignoring_cache);
     GetNavigationErrorStringsInternal(renderFrame, httpMethod,
                                       error_page::Error::HttpError(unreachable_url, http_status),
                                       errorHtml);

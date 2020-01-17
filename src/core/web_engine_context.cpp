@@ -47,6 +47,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
 #include "chrome/common/chrome_switches.h"
@@ -84,6 +85,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -521,6 +523,11 @@ WebEngineContext::WebEngineContext()
 
 #ifndef QT_NO_OPENGL
     m_threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
+#if defined(Q_OS_MACOS)
+    // QtBase disabled it when building on 10.14+, unfortunately we still need it
+    // until we have fixed single-threaded viz-display-compositor.
+    m_threadedGpu = true;
+#endif
 #endif
     m_threadedGpu = m_threadedGpu && !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
 

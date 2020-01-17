@@ -96,7 +96,7 @@ void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
     int size = 0;
     const char *rawData = doc.rawData(&size);
     content::RenderFrameHost *frame = web_contents()->GetMainFrame();
-    qtwebchannel::mojom::WebChannelTransportRenderAssociatedPtr webChannelTransport;
+    mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportRender> webChannelTransport;
     frame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
     qCDebug(log).nospace() << "sending webchannel message to " << frame << ": " << doc;
     webChannelTransport->DispatchWebChannelMessage(std::vector<uint8_t>(rawData, rawData + size), m_worldId);
@@ -116,7 +116,7 @@ void WebChannelIPCTransportHost::setWorldId(content::RenderFrameHost *frame, uin
     if (!frame->IsRenderFrameLive())
         return;
     qCDebug(log).nospace() << "sending setWorldId(" << worldId << ") message to " << frame;
-    qtwebchannel::mojom::WebChannelTransportRenderAssociatedPtr webChannelTransport;
+    mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportRender> webChannelTransport;
     frame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
     webChannelTransport->SetWorldId(worldId);
 }
@@ -126,7 +126,7 @@ void WebChannelIPCTransportHost::resetWorldId()
     for (content::RenderFrameHost *frame : web_contents()->GetAllFrames()) {
         if (!frame->IsRenderFrameLive())
             return;
-        qtwebchannel::mojom::WebChannelTransportRenderAssociatedPtr webChannelTransport;
+        mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportRender> webChannelTransport;
         frame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
         webChannelTransport->ResetWorldId();
     }

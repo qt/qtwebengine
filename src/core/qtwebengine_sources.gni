@@ -130,8 +130,8 @@ source_set("qtwebengine_sources") {
 
   if (is_linux) {
     sources += [
-      "//chrome/browser/ui/webui/sandbox_internals_ui.cc",
-      "//chrome/browser/ui/webui/sandbox_internals_ui.h",
+      "//chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc",
+      "//chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h",
     ]
   }
 

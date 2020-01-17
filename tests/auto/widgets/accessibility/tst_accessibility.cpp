@@ -344,7 +344,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("AX_ROLE_APPLICATION") << QString("<div role='application'>landmark</div>") << true << QAccessible::Document;
     QTest::newRow("AX_ROLE_ARTICLE") << QString("<article>a</article>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_AUDIO") << QString("<audio controls><source src='test.mp3' type='audio/mpeg'></audio>") << false << QAccessible::Sound;
-    QTest::newRow("AX_ROLE_BANNER") << QString("<header>a</header>") << true << QAccessible::Section;
+    QTest::newRow("AX_ROLE_BANNER") << QString("<div role=banner>a</div>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_BLOCKQUOTE") << QString("<blockquote>a</blockquote>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_BUTTON") << QString("<button>a</button>") << false << QAccessible::Button;
     //QTest::newRow("AX_ROLE_BUTTON_DROP_DOWN"); // TODO: Remove this during the next Chromium update: https://chromium-review.googlesource.com/842475
@@ -383,6 +383,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("AX_ROLE_FORM") << QString("<form></form>") << true << QAccessible::Form;
     QTest::newRow("AX_ROLE_GRID") << QString("<div role='grid'></div>") << true << QAccessible::Table;
     QTest::newRow("AX_ROLE_GROUP") << QString("<fieldset></fieldset>") << true << QAccessible::Grouping;
+    QTest::newRow("AX_ROLE_HEADER)") << QString("<header>a</header>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_HEADING") << QString("<h1>a</h1>") << true << QAccessible::Heading;
     QTest::newRow("AX_ROLE_IFRAME") << QString("<iframe>a</iframe>") << true << QAccessible::Section;
     QTest::newRow("AX_ROLE_IFRAME_PRESENTATIONAL") << QString("<iframe role='presentation'>a</iframe>") << false << QAccessible::NoRole;

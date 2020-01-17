@@ -127,8 +127,7 @@ QSGNode *Compositor::updatePaintNode(QSGNode *oldNode, RenderWidgetHostViewQtDel
     }
     m_updatePaintNodeShouldCommit = false;
 
-    gfx::PresentationFeedback dummyFeedback(base::TimeTicks::Now(), base::TimeDelta(), gfx::PresentationFeedback::Flags::kVSync);
-    m_presentations.emplace(m_committedFrame.metadata.frame_token, viz::FrameTimingDetails{dummyFeedback});
+    m_presentations.emplace(m_committedFrame.metadata.frame_token, viz::FrameTimingDetails{base::TimeTicks::Now()});
 
     m_resourceTracker->commitResources();
     frameNode->commit(m_pendingFrame, m_committedFrame, m_resourceTracker.get(), viewDelegate);
@@ -160,8 +159,7 @@ void Compositor::notifyFrameCommitted()
 
 void Compositor::sendPresentationFeedback(uint frame_token)
 {
-    gfx::PresentationFeedback dummyFeedback(base::TimeTicks::Now(), base::TimeDelta(), gfx::PresentationFeedback::Flags::kVSync);
-    viz::FrameTimingDetails dummyDetails = {dummyFeedback};
+    viz::FrameTimingDetails dummyDetails = {base::TimeTicks::Now()};
     m_presentations.emplace(frame_token, dummyDetails);
 }
 

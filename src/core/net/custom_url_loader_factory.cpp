@@ -43,7 +43,9 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/net_errors.h"
@@ -255,7 +257,7 @@ private:
                                                                  : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
             net::RedirectInfo redirectInfo = net::RedirectInfo::ComputeRedirectInfo(
                         m_request.method, m_request.url,
-                        m_request.site_for_cookies, m_request.top_frame_origin,
+                        m_request.site_for_cookies,
                         first_party_url_policy, m_request.referrer_policy,
                         m_request.referrer.spec(), net::HTTP_SEE_OTHER,
                         m_redirect, base::nullopt, false /*insecure_scheme_was_upgraded*/);
@@ -425,13 +427,13 @@ public:
 
     }
 
-    void Clone(network::mojom::URLLoaderFactoryRequest request) override
+    void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) override
     {
-        m_bindings.AddBinding(this, std::move(request));
+        m_receivers.Add(this, std::move(receiver));
     }
 
     const scoped_refptr<base::SequencedTaskRunner> m_taskRunner;
-    mojo::BindingSet<network::mojom::URLLoaderFactory> m_bindings;
+    mojo::ReceiverSet<network::mojom::URLLoaderFactory> m_receivers;
     QPointer<ProfileAdapter> m_profileAdapter;
     DISALLOW_COPY_AND_ASSIGN(CustomURLLoaderFactory);
 };

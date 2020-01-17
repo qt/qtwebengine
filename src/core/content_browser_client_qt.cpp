@@ -89,8 +89,6 @@
 #include "printing/buildflags/buildflags.h"
 #include "qtwebengine/browser/qtwebengine_content_browser_overlay_manifest.h"
 #include "qtwebengine/browser/qtwebengine_content_renderer_overlay_manifest.h"
-#include "qtwebengine/browser/qtwebengine_packaged_service_manifest.h"
-#include "qtwebengine/browser/qtwebengine_renderer_manifest.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
 #include "services/network/network_service.h"
@@ -98,6 +96,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
@@ -142,6 +141,7 @@
 #include "web_engine_library_info.h"
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
+#include "api/qwebengineurlscheme.h"
 
 #if defined(Q_OS_LINUX)
 #include "global_descriptors_qt.h"
@@ -360,9 +360,10 @@ scoped_refptr<content::QuotaPermissionContext> ContentBrowserClientQt::CreateQuo
 
 void ContentBrowserClientQt::GetQuotaSettings(content::BrowserContext* context,
                                               content::StoragePartition* partition,
-                                              storage::OptionalQuotaSettingsCallback callback)
+                                              base::OnceCallback<void(base::Optional<storage::QuotaSettings>)> callback)
 {
-    storage::GetNominalDynamicSettings(partition->GetPath(), context->IsOffTheRecord(), storage::GetDefaultDiskInfoHelper(), std::move(callback));
+    storage::GetNominalDynamicSettings(partition->GetPath(), context->IsOffTheRecord(),
+                                       storage::GetDefaultDiskInfoHelper(), std::move(callback));
 }
 
 // Copied from chrome/browser/ssl/ssl_error_handler.cc:
@@ -685,7 +686,9 @@ bool ContentBrowserClientQt::ShouldEnableStrictSiteIsolation()
 bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(
         network::mojom::RestrictedCookieManagerRole role,
         content::BrowserContext *browser_context,
-        const url::Origin &origin,
+        const url::Origin & /*origin*/,
+        const GURL & /*site_for_cookies*/,
+        const url::Origin & /*top_frame_origin*/,
         bool is_service_worker,
         int process_id,
         int routing_id,
@@ -714,7 +717,8 @@ bool ContentBrowserClientQt::AllowAppCache(const GURL &manifest_url,
 }
 
 bool ContentBrowserClientQt::AllowServiceWorkerOnIO(const GURL &scope,
-                                                    const GURL &first_party,
+                                                    const GURL &site_for_cookies,
+                                                    const base::Optional<url::Origin> & /*top_frame_origin*/,
                                                     const GURL & /*script_url*/,
                                                     content::ResourceContext *context,
                                                     base::RepeatingCallback<content::WebContents*()> wc_getter)
@@ -722,11 +726,12 @@ bool ContentBrowserClientQt::AllowServiceWorkerOnIO(const GURL &scope,
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     // FIXME: Chrome also checks if javascript is enabled here to check if has been disabled since the service worker
     // was started.
-    return ProfileIODataQt::FromResourceContext(context)->canGetCookies(toQt(first_party), toQt(scope));
+    return ProfileIODataQt::FromResourceContext(context)->canGetCookies(toQt(site_for_cookies), toQt(scope));
 }
 
 bool ContentBrowserClientQt::AllowServiceWorkerOnUI(const GURL &scope,
-                                                    const GURL &first_party,
+                                                    const GURL &site_for_cookies,
+                                                    const base::Optional<url::Origin> & /*top_frame_origin*/,
                                                     const GURL & /*script_url*/,
                                                     content::BrowserContext *context,
                                                     base::RepeatingCallback<content::WebContents*()> wc_getter)
@@ -734,7 +739,7 @@ bool ContentBrowserClientQt::AllowServiceWorkerOnUI(const GURL &scope,
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // FIXME: Chrome also checks if javascript is enabled here to check if has been disabled since the service worker
     // was started.
-    return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(first_party), toQt(scope));
+    return static_cast<ProfileQt *>(context)->profileAdapter()->cookieStore()->d_func()->canAccessCookies(toQt(site_for_cookies), toQt(scope));
 }
 
 // We control worker access to FS and indexed-db using cookie permissions, this is mirroring Chromium's logic.
@@ -786,6 +791,7 @@ bool ContentBrowserClientQt::HandleExternalProtocol(
         bool is_main_frame,
         ui::PageTransition page_transition,
         bool has_user_gesture,
+        const base::Optional<url::Origin> &initiating_origin,
         network::mojom::URLLoaderFactoryPtr *out_factory)
 {
 //    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -1041,17 +1047,16 @@ void ContentBrowserClientQt::OnNetworkServiceCreated(network::mojom::NetworkServ
     SystemNetworkContextManager::GetInstance()->OnNetworkServiceCreated(network_service);
 }
 
-network::mojom::NetworkContextPtr ContentBrowserClientQt::CreateNetworkContext(content::BrowserContext *context,
-                                                                               bool in_memory,
-                                                                               const base::FilePath &relative_partition_path)
+mojo::Remote<network::mojom::NetworkContext> ContentBrowserClientQt::CreateNetworkContext(
+        content::BrowserContext *context,
+        bool in_memory,
+        const base::FilePath &relative_partition_path)
 {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-        return nullptr;
-
-    network::mojom::NetworkContextPtr network_context;
+    mojo::Remote<network::mojom::NetworkContext> network_context;
     // ### do we need to pass in_memory and relative_partition_path to ProfileIODataQt::CreateNetworkContextParams() ?
     network::mojom::NetworkContextParamsPtr context_params = ProfileIODataQt::FromBrowserContext(context)->CreateNetworkContextParams();
-    content::GetNetworkService()->CreateNetworkContext(mojo::MakeRequest(&network_context), std::move(context_params));
+    content::GetNetworkService()->CreateNetworkContext(
+            network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
 
     network::mojom::CookieManagerPtrInfo cookie_manager_info;
     network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_info));
@@ -1086,6 +1091,17 @@ void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int 
 #endif
 }
 
+void ContentBrowserClientQt::RegisterNonNetworkWorkerMainResourceURLLoaderFactories(content::BrowserContext *browser_context,
+                                                                                    NonNetworkURLLoaderFactoryMap *factories)
+{
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+    Profile *profile = Profile::FromBrowserContext(browser_context);
+    ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
+
+    for (const QByteArray &scheme : profileAdapter->customUrlSchemes())
+        factories->emplace(scheme.toStdString(), CreateCustomURLLoaderFactory(profileAdapter));
+}
+
 void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
                                                                              NonNetworkURLLoaderFactoryMap *factories)
 {
@@ -1111,7 +1127,7 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     install_file_scheme = install_file_scheme || url.SchemeIs(extensions::kExtensionScheme);
 #endif
-    if (!install_file_scheme && web_contents && !url.SchemeIsFile()) {
+    if (!install_file_scheme && web_contents) {
         const auto *settings = static_cast<WebContentsDelegateQt *>(web_contents->GetDelegate())->webEngineSettings();
         if (settings->testAttribute(WebEngineSettings::LocalContentCanAccessFileUrls)) {
             for (const auto &local_scheme : url::GetLocalSchemes()) {
@@ -1123,7 +1139,7 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
         }
     }
 
-    if (install_file_scheme) {
+    if (install_file_scheme && factories->find(url::kFileScheme) == factories->end()) {
         auto file_factory = content::CreateFileURLLoaderFactory(profile->GetPath(),
                                                                 profile->GetSharedCorsOriginAccessList());
         factories->emplace(url::kFileScheme, std::move(file_factory));
@@ -1184,6 +1200,7 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
     base::PostTask(FROM_HERE, { content::BrowserThread::IO },
                    base::BindOnce(&ProxyingURLLoaderFactoryQt::CreateProxy, process_id,
                                   browser_context->GetResourceContext(),
+                                  static_cast<content::RenderFrameHostImpl*>(frame),
                                   std::move(proxied_receiver),
                                   std::move(target_factory_info)));
     return true;

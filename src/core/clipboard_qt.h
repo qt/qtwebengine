@@ -64,7 +64,9 @@ public:
     void OnPreShutdown() override {}
 
 protected:
-    void WriteObjects(ui::ClipboardBuffer type, const ObjectMap &objects) override;
+    void WritePortableRepresentations(ui::ClipboardBuffer type, const ObjectMap &objects) override;
+    void WritePlatformRepresentations(ui::ClipboardBuffer type,
+                                      std::vector<ui::Clipboard::PlatformRepresentation> platform_representations) override;
     void WriteText(const char *text_data, size_t text_len) override;
     void WriteHTML(const char *markup_data, size_t markup_len, const char *url_data, size_t url_len) override;
     void WriteRTF(const char *rtf_data, size_t data_len) override;

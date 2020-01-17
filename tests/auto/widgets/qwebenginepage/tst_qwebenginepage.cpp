@@ -799,7 +799,7 @@ void tst_QWebEnginePage::backActionUpdate()
     };
 
     QVERIFY(evaluateJavaScriptSync(page, "document.getElementsByName('frame_b')[0].contentDocument == undefined").toBool());
-    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, firstAnchorCenterInFrame(page, "frame_c"));
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, firstAnchorCenterInFrame(page, "frame_c"));
     QTRY_VERIFY(evaluateJavaScriptSync(page, "document.getElementsByName('frame_b')[0].contentDocument != undefined").toBool());
     QTRY_VERIFY(action->isEnabled());
 }
@@ -1964,8 +1964,7 @@ void tst_QWebEnginePage::urlChange()
     QUrl testUrl("http://test.qt.io/");
     m_view->setHtml(QStringLiteral("<h1>Test</h1"), testUrl);
 
-    QTRY_COMPARE(urlSpy.size(), 2);
-    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), QUrl("data:text/html;charset=UTF-8,%3Ch1%3ETest%3C%2Fh1"));
+    QTRY_COMPARE(urlSpy.size(), 1);
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), testUrl);
 }
 
@@ -2077,7 +2076,7 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
 
     page.load(second);
     QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 20000);
-    QCOMPARE(page.url(), second);
+    QCOMPARE(page.url(), first);
     QCOMPARE(page.requestedUrl(), second);
     QVERIFY(!spy.at(1).first().toBool());
 }
@@ -2777,8 +2776,8 @@ void tst_QWebEnginePage::setUrlThenLoads()
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
 
     m_page->load(urlToLoad2);
-    QTRY_COMPARE(m_page->url(), urlToLoad2);
-    QTRY_COMPARE(m_page->requestedUrl(), urlToLoad2);
+    QCOMPARE(m_page->url(), urlToLoad1);
+    QCOMPARE(m_page->requestedUrl(), urlToLoad2);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
     QTRY_COMPARE(startedSpy.count(), 3);
 

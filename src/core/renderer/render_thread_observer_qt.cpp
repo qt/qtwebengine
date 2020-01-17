@@ -67,9 +67,9 @@ void RenderThreadObserverQt::SetInitialConfiguration(bool is_incognito_process)
 }
 
 void RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest(
-        qtwebengine::mojom::RendererConfigurationAssociatedRequest request)
+        mojo::PendingAssociatedReceiver<qtwebengine::mojom::RendererConfiguration> receiver)
 {
-    m_rendererConfigurationBindings.AddBinding(this, std::move(request));
+    m_rendererConfigurationReceivers.Add(this, std::move(receiver));
 }
 
 } // namespace

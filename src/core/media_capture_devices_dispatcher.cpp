@@ -368,7 +368,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
         // Resolve DesktopMediaID for the specified device id.
         mediaId = content::DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(
                 request.requested_video_device_id, main_frame->GetProcess()->GetID(),
-                main_frame->GetRoutingID(), request.security_origin,
+                main_frame->GetRoutingID(), url::Origin::Create(request.security_origin),
                 &originalExtensionName, content::kRegistryStreamTypeDesktop);
     }
 

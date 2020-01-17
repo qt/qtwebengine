@@ -51,8 +51,8 @@
 #include "base/macros.h"
 #include "build/buildflag.h"
 #include "extensions/buildflags/buildflags.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
@@ -94,9 +94,8 @@ private:
 
     std::unique_ptr<ProxyConfigServiceQt> proxy_config_service_;
 
-    mojo::BindingSet<network::mojom::ProxyConfigPollerClient> poller_binding_set_;
-
-    mojo::InterfacePtrSet<network::mojom::ProxyConfigClient> proxy_config_client_set_;
+    mojo::ReceiverSet<network::mojom::ProxyConfigPollerClient> poller_receiver_set_;
+    mojo::RemoteSet<network::mojom::ProxyConfigClient> proxy_config_client_set_;
 
     DISALLOW_COPY_AND_ASSIGN(ProxyConfigMonitor);
 };

@@ -111,7 +111,7 @@ content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForChildWidget(c
     return view;
 }
 
-void WebContentsViewQt::CreateView(const gfx::Size& initial_size, gfx::NativeView context)
+void WebContentsViewQt::CreateView(gfx::NativeView context)
 {
 }
 

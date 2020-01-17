@@ -50,8 +50,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
-#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "media/base/media_switches.h"
+#include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_switches.h"
@@ -128,9 +128,8 @@ void WebEngineSettings::overrideWebPreferences(content::WebContents *webContents
         webPreferences.reset(new content::WebPreferences(*prefs));
 
     if (webContents
-            && webContents->GetRenderViewHost()
             && applySettingsToRendererPreferences(webContents->GetMutableRendererPrefs())) {
-        webContents->GetRenderViewHost()->SyncRendererPrefs();
+        webContents->SyncRendererPrefs();
     }
 }
 
@@ -340,7 +339,7 @@ void WebEngineSettings::doApply()
     m_adapter->updateWebPreferences(*webPreferences.data());
 
     if (applySettingsToRendererPreferences(m_adapter->webContents()->GetMutableRendererPrefs()))
-        m_adapter->webContents()->GetRenderViewHost()->SyncRendererPrefs();
+        m_adapter->webContents()->SyncRendererPrefs();
 }
 
 void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *prefs)
@@ -404,12 +403,6 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     // Set the theme colors. Based on chrome_content_browser_client.cc:
     const ui::NativeTheme *webTheme = ui::NativeTheme::GetInstanceForWeb();
     if (webTheme) {
-#if !defined(OS_MACOSX)
-        // Mac has a concept of high contrast that does not relate to forced colors.
-        prefs->forced_colors = webTheme->UsesHighContrastColors()
-                                   ? blink::ForcedColors::kActive
-                                   : blink::ForcedColors::kNone;
-#endif  // !defined(OS_MACOSX)
         switch (webTheme->GetPreferredColorScheme()) {
           case ui::NativeTheme::PreferredColorScheme::kDark:
             prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
@@ -452,8 +445,8 @@ bool WebEngineSettings::applySettingsToRendererPreferences(blink::mojom::Rendere
 #if QT_CONFIG(webengine_webrtc)
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceWebRtcIPHandlingPolicy)) {
         std::string webrtc_ip_handling_policy = testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly)
-                                              ? content::kWebRTCIPHandlingDefaultPublicInterfaceOnly
-                                              : content::kWebRTCIPHandlingDefault;
+                                              ? blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly
+                                              : blink::kWebRTCIPHandlingDefault;
         if (prefs->webrtc_ip_handling_policy != webrtc_ip_handling_policy) {
             prefs->webrtc_ip_handling_policy = webrtc_ip_handling_policy;
             changed = true;

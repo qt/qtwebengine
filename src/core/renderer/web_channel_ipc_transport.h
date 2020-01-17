@@ -42,7 +42,8 @@
 
 #include "content/public/renderer/render_frame_observer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "qtwebengine/browser/qtwebchannel.mojom.h"
 
 #include <QtCore/qglobal.h>
@@ -66,7 +67,7 @@ private:
     void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;
     void DidClearWindowObject() override;
     void OnDestruct() override;
-    void BindRequest(qtwebchannel::mojom::WebChannelTransportRenderAssociatedRequest request);
+    void BindReceiver(mojo::PendingAssociatedReceiver<qtwebchannel::mojom::WebChannelTransportRender> receiver);
 
 private:
     // The worldId from our WebChannelIPCTransportHost or empty when there is no
@@ -75,7 +76,7 @@ private:
     bool m_worldInitialized;
     // True means it's currently OK to manipulate the frame's script context.
     bool m_canUseContext = false;
-    mojo::AssociatedBindingSet<qtwebchannel::mojom::WebChannelTransportRender> m_binding;
+    mojo::AssociatedReceiverSet<qtwebchannel::mojom::WebChannelTransportRender> m_receivers;
 };
 
 } // namespace

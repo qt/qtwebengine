@@ -225,8 +225,12 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::AlertMessage;
     case ax::mojom::Role::kAnchor:
         return QAccessible::Link;
-    case ax::mojom::Role::kAnnotation:
-        return QAccessible::StaticText;
+    case ax::mojom::Role::kAnnotationAttribution:
+    case ax::mojom::Role::kAnnotationCommentary:
+    case ax::mojom::Role::kAnnotationPresence:
+    case ax::mojom::Role::kAnnotationRevision:
+    case ax::mojom::Role::kAnnotationSuggestion:
+        return QAccessible::Grouping;
     case ax::mojom::Role::kApplication:
         return QAccessible::Document; // returning Application here makes Qt return the top level app object
     case ax::mojom::Role::kArticle:
@@ -346,6 +350,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kFigure:
         return QAccessible::Section;
     case ax::mojom::Role::kFooter:
+    case ax::mojom::Role::kFooterAsNonLandmark:
         return QAccessible::Footer;
     case ax::mojom::Role::kForm:
         return QAccessible::Form;
@@ -359,6 +364,9 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Table;
     case ax::mojom::Role::kGroup:
         return QAccessible::Grouping;
+    case ax::mojom::Role::kHeader:
+        return QAccessible::Section;
+    case ax::mojom::Role::kHeaderAsNonLandmark:
     case ax::mojom::Role::kHeading:
         return QAccessible::Heading;
     case ax::mojom::Role::kIframe:
@@ -458,6 +466,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kRowHeader:
         return QAccessible::RowHeader;
     case ax::mojom::Role::kRuby:
+    case ax::mojom::Role::kRubyAnnotation:
         return QAccessible::StaticText;
     case ax::mojom::Role::kScrollBar:
         return QAccessible::ScrollBar;
@@ -467,6 +476,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Section;
     case ax::mojom::Role::kSearchBox:
         return QAccessible::EditableText;
+    case ax::mojom::Role::kSection:
+        return QAccessible::Section;
     case ax::mojom::Role::kSlider:
         return QAccessible::Slider;
     case ax::mojom::Role::kSliderThumb:

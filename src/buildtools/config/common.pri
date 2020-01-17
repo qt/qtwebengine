@@ -9,6 +9,7 @@ gn_args += \
     is_component_build=false \
     is_shared=true \
     enable_debugallocation=false \
+    enable_media_remoting=false \
     enable_message_center=false \
     enable_nacl=false \
     enable_remoting=false \
@@ -125,12 +126,6 @@ optimize_size: gn_args += optimize_for_size=true
     sanitize_thread: gn_args += is_tsan=true
     sanitize_memory: gn_args += is_msan=true
     sanitize_undefined: gn_args += is_ubsan=true is_ubsan_vptr=true
-}
-
-qtConfig(build-qtwebengine-core):qtConfig(webengine-v8-snapshot):qtConfig(webengine-v8-snapshot-support) {
-    gn_args += v8_use_snapshot=true
-} else {
-    gn_args += v8_use_snapshot=false
 }
 
 qtConfig(build-qtwebengine-core):qtConfig(webengine-kerberos) {

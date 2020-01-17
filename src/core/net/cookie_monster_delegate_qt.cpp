@@ -61,10 +61,9 @@ public:
     ~CookieChangeListener() override = default;
 
     // network::mojom::CookieChangeListener:
-    void OnCookieChange(const net::CanonicalCookie &canonical_cookie,
-                        network::mojom::CookieChangeCause cause) override
+    void OnCookieChange(const net::CookieChangeInfo &change) override
     {
-        m_delegate->OnCookieChanged(canonical_cookie, net::CookieChangeCause(cause));
+        m_delegate->OnCookieChanged(change);
     }
 
 private:
@@ -93,9 +92,9 @@ CookieMonsterDelegateQt::~CookieMonsterDelegateQt()
 void CookieMonsterDelegateQt::AddStore(net::CookieStore *store)
 {
     std::unique_ptr<net::CookieChangeSubscription> sub = store->GetChangeDispatcher().AddCallbackForAllChanges(
-            base::Bind(&CookieMonsterDelegateQt::OnCookieChanged,
-                       // this object's destruction will deregister the subscription.
-                       base::Unretained(this)));
+            base::BindRepeating(&CookieMonsterDelegateQt::OnCookieChanged,
+                                // this object's destruction will deregister the subscription.
+                                base::Unretained(this)));
 
     m_subscriptions.push_back(std::move(sub));
 }
@@ -217,11 +216,11 @@ bool CookieMonsterDelegateQt::canGetCookies(const QUrl &firstPartyUrl, const QUr
     return m_client->d_func()->canAccessCookies(firstPartyUrl, url);
 }
 
-void CookieMonsterDelegateQt::OnCookieChanged(const net::CanonicalCookie &cookie, net::CookieChangeCause cause)
+void CookieMonsterDelegateQt::OnCookieChanged(const net::CookieChangeInfo &change)
 {
     if (!m_client)
         return;
-    m_client->d_func()->onCookieChanged(toQt(cookie), cause != net::CookieChangeCause::INSERTED);
+    m_client->d_func()->onCookieChanged(toQt(change.cookie), change.cause != net::CookieChangeCause::INSERTED);
 }
 
 void CookieMonsterDelegateQt::GetAllCookiesCallbackOnUIThread(qint64 callbackId, const std::vector<net::CanonicalCookie> &cookies)

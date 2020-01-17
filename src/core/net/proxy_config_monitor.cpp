@@ -82,12 +82,13 @@ ProxyConfigMonitor::~ProxyConfigMonitor()
 void ProxyConfigMonitor::AddToNetworkContextParams(
         network::mojom::NetworkContextParams *network_context_params)
 {
-    network::mojom::ProxyConfigClientPtr proxy_config_client;
-    network_context_params->proxy_config_client_request = mojo::MakeRequest(&proxy_config_client);
-    proxy_config_client_set_.AddPtr(std::move(proxy_config_client));
+    mojo::PendingRemote<network::mojom::ProxyConfigClient> proxy_config_client;
+    network_context_params->proxy_config_client_receiver =
+        proxy_config_client.InitWithNewPipeAndPassReceiver();
+    proxy_config_client_set_.Add(std::move(proxy_config_client));
 
-    poller_binding_set_.AddBinding(
-            this, mojo::MakeRequest(&network_context_params->proxy_config_poller_client));
+    poller_receiver_set_.Add(this,
+                             network_context_params->proxy_config_poller_client.InitWithNewPipeAndPassReceiver());
 
     net::ProxyConfigWithAnnotation proxy_config;
     net::ProxyConfigService::ConfigAvailability availability =
@@ -102,21 +103,19 @@ void ProxyConfigMonitor::OnProxyConfigChanged(
 {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI)
            || !BrowserThread::IsThreadInitialized(BrowserThread::UI));
-    proxy_config_client_set_.ForAllPtrs(
-            [config, availability](network::mojom::ProxyConfigClient *proxy_config_client) {
-                switch (availability) {
-                case net::ProxyConfigService::CONFIG_VALID:
-                    proxy_config_client->OnProxyConfigUpdated(config);
-                    break;
-                case net::ProxyConfigService::CONFIG_UNSET:
-                    proxy_config_client->OnProxyConfigUpdated(
-                            net::ProxyConfigWithAnnotation::CreateDirect());
-                    break;
-                case net::ProxyConfigService::CONFIG_PENDING:
-                    NOTREACHED();
-                    break;
-                }
-            });
+    for (const auto &proxy_config_client : proxy_config_client_set_) {
+        switch (availability) {
+        case net::ProxyConfigService::CONFIG_VALID:
+            proxy_config_client->OnProxyConfigUpdated(config);
+            break;
+        case net::ProxyConfigService::CONFIG_UNSET:
+            proxy_config_client->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation::CreateDirect());
+            break;
+        case net::ProxyConfigService::CONFIG_PENDING:
+            NOTREACHED();
+            break;
+        }
+    }
 }
 
 void ProxyConfigMonitor::OnLazyProxyConfigPoll()

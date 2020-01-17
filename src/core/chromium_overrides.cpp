@@ -170,26 +170,26 @@ bool GrabViewSnapshot(gfx::NativeView view,
 void GrabWindowSnapshotAndScaleAsync(gfx::NativeWindow window,
                                      const gfx::Rect& source_rect,
                                      const gfx::Size& target_size,
-                                     const GrabWindowSnapshotAsyncCallback& callback)
+                                     GrabWindowSnapshotAsyncCallback callback)
 {
     NOTIMPLEMENTED();
-    callback.Run(gfx::Image());
+    std::move(callback).Run(gfx::Image());
 }
 
 void GrabWindowSnapshotAsync(gfx::NativeWindow window,
                              const gfx::Rect& source_rect,
-                             const GrabWindowSnapshotAsyncCallback& callback)
+                             GrabWindowSnapshotAsyncCallback callback)
 {
     NOTIMPLEMENTED();
-    callback.Run(gfx::Image());
+    std::move(callback).Run(gfx::Image());
 }
 
 void GrabViewSnapshotAsync(gfx::NativeView view,
                            const gfx::Rect& source_rect,
-                           const GrabWindowSnapshotAsyncCallback& callback)
+                           GrabWindowSnapshotAsyncCallback callback)
 {
     NOTIMPLEMENTED();
-    callback.Run(gfx::Image());
+    std::move(callback).Run(gfx::Image());
 }
 
 } // namespace ui

@@ -85,8 +85,9 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
-#include "content/public/common/webrtc_ip_handling_policy.h"
 #include "extensions/buildflags/buildflags.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -240,7 +241,6 @@ static std::unique_ptr<content::WebContents> createBlankWebContents(WebContentsA
 {
     content::WebContents::CreateParams create_params(browserContext, NULL);
     create_params.routing_id = MSG_ROUTING_NONE;
-    create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
     create_params.initially_hidden = true;
 
     std::unique_ptr<content::WebContents> webContents = content::WebContents::Create(create_params);
@@ -502,7 +502,6 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     // Create our own if a WebContents wasn't provided at construction.
     if (!m_webContents) {
         content::WebContents::CreateParams create_params(m_profileAdapter->profile(), site);
-        create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
         create_params.initially_hidden = true;
         m_webContents = content::WebContents::Create(create_params);
     }
@@ -563,8 +562,8 @@ void WebContentsAdapter::initializeRenderPrefs()
     else
         rendererPrefs->webrtc_ip_handling_policy =
                 m_adapterClient->webEngineSettings()->testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly)
-                ? content::kWebRTCIPHandlingDefaultPublicInterfaceOnly
-                : content::kWebRTCIPHandlingDefault;
+                ? blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly
+                : blink::kWebRTCIPHandlingDefault;
 #endif
     // Set web-contents font settings to the default font settings as Chromium constantly overrides
     // the global font defaults with the font settings of the latest web-contents created.
@@ -575,7 +574,7 @@ void WebContentsAdapter::initializeRenderPrefs()
     rendererPrefs->use_autohinter = params.autohinter;
     rendererPrefs->use_bitmaps = params.use_bitmaps;
     rendererPrefs->subpixel_rendering = params.subpixel_rendering;
-    m_webContents->GetRenderViewHost()->SyncRendererPrefs();
+    m_webContents->SyncRendererPrefs();
 }
 
 bool WebContentsAdapter::canGoBack() const
@@ -974,10 +973,10 @@ void WebContentsAdapter::serializeNavigationHistory(QDataStream &output)
 void WebContentsAdapter::setZoomFactor(qreal factor)
 {
     CHECK_INITIALIZED();
-    if (factor < content::kMinimumZoomFactor || factor > content::kMaximumZoomFactor)
+    if (factor < blink::kMinimumPageZoomFactor || factor > blink::kMaximumPageZoomFactor)
         return;
 
-    double zoomLevel = content::ZoomFactorToZoomLevel(static_cast<double>(factor));
+    double zoomLevel = blink::PageZoomFactorToZoomLevel(static_cast<double>(factor));
     content::HostZoomMap *zoomMap = content::HostZoomMap::GetForWebContents(m_webContents.get());
 
     if (zoomMap) {
@@ -990,7 +989,7 @@ void WebContentsAdapter::setZoomFactor(qreal factor)
 qreal WebContentsAdapter::currentZoomFactor() const
 {
     CHECK_INITIALIZED(1);
-    return content::ZoomLevelToZoomFactor(content::HostZoomMap::GetZoomLevel(m_webContents.get()));
+    return blink::PageZoomLevelToZoomFactor(content::HostZoomMap::GetZoomLevel(m_webContents.get()));
 }
 
 ProfileQt* WebContentsAdapter::profile()

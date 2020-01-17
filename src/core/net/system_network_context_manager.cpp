@@ -78,6 +78,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "url/gurl.h"
 
@@ -133,11 +134,11 @@ public:
                                                               url_request, std::move(client), traffic_annotation);
     }
 
-    void Clone(network::mojom::URLLoaderFactoryRequest request) override
+    void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
     {
         if (!manager_)
             return;
-        manager_->GetURLLoaderFactory()->Clone(std::move(request));
+        manager_->GetURLLoaderFactory()->Clone(std::move(receiver));
     }
 
     // SharedURLLoaderFactory implementation:
@@ -322,8 +323,6 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateDefau
         network_context_params->ct_logs.push_back(std::move(log_info));
     }
 
-    network_context_params->http_09_on_non_default_ports_enabled = false;
-
     return network_context_params;
 }
 
@@ -343,7 +342,7 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetwo
     network_context_params->enable_ftp_url_support = true;
 #endif
 
-    network_context_params->primary_network_context = true;
+    network_context_params->primary_network_context = false;
 
     proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 

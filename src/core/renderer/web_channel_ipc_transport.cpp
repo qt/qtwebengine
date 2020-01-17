@@ -165,7 +165,7 @@ void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
 
     int size = 0;
     const char *rawData = doc.rawData(&size);
-    qtwebchannel::mojom::WebChannelTransportHostAssociatedPtr webChannelTransport;
+    mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportHost> webChannelTransport;
     renderFrame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
     webChannelTransport->DispatchWebChannelMessage(std::vector<uint8_t>(rawData, rawData + size));
 }
@@ -180,13 +180,13 @@ WebChannelIPCTransport::WebChannelIPCTransport(content::RenderFrame *renderFrame
     : content::RenderFrameObserver(renderFrame), m_worldId(0), m_worldInitialized(false)
 {
     renderFrame->GetAssociatedInterfaceRegistry()->AddInterface(
-            base::Bind(&WebChannelIPCTransport::BindRequest, base::Unretained(this)));
+            base::BindRepeating(&WebChannelIPCTransport::BindReceiver, base::Unretained(this)));
 }
 
-void WebChannelIPCTransport::BindRequest(qtwebchannel::mojom::WebChannelTransportRenderAssociatedRequest request)
+void WebChannelIPCTransport::BindReceiver(
+        mojo::PendingAssociatedReceiver<qtwebchannel::mojom::WebChannelTransportRender> receiver)
 {
-
-    m_binding.AddBinding(this, std::move(request));
+    m_receivers.Add(this, std::move(receiver));
 }
 
 void WebChannelIPCTransport::SetWorldId(uint32_t worldId)

@@ -238,6 +238,11 @@ bool DirectCompositionSurfaceWin::IsHDRSupported()
 {
     return false;
 }
+
+bool DirectCompositionSurfaceWin::IsSwapChainTearingSupported()
+{
+    return false;
+}
 } // namespace gl
 #endif
 #endif // !defined(OS_MACOSX)

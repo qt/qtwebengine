@@ -112,7 +112,7 @@ public:
     bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const;
 
     void AddStore(net::CookieStore *store);
-    void OnCookieChanged(const net::CanonicalCookie &cookie, net::CookieChangeCause cause);
+    void OnCookieChanged(const net::CookieChangeInfo &change);
 
 private:
     void GetAllCookiesCallbackOnUIThread(qint64 callbackId, const std::vector<net::CanonicalCookie> &cookies);

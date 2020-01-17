@@ -45,12 +45,12 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
-class PlatformWindowQt : public PlatformWindow, public PlatformEventDispatcher
+class PlatformWindowQt : public PlatformWindowBase, public PlatformEventDispatcher
 {
 public:
     PlatformWindowQt(PlatformWindowDelegate* delegate, const gfx::Rect& bounds);
@@ -58,9 +58,10 @@ public:
     // PlatformWindow:
     gfx::Rect GetBounds() override;
     void SetBounds(const gfx::Rect& bounds) override;
-    void Show() override { }
+    void Show(bool inactive = false) override { }
     void Hide() override { }
     void Close() override { }
+    bool IsVisible() const { return true; }
     void SetTitle(const base::string16&) override { }
     void SetCapture() override { }
     void ReleaseCapture() override { }
@@ -78,6 +79,10 @@ public:
     void Activate() override { }
     void Deactivate() override { }
     void SetUseNativeFrame(bool use_native_frame) override { }
+    bool ShouldUseNativeFrame() const override { return false; }
+    void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                        const gfx::ImageSkia& app_icon) override { }
+    void SizeConstraintsChanged() override { }
 
     // PlatformEventDispatcher:
     bool CanDispatchEvent(const PlatformEvent& event) override;

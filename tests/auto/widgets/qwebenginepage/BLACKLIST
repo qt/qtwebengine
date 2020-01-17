@@ -5,10 +5,6 @@ osx
 windows
 macos # Can't move cursor (QTBUG-76312)
 
-# QTBUG-81614
-[setHtmlWithBaseURL]
-*
-
 [devTools]
 msvc-2019
 
