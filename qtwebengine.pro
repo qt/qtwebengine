@@ -1,3 +1,4 @@
+requires(qtHaveModule(gui))
 load(qt_parts)
 load(functions)
 

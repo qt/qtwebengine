@@ -1682,156 +1682,34 @@ void tst_QWebEnginePage::openWindowDefaultSize()
     QCOMPARE(requestedGeometry.height(), 100);
 }
 
-class JavaScriptCallbackBase
-{
-public:
-    JavaScriptCallbackBase()
-    {
-        if (watcher)
-            QMetaObject::invokeMethod(watcher, "add");
-    }
-
-    void operator() (const QVariant &result)
-    {
-        check(result);
-        if (watcher)
-            QMetaObject::invokeMethod(watcher, "notify");
-    }
-
-protected:
-    virtual void check(const QVariant &result) = 0;
-
-private:
-    friend class JavaScriptCallbackWatcher;
-    static QPointer<QObject> watcher;
-};
-
-QPointer<QObject> JavaScriptCallbackBase::watcher = 0;
-
-class JavaScriptCallback : public JavaScriptCallbackBase
-{
-public:
-    JavaScriptCallback() { }
-    JavaScriptCallback(const QVariant& _expected) : expected(_expected) { }
-
-    void check(const QVariant& result) override
-    {
-        QVERIFY(result.isValid());
-        QCOMPARE(result, expected);
-    }
-
-private:
-    QVariant expected;
-};
-
-class JavaScriptCallbackNull : public JavaScriptCallbackBase
-{
-public:
-    void check(const QVariant& result) override
-    {
-        QVERIFY(result.isNull());
-// FIXME: Returned null values are currently invalid QVariants.
-//        QVERIFY(result.isValid());
-    }
-};
-
-class JavaScriptCallbackUndefined : public JavaScriptCallbackBase
-{
-public:
-    void check(const QVariant& result) override
-    {
-        QVERIFY(result.isNull());
-        QVERIFY(!result.isValid());
-    }
-};
-
-class JavaScriptCallbackWatcher : public QObject
-{
-    Q_OBJECT
-public:
-    JavaScriptCallbackWatcher()
-    {
-        Q_ASSERT(!JavaScriptCallbackBase::watcher);
-        JavaScriptCallbackBase::watcher = this;
-    }
-
-    Q_INVOKABLE void add()
-    {
-        available++;
-    }
-
-    Q_INVOKABLE void notify()
-    {
-        called++;
-        if (called == available)
-            emit allCalled();
-    }
-
-    bool wait(int maxSeconds = 30)
-    {
-        if (called == available)
-            return true;
-
-        QTestEventLoop loop;
-        connect(this, SIGNAL(allCalled()), &loop, SLOT(exitLoop()));
-        loop.enterLoop(maxSeconds);
-        return !loop.timeout();
-    }
-
-signals:
-    void allCalled();
-
-private:
-    int available = 0;
-    int called = 0;
-};
-
-
 void tst_QWebEnginePage::runJavaScript()
 {
     TestPage page;
-    JavaScriptCallbackWatcher watcher;
-
-    JavaScriptCallback callbackBool(QVariant(false));
-    page.runJavaScript("false", QWebEngineCallback<const QVariant&>(callbackBool));
-
-    JavaScriptCallback callbackInt(QVariant(2));
-    page.runJavaScript("2", QWebEngineCallback<const QVariant&>(callbackInt));
-
-    JavaScriptCallback callbackDouble(QVariant(2.5));
-    page.runJavaScript("2.5", QWebEngineCallback<const QVariant&>(callbackDouble));
-
-    JavaScriptCallback callbackString(QVariant(QStringLiteral("Test")));
-    page.runJavaScript("\"Test\"", QWebEngineCallback<const QVariant&>(callbackString));
-
+    QVariant result;
     QVariantList list;
-    JavaScriptCallback callbackList(list);
-    page.runJavaScript("[]", QWebEngineCallback<const QVariant&>(callbackList));
-
     QVariantMap map;
+
+    QTRY_VERIFY(!evaluateJavaScriptSync(&page, "false").toBool());
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "2").toInt(), 2);
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "2.5").toDouble(), 2.5);
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "\"Test\"").toString(), "Test");
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "[]").toList(), list);
+
     map.insert(QStringLiteral("test"), QVariant(2));
-    JavaScriptCallback callbackMap(map);
-    page.runJavaScript("var el = {\"test\": 2}; el", QWebEngineCallback<const QVariant&>(callbackMap));
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "var el = {\"test\": 2}; el").toMap(), map);
 
-    JavaScriptCallbackNull callbackNull;
-    page.runJavaScript("null", QWebEngineCallback<const QVariant&>(callbackNull));
+    QTRY_VERIFY(evaluateJavaScriptSync(&page, "null").isNull());
 
-    JavaScriptCallbackUndefined callbackUndefined;
-    page.runJavaScript("undefined", QWebEngineCallback<const QVariant&>(callbackUndefined));
+    result = evaluateJavaScriptSync(&page, "undefined");
+    QTRY_VERIFY(result.isNull() && !result.isValid());
 
-    JavaScriptCallback callbackDate(QVariant(42.0));
-    page.runJavaScript("new Date(42000)", QWebEngineCallback<const QVariant&>(callbackDate));
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "new Date(42000)").toDate(), QVariant(42.0).toDate());
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "new ArrayBuffer(8)").toByteArray(), QByteArray(8, 0));
 
-    JavaScriptCallback callbackBlob(QVariant(QByteArray(8, 0)));
-    page.runJavaScript("new ArrayBuffer(8)", QWebEngineCallback<const QVariant&>(callbackBlob));
+    result = evaluateJavaScriptSync(&page, "(function(){})");
+    QTRY_VERIFY(result.isNull() && !result.isValid());
 
-    JavaScriptCallbackUndefined callbackFunction;
-    page.runJavaScript("(function(){})", QWebEngineCallback<const QVariant&>(callbackFunction));
-
-    JavaScriptCallback callbackPromise(QVariant(QVariantMap{}));
-    page.runJavaScript("new Promise(function(){})", QWebEngineCallback<const QVariant&>(callbackPromise));
-
-    QVERIFY(watcher.wait());
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "new Promise(function(){})"), QVariant(QVariantMap{}));
 }
 
 void tst_QWebEnginePage::runJavaScriptDisabled()
@@ -1874,7 +1752,6 @@ void tst_QWebEnginePage::runJavaScriptFromSlot()
 
 void tst_QWebEnginePage::fullScreenRequested()
 {
-    JavaScriptCallbackWatcher watcher;
     QWebEngineView view;
     QWebEnginePage* page = view.page();
     view.show();
@@ -1885,9 +1762,8 @@ void tst_QWebEnginePage::fullScreenRequested()
     page->load(QUrl("qrc:///resources/fullscreen.html"));
     QTRY_COMPARE(loadSpy.count(), 1);
 
-    page->runJavaScript("document.webkitFullscreenEnabled", JavaScriptCallback(true));
-    page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(false));
-    QVERIFY(watcher.wait());
+    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitFullscreenEnabled").toBool());
+    QTRY_VERIFY(!evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
 
     // FullscreenRequest must be a user gesture
     bool acceptRequest = true;
@@ -1898,16 +1774,14 @@ void tst_QWebEnginePage::fullScreenRequested()
 
     QTest::keyPress(view.focusProxy(), Qt::Key_Space);
     QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
-    page->runJavaScript("document.webkitExitFullscreen()", JavaScriptCallbackUndefined());
-    QVERIFY(watcher.wait());
+    QVariant result = evaluateJavaScriptSync(page, "document.webkitExitFullscreen()");
+    QTRY_VERIFY(result.isNull() && !result.isValid());
 
     acceptRequest = false;
 
-    page->runJavaScript("document.webkitFullscreenEnabled", JavaScriptCallback(true));
+    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitFullscreenEnabled").toBool());
     QTest::keyPress(view.focusProxy(), Qt::Key_Space);
-    QVERIFY(watcher.wait());
-    page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(false));
-    QVERIFY(watcher.wait());
+    QTRY_VERIFY(!evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
 }
 
 void tst_QWebEnginePage::quotaRequested()
@@ -2040,7 +1914,8 @@ void tst_QWebEnginePage::urlChange()
     QUrl testUrl("http://test.qt.io/");
     m_view->setHtml(QStringLiteral("<h1>Test</h1"), testUrl);
 
-    QTRY_COMPARE(urlSpy.size(), 1);
+    QTRY_COMPARE(urlSpy.size(), 2);
+    QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), QUrl("data:text/html;charset=UTF-8,%3Ch1%3ETest%3C%2Fh1"));
     QCOMPARE(urlSpy.takeFirst().value(0).toUrl(), testUrl);
 }
 
@@ -2781,14 +2656,14 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
 
     evaluateJavaScriptSync(m_page, "window.history.pushState(null, 'push', 'navigate/to/here')");
     expectedUrlChangeCount++;
-    QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
+    QTRY_COMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), QUrl("qrc:/resources/navigate/to/here"));
     QCOMPARE(m_page->history()->count(), 2);
     QVERIFY(m_page->history()->canGoBack());
 
     evaluateJavaScriptSync(m_page, "window.history.replaceState(null, 'replace', 'another/location')");
     expectedUrlChangeCount++;
-    QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
+    QTRY_COMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), QUrl("qrc:/resources/navigate/to/another/location"));
     QCOMPARE(m_page->history()->count(), 2);
     QVERIFY(!m_page->history()->canGoForward());
@@ -2837,8 +2712,8 @@ void tst_QWebEnginePage::setUrlThenLoads()
     const QUrl urlToLoad2("qrc:/resources/test1.html");
 
     m_page->load(urlToLoad1);
-    QCOMPARE(m_page->url(), urlToLoad1);
-    QCOMPARE(m_page->requestedUrl(), urlToLoad1);
+    QTRY_COMPARE(m_page->url(), urlToLoad1);
+    QTRY_COMPARE(m_page->requestedUrl(), urlToLoad1);
     // baseUrlSync spins an event loop and this sometimes return the next result.
     // QCOMPARE(baseUrlSync(m_page), baseUrl);
     QTRY_COMPARE(startedSpy.count(), 2);
@@ -2852,8 +2727,8 @@ void tst_QWebEnginePage::setUrlThenLoads()
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
 
     m_page->load(urlToLoad2);
-    QCOMPARE(m_page->url(), urlToLoad2);
-    QCOMPARE(m_page->requestedUrl(), urlToLoad2);
+    QTRY_COMPARE(m_page->url(), urlToLoad2);
+    QTRY_COMPARE(m_page->requestedUrl(), urlToLoad2);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
     QTRY_COMPARE(startedSpy.count(), 3);
 

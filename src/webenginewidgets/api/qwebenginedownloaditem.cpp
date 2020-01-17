@@ -170,6 +170,7 @@ QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QWebEngineProfilePr
     , interruptReason(QWebEngineDownloadItem::NoReason)
     , downloadUrl(url)
     , downloadPaused(false)
+    , isCustomFileName(false)
     , totalBytes(-1)
     , receivedBytes(0)
     , page(0)
@@ -594,14 +595,15 @@ void QWebEngineDownloadItem::setDownloadDirectory(const QString &directory)
     if (d->downloadState != QWebEngineDownloadItem::DownloadRequested) {
         qWarning("Setting the download directory is not allowed after the download has been accepted.");
         return;
-     }
+    }
 
     if (!directory.isEmpty() && d->downloadDirectory != directory)
         d->downloadDirectory = directory;
 
-    d->downloadFileName = QFileInfo(d->profile->profileAdapter()->determineDownloadPath(d->downloadDirectory,
-                                                                                        d->suggestedFileName,
-                                                                                        d->startTime)).fileName();
+    if (!d->isCustomFileName)
+        d->downloadFileName = QFileInfo(d->profile->profileAdapter()->determineDownloadPath(d->downloadDirectory,
+                                                                                            d->suggestedFileName,
+                                                                                            d->startTime)).fileName();
 }
 
 /*!
@@ -634,8 +636,10 @@ void QWebEngineDownloadItem::setDownloadFileName(const QString &fileName)
         return;
     }
 
-    if (!fileName.isEmpty())
+    if (!fileName.isEmpty()) {
         d->downloadFileName = fileName;
+        d->isCustomFileName = true;
+    }
 }
 
 /*!

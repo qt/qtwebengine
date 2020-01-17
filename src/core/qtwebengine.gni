@@ -66,6 +66,10 @@ if (enable_extensions) {
   ]
 }
 
+if (is_win) {
+  data_deps = [ ":qtwebengine_sandbox_win" ]
+}
+
 defines = [
   "CHROMIUM_VERSION=\"" + chromium_version[0] + "\""
 ]

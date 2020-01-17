@@ -112,6 +112,7 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
     , downloadPaused(false)
     , view(nullptr)
     , downloadUrl(url)
+    , isCustomFileName(false)
 {
 }
 
@@ -511,25 +512,31 @@ void QQuickWebEngineDownloadItem::setDownloadDirectory(const QString &directory)
         return;
     }
 
+    bool isPathChanged = false;
     QString changeDirectory = d->downloadDirectory;
     if (!directory.isEmpty() && changeDirectory != directory) {
         changeDirectory = directory;
 
         if (d->downloadDirectory != changeDirectory) {
             d->downloadDirectory = changeDirectory;
-            Q_EMIT pathChanged();
             Q_EMIT downloadDirectoryChanged();
+            isPathChanged = true;
         }
 
-        QString newFileName = QFileInfo(d->profile->d_ptr->profileAdapter()->determineDownloadPath(d->downloadDirectory,
-                                                                                                   d->suggestedFileName,
-                                                                                                   d->startTime)).fileName();
-        if (d->downloadFileName != newFileName) {
-            d->downloadFileName = newFileName;
-            Q_EMIT pathChanged();
-            Q_EMIT downloadFileNameChanged();
+        if (!d->isCustomFileName) {
+            QString newFileName = QFileInfo(d->profile->d_ptr->profileAdapter()->determineDownloadPath(d->downloadDirectory,
+                                                                                                       d->suggestedFileName,
+                                                                                                       d->startTime)).fileName();
+            if (d->downloadFileName != newFileName) {
+                d->downloadFileName = newFileName;
+                Q_EMIT downloadFileNameChanged();
+                isPathChanged = true;
+            }
         }
     }
+
+    if (isPathChanged)
+        Q_EMIT pathChanged();
 }
 
 /*!
@@ -561,8 +568,9 @@ void QQuickWebEngineDownloadItem::setDownloadFileName(const QString &fileName)
 
     if (d->downloadFileName != fileName && !fileName.isEmpty()) {
         d->downloadFileName = fileName;
-        Q_EMIT pathChanged();
+        d->isCustomFileName = true;
         Q_EMIT downloadFileNameChanged();
+        Q_EMIT pathChanged();
     }
 }
 

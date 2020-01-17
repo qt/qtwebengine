@@ -189,29 +189,10 @@ static bool shouldUseActualURL(content::NavigationEntry *entry)
 
 void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags)
 {
-    if (changed_flags & content::INVALIDATE_TYPE_URL) {
-        content::NavigationEntry *entry = source->GetController().GetVisibleEntry();
-
-        QUrl newUrl;
-        if (source->GetVisibleURL().SchemeIs(content::kViewSourceScheme)) {
-            Q_ASSERT(entry);
-            GURL url = entry->GetURL();
-
-            // Strip user name, password and reference section from view-source URLs
-            if (url.has_password() || url.has_username() || url.has_ref()) {
-                GURL strippedUrl = net::SimplifyUrlForRequest(entry->GetURL());
-                newUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme, QString::fromStdString(strippedUrl.spec())));
-            }
-        }
-
-        // If there is a visible entry there are special cases when we dont wan't to use the actual URL
-        if (entry && newUrl.isEmpty())
-            newUrl = shouldUseActualURL(entry) ? toQt(entry->GetURL()) : toQt(entry->GetVirtualURL());
-
-        if (m_url != newUrl) {
-            m_url = newUrl;
-            m_viewClient->urlChanged(m_url);
-        }
+    if (changed_flags & content::INVALIDATE_TYPE_URL && !m_pendingUrlUpdate) {
+        m_pendingUrlUpdate = true;
+        base::WeakPtr<WebContentsDelegateQt> delegate = AsWeakPtr();
+        QTimer::singleShot(0, [delegate, this](){ if (delegate) m_viewClient->urlChanged();});
     }
 
     if (changed_flags & content::INVALIDATE_TYPE_TITLE) {
@@ -232,6 +213,25 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
     }
 }
 
+QUrl WebContentsDelegateQt::url(content::WebContents* source) const {
+
+    content::NavigationEntry *entry = source->GetController().GetVisibleEntry();
+    QUrl newUrl;
+    if (entry) {
+        GURL url = entry->GetURL();
+        // Strip user name, password and reference section from view-source URLs
+        if (source->GetVisibleURL().SchemeIs(content::kViewSourceScheme) &&
+            (url.has_password() || url.has_username() || url.has_ref())) {
+            GURL strippedUrl = net::SimplifyUrlForRequest(url);
+            newUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme, QString::fromStdString(strippedUrl.spec())));
+        }
+        // If there is a visible entry there are special cases when we dont wan't to use the actual URL
+        if (newUrl.isEmpty())
+            newUrl = shouldUseActualURL(entry) ? toQt(url) : toQt(entry->GetVirtualURL());
+    }
+    m_pendingUrlUpdate = false;
+    return newUrl;
+}
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, std::unique_ptr<content::WebContents> new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
 {
     Q_UNUSED(source)
@@ -810,7 +810,6 @@ WebContentsAdapter *WebContentsDelegateQt::webContentsAdapter() const
 
 void WebContentsDelegateQt::copyStateFrom(WebContentsDelegateQt *source)
 {
-    m_url = source->m_url;
     m_title = source->m_title;
     NavigationStateChanged(web_contents(), content::INVALIDATE_TYPE_URL);
     m_faviconManager->copyStateFrom(source->m_faviconManager.data());

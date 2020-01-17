@@ -369,11 +369,14 @@ void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
     Q_EMIT q->titleChanged();
 }
 
-void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
+void QQuickWebEngineViewPrivate::urlChanged()
 {
     Q_Q(QQuickWebEngineView);
-    Q_UNUSED(url);
-    Q_EMIT q->urlChanged();
+    QUrl url = adapter->activeUrl();
+    if (m_url != url) {
+        m_url = url;
+        Q_EMIT q->urlChanged();
+    }
 }
 
 void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
@@ -885,7 +888,7 @@ void QQuickWebEngineViewPrivate::initializationFinished()
     emit q->titleChanged();
     emit q->urlChanged();
     emit q->iconChanged();
-    QQuickWebEngineLoadRequest loadRequest(adapter->activeUrl(), QQuickWebEngineView::LoadSucceededStatus);
+    QQuickWebEngineLoadRequest loadRequest(m_url, QQuickWebEngineView::LoadSucceededStatus);
     emit q->loadingChanged(&loadRequest);
     emit q->loadProgressChanged();
 
@@ -1017,9 +1020,6 @@ void QQuickWebEngineViewPrivate::updateEditActions()
 QUrl QQuickWebEngineView::url() const
 {
     Q_D(const QQuickWebEngineView);
-    if (d->adapter->isInitialized())
-        return d->adapter->activeUrl();
-    else
         return d->m_url;
 }
 
@@ -1029,13 +1029,15 @@ void QQuickWebEngineView::setUrl(const QUrl& url)
     if (url.isEmpty())
         return;
 
-    if (d->adapter->isInitialized()) {
-        d->adapter->load(url);
-        return;
+    if (d->m_url != url) {
+        d->m_url = url;
+        d->m_html.clear();
+        emit urlChanged();
     }
 
-    d->m_url = url;
-    d->m_html.clear();
+    if (d->adapter->isInitialized()) {
+        d->adapter->load(url);
+    }
 }
 
 QUrl QQuickWebEngineView::icon() const
@@ -1147,14 +1149,13 @@ void QQuickWebEngineViewPrivate::updateAdapter()
 {
     // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
     bool wasInitialized = adapter->isInitialized();
-    QUrl activeUrl = adapter->activeUrl();
     adapter = QSharedPointer<WebContentsAdapter>::create();
     adapter->setClient(this);
     if (wasInitialized) {
         if (!m_html.isEmpty())
-            adapter->setContent(m_html.toUtf8(), defaultMimeType, activeUrl);
-        else if (activeUrl.isValid())
-            adapter->load(activeUrl);
+            adapter->setContent(m_html.toUtf8(), defaultMimeType, m_url);
+        else if (m_url.isValid())
+            adapter->load(m_url);
         else
             adapter->loadDefault();
     }
