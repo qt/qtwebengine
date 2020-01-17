@@ -88,7 +88,7 @@ msvc {
     error("Qt WebEngine for Windows can only be built with a Microsoft Visual Studio C++ compatible compiler")
 }
 
-qtConfig(webengine-spellchecker) {
+qtConfig(build-qtwebengine-core):qtConfig(webengine-spellchecker) {
     qtConfig(webengine-native-spellchecker): gn_args += use_browser_spellchecker=true
     else: gn_args += use_browser_spellchecker=false
 } else {
