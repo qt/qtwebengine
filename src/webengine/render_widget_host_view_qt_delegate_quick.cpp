@@ -226,6 +226,13 @@ bool RenderWidgetHostViewQtDelegateQuick::event(QEvent *event)
 
 void RenderWidgetHostViewQtDelegateQuick::focusInEvent(QFocusEvent *event)
 {
+#if QT_CONFIG(accessibility)
+    if (QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(this)->focusChild()) {
+        QAccessibleEvent focusEvent(iface, QAccessible::Focus);
+        QAccessible::updateAccessibility(&focusEvent);
+    }
+#endif // QT_CONFIG(accessibility)
+
     m_client->forwardEvent(event);
 }
 
