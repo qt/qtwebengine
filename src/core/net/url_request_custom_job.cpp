@@ -69,8 +69,8 @@ URLRequestCustomJob::URLRequestCustomJob(URLRequest *request,
                     .flags().testFlag(QWebEngineUrlScheme::CorsEnabled))
 {
     m_device = nullptr;
-    m_error = 0;
     m_firstBytePosition = 0;
+    m_error = 0;
 }
 
 URLRequestCustomJob::~URLRequestCustomJob()

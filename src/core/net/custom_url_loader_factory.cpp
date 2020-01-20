@@ -123,6 +123,7 @@ private:
     {
         m_binding.set_connection_error_handler(
                     base::BindOnce(&CustomURLLoader::OnConnectionError, base::Unretained(this)));
+        m_firstBytePosition = 0;
         m_device = nullptr;
         m_error = 0;
         QWebEngineUrlScheme scheme = QWebEngineUrlScheme::schemeByName(QByteArray::fromStdString(request.url.scheme()));
@@ -144,6 +145,16 @@ private:
             headers.emplace(it.name(), it.value());
         if (!m_request.referrer.is_empty())
             headers.emplace("Referer", m_request.referrer.spec());
+
+        std::string rangeHeader;
+        if (m_request.headers.GetHeader(net::HttpRequestHeaders::kRange, &rangeHeader)) {
+            std::vector<net::HttpByteRange> ranges;
+            if (net::HttpUtil::ParseRangeHeader(rangeHeader, &ranges)) {
+                // Chromium doesn't support multiple range requests in one single URL request.
+                if (ranges.size() == 1)
+                    m_firstBytePosition = ranges[0].first_byte_position();
+            }
+        }
 
 //        m_taskRunner->PostTask(FROM_HERE,
         base::PostTaskWithTraits(FROM_HERE, { content::BrowserThread::UI },
