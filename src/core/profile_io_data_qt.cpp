@@ -854,6 +854,8 @@ void ProfileIODataQt::CreateRestrictedCookieManager(network::mojom::RestrictedCo
 
 network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextParams()
 {
+    updateStorageSettings();
+
     network::mojom::NetworkContextParamsPtr network_context_params =
              SystemNetworkContextManager::GetInstance()->CreateDefaultNetworkContextParams();
 
@@ -886,8 +888,6 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
     network_context_params->enable_ftp_url_support = true;
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
-//    proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
-
 //    network_context_params->enable_certificate_reporting = true;
 //    network_context_params->enable_expect_ct_reporting = true;
     network_context_params->enforce_chrome_ct_policy = false;
@@ -899,7 +899,7 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
             m_profile->GetSharedCorsOriginAccessList()->GetOriginAccessList().CreateCorsOriginAccessPatternsList();
     }
 
-    m_proxyConfigMonitor->AddToNetworkContextParams(&*network_context_params);
+    m_proxyConfigMonitor->AddToNetworkContextParams(network_context_params.get());
 
     return network_context_params;
 }

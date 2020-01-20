@@ -541,8 +541,8 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(disableFeatures, features::kMojoVideoCapture.name);
 
     // We do not yet fully support the network-service, but it has been enabled by default since 75.
-    bool enableNetworkService  = parsedCommandLine->HasSwitch("enable-network-service");
-    parsedCommandLine->RemoveSwitch("enable-network-service");
+    bool enableNetworkService  = !parsedCommandLine->HasSwitch("disable-network-service");
+    parsedCommandLine->RemoveSwitch("disable-network-service");
     if (!enableNetworkService)
         appendToFeatureList(disableFeatures, network::features::kNetworkService.name);
 

@@ -153,17 +153,17 @@ void tst_QWebEngineProfile::testProfile()
 
 void tst_QWebEngineProfile::clearDataFromCache()
 {
-    QWebEnginePage page;
-
     QDir cacheDir("./tst_QWebEngineProfile_cacheDir");
     cacheDir.makeAbsolute();
     if (cacheDir.exists())
         cacheDir.removeRecursively();
     cacheDir.mkpath(cacheDir.path());
 
-    QWebEngineProfile *profile = page.profile();
-    profile->setCachePath(cacheDir.path());
-    profile->setHttpCacheType(QWebEngineProfile::DiskHttpCache);
+    QWebEngineProfile profile(QStringLiteral("Test"));
+    profile.setCachePath(cacheDir.path());
+    profile.setHttpCacheType(QWebEngineProfile::DiskHttpCache);
+
+    QWebEnginePage page(&profile, nullptr);
 
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.load(QUrl("http://qt-project.org"));
@@ -180,7 +180,7 @@ void tst_QWebEngineProfile::clearDataFromCache()
     QSignalSpy directoryChangedSpy(&fileSystemWatcher, SIGNAL(directoryChanged(const QString &)));
 
     // It deletes most of the files, but not all of them.
-    profile->clearHttpCache();
+    profile.clearHttpCache();
     QTest::qWait(1000);
     QTRY_VERIFY(directoryChangedSpy.count() > 0);
 
@@ -815,26 +815,32 @@ void tst_QWebEngineProfile::initiator()
     InitiatorSpy handler;
     QWebEngineProfile profile;
     profile.installUrlSchemeHandler("foo", &handler);
-    QWebEnginePage page(&profile);
+    QWebEnginePage page(&profile, nullptr);
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.load(QUrl("about:blank"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    loadFinishedSpy.clear();
 
     // about:blank has a unique origin, so initiator should be QUrl("null")
     evaluateJavaScriptSync(&page, "window.location = 'foo:bar'");
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    loadFinishedSpy.clear();
     QCOMPARE(handler.initiator, QUrl("null"));
 
     page.setHtml("", QUrl("http://test:123/foo%20bar"));
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    loadFinishedSpy.clear();
 
     // baseUrl determines the origin, so QUrl("http://test:123")
     evaluateJavaScriptSync(&page, "window.location = 'foo:bar'");
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    loadFinishedSpy.clear();
     QCOMPARE(handler.initiator, QUrl("http://test:123"));
 
     // Directly calling load/setUrl should have initiator QUrl(), meaning
     // browser-initiated, trusted.
     page.load(QUrl("foo:bar"));
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
     QCOMPARE(handler.initiator, QUrl());
 }
 

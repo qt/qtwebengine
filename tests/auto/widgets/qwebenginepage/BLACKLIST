@@ -3,3 +3,7 @@ osx
 
 [mouseMovementProperties]
 windows
+
+# QTBUG-81614
+[setHtmlWithBaseURL]
+*
