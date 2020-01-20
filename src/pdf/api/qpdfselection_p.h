@@ -34,60 +34,26 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqml.h>
-#include <QtQml/qqmlcomponent.h>
-#include <QtQml/qqmlengine.h>
-#include <QtQml/qqmlextensionplugin.h>
-#include "qquickpdfdocument_p.h"
-#include "qquickpdfsearchmodel_p.h"
-#include "qquickpdfselection_p.h"
+#ifndef QPDFSELECTION_P_H
+#define QPDFSELECTION_P_H
+
+#include <QPolygonF>
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \qmlmodule QtQuick.Pdf 5.15
-    \title Qt Quick PDF QML Types
-    \ingroup qmlmodules
-    \brief Provides QML types for handling PDF documents.
-
-    This QML module contains types for handling PDF documents.
-
-    To use the types in this module, import the module with the following line:
-
-    \code
-    import QtQuick.Pdf 5.15
-    \endcode
-*/
-
-class QtQuick2PdfPlugin : public QQmlExtensionPlugin
+class QPdfSelectionPrivate : public QSharedData
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
-
 public:
-    QtQuick2PdfPlugin() : QQmlExtensionPlugin() { }
+    QPdfSelectionPrivate() = default;
+    QPdfSelectionPrivate(const QString &text, QVector<QPolygonF> bounds)
+        : text(text),
+          bounds(bounds) { }
 
-    void initializeEngine(QQmlEngine *engine, const char *uri) override {
-        Q_UNUSED(uri);
-#ifndef QT_STATIC
-        engine->addImportPath(QStringLiteral("qrc:/"));
-#endif
-    }
-
-    void registerTypes(const char *uri) override {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtQuick.Pdf"));
-
-        // Register the latest version, even if there are no new types or new revisions for existing types yet.
-        qmlRegisterModule(uri, 2, QT_VERSION_MINOR);
-
-        qmlRegisterType<QQuickPdfDocument>(uri, 5, 15, "PdfDocument");
-        qmlRegisterType<QQuickPdfSearchModel>(uri, 5, 15, "PdfSearchModel");
-        qmlRegisterType<QQuickPdfSelection>(uri, 5, 15, "PdfSelection");
-
-        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
-    }
+    QString text;
+    QVector<QPolygonF> bounds;
 };
 
 QT_END_NAMESPACE
 
-#include "plugin.moc"
+#endif // QPDFSELECTION_P_H

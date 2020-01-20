@@ -16,10 +16,12 @@ SOURCES += \
     plugin.cpp \
     qquickpdfdocument.cpp \
     qquickpdfsearchmodel.cpp \
+    qquickpdfselection.cpp \
 
 HEADERS += \
     qquickpdfdocument_p.h \
     qquickpdfsearchmodel_p.h \
+    qquickpdfselection_p.h \
 
 QT += pdf quick-private gui gui-private core core-private qml qml-private
 

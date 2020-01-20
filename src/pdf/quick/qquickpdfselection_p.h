@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKPDFSEARCHMODEL_P_H
-#define QQUICKPDFSEARCHMODEL_P_H
+#ifndef QQUICKPDFSELECTION_P_H
+#define QQUICKPDFSELECTION_P_H
 
 //
 //  W A R N I N G
@@ -48,57 +48,75 @@
 // We mean it.
 //
 
-#include "qquickpdfdocument_p.h"
-#include "../api/qpdfsearchmodel.h"
-
+#include <QPointF>
+#include <QPolygonF>
 #include <QVariant>
 #include <QtQml/qqml.h>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickPdfSearchModel : public QPdfSearchModel
+class QQuickPdfDocument;
+
+class QQuickPdfSelection : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QQuickPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
     Q_PROPERTY(int page READ page WRITE setPage NOTIFY pageChanged)
-    Q_PROPERTY(QString searchString READ searchString WRITE setSearchString NOTIFY searchStringChanged)
-    Q_PROPERTY(QVector<QPolygonF> matchGeometry READ matchGeometry NOTIFY matchGeometryChanged)
+    Q_PROPERTY(QPointF fromPoint READ fromPoint WRITE setFromPoint NOTIFY fromPointChanged)
+    Q_PROPERTY(QPointF toPoint READ toPoint WRITE setToPoint NOTIFY toPointChanged)
+    Q_PROPERTY(bool hold READ hold WRITE setHold NOTIFY holdChanged)
+
+    Q_PROPERTY(QString text READ text NOTIFY textChanged)
+    Q_PROPERTY(QVector<QPolygonF> geometry READ geometry NOTIFY geometryChanged)
 
 public:
-    explicit QQuickPdfSearchModel(QObject *parent = nullptr);
+    explicit QQuickPdfSelection(QObject *parent = nullptr);
 
     QQuickPdfDocument *document() const;
     void setDocument(QQuickPdfDocument * document);
-
     int page() const;
     void setPage(int page);
+    QPointF fromPoint() const;
+    void setFromPoint(QPointF fromPoint);
+    QPointF toPoint() const;
+    void setToPoint(QPointF toPoint);
+    bool hold() const;
+    void setHold(bool hold);
 
-    QString searchString() const;
-    void setSearchString(QString searchString);
+    QString text() const;
+    QVector<QPolygonF> geometry() const;
 
-    QVector<QPolygonF> matchGeometry() const;
+#if QT_CONFIG(clipboard)
+    Q_INVOKABLE void copyToClipboard() const;
+#endif
 
 signals:
     void documentChanged();
     void pageChanged();
-    void searchStringChanged();
-    void matchGeometryChanged();
+    void fromPointChanged();
+    void toPointChanged();
+    void holdChanged();
+    void textChanged();
+    void geometryChanged();
 
 private:
+    void resetPoints();
     void updateResults();
 
 private:
-    QQuickPdfDocument *m_quickDocument = nullptr;
-    QString m_searchString;
-    QVector<QPolygonF> m_matchGeometry;
-    int m_page;
+    QQuickPdfDocument *m_document = nullptr;
+    QPointF m_fromPoint;
+    QPointF m_toPoint;
+    QString m_text;
+    QVector<QPolygonF> m_geometry;
+    int m_page = 0;
+    bool m_hold = false;
 
-    Q_DISABLE_COPY(QQuickPdfSearchModel)
+    Q_DISABLE_COPY(QQuickPdfSelection)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QQuickPdfSearchModel)
-QML_DECLARE_TYPE(QPdfSelection)
-
-#endif // QQUICKPDFSEARCHMODEL_P_H
+QML_DECLARE_TYPE(QQuickPdfSelection)
+\
+#endif // QQUICKPDFSELECTION_P_H

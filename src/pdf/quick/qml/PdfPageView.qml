@@ -51,9 +51,22 @@ Rectangle {
     property alias currentPage: image.currentFrame
     property alias pageCount: image.frameCount
     property alias searchString: searchModel.searchString
+    property alias selectedText: selection.text
     property alias status: image.status
 
     property real __pageScale: image.paintedWidth / document.pagePointSize(image.currentFrame).width
+
+    PdfSelection {
+        id: selection
+        document: paper.document
+        page: image.currentFrame
+        fromPoint: Qt.point(textSelectionDrag.centroid.pressPosition.x / paper.__pageScale, textSelectionDrag.centroid.pressPosition.y / paper.__pageScale)
+        toPoint: Qt.point(textSelectionDrag.centroid.position.x / paper.__pageScale, textSelectionDrag.centroid.position.y / paper.__pageScale)
+        hold: !textSelectionDrag.active && !tapHandler.pressed
+    }
+    function copySelectionToClipboard() {
+        selection.copyToClipboard()
+    }
 
     PdfSearchModel {
         id: searchModel
@@ -96,6 +109,14 @@ Rectangle {
                 paths: searchModel.matchGeometry
             }
         }
+        ShapePath {
+            fillColor: "orange"
+            scale: Qt.size(paper.__pageScale, paper.__pageScale)
+            PathMultiline {
+                id: selectionBoundaries
+                paths: selection.geometry
+            }
+        }
     }
     PinchHandler {
         id: pinch
@@ -115,5 +136,14 @@ Rectangle {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
         acceptedButtons: Qt.MiddleButton
         snapMode: DragHandler.NoSnap
+    }
+    DragHandler {
+        id: textSelectionDrag
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
+        target: null
+    }
+    TapHandler {
+        id: tapHandler
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
     }
 }

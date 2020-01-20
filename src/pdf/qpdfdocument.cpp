@@ -38,6 +38,7 @@
 #include "qpdfdocument_p.h"
 
 #include "third_party/pdfium/public/fpdf_doc.h"
+#include "third_party/pdfium/public/fpdf_text.h"
 
 #include <QDateTime>
 #include <QDebug>
@@ -53,6 +54,7 @@ QT_BEGIN_NAMESPACE
 // The library is not thread-safe at all, it has a lot of global variables.
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, pdfMutex, (QMutex::Recursive));
 static int libraryRefCount;
+static const double CharacterHitTolerance = 6.0;
 Q_LOGGING_CATEGORY(qLcDoc, "qt.pdf.document")
 
 QPdfMutexLocker::QPdfMutexLocker()
@@ -712,6 +714,51 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
 
     FPDF_ClosePage(pdfPage);
     return result;
+}
+
+/*!
+    Returns information about the text on the given \a page that can be found
+    between the given \a start and \a end points, if any.
+*/
+QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
+{
+    const QPdfMutexLocker lock;
+    FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
+    double pageHeight = FPDF_GetPageHeight(pdfPage);
+    FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
+    int startIndex = FPDFText_GetCharIndexAtPos(textPage, start.x(), pageHeight - start.y(),
+                                                CharacterHitTolerance, CharacterHitTolerance);
+    int endIndex = FPDFText_GetCharIndexAtPos(textPage, end.x(), pageHeight - end.y(),
+                                              CharacterHitTolerance, CharacterHitTolerance);
+    if (startIndex >= 0 && endIndex != startIndex) {
+        QString text;
+        if (startIndex > endIndex)
+            qSwap(startIndex, endIndex);
+        int count = endIndex - startIndex + 1;
+        QVector<ushort> buf(count + 1);
+        // TODO is that enough space in case one unicode character is more than one in utf-16?
+        int len = FPDFText_GetText(textPage, startIndex, count, buf.data());
+        Q_ASSERT(len - 1 <= count); // len is number of characters written, including the terminator
+        text = QString::fromUtf16(buf.constData(), len - 1);
+        QVector<QPolygonF> bounds;
+        int rectCount = FPDFText_CountRects(textPage, startIndex, endIndex - startIndex);
+        for (int i = 0; i < rectCount; ++i) {
+            double l, r, b, t;
+            FPDFText_GetRect(textPage, i, &l, &t, &r, &b);
+            QPolygonF poly;
+            poly << QPointF(l, pageHeight - t);
+            poly << QPointF(r, pageHeight - t);
+            poly << QPointF(r, pageHeight - b);
+            poly << QPointF(l, pageHeight - b);
+            poly << QPointF(l, pageHeight - t);
+            bounds << poly;
+        }
+        qCDebug(qLcDoc) << page << start << "->" << end << "found" << startIndex << "->" << endIndex << text;
+        return QPdfSelection(text, bounds);
+    }
+
+    qDebug(qLcDoc) << page << start << "->" << end << "nothing found";
+    return QPdfSelection();
 }
 
 QT_END_NAMESPACE

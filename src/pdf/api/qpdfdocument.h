@@ -41,6 +41,7 @@
 #include <QImage>
 #include <QObject>
 #include <QtPdf/QPdfDocumentRenderOptions>
+#include "qpdfselection.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -110,6 +111,8 @@ public:
     QSizeF pageSize(int page) const;
 
     QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
+
+    Q_INVOKABLE QPdfSelection getSelection(int page, QPointF start, QPointF end);
 
 Q_SIGNALS:
     void passwordChanged();

@@ -51,6 +51,7 @@ import QtQuick 2.14
 import QtQuick.Controls 2.14
 import Qt.labs.platform 1.1 as Platform
 import QtQuick.Pdf 5.15
+import QtQuick.Shapes 1.14
 import QtQuick.Window 2.14
 
 Window {
@@ -70,6 +71,15 @@ Window {
         title: "Open a PDF file"
         nameFilters: [ "PDF files (*.pdf)" ]
         onAccepted: doc.source = file
+    }
+
+    PdfSelection {
+        id: selection
+        document: doc
+        page: image.currentFrame
+        fromPoint: dragHandler.centroid.pressPosition
+        toPoint: dragHandler.centroid.position
+        hold: !dragHandler.active
     }
 
     Column {
@@ -147,6 +157,18 @@ Window {
                     Shortcut {
                         sequence: StandardKey.Quit
                         onActivated: Qt.quit()
+                    }
+                }
+
+                Shape {
+                    anchors.fill: parent
+                    opacity: 0.25
+                    ShapePath {
+                        fillColor: "cyan"
+                        PathMultiline {
+                            id: selectionBoundaries
+                            paths: selection.geometry
+                        }
                     }
                 }
             }

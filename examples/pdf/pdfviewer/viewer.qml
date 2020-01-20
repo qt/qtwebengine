@@ -128,6 +128,14 @@ ApplicationWindow {
                     onActivated: currentPageSB.value++
                 }
             }
+            ToolButton {
+                action: Action {
+                    shortcut: StandardKey.Copy
+                    icon.source: "resources/edit-copy.svg"
+                    enabled: pageView.selectedText !== ""
+                    onTriggered: pageView.copySelectionToClipboard()
+                }
+            }
             TextField {
                 id: searchField
                 placeholderText: "search"

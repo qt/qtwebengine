@@ -34,60 +34,50 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqml.h>
-#include <QtQml/qqmlcomponent.h>
-#include <QtQml/qqmlengine.h>
-#include <QtQml/qqmlextensionplugin.h>
-#include "qquickpdfdocument_p.h"
-#include "qquickpdfsearchmodel_p.h"
-#include "qquickpdfselection_p.h"
+#ifndef QPDFSELECTION_H
+#define QPDFSELECTION_H
+
+#include <QtPdf/qtpdfglobal.h>
+#include <QClipboard>
+#include <QExplicitlySharedDataPointer>
+#include <QObject>
+#include <QPolygonF>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \qmlmodule QtQuick.Pdf 5.15
-    \title Qt Quick PDF QML Types
-    \ingroup qmlmodules
-    \brief Provides QML types for handling PDF documents.
+class QPdfSelectionPrivate;
 
-    This QML module contains types for handling PDF documents.
-
-    To use the types in this module, import the module with the following line:
-
-    \code
-    import QtQuick.Pdf 5.15
-    \endcode
-*/
-
-class QtQuick2PdfPlugin : public QQmlExtensionPlugin
+class Q_PDF_EXPORT QPdfSelection
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
+    Q_GADGET
+    Q_PROPERTY(bool valid READ isValid)
+    Q_PROPERTY(QVector<QPolygonF> bounds READ bounds)
+    Q_PROPERTY(QString text READ text)
 
 public:
-    QtQuick2PdfPlugin() : QQmlExtensionPlugin() { }
-
-    void initializeEngine(QQmlEngine *engine, const char *uri) override {
-        Q_UNUSED(uri);
-#ifndef QT_STATIC
-        engine->addImportPath(QStringLiteral("qrc:/"));
+    QPdfSelection(const QPdfSelection &other);
+    ~QPdfSelection();
+    QPdfSelection &operator=(const QPdfSelection &other);
+    inline QPdfSelection &operator=(QPdfSelection &&other) noexcept { swap(other); return *this; }
+    void swap(QPdfSelection &other) noexcept { d.swap(other.d); }
+    bool isValid() const;
+    QVector<QPolygonF> bounds() const;
+    QString text() const;
+#if QT_CONFIG(clipboard)
+    void copyToClipboard(QClipboard::Mode mode = QClipboard::Clipboard) const;
 #endif
-    }
 
-    void registerTypes(const char *uri) override {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtQuick.Pdf"));
+private:
+    QPdfSelection();
+    QPdfSelection(const QString &text, QVector<QPolygonF> bounds);
+    QPdfSelection(QPdfSelectionPrivate *d);
+    friend class QPdfDocument;
+    friend class QQuickPdfSelection;
 
-        // Register the latest version, even if there are no new types or new revisions for existing types yet.
-        qmlRegisterModule(uri, 2, QT_VERSION_MINOR);
-
-        qmlRegisterType<QQuickPdfDocument>(uri, 5, 15, "PdfDocument");
-        qmlRegisterType<QQuickPdfSearchModel>(uri, 5, 15, "PdfSearchModel");
-        qmlRegisterType<QQuickPdfSelection>(uri, 5, 15, "PdfSelection");
-
-        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
-    }
+private:
+    QExplicitlySharedDataPointer<QPdfSelectionPrivate> d;
 };
 
 QT_END_NAMESPACE
 
-#include "plugin.moc"
+#endif // QPDFSELECTION_H
