@@ -89,6 +89,7 @@ public:
         qmlRegisterType<QQuickPdfSelection>(uri, 5, 15, "PdfSelection");
 
         qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
+        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfMultiPageView.qml"), uri, 5, 15, "PdfMultiPageView");
     }
 };
 

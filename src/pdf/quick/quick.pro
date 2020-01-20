@@ -6,6 +6,7 @@ IMPORT_VERSION = 1.0
 #QMAKE_DOCS = $$PWD/doc/qtquickpdf.qdocconf
 
 PDF_QML_FILES = \
+    qml/PdfMultiPageView.qml \
     qml/PdfPageView.qml \
 
 QML_FILES += $$PDF_QML_FILES qmldir
