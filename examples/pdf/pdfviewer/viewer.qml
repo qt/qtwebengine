@@ -113,20 +113,19 @@ ApplicationWindow {
                     onTriggered: pageView.rotation += 90
                 }
             }
-            ToolButton {
-                action: Action {
-                    shortcut: StandardKey.MoveToPreviousPage
-                    icon.source: "resources/go-previous-view-page.svg"
-                    enabled: pageView.currentPage > 0
-                    onTriggered: pageView.currentPage--
+            SpinBox {
+                id: currentPageSB
+                from: 1
+                to: document.pageCount
+                value: 1
+                editable: true
+                Shortcut {
+                    sequence: StandardKey.MoveToPreviousPage
+                    onActivated: currentPageSB.value--
                 }
-            }
-            ToolButton {
-                action: Action {
-                    shortcut: StandardKey.MoveToNextPage
-                    icon.source: "resources/go-next-view-page.svg"
-                    enabled: pageView.currentPage < pageView.pageCount - 1
-                    onTriggered: pageView.currentPage++
+                Shortcut {
+                    sequence: StandardKey.MoveToNextPage
+                    onActivated: currentPageSB.value++
                 }
             }
             TextField {
@@ -184,6 +183,7 @@ ApplicationWindow {
 
     PdfPageView {
         id: pageView
+        currentPage: currentPageSB.value - 1
         document: PdfDocument {
             id: document
             onStatusChanged: if (status === PdfDocument.Error) errorDialog.open()
