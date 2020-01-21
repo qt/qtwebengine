@@ -48,13 +48,18 @@ Rectangle {
     property var document: null
     property real renderScale: 1
     property alias sourceSize: image.sourceSize
-    property alias currentPage: image.currentFrame
+    property alias currentPage: navigationStack.currentPage
     property alias pageCount: image.frameCount
     property alias searchString: searchModel.searchString
     property alias selectedText: selection.text
     property alias status: image.status
+    property alias backEnabled: navigationStack.backAvailable
+    property alias forwardEnabled: navigationStack.forwardAvailable
+    function back() { navigationStack.back() }
+    function forward() { navigationStack.forward() }
+    signal currentPageReallyChanged(page: int)
 
-    property real __pageScale: image.paintedWidth / document.pagePointSize(image.currentFrame).width
+    property real __pageScale: image.paintedWidth / document.pagePointSize(navigationStack.currentPage).width
 
     function resetScale() {
         image.sourceSize.width = 0
@@ -78,7 +83,7 @@ Rectangle {
     function scaleToPage(width, height) {
         var windowAspect = width / height
         var halfRotation = Math.abs(paper.rotation % 180)
-        var pagePointSize = document.pagePointSize(image.currentFrame)
+        var pagePointSize = document.pagePointSize(navigationStack.currentPage)
         if (halfRotation > 45 && halfRotation < 135) {
             // rotated 90 or 270º
             var pageAspect = pagePointSize.height / pagePointSize.width
@@ -104,7 +109,7 @@ Rectangle {
     PdfSelection {
         id: selection
         document: paper.document
-        page: image.currentFrame
+        page: navigationStack.currentPage
         fromPoint: Qt.point(textSelectionDrag.centroid.pressPosition.x / paper.__pageScale, textSelectionDrag.centroid.pressPosition.y / paper.__pageScale)
         toPoint: Qt.point(textSelectionDrag.centroid.position.x / paper.__pageScale, textSelectionDrag.centroid.position.y / paper.__pageScale)
         hold: !textSelectionDrag.active && !tapHandler.pressed
@@ -116,11 +121,17 @@ Rectangle {
     PdfSearchModel {
         id: searchModel
         document: paper.document
-        page: image.currentFrame
+        page: navigationStack.currentPage
+    }
+
+    PdfNavigationStack {
+        id: navigationStack
+        onCurrentPageChanged: paper.currentPageReallyChanged(navigationStack.currentPage)
     }
 
     Image {
         id: image
+        currentFrame: navigationStack.currentPage
         source: document.status === PdfDocument.Ready ? document.source : ""
         asynchronous: true
         fillMode: Image.PreserveAspectFit
@@ -145,7 +156,7 @@ Rectangle {
         }
     }
     onRenderScaleChanged: {
-        image.sourceSize.width = document.pagePointSize(image.currentFrame).width * renderScale
+        image.sourceSize.width = document.pagePointSize(navigationStack.currentPage).width * renderScale
         image.sourceSize.height = 0
         paper.scale = 1
     }
@@ -178,7 +189,7 @@ Rectangle {
         model: PdfLinkModel {
             id: linkModel
             document: paper.document
-            page: image.currentFrame
+            page: navigationStack.currentPage
         }
         delegate: Rectangle {
             color: "transparent"
@@ -191,7 +202,7 @@ Rectangle {
             TapHandler {
                 onTapped: {
                     if (page >= 0)
-                        image.currentFrame = page
+                        navigationStack.currentPage = page
                     else
                         Qt.openUrlExternally(url)
                 }

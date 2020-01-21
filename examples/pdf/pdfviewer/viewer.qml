@@ -57,8 +57,8 @@ import Qt.labs.platform 1.1 as Platform
 
 ApplicationWindow {
     id: root
-    width: 800
-    height: 640
+    width: 1280
+    height: 1024
     color: "lightgrey"
     title: document.title
     visible: true
@@ -125,12 +125,22 @@ ApplicationWindow {
                     onTriggered: pageView.rotation += 90
                 }
             }
+            ToolButton {
+                action: Action {
+                    icon.source: "resources/go-previous-view-page.svg"
+                    enabled: pageView.backEnabled
+                    onTriggered: pageView.back()
+                }
+                ToolTip.visible: enabled && hovered
+                ToolTip.delay: 2000
+                ToolTip.text: "go back"
+            }
             SpinBox {
                 id: currentPageSB
                 from: 1
                 to: document.pageCount
-                value: 1
                 editable: true
+                onValueChanged: pageView.currentPage = value - 1
                 Shortcut {
                     sequence: StandardKey.MoveToPreviousPage
                     onActivated: currentPageSB.value--
@@ -139,6 +149,16 @@ ApplicationWindow {
                     sequence: StandardKey.MoveToNextPage
                     onActivated: currentPageSB.value++
                 }
+            }
+            ToolButton {
+                action: Action {
+                    icon.source: "resources/go-next-view-page.svg"
+                    enabled: pageView.forwardEnabled
+                    onTriggered: pageView.forward()
+                }
+                ToolTip.visible: enabled && hovered
+                ToolTip.delay: 2000
+                ToolTip.text: "go forward"
             }
             ToolButton {
                 action: Action {
@@ -203,7 +223,10 @@ ApplicationWindow {
 
     PdfPageView {
         id: pageView
-        currentPage: currentPageSB.value - 1
+//        currentPage: currentPageSB.value - 1
+        // TODO should work but ends up being NaN in QQuickSpinBoxPrivate::setValue() (?!)
+//        onCurrentPageChanged: currentPageSB.value = pageView.currrentPage + 1
+        onCurrentPageReallyChanged: currentPageSB.value = page + 1
         document: PdfDocument {
             id: document
             onStatusChanged: if (status === PdfDocument.Error) errorDialog.open()

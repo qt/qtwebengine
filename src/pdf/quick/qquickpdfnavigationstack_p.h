@@ -34,64 +34,62 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqml.h>
-#include <QtQml/qqmlcomponent.h>
-#include <QtQml/qqmlengine.h>
-#include <QtQml/qqmlextensionplugin.h>
+#ifndef QQUICKPDFNAVIGATIONSTACK_P_H
+#define QQUICKPDFNAVIGATIONSTACK_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "qquickpdfdocument_p.h"
-#include "qquickpdflinkmodel_p.h"
-#include "qquickpdfnavigationstack_p.h"
-#include "qquickpdfsearchmodel_p.h"
-#include "qquickpdfselection_p.h"
+
+#include <QtQml/qqml.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \qmlmodule QtQuick.Pdf 5.15
-    \title Qt Quick PDF QML Types
-    \ingroup qmlmodules
-    \brief Provides QML types for handling PDF documents.
-
-    This QML module contains types for handling PDF documents.
-
-    To use the types in this module, import the module with the following line:
-
-    \code
-    import QtQuick.Pdf 5.15
-    \endcode
-*/
-
-class QtQuick2PdfPlugin : public QQmlExtensionPlugin
+class QQuickPdfNavigationStack : public QObject
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
+    Q_PROPERTY(int currentPage READ currentPage WRITE setCurrentPage NOTIFY currentPageChanged)
+    Q_PROPERTY(bool backAvailable READ backAvailable NOTIFY backAvailableChanged)
+    Q_PROPERTY(bool forwardAvailable READ forwardAvailable NOTIFY forwardAvailableChanged)
 
 public:
-    QtQuick2PdfPlugin() : QQmlExtensionPlugin() { }
+    explicit QQuickPdfNavigationStack(QObject *parent = nullptr);
 
-    void initializeEngine(QQmlEngine *engine, const char *uri) override {
-        Q_UNUSED(uri);
-#ifndef QT_STATIC
-        engine->addImportPath(QStringLiteral("qrc:/"));
-#endif
-    }
+    Q_INVOKABLE void forward();
+    Q_INVOKABLE void back();
 
-    void registerTypes(const char *uri) override {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtQuick.Pdf"));
+    int currentPage() const { return m_currentPage; }
+    void setCurrentPage(int currentPage);
 
-        // Register the latest version, even if there are no new types or new revisions for existing types yet.
-        qmlRegisterModule(uri, 2, QT_VERSION_MINOR);
+    bool backAvailable() const;
+    bool forwardAvailable() const;
 
-        qmlRegisterType<QQuickPdfDocument>(uri, 5, 15, "PdfDocument");
-        qmlRegisterType<QQuickPdfLinkModel>(uri, 5, 15, "PdfLinkModel");
-        qmlRegisterType<QQuickPdfNavigationStack>(uri, 5, 15, "PdfNavigationStack");
-        qmlRegisterType<QQuickPdfSearchModel>(uri, 5, 15, "PdfSearchModel");
-        qmlRegisterType<QQuickPdfSelection>(uri, 5, 15, "PdfSelection");
+Q_SIGNALS:
+    void currentPageChanged();
+    void currentPageJumped(int page);
+    void backAvailableChanged();
+    void forwardAvailableChanged();
 
-        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
-    }
+private:
+    QVector<int> m_pageHistory;
+    int m_nextHistoryIndex = 0;
+    int m_currentPage = 0;
+    bool m_changing = false;
+
+    Q_DISABLE_COPY(QQuickPdfNavigationStack)
 };
 
 QT_END_NAMESPACE
 
-#include "plugin.moc"
+QML_DECLARE_TYPE(QQuickPdfNavigationStack)
+
+#endif // QQUICKPDFNAVIGATIONSTACK_P_H

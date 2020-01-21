@@ -16,12 +16,14 @@ SOURCES += \
     plugin.cpp \
     qquickpdfdocument.cpp \
     qquickpdflinkmodel.cpp \
+    qquickpdfnavigationstack.cpp \
     qquickpdfsearchmodel.cpp \
     qquickpdfselection.cpp \
 
 HEADERS += \
     qquickpdfdocument_p.h \
     qquickpdflinkmodel_p.h \
+    qquickpdfnavigationstack_p.h \
     qquickpdfsearchmodel_p.h \
     qquickpdfselection_p.h \
 
