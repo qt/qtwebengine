@@ -409,8 +409,10 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
         return;
     }
 
-    if (render_frame_host->GetParent())
+    if (render_frame_host->GetParent()) {
+        m_viewClient->updateNavigationActions();
         return;
+    }
 
     if (!m_faviconManager->hasCandidate())
         m_viewClient->iconChanged(QUrl());

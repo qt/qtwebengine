@@ -1327,20 +1327,39 @@ void tst_QWebEnginePage::textEditing()
 void tst_QWebEnginePage::backActionUpdate()
 {
     QWebEngineView view;
+    view.resize(640, 480);
+    view.show();
+
     QWebEnginePage *page = view.page();
+    QSignalSpy loadSpy(page, &QWebEnginePage::loadFinished);
     QAction *action = page->action(QWebEnginePage::Back);
     QVERIFY(!action->isEnabled());
-    QSignalSpy loadSpy(page, SIGNAL(loadFinished(bool)));
-    QUrl url = QUrl("qrc:///resources/framedindex.html");
-    page->load(url);
-    QTRY_COMPARE(loadSpy.count(), 1);
-    QVERIFY(!action->isEnabled());
-    QTest::mouseClick(&view, Qt::LeftButton, 0, QPoint(10, 10));
-    QEXPECT_FAIL("", "Behavior change: Load signals are emitted only for the main frame in QtWebEngine.", Continue);
-    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 2, 100);
 
-    QEXPECT_FAIL("", "FIXME: Mouse events aren't passed from the QWebEngineView down to the RWHVQtDelegateWidget", Continue);
-    QVERIFY(action->isEnabled());
+    page->load(QUrl("qrc:///resources/framedindex.html"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
+    QVERIFY(!action->isEnabled());
+
+    auto firstAnchorCenterInFrame = [](QWebEnginePage *page, const QString &frameName) {
+        QVariantList rectList = evaluateJavaScriptSync(page,
+            "(function(){"
+            "var frame = document.getElementsByName('" + frameName + "')[0];"
+            "var anchor = frame.contentDocument.getElementsByTagName('a')[0];"
+            "var rect = anchor.getBoundingClientRect();"
+            "return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
+        "})()").toList();
+
+        if (rectList.count() != 2) {
+            qWarning("firstAnchorCenterInFrame failed.");
+            return QPoint();
+        }
+
+        return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
+    };
+
+    QVERIFY(evaluateJavaScriptSync(page, "document.getElementsByName('frame_b')[0].contentDocument == undefined").toBool());
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, firstAnchorCenterInFrame(page, "frame_c"));
+    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.getElementsByName('frame_b')[0].contentDocument != undefined").toBool());
+    QTRY_VERIFY(action->isEnabled());
 }
 
 #if defined(QWEBENGINEPAGE_SETTINGS)
