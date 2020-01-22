@@ -53,12 +53,13 @@
     \section1 Articles and Guides
 
     \list
-        \li \l{Qt WebEngine Overview}
+        \li \l{Qt PDF Overview}
     \endlist
 
     \section1 API Reference
 
     \list
         \li \l{Qt PDF C++ Classes}
+        \li \l{Qt Quick PDF QML Types}
     \endlist
 */

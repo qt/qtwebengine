@@ -15,11 +15,23 @@ qhp.QtPdf.indexRoot           =
 qhp.QtPdf.filterAttributes    = qtpdf $QT_VERSION qtrefdoc
 qhp.QtPdf.customFilters.Qt.name = QtPdf $QT_VERSION
 qhp.QtPdf.customFilters.Qt.filterAttributes = qtpdf $QT_VERSION
-qhp.QtPdf.subprojects         = classes
+
+qhp.QtPdf.subprojects         = classes qmltypes examples
+
 qhp.QtPdf.subprojects.classes.title = C++ Classes
 qhp.QtPdf.subprojects.classes.indexTitle = Qt PDF C++ Classes
 qhp.QtPdf.subprojects.classes.selectors = class fake:headerfile
 qhp.QtPdf.subprojects.classes.sortPages = true
+
+qhp.QtPdf.subprojects.qmltypes.title = QML Types
+qhp.QtPdf.subprojects.qmltypes.indexTitle = Qt Quick PDF QML Types
+qhp.QtPdf.subprojects.qmltypes.selectors = qmltype
+qhp.QtPdf.subprojects.qmltypes.sortPages = true
+
+qhp.QtPdf.subprojects.examples.title = Examples
+qhp.QtPdf.subprojects.examples.indexTitle = Qt PDF Examples
+qhp.QtPdf.subprojects.examples.selectors = doc:example
+qhp.QtPdf.subprojects.examples.sortPages = true
 
 depends += qtcore \
            qtwidgets \
@@ -27,14 +39,17 @@ depends += qtcore \
            qtdoc \
            qmake
 
-headerdirs  += ../api
+headerdirs  += ../api \
+               ../quick
 
-sourcedirs  += ..
+sourcedirs  += .. \
+               ../quick
 
-exampledirs += ../../../examples/pdf \
+exampledirs += ../../../examples/pdfwidgets \
                snippets/
 
 imagedirs   += images
 
 navigation.landingpage = "Qt PDF"
 navigation.cppclassespage = "Qt PDF C++ Classes"
+navigation.qmltypespage = "Qt WebEngine QML Types"
