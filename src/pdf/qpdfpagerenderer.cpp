@@ -246,7 +246,7 @@ QPdfPageRenderer::RenderMode QPdfPageRenderer::renderMode() const
 }
 
 /*!
-    Sets the mode of how the pages are rendered.
+    Sets the mode of how the pages are rendered to \a mode.
 
     \sa RenderMode
 */
