@@ -226,7 +226,7 @@ QPdfPageRenderer::~QPdfPageRenderer()
 
 /*!
     \property QPdfPageRenderer::renderMode
-    \brief the mode the renderer renders the pages
+    \brief The mode the renderer uses to render the pages.
 
     By default, this property is \c QPdfPageRenderer::SingleThreaded.
 
@@ -277,7 +277,7 @@ void QPdfPageRenderer::setRenderMode(RenderMode mode)
 
 /*!
     \property QPdfPageRenderer::document
-    \brief the document instance this object renders the pages from
+    \brief The document instance this object renders the pages from.
 
     By default, this property is \c nullptr.
 

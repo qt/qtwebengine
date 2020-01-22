@@ -141,7 +141,7 @@ QPdfPageNavigation::~QPdfPageNavigation()
 
 /*!
     \property QPdfPageNavigation::document
-    \brief the document instance on which this object navigates
+    \brief The document instance on which this object navigates.
 
     By default, this property is \c nullptr.
 
@@ -189,7 +189,7 @@ void QPdfPageNavigation::setDocument(QPdfDocument *document)
 
 /*!
     \property QPdfPageNavigation::currentPage
-    \brief the current page number in the document
+    \brief The current page number in the document.
 
     \sa currentPage(), setCurrentPage()
 */
@@ -229,7 +229,7 @@ void QPdfPageNavigation::setCurrentPage(int newPage)
 
 /*!
     \property QPdfPageNavigation::pageCount
-    \brief the number of pages in the document
+    \brief The number of pages in the document.
 
     \sa pageCount()
 */
@@ -247,7 +247,7 @@ int QPdfPageNavigation::pageCount() const
 
 /*!
     \property QPdfPageNavigation::canGoToPreviousPage
-    \brief whether there is a page before the current page
+    \brief Indicates whether there is a page before the current page.
 
     \sa canGoToPreviousPage(), goToPreviousPage()
 */
@@ -264,7 +264,7 @@ bool QPdfPageNavigation::canGoToPreviousPage() const
 
 /*!
     \property QPdfPageNavigation::canGoToNextPage
-    \brief whether there is a page after the current page
+    \brief Indicates whether there is a page after the current page.
 
     \sa canGoToNextPage(), goToNextPage()
 */
