@@ -28,6 +28,7 @@
 
 #include "../util.h"
 #include <QtCore/qbuffer.h>
+#include <QtCore/qmimedatabase.h>
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
@@ -43,6 +44,9 @@
 #if QT_CONFIG(webengine_webchannel)
 #include <QWebChannel>
 #endif
+
+#include <httpserver.h>
+#include <httpreqrep.h>
 
 #include <map>
 #include <mutex>
@@ -71,6 +75,10 @@ private Q_SLOTS:
     void httpAcceptLanguage();
     void downloadItem();
     void changePersistentPath();
+    void changeHttpUserAgent();
+    void changeHttpAcceptLanguage();
+    void changeUseForGlobalCertificateVerification();
+    void changePersistentCookiesPolicy();
     void initiator();
     void badDeleteOrder();
     void qtbug_71895(); // this should be the last test
@@ -82,6 +90,7 @@ void tst_QWebEngineProfile::initTestCase()
     QWebEngineUrlScheme stream("stream");
     QWebEngineUrlScheme letterto("letterto");
     QWebEngineUrlScheme aviancarrier("aviancarrier");
+    QWebEngineUrlScheme myscheme("myscheme");
     foo.setSyntax(QWebEngineUrlScheme::Syntax::Host);
     stream.setSyntax(QWebEngineUrlScheme::Syntax::HostAndPort);
     stream.setDefaultPort(8080);
@@ -92,6 +101,7 @@ void tst_QWebEngineProfile::initTestCase()
     QWebEngineUrlScheme::registerScheme(stream);
     QWebEngineUrlScheme::registerScheme(letterto);
     QWebEngineUrlScheme::registerScheme(aviancarrier);
+    QWebEngineUrlScheme::registerScheme(myscheme);
 }
 
 void tst_QWebEngineProfile::init()
@@ -151,75 +161,126 @@ void tst_QWebEngineProfile::testProfile()
              + QStringLiteral("/QtWebEngine/Test"));
 }
 
+class AutoDir : public QDir
+{
+public:
+    AutoDir(const QString &p) : QDir(p)
+    {
+        makeAbsolute();
+        removeRecursively();
+    }
+
+    ~AutoDir() { removeRecursively(); }
+};
+
+qint64 totalSize(QDir dir)
+{
+    qint64 sum = 0;
+    const QDir::Filters filters{QDir::Dirs, QDir::Files, QDir::NoSymLinks, QDir::NoDotAndDotDot};
+    for (const QFileInfo &entry : dir.entryInfoList(filters)) {
+        if (entry.isFile())
+            sum += entry.size();
+        else if (entry.isDir())
+            sum += totalSize(entry.filePath());
+    }
+    return sum;
+}
+
+class TestServer : public HttpServer
+{
+public:
+    TestServer()
+    {
+        connect(this, &HttpServer::newRequest, this, &TestServer::onNewRequest);
+    }
+
+private:
+    void onNewRequest(HttpReqRep *rr)
+    {
+        const QDir resourceDir(TESTS_SOURCE_DIR "qwebengineprofile/resources");
+        QString path = rr->requestPath();
+        path.remove(0, 1);
+
+        if (rr->requestMethod() != "GET" || !resourceDir.exists(path))
+        {
+            rr->setResponseStatus(404);
+            rr->sendResponse();
+            return;
+        }
+
+        QFile file(resourceDir.filePath(path));
+        file.open(QIODevice::ReadOnly);
+        QByteArray data = file.readAll();
+        rr->setResponseBody(data);
+        QMimeDatabase db;
+        QMimeType mime = db.mimeTypeForFileNameAndData(file.fileName(), data);
+        rr->setResponseHeader(QByteArrayLiteral("content-type"), mime.name().toUtf8());
+        if (!mime.inherits("text/html"))
+            rr->setResponseHeader(QByteArrayLiteral("cache-control"),
+                                  QByteArrayLiteral("public, max-age=31536000"));
+        rr->sendResponse();
+    }
+};
+
+static bool loadSync(QWebEnginePage *page, const QUrl &url, bool ok = true)
+{
+    QSignalSpy spy(page, &QWebEnginePage::loadFinished);
+    page->load(url);
+    return (!spy.empty() || spy.wait(20000)) && (spy.front().value(0).toBool() == ok);
+}
+
+static bool loadSync(QWebEngineView *view, const QUrl &url, bool ok = true)
+{
+    return loadSync(view->page(), url, ok);
+}
+
 void tst_QWebEngineProfile::clearDataFromCache()
 {
-    QWebEnginePage page;
+    TestServer server;
+    QVERIFY(server.start());
 
-    QDir cacheDir("./tst_QWebEngineProfile_cacheDir");
-    cacheDir.makeAbsolute();
-    if (cacheDir.exists())
-        cacheDir.removeRecursively();
-    cacheDir.mkpath(cacheDir.path());
+    AutoDir cacheDir("./tst_QWebEngineProfile_clearDataFromCache");
 
-    QWebEngineProfile *profile = page.profile();
-    profile->setCachePath(cacheDir.path());
-    profile->setHttpCacheType(QWebEngineProfile::DiskHttpCache);
+    QWebEngineProfile profile(QStringLiteral("Test"));
+    profile.setCachePath(cacheDir.path());
+    profile.setHttpCacheType(QWebEngineProfile::DiskHttpCache);
 
-    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
-    page.load(QUrl("http://qt-project.org"));
-    if (!loadFinishedSpy.wait(10000) || !loadFinishedSpy.at(0).at(0).toBool())
-        QSKIP("Couldn't load page from network, skipping test.");
+    QWebEnginePage page(&profile);
+    QVERIFY(loadSync(&page, server.url("/hedgehog.html")));
 
-    cacheDir.refresh();
-    QVERIFY(cacheDir.entryList().contains("Cache"));
-    cacheDir.cd("./Cache");
-    int filesBeforeClear = cacheDir.entryList().count();
-
-    QFileSystemWatcher fileSystemWatcher;
-    fileSystemWatcher.addPath(cacheDir.path());
-    QSignalSpy directoryChangedSpy(&fileSystemWatcher, SIGNAL(directoryChanged(const QString &)));
-
-    // It deletes most of the files, but not all of them.
-    profile->clearHttpCache();
+    QVERIFY(cacheDir.exists("Cache"));
+    qint64 sizeBeforeClear = totalSize(cacheDir);
+    profile.clearHttpCache();
+    // Wait for cache to be cleared.
     QTest::qWait(1000);
-    QTRY_VERIFY(directoryChangedSpy.count() > 0);
+    QVERIFY(sizeBeforeClear > totalSize(cacheDir));
 
-    cacheDir.refresh();
-    QVERIFY(filesBeforeClear > cacheDir.entryList().count());
-
-    cacheDir.removeRecursively();
+    QVERIFY(server.stop());
 }
 
 void tst_QWebEngineProfile::disableCache()
 {
-    QWebEnginePage page;
-    QDir cacheDir("./tst_QWebEngineProfile_cacheDir");
-    if (cacheDir.exists())
-        cacheDir.removeRecursively();
-    cacheDir.mkpath(cacheDir.path());
+    TestServer server;
+    QVERIFY(server.start());
 
+    AutoDir cacheDir("./tst_QWebEngineProfile_disableCache");
+
+    QWebEnginePage page;
     QWebEngineProfile *profile = page.profile();
     profile->setCachePath(cacheDir.path());
-    QVERIFY(!cacheDir.entryList().contains("Cache"));
+    QVERIFY(!cacheDir.exists("Cache"));
 
     profile->setHttpCacheType(QWebEngineProfile::NoCache);
-    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
-    page.load(QUrl("http://qt-project.org"));
-    if (!loadFinishedSpy.wait(10000) || !loadFinishedSpy.at(0).at(0).toBool())
-        QSKIP("Couldn't load page from network, skipping test.");
-
-    cacheDir.refresh();
-    QVERIFY(!cacheDir.entryList().contains("Cache"));
+    // Wait for cache to be cleared.
+    QTest::qWait(1000);
+    QVERIFY(loadSync(&page, server.url("/hedgehog.html")));
+    QVERIFY(!cacheDir.exists("Cache"));
 
     profile->setHttpCacheType(QWebEngineProfile::DiskHttpCache);
-    page.load(QUrl("http://qt-project.org"));
-    if (!loadFinishedSpy.wait(10000) || !loadFinishedSpy.at(1).at(0).toBool())
-        QSKIP("Couldn't load page from network, skipping test.");
+    QVERIFY(loadSync(&page, server.url("/hedgehog.html")));
+    QVERIFY(cacheDir.exists("Cache"));
 
-    cacheDir.refresh();
-    QVERIFY(cacheDir.entryList().contains("Cache"));
-
-    cacheDir.removeRecursively();
+    QVERIFY(server.stop());
 }
 
 class RedirectingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
@@ -331,21 +392,6 @@ public:
     }
 };
 
-static bool loadSync(QWebEngineView *view, const QUrl &url, int timeout = 5000)
-{
-    // Ripped off QTRY_VERIFY.
-    QSignalSpy loadFinishedSpy(view, SIGNAL(loadFinished(bool)));
-    view->load(url);
-    if (loadFinishedSpy.isEmpty())
-        QTest::qWait(0);
-    for (int i = 0; i < timeout; i += 50) {
-        if (!loadFinishedSpy.isEmpty())
-            return true;
-        QTest::qWait(50);
-    }
-    return false;
-}
-
 void tst_QWebEngineProfile::urlSchemeHandlers()
 {
     RedirectingUrlSchemeHandler lettertoHandler;
@@ -368,7 +414,7 @@ void tst_QWebEngineProfile::urlSchemeHandlers()
     // Remove the letterto scheme, and check whether it is not handled anymore.
     profile.removeUrlScheme("letterto");
     emailAddress = QStringLiteral("kjeld@olsen-banden.dk");
-    QVERIFY(loadSync(&view, QUrl(QStringLiteral("letterto:") + emailAddress)));
+    QVERIFY(loadSync(&view, QUrl(QStringLiteral("letterto:") + emailAddress), false));
     QVERIFY(toPlainTextSync(view.page()) != emailAddress);
 
     // Check if gopher is still working after removing letterto.
@@ -379,7 +425,7 @@ void tst_QWebEngineProfile::urlSchemeHandlers()
     // Does removeAll work?
     profile.removeAllUrlSchemeHandlers();
     url = QUrl(QStringLiteral("gopher://olsen-banden.dk/harry"));
-    QVERIFY(loadSync(&view, url));
+    QVERIFY(loadSync(&view, url, false));
     QVERIFY(toPlainTextSync(view.page()) != url.toString());
 
     // Install a handler that is owned by the view. Make sure this doesn't crash on shutdown.
@@ -775,28 +821,132 @@ void tst_QWebEngineProfile::downloadItem()
     QWebEngineProfile testProfile;
     QWebEnginePage page(&testProfile);
     QSignalSpy downloadSpy(&testProfile, SIGNAL(downloadRequested(QWebEngineDownloadItem *)));
-    connect(&testProfile, &QWebEngineProfile::downloadRequested, this, [=] (QWebEngineDownloadItem *item) { item->accept(); });
     page.load(QUrl::fromLocalFile(QCoreApplication::applicationFilePath()));
     QTRY_COMPARE(downloadSpy.count(), 1);
 }
 
 void tst_QWebEngineProfile::changePersistentPath()
 {
-    QWebEngineProfile testProfile(QStringLiteral("Test"));
-    const QString oldPath = testProfile.persistentStoragePath();
-    QVERIFY(oldPath.endsWith(QStringLiteral("Test")));
+    TestServer server;
+    QVERIFY(server.start());
 
-    // Make sure the profile has been used and the url-request-context-getter instantiated:
+    AutoDir dataDir1(QStandardPaths::writableLocation(QStandardPaths::DataLocation)
+                     + QStringLiteral("/QtWebEngine/Test"));
+    AutoDir dataDir2(QStandardPaths::writableLocation(QStandardPaths::DataLocation)
+                     + QStringLiteral("/QtWebEngine/Test2"));
+
+    QWebEngineProfile testProfile(QStringLiteral("Test"));
+    QCOMPARE(testProfile.persistentStoragePath(), dataDir1.path());
+
+    // Make sure the profile has been used:
     QWebEnginePage page(&testProfile);
-    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
-    page.load(QUrl("http://qt-project.org"));
-    if (!loadFinishedSpy.wait(10000) || !loadFinishedSpy.at(0).at(0).toBool())
-        QSKIP("Couldn't load page from network, skipping test.");
+    QVERIFY(loadSync(&page, server.url("/hedgehog.html")));
 
     // Test we do not crash (QTBUG-55322):
-    testProfile.setPersistentStoragePath(oldPath + QLatin1Char('2'));
-    const QString newPath = testProfile.persistentStoragePath();
-    QVERIFY(newPath.endsWith(QStringLiteral("Test2")));
+    testProfile.setPersistentStoragePath(dataDir2.path());
+    QCOMPARE(testProfile.persistentStoragePath(), dataDir2.path());
+    QVERIFY(loadSync(&page, server.url("/hedgehog.html")));
+    QVERIFY(dataDir2.exists());
+
+    QVERIFY(server.stop());
+}
+
+void tst_QWebEngineProfile::changeHttpUserAgent()
+{
+    TestServer server;
+    QVERIFY(server.start());
+
+    QVector<QByteArray> userAgents;
+    connect(&server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        if (rr->requestPath() == "/hedgehog.html")
+            userAgents.push_back(rr->requestHeader(QByteArrayLiteral("user-agent")));
+    });
+
+    QWebEngineProfile profile(QStringLiteral("Test"));
+    std::unique_ptr<QWebEnginePage> page;
+    page.reset(new QWebEnginePage(&profile));
+    QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
+    page.reset();
+    profile.setHttpUserAgent("webturbine/42");
+    page.reset(new QWebEnginePage(&profile));
+    QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
+
+    QCOMPARE(userAgents.size(), 2);
+    QCOMPARE(userAgents[1], "webturbine/42");
+    QVERIFY(userAgents[0] != userAgents[1]);
+
+    QVERIFY(server.stop());
+}
+
+void tst_QWebEngineProfile::changeHttpAcceptLanguage()
+{
+    TestServer server;
+    QVERIFY(server.start());
+
+    QVector<QByteArray> languages;
+    connect(&server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
+        if (rr->requestPath() == "/hedgehog.html")
+            languages.push_back(rr->requestHeader(QByteArrayLiteral("accept-language")));
+    });
+
+    QWebEngineProfile profile(QStringLiteral("Test"));
+    std::unique_ptr<QWebEnginePage> page;
+    page.reset(new QWebEnginePage(&profile));
+    QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
+    page.reset();
+    profile.setHttpAcceptLanguage("fi");
+    page.reset(new QWebEnginePage(&profile));
+    QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
+
+    QCOMPARE(languages.size(), 2);
+    QCOMPARE(languages[1], "fi");
+    QVERIFY(languages[0] != languages[1]);
+
+    QVERIFY(server.stop());
+}
+
+void tst_QWebEngineProfile::changeUseForGlobalCertificateVerification()
+{
+    QSKIP("Needs 3rdparty fix");
+
+    TestServer server;
+    QVERIFY(server.start());
+
+    // Check that we don't crash
+
+    QWebEngineProfile profile(QStringLiteral("Test"));
+    std::unique_ptr<QWebEnginePage> page;
+    page.reset(new QWebEnginePage(&profile));
+    QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
+    page.reset();
+    profile.setUseForGlobalCertificateVerification(true);
+    page.reset(new QWebEnginePage(&profile));
+    QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
+    QVERIFY(server.stop());
+}
+
+void tst_QWebEngineProfile::changePersistentCookiesPolicy()
+{
+    TestServer server;
+    QVERIFY(server.start());
+
+    AutoDir dataDir("./tst_QWebEngineProfile_dataDir");
+
+    QWebEngineProfile profile(QStringLiteral("Test"));
+    QWebEnginePage page(&profile);
+
+    profile.setPersistentStoragePath(dataDir.path());
+    profile.setPersistentCookiesPolicy(QWebEngineProfile::NoPersistentCookies);
+
+    QVERIFY(loadSync(&page, server.url("/hedgehog.html")));
+    QVERIFY(!dataDir.exists("Cookies"));
+
+    profile.setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);
+
+    QVERIFY(loadSync(&page, server.url("/hedgehog.html")));
+    QVERIFY(dataDir.exists("Cookies"));
+
+    QVERIFY(server.stop());
 }
 
 class InitiatorSpy : public QWebEngineUrlSchemeHandler
