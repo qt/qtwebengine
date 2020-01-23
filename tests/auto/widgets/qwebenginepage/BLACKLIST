@@ -3,3 +3,4 @@ osx
 
 [mouseMovementProperties]
 windows
+macos # Can't move cursor (QTBUG-76312)
