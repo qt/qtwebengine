@@ -229,6 +229,9 @@ private Q_SLOTS:
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
+    static bool isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
+    static bool isTrueJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
+    static bool isEmptyListJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
 
     QWebEngineView* m_view;
     QWebEnginePage* m_page;
@@ -755,19 +758,38 @@ void tst_QWebEnginePage::textSelection()
 void tst_QWebEnginePage::backActionUpdate()
 {
     QWebEngineView view;
+    view.resize(640, 480);
+    view.show();
+
     QWebEnginePage *page = view.page();
+    QSignalSpy loadSpy(page, &QWebEnginePage::loadFinished);
     QAction *action = page->action(QWebEnginePage::Back);
     QVERIFY(!action->isEnabled());
-    QSignalSpy loadSpy(page, SIGNAL(loadFinished(bool)));
-    QUrl url = QUrl("qrc:///resources/framedindex.html");
-    page->load(url);
+
+    page->load(QUrl("qrc:///resources/framedindex.html"));
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
     QVERIFY(!action->isEnabled());
-    QTest::mouseClick(&view, Qt::LeftButton, {}, QPoint(10, 10));
-    QEXPECT_FAIL("", "Behavior change: Load signals are emitted only for the main frame in QtWebEngine.", Continue);
-    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 2, 100);
 
-    QEXPECT_FAIL("", "FIXME: Mouse events aren't passed from the QWebEngineView down to the RWHVQtDelegateWidget", Continue);
+    auto firstAnchorCenterInFrame = [](QWebEnginePage *page, const QString &frameName) {
+        QVariantList rectList = evaluateJavaScriptSync(page,
+            "(function(){"
+            "var frame = document.getElementsByName('" + frameName + "')[0];"
+            "var anchor = frame.contentDocument.getElementsByTagName('a')[0];"
+            "var rect = anchor.getBoundingClientRect();"
+            "return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
+        "})()").toList();
+
+        if (rectList.count() != 2) {
+            qWarning("firstAnchorCenterInFrame failed.");
+            return QPoint();
+        }
+
+        return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
+    };
+
+    QVERIFY(evaluateJavaScriptSync(page, "document.getElementsByName('frame_b')[0].contentDocument == undefined").toBool());
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, firstAnchorCenterInFrame(page, "frame_c"));
+    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.getElementsByName('frame_b')[0].contentDocument != undefined").toBool());
     QVERIFY(action->isEnabled());
 }
 
@@ -1682,34 +1704,51 @@ void tst_QWebEnginePage::openWindowDefaultSize()
     QCOMPARE(requestedGeometry.height(), 100);
 }
 
+bool tst_QWebEnginePage::isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript)
+{
+    QVariant result = evaluateJavaScriptSync(page, javaScript);
+    return !result.isNull() && result.isValid() && result == QVariant(false);
+}
+
+bool tst_QWebEnginePage::isTrueJavaScriptResult(QWebEnginePage *page, const QString &javaScript)
+{
+    QVariant result = evaluateJavaScriptSync(page, javaScript);
+    return !result.isNull() && result.isValid() && result == QVariant(true);
+}
+
+bool tst_QWebEnginePage::isEmptyListJavaScriptResult(QWebEnginePage *page, const QString &javaScript)
+{
+    QVariant result = evaluateJavaScriptSync(page, javaScript);
+    return !result.isNull() && result.isValid() && result == QList<QVariant>();
+}
+
 void tst_QWebEnginePage::runJavaScript()
 {
     TestPage page;
     QVariant result;
-    QVariantList list;
     QVariantMap map;
 
-    QTRY_VERIFY(!evaluateJavaScriptSync(&page, "false").toBool());
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "2").toInt(), 2);
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "2.5").toDouble(), 2.5);
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "\"Test\"").toString(), "Test");
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "[]").toList(), list);
+    QVERIFY(isFalseJavaScriptResult(&page, "false"));
+    QCOMPARE(evaluateJavaScriptSync(&page, "2").toInt(), 2);
+    QCOMPARE(evaluateJavaScriptSync(&page, "2.5").toDouble(), 2.5);
+    QCOMPARE(evaluateJavaScriptSync(&page, "\"Test\"").toString(), "Test");
+    QVERIFY(isEmptyListJavaScriptResult(&page, "[]"));
 
     map.insert(QStringLiteral("test"), QVariant(2));
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "var el = {\"test\": 2}; el").toMap(), map);
+    QCOMPARE(evaluateJavaScriptSync(&page, "var el = {\"test\": 2}; el").toMap(), map);
 
-    QTRY_VERIFY(evaluateJavaScriptSync(&page, "null").isNull());
+    QVERIFY(evaluateJavaScriptSync(&page, "null").isNull());
 
     result = evaluateJavaScriptSync(&page, "undefined");
-    QTRY_VERIFY(result.isNull() && !result.isValid());
+    QVERIFY(result.isNull() && !result.isValid());
 
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "new Date(42000)").toDate(), QVariant(42.0).toDate());
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "new ArrayBuffer(8)").toByteArray(), QByteArray(8, 0));
+    QCOMPARE(evaluateJavaScriptSync(&page, "new Date(42000)").toDate(), QVariant(42.0).toDate());
+    QCOMPARE(evaluateJavaScriptSync(&page, "new ArrayBuffer(8)").toByteArray(), QByteArray(8, 0));
 
     result = evaluateJavaScriptSync(&page, "(function(){})");
-    QTRY_VERIFY(result.isNull() && !result.isValid());
+    QVERIFY(result.isNull() && !result.isValid());
 
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, "new Promise(function(){})"), QVariant(QVariantMap{}));
+    QCOMPARE(evaluateJavaScriptSync(&page, "new Promise(function(){})"), QVariant(QVariantMap{}));
 }
 
 void tst_QWebEnginePage::runJavaScriptDisabled()
@@ -1762,8 +1801,8 @@ void tst_QWebEnginePage::fullScreenRequested()
     page->load(QUrl("qrc:///resources/fullscreen.html"));
     QTRY_COMPARE(loadSpy.count(), 1);
 
-    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitFullscreenEnabled").toBool());
-    QTRY_VERIFY(!evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
+    QTRY_VERIFY(isTrueJavaScriptResult(page, "document.webkitFullscreenEnabled"));
+    QVERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 
     // FullscreenRequest must be a user gesture
     bool acceptRequest = true;
@@ -1773,15 +1812,15 @@ void tst_QWebEnginePage::fullScreenRequested()
     });
 
     QTest::keyPress(view.focusProxy(), Qt::Key_Space);
-    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
-    QVariant result = evaluateJavaScriptSync(page, "document.webkitExitFullscreen()");
-    QTRY_VERIFY(result.isNull() && !result.isValid());
+    QTRY_VERIFY(isTrueJavaScriptResult(page, "document.webkitIsFullScreen"));
+    page->runJavaScript("document.webkitExitFullscreen()");
+    QTRY_VERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 
     acceptRequest = false;
 
-    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitFullscreenEnabled").toBool());
+    QVERIFY(isTrueJavaScriptResult(page, "document.webkitFullscreenEnabled"));
     QTest::keyPress(view.focusProxy(), Qt::Key_Space);
-    QTRY_VERIFY(!evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
+    QTRY_VERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 }
 
 void tst_QWebEnginePage::quotaRequested()

@@ -67,6 +67,7 @@ public:
         std::string m_charset;
         GURL m_redirect;
         QIODevice *m_device;
+        int64_t m_firstBytePosition;
         int m_error;
         virtual void notifyExpectedContentSize(qint64 size) = 0;
         virtual void notifyHeadersComplete() = 0;

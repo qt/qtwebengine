@@ -1089,7 +1089,7 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
 #endif
         };
 
-        if (!inputMethodQuery(Qt::ImEnabled).toBool() && !acceptKeyOutOfInputField(keyEvent))
+        if (!inputMethodQuery(Qt::ImEnabled).toBool() && !(inputMethodQuery(Qt::ImHints).toInt() & Qt::ImhHiddenText) && !acceptKeyOutOfInputField(keyEvent))
             return false;
 
         Q_ASSERT(m_editCommand.empty());

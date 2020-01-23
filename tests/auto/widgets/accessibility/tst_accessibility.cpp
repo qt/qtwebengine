@@ -365,7 +365,7 @@ void tst_Accessibility::roles_data()
     //QTest::newRow("AX_ROLE_TABLE_HEADER_CONTAINER"); // No mapping to ARIA role
     QTest::newRow("AX_ROLE_TAB") << QString("<div role='tab'>a</div>") << true << QAccessible::PageTab;
     QTest::newRow("AX_ROLE_TAB_LIST") << QString("<div role='tablist'>a</div>") << true << QAccessible::PageTabList;
-    QTest::newRow("AX_ROLE_TAB_PANEL") << QString("<div role='tab'>a</div>") << true << QAccessible::PageTab;
+    QTest::newRow("AX_ROLE_TAB_PANEL") << QString("<div role='tabpanel'>a</div>") << true << QAccessible::Pane;
     QTest::newRow("AX_ROLE_TERM") << QString("<div role='term'>a</div>") << true << QAccessible::StaticText;
     QTest::newRow("AX_ROLE_TEXT_FIELD") << QString("<input type='text'></input>") << false << QAccessible::EditableText;
     QTest::newRow("AX_ROLE_TIME") << QString("<time>a</time>") << false << QAccessible::Clock;

@@ -71,6 +71,7 @@ public:
     bool GetCharset(std::string *charset) override;
     void GetResponseInfo(net::HttpResponseInfo *info) override;
     bool IsRedirectResponse(GURL *location, int *http_status_code, bool *insecure_scheme_was_upgraded) override;
+    void SetExtraRequestHeaders(const net::HttpRequestHeaders &headers);
 
 protected:
     virtual ~URLRequestCustomJob();

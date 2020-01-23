@@ -479,7 +479,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kTabList:
         return QAccessible::PageTabList;
     case ax::mojom::Role::kTabPanel:
-        return QAccessible::PageTab;
+        return QAccessible::Pane;
     case ax::mojom::Role::kTerm:
         return QAccessible::StaticText;
     case ax::mojom::Role::kTextField:

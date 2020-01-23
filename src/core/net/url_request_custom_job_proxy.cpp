@@ -96,9 +96,14 @@ void URLRequestCustomJobProxy::reply(std::string mimeType, QIODevice *device)
     if (m_client->m_device && !m_client->m_device->isReadable())
         m_client->m_device->open(QIODevice::ReadOnly);
 
-    qint64 size = m_client->m_device ? m_client->m_device->size() : -1;
-    if (size > 0)
-        m_client->notifyExpectedContentSize(size);
+    if (m_client->m_firstBytePosition > 0)
+        m_client->m_device->seek(m_client->m_firstBytePosition);
+
+    qint64 deviceSize = m_client->m_device ? m_client->m_device->size() : -1;
+    qint64 remainingBytes = deviceSize - m_client->m_firstBytePosition;
+    if (remainingBytes > 0)
+        m_client->notifyExpectedContentSize(remainingBytes);
+
     if (m_client->m_device && m_client->m_device->isReadable()) {
         m_started = true;
         m_client->notifyHeadersComplete();
