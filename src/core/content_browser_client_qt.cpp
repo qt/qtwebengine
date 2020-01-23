@@ -46,6 +46,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #if QT_CONFIG(webengine_spellchecker)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
@@ -76,6 +77,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/user_agent.h"
 #include "media/media_buildflags.h"
 #include "extensions/buildflags/buildflags.h"
@@ -120,11 +122,9 @@
 #include "media_capture_devices_dispatcher.h"
 #include "net/cookie_monster_delegate_qt.h"
 #include "net/custom_url_loader_factory.h"
-#include "net/network_delegate_qt.h"
 #include "net/proxying_restricted_cookie_manager_qt.h"
 #include "net/proxying_url_loader_factory_qt.h"
 #include "net/qrc_url_scheme_handler.h"
-#include "net/url_request_context_getter_qt.h"
 #include "net/system_network_context_manager.h"
 #include "platform_notification_service_qt.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -296,17 +296,12 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 {
     const int id = host->GetID();
     Profile *profile = Profile::FromBrowserContext(host->GetBrowserContext());
-    if (profile->GetRequestContext()) {
-        base::PostTaskWithTraitsAndReplyWithResult(
-                FROM_HERE, {content::BrowserThread::IO},
-                base::BindOnce(&net::URLRequestContextGetter::GetURLRequestContext, base::Unretained(profile->GetRequestContext())),
-                base::BindOnce(&ContentBrowserClientQt::AddNetworkHintsMessageFilter, base::Unretained(this), id));
-    }
+
+    host->AddFilter(new network_hints::NetworkHintsMessageFilter(id));
 
     // Allow requesting custom schemes.
     const auto policy = content::ChildProcessSecurityPolicy::GetInstance();
-    const auto profileQt = static_cast<ProfileQt *>(host->GetBrowserContext());
-    const auto profileAdapter = profileQt->profileAdapter();
+    const auto profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
     for (const QByteArray &scheme : profileAdapter->customUrlSchemes())
         policy->GrantRequestScheme(id, scheme.toStdString());
 
@@ -315,12 +310,12 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     profileAdapter->userResourceController()->renderProcessStartedWithHost(host);
     host->AddFilter(new BrowserMessageFilterQt(id, profile));
 #if QT_CONFIG(webengine_printing_and_pdf)
-    host->AddFilter(new PrintingMessageFilterQt(host->GetID()));
+    host->AddFilter(new PrintingMessageFilterQt(id));
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    host->AddFilter(new extensions::ExtensionMessageFilter(host->GetID(), host->GetBrowserContext()));
-    host->AddFilter(new extensions::IOThreadExtensionMessageFilter(host->GetID(), host->GetBrowserContext()));
-    host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(host->GetID(), host->GetBrowserContext()));
+    host->AddFilter(new extensions::ExtensionMessageFilter(id, profile));
+    host->AddFilter(new extensions::IOThreadExtensionMessageFilter(id, profile));
+    host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(id, profile));
 #endif //ENABLE_EXTENSIONS
 
     bool is_incognito_process = profile->IsOffTheRecord();
@@ -692,19 +687,6 @@ std::unique_ptr<device::LocationProvider> ContentBrowserClientQt::OverrideSystem
 }
 #endif
 
-void ContentBrowserClientQt::AddNetworkHintsMessageFilter(int render_process_id, net::URLRequestContext *context)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    content::RenderProcessHost* host = content::RenderProcessHost::FromID(render_process_id);
-    if (!host)
-        return;
-
-    content::BrowserMessageFilter *network_hints_message_filter =
-            new network_hints::NetworkHintsMessageFilter(render_process_id);
-    host->AddFilter(network_hints_message_filter);
-}
-
 bool ContentBrowserClientQt::ShouldEnableStrictSiteIsolation()
 {
     // mirroring AwContentBrowserClient, CastContentBrowserClient and
@@ -720,16 +702,6 @@ bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::R
                                                                int routing_id,
                                                                network::mojom::RestrictedCookieManagerRequest *request)
 {
-    if (Profile::FromBrowserContext(browser_context)->GetRequestContext()) {
-        base::PostTaskWithTraits(
-            FROM_HERE, {content::BrowserThread::IO},
-            base::BindOnce(&ProfileIODataQt::CreateRestrictedCookieManager,
-                           ProfileIODataQt::FromBrowserContext(browser_context)->getWeakPtrOnUIThread(),
-                           std::move(*request),
-                           role, origin, is_service_worker, process_id, routing_id));
-        return true;
-    }
-
     network::mojom::RestrictedCookieManagerRequest orig_request = std::move(*request);
     network::mojom::RestrictedCookieManagerPtrInfo target_rcm_info;
     *request = mojo::MakeRequest(&target_rcm_info);
@@ -909,7 +881,31 @@ ContentBrowserClientQt::CreateURLLoaderThrottles(
     return result;
 }
 
-extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition);
+WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition)
+{
+    if (ui::PageTransitionIsRedirect(transition))
+        return WebContentsAdapterClient::RedirectNavigation;
+
+    int32_t qualifier = ui::PageTransitionGetQualifier(transition);
+
+    if (qualifier & ui::PAGE_TRANSITION_FORWARD_BACK)
+        return WebContentsAdapterClient::BackForwardNavigation;
+
+    ui::PageTransition strippedTransition = ui::PageTransitionStripQualifier(transition);
+
+    switch (strippedTransition) {
+    case ui::PAGE_TRANSITION_LINK:
+        return WebContentsAdapterClient::LinkNavigation;
+    case ui::PAGE_TRANSITION_TYPED:
+        return WebContentsAdapterClient::TypedNavigation;
+    case ui::PAGE_TRANSITION_FORM_SUBMIT:
+        return WebContentsAdapterClient::FormSubmittedNavigation;
+    case ui::PAGE_TRANSITION_RELOAD:
+        return WebContentsAdapterClient::ReloadNavigation;
+    default:
+        return WebContentsAdapterClient::OtherNavigation;
+    }
+}
 
 static bool navigationThrottleCallback(content::WebContents *source,
                                        const navigation_interception::NavigationParams &params)

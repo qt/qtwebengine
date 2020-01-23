@@ -60,8 +60,6 @@
 #include "net/http/http_util.h"
 
 #include "api/qwebengineurlrequestinfo_p.h"
-#include "net/url_request_custom_job_proxy.h"
-#include "net/url_request_notification.h"
 #include "profile_io_data_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"

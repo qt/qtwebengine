@@ -49,7 +49,6 @@
 #include "favicon_manager.h"
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
-#include "net/network_delegate_qt.h"
 #include "profile_qt.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
 #include "register_protocol_handler_request_controller_impl.h"

@@ -44,7 +44,6 @@
 #include "command_line_pref_store_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "net/ssl_host_state_delegate_qt.h"
-#include "net/url_request_context_getter_qt.h"
 #include "permission_manager_qt.h"
 #include "platform_notification_service_qt.h"
 #include "qtwebenginecoreglobal_p.h"
@@ -225,19 +224,7 @@ net::URLRequestContextGetter *ProfileQt::CreateRequestContext(
         content::ProtocolHandlerMap *protocol_handlers,
         content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(!m_urlRequestContextGetter.get());
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    extensions::InfoMap *extension_info_map = GetExtensionSystem()->info_map();
-    (*protocol_handlers)[extensions::kExtensionScheme] =
-            extensions::CreateExtensionProtocolHandler(IsOffTheRecord(), extension_info_map);
-#endif
-
-    m_profileIOData->setRequestContextData(protocol_handlers, std::move(request_interceptors));
-    m_profileIOData->updateStorageSettings();
-    m_profileIOData->updateRequestInterceptor();
-    m_urlRequestContextGetter = new URLRequestContextGetterQt(m_profileIOData.get());
-    return m_urlRequestContextGetter.get();
+    return nullptr;
 }
 
 content::ClientHintsControllerDelegate *ProfileQt::GetClientHintsControllerDelegate()

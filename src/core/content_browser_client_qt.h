@@ -251,7 +251,6 @@ public:
 
 private:
     void InitFrameInterfaces();
-    void AddNetworkHintsMessageFilter(int render_process_id, net::URLRequestContext *context);
 
     std::unique_ptr<content::ResourceDispatcherHostDelegate> m_resourceDispatcherHostDelegate;
     scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
