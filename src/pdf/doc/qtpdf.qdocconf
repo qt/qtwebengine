@@ -37,7 +37,8 @@ depends += qtcore \
            qtwidgets \
            qtgui \
            qtdoc \
-           qmake
+           qmake \
+           qtdesigner
 
 headerdirs  += ../api \
                ../quick

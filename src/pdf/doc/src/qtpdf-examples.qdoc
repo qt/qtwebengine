@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -26,46 +26,12 @@
 ****************************************************************************/
 
 /*!
-    \page qtpdf-index.html
-    \title Qt PDF
+    \group qtpdf-examples
+    \ingroup all-examples
 
-    \brief Renders pages from PDF documents.
+    \title Qt PDF Examples
+    \brief Using the classes and types in the Qt PDF module.
 
-    The Qt PDF module contains classes and functions for rendering
-    PDF documents. The \l QPdfDocument class loads a PDF document
-    and renders pages from it according to the options provided by
-    the \l QPdfDocumentRenderOptions class. The \l QPdfPageRenderer
-    class manages a queue that collects all render requests. The
-    \l QPdfPageNavigation class handles the navigation through a
-    PDF document.
-
-    \section1 Getting Started
-
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet qtpdf_build_snippet.qdoc 1
-
-    To link against the module, add this line to your qmake project file:
-
-    \snippet qtpdf_build_snippet.qdoc 0
-
-    \section1 Articles and Guides
-
-    \list
-        \li \l{Qt PDF Overview}
-    \endlist
-
-    \section1 Examples
-
-    \list
-        \li \l{Qt PDF Examples}
-    \endlist
-
-    \section1 API Reference
-
-    \list
-        \li \l{Qt PDF C++ Classes}
-        \li \l{Qt Quick PDF QML Types}
-    \endlist
+    The following examples illustrate how to use the C++ classes and QML types
+    in the \l{Qt PDF} module to render PDF documents.
 */
