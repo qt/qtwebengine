@@ -123,6 +123,7 @@ public:
     void setRequestContextData(content::ProtocolHandlerMap *protocolHandlers,
                                content::URLRequestInterceptorScopedVector request_interceptors);
     void setFullConfiguration(); // runs on ui thread
+    void resetNetworkContext(); // runs on ui thread
     void updateStorageSettings(); // runs on ui thread
     void updateUserAgent(); // runs on ui thread
     void updateCookieStore(); // runs on ui thread

@@ -49,6 +49,7 @@
 #include "download_manager_delegate_qt.h"
 #include "permission_manager_qt.h"
 #include "profile_adapter_client.h"
+#include "profile_io_data_qt.h"
 #include "profile_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "type_conversion.h"
@@ -128,8 +129,7 @@ void ProfileAdapter::setStorageName(const QString &storageName)
     m_name = storageName;
     if (!m_offTheRecord) {
         m_profile->setupPrefService();
-        if (m_profile->m_urlRequestContextGetter.get())
-            m_profile->m_profileIOData->updateStorageSettings();
+        m_profile->m_profileIOData->resetNetworkContext();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -141,8 +141,7 @@ void ProfileAdapter::setOffTheRecord(bool offTheRecord)
         return;
     m_offTheRecord = offTheRecord;
     m_profile->setupPrefService();
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateStorageSettings();
+    m_profile->m_profileIOData->resetNetworkContext();
     if (m_visitedLinksManager)
         resetVisitedLinksManager();
 }
@@ -273,8 +272,7 @@ void ProfileAdapter::setDataPath(const QString &path)
     m_dataPath = path;
     if (!m_offTheRecord) {
         m_profile->setupPrefService();
-        if (m_profile->m_urlRequestContextGetter.get())
-            m_profile->m_profileIOData->updateStorageSettings();
+        m_profile->m_profileIOData->resetNetworkContext();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -301,8 +299,8 @@ void ProfileAdapter::setCachePath(const QString &path)
     if (m_cachePath == path)
         return;
     m_cachePath = path;
-    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateHttpCache();
+    if (!m_offTheRecord)
+        m_profile->m_profileIOData->resetNetworkContext();
 }
 
 QString ProfileAdapter::cookiesPath() const
@@ -348,8 +346,7 @@ void ProfileAdapter::setHttpUserAgent(const QString &userAgent)
         if (web_contents->GetBrowserContext() == m_profile.data())
             web_contents->SetUserAgentOverride(m_httpUserAgent.toStdString(), true);
 
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateUserAgent();
+    m_profile->m_profileIOData->resetNetworkContext();
 }
 
 ProfileAdapter::HttpCacheType ProfileAdapter::httpCacheType() const
@@ -367,8 +364,11 @@ void ProfileAdapter::setHttpCacheType(ProfileAdapter::HttpCacheType newhttpCache
     m_httpCacheType = newhttpCacheType;
     if (oldCacheType == httpCacheType())
         return;
-    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateHttpCache();
+    if (!m_offTheRecord) {
+        m_profile->m_profileIOData->resetNetworkContext();
+        if (m_httpCacheType == NoCache)
+            clearHttpCache();
+    }
 }
 
 ProfileAdapter::PersistentCookiesPolicy ProfileAdapter::persistentCookiesPolicy() const
@@ -384,8 +384,8 @@ void ProfileAdapter::setPersistentCookiesPolicy(ProfileAdapter::PersistentCookie
     m_persistentCookiesPolicy = newPersistentCookiesPolicy;
     if (oldPolicy == persistentCookiesPolicy())
         return;
-    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateCookieStore();
+    if (!m_offTheRecord)
+        m_profile->m_profileIOData->resetNetworkContext();
 }
 
 ProfileAdapter::VisitedLinksPolicy ProfileAdapter::visitedLinksPolicy() const
@@ -439,8 +439,8 @@ void ProfileAdapter::setHttpCacheMaxSize(int maxSize)
     if (m_httpCacheMaxSize == maxSize)
         return;
     m_httpCacheMaxSize = maxSize;
-    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateHttpCache();
+    if (!m_offTheRecord)
+        m_profile->m_profileIOData->resetNetworkContext();
 }
 
 enum class SchemeType { Protected, Overridable, Custom, Unknown };
@@ -601,8 +601,7 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
         }
     }
 
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateUserAgent();
+    m_profile->m_profileIOData->resetNetworkContext();
 }
 
 void ProfileAdapter::clearHttpCache()
@@ -671,6 +670,7 @@ void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
     if (enable) {
         if (profileForglobalCertificateVerification) {
             profileForglobalCertificateVerification->m_usedForGlobalCertificateVerification = false;
+            profileForglobalCertificateVerification->m_profile->m_profileIOData->resetNetworkContext();
             for (auto *client : qAsConst(profileForglobalCertificateVerification->m_clients))
                 client->useForGlobalCertificateVerificationChanged();
         }
@@ -681,8 +681,7 @@ void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
         profileForglobalCertificateVerification = nullptr;
     }
 
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateUsedForGlobalCertificateVerification();
+    m_profile->m_profileIOData->resetNetworkContext();
 }
 
 bool ProfileAdapter::isUsedForGlobalCertificateVerification() const

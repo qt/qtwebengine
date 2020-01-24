@@ -41,6 +41,7 @@
 
 #include "base/task/post_task.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -222,6 +223,18 @@ void ProfileIODataQt::setFullConfiguration()
     m_customUrlSchemes = m_profileAdapter->customUrlSchemes();
     m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
     m_dataPath = m_profileAdapter->dataPath();
+}
+
+void ProfileIODataQt::resetNetworkContext()
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    setFullConfiguration();
+    content::BrowserContext::ForEachStoragePartition(
+            m_profile, base::BindRepeating([](content::StoragePartition *storage) {
+                auto storage_impl = static_cast<content::StoragePartitionImpl *>(storage);
+                storage_impl->ResetURLLoaderFactories();
+                storage_impl->ResetNetworkContext();
+            }));
 }
 
 void ProfileIODataQt::requestStorageGeneration() {

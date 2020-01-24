@@ -168,6 +168,10 @@ void CookieMonsterDelegateQt::deleteAllCookies(quint64 callbackId)
 void CookieMonsterDelegateQt::setMojoCookieManager(network::mojom::CookieManagerPtrInfo cookie_manager_info)
 {
 //    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    if (m_binding)
+        unsetMojoCookieManager();
+
     m_mojoCookieManager.Bind(std::move(cookie_manager_info));
 
     network::mojom::CookieChangeListenerPtr listener_ptr;
