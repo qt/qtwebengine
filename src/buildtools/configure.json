@@ -9,6 +9,7 @@
     "commandline": {
         "options": {
             "build-qtwebengine-core": "boolean",
+            "build-qtpdf": "boolean",
             "webengine-jumbo-build": { "type": "optionalString", "name": "merge_limit"}
         }
     },
@@ -389,6 +390,22 @@
                          && (!config.win32 || features.webengine-winversion)",
             "output": [ "privateFeature" ]
         },
+        "webengine-qtpdf-support": {
+            "label": "Support Qt Pdf",
+            "condition": "module.gui
+                         && features.webengine-python2
+                         && features.webengine-gperf
+                         && features.webengine-bison
+                         && features.webengine-flex
+                         && features.webengine-submodule
+                         && features.webengine-nowhitespace
+                         && features.webengine-arch-support
+                         && !features.webengine-no-platform-support
+                         && (!config.static || config.ios)
+                         && (!config.linux || features.pkg-config)
+                         && (!config.win32 || features.webengine-winversion)",
+            "output": [ "privateFeature" ]
+        },
         "build-qtwebengine-core": {
             "label": "Build Qt WebEngine Core",
             "purpose": "Provides WebEngine Core support.",
@@ -681,7 +698,8 @@
     "report": [
         {
             "type": "skipBuildWarning",
-            "condition": "!features.webengine-core-support && (features.build-qtwebengine-core || features.build-qtpdf)",
+            "condition": "(!features.webengine-core-support && features.build-qtwebengine-core) ||
+                          (!features.webengine-qtpdf-support && features.build-qtpdf)",
             "message": "qtwebengine_confCheckError"
         },
         {
@@ -691,7 +709,7 @@
         },
         {
             "type": "note",
-            "condition": "features.webengine-core-support && !features.build-qtpdf",
+            "condition": "features.webengine-qtpdf-support && !features.build-qtpdf",
             "message": "QtPdf build is disabled by user."
         },
         {
@@ -701,8 +719,13 @@
         },
         {
             "type": "warning",
-            "condition": "!features.webengine-core-support && features.build-qtpdf",
+            "condition": "!features.webengine-qtpdf-support && features.build-qtpdf",
             "message": "QtPdf will not be built."
+        },
+        {
+            "type": "warning",
+            "condition": "config.ios && config.simulator && config.device && features.build-qtpdf",
+            "message": "Building fat libray with device and simulator architectures will disable NEON."
         }
     ],
     "summary": [
@@ -711,14 +734,14 @@
             "entries": [
                 "webengine-system-ninja",
                 "webengine-system-gn",
-                 {
+                {
                     "message": "Jumbo Build Merge Limit",
                     "type": "jumboBuild"
                 },
                 "webengine-developer-build",
                 {
                     "section": "QtWebEngine required system libraries",
-                    "condition": "config.unix && !config.macos",
+                    "condition": "config.unix && !config.macos && !config.ios",
                     "entries": [
                         "webengine-system-fontconfig",
                         "webengine-system-dbus",

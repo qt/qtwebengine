@@ -11,6 +11,7 @@ qtConfig (webengine-extensions) {
 }
 GN_CORE_INCLUDE_DIRS = $$PWD/service
 GN_CREATE_PRI = true
+GN_PRECOMPILED_HEADERS = true
 QMAKE_INTERNAL_INCLUDED_FILES = $$GN_IMPORTS $$GN_INCLUDES $$GN_FILE
 
 
