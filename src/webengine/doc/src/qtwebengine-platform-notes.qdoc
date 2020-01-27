@@ -174,20 +174,32 @@
 
     \section1 Sandboxing Support
 
-    \QWE provides out-of-the-box sandboxing support for Chromium render processes on Linux
-    and \macos. Sandboxing is currently not supported on Windows due to a limitation in how
-    the sandbox is set up and how it interacts with the host process provided by the \QWE
-    libraries.
+    \QWE provides out-of-the-box sandboxing support for Chromium render
+    processes.
 
-    On \macos, there are no special requirements for enabling sandbox support.
+    On Linux, note the following restrictions:
 
-    On Linux, the kernel has to support the anonymous namespaces feature (kernel version >= 3.8)
-    and seccomp-bpf feature (kernel version >= 3.5). Setuid sandboxes are not supported and are thus
-    disabled.
+    \list
+        \li The kernel has to support the anonymous namespaces feature
+            (kernel version 3.8 or later). However, on Debian, Ubuntu,
+            and other Debian-derived distributions, this feature is off
+            by default. It can be turned on by setting
+            \c /proc/sys/kernel/unprivileged_userns_clone to 1.
+        \li The kernel has to support the \c seccomp-bpf feature (kernel
+            version 3.5 or later).
+        \li Setuid sandboxes are not supported and are thus disabled.
+    \endlist
 
-    To explicitly disable sandboxing, the \c QTWEBENGINE_DISABLE_SANDBOX environment variable can be
-    set to 1 or alternatively the \c{--no-sandbox} command line argument can be passed to the user
-    application executable.
+    To explicitly disable sandboxing, use one of the following options:
+
+    \list
+        \li Set the \c QTWEBENGINE_DISABLE_SANDBOX environment variable to 1.
+        \li Pass the \c{--no-sandbox} command line argument to the user
+            application executable.
+        \li Set \c QTWEBENGINE_CHROMIUM_FLAGS to \c{--no-sandbox}.
+    \endlist
+
+    For more information, see \l{Using Command-Line Arguments}.
 
     \section1 Accessibility and Performance
 
