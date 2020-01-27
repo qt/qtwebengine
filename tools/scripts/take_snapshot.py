@@ -147,6 +147,9 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/accessibility')
             or file_path.startswith('third_party/afl')
             or file_path.startswith('third_party/android_')
+            or file_path.startswith('third_party/angle/third_party/deqp')
+            or file_path.startswith('third_party/angle/third_party/glmark2')
+            or file_path.startswith('third_party/angle/third_party/vulkan-validation-layers')
             or file_path.startswith('third_party/apache-')
             or file_path.startswith('third_party/arcode-android-sdk')
             or file_path.startswith('third_party/ashmem')
@@ -291,10 +294,10 @@ def clearDirectory(directory):
             shutil.rmtree(direntry)
     os.chdir(currentDir)
 
-def listFilesInCurrentRepository():
+def listFilesInCurrentRepository(use_deps=False):
     currentRepo = GitSubmodule.Submodule(os.getcwd())
     files = subprocess.check_output(['git', 'ls-files']).splitlines()
-    submodules = currentRepo.readSubmodules()
+    submodules = currentRepo.readSubmodules(use_deps)
     for submodule in submodules:
         submodule_files = submodule.listFiles()
         for submodule_file in submodule_files:
@@ -337,7 +340,7 @@ def exportChromium():
     os.makedirs(third_party_chromium);
     print 'exporting contents of:' + third_party_upstream_chromium
     os.chdir(third_party_upstream_chromium)
-    files = listFilesInCurrentRepository()
+    files = listFilesInCurrentRepository(True)
     # Add LASTCHANGE files which are not tracked by git.
     files.append('build/util/LASTCHANGE')
     files.append('build/util/LASTCHANGE.committime')
