@@ -196,7 +196,7 @@ host_build {
     }
     !packagesExist(libpci): gn_args += use_libpci=false
 
-    qtConfig(webengine-ozone-x11) {
+    qtConfig(build-qtwebengine-core):qtConfig(webengine-ozone-x11) {
         gn_args += ozone_platform_x11=true
         packagesExist(xscrnsaver): gn_args += use_xscrnsaver=true
     }
