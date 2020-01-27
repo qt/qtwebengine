@@ -1,2 +1,3 @@
 TEMPLATE = subdirs
-qtHaveModule(designer): SUBDIRS += qwebengineview
+qtHaveModule(webengine-widgets): qtHaveModule(designer): SUBDIRS += qwebengineview
+qtHaveModule(pdf): qtConfig(imageformatplugin): SUBDIRS += imageformats

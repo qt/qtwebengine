@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/pdfviewer">
+        <file>viewer.qml</file>
+        <file>resources/edit-clear.svg</file>
+        <file>resources/go-next-view-page.svg</file>
+        <file>resources/go-previous-view-page.svg</file>
+        <file>resources/rotate-left.svg</file>
+        <file>resources/rotate-right.svg</file>
+        <file>resources/zoom-in.svg</file>
+        <file>resources/zoom-original.svg</file>
+        <file>resources/zoom-out.svg</file>
+        <file>resources/document-open.svg</file>
+    </qresource>
+</RCC>

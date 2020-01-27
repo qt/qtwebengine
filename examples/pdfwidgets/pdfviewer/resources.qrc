@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>images/fileopen.png</file>
+        <file>images/go-next-24.png</file>
+        <file>images/go-previous-24.png</file>
+        <file>images/zoom-in-24.png</file>
+        <file>images/zoom-in-32.png</file>
+        <file>images/zoom-out-24.png</file>
+        <file>images/zoom-out-32.png</file>
+        <file>images/busy.png</file>
+    </qresource>
+</RCC>

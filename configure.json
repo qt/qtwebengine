@@ -3,6 +3,8 @@
         "src/buildtools",
         "src/core",
         "src/webengine",
-        "src/webenginewidgets"
+        "src/webenginewidgets",
+        "src/pdf",
+        "src/pdfwidgets"
     ]
 }

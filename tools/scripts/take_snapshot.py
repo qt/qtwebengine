@@ -179,7 +179,6 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/icu/android')
             or file_path.startswith('third_party/icu/cast')
             or file_path.startswith('third_party/icu/chromeos')
-            or file_path.startswith('third_party/icu/ios')
             or file_path.startswith('third_party/instrumented_libraries')
             or file_path.startswith('third_party/jsr-305')
             or file_path.startswith('third_party/junit')
