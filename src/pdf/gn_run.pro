@@ -30,6 +30,8 @@ build_pass|!debug_and_release {
     # fixme: refine args
     gn_args = $$gnArgs()
 
+    include($$QTWEBENGINE_ROOT/src/buildtools/config/pdf.pri)
+
     # fixme: qtwebengine_target
     gn_args += "qtwebengine_target=\"$$system_path($$OUT_PWD/$$getConfigDir()):QtPdf\""
 

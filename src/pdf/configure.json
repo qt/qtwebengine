@@ -12,6 +12,7 @@
              "label": "Support V8",
              "purpose": "Enables javascript support.",
              "autoDetect": "false",
+             "condition": "!config.ios",
              "output": ["privateFeature" ]
           },
          "pdf-xfa": {

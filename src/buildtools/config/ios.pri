@@ -39,13 +39,7 @@ ios_enable_code_signing=false \
 target_os=\"ios\" \
 ios_deployment_target=\"$${QMAKE_IOS_DEPLOYMENT_TARGET}\" \
 enable_ios_bitcode=true \
-use_jumbo_build=false \
-pdf_enable_v8=false \
-pdf_enable_xfa=false \
-pdf_enable_xfa_bmp=false \
-pdf_enable_xfa_gif=false \
-pdf_enable_xfa_png=false \
-pdf_enable_xfa_tiff=false
+use_jumbo_build=false
 
 device:simulator {
   # we do fat libray
