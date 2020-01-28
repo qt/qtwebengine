@@ -1,0 +1,81 @@
+Qt 5.14.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.14.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.14 series is binary compatible with the 5.13.x series.
+Applications compiled for 5.13 will continue to run with 5.14.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                              Qt 5.14.1 Changes                           *
+****************************************************************************
+
+Important changes
+-----------------
+
+  - [QTBUG-51170] Sandbox is now enabled by default on Windows like on
+    other platforms. If it causes any trouble it can be disabled with
+    --no-sandbox on the command line or in QTWEBENGINE_CHROMIUM_FLAGS.
+
+General
+-------
+
+  - [QTBUG-74602] Fixed builds with -no-gui
+  - [QTBUG-76564] Now supports accept attribute in file input
+  - [QTBUG-77442] Added macOS entitlements to QtWebEngineProcess.app
+  - [QTBUG-80089] Fixed touch flinging in multithreaded OpenGL mode
+  - [QTBUG-80566] Fixed setDownloadDirectory, so order compared to
+    setDownloadFilename doesn't matter
+  - [QTBUG-80893] Fixed crash when handling QEvent::TouchCancel
+  - Fixed clang-cl build
+  - Fixed youtube in linux ltcg builds
+
+
+Chromium
+--------
+
+ - Security fixes from Chromium up to version 79.0.3945.117, including:
+
+    * CVE-2019-13701
+    * CVE-2019-13727
+    * CVE-2019-13728
+    * CVE-2019-13730
+    * CVE-2019-13732
+    * CVE-2019-13734
+    * CVE-2019-13735
+    * CVE-2019-13736
+    * CVE-2019-13737
+    * CVE-2019-13738
+    * CVE-2019-13739
+    * CVE-2019-13741
+    * CVE-2019-13745
+    * CVE-2019-13746
+    * CVE-2019-13747
+    * CVE-2019-13754
+    * CVE-2019-13755
+    * CVE-2019-13757
+    * CVE-2019-13758
+    * CVE-2019-13761
+    * CVE-2019-13762
+    * CVE-2019-13764
+    * CVE-2020-6377
+    * Security bug 889276
+    * Security bug 974375
+    * Security bug 1016703
+    * Security bug 1017020
+    * Security bug 1017961
+    * Security bug 1025089
+    * Security bug 1027905
+    * Security bug 1028191
+    * Security bug 1033260
