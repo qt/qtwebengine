@@ -134,6 +134,13 @@ TestWebEngineView {
             compare(forwardItemsList.count, 1)
             compare(backItemsList.currentItem.text, Qt.resolvedUrl("test1.html"))
             compare(forwardItemsList.currentItem.text, Qt.resolvedUrl("javascript.html"))
+
+            webEngineView.navigationHistory.clear()
+            compare(webEngineView.url, Qt.resolvedUrl("test2.html"))
+            compare(webEngineView.canGoBack, false)
+            compare(webEngineView.canGoForward, false)
+            compare(backItemsList.count, 0)
+            compare(forwardItemsList.count, 0)
         }
     }
 }

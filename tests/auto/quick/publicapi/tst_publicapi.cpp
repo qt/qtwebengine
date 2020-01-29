@@ -300,6 +300,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineFullScreenRequest.reject() --> void"
     << "QQuickWebEngineFullScreenRequest.toggleOn --> bool"
     << "QQuickWebEngineHistory.backItems --> QQuickWebEngineHistoryListModel*"
+    << "QQuickWebEngineHistory.clear() --> void"
     << "QQuickWebEngineHistory.forwardItems --> QQuickWebEngineHistoryListModel*"
     << "QQuickWebEngineHistory.items --> QQuickWebEngineHistoryListModel*"
     << "QQuickWebEngineJavaScriptDialogRequest.DialogTypeAlert --> DialogType"
