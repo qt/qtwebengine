@@ -43,14 +43,14 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmltype Document
+    \qmltype PdfDocument
     \instantiates QQuickPdfDocument
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief A representation of a PDF document.
     \since 5.15
 
-    A Document provides access to PDF document meta-information.
+    PdfDocument provides access to PDF document meta-information.
     It is not necessary for rendering, as it is enough to use an
     \l Image with source set to the URL of the PDF.
 */
@@ -78,7 +78,7 @@ void QQuickPdfDocument::componentComplete()
 }
 
 /*!
-    \qmlproperty url Document::source
+    \qmlproperty url PdfDocument::source
 
     This property holds a URL pointing to the PDF file to be loaded.
 
@@ -95,7 +95,7 @@ void QQuickPdfDocument::setSource(QUrl source)
 }
 
 /*!
-    \qmlproperty string Document::error
+    \qmlproperty string PdfDocument::error
 
     This property holds a translated string representation of the current
     error, if any.
@@ -130,7 +130,7 @@ QString QQuickPdfDocument::error() const
 }
 
 /*!
-    \qmlproperty bool Document::password
+    \qmlproperty bool PdfDocument::password
 
     This property holds the document password. If the passwordRequired()
     signal is emitted, the UI should prompt the user and then set this
@@ -146,13 +146,13 @@ void QQuickPdfDocument::setPassword(const QString &password)
 }
 
 /*!
-    \qmlproperty int Document::pageCount
+    \qmlproperty int PdfDocument::pageCount
 
     This property holds the number of pages the PDF contains.
 */
 
 /*!
-    \qmlsignal Document::passwordRequired()
+    \qmlsignal PdfDocument::passwordRequired()
 
     This signal is emitted when the PDF requires a password in order to open.
     The UI in a typical PDF viewer should prompt the user for the password
@@ -160,7 +160,7 @@ void QQuickPdfDocument::setPassword(const QString &password)
 */
 
 /*!
-    \qmlmethod size Document::pagePointSize(int page)
+    \qmlmethod size PdfDocument::pagePointSize(int page)
 
     Returns the size of the given \a page in points.
 */
@@ -170,59 +170,59 @@ QSizeF QQuickPdfDocument::pagePointSize(int page) const
 }
 
 /*!
-    \qmlproperty string Document::title
+    \qmlproperty string PdfDocument::title
 
     This property holds the document's title. A typical viewer UI can bind this
     to the \c Window.title property.
 */
 
 /*!
-    \qmlproperty string Document::author
+    \qmlproperty string PdfDocument::author
 
     This property holds the name of the person who created the document.
 */
 
 /*!
-    \qmlproperty string Document::subject
+    \qmlproperty string PdfDocument::subject
 
     This property holds the subject of the document.
 */
 
 /*!
-    \qmlproperty string Document::keywords
+    \qmlproperty string PdfDocument::keywords
 
     This property holds the keywords associated with the document.
 */
 
 /*!
-    \qmlproperty string Document::creator
+    \qmlproperty string PdfDocument::creator
 
     If the document was converted to PDF from another format, this property
     holds the name of the software that created the original document.
 */
 
 /*!
-    \qmlproperty string Document::producer
+    \qmlproperty string PdfDocument::producer
 
     If the document was converted to PDF from another format, this property
     holds the name of the software that converted it to PDF.
 */
 
 /*!
-    \qmlproperty string Document::creationDate
+    \qmlproperty string PdfDocument::creationDate
 
     This property holds the date and time the document was created.
 */
 
 /*!
-    \qmlproperty string Document::modificationDate
+    \qmlproperty string PdfDocument::modificationDate
 
     This property holds the date and time the document was most recently
     modified.
 */
 
 /*!
-    \qmlproperty enum Document::status
+    \qmlproperty enum PdfDocument::status
 
     This property tells the current status of the document. The possible values are:
 
