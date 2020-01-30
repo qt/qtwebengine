@@ -6,9 +6,6 @@ QT_PRIVATE += network
 
 TEMPLATE = lib
 
-CONFIG += c++11
-CONFIG -= precompile_header # Not supported by upstream header files
-
 INCLUDEPATH += $$QTWEBENGINE_ROOT/src/pdf
 CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
 CHROMIUM_GEN_DIR = $$OUT_PWD/../$$getConfigDir()/gen
@@ -27,7 +24,6 @@ linking_pri = $$OUT_PWD/$$getConfigDir()/$${TARGET}.pri
 
 isEmpty(NINJA_OBJECTS): error("Missing object files from QtPdf linking pri.")
 isEmpty(NINJA_LFLAGS): error("Missing linker flags from QtPdf linking pri")
-isEmpty(NINJA_ARCHIVES): error("Missing archive files from QtPdf linking pri")
 isEmpty(NINJA_LIBS): error("Missing library files from QtPdf linking pri")
 
 NINJA_OBJECTS = $$eval($$list($$NINJA_OBJECTS))
@@ -41,8 +37,10 @@ linux:LIBS_PRIVATE += @$$RSP_FILE
 # QTBUG-58710 add main rsp file on windows
 win32:QMAKE_LFLAGS += @$$RSP_FILE
 
-linux: LIBS_PRIVATE += -Wl,--start-group $$NINJA_ARCHIVES -Wl,--end-group
-else: LIBS_PRIVATE += $$NINJA_ARCHIVES
+!isEmpty(NINJA_ARCHIVES) {
+    linux: LIBS_PRIVATE += -Wl,--start-group $$NINJA_ARCHIVES -Wl,--end-group
+    else: LIBS_PRIVATE += $$NINJA_ARCHIVES
+}
 
 LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
 
