@@ -42,6 +42,7 @@ qtConfig(build-qtwebengine-core):qtConfig(webengine-core-support) {
 
 qtConfig(build-qtpdf):qtConfig(webengine-qtpdf-support) {
     pdf.depends = buildtools
+    qtConfig(build-qtwebengine-core):qtConfig(webengine-core-support): pdf.depends += core
     SUBDIRS += pdf
     !contains(SUBDIRS, buildtools): SUBDIRS += buildtools
     !contains(SUBDIRS, plugins): SUBDIRS += plugins
