@@ -100,8 +100,10 @@ public:
             m_request.url = *new_url;
         else
             m_request.url = m_redirect;
-        // ### remove and modify headers?
         m_redirect = GURL();
+        for (const std::string &header: removed_headers)
+            m_request.headers.RemoveHeader(header);
+        m_request.headers.MergeFrom(modified_headers);
         Start();
     }
     void SetPriority(net::RequestPriority priority, int32_t intra_priority_value) override { }
