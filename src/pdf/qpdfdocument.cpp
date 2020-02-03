@@ -211,8 +211,9 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
             emit q->pageCountChanged(pageCount);
         }
 
-        // If it's a local file, and the first page is available, probably the whole document is available.
-        if (checkPageComplete(0)) {
+        // If it's a local file, and the first couple of pages are available,
+        // probably the whole document is available.
+        if (checkPageComplete(0) && (pageCount < 2 || checkPageComplete(1))) {
             setStatus(QPdfDocument::Ready);
         } else {
             updateLastError();
