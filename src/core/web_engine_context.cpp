@@ -261,7 +261,7 @@ void WebEngineContext::destroy()
     // Normally the GPU thread is shut down when the GpuProcessHost is destroyed
     // on IO thread (triggered by ~BrowserMainRunner). But by that time the UI
     // task runner is not working anymore so we need to do this earlier.
-    destroyGpuProcess();
+    destroyGpuProcess(m_threadedGpu);
 
     base::MessagePump::Delegate *delegate =
             static_cast<base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
@@ -413,7 +413,8 @@ static void appendToFeatureSwitch(base::CommandLine *commandLine, const char *fe
 }
 
 WebEngineContext::WebEngineContext()
-    : m_mainDelegate(new ContentMainDelegateQt)
+    : m_threadedGpu(true)
+    , m_mainDelegate(new ContentMainDelegateQt)
     , m_globalQObject(new QObject())
 {
 #if defined(Q_OS_MACOS)
@@ -516,13 +517,12 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
 
-    bool threadedGpu = true;
 #ifndef QT_NO_OPENGL
-    threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
+    m_threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
 #endif
-    threadedGpu = threadedGpu && !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
+    m_threadedGpu = m_threadedGpu && !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
 
-    bool enableViz = ((threadedGpu && !parsedCommandLine->HasSwitch("disable-viz-display-compositor"))
+    bool enableViz = ((m_threadedGpu && !parsedCommandLine->HasSwitch("disable-viz-display-compositor"))
                       || parsedCommandLine->HasSwitch("enable-viz-display-compositor"));
     parsedCommandLine->RemoveSwitch("disable-viz-display-compositor");
     parsedCommandLine->RemoveSwitch("enable-viz-display-compositor");
@@ -665,7 +665,7 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     }
 
-    registerMainThreadFactories(threadedGpu);
+    registerMainThreadFactories(m_threadedGpu);
 
     SetContentClient(new ContentClientQt);
 

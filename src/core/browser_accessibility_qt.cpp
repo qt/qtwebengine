@@ -148,6 +148,19 @@ QAccessibleInterface *BrowserAccessibilityQt::child(int index) const
     return static_cast<BrowserAccessibilityQt*>(BrowserAccessibility::PlatformGetChild(index));
 }
 
+QAccessibleInterface *BrowserAccessibilityQt::focusChild() const
+{
+    if (state().focused)
+        return const_cast<BrowserAccessibilityQt *>(this);
+
+    for (int i = 0; i < childCount(); ++i) {
+        if (QAccessibleInterface *iface = child(i)->focusChild())
+            return iface;
+    }
+
+    return nullptr;
+}
+
 int BrowserAccessibilityQt::childCount() const
 {
     return PlatformChildCount();
