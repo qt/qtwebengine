@@ -608,7 +608,7 @@ int QPdfDocument::pageCount() const
 QSizeF QPdfDocument::pageSize(int page) const
 {
     QSizeF result;
-    if (!d->doc)
+    if (!d->doc || !d->checkPageComplete(page))
         return result;
 
     const QPdfMutexLocker lock;
