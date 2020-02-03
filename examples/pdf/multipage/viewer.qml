@@ -75,11 +75,10 @@ ApplicationWindow {
                     onTriggered: fileDialog.open()
                 }
             }
-            /* TODO zoom & rotation
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.ZoomIn
-                    enabled: view.sourceSize.width < 10000
+                    enabled: view.renderScale < 10
                     icon.source: "resources/zoom-in.svg"
                     onTriggered: view.renderScale *= Math.sqrt(2)
                 }
@@ -87,7 +86,7 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.ZoomOut
-                    enabled: view.sourceSize.width > 50
+                    enabled: view.renderScale > 0.1
                     icon.source: "resources/zoom-out.svg"
                     onTriggered: view.renderScale /= Math.sqrt(2)
                 }
@@ -115,17 +114,16 @@ ApplicationWindow {
                 action: Action {
                     shortcut: "Ctrl+L"
                     icon.source: "resources/rotate-left.svg"
-                    onTriggered: view.rotation -= 90
+                    onTriggered: view.pageRotation -= 90
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+R"
                     icon.source: "resources/rotate-right.svg"
-                    onTriggered: view.rotation += 90
+                    onTriggered: view.pageRotation += 90
                 }
             }
-            */
             ToolButton {
                 action: Action {
                     icon.source: "resources/go-previous-view-page.svg"
@@ -269,7 +267,8 @@ ApplicationWindow {
             x: 6
             property size implicitPointSize: document.pagePointSize(view.currentPage)
             text: "page " + (currentPageSB.value) + " of " + document.pageCount +
-                  " original " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1)
+                  " scale " + view.renderScale.toFixed(2) +
+                  " original size " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1) + " pt"
             visible: document.pageCount > 0
         }
     }

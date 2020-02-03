@@ -59,6 +59,7 @@ Item {
     // TODO 5.15: required property
     property var document: undefined
     property real renderScale: 1
+    property real pageRotation: 0
     property string searchString
     property string selectedText
     property alias currentPage: listView.currentIndex
@@ -72,6 +73,32 @@ Item {
     function forward() { navigationStack.forward() }
     signal currentPageReallyChanged(page: int)
 
+    function resetScale() {
+        root.renderScale = 1
+    }
+
+    function scaleToWidth(width, height) {
+        root.renderScale = width / (listView.rot90 ? listView.firstPagePointSize.height : listView.firstPagePointSize.width)
+    }
+
+    function scaleToPage(width, height) {
+        var windowAspect = width / height
+        var pageAspect = listView.firstPagePointSize.width / listView.firstPagePointSize.height
+        if (listView.rot90) {
+            if (windowAspect > pageAspect) {
+                root.renderScale = height / listView.firstPagePointSize.width
+            } else {
+                root.renderScale = width / listView.firstPagePointSize.height
+            }
+        } else {
+            if (windowAspect > pageAspect) {
+                root.renderScale = height / listView.firstPagePointSize.height
+            } else {
+                root.renderScale = width / listView.firstPagePointSize.width
+            }
+        }
+    }
+
     id: root
     ListView {
         id: listView
@@ -80,24 +107,38 @@ Item {
         spacing: 6
         highlightRangeMode: ListView.ApplyRange
         highlightMoveVelocity: 2000 // TODO increase velocity when setting currentIndex somehow, too
+        property real rotationModulus: Math.abs(root.pageRotation % 180)
+        property bool rot90: rotationModulus > 45 && rotationModulus < 135
+        property size firstPagePointSize: document.pagePointSize(0)
         onCurrentIndexChanged: {
             navigationStack.currentPage = currentIndex
             root.currentPageReallyChanged(currentIndex)
         }
         delegate: Rectangle {
             id: paper
-            width: image.width
-            height: image.height
+            implicitWidth: image.width
+            implicitHeight: image.height
+            rotation: root.pageRotation
             property alias selection: selection
-            property real __pageScale: image.paintedWidth / document.pagePointSize(index).width
+            property size pagePointSize: document.pagePointSize(index)
+            property real pageScale: image.paintedWidth / pagePointSize.width
             Image {
                 id: image
                 source: document.source
                 currentFrame: index
                 asynchronous: true
                 fillMode: Image.PreserveAspectFit
-                width: document.pagePointSize(currentFrame).width
-                height: document.pagePointSize(currentFrame).height
+                width: pagePointSize.width * root.renderScale
+                height: pagePointSize.height * root.renderScale
+                property real renderScale: root.renderScale
+                property real oldRenderScale: 1
+                onRenderScaleChanged: {
+                    image.sourceSize.width = pagePointSize.width * renderScale
+                    image.sourceSize.height = 0
+                    paper.scale = 1
+                    paper.x = 0
+                    paper.y = 0
+                }
             }
             Shape {
                 anchors.fill: parent
@@ -107,7 +148,7 @@ Item {
                     strokeWidth: 1
                     strokeColor: "blue"
                     fillColor: "cyan"
-                    scale: Qt.size(paper.__pageScale, paper.__pageScale)
+                    scale: Qt.size(paper.pageScale, paper.pageScale)
                     PathMultiline {
                         id: searchResultBoundaries
                         paths: searchModel.matchGeometry
@@ -115,7 +156,7 @@ Item {
                 }
                 ShapePath {
                     fillColor: "orange"
-                    scale: Qt.size(paper.__pageScale, paper.__pageScale)
+                    scale: Qt.size(paper.pageScale, paper.pageScale)
                     PathMultiline {
                         id: selectionBoundaries
                         paths: selection.geometry
@@ -132,10 +173,38 @@ Item {
                 id: selection
                 document: root.document
                 page: image.currentFrame
-                fromPoint: Qt.point(textSelectionDrag.centroid.pressPosition.x / paper.__pageScale, textSelectionDrag.centroid.pressPosition.y / paper.__pageScale)
-                toPoint: Qt.point(textSelectionDrag.centroid.position.x / paper.__pageScale, textSelectionDrag.centroid.position.y / paper.__pageScale)
+                fromPoint: Qt.point(textSelectionDrag.centroid.pressPosition.x / paper.pageScale, textSelectionDrag.centroid.pressPosition.y / paper.pageScale)
+                toPoint: Qt.point(textSelectionDrag.centroid.position.x / paper.pageScale, textSelectionDrag.centroid.position.y / paper.pageScale)
                 hold: !textSelectionDrag.active && !tapHandler.pressed
                 onTextChanged: root.selectedText = text
+            }
+            function reRenderIfNecessary() {
+                var newSourceWidth = image.sourceSize.width * paper.scale
+                var ratio = newSourceWidth / image.sourceSize.width
+                if (ratio > 1.1 || ratio < 0.9) {
+                    image.sourceSize.height = 0
+                    image.sourceSize.width = newSourceWidth
+                    paper.scale = 1
+                }
+            }
+            PinchHandler {
+                id: pinch
+                minimumScale: 0.1
+                maximumScale: 10
+                minimumRotation: 0
+                maximumRotation: 0
+                onActiveChanged:
+                    if (active) {
+                        paper.z = 10
+                    } else {
+                        paper.x = 0
+                        paper.y = 0
+                        paper.z = 0
+                        image.width = undefined
+                        image.height = undefined
+                        paper.reRenderIfNecessary()
+                    }
+                grabPermissions: PointerHandler.CanTakeOverFromAnything
             }
             DragHandler {
                 id: textSelectionDrag
@@ -155,10 +224,10 @@ Item {
                 delegate: Rectangle {
                     color: "transparent"
                     border.color: "lightgrey"
-                    x: rect.x * paper.__pageScale
-                    y: rect.y * paper.__pageScale
-                    width: rect.width * paper.__pageScale
-                    height: rect.height * paper.__pageScale
+                    x: rect.x * paper.pageScale
+                    y: rect.y * paper.pageScale
+                    width: rect.width * paper.pageScale
+                    height: rect.height * paper.pageScale
                     MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
