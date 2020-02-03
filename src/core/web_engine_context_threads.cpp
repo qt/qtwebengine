@@ -57,6 +57,8 @@
 
 #include <memory>
 
+#include <QEventLoop>
+
 namespace QtWebEngineCore {
 
 struct GpuThreadControllerQt : content::GpuThreadController
@@ -90,6 +92,20 @@ struct GpuThreadControllerQt : content::GpuThreadController
         s_gpuProcess->set_main_thread(childThread);
     }
 
+    static void cleanupVizProcess()
+    {
+        auto gpuChildThread = content::GpuChildThread::instance();
+        if (!gpuChildThread)
+            return;
+        auto vizMain = gpuChildThread->viz_main();
+        auto vizCompositorThreadRunner = vizMain->viz_compositor_thread_runner();
+        if (!vizCompositorThreadRunner)
+            return;
+        QEventLoop loop;
+        vizCompositorThreadRunner->CleanupForShutdown(base::BindOnce(&QEventLoop::quit, base::Unretained(&loop)));
+        loop.exec();
+    }
+
     static void destroyGpuProcess()
     {
         DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -117,8 +133,10 @@ static std::unique_ptr<content::GpuThreadController> createGpuThreadController(
 }
 
 // static
-void WebEngineContext::destroyGpuProcess()
+void WebEngineContext::destroyGpuProcess(bool threaded)
 {
+    if (!threaded)
+        GpuThreadControllerQt::cleanupVizProcess();
     GpuThreadControllerQt::destroyGpuProcess();
 }
 

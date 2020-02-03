@@ -107,9 +107,18 @@ void QWebEngineViewPrivate::widgetChanged(QtWebEngineCore::RenderWidgetHostViewQ
     if (oldWidget) {
         q->layout()->removeWidget(oldWidget);
         oldWidget->hide();
+#if QT_CONFIG(accessibility)
+        QAccessible::deleteAccessibleInterface(QAccessible::uniqueId(QAccessible::queryAccessibleInterface(oldWidget)));
+#endif
     }
 
     if (newWidget) {
+#if QT_CONFIG(accessibility)
+        // An earlier QAccessible::queryAccessibleInterface() call may have already registered a default
+        // QAccessibleInterface for newWidget: remove it first to avoid assert in QAccessibleCache::insert().
+        QAccessible::deleteAccessibleInterface(QAccessible::uniqueId(QAccessible::queryAccessibleInterface(newWidget)));
+        QAccessible::registerAccessibleInterface(new QtWebEngineCore::RenderWidgetHostViewQtDelegateWidgetAccessible(newWidget, q));
+#endif
         q->layout()->addWidget(newWidget);
         q->setFocusProxy(newWidget);
         newWidget->show();
@@ -462,11 +471,16 @@ void QWebEngineView::dropEvent(QDropEvent *e)
 #endif // QT_CONFIG(draganddrop)
 
 #ifndef QT_NO_ACCESSIBILITY
+QAccessibleInterface *QWebEngineViewAccessible::focusChild() const
+{
+    if (child(0) && child(0)->focusChild())
+        return child(0)->focusChild();
+    return const_cast<QWebEngineViewAccessible *>(this);
+}
+
 int QWebEngineViewAccessible::childCount() const
 {
-    if (view() && child(0))
-        return 1;
-    return 0;
+    return child(0) ? 1 : 0;
 }
 
 QAccessibleInterface *QWebEngineViewAccessible::child(int index) const
@@ -478,7 +492,7 @@ QAccessibleInterface *QWebEngineViewAccessible::child(int index) const
 
 int QWebEngineViewAccessible::indexOfChild(const QAccessibleInterface *c) const
 {
-    if (c == child(0))
+    if (child(0) && c == child(0))
         return 0;
     return -1;
 }

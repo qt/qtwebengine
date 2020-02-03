@@ -43,11 +43,13 @@
 #include "render_widget_host_view_qt_delegate.h"
 #include "web_contents_adapter_client.h"
 
+#include <QAccessibleWidget>
 #include <QQuickItem>
 #include <QQuickWidget>
 
 QT_BEGIN_NAMESPACE
 class QWebEnginePage;
+class QWebEngineView;
 class QWebEnginePagePrivate;
 QT_END_NAMESPACE
 
@@ -114,6 +116,21 @@ private:
     QWebEnginePage *m_page = nullptr;
     QMetaObject::Connection m_parentDestroyedConnection;
 };
+
+#if QT_CONFIG(accessibility)
+class RenderWidgetHostViewQtDelegateWidgetAccessible : public QAccessibleWidget
+{
+public:
+    RenderWidgetHostViewQtDelegateWidgetAccessible(RenderWidgetHostViewQtDelegateWidget *o, QWebEngineView *view);
+
+    QAccessibleInterface *focusChild() const override;
+    int childCount() const override;
+    QAccessibleInterface *child(int index) const override;
+    int indexOfChild(const QAccessibleInterface *child) const override;
+private:
+    QWebEngineView *m_view;
+};
+#endif // QT_CONFIG(accessibility)
 
 } // namespace QtWebEngineCore
 

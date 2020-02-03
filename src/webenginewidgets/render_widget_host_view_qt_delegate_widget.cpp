@@ -483,4 +483,32 @@ void RenderWidgetHostViewQtDelegateWidget::onWindowPosChanged()
     m_client->visualPropertiesChanged();
 }
 
+#if QT_CONFIG(accessibility)
+RenderWidgetHostViewQtDelegateWidgetAccessible::RenderWidgetHostViewQtDelegateWidgetAccessible(RenderWidgetHostViewQtDelegateWidget *o, QWebEngineView *view)
+    : QAccessibleWidget(o)
+    , m_view(view)
+{
+}
+
+QAccessibleInterface *RenderWidgetHostViewQtDelegateWidgetAccessible::focusChild() const
+{
+    return QAccessible::queryAccessibleInterface(m_view)->focusChild();
+}
+
+int RenderWidgetHostViewQtDelegateWidgetAccessible::childCount() const
+{
+    return QAccessible::queryAccessibleInterface(m_view)->childCount();
+}
+
+QAccessibleInterface *RenderWidgetHostViewQtDelegateWidgetAccessible::child(int index) const
+{
+    return QAccessible::queryAccessibleInterface(m_view)->child(index);
+}
+
+int RenderWidgetHostViewQtDelegateWidgetAccessible::indexOfChild(const QAccessibleInterface *c) const
+{
+    return QAccessible::queryAccessibleInterface(m_view)->indexOfChild(c);
+}
+#endif // QT_CONFIG(accessibility)
+
 } // namespace QtWebEngineCore
