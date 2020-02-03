@@ -790,7 +790,7 @@ void tst_QWebEnginePage::backActionUpdate()
     QVERIFY(evaluateJavaScriptSync(page, "document.getElementsByName('frame_b')[0].contentDocument == undefined").toBool());
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, firstAnchorCenterInFrame(page, "frame_c"));
     QTRY_VERIFY(evaluateJavaScriptSync(page, "document.getElementsByName('frame_b')[0].contentDocument != undefined").toBool());
-    QVERIFY(action->isEnabled());
+    QTRY_VERIFY(action->isEnabled());
 }
 
 void tst_QWebEnginePage::localStorageVisibility()
