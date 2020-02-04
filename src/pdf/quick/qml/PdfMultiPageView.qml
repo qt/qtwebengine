@@ -47,12 +47,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick 2.14
+import QtQuick.Controls 2.14
+import QtQuick.Layouts 1.14
 import QtQuick.Pdf 5.15
-import QtQuick.Shapes 1.15
-import QtQuick.Window 2.15
+import QtQuick.Shapes 1.14
+import QtQuick.Window 2.14
 
 Item {
     // public API
@@ -159,9 +159,10 @@ Item {
                     y: rect.y * paper.__pageScale
                     width: rect.width * paper.__pageScale
                     height: rect.height * paper.__pageScale
-                    HoverHandler { cursorShape: Qt.PointingHandCursor } // 5.15 only (QTBUG-68073)
-                    TapHandler {
-                        onTapped: {
+                    MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
                             if (page >= 0)
                                 listView.currentIndex = page
                             else
