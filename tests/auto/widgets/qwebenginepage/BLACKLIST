@@ -7,3 +7,9 @@ windows
 # QTBUG-81614
 [setHtmlWithBaseURL]
 *
+
+[devTools]
+msvc-2019
+
+[setLifecycleStateWithDevTools]
+msvc-2019
