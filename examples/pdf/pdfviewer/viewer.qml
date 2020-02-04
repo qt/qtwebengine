@@ -47,12 +47,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick 2.14
+import QtQuick.Controls 2.14
+import QtQuick.Layouts 1.14
 import QtQuick.Pdf 5.15
-import QtQuick.Shapes 1.15
-import QtQuick.Window 2.15
+import QtQuick.Shapes 1.14
+import QtQuick.Window 2.14
 import Qt.labs.platform 1.1 as Platform
 
 ApplicationWindow {

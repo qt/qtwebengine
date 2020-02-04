@@ -53,10 +53,11 @@
 
 int main(int argc, char* argv[])
 {
-    QApplication app(argc, argv);
     QCoreApplication::setApplicationName("Qt Quick Multi-page PDF Viewer Example");
     QCoreApplication::setOrganizationName("QtProject");
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:///pdfviewer/viewer.qml")));

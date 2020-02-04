@@ -1,3 +1,3 @@
 TEMPLATE=subdirs
 
-SUBDIRS += pdfviewer
+SUBDIRS += pdfviewer multipage
