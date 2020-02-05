@@ -241,6 +241,7 @@ Item {
                 }
             }
         }
+        ScrollBar.vertical: ScrollBar { }
     }
     PdfNavigationStack {
         id: navigationStack
