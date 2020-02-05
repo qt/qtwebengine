@@ -56,6 +56,7 @@ Q_LOGGING_CATEGORY(qLcNav, "qt.pdf.navigationstack")
 QQuickPdfNavigationStack::QQuickPdfNavigationStack(QObject *parent)
     : QObject(parent)
 {
+    push(0, QPointF(), 1);
 }
 
 /*!

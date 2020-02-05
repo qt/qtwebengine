@@ -62,16 +62,19 @@ Item {
     property real pageRotation: 0
     property string searchString
     property string selectedText
-    property alias currentPage: listView.currentIndex
+    property alias currentPage: navigationStack.currentPage
     function copySelectionToClipboard() {
         if (listView.currentItem !== null)
             listView.currentItem.selection.copyToClipboard()
     }
     property alias backEnabled: navigationStack.backAvailable
     property alias forwardEnabled: navigationStack.forwardAvailable
-    function back() { navigationStack.back() }
-    function forward() { navigationStack.forward() }
-    signal currentPageReallyChanged(page: int)
+    function back() {
+        navigationStack.back()
+    }
+    function forward() {
+        navigationStack.forward()
+    }
 
     function resetScale() {
         root.renderScale = 1
@@ -99,6 +102,16 @@ Item {
         }
     }
 
+    function goToPage(page) {
+        goToLocation(page, Qt.point(0, 0), 0)
+    }
+
+    function goToLocation(page, location, zoom) {
+        if (zoom > 0)
+            root.renderScale = zoom
+        navigationStack.push(page, location, zoom)
+    }
+
     id: root
     ListView {
         id: listView
@@ -109,11 +122,7 @@ Item {
         highlightMoveVelocity: 2000 // TODO increase velocity when setting currentIndex somehow, too
         property real rotationModulus: Math.abs(root.pageRotation % 180)
         property bool rot90: rotationModulus > 45 && rotationModulus < 135
-        property size firstPagePointSize: document.pagePointSize(0)
-        onCurrentIndexChanged: {
-            navigationStack.push(currentIndex, Qt.point(0, 0), root.renderScale)
-            root.currentPageReallyChanged(currentIndex)
-        }
+        property size firstPagePointSize: document === undefined ? Qt.size(0, 0) : document.pagePointSize(0)
         delegate: Rectangle {
             id: paper
             implicitWidth: image.width
@@ -233,7 +242,7 @@ Item {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             if (page >= 0)
-                                listView.currentIndex = page
+                                root.goToLocation(page, location, zoom)
                             else
                                 Qt.openUrlExternally(url)
                         }
@@ -241,11 +250,28 @@ Item {
                 }
             }
         }
-        ScrollBar.vertical: ScrollBar { }
+        ScrollBar.vertical: ScrollBar {
+            property bool moved: false
+            onPositionChanged: moved = true
+            onActiveChanged: {
+                var currentPage = listView.indexAt(0, listView.contentY)
+                var currentItem = listView.itemAtIndex(currentPage)
+                var currentLocation = Qt.point(0, listView.contentY - currentItem.y)
+                if (active) {
+                    moved = false
+                    navigationStack.push(currentPage, currentLocation, root.renderScale);
+                } else if (moved) {
+                    navigationStack.update(currentPage, currentLocation, root.renderScale);
+                }
+            }
+        }
     }
     PdfNavigationStack {
         id: navigationStack
         onJumped: listView.currentIndex = page
-        onCurrentPageChanged: root.currentPageReallyChanged(navigationStack.currentPage)
+        onCurrentPageChanged: listView.positionViewAtIndex(currentPage, ListView.Beginning)
+        onCurrentLocationChanged: listView.contentY += currentLocation.y // currentPageChanged() MUST occur first!
+        onCurrentZoomChanged: root.renderScale = currentZoom
+        // TODO deal with horizontal location (need another Flickable probably)
     }
 }

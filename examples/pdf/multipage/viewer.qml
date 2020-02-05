@@ -139,7 +139,7 @@ ApplicationWindow {
                 from: 1
                 to: document.pageCount
                 editable: true
-                onValueChanged: view.currentPage = value - 1
+                onValueModified: view.goToPage(value - 1)
                 Shortcut {
                     sequence: StandardKey.MoveToPreviousPage
                     onActivated: currentPageSB.value--
@@ -256,7 +256,7 @@ ApplicationWindow {
         anchors.fill: parent
         document: root.document
         searchString: searchField.text
-        onCurrentPageReallyChanged: currentPageSB.value = page + 1
+        onCurrentPageChanged: currentPageSB.value = view.currentPage + 1
     }
 
     footer: ToolBar {
