@@ -57,6 +57,7 @@ Rectangle {
     property alias forwardEnabled: navigationStack.forwardAvailable
     function back() { navigationStack.back() }
     function forward() { navigationStack.forward() }
+    function goToPage(page) { navigationStack.push(page, Qt.point(0, 0), renderScale) }
     signal currentPageReallyChanged(page: int)
 
     property real __pageScale: image.paintedWidth / document.pagePointSize(navigationStack.currentPage).width
@@ -203,7 +204,7 @@ Rectangle {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     if (page >= 0)
-                        navigationStack.currentPage = page
+                        navigationStack.push(page, Qt.point(0, 0), paper.renderScale)
                     else
                         Qt.openUrlExternally(url)
                 }

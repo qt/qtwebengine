@@ -60,6 +60,7 @@ ios: OBJECTS += $$NINJA_OBJECTS
 
 SOURCES += \
     qpdfbookmarkmodel.cpp \
+    qpdfdestination.cpp \
     qpdfdocument.cpp \
     qpdflinkmodel.cpp \
     qpdfpagenavigation.cpp \
@@ -72,6 +73,8 @@ SOURCES += \
 
 HEADERS += \
     api/qpdfbookmarkmodel.h \
+    api/qpdfdestination.h \
+    api/qpdfdestination_p.h \
     api/qpdfdocument.h \
     api/qpdfdocument_p.h \
     api/qpdfdocumentrenderoptions.h \

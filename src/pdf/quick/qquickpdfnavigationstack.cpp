@@ -46,10 +46,10 @@ Q_LOGGING_CATEGORY(qLcNav, "qt.pdf.navigationstack")
     \instantiates QQuickPdfNavigationStack
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
-    \brief History of the pages visited within a PDF Document.
+    \brief History of the destinations visited within a PDF Document.
     \since 5.15
 
-    PdfNavigationStack remembers which pages the user has visited in a PDF
+    PdfNavigationStack remembers which destinations the user has visited in a PDF
     document, and provides the ability to traverse backward and forward.
 */
 
@@ -61,102 +61,206 @@ QQuickPdfNavigationStack::QQuickPdfNavigationStack(QObject *parent)
 /*!
     \qmlmethod void PdfNavigationStack::forward()
 
-    Goes back to the page that was being viewed before back() was called, and
-    then emits the \l currentPageJumped() signal.
+    Goes back to the page, location and zoom level that was being viewed before
+    back() was called, and then emits the \l jumped() signal.
 
-    If \l currentPage was set by assignment or binding since the last time
-    \l back() was called, the forward() function does nothing, because there is
-    a branch in the timeline which causes the "future" to be lost.
+    If a new destination was pushed since the last time \l back() was called,
+    the forward() function does nothing, because there is a branch in the
+    timeline which causes the "future" to be lost.
 */
 void QQuickPdfNavigationStack::forward()
 {
-    if (m_nextHistoryIndex >= m_pageHistory.count())
+    if (m_currentHistoryIndex >= m_pageHistory.count() - 1)
         return;
     bool backAvailableWas = backAvailable();
     bool forwardAvailableWas = forwardAvailable();
+    QPointF currentLocationWas = currentLocation();
+    qreal currentZoomWas = currentZoom();
+    ++m_currentHistoryIndex;
     m_changing = true;
-    setCurrentPage(m_pageHistory.at(++m_nextHistoryIndex));
-    m_changing = false;
-    emit currentPageJumped(m_currentPage);
-    if (backAvailableWas != backAvailable())
+    emit jumped(currentPage(), currentLocation(), currentZoom());
+    emit currentPageChanged();
+    if (currentLocationWas != currentLocation())
+        emit currentLocationChanged();
+    if (currentZoomWas != currentZoom())
+        emit currentZoomChanged();
+    if (!backAvailableWas)
         emit backAvailableChanged();
     if (forwardAvailableWas != forwardAvailable())
         emit forwardAvailableChanged();
+    m_changing = false;
 }
 
 /*!
     \qmlmethod void PdfNavigationStack::back()
 
-    Pops the stack and causes the \l currentPage property to change to the
-    most-recently-viewed page, and then emits the \l currentPageJumped()
-    signal.
+    Pops the stack, updates the \l currentPage, \l currentLocation and
+    \l currentZoom properties to the most-recently-viewed destination, and then
+    emits the \l jumped() signal.
 */
 void QQuickPdfNavigationStack::back()
 {
-    if (m_nextHistoryIndex <= 0)
+    if (m_currentHistoryIndex <= 0)
         return;
     bool backAvailableWas = backAvailable();
     bool forwardAvailableWas = forwardAvailable();
+    QPointF currentLocationWas = currentLocation();
+    qreal currentZoomWas = currentZoom();
+    --m_currentHistoryIndex;
     m_changing = true;
-    // TODO don't do that when going back after going forward
-    m_pageHistory.append(m_currentPage);
-    setCurrentPage(m_pageHistory.at(--m_nextHistoryIndex));
-    m_changing = false;
-    emit currentPageJumped(m_currentPage);
+    emit jumped(currentPage(), currentLocation(), currentZoom());
+    emit currentPageChanged();
+    if (currentLocationWas != currentLocation())
+        emit currentLocationChanged();
+    if (currentZoomWas != currentZoom())
+        emit currentZoomChanged();
     if (backAvailableWas != backAvailable())
         emit backAvailableChanged();
-    if (forwardAvailableWas != forwardAvailable())
+    if (!forwardAvailableWas)
         emit forwardAvailableChanged();
+    m_changing = false;
 }
 
 /*!
     \qmlproperty int PdfNavigationStack::currentPage
 
     This property holds the current page that is being viewed.
-
-    It should be set when the viewer's current page changes. Every time this
-    property is set, it pushes the current page number onto the stack, such
-    that the history of pages that have been viewed will grow.
+    If there is no current page, it holds \c -1.
 */
-void QQuickPdfNavigationStack::setCurrentPage(int currentPage)
+int QQuickPdfNavigationStack::currentPage() const
 {
-    if (m_currentPage == currentPage)
+    if (m_currentHistoryIndex < 0 || m_currentHistoryIndex >= m_pageHistory.count())
+        return -1;
+    return m_pageHistory.at(m_currentHistoryIndex)->page;
+}
+
+/*!
+    \qmlproperty point PdfNavigationStack::currentLocation
+
+    This property holds the current location on the page that is being viewed.
+*/
+QPointF QQuickPdfNavigationStack::currentLocation() const
+{
+    if (m_currentHistoryIndex < 0 || m_currentHistoryIndex >= m_pageHistory.count())
+        return QPointF();
+    return m_pageHistory.at(m_currentHistoryIndex)->location;
+}
+
+/*!
+    \qmlproperty real PdfNavigationStack::currentZoom
+
+    This property holds the magnification scale on the page that is being viewed.
+*/
+qreal QQuickPdfNavigationStack::currentZoom() const
+{
+    if (m_currentHistoryIndex < 0 || m_currentHistoryIndex >= m_pageHistory.count())
+        return 1;
+    return m_pageHistory.at(m_currentHistoryIndex)->zoom;
+}
+
+/*!
+    \qmlmethod void PdfNavigationStack::push(int page, point location, qreal zoom)
+
+    Adds the given destination, consisting of \a page, \a location and \a zoom,
+    to the history of visited locations.
+
+    If forwardAvailable is \c true, calling this function represents a branch
+    in the timeline which causes the "future" to be lost, and therefore
+    forwardAvailable will change to \c false.
+*/
+void QQuickPdfNavigationStack::push(int page, QPointF location, qreal zoom)
+{
+    if (page == currentPage() && location == currentLocation() && zoom == currentZoom())
         return;
+    if (qFuzzyIsNull(zoom))
+        zoom = currentZoom();
     bool backAvailableWas = backAvailable();
     bool forwardAvailableWas = forwardAvailable();
     if (!m_changing) {
-        if (m_nextHistoryIndex >= 0 && m_nextHistoryIndex < m_pageHistory.count())
-            m_pageHistory.remove(m_nextHistoryIndex, m_pageHistory.count() - m_nextHistoryIndex);
-        m_pageHistory.append(m_currentPage);
-        m_nextHistoryIndex = m_pageHistory.count();
+        if (m_currentHistoryIndex >= 0 && forwardAvailableWas)
+            m_pageHistory.remove(m_currentHistoryIndex + 1, m_pageHistory.count() - m_currentHistoryIndex - 1);
+        m_pageHistory.append(QExplicitlySharedDataPointer<QPdfDestinationPrivate>(new QPdfDestinationPrivate(page, location, zoom)));
+        m_currentHistoryIndex = m_pageHistory.count() - 1;
     }
-    m_currentPage = currentPage;
     emit currentPageChanged();
-    if (backAvailableWas != backAvailable())
+    emit currentLocationChanged();
+    emit currentZoomChanged();
+    if (m_changing)
+        return;
+    if (!backAvailableWas)
         emit backAvailableChanged();
-    if (forwardAvailableWas != forwardAvailable())
+    if (forwardAvailableWas)
         emit forwardAvailableChanged();
-    qCDebug(qLcNav) << "current" << m_currentPage << "history" << m_pageHistory;
+    qCDebug(qLcNav) << "push: index" << m_currentHistoryIndex << "page" << page
+                    << "@" << location << "zoom" << zoom << "-> history" <<
+        [this]() {
+            QStringList ret;
+            for (auto d : m_pageHistory)
+                ret << QString::number(d->page);
+            return ret.join(',');
+        }();
+}
+
+/*!
+    \qmlmethod void PdfNavigationStack::update(int page, point location, qreal zoom)
+
+    Modifies the current destination, consisting of \a page, \a location and \a zoom.
+
+    This can be called periodically while the user is manually moving around
+    the document, so that after back() is called, forward() will jump back to
+    the most-recently-viewed destination rather than the destination that was
+    last specified by push().
+
+    The \c currentPageChanged, \c currentLocationChanged and \c currentZoomChanged
+    signals will be emitted if the respective properties are actually changed.
+    The \l jumped signal is not emitted, because this operation
+    represents smooth movement rather than a navigational jump.
+*/
+void QQuickPdfNavigationStack::update(int page, QPointF location, qreal zoom)
+{
+    if (m_currentHistoryIndex < 0 || m_currentHistoryIndex >= m_pageHistory.count())
+        return;
+    int currentPageWas = currentPage();
+    QPointF currentLocationWas = currentLocation();
+    qreal currentZoomWas = currentZoom();
+    if (page == currentPageWas && location == currentLocationWas && zoom == currentZoomWas)
+        return;
+    m_pageHistory[m_currentHistoryIndex]->page = page;
+    m_pageHistory[m_currentHistoryIndex]->location = location;
+    m_pageHistory[m_currentHistoryIndex]->zoom = zoom;
+    if (currentPageWas != page)
+        emit currentPageChanged();
+    if (currentLocationWas != location)
+        emit currentLocationChanged();
+    if (currentZoomWas != zoom)
+        emit currentZoomChanged();
+    qCDebug(qLcNav) << "update: index" << m_currentHistoryIndex << "page" << page
+                    << "@" << location << "zoom" << zoom << "-> history" <<
+        [this]() {
+            QStringList ret;
+            for (auto d : m_pageHistory)
+                ret << QString::number(d->page);
+            return ret.join(',');
+        }();
 }
 
 bool QQuickPdfNavigationStack::backAvailable() const
 {
-    return m_nextHistoryIndex > 0;
+    return m_currentHistoryIndex > 0;
 }
 
 bool QQuickPdfNavigationStack::forwardAvailable() const
 {
-    return m_nextHistoryIndex < m_pageHistory.count();
+    return m_currentHistoryIndex < m_pageHistory.count() - 1;
 }
 
 /*!
-    \qmlsignal PdfNavigationStack::currentPageJumped(int page)
+    \qmlsignal PdfNavigationStack::jumped(int page, point location, qreal zoom)
 
     This signal is emitted when either forward() or back() is called, to
-    distinguish navigational jumps from cases when the \l currentPage property
-    is set by means of a binding or assignment. Contrast with the
-    \c currentPageChanged signal, which is emitted in all cases, and does not
-    include the \c page argument.
+    distinguish navigational jumps from cases when push() is called.
+    Contrast with the \c currentPageChanged signal, which is emitted in all
+    cases, and does not include the \c page, \c location and \c zoom arguments.
 */
 
 QT_END_NAMESPACE

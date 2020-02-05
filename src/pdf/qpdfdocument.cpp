@@ -345,6 +345,9 @@ void QPdfDocumentPrivate::checkComplete()
 
 bool QPdfDocumentPrivate::checkPageComplete(int page)
 {
+    if (page < 0 || page >= pageCount)
+        return false;
+
     if (loadComplete)
         return true;
 

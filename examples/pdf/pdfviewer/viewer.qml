@@ -140,7 +140,7 @@ ApplicationWindow {
                 from: 1
                 to: document.pageCount
                 editable: true
-                onValueChanged: pageView.currentPage = value - 1
+                onValueChanged: pageView.goToPage(value - 1)
                 Shortcut {
                     sequence: StandardKey.MoveToPreviousPage
                     onActivated: currentPageSB.value--
@@ -223,7 +223,6 @@ ApplicationWindow {
 
     PdfPageView {
         id: pageView
-//        currentPage: currentPageSB.value - 1
         // TODO should work but ends up being NaN in QQuickSpinBoxPrivate::setValue() (?!)
 //        onCurrentPageChanged: currentPageSB.value = pageView.currrentPage + 1
         onCurrentPageReallyChanged: currentPageSB.value = page + 1

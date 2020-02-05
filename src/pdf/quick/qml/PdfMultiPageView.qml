@@ -111,7 +111,7 @@ Item {
         property bool rot90: rotationModulus > 45 && rotationModulus < 135
         property size firstPagePointSize: document.pagePointSize(0)
         onCurrentIndexChanged: {
-            navigationStack.currentPage = currentIndex
+            navigationStack.push(currentIndex, Qt.point(0, 0), root.renderScale)
             root.currentPageReallyChanged(currentIndex)
         }
         delegate: Rectangle {
@@ -244,7 +244,7 @@ Item {
     }
     PdfNavigationStack {
         id: navigationStack
-        onCurrentPageJumped: listView.currentIndex = page
+        onJumped: listView.currentIndex = page
         onCurrentPageChanged: root.currentPageReallyChanged(navigationStack.currentPage)
     }
 }

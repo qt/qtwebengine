@@ -49,6 +49,7 @@
 //
 
 #include "qquickpdfdocument_p.h"
+#include "../api/qpdfdestination_p.h"
 
 #include <QtQml/qqml.h>
 
@@ -57,32 +58,38 @@ QT_BEGIN_NAMESPACE
 class QQuickPdfNavigationStack : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int currentPage READ currentPage WRITE setCurrentPage NOTIFY currentPageChanged)
+    Q_PROPERTY(int currentPage READ currentPage NOTIFY currentPageChanged)
+    Q_PROPERTY(QPointF currentLocation READ currentLocation NOTIFY currentLocationChanged)
+    Q_PROPERTY(qreal currentZoom READ currentZoom NOTIFY currentZoomChanged)
     Q_PROPERTY(bool backAvailable READ backAvailable NOTIFY backAvailableChanged)
     Q_PROPERTY(bool forwardAvailable READ forwardAvailable NOTIFY forwardAvailableChanged)
 
 public:
     explicit QQuickPdfNavigationStack(QObject *parent = nullptr);
 
+    Q_INVOKABLE void push(int page, QPointF location, qreal zoom);
+    Q_INVOKABLE void update(int page, QPointF location, qreal zoom);
     Q_INVOKABLE void forward();
     Q_INVOKABLE void back();
 
-    int currentPage() const { return m_currentPage; }
-    void setCurrentPage(int currentPage);
+    int currentPage() const;
+    QPointF currentLocation() const;
+    qreal currentZoom() const;
 
     bool backAvailable() const;
     bool forwardAvailable() const;
 
 Q_SIGNALS:
     void currentPageChanged();
-    void currentPageJumped(int page);
+    void currentLocationChanged();
+    void currentZoomChanged();
     void backAvailableChanged();
     void forwardAvailableChanged();
+    void jumped(int page, QPointF location, qreal zoom);
 
 private:
-    QVector<int> m_pageHistory;
-    int m_nextHistoryIndex = 0;
-    int m_currentPage = 0;
+    QVector<QExplicitlySharedDataPointer<QPdfDestinationPrivate>> m_pageHistory;
+    int m_currentHistoryIndex = 0;
     bool m_changing = false;
 
     Q_DISABLE_COPY(QQuickPdfNavigationStack)
