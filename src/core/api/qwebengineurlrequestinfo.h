@@ -117,8 +117,10 @@ private:
 
     void resetChanged();
 
+    QWebEngineUrlRequestInfo();
     QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPrivate *p);
     QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfo &&p);
+    QWebEngineUrlRequestInfo &operator=(QWebEngineUrlRequestInfo &&p);
     ~QWebEngineUrlRequestInfo();
     QScopedPointer<QWebEngineUrlRequestInfoPrivate> d_ptr;
 };

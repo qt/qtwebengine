@@ -147,6 +147,7 @@ private:
     // That way the destructor can send it to OnReceivedError if safe browsing
     // error didn't occur.
     int error_status_ = net::OK;
+    QUrl m_originalUrl;
     GURL m_topDocumentUrl;
 
     network::ResourceRequest request_;
@@ -154,6 +155,7 @@ private:
 
     const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
+    QWebEngineUrlRequestInfo m_requestInfo;
     ProfileIODataQt *m_profileData;
     mojo::Binding<network::mojom::URLLoader> proxied_loader_binding_;
     network::mojom::URLLoaderClientPtr target_client_;
@@ -203,23 +205,13 @@ InterceptedRequest::~InterceptedRequest()
 
 void InterceptedRequest::Restart()
 {
-    // FIXME: Support deprecated interceptors here
-
-    // FIXME: unretained post?
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&InterceptedRequest::InterceptOnUIThread, base::Unretained(this)));
-}
-
-void InterceptedRequest::InterceptOnUIThread()
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     content::ResourceType resourceType = content::ResourceType(request_.resource_type);
     WebContentsAdapterClient::NavigationType navigationType =
             pageTransitionToNavigationType(ui::PageTransition(request_.transition_type));
 
-    const QUrl qUrl = toQt(request_.url);
+    m_originalUrl = toQt(request_.url);
 
     const QUrl initiator = request_.request_initiator.has_value() ? toQt(request_.request_initiator->GetURL()) : QUrl();
 
@@ -229,13 +221,31 @@ void InterceptedRequest::InterceptOnUIThread()
     else
         firstPartyUrl = toQt(request_.site_for_cookies); // m_topDocumentUrl can be empty for the main-frame.
 
-    QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(toQt(resourceType),
-                                                                                       toQt(navigationType),
-                                                                                       qUrl,
-                                                                                       firstPartyUrl,
-                                                                                       initiator,
-                                                                                       QByteArray::fromStdString(request_.method));
-    QWebEngineUrlRequestInfo requestInfo(infoPrivate);
+    QWebEngineUrlRequestInfoPrivate *infoPrivate =
+            new QWebEngineUrlRequestInfoPrivate(toQt(resourceType), toQt(navigationType),
+                                                m_originalUrl, firstPartyUrl, initiator,
+                                                QByteArray::fromStdString(request_.method));
+    m_requestInfo = QWebEngineUrlRequestInfo(infoPrivate);
+
+    if (m_profileData && m_profileData->isInterceptorDeprecated()) {
+        QWebEngineUrlRequestInterceptor *interceptor = m_profileData->acquireInterceptor();
+        if (interceptor && m_profileData->isInterceptorDeprecated())
+            interceptor->interceptRequest(m_requestInfo);
+        m_profileData->releaseInterceptor();
+    }
+
+    if (m_requestInfo.changed()) {
+        ContinueAfterIntercept();
+    } else {
+        // FIXME: unretained post?
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(&InterceptedRequest::InterceptOnUIThread, base::Unretained(this)));
+    }
+}
+
+void InterceptedRequest::InterceptOnUIThread()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     content::WebContents *webContents = nullptr;
     if (process_id_) {
@@ -245,80 +255,66 @@ void InterceptedRequest::InterceptOnUIThread()
         webContents = content::WebContents::FromFrameTreeNodeId(request_.render_frame_id);
 
     if (webContents) {
-        int result = net::OK;
         if (m_profileData) {
             QWebEngineUrlRequestInterceptor *interceptor = m_profileData->requestInterceptor();
             if (interceptor && !interceptor->property("deprecated").toBool())
-                interceptor->interceptRequest(requestInfo);
+                interceptor->interceptRequest(m_requestInfo);
         }
 
         WebContentsAdapterClient *client =
             WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
 
-        if (!requestInfo.changed()) {
-            client->interceptRequest(requestInfo);
-        }
-
-        if (requestInfo.changed()) {
-            result = requestInfo.d_ptr->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
-            // We handle the rest of the changes later when we are back in I/O thread
-        }
-
-        if (result != net::OK) {
-            base::PostTask(
-                FROM_HERE, {content::BrowserThread::IO},
-                base::BindOnce(&InterceptedRequest::SendErrorAndCompleteImmediately, m_weakPtr, result));
-            return;
-        }
-        if (requestInfo.changed()) {
-            if (requestInfo.requestUrl() != qUrl) {
-                net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
-                        request_.update_first_party_url_on_redirect ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
-                                                                    : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
-                net::RedirectInfo redirectInfo = net::RedirectInfo::ComputeRedirectInfo(request_.method, request_.url,
-                                                                                        request_.site_for_cookies,
-                                                                                        first_party_url_policy, request_.referrer_policy,
-                                                                                        request_.referrer.spec(), net::HTTP_TEMPORARY_REDIRECT,
-                                                                                        toGurl(requestInfo.requestUrl()), base::nullopt,
-                                                                                        false /*insecure_scheme_was_upgraded*/);
-
-                // FIXME: Should probably create a new header.
-                current_response_.encoded_data_length = 0;
-                // FIXME: unretained post.
-                base::PostTask(
-                    FROM_HERE, {content::BrowserThread::IO},
-                    base::BindOnce(&network::mojom::URLLoaderClientProxy::OnReceiveRedirect, base::Unretained(&(*target_client_)), redirectInfo, current_response_));
-                request_.method = redirectInfo.new_method;
-                request_.url = redirectInfo.new_url;
-                request_.site_for_cookies = redirectInfo.new_site_for_cookies;
-                request_.referrer = GURL(redirectInfo.new_referrer);
-                request_.referrer_policy = redirectInfo.new_referrer_policy;
-                if (request_.method == net::HttpRequestHeaders::kGetMethod)
-                    request_.request_body = nullptr;
-                return;
-            }
-
-            if (!requestInfo.d_ptr->extraHeaders.isEmpty()) {
-                auto end = requestInfo.d_ptr->extraHeaders.constEnd();
-                for (auto header = requestInfo.d_ptr->extraHeaders.constBegin(); header != end; ++header) {
-                    std::string h = header.key().toStdString();
-                    if (base::LowerCaseEqualsASCII(h, "referer")) {
-                        request_.referrer = GURL(header.value().toStdString());
-                    } else {
-                        request_.headers.SetHeader(h, header.value().toStdString());
-                    }
-                }
-            }
-        }
+        if (!m_requestInfo.changed())
+            client->interceptRequest(m_requestInfo);
     }
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&InterceptedRequest::ContinueAfterIntercept, m_weakPtr));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&InterceptedRequest::ContinueAfterIntercept, m_weakPtr));
 }
 
 void InterceptedRequest::ContinueAfterIntercept()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    if (m_requestInfo.changed()) {
+        if (m_requestInfo.d_ptr->shouldBlockRequest)
+            return SendErrorAndCompleteImmediately(net::ERR_BLOCKED_BY_CLIENT);
+        if (m_requestInfo.requestUrl() != m_originalUrl) {
+            net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
+                    request_.update_first_party_url_on_redirect ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
+                                                                : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
+            net::RedirectInfo redirectInfo = net::RedirectInfo::ComputeRedirectInfo(request_.method, request_.url,
+                                                                                    request_.site_for_cookies,
+                                                                                    first_party_url_policy, request_.referrer_policy,
+                                                                                    request_.referrer.spec(), net::HTTP_TEMPORARY_REDIRECT,
+                                                                                    toGurl(m_requestInfo.requestUrl()), base::nullopt,
+                                                                                    false /*insecure_scheme_was_upgraded*/);
+
+            // FIXME: Should probably create a new header.
+            current_response_.encoded_data_length = 0;
+            request_.method = redirectInfo.new_method;
+            request_.url = redirectInfo.new_url;
+            request_.site_for_cookies = redirectInfo.new_site_for_cookies;
+            request_.referrer = GURL(redirectInfo.new_referrer);
+            request_.referrer_policy = redirectInfo.new_referrer_policy;
+            if (request_.method == net::HttpRequestHeaders::kGetMethod)
+                request_.request_body = nullptr;
+            target_client_->OnReceiveRedirect(redirectInfo, current_response_);
+            return;
+        }
+
+        if (!m_requestInfo.d_ptr->extraHeaders.isEmpty()) {
+            auto end = m_requestInfo.d_ptr->extraHeaders.constEnd();
+            for (auto header = m_requestInfo.d_ptr->extraHeaders.constBegin(); header != end; ++header) {
+                std::string h = header.key().toStdString();
+                if (base::LowerCaseEqualsASCII(h, "referer")) {
+                    request_.referrer = GURL(header.value().toStdString());
+                } else {
+                    request_.headers.SetHeader(h, header.value().toStdString());
+                }
+            }
+        }
+    }
+
     if (!target_loader_ && target_factory_) {
         network::mojom::URLLoaderClientPtr proxied_client;
         proxied_client_binding_.Bind(mojo::MakeRequest(&proxied_client));
