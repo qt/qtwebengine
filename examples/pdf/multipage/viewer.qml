@@ -167,30 +167,6 @@ ApplicationWindow {
                     onTriggered: view.copySelectionToClipboard()
                 }
             }
-            TextField {
-                id: searchField
-                placeholderText: "search"
-                Layout.minimumWidth: 200
-                Layout.fillWidth: true
-                Image {
-                    visible: searchField.text !== ""
-                    source: "resources/edit-clear.svg"
-                    anchors {
-                        right: parent.right
-                        top: parent.top
-                        bottom: parent.bottom
-                        margins: 3
-                        rightMargin: 5
-                    }
-                    TapHandler {
-                        onTapped: searchField.clear()
-                    }
-                }
-            }
-            Shortcut {
-                sequence: StandardKey.Find
-                onActivated: searchField.forceActiveFocus()
-            }
             Shortcut {
                 sequence: StandardKey.Quit
                 onActivated: Qt.quit()
@@ -257,6 +233,63 @@ ApplicationWindow {
         document: root.document
         searchString: searchField.text
         onCurrentPageChanged: currentPageSB.value = view.currentPage + 1
+    }
+
+    Drawer {
+        id: searchDrawer
+        edge: Qt.BottomEdge
+        x: 20
+        width: searchLayout.implicitWidth
+        height: searchLayout.implicitHeight
+        dim: false
+        Shortcut {
+            sequence: StandardKey.Find
+            onActivated: {
+                searchDrawer.open()
+                searchField.forceActiveFocus()
+            }
+        }
+        RowLayout {
+            id: searchLayout
+            ToolButton {
+                action: Action {
+                    icon.source: "resources/go-up-search.svg"
+                    onTriggered: view.searchBack()
+                }
+                ToolTip.visible: enabled && hovered
+                ToolTip.delay: 2000
+                ToolTip.text: "find previous"
+            }
+            TextField {
+                id: searchField
+                placeholderText: "search"
+                Layout.minimumWidth: 200
+                Layout.fillWidth: true
+                Image {
+                    visible: searchField.text !== ""
+                    source: "resources/edit-clear.svg"
+                    anchors {
+                        right: parent.right
+                        top: parent.top
+                        bottom: parent.bottom
+                        margins: 3
+                        rightMargin: 5
+                    }
+                    TapHandler {
+                        onTapped: searchField.clear()
+                    }
+                }
+            }
+            ToolButton {
+                action: Action {
+                    icon.source: "resources/go-down-search.svg"
+                    onTriggered: view.searchForward()
+                }
+                ToolTip.visible: enabled && hovered
+                ToolTip.delay: 2000
+                ToolTip.text: "find next"
+            }
+        }
     }
 
     footer: ToolBar {

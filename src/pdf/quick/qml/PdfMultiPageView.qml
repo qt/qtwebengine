@@ -58,32 +58,33 @@ Item {
     // public API
     // TODO 5.15: required property
     property var document: undefined
-    property real renderScale: 1
-    property real pageRotation: 0
-    property string searchString
+
     property string selectedText
-    property alias currentPage: navigationStack.currentPage
     function copySelectionToClipboard() {
         if (listView.currentItem !== null)
             listView.currentItem.selection.copyToClipboard()
     }
+
+    // page navigation
+    property alias currentPage: navigationStack.currentPage
     property alias backEnabled: navigationStack.backAvailable
     property alias forwardEnabled: navigationStack.forwardAvailable
-    function back() {
-        navigationStack.back()
-    }
-    function forward() {
-        navigationStack.forward()
-    }
-
-    function resetScale() {
-        root.renderScale = 1
+    function back() { navigationStack.back() }
+    function forward() { navigationStack.forward() }
+    function goToPage(page) { goToLocation(page, Qt.point(0, 0), 0) }
+    function goToLocation(page, location, zoom) {
+        if (zoom > 0)
+            root.renderScale = zoom
+        navigationStack.push(page, location, zoom)
     }
 
+    // page scaling
+    property real renderScale: 1
+    property real pageRotation: 0
+    function resetScale() { root.renderScale = 1 }
     function scaleToWidth(width, height) {
         root.renderScale = width / (listView.rot90 ? listView.firstPagePointSize.height : listView.firstPagePointSize.width)
     }
-
     function scaleToPage(width, height) {
         var windowAspect = width / height
         var pageAspect = listView.firstPagePointSize.width / listView.firstPagePointSize.height
@@ -102,14 +103,39 @@ Item {
         }
     }
 
-    function goToPage(page) {
-        goToLocation(page, Qt.point(0, 0), 0)
+    // text search
+    property alias searchString: searchModel.searchString
+    property bool searchBackEnabled: searchModel.currentResult > 0
+    property bool searchForwardEnabled: searchModel.currentResult < searchModel.matchGeometry.length - 1
+    function searchBack() {
+        if (searchModel.currentResult > 0) {
+            --searchModel.currentResult
+        } else {
+            searchModel.deferRendering = true // save time while we are searching
+            while (searchModel.currentResult <= 0) {
+                if (navigationStack.currentPage > 0)
+                    goToPage(navigationStack.currentPage - 1)
+                else
+                    goToPage(document.pageCount - 1)
+                searchModel.currentResult = searchModel.matchGeometry.length - 1
+            }
+            searchModel.deferRendering = false
+        }
     }
-
-    function goToLocation(page, location, zoom) {
-        if (zoom > 0)
-            root.renderScale = zoom
-        navigationStack.push(page, location, zoom)
+    function searchForward() {
+        if (searchModel.currentResult < searchModel.matchGeometry.length - 1) {
+            ++searchModel.currentResult
+        } else {
+            searchModel.deferRendering = true // save time while we are searching
+            while (searchModel.currentResult >= searchModel.matchGeometry.length - 1) {
+                searchModel.currentResult = 0
+                if (navigationStack.currentPage < document.pageCount - 1)
+                    goToPage(navigationStack.currentPage + 1)
+                else
+                    goToPage(0)
+            }
+            searchModel.deferRendering = false
+        }
     }
 
     id: root
@@ -133,7 +159,7 @@ Item {
             property real pageScale: image.paintedWidth / pagePointSize.width
             Image {
                 id: image
-                source: document.source
+                source: searchModel.deferRendering ? "" : document.source
                 currentFrame: index
                 asynchronous: true
                 fillMode: Image.PreserveAspectFit
@@ -152,15 +178,23 @@ Item {
             Shape {
                 anchors.fill: parent
                 opacity: 0.25
-                visible: image.status === Image.Ready
+                visible: image.status === Image.Ready && searchModel.page == index
+                ShapePath {
+                    strokeWidth: 1
+                    strokeColor: "steelblue"
+                    fillColor: "lightsteelblue"
+                    scale: Qt.size(paper.pageScale, paper.pageScale)
+                    PathMultiline {
+                        paths: searchModel.matchGeometry
+                    }
+                }
                 ShapePath {
                     strokeWidth: 1
                     strokeColor: "blue"
                     fillColor: "cyan"
                     scale: Qt.size(paper.pageScale, paper.pageScale)
-                    PathMultiline {
-                        id: searchResultBoundaries
-                        paths: searchModel.matchGeometry
+                    PathPolyline {
+                        path: searchModel.matchGeometry[searchModel.currentResult]
                     }
                 }
                 ShapePath {
@@ -171,12 +205,6 @@ Item {
                         paths: selection.geometry
                     }
                 }
-            }
-            PdfSearchModel {
-                id: searchModel
-                document: root.document
-                page: image.currentFrame
-                searchString: root.searchString
             }
             PdfSelection {
                 id: selection
@@ -273,5 +301,13 @@ Item {
         onCurrentLocationChanged: listView.contentY += currentLocation.y // currentPageChanged() MUST occur first!
         onCurrentZoomChanged: root.renderScale = currentZoom
         // TODO deal with horizontal location (need another Flickable probably)
+    }
+    PdfSearchModel {
+        id: searchModel
+        document: root.document === undefined ? null : root.document
+        page: navigationStack.currentPage
+        searchString: root.searchString
+        property int currentResult: 0
+        property bool deferRendering: false
     }
 }
