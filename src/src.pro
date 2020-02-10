@@ -46,6 +46,7 @@ qtConfig(build-qtpdf):qtConfig(webengine-qtpdf-support) {
     SUBDIRS += pdf
     !contains(SUBDIRS, buildtools): SUBDIRS += buildtools
     !contains(SUBDIRS, plugins): SUBDIRS += plugins
+    plugins.depends += pdf
     qtConfig(pdf-widgets) {
         pdfwidgets.depends = pdf
         SUBDIRS += pdfwidgets
