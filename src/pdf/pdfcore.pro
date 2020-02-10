@@ -66,6 +66,7 @@ SOURCES += \
     qpdfpagenavigation.cpp \
     qpdfpagerenderer.cpp \
     qpdfsearchmodel.cpp \
+    qpdfsearchresult.cpp \
     qpdfselection.cpp \
 
 # all "public" headers must be in "api" for sync script and to hide auto generated headers
@@ -85,7 +86,9 @@ HEADERS += \
     api/qpdfpagenavigation.h \
     api/qpdfpagerenderer.h \
     api/qpdfsearchmodel.h \
-    qpdfsearchmodel_p.h \
+    api/qpdfsearchmodel_p.h \
+    api/qpdfsearchresult.h \
+    api/qpdfsearchresult_p.h \
     api/qpdfselection.h \
     api/qpdfselection_p.h \
 

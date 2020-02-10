@@ -34,38 +34,41 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFDESTINATION_P_H
-#define QPDFDESTINATION_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QPointF>
+#include "qpdfsearchresult.h"
+#include "qpdfsearchresult_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QPdfDestinationPrivate : public QSharedData
-{
-public:
-    QPdfDestinationPrivate() = default;
-    QPdfDestinationPrivate(int page, QPointF location, qreal zoom)
-        : page(page),
-          location(location),
-          zoom(zoom) { }
+QPdfSearchResult::QPdfSearchResult() :
+    QPdfSearchResult(new QPdfSearchResultPrivate()) { }
 
-    int page = -1;
-    QPointF location;
-    qreal zoom = 1;
-};
+QPdfSearchResult::QPdfSearchResult(int page, QVector<QRectF> rects, QString context) :
+    QPdfSearchResult(new QPdfSearchResultPrivate(page, rects, context)) { }
+
+QPdfSearchResult::QPdfSearchResult(QPdfSearchResultPrivate *d) :
+    QPdfDestination(static_cast<QPdfDestinationPrivate *>(d)) { }
+
+QString QPdfSearchResult::context() const
+{
+    return static_cast<QPdfSearchResultPrivate *>(d.data())->context;
+}
+
+QVector<QRectF> QPdfSearchResult::rectangles() const
+{
+    return static_cast<QPdfSearchResultPrivate *>(d.data())->rects;
+}
+
+QDebug operator<<(QDebug dbg, const QPdfSearchResult &searchResult)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    dbg << "QPdfSearchResult(page=" << searchResult.page()
+        << " context=" << searchResult.context()
+        << " rects=" << searchResult.rectangles();
+    dbg << ')';
+    return dbg;
+}
 
 QT_END_NAMESPACE
 
-#endif // QPDFDESTINATION_P_H
+#include "moc_qpdfsearchresult.cpp"

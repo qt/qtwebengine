@@ -39,34 +39,56 @@
 
 #include "qtpdfglobal.h"
 #include "qpdfdocument.h"
+#include "qpdfsearchresult.h"
 
-#include <QObject>
+#include <QtCore/qabstractitemmodel.h>
 
 QT_BEGIN_NAMESPACE
 
 class QPdfSearchModelPrivate;
 
-class Q_PDF_EXPORT QPdfSearchModel : public QObject // TODO QAIM?
+class Q_PDF_EXPORT QPdfSearchModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(QPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
+    Q_PROPERTY(QString searchString READ searchString WRITE setSearchString NOTIFY searchStringChanged)
 
 public:
+    enum class Role : int {
+        Page = Qt::UserRole,
+        IndexOnPage,
+        Location,
+        Context,
+        _Count
+    };
+    Q_ENUM(Role)
     explicit QPdfSearchModel(QObject *parent = nullptr);
     ~QPdfSearchModel();
 
-    QVector<QRectF> matches(int page, const QString &searchString);
+    QVector<QPdfSearchResult> resultsOnPage(int page) const;
+    QPdfSearchResult resultAtIndex(int index) const;
 
     QPdfDocument *document() const;
+    QString searchString() const;
+
+    QHash<int, QByteArray> roleNames() const override;
+    int rowCount(const QModelIndex &parent) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
 
 public Q_SLOTS:
+    void setSearchString(QString searchString);
     void setDocument(QPdfDocument *document);
 
 Q_SIGNALS:
     void documentChanged();
+    void searchStringChanged();
+
+protected:
+    void updatePage(int page);
 
 private:
-    QScopedPointer<QPdfSearchModelPrivate> d;
+    QHash<int, QByteArray> m_roleNames;
+    Q_DECLARE_PRIVATE(QPdfSearchModel)
 };
 
 QT_END_NAMESPACE

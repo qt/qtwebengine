@@ -230,6 +230,7 @@ ApplicationWindow {
     PdfMultiPageView {
         id: view
         anchors.fill: parent
+        anchors.leftMargin: searchDrawer.position * searchDrawer.width
         document: root.document
         searchString: searchField.text
         onCurrentPageChanged: currentPageSB.value = view.currentPage + 1
@@ -237,10 +238,11 @@ ApplicationWindow {
 
     Drawer {
         id: searchDrawer
-        edge: Qt.BottomEdge
-        x: 20
+        edge: Qt.LeftEdge
+        modal: false
         width: searchLayout.implicitWidth
-        height: searchLayout.implicitHeight
+        y: root.header.height
+        height: view.height
         dim: false
         Shortcut {
             sequence: StandardKey.Find
@@ -249,45 +251,69 @@ ApplicationWindow {
                 searchField.forceActiveFocus()
             }
         }
-        RowLayout {
+        ColumnLayout {
             id: searchLayout
-            ToolButton {
-                action: Action {
-                    icon.source: "resources/go-up-search.svg"
-                    onTriggered: view.searchBack()
-                }
-                ToolTip.visible: enabled && hovered
-                ToolTip.delay: 2000
-                ToolTip.text: "find previous"
-            }
-            TextField {
-                id: searchField
-                placeholderText: "search"
-                Layout.minimumWidth: 200
-                Layout.fillWidth: true
-                Image {
-                    visible: searchField.text !== ""
-                    source: "resources/edit-clear.svg"
-                    anchors {
-                        right: parent.right
-                        top: parent.top
-                        bottom: parent.bottom
-                        margins: 3
-                        rightMargin: 5
+            anchors.fill: parent
+            anchors.margins: 2
+            RowLayout {
+                ToolButton {
+                    action: Action {
+                        icon.source: "resources/go-up-search.svg"
+                        shortcut: StandardKey.FindPrevious
+                        onTriggered: view.searchBack()
                     }
-                    TapHandler {
-                        onTapped: searchField.clear()
+                    ToolTip.visible: enabled && hovered
+                    ToolTip.delay: 2000
+                    ToolTip.text: "find previous"
+                }
+                TextField {
+                    id: searchField
+                    placeholderText: "search"
+                    Layout.minimumWidth: 200
+                    Layout.fillWidth: true
+                    Image {
+                        visible: searchField.text !== ""
+                        source: "resources/edit-clear.svg"
+                        anchors {
+                            right: parent.right
+                            top: parent.top
+                            bottom: parent.bottom
+                            margins: 3
+                            rightMargin: 5
+                        }
+                        TapHandler {
+                            onTapped: searchField.clear()
+                        }
                     }
                 }
-            }
-            ToolButton {
-                action: Action {
-                    icon.source: "resources/go-down-search.svg"
-                    onTriggered: view.searchForward()
+                ToolButton {
+                    action: Action {
+                        icon.source: "resources/go-down-search.svg"
+                        shortcut: StandardKey.FindNext
+                        onTriggered: view.searchForward()
+                    }
+                    ToolTip.visible: enabled && hovered
+                    ToolTip.delay: 2000
+                    ToolTip.text: "find next"
                 }
-                ToolTip.visible: enabled && hovered
-                ToolTip.delay: 2000
-                ToolTip.text: "find next"
+            }
+            ListView {
+                id: searchResultsList
+                ColumnLayout.fillWidth: true
+                ColumnLayout.fillHeight: true
+                clip: true
+                model: view.searchModel
+                ScrollBar.vertical: ScrollBar { }
+                delegate: ItemDelegate {
+                    width: parent ? parent.width : 0
+                    text: "page " + (page + 1) + ": " + context
+                    highlighted: ListView.isCurrentItem
+                    onClicked: {
+                        searchResultsList.currentIndex = index
+                        view.goToLocation(page, location, 0)
+                        view.searchModel.currentResult = indexOnPage
+                    }
+                }
             }
         }
     }

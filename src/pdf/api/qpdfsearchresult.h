@@ -34,38 +34,42 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFDESTINATION_P_H
-#define QPDFDESTINATION_P_H
+#ifndef QPDFSEARCHRESULT_H
+#define QPDFSEARCHRESULT_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "qpdfdestination.h"
 
-#include <QPointF>
+#include <QtCore/qdebug.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfDestinationPrivate : public QSharedData
-{
-public:
-    QPdfDestinationPrivate() = default;
-    QPdfDestinationPrivate(int page, QPointF location, qreal zoom)
-        : page(page),
-          location(location),
-          zoom(zoom) { }
+class QPdfSearchResultPrivate;
 
-    int page = -1;
-    QPointF location;
-    qreal zoom = 1;
+class Q_PDF_EXPORT QPdfSearchResult : public QPdfDestination
+{
+    Q_GADGET
+    Q_PROPERTY(QString context READ context)
+    Q_PROPERTY(QVector<QRectF> rectangles READ rectangles)
+
+public:
+    QPdfSearchResult();
+    ~QPdfSearchResult() {}
+
+    QString context() const;
+    QVector<QRectF> rectangles() const;
+
+private:
+    QPdfSearchResult(int page, QVector<QRectF> rects, QString context);
+    QPdfSearchResult(QPdfSearchResultPrivate *d);
+    friend class QPdfDocument;
+    friend class QPdfSearchModelPrivate;
+    friend class QQuickPdfNavigationStack;
 };
+
+Q_PDF_EXPORT QDebug operator<<(QDebug, const QPdfSearchResult &);
 
 QT_END_NAMESPACE
 
-#endif // QPDFDESTINATION_P_H
+#endif // QPDFSEARCHRESULT_H

@@ -104,39 +104,10 @@ Item {
     }
 
     // text search
+    property alias searchModel: searchModel
     property alias searchString: searchModel.searchString
-    property bool searchBackEnabled: searchModel.currentResult > 0
-    property bool searchForwardEnabled: searchModel.currentResult < searchModel.matchGeometry.length - 1
-    function searchBack() {
-        if (searchModel.currentResult > 0) {
-            --searchModel.currentResult
-        } else {
-            searchModel.deferRendering = true // save time while we are searching
-            while (searchModel.currentResult <= 0) {
-                if (navigationStack.currentPage > 0)
-                    goToPage(navigationStack.currentPage - 1)
-                else
-                    goToPage(document.pageCount - 1)
-                searchModel.currentResult = searchModel.matchGeometry.length - 1
-            }
-            searchModel.deferRendering = false
-        }
-    }
-    function searchForward() {
-        if (searchModel.currentResult < searchModel.matchGeometry.length - 1) {
-            ++searchModel.currentResult
-        } else {
-            searchModel.deferRendering = true // save time while we are searching
-            while (searchModel.currentResult >= searchModel.matchGeometry.length - 1) {
-                searchModel.currentResult = 0
-                if (navigationStack.currentPage < document.pageCount - 1)
-                    goToPage(navigationStack.currentPage + 1)
-                else
-                    goToPage(0)
-            }
-            searchModel.deferRendering = false
-        }
-    }
+    function searchBack() { --searchModel.currentResult }
+    function searchForward() { ++searchModel.currentResult }
 
     id: root
     ListView {
@@ -159,7 +130,7 @@ Item {
             property real pageScale: image.paintedWidth / pagePointSize.width
             Image {
                 id: image
-                source: searchModel.deferRendering ? "" : document.source
+                source: document.source
                 currentFrame: index
                 asynchronous: true
                 fillMode: Image.PreserveAspectFit
@@ -178,23 +149,14 @@ Item {
             Shape {
                 anchors.fill: parent
                 opacity: 0.25
-                visible: image.status === Image.Ready && searchModel.page == index
+                visible: image.status === Image.Ready
                 ShapePath {
                     strokeWidth: 1
-                    strokeColor: "steelblue"
-                    fillColor: "lightsteelblue"
+                    strokeColor: "cyan"
+                    fillColor: "steelblue"
                     scale: Qt.size(paper.pageScale, paper.pageScale)
                     PathMultiline {
-                        paths: searchModel.matchGeometry
-                    }
-                }
-                ShapePath {
-                    strokeWidth: 1
-                    strokeColor: "blue"
-                    fillColor: "cyan"
-                    scale: Qt.size(paper.pageScale, paper.pageScale)
-                    PathPolyline {
-                        path: searchModel.matchGeometry[searchModel.currentResult]
+                        paths: searchModel.boundingPolygonsOnPage(index)
                     }
                 }
                 ShapePath {
@@ -203,6 +165,20 @@ Item {
                     PathMultiline {
                         id: selectionBoundaries
                         paths: selection.geometry
+                    }
+                }
+            }
+            Shape {
+                anchors.fill: parent
+                opacity: 0.5
+                visible: image.status === Image.Ready && searchModel.currentPage === index
+                ShapePath {
+                    strokeWidth: 1
+                    strokeColor: "blue"
+                    fillColor: "cyan"
+                    scale: Qt.size(paper.pageScale, paper.pageScale)
+                    PathMultiline {
+                        paths: searchModel.currentResultBoundingPolygons
                     }
                 }
             }
@@ -297,7 +273,10 @@ Item {
     PdfNavigationStack {
         id: navigationStack
         onJumped: listView.currentIndex = page
-        onCurrentPageChanged: listView.positionViewAtIndex(currentPage, ListView.Beginning)
+        onCurrentPageChanged: {
+            listView.positionViewAtIndex(currentPage, ListView.Beginning)
+            searchModel.currentPage = currentPage
+        }
         onCurrentLocationChanged: listView.contentY += currentLocation.y // currentPageChanged() MUST occur first!
         onCurrentZoomChanged: root.renderScale = currentZoom
         // TODO deal with horizontal location (need another Flickable probably)
@@ -305,9 +284,6 @@ Item {
     PdfSearchModel {
         id: searchModel
         document: root.document === undefined ? null : root.document
-        page: navigationStack.currentPage
-        searchString: root.searchString
-        property int currentResult: 0
-        property bool deferRendering: false
+        onCurrentPageChanged: root.goToPage(currentPage)
     }
 }

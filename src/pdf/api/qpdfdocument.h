@@ -124,6 +124,7 @@ private:
     friend class QPdfBookmarkModelPrivate;
     friend class QPdfLinkModelPrivate;
     friend class QPdfSearchModel;
+    friend class QPdfSearchModelPrivate;
 
     Q_PRIVATE_SLOT(d, void _q_tryLoadingWithSizeFromContentHeader())
     Q_PRIVATE_SLOT(d, void _q_copyFromSequentialSourceDevice())

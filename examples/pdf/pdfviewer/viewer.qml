@@ -57,7 +57,7 @@ import Qt.labs.platform 1.1 as Platform
 
 ApplicationWindow {
     id: root
-    width: 1280
+    width: 800
     height: 1024
     color: "lightgrey"
     title: document.title
@@ -140,14 +140,15 @@ ApplicationWindow {
                 from: 1
                 to: document.pageCount
                 editable: true
-                onValueChanged: pageView.goToPage(value - 1)
+                value: pageView.currentPage + 1
+                onValueModified: pageView.goToPage(value - 1)
                 Shortcut {
                     sequence: StandardKey.MoveToPreviousPage
-                    onActivated: currentPageSB.value--
+                    onActivated: pageView.goToPage(currentPageSB.value - 2)
                 }
                 Shortcut {
                     sequence: StandardKey.MoveToNextPage
-                    onActivated: currentPageSB.value++
+                    onActivated: pageView.goToPage(currentPageSB.value)
                 }
             }
             ToolButton {
@@ -167,30 +168,6 @@ ApplicationWindow {
                     enabled: pageView.selectedText !== ""
                     onTriggered: pageView.copySelectionToClipboard()
                 }
-            }
-            TextField {
-                id: searchField
-                placeholderText: "search"
-                Layout.minimumWidth: 200
-                Layout.fillWidth: true
-                Image {
-                    visible: searchField.text !== ""
-                    source: "resources/edit-clear.svg"
-                    anchors {
-                        right: parent.right
-                        top: parent.top
-                        bottom: parent.bottom
-                        margins: 3
-                        rightMargin: 5
-                    }
-                    TapHandler {
-                        onTapped: searchField.clear()
-                    }
-                }
-            }
-            Shortcut {
-                sequence: StandardKey.Find
-                onActivated: searchField.forceActiveFocus()
             }
             Shortcut {
                 sequence: StandardKey.Quit
@@ -223,14 +200,94 @@ ApplicationWindow {
 
     PdfPageView {
         id: pageView
-        // TODO should work but ends up being NaN in QQuickSpinBoxPrivate::setValue() (?!)
-//        onCurrentPageChanged: currentPageSB.value = pageView.currrentPage + 1
-        onCurrentPageReallyChanged: currentPageSB.value = page + 1
+        x: searchDrawer.position * searchDrawer.width // TODO binding gets broken during centering
         document: PdfDocument {
             id: document
             onStatusChanged: if (status === PdfDocument.Error) errorDialog.open()
         }
         searchString: searchField.text
+    }
+
+    Drawer {
+        id: searchDrawer
+        edge: Qt.LeftEdge
+        modal: false
+        width: searchLayout.implicitWidth
+        y: root.header.height
+        height: root.contentItem.height
+        dim: false
+        Shortcut {
+            sequence: StandardKey.Find
+            onActivated: {
+                searchDrawer.open()
+                searchField.forceActiveFocus()
+            }
+        }
+        ColumnLayout {
+            id: searchLayout
+            anchors.fill: parent
+            anchors.margins: 2
+            RowLayout {
+                ToolButton {
+                    action: Action {
+                        icon.source: "resources/go-up-search.svg"
+                        shortcut: StandardKey.FindPrevious
+                        onTriggered: pageView.searchBack()
+                    }
+                    ToolTip.visible: enabled && hovered
+                    ToolTip.delay: 2000
+                    ToolTip.text: "find previous"
+                }
+                TextField {
+                    id: searchField
+                    placeholderText: "search"
+                    Layout.minimumWidth: 200
+                    Layout.fillWidth: true
+                    Image {
+                        visible: searchField.text !== ""
+                        source: "resources/edit-clear.svg"
+                        anchors {
+                            right: parent.right
+                            top: parent.top
+                            bottom: parent.bottom
+                            margins: 3
+                            rightMargin: 5
+                        }
+                        TapHandler {
+                            onTapped: searchField.clear()
+                        }
+                    }
+                }
+                ToolButton {
+                    action: Action {
+                        icon.source: "resources/go-down-search.svg"
+                        shortcut: StandardKey.FindNext
+                        onTriggered: pageView.searchForward()
+                    }
+                    ToolTip.visible: enabled && hovered
+                    ToolTip.delay: 2000
+                    ToolTip.text: "find next"
+                }
+            }
+            ListView {
+                id: searchResultsList
+                ColumnLayout.fillWidth: true
+                ColumnLayout.fillHeight: true
+                clip: true
+                model: pageView.searchModel
+                ScrollBar.vertical: ScrollBar { }
+                delegate: ItemDelegate {
+                    width: parent ? parent.width : 0
+                    text: "page " + (page + 1) + ": " + context
+                    highlighted: ListView.isCurrentItem
+                    onClicked: {
+                        searchResultsList.currentIndex = index
+                        pageView.goToLocation(page, location, 0)
+                        pageView.searchModel.currentResult = indexOnPage
+                    }
+                }
+            }
+        }
     }
 
     footer: Label {

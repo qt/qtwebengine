@@ -65,14 +65,14 @@ public:
     QPointF location() const;
     qreal zoom() const;
 
-private:
+protected:
     QPdfDestination();
     QPdfDestination(int page, QPointF location, qreal zoom);
     QPdfDestination(QPdfDestinationPrivate *d);
     friend class QPdfDocument;
     friend class QQuickPdfNavigationStack;
 
-private:
+protected:
     QExplicitlySharedDataPointer<QPdfDestinationPrivate> d;
 };
 

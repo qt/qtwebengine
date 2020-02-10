@@ -50,15 +50,18 @@ Rectangle {
     property alias sourceSize: image.sourceSize
     property alias currentPage: navigationStack.currentPage
     property alias pageCount: image.frameCount
-    property alias searchString: searchModel.searchString
     property alias selectedText: selection.text
     property alias status: image.status
     property alias backEnabled: navigationStack.backAvailable
     property alias forwardEnabled: navigationStack.forwardAvailable
     function back() { navigationStack.back() }
     function forward() { navigationStack.forward() }
-    function goToPage(page) { navigationStack.push(page, Qt.point(0, 0), renderScale) }
-    signal currentPageReallyChanged(page: int)
+    function goToPage(page) { goToLocation(page, Qt.point(0, 0), 0) }
+    function goToLocation(page, location, zoom) {
+        if (zoom > 0)
+            paper.renderScale = zoom
+        navigationStack.push(page, location, zoom)
+    }
 
     property real __pageScale: image.paintedWidth / document.pagePointSize(navigationStack.currentPage).width
 
@@ -107,6 +110,12 @@ Rectangle {
         paper.scale = 1
     }
 
+    // text search
+    property alias searchModel: searchModel
+    property alias searchString: searchModel.searchString
+    function searchBack() { --searchModel.currentResult }
+    function searchForward() { ++searchModel.currentResult }
+
     PdfSelection {
         id: selection
         document: paper.document
@@ -121,13 +130,16 @@ Rectangle {
 
     PdfSearchModel {
         id: searchModel
-        document: paper.document
-        page: navigationStack.currentPage
+        document: paper.document === undefined ? null : paper.document
+        currentPage: navigationStack.currentPage
+        onCurrentPageChanged: paper.goToPage(currentPage)
     }
 
     PdfNavigationStack {
         id: navigationStack
-        onCurrentPageChanged: paper.currentPageReallyChanged(navigationStack.currentPage)
+        // TODO onCurrentLocationChanged: position currentLocation.x and .y in middle // currentPageChanged() MUST occur first!
+        onCurrentZoomChanged: paper.renderScale = currentZoom
+        // TODO deal with horizontal location (need WheelHandler or Flickable probably)
     }
 
     Image {
@@ -168,19 +180,26 @@ Rectangle {
         visible: image.status === Image.Ready
         ShapePath {
             strokeWidth: 1
-            strokeColor: "blue"
+            strokeColor: "cyan"
+            fillColor: "steelblue"
+            scale: Qt.size(paper.__pageScale, paper.__pageScale)
+            PathMultiline {
+                paths: searchModel.currentPageBoundingPolygons
+            }
+        }
+        ShapePath {
+            strokeWidth: 1
+            strokeColor: "orange"
             fillColor: "cyan"
             scale: Qt.size(paper.__pageScale, paper.__pageScale)
             PathMultiline {
-                id: searchResultBoundaries
-                paths: searchModel.matchGeometry
+                paths: searchModel.currentResultBoundingPolygons
             }
         }
         ShapePath {
             fillColor: "orange"
             scale: Qt.size(paper.__pageScale, paper.__pageScale)
             PathMultiline {
-                id: selectionBoundaries
                 paths: selection.geometry
             }
         }

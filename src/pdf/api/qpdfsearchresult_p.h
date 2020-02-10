@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFDESTINATION_P_H
-#define QPDFDESTINATION_P_H
+#ifndef QPDFSEARCHRESULT_P_H
+#define QPDFSEARCHRESULT_P_H
 
 //
 //  W A R N I N G
@@ -48,24 +48,23 @@
 // We mean it.
 //
 
-#include <QPointF>
+#include "qpdfdestination_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QPdfDestinationPrivate : public QSharedData
+class QPdfSearchResultPrivate : public QPdfDestinationPrivate
 {
 public:
-    QPdfDestinationPrivate() = default;
-    QPdfDestinationPrivate(int page, QPointF location, qreal zoom)
-        : page(page),
-          location(location),
-          zoom(zoom) { }
+    QPdfSearchResultPrivate() = default;
+    QPdfSearchResultPrivate(int page, QVector<QRectF> rects, QString context) :
+        QPdfDestinationPrivate(page, rects.first().topLeft(), 0),
+        context(context),
+        rects(rects) {}
 
-    int page = -1;
-    QPointF location;
-    qreal zoom = 1;
+    QString context;
+    QVector<QRectF> rects;
 };
 
 QT_END_NAMESPACE
 
-#endif // QPDFDESTINATION_P_H
+#endif // QPDFSEARCHRESULT_P_H
