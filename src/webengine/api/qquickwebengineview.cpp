@@ -356,7 +356,9 @@ void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
 {
     Q_Q(QQuickWebEngineView);
     Q_UNUSED(url);
-    Q_EMIT q->urlChanged();
+    QTimer::singleShot(0, q, [q]() {
+        Q_EMIT q->urlChanged();
+    });
 }
 
 void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
