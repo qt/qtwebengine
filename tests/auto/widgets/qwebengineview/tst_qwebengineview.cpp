@@ -3148,36 +3148,55 @@ void tst_QWebEngineView::noContextMenu()
 void tst_QWebEngineView::contextMenu_data()
 {
     QTest::addColumn<int>("childrenCount");
+    QTest::addColumn<bool>("isCustomMenu");
     QTest::addColumn<Qt::ContextMenuPolicy>("contextMenuPolicy");
-    QTest::newRow("defaultContextMenu") << 1 << Qt::DefaultContextMenu;
-    QTest::newRow("customContextMenu") << 1 << Qt::CustomContextMenu;
-    QTest::newRow("preventContextMenu") << 0 << Qt::PreventContextMenu;
+    QTest::newRow("defaultContextMenu") << 1 << false << Qt::DefaultContextMenu;
+    QTest::newRow("customContextMenu")  << 1 << true  << Qt::CustomContextMenu;
+    QTest::newRow("preventContextMenu") << 0 << false << Qt::PreventContextMenu;
 }
 
 void tst_QWebEngineView::contextMenu()
 {
     QFETCH(int, childrenCount);
+    QFETCH(bool, isCustomMenu);
     QFETCH(Qt::ContextMenuPolicy, contextMenuPolicy);
 
     QWebEngineView view;
 
+    QMenu *customMenu = nullptr;
     if (contextMenuPolicy == Qt::CustomContextMenu) {
-        connect(&view, &QWebEngineView::customContextMenuRequested, [&view](const QPoint &pt) {
-            QMenu* menu = new QMenu(&view);
-            menu->addAction("Action1");
-            menu->addAction("Action2");
-            menu->popup(pt);
+        connect(&view, &QWebEngineView::customContextMenuRequested, [&view, &customMenu] (const QPoint &pt) {
+            Q_ASSERT(!customMenu);
+            customMenu = new QMenu(&view);
+            customMenu->addAction("Action1");
+            customMenu->addAction("Action2");
+            customMenu->popup(pt);
         });
     }
 
     view.setContextMenuPolicy(contextMenuPolicy);
+
+    // input is supposed to be skipped before first real navigation in >= 79
+    QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
+    view.load(QUrl("about:blank"));
     view.resize(640, 480);
     view.show();
+    QTRY_COMPARE(loadSpy.count(), 1);
 
     QVERIFY(view.findChildren<QMenu *>().isEmpty());
     QTest::mouseMove(view.windowHandle(), QPoint(10,10));
     QTest::mouseClick(view.windowHandle(), Qt::RightButton);
-    QTRY_COMPARE(view.findChildren<QMenu *>().count(), childrenCount);
+
+    // verify for zero children will always succeed, so should be tested with at least minor timeout
+    if (childrenCount <= 0) {
+        QVERIFY(!QTest::qWaitFor([&view] () { return view.findChildren<QMenu *>().count() > 0; }, 500));
+    } else {
+        QTRY_COMPARE(view.findChildren<QMenu *>().count(), childrenCount);
+        if (isCustomMenu) {
+            QCOMPARE(view.findChildren<QMenu *>().first(), customMenu);
+        }
+    }
+    QCOMPARE(!!customMenu, isCustomMenu);
 }
 
 void tst_QWebEngineView::mouseLeave()
