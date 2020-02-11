@@ -199,7 +199,10 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
         QString newTitle = toQt(source->GetTitle());
         if (m_title != newTitle) {
             m_title = newTitle;
-            m_viewClient->titleChanged(m_title);
+            QTimer::singleShot(0, [delegate = AsWeakPtr(), title = newTitle] () {
+                if (delegate)
+                    delegate->adapterClient()->titleChanged(title);
+            });
         }
     }
 
