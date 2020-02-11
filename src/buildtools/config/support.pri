@@ -62,7 +62,7 @@ defineReplace(qtwebengine_checkError) {
     }
 
     linux:!qtwebengine_checkErrorForLinux():return(false)
-    win:!qtwebengine_checkErrorForWindows():return(false)
+    win32:!qtwebengine_checkErrorForWindows():return(false)
     macos:!qtwebengine_checkErrorForMacOS():return(false)
 
     sanitizer: !qtConfig(webengine-sanitizer) {
