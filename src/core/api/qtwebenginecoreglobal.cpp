@@ -45,6 +45,8 @@
 #ifdef Q_OS_MACOS
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <QOffscreenSurface>
+#include "macos_context_type_helper.h"
 #endif
 #endif
 #include <QThread>
@@ -127,6 +129,52 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
     shareContext = new QOpenGLContext;
     QSurfaceFormat format = QSurfaceFormat::defaultFormat();
 //     format.setOption(QSurfaceFormat::ResetNotification);
+
+#ifdef Q_OS_MACOS
+    if (format == QSurfaceFormat()) {
+        QOpenGLContext testContext;
+
+        // Chromium turns off OpenGL for CoreProfiles with versions < 4.1
+        // The newest Mac that only supports 3.3 was released in Mid 2011,
+        // so it should be safe to request 4.1, but we still double check it
+        // works in order not to set an invalid default surface format.
+        format.setVersion(4, 1);
+        format.setProfile(QSurfaceFormat::CoreProfile);
+
+        testContext.setFormat(format);
+        if (testContext.create()) {
+            QOffscreenSurface surface;
+            surface.setFormat(format);
+            surface.create();
+
+            if (testContext.makeCurrent(&surface)) {
+               // The Cocoa QPA integration allows sharing between OpenGL 3.2 and 4.1 contexts,
+               // which means even though we requested a 4.1 context, if we only get a 3.2 context,
+               // it will still work an Chromium will not black list it.
+               if (testContext.format().version() >= qMakePair(3, 2) &&
+                   testContext.format().profile() == QSurfaceFormat::CoreProfile &&
+                   !isCurrentContextSoftware()) {
+                   QSurfaceFormat::setDefaultFormat(format);
+               } else {
+                   qWarning("The available OpenGL surface format was either not version 3.2 or higher or not a Core Profile.\n"
+                            "Chromium on macOS will fall back to software rendering in this case.\n"
+                            "Hardware acceleration and features such as WebGL will not be available.");
+                   format = QSurfaceFormat::defaultFormat();
+               }
+               testContext.doneCurrent();
+            }
+            surface.destroy();
+        }
+    } else {
+        // The user explicitly requested a specific surface format that does not fit Chromium's requirements. Warn them about this.
+        if (format.version() < qMakePair(3,2) || format.profile() != QSurfaceFormat::CoreProfile) {
+            qWarning("An OpenGL surfcace format was requested that is either not version 3.2 or higher or a not Core Profile.\n"
+                    "Chromium on macOS will fall back to software rendering in this case.\n"
+                    "Hardware acceleration and features such as WebGL will not be available.");
+        }
+    }
+#endif
+
     shareContext->setFormat(format);
     shareContext->create();
     qAddPostRoutine(deleteShareContext);

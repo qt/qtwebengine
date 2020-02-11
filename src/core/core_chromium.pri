@@ -310,6 +310,10 @@ contains(QT_CONFIG, opengl) {
         compositor/display_gl_output_surface.h \
         compositor/stream_video_node.h \
         compositor/yuv_video_node.h
+    macos {
+        HEADERS+=macos_context_type_helper.h
+        SOURCES+=macos_context_type_helper.mm
+    }
 }
 
 qtConfig(webengine-geolocation) {
