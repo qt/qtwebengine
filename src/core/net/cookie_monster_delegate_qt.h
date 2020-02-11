@@ -115,8 +115,7 @@ public:
     void OnCookieChanged(const net::CookieChangeInfo &change);
 
 private:
-    void GetAllCookiesCallbackOnUIThread(qint64 callbackId, const std::vector<net::CanonicalCookie> &cookies);
-    void GetAllCookiesResultOnUIThread(qint64 callbackId, const QByteArray &cookies);
+    void GetAllCookiesCallbackOnUIThread(qint64 callbackId, const net::CookieList &cookies);
     void SetCookieCallbackOnUIThread(qint64 callbackId, net::CanonicalCookie::CookieInclusionStatus status);
     void DeleteCookiesCallbackOnUIThread(qint64 callbackId, uint numCookies);
 };

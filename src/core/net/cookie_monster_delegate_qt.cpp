@@ -223,20 +223,11 @@ void CookieMonsterDelegateQt::OnCookieChanged(const net::CookieChangeInfo &chang
     m_client->d_func()->onCookieChanged(toQt(change.cookie), change.cause != net::CookieChangeCause::INSERTED);
 }
 
-void CookieMonsterDelegateQt::GetAllCookiesCallbackOnUIThread(qint64 callbackId, const std::vector<net::CanonicalCookie> &cookies)
+void CookieMonsterDelegateQt::GetAllCookiesCallbackOnUIThread(qint64 callbackId, const net::CookieList &cookies)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    QByteArray rawCookies;
-    for (auto &&cookie : cookies)
-        rawCookies += toQt(cookie).toRawForm() % QByteArrayLiteral("\n");
-
-    GetAllCookiesResultOnUIThread(callbackId, rawCookies);
-}
-
-void CookieMonsterDelegateQt::GetAllCookiesResultOnUIThread(qint64 callbackId, const QByteArray &cookies)
-{
+    QByteArray rawCookies = QByteArray::fromStdString(net::CanonicalCookie::BuildCookieLine(cookies));
     if (m_client)
-        m_client->d_func()->onGetAllCallbackResult(callbackId, cookies);
+        m_client->d_func()->onGetAllCallbackResult(callbackId, rawCookies);
 }
 
 void CookieMonsterDelegateQt::SetCookieCallbackOnUIThread(qint64 callbackId, net::CanonicalCookie::CookieInclusionStatus status)
@@ -250,4 +241,5 @@ void CookieMonsterDelegateQt::DeleteCookiesCallbackOnUIThread(qint64 callbackId,
     if (m_client)
         m_client->d_func()->onDeleteCallbackResult(callbackId, numCookies);
 }
-}
+
+} // namespace QtWebEngineCore
