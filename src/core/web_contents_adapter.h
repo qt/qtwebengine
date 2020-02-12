@@ -229,6 +229,7 @@ public:
     void focusIfNecessary();
     bool isFindTextInProgress() const;
     bool hasFocusedFrame() const;
+    void resetSelection();
 
     // meant to be used within WebEngineCore only
     void initialize(content::SiteInstance *site);
