@@ -420,6 +420,7 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
              SystemNetworkContextManager::GetInstance()->CreateDefaultNetworkContextParams();
 
     network_context_params->context_name = m_profile->profileAdapter()->storageName().toStdString();
+    network_context_params->user_agent = m_httpUserAgent.toStdString();
     network_context_params->accept_language = m_httpAcceptLanguage.toStdString();
 
     network_context_params->enable_referrers = true;
@@ -429,10 +430,10 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
 
     network_context_params->http_cache_enabled = m_httpCacheType != ProfileAdapter::NoCache;
     network_context_params->http_cache_max_size = m_httpCacheMaxSize;
-    if (m_httpCacheType == ProfileAdapter::DiskHttpCache)
+    if (m_httpCacheType == ProfileAdapter::DiskHttpCache && !m_httpCachePath.isEmpty())
         network_context_params->http_cache_path = toFilePath(m_httpCachePath);
 
-    if (m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies) {
+    if (m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies && !m_dataPath.isEmpty()) {
         base::FilePath cookie_path = toFilePath(m_dataPath);
         cookie_path = cookie_path.AppendASCII("Cookies");
         network_context_params->cookie_path = cookie_path;

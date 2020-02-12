@@ -44,6 +44,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
+#include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "url/url_util.h"
 
@@ -499,8 +500,10 @@ const QList<QByteArray> ProfileAdapter::customUrlSchemes() const
 
 void ProfileAdapter::updateCustomUrlSchemeHandlers()
 {
-//    if (m_profile->m_urlRequestContextGetter.get())
-//        m_profile->m_profileIOData->updateJobFactory();
+    content::BrowserContext::ForEachStoragePartition(
+        m_profile.get(), base::BindRepeating([](content::StoragePartition *storage_partition) {
+                                                 storage_partition->ResetURLLoaderFactories();
+                                             }));
 }
 
 void ProfileAdapter::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
@@ -561,9 +564,11 @@ void ProfileAdapter::installUrlSchemeHandler(const QByteArray &scheme, QWebEngin
 
 void ProfileAdapter::removeAllUrlSchemeHandlers()
 {
-    m_customUrlSchemeHandlers.clear();
-    m_customUrlSchemeHandlers.insert(QByteArrayLiteral("qrc"), &m_qrcHandler);
-    updateCustomUrlSchemeHandlers();
+    if (m_customUrlSchemeHandlers.size() > 1) {
+        m_customUrlSchemeHandlers.clear();
+        m_customUrlSchemeHandlers.insert(QByteArrayLiteral("qrc"), &m_qrcHandler);
+        updateCustomUrlSchemeHandlers();
+    }
 }
 
 UserResourceControllerHost *ProfileAdapter::userResourceController()
@@ -606,16 +611,21 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
         return;
     m_httpAcceptLanguage = httpAcceptLanguage;
 
+    std::string http_accept_language = httpAcceptLanguageWithoutQualities().toStdString();
+
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     for (content::WebContentsImpl *web_contents : list) {
         if (web_contents->GetBrowserContext() == m_profile.data()) {
             blink::mojom::RendererPreferences *rendererPrefs = web_contents->GetMutableRendererPrefs();
-            rendererPrefs->accept_languages = httpAcceptLanguageWithoutQualities().toStdString();
+            rendererPrefs->accept_languages = http_accept_language;
             web_contents->SyncRendererPrefs();
         }
     }
 
-    m_profile->m_profileIOData->resetNetworkContext();
+    content::BrowserContext::ForEachStoragePartition(
+        m_profile.get(), base::BindRepeating([](std::string accept_language, content::StoragePartition *storage_partition) {
+                                                 storage_partition->GetNetworkContext()->SetAcceptLanguage(accept_language);
+                                             }, http_accept_language));
 }
 
 void ProfileAdapter::clearHttpCache()
