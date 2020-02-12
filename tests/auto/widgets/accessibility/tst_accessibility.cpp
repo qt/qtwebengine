@@ -339,7 +339,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("AX_ROLE_ABBR") << QString("<abbr>a</abbr>") << false << QAccessible::StaticText;
     QTest::newRow("AX_ROLE_ALERT") << QString("<div role='alert'>alert</div>") << true << QAccessible::AlertMessage;
     QTest::newRow("AX_ROLE_ALERT_DIALOG") << QString("<div role='alertdialog'>alert</div>") << true << QAccessible::AlertMessage;
-    //QTest::newRow("AX_ROLE_ANCHOR") << QString("<a>target</a>") << false << QAccessible::Link; // FIXME: The test case might be wrong (see https://codereview.chromium.org/2713193003)
+    QTest::newRow("AX_ROLE_ANCHOR") << QString("<a id='a'>Chapter a</a>") << false << QAccessible::Link;
     QTest::newRow("AX_ROLE_ANNOTATION") << QString("<rt>a</rt>") << false << QAccessible::StaticText;
     QTest::newRow("AX_ROLE_APPLICATION") << QString("<div role='application'>landmark</div>") << true << QAccessible::Document;
     QTest::newRow("AX_ROLE_ARTICLE") << QString("<article>a</article>") << true << QAccessible::Section;
