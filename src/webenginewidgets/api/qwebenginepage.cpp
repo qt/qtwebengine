@@ -1870,13 +1870,12 @@ void QWebEnginePagePrivate::visibleChanged(bool visible)
     Registers the request interceptor \a interceptor to intercept URL requests.
 
     The page does not take ownership of the pointer. This interceptor is called
-    after any interceptors on the profile, and unlike profile interceptors, is run
-    on the UI thread, making it thread-safer. Only URL requests from this page are
-    intercepted.
+    after any interceptors on the profile, and unlike profile interceptors, only
+    URL requests from this page are intercepted.
 
     To unset the request interceptor, set a \c nullptr.
 
-    \sa QWebEngineUrlRequestInfo, QWebEngineProfile::setRequestInterceptor()
+    \sa QWebEngineUrlRequestInfo, QWebEngineProfile::setUrlRequestInterceptor()
 */
 
 void QWebEnginePage::setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
