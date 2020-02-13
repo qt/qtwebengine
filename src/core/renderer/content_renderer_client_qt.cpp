@@ -95,6 +95,12 @@
 #include "extensions/extensions_renderer_client_qt.h"
 #endif //ENABLE_EXTENSIONS
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "plugins/loadable_plugin_placeholder_qt.h"
+#include "plugins/plugin_placeholder_qt.h"
+#include "content/common/frame_messages.h"
+#endif // ENABLE_PLUGINS
+
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -324,8 +330,35 @@ bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_
     if (!ExtensionsRendererClientQt::GetInstance()->OverrideCreatePlugin(render_frame, params))
         return false;
 #endif //ENABLE_EXTENSIONS
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+    chrome::mojom::PluginInfoPtr plugin_info = chrome::mojom::PluginInfo::New();
+    content::WebPluginInfo info;
+    std::string mime_type;
+    bool found = false;
+
+    render_frame->Send(new FrameHostMsg_GetPluginInfo(render_frame->GetRoutingID(), params.url,
+                                                      render_frame->GetWebFrame()->Top()->GetSecurityOrigin(),
+                                                      params.mime_type.Utf8(), &found, &info, &mime_type));
+    if (!found) {
+        *plugin = CreatePlugin(render_frame, params, *plugin_info);
+        return true;
+    }
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
     return content::ContentRendererClient::OverrideCreatePlugin(render_frame, params, plugin);
 }
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+// static
+blink::WebPlugin* ContentRendererClientQt::CreatePlugin(content::RenderFrame* render_frame,
+                                                        const blink::WebPluginParams& original_params,
+                                                        const chrome::mojom::PluginInfo& plugin_info)
+{
+    // If the browser plugin is to be enabled, this should be handled by the
+    // renderer, so the code won't reach here due to the early exit in OverrideCreatePlugin.
+    return LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, original_params)->plugin();
+}
+#endif  //BUILDFLAG(ENABLE_PLUGINS)
 
 content::BrowserPluginDelegate *ContentRendererClientQt::CreateBrowserPluginDelegate(content::RenderFrame *render_frame,
                                                                                      const content::WebPluginInfo &info,

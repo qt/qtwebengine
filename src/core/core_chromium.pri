@@ -119,6 +119,8 @@ SOURCES = \
         renderer/render_view_observer_qt.cpp \
         renderer/render_thread_observer_qt.cpp \
         renderer/user_resource_controller.cpp \
+        renderer/plugins/loadable_plugin_placeholder_qt.cpp \
+        renderer/plugins/plugin_placeholder_qt.cpp \
         renderer_host/render_view_observer_host_qt.cpp \
         renderer_host/user_resource_controller_host.cpp \
         resource_bundle_qt.cpp \
@@ -231,6 +233,8 @@ HEADERS = \
         renderer/render_view_observer_qt.h \
         renderer/render_thread_observer_qt.h \
         renderer/user_resource_controller.h \
+        renderer/plugins/loadable_plugin_placeholder_qt.h \
+        renderer/plugins/plugin_placeholder_qt.h \
         renderer_host/render_view_observer_host_qt.h \
         renderer_host/user_resource_controller_host.h \
         request_controller.h \

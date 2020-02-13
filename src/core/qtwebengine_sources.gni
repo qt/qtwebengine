@@ -49,6 +49,7 @@ source_set("qtwebengine_sources") {
     "//build:branding_buildflags",
     "//chrome/common:buildflags",
     "//components/nacl/common:buildflags",
+    "//components/plugins/renderer/",
     "//extensions/buildflags:buildflags",
     "//third_party/blink/public/mojom:mojom_platform",
   ]

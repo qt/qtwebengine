@@ -44,6 +44,12 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
+#include "ppapi/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "qtwebengine/browser/plugin.mojom.h"
+#include "third_party/blink/public/web/web_plugin_params.h"
+#endif
 
 #include <QScopedPointer>
 
@@ -66,6 +72,10 @@ class WebCacheImpl;
 #if QT_CONFIG(webengine_spellchecker)
 class SpellCheck;
 #endif
+
+namespace content {
+struct WebPluginInfo;
+}
 
 namespace QtWebEngineCore {
 
@@ -120,6 +130,12 @@ public:
                          bool *attach_same_site_cookies) override;
 
     void BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver) override;
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+    static blink::WebPlugin* CreatePlugin(content::RenderFrame* render_frame,
+                                          const blink::WebPluginParams& params,
+                                          const chrome::mojom::PluginInfo& plugin_info);
+#endif
 
 private:
 #if BUILDFLAG(ENABLE_SPELLCHECK)
