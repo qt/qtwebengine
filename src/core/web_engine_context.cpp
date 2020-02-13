@@ -49,6 +49,7 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
+#include "chrome/common/chrome_switches.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "chrome/browser/printing/print_job_manager.h"
 #include "components/printing/browser/features.h"
@@ -210,6 +211,21 @@ bool usingSoftwareDynamicGL()
 #else
     return false;
 #endif
+}
+
+void setupProxyPac(base::CommandLine *commandLine){
+    if (commandLine->HasSwitch(switches::kProxyPacUrl)) {
+        QUrl pac_url(toQt(commandLine->GetSwitchValueASCII(switches::kProxyPacUrl)));
+        if (pac_url.isValid() && pac_url.isLocalFile()) {
+            QFile file(pac_url.toLocalFile());
+            if (file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+               QByteArray ba = file.readAll();
+               commandLine->RemoveSwitch(switches::kProxyPacUrl);
+               commandLine->AppendSwitchASCII(switches::kProxyPacUrl,
+                   ba.toBase64().prepend("data:application/x-javascript-config;base64,").toStdString());
+            }
+        }
+    }
 }
 
 scoped_refptr<QtWebEngineCore::WebEngineContext> WebEngineContext::m_handle;
@@ -463,7 +479,7 @@ WebEngineContext::WebEngineContext()
 #endif
 
     base::CommandLine* parsedCommandLine = commandLine();
-
+    setupProxyPac(parsedCommandLine);
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
 
     // Enable sandboxing on OS X and Linux (Desktop / Embedded) by default.
