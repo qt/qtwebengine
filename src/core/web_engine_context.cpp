@@ -478,20 +478,6 @@ WebEngineContext::WebEngineContext()
     }
 
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
-    // These are currently only default on OS X, and we don't support them:
-    parsedCommandLine->AppendSwitch(switches::kDisableZeroCopy);
-    parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferCompositorResources);
-
-    // Enabled on OS X and Linux but currently not working. It worked in 5.7 on OS X.
-    parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
-
-#if defined(Q_OS_MACOS)
-    // Accelerated decoding currently does not work on macOS due to issues with OpenGL Rectangle
-    // texture support. See QTBUG-60002.
-    parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-    // Same problem with Pepper using OpenGL images.
-    parsedCommandLine->AppendSwitch(switches::kDisablePepper3DImageChromium);
-#endif
 
 #if defined(Q_OS_WIN)
     // This switch is used in Chromium's gl_context_wgl.cc file to determine whether to create
@@ -571,6 +557,21 @@ WebEngineContext::WebEngineContext()
     }
 
     if (!enableViz) {
+        // These are currently only default on OS X, and we don't support them:
+        parsedCommandLine->AppendSwitch(switches::kDisableZeroCopy);
+        parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferCompositorResources);
+
+        // Enabled on OS X and Linux but currently not working. It worked in 5.7 on OS X.
+        parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
+
+#if defined(Q_OS_MACOS)
+        // Accelerated decoding currently does not work on macOS due to issues with OpenGL Rectangle
+        // texture support. See QTBUG-60002.
+        parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+        // Same problem with Pepper using OpenGL images.
+        parsedCommandLine->AppendSwitch(switches::kDisablePepper3DImageChromium);
+#endif
+
         // Viz Display Compositor is enabled by default since 73. Doesn't work for us (also implies SurfaceSynchronization)
         appendToFeatureList(disableFeatures, features::kVizDisplayCompositor.name);
         // VideoSurfaceLayer is enabled by default since 75. We don't support it.
