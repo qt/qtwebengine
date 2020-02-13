@@ -41,7 +41,6 @@
 
 #include "profile_adapter.h"
 #include "browsing_data_remover_delegate_qt.h"
-#include "command_line_pref_store_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "net/ssl_host_state_delegate_qt.h"
 #include "permission_manager_qt.h"

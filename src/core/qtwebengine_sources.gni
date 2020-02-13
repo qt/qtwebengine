@@ -51,6 +51,7 @@ source_set("qtwebengine_sources") {
     "//components/nacl/common:buildflags",
     "//components/plugins/renderer/",
     "//extensions/buildflags:buildflags",
+    "//rlz/buildflags:buildflags",
     "//third_party/blink/public/mojom:mojom_platform",
   ]
 
@@ -64,6 +65,8 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/media/webrtc/desktop_media_list.h",
     "//chrome/browser/net/chrome_mojo_proxy_resolver_factory.cc",
     "//chrome/browser/net/chrome_mojo_proxy_resolver_factory.h",
+    "//chrome/browser/prefs/chrome_command_line_pref_store.cc",
+    "//chrome/browser/prefs/chrome_command_line_pref_store.h",
     "//chrome/browser/profiles/profile.cc",
     "//chrome/browser/profiles/profile.h",
     "//chrome/browser/ui/webui/devtools_ui.cc",

@@ -50,7 +50,6 @@ SOURCES = \
         clipboard_qt.cpp \
         color_chooser_qt.cpp \
         color_chooser_controller.cpp \
-        command_line_pref_store_qt.cpp \
         common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
@@ -157,7 +156,6 @@ HEADERS = \
         client_cert_select_controller.h \
         clipboard_change_observer.h \
         clipboard_qt.h \
-        command_line_pref_store_qt.h \
         color_chooser_qt.h \
         color_chooser_controller_p.h \
         color_chooser_controller.h \

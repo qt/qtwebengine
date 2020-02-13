@@ -39,12 +39,13 @@
 
 #include "pref_service_adapter.h"
 
-#include "command_line_pref_store_qt.h"
 #include "profile_adapter.h"
 #include "type_conversion.h"
 #include "web_engine_context.h"
 
+#include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "content/public/browser/browser_thread.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
@@ -80,7 +81,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     PrefServiceFactory factory;
-    factory.set_command_line_prefs(base::MakeRefCounted<CommandLinePrefStoreQt>(
+    factory.set_command_line_prefs(base::MakeRefCounted<ChromeCommandLinePrefStore>(
             WebEngineContext::commandLine()));
 
     QString userPrefStorePath = profileAdapter.dataPath();
@@ -92,12 +93,12 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
         factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(toFilePath(userPrefStorePath)));
     }
 
-    PrefRegistrySimple *registry = new PrefRegistrySimple();
-    PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
+    auto registry = base::MakeRefCounted<PrefRegistrySimple>();
+    PrefProxyConfigTrackerImpl::RegisterPrefs(registry.get());
 
 #if QT_CONFIG(webengine_spellchecker)
     // Initial spellcheck settings
-    registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
+    registry->RegisterStringPref(language::prefs::kAcceptLanguages, std::string());
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries);
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckForcedDictionaries);
     registry->RegisterListPref(spellcheck::prefs::kSpellCheckBlacklistedDictionaries);
