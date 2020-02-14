@@ -267,7 +267,7 @@ TestWebEngineView {
                    { tag: "CustomSuffix", input: ".pug", expected: ".pug", exactMatch: false},
                    { tag: "CustomMime", input: "dog/pug", expected: "Accepted types ()", exactMatch: true},
                    { tag: "CustomGlob", input: "dog/*", expected: "Accepted types ()", exactMatch: true},
-                   { tag: "Invalid", input: "---", expected: "Accepted types ()", exactMatch: true},
+                   { tag: "Invalid", input: "---", expected: undefined, exactMatch: true},
                    { tag: "Jpeg", input: "image/jpeg", expected: ".jpeg", exactMatch: false}
             ];
         }
