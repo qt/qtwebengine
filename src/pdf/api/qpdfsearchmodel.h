@@ -85,6 +85,7 @@ Q_SIGNALS:
 
 protected:
     void updatePage(int page);
+    void timerEvent(QTimerEvent *event) override;
 
 private:
     QHash<int, QByteArray> m_roleNames;

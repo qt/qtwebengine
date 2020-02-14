@@ -77,6 +77,8 @@ public:
     QVector<bool> pagesSearched;
     QVector<QVector<QPdfSearchResult>> searchResults;
     int rowCountSoFar = 0;
+    int updateTimerId = -1;
+    int nextPageToUpdate = 0;
 };
 
 QT_END_NAMESPACE

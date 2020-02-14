@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcS, "qt.pdf.search")
 
+static const int UpdateTimerInterval = 100;
 static const int ContextChars = 20;
 static const double CharacterHitTolerance = 6.0;
 
@@ -164,12 +165,27 @@ void QPdfSearchModel::setDocument(QPdfDocument *document)
     d->clearResults();
 }
 
+void QPdfSearchModel::timerEvent(QTimerEvent *event)
+{
+    Q_D(QPdfSearchModel);
+    if (event->timerId() != d->updateTimerId)
+        return;
+    if (!d->document || d->nextPageToUpdate >= d->document->pageCount()) {
+        if (d->document)
+            qCDebug(qLcS, "done updating search results on %d pages", d->searchResults.count());
+        killTimer(d->updateTimerId);
+        d->updateTimerId = -1;
+    }
+    d->doSearch(d->nextPageToUpdate++);
+}
+
 QPdfSearchModelPrivate::QPdfSearchModelPrivate()
 {
 }
 
 void QPdfSearchModelPrivate::clearResults()
 {
+    Q_Q(QPdfSearchModel);
     rowCountSoFar = 0;
     searchResults.clear();
     pagesSearched.clear();
@@ -180,6 +196,8 @@ void QPdfSearchModelPrivate::clearResults()
         searchResults.resize(0);
         pagesSearched.resize(0);
     }
+    nextPageToUpdate = 0;
+    updateTimerId = q->startTimer(UpdateTimerInterval);
 }
 
 bool QPdfSearchModelPrivate::doSearch(int page)
