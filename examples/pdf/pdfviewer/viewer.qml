@@ -53,6 +53,7 @@ import QtQuick.Layouts 1.14
 import QtQuick.Pdf 5.15
 import QtQuick.Shapes 1.14
 import QtQuick.Window 2.14
+import Qt.labs.animation 1.0
 import Qt.labs.platform 1.1 as Platform
 
 ApplicationWindow {
@@ -206,6 +207,21 @@ ApplicationWindow {
             onStatusChanged: if (status === PdfDocument.Error) errorDialog.open()
         }
         searchString: searchField.text
+    }
+
+    WheelHandler {
+        rotationScale: 15
+        target: pageView
+        property: "x"
+        orientation: Qt.Horizontal
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+    }
+    WheelHandler {
+        rotationScale: 15
+        target: pageView
+        property: "y"
+        orientation: Qt.Vertical
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
     }
 
     Drawer {

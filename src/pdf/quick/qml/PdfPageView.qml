@@ -37,6 +37,7 @@ import QtQuick 2.14
 import QtQuick.Controls 2.14
 import QtQuick.Pdf 5.15
 import QtQuick.Shapes 1.14
+import Qt.labs.animation 1.0
 
 Rectangle {
     // public API
@@ -259,5 +260,14 @@ Rectangle {
     TapHandler {
         id: tapHandler
         acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
+    }
+    // prevent it from being scrolled out of view
+    BoundaryRule on x {
+        minimum: 100 - root.width
+        maximum: root.parent.width - 100
+    }
+    BoundaryRule on y {
+        minimum: 100 - root.height
+        maximum: root.parent.height - 100
     }
 }
