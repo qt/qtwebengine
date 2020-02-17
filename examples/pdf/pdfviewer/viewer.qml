@@ -271,8 +271,8 @@ ApplicationWindow {
             }
             ListView {
                 id: searchResultsList
-                ColumnLayout.fillWidth: true
-                ColumnLayout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 clip: true
                 model: pageView.searchModel
                 ScrollBar.vertical: ScrollBar { }
@@ -292,10 +292,9 @@ ApplicationWindow {
 
     footer: Label {
         property size implicitPointSize: document.pagePointSize(pageView.currentPage)
-        text: "page " + (pageView.currentPage + 1) + " of " + pageView.pageCount +
+        text: "page " + (pageView.currentPage + 1) + " of " + document.pageCount +
               " scale " + pageView.renderScale.toFixed(2) +
-              " sourceSize " + pageView.sourceSize.width.toFixed(1) + "x" + pageView.sourceSize.height.toFixed(1) +
-              " original " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1)
-        visible: pageView.pageCount > 0
+              " original " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1) + "pts"
+        visible: document.status === PdfDocument.Ready
     }
 }

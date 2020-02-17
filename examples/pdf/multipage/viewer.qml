@@ -299,8 +299,8 @@ ApplicationWindow {
             }
             ListView {
                 id: searchResultsList
-                ColumnLayout.fillWidth: true
-                ColumnLayout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 clip: true
                 model: view.searchModel
                 ScrollBar.vertical: ScrollBar { }
