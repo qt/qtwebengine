@@ -77,6 +77,12 @@ QPdfDestination::~QPdfDestination()
 {
 }
 
+QPdfDestination &QPdfDestination::operator=(const QPdfDestination &other)
+{
+    d = other.d;
+    return *this;
+}
+
 /*!
     \property QPdfDestination::valid
 
@@ -118,16 +124,15 @@ qreal QPdfDestination::zoom() const
     return d->zoom;
 }
 
-//QDataStream& operator<<(QDataStream& stream, const QPdfDestination& dest)
-//{
-//    stream << *dest.d.data();
-//    return stream;
-//}
-
-QDataStream& operator<<(QDataStream& stream, const QPdfDestinationPrivate& dest)
+QDebug operator<<(QDebug dbg, const QPdfDestination& dest)
 {
-    stream << QStringLiteral("QPdfDestination") << dest.page << dest.location ; // << dest.zoom();
-    return stream;
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    dbg << "QPdfDestination(page=" << dest.page()
+        << " location=" << dest.location()
+        << " zoom=" << dest.zoom();
+    dbg << ')';
+    return dbg;
 }
 
 QT_END_NAMESPACE

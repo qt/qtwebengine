@@ -38,9 +38,10 @@
 #define QPDFDESTINATION_H
 
 #include <QtPdf/qtpdfglobal.h>
-#include <QExplicitlySharedDataPointer>
-#include <QObject>
-#include <QPointF>
+#include <QtCore/qdebug.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qpoint.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -75,6 +76,8 @@ protected:
 protected:
     QExplicitlySharedDataPointer<QPdfDestinationPrivate> d;
 };
+
+Q_PDF_EXPORT QDebug operator<<(QDebug, const QPdfDestination &);
 
 QT_END_NAMESPACE
 
