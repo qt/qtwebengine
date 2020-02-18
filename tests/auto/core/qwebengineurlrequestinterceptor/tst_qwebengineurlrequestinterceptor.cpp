@@ -114,7 +114,7 @@ class TestRequestInterceptor : public QWebEngineUrlRequestInterceptor
 public:
     QList<RequestInfo> requestInfos;
     bool shouldIntercept;
-    QMap<QUrl, QUrl> requestInitiatorUrls;
+    QMap<QUrl, QSet<QUrl>> requestInitiatorUrls;
 
     void interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
@@ -129,7 +129,7 @@ public:
         // Set referrer header
         info.setHttpHeader(kHttpHeaderRefererName, kHttpHeaderReferrerValue);
 
-        requestInitiatorUrls.insert(info.requestUrl(), info.initiator());
+        requestInitiatorUrls[info.requestUrl()].insert(info.initiator());
         requestInfos.append(info);
     }
 
@@ -577,49 +577,49 @@ void tst_QWebEngineUrlRequestInterceptor::initiator()
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeSubFrame));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeSubFrame);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Stylesheet
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeStylesheet));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeStylesheet);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Script
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeScript));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeScript);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Image
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeImage));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeImage);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // FontResource
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFontResource));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFontResource);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Media
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeMedia));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeMedia);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Favicon
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFavicon));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFavicon);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // XMLHttpRequest
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeXhr));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeXhr);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 }
 
 QTEST_MAIN(tst_QWebEngineUrlRequestInterceptor)
