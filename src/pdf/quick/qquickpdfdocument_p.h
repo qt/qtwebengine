@@ -62,6 +62,8 @@ class QQuickPdfDocument : public QObject, public QQmlParserStatus
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged FINAL)
+    Q_PROPERTY(qreal maxPageWidth READ maxPageWidth NOTIFY metaDataChanged)
+    Q_PROPERTY(qreal maxPageHeight READ maxPageHeight NOTIFY metaDataChanged)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged FINAL)
     Q_PROPERTY(QPdfDocument::Status status READ status NOTIFY statusChanged FINAL)
     Q_PROPERTY(QString error READ error NOTIFY statusChanged FINAL)
@@ -102,6 +104,9 @@ public:
     QDateTime modificationDate() { return m_doc.metaData(QPdfDocument::ModificationDate).toDateTime(); }
 
     Q_INVOKABLE QSizeF pagePointSize(int page) const;
+    qreal maxPageWidth() const;
+    qreal maxPageHeight() const;
+    Q_INVOKABLE qreal heightSumBeforePage(int page, qreal spacing = 0, int facingPages = 1) const;
 
 Q_SIGNALS:
     void sourceChanged();
@@ -113,10 +118,12 @@ Q_SIGNALS:
 
 private:
     QPdfDocument &document() { return m_doc; }
+    void updateMaxPageSize();
 
 private:
     QUrl m_source;
     QPdfDocument m_doc;
+    QSizeF m_maxPageWidthHeight;
 
     friend class QQuickPdfLinkModel;
     friend class QQuickPdfSearchModel;

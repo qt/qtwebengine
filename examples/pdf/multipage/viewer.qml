@@ -249,6 +249,7 @@ ApplicationWindow {
         y: root.header.height
         height: view.height
         dim: false
+        clip: true
         ListView {
             id: searchResultsList
             anchors.fill: parent
@@ -286,7 +287,7 @@ ApplicationWindow {
             TextField {
                 id: searchField
                 placeholderText: "search"
-                Layout.minimumWidth: 200
+                Layout.minimumWidth: 150
                 Layout.fillWidth: true
                 onAccepted: searchDrawer.open()
                 Image {
@@ -316,11 +317,10 @@ ApplicationWindow {
             }
             Label {
                 id: statusLabel
-                Layout.fillWidth: true
                 property size implicitPointSize: document.pagePointSize(view.currentPage)
                 text: "page " + (currentPageSB.value) + " of " + document.pageCount +
                       " scale " + view.renderScale.toFixed(2) +
-                      " original size " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1) + " pt"
+                      " original " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1) + " pt"
                 visible: document.pageCount > 0
             }
         }

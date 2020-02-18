@@ -80,11 +80,11 @@ void QQuickPdfNavigationStack::forward()
     ++m_currentHistoryIndex;
     m_changing = true;
     emit jumped(currentPage(), currentLocation(), currentZoom());
+    if (currentZoomWas != currentZoom())
+        emit currentZoomChanged();
     emit currentPageChanged();
     if (currentLocationWas != currentLocation())
         emit currentLocationChanged();
-    if (currentZoomWas != currentZoom())
-        emit currentZoomChanged();
     if (!backAvailableWas)
         emit backAvailableChanged();
     if (forwardAvailableWas != forwardAvailable())
@@ -110,11 +110,11 @@ void QQuickPdfNavigationStack::back()
     --m_currentHistoryIndex;
     m_changing = true;
     emit jumped(currentPage(), currentLocation(), currentZoom());
+    if (currentZoomWas != currentZoom())
+        emit currentZoomChanged();
     emit currentPageChanged();
     if (currentLocationWas != currentLocation())
         emit currentLocationChanged();
-    if (currentZoomWas != currentZoom())
-        emit currentZoomChanged();
     if (backAvailableWas != backAvailable())
         emit backAvailableChanged();
     if (!forwardAvailableWas)
@@ -183,15 +183,16 @@ void QQuickPdfNavigationStack::push(int page, QPointF location, qreal zoom)
         m_pageHistory.append(QExplicitlySharedDataPointer<QPdfDestinationPrivate>(new QPdfDestinationPrivate(page, location, zoom)));
         m_currentHistoryIndex = m_pageHistory.count() - 1;
     }
+    emit currentZoomChanged();
     emit currentPageChanged();
     emit currentLocationChanged();
-    emit currentZoomChanged();
     if (m_changing)
         return;
     if (!backAvailableWas)
         emit backAvailableChanged();
     if (forwardAvailableWas)
         emit forwardAvailableChanged();
+    emit jumped(page, location, zoom);
     qCDebug(qLcNav) << "push: index" << m_currentHistoryIndex << "page" << page
                     << "@" << location << "zoom" << zoom << "-> history" <<
         [this]() {
@@ -212,7 +213,7 @@ void QQuickPdfNavigationStack::push(int page, QPointF location, qreal zoom)
     the most-recently-viewed destination rather than the destination that was
     last specified by push().
 
-    The \c currentPageChanged, \c currentLocationChanged and \c currentZoomChanged
+    The \c currentZoomChanged, \c currentPageChanged and \c currentLocationChanged
     signals will be emitted if the respective properties are actually changed.
     The \l jumped signal is not emitted, because this operation
     represents smooth movement rather than a navigational jump.
@@ -229,12 +230,12 @@ void QQuickPdfNavigationStack::update(int page, QPointF location, qreal zoom)
     m_pageHistory[m_currentHistoryIndex]->page = page;
     m_pageHistory[m_currentHistoryIndex]->location = location;
     m_pageHistory[m_currentHistoryIndex]->zoom = zoom;
+    if (currentZoomWas != zoom)
+        emit currentZoomChanged();
     if (currentPageWas != page)
         emit currentPageChanged();
     if (currentLocationWas != location)
         emit currentLocationChanged();
-    if (currentZoomWas != zoom)
-        emit currentZoomChanged();
     qCDebug(qLcNav) << "update: index" << m_currentHistoryIndex << "page" << page
                     << "@" << location << "zoom" << zoom << "-> history" <<
         [this]() {
@@ -258,10 +259,8 @@ bool QQuickPdfNavigationStack::forwardAvailable() const
 /*!
     \qmlsignal PdfNavigationStack::jumped(int page, point location, qreal zoom)
 
-    This signal is emitted when either forward() or back() is called, to
-    distinguish navigational jumps from cases when push() is called.
-    Contrast with the \c currentPageChanged signal, which is emitted in all
-    cases, and does not include the \c page, \c location and \c zoom arguments.
+    This signal is emitted when forward(), back() or push() is called, but not
+    when update() is called.
 */
 
 QT_END_NAMESPACE

@@ -90,6 +90,7 @@ void QQuickPdfDocument::setSource(QUrl source)
         return;
 
     m_source = source;
+    m_maxPageWidthHeight = QSizeF();
     emit sourceChanged();
     if (source.scheme() == QLatin1String("qrc"))
         m_doc.load(QLatin1Char(':') + source.path());
@@ -171,6 +172,71 @@ QSizeF QQuickPdfDocument::pagePointSize(int page) const
 {
     return m_doc.pageSize(page);
 }
+
+qreal QQuickPdfDocument::maxPageWidth() const
+{
+    const_cast<QQuickPdfDocument *>(this)->updateMaxPageSize();
+    return m_maxPageWidthHeight.width();
+}
+
+qreal QQuickPdfDocument::maxPageHeight() const
+{
+    const_cast<QQuickPdfDocument *>(this)->updateMaxPageSize();
+    return m_maxPageWidthHeight.height();
+}
+
+/*!
+    \internal
+    \qmlmethod size PdfDocument::heightSumBeforePage(int page)
+
+    Returns the sum of the heights, in points, of all sets of \a facingPages
+    pages from 0 to the given \a page, exclusive.
+
+    That is, if the pages were laid out end-to-end in adjacent sets of
+    \a facingPages, what would be the distance in points from the top of the
+    first page to the top of the given page.
+*/
+// Workaround for lack of something analogous to ListView.positionViewAtIndex() in TableView
+qreal QQuickPdfDocument::heightSumBeforePage(int page, qreal spacing, int facingPages) const
+{
+    qreal ret = 0;
+    for (int i = 0; i < page; i+= facingPages) {
+        if (i + facingPages > page)
+            break;
+        qreal facingPagesHeight = 0;
+        for (int j = i; j < i + facingPages; ++j)
+            facingPagesHeight = qMax(facingPagesHeight, pagePointSize(j).height());
+        ret += facingPagesHeight + spacing;
+    }
+    return ret;
+}
+
+void QQuickPdfDocument::updateMaxPageSize()
+{
+    if (m_maxPageWidthHeight.isValid())
+        return;
+    qreal w = 0;
+    qreal h = 0;
+    const int count = pageCount();
+    for (int i = 0; i < count; ++i) {
+        auto size = pagePointSize(i);
+        w = qMax(w, size.width());
+        h = qMax(w, size.height());
+    }
+    m_maxPageWidthHeight = QSizeF(w, h);
+}
+
+/*!
+    \qmlproperty real PdfDocument::maxPageWidth
+
+    This property holds the width of the widest page in the document, in points.
+*/
+
+/*!
+    \qmlproperty real PdfDocument::maxPageHeight
+
+    This property holds the height of the tallest page in the document, in points.
+*/
 
 /*!
     \qmlproperty string PdfDocument::title
