@@ -67,6 +67,7 @@ private Q_SLOTS:
     void urlSchemeHandlerInstallation();
     void urlSchemeHandlerXhrStatus();
     void urlSchemeHandlerScriptModule();
+    void urlSchemeHandlerLongReply();
     void customUserAgent();
     void httpAcceptLanguage();
     void downloadItem();
@@ -294,7 +295,7 @@ protected:
             memcpy(data, m_data.constData() + m_bytesRead, len);
             m_bytesAvailable -= len;
             m_bytesRead += len;
-        } else if (m_data.size() > 0)
+        } else if (atEnd())
             return -1;
 
         return len;
@@ -712,6 +713,31 @@ void tst_QWebEngineProfile::urlSchemeHandlerScriptModule()
     page.setHtml(QStringLiteral("<html><head><script type=\"module\" src=\"aviancarrier:///\"></script></head><body>Test2</body></html>"));
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("test")).toString(), QStringLiteral("SUCCESS"));
+}
+
+class LongReplyUrlSchemeHandler : public QWebEngineUrlSchemeHandler
+{
+public:
+    LongReplyUrlSchemeHandler(QObject *parent = nullptr) : QWebEngineUrlSchemeHandler(parent) {}
+    ~LongReplyUrlSchemeHandler() {}
+
+    void requestStarted(QWebEngineUrlRequestJob *job)
+    {
+        QBuffer *buffer = new QBuffer(job);
+        buffer->setData(QByteArray(128 * 1024, ' ') +
+                        "<html><head><title>Minify this!</title></head></html>");
+        job->reply("text/html", buffer);
+    }
+};
+
+void tst_QWebEngineProfile::urlSchemeHandlerLongReply()
+{
+    LongReplyUrlSchemeHandler handler;
+    QWebEngineProfile profile;
+    profile.installUrlSchemeHandler("aviancarrier", &handler);
+    QWebEnginePage page(&profile);
+    page.load(QUrl("aviancarrier:/"));
+    QTRY_COMPARE(page.title(), QString("Minify this!"));
 }
 
 void tst_QWebEngineProfile::customUserAgent()
