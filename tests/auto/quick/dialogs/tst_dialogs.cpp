@@ -230,6 +230,7 @@ void tst_Dialogs::javaScriptDialogRequested()
     QTRY_VERIFY(m_listner->ready()); // make sure javascript executes no longer
 }
 
+static QByteArrayList params;
+W_QTEST_MAIN(tst_Dialogs, params)
 #include "tst_dialogs.moc"
-W_QTEST_MAIN(tst_Dialogs)
 

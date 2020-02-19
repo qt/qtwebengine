@@ -157,5 +157,6 @@ void tst_QQuickWebEngineViewGraphics::setHtml(const QString &html)
     QTRY_COMPARE_WITH_TIMEOUT(m_view->rootObject()->property("loading"), QVariant(false), 30000);
 }
 
-W_QTEST_MAIN(tst_QQuickWebEngineViewGraphics)
+static QByteArrayList params;
+W_QTEST_MAIN(tst_QQuickWebEngineViewGraphics, params)
 #include "tst_qquickwebengineviewgraphics.moc"

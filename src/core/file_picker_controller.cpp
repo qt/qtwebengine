@@ -172,6 +172,9 @@ QStringList FilePickerController::nameFilters(const QStringList &acceptedMimeTyp
     QStringList acceptedGlobs;
     QMimeDatabase mimeDatabase;
 
+    if (acceptedMimeTypes.isEmpty())
+        return nameFilters;
+
     for (QString type : acceptedMimeTypes) {
         if (type.startsWith(".")) {
             // A single suffix

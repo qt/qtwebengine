@@ -236,6 +236,7 @@ class QQuickWebEngineViewAccessible : public QAccessibleObject
 public:
     QQuickWebEngineViewAccessible(QQuickWebEngineView *o);
     QAccessibleInterface *parent() const override;
+    QAccessibleInterface *focusChild() const override;
     int childCount() const override;
     QAccessibleInterface *child(int index) const override;
     int indexOfChild(const QAccessibleInterface*) const override;
