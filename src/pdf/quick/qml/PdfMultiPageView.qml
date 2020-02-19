@@ -242,14 +242,24 @@ Item {
                     width: rect.width * paper.pageScale
                     height: rect.height * paper.pageScale
                     MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
+                        id: linkMA
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
                         onClicked: {
                             if (page >= 0)
                                 root.goToLocation(page, location, zoom)
                             else
                                 Qt.openUrlExternally(url)
                         }
+                    }
+                    ToolTip {
+                        visible: linkMA.containsMouse
+                        delay: 1000
+                        text: page >= 0 ?
+                                  ("page " + (page + 1) +
+                                   " location " + location.x.toFixed(1) + ", " + location.y.toFixed(1) +
+                                   " zoom " + zoom) : url
                     }
                 }
             }

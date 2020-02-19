@@ -179,7 +179,7 @@ void QPdfLinkModelPrivate::update()
         if (!ok)
             break;
         if (hasX && hasY)
-            linkData.location = QPointF(x, y);
+            linkData.location = QPointF(x, pageHeight - y);
         if (hasZoom)
             linkData.zoom = zoom;
         links << linkData;
