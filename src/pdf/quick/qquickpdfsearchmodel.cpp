@@ -67,7 +67,7 @@ QQuickPdfDocument *QQuickPdfSearchModel::document() const
 
 void QQuickPdfSearchModel::setDocument(QQuickPdfDocument *document)
 {
-    if (document == m_quickDocument)
+    if (document == m_quickDocument || !document)
         return;
 
     m_quickDocument = document;
