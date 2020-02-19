@@ -387,7 +387,8 @@
                          && !config.static
                          && (!config.linux || features.pkg-config)
                          && (!features.xcb || features.webengine-ozone-x11)
-                         && (!config.win32 || features.webengine-winversion)",
+                         && (!config.win32 || features.webengine-winversion)
+                         && !config.ios",
             "output": [ "privateFeature" ]
         },
         "webengine-qtpdf-support": {
