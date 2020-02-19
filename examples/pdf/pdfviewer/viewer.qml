@@ -63,7 +63,7 @@ ApplicationWindow {
     color: "lightgrey"
     title: document.title
     visible: true
-    property alias source: document.source // for main.cpp
+    property string source // for main.cpp
     property real scaleStep: Math.sqrt(2)
 
     header: ToolBar {
@@ -204,6 +204,7 @@ ApplicationWindow {
         x: searchDrawer.position * searchDrawer.width // TODO binding gets broken during centering
         document: PdfDocument {
             id: document
+            source: Qt.resolvedUrl(root.source)
             onStatusChanged: if (status === PdfDocument.Error) errorDialog.open()
         }
         searchString: searchField.text

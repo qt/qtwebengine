@@ -64,6 +64,8 @@ int main(int argc, char* argv[])
     if (app.arguments().count() > 1) {
         QUrl toLoad = QUrl::fromUserInput(app.arguments().at(1));
         engine.rootObjects().first()->setProperty("source", toLoad);
+    } else {
+        engine.rootObjects().first()->setProperty("source", QStringLiteral("resources/test.pdf"));
     }
 
     return app.exec();

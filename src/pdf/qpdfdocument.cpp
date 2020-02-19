@@ -420,6 +420,8 @@ QPdfDocument::~QPdfDocument()
 
 QPdfDocument::DocumentError QPdfDocument::load(const QString &fileName)
 {
+    qCDebug(qLcDoc) << "loading" << fileName;
+
     close();
 
     d->setStatus(QPdfDocument::Loading);
@@ -761,7 +763,7 @@ QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
         return QPdfSelection(text, bounds);
     }
 
-    qDebug(qLcDoc) << page << start << "->" << end << "nothing found";
+    qCDebug(qLcDoc) << page << start << "->" << end << "nothing found";
     return QPdfSelection();
 }
 
