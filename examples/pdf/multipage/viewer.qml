@@ -168,6 +168,10 @@ ApplicationWindow {
                 }
             }
             Shortcut {
+                sequence: StandardKey.Find
+                onActivated: searchField.forceActiveFocus()
+            }
+            Shortcut {
                 sequence: StandardKey.Quit
                 onActivated: Qt.quit()
             }
@@ -240,95 +244,84 @@ ApplicationWindow {
         id: searchDrawer
         edge: Qt.LeftEdge
         modal: false
-        width: searchLayout.implicitWidth
+        width: 300
         y: root.header.height
         height: view.height
         dim: false
-        Shortcut {
-            sequence: StandardKey.Find
-            onActivated: {
-                searchDrawer.open()
-                searchField.forceActiveFocus()
-            }
-        }
-        ColumnLayout {
-            id: searchLayout
+        ListView {
+            id: searchResultsList
             anchors.fill: parent
             anchors.margins: 2
-            RowLayout {
-                ToolButton {
-                    action: Action {
-                        icon.source: "resources/go-up-search.svg"
-                        shortcut: StandardKey.FindPrevious
-                        onTriggered: view.searchBack()
-                    }
-                    ToolTip.visible: enabled && hovered
-                    ToolTip.delay: 2000
-                    ToolTip.text: "find previous"
-                }
-                TextField {
-                    id: searchField
-                    placeholderText: "search"
-                    Layout.minimumWidth: 200
-                    Layout.fillWidth: true
-                    Image {
-                        visible: searchField.text !== ""
-                        source: "resources/edit-clear.svg"
-                        anchors {
-                            right: parent.right
-                            top: parent.top
-                            bottom: parent.bottom
-                            margins: 3
-                            rightMargin: 5
-                        }
-                        TapHandler {
-                            onTapped: searchField.clear()
-                        }
-                    }
-                }
-                ToolButton {
-                    action: Action {
-                        icon.source: "resources/go-down-search.svg"
-                        shortcut: StandardKey.FindNext
-                        onTriggered: view.searchForward()
-                    }
-                    ToolTip.visible: enabled && hovered
-                    ToolTip.delay: 2000
-                    ToolTip.text: "find next"
-                }
-            }
-            ListView {
-                id: searchResultsList
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-                model: view.searchModel
-                ScrollBar.vertical: ScrollBar { }
-                delegate: ItemDelegate {
-                    width: parent ? parent.width : 0
-                    text: "page " + (page + 1) + ": " + context
-                    highlighted: ListView.isCurrentItem
-                    onClicked: {
-                        searchResultsList.currentIndex = index
-                        view.goToLocation(page, location, 0)
-                        view.searchModel.currentResult = indexOnPage
-                    }
+            model: view.searchModel
+            ScrollBar.vertical: ScrollBar { }
+            delegate: ItemDelegate {
+                width: parent ? parent.width : 0
+                text: "page " + (page + 1) + ": " + context
+                highlighted: ListView.isCurrentItem
+                onClicked: {
+                    searchResultsList.currentIndex = index
+                    view.goToLocation(page, location, 0)
+                    view.searchModel.currentResult = indexOnPage
                 }
             }
         }
     }
 
     footer: ToolBar {
-        height: statusLabel.implicitHeight * 1.5
-        Label {
-            id: statusLabel
-            anchors.verticalCenter: parent.verticalCenter
-            x: 6
-            property size implicitPointSize: document.pagePointSize(view.currentPage)
-            text: "page " + (currentPageSB.value) + " of " + document.pageCount +
-                  " scale " + view.renderScale.toFixed(2) +
-                  " original size " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1) + " pt"
-            visible: document.pageCount > 0
+        height: footerRow.implicitHeight
+        RowLayout {
+            id: footerRow
+            anchors.fill: parent
+            ToolButton {
+                action: Action {
+                    icon.source: "resources/go-up-search.svg"
+                    shortcut: StandardKey.FindPrevious
+                    onTriggered: view.searchBack()
+                }
+                ToolTip.visible: enabled && hovered
+                ToolTip.delay: 2000
+                ToolTip.text: "find previous"
+            }
+            TextField {
+                id: searchField
+                placeholderText: "search"
+                Layout.minimumWidth: 200
+                Layout.fillWidth: true
+                onAccepted: searchDrawer.open()
+                Image {
+                    visible: searchField.text !== ""
+                    source: "resources/edit-clear.svg"
+                    anchors {
+                        right: parent.right
+                        top: parent.top
+                        bottom: parent.bottom
+                        margins: 3
+                        rightMargin: 5
+                    }
+                    TapHandler {
+                        onTapped: searchField.clear()
+                    }
+                }
+            }
+            ToolButton {
+                action: Action {
+                    icon.source: "resources/go-down-search.svg"
+                    shortcut: StandardKey.FindNext
+                    onTriggered: view.searchForward()
+                }
+                ToolTip.visible: enabled && hovered
+                ToolTip.delay: 2000
+                ToolTip.text: "find next"
+            }
+            Label {
+                id: statusLabel
+                Layout.fillWidth: true
+                property size implicitPointSize: document.pagePointSize(view.currentPage)
+                text: "page " + (currentPageSB.value) + " of " + document.pageCount +
+                      " scale " + view.renderScale.toFixed(2) +
+                      " original size " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1) + " pt"
+                visible: document.pageCount > 0
+            }
         }
     }
 }
