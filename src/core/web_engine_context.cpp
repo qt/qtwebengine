@@ -221,8 +221,13 @@ bool usingSoftwareDynamicGL()
 void setupProxyPac(base::CommandLine *commandLine){
     if (commandLine->HasSwitch(switches::kProxyPacUrl)) {
         QUrl pac_url(toQt(commandLine->GetSwitchValueASCII(switches::kProxyPacUrl)));
-        if (pac_url.isValid() && pac_url.isLocalFile()) {
-            QFile file(pac_url.toLocalFile());
+        if (pac_url.isValid() && (pac_url.isLocalFile() ||
+            !pac_url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive))) {
+            QFile file;
+            if (pac_url.isLocalFile())
+              file.setFileName(pac_url.toLocalFile());
+            else
+              file.setFileName(pac_url.path().prepend(QChar(':')));
             if (file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text)) {
                QByteArray ba = file.readAll();
                commandLine->RemoveSwitch(switches::kProxyPacUrl);

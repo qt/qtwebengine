@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource profix="/">
+    <file>proxy.pac</file>
+</qresource>
+</RCC>
+
