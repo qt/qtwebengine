@@ -80,57 +80,57 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.ZoomIn
-                    enabled: pageView.sourceSize.width < 10000
+                    enabled: view.sourceSize.width < 10000
                     icon.source: "resources/zoom-in.svg"
-                    onTriggered: pageView.renderScale *= root.scaleStep
+                    onTriggered: view.renderScale *= root.scaleStep
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.ZoomOut
-                    enabled: pageView.sourceSize.width > 50
+                    enabled: view.sourceSize.width > 50
                     icon.source: "resources/zoom-out.svg"
-                    onTriggered: pageView.renderScale /= root.scaleStep
+                    onTriggered: view.renderScale /= root.scaleStep
                 }
             }
             ToolButton {
                 action: Action {
                     icon.source: "resources/zoom-fit-width.svg"
-                    onTriggered: pageView.scaleToWidth(root.contentItem.width, root.contentItem.height)
+                    onTriggered: view.scaleToWidth(root.contentItem.width, root.contentItem.height)
                 }
             }
             ToolButton {
                 action: Action {
                     icon.source: "resources/zoom-fit-best.svg"
-                    onTriggered: pageView.scaleToPage(root.contentItem.width, root.contentItem.height)
+                    onTriggered: view.scaleToPage(root.contentItem.width, root.contentItem.height)
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+0"
                     icon.source: "resources/zoom-original.svg"
-                    onTriggered: pageView.resetScale()
+                    onTriggered: view.resetScale()
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+L"
                     icon.source: "resources/rotate-left.svg"
-                    onTriggered: pageView.rotation -= 90
+                    onTriggered: view.pageRotation -= 90
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+R"
                     icon.source: "resources/rotate-right.svg"
-                    onTriggered: pageView.rotation += 90
+                    onTriggered: view.pageRotation += 90
                 }
             }
             ToolButton {
                 action: Action {
                     icon.source: "resources/go-previous-view-page.svg"
-                    enabled: pageView.backEnabled
-                    onTriggered: pageView.back()
+                    enabled: view.backEnabled
+                    onTriggered: view.back()
                 }
                 ToolTip.visible: enabled && hovered
                 ToolTip.delay: 2000
@@ -141,22 +141,22 @@ ApplicationWindow {
                 from: 1
                 to: document.pageCount
                 editable: true
-                value: pageView.currentPage + 1
-                onValueModified: pageView.goToPage(value - 1)
+                value: view.currentPage + 1
+                onValueModified: view.goToPage(value - 1)
                 Shortcut {
                     sequence: StandardKey.MoveToPreviousPage
-                    onActivated: pageView.goToPage(currentPageSB.value - 2)
+                    onActivated: view.goToPage(currentPageSB.value - 2)
                 }
                 Shortcut {
                     sequence: StandardKey.MoveToNextPage
-                    onActivated: pageView.goToPage(currentPageSB.value)
+                    onActivated: view.goToPage(currentPageSB.value)
                 }
             }
             ToolButton {
                 action: Action {
                     icon.source: "resources/go-next-view-page.svg"
-                    enabled: pageView.forwardEnabled
-                    onTriggered: pageView.forward()
+                    enabled: view.forwardEnabled
+                    onTriggered: view.forward()
                 }
                 ToolTip.visible: enabled && hovered
                 ToolTip.delay: 2000
@@ -166,8 +166,8 @@ ApplicationWindow {
                 action: Action {
                     shortcut: StandardKey.Copy
                     icon.source: "resources/edit-copy.svg"
-                    enabled: pageView.selectedText !== ""
-                    onTriggered: pageView.copySelectionToClipboard()
+                    enabled: view.selectedText !== ""
+                    onTriggered: view.copySelectionToClipboard()
                 }
             }
             Shortcut {
@@ -199,30 +199,15 @@ ApplicationWindow {
         }
     }
 
-    PdfPageView {
-        id: pageView
-        x: searchDrawer.position * searchDrawer.width // TODO binding gets broken during centering
+    PdfScrollablePageView {
+        id: view
+        anchors.fill: parent
         document: PdfDocument {
             id: document
             source: Qt.resolvedUrl(root.source)
             onStatusChanged: if (status === PdfDocument.Error) errorDialog.open()
         }
         searchString: searchField.text
-    }
-
-    WheelHandler {
-        rotationScale: 15
-        target: pageView
-        property: "x"
-        orientation: Qt.Horizontal
-        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-    }
-    WheelHandler {
-        rotationScale: 15
-        target: pageView
-        property: "y"
-        orientation: Qt.Vertical
-        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
     }
 
     Drawer {
@@ -249,7 +234,7 @@ ApplicationWindow {
                     action: Action {
                         icon.source: "resources/go-up-search.svg"
                         shortcut: StandardKey.FindPrevious
-                        onTriggered: pageView.searchBack()
+                        onTriggered: view.searchBack()
                     }
                     ToolTip.visible: enabled && hovered
                     ToolTip.delay: 2000
@@ -279,7 +264,7 @@ ApplicationWindow {
                     action: Action {
                         icon.source: "resources/go-down-search.svg"
                         shortcut: StandardKey.FindNext
-                        onTriggered: pageView.searchForward()
+                        onTriggered: view.searchForward()
                     }
                     ToolTip.visible: enabled && hovered
                     ToolTip.delay: 2000
@@ -291,7 +276,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
-                model: pageView.searchModel
+                model: view.searchModel
                 ScrollBar.vertical: ScrollBar { }
                 delegate: ItemDelegate {
                     width: parent ? parent.width : 0
@@ -299,8 +284,8 @@ ApplicationWindow {
                     highlighted: ListView.isCurrentItem
                     onClicked: {
                         searchResultsList.currentIndex = index
-                        pageView.goToLocation(page, location, 0)
-                        pageView.searchModel.currentResult = indexOnPage
+                        view.goToLocation(page, location, 0)
+                        view.searchModel.currentResult = indexOnPage
                     }
                 }
             }
@@ -308,9 +293,9 @@ ApplicationWindow {
     }
 
     footer: Label {
-        property size implicitPointSize: document.pagePointSize(pageView.currentPage)
-        text: "page " + (pageView.currentPage + 1) + " of " + document.pageCount +
-              " scale " + pageView.renderScale.toFixed(2) +
+        property size implicitPointSize: document.pagePointSize(view.currentPage)
+        text: "page " + (view.currentPage + 1) + " of " + document.pageCount +
+              " scale " + view.renderScale.toFixed(2) +
               " original " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1) + "pts"
         visible: document.status === PdfDocument.Ready
     }

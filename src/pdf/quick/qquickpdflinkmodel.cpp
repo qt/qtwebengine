@@ -96,7 +96,7 @@ QT_BEGIN_NAMESPACE
     \endqml
 
     \note General-purpose PDF viewing capabilities are provided by
-    \l PdfPageView and \l PdfMultiPageView. PdfLinkModel is only needed
+    \l PdfScrollablePageView and \l PdfMultiPageView. PdfLinkModel is only needed
     when building PDF view components from scratch.
 */
 

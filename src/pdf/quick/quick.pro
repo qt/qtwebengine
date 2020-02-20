@@ -8,6 +8,7 @@ IMPORT_VERSION = 1.0
 PDF_QML_FILES = \
     qml/PdfMultiPageView.qml \
     qml/PdfPageView.qml \
+    qml/PdfScrollablePageView.qml \
 
 QML_FILES += $$PDF_QML_FILES qmldir
 

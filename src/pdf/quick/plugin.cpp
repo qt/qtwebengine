@@ -90,6 +90,7 @@ public:
 
         qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
         qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfMultiPageView.qml"), uri, 5, 15, "PdfMultiPageView");
+        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfScrollablePageView.qml"), uri, 5, 15, "PdfScrollablePageView");
     }
 };
 
