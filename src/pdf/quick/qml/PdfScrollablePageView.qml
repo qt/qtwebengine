@@ -57,7 +57,11 @@ Flickable {
     property alias forwardEnabled: navigationStack.forwardAvailable
     function back() { navigationStack.back() }
     function forward() { navigationStack.forward() }
-    function goToPage(page) { goToLocation(page, Qt.point(0, 0), 0) }
+    function goToPage(page) {
+        if (page === navigationStack.currentPage)
+            return
+        goToLocation(page, Qt.point(0, 0), 0)
+    }
     function goToLocation(page, location, zoom) {
         if (zoom > 0)
             root.renderScale = zoom
@@ -81,7 +85,6 @@ Flickable {
         root.contentY = 0
     }
     function scaleToPage(width, height) {
-
         var pagePointSize = document.pagePointSize(navigationStack.currentPage)
         root.renderScale = Math.min(
                     root.width / (paper.rot90 ? pagePointSize.height : pagePointSize.width),
@@ -100,13 +103,30 @@ Flickable {
     id: root
     contentWidth: paper.width
     contentHeight: paper.height
-    ScrollBar.vertical: ScrollBar { }
-    ScrollBar.horizontal: ScrollBar { }
+    ScrollBar.vertical: ScrollBar {
+        onActiveChanged:
+            if (!active ) {
+                var currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
+                                               (root.contentY + root.height / 2) / root.renderScale)
+                navigationStack.update(navigationStack.currentPage, currentLocation, root.renderScale)
+            }
+    }
+    ScrollBar.horizontal: ScrollBar {
+        onActiveChanged:
+            if (!active ) {
+                var currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
+                                               (root.contentY + root.height / 2) / root.renderScale)
+                navigationStack.update(navigationStack.currentPage, currentLocation, root.renderScale)
+            }
+    }
 
     onRenderScaleChanged: {
         image.sourceSize.width = document.pagePointSize(navigationStack.currentPage).width * renderScale
         image.sourceSize.height = 0
         paper.scale = 1
+        var currentLocation = Qt.point((root.contentX + root.width / 2) / root.renderScale,
+                                       (root.contentY + root.height / 2) / root.renderScale)
+        navigationStack.update(navigationStack.currentPage, currentLocation, root.renderScale)
     }
 
     PdfSelection {
@@ -128,10 +148,15 @@ Flickable {
 
     PdfNavigationStack {
         id: navigationStack
+        onJumped: {
+            root.renderScale = zoom
+            root.contentX = Math.max(0, location.x * root.renderScale - root.width / 2)
+            root.contentY = Math.max(0, location.y * root.renderScale - root.height / 2)
+            if (root.debug)
+                console.log("going to zoom", zoom, "loc", location,
+                            "on page", page, "ended up @", root.contentX + ", " + root.contentY)
+        }
         onCurrentPageChanged: searchModel.currentPage = currentPage
-        // TODO onCurrentLocationChanged: position currentLocation.x and .y in middle // currentPageChanged() MUST occur first!
-        onCurrentZoomChanged: root.renderScale = currentZoom
-        // TODO deal with horizontal location (need WheelHandler or Flickable probably)
     }
 
     Rectangle {
