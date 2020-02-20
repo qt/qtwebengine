@@ -471,6 +471,17 @@ void QWebEngineView::dropEvent(QDropEvent *e)
 #endif // QT_CONFIG(draganddrop)
 
 #ifndef QT_NO_ACCESSIBILITY
+bool QWebEngineViewAccessible::isValid() const
+{
+    if (!QAccessibleWidget::isValid())
+        return false;
+
+    if (!view() || !view()->d_func() || !view()->d_func()->page || !view()->d_func()->page->d_func())
+        return false;
+
+    return true;
+}
+
 QAccessibleInterface *QWebEngineViewAccessible::focusChild() const
 {
     if (child(0) && child(0)->focusChild())
@@ -485,7 +496,7 @@ int QWebEngineViewAccessible::childCount() const
 
 QAccessibleInterface *QWebEngineViewAccessible::child(int index) const
 {
-    if (index == 0 && view() && view()->page())
+    if (index == 0 && isValid())
         return view()->page()->d_func()->adapter->browserAccessible();
     return nullptr;
 }
