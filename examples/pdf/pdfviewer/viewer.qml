@@ -47,22 +47,23 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick 2.14
+import QtQuick.Controls 2.14
+import QtQuick.Layouts 1.14
 import QtQuick.Pdf 5.15
-import QtQuick.Shapes 1.15
-import QtQuick.Window 2.15
+import QtQuick.Shapes 1.14
+import QtQuick.Window 2.14
+import Qt.labs.animation 1.0
 import Qt.labs.platform 1.1 as Platform
 
 ApplicationWindow {
     id: root
     width: 800
-    height: 640
+    height: 1024
     color: "lightgrey"
     title: document.title
     visible: true
-    property alias source: document.source // for main.cpp
+    property string source // for main.cpp
     property real scaleStep: Math.sqrt(2)
 
     header: ToolBar {
@@ -79,74 +80,94 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.ZoomIn
-                    enabled: pageView.sourceSize.width < 10000
+                    enabled: view.sourceSize.width < 10000
                     icon.source: "resources/zoom-in.svg"
-                    onTriggered: pageView.renderScale *= root.scaleStep
+                    onTriggered: view.renderScale *= root.scaleStep
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.ZoomOut
-                    enabled: pageView.sourceSize.width > 50
+                    enabled: view.sourceSize.width > 50
                     icon.source: "resources/zoom-out.svg"
-                    onTriggered: pageView.renderScale /= root.scaleStep
+                    onTriggered: view.renderScale /= root.scaleStep
+                }
+            }
+            ToolButton {
+                action: Action {
+                    icon.source: "resources/zoom-fit-width.svg"
+                    onTriggered: view.scaleToWidth(root.contentItem.width, root.contentItem.height)
+                }
+            }
+            ToolButton {
+                action: Action {
+                    icon.source: "resources/zoom-fit-best.svg"
+                    onTriggered: view.scaleToPage(root.contentItem.width, root.contentItem.height)
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+0"
                     icon.source: "resources/zoom-original.svg"
-                    onTriggered: pageView.renderScale = 1
+                    onTriggered: view.resetScale()
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+L"
                     icon.source: "resources/rotate-left.svg"
-                    onTriggered: pageView.rotation -= 90
+                    onTriggered: view.pageRotation -= 90
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+R"
                     icon.source: "resources/rotate-right.svg"
-                    onTriggered: pageView.rotation += 90
+                    onTriggered: view.pageRotation += 90
                 }
             }
             ToolButton {
                 action: Action {
-                    shortcut: StandardKey.MoveToPreviousPage
                     icon.source: "resources/go-previous-view-page.svg"
-                    enabled: pageView.currentPage > 0
-                    onTriggered: pageView.currentPage--
+                    enabled: view.backEnabled
+                    onTriggered: view.back()
+                }
+                ToolTip.visible: enabled && hovered
+                ToolTip.delay: 2000
+                ToolTip.text: "go back"
+            }
+            SpinBox {
+                id: currentPageSB
+                from: 1
+                to: document.pageCount
+                editable: true
+                value: view.currentPage + 1
+                onValueModified: view.goToPage(value - 1)
+                Shortcut {
+                    sequence: StandardKey.MoveToPreviousPage
+                    onActivated: view.goToPage(currentPageSB.value - 2)
+                }
+                Shortcut {
+                    sequence: StandardKey.MoveToNextPage
+                    onActivated: view.goToPage(currentPageSB.value)
                 }
             }
             ToolButton {
                 action: Action {
-                    shortcut: StandardKey.MoveToNextPage
                     icon.source: "resources/go-next-view-page.svg"
-                    enabled: pageView.currentPage < pageView.pageCount - 1
-                    onTriggered: pageView.currentPage++
+                    enabled: view.forwardEnabled
+                    onTriggered: view.forward()
                 }
+                ToolTip.visible: enabled && hovered
+                ToolTip.delay: 2000
+                ToolTip.text: "go forward"
             }
-            TextField {
-                id: searchField
-                placeholderText: "search"
-                Layout.minimumWidth: 200
-                Layout.fillWidth: true
-                Image {
-                    visible: searchField.text !== ""
-                    source: "resources/edit-clear.svg"
-                    anchors {
-                        right: parent.right
-                        top: parent.top
-                        bottom: parent.bottom
-                        margins: 3
-                        rightMargin: 5
-                    }
-                    TapHandler {
-                        onTapped: searchField.clear()
-                    }
+            ToolButton {
+                action: Action {
+                    shortcut: StandardKey.Copy
+                    icon.source: "resources/edit-copy.svg"
+                    enabled: view.selectedText !== ""
+                    onTriggered: view.copySelectionToClipboard()
                 }
             }
             Shortcut {
@@ -182,21 +203,100 @@ ApplicationWindow {
         }
     }
 
-    PdfPageView {
-        id: pageView
+    PdfScrollablePageView {
+        id: view
+        anchors.fill: parent
         document: PdfDocument {
             id: document
+            source: Qt.resolvedUrl(root.source)
             onStatusChanged: if (status === PdfDocument.Error) errorDialog.open()
         }
         searchString: searchField.text
     }
 
-    footer: Label {
-        property size implicitPointSize: document.pagePointSize(pageView.currentPage)
-        text: "page " + (pageView.currentPage + 1) + " of " + pageView.pageCount +
-              " scale " + pageView.renderScale.toFixed(2) +
-              " sourceSize " + pageView.sourceSize.width.toFixed(1) + "x" + pageView.sourceSize.height.toFixed(1) +
-              " original " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1)
-        visible: pageView.pageCount > 0
+    Drawer {
+        id: searchDrawer
+        edge: Qt.LeftEdge
+        modal: false
+        width: 300
+        y: root.header.height
+        height: view.height
+        dim: false
+        clip: true
+        ListView {
+            id: searchResultsList
+            anchors.fill: parent
+            anchors.margins: 2
+            model: view.searchModel
+            ScrollBar.vertical: ScrollBar { }
+            delegate: ItemDelegate {
+                width: parent ? parent.width : 0
+                text: "page " + (page + 1) + ": " + context
+                highlighted: ListView.isCurrentItem
+                onClicked: {
+                    searchResultsList.currentIndex = index
+                    view.goToLocation(page, location, 0)
+                    view.searchModel.currentResult = indexOnPage
+                }
+            }
+        }
+    }
+
+    footer: ToolBar {
+        height: footerRow.implicitHeight
+        RowLayout {
+            id: footerRow
+            anchors.fill: parent
+            ToolButton {
+                action: Action {
+                    icon.source: "resources/go-up-search.svg"
+                    shortcut: StandardKey.FindPrevious
+                    onTriggered: view.searchBack()
+                }
+                ToolTip.visible: enabled && hovered
+                ToolTip.delay: 2000
+                ToolTip.text: "find previous"
+            }
+            TextField {
+                id: searchField
+                placeholderText: "search"
+                Layout.minimumWidth: 150
+                Layout.maximumWidth: 300
+                Layout.fillWidth: true
+                onAccepted: searchDrawer.open()
+                Image {
+                    visible: searchField.text !== ""
+                    source: "resources/edit-clear.svg"
+                    anchors {
+                        right: parent.right
+                        top: parent.top
+                        bottom: parent.bottom
+                        margins: 3
+                        rightMargin: 5
+                    }
+                    TapHandler {
+                        onTapped: searchField.clear()
+                    }
+                }
+            }
+            ToolButton {
+                action: Action {
+                    icon.source: "resources/go-down-search.svg"
+                    shortcut: StandardKey.FindNext
+                    onTriggered: view.searchForward()
+                }
+                ToolTip.visible: enabled && hovered
+                ToolTip.delay: 2000
+                ToolTip.text: "find next"
+            }
+            Label {
+                Layout.fillWidth: true
+                property size implicitPointSize: document.pagePointSize(view.currentPage)
+                text: "page " + (view.currentPage + 1) + " of " + document.pageCount +
+                      " scale " + view.renderScale.toFixed(2) +
+                      " original " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1) + "pts"
+                visible: document.status === PdfDocument.Ready
+            }
+        }
     }
 }

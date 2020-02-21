@@ -1,0 +1,108 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example pdfviewer
+    \ingroup qtpdf-examples
+
+    \title PDF Viewer Example
+    \brief Renders PDF documents.
+
+    \image pdfviewer.png
+
+    \e {PDF Viewer} demonstrates how to use the \l QPdfDocument class to render
+    PDF documents and the \l QPdfPageNavigation class to navigate them.
+
+    Qt Creator and the integrated Qt Designer were used to create the example
+    UI and to connect it to the code. This affects the code, which might be
+    somewhat different to what you would typically write by hand.
+    For more information about using Qt Designer, see \l{Qt Designer Manual}
+    and \l{Qt Creator: Creating a Qt Widget Based Application}.
+
+    \include examples-run.qdocinc
+
+    \section1 Creating the Main Window
+
+    The MainWindow class inherits the QMainWindow class:
+
+    \quotefromfile pdfviewer/mainwindow.h
+    \skipto public QMainWindow
+    \printuntil ~MainWindow()
+
+    The class declares public and private slots that match the actions of the
+    selectors:
+
+    \printuntil on_actionContinuous_triggered()
+
+    The actual layout of the main window is specified in a \c{.ui} file. The
+    widgets and actions are available at runtime in the \c ui member variable.
+
+    \printuntil Ui::
+
+    The \c m_zoomSelector variable holds the zoom selector and the
+    \c m_pageSelector holds the page selector. The \c m_document
+    variable is an instance of the QPdfDocument class that contains
+    the PDF document.
+
+    \printuntil }
+
+    The actual setup of the different objects is done in the MainWindow
+    constructor:
+
+    \quotefromfile pdfviewer/mainwindow.cpp
+    \skipto MainWindow::
+    \printuntil {
+
+    The constructor first calls \c setupUi() to construct the zoom and page
+    selectors according to the UI file. We set the maximum width of the
+    selectors.
+
+    \printuntil addWidget(m_pageSelector)
+
+    We use the \l QPdfPageNavigation class to handle the navigation through a
+    PDF document:
+
+    \printuntil setPageNavigation
+
+    We connect the \c zoomModeChanged and \c zoomFactor changed signals of the
+    PDF view to the functions that reset the zoom selector:
+
+    \printuntil reset()
+
+    We then load the PDF document to the viewer:
+
+    \dots
+    \skipto pdfView
+    \printuntil ;
+
+    Finally, we connect the \c zoomFactorChanged signal to the function that
+    sets the value of the zoom selector:
+
+    \printuntil }
+
+    \section1 Files and Attributions
+*/

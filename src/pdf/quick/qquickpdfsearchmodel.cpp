@@ -35,12 +35,11 @@
 ****************************************************************************/
 
 #include "qquickpdfsearchmodel_p.h"
-#include <QQuickItem>
-#include <QQmlEngine>
-#include <QStandardPaths>
-#include <private/qguiapplication_p.h>
+#include <QtCore/qloggingcategory.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(qLcS, "qt.pdf.search")
 
 /*!
     \qmltype PdfSearchModel
@@ -57,6 +56,8 @@ QT_BEGIN_NAMESPACE
 QQuickPdfSearchModel::QQuickPdfSearchModel(QObject *parent)
     : QPdfSearchModel(parent)
 {
+    connect(this, &QPdfSearchModel::searchStringChanged,
+            this, &QQuickPdfSearchModel::onResultsChanged);
 }
 
 QQuickPdfDocument *QQuickPdfSearchModel::document() const
@@ -66,16 +67,97 @@ QQuickPdfDocument *QQuickPdfSearchModel::document() const
 
 void QQuickPdfSearchModel::setDocument(QQuickPdfDocument *document)
 {
-    if (document == m_quickDocument)
+    if (document == m_quickDocument || !document)
         return;
+
     m_quickDocument = document;
     QPdfSearchModel::setDocument(&document->m_doc);
 }
 
 /*!
-    \qmlproperty list<list<point>> PdfSearchModel::matchGeometry
+    \qmlproperty list<list<point>> PdfSearchModel::currentResultBoundingPolygons
 
     A set of paths in a form that can be bound to the \c paths property of a
+    \l {QtQuick::PathMultiline}{PathMultiline} instance to render a batch of
+    rectangles around the regions comprising the search result \l currentResult
+    on \l currentPage.  This is normally used to highlight one search result
+    at a time, in a UI that allows stepping through the results:
+
+    \qml
+    PdfDocument {
+        id: doc
+    }
+    PdfSearchModel {
+        id: searchModel
+        document: doc
+        currentPage: view.currentPage
+        currentResult: ...
+    }
+    Shape {
+        ShapePath {
+            PathMultiline {
+                paths: searchModel.currentResultBoundingPolygons
+            }
+        }
+    }
+    \endqml
+
+    \sa PathMultiline
+*/
+QVector<QPolygonF> QQuickPdfSearchModel::currentResultBoundingPolygons() const
+{
+    QVector<QPolygonF> ret;
+    const auto &results = const_cast<QQuickPdfSearchModel *>(this)->resultsOnPage(m_currentPage);
+    if (m_currentResult < 0 || m_currentResult >= results.count())
+        return ret;
+    const auto result = results[m_currentResult];
+    for (auto rect : result.rectangles())
+        ret << QPolygonF(rect);
+    return ret;
+}
+
+void QQuickPdfSearchModel::onResultsChanged()
+{
+    emit currentPageBoundingPolygonsChanged();
+    emit currentResultBoundingPolygonsChanged();
+}
+
+/*!
+    \qmlproperty list<list<point>> PdfSearchModel::currentPageBoundingPolygons
+
+    A set of paths in a form that can be bound to the \c paths property of a
+    \l {QtQuick::PathMultiline}{PathMultiline} instance to render a batch of
+    rectangles around all the regions where search results are found on
+    \l currentPage:
+
+    \qml
+    PdfDocument {
+        id: doc
+    }
+    PdfSearchModel {
+        id: searchModel
+        document: doc
+    }
+    Shape {
+        ShapePath {
+            PathMultiline {
+                paths: searchModel.matchGeometry(view.currentPage)
+            }
+        }
+    }
+    \endqml
+
+    \sa PathMultiline
+*/
+QVector<QPolygonF> QQuickPdfSearchModel::currentPageBoundingPolygons() const
+{
+    return const_cast<QQuickPdfSearchModel *>(this)->boundingPolygonsOnPage(m_currentPage);
+}
+
+/*!
+    \qmlfunction list<list<point>> PdfSearchModel::boundingPolygonsOnPage(int page)
+
+    Returns a set of paths in a form that can be bound to the \c paths property of a
     \l {QtQuick::PathMultiline}{PathMultiline} instance to render a batch of
     rectangles around all the locations where search results are found:
 
@@ -86,12 +168,11 @@ void QQuickPdfSearchModel::setDocument(QQuickPdfDocument *document)
     PdfSearchModel {
         id: searchModel
         document: doc
-        page: doc.currentPage
     }
     Shape {
         ShapePath {
             PathMultiline {
-                paths: searchModel.matchGeometry
+                paths: searchModel.matchGeometry(view.currentPage)
             }
         }
     }
@@ -99,9 +180,92 @@ void QQuickPdfSearchModel::setDocument(QQuickPdfDocument *document)
 
     \sa PathMultiline
 */
-QVector<QPolygonF> QQuickPdfSearchModel::matchGeometry() const
+QVector<QPolygonF> QQuickPdfSearchModel::boundingPolygonsOnPage(int page)
 {
-    return m_matchGeometry;
+    if (!document() || searchString().isEmpty() || page < 0 || page > document()->pageCount())
+        return {};
+
+    updatePage(page);
+
+    QVector<QPolygonF> ret;
+    auto m = QPdfSearchModel::resultsOnPage(page);
+    for (auto result : m) {
+        for (auto rect : result.rectangles())
+            ret << QPolygonF(rect);
+    }
+
+    return ret;
+}
+
+/*!
+    \qmlproperty int PdfSearchModel::currentPage
+
+    The page on which \l currentMatchGeometry should provide filtered search results.
+*/
+void QQuickPdfSearchModel::setCurrentPage(int currentPage)
+{
+    if (m_currentPage == currentPage)
+        return;
+
+    if (currentPage < 0)
+        currentPage = document()->pageCount() - 1;
+    else if (currentPage >= document()->pageCount())
+        currentPage = 0;
+
+    m_currentPage = currentPage;
+    if (!m_suspendSignals) {
+        emit currentPageChanged();
+        onResultsChanged();
+    }
+}
+
+/*!
+    \qmlproperty int PdfSearchModel::currentResult
+
+    The result index on \l currentPage for which \l currentResultBoundingPolygons
+    should provide the regions to highlight.
+*/
+void QQuickPdfSearchModel::setCurrentResult(int currentResult)
+{
+    if (m_currentResult == currentResult)
+        return;
+
+    int currentResultWas = currentResult;
+    int currentPageWas = m_currentPage;
+    if (currentResult < 0) {
+        setCurrentPage(m_currentPage - 1);
+        while (resultsOnPage(m_currentPage).count() == 0 && m_currentPage != currentPageWas) {
+            m_suspendSignals = true;
+            setCurrentPage(m_currentPage - 1);
+        }
+        if (m_suspendSignals) {
+            emit currentPageChanged();
+            m_suspendSignals = false;
+        }
+        const auto results = resultsOnPage(m_currentPage);
+        currentResult = results.count() - 1;
+    } else {
+        const auto results = resultsOnPage(m_currentPage);
+        if (currentResult >= results.count()) {
+            setCurrentPage(m_currentPage + 1);
+            while (resultsOnPage(m_currentPage).count() == 0 && m_currentPage != currentPageWas) {
+                m_suspendSignals = true;
+                setCurrentPage(m_currentPage + 1);
+            }
+            if (m_suspendSignals) {
+                emit currentPageChanged();
+                m_suspendSignals = false;
+            }
+            currentResult = 0;
+        }
+    }
+    qCDebug(qLcS) << "currentResult was" << m_currentResult
+                  << "requested" << currentResultWas << "on page" << currentPageWas
+                  << "->" << currentResult << "on page" << m_currentPage;
+
+    m_currentResult = currentResult;
+    emit currentResultChanged();
+    emit currentResultBoundingPolygonsChanged();
 }
 
 /*!
@@ -109,57 +273,5 @@ QVector<QPolygonF> QQuickPdfSearchModel::matchGeometry() const
 
     The string to search for.
 */
-QString QQuickPdfSearchModel::searchString() const
-{
-    return m_searchString;
-}
-
-void QQuickPdfSearchModel::setSearchString(QString searchString)
-{
-    if (m_searchString == searchString)
-        return;
-
-    m_searchString = searchString;
-    emit searchStringChanged();
-    updateResults();
-}
-
-/*!
-    \qmlproperty int PdfSearchModel::page
-
-    The page number on which to search.
-
-    \sa QtQuick::Image::currentFrame
-*/
-int QQuickPdfSearchModel::page() const
-{
-    return m_page;
-}
-
-void QQuickPdfSearchModel::setPage(int page)
-{
-    if (m_page == page)
-        return;
-
-    m_page = page;
-    emit pageChanged();
-    updateResults();
-}
-
-void QQuickPdfSearchModel::updateResults()
-{
-    if (!document() || (m_searchString.isEmpty() && !m_matchGeometry.isEmpty()) || m_page < 0 || m_page > document()->pageCount()) {
-        m_matchGeometry.clear();
-        emit matchGeometryChanged();
-    }
-    QVector<QRectF> m = QPdfSearchModel::matches(m_page, m_searchString);
-    QVector<QPolygonF> matches;
-    for (QRectF r : m)
-        matches << QPolygonF(r);
-    if (matches != m_matchGeometry) {
-        m_matchGeometry = matches;
-        emit matchGeometryChanged();
-    }
-}
 
 QT_END_NAMESPACE

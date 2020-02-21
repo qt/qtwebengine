@@ -41,6 +41,7 @@
 #include <QImage>
 #include <QObject>
 #include <QtPdf/QPdfDocumentRenderOptions>
+#include "qpdfselection.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -111,6 +112,8 @@ public:
 
     QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
 
+    Q_INVOKABLE QPdfSelection getSelection(int page, QPointF start, QPointF end);
+
 Q_SIGNALS:
     void passwordChanged();
     void passwordRequired();
@@ -119,7 +122,9 @@ Q_SIGNALS:
 
 private:
     friend class QPdfBookmarkModelPrivate;
+    friend class QPdfLinkModelPrivate;
     friend class QPdfSearchModel;
+    friend class QPdfSearchModelPrivate;
 
     Q_PRIVATE_SLOT(d, void _q_tryLoadingWithSizeFromContentHeader())
     Q_PRIVATE_SLOT(d, void _q_copyFromSequentialSourceDevice())

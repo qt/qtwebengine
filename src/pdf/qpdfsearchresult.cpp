@@ -34,23 +34,41 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFSEARCHMODEL_P_H
-#define QPDFSEARCHMODEL_P_H
-
-#include "qpdfsearchmodel.h"
-
-#include "third_party/pdfium/public/fpdfview.h"
+#include "qpdfsearchresult.h"
+#include "qpdfsearchresult_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QPdfSearchModelPrivate
-{
-public:
-    QPdfSearchModelPrivate();
+QPdfSearchResult::QPdfSearchResult() :
+    QPdfSearchResult(new QPdfSearchResultPrivate()) { }
 
-    QPdfDocument *document = nullptr;
-};
+QPdfSearchResult::QPdfSearchResult(int page, QVector<QRectF> rects, QString context) :
+    QPdfSearchResult(new QPdfSearchResultPrivate(page, rects, context)) { }
+
+QPdfSearchResult::QPdfSearchResult(QPdfSearchResultPrivate *d) :
+    QPdfDestination(static_cast<QPdfDestinationPrivate *>(d)) { }
+
+QString QPdfSearchResult::context() const
+{
+    return static_cast<QPdfSearchResultPrivate *>(d.data())->context;
+}
+
+QVector<QRectF> QPdfSearchResult::rectangles() const
+{
+    return static_cast<QPdfSearchResultPrivate *>(d.data())->rects;
+}
+
+QDebug operator<<(QDebug dbg, const QPdfSearchResult &searchResult)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    dbg << "QPdfSearchResult(page=" << searchResult.page()
+        << " context=" << searchResult.context()
+        << " rects=" << searchResult.rectangles();
+    dbg << ')';
+    return dbg;
+}
 
 QT_END_NAMESPACE
 
-#endif // QPDFSEARCHMODEL_P_H
+#include "moc_qpdfsearchresult.cpp"

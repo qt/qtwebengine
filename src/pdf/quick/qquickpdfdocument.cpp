@@ -43,14 +43,14 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmltype Document
+    \qmltype PdfDocument
     \instantiates QQuickPdfDocument
     \inqmlmodule QtQuick.Pdf
     \ingroup pdf
     \brief A representation of a PDF document.
     \since 5.15
 
-    A Document provides access to PDF document meta-information.
+    PdfDocument provides access to PDF document meta-information.
     It is not necessary for rendering, as it is enough to use an
     \l Image with source set to the URL of the PDF.
 */
@@ -78,7 +78,7 @@ void QQuickPdfDocument::componentComplete()
 }
 
 /*!
-    \qmlproperty url Document::source
+    \qmlproperty url PdfDocument::source
 
     This property holds a URL pointing to the PDF file to be loaded.
 
@@ -90,12 +90,16 @@ void QQuickPdfDocument::setSource(QUrl source)
         return;
 
     m_source = source;
+    m_maxPageWidthHeight = QSizeF();
     emit sourceChanged();
-    m_doc.load(source.path());
+    if (source.scheme() == QLatin1String("qrc"))
+        m_doc.load(QLatin1Char(':') + source.path());
+    else
+        m_doc.load(source.path());
 }
 
 /*!
-    \qmlproperty string Document::error
+    \qmlproperty string PdfDocument::error
 
     This property holds a translated string representation of the current
     error, if any.
@@ -130,7 +134,7 @@ QString QQuickPdfDocument::error() const
 }
 
 /*!
-    \qmlproperty bool Document::password
+    \qmlproperty bool PdfDocument::password
 
     This property holds the document password. If the passwordRequired()
     signal is emitted, the UI should prompt the user and then set this
@@ -146,13 +150,13 @@ void QQuickPdfDocument::setPassword(const QString &password)
 }
 
 /*!
-    \qmlproperty int Document::pageCount
+    \qmlproperty int PdfDocument::pageCount
 
     This property holds the number of pages the PDF contains.
 */
 
 /*!
-    \qmlsignal Document::passwordRequired()
+    \qmlsignal PdfDocument::passwordRequired()
 
     This signal is emitted when the PDF requires a password in order to open.
     The UI in a typical PDF viewer should prompt the user for the password
@@ -160,7 +164,7 @@ void QQuickPdfDocument::setPassword(const QString &password)
 */
 
 /*!
-    \qmlmethod size Document::pagePointSize(int page)
+    \qmlmethod size PdfDocument::pagePointSize(int page)
 
     Returns the size of the given \a page in points.
 */
@@ -169,60 +173,125 @@ QSizeF QQuickPdfDocument::pagePointSize(int page) const
     return m_doc.pageSize(page);
 }
 
+qreal QQuickPdfDocument::maxPageWidth() const
+{
+    const_cast<QQuickPdfDocument *>(this)->updateMaxPageSize();
+    return m_maxPageWidthHeight.width();
+}
+
+qreal QQuickPdfDocument::maxPageHeight() const
+{
+    const_cast<QQuickPdfDocument *>(this)->updateMaxPageSize();
+    return m_maxPageWidthHeight.height();
+}
+
 /*!
-    \qmlproperty string Document::title
+    \internal
+    \qmlmethod size PdfDocument::heightSumBeforePage(int page)
+
+    Returns the sum of the heights, in points, of all sets of \a facingPages
+    pages from 0 to the given \a page, exclusive.
+
+    That is, if the pages were laid out end-to-end in adjacent sets of
+    \a facingPages, what would be the distance in points from the top of the
+    first page to the top of the given page.
+*/
+// Workaround for lack of something analogous to ListView.positionViewAtIndex() in TableView
+qreal QQuickPdfDocument::heightSumBeforePage(int page, qreal spacing, int facingPages) const
+{
+    qreal ret = 0;
+    for (int i = 0; i < page; i+= facingPages) {
+        if (i + facingPages > page)
+            break;
+        qreal facingPagesHeight = 0;
+        for (int j = i; j < i + facingPages; ++j)
+            facingPagesHeight = qMax(facingPagesHeight, pagePointSize(j).height());
+        ret += facingPagesHeight + spacing;
+    }
+    return ret;
+}
+
+void QQuickPdfDocument::updateMaxPageSize()
+{
+    if (m_maxPageWidthHeight.isValid())
+        return;
+    qreal w = 0;
+    qreal h = 0;
+    const int count = pageCount();
+    for (int i = 0; i < count; ++i) {
+        auto size = pagePointSize(i);
+        w = qMax(w, size.width());
+        h = qMax(w, size.height());
+    }
+    m_maxPageWidthHeight = QSizeF(w, h);
+}
+
+/*!
+    \qmlproperty real PdfDocument::maxPageWidth
+
+    This property holds the width of the widest page in the document, in points.
+*/
+
+/*!
+    \qmlproperty real PdfDocument::maxPageHeight
+
+    This property holds the height of the tallest page in the document, in points.
+*/
+
+/*!
+    \qmlproperty string PdfDocument::title
 
     This property holds the document's title. A typical viewer UI can bind this
     to the \c Window.title property.
 */
 
 /*!
-    \qmlproperty string Document::author
+    \qmlproperty string PdfDocument::author
 
     This property holds the name of the person who created the document.
 */
 
 /*!
-    \qmlproperty string Document::subject
+    \qmlproperty string PdfDocument::subject
 
     This property holds the subject of the document.
 */
 
 /*!
-    \qmlproperty string Document::keywords
+    \qmlproperty string PdfDocument::keywords
 
     This property holds the keywords associated with the document.
 */
 
 /*!
-    \qmlproperty string Document::creator
+    \qmlproperty string PdfDocument::creator
 
     If the document was converted to PDF from another format, this property
     holds the name of the software that created the original document.
 */
 
 /*!
-    \qmlproperty string Document::producer
+    \qmlproperty string PdfDocument::producer
 
     If the document was converted to PDF from another format, this property
     holds the name of the software that converted it to PDF.
 */
 
 /*!
-    \qmlproperty string Document::creationDate
+    \qmlproperty string PdfDocument::creationDate
 
     This property holds the date and time the document was created.
 */
 
 /*!
-    \qmlproperty string Document::modificationDate
+    \qmlproperty string PdfDocument::modificationDate
 
     This property holds the date and time the document was most recently
     modified.
 */
 
 /*!
-    \qmlproperty enum Document::status
+    \qmlproperty enum PdfDocument::status
 
     This property tells the current status of the document. The possible values are:
 

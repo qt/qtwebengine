@@ -39,7 +39,10 @@
 #include <QtQml/qqmlengine.h>
 #include <QtQml/qqmlextensionplugin.h>
 #include "qquickpdfdocument_p.h"
+#include "qquickpdflinkmodel_p.h"
+#include "qquickpdfnavigationstack_p.h"
 #include "qquickpdfsearchmodel_p.h"
+#include "qquickpdfselection_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -80,9 +83,14 @@ public:
         qmlRegisterModule(uri, 2, QT_VERSION_MINOR);
 
         qmlRegisterType<QQuickPdfDocument>(uri, 5, 15, "PdfDocument");
+        qmlRegisterType<QQuickPdfLinkModel>(uri, 5, 15, "PdfLinkModel");
+        qmlRegisterType<QQuickPdfNavigationStack>(uri, 5, 15, "PdfNavigationStack");
         qmlRegisterType<QQuickPdfSearchModel>(uri, 5, 15, "PdfSearchModel");
+        qmlRegisterType<QQuickPdfSelection>(uri, 5, 15, "PdfSelection");
 
         qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
+        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfMultiPageView.qml"), uri, 5, 15, "PdfMultiPageView");
+        qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfScrollablePageView.qml"), uri, 5, 15, "PdfScrollablePageView");
     }
 };
 

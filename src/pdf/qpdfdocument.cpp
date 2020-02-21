@@ -38,6 +38,7 @@
 #include "qpdfdocument_p.h"
 
 #include "third_party/pdfium/public/fpdf_doc.h"
+#include "third_party/pdfium/public/fpdf_text.h"
 
 #include <QDateTime>
 #include <QDebug>
@@ -46,12 +47,14 @@
 #include <QHash>
 #include <QLoggingCategory>
 #include <QMutex>
+#include <QVector2D>
 
 QT_BEGIN_NAMESPACE
 
 // The library is not thread-safe at all, it has a lot of global variables.
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, pdfMutex, (QMutex::Recursive));
 static int libraryRefCount;
+static const double CharacterHitTolerance = 6.0;
 Q_LOGGING_CATEGORY(qLcDoc, "qt.pdf.document")
 
 QPdfMutexLocker::QPdfMutexLocker()
@@ -186,7 +189,36 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
     } else {
         device = newDevice;
         initiateAsyncLoadWithTotalSizeKnown(device->size());
-        checkComplete();
+        if (!avail) {
+            setStatus(QPdfDocument::Error);
+            return;
+        }
+
+        if (!doc)
+            tryLoadDocument();
+
+        if (!doc) {
+            updateLastError();
+            setStatus(QPdfDocument::Error);
+            return;
+        }
+
+        QPdfMutexLocker lock;
+        const int newPageCount = FPDF_GetPageCount(doc);
+        lock.unlock();
+        if (newPageCount != pageCount) {
+            pageCount = newPageCount;
+            emit q->pageCountChanged(pageCount);
+        }
+
+        // If it's a local file, and the first couple of pages are available,
+        // probably the whole document is available.
+        if (checkPageComplete(0) && (pageCount < 2 || checkPageComplete(1))) {
+            setStatus(QPdfDocument::Ready);
+        } else {
+            updateLastError();
+            setStatus(QPdfDocument::Error);
+        }
     }
 }
 
@@ -311,6 +343,26 @@ void QPdfDocumentPrivate::checkComplete()
     }
 }
 
+bool QPdfDocumentPrivate::checkPageComplete(int page)
+{
+    if (page < 0 || page >= pageCount)
+        return false;
+
+    if (loadComplete)
+        return true;
+
+    QPdfMutexLocker lock;
+    int result = PDF_DATA_NOTAVAIL;
+    while (result == PDF_DATA_NOTAVAIL)
+        result = FPDFAvail_IsPageAvail(avail, page, this);
+    lock.unlock();
+
+    if (result == PDF_DATA_ERROR)
+        updateLastError();
+
+    return (result != PDF_DATA_ERROR);
+}
+
 void QPdfDocumentPrivate::setStatus(QPdfDocument::Status documentStatus)
 {
     if (status == documentStatus)
@@ -368,6 +420,8 @@ QPdfDocument::~QPdfDocument()
 
 QPdfDocument::DocumentError QPdfDocument::load(const QString &fileName)
 {
+    qCDebug(qLcDoc) << "loading" << fileName;
+
     close();
 
     d->setStatus(QPdfDocument::Loading);
@@ -560,7 +614,7 @@ int QPdfDocument::pageCount() const
 QSizeF QPdfDocument::pageSize(int page) const
 {
     QSizeF result;
-    if (!d->doc)
+    if (!d->doc || !d->checkPageComplete(page))
         return result;
 
     const QPdfMutexLocker lock;
@@ -581,7 +635,7 @@ QSizeF QPdfDocument::pageSize(int page) const
 */
 QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions)
 {
-    if (!d->doc)
+    if (!d->doc || !d->checkPageComplete(page))
         return QImage();
 
     const QPdfMutexLocker lock;
@@ -630,13 +684,87 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
     if (renderFlags & QPdf::RenderPathAliased)
         flags |= FPDF_RENDER_NO_SMOOTHPATH;
 
-    FPDF_RenderPageBitmap(bitmap, pdfPage, 0, 0, result.width(), result.height(), rotation, flags);
+    if (renderOptions.scaledClipRect().isValid()) {
+        const QRect &clipRect = renderOptions.scaledClipRect();
+
+        // TODO take rotation into account, like cpdf_page.cpp lines 145-178
+        float x0 = clipRect.left();
+        float y0 = clipRect.top();
+        float x1 = clipRect.left();
+        float y1 = clipRect.bottom();
+        float x2 = clipRect.right();
+        float y2 = clipRect.top();
+        QSizeF origSize = pageSize(page);
+        QVector2D pageScale(1, 1);
+        if (!renderOptions.scaledSize().isNull()) {
+            pageScale = QVector2D(renderOptions.scaledSize().width() / float(origSize.width()),
+                                  renderOptions.scaledSize().height() / float(origSize.height()));
+        }
+        FS_MATRIX matrix {(x2 - x0) / result.width() * pageScale.x(),
+                          (y2 - y0) / result.width() * pageScale.x(),
+                          (x1 - x0) / result.height() * pageScale.y(),
+                          (y1 - y0) / result.height() * pageScale.y(), -x0, -y0};
+
+        FS_RECTF clipRectF { 0, 0, float(imageSize.width()), float(imageSize.height()) };
+
+        FPDF_RenderPageBitmapWithMatrix(bitmap, pdfPage, &matrix, &clipRectF, flags);
+        qCDebug(qLcDoc) << "matrix" << matrix.a << matrix.b << matrix.c << matrix.d << matrix.e << matrix.f;
+        qCDebug(qLcDoc) << "page" << page << "region" << renderOptions.scaledClipRect()
+                        << "size" << imageSize << "took" << timer.elapsed() << "ms";
+    } else {
+        FPDF_RenderPageBitmap(bitmap, pdfPage, 0, 0, result.width(), result.height(), rotation, flags);
+        qCDebug(qLcDoc) << "page" << page << "size" << imageSize << "took" << timer.elapsed() << "ms";
+    }
 
     FPDFBitmap_Destroy(bitmap);
 
     FPDF_ClosePage(pdfPage);
-    qCDebug(qLcDoc) << "page" << page << imageSize << "took" << timer.elapsed() << "ms";
     return result;
+}
+
+/*!
+    Returns information about the text on the given \a page that can be found
+    between the given \a start and \a end points, if any.
+*/
+QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
+{
+    const QPdfMutexLocker lock;
+    FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
+    double pageHeight = FPDF_GetPageHeight(pdfPage);
+    FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
+    int startIndex = FPDFText_GetCharIndexAtPos(textPage, start.x(), pageHeight - start.y(),
+                                                CharacterHitTolerance, CharacterHitTolerance);
+    int endIndex = FPDFText_GetCharIndexAtPos(textPage, end.x(), pageHeight - end.y(),
+                                              CharacterHitTolerance, CharacterHitTolerance);
+    if (startIndex >= 0 && endIndex != startIndex) {
+        QString text;
+        if (startIndex > endIndex)
+            qSwap(startIndex, endIndex);
+        int count = endIndex - startIndex + 1;
+        QVector<ushort> buf(count + 1);
+        // TODO is that enough space in case one unicode character is more than one in utf-16?
+        int len = FPDFText_GetText(textPage, startIndex, count, buf.data());
+        Q_ASSERT(len - 1 <= count); // len is number of characters written, including the terminator
+        text = QString::fromUtf16(buf.constData(), len - 1);
+        QVector<QPolygonF> bounds;
+        int rectCount = FPDFText_CountRects(textPage, startIndex, endIndex - startIndex);
+        for (int i = 0; i < rectCount; ++i) {
+            double l, r, b, t;
+            FPDFText_GetRect(textPage, i, &l, &t, &r, &b);
+            QPolygonF poly;
+            poly << QPointF(l, pageHeight - t);
+            poly << QPointF(r, pageHeight - t);
+            poly << QPointF(r, pageHeight - b);
+            poly << QPointF(l, pageHeight - b);
+            poly << QPointF(l, pageHeight - t);
+            bounds << poly;
+        }
+        qCDebug(qLcDoc) << page << start << "->" << end << "found" << startIndex << "->" << endIndex << text;
+        return QPdfSelection(text, bounds);
+    }
+
+    qCDebug(qLcDoc) << page << start << "->" << end << "nothing found";
+    return QPdfSelection();
 }
 
 QT_END_NAMESPACE

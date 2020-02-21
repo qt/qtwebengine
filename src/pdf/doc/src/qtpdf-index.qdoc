@@ -39,7 +39,12 @@
     \l QPdfPageNavigation class handles the navigation through a
     PDF document.
 
-    \section1 Getting Started
+    \include module-use.qdocinc using qt module
+    \quotefile qtpdf-build.cmake
+
+    See also the \l{Build with CMake} overview.
+
+    \section2 Building with qmake
 
     To include the definitions of the module's classes, use the
     following directive:
@@ -54,6 +59,12 @@
 
     \list
         \li \l{Qt PDF Overview}
+    \endlist
+
+    \section1 Examples
+
+    \list
+        \li \l{Qt PDF Examples}
     \endlist
 
     \section1 API Reference

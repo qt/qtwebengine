@@ -51,7 +51,7 @@
 #include "qquickpdfdocument_p.h"
 #include "../api/qpdfsearchmodel.h"
 
-#include <QVariant>
+#include <QtCore/qvariant.h>
 #include <QtQml/qqml.h>
 
 QT_BEGIN_NAMESPACE
@@ -60,9 +60,10 @@ class QQuickPdfSearchModel : public QPdfSearchModel
 {
     Q_OBJECT
     Q_PROPERTY(QQuickPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
-    Q_PROPERTY(int page READ page WRITE setPage NOTIFY pageChanged)
-    Q_PROPERTY(QString searchString READ searchString WRITE setSearchString NOTIFY searchStringChanged)
-    Q_PROPERTY(QVector<QPolygonF> matchGeometry READ matchGeometry NOTIFY matchGeometryChanged)
+    Q_PROPERTY(int currentPage READ currentPage WRITE setCurrentPage NOTIFY currentPageChanged)
+    Q_PROPERTY(int currentResult READ currentResult WRITE setCurrentResult NOTIFY currentResultChanged)
+    Q_PROPERTY(QVector<QPolygonF> currentPageBoundingPolygons READ currentPageBoundingPolygons NOTIFY currentPageBoundingPolygonsChanged)
+    Q_PROPERTY(QVector<QPolygonF> currentResultBoundingPolygons READ currentResultBoundingPolygons NOTIFY currentResultBoundingPolygonsChanged)
 
 public:
     explicit QQuickPdfSearchModel(QObject *parent = nullptr);
@@ -70,28 +71,33 @@ public:
     QQuickPdfDocument *document() const;
     void setDocument(QQuickPdfDocument * document);
 
-    int page() const;
-    void setPage(int page);
+    Q_INVOKABLE QVector<QPolygonF> boundingPolygonsOnPage(int page);
 
-    QString searchString() const;
-    void setSearchString(QString searchString);
+    int currentPage() const { return m_currentPage; }
+    void setCurrentPage(int currentPage);
 
-    QVector<QPolygonF> matchGeometry() const;
+    int currentResult() const { return m_currentResult; }
+    void setCurrentResult(int currentResult);
+
+    QVector<QPolygonF> currentPageBoundingPolygons() const;
+    QVector<QPolygonF> currentResultBoundingPolygons() const;
 
 signals:
     void documentChanged();
-    void pageChanged();
-    void searchStringChanged();
-    void matchGeometryChanged();
+    void currentPageChanged();
+    void currentResultChanged();
+    void currentPageBoundingPolygonsChanged();
+    void currentResultBoundingPolygonsChanged();
 
 private:
     void updateResults();
+    void onResultsChanged();
 
 private:
     QQuickPdfDocument *m_quickDocument = nullptr;
-    QString m_searchString;
-    QVector<QPolygonF> m_matchGeometry;
-    int m_page;
+    int m_currentPage = 0;
+    int m_currentResult = 0;
+    bool m_suspendSignals = false;
 
     Q_DISABLE_COPY(QQuickPdfSearchModel)
 };
@@ -99,5 +105,6 @@ private:
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QQuickPdfSearchModel)
+QML_DECLARE_TYPE(QPdfSelection)
 
 #endif // QQUICKPDFSEARCHMODEL_P_H

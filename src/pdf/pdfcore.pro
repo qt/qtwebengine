@@ -58,24 +58,36 @@ ios: OBJECTS += $$NINJA_OBJECTS
 
 SOURCES += \
     qpdfbookmarkmodel.cpp \
+    qpdfdestination.cpp \
     qpdfdocument.cpp \
+    qpdflinkmodel.cpp \
     qpdfpagenavigation.cpp \
     qpdfpagerenderer.cpp \
     qpdfsearchmodel.cpp \
+    qpdfsearchresult.cpp \
+    qpdfselection.cpp \
 
 # all "public" headers must be in "api" for sync script and to hide auto generated headers
 # by Chromium in case of in-source build
 
 HEADERS += \
     api/qpdfbookmarkmodel.h \
+    api/qpdfdestination.h \
+    api/qpdfdestination_p.h \
     api/qpdfdocument.h \
     api/qpdfdocument_p.h \
     api/qpdfdocumentrenderoptions.h \
     api/qtpdfglobal.h \
+    api/qpdflinkmodel_p.h \
+    api/qpdflinkmodel_p_p.h \
     api/qpdfnamespace.h \
     api/qpdfpagenavigation.h \
     api/qpdfpagerenderer.h \
     api/qpdfsearchmodel.h \
-    qpdfsearchmodel_p.h \
+    api/qpdfsearchmodel_p.h \
+    api/qpdfsearchresult.h \
+    api/qpdfsearchresult_p.h \
+    api/qpdfselection.h \
+    api/qpdfselection_p.h \
 
 load(qt_module)

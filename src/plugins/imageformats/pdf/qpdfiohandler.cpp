@@ -98,7 +98,8 @@ bool QPdfIOHandler::read(QImage *image)
         if (m_page < 0)
             m_page = 0;
         const bool xform = (m_clipRect.isValid() || m_scaledSize.isValid() || m_scaledClipRect.isValid());
-        QSize finalSize = m_doc.pageSize(m_page).toSize();
+        QSize pageSize = m_doc.pageSize(m_page).toSize();
+        QSize finalSize = pageSize;
         QRectF bounds;
         if (xform && !finalSize.isEmpty()) {
             bounds = QRectF(QPointF(0,0), QSizeF(finalSize));
@@ -112,6 +113,7 @@ bool QPdfIOHandler::read(QImage *image)
                 sc = QSizeF(qreal(m_scaledSize.width()) / finalSize.width(),
                             qreal(m_scaledSize.height()) / finalSize.height());
                 finalSize = m_scaledSize;
+                pageSize = m_scaledSize;
             }
             if (m_scaledClipRect.isValid()) {
                 tr2 = -m_scaledClipRect.topLeft();
@@ -133,9 +135,13 @@ bool QPdfIOHandler::read(QImage *image)
             }
         }
         if (!finalSize.isEmpty()) {
+            QPdfDocumentRenderOptions options;
+            if (m_scaledClipRect.isValid())
+                options.setScaledClipRect(m_scaledClipRect);
+            options.setScaledSize(pageSize);
             image->fill(m_backColor.rgba());
             QPainter p(image);
-            QImage pageImage = m_doc.render(m_page, finalSize);
+            QImage pageImage = m_doc.render(m_page, finalSize, options);
             p.drawImage(0, 0, pageImage);
             p.end();
         }
