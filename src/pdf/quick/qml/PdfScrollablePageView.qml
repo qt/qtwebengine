@@ -243,15 +243,29 @@ Flickable {
             enabled: image.sourceSize.width < 5000
             onActiveChanged:
                 if (!active) {
+                    var centroidInPoints = Qt.point(pinch.centroid.position.x / root.renderScale,
+                                                    pinch.centroid.position.y / root.renderScale)
+                    var centroidInFlickable = root.mapFromItem(paper, pinch.centroid.position.x, pinch.centroid.position.y)
                     var newSourceWidth = image.sourceSize.width * paper.scale
                     var ratio = newSourceWidth / image.sourceSize.width
+                    if (root.debug)
+                        console.log("pinch ended with centroid", pinch.centroid.position, centroidInPoints, "wrt flickable", centroidInFlickable,
+                                    "page at", paper.x.toFixed(2), paper.y.toFixed(2),
+                                    "contentX/Y were", root.contentX.toFixed(2), root.contentY.toFixed(2))
                     if (ratio > 1.1 || ratio < 0.9) {
+                        var centroidOnPage = Qt.point(centroidInPoints.x * root.renderScale * ratio, centroidInPoints.y * root.renderScale * ratio)
                         paper.scale = 1
-                        root.renderScale *= ratio
+                        paper.x = 0
+                        paper.y = 0
+                        root.contentX = centroidOnPage.x - centroidInFlickable.x
+                        root.contentY = centroidOnPage.y - centroidInFlickable.y
+                        root.renderScale *= ratio // onRenderScaleChanged calls navigationStack.update() so we don't need to here
+                        if (root.debug)
+                            console.log("contentX/Y adjusted to", root.contentX.toFixed(2), root.contentY.toFixed(2))
+                    } else {
+                        paper.x = 0
+                        paper.y = 0
                     }
-                    // TODO adjust contentX/Y to position the page so the same region is visible
-                    paper.x = 0
-                    paper.y = 0
                 }
             grabPermissions: PointerHandler.CanTakeOverFromAnything
         }
