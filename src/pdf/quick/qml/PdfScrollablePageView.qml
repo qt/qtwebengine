@@ -175,62 +175,71 @@ Flickable {
             rotation: root.pageRotation
             anchors.centerIn: parent
             property real pageScale: image.paintedWidth / document.pagePointSize(navigationStack.currentPage).width
-        }
 
-        Shape {
-            anchors.fill: parent
-            opacity: 0.25
-            visible: image.status === Image.Ready
-            ShapePath {
-                strokeWidth: 1
-                strokeColor: "cyan"
-                fillColor: "steelblue"
-                scale: Qt.size(image.pageScale, image.pageScale)
-                PathMultiline {
-                    paths: searchModel.currentPageBoundingPolygons
-                }
-            }
-            ShapePath {
-                strokeWidth: 1
-                strokeColor: "orange"
-                fillColor: "cyan"
-                scale: Qt.size(image.pageScale, image.pageScale)
-                PathMultiline {
-                    paths: searchModel.currentResultBoundingPolygons
-                }
-            }
-            ShapePath {
-                fillColor: "orange"
-                scale: Qt.size(image.pageScale, image.pageScale)
-                PathMultiline {
-                    paths: selection.geometry
-                }
-            }
-        }
-
-        Repeater {
-            model: PdfLinkModel {
-                id: linkModel
-                document: root.document
-                page: navigationStack.currentPage
-            }
-            delegate: Rectangle {
-                color: "transparent"
-                border.color: "lightgrey"
-                x: rect.x * image.pageScale
-                y: rect.y * image.pageScale
-                width: rect.width * image.pageScale
-                height: rect.height * image.pageScale
-                MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (page >= 0)
-                            navigationStack.push(page, Qt.point(0, 0), root.renderScale)
-                        else
-                            Qt.openUrlExternally(url)
+            Shape {
+                anchors.fill: parent
+                opacity: 0.25
+                visible: image.status === Image.Ready
+                ShapePath {
+                    strokeWidth: 1
+                    strokeColor: "cyan"
+                    fillColor: "steelblue"
+                    scale: Qt.size(image.pageScale, image.pageScale)
+                    PathMultiline {
+                        paths: searchModel.currentPageBoundingPolygons
                     }
                 }
+                ShapePath {
+                    strokeWidth: 1
+                    strokeColor: "orange"
+                    fillColor: "cyan"
+                    scale: Qt.size(image.pageScale, image.pageScale)
+                    PathMultiline {
+                        paths: searchModel.currentResultBoundingPolygons
+                    }
+                }
+                ShapePath {
+                    fillColor: "orange"
+                    scale: Qt.size(image.pageScale, image.pageScale)
+                    PathMultiline {
+                        paths: selection.geometry
+                    }
+                }
+            }
+
+            Repeater {
+                model: PdfLinkModel {
+                    id: linkModel
+                    document: root.document
+                    page: navigationStack.currentPage
+                }
+                delegate: Rectangle {
+                    color: "transparent"
+                    border.color: "lightgrey"
+                    x: rect.x * image.pageScale
+                    y: rect.y * image.pageScale
+                    width: rect.width * image.pageScale
+                    height: rect.height * image.pageScale
+                    MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (page >= 0)
+                                navigationStack.push(page, Qt.point(0, 0), root.renderScale)
+                            else
+                                Qt.openUrlExternally(url)
+                        }
+                    }
+                }
+            }
+            DragHandler {
+                id: textSelectionDrag
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
+                target: null
+            }
+            TapHandler {
+                id: tapHandler
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
             }
         }
 
@@ -268,21 +277,6 @@ Flickable {
                     }
                 }
             grabPermissions: PointerHandler.CanTakeOverFromAnything
-        }
-        DragHandler {
-            id: pageMovingMiddleMouseDrag
-            acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
-            acceptedButtons: Qt.MiddleButton
-            snapMode: DragHandler.NoSnap
-        }
-        DragHandler {
-            id: textSelectionDrag
-            acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
-            target: null
-        }
-        TapHandler {
-            id: tapHandler
-            acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
         }
     }
 }
