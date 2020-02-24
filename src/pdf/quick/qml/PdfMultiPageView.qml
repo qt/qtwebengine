@@ -121,13 +121,14 @@ Item {
     TableView {
         id: tableView
         anchors.fill: parent
+        anchors.leftMargin: 2
         model: root.document === undefined ? 0 : root.document.pageCount
         rowSpacing: 6
-        property real rotationModulus: Math.abs(root.pageRotation % 180)
-        property bool rot90: rotationModulus > 45 && rotationModulus < 135
+        property real rotationNorm: Math.round((360 + (root.pageRotation % 360)) % 360)
+        property bool rot90: rotationNorm == 90 || rotationNorm == 270
         onRot90Changed: forceLayout()
         property size firstPagePointSize: document === undefined ? Qt.size(0, 0) : document.pagePointSize(0)
-        contentWidth: document === undefined ? 0 : document.maxPageWidth * root.renderScale
+        contentWidth: document === undefined ? 0 : (rot90 ? document.maxPageHeight : document.maxPageWidth) * root.renderScale + vscroll.width + 2
         // workaround for missing function (see https://codereview.qt-project.org/c/qt/qtdeclarative/+/248464)
         function itemAtPos(x, y, includeSpacing) {
             // we don't care about x (assume col 0), and assume includeSpacing is true
@@ -139,7 +140,7 @@ Item {
                 if (child.y < y && (!ret || child.y > ret.y))
                     ret = child
             }
-            if (root.debug)
+            if (root.debug && ret !== null)
                 console.log("given y", y, "found", ret, "@", ret.y)
             return ret // the delegate with the largest y that is less than the given y
         }
@@ -164,7 +165,7 @@ Item {
                 width: image.width
                 height: image.height
                 rotation: root.pageRotation
-                anchors.centerIn: parent
+                anchors.centerIn: pinch.active ? undefined : parent
                 property size pagePointSize: document.pagePointSize(index)
                 property real pageScale: image.paintedWidth / pagePointSize.width
                 Image {
@@ -223,19 +224,46 @@ Item {
                     id: pinch
                     minimumScale: 0.1
                     maximumScale: root.renderScale < 4 ? 2 : 1
-                    minimumRotation: 0
-                    maximumRotation: 0
+                    minimumRotation: root.pageRotation
+                    maximumRotation: root.pageRotation
                     enabled: image.sourceSize.width < 5000
                     onActiveChanged:
                         if (active) {
                             paper.z = 10
                         } else {
                             paper.z = 0
+                            var centroidInPoints = Qt.point(pinch.centroid.position.x / root.renderScale,
+                                                            pinch.centroid.position.y / root.renderScale)
+                            var centroidInFlickable = tableView.mapFromItem(paper, pinch.centroid.position.x, pinch.centroid.position.y)
                             var newSourceWidth = image.sourceSize.width * paper.scale
                             var ratio = newSourceWidth / image.sourceSize.width
+                            if (root.debug)
+                                console.log("pinch ended on page", index, "with centroid", pinch.centroid.position, centroidInPoints, "wrt flickable", centroidInFlickable,
+                                            "page at", pageHolder.x.toFixed(2), pageHolder.y.toFixed(2),
+                                            "contentX/Y were", tableView.contentX.toFixed(2), tableView.contentY.toFixed(2))
                             if (ratio > 1.1 || ratio < 0.9) {
+                                var centroidOnPage = Qt.point(centroidInPoints.x * root.renderScale * ratio, centroidInPoints.y * root.renderScale * ratio)
                                 paper.scale = 1
+                                paper.x = 0
+                                paper.y = 0
                                 root.renderScale *= ratio
+                                tableView.forceLayout()
+                                if (tableView.rotationNorm == 0) {
+                                    tableView.contentX = pageHolder.x + tableView.originX + centroidOnPage.x - centroidInFlickable.x
+                                    tableView.contentY = pageHolder.y + tableView.originY + centroidOnPage.y - centroidInFlickable.y
+                                } else if (tableView.rotationNorm == 90) {
+                                    tableView.contentX = pageHolder.x + tableView.originX + image.height - centroidOnPage.y - centroidInFlickable.x
+                                    tableView.contentY = pageHolder.y + tableView.originY + centroidOnPage.x - centroidInFlickable.y
+                                } else if (tableView.rotationNorm == 180) {
+                                    tableView.contentX = pageHolder.x + tableView.originX + image.width - centroidOnPage.x - centroidInFlickable.x
+                                    tableView.contentY = pageHolder.y + tableView.originY + image.height - centroidOnPage.y - centroidInFlickable.y
+                                } else if (tableView.rotationNorm == 270) {
+                                    tableView.contentX = pageHolder.x + tableView.originX + centroidOnPage.y - centroidInFlickable.x
+                                    tableView.contentY = pageHolder.y + tableView.originY + image.width - centroidOnPage.x - centroidInFlickable.y
+                                }
+                                if (root.debug)
+                                    console.log("contentX/Y adjusted to", tableView.contentX.toFixed(2), tableView.contentY.toFixed(2), "y @top", pageHolder.y)
+                                tableView.returnToBounds()
                             }
                         }
                     grabPermissions: PointerHandler.CanTakeOverFromAnything
@@ -298,6 +326,7 @@ Item {
             }
         }
         ScrollBar.vertical: ScrollBar {
+            id: vscroll
             property bool moved: false
             onPositionChanged: moved = true
             onActiveChanged: {
