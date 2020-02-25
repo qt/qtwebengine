@@ -1213,7 +1213,7 @@ void tst_QWebEngineView::changeLocale()
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
-    errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
+    errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 
     QLocale::setDefault(QLocale("en"));
@@ -1223,7 +1223,7 @@ void tst_QWebEngineView::changeLocale()
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyEN.count(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewEN.page()).isEmpty());
-    errorLines = toPlainTextSync(viewEN.page()).split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
+    errorLines = toPlainTextSync(viewEN.page()).split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("This site can\xE2\x80\x99t be reached"));
 
     // Reset error page
@@ -1236,7 +1236,7 @@ void tst_QWebEngineView::changeLocale()
     QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpyDE.count(), 1, 20000);
 
     QTRY_VERIFY(!toPlainTextSync(viewDE.page()).isEmpty());
-    errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
+    errorLines = toPlainTextSync(viewDE.page()).split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 }
 
@@ -1709,7 +1709,7 @@ void tst_QWebEngineView::postData()
             QStringList lines = QString::fromLocal8Bit(rawData).split("\r\n");
 
             // examine request
-            QStringList request = lines[0].split(" ", QString::SkipEmptyParts);
+            QStringList request = lines[0].split(" ", Qt::SkipEmptyParts);
             bool requestOk = request.length() > 2
                           && request[2].toUpper().startsWith("HTTP/")
                           && request[0].toUpper() == "POST"
