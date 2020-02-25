@@ -84,6 +84,7 @@ Item {
         if (zoom > 0)
             root.renderScale = zoom
         navigationStack.push(page, location, zoom)
+        searchModel.currentPage = page
     }
 
     // page scaling
@@ -366,6 +367,6 @@ Item {
     PdfSearchModel {
         id: searchModel
         document: root.document === undefined ? null : root.document
-        onCurrentPageChanged: root.goToPage(currentPage)
+        onCurrentPageChanged: if (currentPage != navigationStack.currentPage) root.goToPage(currentPage)
     }
 }
