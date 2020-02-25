@@ -67,6 +67,8 @@ ProfileAdapter::PermissionType toQt(content::PermissionType type)
         return ProfileAdapter::ClipboardWrite;
     case content::PermissionType::NOTIFICATIONS:
         return ProfileAdapter::NotificationPermission;
+    case content::PermissionType::ACCESSIBILITY_EVENTS:
+        return ProfileAdapter::UnsupportedPermission;
     case content::PermissionType::FLASH:
     case content::PermissionType::MIDI_SYSEX:
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
@@ -74,7 +76,6 @@ ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::DURABLE_STORAGE:
     case content::PermissionType::BACKGROUND_SYNC:
     case content::PermissionType::SENSORS:
-    case content::PermissionType::ACCESSIBILITY_EVENTS:
     case content::PermissionType::PAYMENT_HANDLER:
     case content::PermissionType::BACKGROUND_FETCH:
     case content::PermissionType::IDLE_DETECTION:
