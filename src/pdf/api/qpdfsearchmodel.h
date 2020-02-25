@@ -58,7 +58,8 @@ public:
         Page = Qt::UserRole,
         IndexOnPage,
         Location,
-        Context,
+        ContextBefore,
+        ContextAfter,
         _Count
     };
     Q_ENUM(Role)

@@ -231,7 +231,31 @@ ApplicationWindow {
             ScrollBar.vertical: ScrollBar { }
             delegate: ItemDelegate {
                 width: parent ? parent.width : 0
-                text: "page " + (page + 1) + ": " + context
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 0
+                    Label {
+                        text: "Page " + (page + 1) + ": "
+                    }
+                    Label {
+                        text: contextBefore
+                        elide: Text.ElideLeft
+                        horizontalAlignment: Text.AlignRight
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
+                    }
+                    Label {
+                        font.bold: true
+                        text: view.searchString
+                        width: implicitWidth
+                    }
+                    Label {
+                        text: contextAfter
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
+                    }
+                }
                 highlighted: ListView.isCurrentItem
                 onClicked: {
                     searchResultsList.currentIndex = index
