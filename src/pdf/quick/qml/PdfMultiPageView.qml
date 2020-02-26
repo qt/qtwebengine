@@ -48,15 +48,15 @@ Item {
 
     property string selectedText
     function selectAll() {
-        var currentItem = tableView.itemAtPos(0, tableView.contentY + root.height / 2)
-        if (currentItem !== null)
+        var currentItem = tableHelper.itemAtCell(tableHelper.cellAtPos(root.width / 2, root.height / 2))
+        if (currentItem)
             currentItem.selection.selectAll()
     }
     function copySelectionToClipboard() {
-        var currentItem = tableView.itemAtPos(0, tableView.contentY + root.height / 2)
+        var currentItem = tableHelper.itemAtCell(tableHelper.cellAtPos(root.width / 2, root.height / 2))
         if (debug)
             console.log("currentItem", currentItem, "sel", currentItem.selection.text)
-        if (currentItem !== null)
+        if (currentItem)
             currentItem.selection.copyToClipboard()
     }
 
@@ -69,14 +69,18 @@ Item {
     function goToPage(page) {
         if (page === navigationStack.currentPage)
             return
-        goToLocation(page, Qt.point(0, 0), 0)
+        goToLocation(page, Qt.point(-1, -1), 0)
     }
     function goToLocation(page, location, zoom) {
-        if (zoom > 0)
+        if (zoom > 0) {
+            navigationStack.jumping = true // don't call navigationStack.update() because we will push() instead
             root.renderScale = zoom
-        navigationStack.push(page, location, zoom)
-        searchModel.currentPage = page
+            tableView.forceLayout() // but do ensure that the table layout is correct before we try to jump
+            navigationStack.jumping = false
+        }
+        navigationStack.push(page, location, zoom) // actually jump
     }
+    property vector2d jumpLocationMargin: Qt.vector2d(10, 10)  // px from top-left corner
 
     // page scaling
     property real renderScale: 1
@@ -121,23 +125,14 @@ Item {
         property bool rot90: rotationNorm == 90 || rotationNorm == 270
         onRot90Changed: forceLayout()
         property size firstPagePointSize: document === undefined ? Qt.size(0, 0) : document.pagePointSize(0)
-        contentWidth: document === undefined ? 0 : (rot90 ? document.maxPageHeight : document.maxPageWidth) * root.renderScale + vscroll.width + 2
-        // workaround for missing function (see https://codereview.qt-project.org/c/qt/qtdeclarative/+/248464)
-        function itemAtPos(x, y, includeSpacing) {
-            // we don't care about x (assume col 0), and assume includeSpacing is true
-            var ret = null
-            for (var i = 0; i < contentItem.children.length; ++i) {
-                var child = contentItem.children[i];
-                if (root.debug)
-                    console.log(child, "@y", child.y)
-                if (child.y < y && (!ret || child.y > ret.y))
-                    ret = child
-            }
-            if (root.debug && ret !== null)
-                console.log("given y", y, "found", ret, "@", ret.y)
-            return ret // the delegate with the largest y that is less than the given y
-        }
+        property real pageHolderWidth: Math.max(root.width, document === undefined ? 0 :
+                                         (rot90 ? document.maxPageHeight : document.maxPageWidth) * root.renderScale)
+        contentWidth: document === undefined ? 0 : pageHolderWidth + vscroll.width + 2
         rowHeightProvider: function(row) { return (rot90 ? document.pagePointSize(row).width : document.pagePointSize(row).height) * root.renderScale }
+        TableViewExtra {
+            id: tableHelper
+            tableView: tableView
+        }
         delegate: Rectangle {
             id: pageHolder
             color: root.debug ? "beige" : "transparent"
@@ -147,11 +142,8 @@ Item {
                 rotation: -90; text: pageHolder.width.toFixed(1) + "x" + pageHolder.height.toFixed(1) + "\n" +
                                      image.width.toFixed(1) + "x" + image.height.toFixed(1)
             }
-            implicitWidth: Math.max(root.width, (tableView.rot90 ? document.maxPageHeight : document.maxPageWidth) * root.renderScale)
+            implicitWidth: tableView.pageHolderWidth
             implicitHeight: tableView.rot90 ? image.width : image.height
-            onImplicitWidthChanged: tableView.forceLayout()
-            objectName: "page " + index
-            property int delegateIndex: row // expose the context property for JS outside of the delegate
             property alias selection: selection
             Rectangle {
                 id: paper
@@ -347,42 +339,82 @@ Item {
             property bool moved: false
             onPositionChanged: moved = true
             onActiveChanged: {
-                var currentItem = tableView.itemAtPos(0, tableView.contentY + root.height / 2)
-                var currentPage = currentItem.delegateIndex
-                var currentLocation = Qt.point((tableView.contentX - currentItem.x + root.width / 2) / root.renderScale,
-                                               (tableView.contentY - currentItem.y + root.height / 2) / root.renderScale)
+                var cell = tableHelper.cellAtPos(root.width / 2, root.height / 2)
+                var currentItem = tableHelper.itemAtCell(cell)
+                var currentLocation = Qt.point(0, 0)
+                if (currentItem) { // maybe the delegate wasn't loaded yet
+                    currentLocation = Qt.point((tableView.contentX - currentItem.x + jumpLocationMargin.x) / root.renderScale,
+                                               (tableView.contentY - currentItem.y + jumpLocationMargin.y) / root.renderScale)
+                }
                 if (active) {
                     moved = false
-                    navigationStack.push(currentPage, currentLocation, root.renderScale)
+                    // emitJumped false to avoid interrupting a pinch if TableView thinks it should scroll at the same time
+                    navigationStack.push(cell.y, currentLocation, root.renderScale, false)
                 } else if (moved) {
-                    navigationStack.update(currentPage, currentLocation, root.renderScale)
+                    navigationStack.update(cell.y, currentLocation, root.renderScale)
                 }
             }
         }
         ScrollBar.horizontal: ScrollBar { }
     }
     onRenderScaleChanged: {
+        // if navigationStack.jumped changes the scale, don't turn around and update the stack again;
+        // and don't force layout either, because positionViewAtCell() will do that
+        if (navigationStack.jumping)
+            return
         tableView.forceLayout()
-        var currentItem = tableView.itemAtPos(tableView.contentX + root.width / 2, tableView.contentY + root.height / 2)
-        if (currentItem !== undefined)
-            navigationStack.update(currentItem.delegateIndex, Qt.point(currentItem.x / renderScale, currentItem.y / renderScale), renderScale)
+        var cell = tableHelper.cellAtPos(root.width / 2, root.height / 2)
+        var currentItem = tableHelper.itemAtCell(cell)
+        if (currentItem) {
+            var currentLocation = Qt.point((tableView.contentX - currentItem.x + jumpLocationMargin.x) / root.renderScale,
+                                           (tableView.contentY - currentItem.y + jumpLocationMargin.y) / root.renderScale)
+            navigationStack.update(cell.y, currentLocation, renderScale)
+        }
     }
     PdfNavigationStack {
         id: navigationStack
+        property bool jumping: false
+        property int previousPage: 0
         onJumped: {
+            jumping = true
             root.renderScale = zoom
-            tableView.contentX = Math.max(0, location.x - root.width / 2) * root.renderScale
-            tableView.contentY = tableView.originY + root.document.heightSumBeforePage(page, tableView.rowSpacing / root.renderScale) * root.renderScale
-            if (root.debug) {
-                console.log("going to page", page,
-                            "@y", root.document.heightSumBeforePage(page, tableView.rowSpacing / root.renderScale) * root.renderScale,
-                            "ended up @", tableView.contentY, "originY is", tableView.originY)
+            if (location.y < 0) {
+                // invalid to indicate that a specific location was not needed,
+                // so attempt to position the new page just as the current page is
+                var currentYOffset = 0
+                var previousPageDelegate = tableHelper.itemAtCell(0, previousPage)
+                if (previousPageDelegate)
+                    currentYOffset = tableView.contentY - previousPageDelegate.y
+                tableHelper.positionViewAtRow(page, Qt.AlignTop, currentYOffset)
+                if (root.debug) {
+                    console.log("going from page", previousPage, "to", page, "offset", currentYOffset,
+                                "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))
+                }
+            } else {
+                // jump to a page and position the given location relative to the top-left corner of the viewport
+                var pageSize = root.document.pagePointSize(page)
+                pageSize.width *= root.renderScale
+                pageSize.height *= root.renderScale
+                var xOffsetLimit = Math.max(0, pageSize.width - root.width) / 2
+                var offset = Qt.point(Math.max(-xOffsetLimit, Math.min(xOffsetLimit,
+                                        location.x * root.renderScale - jumpLocationMargin.x)),
+                                      Math.max(0, location.y * root.renderScale - jumpLocationMargin.y))
+                tableHelper.positionViewAtCell(0, page, Qt.AlignLeft | Qt.AlignTop, offset)
+                if (root.debug) {
+                    console.log("going to zoom", zoom, "loc", location, "on page", page,
+                                "ended up @", tableView.contentX.toFixed(1) + ", " + tableView.contentY.toFixed(1))
+                }
             }
+            jumping = false
+            previousPage = page
         }
+        onCurrentPageChanged: searchModel.currentPage = currentPage
     }
     PdfSearchModel {
         id: searchModel
         document: root.document === undefined ? null : root.document
-        onCurrentPageChanged: if (currentPage != navigationStack.currentPage) root.goToPage(currentPage)
+        // TODO maybe avoid jumping if the result is already fully visible in the viewport
+        onCurrentResultBoundingRectChanged: root.goToLocation(currentPage,
+            Qt.point(currentResultBoundingRect.x, currentResultBoundingRect.y), 0)
     }
 }
