@@ -101,6 +101,7 @@ Flickable {
 
     // implementation
     id: root
+    PdfStyle { id: style }
     contentWidth: paper.width
     contentHeight: paper.height
     ScrollBar.vertical: ScrollBar {
@@ -178,28 +179,26 @@ Flickable {
 
             Shape {
                 anchors.fill: parent
-                opacity: 0.25
                 visible: image.status === Image.Ready
                 ShapePath {
-                    strokeWidth: 1
-                    strokeColor: "cyan"
-                    fillColor: "steelblue"
+                    strokeWidth: -1
+                    fillColor: style.pageSearchResultsColor
                     scale: Qt.size(image.pageScale, image.pageScale)
                     PathMultiline {
                         paths: searchModel.currentPageBoundingPolygons
                     }
                 }
                 ShapePath {
-                    strokeWidth: 1
-                    strokeColor: "orange"
-                    fillColor: "cyan"
+                    strokeWidth: style.currentSearchResultStrokeWidth
+                    strokeColor: style.currentSearchResultStrokeColor
+                    fillColor: "transparent"
                     scale: Qt.size(image.pageScale, image.pageScale)
                     PathMultiline {
                         paths: searchModel.currentResultBoundingPolygons
                     }
                 }
                 ShapePath {
-                    fillColor: "orange"
+                    fillColor: style.selectionColor
                     scale: Qt.size(image.pageScale, image.pageScale)
                     PathMultiline {
                         paths: selection.geometry
@@ -219,10 +218,10 @@ Flickable {
                     width: rect.width * image.pageScale
                     height: rect.height * image.pageScale
                     ShapePath {
-                        strokeWidth: 1
-                        strokeColor: "steelblue"
-                        strokeStyle: ShapePath.DashLine
-                        dashPattern: [ 1, 4 ]
+                        strokeWidth: style.linkUnderscoreStrokeWidth
+                        strokeColor: style.linkUnderscoreColor
+                        strokeStyle: style.linkUnderscoreStrokeStyle
+                        dashPattern: style.linkUnderscoreDashPattern
                         startX: 0; startY: height
                         PathLine { x: width; y: height }
                     }

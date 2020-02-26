@@ -105,6 +105,7 @@ Item {
     function searchForward() { ++searchModel.currentResult }
 
     id: root
+    PdfStyle { id: style }
     TableView {
         id: tableView
         anchors.fill: parent
@@ -174,13 +175,11 @@ Item {
                 }
                 Shape {
                     anchors.fill: parent
-                    opacity: 0.25
                     visible: image.status === Image.Ready
                     onVisibleChanged: searchHighlights.update()
                     ShapePath {
-                        strokeWidth: 1
-                        strokeColor: "cyan"
-                        fillColor: "steelblue"
+                        strokeWidth: -1
+                        fillColor: style.pageSearchResultsColor
                         scale: Qt.size(paper.pageScale, paper.pageScale)
                         PathMultiline {
                             id: searchHighlights
@@ -197,22 +196,21 @@ Item {
                         function onCurrentPageBoundingPolygonsChanged() { searchHighlights.update() }
                     }
                     ShapePath {
-                        fillColor: "orange"
+                        strokeWidth: -1
+                        fillColor: style.selectionColor
                         scale: Qt.size(paper.pageScale, paper.pageScale)
                         PathMultiline {
-                            id: selectionBoundaries
                             paths: selection.geometry
                         }
                     }
                 }
                 Shape {
                     anchors.fill: parent
-                    opacity: 0.5
                     visible: image.status === Image.Ready && searchModel.currentPage === index
                     ShapePath {
-                        strokeWidth: 1
-                        strokeColor: "blue"
-                        fillColor: "cyan"
+                        strokeWidth: style.currentSearchResultStrokeWidth
+                        strokeColor: style.currentSearchResultStrokeColor
+                        fillColor: "transparent"
                         scale: Qt.size(paper.pageScale, paper.pageScale)
                         PathMultiline {
                             paths: searchModel.currentResultBoundingPolygons
@@ -288,10 +286,10 @@ Item {
                         width: rect.width * paper.pageScale
                         height: rect.height * paper.pageScale
                         ShapePath {
-                            strokeWidth: 1
-                            strokeColor: "steelblue"
-                            strokeStyle: ShapePath.DashLine
-                            dashPattern: [ 1, 4 ]
+                            strokeWidth: style.linkUnderscoreStrokeWidth
+                            strokeColor: style.linkUnderscoreColor
+                            strokeStyle: style.linkUnderscoreStrokeStyle
+                            dashPattern: style.linkUnderscoreDashPattern
                             startX: 0; startY: height
                             PathLine { x: width; y: height }
                         }
