@@ -269,15 +269,15 @@ private:
         m_client->OnReceiveResponse(m_head);
         m_client->OnStartLoadingResponseBody(std::move(m_pipe.consumer_handle));
 
-        readAvailableData();
-        if (m_device) {
-            m_watcher = std::make_unique<mojo::SimpleWatcher>(
-                    FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC, m_taskRunner);
-            m_watcher->Watch(m_pipe.producer_handle.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-                             MOJO_WATCH_CONDITION_SATISFIED,
-                             base::BindRepeating(&CustomURLLoader::notifyReadyWrite,
-                                                 m_weakPtrFactory.GetWeakPtr()));
-        }
+        if (readAvailableData()) // May delete this
+            return;
+
+        m_watcher = std::make_unique<mojo::SimpleWatcher>(
+                FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC, m_taskRunner);
+        m_watcher->Watch(m_pipe.producer_handle.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+                         MOJO_WATCH_CONDITION_SATISFIED,
+                         base::BindRepeating(&CustomURLLoader::notifyReadyWrite,
+                                             m_weakPtrFactory.GetWeakPtr()));
     }
     void notifyCanceled() override
     {
@@ -334,7 +334,7 @@ private:
         }
         readAvailableData();
     }
-    void readAvailableData()
+    bool readAvailableData()
     {
         DCHECK(m_taskRunner->RunsTasksInCurrentSequence());
         for (;;) {
@@ -346,7 +346,7 @@ private:
             MojoResult beginResult = m_pipe.producer_handle->BeginWriteData(
                     &buffer, &bufferSize, MOJO_BEGIN_WRITE_DATA_FLAG_NONE);
             if (beginResult == MOJO_RESULT_SHOULD_WAIT)
-                return; // Wait for pipe watcher
+                return false; // Wait for pipe watcher
             if (beginResult != MOJO_RESULT_OK)
                 break;
 
@@ -358,16 +358,17 @@ private:
 
             if (m_device->atEnd()) {
                 OnTransferComplete(MOJO_RESULT_OK);
-                return;
+                return true; // Done with reading
             }
 
             if (readResult == 0)
-                return; // Wait for readyRead
+                return false; // Wait for readyRead
             if (readResult < 0)
                 break;
         }
 
         CompleteWithFailure(m_error ? net::Error(m_error) : net::ERR_FAILED);
+        return true; // Done with reading
     }
     base::TaskRunner *taskRunner() override
     {
