@@ -206,6 +206,7 @@ ApplicationWindow {
     PdfScrollablePageView {
         id: view
         anchors.fill: parent
+        anchors.leftMargin: searchDrawer.position * searchDrawer.width
         document: PdfDocument {
             id: document
             source: Qt.resolvedUrl(root.source)
