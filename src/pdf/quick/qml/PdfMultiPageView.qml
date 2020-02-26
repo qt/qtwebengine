@@ -183,20 +183,32 @@ Item {
                         image.sourceSize.width = paper.pagePointSize.width * renderScale
                         image.sourceSize.height = 0
                         paper.scale = 1
+                        searchHighlights.update()
                     }
                 }
                 Shape {
                     anchors.fill: parent
                     opacity: 0.25
                     visible: image.status === Image.Ready
+                    onVisibleChanged: searchHighlights.update()
                     ShapePath {
                         strokeWidth: 1
                         strokeColor: "cyan"
                         fillColor: "steelblue"
                         scale: Qt.size(paper.pageScale, paper.pageScale)
                         PathMultiline {
-                            paths: searchModel.boundingPolygonsOnPage(index)
+                            id: searchHighlights
+                            function update() {
+                                // paths could be a binding, but we need to be able to "kick" it sometimes
+                                paths = searchModel.boundingPolygonsOnPage(index)
+                            }
                         }
+                    }
+                    Connections {
+                        target: searchModel
+                        // whenever the highlights on the _current_ page change, they actually need to change on _all_ pages
+                        // (usually because the search string has changed)
+                        function onCurrentPageBoundingPolygonsChanged() { searchHighlights.update() }
                     }
                     ShapePath {
                         fillColor: "orange"
