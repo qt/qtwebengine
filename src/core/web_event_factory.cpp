@@ -157,8 +157,11 @@ static Qt::KeyboardModifiers qtModifiersForEvent(const QInputEvent *ev)
 //
 // On Linux, the Control modifier transformation is applied [1]. For example,
 // pressing Ctrl+@ generates the text "\u0000". We would like "@" instead.
+// Windows also translates some control key combinations into ASCII control
+// characters [2].
 //
 // [1]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
+// [2]: https://docs.microsoft.com/en-us/windows/win32/learnwin32/keyboard-input#character-messages
 //
 // On macOS, if the Control modifier is used, then no text is generated at all.
 // We need some text.
@@ -171,8 +174,10 @@ static QString qtTextForKeyEvent(const QKeyEvent *ev, int qtKey, Qt::KeyboardMod
 {
     QString text = ev->text();
 
-    if ((qtModifiers & Qt::ControlModifier) && keyboardDriver() == KeyboardDriver::Xkb)
+    if ((qtModifiers & Qt::ControlModifier) &&
+            (keyboardDriver() == KeyboardDriver::Xkb || keyboardDriver() == KeyboardDriver::Windows)) {
         text.clear();
+    }
 
     return text;
 }

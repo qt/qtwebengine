@@ -67,6 +67,7 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -367,6 +368,23 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         }
         entries->push_back(std::move(entry));
     }
+}
+
+static void Navigate(WebContentsAdapter *adapter, const content::NavigationController::LoadURLParams &params)
+{
+    Q_ASSERT(adapter);
+    adapter->webContents()->GetController().LoadURLWithParams(params);
+    adapter->focusIfNecessary();
+    adapter->resetSelection();
+}
+
+static void NavigateTask(QWeakPointer<WebContentsAdapter> weakAdapter, const content::NavigationController::LoadURLParams &params)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    const auto adapter = weakAdapter.toStrongRef();
+    if (!adapter)
+        return;
+    Navigate(adapter.get(), params);
 }
 
 namespace {
@@ -705,21 +723,12 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
         }
     }
 
-    auto navigate = [](QWeakPointer<WebContentsAdapter> weakAdapter, const content::NavigationController::LoadURLParams &params) {
-        const auto adapter = weakAdapter.toStrongRef();
-        if (!adapter)
-            return;
-        adapter->webContents()->GetController().LoadURLWithParams(params);
-        adapter->focusIfNecessary();
-    };
-
-    QWeakPointer<WebContentsAdapter> weakThis(sharedFromThis());
     if (resizeNeeded) {
         // Schedule navigation on the event loop.
         base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(navigate, std::move(weakThis), std::move(params)));
+                                 base::BindOnce(&NavigateTask, sharedFromThis().toWeakRef(), std::move(params)));
     } else {
-        navigate(std::move(weakThis), params);
+        Navigate(this, params);
     }
 }
 
@@ -752,9 +761,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     params.can_load_local_resources = true;
     params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_API);
     params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
-    m_webContents->GetController().LoadURLWithParams(params);
-    focusIfNecessary();
-    m_webContents->CollapseSelection();
+    Navigate(this, params);
 }
 
 void WebContentsAdapter::save(const QString &filePath, int savePageFormat)
@@ -1685,6 +1692,17 @@ bool WebContentsAdapter::hasFocusedFrame() const
 {
     CHECK_INITIALIZED(false);
     return m_webContents->GetFocusedFrame() != nullptr;
+}
+
+void WebContentsAdapter::resetSelection()
+{
+    CHECK_INITIALIZED();
+    // unconditionally clears the selection in contrast to CollapseSelection, which checks focus state first
+    if (auto rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
+        if (auto mgr = rwhv->GetTextInputManager())
+            if (auto selection = const_cast<content::TextInputManager::TextSelection *>(mgr->GetTextSelection(rwhv)))
+                selection->SetSelection(base::string16(), 0, gfx::Range(), false);
+    }
 }
 
 WebContentsAdapterClient::RenderProcessTerminationStatus

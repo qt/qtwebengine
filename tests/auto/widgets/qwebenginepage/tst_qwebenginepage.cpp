@@ -701,7 +701,7 @@ public:
     CursorTrackedPage(QWidget *parent = 0): QWebEnginePage(parent) {
     }
 
-    QString selectedText() {
+    QString jsSelectedText() {
         return evaluateJavaScriptSync(this, "window.getSelection().toString()").toString();
     }
 
@@ -717,42 +717,52 @@ public:
     int isSelectionCollapsed() {
         return evaluateJavaScriptSync(this, "window.getSelection().getRangeAt(0).collapsed").toBool();
     }
-    bool hasSelection()
-    {
-        return !selectedText().isEmpty();
-    }
 };
 
 void tst_QWebEnginePage::textSelection()
 {
-    QWebEngineView view;
-    CursorTrackedPage *page = new CursorTrackedPage(&view);
-    QString content("<html><body><p id=one>The quick brown fox</p>" \
+    CursorTrackedPage page;
+
+    QString textToSelect("The quick brown fox");
+    QString content = QString("<html><body><p id=one>%1</p>" \
         "<p id=two>jumps over the lazy dog</p>" \
-        "<p>May the source<br/>be with you!</p></body></html>");
-    page->setView(&view);
-    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
-    page->setHtml(content);
+        "<p>May the source<br/>be with you!</p></body></html>").arg(textToSelect);
+
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    page.setHtml(content);
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
 
     // these actions must exist
-    QVERIFY(page->action(QWebEnginePage::SelectAll) != 0);
+    QVERIFY(page.action(QWebEnginePage::SelectAll) != 0);
 
     // ..but SelectAll is disabled because the page has no focus due to disabled FocusOnNavigationEnabled.
-    QCOMPARE(page->action(QWebEnginePage::SelectAll)->isEnabled(), false);
+    QCOMPARE(page.action(QWebEnginePage::SelectAll)->isEnabled(), false);
 
     // Verify hasSelection returns false since there is no selection yet...
-    QCOMPARE(page->hasSelection(), false);
+    QVERIFY(!page.hasSelection());
+    QVERIFY(page.jsSelectedText().isEmpty());
 
     // this will select the first paragraph
     QString selectScript = "var range = document.createRange(); " \
         "var node = document.getElementById(\"one\"); " \
         "range.selectNode(node); " \
         "getSelection().addRange(range);";
-    evaluateJavaScriptSync(page, selectScript);
-    QCOMPARE(page->selectedText().trimmed(), QString::fromLatin1("The quick brown fox"));
+    evaluateJavaScriptSync(&page, selectScript);
+
     // Make sure hasSelection returns true, since there is selected text now...
-    QCOMPARE(page->hasSelection(), true);
+    QTRY_VERIFY(page.hasSelection());
+    QCOMPARE(page.selectedText().trimmed(), textToSelect);
+
+    QCOMPARE(page.jsSelectedText().trimmed(), textToSelect);
+
+    // navigate away and check that selection is cleared
+    page.load(QUrl("about:blank"));
+    QTRY_COMPARE(loadSpy.count(), 2);
+
+    QVERIFY(!page.hasSelection());
+    QVERIFY(page.selectedText().isEmpty());
+
+    QVERIFY(page.jsSelectedText().isEmpty());
 }
 
 

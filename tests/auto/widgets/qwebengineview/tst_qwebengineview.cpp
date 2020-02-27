@@ -199,6 +199,7 @@ private Q_SLOTS:
     void visibilityState();
     void visibilityState2();
     void visibilityState3();
+    void jsKeyboardEvent_data();
     void jsKeyboardEvent();
     void deletePage();
     void closeOpenerTab();
@@ -3383,6 +3384,28 @@ void tst_QWebEngineView::visibilityState3()
     QCOMPARE(evaluateJavaScriptSync(&page2, "document.visibilityState").toString(), QStringLiteral("visible"));
 }
 
+void tst_QWebEngineView::jsKeyboardEvent_data()
+{
+    QTest::addColumn<char>("key");
+    QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
+    QTest::addColumn<QString>("expected");
+
+#if defined(Q_OS_MACOS)
+    // See Qt::AA_MacDontSwapCtrlAndMeta
+    Qt::KeyboardModifiers controlModifier = Qt::MetaModifier;
+#else
+    Qt::KeyboardModifiers controlModifier = Qt::ControlModifier;
+#endif
+
+    QTest::newRow("Ctrl+Shift+A") << 'A' << (controlModifier | Qt::ShiftModifier) << QStringLiteral(
+                                         "16,ShiftLeft,Shift,false,true,false;"
+                                         "17,ControlLeft,Control,true,true,false;"
+                                         "65,KeyA,A,true,true,false;");
+    QTest::newRow("Ctrl+z") << 'z' << controlModifier << QStringLiteral(
+                                   "17,ControlLeft,Control,true,false,false;"
+                                   "90,KeyZ,z,true,false,false;");
+}
+
 void tst_QWebEngineView::jsKeyboardEvent()
 {
     QWebEngineView view;
@@ -3392,18 +3415,13 @@ void tst_QWebEngineView::jsKeyboardEvent()
         "addEventListener('keydown', (ev) => {"
         "  log += [ev.keyCode, ev.code, ev.key, ev.ctrlKey, ev.shiftKey, ev.altKey].join(',') + ';';"
         "});");
+
+    QFETCH(char, key);
+    QFETCH(Qt::KeyboardModifiers, modifiers);
+    QFETCH(QString, expected);
+
     // Note that this only tests the fallback code path where native scan codes are not used.
-#if defined(Q_OS_MACOS)
-    // See Qt::AA_MacDontSwapCtrlAndMeta
-    QTest::keyClick(view.focusProxy(), 'A', Qt::MetaModifier | Qt::ShiftModifier);
-#else
-    QTest::keyClick(view.focusProxy(), 'A', Qt::ControlModifier | Qt::ShiftModifier);
-#endif
-    QString expected = QStringLiteral(
-        "16,ShiftLeft,Shift,false,true,false;"
-        "17,ControlLeft,Control,true,true,false;"
-        "65,KeyA,A,true,true,false;"
-    );
+    QTest::keyClick(view.focusProxy(), key, modifiers);
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "log") != QVariant(QString()));
     QCOMPARE(evaluateJavaScriptSync(view.page(), "log"), expected);
 }
