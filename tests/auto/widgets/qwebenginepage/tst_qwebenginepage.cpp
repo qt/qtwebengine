@@ -823,11 +823,13 @@ void tst_QWebEnginePage::localStorageVisibility()
     QVERIFY(evaluateJavaScriptSync(&webPage1, QString("(window.localStorage != undefined)")).toBool());
     QVERIFY(!evaluateJavaScriptSync(&webPage2, QString("(window.localStorage != undefined)")).toBool());
 
-    // Switching the feature off does not actively remove the object from webPage1.
+    // Toggle local setting for every page and...
     webPage1.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, false);
     webPage2.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+    // ...first check second page (for storage to appear) as applying settings is batched and done asynchronously
+    QTRY_VERIFY(evaluateJavaScriptSync(&webPage2, QString("(window.localStorage != undefined)")).toBool());
+    // Switching the feature off does not actively remove the object from webPage1.
     QVERIFY(evaluateJavaScriptSync(&webPage1, QString("(window.localStorage != undefined)")).toBool());
-    QVERIFY(evaluateJavaScriptSync(&webPage2, QString("(window.localStorage != undefined)")).toBool());
 
     // The object disappears only after reloading.
     webPage1.triggerAction(QWebEnginePage::Reload);
