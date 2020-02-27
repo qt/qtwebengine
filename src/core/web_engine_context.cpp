@@ -49,6 +49,9 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
+#include "content/gpu/gpu_child_thread.h"
+#include "content/browser/compositor/surface_utils.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "chrome/browser/printing/print_job_manager.h"
 #include "components/printing/browser/features.h"
@@ -211,6 +214,26 @@ bool usingSoftwareDynamicGL()
 #endif
 }
 
+static bool waitForViz = false;
+static void completeVizCleanup()
+{
+    waitForViz = false;
+}
+
+static void cleanupVizProcess()
+{
+    auto gpuChildThread = content::GpuChildThread::instance();
+    if (!gpuChildThread)
+        return;
+    auto vizMain = gpuChildThread->viz_main();
+    auto vizCompositorThreadRunner = vizMain->viz_compositor_thread_runner();
+    if (!vizCompositorThreadRunner)
+        return;
+    waitForViz = true;
+    content::GetHostFrameSinkManager()->SetConnectionLostCallback(base::DoNothing());
+    vizCompositorThreadRunner->CleanupForShutdown(base::BindOnce(&completeVizCleanup));
+}
+
 scoped_refptr<QtWebEngineCore::WebEngineContext> WebEngineContext::m_handle;
 bool WebEngineContext::m_destroyed = false;
 
@@ -257,14 +280,21 @@ void WebEngineContext::destroy()
     if (m_devtoolsServer)
         m_devtoolsServer->stop();
 
-    // Normally the GPU thread is shut down when the GpuProcessHost is destroyed
-    // on IO thread (triggered by ~BrowserMainRunner). But by that time the UI
-    // task runner is not working anymore so we need to do this earlier.
-    destroyGpuProcess(m_threadedGpu);
 
     base::MessagePump::Delegate *delegate =
             static_cast<base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl *>(
                 m_runLoop->delegate_);
+    // Normally the GPU thread is shut down when the GpuProcessHost is destroyed
+    // on IO thread (triggered by ~BrowserMainRunner). But by that time the UI
+    // task runner is not working anymore so we need to do this earlier.
+    if (features::IsVizDisplayCompositorEnabled()) {
+        cleanupVizProcess();
+        while (waitForViz) {
+            while (delegate->DoWork()){}
+            QThread::msleep(50);
+        }
+    }
+    destroyGpuProcess();
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
 
@@ -412,8 +442,7 @@ static void appendToFeatureSwitch(base::CommandLine *commandLine, const char *fe
 }
 
 WebEngineContext::WebEngineContext()
-    : m_threadedGpu(true)
-    , m_mainDelegate(new ContentMainDelegateQt)
+    : m_mainDelegate(new ContentMainDelegateQt)
     , m_globalQObject(new QObject())
 {
 #if defined(Q_OS_MACOS)
@@ -515,13 +544,13 @@ WebEngineContext::WebEngineContext()
     if (isDesktopGLOrSoftware || isGLES2Context)
         parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
-
+    bool threadedGpu = false;
 #ifndef QT_NO_OPENGL
-    m_threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
+    threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
 #endif
-    m_threadedGpu = m_threadedGpu && !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
+    threadedGpu = threadedGpu && !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
 
-    bool enableViz = ((m_threadedGpu && !parsedCommandLine->HasSwitch("disable-viz-display-compositor"))
+    bool enableViz = ((threadedGpu && !parsedCommandLine->HasSwitch("disable-viz-display-compositor"))
                       || parsedCommandLine->HasSwitch("enable-viz-display-compositor"));
     parsedCommandLine->RemoveSwitch("disable-viz-display-compositor");
     parsedCommandLine->RemoveSwitch("enable-viz-display-compositor");
@@ -660,7 +689,7 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     }
 
-    registerMainThreadFactories(m_threadedGpu);
+    registerMainThreadFactories(threadedGpu);
 
     SetContentClient(new ContentClientQt);
 
