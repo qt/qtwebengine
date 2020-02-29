@@ -282,13 +282,19 @@ Item {
                         document: root.document
                         page: image.currentFrame
                     }
-                    delegate: Rectangle {
-                        color: "transparent"
-                        border.color: "lightgrey"
+                    delegate: Shape {
                         x: rect.x * paper.pageScale
                         y: rect.y * paper.pageScale
                         width: rect.width * paper.pageScale
                         height: rect.height * paper.pageScale
+                        ShapePath {
+                            strokeWidth: 1
+                            strokeColor: "steelblue"
+                            strokeStyle: ShapePath.DashLine
+                            dashPattern: [ 1, 4 ]
+                            startX: 0; startY: height
+                            PathLine { x: width; y: height }
+                        }
                         MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
                             id: linkMA
                             anchors.fill: parent

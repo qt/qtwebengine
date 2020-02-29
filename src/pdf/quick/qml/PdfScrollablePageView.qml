@@ -213,13 +213,19 @@ Flickable {
                     document: root.document
                     page: navigationStack.currentPage
                 }
-                delegate: Rectangle {
-                    color: "transparent"
-                    border.color: "lightgrey"
+                delegate: Shape {
                     x: rect.x * image.pageScale
                     y: rect.y * image.pageScale
                     width: rect.width * image.pageScale
                     height: rect.height * image.pageScale
+                    ShapePath {
+                        strokeWidth: 1
+                        strokeColor: "steelblue"
+                        strokeStyle: ShapePath.DashLine
+                        dashPattern: [ 1, 4 ]
+                        startX: 0; startY: height
+                        PathLine { x: width; y: height }
+                    }
                     MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
