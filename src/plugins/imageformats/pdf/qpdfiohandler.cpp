@@ -85,11 +85,6 @@ int QPdfIOHandler::imageCount() const
     return ret;
 }
 
-QByteArray QPdfIOHandler::name() const
-{
-    return m_doc.metaData(QPdfDocument::MetaDataField::Title).toString().toLocal8Bit();
-}
-
 bool QPdfIOHandler::read(QImage *image)
 {
     if (load(device())) {

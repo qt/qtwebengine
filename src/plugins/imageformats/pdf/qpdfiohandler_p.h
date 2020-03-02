@@ -62,7 +62,6 @@ public:
     int currentImageNumber() const override;
     QRect currentImageRect() const override;
     int imageCount() const override;
-    QByteArray name() const override;
     bool read(QImage *image) override;
     QVariant option(ImageOption option) const override;
     void setOption(ImageOption option, const QVariant & value) override;
