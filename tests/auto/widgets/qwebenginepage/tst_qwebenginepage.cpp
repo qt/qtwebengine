@@ -2024,7 +2024,7 @@ private Q_SLOTS:
 
     void continueError()
     {
-        emit error(this->networkError());
+        emit error(this->error());
         emit finished();
     }
 };
