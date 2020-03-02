@@ -438,8 +438,8 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
         cookie_path = cookie_path.AppendASCII("Cookies");
         network_context_params->cookie_path = cookie_path;
 
-        network_context_params->restore_old_session_cookies = false;
-        network_context_params->persist_session_cookies = m_persistentCookiesPolicy == ProfileAdapter::ForcePersistentCookies;
+        network_context_params->restore_old_session_cookies = m_persistentCookiesPolicy == ProfileAdapter::ForcePersistentCookies;
+        network_context_params->persist_session_cookies = m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies;
     }
     if (!m_dataPath.isEmpty()) {
         network_context_params->http_server_properties_path = toFilePath(m_dataPath).AppendASCII("Network Persistent State");
