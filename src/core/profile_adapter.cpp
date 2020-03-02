@@ -352,16 +352,21 @@ QString ProfileAdapter::httpUserAgent() const
 
 void ProfileAdapter::setHttpUserAgent(const QString &userAgent)
 {
-    if (m_httpUserAgent == userAgent)
+    const QString httpUserAgent = userAgent.simplified();
+    if (m_httpUserAgent == httpUserAgent)
         return;
-    m_httpUserAgent = userAgent.simplified();
+    m_httpUserAgent = httpUserAgent;
+    const std::string stdUserAgent = httpUserAgent.toStdString();
 
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     for (content::WebContentsImpl *web_contents : list)
         if (web_contents->GetBrowserContext() == m_profile.data())
-            web_contents->SetUserAgentOverride(m_httpUserAgent.toStdString(), true);
+            web_contents->SetUserAgentOverride(stdUserAgent, true);
 
-    m_profile->m_profileIOData->resetNetworkContext();
+    content::BrowserContext::ForEachStoragePartition(
+        m_profile.get(), base::BindRepeating([](const std::string &user_agent, content::StoragePartition *storage_partition) {
+                                                 storage_partition->GetNetworkContext()->SetUserAgent(user_agent);
+                                             }, stdUserAgent));
 }
 
 ProfileAdapter::HttpCacheType ProfileAdapter::httpCacheType() const
