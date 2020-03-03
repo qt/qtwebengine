@@ -750,6 +750,17 @@ QQuickWebEngineViewAccessible::QQuickWebEngineViewAccessible(QQuickWebEngineView
     : QAccessibleObject(o)
 {}
 
+bool QQuickWebEngineViewAccessible::isValid() const
+{
+    if (!QAccessibleObject::isValid())
+        return false;
+
+    if (!engineView() || !engineView()->d_func())
+        return false;
+
+    return true;
+}
+
 QAccessibleInterface *QQuickWebEngineViewAccessible::parent() const
 {
     QQuickItem *parent = engineView()->parentItem();
@@ -773,9 +784,9 @@ int QQuickWebEngineViewAccessible::childCount() const
 
 QAccessibleInterface *QQuickWebEngineViewAccessible::child(int index) const
 {
-    if (index == 0 && engineView())
+    if (index == 0 && isValid())
         return engineView()->d_func()->adapter->browserAccessible();
-    return 0;
+    return nullptr;
 }
 
 int QQuickWebEngineViewAccessible::indexOfChild(const QAccessibleInterface *c) const
