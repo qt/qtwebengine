@@ -932,8 +932,6 @@ void tst_QWebEngineProfile::changeHttpAcceptLanguage()
 
 void tst_QWebEngineProfile::changeUseForGlobalCertificateVerification()
 {
-    QSKIP("Needs 3rdparty fix");
-
     TestServer server;
     QVERIFY(server.start());
 
