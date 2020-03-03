@@ -1010,7 +1010,10 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
     CHECK_INITIALIZED(nullptr);
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    content::BrowserAccessibilityManager *manager = static_cast<content::RenderFrameHostImpl*>(rvh->GetMainFrame())->GetOrCreateBrowserAccessibilityManager();
+    content::RenderFrameHostImpl *rfh = static_cast<content::RenderFrameHostImpl *>(rvh->GetMainFrame());
+    if (!rfh)
+        return nullptr;
+    content::BrowserAccessibilityManager *manager = rfh->GetOrCreateBrowserAccessibilityManager();
     if (!manager) // FIXME!
         return nullptr;
     content::BrowserAccessibility *acc = manager->GetRoot();

@@ -421,32 +421,29 @@ void tst_QQuickWebEngineView::transparentWebEngineViews()
 
     webEngineView1->setSize(QSizeF(300, 400));
     webEngineView1->loadHtml("<html><body bgcolor=\"red\"></body></html>");
-    QVERIFY(waitForLoadSucceeded(webEngineView1.data()));
-    webEngineView1->setVisible(true);
+    QVERIFY(waitForLoadSucceeded(webEngineView1.data(), 30000));
 
     webEngineView2->setSize(QSizeF(300, 400));
     webEngineView2->setUrl(urlFromTestPath("/html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView2.data()));
 
     // Result image: black text on red background.
-    const QImage grabbedWindow = tryToGrabWindowUntil(m_window.data(), [] (const QImage &image) {
-        return image.pixelColor(0, 0) == QColor(Qt::red);
+    QSet<QRgb> colors;
+    tryToGrabWindowUntil(m_window.data(), [&colors] (const QImage &image) {
+        colors.clear();
+        for (int i = 0; i < image.width(); i++)
+            for (int j = 0; j < image.height(); j++)
+                colors.insert(image.pixel(i, j));
+        return colors.count() > 1;
     });
 
-    QSet<int> redComponents;
-    for (int i = 0, width = grabbedWindow.width(); i < width; i++) {
-        for (int j = 0, height = grabbedWindow.height(); j < height; j++) {
-            QColor color(grabbedWindow.pixel(i, j));
-            redComponents.insert(color.red());
-            // There are no green or blue components between red and black.
-            QVERIFY(color.green() == 0);
-            QVERIFY(color.blue() == 0);
-        }
+    QVERIFY(colors.count() > 1);
+    QVERIFY(colors.contains(qRgb(0, 0, 0)));     // black
+    QVERIFY(colors.contains(qRgb(255, 0, 0)));   // red
+    for (auto color : colors) {
+        QCOMPARE(qGreen(color), 0);
+        QCOMPARE(qBlue(color), 0);
     }
-
-    QVERIFY(redComponents.count() > 1);
-    QVERIFY(redComponents.contains(0));     // black
-    QVERIFY(redComponents.contains(255));   // red
 }
 
 void tst_QQuickWebEngineView::inputMethod()

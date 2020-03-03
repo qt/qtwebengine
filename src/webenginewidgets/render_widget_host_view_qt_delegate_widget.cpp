@@ -41,6 +41,7 @@
 
 #include "qwebenginepage_p.h"
 #include "qwebengineview.h"
+#include "qwebengineview_p.h"
 #include <QGuiApplication>
 #include <QLayout>
 #include <QMouseEvent>
@@ -490,24 +491,37 @@ RenderWidgetHostViewQtDelegateWidgetAccessible::RenderWidgetHostViewQtDelegateWi
 {
 }
 
+bool RenderWidgetHostViewQtDelegateWidgetAccessible::isValid() const
+{
+    if (!viewAccessible() || !viewAccessible()->isValid())
+        return false;
+
+    return QAccessibleWidget::isValid();
+}
+
 QAccessibleInterface *RenderWidgetHostViewQtDelegateWidgetAccessible::focusChild() const
 {
-    return QAccessible::queryAccessibleInterface(m_view)->focusChild();
+    return viewAccessible()->focusChild();
 }
 
 int RenderWidgetHostViewQtDelegateWidgetAccessible::childCount() const
 {
-    return QAccessible::queryAccessibleInterface(m_view)->childCount();
+    return viewAccessible()->childCount();
 }
 
 QAccessibleInterface *RenderWidgetHostViewQtDelegateWidgetAccessible::child(int index) const
 {
-    return QAccessible::queryAccessibleInterface(m_view)->child(index);
+    return viewAccessible()->child(index);
 }
 
 int RenderWidgetHostViewQtDelegateWidgetAccessible::indexOfChild(const QAccessibleInterface *c) const
 {
-    return QAccessible::queryAccessibleInterface(m_view)->indexOfChild(c);
+    return viewAccessible()->indexOfChild(c);
+}
+
+QWebEngineViewAccessible *RenderWidgetHostViewQtDelegateWidgetAccessible::viewAccessible() const
+{
+    return static_cast<QWebEngineViewAccessible *>(QAccessible::queryAccessibleInterface(m_view));
 }
 #endif // QT_CONFIG(accessibility)
 
