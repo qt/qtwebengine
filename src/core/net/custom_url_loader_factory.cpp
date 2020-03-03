@@ -153,14 +153,8 @@ private:
             headers.emplace("Referer", m_request.referrer.spec());
 
         std::string rangeHeader;
-        if (m_request.headers.GetHeader(net::HttpRequestHeaders::kRange, &rangeHeader)) {
-            std::vector<net::HttpByteRange> ranges;
-            if (net::HttpUtil::ParseRangeHeader(rangeHeader, &ranges)) {
-                // Chromium doesn't support multiple range requests in one single URL request.
-                if (ranges.size() == 1)
-                    m_firstBytePosition = ranges[0].first_byte_position();
-            }
-        }
+        if (ParseRange(m_request.headers))
+            m_firstBytePosition = m_byteRange.first_byte_position();
 
 //        m_taskRunner->PostTask(FROM_HERE,
         base::PostTask(FROM_HERE, { content::BrowserThread::UI },
@@ -219,7 +213,17 @@ private:
     void notifyExpectedContentSize(qint64 size) override
     {
         DCHECK(m_taskRunner->RunsTasksInCurrentSequence());
-        m_head.content_length = size;
+        m_totalSize = size;
+        if (m_byteRange.IsValid()) {
+            if (!m_byteRange.ComputeBounds(size)) {
+                CompleteWithFailure(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
+            } else {
+                m_maxBytesToRead = m_byteRange.last_byte_position() - m_byteRange.first_byte_position() + 1;
+                m_head.content_length = m_maxBytesToRead;
+            }
+        } else {
+            m_head.content_length = size;
+        }
     }
     void notifyHeadersComplete() override
     {
@@ -232,9 +236,20 @@ private:
             headers += "HTTP/1.1 303 See Other\n";
             headers += base::StringPrintf("Location: %s\n", m_redirect.spec().c_str());
         } else {
-            headers += "HTTP/1.1 200 OK\n";
+            if (m_byteRange.IsValid() && m_totalSize > 0) {
+                headers += "HTTP/1.1 206 Partial Content\n";
+                headers += net::HttpResponseHeaders::kContentRange;
+                headers += base::StringPrintf(": bytes %lld-%lld/%lld",
+                                              qlonglong{m_byteRange.first_byte_position()},
+                                              qlonglong{m_byteRange.last_byte_position()},
+                                              qlonglong{m_totalSize});
+                headers += "\n";
+            } else {
+                headers += "HTTP/1.1 200 OK\n";
+            }
             if (m_mimeType.size() > 0) {
-                headers += base::StringPrintf("Content-Type: %s", m_mimeType.c_str());
+                headers += net::HttpRequestHeaders::kContentType;
+                headers += base::StringPrintf(": %s", m_mimeType.c_str());
                 if (m_charset.size() > 0)
                     headers += base::StringPrintf("; charset=%s", m_charset.c_str());
                 headers += "\n";
@@ -351,6 +366,8 @@ private:
                 return false; // Wait for pipe watcher
             if (beginResult != MOJO_RESULT_OK)
                 break;
+            if (m_maxBytesToRead > 0 && m_maxBytesToRead <= int64_t{std::numeric_limits<uint32_t>::max()})
+                bufferSize = std::min(bufferSize, uint32_t(m_maxBytesToRead));
 
             int readResult = m_device->read(static_cast<char *>(buffer), bufferSize);
             uint32_t bytesRead = std::max(readResult, 0);
@@ -358,7 +375,7 @@ private:
             m_totalBytesRead += bytesRead;
             m_client->OnTransferSizeUpdated(m_totalBytesRead);
 
-            if (m_device->atEnd()) {
+            if (m_device->atEnd() || (m_maxBytesToRead > 0 && m_totalBytesRead >= m_maxBytesToRead)) {
                 OnTransferComplete(MOJO_RESULT_OK);
                 return true; // Done with reading
             }
@@ -371,6 +388,21 @@ private:
 
         CompleteWithFailure(m_error ? net::Error(m_error) : net::ERR_FAILED);
         return true; // Done with reading
+    }
+    bool ParseRange(const net::HttpRequestHeaders &headers)
+    {
+        std::string range_header;
+        if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
+            std::vector<net::HttpByteRange> ranges;
+            if (net::HttpUtil::ParseRangeHeader(range_header, &ranges)) {
+                // Chromium doesn't support multirange requests.
+                if (ranges.size() == 1) {
+                    m_byteRange = ranges[0];
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     base::TaskRunner *taskRunner() override
     {
@@ -386,6 +418,9 @@ private:
     mojo::DataPipe m_pipe;
     std::unique_ptr<mojo::SimpleWatcher> m_watcher;
 
+    net::HttpByteRange m_byteRange;
+    int64_t m_totalSize = 0;
+    int64_t m_maxBytesToRead = -1;
     network::ResourceRequest m_request;
     network::ResourceResponseHead m_head;
     qint64 m_totalBytesRead = 0;

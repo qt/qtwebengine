@@ -100,9 +100,8 @@ void URLRequestCustomJobProxy::reply(std::string mimeType, QIODevice *device)
         m_client->m_device->seek(m_client->m_firstBytePosition);
 
     qint64 deviceSize = m_client->m_device ? m_client->m_device->size() : -1;
-    qint64 remainingBytes = deviceSize - m_client->m_firstBytePosition;
-    if (remainingBytes > 0)
-        m_client->notifyExpectedContentSize(remainingBytes);
+    if (deviceSize > 0)
+        m_client->notifyExpectedContentSize(deviceSize);
 
     if (m_client->m_device && m_client->m_device->isReadable()) {
         m_started = true;
