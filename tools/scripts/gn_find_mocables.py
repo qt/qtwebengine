@@ -58,10 +58,10 @@ for f in filter(os.path.isfile, files):
             includedMocs.add(im.group(1))
 
 for mocable in includedMocs:
-    print "Found included moc: " + mocable
+    print("Found included moc: " + mocable)
 
 assert len(includedMocs) == 0 , "Included mocs are not supported !"
 
 for mocable in mocables:
-    print mocable
+    print(mocable)
 sys.exit(0)
