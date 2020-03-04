@@ -48,6 +48,7 @@
 #include "touch_selection_controller_client_qt.h"
 #include "touch_selection_menu_controller.h"
 #include "type_conversion.h"
+#include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 #include "web_event_factory.h"
 
@@ -488,23 +489,20 @@ gfx::Rect RenderWidgetHostViewQt::GetViewBounds()
 
 void RenderWidgetHostViewQt::UpdateBackgroundColor()
 {
+    DCHECK(GetBackgroundColor());
+    SkColor color = *GetBackgroundColor();
+
+    m_delegate->setClearColor(toQt(color));
+
     if (m_enableViz) {
-        DCHECK(GetBackgroundColor());
-        SkColor color = *GetBackgroundColor();
         bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
         m_rootLayer->SetFillsBoundsOpaquely(opaque);
         m_rootLayer->SetColor(color);
         m_uiCompositor->SetBackgroundColor(color);
-        m_delegate->setClearColor(toQt(color));
-        host()->Send(new RenderViewObserverQt_SetBackgroundColor(host()->GetRoutingID(), color));
-        return;
     }
 
-    auto color = GetBackgroundColor();
-    if (color) {
-        m_delegate->setClearColor(toQt(*color));
-        host()->Send(new RenderViewObserverQt_SetBackgroundColor(host()->GetRoutingID(), *color));
-    }
+    content::RenderViewHost *rvh = content::RenderViewHost::From(host());
+    host()->Send(new RenderViewObserverQt_SetBackgroundColor(rvh->GetRoutingID(), color));
 }
 
 // Return value indicates whether the mouse is locked successfully or not.
