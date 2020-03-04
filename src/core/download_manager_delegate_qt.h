@@ -82,9 +82,7 @@ public:
                         const base::FilePath &suggested_path,
                         const base::FilePath::StringType &default_extension,
                         bool can_save_as_complete,
-                        const content::SavePackagePathPickedCallback &callback) override;
-    bool IsMostRecentDownloadItemAtFilePath(download::DownloadItem* download) override;
-
+                        content::SavePackagePathPickedCallback callback) override;
 
     void cancelDownload(quint32 downloadId);
     void pauseDownload(quint32 downloadId);

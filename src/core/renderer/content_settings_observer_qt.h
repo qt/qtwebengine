@@ -69,7 +69,7 @@ public:
     // blink::WebContentSettingsClient:
     bool AllowDatabase() override;
     void RequestFileSystemAccessAsync(base::OnceCallback<void(bool)> callback) override;
-    bool AllowIndexedDB(const blink::WebSecurityOrigin &origin) override;
+    bool AllowIndexedDB() override;
     bool AllowStorage(bool local) override;
 
 private:

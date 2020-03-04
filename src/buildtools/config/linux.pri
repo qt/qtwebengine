@@ -192,6 +192,11 @@ host_build {
     } else {
         gn_args += use_alsa=false
     }
+    qtConfig(build-qtwebengine-core):qtConfig(webengine-system-xkbcommon) {
+        gn_args += use_xkbcommon=true
+    } else {
+        gn_args += use_xkbcommon=false
+    }
     !packagesExist(libpci): gn_args += use_libpci=false
 
     qtConfig(build-qtwebengine-core):qtConfig(webengine-ozone-x11) {

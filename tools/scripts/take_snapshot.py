@@ -159,7 +159,7 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/chromite')
             or file_path.startswith('third_party/colorama')
             or file_path.startswith('third_party/depot_tools')
-            or file_path.startswith('third_party/devtools-node-modules')
+            or file_path.startswith('third_party/devtools-frontend/src/node-modules/')
             or file_path.startswith('third_party/fuschsia-sdk/')
             or file_path.startswith('third_party/glslang/src/Test/')
             or file_path.startswith('third_party/google_')
@@ -193,7 +193,7 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/skia/infra')
             or file_path.startswith('third_party/sqlite/sqlite-src-')
             or file_path.startswith('third_party/speech-dispatcher')
-            or file_path.startswith('third_party/spirv-cross/')
+            or file_path.startswith('third_party/spirv-cross/spirv-cross/reference/')
             or file_path.startswith('third_party/swiftshader/third_party/')
             or file_path.startswith('third_party/wayland')
             or file_path.startswith('third_party/webgl')
@@ -231,6 +231,7 @@ def isInChromiumBlacklist(file_path):
             not '/webrtc/' in file_path and
             not file_path.startswith('net/test/') and
             not file_path.endswith('mock_chrome_application_mac.h') and
+            not file_path.endswith('test_mock_time_task_runner.h') and
             not file_path.endswith('perftimer.h') and
             not file_path.endswith('test-torque.tq') and
             not file_path.endswith('fonts.conf') and

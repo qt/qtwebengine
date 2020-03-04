@@ -68,11 +68,12 @@ ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNameConstraintViolatio
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateValidityTooLong, net::ERR_CERT_VALIDITY_TOO_LONG)
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateTransparencyRequired, net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED)
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateSymantecLegacy, net::ERR_CERT_SYMANTEC_LEGACY)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateKnownInterceptionBlocked, net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED)
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateErrorEnd, net::ERR_CERT_END)
 
 void CertificateErrorControllerPrivate::accept(bool accepted)
 {
-    callback.Run(accepted ? content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE : content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
+    std::move(callback).Run(accepted ? content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE : content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
 }
 
 CertificateErrorControllerPrivate::CertificateErrorControllerPrivate(int cert_error,
@@ -81,14 +82,14 @@ CertificateErrorControllerPrivate::CertificateErrorControllerPrivate(int cert_er
                                                                      bool main_frame,
                                                                      bool fatal_error,
                                                                      bool strict_enforcement,
-                                                                     const base::Callback<void(content::CertificateRequestResultType)>& cb
+                                                                     base::OnceCallback<void(content::CertificateRequestResultType)> cb
                                                                     )
     : certError(CertificateErrorController::CertificateError(cert_error))
     , requestUrl(toQt(request_url))
     , resourceType(main_frame ? CertificateErrorController::ResourceTypeMainFrame : CertificateErrorController::ResourceTypeOther)
     , fatalError(fatal_error)
     , strictEnforcement(strict_enforcement)
-    , callback(cb)
+    , callback(std::move(cb))
 {
     if (auto cert = ssl_info.cert.get()) {
         validStart = toQt(cert->valid_start());
@@ -158,6 +159,8 @@ QString CertificateErrorController::errorString() const
         else
             return getQStringForMessageId(IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION);
     case CertificateAuthorityInvalid:
+    case CertificateKnownInterceptionBlocked:
+    case CertificateSymantecLegacy:
         return getQStringForMessageId(IDS_CERT_ERROR_AUTHORITY_INVALID_DESCRIPTION);
     case CertificateContainsErrors:
         return getQStringForMessageId(IDS_CERT_ERROR_CONTAINS_ERRORS_DESCRIPTION);

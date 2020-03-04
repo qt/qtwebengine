@@ -241,7 +241,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
                         const base::FilePath &suggested_path,
                         const base::FilePath::StringType &default_extension,
                         bool can_save_as_complete,
-                        const content::SavePackagePathPickedCallback &callback)
+                        content::SavePackagePathPickedCallback callback)
 {
     Q_UNUSED(default_extension);
     Q_UNUSED(can_save_as_complete);
@@ -308,29 +308,9 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
     if (!info.accepted)
         return;
 
-    callback.Run(toFilePath(info.path), static_cast<content::SavePageType>(info.savePageFormat),
-                 base::Bind(&DownloadManagerDelegateQt::savePackageDownloadCreated,
-                            m_weakPtrFactory.GetWeakPtr()));
-}
-
-bool DownloadManagerDelegateQt::IsMostRecentDownloadItemAtFilePath(download::DownloadItem *download)
-{
-    content::BrowserContext *context = content::DownloadItemUtils::GetBrowserContext(download);
-    std::vector<download::DownloadItem*> all_downloads;
-
-    content::DownloadManager* manager =
-            content::BrowserContext::GetDownloadManager(context);
-    if (manager)
-        manager->GetAllDownloads(&all_downloads);
-
-    for (const auto* item : all_downloads) {
-        if (item->GetGuid() == download->GetGuid() ||
-                item->GetTargetFilePath() != download->GetTargetFilePath())
-            continue;
-        if (item->GetState() == download::DownloadItem::IN_PROGRESS)
-            return false;
-    }
-    return true;
+    std::move(callback).Run(toFilePath(info.path), static_cast<content::SavePageType>(info.savePageFormat),
+                            base::Bind(&DownloadManagerDelegateQt::savePackageDownloadCreated,
+                                       m_weakPtrFactory.GetWeakPtr()));
 }
 
 void DownloadManagerDelegateQt::savePackageDownloadCreated(download::DownloadItem *item)

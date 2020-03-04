@@ -86,9 +86,9 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "extensions/buildflags/buildflags.h"
+#include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
-#include "third_party/blink/public/web/web_media_player_action.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -239,7 +239,7 @@ static void callbackOnPdfSavingFinished(WebContentsAdapterClient *adapterClient,
 
 static std::unique_ptr<content::WebContents> createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
 {
-    content::WebContents::CreateParams create_params(browserContext, NULL);
+    content::WebContents::CreateParams create_params(browserContext, nullptr);
     create_params.routing_id = MSG_ROUTING_NONE;
     create_params.initially_hidden = true;
 
@@ -1175,22 +1175,22 @@ void WebContentsAdapter::copyImageAt(const QPoint &location)
     m_webContents->GetRenderViewHost()->GetMainFrame()->CopyImageAt(location.x(), location.y());
 }
 
-static blink::WebMediaPlayerAction::Type toBlinkMediaPlayerActionType(WebContentsAdapter::MediaPlayerAction action)
+static blink::MediaPlayerAction::Type toBlinkMediaPlayerActionType(WebContentsAdapter::MediaPlayerAction action)
 {
     switch (action) {
     case WebContentsAdapter::MediaPlayerPlay:
-        return blink::WebMediaPlayerAction::Type::kPlay;
+        return blink::MediaPlayerAction::Type::kPlay;
     case WebContentsAdapter::MediaPlayerMute:
-        return blink::WebMediaPlayerAction::Type::kMute;
+        return blink::MediaPlayerAction::Type::kMute;
     case WebContentsAdapter::MediaPlayerLoop:
-        return blink::WebMediaPlayerAction::Type::kLoop;
+        return blink::MediaPlayerAction::Type::kLoop;
     case WebContentsAdapter::MediaPlayerControls:
-        return blink::WebMediaPlayerAction::Type::kControls;
+        return blink::MediaPlayerAction::Type::kControls;
     case WebContentsAdapter::MediaPlayerNoAction:
         break;
     }
     NOTREACHED();
-    return (blink::WebMediaPlayerAction::Type)-1;
+    return (blink::MediaPlayerAction::Type)-1;
 }
 
 void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, MediaPlayerAction action, bool enable)
@@ -1198,7 +1198,7 @@ void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, Medi
     CHECK_INITIALIZED();
     if (action == MediaPlayerNoAction)
         return;
-    blink::WebMediaPlayerAction blinkAction(toBlinkMediaPlayerActionType(action), enable);
+    blink::MediaPlayerAction blinkAction(toBlinkMediaPlayerActionType(action), enable);
     m_webContents->GetRenderViewHost()->GetMainFrame()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
 }
 

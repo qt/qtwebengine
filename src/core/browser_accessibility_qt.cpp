@@ -225,15 +225,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::AlertMessage;
     case ax::mojom::Role::kAnchor:
         return QAccessible::Link;
-
-    // REMINDER: annotation roles are removed from Chromium 80: https://chromium-review.googlesource.com/c/chromium/src/+/1907074
-    case ax::mojom::Role::kAnnotationAttribution:
-    case ax::mojom::Role::kAnnotationCommentary:
-    case ax::mojom::Role::kAnnotationPresence:
-    case ax::mojom::Role::kAnnotationRevision:
-    case ax::mojom::Role::kAnnotationSuggestion:
-        return QAccessible::Section;
-
     case ax::mojom::Role::kApplication:
         return QAccessible::Document; // returning Application here makes Qt return the top level app object
     case ax::mojom::Role::kArticle:
@@ -258,6 +249,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::CheckBox;
     case ax::mojom::Role::kClient:
         return QAccessible::Client;
+    case ax::mojom::Role::kCode:
+        return QAccessible::StaticText;
     case ax::mojom::Role::kColorWell:
         return QAccessible::ColorChooser;
     case ax::mojom::Role::kColumn:
@@ -270,6 +263,9 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::ComboBox;
     case ax::mojom::Role::kComplementary:
         return QAccessible::ComplementaryContent;
+    case ax::mojom::Role::kComment:
+    case ax::mojom::Role::kCommentSection:
+        return QAccessible::Section;
     case ax::mojom::Role::kContentDeletion:
     case ax::mojom::Role::kContentInsertion:
         return QAccessible::Grouping;
@@ -348,6 +344,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Document;
     case ax::mojom::Role::kEmbeddedObject:
         return QAccessible::Grouping;
+    case ax::mojom::Role::kEmphasis:
+        return QAccessible::StaticText;
     case ax::mojom::Role::kFeed:
         return QAccessible::Section;
     case ax::mojom::Role::kFigcaption:
@@ -466,8 +464,12 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Grouping;
     case ax::mojom::Role::kRegion:
         return QAccessible::Section;
+    case ax::mojom::Role::kRevision:
+        return QAccessible::Section;
     case ax::mojom::Role::kRow:
         return QAccessible::Row;
+    case ax::mojom::Role::kRowGroup:
+        return QAccessible::Section;
     case ax::mojom::Role::kRowHeader:
         return QAccessible::RowHeader;
     case ax::mojom::Role::kRuby:
@@ -495,6 +497,10 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::StaticText;
     case ax::mojom::Role::kStatus:
         return QAccessible::Indicator;
+    case ax::mojom::Role::kStrong:
+        return QAccessible::StaticText;
+    case ax::mojom::Role::kSuggestion:
+        return QAccessible::Section;
     case ax::mojom::Role::kSvgRoot:
         return QAccessible::Graphic;
     case ax::mojom::Role::kSwitch:

@@ -45,12 +45,12 @@
 
 #include <base/files/file_util.h>
 #include "components/visitedlink/browser/visitedlink_delegate.h"
-#include "components/visitedlink/browser/visitedlink_master.h"
+#include "components/visitedlink/browser/visitedlink_writer.h"
 
 namespace QtWebEngineCore {
 
 namespace {
-class BasicUrlIterator : public visitedlink::VisitedLinkMaster::URLIterator {
+class BasicUrlIterator : public visitedlink::VisitedLinkWriter::URLIterator {
 public:
     BasicUrlIterator(const QList<QUrl> &urls) : m_urls(urls) {}
     virtual const GURL& NextURL() { m_currentUrl = toGurl(m_urls.takeFirst()); return m_currentUrl; }
@@ -76,18 +76,18 @@ public:
 
 void VisitedLinksManagerQt::deleteAllVisitedLinkData()
 {
-    m_visitedLinkMaster->DeleteAllURLs();
+    m_visitedLinkWriter->DeleteAllURLs();
 }
 
 void VisitedLinksManagerQt::deleteVisitedLinkDataForUrls(const QList<QUrl> &urlsToDelete)
 {
     BasicUrlIterator iterator(urlsToDelete);
-    m_visitedLinkMaster->DeleteURLs(&iterator);
+    m_visitedLinkWriter->DeleteURLs(&iterator);
 }
 
 bool VisitedLinksManagerQt::containsUrl(const QUrl &url) const
 {
-    return m_visitedLinkMaster->IsVisited(toGurl(url));
+    return m_visitedLinkWriter->IsVisited(toGurl(url));
 }
 
 static void ensureDirectoryExists(const base::FilePath &path)
@@ -111,8 +111,8 @@ VisitedLinksManagerQt::VisitedLinksManagerQt(ProfileQt *profile, bool persistVis
     Q_ASSERT(profile);
     if (persistVisitedLinks)
         ensureDirectoryExists(profile->GetPath());
-    m_visitedLinkMaster.reset(new visitedlink::VisitedLinkMaster(profile, m_delegate.data(), persistVisitedLinks));
-    m_visitedLinkMaster->Init();
+    m_visitedLinkWriter.reset(new visitedlink::VisitedLinkWriter(profile, m_delegate.data(), persistVisitedLinks));
+    m_visitedLinkWriter->Init();
 }
 
 VisitedLinksManagerQt::~VisitedLinksManagerQt()
@@ -121,8 +121,8 @@ VisitedLinksManagerQt::~VisitedLinksManagerQt()
 
 void VisitedLinksManagerQt::addUrl(const GURL &urlToAdd)
 {
-    Q_ASSERT(m_visitedLinkMaster);
-    m_visitedLinkMaster->AddURL(urlToAdd);
+    Q_ASSERT(m_visitedLinkWriter);
+    m_visitedLinkWriter->AddURL(urlToAdd);
 }
 
 } // namespace QtWebEngineCore

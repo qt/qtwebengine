@@ -29,7 +29,8 @@ gn_args += \
     clang_use_chrome_plugins=false \
     mac_deployment_target=\"$${QMAKE_MACOSX_DEPLOYMENT_TARGET}\" \
     mac_sdk_min=\"$${QMAKE_MAC_SDK_VERSION}\" \
-    use_external_popup_menu=false
+    use_external_popup_menu=false \
+    angle_enable_vulkan=false
 
 qtConfig(build-qtwebengine-core):qtConfig(webengine-spellchecker) {
     qtConfig(webengine-native-spellchecker): gn_args += use_browser_spellchecker=true

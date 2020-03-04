@@ -57,6 +57,8 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/context_menu_params.h"
+#include "third_party/blink/public/common/context_menu_data/edit_flags.h"
+#include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "ui/gfx/image/image_skia.h"
 
 #include <QtGui/qpixmap.h>
@@ -87,7 +89,7 @@ void WebContentsViewQt::setClient(WebContentsAdapterClient* client)
     }
 }
 
-content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host, bool is_guest_view_hack)
+content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost *render_widget_host)
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
 
@@ -158,13 +160,13 @@ void WebContentsViewQt::FocusThroughTabTraversal(bool reverse)
 }
 
 
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeNone, blink::WebContextMenuData::kMediaTypeNone)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeImage, blink::WebContextMenuData::kMediaTypeImage)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeVideo, blink::WebContextMenuData::kMediaTypeVideo)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeAudio, blink::WebContextMenuData::kMediaTypeAudio)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeCanvas, blink::WebContextMenuData::kMediaTypeCanvas)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeFile, blink::WebContextMenuData::kMediaTypeFile)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypePlugin, blink::WebContextMenuData::kMediaTypePlugin)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeNone, blink::ContextMenuDataMediaType::kNone)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeImage, blink::ContextMenuDataMediaType::kImage)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeVideo, blink::ContextMenuDataMediaType::kVideo)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeAudio, blink::ContextMenuDataMediaType::kAudio)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeCanvas, blink::ContextMenuDataMediaType::kCanvas)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeFile, blink::ContextMenuDataMediaType::kFile)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypePlugin, blink::ContextMenuDataMediaType::kPlugin)
 
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaNone, blink::WebContextMenuData::kMediaNone)
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaInError, blink::WebContextMenuData::kMediaInError)
@@ -178,16 +180,16 @@ ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaControls, blink::WebContextMen
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanPrint, blink::WebContextMenuData::kMediaCanPrint)
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanRotate, blink::WebContextMenuData::kMediaCanRotate)
 
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanDoNone, blink::WebContextMenuData::kCanDoNone)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanUndo, blink::WebContextMenuData::kCanUndo)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanRedo, blink::WebContextMenuData::kCanRedo)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanCut, blink::WebContextMenuData::kCanCut)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanCopy, blink::WebContextMenuData::kCanCopy)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanPaste, blink::WebContextMenuData::kCanPaste)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanDelete, blink::WebContextMenuData::kCanDelete)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanSelectAll, blink::WebContextMenuData::kCanSelectAll)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanTranslate, blink::WebContextMenuData::kCanTranslate)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanEditRichly, blink::WebContextMenuData::kCanEditRichly)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanDoNone, blink::kCanDoNone)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanUndo, blink::kCanUndo)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanRedo, blink::kCanRedo)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanCut, blink::kCanCut)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanCopy, blink::kCanCopy)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanPaste, blink::kCanPaste)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanDelete, blink::kCanDelete)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanSelectAll, blink::kCanSelectAll)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanTranslate, blink::kCanTranslate)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanEditRichly, blink::kCanEditRichly)
 
 static inline WebEngineContextMenuData fromParams(const content::ContextMenuParams &params)
 {

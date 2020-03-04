@@ -85,6 +85,7 @@ public:
         CertificateNameConstraintViolation = -212,
         CertificateValidityTooLong = -213,
         CertificateTransparencyRequired = -214,
+        CertificateKnownInterceptionBlocked = -217,
     };
     Q_ENUM(Error)
 

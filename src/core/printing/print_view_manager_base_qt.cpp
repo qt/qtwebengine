@@ -48,7 +48,6 @@
 #include "web_engine_context.h"
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
@@ -427,12 +426,8 @@ void PrintViewManagerBaseQt::ReleasePrintJob()
     if (!m_printJob.get())
         return;
 
-    if (rfh) {
-        auto msg = std::make_unique<PrintMsg_PrintingDone>(rfh->GetRoutingID(),
-                                                           m_didPrintingSucceed);
-        rfh->Send(msg.release());
-    }
-
+    if (rfh)
+      GetPrintRenderFrame(rfh)->PrintingDone(m_didPrintingSucceed);
 
     m_registrar.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                        content::Source<printing::PrintJob>(m_printJob.get()));
@@ -543,7 +538,7 @@ void PrintViewManagerBaseQt::StopWorker(int documentCookie)
 
 void PrintViewManagerBaseQt::SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh)
 {
-    rfh->Send(new PrintMsg_SetPrintingEnabled(rfh->GetRoutingID(), enabled));
+    GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
 }
 
 } // namespace QtWebEngineCore

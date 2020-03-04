@@ -91,7 +91,8 @@ public:
     bool IsRunningInForcedAppMode() override;
     bool IsLoggedInAsPublicAccount() override;
     ExtensionSystemProvider *GetExtensionSystemFactory() override;
-//    void RegisterExtensionFunctions(ExtensionFunctionRegistry *registry) const;
+    void RegisterBrowserInterfaceBindersForFrame(service_manager::BinderMapWithContext<content::RenderFrameHost*> *,
+                                                 content::RenderFrameHost *, const extensions::Extension *) const override;
     std::unique_ptr<RuntimeAPIDelegate> CreateRuntimeAPIDelegate(content::BrowserContext *context) const override;
     void RegisterExtensionInterfaces(service_manager::BinderRegistryWithArgs<content::RenderFrameHost *> *registry,
                                      content::RenderFrameHost *render_frame_host,
@@ -122,11 +123,11 @@ public:
     // Creates and starts a URLLoader to load an extension resource from the
     // embedder's resource bundle (.pak) files. Used for component extensions.
     void LoadResourceFromResourceBundle(const network::ResourceRequest &request,
-                                        network::mojom::URLLoaderRequest loader,
+                                        mojo::PendingReceiver<network::mojom::URLLoader> loader,
                                         const base::FilePath &resource_relative_path,
                                         int resource_id,
                                         const std::string &content_security_policy,
-                                        network::mojom::URLLoaderClientPtr client,
+                                        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
                                         bool send_cors_header) override;
 
     // Returns the locale used by the application.

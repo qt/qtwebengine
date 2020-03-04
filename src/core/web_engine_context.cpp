@@ -589,9 +589,10 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(disableFeatures, features::kFontSrcLocalMatching.name);
 #endif
 
-#if QT_CONFIG(webengine_printing_and_pdf)
-    appendToFeatureList(disableFeatures, printing::features::kUsePdfCompositorServiceForPrint.name);
-#endif
+    // We don't support the skia renderer (enabled by default on Linux since 80)
+    appendToFeatureList(disableFeatures, features::kUseSkiaRenderer.name);
+
+    appendToFeatureList(disableFeatures, network::features::kDnsOverHttpsUpgrade.name);
 
     // Explicitly tell Chromium about default-on features we do not support
     appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
@@ -629,7 +630,7 @@ WebEngineContext::WebEngineContext()
         // Viz Display Compositor is enabled by default since 73. Doesn't work for us (also implies SurfaceSynchronization)
         appendToFeatureList(disableFeatures, features::kVizDisplayCompositor.name);
         // VideoSurfaceLayer is enabled by default since 75. We don't support it.
-        appendToFeatureList(disableFeatures, media::kUseSurfaceLayerForVideo.name);
+        appendToFeatureList(enableFeatures, media::kDisableSurfaceLayerForVideo.name);
     }
 
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, disableFeatures);

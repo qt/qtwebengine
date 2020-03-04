@@ -45,12 +45,12 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/platform_window/platform_window_base.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
-class PlatformWindowQt : public PlatformWindowBase, public PlatformEventDispatcher
+class PlatformWindowQt : public PlatformWindow, public PlatformEventDispatcher
 {
 public:
     PlatformWindowQt(PlatformWindowDelegate* delegate, const gfx::Rect& bounds);

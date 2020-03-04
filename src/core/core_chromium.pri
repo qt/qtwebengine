@@ -118,7 +118,6 @@ SOURCES = \
         renderer/render_view_observer_qt.cpp \
         renderer/render_thread_observer_qt.cpp \
         renderer/user_resource_controller.cpp \
-        renderer/plugins/loadable_plugin_placeholder_qt.cpp \
         renderer/plugins/plugin_placeholder_qt.cpp \
         renderer_host/render_view_observer_host_qt.cpp \
         renderer_host/user_resource_controller_host.cpp \
@@ -231,7 +230,6 @@ HEADERS = \
         renderer/render_view_observer_qt.h \
         renderer/render_thread_observer_qt.h \
         renderer/user_resource_controller.h \
-        renderer/plugins/loadable_plugin_placeholder_qt.h \
         renderer/plugins/plugin_placeholder_qt.h \
         renderer_host/render_view_observer_host_qt.h \
         renderer_host/user_resource_controller_host.h \
@@ -269,14 +267,16 @@ qtConfig(webengine-pepper-plugins) {
         renderer_host/pepper/pepper_host_factory_qt.cpp \
         renderer_host/pepper/pepper_isolated_file_system_message_filter.cpp \
         renderer/pepper/pepper_flash_renderer_host_qt.cpp \
-        renderer/pepper/pepper_renderer_host_factory_qt.cpp
+        renderer/pepper/pepper_renderer_host_factory_qt.cpp \
+        renderer/plugins/loadable_plugin_placeholder_qt.cpp
 
     HEADERS += \
         renderer_host/pepper/pepper_flash_browser_host_qt.h \
         renderer_host/pepper/pepper_host_factory_qt.h \
         renderer_host/pepper/pepper_isolated_file_system_message_filter.h \
         renderer/pepper/pepper_flash_renderer_host_qt.h \
-        renderer/pepper/pepper_renderer_host_factory_qt.h
+        renderer/pepper/pepper_renderer_host_factory_qt.h \
+        renderer/plugins/loadable_plugin_placeholder_qt.h
 }
 
 qtConfig(webengine-printing-and-pdf) {

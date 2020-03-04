@@ -22,7 +22,7 @@ deps = [
   "//components/keyed_service/content",
   "//components/navigation_interception",
   "//components/network_hints/browser",
-  "//components/network_hints/common",
+  "//components/network_hints/common:mojo_bindings",
   "//components/network_hints/renderer",
   "//components/visitedlink/browser",
   "//components/visitedlink/renderer",
@@ -34,7 +34,7 @@ deps = [
   "//content/public/app:browser",
   "//content",
   "//media:media_buildflags",
-  "//net:net_with_v8",
+  "//net",
   "//services/proxy_resolver:lib",
   "//skia",
   "//third_party/blink/public:blink",
@@ -48,7 +48,7 @@ deps = [
 ]
 
 if (enable_webrtc) {
-  deps += [ "//third_party/webrtc_overrides" ]
+  deps += [ "//third_party/webrtc_overrides:webrtc_component" ]
 }
 
 if (use_ozone) {

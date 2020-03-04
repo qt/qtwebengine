@@ -59,8 +59,8 @@ namespace {
 
 bool IsUniqueFrame(blink::WebFrame *frame)
 {
-    return frame->GetSecurityOrigin().IsUnique() ||
-           frame->Top()->GetSecurityOrigin().IsUnique();
+    return frame->GetSecurityOrigin().IsOpaque() ||
+           frame->Top()->GetSecurityOrigin().IsOpaque();
 }
 
 } // namespace
@@ -139,14 +139,15 @@ void ContentSettingsObserverQt::RequestFileSystemAccessAsync(base::OnceCallback<
                                                              url::Origin(frame->Top()->GetSecurityOrigin()).GetURL()));
 }
 
-bool ContentSettingsObserverQt::AllowIndexedDB(const WebSecurityOrigin &origin)
+bool ContentSettingsObserverQt::AllowIndexedDB()
 {
     blink::WebFrame *frame = render_frame()->GetWebFrame();
     if (IsUniqueFrame(frame))
         return false;
 
     bool result = false;
-    Send(new QtWebEngineHostMsg_AllowIndexedDB(routing_id(), url::Origin(origin).GetURL(),
+    Send(new QtWebEngineHostMsg_AllowIndexedDB(routing_id(),
+                                               url::Origin(frame->GetSecurityOrigin()).GetURL(),
                                                url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), &result));
     return result;
 }

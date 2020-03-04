@@ -87,7 +87,7 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale)
     }
 #endif
 
-    return !GetLocaleFilePath(locale, true).empty();
+    return !GetLocaleFilePath(locale).empty();
 }
 
 std::string ResourceBundle::LoadLocaleResources(const std::string& pref_locale)
@@ -108,7 +108,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string& pref_locale)
 
     base::FilePath locale_file_path = GetOverriddenPakPath();
     if (locale_file_path.empty())
-        locale_file_path = GetLocaleFilePath(app_locale, true);
+        locale_file_path = GetLocaleFilePath(app_locale);
 
     if (locale_file_path.empty()) {
         // It's possible that there is no locale.pak.

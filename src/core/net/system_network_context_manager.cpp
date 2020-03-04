@@ -74,7 +74,7 @@
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
-#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
+#include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
@@ -122,19 +122,23 @@ public:
 
     // mojom::URLLoaderFactory implementation:
 
-    void CreateLoaderAndStart(network::mojom::URLLoaderRequest request, int32_t routing_id, int32_t request_id,
-                              uint32_t options, const network::ResourceRequest &url_request,
-                              network::mojom::URLLoaderClientPtr client,
+    void CreateLoaderAndStart(mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+                              int32_t routing_id,
+                              int32_t request_id,
+                              uint32_t options,
+                              const network::ResourceRequest &url_request,
+                              mojo::PendingRemote<network::mojom::URLLoaderClient> client,
                               const net::MutableNetworkTrafficAnnotationTag &traffic_annotation) override
     {
         DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
         if (!manager_)
             return;
-        manager_->GetURLLoaderFactory()->CreateLoaderAndStart(std::move(request), routing_id, request_id, options,
-                                                              url_request, std::move(client), traffic_annotation);
+        manager_->GetURLLoaderFactory()->CreateLoaderAndStart(
+                    std::move(receiver), routing_id, request_id, options, url_request,
+                    std::move(client), traffic_annotation);
     }
 
-    void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+    void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) override
     {
         if (!manager_)
             return;
@@ -142,10 +146,10 @@ public:
     }
 
     // SharedURLLoaderFactory implementation:
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override
+    std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override
     {
         DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-        return std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(this);
+        return std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(this);
     }
 
     void Shutdown() { manager_ = nullptr; }

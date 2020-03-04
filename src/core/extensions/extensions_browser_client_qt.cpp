@@ -63,13 +63,13 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_protocols.h"
+#include "extensions/browser/extensions_browser_interface_binders.h"
 #include "extensions/browser/mojo/interface_registration.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/file_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/mime_util.h"
-#include "net/url_request/url_request_simple_job.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -144,9 +144,11 @@ scoped_refptr<base::RefCountedMemory> GetResource(int resource_id, const std::st
 class ResourceBundleFileLoader : public network::mojom::URLLoader
 {
 public:
-    static void CreateAndStart(const network::ResourceRequest &request, network::mojom::URLLoaderRequest loader,
-                               network::mojom::URLLoaderClientPtrInfo client_info, const base::FilePath &filename,
-                               int resource_id, const std::string &content_security_policy, bool send_cors_header)
+    static void CreateAndStart(const network::ResourceRequest &request,
+                               mojo::PendingReceiver<network::mojom::URLLoader> loader,
+                               mojo::PendingRemote<network::mojom::URLLoaderClient> client_info,
+                               const base::FilePath &filename, int resource_id,
+                               const std::string &content_security_policy, bool send_cors_header)
     {
         // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
         // bindings are alive - essentially until either the client gives up or all
@@ -174,10 +176,12 @@ private:
     }
     ~ResourceBundleFileLoader() override = default;
 
-    void Start(const network::ResourceRequest &request, network::mojom::URLLoaderRequest loader,
-               network::mojom::URLLoaderClientPtrInfo client_info, const base::FilePath &filename, int resource_id)
+    void Start(const network::ResourceRequest &request,
+               mojo::PendingReceiver<network::mojom::URLLoader> loader,
+               mojo::PendingRemote<network::mojom::URLLoaderClient> client_info_remote,
+               const base::FilePath &filename, int resource_id)
     {
-        client_.Bind(std::move(client_info));
+        client_.Bind(std::move(client_info_remote));
         binding_.Bind(std::move(loader));
         binding_.set_connection_error_handler(
                 base::BindOnce(&ResourceBundleFileLoader::OnBindingError, base::Unretained(this)));
@@ -364,14 +368,14 @@ base::FilePath ExtensionsBrowserClientQt::GetBundleResourcePath(const network::R
 // Creates and starts a URLLoader to load an extension resource from the
 // embedder's resource bundle (.pak) files. Used for component extensions.
 void ExtensionsBrowserClientQt::LoadResourceFromResourceBundle(const network::ResourceRequest &request,
-                                                               network::mojom::URLLoaderRequest loader,
+                                                               mojo::PendingReceiver<network::mojom::URLLoader> loader,
                                                                const base::FilePath &resource_relative_path,
                                                                int resource_id,
                                                                const std::string &content_security_policy,
-                                                               network::mojom::URLLoaderClientPtr client,
+                                                               mojo::PendingRemote<network::mojom::URLLoaderClient> client,
                                                                bool send_cors_header)
 {
-    ResourceBundleFileLoader::CreateAndStart(request, std::move(loader), client.PassInterface(), resource_relative_path,
+    ResourceBundleFileLoader::CreateAndStart(request, std::move(loader), std::move(client), resource_relative_path,
                                              resource_id, content_security_policy, send_cors_header);
 }
 
@@ -458,6 +462,18 @@ void ExtensionsBrowserClientQt::RegisterExtensionInterfaces(service_manager::Bin
                                                             const Extension *extension) const
 {
     RegisterInterfacesForExtension(registry, render_frame_host, extension);
+}
+
+void ExtensionsBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
+        service_manager::BinderMapWithContext<content::RenderFrameHost*> *binder_map,
+        content::RenderFrameHost* render_frame_host,
+        const Extension* extension) const
+{
+    PopulateExtensionFrameBinders(binder_map, render_frame_host, extension);
+
+    // FIXME Do we need something from here?
+    // PopulateChromeFrameBindersForExtension(binder_map, render_frame_host,
+    //                                        extension);
 }
 
 std::unique_ptr<RuntimeAPIDelegate> ExtensionsBrowserClientQt::CreateRuntimeAPIDelegate(content::BrowserContext *context) const

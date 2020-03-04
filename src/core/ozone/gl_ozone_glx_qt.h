@@ -54,7 +54,7 @@ public:
 
     bool InitializeGLOneOffPlatform() override;
     bool InitializeStaticGLBindings(gl::GLImplementation implementation) override;
-    void InitializeDebugGLBindings() override;
+    void InitializeLogGLBindings() override;
     bool InitializeExtensionSettingsOneOffPlatform() override;
     void ShutdownGL() override;
     void SetDisabledExtensionsPlatform(

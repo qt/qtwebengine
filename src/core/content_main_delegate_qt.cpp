@@ -107,7 +107,7 @@ struct LazyDirectoryListerCacher
         dict.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
         std::string html =
                 webui::GetI18nTemplateHtml(
-                    ui::ResourceBundle::GetSharedInstance().DecompressDataResource(IDR_DIR_HEADER_HTML),
+                    ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_DIR_HEADER_HTML),
                     &dict);
         html_data = base::RefCountedString::TakeString(&html);
     }

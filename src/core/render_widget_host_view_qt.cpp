@@ -1840,7 +1840,6 @@ const viz::LocalSurfaceIdAllocation &RenderWidgetHostViewQt::GetLocalSurfaceIdAl
 void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostView *view)
 {
     DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)->IsRenderWidgetHostViewChildFrame());
-    DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)->IsRenderWidgetHostViewGuest());
     RenderWidgetHostViewQt *viewQt = static_cast<RenderWidgetHostViewQt *>(view);
     base::Optional<SkColor> color = viewQt->GetBackgroundColor();
     if (color)

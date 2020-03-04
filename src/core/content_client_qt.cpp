@@ -347,8 +347,8 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
             // Add the supported encryption schemes as if they came from the
             // component manifest. This list must match the CDM that is being
             // bundled with Chrome.
-            capability->encryption_schemes.insert(media::EncryptionMode::kCenc);
-            capability->encryption_schemes.insert(media::EncryptionMode::kCbcs);
+            capability->encryption_schemes.insert(media::EncryptionScheme::kCenc);
+            capability->encryption_schemes.insert(media::EncryptionScheme::kCbcs);
 
             // Temporary session is always supported.
             capability->session_types.insert(media::CdmSessionType::kTemporary);
@@ -391,7 +391,7 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
 
             // Supported codecs are hard-coded in ExternalClearKeyProperties.
             content::CdmCapability capability(
-                {}, {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
+                {}, {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs},
                 {media::CdmSessionType::kTemporary,
                  media::CdmSessionType::kPersistentLicense},
                 {});

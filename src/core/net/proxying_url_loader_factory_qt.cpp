@@ -97,8 +97,9 @@ public:
                        const network::ResourceRequest &request,
                        const net::MutableNetworkTrafficAnnotationTag &traffic_annotation,
                        ProfileIODataQt *profileData,
-                       network::mojom::URLLoaderRequest loader_request, network::mojom::URLLoaderClientPtr client,
-                       network::mojom::URLLoaderFactoryPtr target_factory);
+                       mojo::PendingReceiver<network::mojom::URLLoader> loader,
+                       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+                       mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory);
     ~InterceptedRequest() override;
 
     void Start();
@@ -158,12 +159,12 @@ private:
 
     QWebEngineUrlRequestInfo m_requestInfo;
     ProfileIODataQt *m_profileData;
-    mojo::Binding<network::mojom::URLLoader> proxied_loader_binding_;
-    network::mojom::URLLoaderClientPtr target_client_;
+    mojo::Receiver<network::mojom::URLLoader> proxied_loader_receiver_;
+    mojo::Remote<network::mojom::URLLoaderClient> target_client_;
 
-    mojo::Binding<network::mojom::URLLoaderClient> proxied_client_binding_;
-    network::mojom::URLLoaderPtr target_loader_;
-    network::mojom::URLLoaderFactoryPtr target_factory_;
+    mojo::Receiver<network::mojom::URLLoaderClient> proxied_client_receiver_{this};
+    mojo::Remote<network::mojom::URLLoader> target_loader_;
+    mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
 
     base::WeakPtrFactory<InterceptedRequest> m_weakFactory;
     base::WeakPtr<InterceptedRequest> m_weakPtr;
@@ -174,9 +175,9 @@ InterceptedRequest::InterceptedRequest(int process_id, uint64_t request_id, int3
                                        const network::ResourceRequest &request,
                                        const net::MutableNetworkTrafficAnnotationTag &traffic_annotation,
                                        ProfileIODataQt *profileData,
-                                       network::mojom::URLLoaderRequest loader_request,
-                                       network::mojom::URLLoaderClientPtr client,
-                                       network::mojom::URLLoaderFactoryPtr target_factory)
+                                       mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
+                                       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+                                       mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory)
     : process_id_(process_id)
     , request_id_(request_id)
     , routing_id_(routing_id)
@@ -184,18 +185,17 @@ InterceptedRequest::InterceptedRequest(int process_id, uint64_t request_id, int3
     , request_(request)
     , traffic_annotation_(traffic_annotation)
     , m_profileData(profileData)
-    , proxied_loader_binding_(this, std::move(loader_request))
+    , proxied_loader_receiver_(this, std::move(loader_receiver))
     , target_client_(std::move(client))
-    , proxied_client_binding_(this)
     , target_factory_(std::move(target_factory))
     , m_weakFactory(this)
     , m_weakPtr(m_weakFactory.GetWeakPtr())
 {
     // If there is a client error, clean up the request.
-    target_client_.set_connection_error_handler(
-            base::BindOnce(&InterceptedRequest::OnURLLoaderClientError,  m_weakFactory.GetWeakPtr()));
-    proxied_loader_binding_.set_connection_error_with_reason_handler(
-            base::BindOnce(&InterceptedRequest::OnURLLoaderError,  m_weakFactory.GetWeakPtr()));
+    target_client_.set_disconnect_handler(
+            base::BindOnce(&InterceptedRequest::OnURLLoaderClientError, m_weakFactory.GetWeakPtr()));
+    proxied_loader_receiver_.set_disconnect_with_reason_handler(
+            base::BindOnce(&InterceptedRequest::OnURLLoaderError, m_weakFactory.GetWeakPtr()));
 }
 
 InterceptedRequest::~InterceptedRequest()
@@ -341,10 +341,9 @@ void InterceptedRequest::ContinueAfterIntercept()
     }
 
     if (!target_loader_ && target_factory_) {
-        network::mojom::URLLoaderClientPtr proxied_client;
-        proxied_client_binding_.Bind(mojo::MakeRequest(&proxied_client));
-        target_factory_->CreateLoaderAndStart(mojo::MakeRequest(&target_loader_), routing_id_, request_id_, options_,
-                                              request_, std::move(proxied_client), traffic_annotation_);
+        target_factory_->CreateLoaderAndStart(target_loader_.BindNewPipeAndPassReceiver(), routing_id_, request_id_,
+                                              options_, request_, proxied_client_receiver_.BindNewPipeAndPassRemote(),
+                                              traffic_annotation_);
     }
 }
 
@@ -460,17 +459,17 @@ void InterceptedRequest::CallOnComplete(const network::URLLoaderCompletionStatus
     if (target_client_)
         target_client_->OnComplete(status);
 
-    if (proxied_loader_binding_ && wait_for_loader_error) {
-        // Don't delete |this| yet, in case the |proxied_loader_binding_|'s
+    if (proxied_loader_receiver_.is_bound() && wait_for_loader_error) {
+        // Since the original client is gone no need to continue loading the
+        // request.
+        proxied_client_receiver_.reset();
+        target_loader_.reset();
+
+        // Don't delete |this| yet, in case the |proxied_loader_receiver_|'s
         // error_handler is called with a reason to indicate an error which we want
         // to send to the client bridge. Also reset |target_client_| so we don't
         // get its error_handler called and then delete |this|.
         target_client_.reset();
-
-        // Since the original client is gone no need to continue loading the
-        // request.
-        proxied_client_binding_.Close();
-        target_loader_.reset();
 
         // In case there are pending checks as to whether this request should be
         // intercepted, we don't want that causing |target_client_| to be used
@@ -523,10 +522,10 @@ void ProxyingURLLoaderFactoryQt::CreateProxy(int process_id,
     new ProxyingURLLoaderFactoryQt(process_id, resourceContext, std::move(loader_receiver), std::move(target_factory_info));
 }
 
-void ProxyingURLLoaderFactoryQt::CreateLoaderAndStart(network::mojom::URLLoaderRequest loader, int32_t routing_id,
-                                                      int32_t request_id, uint32_t options,
+void ProxyingURLLoaderFactoryQt::CreateLoaderAndStart(mojo::PendingReceiver<network::mojom::URLLoader> loader,
+                                                      int32_t routing_id, int32_t request_id, uint32_t options,
                                                       const network::ResourceRequest &request,
-                                                      network::mojom::URLLoaderClientPtr client,
+                                                      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
                                                       const net::MutableNetworkTrafficAnnotationTag &traffic_annotation)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -541,9 +540,9 @@ void ProxyingURLLoaderFactoryQt::CreateLoaderAndStart(network::mojom::URLLoaderR
         return;
     }
 
-    network::mojom::URLLoaderFactoryPtr target_factory_clone;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_clone;
     if (m_targetFactory)
-        m_targetFactory->Clone(mojo::MakeRequest(&target_factory_clone));
+        m_targetFactory->Clone(target_factory_clone.InitWithNewPipeAndPassReceiver());
 
     // Will manage its own lifetime
     InterceptedRequest *req = new InterceptedRequest(m_processId, request_id, routing_id, options, request,
