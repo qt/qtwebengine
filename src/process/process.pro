@@ -39,7 +39,12 @@ win32 {
     msvc: QMAKE_LFLAGS += /MANIFESTINPUT:$$PWD/process.exe.manifest
 }
 
-load(qt_app)
+TEMPLATE = app
+
+load(qt_build_paths)
+
+!build_pass:qtConfig(debug_and_release): CONFIG += release
+CONFIG += relative_qt_rpath
 
 qtConfig(build_all): CONFIG += build_all
 
@@ -63,3 +68,8 @@ qtConfig(framework) {
 } else {
     target.path = $$[QT_INSTALL_LIBEXECS]
 }
+
+load(qt_targets)
+load(qt_common)
+
+INSTALLS += target
