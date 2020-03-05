@@ -129,9 +129,8 @@ private:
     ~WebEngineContext();
 
     static void registerMainThreadFactories(bool threaded);
-    static void destroyGpuProcess(bool threaded);
+    static void destroyGpuProcess();
 
-    bool m_threadedGpu;
     std::unique_ptr<base::RunLoop> m_runLoop;
     std::unique_ptr<ContentMainDelegateQt> m_mainDelegate;
     std::unique_ptr<content::ContentMainRunner> m_contentRunner;
