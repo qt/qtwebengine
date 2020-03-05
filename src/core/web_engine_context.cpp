@@ -574,7 +574,6 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(enableFeatures, features::kAllowContentInitiatedDataUrlNavigations.name);
 
     appendToFeatureList(enableFeatures, features::kTracingServiceInProcess.name);
-    appendToFeatureList(enableFeatures, features::kNetworkServiceInProcess.name);
 
     // The video-capture service is not functioning at this moment (since 69)
     appendToFeatureList(disableFeatures, features::kMojoVideoCapture.name);
