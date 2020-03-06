@@ -133,17 +133,6 @@ Flickable {
         navigationStack.update(navigationStack.currentPage, currentLocation, root.renderScale)
     }
 
-    PdfSelection {
-        id: selection
-        document: root.document
-        page: navigationStack.currentPage
-        fromPoint: Qt.point(textSelectionDrag.centroid.pressPosition.x / image.pageScale,
-                            textSelectionDrag.centroid.pressPosition.y / image.pageScale)
-        toPoint: Qt.point(textSelectionDrag.centroid.position.x / image.pageScale,
-                          textSelectionDrag.centroid.position.y / image.pageScale)
-        hold: !textSelectionDrag.active && !tapHandler.pressed
-    }
-
     PdfSearchModel {
         id: searchModel
         document: root.document === undefined ? null : root.document
@@ -246,9 +235,29 @@ Flickable {
                 target: null
             }
             TapHandler {
-                id: tapHandler
+                id: mouseClickHandler
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
             }
+            TapHandler {
+                id: touchTapHandler
+                acceptedDevices: PointerDevice.TouchScreen
+                onTapped: {
+                    selection.clear()
+                    selection.focus = true
+                }
+            }
+        }
+
+        PdfSelection {
+            id: selection
+            anchors.fill: parent
+            document: root.document
+            page: navigationStack.currentPage
+            renderScale: image.pageScale
+            fromPoint: textSelectionDrag.centroid.pressPosition
+            toPoint: textSelectionDrag.centroid.position
+            hold: !textSelectionDrag.active && !mouseClickHandler.pressed
+            focus: true
         }
 
         PinchHandler {

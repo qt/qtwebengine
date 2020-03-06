@@ -46,12 +46,18 @@ class QPdfSelectionPrivate : public QSharedData
 {
 public:
     QPdfSelectionPrivate() = default;
-    QPdfSelectionPrivate(const QString &text, QVector<QPolygonF> bounds)
+    QPdfSelectionPrivate(const QString &text, QVector<QPolygonF> bounds, QRectF boundingRect, int startIndex, int endIndex)
         : text(text),
-          bounds(bounds) { }
+          bounds(bounds),
+          boundingRect(boundingRect),
+          startIndex(startIndex),
+          endIndex(endIndex) { }
 
     QString text;
     QVector<QPolygonF> bounds;
+    QRectF boundingRect;
+    int startIndex;
+    int endIndex;
 };
 
 QT_END_NAMESPACE

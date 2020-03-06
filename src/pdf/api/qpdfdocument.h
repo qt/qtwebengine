@@ -114,6 +114,7 @@ public:
     QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
 
     Q_INVOKABLE QPdfSelection getSelection(int page, QPointF start, QPointF end);
+    Q_INVOKABLE QPdfSelection getSelectionAtIndex(int page, int startIndex, int maxLength);
     Q_INVOKABLE QPdfSelection getAllText(int page);
 
 Q_SIGNALS:
@@ -127,6 +128,7 @@ private:
     friend class QPdfLinkModelPrivate;
     friend class QPdfSearchModel;
     friend class QPdfSearchModelPrivate;
+    friend class QQuickPdfSelection;
 
     Q_PRIVATE_SLOT(d, void _q_tryLoadingWithSizeFromContentHeader())
     Q_PRIVATE_SLOT(d, void _q_copyFromSequentialSourceDevice())

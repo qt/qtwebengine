@@ -3,6 +3,10 @@ TARGET  = pdfplugin
 TARGETPATH = QtQuick/Pdf
 IMPORT_VERSION = 1.0
 
+# qpdfdocument_p.h includes pdfium headers which we must find in order to use private API
+CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
+INCLUDEPATH += $$CHROMIUM_SRC_DIR
+
 #QMAKE_DOCS = $$PWD/doc/qtquickpdf.qdocconf
 
 PDF_QML_FILES = \
@@ -29,6 +33,6 @@ HEADERS += \
     qquickpdfsearchmodel_p.h \
     qquickpdfselection_p.h \
 
-QT += pdf gui core qml quick
+QT += pdf pdf-private gui core qml quick
 
 load(qml_plugin)

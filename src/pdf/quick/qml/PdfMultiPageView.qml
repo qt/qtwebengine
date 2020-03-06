@@ -276,8 +276,16 @@ Item {
                     target: null
                 }
                 TapHandler {
-                    id: tapHandler
+                    id: mouseClickHandler
                     acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
+                }
+                TapHandler {
+                    id: touchTapHandler
+                    acceptedDevices: PointerDevice.TouchScreen
+                    onTapped: {
+                        selection.clear()
+                        selection.forceActiveFocus()
+                    }
                 }
                 Repeater {
                     model: PdfLinkModel {
@@ -320,17 +328,18 @@ Item {
                         }
                     }
                 }
-            }
-            PdfSelection {
-                id: selection
-                document: root.document
-                page: image.currentFrame
-                fromPoint: Qt.point(textSelectionDrag.centroid.pressPosition.x / paper.pageScale,
-                                    textSelectionDrag.centroid.pressPosition.y / paper.pageScale)
-                toPoint: Qt.point(textSelectionDrag.centroid.position.x / paper.pageScale,
-                                  textSelectionDrag.centroid.position.y / paper.pageScale)
-                hold: !textSelectionDrag.active && !tapHandler.pressed
-                onTextChanged: root.selectedText = text
+                PdfSelection {
+                    id: selection
+                    anchors.fill: parent
+                    document: root.document
+                    page: image.currentFrame
+                    renderScale: image.renderScale
+                    fromPoint: textSelectionDrag.centroid.pressPosition
+                    toPoint: textSelectionDrag.centroid.position
+                    hold: !textSelectionDrag.active && !mouseClickHandler.pressed
+                    onTextChanged: root.selectedText = text
+                    focus: true
+                }
             }
         }
         ScrollBar.vertical: ScrollBar {
