@@ -163,7 +163,7 @@ defineTest(qtConfTest_detectNinja) {
     !isEmpty(ninja) {
         qtLog("Found ninja from path: $$ninja")
         qtRunLoggedCommand("$$ninja --version", version)|return(false)
-        contains(version, "1.[7-9].*"): return(true)
+        contains(version, "1\.([7-9]|1[0-9])\..*"): return(true)
         qtLog("Ninja version too old")
     }
     qtLog("Building own ninja")
