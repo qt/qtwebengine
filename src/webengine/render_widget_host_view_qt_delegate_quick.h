@@ -47,6 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
+class QQuickWebEngineViewAccessible;
 class QQuickWebEngineViewPrivate;
 QT_END_NAMESPACE
 
@@ -122,6 +123,7 @@ class RenderWidgetHostViewQtDelegateQuickAccessible : public QAccessibleObject
 public:
     RenderWidgetHostViewQtDelegateQuickAccessible(RenderWidgetHostViewQtDelegateQuick *o, QQuickWebEngineView *view);
 
+    bool isValid() const override;
     QAccessibleInterface *parent() const override;
     QString text(QAccessible::Text t) const override;
     QAccessible::Role role() const override;
@@ -133,6 +135,7 @@ public:
     int indexOfChild(const QAccessibleInterface *) const override;
 
 private:
+    QQuickWebEngineViewAccessible *viewAccessible() const;
     QQuickWebEngineView *m_view;
 };
 #endif // QT_CONFIG(accessibility)

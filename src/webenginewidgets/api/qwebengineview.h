@@ -53,6 +53,7 @@ class QContextMenuEvent;
 class QUrl;
 class QWebEnginePage;
 class QWebEngineSettings;
+class QWebEngineViewAccessible;
 class QWebEngineViewPrivate;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineView : public QWidget {
@@ -141,6 +142,9 @@ private:
 
     friend class QWebEnginePage;
     friend class QWebEnginePagePrivate;
+#if QT_CONFIG(accessibility)
+    friend class QWebEngineViewAccessible;
+#endif
 };
 
 QT_END_NAMESPACE
