@@ -164,6 +164,13 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
+                    shortcut: StandardKey.SelectAll
+                    icon.source: "resources/edit-select-all.svg"
+                    onTriggered: view.selectAll()
+                }
+            }
+            ToolButton {
+                action: Action {
                     shortcut: StandardKey.Copy
                     icon.source: "resources/edit-copy.svg"
                     enabled: view.selectedText !== ""

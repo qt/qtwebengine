@@ -105,6 +105,7 @@ public:
     static int fpdf_GetBlock(void* param, unsigned long position, unsigned char* pBuf, unsigned long size);
     static void fpdf_AddSegment(struct _FX_DOWNLOADHINTS* pThis, size_t offset, size_t size);
     void updateLastError();
+    QString getText(FPDF_TEXTPAGE textPage, int startIndex, int count);
 };
 
 QT_END_NAMESPACE

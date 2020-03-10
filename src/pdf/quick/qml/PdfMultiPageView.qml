@@ -47,6 +47,11 @@ Item {
     property bool debug: false
 
     property string selectedText
+    function selectAll() {
+        var currentItem = tableView.itemAtPos(0, tableView.contentY + root.height / 2)
+        if (currentItem !== null)
+            currentItem.selection.selectAll()
+    }
     function copySelectionToClipboard() {
         var currentItem = tableView.itemAtPos(0, tableView.contentY + root.height / 2)
         if (debug)

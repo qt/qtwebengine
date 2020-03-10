@@ -47,6 +47,9 @@ Flickable {
     property alias status: image.status
 
     property alias selectedText: selection.text
+    function selectAll() {
+        selection.selectAll()
+    }
     function copySelectionToClipboard() {
         selection.copyToClipboard()
     }
