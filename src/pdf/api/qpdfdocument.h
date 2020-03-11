@@ -113,6 +113,7 @@ public:
     QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
 
     Q_INVOKABLE QPdfSelection getSelection(int page, QPointF start, QPointF end);
+    Q_INVOKABLE QPdfSelection getAllText(int page);
 
 Q_SIGNALS:
     void passwordChanged();

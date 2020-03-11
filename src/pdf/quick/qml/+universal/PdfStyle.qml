@@ -33,48 +33,23 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+import QtQml 2.14
+import QtQuick 2.14
+import QtQuick.Controls 2.14
+import QtQuick.Controls.Universal 2.14
+import QtQuick.Shapes 1.14
 
-#include "qpdfsearchresult.h"
-#include "qpdfsearchresult_p.h"
-
-QT_BEGIN_NAMESPACE
-
-QPdfSearchResult::QPdfSearchResult() :
-    QPdfSearchResult(new QPdfSearchResultPrivate()) { }
-
-QPdfSearchResult::QPdfSearchResult(int page, QVector<QRectF> rects, QString contextBefore, QString contextAfter) :
-    QPdfSearchResult(new QPdfSearchResultPrivate(page, rects, contextBefore, contextAfter)) { }
-
-QPdfSearchResult::QPdfSearchResult(QPdfSearchResultPrivate *d) :
-    QPdfDestination(static_cast<QPdfDestinationPrivate *>(d)) { }
-
-QString QPdfSearchResult::contextBefore() const
-{
-    return static_cast<QPdfSearchResultPrivate *>(d.data())->contextBefore;
+QtObject {
+    property Control prototypeControl: Control { }
+    function withAlpha(color, alpha) {
+        return Qt.hsla(color.hslHue, color.hslSaturation, color.hslLightness, alpha)
+    }
+    property color selectionColor: withAlpha(prototypeControl.palette.highlight, 0.5)
+    property color pageSearchResultsColor: withAlpha(Qt.lighter(Universal.accent, 1.5), 0.5)
+    property color currentSearchResultStrokeColor: Universal.accent
+    property real currentSearchResultStrokeWidth: 2
+    property color linkUnderscoreColor: prototypeControl.palette.link
+    property real linkUnderscoreStrokeWidth: 1
+    property var linkUnderscoreStrokeStyle: ShapePath.DashLine
+    property var linkUnderscoreDashPattern: [ 1, 4 ]
 }
-
-QString QPdfSearchResult::contextAfter() const
-{
-    return static_cast<QPdfSearchResultPrivate *>(d.data())->contextAfter;
-}
-
-QVector<QRectF> QPdfSearchResult::rectangles() const
-{
-    return static_cast<QPdfSearchResultPrivate *>(d.data())->rects;
-}
-
-QDebug operator<<(QDebug dbg, const QPdfSearchResult &searchResult)
-{
-    QDebugStateSaver saver(dbg);
-    dbg.nospace();
-    dbg << "QPdfSearchResult(page=" << searchResult.page()
-        << " contextBefore=" << searchResult.contextBefore()
-        << " contextAfter=" << searchResult.contextAfter()
-        << " rects=" << searchResult.rectangles();
-    dbg << ')';
-    return dbg;
-}
-
-QT_END_NAMESPACE
-
-#include "moc_qpdfsearchresult.cpp"

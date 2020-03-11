@@ -47,6 +47,9 @@ Flickable {
     property alias status: image.status
 
     property alias selectedText: selection.text
+    function selectAll() {
+        selection.selectAll()
+    }
     function copySelectionToClipboard() {
         selection.copyToClipboard()
     }
@@ -101,6 +104,7 @@ Flickable {
 
     // implementation
     id: root
+    PdfStyle { id: style }
     contentWidth: paper.width
     contentHeight: paper.height
     ScrollBar.vertical: ScrollBar {
@@ -175,62 +179,75 @@ Flickable {
             rotation: root.pageRotation
             anchors.centerIn: parent
             property real pageScale: image.paintedWidth / document.pagePointSize(navigationStack.currentPage).width
-        }
 
-        Shape {
-            anchors.fill: parent
-            opacity: 0.25
-            visible: image.status === Image.Ready
-            ShapePath {
-                strokeWidth: 1
-                strokeColor: "cyan"
-                fillColor: "steelblue"
-                scale: Qt.size(image.pageScale, image.pageScale)
-                PathMultiline {
-                    paths: searchModel.currentPageBoundingPolygons
-                }
-            }
-            ShapePath {
-                strokeWidth: 1
-                strokeColor: "orange"
-                fillColor: "cyan"
-                scale: Qt.size(image.pageScale, image.pageScale)
-                PathMultiline {
-                    paths: searchModel.currentResultBoundingPolygons
-                }
-            }
-            ShapePath {
-                fillColor: "orange"
-                scale: Qt.size(image.pageScale, image.pageScale)
-                PathMultiline {
-                    paths: selection.geometry
-                }
-            }
-        }
-
-        Repeater {
-            model: PdfLinkModel {
-                id: linkModel
-                document: root.document
-                page: navigationStack.currentPage
-            }
-            delegate: Rectangle {
-                color: "transparent"
-                border.color: "lightgrey"
-                x: rect.x * image.pageScale
-                y: rect.y * image.pageScale
-                width: rect.width * image.pageScale
-                height: rect.height * image.pageScale
-                MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (page >= 0)
-                            navigationStack.push(page, Qt.point(0, 0), root.renderScale)
-                        else
-                            Qt.openUrlExternally(url)
+            Shape {
+                anchors.fill: parent
+                visible: image.status === Image.Ready
+                ShapePath {
+                    strokeWidth: -1
+                    fillColor: style.pageSearchResultsColor
+                    scale: Qt.size(image.pageScale, image.pageScale)
+                    PathMultiline {
+                        paths: searchModel.currentPageBoundingPolygons
                     }
                 }
+                ShapePath {
+                    strokeWidth: style.currentSearchResultStrokeWidth
+                    strokeColor: style.currentSearchResultStrokeColor
+                    fillColor: "transparent"
+                    scale: Qt.size(image.pageScale, image.pageScale)
+                    PathMultiline {
+                        paths: searchModel.currentResultBoundingPolygons
+                    }
+                }
+                ShapePath {
+                    fillColor: style.selectionColor
+                    scale: Qt.size(image.pageScale, image.pageScale)
+                    PathMultiline {
+                        paths: selection.geometry
+                    }
+                }
+            }
+
+            Repeater {
+                model: PdfLinkModel {
+                    id: linkModel
+                    document: root.document
+                    page: navigationStack.currentPage
+                }
+                delegate: Shape {
+                    x: rect.x * image.pageScale
+                    y: rect.y * image.pageScale
+                    width: rect.width * image.pageScale
+                    height: rect.height * image.pageScale
+                    ShapePath {
+                        strokeWidth: style.linkUnderscoreStrokeWidth
+                        strokeColor: style.linkUnderscoreColor
+                        strokeStyle: style.linkUnderscoreStrokeStyle
+                        dashPattern: style.linkUnderscoreDashPattern
+                        startX: 0; startY: height
+                        PathLine { x: width; y: height }
+                    }
+                    MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (page >= 0)
+                                navigationStack.push(page, Qt.point(0, 0), root.renderScale)
+                            else
+                                Qt.openUrlExternally(url)
+                        }
+                    }
+                }
+            }
+            DragHandler {
+                id: textSelectionDrag
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
+                target: null
+            }
+            TapHandler {
+                id: tapHandler
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
             }
         }
 
@@ -243,32 +260,31 @@ Flickable {
             enabled: image.sourceSize.width < 5000
             onActiveChanged:
                 if (!active) {
+                    var centroidInPoints = Qt.point(pinch.centroid.position.x / root.renderScale,
+                                                    pinch.centroid.position.y / root.renderScale)
+                    var centroidInFlickable = root.mapFromItem(paper, pinch.centroid.position.x, pinch.centroid.position.y)
                     var newSourceWidth = image.sourceSize.width * paper.scale
                     var ratio = newSourceWidth / image.sourceSize.width
+                    if (root.debug)
+                        console.log("pinch ended with centroid", pinch.centroid.position, centroidInPoints, "wrt flickable", centroidInFlickable,
+                                    "page at", paper.x.toFixed(2), paper.y.toFixed(2),
+                                    "contentX/Y were", root.contentX.toFixed(2), root.contentY.toFixed(2))
                     if (ratio > 1.1 || ratio < 0.9) {
+                        var centroidOnPage = Qt.point(centroidInPoints.x * root.renderScale * ratio, centroidInPoints.y * root.renderScale * ratio)
                         paper.scale = 1
-                        root.renderScale *= ratio
+                        paper.x = 0
+                        paper.y = 0
+                        root.contentX = centroidOnPage.x - centroidInFlickable.x
+                        root.contentY = centroidOnPage.y - centroidInFlickable.y
+                        root.renderScale *= ratio // onRenderScaleChanged calls navigationStack.update() so we don't need to here
+                        if (root.debug)
+                            console.log("contentX/Y adjusted to", root.contentX.toFixed(2), root.contentY.toFixed(2))
+                    } else {
+                        paper.x = 0
+                        paper.y = 0
                     }
-                    // TODO adjust contentX/Y to position the page so the same region is visible
-                    paper.x = 0
-                    paper.y = 0
                 }
             grabPermissions: PointerHandler.CanTakeOverFromAnything
-        }
-        DragHandler {
-            id: pageMovingMiddleMouseDrag
-            acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
-            acceptedButtons: Qt.MiddleButton
-            snapMode: DragHandler.NoSnap
-        }
-        DragHandler {
-            id: textSelectionDrag
-            acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
-            target: null
-        }
-        TapHandler {
-            id: tapHandler
-            acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
         }
     }
 }

@@ -161,6 +161,13 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
+                    shortcut: StandardKey.SelectAll
+                    icon.source: "resources/edit-select-all.svg"
+                    onTriggered: view.selectAll()
+                }
+            }
+            ToolButton {
+                action: Action {
                     shortcut: StandardKey.Copy
                     icon.source: "resources/edit-copy.svg"
                     enabled: view.selectedText !== ""
@@ -258,7 +265,31 @@ ApplicationWindow {
             ScrollBar.vertical: ScrollBar { }
             delegate: ItemDelegate {
                 width: parent ? parent.width : 0
-                text: "page " + (page + 1) + ": " + context
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 0
+                    Label {
+                        text: "Page " + (page + 1) + ": "
+                    }
+                    Label {
+                        text: contextBefore
+                        elide: Text.ElideLeft
+                        horizontalAlignment: Text.AlignRight
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
+                    }
+                    Label {
+                        font.bold: true
+                        text: view.searchString
+                        width: implicitWidth
+                    }
+                    Label {
+                        text: contextAfter
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
+                    }
+                }
                 highlighted: ListView.isCurrentItem
                 onClicked: {
                     searchResultsList.currentIndex = index
