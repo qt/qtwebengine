@@ -61,12 +61,10 @@
 #include "extensions/extension_system_factory_qt.h"
 #include "common/extensions/extensions_client_qt.h"
 #endif //BUILDFLAG(ENABLE_EXTENSIONS)
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "ui/display/screen.h"
 
-#include "service/service_qt.h"
 #include "web_engine_context.h"
 
 #include <QtGui/qtgui-config.h>
@@ -281,8 +279,6 @@ int BrowserMainPartsQt::PreCreateThreads()
 
 void BrowserMainPartsQt::PostCreateThreads()
 {
-    ServiceQt::GetInstance()->InitConnector();
-    content::GetSystemConnector()->WarmService(service_manager::ServiceFilter::ByName("qtwebengine"));
 }
 
 } // namespace QtWebEngineCore

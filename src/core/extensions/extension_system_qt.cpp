@@ -136,7 +136,8 @@ public:
 
     // This should return what verification mode is appropriate for the given
     // extension, if any.
-    bool ShouldBeVerified(const Extension &extension) override { return false; }
+    VerifierSourceType GetVerifierSourceType(const Extension &extension) override
+    { return VerifierSourceType::NONE; }
 
     // Should return the public key to use for validating signatures via the two
     // out parameters.
@@ -174,7 +175,7 @@ void ExtensionSystemQt::LoadExtension(std::string extension_id, std::unique_ptr<
     if (!extension.get())
         LOG(ERROR) << error;
 
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
             base::Bind(&InfoMap::AddExtension,
                        base::Unretained(info_map()),
                        base::RetainedRef(extension),
@@ -411,7 +412,7 @@ void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *ex
     bool incognito_enabled = false;
     bool notifications_disabled = false;
 
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
             FROM_HERE, {BrowserThread::IO},
             base::Bind(&InfoMap::AddExtension, info_map(),
                        base::RetainedRef(extension), install_time, incognito_enabled,
@@ -422,7 +423,7 @@ void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *ex
 void ExtensionSystemQt::UnregisterExtensionWithRequestContexts(const std::string &extension_id,
                                                                const UnloadedExtensionReason reason)
 {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::Bind(&InfoMap::RemoveExtension, info_map(), extension_id, reason));
 }

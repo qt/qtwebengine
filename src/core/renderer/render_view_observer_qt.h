@@ -43,9 +43,10 @@
 
 #include <QtGlobal>
 
-class RenderViewObserverQt : public content::RenderViewObserver {
+class RenderViewObserverQt : public content::RenderViewObserver
+{
 public:
-    RenderViewObserverQt(content::RenderView* render_view);
+    RenderViewObserverQt(content::RenderView *render_view);
 
 private:
     void onFetchDocumentMarkup(quint64 requestId);
@@ -54,7 +55,7 @@ private:
 
     void OnDestruct() override;
 
-    bool OnMessageReceived(const IPC::Message& message) override;
+    bool OnMessageReceived(const IPC::Message &message) override;
 
     DISALLOW_COPY_AND_ASSIGN(RenderViewObserverQt);
 };

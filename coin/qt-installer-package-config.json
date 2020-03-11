@@ -1,0 +1,16 @@
+{
+    "version": "1",
+    "module-split": {
+        "qtpdf": [
+            "**/include/*QtPdf*/**/*",
+            "**/lib/cmake/Qt5Gui/*",
+            "**/lib/cmake/Qt5Pdf/*",
+            "**/lib/cmake/Qt5PdfWidgets/*",
+            "**/lib/pkgconfig/Qt5Pdf*",
+            "**/lib/libQt5Pdf*",
+            "**/mkspecs/modules/qt_lib_pdf*",
+            "**/plugins/**/*",
+            "**/qml/QtQuick/**/*"
+        ]
+    }
+}

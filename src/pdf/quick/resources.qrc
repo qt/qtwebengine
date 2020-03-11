@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="/qt-project.org/qtpdf">
+    <file>qml/PdfMultiPageView.qml</file>
+    <file>qml/PdfPageView.qml</file>
+    <file>qml/PdfScrollablePageView.qml</file>
+  </qresource>
+</RCC>

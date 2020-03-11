@@ -34,8 +34,9 @@
 #include <QQuickItem>
 #include <QPainter>
 #include <qtwebengineglobal.h>
-#include <private/qquickwebenginetestsupport_p.h>
 #include <private/qquickwebengineview_p.h>
+
+#include <map>
 
 class TestView : public QQuickView {
     Q_OBJECT
@@ -59,91 +60,57 @@ Q_SIGNALS:
 class tst_QQuickWebEngineViewGraphics : public QObject
 {
     Q_OBJECT
-public:
-    tst_QQuickWebEngineViewGraphics();
-    virtual ~tst_QQuickWebEngineViewGraphics();
-
-public Q_SLOTS:
-    void initTestCase();
-    void init();
-    void cleanup();
-
 private Q_SLOTS:
     void simpleGraphics();
-    void renderMultipleTimes();
-    void renderAfterNodeCleanup();
     void showHideShow();
     void simpleAcceleratedLayer();
     void reparentToOtherWindow();
 
 private:
     void setHtml(const QString &html);
-    QScopedPointer<TestView> m_view;
-    QScopedPointer<QQuickWebEngineTestSupport> m_testSupport;
+    QScopedPointer<TestView> m_view{new TestView};
 };
 
 static const QString greenSquare("<div style=\"background-color: #00ff00; position:absolute; left:50px; top: 50px; width: 50px; height: 50px;\"></div>");
 static const QString acLayerGreenSquare("<div style=\"background-color: #00ff00; position:absolute; left:50px; top: 50px; width: 50px; height: 50px; transform: translateZ(0); -webkit-transform: translateZ(0);\"></div>");
 
-static QImage get150x150GreenReferenceImage()
+static QImage makeGreenSquare(QImage::Format format)
 {
-    static QImage reference;
-    if (reference.isNull()) {
-        reference = QImage(150, 150, QImage::Format_RGB32);
-        reference.fill(Qt::white);
-        QPainter painter(&reference);
-        painter.fillRect(50, 50, 50, 50, QColor("#00ff00"));
+    QImage image(150, 150, format);
+    image.fill(Qt::white);
+    QPainter painter(&image);
+    painter.fillRect(50, 50, 50, 50, QColor("#00ff00"));
+    return image;
+}
+
+static QImage getGreenSquare(QImage::Format format)
+{
+    static std::map<QImage::Format, QImage> images;
+    auto it = images.find(format);
+    if (it == images.end())
+        it = images.emplace(format, makeGreenSquare(format)).first;
+    return it->second;
+}
+
+static void verifyGreenSquare(QQuickWindow *window)
+{
+    QImage actual, expected;
+    bool ok = QTest::qWaitFor([&](){
+        actual = window->grabWindow();
+        expected = getGreenSquare(actual.format());
+        return actual == expected;
+    }, 10000);
+    if (!ok) {
+        // actual.save("actual.png");
+        // expected.save("expected.png");
+        QFAIL("expected green square to be rendered");
     }
-    return reference;
-}
-
-tst_QQuickWebEngineViewGraphics::tst_QQuickWebEngineViewGraphics()
-{
-}
-
-tst_QQuickWebEngineViewGraphics::~tst_QQuickWebEngineViewGraphics()
-{
-}
-
-// This will be called before the first test function is executed.
-// It is only called once.
-void tst_QQuickWebEngineViewGraphics::initTestCase()
-{
-    QtWebEngine::initialize();
-    m_testSupport.reset(new QQuickWebEngineTestSupport);
-}
-
-void tst_QQuickWebEngineViewGraphics::init()
-{
-    m_view.reset(new TestView);
-}
-
-void tst_QQuickWebEngineViewGraphics::cleanup()
-{
 }
 
 void tst_QQuickWebEngineViewGraphics::simpleGraphics()
 {
     setHtml(greenSquare);
-    QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
-}
-
-void tst_QQuickWebEngineViewGraphics::renderMultipleTimes()
-{
-    // This test is for loadVisuallyCommitted signal.
-    // The setHtml() should not fail after multiple page load.
-    setHtml(greenSquare);
-    setHtml(greenSquare);
-}
-
-void tst_QQuickWebEngineViewGraphics::renderAfterNodeCleanup()
-{
-    setHtml(greenSquare);
-
-    // Do it twice in a row, if the window isn't visible, the scene graph is going to be trashed by QQuickWindow::grabWindow after the first render.
-    QVERIFY(!m_view->isVisible());
-    QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
-    QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
+    verifyGreenSquare(m_view.data());
 }
 
 void tst_QQuickWebEngineViewGraphics::showHideShow()
@@ -152,19 +119,19 @@ void tst_QQuickWebEngineViewGraphics::showHideShow()
     QSignalSpy exposeSpy(m_view.data(), SIGNAL(exposeChanged()));
     m_view->show();
     QVERIFY(exposeSpy.wait());
-    QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
+    verifyGreenSquare(m_view.data());
 
     m_view->hide();
     QVERIFY(exposeSpy.wait());
     m_view->show();
     QVERIFY(exposeSpy.wait());
-    QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
+    verifyGreenSquare(m_view.data());
 }
 
 void tst_QQuickWebEngineViewGraphics::simpleAcceleratedLayer()
 {
     setHtml(acLayerGreenSquare);
-    QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
+    verifyGreenSquare(m_view.data());
 }
 
 void tst_QQuickWebEngineViewGraphics::reparentToOtherWindow()
@@ -175,7 +142,7 @@ void tst_QQuickWebEngineViewGraphics::reparentToOtherWindow()
     window.create();
 
     m_view->rootObject()->setParentItem(window.contentItem());
-    QCOMPARE(window.grabWindow(), get150x150GreenReferenceImage());
+    verifyGreenSquare(&window);
 }
 
 void tst_QQuickWebEngineViewGraphics::setHtml(const QString &html)
@@ -187,10 +154,9 @@ void tst_QQuickWebEngineViewGraphics::setHtml(const QString &html)
 
     QQuickWebEngineView *webEngineView = static_cast<QQuickWebEngineView *>(m_view->rootObject());
     webEngineView->setProperty("url", QUrl(QStringLiteral("data:text/html,%1").arg(htmlData)));
-    webEngineView->setTestSupport(m_testSupport.data());
-    QVERIFY(waitForViewportReady(webEngineView));
-    QCOMPARE(m_view->rootObject()->property("loading"), QVariant(false));
+    QTRY_COMPARE_WITH_TIMEOUT(m_view->rootObject()->property("loading"), QVariant(false), 30000);
 }
 
-QTEST_MAIN(tst_QQuickWebEngineViewGraphics)
+static QByteArrayList params;
+W_QTEST_MAIN(tst_QQuickWebEngineViewGraphics, params)
 #include "tst_qquickwebengineviewgraphics.moc"

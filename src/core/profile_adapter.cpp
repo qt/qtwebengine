@@ -43,13 +43,17 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
+#include "content/public/browser/storage_partition.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
+#include "url/url_util.h"
 
 #include "api/qwebengineurlscheme.h"
 #include "content_browser_client_qt.h"
 #include "download_manager_delegate_qt.h"
-#include "net/url_request_context_getter_qt.h"
 #include "permission_manager_qt.h"
 #include "profile_adapter_client.h"
+#include "profile_io_data_qt.h"
 #include "profile_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "type_conversion.h"
@@ -104,6 +108,17 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     if (!storageName.isEmpty())
         extensions::ExtensionSystem::Get(m_profile.data())->InitForRegularProfile(true);
 #endif
+
+    // Allow XMLHttpRequests from qrc to file.
+    // ### consider removing for Qt6
+    url::Origin qrc = url::Origin::Create(GURL("qrc://"));
+    auto pattern = network::mojom::CorsOriginPattern::New("file", "", 0,
+                                                          network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+                                                          network::mojom::CorsPortMatchMode::kAllowAnyPort,
+                                                          network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
+    std::vector<network::mojom::CorsOriginPatternPtr> list;
+    list.push_back(std::move(pattern));
+    m_profile->GetSharedCorsOriginAccessList()->SetForOrigin(qrc, std::move(list), {}, base::BindOnce([]{}));
 }
 
 ProfileAdapter::~ProfileAdapter()
@@ -129,8 +144,7 @@ void ProfileAdapter::setStorageName(const QString &storageName)
     m_name = storageName;
     if (!m_offTheRecord) {
         m_profile->setupPrefService();
-        if (m_profile->m_urlRequestContextGetter.get())
-            m_profile->m_profileIOData->updateStorageSettings();
+        m_profile->m_profileIOData->resetNetworkContext();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -142,8 +156,7 @@ void ProfileAdapter::setOffTheRecord(bool offTheRecord)
         return;
     m_offTheRecord = offTheRecord;
     m_profile->setupPrefService();
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateStorageSettings();
+    m_profile->m_profileIOData->resetNetworkContext();
     if (m_visitedLinksManager)
         resetVisitedLinksManager();
 }
@@ -193,8 +206,7 @@ void ProfileAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *inte
             Q_ASSERT(!m_profile->m_profileIOData->requestInterceptor());
         });
 
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateRequestInterceptor();
+    m_profile->m_profileIOData->updateRequestInterceptor();
 }
 
 void ProfileAdapter::addClient(ProfileAdapterClient *adapterClient)
@@ -210,16 +222,14 @@ void ProfileAdapter::removeClient(ProfileAdapterClient *adapterClient)
 void ProfileAdapter::addPageRequestInterceptor()
 {
     ++m_pageRequestInterceptors;
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateRequestInterceptor();
+    m_profile->m_profileIOData->updateRequestInterceptor();
 }
 
 void ProfileAdapter::removePageRequestInterceptor()
 {
     Q_ASSERT(m_pageRequestInterceptors > 0);
     --m_pageRequestInterceptors;
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateRequestInterceptor();
+    m_profile->m_profileIOData->updateRequestInterceptor();
 }
 
 
@@ -277,8 +287,7 @@ void ProfileAdapter::setDataPath(const QString &path)
     m_dataPath = path;
     if (!m_offTheRecord) {
         m_profile->setupPrefService();
-        if (m_profile->m_urlRequestContextGetter.get())
-            m_profile->m_profileIOData->updateStorageSettings();
+        m_profile->m_profileIOData->resetNetworkContext();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -305,8 +314,8 @@ void ProfileAdapter::setCachePath(const QString &path)
     if (m_cachePath == path)
         return;
     m_cachePath = path;
-    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateHttpCache();
+    if (!m_offTheRecord)
+        m_profile->m_profileIOData->resetNetworkContext();
 }
 
 QString ProfileAdapter::cookiesPath() const
@@ -343,17 +352,21 @@ QString ProfileAdapter::httpUserAgent() const
 
 void ProfileAdapter::setHttpUserAgent(const QString &userAgent)
 {
-    if (m_httpUserAgent == userAgent)
+    const QString httpUserAgent = userAgent.simplified();
+    if (m_httpUserAgent == httpUserAgent)
         return;
-    m_httpUserAgent = userAgent.simplified();
+    m_httpUserAgent = httpUserAgent;
+    const std::string stdUserAgent = httpUserAgent.toStdString();
 
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     for (content::WebContentsImpl *web_contents : list)
         if (web_contents->GetBrowserContext() == m_profile.data())
-            web_contents->SetUserAgentOverride(m_httpUserAgent.toStdString(), true);
+            web_contents->SetUserAgentOverride(stdUserAgent, true);
 
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateUserAgent();
+    content::BrowserContext::ForEachStoragePartition(
+        m_profile.get(), base::BindRepeating([](const std::string &user_agent, content::StoragePartition *storage_partition) {
+                                                 storage_partition->GetNetworkContext()->SetUserAgent(user_agent);
+                                             }, stdUserAgent));
 }
 
 ProfileAdapter::HttpCacheType ProfileAdapter::httpCacheType() const
@@ -371,8 +384,11 @@ void ProfileAdapter::setHttpCacheType(ProfileAdapter::HttpCacheType newhttpCache
     m_httpCacheType = newhttpCacheType;
     if (oldCacheType == httpCacheType())
         return;
-    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateHttpCache();
+    if (!m_offTheRecord) {
+        m_profile->m_profileIOData->resetNetworkContext();
+        if (m_httpCacheType == NoCache)
+            clearHttpCache();
+    }
 }
 
 ProfileAdapter::PersistentCookiesPolicy ProfileAdapter::persistentCookiesPolicy() const
@@ -388,8 +404,8 @@ void ProfileAdapter::setPersistentCookiesPolicy(ProfileAdapter::PersistentCookie
     m_persistentCookiesPolicy = newPersistentCookiesPolicy;
     if (oldPolicy == persistentCookiesPolicy())
         return;
-    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateCookieStore();
+    if (!m_offTheRecord)
+        m_profile->m_profileIOData->resetNetworkContext();
 }
 
 ProfileAdapter::VisitedLinksPolicy ProfileAdapter::visitedLinksPolicy() const
@@ -443,8 +459,8 @@ void ProfileAdapter::setHttpCacheMaxSize(int maxSize)
     if (m_httpCacheMaxSize == maxSize)
         return;
     m_httpCacheMaxSize = maxSize;
-    if (!m_offTheRecord && m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateHttpCache();
+    if (!m_offTheRecord)
+        m_profile->m_profileIOData->resetNetworkContext();
 }
 
 enum class SchemeType { Protected, Overridable, Custom, Unknown };
@@ -489,8 +505,10 @@ const QList<QByteArray> ProfileAdapter::customUrlSchemes() const
 
 void ProfileAdapter::updateCustomUrlSchemeHandlers()
 {
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateJobFactory();
+    content::BrowserContext::ForEachStoragePartition(
+        m_profile.get(), base::BindRepeating([](content::StoragePartition *storage_partition) {
+                                                 storage_partition->ResetURLLoaderFactories();
+                                             }));
 }
 
 void ProfileAdapter::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
@@ -551,9 +569,11 @@ void ProfileAdapter::installUrlSchemeHandler(const QByteArray &scheme, QWebEngin
 
 void ProfileAdapter::removeAllUrlSchemeHandlers()
 {
-    m_customUrlSchemeHandlers.clear();
-    m_customUrlSchemeHandlers.insert(QByteArrayLiteral("qrc"), &m_qrcHandler);
-    updateCustomUrlSchemeHandlers();
+    if (m_customUrlSchemeHandlers.size() > 1) {
+        m_customUrlSchemeHandlers.clear();
+        m_customUrlSchemeHandlers.insert(QByteArrayLiteral("qrc"), &m_qrcHandler);
+        updateCustomUrlSchemeHandlers();
+    }
 }
 
 UserResourceControllerHost *ProfileAdapter::userResourceController()
@@ -596,17 +616,21 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
         return;
     m_httpAcceptLanguage = httpAcceptLanguage;
 
+    std::string http_accept_language = httpAcceptLanguageWithoutQualities().toStdString();
+
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     for (content::WebContentsImpl *web_contents : list) {
         if (web_contents->GetBrowserContext() == m_profile.data()) {
             blink::mojom::RendererPreferences *rendererPrefs = web_contents->GetMutableRendererPrefs();
-            rendererPrefs->accept_languages = httpAcceptLanguageWithoutQualities().toStdString();
-            web_contents->GetRenderViewHost()->SyncRendererPrefs();
+            rendererPrefs->accept_languages = http_accept_language;
+            web_contents->SyncRendererPrefs();
         }
     }
 
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateUserAgent();
+    content::BrowserContext::ForEachStoragePartition(
+        m_profile.get(), base::BindRepeating([](std::string accept_language, content::StoragePartition *storage_partition) {
+                                                 storage_partition->GetNetworkContext()->SetAcceptLanguage(accept_language);
+                                             }, http_accept_language));
 }
 
 void ProfileAdapter::clearHttpCache()
@@ -675,6 +699,7 @@ void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
     if (enable) {
         if (profileForglobalCertificateVerification) {
             profileForglobalCertificateVerification->m_usedForGlobalCertificateVerification = false;
+            profileForglobalCertificateVerification->m_profile->m_profileIOData->resetNetworkContext();
             for (auto *client : qAsConst(profileForglobalCertificateVerification->m_clients))
                 client->useForGlobalCertificateVerificationChanged();
         }
@@ -685,8 +710,7 @@ void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
         profileForglobalCertificateVerification = nullptr;
     }
 
-    if (m_profile->m_urlRequestContextGetter.get())
-        m_profile->m_profileIOData->updateUsedForGlobalCertificateVerification();
+    m_profile->m_profileIOData->resetNetworkContext();
 }
 
 bool ProfileAdapter::isUsedForGlobalCertificateVerification() const
@@ -700,7 +724,7 @@ QString ProfileAdapter::determineDownloadPath(const QString &downloadDirectory, 
     QString suggestedFilePath = suggestedFile.absoluteFilePath();
     base::FilePath tmpFilePath(toFilePath(suggestedFilePath).NormalizePathSeparatorsTo('/'));
 
-    int uniquifier = base::GetUniquePathNumber(tmpFilePath, base::FilePath::StringType());
+    int uniquifier = base::GetUniquePathNumber(tmpFilePath);
     if (uniquifier > 0)
         suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier)).AsUTF8Unsafe());
     else if (uniquifier == -1) {
@@ -713,13 +737,6 @@ QString ProfileAdapter::determineDownloadPath(const QString &downloadDirectory, 
         suggestedFilePath = toQt(tmpFilePath.InsertBeforeExtensionASCII(suffix).AsUTF8Unsafe());
     }
     return suggestedFilePath;
-}
-
-QString ProfileAdapter::updateDownloadPath(int downloadId, const QString &directory, const QString &fileName)
-{
-    download::DownloadItem *download = m_downloadManagerDelegate->findDownloadById(downloadId);
-    Q_ASSERT(download);
-    return determineDownloadPath(directory, fileName, download->GetStartTime().ToTimeT());
 }
 
 #if QT_CONFIG(ssl)

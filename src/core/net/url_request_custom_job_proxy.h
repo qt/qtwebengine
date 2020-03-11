@@ -42,6 +42,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/task_runner.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include <QtCore/QPointer>
@@ -60,7 +61,24 @@ class URLRequestCustomJobProxy : public base::RefCountedThreadSafe<URLRequestCus
 {
 
 public:
-    URLRequestCustomJobProxy(URLRequestCustomJob *job,
+    class Client {
+    public:
+        std::string m_mimeType;
+        std::string m_charset;
+        GURL m_redirect;
+        QIODevice *m_device;
+        int64_t m_firstBytePosition;
+        int m_error;
+        virtual void notifyExpectedContentSize(qint64 size) = 0;
+        virtual void notifyHeadersComplete() = 0;
+        virtual void notifyCanceled() = 0;
+        virtual void notifyAborted() = 0;
+        virtual void notifyStartFailure(int) = 0;
+        virtual void notifyReadyRead() = 0;
+        virtual base::TaskRunner *taskRunner() = 0;
+    };
+
+    URLRequestCustomJobProxy(Client *client,
                              const std::string &scheme,
                              QPointer<ProfileAdapter> profileAdapter);
     ~URLRequestCustomJobProxy();
@@ -76,13 +94,14 @@ public:
     void readyRead();
 
     // IO thread owned:
-    URLRequestCustomJob *m_job;
+    Client *m_client;
     bool m_started;
 
     // UI thread owned:
     std::string m_scheme;
     URLRequestCustomJobDelegate *m_delegate;
     QPointer<ProfileAdapter> m_profileAdapter;
+    scoped_refptr<base::TaskRunner> m_ioTaskRunner;
 };
 
 } // namespace QtWebEngineCore

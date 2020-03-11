@@ -106,12 +106,13 @@ public:
     void recommendedStateChanged(LifecycleState state) override;
     void visibleChanged(bool visible) override;
     void titleChanged(const QString&) override;
-    void urlChanged(const QUrl&) override;
+    void urlChanged() override;
     void iconChanged(const QUrl&) override;
     void loadProgressChanged(int progress) override;
     void didUpdateTargetURL(const QUrl&) override;
     void selectionChanged() override;
     void recentlyAudibleChanged(bool recentlyAudible) override;
+    void renderProcessPidChanged(qint64 pid) override;
     QRectF viewportRect() const override;
     QColor backgroundColor() const override;
     void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) override;
@@ -234,7 +235,9 @@ class QQuickWebEngineViewAccessible : public QAccessibleObject
 {
 public:
     QQuickWebEngineViewAccessible(QQuickWebEngineView *o);
+    bool isValid() const override;
     QAccessibleInterface *parent() const override;
+    QAccessibleInterface *focusChild() const override;
     int childCount() const override;
     QAccessibleInterface *child(int index) const override;
     int indexOfChild(const QAccessibleInterface*) const override;

@@ -42,13 +42,11 @@
 
 #include "profile_adapter.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "extensions/buildflags/buildflags.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "net/proxy_config_monitor.h"
 #include "services/network/cookie_settings.h"
-#include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 #include <QtCore/QString>
@@ -57,16 +55,7 @@
 
 namespace net {
 class ClientCertStore;
-class DhcpPacFileFetcherFactory;
-class HttpAuthPreferences;
-class HttpNetworkSession;
-class HostResolver;
-class NetworkDelegate;
 class ProxyConfigService;
-class URLRequestContext;
-class URLRequestContextStorage;
-class URLRequestJobFactoryImpl;
-class TransportSecurityPersister;
 }
 
 namespace extensions {
@@ -108,22 +97,12 @@ public:
     extensions::ExtensionSystemQt* GetExtensionSystem();
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
-    ProtocolHandlerRegistry::IOThreadDelegate *protocolHandlerRegistryIOThreadDelegate()
-    {
-        return m_protocolHandlerRegistryIOThreadDelegate.get();
-    }
-
     void initializeOnIOThread();
     void initializeOnUIThread(); // runs on ui thread
     void shutdownOnUIThread(); // runs on ui thread
 
     void cancelAllUrlRequests();
     void generateAllStorage();
-    void generateStorage();
-    void generateCookieStore();
-    void generateHttpCache();
-    void generateUserAgent();
-    void generateJobFactory();
     void regenerateJobFactory();
     bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url) const;
     bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const;
@@ -138,6 +117,7 @@ public:
     void setRequestContextData(content::ProtocolHandlerMap *protocolHandlers,
                                content::URLRequestInterceptorScopedVector request_interceptors);
     void setFullConfiguration(); // runs on ui thread
+    void resetNetworkContext(); // runs on ui thread
     void updateStorageSettings(); // runs on ui thread
     void updateUserAgent(); // runs on ui thread
     void updateCookieStore(); // runs on ui thread
@@ -149,12 +129,7 @@ public:
     void updateUsedForGlobalCertificateVerification(); // runs on ui thread
     bool hasPageInterceptors();
 
-    void CreateRestrictedCookieManager(network::mojom::RestrictedCookieManagerRequest request,
-                                       network::mojom::RestrictedCookieManagerRole role,
-                                       const url::Origin &origin,
-                                       bool is_service_worker,
-                                       int32_t process_id,
-                                       int32_t routing_id);
+    network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
 
 #if QT_CONFIG(ssl)
     ClientCertificateStoreData *clientCertificateStoreData();
@@ -163,34 +138,25 @@ public:
     static ProfileIODataQt *FromBrowserContext(content::BrowserContext *browser_context);
     static ProfileIODataQt *FromResourceContext(content::ResourceContext *resource_context);
 
+    base::WeakPtr<ProfileIODataQt> getWeakPtrOnIOThread();
     base::WeakPtr<ProfileIODataQt> getWeakPtrOnUIThread();
+
+    CookieMonsterDelegateQt *cookieDelegate() const { return m_cookieDelegate.get(); }
 
 private:
     void removeBrowsingDataRemoverObserver();
 
     ProfileQt *m_profile;
-    std::unique_ptr<net::URLRequestContextStorage> m_storage;
-    std::unique_ptr<net::NetworkDelegate> m_networkDelegate;
     std::unique_ptr<content::ResourceContext> m_resourceContext;
-    std::unique_ptr<net::URLRequestContext> m_urlRequestContext;
-    std::unique_ptr<net::HttpNetworkSession> m_httpNetworkSession;
-    scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>
-            m_protocolHandlerRegistryIOThreadDelegate;
-    std::unique_ptr<net::DhcpPacFileFetcherFactory> m_dhcpPacFileFetcherFactory;
-    std::unique_ptr<net::HttpAuthPreferences> m_httpAuthPreferences;
-    std::unique_ptr<net::URLRequestJobFactory> m_jobFactory;
-    std::unique_ptr<net::TransportSecurityPersister> m_transportSecurityPersister;
-    std::unique_ptr<net::HostResolver> m_hostResolver;
     base::WeakPtr<ProfileIODataQt> m_weakPtr;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
     content::ProtocolHandlerMap m_protocolHandlers;
     mojo::InterfacePtrInfo<proxy_resolver::mojom::ProxyResolverFactory> m_proxyResolverFactoryInterface;
-    net::URLRequestJobFactoryImpl *m_baseJobFactory = nullptr;
     QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
     QPointer<ProfileAdapter> m_profileAdapter; // never dereferenced in IO thread and it is passed by qpointer
     ProfileAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;
-    mojo::StrongBindingSet<network::mojom::RestrictedCookieManager> m_restrictedCookieManagerBindings;
+    std::unique_ptr<ProxyConfigMonitor> m_proxyConfigMonitor;
 
 #if QT_CONFIG(ssl)
     ClientCertificateStoreData *m_clientCertificateStoreData;

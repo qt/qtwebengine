@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -37,6 +37,7 @@
         \li \l{Audio and Video Codecs}
         \li \l{Chromium DevTools}
         \li \l{Client Certificates}
+        \li \l{Custom Schemes}
         \li \l{Drag and Drop}
         \li \l{Fullscreen}
         \li \l{HTML5 DRM}
@@ -128,7 +129,7 @@
 
     To activate support for client certificates, an application needs to listen to
     the QWebEnginePage::selectClientCertificate or
-    \l{WebEnginePage::selectClientCertificate}{WebEnginePage.selectClientCertificate}
+    \l{WebEngineView::selectClientCertificate}{WebEngineView.selectClientCertificate}
     signals and select one of the offered
     certificates. For applications that can navigate to untrusted web sites, it is
     recommended to always give the user a choice before uniquely identifying them

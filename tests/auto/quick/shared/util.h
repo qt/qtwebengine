@@ -107,21 +107,6 @@ inline bool waitForLoadFailed(QQuickWebEngineView *webEngineView, int timeout = 
     return spy.wait(timeout);
 }
 
-inline bool waitForViewportReady(QQuickWebEngineView *webEngineView, int timeout = 10000)
-{
-#if QT_CONFIG(webengine_testsupport)
-    QSignalSpy spy(reinterpret_cast<QObject *>(webEngineView->testSupport()), SIGNAL(loadVisuallyCommitted()));
-    return spy.wait(timeout);
-#else
-    Q_UNUSED(webEngineView)
-    Q_UNUSED(timeout)
-    qFatal("Test Support API is disabled. The result is not reliable.\
-            Use the following command to build Test Support module and rebuild WebEngineView API:\
-            qmake -r -- --feature-testsupport=yes && make");
-    return false;
-#endif
-}
-
 inline QVariant evaluateJavaScriptSync(QQuickWebEngineView *view, const QString &script)
 {
     QQmlEngine *engine = qmlEngine(view);
@@ -183,11 +168,19 @@ inline QString activeElementId(QQuickWebEngineView *webEngineView)
     return arguments.at(1).toString();
 }
 
-#define W_QTEST_MAIN(TestObject) \
+#define W_QTEST_MAIN(TestObject, params) \
 int main(int argc, char *argv[]) \
 { \
     QtWebEngine::initialize(); \
-    QGuiApplication app(argc, argv); \
+    \
+    QVector<const char *> w_argv(argc); \
+    for (int i = 0; i < argc; ++i) \
+        w_argv[i] = argv[i]; \
+    for (int i = 0; i < params.size(); ++i) \
+        w_argv.append(params[i].data()); \
+    int w_argc = w_argv.size(); \
+    \
+    QGuiApplication app(w_argc, const_cast<char **>(w_argv.data())); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \

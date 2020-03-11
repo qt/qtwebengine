@@ -1,0 +1,139 @@
+/****************************************************************************
+**
+** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the QtPDF module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL3$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file. Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qpdfdocumentrenderoptions.h"
+
+QT_BEGIN_NAMESPACE
+
+/*!
+    \class QPdfDocumentRenderOptions
+    \since 5.10
+    \inmodule QtPdf
+
+    \brief The QPdfDocumentRenderOptions class holds the options to render a page from a PDF document.
+
+    \sa QPdfDocument
+*/
+
+/*!
+    \fn QPdfDocumentRenderOptions::QPdfDocumentRenderOptions()
+
+    Constructs a QPdfDocumentRenderOptions object.
+*/
+
+/*!
+    \fn  QPdf::Rotation QPdfDocumentRenderOptions::rotation() const
+
+    Returns the rotation used for rendering a page from a PDF document.
+
+    \sa setRotation()
+*/
+
+/*!
+    \fn void QPdfDocumentRenderOptions::setRotation(QPdf::Rotation rotation)
+
+    Sets the \a rotation used for rendering a page from a PDF document.
+
+    \sa rotation()
+*/
+
+/*!
+    \fn QPdf::RenderFlags QPdfDocumentRenderOptions::renderFlags() const
+
+    Returns the special flags used for rendering a page from a PDF document.
+
+    \sa setRenderFlags()
+*/
+
+/*!
+    \fn void QPdfDocumentRenderOptions::setRenderFlags(QPdf::RenderFlags flags)
+
+    Sets the special \a flags used for rendering a page from a PDF document.
+
+    \sa renderFlags()
+*/
+
+/*!
+    \fn QRect QPdfDocumentRenderOptions::scaledClipRect() const
+
+    Returns the rectangular region to be clipped from the page after having
+    been scaled to \l scaledSize().
+
+    \sa setScaledClipRect()
+*/
+
+/*!
+    \fn void QPdfDocumentRenderOptions::setScaledClipRect(QRect rect)
+
+    Sets the region \a rect to be clipped from the page after having been
+    scaled to \l scaledSize().
+
+    \sa scaledClipRect()
+*/
+
+/*!
+    \fn QRect QPdfDocumentRenderOptions::scaledSize() const
+
+    Returns the \a size of the page to be rendered, in pixels.
+
+    \sa setScaledSize()
+*/
+
+/*!
+    \fn void QPdfDocumentRenderOptions::setScaledSize(QSize size)
+
+    Sets the \a size of the page to be rendered, in pixels.
+
+    \sa scaledSize()
+*/
+
+/*!
+    \fn bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs)
+    \relates QPdfDocumentRenderOptions
+
+    Returns \c true if the options \a lhs and \a rhs are different, otherwise
+    returns \c false.
+*/
+
+/*!
+    \fn bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs)
+    \relates QPdfDocumentRenderOptions
+
+    Returns \c true if the options \a lhs and \a rhs are equal,
+    otherwise returns \c false.
+*/
+
+QT_END_NAMESPACE

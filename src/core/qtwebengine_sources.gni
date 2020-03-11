@@ -49,6 +49,7 @@ source_set("qtwebengine_sources") {
     "//build:branding_buildflags",
     "//chrome/common:buildflags",
     "//components/nacl/common:buildflags",
+    "//components/plugins/renderer/",
     "//extensions/buildflags:buildflags",
     "//third_party/blink/public/mojom:mojom_platform",
   ]
@@ -67,6 +68,8 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/profiles/profile.h",
     "//chrome/browser/ui/webui/devtools_ui.cc",
     "//chrome/browser/ui/webui/devtools_ui.h",
+    "//chrome/browser/ui/webui/devtools_ui_data_source.cc",
+    "//chrome/browser/ui/webui/devtools_ui_data_source.h",
     "//chrome/browser/ui/webui/quota_internals/quota_internals_handler.cc",
     "//chrome/browser/ui/webui/quota_internals/quota_internals_handler.h",
     "//chrome/browser/ui/webui/quota_internals/quota_internals_proxy.cc",
@@ -128,8 +131,8 @@ source_set("qtwebengine_sources") {
 
   if (is_linux) {
     sources += [
-      "//chrome/browser/ui/webui/sandbox_internals_ui.cc",
-      "//chrome/browser/ui/webui/sandbox_internals_ui.h",
+      "//chrome/browser/ui/webui/sandbox/sandbox_internals_ui.cc",
+      "//chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h",
     ]
   }
 
@@ -179,3 +182,9 @@ source_set("qtwebengine_sources") {
   }
 }
 
+if (is_win) {
+  shared_library("qtwebengine_sandbox_win") {
+    create_pri_file = true
+    public_deps = [ "//sandbox/win:sandbox" ]
+  }
+}

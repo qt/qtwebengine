@@ -133,6 +133,10 @@ ApplicationWindow {
         }
     }
     Action {
+        shortcut: StandardKey.Quit
+        onTriggered: browserWindow.close()
+    }
+    Action {
         shortcut: "Escape"
         onTriggered: {
             if (currentWebView.state == "FullScreen") {
@@ -268,7 +272,7 @@ ApplicationWindow {
                         id: faviconImage
                         width: 16; height: 16
                         sourceSize: Qt.size(width, height)
-                        source: currentWebView && currentWebView.icon
+                        source: currentWebView && currentWebView.icon ? currentWebView.icon : ''
                     }
                     style: TextFieldStyle {
                         padding {
@@ -395,9 +399,23 @@ ApplicationWindow {
             var tab = addTab("", tabComponent);
             // We must do this first to make sure that tab.active gets set so that tab.item gets instantiated immediately.
             tab.active = true;
-            tab.title = Qt.binding(function() { return tab.item.title });
+            tab.title = Qt.binding(function() { return tab.item.title ? tab.item.title : 'New Tab' });
             tab.item.profile = profile;
             return tab;
+        }
+
+        function indexOfView(view) {
+            for (let i = 0; i < tabs.count; ++i)
+                if (tabs.getTab(i).item == view)
+                    return i
+            return -1
+        }
+
+        function removeView(index) {
+            if (tabs.count > 1)
+                tabs.removeTab(index)
+            else
+                browserWindow.close();
         }
 
         anchors.top: parent.top
@@ -447,7 +465,7 @@ ApplicationWindow {
                             color: control.hovered ? "#ccc" : tabRectangle.color
                             Text {text: "x" ; anchors.centerIn: parent ; color: "gray"}
                         }}
-                    onClicked: tabs.removeTab(styleData.index);
+                    onClicked: tabs.removeView(styleData.index)
                 }
             }
         }
@@ -564,12 +582,7 @@ ApplicationWindow {
                     reloadTimer.running = true;
                 }
 
-                onWindowCloseRequested: {
-                    if (tabs.count == 1)
-                        browserWindow.close();
-                    else
-                        tabs.removeTab(tabs.currentIndex);
-                }
+                onWindowCloseRequested: tabs.removeView(tabs.indexOfView(webEngineView))
 
                 onSelectClientCertificate: function(selection) {
                     selection.certificates[0].select();

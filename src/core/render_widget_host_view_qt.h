@@ -102,7 +102,6 @@ struct MultipleMouseClickHelper
 
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
-    , public content::RenderProcessHostObserver
     , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
@@ -142,7 +141,7 @@ public:
     bool IsShowing() override;
     gfx::Rect GetViewBounds() override;
     void UpdateBackgroundColor() override;
-    bool LockMouse() override;
+    bool LockMouse(bool) override;
     void UnlockMouse() override;
     void UpdateCursor(const content::WebCursor&) override;
     void DisplayCursor(const content::WebCursor&) override;
@@ -163,7 +162,6 @@ public:
     void GetScreenInfo(content::ScreenInfo *results) override;
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) override;
-    void ClearCompositorFrame() override;
     void SetNeedsBeginFrames(bool needs_begin_frames) override;
     void SetWantsAnimateOnlyBeginFrames() override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
@@ -175,10 +173,7 @@ public:
     void ResetFallbackToFirstNavigationSurface() override;
     void DidStopFlinging() override;
     std::unique_ptr<content::SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
-
-    // RenderProcessHostObserver implementation.
-    void RenderProcessExited(content::RenderProcessHost *host,
-                             const content::ChildProcessTerminationInfo &info) override;
+    ui::Compositor *GetCompositor() override;
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -277,6 +272,7 @@ private:
     const bool m_enableViz;
     bool m_visible;
     bool m_needsBeginFrames;
+    bool m_deferredShow = false;
     DelegatedFrameHostClientQt m_delegatedFrameHostClient{this};
     std::unique_ptr<content::DelegatedFrameHost> m_delegatedFrameHost;
     std::unique_ptr<ui::Layer> m_rootLayer;

@@ -157,8 +157,11 @@ static Qt::KeyboardModifiers qtModifiersForEvent(const QInputEvent *ev)
 //
 // On Linux, the Control modifier transformation is applied [1]. For example,
 // pressing Ctrl+@ generates the text "\u0000". We would like "@" instead.
+// Windows also translates some control key combinations into ASCII control
+// characters [2].
 //
 // [1]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
+// [2]: https://docs.microsoft.com/en-us/windows/win32/learnwin32/keyboard-input#character-messages
 //
 // On macOS, if the Control modifier is used, then no text is generated at all.
 // We need some text.
@@ -171,8 +174,10 @@ static QString qtTextForKeyEvent(const QKeyEvent *ev, int qtKey, Qt::KeyboardMod
 {
     QString text = ev->text();
 
-    if ((qtModifiers & Qt::ControlModifier) && keyboardDriver() == KeyboardDriver::Xkb)
+    if ((qtModifiers & Qt::ControlModifier) &&
+            (keyboardDriver() == KeyboardDriver::Xkb || keyboardDriver() == KeyboardDriver::Windows)) {
         text.clear();
+    }
 
     return text;
 }
@@ -1505,8 +1510,9 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev)
     webEvent.wheel_ticks_y = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
     webEvent.phase = toBlinkPhase(ev);
 #if defined(Q_OS_DARWIN)
-    // has_precise_scrolling_deltas is a macOS term meaning it is a system scroll gesture, see qnsview_mouse.mm
-    webEvent.has_precise_scrolling_deltas = (ev->source() == Qt::MouseEventSynthesizedBySystem);
+    // PrecisePixel is a macOS term meaning it is a system scroll gesture, see qnsview_mouse.mm
+    if (ev->source() == Qt::MouseEventSynthesizedBySystem)
+        webEvent.delta_units = ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
 #endif
 
     setBlinkWheelEventDelta(webEvent);
@@ -1523,7 +1529,8 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
     if (toBlinkPhase(ev) != webEvent.phase)
         return false;
 #if defined(Q_OS_DARWIN)
-    if (webEvent.has_precise_scrolling_deltas != (ev->source() == Qt::MouseEventSynthesizedBySystem))
+    if ((webEvent.delta_units == ui::input_types::ScrollGranularity::kScrollByPrecisePixel)
+            != (ev->source() == Qt::MouseEventSynthesizedBySystem))
         return false;
 #endif
 

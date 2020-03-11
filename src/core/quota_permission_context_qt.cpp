@@ -66,7 +66,7 @@ void QuotaPermissionContextQt::RequestQuotaPermission(const StorageQuotaParams &
     }
 
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {content::BrowserThread::UI},
             base::BindOnce(&QuotaPermissionContextQt::RequestQuotaPermission, this,
                            params, render_process_id, callback));
@@ -97,7 +97,7 @@ void QuotaPermissionContextQt::dispatchCallbackOnIOThread(const PermissionCallba
         return;
 
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {content::BrowserThread::IO},
             base::BindOnce(&QuotaPermissionContextQt::dispatchCallbackOnIOThread,
                            this, callback, response));

@@ -229,14 +229,12 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
 }
 
 void DownloadManagerDelegateQt::GetSaveDir(content::BrowserContext* browser_context,
-                        base::FilePath* website_save_dir,
-                        base::FilePath* download_save_dir,
-                        bool* skip_dir_check)
+                                           base::FilePath* website_save_dir,
+                                           base::FilePath* download_save_dir)
 {
     static base::FilePath::StringType save_dir = toFilePathString(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation));
     *website_save_dir = base::FilePath(save_dir);
     *download_save_dir = base::FilePath(save_dir);
-    *skip_dir_check = true;
 }
 
 void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_contents,
@@ -298,7 +296,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         ProfileAdapterClient::NoReason,
         adapterClient,
         QFileInfo(suggestedFilePath).fileName(),
-        time_t(QDateTime::currentMSecsSinceEpoch())
+        QDateTime::currentMSecsSinceEpoch()
     };
 
     for (ProfileAdapterClient *client : qAsConst(clients)) {

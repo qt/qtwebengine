@@ -1,2 +1,3 @@
-[transparentWebEngineViews]
-windows
+# until qt5.git is updated with new qtdeclarative
+[focusChild]
+*

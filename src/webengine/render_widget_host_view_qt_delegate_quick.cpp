@@ -226,6 +226,13 @@ bool RenderWidgetHostViewQtDelegateQuick::event(QEvent *event)
 
 void RenderWidgetHostViewQtDelegateQuick::focusInEvent(QFocusEvent *event)
 {
+#if QT_CONFIG(accessibility)
+    if (QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(this)->focusChild()) {
+        QAccessibleEvent focusEvent(iface, QAccessible::Focus);
+        QAccessible::updateAccessibility(&focusEvent);
+    }
+#endif // QT_CONFIG(accessibility)
+
     m_client->forwardEvent(event);
 }
 
@@ -372,5 +379,66 @@ bool RenderWidgetHostViewQtDelegateQuick::copySurface(const QRect &rect, const Q
     image = image.scaled(size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     return true;
 }
+
+#if QT_CONFIG(accessibility)
+RenderWidgetHostViewQtDelegateQuickAccessible::RenderWidgetHostViewQtDelegateQuickAccessible(RenderWidgetHostViewQtDelegateQuick *o, QQuickWebEngineView *view)
+    : QAccessibleObject(o)
+    , m_view(view)
+{
+}
+
+bool RenderWidgetHostViewQtDelegateQuickAccessible::isValid() const
+{
+    if (!viewAccessible() || !viewAccessible()->isValid())
+        return false;
+
+    return QAccessibleObject::isValid();
+}
+
+QAccessibleInterface *RenderWidgetHostViewQtDelegateQuickAccessible::parent() const
+{
+    return viewAccessible()->parent();
+}
+
+QString RenderWidgetHostViewQtDelegateQuickAccessible::text(QAccessible::Text) const
+{
+    return QString();
+}
+
+QAccessible::Role RenderWidgetHostViewQtDelegateQuickAccessible::role() const
+{
+    return QAccessible::Client;
+}
+
+QAccessible::State RenderWidgetHostViewQtDelegateQuickAccessible::state() const
+{
+    return viewAccessible()->state();
+}
+
+QAccessibleInterface *RenderWidgetHostViewQtDelegateQuickAccessible::focusChild() const
+{
+    return viewAccessible()->focusChild();
+}
+
+int RenderWidgetHostViewQtDelegateQuickAccessible::childCount() const
+{
+    return viewAccessible()->childCount();
+}
+
+QAccessibleInterface *RenderWidgetHostViewQtDelegateQuickAccessible::child(int index) const
+{
+    return viewAccessible()->child(index);
+}
+
+int RenderWidgetHostViewQtDelegateQuickAccessible::indexOfChild(const QAccessibleInterface *c) const
+{
+    return viewAccessible()->indexOfChild(c);
+}
+
+QQuickWebEngineViewAccessible *RenderWidgetHostViewQtDelegateQuickAccessible::viewAccessible() const
+{
+    return static_cast<QQuickWebEngineViewAccessible *>(QAccessible::queryAccessibleInterface(m_view));
+}
+#endif // QT_CONFIG(accessibility)
 
 } // namespace QtWebEngineCore

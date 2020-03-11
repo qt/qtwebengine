@@ -369,11 +369,14 @@ void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
     Q_EMIT q->titleChanged();
 }
 
-void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
+void QQuickWebEngineViewPrivate::urlChanged()
 {
     Q_Q(QQuickWebEngineView);
-    Q_UNUSED(url);
-    Q_EMIT q->urlChanged();
+    QUrl url = adapter->activeUrl();
+    if (m_url != url) {
+        m_url = url;
+        Q_EMIT q->urlChanged();
+    }
 }
 
 void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
@@ -423,6 +426,12 @@ void QQuickWebEngineViewPrivate::recentlyAudibleChanged(bool recentlyAudible)
 {
     Q_Q(QQuickWebEngineView);
     Q_EMIT q->recentlyAudibleChanged(recentlyAudible);
+}
+
+void QQuickWebEngineViewPrivate::renderProcessPidChanged(qint64 pid)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->renderProcessPidChanged(pid);
 }
 
 QRectF QQuickWebEngineViewPrivate::viewportRect() const
@@ -741,29 +750,48 @@ QQuickWebEngineViewAccessible::QQuickWebEngineViewAccessible(QQuickWebEngineView
     : QAccessibleObject(o)
 {}
 
+bool QQuickWebEngineViewAccessible::isValid() const
+{
+    if (!QAccessibleObject::isValid())
+        return false;
+
+    if (!engineView() || !engineView()->d_func())
+        return false;
+
+    return true;
+}
+
 QAccessibleInterface *QQuickWebEngineViewAccessible::parent() const
 {
     QQuickItem *parent = engineView()->parentItem();
-    return QAccessible::queryAccessibleInterface(parent);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(parent);
+    if (!iface)
+        return QAccessible::queryAccessibleInterface(engineView()->window());
+    return iface;
+}
+
+QAccessibleInterface *QQuickWebEngineViewAccessible::focusChild() const
+{
+    if (child(0) && child(0)->focusChild())
+        return child(0)->focusChild();
+    return const_cast<QQuickWebEngineViewAccessible *>(this);
 }
 
 int QQuickWebEngineViewAccessible::childCount() const
 {
-    if (engineView() && child(0))
-        return 1;
-    return 0;
+    return child(0) ? 1 : 0;
 }
 
 QAccessibleInterface *QQuickWebEngineViewAccessible::child(int index) const
 {
-    if (index == 0)
+    if (index == 0 && isValid())
         return engineView()->d_func()->adapter->browserAccessible();
-    return 0;
+    return nullptr;
 }
 
 int QQuickWebEngineViewAccessible::indexOfChild(const QAccessibleInterface *c) const
 {
-    if (c == child(0))
+    if (child(0) && c == child(0))
         return 0;
     return -1;
 }
@@ -775,7 +803,7 @@ QString QQuickWebEngineViewAccessible::text(QAccessible::Text) const
 
 QAccessible::Role QQuickWebEngineViewAccessible::role() const
 {
-    return QAccessible::Document;
+    return QAccessible::Client;
 }
 
 QAccessible::State QQuickWebEngineViewAccessible::state() const
@@ -885,7 +913,7 @@ void QQuickWebEngineViewPrivate::initializationFinished()
     emit q->titleChanged();
     emit q->urlChanged();
     emit q->iconChanged();
-    QQuickWebEngineLoadRequest loadRequest(adapter->activeUrl(), QQuickWebEngineView::LoadSucceededStatus);
+    QQuickWebEngineLoadRequest loadRequest(m_url, QQuickWebEngineView::LoadSucceededStatus);
     emit q->loadingChanged(&loadRequest);
     emit q->loadProgressChanged();
 
@@ -936,10 +964,17 @@ void QQuickWebEngineViewPrivate::widgetChanged(RenderWidgetHostViewQtDelegateQui
 {
     Q_Q(QQuickWebEngineView);
 
-    if (oldWidget)
+    if (oldWidget) {
         oldWidget->setParentItem(nullptr);
+#if QT_CONFIG(accessibility)
+        QAccessible::deleteAccessibleInterface(QAccessible::uniqueId(QAccessible::queryAccessibleInterface(oldWidget)));
+#endif
+    }
 
     if (newWidget) {
+#if QT_CONFIG(accessibility)
+        QAccessible::registerAccessibleInterface(new QtWebEngineCore::RenderWidgetHostViewQtDelegateQuickAccessible(newWidget, q));
+#endif
         newWidget->setParentItem(q);
         newWidget->setSize(q->boundingRect().size());
         // Focus on creation if the view accepts it
@@ -1017,9 +1052,6 @@ void QQuickWebEngineViewPrivate::updateEditActions()
 QUrl QQuickWebEngineView::url() const
 {
     Q_D(const QQuickWebEngineView);
-    if (d->adapter->isInitialized())
-        return d->adapter->activeUrl();
-    else
         return d->m_url;
 }
 
@@ -1029,13 +1061,15 @@ void QQuickWebEngineView::setUrl(const QUrl& url)
     if (url.isEmpty())
         return;
 
-    if (d->adapter->isInitialized()) {
-        d->adapter->load(url);
-        return;
+    if (d->m_url != url) {
+        d->m_url = url;
+        d->m_html.clear();
+        emit urlChanged();
     }
 
-    d->m_url = url;
-    d->m_html.clear();
+    if (d->adapter->isInitialized()) {
+        d->adapter->load(url);
+    }
 }
 
 QUrl QQuickWebEngineView::icon() const
@@ -1147,14 +1181,13 @@ void QQuickWebEngineViewPrivate::updateAdapter()
 {
     // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
     bool wasInitialized = adapter->isInitialized();
-    QUrl activeUrl = adapter->activeUrl();
     adapter = QSharedPointer<WebContentsAdapter>::create();
     adapter->setClient(this);
     if (wasInitialized) {
         if (!m_html.isEmpty())
-            adapter->setContent(m_html.toUtf8(), defaultMimeType, activeUrl);
-        else if (activeUrl.isValid())
-            adapter->load(activeUrl);
+            adapter->setContent(m_html.toUtf8(), defaultMimeType, m_url);
+        else if (m_url.isValid())
+            adapter->load(m_url);
         else
             adapter->loadDefault();
     }
@@ -1400,6 +1433,12 @@ bool QQuickWebEngineView::recentlyAudible() const
 {
     const Q_D(QQuickWebEngineView);
     return d->adapter->recentlyAudible();
+}
+
+qint64 QQuickWebEngineView::renderProcessPid() const
+{
+    const Q_D(QQuickWebEngineView);
+    return d->adapter->renderProcessPid();
 }
 
 void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
@@ -1766,10 +1805,14 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
     case CopyLinkToClipboard:
         if (!d->m_contextMenuData.unfilteredLinkUrl().isEmpty()) {
             QString urlString = d->m_contextMenuData.unfilteredLinkUrl().toString(QUrl::FullyEncoded);
-            QString title = d->m_contextMenuData.linkText().toHtmlEscaped();
+            QString linkText = d->m_contextMenuData.linkText().toHtmlEscaped();
+            QString title = d->m_contextMenuData.titleText();
+            if (!title.isEmpty())
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\">") + title + QStringLiteral("</a>");
+            QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral(">")
+                         + linkText + QStringLiteral("</a>");
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << d->m_contextMenuData.unfilteredLinkUrl());
             qApp->clipboard()->setMimeData(data);
@@ -1791,12 +1834,15 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
     case CopyImageUrlToClipboard:
         if (d->m_contextMenuData.mediaUrl().isValid() && d->m_contextMenuData.mediaType() == WebEngineContextMenuData::MediaTypeImage) {
             QString urlString = d->m_contextMenuData.mediaUrl().toString(QUrl::FullyEncoded);
-            QString title = d->m_contextMenuData.linkText();
+            QString alt = d->m_contextMenuData.altText();
+            if (!alt.isEmpty())
+                alt = QStringLiteral(" alt=\"%1\"").arg(alt.toHtmlEscaped());
+            QString title = d->m_contextMenuData.titleText();
             if (!title.isEmpty())
-                title = QStringLiteral(" alt=\"%1\"").arg(title.toHtmlEscaped());
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral("></img>");
+            QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + alt + QStringLiteral("></img>");
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << d->m_contextMenuData.mediaUrl());
             qApp->clipboard()->setMimeData(data);
@@ -1814,12 +1860,17 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
                  d->m_contextMenuData.mediaType() == WebEngineContextMenuData::MediaTypeVideo))
         {
             QString urlString = d->m_contextMenuData.mediaUrl().toString(QUrl::FullyEncoded);
+            QString title = d->m_contextMenuData.titleText();
+            if (!title.isEmpty())
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
             if (d->m_contextMenuData.mediaType() == WebEngineContextMenuData::MediaTypeAudio)
-                data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"></audio>"));
+                data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"") + title +
+                              QStringLiteral("></audio>"));
             else
-                data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"></video>"));
+                data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"") + title +
+                              QStringLiteral("></video>"));
             data->setUrls(QList<QUrl>() << d->m_contextMenuData.mediaUrl());
             qApp->clipboard()->setMimeData(data);
         }

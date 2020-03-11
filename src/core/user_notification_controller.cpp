@@ -43,6 +43,7 @@
 
 #include "base/callback.h"
 #include "content/public/browser/notification_event_dispatcher.h"
+#include "third_party/blink/public/mojom/notifications/notification.mojom-shared.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"

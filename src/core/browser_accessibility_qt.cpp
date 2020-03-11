@@ -148,6 +148,19 @@ QAccessibleInterface *BrowserAccessibilityQt::child(int index) const
     return static_cast<BrowserAccessibilityQt*>(BrowserAccessibility::PlatformGetChild(index));
 }
 
+QAccessibleInterface *BrowserAccessibilityQt::focusChild() const
+{
+    if (state().focused)
+        return const_cast<BrowserAccessibilityQt *>(this);
+
+    for (int i = 0; i < childCount(); ++i) {
+        if (QAccessibleInterface *iface = child(i)->focusChild())
+            return iface;
+    }
+
+    return nullptr;
+}
+
 int BrowserAccessibilityQt::childCount() const
 {
     return PlatformChildCount();
@@ -212,8 +225,15 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::AlertMessage;
     case ax::mojom::Role::kAnchor:
         return QAccessible::Link;
-    case ax::mojom::Role::kAnnotation:
-        return QAccessible::StaticText;
+
+    // REMINDER: annotation roles are removed from Chromium 80: https://chromium-review.googlesource.com/c/chromium/src/+/1907074
+    case ax::mojom::Role::kAnnotationAttribution:
+    case ax::mojom::Role::kAnnotationCommentary:
+    case ax::mojom::Role::kAnnotationPresence:
+    case ax::mojom::Role::kAnnotationRevision:
+    case ax::mojom::Role::kAnnotationSuggestion:
+        return QAccessible::Section;
+
     case ax::mojom::Role::kApplication:
         return QAccessible::Document; // returning Application here makes Qt return the top level app object
     case ax::mojom::Role::kArticle:
@@ -269,17 +289,17 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kDetails:
         return QAccessible::Grouping;
     case ax::mojom::Role::kDesktop:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::Pane;
     case ax::mojom::Role::kDialog:
         return QAccessible::Dialog;
     case ax::mojom::Role::kDirectory:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::List;
     case ax::mojom::Role::kDisclosureTriangle:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::Button;
     case ax::mojom::Role::kGenericContainer:
         return QAccessible::Section;
     case ax::mojom::Role::kDocCover:
-      return QAccessible::Graphic;
+        return QAccessible::Graphic;
     case ax::mojom::Role::kDocBackLink:
     case ax::mojom::Role::kDocBiblioRef:
     case ax::mojom::Role::kDocGlossRef:
@@ -318,14 +338,16 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kDocPrologue:
     case ax::mojom::Role::kDocPullquote:
     case ax::mojom::Role::kDocQna:
+        return QAccessible::Section;
     case ax::mojom::Role::kDocSubtitle:
+        return QAccessible::Heading;
     case ax::mojom::Role::kDocTip:
     case ax::mojom::Role::kDocToc:
         return QAccessible::Section;
     case ax::mojom::Role::kDocument:
         return QAccessible::Document;
     case ax::mojom::Role::kEmbeddedObject:
-        return QAccessible::Grouping; // FIXME
+        return QAccessible::Grouping;
     case ax::mojom::Role::kFeed:
         return QAccessible::Section;
     case ax::mojom::Role::kFigcaption:
@@ -334,6 +356,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Section;
     case ax::mojom::Role::kFooter:
         return QAccessible::Footer;
+    case ax::mojom::Role::kFooterAsNonLandmark:
+        return QAccessible::Section;
     case ax::mojom::Role::kForm:
         return QAccessible::Form;
     case ax::mojom::Role::kGraphicsDocument:
@@ -346,20 +370,23 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Table;
     case ax::mojom::Role::kGroup:
         return QAccessible::Grouping;
+    case ax::mojom::Role::kHeader:
+    case ax::mojom::Role::kHeaderAsNonLandmark:
+        return QAccessible::Section;
     case ax::mojom::Role::kHeading:
         return QAccessible::Heading;
     case ax::mojom::Role::kIframe:
-        return QAccessible::Grouping;
+        return QAccessible::WebDocument;
     case ax::mojom::Role::kIframePresentational:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::Grouping;
     case ax::mojom::Role::kIgnored:
         return QAccessible::NoRole;
     case ax::mojom::Role::kImage:
         return QAccessible::Graphic;
     case ax::mojom::Role::kImageMap:
-        return QAccessible::Graphic;
+        return QAccessible::Document;
     case ax::mojom::Role::kInlineTextBox:
-        return QAccessible::EditableText;
+        return QAccessible::StaticText;
     case ax::mojom::Role::kInputTime:
         return QAccessible::SpinBox;
     case ax::mojom::Role::kKeyboard:
@@ -370,8 +397,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kLayoutTableCell:
     case ax::mojom::Role::kLayoutTableColumn:
     case ax::mojom::Role::kLayoutTableRow:
-        // No role description.
-        return  QAccessible::NoRole;
+        return QAccessible::Section;
     case ax::mojom::Role::kLegend:
         return QAccessible::StaticText;
     case ax::mojom::Role::kLineBreak:
@@ -446,18 +472,21 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::RowHeader;
     case ax::mojom::Role::kRuby:
         return QAccessible::StaticText;
+    case ax::mojom::Role::kRubyAnnotation:
+        return QAccessible::StaticText;
     case ax::mojom::Role::kScrollBar:
         return QAccessible::ScrollBar;
     case ax::mojom::Role::kScrollView:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::Pane;
     case ax::mojom::Role::kSearch:
         return QAccessible::Section;
     case ax::mojom::Role::kSearchBox:
         return QAccessible::EditableText;
+    case ax::mojom::Role::kSection:
+        return QAccessible::Section;
     case ax::mojom::Role::kSlider:
-        return QAccessible::Slider;
     case ax::mojom::Role::kSliderThumb:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::Slider;
     case ax::mojom::Role::kSpinButton:
         return QAccessible::SpinBox;
     case ax::mojom::Role::kSplitter:
@@ -479,7 +508,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kTabList:
         return QAccessible::PageTabList;
     case ax::mojom::Role::kTabPanel:
-        return QAccessible::PageTab;
+        return QAccessible::Pane;
     case ax::mojom::Role::kTerm:
         return QAccessible::StaticText;
     case ax::mojom::Role::kTextField:
@@ -488,7 +517,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kTimer:
         return QAccessible::Clock;
     case ax::mojom::Role::kTitleBar:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::Document;
     case ax::mojom::Role::kToggleButton:
         return QAccessible::Button;
     case ax::mojom::Role::kToolbar:

@@ -53,11 +53,9 @@ AuthenticationDialogControllerPrivate::AuthenticationDialogControllerPrivate(bas
 
 void AuthenticationDialogControllerPrivate::dialogFinished(bool accepted, const QString &user, const QString &password)
 {
-    base::PostTaskWithTraits(
-                FROM_HERE, {content::BrowserThread::UI},
-                base::BindOnce(&LoginDelegateQt::sendAuthToRequester,
-                               loginDelegate,
-                               accepted, user, password));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&LoginDelegateQt::sendAuthToRequester,
+                                  loginDelegate, accepted, user, password));
 }
 
 AuthenticationDialogController::AuthenticationDialogController(AuthenticationDialogControllerPrivate *dd)

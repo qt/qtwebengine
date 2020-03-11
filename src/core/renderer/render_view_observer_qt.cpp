@@ -50,18 +50,15 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 
-RenderViewObserverQt::RenderViewObserverQt(
-        content::RenderView* render_view)
-    : content::RenderViewObserver(render_view)
-{
-}
+RenderViewObserverQt::RenderViewObserverQt(content::RenderView *render_view) : content::RenderViewObserver(render_view)
+{}
 
 void RenderViewObserverQt::onFetchDocumentMarkup(quint64 requestId)
 {
     blink::WebString markup;
     if (render_view()->GetWebView()->MainFrame()->IsWebLocalFrame())
         markup = blink::WebFrameContentDumper::DumpAsMarkup(
-                    static_cast<blink::WebLocalFrame*>(render_view()->GetWebView()->MainFrame()));
+                static_cast<blink::WebLocalFrame *>(render_view()->GetWebView()->MainFrame()));
     Send(new RenderViewObserverHostQt_DidFetchDocumentMarkup(routing_id(), requestId, markup.Utf16()));
 }
 
@@ -69,9 +66,8 @@ void RenderViewObserverQt::onFetchDocumentInnerText(quint64 requestId)
 {
     blink::WebString text;
     if (render_view()->GetWebView()->MainFrame()->IsWebLocalFrame())
-        text = blink::WebFrameContentDumper::DumpWebViewAsText(
-                    render_view()->GetWebView(),
-                    std::numeric_limits<std::size_t>::max());
+        text = blink::WebFrameContentDumper::DumpWebViewAsText(render_view()->GetWebView(),
+                                                               std::numeric_limits<std::size_t>::max());
     Send(new RenderViewObserverHostQt_DidFetchDocumentInnerText(routing_id(), requestId, text.Utf16()));
 }
 
@@ -85,7 +81,7 @@ void RenderViewObserverQt::OnDestruct()
     delete this;
 }
 
-bool RenderViewObserverQt::OnMessageReceived(const IPC::Message& message)
+bool RenderViewObserverQt::OnMessageReceived(const IPC::Message &message)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(RenderViewObserverQt, message)

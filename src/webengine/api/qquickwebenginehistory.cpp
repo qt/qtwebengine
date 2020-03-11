@@ -327,6 +327,20 @@ QQuickWebEngineHistoryListModel *QQuickWebEngineHistory::forwardItems() const
     return d->m_forwardNavigationModel.data();
 }
 
+/*!
+    \qmlmethod void WebEngineHistory::clear()
+    \since QtWebEngine 1.11
+
+    Clears the history.
+*/
+void QQuickWebEngineHistory::clear()
+{
+    Q_D(QQuickWebEngineHistory);
+    d->m_view->adapter->clearNavigationHistory();
+    d->m_view->updateNavigationActions();
+    reset();
+}
+
 void QQuickWebEngineHistory::reset()
 {
     Q_D(QQuickWebEngineHistory);

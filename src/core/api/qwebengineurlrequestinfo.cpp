@@ -145,7 +145,21 @@ QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRe
 /*!
     \internal
 */
+QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo() {}
+
+/*!
+    \internal
+*/
 QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfo &&p) : d_ptr(p.d_ptr.take()) {}
+
+/*!
+    \internal
+*/
+QWebEngineUrlRequestInfo &QWebEngineUrlRequestInfo::operator=(QWebEngineUrlRequestInfo &&p)
+{
+    d_ptr.reset(p.d_ptr.take());
+    return *this;
+}
 
 /*!
     \internal

@@ -42,10 +42,12 @@
 
 #include "render_widget_host_view_qt_delegate.h"
 
+#include <QAccessibleObject>
 #include <QQuickItem>
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
+class QQuickWebEngineViewAccessible;
 class QQuickWebEngineViewPrivate;
 QT_END_NAMESPACE
 
@@ -114,6 +116,29 @@ private:
     bool m_isPopup;
     QQuickWebEngineView *m_view = nullptr;
 };
+
+#if QT_CONFIG(accessibility)
+class RenderWidgetHostViewQtDelegateQuickAccessible : public QAccessibleObject
+{
+public:
+    RenderWidgetHostViewQtDelegateQuickAccessible(RenderWidgetHostViewQtDelegateQuick *o, QQuickWebEngineView *view);
+
+    bool isValid() const override;
+    QAccessibleInterface *parent() const override;
+    QString text(QAccessible::Text t) const override;
+    QAccessible::Role role() const override;
+    QAccessible::State state() const override;
+
+    QAccessibleInterface *focusChild() const override;
+    int childCount() const override;
+    QAccessibleInterface *child(int index) const override;
+    int indexOfChild(const QAccessibleInterface *) const override;
+
+private:
+    QQuickWebEngineViewAccessible *viewAccessible() const;
+    QQuickWebEngineView *m_view;
+};
+#endif // QT_CONFIG(accessibility)
 
 } // namespace QtWebEngineCore
 

@@ -132,7 +132,7 @@ bool QWebEngineNotification::matches(const QWebEngineNotification *other) const
 }
 
 /*!
-    \qmlproperty bool WebEngineNotification::title
+    \qmlproperty string WebEngineNotification::title
     \brief The title of the notification.
 */
 /*!

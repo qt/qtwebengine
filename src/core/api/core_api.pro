@@ -65,6 +65,9 @@ SOURCES = \
     qwebengineurlscheme.cpp \
     qwebengineurlschemehandler.cpp
 
+# Chromium headers included are not remotely clean
+CONFIG -= warning_clean
+
 msvc {
     # Create a list of object files that can be used as response file for the linker.
     # This is done to simulate -whole-archive on MSVC.

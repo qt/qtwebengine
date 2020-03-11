@@ -6,7 +6,8 @@ gn_args += \
     ninja_use_custom_environment_files=false \
     is_multi_dll_chrome=false \
     win_linker_timing=true \
-    com_init_check_hook_disabled=true
+    com_init_check_hook_disabled=true \
+    heterogeneous_executables=true
 
 clang_cl {
     clang_full_path = $$system_path($$which($${QMAKE_CXX}))
@@ -15,7 +16,7 @@ clang_cl {
     clang_prefix = $$join(clang_dir,,,"\..")
     gn_args += \
         is_clang=true \
-        use_ldd=true \
+        use_lld=true \
         clang_use_chrome_plugins=false \
         clang_base_path=\"$$system_path($$clean_path($$clang_prefix))\"
 } else {
@@ -88,7 +89,7 @@ msvc {
     error("Qt WebEngine for Windows can only be built with a Microsoft Visual Studio C++ compatible compiler")
 }
 
-qtConfig(webengine-spellchecker) {
+qtConfig(build-qtwebengine-core):qtConfig(webengine-spellchecker) {
     qtConfig(webengine-native-spellchecker): gn_args += use_browser_spellchecker=true
     else: gn_args += use_browser_spellchecker=false
 } else {

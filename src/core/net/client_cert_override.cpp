@@ -142,7 +142,7 @@ void ClientCertOverrideStore::GetClientCerts(const net::SSLCertRequestInfo &cert
 {
 #if QT_CONFIG(ssl)
     // Access the user-provided data from the UI thread, but return on whatever thread this is.
-    if (base::PostTaskWithTraitsAndReplyWithResult(
+    if (base::PostTaskAndReplyWithResult(
             FROM_HERE, { content::BrowserThread::UI },
             base::BindOnce(&ClientCertOverrideStore::GetClientCertsOnUIThread,
                            base::Unretained(this), std::cref(cert_request_info)),

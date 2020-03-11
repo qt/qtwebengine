@@ -59,7 +59,6 @@ public:
     base::StringPiece GetDataResource(int, ui::ScaleFactor) override;
     base::RefCountedMemory* GetDataResourceBytes(int resource_id) override;
     gfx::Image &GetNativeImageNamed(int resource_id) override;
-    bool IsDataResourceGzipped(int resource_id) override;
     base::string16 GetLocalizedString(int message_id) override;
 };
 

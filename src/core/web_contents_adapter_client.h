@@ -125,7 +125,9 @@ public:
     QUrl linkUrl;
     QUrl unfilteredLinkUrl;
     QUrl mediaUrl;
+    QString altText;
     QString linkText;
+    QString titleText;
     QString selectedText;
     QString suggestedFileName;
     QString misspelledWord;
@@ -215,12 +217,28 @@ public:
         return d->unfilteredLinkUrl;
     }
 
+    void setAltText(const QString &text) {
+        d->altText = text;
+    }
+
+    QString altText() const {
+        return d->altText;
+    }
+
     void setLinkText(const QString &text) {
         d->linkText = text;
     }
 
     QString linkText() const {
         return d->linkText;
+    }
+
+    void setTitleText(const QString &text) {
+        d->titleText = text;
+    }
+
+    QString titleText() const {
+        return d->titleText;
     }
 
     void setSelectedText(const QString &text) {
@@ -434,12 +452,13 @@ public:
     virtual void recommendedStateChanged(LifecycleState) = 0;
     virtual void visibleChanged(bool) = 0;
     virtual void titleChanged(const QString&) = 0;
-    virtual void urlChanged(const QUrl&) = 0;
+    virtual void urlChanged() = 0;
     virtual void iconChanged(const QUrl&) = 0;
     virtual void loadProgressChanged(int progress) = 0;
     virtual void didUpdateTargetURL(const QUrl&) = 0;
     virtual void selectionChanged() = 0;
     virtual void recentlyAudibleChanged(bool recentlyAudible) = 0;
+    virtual void renderProcessPidChanged(qint64 pid) = 0;
     virtual QRectF viewportRect() const = 0;
     virtual QColor backgroundColor() const = 0;
     virtual void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) = 0;

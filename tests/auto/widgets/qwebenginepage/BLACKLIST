@@ -3,6 +3,10 @@ osx
 
 [mouseMovementProperties]
 windows
+macos # Can't move cursor (QTBUG-76312)
 
-[fullScreenRequested]
-windows
+[devTools]
+msvc-2019
+
+[setLifecycleStateWithDevTools]
+msvc-2019

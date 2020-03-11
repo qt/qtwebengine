@@ -89,13 +89,17 @@ struct tm* localtime64_r_proxy(const time_t* timep, struct tm* result)
 #endif // defined(OS_LINUX)
 
 #ifdef Q_OS_WIN
+namespace QtWebEngineProcess {
 void initDpiAwareness();
+void initializeStaticCopy(int argc, const char **argv);
+} // namespace
 #endif // defined(Q_OS_WIN)
 
 int main(int argc, const char **argv)
 {
 #ifdef Q_OS_WIN
-    initDpiAwareness();
+    QtWebEngineProcess::initializeStaticCopy(argc, argv);
+    QtWebEngineProcess::initDpiAwareness();
 #endif
 
     // Chromium on Linux manipulates argv to set a process title
@@ -123,6 +127,6 @@ int main(int argc, const char **argv)
 
     QCoreApplication qtApplication(argc, argv_.get());
 
-    return QtWebEngine::processMain(argc, argv);
+    return QtWebEngineCore::processMain(argc, argv);
 }
 

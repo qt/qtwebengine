@@ -46,6 +46,7 @@
 #include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
+class InterceptedRequest;
 class NetworkDelegateQt;
 class URLRequestNotification;
 } // namespace QtWebEngineCore
@@ -110,13 +111,16 @@ public:
 private:
     friend class QtWebEngineCore::NetworkDelegateQt;
     friend class QtWebEngineCore::URLRequestNotification;
+    friend class QtWebEngineCore::InterceptedRequest;
     Q_DISABLE_COPY(QWebEngineUrlRequestInfo)
     Q_DECLARE_PRIVATE(QWebEngineUrlRequestInfo)
 
     void resetChanged();
 
+    QWebEngineUrlRequestInfo();
     QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPrivate *p);
     QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfo &&p);
+    QWebEngineUrlRequestInfo &operator=(QWebEngineUrlRequestInfo &&p);
     ~QWebEngineUrlRequestInfo();
     QScopedPointer<QWebEngineUrlRequestInfoPrivate> d_ptr;
 };

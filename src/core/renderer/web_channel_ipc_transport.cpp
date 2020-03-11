@@ -61,11 +61,13 @@
 
 namespace QtWebEngineCore {
 
-class WebChannelTransport : public gin::Wrappable<WebChannelTransport> {
+class WebChannelTransport : public gin::Wrappable<WebChannelTransport>
+{
 public:
     static gin::WrapperInfo kWrapperInfo;
     static void Install(blink::WebLocalFrame *frame, uint worldId);
     static void Uninstall(blink::WebLocalFrame *frame, uint worldId);
+
 private:
     WebChannelTransport() {}
     void NativeQtSendMessage(gin::Arguments *args);
@@ -152,9 +154,7 @@ void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
     v8::Local<v8::String> jsonString = v8::Local<v8::String>::Cast(jsonValue);
 
     QByteArray json(jsonString->Utf8Length(isolate), 0);
-    jsonString->WriteUtf8(isolate,
-                          json.data(), json.size(),
-                          nullptr, v8::String::REPLACE_INVALID_UTF8);
+    jsonString->WriteUtf8(isolate, json.data(), json.size(), nullptr, v8::String::REPLACE_INVALID_UTF8);
 
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(json, &error);
@@ -165,30 +165,28 @@ void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
 
     int size = 0;
     const char *rawData = doc.rawData(&size);
-    qtwebchannel::mojom::WebChannelTransportHostAssociatedPtr webChannelTransport;
+    mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportHost> webChannelTransport;
     renderFrame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
     webChannelTransport->DispatchWebChannelMessage(std::vector<uint8_t>(rawData, rawData + size));
 }
 
 gin::ObjectTemplateBuilder WebChannelTransport::GetObjectTemplateBuilder(v8::Isolate *isolate)
 {
-    return gin::Wrappable<WebChannelTransport>::GetObjectTemplateBuilder(isolate)
-        .SetMethod("send", &WebChannelTransport::NativeQtSendMessage);
+    return gin::Wrappable<WebChannelTransport>::GetObjectTemplateBuilder(isolate).SetMethod(
+            "send", &WebChannelTransport::NativeQtSendMessage);
 }
 
 WebChannelIPCTransport::WebChannelIPCTransport(content::RenderFrame *renderFrame)
-    : content::RenderFrameObserver(renderFrame)
-    , m_worldId(0)
-    , m_worldInitialized(false)
+    : content::RenderFrameObserver(renderFrame), m_worldId(0), m_worldInitialized(false)
 {
     renderFrame->GetAssociatedInterfaceRegistry()->AddInterface(
-                base::Bind(&WebChannelIPCTransport::BindRequest, base::Unretained(this)));
+            base::BindRepeating(&WebChannelIPCTransport::BindReceiver, base::Unretained(this)));
 }
 
-void WebChannelIPCTransport::BindRequest(
-        qtwebchannel::mojom::WebChannelTransportRenderAssociatedRequest request) {
-
-    m_binding.AddBinding(this, std::move(request));
+void WebChannelIPCTransport::BindReceiver(
+        mojo::PendingAssociatedReceiver<qtwebchannel::mojom::WebChannelTransportRender> receiver)
+{
+    m_receivers.Add(this, std::move(receiver));
 }
 
 void WebChannelIPCTransport::SetWorldId(uint32_t worldId)
@@ -208,7 +206,7 @@ void WebChannelIPCTransport::SetWorldId(uint32_t worldId)
 
 void WebChannelIPCTransport::ResetWorldId()
 {
-   if (m_worldInitialized && m_canUseContext)
+    if (m_worldInitialized && m_canUseContext)
         WebChannelTransport::Uninstall(render_frame()->GetWebFrame(), m_worldId);
 
     m_worldInitialized = false;
@@ -222,8 +220,8 @@ void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t
     if (!m_canUseContext)
         return;
 
-    QJsonDocument doc = QJsonDocument::fromRawData(reinterpret_cast<const char *>(binaryJson.data()),
-                                                   binaryJson.size(), QJsonDocument::BypassValidation);
+    QJsonDocument doc = QJsonDocument::fromRawData(reinterpret_cast<const char *>(binaryJson.data()), binaryJson.size(),
+                                                   QJsonDocument::BypassValidation);
     DCHECK(doc.isObject());
     QByteArray json = doc.toJson(QJsonDocument::Compact);
 
@@ -242,22 +240,23 @@ void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t
     if (qtObjectValue.IsEmpty() || !qtObjectValue.ToLocalChecked()->IsObject())
         return;
     v8::Local<v8::Object> qtObject = v8::Local<v8::Object>::Cast(qtObjectValue.ToLocalChecked());
-    v8::MaybeLocal<v8::Value> webChannelObjectValue(qtObject->Get(context, gin::StringToV8(isolate, "webChannelTransport")));
+    v8::MaybeLocal<v8::Value> webChannelObjectValue(
+            qtObject->Get(context, gin::StringToV8(isolate, "webChannelTransport")));
     if (webChannelObjectValue.IsEmpty() || !webChannelObjectValue.ToLocalChecked()->IsObject())
         return;
     v8::Local<v8::Object> webChannelObject = v8::Local<v8::Object>::Cast(webChannelObjectValue.ToLocalChecked());
     v8::MaybeLocal<v8::Value> callbackValue(webChannelObject->Get(context, gin::StringToV8(isolate, "onmessage")));
     if (callbackValue.IsEmpty() || !callbackValue.ToLocalChecked()->IsFunction()) {
-        LOG(WARNING) << "onmessage is not a callable property of qt.webChannelTransport. Some things might not work as expected.";
+        LOG(WARNING) << "onmessage is not a callable property of qt.webChannelTransport. Some things might not work as "
+                        "expected.";
         return;
     }
 
     v8::Local<v8::Object> messageObject(v8::Object::New(isolate));
     v8::Maybe<bool> wasSet = messageObject->DefineOwnProperty(
-                context,
-                v8::String::NewFromUtf8(isolate, "data").ToLocalChecked(),
-                v8::String::NewFromUtf8(isolate, json.constData(), v8::NewStringType::kNormal, json.size()).ToLocalChecked(),
-                v8::PropertyAttribute(v8::ReadOnly | v8::DontDelete));
+            context, v8::String::NewFromUtf8(isolate, "data").ToLocalChecked(),
+            v8::String::NewFromUtf8(isolate, json.constData(), v8::NewStringType::kNormal, json.size()).ToLocalChecked(),
+            v8::PropertyAttribute(v8::ReadOnly | v8::DontDelete));
     DCHECK(!wasSet.IsNothing() && wasSet.FromJust());
 
     v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(callbackValue.ToLocalChecked());

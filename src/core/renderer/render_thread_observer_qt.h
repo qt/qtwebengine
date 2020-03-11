@@ -41,15 +41,17 @@
 #define RENDER_THREAD_OBSERVER_QT_H
 
 #include "content/public/renderer/render_thread_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "qtwebengine/common/renderer_configuration.mojom.h"
 
 namespace QtWebEngineCore {
 
-class RenderThreadObserverQt : public content::RenderThreadObserver,
-                               public qtwebengine::mojom::RendererConfiguration {
+class RenderThreadObserverQt
+    : public content::RenderThreadObserver
+    , public qtwebengine::mojom::RendererConfiguration
+{
 public:
-
     RenderThreadObserverQt() = default;
     ~RenderThreadObserverQt() override = default;
 
@@ -63,11 +65,12 @@ private:
     // qtwebengine::mojom::RendererConfiguration:
     void SetInitialConfiguration(bool is_incognito_process) override;
 
-    void OnRendererConfigurationAssociatedRequest(qtwebengine::mojom::RendererConfigurationAssociatedRequest request);
+    void OnRendererConfigurationAssociatedRequest(
+            mojo::PendingAssociatedReceiver<qtwebengine::mojom::RendererConfiguration> receiver);
 
     static bool m_isIncognitoProcess;
 
-    mojo::AssociatedBindingSet<qtwebengine::mojom::RendererConfiguration> m_rendererConfigurationBindings;
+    mojo::AssociatedReceiverSet<qtwebengine::mojom::RendererConfiguration> m_rendererConfigurationReceivers;
 
     DISALLOW_COPY_AND_ASSIGN(RenderThreadObserverQt);
 };

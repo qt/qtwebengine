@@ -44,7 +44,6 @@
 #include "command_line_pref_store_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "net/ssl_host_state_delegate_qt.h"
-#include "net/url_request_context_getter_qt.h"
 #include "permission_manager_qt.h"
 #include "platform_notification_service_qt.h"
 #include "qtwebenginecoreglobal_p.h"
@@ -52,8 +51,10 @@
 #include "web_engine_library_info.h"
 #include "web_engine_context.h"
 
+#include "base/barrier_closure.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cors_origin_pattern_setter.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -76,7 +77,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "components/guest_view/browser/guest_view_manager.h"
-#include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
@@ -145,16 +145,6 @@ bool ProfileQt::IsOffTheRecord()
     return m_profileAdapter->isOffTheRecord();
 }
 
-net::URLRequestContextGetter *ProfileQt::GetRequestContext()
-{
-    return m_urlRequestContextGetter.get();
-}
-
-net::URLRequestContextGetter *ProfileQt::CreateMediaRequestContext()
-{
-    return m_urlRequestContextGetter.get();
-}
-
 content::ResourceContext *ProfileQt::GetResourceContext()
 {
     return m_profileIOData->resourceContext();
@@ -176,7 +166,7 @@ content::BrowserPluginGuestManager *ProfileQt::GetGuestManager()
 
 storage::SpecialStoragePolicy *ProfileQt::GetSpecialStoragePolicy()
 {
-    QT_NOT_YET_IMPLEMENTED
+    // matches android_webview and chromecast
     return nullptr;
 }
 
@@ -221,26 +211,12 @@ content::PermissionControllerDelegate *ProfileQt::GetPermissionControllerDelegat
     return m_permissionManager.get();
 }
 
-net::URLRequestContextGetter *ProfileQt::CreateRequestContext(
-        content::ProtocolHandlerMap *protocol_handlers,
-        content::URLRequestInterceptorScopedVector request_interceptors)
+content::ClientHintsControllerDelegate *ProfileQt::GetClientHintsControllerDelegate()
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(!m_urlRequestContextGetter.get());
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    extensions::InfoMap *extension_info_map = GetExtensionSystem()->info_map();
-    (*protocol_handlers)[extensions::kExtensionScheme] =
-            extensions::CreateExtensionProtocolHandler(IsOffTheRecord(), extension_info_map);
-#endif
-
-    m_profileIOData->setRequestContextData(protocol_handlers, std::move(request_interceptors));
-    m_profileIOData->updateStorageSettings();
-    m_profileIOData->updateRequestInterceptor();
-    m_urlRequestContextGetter = new URLRequestContextGetterQt(m_profileIOData.get());
-    return m_urlRequestContextGetter.get();
+    return nullptr;
 }
 
-content::ClientHintsControllerDelegate *ProfileQt::GetClientHintsControllerDelegate()
+content::StorageNotificationService *ProfileQt::GetStorageNotificationService()
 {
     return nullptr;
 }
@@ -250,10 +226,22 @@ void ProfileQt::SetCorsOriginAccessListForOrigin(const url::Origin &source_origi
                                                  std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
                                                  base::OnceClosure closure)
 {
+    auto barrier_closure = base::BarrierClosure(2, std::move(closure));
+
+    // Keep profile storage partitions' NetworkContexts synchronized.
+    auto profile_setter = base::MakeRefCounted<content::CorsOriginPatternSetter>(
+                source_origin,
+                content::CorsOriginPatternSetter::ClonePatterns(allow_patterns),
+                content::CorsOriginPatternSetter::ClonePatterns(block_patterns),
+                barrier_closure);
+    ForEachStoragePartition(this,
+                            base::BindRepeating(&content::CorsOriginPatternSetter::SetLists,
+                                                base::RetainedRef(profile_setter.get())));
+
     m_sharedCorsOriginAccessList->SetForOrigin(source_origin,
                                                std::move(allow_patterns),
                                                std::move(block_patterns),
-                                               std::move(closure));
+                                               barrier_closure);
 }
 
 content::SharedCorsOriginAccessList *ProfileQt::GetSharedCorsOriginAccessList()

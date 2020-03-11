@@ -1,0 +1,28 @@
+{
+    "module": "pdfwidgets",
+    "condition": "module.pdf && features.pdf-widgets",
+    "depends": [
+        "pdf-private"
+    ],
+    "commandline": {
+        "options": {
+            "pdf-widgets": "boolean"
+        }
+    },
+    "features": {
+       "pdf-widgets": {
+            "label": "Support Qt PDF Widgets",
+            "purpose": "Provides Qt PDF Widgets support.",
+            "condition": "module.widgets",
+            "output": [ "privateFeature" ]
+        }
+    },
+    "summary": [
+        {
+            "section": "Qt PDF Widgets",
+            "entries": [
+                "pdf-widgets"
+            ]
+        }
+    ]
+}

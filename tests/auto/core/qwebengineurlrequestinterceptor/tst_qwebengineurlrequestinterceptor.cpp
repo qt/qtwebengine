@@ -114,7 +114,7 @@ class TestRequestInterceptor : public QWebEngineUrlRequestInterceptor
 public:
     QList<RequestInfo> requestInfos;
     bool shouldIntercept;
-    QMap<QUrl, QUrl> requestInitiatorUrls;
+    QMap<QUrl, QSet<QUrl>> requestInitiatorUrls;
 
     void interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
@@ -129,7 +129,7 @@ public:
         // Set referrer header
         info.setHttpHeader(kHttpHeaderRefererName, kHttpHeaderReferrerValue);
 
-        requestInitiatorUrls.insert(info.requestUrl(), info.initiator());
+        requestInitiatorUrls[info.requestUrl()].insert(info.initiator());
         requestInfos.append(info);
     }
 
@@ -290,18 +290,21 @@ void tst_QWebEngineUrlRequestInterceptor::requestedUrl()
     page.setUrl(QUrl("qrc:///resources/__placeholder__"));
     QVERIFY(spy.wait());
     QTRY_COMPARE(spy.count(), 1);
+    QVERIFY(interceptor.requestInfos.count() >= 1);
     QCOMPARE(interceptor.requestInfos.at(0).requestUrl, QUrl("qrc:///resources/content.html"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
 
     page.setUrl(QUrl("qrc:/non-existent.html"));
     QTRY_COMPARE(spy.count(), 2);
+    QVERIFY(interceptor.requestInfos.count() >= 3);
     QCOMPARE(interceptor.requestInfos.at(2).requestUrl, QUrl("qrc:/non-existent.html"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
 
     page.setUrl(QUrl("http://abcdef.abcdef"));
     QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 3, 15000);
+    QVERIFY(interceptor.requestInfos.count() >= 4);
     QCOMPARE(interceptor.requestInfos.at(3).requestUrl, QUrl("http://abcdef.abcdef/"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
@@ -359,6 +362,7 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrl()
 
     page.setUrl(QUrl("qrc:///resources/firstparty.html"));
     QVERIFY(spy.wait());
+    QVERIFY(interceptor.requestInfos.count() >= 2);
     QCOMPARE(interceptor.requestInfos.at(0).requestUrl, QUrl("qrc:///resources/firstparty.html"));
     QCOMPARE(interceptor.requestInfos.at(1).requestUrl, QUrl("qrc:///resources/content.html"));
     QCOMPARE(interceptor.requestInfos.at(0).firstPartyUrl, QUrl("qrc:///resources/firstparty.html"));
@@ -393,16 +397,19 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrlNestedIframes()
     page.setUrl(requestUrl);
     QTRY_COMPARE(loadSpy.count(), 1);
 
+    QVERIFY(interceptor.requestInfos.count() >= 1);
     RequestInfo info = interceptor.requestInfos.at(0);
     QCOMPARE(info.requestUrl, requestUrl);
     QCOMPARE(info.firstPartyUrl, requestUrl);
     QCOMPARE(info.resourceType, QWebEngineUrlRequestInfo::ResourceTypeMainFrame);
 
+    QVERIFY(interceptor.requestInfos.count() >= 2);
     info = interceptor.requestInfos.at(1);
     QCOMPARE(info.requestUrl, QUrl(adjustedUrl + "iframe2.html"));
     QCOMPARE(info.firstPartyUrl, requestUrl);
     QCOMPARE(info.resourceType, QWebEngineUrlRequestInfo::ResourceTypeSubFrame);
 
+    QVERIFY(interceptor.requestInfos.count() >= 3);
     info = interceptor.requestInfos.at(2);
     QCOMPARE(info.requestUrl, QUrl(adjustedUrl + "iframe3.html"));
     QCOMPARE(info.firstPartyUrl, requestUrl);
@@ -456,6 +463,7 @@ void tst_QWebEngineUrlRequestInterceptor::requestInterceptorByResourceType()
 
     QTRY_COMPARE(interceptor.getUrlRequestForType(static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType)).count(), 1);
     QList<RequestInfo> infos = interceptor.getUrlRequestForType(static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType));
+    QVERIFY(infos.count() >= 1);
     QCOMPARE(infos.at(0).requestUrl, requestUrl);
     QCOMPARE(infos.at(0).firstPartyUrl, firstPartyUrl);
     QCOMPARE(infos.at(0).resourceType, resourceType);
@@ -577,49 +585,49 @@ void tst_QWebEngineUrlRequestInterceptor::initiator()
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeSubFrame));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeSubFrame);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Stylesheet
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeStylesheet));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeStylesheet);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Script
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeScript));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeScript);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Image
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeImage));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeImage);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // FontResource
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFontResource));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFontResource);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Media
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeMedia));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeMedia);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // Favicon
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFavicon));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeFavicon);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 
     // XMLHttpRequest
     QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeXhr));
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeXhr);
     foreach (auto info, infos)
-        QCOMPARE(info.initiator, interceptor.requestInitiatorUrls[info.requestUrl]);
+        QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
 }
 
 QTEST_MAIN(tst_QWebEngineUrlRequestInterceptor)

@@ -230,7 +230,7 @@ TestWebEngineView {
             compare(loadRequest.activeUrl, aboutBlank);
             loadRequest = loadRequestArray[2];
             compare(loadRequest.status, WebEngineView.LoadStartedStatus);
-            compare(loadRequest.activeUrl, aboutBlank);
+            compare(loadRequest.activeUrl, bogusSite);
             compare(loadRequest.url, "data:text/html;charset=UTF-8,load failed")
             loadRequest = loadRequestArray[3];
             compare(loadRequest.status, WebEngineView.LoadSucceededStatus);

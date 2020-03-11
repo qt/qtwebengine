@@ -56,7 +56,8 @@ class RenderFrame;
 class RenderView;
 }
 
-class UserResourceController : public content::RenderThreadObserver {
+class UserResourceController : public content::RenderThreadObserver
+{
 
 public:
     static UserResourceController *instance();

@@ -59,7 +59,7 @@ public:
     ~AccessibilityTreeFormatterQt() override;
 
 private:
-    const base::FilePath::StringType GetExpectedFileSuffix() override;
+    base::FilePath::StringType GetExpectedFileSuffix() override;
     const std::string GetAllowEmptyString() override;
     const std::string GetAllowString() override;
     const std::string GetDenyString() override;
@@ -179,7 +179,7 @@ base::string16 AccessibilityTreeFormatterQt::ProcessTreeForOutput(const base::Di
     return line + base::ASCIIToUTF16("\n");
 }
 
-const base::FilePath::StringType AccessibilityTreeFormatterQt::GetExpectedFileSuffix()
+base::FilePath::StringType AccessibilityTreeFormatterQt::GetExpectedFileSuffix()
 {
     return FILE_PATH_LITERAL("-expected-qt.txt");
 }

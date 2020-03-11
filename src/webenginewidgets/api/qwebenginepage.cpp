@@ -230,11 +230,14 @@ void QWebEnginePagePrivate::titleChanged(const QString &title)
     Q_EMIT q->titleChanged(title);
 }
 
-void QWebEnginePagePrivate::urlChanged(const QUrl &url)
+void QWebEnginePagePrivate::urlChanged()
 {
     Q_Q(QWebEnginePage);
-    explicitUrl = QUrl();
-    Q_EMIT q->urlChanged(url);
+    QUrl qurl = adapter->activeUrl();
+    if (url != qurl) {
+        url = qurl;
+        Q_EMIT q->urlChanged(qurl);
+    }
 }
 
 void QWebEnginePagePrivate::iconChanged(const QUrl &url)
@@ -272,6 +275,12 @@ void QWebEnginePagePrivate::recentlyAudibleChanged(bool recentlyAudible)
 {
     Q_Q(QWebEnginePage);
     Q_EMIT q->recentlyAudibleChanged(recentlyAudible);
+}
+
+void QWebEnginePagePrivate::renderProcessPidChanged(qint64 pid)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->renderProcessPidChanged(pid);
 }
 
 QRectF QWebEnginePagePrivate::viewportRect() const
@@ -313,8 +322,6 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
     }
 
     isLoading = false;
-    if (success)
-        explicitUrl = QUrl();
     // Delay notifying failure until the error-page is done loading.
     // Error-pages are not loaded on failures due to abort.
     if (success || errorCode == -3 /* ERR_ABORTED*/ || !settings->testAttribute(QWebEngineSettings::ErrorPageEnabled)) {
@@ -936,6 +943,13 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
+  \fn void QWebEnginePage::renderProcessPidChanged(qint64 pid);
+  \since 5.15
+
+  This signal is emitted when the underlying render process PID, \a renderProcessPid, changes.
+*/
+
+/*!
     \fn void QWebEnginePage::iconUrlChanged(const QUrl &url)
 
     This signal is emitted when the URL of the icon ("favicon") associated with the
@@ -1146,6 +1160,20 @@ bool QWebEnginePage::recentlyAudible() const
 {
     Q_D(const QWebEnginePage);
     return d->adapter->isInitialized() && d->adapter->recentlyAudible();
+}
+
+/*!
+  \property QWebEnginePage::renderProcessPid
+  \brief The process ID (PID) of the render process assigned to the current
+  page's main frame.
+  \since 5.15
+
+  If no render process is available yet, \c 0 is returned.
+*/
+qint64 QWebEnginePage::renderProcessPid() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->renderProcessPid();
 }
 
 void QWebEnginePage::setView(QWidget *newViewBase)
@@ -1426,10 +1454,14 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case CopyLinkToClipboard:
         if (menuData && !menuData->unfilteredLinkUrl().isEmpty()) {
             QString urlString = menuData->unfilteredLinkUrl().toString(QUrl::FullyEncoded);
-            QString title = menuData->linkText().toHtmlEscaped();
+            QString linkText = menuData->linkText().toHtmlEscaped();
+            QString title = menuData->titleText();
+            if (!title.isEmpty())
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\">") + title + QStringLiteral("</a>");
+            QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral(">")
+                         + linkText + QStringLiteral("</a>");
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << menuData->unfilteredLinkUrl());
             qApp->clipboard()->setMimeData(data);
@@ -1452,12 +1484,15 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case CopyImageUrlToClipboard:
         if (menuData && menuData->mediaUrl().isValid() && menuData->mediaType() == WebEngineContextMenuData::MediaTypeImage) {
             QString urlString = menuData->mediaUrl().toString(QUrl::FullyEncoded);
-            QString title = menuData->linkText();
+            QString alt = menuData->altText();
+            if (!alt.isEmpty())
+                alt = QStringLiteral(" alt=\"%1\"").arg(alt.toHtmlEscaped());
+            QString title = menuData->titleText();
             if (!title.isEmpty())
-                title = QStringLiteral(" alt=\"%1\"").arg(title.toHtmlEscaped());
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral("></img>");
+            QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + alt + QStringLiteral("></img>");
             data->setHtml(html);
             data->setUrls(QList<QUrl>() << menuData->mediaUrl());
             qApp->clipboard()->setMimeData(data);
@@ -1475,12 +1510,17 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
                  menuData->mediaType() == WebEngineContextMenuData::MediaTypeVideo))
         {
             QString urlString = menuData->mediaUrl().toString(QUrl::FullyEncoded);
+            QString title = menuData->titleText();
+            if (!title.isEmpty())
+                title = QStringLiteral(" title=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
             if (menuData->mediaType() == WebEngineContextMenuData::MediaTypeAudio)
-                data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"></audio>"));
+                data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"") + title +
+                              QStringLiteral("></audio>"));
             else
-                data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"></video>"));
+                data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"") + title +
+                              QStringLiteral("></video>"));
             data->setUrls(QList<QUrl>() << menuData->mediaUrl());
             qApp->clipboard()->setMimeData(data);
         }
@@ -1857,13 +1897,12 @@ void QWebEnginePagePrivate::visibleChanged(bool visible)
     Registers the request interceptor \a interceptor to intercept URL requests.
 
     The page does not take ownership of the pointer. This interceptor is called
-    after any interceptors on the profile, and unlike profile interceptors, is run
-    on the UI thread, making it thread-safer. Only URL requests from this page are
-    intercepted.
+    after any interceptors on the profile, and unlike profile interceptors, only
+    URL requests from this page are intercepted.
 
     To unset the request interceptor, set a \c nullptr.
 
-    \sa QWebEngineUrlRequestInfo, QWebEngineProfile::setRequestInterceptor()
+    \sa QWebEngineUrlRequestInfo, QWebEngineProfile::setUrlRequestInterceptor()
 */
 
 void QWebEnginePage::setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
@@ -2065,14 +2104,17 @@ QString QWebEnginePage::title() const
 void QWebEnginePage::setUrl(const QUrl &url)
 {
     Q_D(QWebEnginePage);
-    d->explicitUrl = url;
+    if (d->url != url) {
+        d->url = url;
+        emit urlChanged(url);
+    }
     load(url);
 }
 
 QUrl QWebEnginePage::url() const
 {
     Q_D(const QWebEnginePage);
-    return d->explicitUrl.isValid() ? d->explicitUrl : d->adapter->activeUrl();
+    return d->url;
 }
 
 QUrl QWebEnginePage::requestedUrl() const
@@ -2292,14 +2334,12 @@ ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, QWebEnginePage::FileSelec
 QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes)
 {
 #if QT_CONFIG(filedialog)
-    // FIXME: Should we expose this in QWebPage's API ? Right now it is very open and can contain a mix and match of file extensions (which QFileDialog
-    // can work with) and mimetypes ranging from text/plain or images/* to application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-    Q_UNUSED(acceptedMimeTypes);
+    const QStringList &filter = FilePickerController::nameFilters(acceptedMimeTypes);
     QStringList ret;
     QString str;
     switch (static_cast<FilePickerController::FileChooserMode>(mode)) {
     case FilePickerController::OpenMultiple:
-        ret = QFileDialog::getOpenFileNames(view(), QString());
+        ret = QFileDialog::getOpenFileNames(view(), QString(), QString(), filter.join(QStringLiteral(";;")), nullptr, QFileDialog::HideNameFilterDetails);
         break;
     // Chromium extension, not exposed as part of the public API for now.
     case FilePickerController::UploadFolder:
@@ -2313,7 +2353,7 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
             ret << str;
         break;
     case FilePickerController::Open:
-        str = QFileDialog::getOpenFileName(view(), QString(), oldFiles.first());
+        str = QFileDialog::getOpenFileName(view(), QString(), oldFiles.first(), filter.join(QStringLiteral(";;")), nullptr, QFileDialog::HideNameFilterDetails);
         if (!str.isNull())
             ret << str;
         break;

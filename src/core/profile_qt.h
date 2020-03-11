@@ -44,7 +44,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/url_request/url_request_context.h"
 #include "pref_service_adapter.h"
 #include "profile_io_data_qt.h"
 #include <QtGlobal>
@@ -79,16 +78,12 @@ public:
     base::FilePath GetPath() override;
     bool IsOffTheRecord() override;
 
-    net::URLRequestContextGetter *CreateMediaRequestContext() override;
     content::ResourceContext *GetResourceContext() override;
     content::DownloadManagerDelegate *GetDownloadManagerDelegate() override;
     content::BrowserPluginGuestManager *GetGuestManager() override;
     storage::SpecialStoragePolicy *GetSpecialStoragePolicy() override;
     content::PushMessagingService *GetPushMessagingService() override;
     content::SSLHostStateDelegate *GetSSLHostStateDelegate() override;
-    net::URLRequestContextGetter *CreateRequestContext(
-            content::ProtocolHandlerMap *protocol_handlers,
-            content::URLRequestInterceptorScopedVector request_interceptors) override;
     std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
             const base::FilePath &partition_path) override;
     content::PermissionControllerDelegate * GetPermissionControllerDelegate() override;
@@ -96,6 +91,7 @@ public:
     content::BackgroundSyncController *GetBackgroundSyncController() override;
     content::BrowsingDataRemoverDelegate *GetBrowsingDataRemoverDelegate() override;
     content::ClientHintsControllerDelegate *GetClientHintsControllerDelegate() override;
+    content::StorageNotificationService *GetStorageNotificationService() override;
     void SetCorsOriginAccessListForOrigin(const url::Origin &source_origin,
                                           std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
                                           std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
@@ -106,9 +102,8 @@ public:
     // Profile implementation:
     PrefService *GetPrefs() override;
     const PrefService *GetPrefs() const override;
-    net::URLRequestContextGetter *GetRequestContext() override;
-    void Initialize();
 
+    void Initialize();
     ProfileAdapter *profileAdapter() { return m_profileAdapter; }
 
     content::PlatformNotificationService *platformNotificationService();
@@ -132,7 +127,6 @@ private:
     friend class ContentBrowserClientQt;
     friend class ProfileIODataQt;
     friend class WebContentsAdapter;
-    scoped_refptr<net::URLRequestContextGetter> m_urlRequestContextGetter;
     std::unique_ptr<BrowsingDataRemoverDelegateQt> m_removerDelegate;
     std::unique_ptr<PermissionManagerQt> m_permissionManager;
     std::unique_ptr<SSLHostStateDelegateQt> m_sslHostStateDelegate;

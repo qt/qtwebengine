@@ -87,6 +87,8 @@ public:
     QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o)
     {}
 
+    bool isValid() const override;
+    QAccessibleInterface *focusChild() const override;
     int childCount() const override;
     QAccessibleInterface *child(int index) const override;
     int indexOfChild(const QAccessibleInterface *child) const override;

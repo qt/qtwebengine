@@ -65,7 +65,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/sandbox_internals_ui.h"
+#include "chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h"
 #endif
 
 // The Following WebUIs are disabled because they currently doesn't build

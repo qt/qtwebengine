@@ -49,7 +49,6 @@
 #include "favicon_manager.h"
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
-#include "net/network_delegate_qt.h"
 #include "profile_qt.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
 #include "register_protocol_handler_request_controller_impl.h"
@@ -189,36 +188,20 @@ static bool shouldUseActualURL(content::NavigationEntry *entry)
 
 void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags)
 {
-    if (changed_flags & content::INVALIDATE_TYPE_URL) {
-        content::NavigationEntry *entry = source->GetController().GetVisibleEntry();
-
-        QUrl newUrl;
-        if (source->GetVisibleURL().SchemeIs(content::kViewSourceScheme)) {
-            Q_ASSERT(entry);
-            GURL url = entry->GetURL();
-
-            // Strip user name, password and reference section from view-source URLs
-            if (url.has_password() || url.has_username() || url.has_ref()) {
-                GURL strippedUrl = net::SimplifyUrlForRequest(entry->GetURL());
-                newUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme, QString::fromStdString(strippedUrl.spec())));
-            }
-        }
-
-        // If there is a visible entry there are special cases when we dont wan't to use the actual URL
-        if (entry && newUrl.isEmpty())
-            newUrl = shouldUseActualURL(entry) ? toQt(entry->GetURL()) : toQt(entry->GetVirtualURL());
-
-        if (m_url != newUrl) {
-            m_url = newUrl;
-            m_viewClient->urlChanged(m_url);
-        }
+    if (changed_flags & content::INVALIDATE_TYPE_URL && !m_pendingUrlUpdate) {
+        m_pendingUrlUpdate = true;
+        base::WeakPtr<WebContentsDelegateQt> delegate = AsWeakPtr();
+        QTimer::singleShot(0, [delegate, this](){ if (delegate) m_viewClient->urlChanged();});
     }
 
     if (changed_flags & content::INVALIDATE_TYPE_TITLE) {
         QString newTitle = toQt(source->GetTitle());
         if (m_title != newTitle) {
             m_title = newTitle;
-            m_viewClient->titleChanged(m_title);
+            QTimer::singleShot(0, [delegate = AsWeakPtr(), title = newTitle] () {
+                if (delegate)
+                    delegate->adapterClient()->titleChanged(title);
+            });
         }
     }
 
@@ -232,6 +215,25 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
     }
 }
 
+QUrl WebContentsDelegateQt::url(content::WebContents* source) const {
+
+    content::NavigationEntry *entry = source->GetController().GetVisibleEntry();
+    QUrl newUrl;
+    if (entry) {
+        GURL url = entry->GetURL();
+        // Strip user name, password and reference section from view-source URLs
+        if (source->GetVisibleURL().SchemeIs(content::kViewSourceScheme) &&
+            (url.has_password() || url.has_username() || url.has_ref())) {
+            GURL strippedUrl = net::SimplifyUrlForRequest(url);
+            newUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme, QString::fromStdString(strippedUrl.spec())));
+        }
+        // If there is a visible entry there are special cases when we dont wan't to use the actual URL
+        if (newUrl.isEmpty())
+            newUrl = shouldUseActualURL(entry) ? toQt(url) : toQt(entry->GetVirtualURL());
+    }
+    m_pendingUrlUpdate = false;
+    return newUrl;
+}
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, std::unique_ptr<content::WebContents> new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
 {
     Q_UNUSED(source)
@@ -286,10 +288,17 @@ void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_
 
 void WebContentsDelegateQt::RenderProcessGone(base::TerminationStatus status)
 {
+    // RenderProcessHost::FastShutdownIfPossible results in TERMINATION_STATUS_STILL_RUNNING
+    if (status != base::TERMINATION_STATUS_STILL_RUNNING) {
+        m_viewClient->renderProcessTerminated(
+                m_viewClient->renderProcessExitStatus(status),
+                web_contents()->GetCrashedErrorCode());
+    }
+
     // Based one TabLoadTracker::RenderProcessGone
 
-    if (status == base::TerminationStatus::TERMINATION_STATUS_NORMAL_TERMINATION
-        || status == base::TerminationStatus::TERMINATION_STATUS_STILL_RUNNING) {
+    if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION
+        || status == base::TERMINATION_STATUS_STILL_RUNNING) {
         return;
     }
 
@@ -306,6 +315,14 @@ void WebContentsDelegateQt::RenderFrameHostChanged(content::RenderFrameHost *old
     if (new_host) {
         content::FrameTreeNode *new_node = static_cast<content::RenderFrameHostImpl *>(new_host)->frame_tree_node();
         m_frameFocusedObserver.addNode(new_node);
+
+        // Is this a main frame?
+        if (new_host->GetFrameOwnerElementType() == blink::FrameOwnerElementType::kNone) {
+            content::RenderProcessHost *renderProcessHost = new_host->GetProcess();
+            const base::Process &process = renderProcessHost->GetProcess();
+            if (process.IsValid())
+                m_viewClient->renderProcessPidChanged(process.Pid());
+        }
     }
 }
 
@@ -466,17 +483,20 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     Q_ASSERT(validated_url.is_valid());
     if (validated_url.spec() == content::kUnreachableWebDataURL) {
         m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
-        m_viewClient->iconChanged(QUrl());
 
         // Trigger LoadFinished signal for main frame's error page only.
-        if (!render_frame_host->GetParent())
+        if (!render_frame_host->GetParent()) {
+            m_viewClient->iconChanged(QUrl());
             EmitLoadFinished(true /* success */, toQt(validated_url), true /* isErrorPage */);
+        }
 
         return;
     }
 
-    if (render_frame_host->GetParent())
+    if (render_frame_host->GetParent()) {
+        m_viewClient->updateNavigationActions();
         return;
+    }
 
     if (!m_faviconManager->hasCandidate())
         m_viewClient->iconChanged(QUrl());
@@ -526,7 +546,7 @@ content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogMana
     return JavaScriptDialogManagerQt::GetInstance();
 }
 
-void WebContentsDelegateQt::EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL& origin, const blink::WebFullscreenOptions &)
+void WebContentsDelegateQt::EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL& origin, const blink::mojom::FullscreenOptions &)
 {
     Q_UNUSED(web_contents);
     if (!m_viewClient->isFullScreenMode())
@@ -803,7 +823,6 @@ WebContentsAdapter *WebContentsDelegateQt::webContentsAdapter() const
 
 void WebContentsDelegateQt::copyStateFrom(WebContentsDelegateQt *source)
 {
-    m_url = source->m_url;
     m_title = source->m_title;
     NavigationStateChanged(web_contents(), content::INVALIDATE_TYPE_URL);
     m_faviconManager->copyStateFrom(source->m_faviconManager.data());

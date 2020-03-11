@@ -66,6 +66,7 @@
 #include "printing/metafile_skia.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace {
 
@@ -106,8 +107,8 @@ static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
     base::File file(path,
                     base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
     bool success = file.IsValid() && metafile.SaveTo(&file);
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(saveCallback, success));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(saveCallback, success));
 }
 
 static base::DictionaryValue *createPrintSettings()
@@ -120,10 +121,7 @@ static base::DictionaryValue *createPrintSettings()
     printSettings->SetInteger(printing::kPreviewRequestID, internalRequestId);
 
     // The following are standard settings that Chromium expects to be set.
-    printSettings->SetBoolean(printing::kSettingPrintToPDF, true);
-    printSettings->SetBoolean(printing::kSettingCloudPrintDialog, false);
-    printSettings->SetBoolean(printing::kSettingPrintWithPrivet, false);
-    printSettings->SetBoolean(printing::kSettingPrintWithExtension, false);
+    printSettings->SetInteger(printing::kSettingPrinterType, printing::kPdfPrinter);
 
     printSettings->SetInteger(printing::kSettingDpiHorizontal, printing::kPointsPerInch);
     printSettings->SetInteger(printing::kSettingDpiVertical, printing::kPointsPerInch);
@@ -216,16 +214,16 @@ void PrintViewManagerQt::PrintToPDFFileWithCallback(const QPageLayout &pageLayou
         return;
 
     if (m_printSettings || !filePath.length()) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(callback, false));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(callback, false));
         return;
     }
 
     m_pdfOutputPath = toFilePath(filePath);
     m_pdfSaveCallback = callback;
     if (!PrintToPDFInternal(pageLayout, printInColor)) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(callback, false));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(callback, false));
         resetPdfState();
     }
 }
@@ -240,15 +238,15 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
 
     // If there already is a pending print in progress, don't try starting another one.
     if (m_printSettings) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                base::BindOnce(callback, QSharedPointer<QByteArray>()));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(callback, QSharedPointer<QByteArray>()));
         return;
     }
 
     m_pdfPrintCallback = callback;
     if (!PrintToPDFInternal(pageLayout, printInColor, useCustomMargins)) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(callback, QSharedPointer<QByteArray>()));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(callback, QSharedPointer<QByteArray>()));
 
         resetPdfState();
     }
@@ -272,15 +270,9 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
         return false;
 
     content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
-    auto message = std::make_unique<PrintMsg_InitiatePrintPreview>(
-                rfh->GetRoutingID(), false);
+    GetPrintRenderFrame(rfh)->InitiatePrintPreview(nullptr, false);
 
     DCHECK(!m_printPreviewRfh);
-
-    if (!rfh->Send(message.release())) {
-        return false;
-    }
-
     m_printPreviewRfh = rfh;
     return true;
 }
@@ -324,6 +316,24 @@ void PrintViewManagerQt::RenderFrameDeleted(content::RenderFrameHost *render_fra
     if (render_frame_host == m_printPreviewRfh)
         PrintPreviewDone();
     PrintViewManagerBaseQt::RenderFrameDeleted(render_frame_host);
+    m_printRenderFrames.erase(render_frame_host);
+}
+
+const mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> &PrintViewManagerQt::GetPrintRenderFrame(content::RenderFrameHost *rfh)
+{
+    auto it = m_printRenderFrames.find(rfh);
+    if (it == m_printRenderFrames.end()) {
+        mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> remote;
+        rfh->GetRemoteAssociatedInterfaces()->GetInterface(&remote);
+        it = m_printRenderFrames.insert(std::make_pair(rfh, std::move(remote))).first;
+    } else if (it->second.is_bound() && !it->second.is_connected()) {
+        // When print preview is closed, the remote is disconnected from the
+        // receiver. Reset and bind the remote before using it again.
+        it->second.reset();
+        rfh->GetRemoteAssociatedInterfaces()->GetInterface(&it->second);
+    }
+
+    return it->second;
 }
 
 void PrintViewManagerQt::resetPdfState()
@@ -359,12 +369,12 @@ void PrintViewManagerQt::OnMetafileReadyForPrinting(content::RenderFrameHost* rf
 
     if (!pdf_print_callback.is_null()) {
         QSharedPointer<QByteArray> data_array = GetStdVectorFromHandle(params.content.metafile_data_region);
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(pdf_print_callback, data_array));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(pdf_print_callback, data_array));
     } else {
         scoped_refptr<base::RefCountedBytes> data_bytes = GetBytesFromHandle(params.content.metafile_data_region);
-        base::PostTaskWithTraits(FROM_HERE, {base::MayBlock()},
-                                 base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
+        base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                       base::BindOnce(&SavePdfFile, data_bytes, pdfOutputPath, pdf_save_callback));
     }
 }
 
@@ -382,8 +392,8 @@ void PrintViewManagerQt::DidStartLoading()
 void PrintViewManagerQt::NavigationStopped()
 {
     if (!m_pdfPrintCallback.is_null()) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(m_pdfPrintCallback, QSharedPointer<QByteArray>()));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(m_pdfPrintCallback, QSharedPointer<QByteArray>()));
     }
     resetPdfState();
     PrintViewManagerBaseQt::NavigationStopped();
@@ -393,8 +403,8 @@ void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
 {
     PrintViewManagerBaseQt::RenderProcessGone(status);
     if (!m_pdfPrintCallback.is_null()) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                 base::BindOnce(m_pdfPrintCallback, QSharedPointer<QByteArray>()));
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(m_pdfPrintCallback, QSharedPointer<QByteArray>()));
     }
     resetPdfState();
 }
@@ -419,7 +429,7 @@ void PrintViewManagerQt::OnSetupScriptedPrintPreview(content::RenderFrameHost* r
         return;
 
     // close preview
-    rfh->Send(new PrintMsg_ClosePrintPreviewDialog(rfh->GetRoutingID()));
+    GetPrintRenderFrame(rfh)->OnPrintPreviewDialogClosed();
 
     client->printRequested();
 }
@@ -431,8 +441,7 @@ void PrintViewManagerQt::OnShowScriptedPrintPreview(content::RenderFrameHost* rf
 }
 
 void PrintViewManagerQt::PrintPreviewDone() {
-    m_printPreviewRfh->Send(new PrintMsg_ClosePrintPreviewDialog(
-                                m_printPreviewRfh->GetRoutingID()));
+    GetPrintRenderFrame(m_printPreviewRfh)->OnPrintPreviewDialogClosed();
     m_printPreviewRfh = nullptr;
 }
 

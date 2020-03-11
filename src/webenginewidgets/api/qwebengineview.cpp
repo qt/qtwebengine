@@ -107,9 +107,18 @@ void QWebEngineViewPrivate::widgetChanged(QtWebEngineCore::RenderWidgetHostViewQ
     if (oldWidget) {
         q->layout()->removeWidget(oldWidget);
         oldWidget->hide();
+#if QT_CONFIG(accessibility)
+        QAccessible::deleteAccessibleInterface(QAccessible::uniqueId(QAccessible::queryAccessibleInterface(oldWidget)));
+#endif
     }
 
     if (newWidget) {
+#if QT_CONFIG(accessibility)
+        // An earlier QAccessible::queryAccessibleInterface() call may have already registered a default
+        // QAccessibleInterface for newWidget: remove it first to avoid assert in QAccessibleCache::insert().
+        QAccessible::deleteAccessibleInterface(QAccessible::uniqueId(QAccessible::queryAccessibleInterface(newWidget)));
+        QAccessible::registerAccessibleInterface(new QtWebEngineCore::RenderWidgetHostViewQtDelegateWidgetAccessible(newWidget, q));
+#endif
         q->layout()->addWidget(newWidget);
         q->setFocusProxy(newWidget);
         newWidget->show();
@@ -462,23 +471,39 @@ void QWebEngineView::dropEvent(QDropEvent *e)
 #endif // QT_CONFIG(draganddrop)
 
 #ifndef QT_NO_ACCESSIBILITY
+bool QWebEngineViewAccessible::isValid() const
+{
+    if (!QAccessibleWidget::isValid())
+        return false;
+
+    if (!view() || !view()->d_func() || !view()->d_func()->page || !view()->d_func()->page->d_func())
+        return false;
+
+    return true;
+}
+
+QAccessibleInterface *QWebEngineViewAccessible::focusChild() const
+{
+    if (child(0) && child(0)->focusChild())
+        return child(0)->focusChild();
+    return const_cast<QWebEngineViewAccessible *>(this);
+}
+
 int QWebEngineViewAccessible::childCount() const
 {
-    if (view() && child(0))
-        return 1;
-    return 0;
+    return child(0) ? 1 : 0;
 }
 
 QAccessibleInterface *QWebEngineViewAccessible::child(int index) const
 {
-    if (index == 0 && view() && view()->page())
+    if (index == 0 && isValid())
         return view()->page()->d_func()->adapter->browserAccessible();
     return nullptr;
 }
 
 int QWebEngineViewAccessible::indexOfChild(const QAccessibleInterface *c) const
 {
-    if (c == child(0))
+    if (child(0) && c == child(0))
         return 0;
     return -1;
 }

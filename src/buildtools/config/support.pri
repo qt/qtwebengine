@@ -6,11 +6,6 @@ defineTest(qtwebengine_skipBuild) {
 
 defineReplace(qtwebengine_checkError) {
 
-    static {
-       qtwebengine_skipBuild("Static builds of QtWebEngine are not supported.")
-       return(false)
-    }
-
     !qtHaveModule(gui) {
         qtwebengine_skipBuild("QtWebEngine requires QtGui.")
         return(false)
@@ -67,7 +62,8 @@ defineReplace(qtwebengine_checkError) {
     }
 
     linux:!qtwebengine_checkErrorForLinux():return(false)
-    win:!qtwebengine_checkErrorForWindows():return(false)
+    win32:!qtwebengine_checkErrorForWindows():return(false)
+    macos:!qtwebengine_checkErrorForMacOS():return(false)
 
     sanitizer: !qtConfig(webengine-sanitizer) {
         qtwebengine_skipBuild("Chosen sanitizer configuration is not supported for QtWebEngine. Check config.log for details or use -feature-webengine-sanitizer to force build with the chosen sanitizer configuration.")
@@ -77,7 +73,19 @@ defineReplace(qtwebengine_checkError) {
     return(true)
 }
 
+defineTest(qtwebengine_checkErrorFoMacOS) {
+    static {
+       qtwebengine_skipBuild("Static builds of QtWebEngine are not supported.")
+       return(false)
+    }
+}
+
 defineTest(qtwebengine_checkErrorForLinux) {
+
+    static {
+       qtwebengine_skipBuild("Static builds of QtWebEngine are not supported.")
+       return(false)
+    }
 
     !qtConfig(pkg-config) {
         qtwebengine_skipBuild("A pkg-config support is required to build QtWebEngine.")
@@ -114,6 +122,12 @@ defineTest(qtwebengine_checkErrorForLinux) {
 }
 
 defineTest(qtwebengine_checkErrorForWindows) {
+
+    static {
+       qtwebengine_skipBuild("Static builds of QtWebEngine are not supported.")
+       return(false)
+    }
+
     !qtConfig(webengine-win-compiler64) {
         qtwebengine_skipBuild("64-bit cross-building or native toolchain required to build QtWebEngine could not be found.")
         return(false)

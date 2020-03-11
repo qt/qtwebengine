@@ -56,15 +56,14 @@
 #include <QtGui/qimage.h>
 
 namespace QtWebEngineCore {
-class PdfiumPageWrapperQt;
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT PdfiumDocumentWrapperQt
 {
 public:
     PdfiumDocumentWrapperQt(const void *pdfData, size_t size, const char *password = nullptr);
     virtual ~PdfiumDocumentWrapperQt();
-    QImage pageAsQImage(size_t index);
-    bool pageIsLandscape(size_t index);
+    QImage pageAsQImage(size_t index, int width , int height);
+    QSizeF pageSize(size_t index);
     int pageCount() const { return m_pageCount; }
 
 private:

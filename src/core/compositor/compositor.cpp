@@ -46,7 +46,7 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace QtWebEngineCore {
 
@@ -56,7 +56,7 @@ Compositor::Compositor(content::RenderWidgetHost *host)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    m_taskRunner = base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE});
+    m_taskRunner = base::CreateSingleThreadTaskRunner({content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE});
     m_beginFrameSource =
         std::make_unique<viz::DelayBasedBeginFrameSource>(
             std::make_unique<viz::DelayBasedTimeSource>(m_taskRunner.get()),
@@ -127,8 +127,7 @@ QSGNode *Compositor::updatePaintNode(QSGNode *oldNode, RenderWidgetHostViewQtDel
     }
     m_updatePaintNodeShouldCommit = false;
 
-    gfx::PresentationFeedback dummyFeedback(base::TimeTicks::Now(), base::TimeDelta(), gfx::PresentationFeedback::Flags::kVSync);
-    m_presentations.emplace(m_committedFrame.metadata.frame_token, viz::FrameTimingDetails{dummyFeedback});
+    m_presentations.emplace(m_committedFrame.metadata.frame_token, viz::FrameTimingDetails{base::TimeTicks::Now()});
 
     m_resourceTracker->commitResources();
     frameNode->commit(m_pendingFrame, m_committedFrame, m_resourceTracker.get(), viewDelegate);
@@ -160,8 +159,7 @@ void Compositor::notifyFrameCommitted()
 
 void Compositor::sendPresentationFeedback(uint frame_token)
 {
-    gfx::PresentationFeedback dummyFeedback(base::TimeTicks::Now(), base::TimeDelta(), gfx::PresentationFeedback::Flags::kVSync);
-    viz::FrameTimingDetails dummyDetails = {dummyFeedback};
+    viz::FrameTimingDetails dummyDetails = {base::TimeTicks::Now()};
     m_presentations.emplace(frame_token, dummyDetails);
 }
 

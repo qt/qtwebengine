@@ -38,28 +38,29 @@
 ****************************************************************************/
 
 #include "url_request_custom_job_proxy.h"
-#include "url_request_custom_job.h"
 #include "url_request_custom_job_delegate.h"
+
+#include "content/public/browser/browser_thread.h"
+#include "net/base/net_errors.h"
+
 #include "api/qwebengineurlrequestjob.h"
 #include "profile_adapter.h"
 #include "type_conversion.h"
-#include "content/public/browser/browser_thread.h"
 #include "web_engine_context.h"
-
-using namespace net;
 
 namespace QtWebEngineCore {
 
-URLRequestCustomJobProxy::URLRequestCustomJobProxy(URLRequestCustomJob *job,
+URLRequestCustomJobProxy::URLRequestCustomJobProxy(URLRequestCustomJobProxy::Client *client,
                                                    const std::string &scheme,
                                                    QPointer<ProfileAdapter> profileAdapter)
-    : m_job(job)
+    : m_client(client)
     , m_started(false)
     , m_scheme(scheme)
     , m_delegate(nullptr)
     , m_profileAdapter(profileAdapter)
+    , m_ioTaskRunner(m_client->taskRunner())
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK(m_ioTaskRunner && m_ioTaskRunner->RunsTasksInCurrentSequence());
 }
 
 URLRequestCustomJobProxy::~URLRequestCustomJobProxy()
@@ -87,69 +88,73 @@ void URLRequestCustomJobProxy::setReplyCharset(const std::string &charset)
 */
 void URLRequestCustomJobProxy::reply(std::string mimeType, QIODevice *device)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (!m_job)
+    if (!m_client)
         return;
-    m_job->m_mimeType = mimeType;
-    m_job->m_device = device;
-    if (m_job->m_device && !m_job->m_device->isReadable())
-        m_job->m_device->open(QIODevice::ReadOnly);
+    DCHECK (!m_ioTaskRunner || m_ioTaskRunner->RunsTasksInCurrentSequence());
+    m_client->m_mimeType = mimeType;
+    m_client->m_device = device;
+    if (m_client->m_device && !m_client->m_device->isReadable())
+        m_client->m_device->open(QIODevice::ReadOnly);
 
-    qint64 size = m_job->m_device ? m_job->m_device->size() : -1;
-    if (size > 0)
-        m_job->set_expected_content_size(size);
-    if (m_job->m_device && m_job->m_device->isReadable()) {
+    if (m_client->m_firstBytePosition > 0)
+        m_client->m_device->seek(m_client->m_firstBytePosition);
+
+    qint64 deviceSize = m_client->m_device ? m_client->m_device->size() : -1;
+    if (deviceSize > 0)
+        m_client->notifyExpectedContentSize(deviceSize);
+
+    if (m_client->m_device && m_client->m_device->isReadable()) {
         m_started = true;
-        m_job->NotifyHeadersComplete();
+        m_client->notifyHeadersComplete();
     } else {
-        fail(ERR_INVALID_URL);
+        fail(net::ERR_INVALID_URL);
     }
 }
 
 void URLRequestCustomJobProxy::redirect(GURL url)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (!m_job)
+    if (!m_client)
         return;
-    if (m_job->m_device || m_job->m_error)
+    DCHECK (!m_ioTaskRunner || m_ioTaskRunner->RunsTasksInCurrentSequence());
+    if (m_client->m_device || m_client->m_error)
         return;
-    m_job->m_redirect = url;
+    m_client->m_redirect = url;
     m_started = true;
-    m_job->NotifyHeadersComplete();
+    m_client->notifyHeadersComplete();
 }
 
 void URLRequestCustomJobProxy::abort()
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (!m_job)
+    if (!m_client)
         return;
-    if (m_job->m_device && m_job->m_device->isOpen())
-        m_job->m_device->close();
-    m_job->m_device = nullptr;
+    DCHECK (!m_ioTaskRunner || m_ioTaskRunner->RunsTasksInCurrentSequence());
+    if (m_client->m_device && m_client->m_device->isOpen())
+        m_client->m_device->close();
+    m_client->m_device = nullptr;
     if (m_started)
-        m_job->NotifyCanceled();
+        m_client->notifyCanceled();
     else
-        m_job->NotifyStartError(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
+        m_client->notifyAborted();
 }
 
 void URLRequestCustomJobProxy::fail(int error)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (!m_job)
+    if (!m_client)
         return;
-    m_job->m_error = error;
-    if (m_job->m_device)
-        m_job->m_device->close();
+    DCHECK (m_ioTaskRunner->RunsTasksInCurrentSequence());
+    m_client->m_error = error;
+    if (m_client->m_device)
+        m_client->m_device->close();
     if (!m_started)
-        m_job->NotifyStartError(URLRequestStatus::FromError(error));
+        m_client->notifyStartFailure(error);
     // else we fail on the next read, or the read that might already be in progress
 }
 
 void URLRequestCustomJobProxy::readyRead()
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (m_job)
-        m_job->notifyReadyRead();
+    DCHECK (m_ioTaskRunner->RunsTasksInCurrentSequence());
+    if (m_client)
+        m_client->notifyReadyRead();
 }
 
 void URLRequestCustomJobProxy::initialize(GURL url, std::string method,

@@ -97,6 +97,7 @@ public:
         qmlRegisterType<QQuickWebEngineView, 8>(uri, 1, 8, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 9>(uri, 1, 9, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 10>(uri, 1, 10, "WebEngineView");
+        qmlRegisterType<QQuickWebEngineView, 11>(uri, 1, 11, "WebEngineView");
         qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 1>(uri, 1, 2, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 2>(uri, 1, 3, "WebEngineProfile");
@@ -137,6 +138,7 @@ public:
         qmlRegisterSingletonType<QQuickWebEngineSingleton>(uri, 1, 1, "WebEngine", webEngineSingletonProvider);
         qmlRegisterUncreatableType<QQuickWebEngineHistory>(uri, 1, 1, "NavigationHistory",
             msgUncreatableType("NavigationHistory"));
+        qmlRegisterUncreatableType<QQuickWebEngineHistory, 1>(uri, 1, 11, "NavigationHistory", msgUncreatableType("NavigationHistory"));
         qmlRegisterUncreatableType<QQuickWebEngineHistoryListModel>(uri, 1, 1, "NavigationHistoryListModel",
             msgUncreatableType("NavigationHistory"));
         qmlRegisterUncreatableType<QQuickWebEngineFullScreenRequest>(uri, 1, 1, "FullScreenRequest",

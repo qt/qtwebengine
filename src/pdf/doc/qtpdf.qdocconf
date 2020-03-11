@@ -1,0 +1,58 @@
+include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
+
+project                 = QtPdf
+description             = Qt Pdf Reference Documentation
+version                 = $QT_VERSION
+
+qhp.projects            = QtPdf
+
+qhp.QtPdf.file                = qtpdf.qhp
+qhp.QtPdf.namespace           = org.qt-project.qtpdf.$QT_VERSION_TAG
+qhp.QtPdf.virtualFolder       = qtpdf
+qhp.QtPdf.indexTitle          = Qt PDF
+qhp.QtPdf.indexRoot           =
+
+qhp.QtPdf.filterAttributes    = qtpdf $QT_VERSION qtrefdoc
+qhp.QtPdf.customFilters.Qt.name = QtPdf $QT_VERSION
+qhp.QtPdf.customFilters.Qt.filterAttributes = qtpdf $QT_VERSION
+
+qhp.QtPdf.subprojects         = classes qmltypes examples
+
+qhp.QtPdf.subprojects.classes.title = C++ Classes
+qhp.QtPdf.subprojects.classes.indexTitle = Qt PDF C++ Classes
+qhp.QtPdf.subprojects.classes.selectors = class fake:headerfile
+qhp.QtPdf.subprojects.classes.sortPages = true
+
+qhp.QtPdf.subprojects.qmltypes.title = QML Types
+qhp.QtPdf.subprojects.qmltypes.indexTitle = Qt Quick PDF QML Types
+qhp.QtPdf.subprojects.qmltypes.selectors = qmltype
+qhp.QtPdf.subprojects.qmltypes.sortPages = true
+
+qhp.QtPdf.subprojects.examples.title = Examples
+qhp.QtPdf.subprojects.examples.indexTitle = Qt PDF Examples
+qhp.QtPdf.subprojects.examples.selectors = doc:example
+qhp.QtPdf.subprojects.examples.sortPages = true
+
+depends += qtcore \
+           qtwidgets \
+           qtgui \
+           qtdoc \
+           qmake \
+           qtdesigner \
+           qtquick \
+           qtcmake
+
+headerdirs  += ../api \
+               ../quick
+
+sourcedirs  += .. \
+               ../quick
+
+exampledirs += ../../../examples/pdfwidgets \
+               snippets/
+
+imagedirs   += images
+
+navigation.landingpage = "Qt PDF"
+navigation.cppclassespage = "Qt PDF C++ Classes"
+navigation.qmltypespage = "Qt WebEngine QML Types"

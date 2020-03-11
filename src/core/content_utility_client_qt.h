@@ -53,8 +53,7 @@ public:
     ~ContentUtilityClientQt() override;
 
     // content::ContentUtilityClient:
-    void RunIOThreadService(mojo::GenericPendingReceiver *receiver) override;
-
+    mojo::ServiceFactory *GetIOThreadServiceFactory() override;
 };
 
 } // namespace

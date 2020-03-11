@@ -97,12 +97,13 @@ public:
     void recommendedStateChanged(LifecycleState state) override;
     void visibleChanged(bool visible) override;
     void titleChanged(const QString&) override;
-    void urlChanged(const QUrl&) override;
+    void urlChanged() override;
     void iconChanged(const QUrl&) override;
     void loadProgressChanged(int progress) override;
     void didUpdateTargetURL(const QUrl&) override;
     void selectionChanged() override;
     void recentlyAudibleChanged(bool recentlyAudible) override;
+    void renderProcessPidChanged(qint64 pid) override;
     QRectF viewportRect() const override;
     QColor backgroundColor() const override;
     void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) override;
@@ -186,7 +187,7 @@ public:
     QWebEngineProfile *profile;
     QWebEngineSettings *settings;
     QWebEngineView *view;
-    QUrl explicitUrl;
+    QUrl url;
     QWebEngineContextMenuData contextData;
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;

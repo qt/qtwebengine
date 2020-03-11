@@ -114,7 +114,7 @@ public:
     WebContentsDelegateQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
     ~WebContentsDelegateQt();
 
-    QUrl url() const { return m_url; }
+    QUrl url(content::WebContents *source) const;
     QString title() const { return m_title; }
 
     // WebContentsDelegate overrides
@@ -128,7 +128,7 @@ public:
     void WebContentsCreated(content::WebContents *source_contents, int opener_render_process_id, int opener_render_frame_id,
                             const std::string &frame_name, const GURL &target_url, content::WebContents *new_contents) override;
     content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) override;
-    void EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL &origin, const blink::WebFullscreenOptions &) override;
+    void EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL &origin, const blink::mojom::FullscreenOptions &options) override;
     void ExitFullscreenModeForTab(content::WebContents*) override;
     bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) override;
     void RunFileChooser(content::RenderFrameHost* render_frame_host,
@@ -223,12 +223,12 @@ private:
     bool m_didStartLoadingSeen;
     FrameFocusedObserver m_frameFocusedObserver;
 
-    QUrl m_url;
     QString m_title;
     int m_audioStreamCount = 0;
     int m_videoStreamCount = 0;
     int m_mirroringStreamCount = 0;
     int m_desktopStreamCount = 0;
+    mutable bool m_pendingUrlUpdate = false;
 
     base::WeakPtrFactory<WebContentsDelegateQt> m_weakPtrFactory { this };
 };

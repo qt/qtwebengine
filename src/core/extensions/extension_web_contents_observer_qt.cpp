@@ -70,42 +70,6 @@ void ExtensionWebContentsObserverQt::CreateForWebContents(content::WebContents *
     FromWebContents(web_contents)->Initialize();
 }
 
-std::string ExtensionWebContentsObserverQt::GetExtensionIdFromFrame(content::RenderFrameHost *render_frame_host) const
-{
-    const GURL &site = render_frame_host->GetSiteInstance()->GetSiteURL();
-    if (!site.SchemeIs(kExtensionScheme))
-        return std::string();
-
-    return site.host();
-}
-
-const Extension *ExtensionWebContentsObserverQt::GetExtensionFromFrame(content::RenderFrameHost *render_frame_host, bool verify_url) const
-{
-    std::string extension_id = GetExtensionIdFromFrame(render_frame_host);
-    if (extension_id.empty())
-        return nullptr;
-
-    content::BrowserContext *browser_context =
-            render_frame_host->GetProcess()->GetBrowserContext();
-    const Extension *extension = ExtensionRegistry::Get(browser_context)
-                                         ->enabled_extensions()
-                                         .GetByID(extension_id);
-    if (!extension)
-        return nullptr;
-
-    if (verify_url) {
-        const url::Origin &origin(render_frame_host->GetLastCommittedOrigin());
-        // Without site isolation, this check is needed to eliminate non-extension
-        // schemes. With site isolation, this is still needed to exclude sandboxed
-        // extension frames with a unique origin.
-        const GURL site_url(render_frame_host->GetSiteInstance()->GetSiteURL());
-        if (origin.opaque() || site_url != content::SiteInstance::GetSiteForURL(browser_context, origin.GetURL()))
-            return nullptr;
-    }
-
-    return extension;
-}
-
 void ExtensionWebContentsObserverQt::RenderFrameCreated(content::RenderFrameHost *render_frame_host)
 {
     ExtensionWebContentsObserver::RenderFrameCreated(render_frame_host);

@@ -40,130 +40,34 @@
 #include "profile_io_data_qt.h"
 
 #include "base/task/post_task.h"
-#include "components/certificate_transparency/ct_known_logs.h"
-#include "components/network_session_configurator/common/network_features.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "content/public/browser/cookie_store_factory.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cert/ct_log_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/multi_log_ct_verifier.h"
-#include "net/cert_net/cert_net_fetcher_impl.h"
-#include "net/ftp/ftp_auth_cache.h"
-#include "net/dns/host_resolver_manager.h"
-#include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_auth_scheme.h"
-#include "net/http/http_auth_preferences.h"
-#include "net/http/http_cache.h"
-#include "net/http/http_server_properties_impl.h"
-#include "net/http/http_network_session.h"
-#include "net/http/transport_security_persister.h"
-#include "net/proxy_resolution/dhcp_pac_file_fetcher_factory.h"
-#include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/data_protocol_handler.h"
-#include "net/url_request/file_protocol_handler.h"
-#include "net/url_request/ftp_protocol_handler.h"
-#include "net/url_request/static_http_user_agent_settings.h"
-#include "net/url_request/url_request_context_storage.h"
-#include "net/url_request/url_request_job_factory_impl.h"
-#include "net/url_request/url_request_intercepting_job_factory.h"
-#include "services/file/user_id_map.h"
 #include "services/network/proxy_service_mojo.h"
-#include "services/network/restricted_cookie_manager.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
 
 #include "net/client_cert_override.h"
 #include "net/client_cert_store_data.h"
 #include "net/cookie_monster_delegate_qt.h"
-#include "net/custom_protocol_handler.h"
-#include "net/network_delegate_qt.h"
 #include "net/proxy_config_service_qt.h"
-#include "net/restricted_cookie_manager_qt.h"
-#include "net/url_request_context_getter_qt.h"
+#include "net/system_network_context_manager.h"
 #include "profile_qt.h"
 #include "resource_context_qt.h"
 #include "type_conversion.h"
 
-#if defined(USE_NSS_CERTS)
-#include "net/cert_net/nss_ocsp.h"
-#endif
-
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#include "net/cert/cert_net_fetcher.h"
-#include "net/cert_net/cert_net_fetcher_impl.h"
-#endif
-
 #include <mutex>
+#include <QVariant>
 
 namespace QtWebEngineCore {
-
-static scoped_refptr<net::CertNetFetcherImpl> s_certNetFetcher;
-
-static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first,
-                                        const net::HttpNetworkSession::Params &second)
-{
-    if (first.ignore_certificate_errors != second.ignore_certificate_errors)
-        return false;
-    return true;
-}
-
-static bool doNetworkSessionContextMatch(const net::HttpNetworkSession::Context &first,
-                                         const net::HttpNetworkSession::Context &second)
-{
-    if (first.transport_security_state != second.transport_security_state)
-        return false;
-    if (first.cert_verifier != second.cert_verifier)
-        return false;
-    if (first.proxy_resolution_service != second.proxy_resolution_service)
-        return false;
-    if (first.ssl_config_service != second.ssl_config_service)
-        return false;
-    if (first.http_auth_handler_factory != second.http_auth_handler_factory)
-        return false;
-    if (first.http_user_agent_settings != second.http_user_agent_settings)
-        return false;
-    if (first.http_server_properties != second.http_server_properties)
-        return false;
-    if (first.host_resolver != second.host_resolver)
-        return false;
-    if (first.cert_transparency_verifier != second.cert_transparency_verifier)
-        return false;
-    if (first.ct_policy_enforcer != second.ct_policy_enforcer)
-        return false;
-    return true;
-}
-
-static net::HttpNetworkSession::Context generateNetworkSessionContext(net::URLRequestContext *urlRequestContext)
-{
-    net::HttpNetworkSession::Context network_session_context;
-    network_session_context.transport_security_state = urlRequestContext->transport_security_state();
-    network_session_context.cert_verifier = urlRequestContext->cert_verifier();
-    network_session_context.proxy_resolution_service = urlRequestContext->proxy_resolution_service();
-    network_session_context.ssl_config_service = urlRequestContext->ssl_config_service();
-    network_session_context.http_auth_handler_factory = urlRequestContext->http_auth_handler_factory();
-    network_session_context.http_user_agent_settings = urlRequestContext->http_user_agent_settings();
-    network_session_context.http_server_properties = urlRequestContext->http_server_properties();
-    network_session_context.host_resolver = urlRequestContext->host_resolver();
-    network_session_context.cert_transparency_verifier = urlRequestContext->cert_transparency_verifier();
-    network_session_context.ct_policy_enforcer = urlRequestContext->ct_policy_enforcer();
-    return network_session_context;
-}
-
-static net::HttpNetworkSession::Params generateNetworkSessionParams(bool ignoreCertificateErrors)
-{
-    net::HttpNetworkSession::Params network_session_params;
-    network_session_params.ignore_certificate_errors = ignoreCertificateErrors;
-    return network_session_params;
-}
 
 ProfileIODataQt::ProfileIODataQt(ProfileQt *profile)
     : m_profile(profile),
@@ -182,27 +86,7 @@ ProfileIODataQt::~ProfileIODataQt()
     if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::IO))
         DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-    if (m_useForGlobalCertificateVerification) {
-#if defined(USE_NSS_CERTS)
-        net::SetURLRequestContextForNSSHttpIO(nullptr);
-#endif
-        if (s_certNetFetcher) {
-            s_certNetFetcher->Shutdown();
-            s_certNetFetcher.reset();
-        }
-    }
-
-    if (m_urlRequestContext) {
-        if (m_urlRequestContext->proxy_resolution_service())
-            m_urlRequestContext->proxy_resolution_service()->OnShutdown();
-        m_restrictedCookieManagerBindings.CloseAllBindings();
-        cancelAllUrlRequests();
-    }
-
     m_resourceContext.reset();
-    if (m_cookieDelegate)
-        m_cookieDelegate->setCookieMonster(0); // this will let CookieMonsterDelegateQt be deleted
-    m_networkDelegate.reset();
     delete m_proxyConfigService.fetchAndStoreAcquire(0);
 }
 
@@ -218,6 +102,9 @@ void ProfileIODataQt::shutdownOnUIThread()
     delete m_clientCertificateStoreData;
     m_clientCertificateStoreData = nullptr;
 #endif
+    if (m_cookieDelegate)
+        m_cookieDelegate->unsetMojoCookieManager();
+    m_proxyConfigMonitor.reset();
     bool posted = content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, this);
     if (!posted) {
         qWarning() << "Could not delete ProfileIODataQt on io thread !";
@@ -230,7 +117,7 @@ net::URLRequestContext *ProfileIODataQt::urlRequestContext()
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (!m_initialized)
         initializeOnIOThread();
-    return m_urlRequestContext.get();
+    return nullptr;
 }
 
 content::ResourceContext *ProfileIODataQt::resourceContext()
@@ -248,22 +135,23 @@ extensions::ExtensionSystemQt* ProfileIODataQt::GetExtensionSystem()
 base::WeakPtr<ProfileIODataQt> ProfileIODataQt::getWeakPtrOnUIThread()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(m_initialized);
     return m_weakPtr;
+}
+
+base::WeakPtr<ProfileIODataQt> ProfileIODataQt::getWeakPtrOnIOThread()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    return m_weakPtrFactory.GetWeakPtr();
 }
 
 void ProfileIODataQt::initializeOnIOThread()
 {
-    m_networkDelegate.reset(new NetworkDelegateQt(this));
-    m_hostResolver = net::HostResolver::CreateStandaloneResolver(nullptr);
-    m_urlRequestContext.reset(new net::URLRequestContext());
-    m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
-    m_urlRequestContext->set_enable_brotli(true);
-    m_urlRequestContext->set_host_resolver(m_hostResolver.get());
     // this binds factory to io thread
     m_weakPtr = m_weakPtrFactory.GetWeakPtr();
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     generateAllStorage();
-    generateJobFactory();
+//    generateJobFactory();
     setGlobalCertificateVerification();
     m_initialized = true;
 }
@@ -273,300 +161,24 @@ void ProfileIODataQt::initializeOnUIThread()
     m_profileAdapter = m_profile->profileAdapter();
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     m_resourceContext.reset(new ResourceContextQt(this));
-    ProtocolHandlerRegistry* protocolHandlerRegistry =
-        ProtocolHandlerRegistryFactory::GetForBrowserContext(m_profile);
-    DCHECK(protocolHandlerRegistry);
-    m_protocolHandlerRegistryIOThreadDelegate = protocolHandlerRegistry->io_thread_delegate();
     m_cookieDelegate = new CookieMonsterDelegateQt();
     m_cookieDelegate->setClient(m_profile->profileAdapter()->cookieStore());
-    createProxyConfig();
-}
-
-void ProfileIODataQt::cancelAllUrlRequests()
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    Q_ASSERT(m_urlRequestContext);
-
-    const std::set<const net::URLRequest*> *url_requests = m_urlRequestContext->url_requests();
-    std::set<const net::URLRequest*>::const_iterator it = url_requests->begin();
-    std::set<const net::URLRequest*>::const_iterator end = url_requests->end();
-    for ( ; it != end; ++it) {
-        net::URLRequest* request = const_cast<net::URLRequest*>(*it);
-        if (request)
-            request->Cancel();
-    }
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+        m_proxyConfigMonitor.reset(new ProxyConfigMonitor(m_profile->GetPrefs()));
+    else
+        createProxyConfig();
 }
 
 void ProfileIODataQt::generateAllStorage()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
-    generateStorage();
-    generateCookieStore();
-    generateUserAgent();
-    generateHttpCache();
     m_updateAllStorage = false;
-}
-
-void ProfileIODataQt::generateStorage()
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    Q_ASSERT(m_urlRequestContext);
-//    Q_ASSERT(!m_mutex.tryLock()); // assert locked
-
-    // We must stop all requests before deleting their backends.
-    if (m_storage) {
-        m_urlRequestContext->proxy_resolution_service()->OnShutdown();
-        m_restrictedCookieManagerBindings.CloseAllBindings();
-        m_cookieDelegate->setCookieMonster(nullptr);
-        m_storage->set_cookie_store(nullptr);
-        cancelAllUrlRequests();
-        // we need to get rid of dangling pointer due to coming storage deletion
-        m_urlRequestContext->set_http_transaction_factory(nullptr);
-        m_httpNetworkSession.reset();
-        m_transportSecurityPersister.reset();
-    }
-
-    m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
-
-    net::ProxyConfigService *proxyConfigService = m_proxyConfigService.fetchAndStoreAcquire(0);
-    Q_ASSERT(proxyConfigService);
-
-    std::unique_ptr<net::CertVerifier> cert_verifier = net::CertVerifier::CreateDefault(s_certNetFetcher);
-    net::CertVerifier::Config config;
-    // Enable revocation checking:
-    config.enable_rev_checking = true;
-    // Mirroring Android WebView (we have no beef with Symantec, and our users might use them):
-    config.disable_symantec_enforcement = true;
-    cert_verifier->SetConfig(config);
-
-    m_storage->set_cert_verifier(std::move(cert_verifier));
-    std::unique_ptr<net::MultiLogCTVerifier> ct_verifier(new net::MultiLogCTVerifier());
-    std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
-    for (const auto &ct_log : certificate_transparency::GetKnownLogs()) {
-        scoped_refptr<const net::CTLogVerifier> log_verifier =
-                net::CTLogVerifier::Create(std::string(ct_log.log_key, ct_log.log_key_length),
-                                           ct_log.log_name);
-        if (!log_verifier)
-            continue;
-        ct_logs.push_back(std::move(log_verifier));
-    }
-    ct_verifier->AddLogs(ct_logs);
-    m_storage->set_cert_transparency_verifier(std::move(ct_verifier));
-    m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::DefaultCTPolicyEnforcer()));
-    m_storage->set_ssl_config_service(std::make_unique<net::SSLConfigServiceDefaults>());
-    if (!m_httpAuthPreferences) {
-        m_httpAuthPreferences.reset(new net::HttpAuthPreferences());
-        std::string serverWhitelist = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kAuthServerWhitelist);
-        m_httpAuthPreferences->SetServerWhitelist(serverWhitelist);
-    }
-    m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(
-                                                 m_httpAuthPreferences.get()));
-    m_storage->set_transport_security_state(std::make_unique<net::TransportSecurityState>());
-
-    if (!m_dataPath.isEmpty()) {
-        scoped_refptr<base::SequencedTaskRunner> background_task_runner(
-                    base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(),
-         base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
-        m_transportSecurityPersister =
-                std::make_unique<net::TransportSecurityPersister>(
-                    m_urlRequestContext->transport_security_state(),
-                    toFilePath(m_dataPath),
-                    background_task_runner);
-    };
-
-    m_storage->set_http_server_properties(std::unique_ptr<net::HttpServerProperties>(
-                                              new net::HttpServerPropertiesImpl));
-
-    // The System Proxy Resolver has issues on Windows with unconfigured network cards,
-    // which is why we want to use the v8 one
-    if (!m_dhcpPacFileFetcherFactory)
-        m_dhcpPacFileFetcherFactory.reset(new net::DhcpPacFileFetcherFactory);
-
-    proxy_resolver::mojom::ProxyResolverFactoryPtr proxyResolver(std::move(m_proxyResolverFactoryInterface));
-    m_storage->set_proxy_resolution_service(network::CreateProxyResolutionServiceUsingMojoFactory(
-                                                std::move(proxyResolver),
-                                                std::unique_ptr<net::ProxyConfigService>(proxyConfigService),
-                                                net::PacFileFetcherImpl::CreateWithFileUrlSupport(m_urlRequestContext.get()),
-                                                m_dhcpPacFileFetcherFactory->Create(m_urlRequestContext.get()),
-                                                m_urlRequestContext->host_resolver(),
-                                                nullptr /* NetLog */,
-                                                m_urlRequestContext->network_delegate()));
-
-    m_storage->set_ftp_auth_cache(std::make_unique<net::FtpAuthCache>());
-}
-
-
-void ProfileIODataQt::generateCookieStore()
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    Q_ASSERT(m_urlRequestContext);
-
-    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
-
-    // FIXME: Add code to remove the old channel-id database.
-
-    std::unique_ptr<net::CookieStore> cookieStore;
-    switch (m_persistentCookiesPolicy) {
-    case ProfileAdapter::NoPersistentCookies:
-        cookieStore = content::CreateCookieStore(
-            content::CookieStoreConfig(
-                base::FilePath(),
-                false,
-                false,
-                nullptr),
-            nullptr);
-        break;
-    case ProfileAdapter::AllowPersistentCookies:
-        cookieStore = content::CreateCookieStore(
-            content::CookieStoreConfig(
-                toFilePath(m_cookiesPath),
-                false,
-                true,
-                nullptr),
-            nullptr);
-        break;
-    case ProfileAdapter::ForcePersistentCookies:
-        cookieStore = content::CreateCookieStore(
-            content::CookieStoreConfig(
-                toFilePath(m_cookiesPath),
-                true,
-                true,
-                nullptr),
-            nullptr);
-        break;
-    }
-
-    net::CookieMonster * const cookieMonster = static_cast<net::CookieMonster*>(cookieStore.get());
-    m_cookieDelegate->setCookieMonster(cookieMonster);
-    m_storage->set_cookie_store(std::move(cookieStore));
-
-    const std::vector<std::string> cookieableSchemes(kCookieableSchemes,
-                                                     kCookieableSchemes + base::size(kCookieableSchemes));
-    cookieMonster->SetCookieableSchemes(cookieableSchemes, base::DoNothing());
-}
-
-void ProfileIODataQt::generateUserAgent()
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    Q_ASSERT(m_urlRequestContext);
-    Q_ASSERT(m_storage);
-
-    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
-    m_storage->set_http_user_agent_settings(std::unique_ptr<net::HttpUserAgentSettings>(
-        new net::StaticHttpUserAgentSettings(m_httpAcceptLanguage.toStdString(),
-                                             m_httpUserAgent.toStdString())));
-}
-
-void ProfileIODataQt::generateHttpCache()
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    Q_ASSERT(m_urlRequestContext);
-    Q_ASSERT(m_storage);
-
-    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
-
-    net::HttpCache::DefaultBackend* main_backend = 0;
-    switch (m_httpCacheType) {
-    case ProfileAdapter::MemoryHttpCache:
-        main_backend =
-            new net::HttpCache::DefaultBackend(
-                net::MEMORY_CACHE,
-                net::CACHE_BACKEND_DEFAULT,
-                base::FilePath(),
-                m_httpCacheMaxSize
-            );
-        break;
-    case ProfileAdapter::DiskHttpCache:
-        main_backend =
-            new net::HttpCache::DefaultBackend(
-                net::DISK_CACHE,
-                net::CACHE_BACKEND_DEFAULT,
-                toFilePath(m_httpCachePath),
-                m_httpCacheMaxSize
-            );
-        break;
-    case ProfileAdapter::NoCache:
-        // It's safe to not create BackendFactory.
-        break;
-    }
-
-    net::HttpCache *cache = 0;
-    net::HttpNetworkSession::Context network_session_context =
-            generateNetworkSessionContext(m_urlRequestContext.get());
-    net::HttpNetworkSession::Params network_session_params =
-            generateNetworkSessionParams(m_ignoreCertificateErrors);
-
-    if (!m_httpNetworkSession
-            || !doNetworkSessionParamsMatch(network_session_params, m_httpNetworkSession->params())
-            || !doNetworkSessionContextMatch(network_session_context, m_httpNetworkSession->context())) {
-        m_httpNetworkSession.reset(new net::HttpNetworkSession(network_session_params,
-                                                               network_session_context));
-    }
-
-    cache = new net::HttpCache(m_httpNetworkSession.get(),
-                               std::unique_ptr<net::HttpCache::DefaultBackend>(main_backend), false);
-
-    m_storage->set_http_transaction_factory(std::unique_ptr<net::HttpCache>(cache));
-}
-
-void ProfileIODataQt::generateJobFactory()
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    Q_ASSERT(m_urlRequestContext);
-    Q_ASSERT(!m_jobFactory);
-
-    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
-    m_updateJobFactory = false;
-
-    std::unique_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
-    for (auto &it : m_protocolHandlers)
-        jobFactory->SetProtocolHandler(it.first, base::WrapUnique(it.second.release()));
-    m_protocolHandlers.clear();
-
-    jobFactory->SetProtocolHandler(url::kDataScheme,
-                                   std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-                                       new net::DataProtocolHandler()));
-    scoped_refptr<base::TaskRunner> taskRunner(base::CreateTaskRunnerWithTraits({base::MayBlock(),
-                                      base::TaskPriority::BEST_EFFORT,
-                                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-    jobFactory->SetProtocolHandler(url::kFileScheme,
-                                   std::make_unique<net::FileProtocolHandler>(taskRunner));
-    jobFactory->SetProtocolHandler(url::kFtpScheme,
-            net::FtpProtocolHandler::Create(m_urlRequestContext->host_resolver(), m_urlRequestContext->ftp_auth_cache()));
-
-    m_installedCustomSchemes = m_customUrlSchemes;
-    for (const QByteArray &scheme : qAsConst(m_installedCustomSchemes)) {
-        jobFactory->SetProtocolHandler(scheme.toStdString(),
-                                       std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-                                           new CustomProtocolHandler(m_profileAdapter)));
-    }
-
-    m_baseJobFactory = jobFactory.get();
-
-    // Set up interceptors in the reverse order.
-    std::unique_ptr<net::URLRequestJobFactory> topJobFactory = std::move(jobFactory);
-    content::URLRequestInterceptorScopedVector::reverse_iterator i;
-    for (i = m_requestInterceptors.rbegin(); i != m_requestInterceptors.rend(); ++i) {
-        topJobFactory.reset(new net::URLRequestInterceptingJobFactory(std::move(topJobFactory),
-                                                                      std::move(*i)));
-    }
-
-    m_requestInterceptors.clear();
-
-    m_jobFactory = std::move(topJobFactory);
-
-    m_urlRequestContext->set_job_factory(m_jobFactory.get());
 }
 
 void ProfileIODataQt::regenerateJobFactory()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    Q_ASSERT(m_urlRequestContext);
-    Q_ASSERT(m_jobFactory);
-    Q_ASSERT(m_baseJobFactory);
 
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     m_updateJobFactory = false;
@@ -574,31 +186,13 @@ void ProfileIODataQt::regenerateJobFactory()
     if (m_customUrlSchemes == m_installedCustomSchemes)
         return;
 
-    for (const QByteArray &scheme : qAsConst(m_installedCustomSchemes)) {
-        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), nullptr);
-    }
-
     m_installedCustomSchemes = m_customUrlSchemes;
-    for (const QByteArray &scheme : qAsConst(m_installedCustomSchemes)) {
-        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(),
-                                             std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-                                                 new CustomProtocolHandler(m_profileAdapter)));
-    }
 }
 
 void ProfileIODataQt::setGlobalCertificateVerification()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
-    if (m_useForGlobalCertificateVerification) {
-#if defined(USE_NSS_CERTS)
-        // Set request context used by NSS for OCSP requests.
-        net::SetURLRequestContextForNSSHttpIO(m_urlRequestContext.get());
-#endif
-        if (!s_certNetFetcher)
-            s_certNetFetcher = base::MakeRefCounted<net::CertNetFetcherImpl>();
-        s_certNetFetcher->SetURLRequestContext(m_urlRequestContext.get());
-    }
 }
 
 void ProfileIODataQt::setRequestContextData(content::ProtocolHandlerMap *protocolHandlers,
@@ -625,34 +219,44 @@ void ProfileIODataQt::setFullConfiguration()
     m_dataPath = m_profileAdapter->dataPath();
 }
 
+void ProfileIODataQt::resetNetworkContext()
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    setFullConfiguration();
+    content::BrowserContext::ForEachStoragePartition(
+            m_profile, base::BindRepeating([](content::StoragePartition *storage) {
+                auto storage_impl = static_cast<content::StoragePartitionImpl *>(storage);
+                storage_impl->ResetURLLoaderFactories();
+                storage_impl->ResetNetworkContext();
+            }));
+}
+
 void ProfileIODataQt::requestStorageGeneration() {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     if (m_initialized && !m_updateAllStorage) {
         m_updateAllStorage = true;
-        createProxyConfig();
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                                 base::BindOnce(&ProfileIODataQt::generateAllStorage, m_weakPtr));
+        if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+            createProxyConfig();
+        base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                       base::BindOnce(&ProfileIODataQt::generateAllStorage, m_weakPtr));
     }
 }
 
 // TODO(miklocek): mojofy ProxyConfigServiceQt
 void ProfileIODataQt::createProxyConfig()
 {
+    Q_ASSERT(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     // We must create the proxy config service on the UI loop on Linux because it
     // must synchronously run on the glib message loop. This will be passed to
     // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
     Q_ASSERT(m_proxyConfigService == 0);
-    net::ProxyConfigWithAnnotation initialConfig;
-    ProxyPrefs::ConfigState initialConfigState = PrefProxyConfigTrackerImpl::ReadPrefConfig(
-                m_profileAdapter->profile()->GetPrefs(), &initialConfig);
     m_proxyConfigService =
             new ProxyConfigServiceQt(
-                net::ProxyResolutionService::CreateSystemProxyConfigService(
-                    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})),
-                    initialConfig, initialConfigState);
+                    m_profileAdapter->profile()->GetPrefs(),
+                    base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}));
     //pass interface to io thread
     m_proxyResolverFactoryInterface = ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
 }
@@ -664,11 +268,6 @@ void ProfileIODataQt::updateStorageSettings()
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     setFullConfiguration();
 
-    base::Token groupId = content::BrowserContext::GetServiceInstanceGroupFor(m_profile);
-    if (file::GetUserDirForInstanceGroup(groupId) != toFilePath(m_profileAdapter->dataPath())) {
-        file::ForgetServiceInstanceGroupUserDirAssociation(groupId);
-        file::AssociateServiceInstanceGroupWithUserDir(groupId, toFilePath(m_profileAdapter->dataPath()));
-    }
     if (!m_pendingStorageRequestGeneration)
         requestStorageGeneration();
 }
@@ -726,8 +325,8 @@ void ProfileIODataQt::updateJobFactory()
 
     if (m_initialized && !m_updateJobFactory) {
         m_updateJobFactory = true;
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                                 base::BindOnce(&ProfileIODataQt::regenerateJobFactory, m_weakPtr));
+        base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                       base::BindOnce(&ProfileIODataQt::regenerateJobFactory, m_weakPtr));
     }
 }
 
@@ -751,6 +350,7 @@ bool ProfileIODataQt::isInterceptorDeprecated() const
 
 QWebEngineUrlRequestInterceptor *ProfileIODataQt::acquireInterceptor()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     m_mutex.lock();
     return m_requestInterceptor;
 }
@@ -769,6 +369,7 @@ bool ProfileIODataQt::hasPageInterceptors()
 
 void ProfileIODataQt::releaseInterceptor()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     m_mutex.unlock();
 }
 
@@ -791,8 +392,8 @@ void ProfileIODataQt::updateUsedForGlobalCertificateVerification()
     m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
 
     if (m_useForGlobalCertificateVerification)
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                                 base::BindOnce(&ProfileIODataQt::setGlobalCertificateVerification, m_weakPtr));
+        base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                       base::BindOnce(&ProfileIODataQt::setGlobalCertificateVerification, m_weakPtr));
 }
 
 #if QT_CONFIG(ssl)
@@ -811,21 +412,58 @@ std::unique_ptr<net::ClientCertStore> ProfileIODataQt::CreateClientCertStore()
 #endif
 }
 
-void ProfileIODataQt::CreateRestrictedCookieManager(network::mojom::RestrictedCookieManagerRequest request,
-                                                    network::mojom::RestrictedCookieManagerRole role,
-                                                    const url::Origin &origin,
-                                                    bool is_service_worker,
-                                                    int32_t process_id,
-                                                    int32_t routing_id)
+network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextParams()
 {
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    m_restrictedCookieManagerBindings.AddBinding(
-                std::make_unique<RestrictedCookieManagerQt>(
-                        m_weakPtr,
-                        role, urlRequestContext()->cookie_store(),
-                        &m_cookieSettings, origin,
-                        is_service_worker, process_id, routing_id),
-                std::move(request));
+    updateStorageSettings();
+
+    network::mojom::NetworkContextParamsPtr network_context_params =
+             SystemNetworkContextManager::GetInstance()->CreateDefaultNetworkContextParams();
+
+    network_context_params->context_name = m_profile->profileAdapter()->storageName().toStdString();
+    network_context_params->user_agent = m_httpUserAgent.toStdString();
+    network_context_params->accept_language = m_httpAcceptLanguage.toStdString();
+
+    network_context_params->enable_referrers = true;
+    // Encrypted cookies requires os_crypt, which currently has issues for us on Linux.
+    network_context_params->enable_encrypted_cookies = false;
+//    network_context_params->proxy_resolver_factory = std::move(m_proxyResolverFactoryInterface);
+
+    network_context_params->http_cache_enabled = m_httpCacheType != ProfileAdapter::NoCache;
+    network_context_params->http_cache_max_size = m_httpCacheMaxSize;
+    if (m_httpCacheType == ProfileAdapter::DiskHttpCache && !m_httpCachePath.isEmpty())
+        network_context_params->http_cache_path = toFilePath(m_httpCachePath);
+
+    if (m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies && !m_dataPath.isEmpty()) {
+        base::FilePath cookie_path = toFilePath(m_dataPath);
+        cookie_path = cookie_path.AppendASCII("Cookies");
+        network_context_params->cookie_path = cookie_path;
+
+        network_context_params->restore_old_session_cookies = m_persistentCookiesPolicy == ProfileAdapter::ForcePersistentCookies;
+        network_context_params->persist_session_cookies = m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies;
+    }
+    if (!m_dataPath.isEmpty()) {
+        network_context_params->http_server_properties_path = toFilePath(m_dataPath).AppendASCII("Network Persistent State");
+        network_context_params->transport_security_persister_path = toFilePath(m_dataPath);
+    }
+
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+    network_context_params->enable_ftp_url_support = true;
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
+//    network_context_params->enable_certificate_reporting = true;
+//    network_context_params->enable_expect_ct_reporting = true;
+    network_context_params->enforce_chrome_ct_policy = false;
+    network_context_params->primary_network_context = m_useForGlobalCertificateVerification;
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+        // Should be initialized with existing per-profile CORS access lists.
+        network_context_params->cors_origin_access_list =
+            m_profile->GetSharedCorsOriginAccessList()->GetOriginAccessList().CreateCorsOriginAccessPatternsList();
+    }
+
+    m_proxyConfigMonitor->AddToNetworkContextParams(network_context_params.get());
+
+    return network_context_params;
 }
 
 // static

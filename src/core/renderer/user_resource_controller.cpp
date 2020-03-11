@@ -64,7 +64,7 @@
 
 Q_GLOBAL_STATIC(UserResourceController, qt_webengine_userResourceController)
 
-static content::RenderView * const globalScriptsIndex = 0;
+static content::RenderView *const globalScriptsIndex = nullptr;
 
 // Scripts meant to run after the load event will be run 500ms after DOMContentLoaded if the load event doesn't come within that delay.
 static const int afterLoadTimeout = 500;
@@ -74,7 +74,8 @@ static int validUserScriptSchemes()
     return URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS | URLPattern::SCHEME_FILE | URLPattern::SCHEME_QRC;
 }
 
-static bool regexMatchesURL(const std::string &pat, const GURL &url) {
+static bool regexMatchesURL(const std::string &pat, const GURL &url)
+{
     QRegularExpression qre(QtWebEngineCore::toQt(pat));
     qre.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
     if (!qre.isValid())
@@ -96,7 +97,8 @@ static bool includeRuleMatchesURL(const std::string &pat, const GURL &url)
     return false;
 }
 
-static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url) {
+static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url)
+{
     // Logic taken from Chromium (extensions/common/user_script.cc)
     bool matchFound;
     if (!scriptData.urlPatterns.empty()) {
@@ -133,7 +135,7 @@ static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url) 
 class UserResourceController::RenderFrameObserverHelper : public content::RenderFrameObserver
 {
 public:
-    RenderFrameObserverHelper(content::RenderFrame* render_frame);
+    RenderFrameObserverHelper(content::RenderFrame *render_frame);
 
 private:
     // RenderFrameObserver implementation.
@@ -142,7 +144,7 @@ private:
     void DidFinishLoad() override;
     void FrameDetached() override;
     void OnDestruct() override;
-    bool OnMessageReceived(const IPC::Message& message) override;
+    bool OnMessageReceived(const IPC::Message &message) override;
 
     void onUserScriptAdded(const UserScriptData &);
     void onUserScriptRemoved(const UserScriptData &);
@@ -154,12 +156,10 @@ private:
 
 // Helper class to create WeakPtrs so the AfterLoad tasks can be canceled and to
 // avoid running scripts more than once per injection point.
-class UserResourceController::RenderFrameObserverHelper::Runner : public base::SupportsWeakPtr<Runner> {
+class UserResourceController::RenderFrameObserverHelper::Runner : public base::SupportsWeakPtr<Runner>
+{
 public:
-    explicit Runner(blink::WebLocalFrame *frame)
-        : m_frame(frame)
-    {
-    }
+    explicit Runner(blink::WebLocalFrame *frame) : m_frame(frame) {}
 
     void run(UserScriptData::InjectionPoint p)
     {
@@ -179,7 +179,8 @@ private:
 class UserResourceController::RenderViewObserverHelper : public content::RenderViewObserver
 {
 public:
-    RenderViewObserverHelper(content::RenderView* render_view);
+    RenderViewObserverHelper(content::RenderView *render_view);
+
 private:
     // RenderViewObserver implementation.
     void OnDestruct() override;
@@ -201,8 +202,7 @@ void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink:
 
     for (uint64_t id : qAsConst(scriptsToRun)) {
         const UserScriptData &script = m_scripts.value(id);
-        if (script.injectionPoint != p
-                || (!script.injectForSubframes && !isMainFrame))
+        if (script.injectionPoint != p || (!script.injectForSubframes && !isMainFrame))
             continue;
         if (!scriptMatchesURL(script, frame->GetDocument().Url()))
             continue;
@@ -221,13 +221,11 @@ void UserResourceController::RunScriptsAtDocumentEnd(content::RenderFrame *rende
 
 UserResourceController::RenderFrameObserverHelper::RenderFrameObserverHelper(content::RenderFrame *render_frame)
     : content::RenderFrameObserver(render_frame)
-{
-}
+{}
 
 UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(content::RenderView *render_view)
     : content::RenderViewObserver(render_view)
-{
-}
+{}
 
 void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
                                                                                  ui::PageTransition /*transitionbool*/)
@@ -242,8 +240,7 @@ void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad
     m_runner.reset(new Runner(render_frame()->GetWebFrame()));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::DocumentElementCreation));
+            FROM_HERE, base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::DocumentElementCreation));
 }
 
 void UserResourceController::RenderFrameObserverHelper::DidFinishDocumentLoad()
@@ -252,18 +249,15 @@ void UserResourceController::RenderFrameObserverHelper::DidFinishDocumentLoad()
     // called instead of DidCommitProvisionalLoad).
     if (m_runner)
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-            FROM_HERE,
-            base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad),
-            base::TimeDelta::FromMilliseconds(afterLoadTimeout));
-
+                FROM_HERE, base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad),
+                base::TimeDelta::FromMilliseconds(afterLoadTimeout));
 }
 
 void UserResourceController::RenderFrameObserverHelper::DidFinishLoad()
 {
     if (m_runner)
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad));
+                FROM_HERE, base::BindOnce(&Runner::run, m_runner->AsWeakPtr(), UserScriptData::AfterLoad));
 }
 
 void UserResourceController::RenderFrameObserverHelper::FrameDetached()
@@ -293,7 +287,7 @@ bool UserResourceController::RenderFrameObserverHelper::OnMessageReceived(const 
         IPC_MESSAGE_HANDLER(RenderFrameObserverHelper_ClearScripts, onScriptsCleared)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
-            return handled;
+    return handled;
 }
 
 void UserResourceController::RenderFrameObserverHelper::onUserScriptAdded(const UserScriptData &script)
@@ -411,4 +405,3 @@ void UserResourceController::onClearScripts()
 {
     clearScriptsForView(globalScriptsIndex);
 }
-

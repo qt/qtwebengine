@@ -142,6 +142,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(LifecycleState lifecycleState READ lifecycleState WRITE setLifecycleState NOTIFY lifecycleStateChanged REVISION 10 FINAL)
     Q_PROPERTY(LifecycleState recommendedState READ recommendedState NOTIFY recommendedStateChanged REVISION 10 FINAL)
 
+    Q_PROPERTY(qint64 renderProcessPid READ renderProcessPid NOTIFY renderProcessPidChanged FINAL REVISION 11)
+
 public:
     QQuickWebEngineView(QQuickItem *parent = 0);
     ~QQuickWebEngineView();
@@ -493,6 +495,8 @@ public:
     void setAudioMuted(bool muted);
     bool recentlyAudible() const;
 
+    qint64 renderProcessPid() const;
+
 #if QT_CONFIG(webengine_testsupport)
     QQuickWebEngineTestSupport *testSupport() const;
     void setTestSupport(QQuickWebEngineTestSupport *testSupport);
@@ -520,7 +524,7 @@ public Q_SLOTS:
     void reload();
     Q_REVISION(1) void reloadAndBypassCache();
     void stop();
-    Q_REVISION(1) void findText(const QString &subString, FindFlags options = 0, const QJSValue &callback = QJSValue());
+    Q_REVISION(1) void findText(const QString &subString, FindFlags options = { }, const QJSValue &callback = QJSValue());
     Q_REVISION(1) void fullScreenCancelled();
     Q_REVISION(1) void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
     Q_REVISION(2) void setActiveFocusOnPress(bool arg);
@@ -576,6 +580,7 @@ Q_SIGNALS:
     Q_REVISION(10) void lifecycleStateChanged(LifecycleState state);
     Q_REVISION(10) void recommendedStateChanged(LifecycleState state);
     Q_REVISION(10) void findTextFinished(const QWebEngineFindTextResult &result);
+    Q_REVISION(11) void renderProcessPidChanged(qint64 pid);
 
 #if QT_CONFIG(webengine_testsupport)
     void testSupportChanged();

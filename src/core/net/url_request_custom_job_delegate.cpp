@@ -92,27 +92,27 @@ void URLRequestCustomJobDelegate::reply(const QByteArray &contentType, QIODevice
 {
     if (device)
         QObject::connect(device, &QIODevice::readyRead, this, &URLRequestCustomJobDelegate::slotReadyRead);
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&URLRequestCustomJobProxy::reply,
-                                            m_proxy,contentType.toStdString(),device));
+    m_proxy->m_ioTaskRunner->PostTask(FROM_HERE,
+                                      base::BindOnce(&URLRequestCustomJobProxy::reply,
+                                                     m_proxy, contentType.toStdString(),device));
 }
 
 void URLRequestCustomJobDelegate::slotReadyRead()
 {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&URLRequestCustomJobProxy::readyRead, m_proxy));
+    m_proxy->m_ioTaskRunner->PostTask(FROM_HERE,
+                                      base::BindOnce(&URLRequestCustomJobProxy::readyRead, m_proxy));
 }
 
 void URLRequestCustomJobDelegate::abort()
 {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&URLRequestCustomJobProxy::abort, m_proxy));
+    m_proxy->m_ioTaskRunner->PostTask(FROM_HERE,
+                                      base::BindOnce(&URLRequestCustomJobProxy::abort, m_proxy));
 }
 
 void URLRequestCustomJobDelegate::redirect(const QUrl &url)
 {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&URLRequestCustomJobProxy::redirect, m_proxy, toGurl(url)));
+    m_proxy->m_ioTaskRunner->PostTask(FROM_HERE,
+                                      base::BindOnce(&URLRequestCustomJobProxy::redirect, m_proxy, toGurl(url)));
 }
 
 void URLRequestCustomJobDelegate::fail(Error error)
@@ -138,8 +138,8 @@ void URLRequestCustomJobDelegate::fail(Error error)
         break;
     }
     if (net_error) {
-        base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                                 base::BindOnce(&URLRequestCustomJobProxy::fail, m_proxy, net_error));
+        m_proxy->m_ioTaskRunner->PostTask(FROM_HERE,
+                                          base::BindOnce(&URLRequestCustomJobProxy::fail, m_proxy, net_error));
     }
 }
 

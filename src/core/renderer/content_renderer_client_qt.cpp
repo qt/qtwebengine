@@ -95,8 +95,15 @@
 #include "extensions/extensions_renderer_client_qt.h"
 #endif //ENABLE_EXTENSIONS
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "plugins/loadable_plugin_placeholder_qt.h"
+#include "plugins/plugin_placeholder_qt.h"
+#include "content/common/frame_messages.h"
+#endif // ENABLE_PLUGINS
+
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 #include "components/grit/components_resources.h"
 
@@ -114,7 +121,6 @@ namespace QtWebEngineCore {
 static const char kHttpErrorDomain[] = "http";
 
 ContentRendererClientQt::ContentRendererClientQt()
-    : m_serviceBinding(this)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionsClient::Set(extensions::ExtensionsClientQt::GetInstance());
@@ -122,14 +128,11 @@ ContentRendererClientQt::ContentRendererClientQt()
 #endif
 }
 
-ContentRendererClientQt::~ContentRendererClientQt()
-{
-}
+ContentRendererClientQt::~ContentRendererClientQt() {}
 
 void ContentRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *renderThread = content::RenderThread::Get();
-    (void)GetConnector();
     m_renderThreadObserver.reset(new RenderThreadObserverQt());
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheImpl.reset(new web_cache::WebCacheImpl());
@@ -137,10 +140,9 @@ void ContentRendererClientQt::RenderThreadStarted()
     m_prescientNetworkingDispatcher.reset(new network_hints::PrescientNetworkingDispatcher());
 
     auto registry = std::make_unique<service_manager::BinderRegistry>();
-    registry->AddInterface(m_visitedLinkSlave->GetBindCallback(),
-                           base::ThreadTaskRunnerHandle::Get());
+    registry->AddInterface(m_visitedLinkSlave->GetBindCallback(), base::ThreadTaskRunnerHandle::Get());
     content::ChildThread::Get()->GetServiceManagerConnection()->AddConnectionFilter(
-                std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
+            std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
 
     renderThread->AddObserver(m_renderThreadObserver.data());
     renderThread->AddObserver(UserResourceController::instance());
@@ -151,34 +153,35 @@ void ContentRendererClientQt::RenderThreadStarted()
 #endif
 
     // Allow XMLHttpRequests from qrc to file.
+    // ### consider removing for Qt6
     blink::WebURL qrc(blink::KURL("qrc:"));
     blink::WebString file(blink::WebString::FromASCII("file"));
-    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(qrc, file, blink::WebString(), 0,
-                                                            network::mojom::CorsDomainMatchMode::kAllowSubdomains,
-                                                            network::mojom::CorsPortMatchMode::kAllowAnyPort,
-                                                            network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
+    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
+            qrc, file, blink::WebString(), 0, network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+            network::mojom::CorsPortMatchMode::kAllowAnyPort,
+            network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // Allow the pdf viewer extension to access chrome resources
     blink::WebURL pdfViewerExtension(blink::KURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"));
     blink::WebString chromeResources(blink::WebString::FromASCII("chrome"));
-    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(pdfViewerExtension, chromeResources, blink::WebString(), 0,
-                                                            network::mojom::CorsDomainMatchMode::kAllowSubdomains,
-                                                            network::mojom::CorsPortMatchMode::kAllowAnyPort,
-                                                            network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
+    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
+            pdfViewerExtension, chromeResources, blink::WebString(), 0,
+            network::mojom::CorsDomainMatchMode::kAllowSubdomains, network::mojom::CorsPortMatchMode::kAllowAnyPort,
+            network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
     ExtensionsRendererClientQt::GetInstance()->RenderThreadStarted();
 #endif
 }
 
-void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
+void ContentRendererClientQt::RenderViewCreated(content::RenderView *render_view)
 {
     // RenderViewObservers destroy themselves with their RenderView.
     new RenderViewObserverQt(render_view);
     UserResourceController::instance()->renderViewCreated(render_view);
 }
 
-void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)
+void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_frame)
 {
     QtWebEngineCore::RenderFrameObserverQt *render_frame_observer =
             new QtWebEngineCore::RenderFrameObserverQt(render_frame, m_webCacheImpl.data());
@@ -195,9 +198,7 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_fr
     new SpellCheckProvider(render_frame, m_spellCheck.data(), this);
 #endif
 #if QT_CONFIG(webengine_printing_and_pdf)
-    new printing::PrintRenderFrameHelper(
-                render_frame,
-                base::WrapUnique(new PrintWebViewHelperDelegateQt()));
+    new printing::PrintRenderFrameHelper(render_frame, base::WrapUnique(new PrintWebViewHelperDelegateQt()));
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     auto registry = std::make_unique<service_manager::BinderRegistry>();
@@ -255,29 +256,28 @@ bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *fram
 void ContentRendererClientQt::PrepareErrorPage(content::RenderFrame *renderFrame,
                                                const blink::WebURLError &web_error,
                                                const std::string &httpMethod,
-                                               bool ignoring_cache,
                                                std::string *errorHtml)
 {
-    Q_UNUSED(ignoring_cache);
-    GetNavigationErrorStringsInternal(renderFrame, httpMethod,
-                                      error_page::Error::NetError(web_error.url(), web_error.reason(), web_error.has_copy_in_cache()),
-                                      errorHtml);
+    GetNavigationErrorStringsInternal(
+            renderFrame, httpMethod,
+            error_page::Error::NetError(web_error.url(), web_error.reason(), web_error.has_copy_in_cache()), errorHtml);
 }
 
 void ContentRendererClientQt::PrepareErrorPageForHttpStatusError(content::RenderFrame *renderFrame,
                                                                  const GURL &unreachable_url,
                                                                  const std::string &httpMethod,
-                                                                 bool ignoring_cache,
                                                                  int http_status,
                                                                  std::string *errorHtml)
 {
-    Q_UNUSED(ignoring_cache);
     GetNavigationErrorStringsInternal(renderFrame, httpMethod,
                                       error_page::Error::HttpError(unreachable_url, http_status),
                                       errorHtml);
 }
 
-void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderFrame *renderFrame, const std::string &httpMethod, const error_page::Error &error, std::string *errorHtml)
+void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderFrame *renderFrame,
+                                                                const std::string &httpMethod,
+                                                                const error_page::Error &error,
+                                                                std::string *errorHtml)
 {
     Q_UNUSED(renderFrame)
     const bool isPost = QByteArray::fromStdString(httpMethod) == QByteArrayLiteral("POST");
@@ -322,42 +322,67 @@ blink::WebPrescientNetworking *ContentRendererClientQt::GetPrescientNetworking()
     return m_prescientNetworkingDispatcher.get();
 }
 
-bool ContentRendererClientQt::OverrideCreatePlugin(
-    content::RenderFrame* render_frame,
-    const blink::WebPluginParams& params, blink::WebPlugin** plugin)
+bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_frame,
+                                                   const blink::WebPluginParams &params,
+                                                   blink::WebPlugin **plugin)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     if (!ExtensionsRendererClientQt::GetInstance()->OverrideCreatePlugin(render_frame, params))
         return false;
 #endif //ENABLE_EXTENSIONS
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+    chrome::mojom::PluginInfoPtr plugin_info = chrome::mojom::PluginInfo::New();
+    content::WebPluginInfo info;
+    std::string mime_type;
+    bool found = false;
+
+    render_frame->Send(new FrameHostMsg_GetPluginInfo(render_frame->GetRoutingID(), params.url,
+                                                      render_frame->GetWebFrame()->Top()->GetSecurityOrigin(),
+                                                      params.mime_type.Utf8(), &found, &info, &mime_type));
+    if (!found) {
+        *plugin = CreatePlugin(render_frame, params, *plugin_info);
+        return true;
+    }
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
     return content::ContentRendererClient::OverrideCreatePlugin(render_frame, params, plugin);
 }
 
-content::BrowserPluginDelegate* ContentRendererClientQt::CreateBrowserPluginDelegate(content::RenderFrame *render_frame,
+#if BUILDFLAG(ENABLE_PLUGINS)
+// static
+blink::WebPlugin* ContentRendererClientQt::CreatePlugin(content::RenderFrame* render_frame,
+                                                        const blink::WebPluginParams& original_params,
+                                                        const chrome::mojom::PluginInfo& plugin_info)
+{
+    // If the browser plugin is to be enabled, this should be handled by the
+    // renderer, so the code won't reach here due to the early exit in OverrideCreatePlugin.
+    return LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, original_params)->plugin();
+}
+#endif  //BUILDFLAG(ENABLE_PLUGINS)
+
+content::BrowserPluginDelegate *ContentRendererClientQt::CreateBrowserPluginDelegate(content::RenderFrame *render_frame,
                                                                                      const content::WebPluginInfo &info,
                                                                                      const std::string &mime_type,
                                                                                      const GURL &original_url)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    return ExtensionsRendererClientQt::GetInstance()->CreateBrowserPluginDelegate(render_frame, info, mime_type, original_url);
+    return ExtensionsRendererClientQt::GetInstance()->CreateBrowserPluginDelegate(render_frame, info, mime_type,
+                                                                                  original_url);
 #else
     return nullptr;
 #endif
 }
 
-void ContentRendererClientQt::OnBindInterface(const service_manager::BindSourceInfo &remote_info,
-                                              const std::string& name,
-                                              mojo::ScopedMessagePipeHandle handle)
+void ContentRendererClientQt::BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver)
 {
-    Q_UNUSED(remote_info);
-    m_registry.TryBindInterface(name, &handle);
+    std::string interface_name = *receiver.interface_name();
+    auto pipe = receiver.PassPipe();
+    m_registry.TryBindInterface(interface_name, &pipe);
 }
 
 void ContentRendererClientQt::GetInterface(const std::string &interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {
-    m_serviceBinding.GetConnector()->BindInterface(
-        service_manager::ServiceFilter::ByName("qtwebengine"),
-        interface_name, std::move(interface_pipe));
+    content::RenderThread::Get()->BindHostReceiver(mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
 }
 
 // The following is based on chrome/renderer/media/chrome_key_systems.cc:
@@ -367,7 +392,7 @@ void ContentRendererClientQt::GetInterface(const std::string &interface_name, mo
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 // External Clear Key (used for testing).
-static void AddExternalClearKey(std::vector<std::unique_ptr<media::KeySystemProperties>>* concrete_key_systems)
+static void AddExternalClearKey(std::vector<std::unique_ptr<media::KeySystemProperties>> *concrete_key_systems)
 {
     // TODO(xhwang): Move these into an array so we can use a for loop to add
     // supported key systems below.
@@ -403,57 +428,58 @@ static void AddExternalClearKey(std::vector<std::unique_ptr<media::KeySystemProp
     }
 
     concrete_key_systems->emplace_back(
-                new cdm::ExternalClearKeyProperties(kExternalClearKeyKeySystem));
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyKeySystem));
 
     // Add support of decrypt-only mode in ClearKeyCdm.
-    concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-                                           kExternalClearKeyDecryptOnlyKeySystem));
+    concrete_key_systems->emplace_back(
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyDecryptOnlyKeySystem));
 
     // A key system that triggers various types of messages in ClearKeyCdm.
-    concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-                                           kExternalClearKeyMessageTypeTestKeySystem));
+    concrete_key_systems->emplace_back(
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyMessageTypeTestKeySystem));
 
     // A key system that triggers the FileIO test in ClearKeyCdm.
-    concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-                                           kExternalClearKeyFileIOTestKeySystem));
+    concrete_key_systems->emplace_back(
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyFileIOTestKeySystem));
 
     // A key system that triggers the output protection test in ClearKeyCdm.
-    concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-                                           kExternalClearKeyOutputProtectionTestKeySystem));
+    concrete_key_systems->emplace_back(
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyOutputProtectionTestKeySystem));
 
     // A key system that triggers the platform verification test in ClearKeyCdm.
-    concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-                                           kExternalClearKeyPlatformVerificationTestKeySystem));
+    concrete_key_systems->emplace_back(
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyPlatformVerificationTestKeySystem));
 
     // A key system that Chrome thinks is supported by ClearKeyCdm, but actually
     // will be refused by ClearKeyCdm. This is to test the CDM initialization
     // failure case.
-    concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-                                           kExternalClearKeyInitializeFailKeySystem));
+    concrete_key_systems->emplace_back(
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyInitializeFailKeySystem));
 
     // A key system that triggers a crash in ClearKeyCdm.
-    concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-                                           kExternalClearKeyCrashKeySystem));
+    concrete_key_systems->emplace_back(
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyCrashKeySystem));
 
     // A key system that triggers the verify host files test in ClearKeyCdm.
-    concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-                                           kExternalClearKeyVerifyCdmHostTestKeySystem));
+    concrete_key_systems->emplace_back(
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyVerifyCdmHostTestKeySystem));
 
     // A key system that fetches the Storage ID in ClearKeyCdm.
-    concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-                                           kExternalClearKeyStorageIdTestKeySystem));
+    concrete_key_systems->emplace_back(
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyStorageIdTestKeySystem));
 
     // A key system that is registered with a different CDM GUID.
-    concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-                                           kExternalClearKeyDifferentGuidTestKeySystem));
+    concrete_key_systems->emplace_back(
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyDifferentGuidTestKeySystem));
 
     // A key system that triggers CDM Proxy test in ClearKeyCdm.
-    concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-                                           kExternalClearKeyCdmProxyTestKeySystem));
+    concrete_key_systems->emplace_back(
+            new cdm::ExternalClearKeyProperties(kExternalClearKeyCdmProxyTestKeySystem));
 }
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
-static media::SupportedCodecs GetSupportedCodecs(const std::vector<media::VideoCodec> &supported_video_codecs, bool is_secure)
+static media::SupportedCodecs GetSupportedCodecs(const std::vector<media::VideoCodec> &supported_video_codecs,
+                                                 bool is_secure)
 {
     media::SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
 
@@ -469,7 +495,7 @@ static media::SupportedCodecs GetSupportedCodecs(const std::vector<media::VideoC
         supported_codecs |= media::EME_CODEC_FLAC;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
         supported_codecs |= media::EME_CODEC_AAC;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#endif // BUILDFLAG(USE_PROPRIETARY_CODECS)
     }
 
     // Video codecs are determined by what was registered for the CDM.
@@ -486,7 +512,7 @@ static media::SupportedCodecs GetSupportedCodecs(const std::vector<media::VideoC
         case media::VideoCodec::kCodecH264:
             supported_codecs |= media::EME_CODEC_AVC1;
             break;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#endif // BUILDFLAG(USE_PROPRIETARY_CODECS)
         default:
             DVLOG(1) << "Unexpected supported codec: " << GetCodecName(codec);
             break;
@@ -505,13 +531,11 @@ static void AddWidevine(std::vector<std::unique_ptr<media::KeySystemProperties>>
     }
 
     // Codecs and encryption schemes.
-    auto codecs =
-        GetSupportedCodecs(capability->video_codecs, /*is_secure=*/false);
-    const auto& encryption_schemes = capability->encryption_schemes;
+    auto codecs = GetSupportedCodecs(capability->video_codecs, /*is_secure=*/false);
+    const auto &encryption_schemes = capability->encryption_schemes;
     auto hw_secure_codecs = GetSupportedCodecs(capability->hw_secure_video_codecs,
                                                /*is_secure=*/true);
-    const auto& hw_secure_encryption_schemes =
-        capability->hw_secure_encryption_schemes;
+    const auto &hw_secure_encryption_schemes = capability->hw_secure_encryption_schemes;
 
     // Robustness.
     using Robustness = cdm::WidevineKeySystemProperties::Robustness;
@@ -574,22 +598,13 @@ void ContentRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
                                               bool *attach_same_site_cookies)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    ExtensionsRendererClientQt::GetInstance()->WillSendRequest(frame, transition_type, url, initiator_origin, new_url, attach_same_site_cookies);
+    ExtensionsRendererClientQt::GetInstance()->WillSendRequest(frame, transition_type, url, initiator_origin, new_url,
+                                                               attach_same_site_cookies);
     if (!new_url->is_empty())
         return;
 #endif
-    content::ContentRendererClient::WillSendRequest(frame, transition_type, url, initiator_origin, new_url, attach_same_site_cookies);
+    content::ContentRendererClient::WillSendRequest(frame, transition_type, url, initiator_origin, new_url,
+                                                    attach_same_site_cookies);
 }
 
-void ContentRendererClientQt::CreateRendererService(service_manager::mojom::ServiceRequest service_request)
-{
-    DCHECK(!m_serviceBinding.is_bound());
-    m_serviceBinding.Bind(std::move(service_request));
-}
-
-service_manager::Connector* ContentRendererClientQt::GetConnector()
-{
-    return m_serviceBinding.GetConnector();
-}
-
-} // namespace
+} // namespace QtWebEngineCore

@@ -144,14 +144,16 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('testing/buildbot')
         or (file_path.startswith('third_party/') and (
             file_path.startswith('third_party/WebKit/LayoutTests')
-            or file_path.startswith('third_party/accessibility-audit')
+            or file_path.startswith('third_party/accessibility')
             or file_path.startswith('third_party/afl')
             or file_path.startswith('third_party/android_')
-            or file_path.startswith('third_party/apache-win32')
+            or file_path.startswith('third_party/angle/third_party/deqp')
+            or file_path.startswith('third_party/angle/third_party/glmark2')
+            or file_path.startswith('third_party/angle/third_party/vulkan-validation-layers')
+            or file_path.startswith('third_party/apache-')
             or file_path.startswith('third_party/arcode-android-sdk')
             or file_path.startswith('third_party/ashmem')
             or file_path.startswith('third_party/binutils')
-            or file_path.startswith('third_party/bison')
             or file_path.startswith('third_party/blink/perf_tests/')
             or file_path.startswith('third_party/blink/web_tests/')
             or file_path.startswith('third_party/breakpad/src/processor/testdata/')
@@ -167,10 +169,9 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/catapult/tracing/test_data/')
             or file_path.startswith('third_party/chromevox')
             or file_path.startswith('third_party/chromite')
-            or file_path.startswith('third_party/closure_compiler')
             or file_path.startswith('third_party/colorama')
             or file_path.startswith('third_party/depot_tools')
-            or file_path.startswith('third_party/elfutils')
+            or file_path.startswith('third_party/devtools-node-modules')
             or file_path.startswith('third_party/fuschsia-sdk/')
             or file_path.startswith('third_party/glslang/src/Test/')
             or file_path.startswith('third_party/google_')
@@ -179,7 +180,6 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/icu/android')
             or file_path.startswith('third_party/icu/cast')
             or file_path.startswith('third_party/icu/chromeos')
-            or file_path.startswith('third_party/icu/ios')
             or file_path.startswith('third_party/instrumented_libraries')
             or file_path.startswith('third_party/jsr-305')
             or file_path.startswith('third_party/junit')
@@ -294,10 +294,10 @@ def clearDirectory(directory):
             shutil.rmtree(direntry)
     os.chdir(currentDir)
 
-def listFilesInCurrentRepository():
+def listFilesInCurrentRepository(use_deps=False):
     currentRepo = GitSubmodule.Submodule(os.getcwd())
     files = subprocess.check_output(['git', 'ls-files']).splitlines()
-    submodules = currentRepo.readSubmodules()
+    submodules = currentRepo.readSubmodules(use_deps)
     for submodule in submodules:
         submodule_files = submodule.listFiles()
         for submodule_file in submodule_files:
@@ -340,7 +340,7 @@ def exportChromium():
     os.makedirs(third_party_chromium);
     print 'exporting contents of:' + third_party_upstream_chromium
     os.chdir(third_party_upstream_chromium)
-    files = listFilesInCurrentRepository()
+    files = listFilesInCurrentRepository(True)
     # Add LASTCHANGE files which are not tracked by git.
     files.append('build/util/LASTCHANGE')
     files.append('build/util/LASTCHANGE.committime')

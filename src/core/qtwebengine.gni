@@ -20,6 +20,7 @@ deps = [
   "//components/cdm/renderer",
   "//components/error_page/common",
   "//components/keyed_service/content",
+  "//components/navigation_interception",
   "//components/network_hints/browser",
   "//components/network_hints/common",
   "//components/network_hints/renderer",
@@ -63,6 +64,10 @@ if (enable_extensions) {
   deps += [
     ":qtwebengine_extensions_features"
   ]
+}
+
+if (is_win) {
+  data_deps = [ ":qtwebengine_sandbox_win" ]
 }
 
 defines = [

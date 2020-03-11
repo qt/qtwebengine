@@ -73,11 +73,6 @@ public:
     bool IsGuestSession(content::BrowserContext *context) const override;
     bool IsExtensionIncognitoEnabled(const std::string &extension_id, content::BrowserContext *context) const override;
     bool CanExtensionCrossIncognito(const Extension *extension, content::BrowserContext *context) const override;
-    net::URLRequestJob *MaybeCreateResourceBundleRequestJob(net::URLRequest *request,
-                                                            net::NetworkDelegate *network_delegate,
-                                                            const base::FilePath &directory_path,
-                                                            const std::string &content_security_policy,
-                                                            bool send_cors_header) override;
     bool AllowCrossRendererResourceLoad(const GURL &url,
                                         content::ResourceType resource_type,
                                         ui::PageTransition page_transition,
@@ -105,7 +100,8 @@ public:
     GetComponentExtensionResourceManager() override;
     void BroadcastEventToRenderers(events::HistogramValue histogram_value,
                                    const std::string &event_name,
-                                   std::unique_ptr<base::ListValue> args) override;
+                                   std::unique_ptr<base::ListValue> args,
+                                   bool dispatch_to_off_the_record_profiles) override;
     ExtensionCache *GetExtensionCache() override;
     bool IsBackgroundUpdateAllowed() override;
     bool IsMinBrowserVersionSupported(const std::string &min_version) override;

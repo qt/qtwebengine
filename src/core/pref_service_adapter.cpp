@@ -122,7 +122,6 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterListPref(extensions::pref_names::kNativeMessagingBlacklist);
     registry->RegisterListPref(extensions::pref_names::kNativeMessagingWhitelist);
     registry->RegisterBooleanPref(extensions::pref_names::kNativeMessagingUserLevelHosts, true);
-    registry->RegisterBooleanPref(extensions::pref_names::kInsecureExtensionUpdatesEnabled, false);
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
     // Media device salt id key

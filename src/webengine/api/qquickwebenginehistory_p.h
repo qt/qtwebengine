@@ -107,6 +107,7 @@ public:
     QQuickWebEngineHistoryListModel *items() const;
     QQuickWebEngineHistoryListModel *backItems() const;
     QQuickWebEngineHistoryListModel *forwardItems() const;
+    Q_REVISION(1) Q_INVOKABLE void clear();
 
     void reset();
 

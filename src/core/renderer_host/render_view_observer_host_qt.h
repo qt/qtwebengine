@@ -45,7 +45,7 @@
 #include <QtGlobal>
 
 namespace content {
-    class WebContents;
+class WebContents;
 }
 
 namespace QtWebEngineCore {
@@ -55,14 +55,14 @@ class WebContentsAdapterClient;
 class RenderViewObserverHostQt : public content::WebContentsObserver
 {
 public:
-    RenderViewObserverHostQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
+    RenderViewObserverHostQt(content::WebContents *, WebContentsAdapterClient *adapterClient);
     void fetchDocumentMarkup(quint64 requestId);
     void fetchDocumentInnerText(quint64 requestId);
 
 private:
-    bool OnMessageReceived(const IPC::Message& message) override;
-    void onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup);
-    void onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText);
+    bool OnMessageReceived(const IPC::Message &message) override;
+    void onDidFetchDocumentMarkup(quint64 requestId, const base::string16 &markup);
+    void onDidFetchDocumentInnerText(quint64 requestId, const base::string16 &innerText);
 
     WebContentsAdapterClient *m_adapterClient;
 };

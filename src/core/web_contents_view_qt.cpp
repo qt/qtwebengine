@@ -111,7 +111,7 @@ content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForChildWidget(c
     return view;
 }
 
-void WebContentsViewQt::CreateView(const gfx::Size& initial_size, gfx::NativeView context)
+void WebContentsViewQt::CreateView(gfx::NativeView context)
 {
 }
 
@@ -195,6 +195,8 @@ static inline WebEngineContextMenuData fromParams(const content::ContextMenuPara
     ret.setPosition(QPoint(params.x, params.y));
     ret.setLinkUrl(toQt(params.link_url));
     ret.setLinkText(toQt(params.link_text.data()));
+    ret.setAltText(toQt(params.alt_text.data()));
+    ret.setTitleText(toQt(params.title_text.data()));
     ret.setUnfilteredLinkUrl(toQt(params.unfiltered_link_url));
     ret.setSelectedText(toQt(params.selection_text.data()));
     ret.setMediaUrl(toQt(params.src_url));

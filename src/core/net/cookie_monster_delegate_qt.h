@@ -57,8 +57,22 @@ QT_WARNING_PUSH
 // For some reason adding -Wno-unused-parameter to QMAKE_CXXFLAGS has no
 // effect with clang, so use a pragma for these dirty chromium headers
 QT_WARNING_DISABLE_CLANG("-Wunused-parameter")
+
+// We need to work around Chromium using 'signals' as a variable name in headers:
+#ifdef signals
+#define StAsH_signals signals
+#undef signals
+#endif
 #include "base/memory/ref_counted.h"
-#include "net/cookies/cookie_monster.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "net/cookies/cookie_change_dispatcher.h"
+#include "net/cookies/cookie_store.h"
+#include "services/network/public/mojom/cookie_manager.mojom-forward.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
+#ifdef StAsH_signals
+#define signals StAsH_signals
+#undef StAsH_signals
+#endif
 QT_WARNING_POP
 
 #include <QNetworkCookie>
@@ -68,18 +82,16 @@ QT_FORWARD_DECLARE_CLASS(QWebEngineCookieStore)
 
 namespace QtWebEngineCore {
 
-// Extends net::CookieMonster::kDefaultCookieableSchemes with qrc, without enabling
-// cookies for the file:// scheme, which is disabled by default in Chromium.
-// Since qrc:// is similar to file:// and there are some unknowns about how
-// to correctly handle file:// cookies, qrc:// should only be used for testing.
-static const char *const kCookieableSchemes[] = { "http", "https", "qrc", "ws", "wss" };
+class CookieMonsterDelegateQtPrivate;
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT CookieMonsterDelegateQt : public base::RefCountedThreadSafe<CookieMonsterDelegateQt>
 {
     QPointer<QWebEngineCookieStore> m_client;
-    net::CookieMonster *m_cookieMonster;
     std::vector<std::unique_ptr<net::CookieChangeSubscription>> m_subscriptions;
 
+    network::mojom::CookieManagerPtr m_mojoCookieManager;
+    std::unique_ptr<network::mojom::CookieChangeListener> m_listener;
+    mojo::Receiver<network::mojom::CookieChangeListener> m_receiver;
 public:
     CookieMonsterDelegateQt();
     ~CookieMonsterDelegateQt();
@@ -92,31 +104,19 @@ public:
     void deleteSessionCookies(quint64 callbackId);
     void deleteAllCookies(quint64 callbackId);
 
-    void setCookieMonster(net::CookieMonster *monster);
     void setClient(QWebEngineCookieStore *client);
+    void setMojoCookieManager(network::mojom::CookieManagerPtrInfo cookie_manager_info);
+    void unsetMojoCookieManager();
 
     bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url) const;
     bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const;
 
     void AddStore(net::CookieStore *store);
-    void OnCookieChanged(const net::CanonicalCookie &cookie, net::CookieChangeCause cause);
+    void OnCookieChanged(const net::CookieChangeInfo &change);
 
 private:
-    void GetAllCookiesOnIOThread(net::CookieMonster::GetCookieListCallback callback);
-    void SetCookieOnIOThread(const GURL &url, const std::string &cookie_line,
-                             net::CookieMonster::SetCookiesCallback callback);
-    void DeleteCookieOnIOThread(const GURL &url, const std::string &cookie_name);
-    void DeleteSessionCookiesOnIOThread(net::CookieMonster::DeleteCallback callback);
-    void DeleteAllOnIOThread(net::CookieMonster::DeleteCallback callback);
-
-    void GetCookiesToDeleteCallback(const std::string &cookie_name, const net::CookieList &cookies,
-                                    const net::CookieStatusList &statusList);
-    void GetAllCookiesCallbackOnIOThread(qint64 callbackId, const net::CookieList &cookies,
-                                         const net::CookieStatusList &statusList);
-    void SetCookieCallbackOnIOThread(qint64 callbackId, net::CanonicalCookie::CookieInclusionStatus status);
-    void DeleteCookiesCallbackOnIOThread(qint64 callbackId, uint numCookies);
-
-    void GetAllCookiesCallbackOnUIThread(qint64 callbackId, const QByteArray &cookies);
+    void GetAllCookiesCallbackOnUIThread(qint64 callbackId, const std::vector<net::CanonicalCookie> &cookies);
+    void GetAllCookiesResultOnUIThread(qint64 callbackId, const QByteArray &cookies);
     void SetCookieCallbackOnUIThread(qint64 callbackId, net::CanonicalCookie::CookieInclusionStatus status);
     void DeleteCookiesCallbackOnUIThread(qint64 callbackId, uint numCookies);
 };

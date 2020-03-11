@@ -214,7 +214,6 @@ public:
     {   return m_persistentNotifications; }
 
     QString determineDownloadPath(const QString &downloadDirectory, const QString &suggestedFilename, const time_t &startTime);
-    QString updateDownloadPath(int downloadId, const QString &directory, const QString &filename);
 
 private:
     void updateCustomUrlSchemeHandlers();

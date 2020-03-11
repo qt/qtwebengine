@@ -68,6 +68,7 @@ public:
     // navigation, hierarchy
     QAccessibleInterface *parent() const override;
     QAccessibleInterface *child(int index) const override;
+    QAccessibleInterface *focusChild() const override;
     int childCount() const override;
     int indexOfChild(const QAccessibleInterface *) const override;
 

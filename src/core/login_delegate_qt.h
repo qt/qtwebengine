@@ -42,7 +42,6 @@
 
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/login_delegate.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 

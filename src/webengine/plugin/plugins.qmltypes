@@ -1348,6 +1348,7 @@ Module {
         Property { name: "devToolsView"; revision: 7; type: "QQuickWebEngineView"; isPointer: true }
         Property { name: "lifecycleState"; revision: 10; type: "LifecycleState" }
         Property { name: "recommendedState"; revision: 10; type: "LifecycleState"; isReadonly: true }
+        Property { name: "renderProcessId"; revision: 11; type: "qint64"; isReadonly: true }
         Signal {
             name: "loadingChanged"
             Parameter { name: "loadRequest"; type: "QQuickWebEngineLoadRequest"; isPointer: true }
@@ -1525,6 +1526,11 @@ Module {
             name: "findTextFinished"
             revision: 10
             Parameter { name: "result"; type: "QWebEngineFindTextResult" }
+        }
+        Signal {
+            name: "renderProcessPidChanged"
+            revision: 11
+            Parameter { name: "pid"; type: "qint64" }
         }
         Method {
             name: "runJavaScript"

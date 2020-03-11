@@ -481,6 +481,8 @@ void tst_Origins::subdirWithoutAccess()
 {
     ScopedAttribute sa(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, false);
 
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     QVERIFY(verifyLoad(QSL("file:" THIS_DIR "resources/subdir/index.html")));
     QCOMPARE(eval(QSL("msg[0]")), QVariant());
     QCOMPARE(eval(QSL("msg[1]")), QVariant());
@@ -507,22 +509,28 @@ void tst_Origins::mixedSchemes()
     QVERIFY(verifyLoad(QSL("file:" THIS_DIR "resources/mixedSchemes.html")));
     eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('tst:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("qrc:/resources/mixedSchemes.html")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
     eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('tst:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("tst:/resources/mixedSchemes.html")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Not allowed to load local resource")));
     eval(QSL("setIFrameUrl('file:" THIS_DIR "resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('qrc:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
     eval(QSL("setIFrameUrl('tst:/resources/mixedSchemes_frame.html')"));
@@ -531,36 +539,47 @@ void tst_Origins::mixedSchemes()
     QVERIFY(verifyLoad(QSL("PathSyntax:/resources/mixedSchemes.html")));
     eval(QSL("setIFrameUrl('PathSyntax:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Not allowed to load local resource")));
     eval(QSL("setIFrameUrl('PathSyntax-Local:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
     eval(QSL("setIFrameUrl('PathSyntax-LocalAccessAllowed:/resources/mixedSchemes_frame.html')"));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax-NoAccessAllowed:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("PathSyntax-LocalAccessAllowed:/resources/mixedSchemes.html")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax-Local:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
     eval(QSL("setIFrameUrl('PathSyntax-LocalAccessAllowed:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax-NoAccessAllowed:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("PathSyntax-NoAccessAllowed:/resources/mixedSchemes.html")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Not allowed to load local resource")));
     eval(QSL("setIFrameUrl('PathSyntax-Local:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("cannotLoad")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax-LocalAccessAllowed:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('PathSyntax-NoAccessAllowed:/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("HostSyntax://a/resources/mixedSchemes.html")));
     eval(QSL("setIFrameUrl('HostSyntax://a/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('HostSyntax://b/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 }
@@ -569,14 +588,17 @@ void tst_Origins::mixedSchemes()
 void tst_Origins::mixedSchemesWithCsp()
 {
     QVERIFY(verifyLoad(QSL("HostSyntax://a/resources/mixedSchemesWithCsp.html")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("violates the following Content Security Policy")));
     eval(QSL("setIFrameUrl('HostSyntax://a/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("violates the following Content Security Policy")));
     eval(QSL("setIFrameUrl('HostSyntax://b/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 
     QVERIFY(verifyLoad(QSL("HostSyntax-ContentSecurityPolicyIgnored://a/resources/mixedSchemesWithCsp.html")));
     eval(QSL("setIFrameUrl('HostSyntax-ContentSecurityPolicyIgnored://a/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadAndAccess")));
+    QTest::ignoreMessage(QtSystemMsg, QRegularExpression(QSL("Uncaught SecurityError")));
     eval(QSL("setIFrameUrl('HostSyntax-ContentSecurityPolicyIgnored://b/resources/mixedSchemes_frame.html')"));
     QTRY_COMPARE(eval(QSL("result")), QVariant(QSL("canLoadButNotAccess")));
 }

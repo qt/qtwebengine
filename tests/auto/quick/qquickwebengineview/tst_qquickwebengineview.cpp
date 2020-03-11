@@ -92,6 +92,8 @@ private Q_SLOTS:
     void javascriptClipboard_data();
     void javascriptClipboard();
     void setProfile();
+    void focusChild();
+    void focusChild_data();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -419,32 +421,29 @@ void tst_QQuickWebEngineView::transparentWebEngineViews()
 
     webEngineView1->setSize(QSizeF(300, 400));
     webEngineView1->loadHtml("<html><body bgcolor=\"red\"></body></html>");
-    QVERIFY(waitForLoadSucceeded(webEngineView1.data()));
-    webEngineView1->setVisible(true);
+    QVERIFY(waitForLoadSucceeded(webEngineView1.data(), 30000));
 
     webEngineView2->setSize(QSizeF(300, 400));
     webEngineView2->setUrl(urlFromTestPath("/html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView2.data()));
 
     // Result image: black text on red background.
-    const QImage grabbedWindow = tryToGrabWindowUntil(m_window.data(), [] (const QImage &image) {
-        return image.pixelColor(0, 0) == QColor(Qt::red);
+    QSet<QRgb> colors;
+    tryToGrabWindowUntil(m_window.data(), [&colors] (const QImage &image) {
+        colors.clear();
+        for (int i = 0; i < image.width(); i++)
+            for (int j = 0; j < image.height(); j++)
+                colors.insert(image.pixel(i, j));
+        return colors.count() > 1;
     });
 
-    QSet<int> redComponents;
-    for (int i = 0, width = grabbedWindow.width(); i < width; i++) {
-        for (int j = 0, height = grabbedWindow.height(); j < height; j++) {
-            QColor color(grabbedWindow.pixel(i, j));
-            redComponents.insert(color.red());
-            // There are no green or blue components between red and black.
-            QVERIFY(color.green() == 0);
-            QVERIFY(color.blue() == 0);
-        }
+    QVERIFY(colors.count() > 1);
+    QVERIFY(colors.contains(qRgb(0, 0, 0)));     // black
+    QVERIFY(colors.contains(qRgb(255, 0, 0)));   // red
+    for (auto color : colors) {
+        QCOMPARE(qGreen(color), 0);
+        QCOMPARE(qBlue(color), 0);
     }
-
-    QVERIFY(redComponents.count() > 1);
-    QVERIFY(redComponents.contains(0));     // black
-    QVERIFY(redComponents.contains(255));   // red
 }
 
 void tst_QQuickWebEngineView::inputMethod()
@@ -582,7 +581,7 @@ void tst_QQuickWebEngineView::interruptImeTextComposition()
     QFETCH(QString, eventType);
     if (eventType == "MouseButton") {
         QPoint textInputCenter = elementCenter(view, QStringLiteral("input2"));
-        QTest::mouseClick(view->window(), Qt::LeftButton, 0, textInputCenter);
+        QTest::mouseClick(view->window(), Qt::LeftButton, {}, textInputCenter);
     } else if (eventType == "Touch") {
         QPoint textInputCenter = elementCenter(view, QStringLiteral("input2"));
         QTouchDevice *touchDevice = QTest::createTouchDevice();
@@ -619,7 +618,7 @@ void tst_QQuickWebEngineView::inputContextQueryInput()
 
     // Set focus on an input field.
     QPoint textInputCenter = elementCenter(view, "input1");
-    QTest::mouseClick(view->window(), Qt::LeftButton, 0, textInputCenter);
+    QTest::mouseClick(view->window(), Qt::LeftButton, {}, textInputCenter);
     QTRY_COMPARE(testContext.infos.count(), 2);
     QCOMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input1"));
     foreach (const InputMethodInfo &info, testContext.infos) {
@@ -1004,7 +1003,7 @@ void tst_QQuickWebEngineView::changeLocale()
 
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
-    errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
+    errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 
     QLocale::setDefault(QLocale("en"));
@@ -1014,7 +1013,7 @@ void tst_QQuickWebEngineView::changeLocale()
 
     QTRY_VERIFY(!evaluateJavaScriptSync(viewEN.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").isNull());
-    errorLines = evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
+    errorLines = evaluateJavaScriptSync(viewEN.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("This site can\xE2\x80\x99t be reached"));
 
     // Reset error page
@@ -1027,7 +1026,7 @@ void tst_QQuickWebEngineView::changeLocale()
 
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body").isNull());
     QTRY_VERIFY(!evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").isNull());
-    errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), QString::SkipEmptyParts);
+    errorLines = evaluateJavaScriptSync(viewDE.data(), "document.body.innerText").toString().split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
     QCOMPARE(errorLines.first().toUtf8(), QByteArrayLiteral("Die Website ist nicht erreichbar"));
 }
 
@@ -1162,5 +1161,71 @@ void tst_QQuickWebEngineView::setProfile() {
     QTRY_COMPARE(webEngineView()->url() ,urlFromTestPath("html/basic_page2.html"));
 }
 
-QTEST_MAIN(tst_QQuickWebEngineView)
+void tst_QQuickWebEngineView::focusChild_data()
+{
+    QTest::addColumn<QString>("interfaceName");
+    QTest::addColumn<QVector<QAccessible::Role>>("ancestorRoles");
+
+    QTest::newRow("QQuickWebEngineView") << QString("QQuickWebEngineView") << QVector<QAccessible::Role>({QAccessible::Client});
+    QTest::newRow("RenderWidgetHostViewQtDelegate") << QString("RenderWidgetHostViewQtDelegate") << QVector<QAccessible::Role>({QAccessible::Client});
+    QTest::newRow("QQuickView") << QString("QQuickView") << QVector<QAccessible::Role>({QAccessible::Window, QAccessible::Client /* view */});
+}
+
+void tst_QQuickWebEngineView::focusChild()
+{
+    auto traverseToWebDocumentAccessibleInterface = [](QAccessibleInterface *iface) -> QAccessibleInterface * {
+        QFETCH(QVector<QAccessible::Role>, ancestorRoles);
+        for (int i = 0; i < ancestorRoles.size(); ++i) {
+            if (iface->childCount() == 0 || iface->role() != ancestorRoles[i])
+                return nullptr;
+            iface = iface->child(0);
+        }
+
+        if (iface->role() != QAccessible::WebDocument)
+            return nullptr;
+
+        return iface;
+    };
+
+    QQuickWebEngineView *view = webEngineView();
+    m_window->show();
+    view->settings()->setFocusOnNavigationEnabled(true);
+    view->setSize(QSizeF(640, 480));
+    view->loadHtml("<html><body>"
+                   "<input id='input1' type='text'>"
+                   "</body></html>");
+    QVERIFY(waitForLoadSucceeded(view));
+
+    QAccessibleInterface *iface = nullptr;
+    QFETCH(QString, interfaceName);
+    if (interfaceName == "QQuickWebEngineView")
+        iface = QAccessible::queryAccessibleInterface(view);
+    else if (interfaceName == "RenderWidgetHostViewQtDelegate")
+        iface = QAccessible::queryAccessibleInterface(m_window->focusObject());
+    else if (interfaceName == "QQuickView")
+        iface = QAccessible::queryAccessibleInterface(m_window.data());
+    QVERIFY(iface);
+
+    // Make sure the input field does not have the focus.
+    runJavaScript("document.getElementById('input1').blur();");
+    QTRY_VERIFY(evaluateJavaScriptSync(view, "document.activeElement.id").toString().isEmpty());
+
+    QVERIFY(iface->focusChild());
+    QTRY_COMPARE(iface->focusChild()->role(), QAccessible::WebDocument);
+    QCOMPARE(traverseToWebDocumentAccessibleInterface(iface), iface->focusChild());
+
+    // Set active focus on the input field.
+    runJavaScript("document.getElementById('input1').focus();");
+    QTRY_COMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input1"));
+
+    QVERIFY(iface->focusChild());
+    QTRY_COMPARE(iface->focusChild()->role(), QAccessible::EditableText);
+    // <html> -> <body> -> <input>
+    QCOMPARE(traverseToWebDocumentAccessibleInterface(iface)->child(0)->child(0), iface->focusChild());
+}
+
+static QByteArrayList params = QByteArrayList()
+    << "--force-renderer-accessibility";
+
+W_QTEST_MAIN(tst_QQuickWebEngineView, params)
 #include "tst_qquickwebengineview.moc"

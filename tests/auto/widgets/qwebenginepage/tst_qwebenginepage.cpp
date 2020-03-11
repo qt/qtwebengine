@@ -225,9 +225,14 @@ private Q_SLOTS:
     void editActionsWithoutSelection();
 
     void customUserAgentInNewTab();
+    void renderProcessCrashed();
+    void renderProcessPid();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
+    static bool isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
+    static bool isTrueJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
+    static bool isEmptyListJavaScriptResult(QWebEnginePage *page, const QString &javaScript);
 
     QWebEngineView* m_view;
     QWebEnginePage* m_page;
@@ -696,7 +701,7 @@ public:
     CursorTrackedPage(QWidget *parent = 0): QWebEnginePage(parent) {
     }
 
-    QString selectedText() {
+    QString jsSelectedText() {
         return evaluateJavaScriptSync(this, "window.getSelection().toString()").toString();
     }
 
@@ -712,62 +717,91 @@ public:
     int isSelectionCollapsed() {
         return evaluateJavaScriptSync(this, "window.getSelection().getRangeAt(0).collapsed").toBool();
     }
-    bool hasSelection()
-    {
-        return !selectedText().isEmpty();
-    }
 };
 
 void tst_QWebEnginePage::textSelection()
 {
-    QWebEngineView view;
-    CursorTrackedPage *page = new CursorTrackedPage(&view);
-    QString content("<html><body><p id=one>The quick brown fox</p>" \
+    CursorTrackedPage page;
+
+    QString textToSelect("The quick brown fox");
+    QString content = QString("<html><body><p id=one>%1</p>" \
         "<p id=two>jumps over the lazy dog</p>" \
-        "<p>May the source<br/>be with you!</p></body></html>");
-    page->setView(&view);
-    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
-    page->setHtml(content);
+        "<p>May the source<br/>be with you!</p></body></html>").arg(textToSelect);
+
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    page.setHtml(content);
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
 
     // these actions must exist
-    QVERIFY(page->action(QWebEnginePage::SelectAll) != 0);
+    QVERIFY(page.action(QWebEnginePage::SelectAll) != 0);
 
     // ..but SelectAll is disabled because the page has no focus due to disabled FocusOnNavigationEnabled.
-    QCOMPARE(page->action(QWebEnginePage::SelectAll)->isEnabled(), false);
+    QCOMPARE(page.action(QWebEnginePage::SelectAll)->isEnabled(), false);
 
     // Verify hasSelection returns false since there is no selection yet...
-    QCOMPARE(page->hasSelection(), false);
+    QVERIFY(!page.hasSelection());
+    QVERIFY(page.jsSelectedText().isEmpty());
 
     // this will select the first paragraph
     QString selectScript = "var range = document.createRange(); " \
         "var node = document.getElementById(\"one\"); " \
         "range.selectNode(node); " \
         "getSelection().addRange(range);";
-    evaluateJavaScriptSync(page, selectScript);
-    QCOMPARE(page->selectedText().trimmed(), QString::fromLatin1("The quick brown fox"));
+    evaluateJavaScriptSync(&page, selectScript);
+
     // Make sure hasSelection returns true, since there is selected text now...
-    QCOMPARE(page->hasSelection(), true);
+    QTRY_VERIFY(page.hasSelection());
+    QCOMPARE(page.selectedText().trimmed(), textToSelect);
+
+    QCOMPARE(page.jsSelectedText().trimmed(), textToSelect);
+
+    // navigate away and check that selection is cleared
+    page.load(QUrl("about:blank"));
+    QTRY_COMPARE(loadSpy.count(), 2);
+
+    QVERIFY(!page.hasSelection());
+    QVERIFY(page.selectedText().isEmpty());
+
+    QVERIFY(page.jsSelectedText().isEmpty());
 }
 
 
 void tst_QWebEnginePage::backActionUpdate()
 {
     QWebEngineView view;
+    view.resize(640, 480);
+    view.show();
+
     QWebEnginePage *page = view.page();
+    QSignalSpy loadSpy(page, &QWebEnginePage::loadFinished);
     QAction *action = page->action(QWebEnginePage::Back);
     QVERIFY(!action->isEnabled());
-    QSignalSpy loadSpy(page, SIGNAL(loadFinished(bool)));
-    QUrl url = QUrl("qrc:///resources/framedindex.html");
-    page->load(url);
+
+    page->load(QUrl("qrc:///resources/framedindex.html"));
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
     QVERIFY(!action->isEnabled());
-    QTest::mouseClick(&view, Qt::LeftButton, 0, QPoint(10, 10));
-    QEXPECT_FAIL("", "Behavior change: Load signals are emitted only for the main frame in QtWebEngine.", Continue);
-    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 2, 100);
 
-    QEXPECT_FAIL("", "FIXME: Mouse events aren't passed from the QWebEngineView down to the RWHVQtDelegateWidget", Continue);
-    QVERIFY(action->isEnabled());
+    auto firstAnchorCenterInFrame = [](QWebEnginePage *page, const QString &frameName) {
+        QVariantList rectList = evaluateJavaScriptSync(page,
+            "(function(){"
+            "var frame = document.getElementsByName('" + frameName + "')[0];"
+            "var anchor = frame.contentDocument.getElementsByTagName('a')[0];"
+            "var rect = anchor.getBoundingClientRect();"
+            "return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
+        "})()").toList();
+
+        if (rectList.count() != 2) {
+            qWarning("firstAnchorCenterInFrame failed.");
+            return QPoint();
+        }
+
+        return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
+    };
+
+    QVERIFY(evaluateJavaScriptSync(page, "document.getElementsByName('frame_b')[0].contentDocument == undefined").toBool());
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, firstAnchorCenterInFrame(page, "frame_c"));
+    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.getElementsByName('frame_b')[0].contentDocument != undefined").toBool());
+    QTRY_VERIFY(action->isEnabled());
 }
 
 void tst_QWebEnginePage::localStorageVisibility()
@@ -790,11 +824,13 @@ void tst_QWebEnginePage::localStorageVisibility()
     QVERIFY(evaluateJavaScriptSync(&webPage1, QString("(window.localStorage != undefined)")).toBool());
     QVERIFY(!evaluateJavaScriptSync(&webPage2, QString("(window.localStorage != undefined)")).toBool());
 
-    // Switching the feature off does not actively remove the object from webPage1.
+    // Toggle local setting for every page and...
     webPage1.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, false);
     webPage2.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+    // ...first check second page (for storage to appear) as applying settings is batched and done asynchronously
+    QTRY_VERIFY(evaluateJavaScriptSync(&webPage2, QString("(window.localStorage != undefined)")).toBool());
+    // Switching the feature off does not actively remove the object from webPage1.
     QVERIFY(evaluateJavaScriptSync(&webPage1, QString("(window.localStorage != undefined)")).toBool());
-    QVERIFY(evaluateJavaScriptSync(&webPage2, QString("(window.localStorage != undefined)")).toBool());
 
     // The object disappears only after reloading.
     webPage1.triggerAction(QWebEnginePage::Reload);
@@ -947,7 +983,7 @@ void tst_QWebEnginePage::findText()
     {
         CallbackSpy<bool> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
-        m_view->findText("", 0, callbackSpy.ref());
+        m_view->findText("", {}, callbackSpy.ref());
         QVERIFY(callbackSpy.wasCalled());
         QCOMPARE(signalSpy.count(), 1);
         QTRY_COMPARE(m_view->selectedText(), QString("foo bar"));
@@ -958,7 +994,7 @@ void tst_QWebEnginePage::findText()
     {
         CallbackSpy<bool> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
-        m_view->findText("Will not be found", 0, callbackSpy.ref());
+        m_view->findText("Will not be found", {}, callbackSpy.ref());
         QCOMPARE(callbackSpy.waitForResult(), false);
         QTRY_COMPARE(signalSpy.count(), 1);
         auto result = signalSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
@@ -975,7 +1011,7 @@ void tst_QWebEnginePage::findText()
     {
         CallbackSpy<bool> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
-        m_view->findText("foo", 0, callbackSpy.ref());
+        m_view->findText("foo", {}, callbackSpy.ref());
         QVERIFY(callbackSpy.waitForResult());
         QTRY_COMPARE(signalSpy.count(), 1);
         QTRY_VERIFY(m_view->selectedText().isEmpty());
@@ -986,10 +1022,23 @@ void tst_QWebEnginePage::findText()
     {
         CallbackSpy<bool> callbackSpy;
         QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
-        m_view->findText("", 0, callbackSpy.ref());
+        m_view->findText("", {}, callbackSpy.ref());
         QTRY_VERIFY(callbackSpy.wasCalled());
         QTRY_COMPARE(signalSpy.count(), 1);
         QTRY_COMPARE(m_view->selectedText(), QString("foo"));
+    }
+
+    // Invoking startFinding operation for the same text twice. Without any wait, the second one
+    // should interrupt the first one.
+    {
+        QSignalSpy signalSpy(m_view->page(), &QWebEnginePage::findTextFinished);
+        m_view->findText("foo", {});
+        m_view->findText("foo", {});
+        QTRY_COMPARE(signalSpy.count(), 2);
+        QTRY_VERIFY(m_view->selectedText().isEmpty());
+
+        QCOMPARE(signalSpy.at(0).value(0).value<QWebEngineFindTextResult>().numberOfMatches(), 0);
+        QCOMPARE(signalSpy.at(1).value(0).value<QWebEngineFindTextResult>().numberOfMatches(), 1);
     }
 }
 
@@ -1039,11 +1088,11 @@ void tst_QWebEnginePage::findTextSuccessiveShouldCallAllCallbacks()
     QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
     m_view->setHtml(QString("<html><head></head><body><div>abcdefg abcdefg abcdefg abcdefg abcdefg</div></body></html>"));
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
-    m_page->findText("abcde", 0, spy1.ref());
-    m_page->findText("abcd", 0, spy2.ref());
-    m_page->findText("abc", 0, spy3.ref());
-    m_page->findText("ab", 0, spy4.ref());
-    m_page->findText("a", 0, spy5.ref());
+    m_page->findText("abcde", {}, spy1.ref());
+    m_page->findText("abcd", {}, spy2.ref());
+    m_page->findText("abc", {}, spy3.ref());
+    m_page->findText("ab", {}, spy4.ref());
+    m_page->findText("a", {}, spy5.ref());
     spy5.waitForResult();
     QVERIFY(spy1.wasCalled());
     QVERIFY(spy2.wasCalled());
@@ -1064,10 +1113,10 @@ void tst_QWebEnginePage::findTextCalledOnMatch()
 
     // CALLBACK
     bool callbackCalled = false;
-    m_view->page()->findText("foo", 0, [this, &callbackCalled](bool found) {
+    m_view->page()->findText("foo", {}, [this, &callbackCalled](bool found) {
         QVERIFY(found);
 
-        m_view->page()->findText("bar", 0, [&callbackCalled](bool found) {
+        m_view->page()->findText("bar", {}, [&callbackCalled](bool found) {
             QVERIFY(found);
             callbackCalled = true;
         });
@@ -1101,7 +1150,7 @@ void tst_QWebEnginePage::findTextActiveMatchOrdinal()
 
     // Iterate over all "foo" matches.
     for (int i = 1; i <= 3; ++i) {
-        m_view->page()->findText("foo", 0);
+        m_view->page()->findText("foo", {});
         QTRY_COMPARE(findTextSpy.count(), 1);
         result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
         QCOMPARE(result.numberOfMatches(), 3);
@@ -1109,7 +1158,7 @@ void tst_QWebEnginePage::findTextActiveMatchOrdinal()
     }
 
     // The last match is followed by the fist one.
-    m_view->page()->findText("foo", 0);
+    m_view->page()->findText("foo", {});
     QTRY_COMPARE(findTextSpy.count(), 1);
     result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
     QCOMPARE(result.numberOfMatches(), 3);
@@ -1123,14 +1172,14 @@ void tst_QWebEnginePage::findTextActiveMatchOrdinal()
     QCOMPARE(result.activeMatch(), 3);
 
     // Finding another word resets the activeMatch.
-    m_view->page()->findText("bar", 0);
+    m_view->page()->findText("bar", {});
     QTRY_COMPARE(findTextSpy.count(), 1);
     result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
     QCOMPARE(result.numberOfMatches(), 2);
     QCOMPARE(result.activeMatch(), 1);
 
     // If no match activeMatch is 0.
-    m_view->page()->findText("bla", 0);
+    m_view->page()->findText("bla", {});
     QTRY_COMPARE(findTextSpy.count(), 1);
     result = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
     QCOMPARE(result.numberOfMatches(), 0);
@@ -1668,156 +1717,51 @@ void tst_QWebEnginePage::openWindowDefaultSize()
     QCOMPARE(requestedGeometry.height(), 100);
 }
 
-class JavaScriptCallbackBase
+bool tst_QWebEnginePage::isFalseJavaScriptResult(QWebEnginePage *page, const QString &javaScript)
 {
-public:
-    JavaScriptCallbackBase()
-    {
-        if (watcher)
-            QMetaObject::invokeMethod(watcher, "add");
-    }
+    QVariant result = evaluateJavaScriptSync(page, javaScript);
+    return !result.isNull() && result.isValid() && result == QVariant(false);
+}
 
-    void operator() (const QVariant &result)
-    {
-        check(result);
-        if (watcher)
-            QMetaObject::invokeMethod(watcher, "notify");
-    }
-
-protected:
-    virtual void check(const QVariant &result) = 0;
-
-private:
-    friend class JavaScriptCallbackWatcher;
-    static QPointer<QObject> watcher;
-};
-
-QPointer<QObject> JavaScriptCallbackBase::watcher = 0;
-
-class JavaScriptCallback : public JavaScriptCallbackBase
+bool tst_QWebEnginePage::isTrueJavaScriptResult(QWebEnginePage *page, const QString &javaScript)
 {
-public:
-    JavaScriptCallback() { }
-    JavaScriptCallback(const QVariant& _expected) : expected(_expected) { }
+    QVariant result = evaluateJavaScriptSync(page, javaScript);
+    return !result.isNull() && result.isValid() && result == QVariant(true);
+}
 
-    void check(const QVariant& result) override
-    {
-        QVERIFY(result.isValid());
-        QCOMPARE(result, expected);
-    }
-
-private:
-    QVariant expected;
-};
-
-class JavaScriptCallbackNull : public JavaScriptCallbackBase
+bool tst_QWebEnginePage::isEmptyListJavaScriptResult(QWebEnginePage *page, const QString &javaScript)
 {
-public:
-    void check(const QVariant& result) override
-    {
-        QVERIFY(result.isNull());
-// FIXME: Returned null values are currently invalid QVariants.
-//        QVERIFY(result.isValid());
-    }
-};
-
-class JavaScriptCallbackUndefined : public JavaScriptCallbackBase
-{
-public:
-    void check(const QVariant& result) override
-    {
-        QVERIFY(result.isNull());
-        QVERIFY(!result.isValid());
-    }
-};
-
-class JavaScriptCallbackWatcher : public QObject
-{
-    Q_OBJECT
-public:
-    JavaScriptCallbackWatcher()
-    {
-        Q_ASSERT(!JavaScriptCallbackBase::watcher);
-        JavaScriptCallbackBase::watcher = this;
-    }
-
-    Q_INVOKABLE void add()
-    {
-        available++;
-    }
-
-    Q_INVOKABLE void notify()
-    {
-        called++;
-        if (called == available)
-            emit allCalled();
-    }
-
-    bool wait(int maxSeconds = 30)
-    {
-        if (called == available)
-            return true;
-
-        QTestEventLoop loop;
-        connect(this, SIGNAL(allCalled()), &loop, SLOT(exitLoop()));
-        loop.enterLoop(maxSeconds);
-        return !loop.timeout();
-    }
-
-signals:
-    void allCalled();
-
-private:
-    int available = 0;
-    int called = 0;
-};
-
+    QVariant result = evaluateJavaScriptSync(page, javaScript);
+    return !result.isNull() && result.isValid() && result == QList<QVariant>();
+}
 
 void tst_QWebEnginePage::runJavaScript()
 {
     TestPage page;
-    JavaScriptCallbackWatcher watcher;
-
-    JavaScriptCallback callbackBool(QVariant(false));
-    page.runJavaScript("false", QWebEngineCallback<const QVariant&>(callbackBool));
-
-    JavaScriptCallback callbackInt(QVariant(2));
-    page.runJavaScript("2", QWebEngineCallback<const QVariant&>(callbackInt));
-
-    JavaScriptCallback callbackDouble(QVariant(2.5));
-    page.runJavaScript("2.5", QWebEngineCallback<const QVariant&>(callbackDouble));
-
-    JavaScriptCallback callbackString(QVariant(QStringLiteral("Test")));
-    page.runJavaScript("\"Test\"", QWebEngineCallback<const QVariant&>(callbackString));
-
-    QVariantList list;
-    JavaScriptCallback callbackList(list);
-    page.runJavaScript("[]", QWebEngineCallback<const QVariant&>(callbackList));
-
+    QVariant result;
     QVariantMap map;
+
+    QVERIFY(isFalseJavaScriptResult(&page, "false"));
+    QCOMPARE(evaluateJavaScriptSync(&page, "2").toInt(), 2);
+    QCOMPARE(evaluateJavaScriptSync(&page, "2.5").toDouble(), 2.5);
+    QCOMPARE(evaluateJavaScriptSync(&page, "\"Test\"").toString(), "Test");
+    QVERIFY(isEmptyListJavaScriptResult(&page, "[]"));
+
     map.insert(QStringLiteral("test"), QVariant(2));
-    JavaScriptCallback callbackMap(map);
-    page.runJavaScript("var el = {\"test\": 2}; el", QWebEngineCallback<const QVariant&>(callbackMap));
+    QCOMPARE(evaluateJavaScriptSync(&page, "var el = {\"test\": 2}; el").toMap(), map);
 
-    JavaScriptCallbackNull callbackNull;
-    page.runJavaScript("null", QWebEngineCallback<const QVariant&>(callbackNull));
+    QVERIFY(evaluateJavaScriptSync(&page, "null").isNull());
 
-    JavaScriptCallbackUndefined callbackUndefined;
-    page.runJavaScript("undefined", QWebEngineCallback<const QVariant&>(callbackUndefined));
+    result = evaluateJavaScriptSync(&page, "undefined");
+    QVERIFY(result.isNull() && !result.isValid());
 
-    JavaScriptCallback callbackDate(QVariant(42.0));
-    page.runJavaScript("new Date(42000)", QWebEngineCallback<const QVariant&>(callbackDate));
+    QCOMPARE(evaluateJavaScriptSync(&page, "new Date(42000)").toDate(), QVariant(42.0).toDate());
+    QCOMPARE(evaluateJavaScriptSync(&page, "new ArrayBuffer(8)").toByteArray(), QByteArray(8, 0));
 
-    JavaScriptCallback callbackBlob(QVariant(QByteArray(8, 0)));
-    page.runJavaScript("new ArrayBuffer(8)", QWebEngineCallback<const QVariant&>(callbackBlob));
+    result = evaluateJavaScriptSync(&page, "(function(){})");
+    QVERIFY(result.isNull() && !result.isValid());
 
-    JavaScriptCallbackUndefined callbackFunction;
-    page.runJavaScript("(function(){})", QWebEngineCallback<const QVariant&>(callbackFunction));
-
-    JavaScriptCallback callbackPromise(QVariant(QVariantMap{}));
-    page.runJavaScript("new Promise(function(){})", QWebEngineCallback<const QVariant&>(callbackPromise));
-
-    QVERIFY(watcher.wait());
+    QCOMPARE(evaluateJavaScriptSync(&page, "new Promise(function(){})"), QVariant(QVariantMap{}));
 }
 
 void tst_QWebEnginePage::runJavaScriptDisabled()
@@ -1860,7 +1804,6 @@ void tst_QWebEnginePage::runJavaScriptFromSlot()
 
 void tst_QWebEnginePage::fullScreenRequested()
 {
-    JavaScriptCallbackWatcher watcher;
     QWebEngineView view;
     QWebEnginePage* page = view.page();
     view.show();
@@ -1871,9 +1814,8 @@ void tst_QWebEnginePage::fullScreenRequested()
     page->load(QUrl("qrc:///resources/fullscreen.html"));
     QTRY_COMPARE(loadSpy.count(), 1);
 
-    page->runJavaScript("document.webkitFullscreenEnabled", JavaScriptCallback(true));
-    page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(false));
-    QVERIFY(watcher.wait());
+    QTRY_VERIFY(isTrueJavaScriptResult(page, "document.webkitFullscreenEnabled"));
+    QVERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 
     // FullscreenRequest must be a user gesture
     bool acceptRequest = true;
@@ -1883,17 +1825,15 @@ void tst_QWebEnginePage::fullScreenRequested()
     });
 
     QTest::keyPress(view.focusProxy(), Qt::Key_Space);
-    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
-    page->runJavaScript("document.webkitExitFullscreen()", JavaScriptCallbackUndefined());
-    QVERIFY(watcher.wait());
+    QTRY_VERIFY(isTrueJavaScriptResult(page, "document.webkitIsFullScreen"));
+    page->runJavaScript("document.webkitExitFullscreen()");
+    QTRY_VERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 
     acceptRequest = false;
 
-    page->runJavaScript("document.webkitFullscreenEnabled", JavaScriptCallback(true));
+    QVERIFY(isTrueJavaScriptResult(page, "document.webkitFullscreenEnabled"));
     QTest::keyPress(view.focusProxy(), Qt::Key_Space);
-    QVERIFY(watcher.wait());
-    page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(false));
-    QVERIFY(watcher.wait());
+    QTRY_VERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 }
 
 void tst_QWebEnginePage::quotaRequested()
@@ -2138,7 +2078,7 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
 
     page.load(second);
     QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 20000);
-    QCOMPARE(page.url(), second);
+    QCOMPARE(page.url(), first);
     QCOMPARE(page.requestedUrl(), second);
     QVERIFY(!spy.at(1).first().toBool());
 }
@@ -2767,14 +2707,14 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
 
     evaluateJavaScriptSync(m_page, "window.history.pushState(null, 'push', 'navigate/to/here')");
     expectedUrlChangeCount++;
-    QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
+    QTRY_COMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), QUrl("qrc:/resources/navigate/to/here"));
     QCOMPARE(m_page->history()->count(), 2);
     QVERIFY(m_page->history()->canGoBack());
 
     evaluateJavaScriptSync(m_page, "window.history.replaceState(null, 'replace', 'another/location')");
     expectedUrlChangeCount++;
-    QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
+    QTRY_COMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), QUrl("qrc:/resources/navigate/to/another/location"));
     QCOMPARE(m_page->history()->count(), 2);
     QVERIFY(!m_page->history()->canGoForward());
@@ -2823,8 +2763,8 @@ void tst_QWebEnginePage::setUrlThenLoads()
     const QUrl urlToLoad2("qrc:/resources/test1.html");
 
     m_page->load(urlToLoad1);
-    QCOMPARE(m_page->url(), urlToLoad1);
-    QCOMPARE(m_page->requestedUrl(), urlToLoad1);
+    QTRY_COMPARE(m_page->url(), urlToLoad1);
+    QTRY_COMPARE(m_page->requestedUrl(), urlToLoad1);
     // baseUrlSync spins an event loop and this sometimes return the next result.
     // QCOMPARE(baseUrlSync(m_page), baseUrl);
     QTRY_COMPARE(startedSpy.count(), 2);
@@ -2838,7 +2778,7 @@ void tst_QWebEnginePage::setUrlThenLoads()
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
 
     m_page->load(urlToLoad2);
-    QCOMPARE(m_page->url(), urlToLoad2);
+    QCOMPARE(m_page->url(), urlToLoad1);
     QCOMPARE(m_page->requestedUrl(), urlToLoad2);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
     QTRY_COMPARE(startedSpy.count(), 3);
@@ -3352,7 +3292,7 @@ void tst_QWebEnginePage::dataURLFragment()
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
 
     QSignalSpy urlChangedSpy(m_page, SIGNAL(urlChanged(QUrl)));
-    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, 0, elementCenter(m_page, "link"));
+    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, {}, elementCenter(m_page, "link"));
     QVERIFY(urlChangedSpy.wait());
     QCOMPARE(m_page->url().fragment(), QStringLiteral("anchor"));
 
@@ -3362,7 +3302,7 @@ void tst_QWebEnginePage::dataURLFragment()
                     "</body></html>", QUrl("http://test.qt.io/mytest.html"));
     QTRY_COMPARE(loadFinishedSpy.count(), 2);
 
-    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, 0, elementCenter(m_page, "link"));
+    QTest::mouseClick(m_view->focusProxy(), Qt::LeftButton, {}, elementCenter(m_page, "link"));
     QVERIFY(urlChangedSpy.wait());
     QCOMPARE(m_page->url(), QUrl("http://test.qt.io/mytest.html#anchor"));
 }
@@ -3384,7 +3324,7 @@ void tst_QWebEnginePage::devTools()
     QCOMPARE(devToolsPage.devToolsPage(), nullptr);
     QCOMPARE(devToolsPage.inspectedPage(), &inspectedPage1);
 
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 30000);
     QVERIFY(spy.takeFirst().value(0).toBool());
 
     devToolsPage.setInspectedPage(&inspectedPage2);
@@ -3396,7 +3336,7 @@ void tst_QWebEnginePage::devTools()
     QCOMPARE(devToolsPage.devToolsPage(), nullptr);
     QCOMPARE(devToolsPage.inspectedPage(), &inspectedPage2);
 
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 30000);
     QVERIFY(spy.takeFirst().value(0).toBool());
 
     devToolsPage.setInspectedPage(nullptr);
@@ -3432,7 +3372,7 @@ void tst_QWebEnginePage::openLinkInDifferentProfile()
     QTRY_COMPARE(spy1.count(), 1);
     QVERIFY(spy1.takeFirst().value(0).toBool());
     page1.targetPage = &page2;
-    QTest::mouseClick(view.focusProxy(), Qt::MiddleButton, 0, elementCenter(&page1, "link"));
+    QTest::mouseClick(view.focusProxy(), Qt::MiddleButton, {}, elementCenter(&page1, "link"));
     QTRY_COMPARE(spy2.count(), 1);
     QVERIFY(spy2.takeFirst().value(0).toBool());
 }
@@ -3876,9 +3816,9 @@ void tst_QWebEnginePage::setLifecycleStateWithDevTools()
     // Ensure pages are initialized
     inspectedPage.load(QStringLiteral("about:blank"));
     devToolsPage.load(QStringLiteral("about:blank"));
-    QTRY_COMPARE(inspectedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(inspectedSpy.count(), 1, 30000);
     QCOMPARE(inspectedSpy.takeFirst().value(0), QVariant(true));
-    QTRY_COMPARE(devToolsSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(devToolsSpy.count(), 1, 30000);
     QCOMPARE(devToolsSpy.takeFirst().value(0), QVariant(true));
 
     // Open DevTools with Frozen inspectedPage
@@ -4389,7 +4329,7 @@ void tst_QWebEnginePage::customUserAgentInNewTab()
     QTRY_COMPARE(spy.count(), 1);
     QVERIFY(spy.takeFirst().value(0).toBool());
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), profile1.httpUserAgent());
-    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, elementCenter(&page, "link"));
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
     QTRY_VERIFY(page.newPage);
     QTRY_VERIFY(!lastUserAgent.isEmpty());
     QCOMPARE(lastUserAgent, profile1.httpUserAgent().toUtf8());
@@ -4404,10 +4344,48 @@ void tst_QWebEnginePage::customUserAgentInNewTab()
                  QString("'>link</a></body></html>"));
     QTRY_COMPARE(spy.count(), 1);
     QVERIFY(spy.takeFirst().value(0).toBool());
-    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, elementCenter(&page, "link"));
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, elementCenter(&page, "link"));
     QTRY_VERIFY(page.newPage);
     QTRY_VERIFY(!lastUserAgent.isEmpty());
     QCOMPARE(lastUserAgent, profile2.httpUserAgent().toUtf8());
+}
+
+void tst_QWebEnginePage::renderProcessCrashed()
+{
+    using Status = QWebEnginePage::RenderProcessTerminationStatus;
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    bool done = false;
+    Status status;
+    connect(&page, &QWebEnginePage::renderProcessTerminated, [&](Status newStatus) {
+        status = newStatus;
+        done = true;
+    });
+    page.load(QUrl("chrome://crash"));
+    QTRY_VERIFY_WITH_TIMEOUT(done, 20000);
+    // The status depends on whether stack traces are enabled. With
+    // --disable-in-process-stack-traces we get an AbnormalTerminationStatus,
+    // otherwise a CrashedTerminationStatus.
+    QVERIFY(status == QWebEnginePage::CrashedTerminationStatus ||
+            status == QWebEnginePage::AbnormalTerminationStatus);
+}
+
+void tst_QWebEnginePage::renderProcessPid()
+{
+    QCOMPARE(m_page->renderProcessPid(), 0);
+
+    m_page->load(QUrl("about:blank"));
+    QSignalSpy spyFinished(m_page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
+
+    QVERIFY(m_page->renderProcessPid() > 1);
+
+    bool crashed = false;
+    connect(m_page, &QWebEnginePage::renderProcessTerminated, [&]() { crashed = true; });
+    m_page->load(QUrl("chrome://crash"));
+    QTRY_VERIFY_WITH_TIMEOUT(crashed, 20000);
+
+    QCOMPARE(m_page->renderProcessPid(), 0);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

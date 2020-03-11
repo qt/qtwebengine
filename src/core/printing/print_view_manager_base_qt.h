@@ -98,9 +98,16 @@ protected:
     bool OnMessageReceived(const IPC::Message& message,
                            content::RenderFrameHost* render_frame_host) override;
 
-    // IPC Message handlers.
-    void OnDidPrintDocument(content::RenderFrameHost* render_frame_host,
-                            const PrintHostMsg_DidPrintDocument_Params& params);
+    // printing::PrintManager implementation:
+    void OnDidPrintDocument(content::RenderFrameHost *render_frame_host,
+                            const PrintHostMsg_DidPrintDocument_Params &params,
+                            std::unique_ptr<DelayedFrameDispatchHelper> helper) override;
+    void OnGetDefaultPrintSettings(content::RenderFrameHost* render_frame_host,
+                                   IPC::Message* reply_msg) override;
+    void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
+                         const PrintHostMsg_ScriptedPrint_Params& params,
+                         IPC::Message* reply_msg) override;
+
     void OnShowInvalidPrinterSettingsError();
 
     // Processes a NOTIFY_PRINT_JOB_EVENT notification.

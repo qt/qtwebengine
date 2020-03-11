@@ -61,6 +61,9 @@ class DEPSParser:
         #result.update(self.custom_vars or {})
         return result
 
+    def get_recursedeps(self):
+        return self.local_scope["recursedeps"]
+
     def createSubmodulesFromScope(self, scope, os):
         submodules = []
         for dep in scope:
@@ -225,6 +228,9 @@ class Submodule:
             # The submodule operations should be done relative to the current submodule's
             # supermodule.
             if self.topmost_supermodule_path_prefix:
+                if not os.path.isdir(self.path):
+                    print '-- skipping ' + self.path + ' as dir has been stripped. --'
+                    return
                 os.chdir(self.topmost_supermodule_path_prefix)
 
             if os.path.isdir(self.path):
@@ -309,22 +315,22 @@ class Submodule:
         os.chdir(oldCwd)
         return flattened_submodules
 
-    def readSubmodules(self):
+    def readSubmodules(self, use_deps=False):
         submodules = []
-        if self.ref:
+        if use_deps:
             submodules = resolver.readSubmodules()
             print 'DEPS file provides the following submodules:'
             for submodule in submodules:
                 print '{:<80}'.format(submodule.pathRelativeToTopMostSupermodule()) + '{:<120}'.format(submodule.url) + submodule.ref
-        else: # Try .gitmodules since no ref has been specified
+        else: # Try .gitmodules instead
             gitmodules_file_name = '.gitmodules'
             submodules = self.readSubmodulesFromGitModules(self, gitmodules_file_name, self.path)
         return submodules
 
     def initSubmodules(self):
+        submodules = self.readSubmodules()
         oldCwd = os.getcwd()
         os.chdir(self.path)
-        submodules = self.readSubmodules()
         for submodule in submodules:
             submodule.initialize()
         subprocessCall(['git', 'commit', '-a', '--amend', '--no-edit'])

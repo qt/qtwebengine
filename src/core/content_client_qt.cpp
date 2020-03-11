@@ -129,7 +129,8 @@ static QString getLocalAppDataDir()
 static const int32_t kPepperFlashPermissions = ppapi::PERMISSION_DEV |
                                                ppapi::PERMISSION_PRIVATE |
                                                ppapi::PERMISSION_BYPASS_USER_GESTURE |
-                                               ppapi::PERMISSION_FLASH;
+                                               ppapi::PERMISSION_FLASH |
+                                               ppapi::PERMISSION_SOCKET;
 
 namespace switches {
 const char kPpapiFlashPath[]    = "ppapi-flash-path";
@@ -286,11 +287,11 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         pluginPaths << ppapiPluginsPath() + QStringLiteral("/") + QString::fromLatin1(kWidevineCdmFileName);
 #endif
 #if defined(Q_OS_OSX)
-    QDir potentialWidevineDir("/Applications/Google Chrome.app/Contents/Versions");
+    QDir potentialWidevineDir("/Applications/Google Chrome.app/Contents/Frameworks");
     if (potentialWidevineDir.exists()) {
         QFileInfoList widevineVersionDirs = potentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot,
                                                                                QDir::Name | QDir::Reversed);
-        const QString library = QLatin1String("/Google Chrome Framework.framework/Versions/A/Libraries/"
+        const QString library = QLatin1String("/Versions/Current/Libraries/"
                                               "WidevineCdm/_platform_specific/mac_x64/libwidevinecdm.dylib");
         for (const QFileInfo &info : widevineVersionDirs)
             pluginPaths << info.absoluteFilePath() + library;
@@ -320,7 +321,12 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         }
     }
 #elif defined(Q_OS_LINUX)
-        pluginPaths << QStringLiteral("/opt/google/chrome/libwidevinecdm.so") // Google Chrome
+        pluginPaths << QStringLiteral("/opt/google/chrome/libwidevinecdm.so") // Old Google Chrome
+#if Q_PROCESSOR_WORDSIZE == 8
+                    << QStringLiteral("/opt/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so")
+#else
+                    << QStringLiteral("/opt/google/chrome/WidevineCdm/_platform_specific/linux_x86/libwidevinecdm.so")
+#endif
                     << QStringLiteral("/usr/lib/chromium/libwidevinecdm.so") // Arch
                     << QStringLiteral("/usr/lib/chromium-browser/libwidevinecdm.so") // Ubuntu/neon
                     << QStringLiteral("/usr/lib64/chromium/libwidevinecdm.so"); // OpenSUSE style
@@ -427,11 +433,6 @@ base::RefCountedMemory *ContentClientQt::GetDataResourceBytes(int resource_id)
 gfx::Image &ContentClientQt::GetNativeImageNamed(int resource_id)
 {
     return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
-}
-
-bool ContentClientQt::IsDataResourceGzipped(int resource_id)
-{
-    return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
 }
 
 base::string16 ContentClientQt::GetLocalizedString(int message_id)

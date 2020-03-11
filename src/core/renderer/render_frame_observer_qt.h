@@ -57,23 +57,22 @@ class WebCacheImpl;
 namespace QtWebEngineCore {
 
 class RenderFrameObserverQt
-        : public content::RenderFrameObserver
-        , public content::RenderFrameObserverTracker<RenderFrameObserverQt>
+    : public content::RenderFrameObserver
+    , public content::RenderFrameObserverTracker<RenderFrameObserverQt>
 {
 public:
-    explicit RenderFrameObserverQt(content::RenderFrame* render_frame,
-                                   web_cache::WebCacheImpl* web_cache_impl);
+    explicit RenderFrameObserverQt(content::RenderFrame *render_frame, web_cache::WebCacheImpl *web_cache_impl);
     ~RenderFrameObserverQt();
 
 #if QT_CONFIG(webengine_pepper_plugins)
-    void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
+    void DidCreatePepperPlugin(content::RendererPpapiHost *host) override;
 #endif
     void OnDestruct() override;
     void FrameDetached() override;
 
     bool isFrameDetached() const;
 
-    service_manager::BinderRegistry* registry() { return &registry_; }
+    service_manager::BinderRegistry *registry() { return &registry_; }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RenderFrameObserverQt);

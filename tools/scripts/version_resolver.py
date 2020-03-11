@@ -38,9 +38,9 @@ import json
 import urllib2
 import git_submodule as GitSubmodule
 
-chromium_version = '77.0.3865.98'
-chromium_branch = '3865'
-ninja_version = 'v1.9.0'
+chromium_version = '79.0.3945.139'
+chromium_branch = '3945'
+ninja_version = 'v1.8.2'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
 
@@ -88,17 +88,24 @@ def readSubmodules():
     for sub in git_submodules:
         submodule_dict[sub.path] = sub
 
+    extradeps_dirs = parser.get_recursedeps()
     # Add buildtools submodules
-    buildtools_deps_file_path = "buildtools/DEPS"
-    if (os.path.isfile(buildtools_deps_file_path)):
-        with open(buildtools_deps_file_path, 'r') as buildtools_deps_file:
-            buildtools_deps = buildtools_deps_file.read()
-            if buildtools_deps:
-                buildtools_parser = GitSubmodule.DEPSParser()
-                buildtools_parser.topmost_supermodule_path_prefix = './buildtools/'
-                buildtools_submodules = buildtools_parser.parse(buildtools_deps)
-                for sub in buildtools_submodules:
-                    submodule_dict[sub.path] = sub
+    extradeps_dirs.append('buildtools')
+
+    for extradeps_dir in extradeps_dirs:
+        if extradeps_dir.startswith('src/'):
+            extradeps_dir = extradeps_dir[4:]
+        extra_deps_file_path = extradeps_dir + '/DEPS'
+        if (os.path.isfile(extra_deps_file_path)):
+            with open(extra_deps_file_path, 'r') as extra_deps_file:
+                extra_deps = extra_deps_file.read()
+                if extra_deps:
+                    extradeps_parser = GitSubmodule.DEPSParser()
+                    extradeps_parser.topmost_supermodule_path_prefix = extradeps_dir
+                    extradeps_submodules = extradeps_parser.parse(extra_deps)
+                    for sub in extradeps_submodules:
+                        submodule_dict[sub.path] = sub
+
 
     # Remove unwanted upstream submodules
     for path in submodule_blacklist:
