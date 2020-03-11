@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(qLcS, "qt.pdf.search")
 
 static const int UpdateTimerInterval = 100;
-static const int ContextChars = 20;
+static const int ContextChars = 64;
 static const double CharacterHitTolerance = 6.0;
 
 QPdfSearchModel::QPdfSearchModel(QObject *parent)
@@ -95,13 +95,19 @@ QVariant QPdfSearchModel::data(const QModelIndex &index, int role) const
         return pi.index;
     case Role::Location:
         return d->searchResults[pi.page][pi.index].location();
-    case Role::Context:
-        return d->searchResults[pi.page][pi.index].context();
+    case Role::ContextBefore:
+        return d->searchResults[pi.page][pi.index].contextBefore();
+    case Role::ContextAfter:
+        return d->searchResults[pi.page][pi.index].contextAfter();
     case Role::_Count:
         break;
     }
-    if (role == Qt::DisplayRole)
-        return d->searchResults[pi.page][pi.index].context();
+    if (role == Qt::DisplayRole) {
+        const QString ret = d->searchResults[pi.page][pi.index].contextBefore() +
+                QLatin1String("<b>") + d->searchString + QLatin1String("</b>") +
+                d->searchResults[pi.page][pi.index].contextAfter();
+        return ret;
+    }
     return QVariant();
 }
 
@@ -124,9 +130,9 @@ void QPdfSearchModel::setSearchString(QString searchString)
         return;
 
     d->searchString = searchString;
-    emit searchStringChanged();
     beginResetModel();
     d->clearResults();
+    emit searchStringChanged();
     endResetModel();
 }
 
@@ -161,8 +167,8 @@ void QPdfSearchModel::setDocument(QPdfDocument *document)
         return;
 
     d->document = document;
-    emit documentChanged();
     d->clearResults();
+    emit documentChanged();
 }
 
 void QPdfSearchModel::timerEvent(QTimerEvent *event)
@@ -179,7 +185,7 @@ void QPdfSearchModel::timerEvent(QTimerEvent *event)
     d->doSearch(d->nextPageToUpdate++);
 }
 
-QPdfSearchModelPrivate::QPdfSearchModelPrivate()
+QPdfSearchModelPrivate::QPdfSearchModelPrivate() : QAbstractItemModelPrivate()
 {
 }
 
@@ -246,7 +252,7 @@ bool QPdfSearchModelPrivate::doSearch(int page)
             }
             qCDebug(qLcS) << rects.last() << "char idx" << startIndex << "->" << endIndex;
         }
-        QString context;
+        QString contextBefore, contextAfter;
         if (startIndex >= 0 || endIndex >= 0) {
             startIndex = qMax(0, startIndex - ContextChars);
             endIndex += ContextChars;
@@ -255,13 +261,21 @@ bool QPdfSearchModelPrivate::doSearch(int page)
                 QVector<ushort> buf(count + 1);
                 int len = FPDFText_GetText(textPage, startIndex, count, buf.data());
                 Q_ASSERT(len - 1 <= count); // len is number of characters written, including the terminator
-                context = QString::fromUtf16(buf.constData(), len - 1);
-                context = context.replace(QLatin1Char('\n'), QLatin1Char(' '));
-                context = context.replace(searchString,
-                                          QLatin1String("<b>") + searchString + QLatin1String("</b>"));
+                QString context = QString::fromUtf16(buf.constData(), len - 1);
+                context = context.replace(QLatin1Char('\n'), QStringLiteral("\u23CE"));
+                context = context.remove(QLatin1Char('\r'));
+                // try to find the search string near the middle of the context if possible
+                int si = context.indexOf(searchString, ContextChars - 5, Qt::CaseInsensitive);
+                if (si < 0)
+                    si = context.indexOf(searchString, Qt::CaseInsensitive);
+                if (si < 0)
+                    qWarning() << "search string" << searchString << "not found in context" << context;
+                contextBefore = context.mid(0, si);
+                contextAfter = context.mid(si + searchString.length());
             }
         }
-        newSearchResults << QPdfSearchResult(page, rects, context);
+        if (!rects.isEmpty())
+            newSearchResults << QPdfSearchResult(page, rects, contextBefore, contextAfter);
     }
     FPDFText_FindClose(sh);
     FPDFText_ClosePage(textPage);
