@@ -94,13 +94,14 @@ class InterceptedRequest : public network::mojom::URLLoader
 {
 public:
     InterceptedRequest(int process_id, uint64_t request_id, int32_t routing_id, uint32_t options,
-                       const network::ResourceRequest &request, const GURL &top_document_url,
+                       const network::ResourceRequest &request,
                        const net::MutableNetworkTrafficAnnotationTag &traffic_annotation,
                        ProfileIODataQt *profileData,
                        network::mojom::URLLoaderRequest loader_request, network::mojom::URLLoaderClientPtr client,
                        network::mojom::URLLoaderFactoryPtr target_factory);
     ~InterceptedRequest() override;
 
+    void Start();
     void Restart();
     void InterceptOnUIThread();
 
@@ -170,7 +171,7 @@ private:
 };
 
 InterceptedRequest::InterceptedRequest(int process_id, uint64_t request_id, int32_t routing_id, uint32_t options,
-                                       const network::ResourceRequest &request, const GURL &top_document_url,
+                                       const network::ResourceRequest &request,
                                        const net::MutableNetworkTrafficAnnotationTag &traffic_annotation,
                                        ProfileIODataQt *profileData,
                                        network::mojom::URLLoaderRequest loader_request,
@@ -180,7 +181,6 @@ InterceptedRequest::InterceptedRequest(int process_id, uint64_t request_id, int3
     , request_id_(request_id)
     , routing_id_(routing_id)
     , options_(options)
-    , m_topDocumentUrl(top_document_url)
     , request_(request)
     , traffic_annotation_(traffic_annotation)
     , m_profileData(profileData)
@@ -201,6 +201,31 @@ InterceptedRequest::InterceptedRequest(int process_id, uint64_t request_id, int3
 InterceptedRequest::~InterceptedRequest()
 {
     m_weakFactory.InvalidateWeakPtrs();
+}
+
+void InterceptedRequest::Start()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    content::FrameTreeNode *frameTreeNode = nullptr;
+    if (process_id_) {
+        content::RenderFrameHostImpl *renderFrameHost = content::RenderFrameHostImpl::FromID(process_id_,
+                                                                                             request_.render_frame_id);
+        if (renderFrameHost)
+            frameTreeNode = renderFrameHost->frame_tree_node();
+    } else {
+        frameTreeNode = content::FrameTreeNode::GloballyFindByID(request_.render_frame_id);
+    }
+    // Follows a similar path to the root as RenderFrameHostImpl::CalculateSiteForCookies()
+    if (frameTreeNode && frameTreeNode->frame_tree()
+            && frameTreeNode->frame_tree()->root()
+            && frameTreeNode->frame_tree()->root()->current_frame_host())
+        m_topDocumentUrl = frameTreeNode->frame_tree()->root()->current_frame_host()->GetLastCommittedURL();
+    else
+        LOG(INFO) << "InterceptedRequest::Start() - null frameTreeNode or path to top frame";
+
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&InterceptedRequest::Restart, m_weakPtr));
 }
 
 void InterceptedRequest::Restart()
@@ -466,10 +491,9 @@ void InterceptedRequest::SendErrorAndCompleteImmediately(int error_code)
 
 ProxyingURLLoaderFactoryQt::ProxyingURLLoaderFactoryQt(int process_id,
                                                        content::ResourceContext *resourceContext,
-                                                       content::RenderFrameHostImpl *host,
                                                        mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
                                                        network::mojom::URLLoaderFactoryPtrInfo target_factory_info)
-    : m_processId(process_id), m_resourceContext(resourceContext), m_renderFrameHost(host), m_weakFactory(this)
+    : m_processId(process_id), m_resourceContext(resourceContext), m_weakFactory(this)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (target_factory_info) {
@@ -490,14 +514,13 @@ ProxyingURLLoaderFactoryQt::~ProxyingURLLoaderFactoryQt()
 // static
 void ProxyingURLLoaderFactoryQt::CreateProxy(int process_id,
                                              content::ResourceContext *resourceContext,
-                                             content::RenderFrameHostImpl *host,
                                              mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
                                              network::mojom::URLLoaderFactoryPtrInfo target_factory_info)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     // Will manage its own lifetime
-    new ProxyingURLLoaderFactoryQt(process_id, resourceContext, host, std::move(loader_receiver), std::move(target_factory_info));
+    new ProxyingURLLoaderFactoryQt(process_id, resourceContext, std::move(loader_receiver), std::move(target_factory_info));
 }
 
 void ProxyingURLLoaderFactoryQt::CreateLoaderAndStart(network::mojom::URLLoaderRequest loader, int32_t routing_id,
@@ -522,20 +545,13 @@ void ProxyingURLLoaderFactoryQt::CreateLoaderAndStart(network::mojom::URLLoaderR
     if (m_targetFactory)
         m_targetFactory->Clone(mojo::MakeRequest(&target_factory_clone));
 
-    // Follows a similar path to the root as RenderFrameHostImpl::CalculateSiteForCookies()
-    GURL top_document_url;
-    if (m_renderFrameHost)
-        top_document_url = m_renderFrameHost->frame_tree_node()->frame_tree()->root()->current_frame_host()->GetLastCommittedURL();
-    else
-        LOG(INFO) << "ProxyingURLLoaderFactoryQt::CreateLoaderAndStart() - null m_renderFrameHost, shouldn't happen";
-
     // Will manage its own lifetime
     InterceptedRequest *req = new InterceptedRequest(m_processId, request_id, routing_id, options, request,
-                                                     top_document_url,
                                                      traffic_annotation, profileIOData,
                                                      std::move(loader), std::move(client),
                                                      std::move(target_factory_clone));
-    req->Restart();
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&InterceptedRequest::Start, base::Unretained(req)));
 }
 
 void ProxyingURLLoaderFactoryQt::OnTargetFactoryError()

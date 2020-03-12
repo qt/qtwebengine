@@ -60,7 +60,6 @@
 // found in the LICENSE file.
 
 namespace content {
-class RenderFrameHostImpl;
 class ResourceContext;
 }
 
@@ -70,14 +69,12 @@ class ProxyingURLLoaderFactoryQt : public network::mojom::URLLoaderFactory
 {
 public:
     ProxyingURLLoaderFactoryQt(int process_id, content::ResourceContext *resourceContext,
-                               content::RenderFrameHostImpl *host,
                                mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
                                network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
 
     ~ProxyingURLLoaderFactoryQt() override;
 
     static void CreateProxy(int process_id, content::ResourceContext *resourceContext,
-                            content::RenderFrameHostImpl *host,
                             mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
                             network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
 
@@ -97,7 +94,6 @@ private:
     network::mojom::URLLoaderFactoryPtr m_targetFactory;
 
     content::ResourceContext *m_resourceContext;
-    content::RenderFrameHostImpl *m_renderFrameHost;
 
     base::WeakPtrFactory<ProxyingURLLoaderFactoryQt> m_weakFactory;
 

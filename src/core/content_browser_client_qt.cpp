@@ -1200,7 +1200,6 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
     base::PostTask(FROM_HERE, { content::BrowserThread::IO },
                    base::BindOnce(&ProxyingURLLoaderFactoryQt::CreateProxy, process_id,
                                   browser_context->GetResourceContext(),
-                                  static_cast<content::RenderFrameHostImpl*>(frame),
                                   std::move(proxied_receiver),
                                   std::move(target_factory_info)));
     return true;
