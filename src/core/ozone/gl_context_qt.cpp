@@ -81,6 +81,15 @@ void GLContextHelper::initialize()
 {
     if (!contextHelper)
         contextHelper = new GLContextHelper;
+#if QT_CONFIG(opengl)
+    if (QGuiApplication::platformName() == QLatin1String("offscreen")){
+        contextHelper->m_robustness = false;
+        return;
+    }
+
+    if (QOpenGLContext *context = qt_gl_global_share_context())
+        contextHelper->m_robustness = context->format().testOption(QSurfaceFormat::ResetNotification);
+#endif
 }
 
 void GLContextHelper::destroy()
@@ -165,15 +174,9 @@ QFunctionPointer GLContextHelper::getEglGetProcAddress()
 
 bool GLContextHelper::isCreateContextRobustnessSupported()
 {
-#if QT_CONFIG(opengl)
-    if (QGuiApplication::platformName() == QLatin1String("offscreen"))
-        return false;
-
-    if (QOpenGLContext *context = qt_gl_global_share_context())
-        return context->format().testOption(QSurfaceFormat::ResetNotification);
-#endif
-    return false;
+    return contextHelper->m_robustness;
 }
+
 QT_END_NAMESPACE
 
 #if defined(OS_WIN)

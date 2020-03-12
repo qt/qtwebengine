@@ -344,12 +344,13 @@ void WebEngineContext::destroy()
     // This should deliver all nessesery calls of DeleteSoon from PostTask
     while (delegate->DoWork()) { }
 
-    GLContextHelper::destroy();
     m_devtoolsServer.reset();
     m_runLoop->AfterRun();
 
     // Destroy the main runner, this stops main message loop
     m_browserRunner.reset();
+    // gpu thread is no longer around, so no more cotnext is used, remove the helper
+    GLContextHelper::destroy();
 
     // These would normally be in the content-runner, but we allocated them separately:
     m_startupData.reset();

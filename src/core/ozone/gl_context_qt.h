@@ -70,6 +70,7 @@ private:
     Q_INVOKABLE bool initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface, gl::GLContextAttribs attribs);
 
     static GLContextHelper* contextHelper;
+    bool m_robustness = false;
 };
 
 QT_END_NAMESPACE
