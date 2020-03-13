@@ -46,26 +46,21 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
-#include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
-#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
-#include "net/proxy_resolution/proxy_config_service.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "services/network/proxy_service_mojo.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 
 #include "net/client_cert_override.h"
 #include "net/client_cert_store_data.h"
 #include "net/cookie_monster_delegate_qt.h"
-#include "net/proxy_config_service_qt.h"
 #include "net/system_network_context_manager.h"
 #include "profile_qt.h"
 #include "resource_context_qt.h"
 #include "type_conversion.h"
 
-#include <mutex>
+#include <QDebug>
 #include <QVariant>
+
+#include <mutex>
 
 namespace QtWebEngineCore {
 
@@ -87,7 +82,6 @@ ProfileIODataQt::~ProfileIODataQt()
         DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     m_resourceContext.reset();
-    delete m_proxyConfigService.fetchAndStoreAcquire(0);
 }
 
 QPointer<ProfileAdapter> ProfileIODataQt::profileAdapter()
@@ -151,7 +145,6 @@ void ProfileIODataQt::initializeOnIOThread()
     m_weakPtr = m_weakPtrFactory.GetWeakPtr();
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     generateAllStorage();
-//    generateJobFactory();
     setGlobalCertificateVerification();
     m_initialized = true;
 }
@@ -163,10 +156,7 @@ void ProfileIODataQt::initializeOnUIThread()
     m_resourceContext.reset(new ResourceContextQt(this));
     m_cookieDelegate = new CookieMonsterDelegateQt();
     m_cookieDelegate->setClient(m_profile->profileAdapter()->cookieStore());
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-        m_proxyConfigMonitor.reset(new ProxyConfigMonitor(m_profile->GetPrefs()));
-    else
-        createProxyConfig();
+    m_proxyConfigMonitor.reset(new ProxyConfigMonitor(m_profile->GetPrefs()));
 }
 
 void ProfileIODataQt::generateAllStorage()
@@ -236,29 +226,9 @@ void ProfileIODataQt::requestStorageGeneration() {
     const std::lock_guard<QRecursiveMutex> lock(m_mutex);
     if (m_initialized && !m_updateAllStorage) {
         m_updateAllStorage = true;
-        if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-            createProxyConfig();
         base::PostTask(FROM_HERE, {content::BrowserThread::IO},
                        base::BindOnce(&ProfileIODataQt::generateAllStorage, m_weakPtr));
     }
-}
-
-// TODO(miklocek): mojofy ProxyConfigServiceQt
-void ProfileIODataQt::createProxyConfig()
-{
-    Q_ASSERT(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
-    // We must create the proxy config service on the UI loop on Linux because it
-    // must synchronously run on the glib message loop. This will be passed to
-    // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
-    Q_ASSERT(m_proxyConfigService == 0);
-    m_proxyConfigService =
-            new ProxyConfigServiceQt(
-                    m_profileAdapter->profile()->GetPrefs(),
-                    base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}));
-    //pass interface to io thread
-    m_proxyResolverFactoryInterface = ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
 }
 
 void ProfileIODataQt::updateStorageSettings()
@@ -426,7 +396,6 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
     network_context_params->enable_referrers = true;
     // Encrypted cookies requires os_crypt, which currently has issues for us on Linux.
     network_context_params->enable_encrypted_cookies = false;
-//    network_context_params->proxy_resolver_factory = std::move(m_proxyResolverFactoryInterface);
 
     network_context_params->http_cache_enabled = m_httpCacheType != ProfileAdapter::NoCache;
     network_context_params->http_cache_max_size = m_httpCacheMaxSize;
@@ -455,11 +424,9 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
     network_context_params->enforce_chrome_ct_policy = false;
     network_context_params->primary_network_context = m_useForGlobalCertificateVerification;
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-        // Should be initialized with existing per-profile CORS access lists.
-        network_context_params->cors_origin_access_list =
-            m_profile->GetSharedCorsOriginAccessList()->GetOriginAccessList().CreateCorsOriginAccessPatternsList();
-    }
+    // Should be initialized with existing per-profile CORS access lists.
+    network_context_params->cors_origin_access_list =
+        m_profile->GetSharedCorsOriginAccessList()->GetOriginAccessList().CreateCorsOriginAccessPatternsList();
 
     m_proxyConfigMonitor->AddToNetworkContextParams(network_context_params.get());
 

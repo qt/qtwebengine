@@ -40,14 +40,13 @@
 #ifndef PROFILE_IO_DATA_QT_H
 #define PROFILE_IO_DATA_QT_H
 
-#include "profile_adapter.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/proxy_config_monitor.h"
 #include "services/network/cookie_settings.h"
-#include "services/network/public/mojom/network_context.mojom.h"
-#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
+
+#include "net/proxy_config_monitor.h"
+#include "profile_adapter.h"
 
 #include <QtCore/QString>
 #include <QtCore/QPointer>
@@ -55,7 +54,7 @@
 
 namespace net {
 class ClientCertStore;
-class ProxyConfigService;
+class URLRequestContext;
 }
 
 namespace extensions {
@@ -125,7 +124,6 @@ public:
     void updateJobFactory(); // runs on ui thread
     void updateRequestInterceptor(); // runs on ui thread
     void requestStorageGeneration(); //runs on ui thread
-    void createProxyConfig(); //runs on ui thread
     void updateUsedForGlobalCertificateVerification(); // runs on ui thread
     bool hasPageInterceptors();
 
@@ -152,8 +150,6 @@ private:
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
     content::ProtocolHandlerMap m_protocolHandlers;
-    mojo::InterfacePtrInfo<proxy_resolver::mojom::ProxyResolverFactory> m_proxyResolverFactoryInterface;
-    QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
     QPointer<ProfileAdapter> m_profileAdapter; // never dereferenced in IO thread and it is passed by qpointer
     ProfileAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;
     std::unique_ptr<ProxyConfigMonitor> m_proxyConfigMonitor;
