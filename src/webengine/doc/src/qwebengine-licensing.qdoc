@@ -26,7 +26,6 @@
 ****************************************************************************/
 
 /*!
-\contentspage qtwebengine-licensing.html
 \group qtwebengine-licensing
 \title Qt WebEngine Licensing
 
@@ -43,7 +42,6 @@ Third party licenses included in the sources are:
 */
 
 /*!
-\contentspage qtwebengine-licensing.html
 \page qtwebengine-3rdparty-chromium-global.html attribution
 \ingroup qtwebengine-licensing
 \title Chromium License
