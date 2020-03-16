@@ -31,7 +31,6 @@
 #include <QMenu>
 #include <QMimeDatabase>
 #include <QNetworkProxy>
-#include <QOpenGLWidget>
 #include <QPaintEngine>
 #include <QPushButton>
 #include <QScreen>
