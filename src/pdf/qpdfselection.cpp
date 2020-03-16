@@ -82,8 +82,19 @@ QPdfSelection::QPdfSelection(const QPdfSelection &other)
 {
 }
 
+QPdfSelection::QPdfSelection(QPdfSelection &&other) noexcept
+  : d(std::move(other.d))
+{
+}
+
 QPdfSelection::~QPdfSelection()
 {
+}
+
+QPdfSelection &QPdfSelection::operator=(const QPdfSelection &other)
+{
+    d = other.d;
+    return *this;
 }
 
 /*!

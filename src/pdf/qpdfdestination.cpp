@@ -73,6 +73,11 @@ QPdfDestination::QPdfDestination(const QPdfDestination &other)
 {
 }
 
+QPdfDestination::QPdfDestination(QPdfDestination &&other) noexcept
+  : d(std::move(other.d))
+{
+}
+
 QPdfDestination::~QPdfDestination()
 {
 }

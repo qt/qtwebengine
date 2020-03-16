@@ -56,10 +56,11 @@ class Q_PDF_EXPORT QPdfSelection
     Q_PROPERTY(QString text READ text)
 
 public:
-    QPdfSelection(const QPdfSelection &other);
     ~QPdfSelection();
+    QPdfSelection(const QPdfSelection &other);
     QPdfSelection &operator=(const QPdfSelection &other);
-    inline QPdfSelection &operator=(QPdfSelection &&other) noexcept { swap(other); return *this; }
+    QPdfSelection(QPdfSelection &&other) noexcept;
+    QPdfSelection &operator=(QPdfSelection &&other) noexcept { swap(other); return *this; }
     void swap(QPdfSelection &other) noexcept { d.swap(other.d); }
     bool isValid() const;
     QVector<QPolygonF> bounds() const;
