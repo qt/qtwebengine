@@ -37,11 +37,10 @@
 #ifndef QPDFSEARCHRESULT_H
 #define QPDFSEARCHRESULT_H
 
-#include "qpdfdestination.h"
-
 #include <QtCore/qdebug.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qvector.h>
+#include <QtPdf/qpdfdestination.h>
 
 QT_BEGIN_NAMESPACE
 

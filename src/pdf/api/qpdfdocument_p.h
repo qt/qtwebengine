@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -53,10 +53,10 @@
 #include "third_party/pdfium/public/fpdfview.h"
 #include "third_party/pdfium/public/fpdf_dataavail.h"
 
-#include <qbuffer.h>
-#include <qmutex.h>
-#include <qnetworkreply.h>
-#include <qpointer.h>
+#include <QtCore/qbuffer.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qpointer.h>
+#include <QtNetwork/qnetworkreply.h>
 
 QT_BEGIN_NAMESPACE
 

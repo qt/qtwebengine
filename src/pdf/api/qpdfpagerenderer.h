@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -38,9 +39,10 @@
 #define QPDFPAGERENDERER_H
 
 #include <QtPdf/qtpdfglobal.h>
-#include <QObject>
-#include <QtPdf/QPdfDocumentRenderOptions>
-#include <QSize>
+
+#include <QtCore/qobject.h>
+#include <QtCore/qsize.h>
+#include <QtPdf/qpdfdocumentrenderoptions.h>
 
 QT_BEGIN_NAMESPACE
 

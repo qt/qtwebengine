@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -38,10 +38,11 @@
 #define QPDFDOCUMENT_H
 
 #include <QtPdf/qtpdfglobal.h>
-#include <QImage>
-#include <QObject>
-#include <QtPdf/QPdfDocumentRenderOptions>
-#include "qpdfselection.h"
+
+#include <QtCore/qobject.h>
+#include <QtGui/qimage.h>
+#include <QtPdf/qpdfdocumentrenderoptions.h>
+#include <QtPdf/qpdfselection.h>
 
 QT_BEGIN_NAMESPACE
 

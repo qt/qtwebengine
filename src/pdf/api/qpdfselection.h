@@ -38,10 +38,11 @@
 #define QPDFSELECTION_H
 
 #include <QtPdf/qtpdfglobal.h>
-#include <QClipboard>
-#include <QExplicitlySharedDataPointer>
-#include <QObject>
-#include <QPolygonF>
+
+#include <QtCore/qobject.h>
+#include <QtCore/qshareddata.h>
+#include <QtGui/qclipboard.h>
+#include <QtGui/qpolygon.h>
 
 QT_BEGIN_NAMESPACE
 
