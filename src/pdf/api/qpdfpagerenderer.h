@@ -57,15 +57,15 @@ class Q_PDF_EXPORT QPdfPageRenderer : public QObject
     Q_PROPERTY(RenderMode renderMode READ renderMode WRITE setRenderMode NOTIFY renderModeChanged)
 
 public:
-    enum RenderMode
+    enum class RenderMode
     {
-        MultiThreadedRenderMode,
-        SingleThreadedRenderMode
+        MultiThreaded,
+        SingleThreaded
     };
     Q_ENUM(RenderMode)
 
     explicit QPdfPageRenderer(QObject *parent = nullptr);
-    ~QPdfPageRenderer();
+    ~QPdfPageRenderer() override;
 
     RenderMode renderMode() const;
     void setRenderMode(RenderMode mode);

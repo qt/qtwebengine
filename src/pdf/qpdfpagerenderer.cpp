@@ -79,7 +79,7 @@ public:
     void requestFinished(int page, QSize imageSize, const QImage &image,
                          QPdfDocumentRenderOptions options, quint64 requestId);
 
-    QPdfPageRenderer::RenderMode m_renderMode = QPdfPageRenderer::SingleThreadedRenderMode;
+    QPdfPageRenderer::RenderMode m_renderMode = QPdfPageRenderer::RenderMode::SingleThreaded;
     QPointer<QPdfDocument> m_document;
 
     struct PageRequest
@@ -164,6 +164,8 @@ void QPdfPageRendererPrivate::handleNextRequest()
 
 void QPdfPageRendererPrivate::requestFinished(int page, QSize imageSize, const QImage &image, QPdfDocumentRenderOptions options, quint64 requestId)
 {
+    Q_UNUSED(image);
+    Q_UNUSED(requestId);
     const auto it = std::find_if(m_pendingRequests.begin(), m_pendingRequests.end(),
                                  [page, imageSize, options](const PageRequest &request){ return request.pageNumber == page && request.imageSize == imageSize && request.options == options; });
 
@@ -180,8 +182,8 @@ void QPdfPageRendererPrivate::requestFinished(int page, QSize imageSize, const Q
 
     The QPdfPageRenderer contains a queue that collects all render requests that are invoked through
     requestPage(). Depending on the configured RenderMode the QPdfPageRenderer processes this queue
-    in the main UI thread on next event loop invocation (SingleThreadedRenderMode) or in a separate worker thread
-    (MultiThreadedRenderMode) and emits the result through the pageRendered() signal for each request once
+    in the main UI thread on next event loop invocation (\c RenderMode::SingleThreaded) or in a separate worker thread
+    (\c RenderMode::MultiThreaded) and emits the result through the pageRendered() signal for each request once
     the rendering is done.
 
     \sa QPdfDocument
@@ -218,8 +220,8 @@ QPdfPageRenderer::~QPdfPageRenderer()
 
     This enum describes how the pages are rendered.
 
-    \value MultiThreadedRenderMode All pages are rendered in a separate worker thread.
-    \value SingleThreadedRenderMode All pages are rendered in the main UI thread (default).
+    \value MultiThreaded All pages are rendered in a separate worker thread.
+    \value SingleThreaded All pages are rendered in the main UI thread (default).
 
     \sa renderMode(), setRenderMode()
 */
@@ -228,7 +230,7 @@ QPdfPageRenderer::~QPdfPageRenderer()
     \property QPdfPageRenderer::renderMode
     \brief The mode the renderer uses to render the pages.
 
-    By default, this property is \c QPdfPageRenderer::SingleThreaded.
+    By default, this property is \c RenderMode::SingleThreaded.
 
     \sa setRenderMode(), RenderMode
 */
@@ -260,7 +262,7 @@ void QPdfPageRenderer::setRenderMode(RenderMode mode)
     d->m_renderMode = mode;
     emit renderModeChanged(d->m_renderMode);
 
-    if (d->m_renderMode == MultiThreadedRenderMode) {
+    if (d->m_renderMode == RenderMode::MultiThreaded) {
         d->m_renderThread = new QThread;
         d->m_renderWorker->moveToThread(d->m_renderThread);
         d->m_renderThread->start();
@@ -332,7 +334,7 @@ quint64 QPdfPageRenderer::requestPage(int pageNumber, QSize imageSize,
     if (!d->m_document || d->m_document->status() != QPdfDocument::Ready)
         return 0;
 
-    for (const auto request : qAsConst(d->m_pendingRequests)) {
+    for (const auto &request : qAsConst(d->m_pendingRequests)) {
         if (request.pageNumber == pageNumber
             && request.imageSize == imageSize
             && request.options == options)

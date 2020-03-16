@@ -57,7 +57,7 @@ void tst_QPdfPageRenderer::defaultValues()
     QPdfPageRenderer pageRenderer;
 
     QCOMPARE(pageRenderer.document(), nullptr);
-    QCOMPARE(pageRenderer.renderMode(), QPdfPageRenderer::SingleThreadedRenderMode);
+    QCOMPARE(pageRenderer.renderMode(), QPdfPageRenderer::RenderMode::SingleThreaded);
 }
 
 void tst_QPdfPageRenderer::withNoDocument()
@@ -110,7 +110,7 @@ void tst_QPdfPageRenderer::withLoadedDocumentMultiThreaded()
 
     QPdfPageRenderer pageRenderer;
     pageRenderer.setDocument(&document);
-    pageRenderer.setRenderMode(QPdfPageRenderer::MultiThreadedRenderMode);
+    pageRenderer.setRenderMode(QPdfPageRenderer::RenderMode::MultiThreaded);
 
     QCOMPARE(document.load(QFINDTESTDATA("pdf-sample.pagerenderer.pdf")), QPdfDocument::NoError);
 
@@ -152,7 +152,7 @@ void tst_QPdfPageRenderer::switchingRenderMode()
     pageRenderedSpy.clear();
 
     // switch to multi threaded
-    pageRenderer.setRenderMode(QPdfPageRenderer::MultiThreadedRenderMode);
+    pageRenderer.setRenderMode(QPdfPageRenderer::RenderMode::MultiThreaded);
 
     const quint64 secondRequestId = pageRenderer.requestPage(0, imageSize);
 
@@ -167,7 +167,7 @@ void tst_QPdfPageRenderer::switchingRenderMode()
     pageRenderedSpy.clear();
 
     // switch back to single threaded
-    pageRenderer.setRenderMode(QPdfPageRenderer::SingleThreadedRenderMode);
+    pageRenderer.setRenderMode(QPdfPageRenderer::RenderMode::SingleThreaded);
 
     const quint64 thirdRequestId = pageRenderer.requestPage(0, imageSize);
 
