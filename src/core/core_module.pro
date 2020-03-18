@@ -107,7 +107,7 @@ resources.files = $$REPACK_DIR/qtwebengine_resources.pak \
 
 icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
 
-!debug_and_release|!build_all|CONFIG(release, debug|release) {
+!qtConfig(debug_and_release)|!qtConfig(build_all)|CONFIG(release, debug|release) {
     qtConfig(framework) {
         locales.version = Versions
         locales.path = Resources/qtwebengine_locales
@@ -146,7 +146,7 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
     }
 }
 
-!build_pass:debug_and_release {
+!build_pass:qtConfig(debug_and_release) {
     # Special GNU make target that ensures linking isn't done for both debug and release builds
     # at the same time.
     notParallel.target = .NOTPARALLEL
