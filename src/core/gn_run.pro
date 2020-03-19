@@ -65,3 +65,8 @@ build_pass|!debug_and_release {
     notParallel.target = .NOTPARALLEL
     QMAKE_EXTRA_TARGETS += notParallel
 }
+
+build_pass:CONFIG(debug, debug|release) {
+    TARGET = gn_run_debug
+}
+
