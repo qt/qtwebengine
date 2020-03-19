@@ -56,12 +56,17 @@ defineTest(usingMSVC32BitCrossCompiler) {
     }
     CL_DIR = $$system_path($$CL_DIR)
     CL_DIR = $$split(CL_DIR, \\)
-    CL_PLATFORM = $$last(CL_DIR)
+    CL_PLATFORM = $$take_last(CL_DIR)
     equals(CL_PLATFORM, amd64_x86): return(true)
+    equals(CL_PLATFORM, x86)|equals(CL_PLATFORM, x64) {
+        CL_PLATFORM = $$take_last(CL_DIR)
+        equals(CL_PLATFORM, HostX64): return(true)
+    }
     return(false)
 }
 
 msvc:contains(QT_ARCH, "i386"):!usingMSVC32BitCrossCompiler() {
+    warning(Full debug info is disabled for chromium due to 32bit compiler)
     # The 32 bit MSVC linker runs out of memory if we do not remove all debug information.
     force_debug_info: gn_args -= symbol_level=1
     gn_args *= symbol_level=0
