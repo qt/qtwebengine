@@ -1882,9 +1882,9 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation()
     gfx::SizeF contentsSize = metadata.root_layer_size;
     std::swap(m_lastScrollOffset, scrollOffset);
     std::swap(m_lastContentsSize, contentsSize);
-    if (scrollOffset != m_lastScrollOffset)
+    if (m_adapterClient && scrollOffset != m_lastScrollOffset)
         m_adapterClient->updateScrollPosition(toQt(m_lastScrollOffset));
-    if (contentsSize != m_lastContentsSize)
+    if (m_adapterClient && contentsSize != m_lastContentsSize)
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
 }
 
