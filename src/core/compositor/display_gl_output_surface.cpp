@@ -273,7 +273,7 @@ void DisplayGLOutputSurface::ApplyExternalStencil()
 // glCopyTexSubImage2D on our framebuffer.
 uint32_t DisplayGLOutputSurface::GetFramebufferCopyTextureFormat()
 {
-    return GL_RGBA;
+    return m_currentShape.hasAlpha ? GL_RGBA : GL_RGB;
 }
 
 // Called from viz::DirectRenderer::DrawFrame, only used for overlays.
