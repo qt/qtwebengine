@@ -590,7 +590,7 @@ Q_SIGNALS:
 #endif
 
 protected:
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
+    void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
     void itemChange(ItemChange, const ItemChangeData &) override;
 #if QT_CONFIG(draganddrop)
     void dragEnterEvent(QDragEnterEvent *e) override;

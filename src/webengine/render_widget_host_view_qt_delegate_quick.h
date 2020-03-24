@@ -100,7 +100,7 @@ protected:
     void hoverLeaveEvent(QHoverEvent *event) override;
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
     void inputMethodEvent(QInputMethodEvent *event) override;
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
+    void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
     void itemChange(ItemChange change, const ItemChangeData &value) override;
     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
 

@@ -328,9 +328,9 @@ void RenderWidgetHostViewQtDelegateQuick::inputMethodEvent(QInputMethodEvent *ev
     m_client->forwardEvent(event);
 }
 
-void RenderWidgetHostViewQtDelegateQuick::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+void RenderWidgetHostViewQtDelegateQuick::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
-    QQuickItem::geometryChanged(newGeometry, oldGeometry);
+    QQuickItem::geometryChange(newGeometry, oldGeometry);
     m_client->visualPropertiesChanged();
 }
 

@@ -1687,9 +1687,9 @@ void QQuickWebEngineView::fullScreenCancelled()
     d->adapter->exitFullScreen();
 }
 
-void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+void QQuickWebEngineView::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
-    QQuickItem::geometryChanged(newGeometry, oldGeometry);
+    QQuickItem::geometryChange(newGeometry, oldGeometry);
     Q_D(QQuickWebEngineView);
     if (d->widget)
         d->widget->setSize(newGeometry.size());
