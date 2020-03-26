@@ -404,10 +404,14 @@ bool QQuickWebEngineSettings::showScrollBars() const
   \qmlproperty bool WebEngineSettings::playbackRequiresUserGesture
   \since QtWebEngine 1.7
   Inhibits playback of media content until the user interacts with
-  the page. Disabled by default.
+  the page.
+
+  By default, Qt WebEngine uses Chromium settings, as described in
+  \l {Autoplay Policy Changes}. To overwrite the default behavior,
+  this property must be set to \c false.
 
   \note The behavior is similar to Chrome on Android when enabled,
-  and similar to Chrome on desktops when disabled (default).
+  and similar to Chrome on desktops when disabled.
 */
 bool QQuickWebEngineSettings::playbackRequiresUserGesture() const
 {
