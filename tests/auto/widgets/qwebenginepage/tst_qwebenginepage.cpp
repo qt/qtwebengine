@@ -227,6 +227,7 @@ private Q_SLOTS:
     void customUserAgentInNewTab();
     void renderProcessCrashed();
     void renderProcessPid();
+    void backgroundColor();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4386,6 +4387,43 @@ void tst_QWebEnginePage::renderProcessPid()
     QTRY_VERIFY_WITH_TIMEOUT(crashed, 20000);
 
     QCOMPARE(m_page->renderProcessPid(), 0);
+}
+
+void tst_QWebEnginePage::backgroundColor()
+{
+    QWebEngineProfile profile;
+    QWebEngineView view;
+    QWebEnginePage *page = new QWebEnginePage(&profile, &view);
+
+    view.resize(640, 480);
+    view.show();
+    QPoint center(view.size().width() / 2, view.size().height() / 2);
+
+    QCOMPARE(page->backgroundColor(), Qt::white);
+    QTRY_COMPARE(view.grab().toImage().pixelColor(center), Qt::white);
+
+    page->setBackgroundColor(Qt::red);
+    view.setPage(page);
+
+    QCOMPARE(page->backgroundColor(), Qt::red);
+    QTRY_COMPARE(view.grab().toImage().pixelColor(center), Qt::red);
+
+    page->setHtml(QString("<html>"
+                          "<head><style>html, body { margin:0; padding:0; }</style></head>"
+                          "<body><div style=\"width:100%; height:10px; background-color:black\"/></body>"
+                          "</html>"));
+    QSignalSpy spyFinished(page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
+    // Make sure the page is rendered and the test is not grabbing the color of the RenderWidgetHostViewQtDelegateWidget.
+    QTRY_COMPARE(view.grab().toImage().pixelColor(QPoint(5, 5)), Qt::black);
+
+    QCOMPARE(page->backgroundColor(), Qt::red);
+    QCOMPARE(view.grab().toImage().pixelColor(center), Qt::red);
+
+    page->setBackgroundColor(Qt::green);
+
+    QCOMPARE(page->backgroundColor(), Qt::green);
+    QTRY_COMPARE(view.grab().toImage().pixelColor(center), Qt::green);
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
