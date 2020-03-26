@@ -36,6 +36,9 @@ IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentMarkup,
 IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentInnerText,
                     uint64_t /* requestId */)
 
+IPC_MESSAGE_ROUTED1(RenderViewObserverQt_SetBackgroundColor,
+                    uint32_t /* color */)
+
 // User scripts messages
 IPC_MESSAGE_ROUTED1(RenderFrameObserverHelper_AddScript,
                     UserScriptData /* script */)
@@ -64,9 +67,6 @@ IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentMarkup,
 IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentInnerText,
                     uint64_t /* requestId */,
                     base::string16 /* innerText */)
-
-IPC_MESSAGE_ROUTED1(RenderViewObserverQt_SetBackgroundColor,
-                    uint32_t /* color */)
 
 IPC_MESSAGE_ROUTED0(RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout)
 

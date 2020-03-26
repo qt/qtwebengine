@@ -1,0 +1,107 @@
+Qt 5.14.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.14.0 through 5.14.1.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.14 series is binary compatible with the 5.13.x series.
+Applications compiled for 5.13 will continue to run with 5.14.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                              Qt 5.14.2 Changes                           *
+****************************************************************************
+
+General
+-------
+
+  - [QTBUG-78284] Fixed conversion of tabpanel aria role
+  - [QTBUG-81206] Fixed overriding shortcuts in password input fields on Windows
+  - [QTBUG-80234] Fixed media playback issue on custom urls by supporting
+                  HTTP ranges headers
+  - [QTBUG-81521] Update navigation actions when load finishes in a subframe
+  - [QTBUG-82109] Fixed name filters of GTK file picker
+  - [QTBUG-78284] Fixed widget accessibility on macOS
+  - [QTBUG-78284] Fixed quick accessibility on macOS
+  - [QTBUG-81783] Fixed event.key for Ctrl key combinations on Windows
+  - [QTBUG-81574] Clear previous page text selection on new navigation unconditionally
+  - [QTBUG-78284] Fixed VoiceOver navigation on web pages on macOS
+  - [QTBUG-81539] Update accessibility focus on FocusIn events for Quick
+  - [QTBUG-82715] Support build with system ninja >= 1.10.0
+  - Fixed deadlocks on WebEngineContext destruction
+  - Suppress error message on ACCESSIBILITY_EVENTS permission type
+  - Example 'quicknanobrowser' improvements
+
+Chromium
+--------
+
+  - Fixed build with gcc 5
+  - Fixed -no-webengine-spellchecker build
+
+  - Security fixes from Chromium up to version 80.0.3987.132, including:
+
+    * CVE-2019-19880
+    * CVE-2019-19923 - Out of bounds memory access in SQLite
+    * CVE-2019-19925 - Multiple vulnerabilities in SQLite
+    * CVE-2019-19926 - Inappropriate implementation in SQLite
+    * CVE-2019-18197 - Multiple vulnerabilities in XML
+    * CVE-2019-20503 - Out of bounds read in usersctplib
+    * CVE-2020-6381 - Integer overflow in Javascript
+    * CVE-2020-6383 - Type confusion in V8
+    * CVE-2020-6384 - Use after free in WebAudio
+    * CVE-2020-6385 - Insufficient policy enforcement in storage
+    * CVE-2020-6387 - Out of bounds write in WebRTC
+    * CVE-2020-6388 - Out of bounds memory access in WebAudio
+    * CVE-2020-6389 - Out of bounds write in WebRTC
+    * CVE-2020-6390 - Out of bounds memory access in streams
+    * CVE-2020-6391 - Insufficient validation of untrusted input in Blink
+    * CVE-2020-6392 - Insufficient policy enforcement in extensions
+    * CVE-2020-6393 - Insufficient policy enforcement in Blink
+    * CVE-2020-6394 - Insufficient policy enforcement in Blink
+    * CVE-2020-6395 - Out of bounds read in JavaScript
+    * CVE-2020-6396 - Inappropriate implementation in Skia
+    * CVE-2020-6398 - Uninitialized use in PDFium
+    * CVE-2020-6399 - Insufficient policy enforcement in AppCache
+    * CVE-2020-6400 - Inappropriate implementation in CORS
+    * CVE-2020-6401
+    * CVE-2020-6404 - Inappropriate implementation in Blink
+    * CVE-2020-6405 - Out of bounds read in SQLite
+    * CVE-2020-6406 - Use after free in audio
+    * CVE-2020-6407 - Out of bounds memory access in streams
+    * CVE-2020-6410 - Insufficient policy enforcement in navigation
+    * CVE-2020-6411
+    * CVE-2020-6412 - Insufficient validation of untrusted input in Omnibox
+    * CVE-2020-6413 - Inappropriate implementation in Blink
+    * CVE-2020-6415
+    * CVE-2020-6418 - Type confusion in V8
+    * CVE-2020-6420 - Insufficient policy enforcement in media
+    * CVE-2020-6422 - Use after free in WebGL.
+    * CVE-2020-6426 - Inappropriate implementation in V8.
+    * CVE-2020-6427 - Use after free in audio.
+    * CVE-2020-6428 - Use after free in audio.
+    * CVE-2020-6429 - Use after free in audio.
+    * CVE-2020-6449 - Use after free in audio.
+    * Security bug 925035
+    * Security bug 1016038
+    * Security bug 1016506
+    * Security bug 1018629
+    * Security bug 1020031
+    * Security bug 1025442
+    * Security bug 1026293
+    * Security bug 1029865
+    * Security bug 1031909
+    * Security bug 1033461
+    * Security bug 1035723
+    * Security bug 1040700
+    * Security bug 1044570
+    * Security bug 1047097
+
