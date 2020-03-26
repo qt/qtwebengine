@@ -945,7 +945,8 @@ void tst_QWebEngineProfile::changeUseForGlobalCertificateVerification()
     profile.setUseForGlobalCertificateVerification(true);
     page.reset(new QWebEnginePage(&profile));
     QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
-    QVERIFY(server.stop());
+    // Don't check for error: there can be disconnects during GET hedgehog.png.
+    server.stop();
 }
 
 void tst_QWebEngineProfile::changePersistentCookiesPolicy()
