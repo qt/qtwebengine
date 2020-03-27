@@ -53,6 +53,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/compositor/viz_process_transport_factory.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "chrome/browser/printing/print_job_manager.h"
@@ -255,6 +256,8 @@ static void cleanupVizProcess()
         return;
     waitForViz = true;
     content::GetHostFrameSinkManager()->SetConnectionLostCallback(base::DoNothing());
+    auto factory = static_cast<content::VizProcessTransportFactory*>(content::ImageTransportFactory::GetInstance());
+    factory->PrepareForShutDown();
     vizCompositorThreadRunner->CleanupForShutdown(base::BindOnce(&completeVizCleanup));
 }
 
