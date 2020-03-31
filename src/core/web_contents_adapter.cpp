@@ -614,6 +614,8 @@ void WebContentsAdapter::reload()
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    WebEngineSettings *settings = m_adapterClient->webEngineSettings();
+    settings->doApply();
     if (!wasDiscarded) // undiscard() already triggers a reload
         m_webContents->GetController().Reload(content::ReloadType::NORMAL, /*checkRepost = */false);
     focusIfNecessary();
@@ -625,6 +627,8 @@ void WebContentsAdapter::reloadAndBypassCache()
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+    WebEngineSettings *settings = m_adapterClient->webEngineSettings();
+    settings->doApply();
     if (!wasDiscarded) // undiscard() already triggers a reload
         m_webContents->GetController().Reload(content::ReloadType::BYPASSING_CACHE, /*checkRepost = */false);
     focusIfNecessary();
@@ -654,6 +658,9 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
     }
 
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+
+    WebEngineSettings *settings = m_adapterClient->webEngineSettings();
+    settings->doApply();
 
     // The situation can occur when relying on the editingFinished signal in QML to set the url
     // of the WebView.
@@ -739,6 +746,9 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
         setLifecycleState(LifecycleState::Active);
 
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
+
+    WebEngineSettings *settings = m_adapterClient->webEngineSettings();
+    settings->doApply();
 
     QByteArray encodedData = data.toPercentEncoding();
     std::string urlString;

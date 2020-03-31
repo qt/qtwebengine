@@ -828,6 +828,7 @@ void tst_QWebEnginePage::localStorageVisibility()
     // Toggle local setting for every page and...
     webPage1.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, false);
     webPage2.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+    // TODO: note this setting is flaky, consider settings().commit()
     // ...first check second page (for storage to appear) as applying settings is batched and done asynchronously
     QTRY_VERIFY(evaluateJavaScriptSync(&webPage2, QString("(window.localStorage != undefined)")).toBool());
     // Switching the feature off does not actively remove the object from webPage1.

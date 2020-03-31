@@ -168,7 +168,7 @@ protected:
 
         if (isMainFrame && url.scheme().startsWith("data"))
             settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
-
+            // TODO: note this setting is flaky, consider settings().commit()
         return true;
     }
 };

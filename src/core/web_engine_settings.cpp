@@ -333,6 +333,8 @@ void WebEngineSettings::doApply()
 {
     if (webPreferences.isNull())
         return;
+
+    m_batchTimer.stop();
     // Override with our settings when applicable
     applySettingsToWebPreferences(webPreferences.data());
     Q_ASSERT(m_adapter);
