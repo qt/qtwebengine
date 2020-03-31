@@ -14,7 +14,8 @@ CONFIG -= create_prl
 # Copy this logic from qt_module.prf so that the intermediate library can be
 # created to the same rules as the final module linking in core_module.pro.
 !host_build:if(win32|mac):!macx-xcode {
-    qtConfig(debug_and_release): CONFIG += debug_and_release build_all
+    qtConfig(debug_and_release): CONFIG += debug_and_release
+    qtConfig(build_all): CONFIG += build_all
 }
 
 DEFINES += \
