@@ -137,7 +137,9 @@ QSGNode *DisplaySoftwareOutputSurface::Device::updatePaintNode(
                      skPixmap.rowBytes(), imageFormat(skPixmap.colorType()));
         if (m_image.size() == image.size()) {
             QRect damageRect = toQt(damage_rect_);
-            QPainter(&m_image).drawImage(damageRect, image, damageRect);
+            QPainter painter(&m_image);
+            painter.setCompositionMode(QPainter::CompositionMode_Source);
+            painter.drawImage(damageRect, image, damageRect);
         } else {
             m_image = image;
             m_image.detach();
