@@ -237,6 +237,7 @@ static bool loadSync(QWebEngineView *view, const QUrl &url, bool ok = true)
 void tst_QWebEngineProfile::clearDataFromCache()
 {
     TestServer server;
+    QSignalSpy serverSpy(&server, &HttpServer::newRequest);
     QVERIFY(server.start());
 
     AutoDir cacheDir("./tst_QWebEngineProfile_clearDataFromCache");
@@ -247,6 +248,8 @@ void tst_QWebEngineProfile::clearDataFromCache()
 
     QWebEnginePage page(&profile);
     QVERIFY(loadSync(&page, server.url("/hedgehog.html")));
+    // Wait for GET /favicon.ico
+    QTRY_COMPARE(serverSpy.size(), 3);
 
     QVERIFY(cacheDir.exists("Cache"));
     qint64 sizeBeforeClear = totalSize(cacheDir);
