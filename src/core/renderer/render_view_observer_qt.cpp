@@ -73,7 +73,7 @@ void RenderViewObserverQt::onFetchDocumentInnerText(quint64 requestId)
 
 void RenderViewObserverQt::onSetBackgroundColor(quint32 color)
 {
-    render_view()->GetWebView()->SetBaseBackgroundColor(color);
+    render_view()->GetWebView()->SetBaseBackgroundColorOverride(color);
 }
 
 void RenderViewObserverQt::OnDestruct()

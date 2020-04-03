@@ -4397,6 +4397,7 @@ void tst_QWebEnginePage::backgroundColor()
     QWebEnginePage *page = new QWebEnginePage(&profile, &view);
 
     view.resize(640, 480);
+    view.setStyleSheet("background: yellow");
     view.show();
     QPoint center(view.size().width() / 2, view.size().height() / 2);
 
@@ -4420,6 +4421,11 @@ void tst_QWebEnginePage::backgroundColor()
 
     QCOMPARE(page->backgroundColor(), Qt::red);
     QCOMPARE(view.grab().toImage().pixelColor(center), Qt::red);
+
+    page->setBackgroundColor(Qt::transparent);
+
+    QCOMPARE(page->backgroundColor(), Qt::transparent);
+    QTRY_COMPARE(view.grab().toImage().pixelColor(center), Qt::yellow);
 
     page->setBackgroundColor(Qt::green);
 
