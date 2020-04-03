@@ -83,10 +83,13 @@ public:
         QObject::connect(&timeoutTimer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
     }
 
-    T waitForResult() {
-        if (!called) {
-            timeoutTimer.start(20000);
+    T waitForResult(int timeout = 20000) {
+        const int step = 1000;
+        int elapsed = 0;
+        while (elapsed < timeout && !called) {
+            timeoutTimer.start(step);
             eventLoop.exec();
+            elapsed += step;
         }
         return result;
     }
