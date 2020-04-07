@@ -9,6 +9,10 @@ isEmpty(QMAKE_MAC_SDK_VERSION) {
      isEmpty(QMAKE_MAC_SDK_VERSION): error("Could not resolve SDK version for \'$${QMAKE_MAC_SDK}\'")
 }
 
+# chromium/build/mac/find_sdk.py expects the SDK version (mac_sdk_min) in Major.Minor format.
+# If Patch version is provided it fails with "Exception: No Major.Minor.Patch+ SDK found"
+QMAKE_MAC_SDK_VERSION_MAJOR_MINOR = $$section(QMAKE_MAC_SDK_VERSION, ".", 0, 1)
+
 QMAKE_CLANG_DIR = "/usr"
 QMAKE_CLANG_PATH = $$eval(QMAKE_MAC_SDK.macx-clang.$${QMAKE_MAC_SDK}.QMAKE_CXX)
 !isEmpty(QMAKE_CLANG_PATH) {
@@ -27,7 +31,7 @@ gn_args += \
     clang_base_path=\"$${QMAKE_CLANG_DIR}\" \
     clang_use_chrome_plugins=false \
     mac_deployment_target=\"$${QMAKE_MACOSX_DEPLOYMENT_TARGET}\" \
-    mac_sdk_min=\"$${QMAKE_MAC_SDK_VERSION}\" \
+    mac_sdk_min=\"$${QMAKE_MAC_SDK_VERSION_MAJOR_MINOR}\" \
     mac_views_browser=false \
     toolkit_views=false \
     use_external_popup_menu=false
