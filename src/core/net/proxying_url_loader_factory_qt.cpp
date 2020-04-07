@@ -207,22 +207,15 @@ void InterceptedRequest::Start()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    content::FrameTreeNode *frameTreeNode = nullptr;
+    content::WebContents *webContents = nullptr;
     if (process_id_) {
-        content::RenderFrameHostImpl *renderFrameHost = content::RenderFrameHostImpl::FromID(process_id_,
-                                                                                             request_.render_frame_id);
-        if (renderFrameHost)
-            frameTreeNode = renderFrameHost->frame_tree_node();
-    } else {
-        frameTreeNode = content::FrameTreeNode::GloballyFindByID(request_.render_frame_id);
-    }
-    // Follows a similar path to the root as RenderFrameHostImpl::CalculateSiteForCookies()
-    if (frameTreeNode && frameTreeNode->frame_tree()
-            && frameTreeNode->frame_tree()->root()
-            && frameTreeNode->frame_tree()->root()->current_frame_host())
-        m_topDocumentUrl = frameTreeNode->frame_tree()->root()->current_frame_host()->GetLastCommittedURL();
-    else
-        LOG(INFO) << "InterceptedRequest::Start() - null frameTreeNode or path to top frame";
+        content::RenderFrameHost *frameHost = content::RenderFrameHost::FromID(process_id_, request_.render_frame_id);
+        webContents = content::WebContents::FromRenderFrameHost(frameHost);
+    } else
+        webContents = content::WebContents::FromFrameTreeNodeId(request_.render_frame_id);
+
+    if (webContents)
+        m_topDocumentUrl = static_cast<content::WebContentsImpl *>(webContents)->GetLastCommittedURL();
 
     base::PostTask(FROM_HERE, {content::BrowserThread::IO},
                    base::BindOnce(&InterceptedRequest::Restart, m_weakPtr));
