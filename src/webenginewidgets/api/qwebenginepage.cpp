@@ -2345,7 +2345,9 @@ void QWebEnginePage::javaScriptAlert(const QUrl &securityOrigin, const QString &
 {
     Q_UNUSED(securityOrigin);
 #if QT_CONFIG(messagebox)
-    QMessageBox::information(view(), QStringLiteral("Javascript Alert - %1").arg(url().toString()), msg);
+    QMessageBox::information(view(),
+                             QStringLiteral("Javascript Alert - %1").arg(url().toString()),
+                             msg.toHtmlEscaped());
 #else
     Q_UNUSED(msg);
 #endif // QT_CONFIG(messagebox)
@@ -2355,7 +2357,11 @@ bool QWebEnginePage::javaScriptConfirm(const QUrl &securityOrigin, const QString
 {
     Q_UNUSED(securityOrigin);
 #if QT_CONFIG(messagebox)
-    return (QMessageBox::information(view(), QStringLiteral("Javascript Confirm - %1").arg(url().toString()), msg, QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Ok);
+    return (QMessageBox::information(view(),
+                                     QStringLiteral("Javascript Confirm - %1").arg(url().toString()),
+                                     msg.toHtmlEscaped(),
+                                     QMessageBox::Ok,
+                                     QMessageBox::Cancel) == QMessageBox::Ok);
 #else
     Q_UNUSED(msg);
     return false;
@@ -2368,7 +2374,12 @@ bool QWebEnginePage::javaScriptPrompt(const QUrl &securityOrigin, const QString 
 #if QT_CONFIG(inputdialog)
     bool ret = false;
     if (result)
-        *result = QInputDialog::getText(view(), QStringLiteral("Javascript Prompt - %1").arg(url().toString()), msg, QLineEdit::Normal, defaultValue, &ret);
+        *result = QInputDialog::getText(view(),
+                                        QStringLiteral("Javascript Prompt - %1").arg(url().toString()),
+                                        msg.toHtmlEscaped(),
+                                        QLineEdit::Normal,
+                                        defaultValue.toHtmlEscaped(),
+                                        &ret);
     return ret;
 #else
     Q_UNUSED(msg);
