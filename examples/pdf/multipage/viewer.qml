@@ -143,11 +143,11 @@ ApplicationWindow {
                 onValueModified: view.goToPage(value - 1)
                 Shortcut {
                     sequence: StandardKey.MoveToPreviousPage
-                    onActivated: currentPageSB.value--
+                    onActivated: view.goToPage(currentPageSB.value - 2)
                 }
                 Shortcut {
                     sequence: StandardKey.MoveToNextPage
-                    onActivated: currentPageSB.value++
+                    onActivated: view.goToPage(currentPageSB.value)
                 }
             }
             ToolButton {
