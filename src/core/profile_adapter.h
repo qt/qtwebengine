@@ -123,7 +123,6 @@ public:
     void setCachePath(const QString &path);
 
     QString httpCachePath() const;
-    QString cookiesPath() const;
 
     QString httpUserAgent() const;
     void setHttpUserAgent(const QString &userAgent);

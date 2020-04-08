@@ -318,21 +318,6 @@ void ProfileAdapter::setCachePath(const QString &path)
         m_profile->m_profileIOData->resetNetworkContext();
 }
 
-QString ProfileAdapter::cookiesPath() const
-{
-    if (m_offTheRecord)
-        return QString();
-    QString basePath = dataPath();
-    if (!basePath.isEmpty()) {
-        // This is a typo fix. We still need the old path in order to avoid breaking migration.
-        QDir coookiesFolder(basePath % QLatin1String("/Coookies"));
-        if (coookiesFolder.exists())
-            return coookiesFolder.path();
-        return basePath % QLatin1String("/Cookies");
-    }
-    return QString();
-}
-
 QString ProfileAdapter::httpCachePath() const
 {
     if (m_offTheRecord)
@@ -393,7 +378,7 @@ void ProfileAdapter::setHttpCacheType(ProfileAdapter::HttpCacheType newhttpCache
 
 ProfileAdapter::PersistentCookiesPolicy ProfileAdapter::persistentCookiesPolicy() const
 {
-    if (isOffTheRecord() || cookiesPath().isEmpty())
+    if (isOffTheRecord() || dataPath().isEmpty())
         return NoPersistentCookies;
     return m_persistentCookiesPolicy;
 }
