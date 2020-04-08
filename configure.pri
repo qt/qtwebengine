@@ -424,23 +424,22 @@ defineTest(qtwebengine_isWindowsPlatformSupported) {
 }
 
 defineTest(qtwebengine_isMacOsPlatformSupported) {
-    # FIXME: Try to get it back down to 8.2 for building on OS X 10.11
-    !qtwebengine_isMinXcodeVersion(8, 3, 3) {
-        qtwebengine_platformError("Using Xcode version $$QMAKE_XCODE_VERSION, but at least version 8.3.3 is required to build Qt WebEngine or Qt Pdf.")
+    !qtwebengine_isMinXcodeVersion(10, 0, 0) {
+        qtwebengine_platformError("Using Xcode version $$QMAKE_XCODE_VERSION, but at least version 10.0.0 is required to build Qt WebEngine or Qt Pdf.")
         return(false)
     }
     !clang|intel_icc {
         qtwebengine_platformError("Qt WebEngine and Qt Pdf requires Clang.")
         return(false)
     }
-    # We require macOS 10.12 (darwin version 16.0.0) or newer.
+    # We require macOS 10.13 (darwin version 17.0.0) or newer.
     darwin_major_version = $$section(QMAKE_HOST.version, ., 0, 0)
-    lessThan(darwin_major_version, 16) {
-        qtwebengine_platformError("Building Qt WebEngine or Qt Pdf requires macOS version 10.12 or newer.")
+    lessThan(darwin_major_version, 17) {
+        qtwebengine_platformError("Building Qt WebEngine or Qt Pdf requires macOS version 10.13 or newer.")
         return(false)
     }
-    !qtwebengine_isMinOSXSDKVersion(10, 12): {
-        qtwebengine_platformError("Building Qt WebEngine or Qt Pdf requires a macOS SDK version of 10.12 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
+    !qtwebengine_isMinOSXSDKVersion(10, 13): {
+        qtwebengine_platformError("Building Qt WebEngine or Qt Pdf requires a macOS SDK version of 10.13 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
         return(false)
     }
     return(true)

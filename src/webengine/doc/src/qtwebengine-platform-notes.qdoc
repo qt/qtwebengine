@@ -87,7 +87,7 @@
     \section2 Linux
 
     On Linux, Clang or GCC version 5 or later is required.
-    Supported configurations are \c linux-g++ and \c{linux-clang}.
+    Supported configurations are \c linux-g++, \c{linux-clang} and \c{linux-clang-libc++}
 
     \QWE requires \c pkg-config to detect most of its dependencies. The
     following \c pkg-config files are required:
@@ -117,9 +117,9 @@
     On \macos, the following are required:
 
     \list
-        \li \macos 10.12 or later
-        \li Xcode 8.3.3 or later
-        \li \macos 10.12 SDK or later
+        \li \macos 10.13 or later
+        \li Xcode 10.0 or later
+        \li \macos 10.13 SDK or later
     \endlist
 
     \note \QWE cannot be built for the 32-bit mode of \macos (using the
@@ -128,8 +128,8 @@
     \section1 Using Earlier Qt Versions to Build \QWE
 
     Building \QWE with earlier Qt versions (down to the last LTS
-    version) is supported. It means that \QWE 5.11 can be built with
-    Qt 5.9.x, Qt 5.10.x, and Qt 5.11.
+    version) is supported. It means that \QWE 5.15 can be built with
+    Qt 5.12.x, Qt 5.14.x, and Qt 5.15.
 
     To use an earlier Qt version to build Qt Webengine:
 
