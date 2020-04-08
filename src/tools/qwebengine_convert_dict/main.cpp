@@ -84,7 +84,7 @@ inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
     hunspell::BDictReader reader;
     if (!reader.Init(reinterpret_cast<const unsigned char*>(serialized.data()),
                      serialized.size())) {
-        out << "BDict is invalid" << Qt::endl;
+        out << "BDict is invalid\n";
         return false;
     }
     hunspell::WordIterator iter = reader.GetAllWordIterator();
@@ -96,7 +96,7 @@ inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
     for (size_t i = 0; i < org_words.size(); i++) {
         int affix_matches = iter.Advance(buf, buf_size, affix_ids);
         if (affix_matches == 0) {
-            out << "Found the end before we expected" << Qt::endl;
+            out << "Found the end before we expected\n";
             return false;
         }
 
@@ -104,7 +104,7 @@ inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
             out << "Word does not match!\n"
                 << "  Index:    " << i << "\n"
                 << "  Expected: " << QString::fromStdString(org_words[i].first) << "\n"
-                << "  Actual:   " << QString::fromUtf8(buf) << Qt::endl;
+                << "  Actual:   " << QString::fromUtf8(buf) << "\n";
             return false;
         }
 
@@ -118,7 +118,7 @@ inline bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
                 << "  Index:    " << i << "\n"
                 << "  Word:     " << QString::fromUtf8(buf) << "\n"
                 << "  Expected: " << expectedAffixes << "\n"
-                << "  Actual:   " << actualAffixes << Qt::endl;
+                << "  Actual:   " << actualAffixes << "\n";
             return false;
         }
     }
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
         out << "Usage: qwebengine_convert_dict <dic file> <bdic file>\n\nExample:\n"
                "qwebengine_convert_dict ./en-US.dic ./en-US.bdic\nwill read en-US.dic, "
                "en-US.dic_delta, and en-US.aff from the current directory and generate "
-               "en-US.bdic\n" << Qt::endl;
+               "en-US.bdic\n\n";
         return 1;
     }
 
@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
         out << "Couldn't find ICU data directory. Please check that the following path exists: "
             << icuDataDir
             << "\nAlternatively provide the directory path via the QT_WEBENGINE_ICU_DAT_DIR "
-               "environment variable.\n" << Qt::endl;
+               "environment variable.\n\n";
         return 1;
     }
 
@@ -196,21 +196,21 @@ int main(int argc, char *argv[])
     base::FilePath file_out_path = toFilePath(argv[2]);
     base::FilePath aff_path = file_in_path.ReplaceExtension(FILE_PATH_LITERAL(".aff"));
 
-    out << "Reading " << toQt(aff_path.value()) << Qt::endl;
+    out << "Reading " << toQt(aff_path.value()) << "\n";
     convert_dict::AffReader aff_reader(aff_path);
 
     if (!aff_reader.Read()) {
-        out << "Unable to read the aff file." << Qt::endl;
+        out << "Unable to read the aff file.\n";
         return 1;
     }
 
     base::FilePath dic_path = file_in_path.ReplaceExtension(FILE_PATH_LITERAL(".dic"));
-    out << "Reading " << toQt(dic_path.value()) << Qt::endl;
+    out << "Reading " << toQt(dic_path.value()) << "\n";
 
     // DicReader will also read the .dic_delta file.
     convert_dict::DicReader dic_reader(dic_path);
     if (!dic_reader.Read(&aff_reader)) {
-        out << "Unable to read the dic file." << Qt::endl;
+        out << "Unable to read the dic file.\n";
         return 1;
     }
 
@@ -222,27 +222,27 @@ int main(int argc, char *argv[])
     writer.SetOtherCommands(aff_reader.other_commands());
     writer.SetWords(dic_reader.words());
 
-    out << "Serializing..." << Qt::endl;
+    out << "Serializing...\n";
 
     std::string serialized = writer.GetBDict();
 
-    out << "Verifying..." << Qt::endl;
+    out << "Verifying...\n";
 
     if (!VerifyWords(dic_reader.words(), serialized, out)) {
-        out << "ERROR converting, the dictionary does not check out OK." << Qt::endl;
+        out << "ERROR converting, the dictionary does not check out OK.\n";
         return 1;
     }
 
-    out << "Writing " << toQt(file_out_path.value()) << Qt::endl;
+    out << "Writing " << toQt(file_out_path.value()) << "\n";
     FILE *out_file = base::OpenFile(file_out_path, "wb");
     if (!out_file) {
-        out << "ERROR writing file" << Qt::endl;
+        out << "ERROR writing file\n";
         return 1;
     }
     size_t written = fwrite(&serialized[0], 1, serialized.size(), out_file);
     Q_ASSERT(written == serialized.size());
     base::CloseFile(out_file);
-    out << "Success. Dictionary converted." << Qt::endl;
+    out << "Success. Dictionary converted.\n";
     return 0;
 }
 
