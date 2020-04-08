@@ -87,11 +87,6 @@ LoginDelegateQt::LoginDelegateQt(const net::AuthChallengeInfo &authInfo,
             base::BindOnce(&LoginDelegateQt::triggerDialog, m_weakFactory.GetWeakPtr()));
 }
 
-LoginDelegateQt::~LoginDelegateQt()
-{
-    destroy();
-}
-
 QUrl LoginDelegateQt::url() const
 {
     return toQt(m_url);
@@ -152,16 +147,6 @@ void LoginDelegateQt::sendAuthToRequester(bool success, const QString &user, con
         else
             std::move(m_auth_required_callback).Run(base::nullopt);
     }
-
-    // With network service the auth callback has already deleted us.
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-        destroy();
-}
-
-void LoginDelegateQt::destroy()
-{
-    m_dialogController.reset();
-    m_auth_required_callback.Reset();
 }
 
 } // namespace QtWebEngineCore

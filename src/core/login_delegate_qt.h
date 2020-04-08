@@ -66,8 +66,6 @@ public:
                     bool first_auth_attempt,
                     LoginAuthRequiredCallback auth_required_callback);
 
-    ~LoginDelegateQt() override;
-
     QUrl url() const;
     QString realm() const;
     QString host() const;
@@ -78,7 +76,6 @@ public:
 
 private:
     void triggerDialog();
-    void destroy();
 
     net::AuthChallengeInfo m_authInfo;
 

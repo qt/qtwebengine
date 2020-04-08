@@ -1058,9 +1058,6 @@ network::mojom::NetworkContext *ContentBrowserClientQt::GetSystemNetworkContext(
 
 void ContentBrowserClientQt::OnNetworkServiceCreated(network::mojom::NetworkService *network_service)
 {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-        return;
-
     if (!SystemNetworkContextManager::GetInstance())
         SystemNetworkContextManager::CreateInstance();
 
@@ -1096,7 +1093,6 @@ std::vector<base::FilePath> ContentBrowserClientQt::GetNetworkContextsParentDire
 void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int frame_tree_node_id,
                                                                             NonNetworkURLLoaderFactoryMap *factories)
 {
-    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     content::WebContents *web_contents = content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
     Profile *profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
@@ -1115,7 +1111,6 @@ void ContentBrowserClientQt::RegisterNonNetworkNavigationURLLoaderFactories(int 
 void ContentBrowserClientQt::RegisterNonNetworkWorkerMainResourceURLLoaderFactories(content::BrowserContext *browser_context,
                                                                                     NonNetworkURLLoaderFactoryMap *factories)
 {
-    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     Profile *profile = Profile::FromBrowserContext(browser_context);
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
 
@@ -1126,8 +1121,6 @@ void ContentBrowserClientQt::RegisterNonNetworkWorkerMainResourceURLLoaderFactor
 void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int render_process_id, int render_frame_id,
                                                                              NonNetworkURLLoaderFactoryMap *factories)
 {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-        return;
     content::RenderProcessHost *process_host = content::RenderProcessHost::FromID(render_process_id);
     Profile *profile = Profile::FromBrowserContext(process_host->GetBrowserContext());
     ProfileAdapter *profileAdapter = static_cast<ProfileQt *>(profile)->profileAdapter();
@@ -1212,9 +1205,6 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         bool *bypass_redirect_checks,
         network::mojom::URLLoaderFactoryOverridePtr *factory_override)
 {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-        return false;
-
     auto proxied_receiver = std::move(*factory_receiver);
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
     *factory_receiver = mojo::MakeRequest(&target_factory_info);

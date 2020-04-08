@@ -166,12 +166,6 @@ private:
 
 network::mojom::NetworkContext *SystemNetworkContextManager::GetContext()
 {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-        // SetUp should already have been called.
-        DCHECK(io_thread_network_context_);
-        return io_thread_network_context_.get();
-    }
-
     if (!network_service_network_context_ || network_service_network_context_.encountered_error()) {
         // This should call into OnNetworkServiceCreated(), which will re-create
         // the network service, if needed. There's a chance that it won't be
@@ -211,10 +205,6 @@ void SystemNetworkContextManager::SetUp(
         network::mojom::HttpAuthStaticParamsPtr *http_auth_static_params,
         network::mojom::HttpAuthDynamicParamsPtr *http_auth_dynamic_params, bool *is_quic_allowed)
 {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-        *network_context_request = mojo::MakeRequest(&io_thread_network_context_);
-        *network_context_params = CreateNetworkContextParams();
-    }
     *is_quic_allowed = false;
     *http_auth_static_params = CreateHttpAuthStaticParams();
     *http_auth_dynamic_params = CreateHttpAuthDynamicParams();
@@ -254,8 +244,6 @@ SystemNetworkContextManager::~SystemNetworkContextManager()
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::NetworkService *network_service)
 {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-        return;
     // Disable QUIC globally
     network_service->DisableQuic();
 
