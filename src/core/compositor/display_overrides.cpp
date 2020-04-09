@@ -76,7 +76,10 @@ void gpu::InProcessCommandBuffer::GetTextureQt(
 void gpu::InProcessCommandBuffer::GetTextureQtOnGpuThread(
         unsigned int client_id, GetTextureCallback callback)
 {
-    MakeCurrent();
+    if (!MakeCurrent()) {
+        LOG(ERROR) << "MakeCurrent failed for GetTextureQt";
+        return;
+    }
     gpu::TextureBase *texture = decoder_->GetTextureBase(client_id);
     std::move(callback).Run(texture ? texture->service_id() : 0, gl::GLFence::Create());
 }
