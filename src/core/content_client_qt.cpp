@@ -114,6 +114,15 @@ static QString getLocalAppDataDir()
         result = QDir::fromNativeSeparators(QString::fromWCharArray(path));
     return result;
 }
+
+static QString getProgramFilesDir(bool x86Dir = false)
+{
+    QString result;
+    wchar_t path[MAX_PATH];
+    if (SHGetSpecialFolderPath(0, path, x86Dir ? CSIDL_PROGRAM_FILESX86 : CSIDL_PROGRAM_FILES, FALSE))
+        result = QDir::fromNativeSeparators(QString::fromWCharArray(path));
+    return result;
+}
 #endif
 
 #if QT_CONFIG(webengine_pepper_plugins)
@@ -307,6 +316,28 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         }
     }
 #elif defined(Q_OS_WIN)
+    const QString googleChromeDir = QLatin1String("/Google/Chrome/Application");
+    const QStringList programFileDirs{getProgramFilesDir() + googleChromeDir,
+                                      getProgramFilesDir(true) + googleChromeDir};
+    for (const QString &dir : programFileDirs) {
+        QDir d(dir);
+        if (d.exists()) {
+            QFileInfoList widevineVersionDirs = d.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+            for (int i = 0; i < widevineVersionDirs.size(); ++i) {
+                QString versionDirPath(widevineVersionDirs.at(i).absoluteFilePath());
+#ifdef WIN64
+                QString potentialWidevinePluginPath = versionDirPath +
+                                                        "/WidevineCdm/_platform_specific/win_x64/" +
+                                                        QString::fromLatin1(kWidevineCdmFileName);
+#else
+                QString potentialWidevinePluginPath = versionDirPath +
+                                                        "/WidevineCdm/_platform_specific/win_x86/" +
+                                                        QString::fromLatin1(kWidevineCdmFileName);
+#endif
+                pluginPaths << potentialWidevinePluginPath;
+            }
+        }
+    }
     QDir potentialWidevineDir(getLocalAppDataDir() + "/Google/Chrome/User Data/WidevineCDM");
     if (potentialWidevineDir.exists()) {
         QFileInfoList widevineVersionDirs = potentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
