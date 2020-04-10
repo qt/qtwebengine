@@ -174,9 +174,11 @@
             Enabled by default. (Added in Qt 5.10)
     \value  PlaybackRequiresUserGesture
             Inhibits playback of media content until the user interacts with
-            the page. This is similar to how Chrome on Android behaves, while
-            the default behavior when it is disabled is similar to Chrome on desktops.
-            (Added in Qt 5.11)
+            the page. By default, WebEngine uses Chromium settings, as described
+            in \l {Autoplay Policy Changes}. This is similar to how Chrome on
+            Android behaves, while the default behavior when it is disabled is
+            similar to Chrome on desktops. To overwrite the default behavior,
+            disable this setting. (Added in Qt 5.11)
     \value  JavascriptCanPaste
             Enables JavaScript \c{execCommand("paste")}. This also requires
             enabling JavascriptCanAccessClipboard.
