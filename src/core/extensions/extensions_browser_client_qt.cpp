@@ -79,7 +79,6 @@
 #include "extension_system_factory_qt.h"
 #include "extension_web_contents_observer_qt.h"
 #include "extensions_api_client_qt.h"
-#include "extensions_browser_api_provider_qt.h"
 #include "extensions_browser_client_qt.h"
 #include "web_engine_library_info.h"
 
@@ -274,7 +273,6 @@ ExtensionsBrowserClientQt::ExtensionsBrowserClientQt()
     , resource_manager_(new ComponentExtensionResourceManagerQt)
 {
     AddAPIProvider(std::make_unique<CoreExtensionsBrowserAPIProvider>());
-    AddAPIProvider(std::make_unique<ExtensionsBrowserAPIProviderQt>());
 }
 
 ExtensionsBrowserClientQt::~ExtensionsBrowserClientQt()
@@ -451,12 +449,6 @@ ExtensionSystemProvider *ExtensionsBrowserClientQt::GetExtensionSystemFactory()
     return ExtensionSystemFactoryQt::GetInstance();
 }
 
-// void ExtensionsBrowserClientQt::RegisterExtensionFunctions(ExtensionFunctionRegistry *registry) const
-//{
-//    // Register core extension-system APIs.
-//    api::GeneratedFunctionRegistry::RegisterAll(registry);
-//}
-
 void ExtensionsBrowserClientQt::RegisterExtensionInterfaces(service_manager::BinderRegistryWithArgs<content::RenderFrameHost *> *registry,
                                                             content::RenderFrameHost *render_frame_host,
                                                             const Extension *extension) const
@@ -470,10 +462,6 @@ void ExtensionsBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
         const Extension* extension) const
 {
     PopulateExtensionFrameBinders(binder_map, render_frame_host, extension);
-
-    // FIXME Do we need something from here?
-    // PopulateChromeFrameBindersForExtension(binder_map, render_frame_host,
-    //                                        extension);
 }
 
 std::unique_ptr<RuntimeAPIDelegate> ExtensionsBrowserClientQt::CreateRuntimeAPIDelegate(content::BrowserContext *context) const

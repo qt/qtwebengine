@@ -334,7 +334,6 @@ qtConfig(webengine-extensions) {
         extensions/extension_system_factory_qt.cpp \
         extensions/extension_web_contents_observer_qt.cpp \
         extensions/extensions_api_client_qt.cpp \
-        extensions/extensions_browser_api_provider_qt.cpp \
         extensions/extensions_browser_client_qt.cpp \
         extensions/mime_handler_view_guest_delegate_qt.cpp \
         net/plugin_response_interceptor_url_loader_throttle.cpp \
@@ -351,7 +350,6 @@ qtConfig(webengine-extensions) {
         extensions/extension_system_factory_qt.h \
         extensions/extension_web_contents_observer_qt.h \
         extensions/extensions_api_client_qt.h \
-        extensions/extensions_browser_api_provider_qt.h \
         extensions/extensions_browser_client_qt.h \
         extensions/mime_handler_view_guest_delegate_qt.h \
         net/plugin_response_interceptor_url_loader_throttle.h \
