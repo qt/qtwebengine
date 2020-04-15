@@ -1931,8 +1931,24 @@ QMenu *QWebEnginePage::createStandardContextMenu()
 void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEnginePage::Feature feature, QWebEnginePage::PermissionPolicy policy)
 {
     Q_D(QWebEnginePage);
-    if (policy == PermissionUnknown)
+    if (policy == PermissionUnknown) {
+        switch (feature) {
+        case MediaAudioVideoCapture:
+        case MediaAudioCapture:
+        case MediaVideoCapture:
+        case DesktopAudioVideoCapture:
+        case DesktopVideoCapture:
+        case MouseLock:
+            break;
+        case Geolocation:
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::GeolocationPermission, ProfileAdapter::AskPermission);
+            break;
+        case Notifications:
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::NotificationPermission, ProfileAdapter::AskPermission);
+            break;
+        }
         return;
+    }
 
     const WebContentsAdapterClient::MediaRequestFlags audioVideoCaptureFlags(
         WebContentsAdapterClient::MediaVideoCapture |
@@ -1958,14 +1974,14 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
         case DesktopVideoCapture:
             d->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaDesktopVideoCapture);
             break;
-        case Geolocation:
-            d->adapter->runFeatureRequestCallback(securityOrigin, ProfileAdapter::GeolocationPermission, true);
-            break;
         case MouseLock:
             d->adapter->grantMouseLockPermission(securityOrigin, true);
             break;
+        case Geolocation:
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::GeolocationPermission, ProfileAdapter::AllowedPermission);
+            break;
         case Notifications:
-            d->adapter->runFeatureRequestCallback(securityOrigin, ProfileAdapter::NotificationPermission, true);
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::NotificationPermission, ProfileAdapter::AllowedPermission);
             break;
         }
     } else { // if (policy == PermissionDeniedByUser)
@@ -1978,13 +1994,13 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
             d->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaNone);
             break;
         case Geolocation:
-            d->adapter->runFeatureRequestCallback(securityOrigin, ProfileAdapter::GeolocationPermission, false);
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::GeolocationPermission, ProfileAdapter::DeniedPermission);
             break;
         case MouseLock:
             d->adapter->grantMouseLockPermission(securityOrigin, false);
             break;
         case Notifications:
-            d->adapter->runFeatureRequestCallback(securityOrigin, ProfileAdapter::NotificationPermission, false);
+            d->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::NotificationPermission, ProfileAdapter::DeniedPermission);
             break;
         }
     }

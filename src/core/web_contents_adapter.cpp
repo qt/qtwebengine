@@ -1360,13 +1360,13 @@ void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, 
     CHECK_INITIALIZED();
     // Let the permission manager remember the reply.
     if (flags & WebContentsAdapterClient::MediaAudioCapture)
-        m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::AudioCapturePermission, true);
+        m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::AudioCapturePermission, ProfileAdapter::AllowedPermission);
     if (flags & WebContentsAdapterClient::MediaVideoCapture)
-        m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::VideoCapturePermission, true);
+        m_profileAdapter->permissionRequestReply(securityOrigin, ProfileAdapter::VideoCapturePermission, ProfileAdapter::AllowedPermission);
     MediaCaptureDevicesDispatcher::GetInstance()->handleMediaAccessPermissionResponse(m_webContents.get(), securityOrigin, flags);
 }
 
-void WebContentsAdapter::runFeatureRequestCallback(const QUrl &securityOrigin, ProfileAdapter::PermissionType feature, bool allowed)
+void WebContentsAdapter::grantFeaturePermission(const QUrl &securityOrigin, ProfileAdapter::PermissionType feature, ProfileAdapter::PermissionState allowed)
 {
     Q_ASSERT(m_profileAdapter);
     m_profileAdapter->permissionRequestReply(securityOrigin, feature, allowed);
