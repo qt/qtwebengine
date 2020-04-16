@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
@@ -216,13 +217,13 @@ public:
     float GetRawY(size_t pointer_index) const override { return touchPoints.at(pointer_index).screenPos().y(); }
     float GetTouchMajor(size_t pointer_index) const override
     {
-        QRectF touchRect = touchPoints.at(pointer_index).rect();
-        return std::max(touchRect.height(), touchRect.width());
+        QSizeF diams = touchPoints.at(pointer_index).ellipseDiameters();
+        return std::max(diams.height(), diams.width());
     }
     float GetTouchMinor(size_t pointer_index) const override
     {
-        QRectF touchRect = touchPoints.at(pointer_index).rect();
-        return std::min(touchRect.height(), touchRect.width());
+        QSizeF diams = touchPoints.at(pointer_index).ellipseDiameters();
+        return std::min(diams.height(), diams.width());
     }
     float GetOrientation(size_t pointer_index) const override
     {
