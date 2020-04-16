@@ -163,7 +163,6 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , webChannelWorldId(QWebEngineScript::MainWorld)
     , defaultAudioMuted(false)
     , defaultZoomFactor(1.0)
-    , requestInterceptor(nullptr)
 #if QT_CONFIG(webengine_printing_and_pdf)
     , currentPrinter(nullptr)
 #endif
@@ -185,8 +184,6 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
 
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
 {
-    if (requestInterceptor)
-        profile->d_ptr->profileAdapter()->removePageRequestInterceptor();
     delete history;
     delete settings;
     profile->d_ptr->removeWebContentsAdapterClient(this);
@@ -1916,20 +1913,7 @@ void QWebEnginePagePrivate::visibleChanged(bool visible)
 void QWebEnginePage::setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     Q_D(QWebEnginePage);
-    bool hadInterceptorChanged = bool(d->requestInterceptor) != bool(interceptor);
-    d->requestInterceptor = interceptor;
-    if (hadInterceptorChanged) {
-        if (interceptor)
-            d->profile->d_ptr->profileAdapter()->addPageRequestInterceptor();
-        else
-            d->profile->d_ptr->profileAdapter()->removePageRequestInterceptor();
-    }
-}
-
-void QWebEnginePagePrivate::interceptRequest(QWebEngineUrlRequestInfo &info)
-{
-    if (requestInterceptor)
-        requestInterceptor->interceptRequest(info);
+    d->adapter->setRequestInterceptor(interceptor);
 }
 
 #if QT_CONFIG(menu)

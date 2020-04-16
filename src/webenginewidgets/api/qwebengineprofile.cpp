@@ -596,6 +596,7 @@ QWebEngineCookieStore* QWebEngineProfile::cookieStore()
     Interceptors installed with this method will call
     QWebEngineUrlRequestInterceptor::interceptRequest on the I/O thread. Therefore
     the user has to provide thread-safe interaction with the other user classes.
+    For a duration of this call ui thread is blocked.
     Use setUrlRequestInterceptor instead.
 
     \since 5.6

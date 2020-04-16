@@ -54,10 +54,13 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
+#include <QPointer>
 // based on aw_proxying_url_loader_factory.h:
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInterceptor)
 
 namespace content {
 class ResourceContext;
@@ -68,15 +71,12 @@ namespace QtWebEngineCore {
 class ProxyingURLLoaderFactoryQt : public network::mojom::URLLoaderFactory
 {
 public:
-    ProxyingURLLoaderFactoryQt(int process_id, content::ResourceContext *resourceContext,
+    ProxyingURLLoaderFactoryQt(int processId, QWebEngineUrlRequestInterceptor *profile,
+                               QWebEngineUrlRequestInterceptor *page,
                                mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
-                               network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
+                               mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_target_factory_remote);
 
     ~ProxyingURLLoaderFactoryQt() override;
-
-    static void CreateProxy(int process_id, content::ResourceContext *resourceContext,
-                            mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
-                            network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
 
     void CreateLoaderAndStart(mojo::PendingReceiver<network::mojom::URLLoader> loader,
                               int32_t routing_id, int32_t request_id,
@@ -90,12 +90,11 @@ private:
     void OnTargetFactoryError();
     void OnProxyBindingError();
 
-    const int m_processId;
+    int m_processId;
     mojo::ReceiverSet<network::mojom::URLLoaderFactory> m_proxyReceivers;
-    network::mojom::URLLoaderFactoryPtr m_targetFactory;
-
-    content::ResourceContext *m_resourceContext;
-
+    mojo::Remote<network::mojom::URLLoaderFactory> m_targetFactory;
+    QPointer<QWebEngineUrlRequestInterceptor> m_profileRequestInterceptor;
+    QPointer<QWebEngineUrlRequestInterceptor> m_pageRequestInterceptor;
     base::WeakPtrFactory<ProxyingURLLoaderFactoryQt> m_weakFactory;
 
     DISALLOW_COPY_AND_ASSIGN(ProxyingURLLoaderFactoryQt);
