@@ -1530,7 +1530,21 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
         m_mouseWheelPhaseHandler.AddPhaseIfNeededAndScheduleEndEvent(webEvent, false);
         host()->ForwardWheelEvent(webEvent);
     }
-    // TODO: We could forward unhandled wheelevents to our parent.
+}
+
+void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event, content::InputEventAckState ack_result)
+{
+    // Forward unhandled scroll events back as wheel events
+    if (event.GetType() != blink::WebInputEvent::kGestureScrollUpdate)
+        return;
+    switch (ack_result) {
+    case content::INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
+    case content::INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
+        WebEventFactory::sendUnhandledWheelEvent(event, delegate());
+        break;
+    default:
+        break;
+    }
 }
 
 content::MouseWheelPhaseHandler *RenderWidgetHostViewQt::GetMouseWheelPhaseHandler()

@@ -58,12 +58,13 @@
 
 QT_BEGIN_NAMESPACE
 class QEvent;
+class QInputMethodEvent;
 class QSGLayer;
 class QSGNode;
 class QSGRectangleNode;
 class QSGTexture;
 class QVariant;
-class QInputMethodEvent;
+class QWheelEvent;
 
 class QSGImageNode;
 
@@ -111,6 +112,7 @@ public:
     virtual void setInputMethodHints(Qt::InputMethodHints hints) = 0;
     virtual void setClearColor(const QColor &color) = 0;
     virtual bool copySurface(const QRect &, const QSize &, QImage &) = 0;
+    virtual void unhandledWheelEvent(QWheelEvent *) {}
 };
 
 } // namespace QtWebEngineCore
