@@ -21,9 +21,30 @@ class tst_MultiPageView : public QQuickDataTest
 private Q_SLOTS:
     void internalLink_data();
     void internalLink();
+    void navigation_data();
+    void navigation();
     void password();
     void selectionAndClipboard();
     void search();
+
+public:
+    enum NavigationAction {
+        Back,
+        Forward,
+        GotoPage,
+        GotoLocation,
+        ClickLink
+    };
+    Q_ENUM(NavigationAction)
+
+    struct NavigationCommand {
+        NavigationAction action;
+        int index;
+        QPointF location;
+        qreal zoom;
+        QPointF expectedContentPos;
+        int expectedCurrentPage;
+    };
 
 private:
     QScopedPointer<QPointingDevice> touchscreen = QScopedPointer<QPointingDevice>(QTest::createTouchDevice());
@@ -109,6 +130,105 @@ void tst_MultiPageView::internalLink()
     QTRY_COMPARE(tableViewContentPos(table), linkScrollPos);
     QCOMPARE(pdfView->property("currentPage").toInt(), linkPage);
     QCOMPARE(pdfView->property("renderScale").toReal(), linkZoom);
+}
+
+void tst_MultiPageView::navigation_data()
+{
+    QTest::addColumn<QList<NavigationCommand>>("actions");
+    const int totalPageSpacing = 832; // 826 points + 6 px (rowSpacing)
+
+    QList<NavigationCommand> actions;
+    actions << NavigationCommand {NavigationAction::GotoPage, 2, {}, 0, {0, 1664}, 2}
+            << NavigationCommand {NavigationAction::GotoPage, 3, {}, 0, {0, 2496}, 3}
+            << NavigationCommand {NavigationAction::Back, 0, {}, 0, {0, 1664}, 2}
+            << NavigationCommand {NavigationAction::Back, 0, {}, 0, {0, 0}, 0};
+    QTest::newRow("goto and back") << actions;
+
+    actions.clear();
+    actions // first link is "More..." going to page 0, location 8, 740
+            << NavigationCommand {NavigationAction::ClickLink, 0, {465, 65}, 0, {0, 740}, 0}
+            << NavigationCommand {NavigationAction::Back, 0, {}, 0, {0, 0}, 0}
+            // link "setPdfVersion()" going to page 3, location 8, 295
+            << NavigationCommand {NavigationAction::ClickLink, 0, {255, 455}, 0, {0, totalPageSpacing * 3 + 295}, 3}
+            << NavigationCommand {NavigationAction::Back, 0, {}, 0, {0, 0}, 0};
+    QTest::newRow("click links and go back, twice") << actions;
+
+    actions.clear();
+    actions // first link is "More..." going to page 0, location 8, 740
+            << NavigationCommand {NavigationAction::ClickLink, 0, {465, 65}, 0, {0, 740}, 0}
+               // link "newPage()" going to page 1, location 8, 290
+            << NavigationCommand {NavigationAction::ClickLink, 0, {480, 40}, 0, {0, totalPageSpacing + 290}, 1} // fails, goes back to page 0
+            << NavigationCommand {NavigationAction::Back, 0, {}, 0, {8, 740}, 0}
+            << NavigationCommand {NavigationAction::Back, 0, {}, 0, {0, 0}, 0};
+    QTest::newRow("click two links in series and then go back") << actions;
+}
+
+void tst_MultiPageView::navigation()
+{
+    QFETCH(QList<NavigationCommand>, actions);
+
+    QQuickView window;
+    window.setColor(Qt::gray);
+    window.setSource(testFileUrl("multiPageViewWithFeedback.qml"));
+    QTRY_COMPARE(window.status(), QQuickView::Ready);
+    QQuickItem *pdfView = window.rootObject();
+    QVERIFY(pdfView);
+    QObject *doc = pdfView->property("document").value<QObject *>();
+    QVERIFY(doc);
+    doc->setProperty("source", testFileUrl("qpdfwriter.pdf"));
+    QQuickItem *table = static_cast<QQuickItem *>(findFirstChild(pdfView, "QQuickTableView"));
+    QVERIFY(table);
+    // Expect that contentY == destination y after a jump, for ease of comparison.
+    // 0.01 is close enough to 0 that we can compare int positions accurately,
+    // but nonzero so that QRectF::isValid() is true in tableView.positionViewAtCell()
+    table->setProperty("jumpLocationMargin", QPointF(0.01, 0.01));
+
+    window.show();
+    window.requestActivate();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QTRY_COMPARE(table->property("contentHeight").toInt(), 3322);
+    QCOMPARE(table->property("contentY").toInt(), 0);
+
+    for (const NavigationCommand &nav : actions) {
+        switch (nav.action) {
+        case NavigationAction::Back:
+            QVERIFY(QMetaObject::invokeMethod(pdfView, "back"));
+            QCOMPARE(pdfView->property("forwardEnabled").toBool(), true);
+            break;
+        case NavigationAction::Forward:
+            QVERIFY(QMetaObject::invokeMethod(pdfView, "forward"));
+            QCOMPARE(pdfView->property("backEnabled").toBool(), true);
+            break;
+        case NavigationAction::GotoPage:
+            QVERIFY(QMetaObject::invokeMethod(pdfView, "goToPage",
+                                              Q_ARG(QVariant, QVariant(nav.index))));
+            QCOMPARE(pdfView->property("backEnabled").toBool(), true);
+            break;
+        case NavigationAction::GotoLocation:
+            QVERIFY(QMetaObject::invokeMethod(pdfView, "goToLocation",
+                                              Q_ARG(QVariant, QVariant(nav.index)),
+                                              Q_ARG(QVariant, QVariant(nav.location)),
+                                              Q_ARG(QVariant, QVariant(nav.zoom)) ));
+            break;
+        case NavigationAction::ClickLink:
+            // Link delegates don't exist until page rendering is done
+            QTRY_VERIFY(pdfView->property("currentPageRenderingStatus").toInt() == 1); // QQuickImage::Status::Ready
+            QTest::mouseClick(&window, Qt::LeftButton, Qt::NoModifier, nav.location.toPoint());
+            // Wait for the destination page to be rendered
+            QTRY_VERIFY(pdfView->property("currentPageRenderingStatus").toInt() == 1); // QQuickImage::Status::Ready
+            break;
+        }
+        qCDebug(lcTests) << "action" << nav.action << "index" << nav.index
+                         << "contentX,Y" << table->property("contentX").toInt() << table->property("contentY").toInt()
+                         << "expected" << nav.expectedContentPos;
+        QTRY_COMPARE(table->property("contentY").toInt(), nav.expectedContentPos.y());
+        // some minor side-to-side scrolling happens, in practice
+        QVERIFY(qAbs(table->property("contentX").toInt() - nav.expectedContentPos.x()) < 10);
+        QCOMPARE(pdfView->property("currentPage").toInt(), nav.expectedCurrentPage);
+    }
+
+    QCOMPARE(pdfView->property("backEnabled").toBool(), false);
 }
 
 void tst_MultiPageView::password()
