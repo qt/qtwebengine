@@ -797,6 +797,15 @@ bool WebContentsDelegateQt::TakeFocus(content::WebContents *source, bool reverse
     return m_viewClient->passOnFocus(reverse);
 }
 
+void WebContentsDelegateQt::ContentsZoomChange(bool zoom_in)
+{
+    WebContentsAdapter *adapter = webContentsAdapter();
+    if (zoom_in)
+        adapter->setZoomFactor(adapter->currentZoomFactor() + 0.1f);
+    else
+        adapter->setZoomFactor(adapter->currentZoomFactor() - 0.1f);
+}
+
 FaviconManager *WebContentsDelegateQt::faviconManager()
 {
     return m_faviconManager.data();

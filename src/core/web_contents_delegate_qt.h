@@ -148,6 +148,7 @@ public:
     void RegisterProtocolHandler(content::WebContents* web_contents, const std::string& protocol, const GURL& url, bool user_gesture) override;
     void UnregisterProtocolHandler(content::WebContents* web_contents, const std::string& protocol, const GURL& url, bool user_gesture) override;
     bool TakeFocus(content::WebContents *source, bool reverse) override;
+    void ContentsZoomChange(bool zoom_in) override;
 
     // WebContentsObserver overrides
     void RenderFrameCreated(content::RenderFrameHost *render_frame_host) override;
