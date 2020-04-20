@@ -2476,3 +2476,4 @@ void QQuickWebEngineTouchHandle::setOpacity(float opacity)
 
 QT_END_NAMESPACE
 
+#include "moc_qquickwebengineview_p.cpp"

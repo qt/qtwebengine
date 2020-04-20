@@ -60,7 +60,7 @@ Compositor::Compositor(content::RenderWidgetHost *host)
     m_beginFrameSource =
         std::make_unique<viz::DelayBasedBeginFrameSource>(
             std::make_unique<viz::DelayBasedTimeSource>(m_taskRunner.get()),
-            viz::BeginFrameSource::kNotRestartableId);
+            0 /*viz::BeginFrameSource::kNotRestartableId*/);
 }
 
 Compositor::~Compositor()

@@ -771,7 +771,9 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.url --> QUrl"
     << "QQuickWebEngineView.urlChanged() --> void"
     << "QQuickWebEngineView.userScripts --> QQmlListProperty<QQuickWebEngineScript>"
+#if QT_CONFIG(webengine_webchannel)
     << "QQuickWebEngineView.webChannel --> QQmlWebChannel*"
+#endif
     << "QQuickWebEngineView.webChannelChanged() --> void"
     << "QQuickWebEngineView.webChannelWorld --> uint"
     << "QQuickWebEngineView.webChannelWorldChanged(uint) --> void"

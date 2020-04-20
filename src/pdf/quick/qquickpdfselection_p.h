@@ -53,9 +53,9 @@
 #include <QVariant>
 #include <QtQml/qqml.h>
 
-QT_BEGIN_NAMESPACE
+#include "qquickpdfdocument_p.h"
 
-class QQuickPdfDocument;
+QT_BEGIN_NAMESPACE
 
 class QQuickPdfSelection : public QObject
 {

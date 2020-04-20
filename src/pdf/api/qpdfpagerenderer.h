@@ -38,13 +38,14 @@
 #define QPDFPAGERENDERER_H
 
 #include <QtPdf/qtpdfglobal.h>
-#include <QObject>
-#include <QtPdf/QPdfDocumentRenderOptions>
-#include <QSize>
+
+#include <QtCore/qobject.h>
+#include <QtCore/qsize.h>
+#include <QtPdf/qpdfdocument.h>
+#include <QtPdf/qpdfdocumentrenderoptions.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfDocument;
 class QPdfPageRendererPrivate;
 
 class Q_PDF_EXPORT QPdfPageRenderer : public QObject

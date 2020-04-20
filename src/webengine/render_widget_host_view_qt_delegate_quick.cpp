@@ -42,6 +42,7 @@
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 #include <QGuiApplication>
+#include <QOpenGLContext>
 #include <QQuickPaintedItem>
 #include <QQuickWindow>
 #include <QSurfaceFormat>

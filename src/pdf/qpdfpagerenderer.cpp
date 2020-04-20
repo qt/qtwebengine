@@ -38,7 +38,6 @@
 
 #include <private/qobject_p.h>
 #include <QMutex>
-#include <QPdfDocument>
 #include <QPointer>
 #include <QThread>
 

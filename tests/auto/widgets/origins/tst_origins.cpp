@@ -41,7 +41,7 @@
 #include <QtWebSockets/qwebsocketserver.h>
 #include <QtWebChannel/qwebchannel.h>
 #endif
-#include <QtWidgets/qaction.h>
+#include <qaction.h>
 
 #define QSL QStringLiteral
 #define QBAL QByteArrayLiteral

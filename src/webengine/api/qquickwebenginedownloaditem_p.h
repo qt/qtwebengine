@@ -52,16 +52,18 @@
 //
 
 #include <QtWebEngine/private/qtwebengineglobal_p.h>
+
 #include <QObject>
 #include <QScopedPointer>
 #include <QString>
 #include <QUrl>
 
+#include "qquickwebengineview_p.h"
+
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineDownloadItemPrivate;
 class QQuickWebEngineProfilePrivate;
-class QQuickWebEngineView;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineDownloadItem: public QObject {
     Q_OBJECT

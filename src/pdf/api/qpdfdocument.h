@@ -38,10 +38,11 @@
 #define QPDFDOCUMENT_H
 
 #include <QtPdf/qtpdfglobal.h>
-#include <QImage>
-#include <QObject>
-#include <QtPdf/QPdfDocumentRenderOptions>
-#include "qpdfselection.h"
+
+#include <QtCore/qobject.h>
+#include <QtGui/qimage.h>
+#include <QtPdf/qpdfdocumentrenderoptions.h>
+#include <QtPdf/qpdfselection.h>
 
 QT_BEGIN_NAMESPACE
 

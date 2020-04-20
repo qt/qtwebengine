@@ -17,5 +17,7 @@ qtConfig(webengine-testsupport) {
         qquickwebengineviewgraphics
 }
 
+!qtHaveModule(quickcontrols): SUBDIRS -= qmltests
+
 # QTBUG-66055
 boot2qt: SUBDIRS -= inspectorserver qquickwebengineview qmltests

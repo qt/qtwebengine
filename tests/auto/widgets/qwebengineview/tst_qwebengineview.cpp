@@ -29,8 +29,9 @@
 #include <qwebengineview.h>
 #include <qwebenginepage.h>
 #include <qwebenginesettings.h>
-#include <qnetworkrequest.h>
+#include <qaction.h>
 #include <qdiriterator.h>
+#include <qnetworkrequest.h>
 #include <qstackedlayout.h>
 #include <qtemporarydir.h>
 #include <QClipboard>
@@ -45,7 +46,6 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QStyle>
-#include <QtWidgets/qaction.h>
 #include <QWebEngineProfile>
 #include <QtCore/qregularexpression.h>
 

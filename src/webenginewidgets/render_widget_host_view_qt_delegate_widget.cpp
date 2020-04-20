@@ -47,7 +47,6 @@
 #include <QMouseEvent>
 #include <QOpenGLContext>
 #include <QResizeEvent>
-#include <QSGAbstractRenderer>
 #include <QSGNode>
 #include <QWindow>
 #include <QtQuick/private/qquickwindow_p.h>

@@ -51,10 +51,12 @@
 // We mean it.
 //
 
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtWebEngine/private/qtwebengineglobal_p.h>
 #include <QQuickItem>
 #include <QtGui/qcolor.h>
 
+#include "qquickwebengineprofile.h"
 #include "qquickwebenginescript.h"
 
 QT_BEGIN_NAMESPACE
@@ -74,7 +76,6 @@ class QQuickWebEngineJavaScriptDialogRequest;
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
 class QQuickWebEngineNewViewRequest;
-class QQuickWebEngineProfile;
 class QQuickWebEngineSettings;
 class QQuickWebEngineTooltipRequest;
 class QQuickWebEngineFormValidationMessageRequest;
@@ -123,7 +124,9 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile NOTIFY profileChanged FINAL REVISION 1)
     Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1 CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL REVISION 1)
+#if QT_CONFIG(webengine_webchannel)
     Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1 FINAL)
+#endif
     Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL REVISION 1)
     Q_PROPERTY(bool activeFocusOnPress READ activeFocusOnPress WRITE setActiveFocusOnPress NOTIFY activeFocusOnPressChanged REVISION 2 FINAL)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION 2 FINAL)

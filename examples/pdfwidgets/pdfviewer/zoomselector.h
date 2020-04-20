@@ -57,7 +57,7 @@ signals:
     void zoomFactorChanged(qreal zoomFactor);
 
 private slots:
-    void onCurrentTextChanged(const QString &text);
+    void onCurrentTextChanged(int, const QString &text);
 };
 
 #endif // ZOOMSELECTOR_H
