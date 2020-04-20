@@ -43,6 +43,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -66,6 +67,7 @@ ProfileIODataQt::ProfileIODataQt(ProfileQt *profile)
 #if QT_CONFIG(ssl)
       m_clientCertificateStoreData(new ClientCertificateStoreData),
 #endif
+      m_removerObserver(this),
       m_weakPtrFactory(this)
 {
     if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI))
@@ -128,6 +130,42 @@ void ProfileIODataQt::initializeOnUIThread()
     m_cookieDelegate = new CookieMonsterDelegateQt();
     m_cookieDelegate->setClient(m_profile->profileAdapter()->cookieStore());
     m_proxyConfigMonitor.reset(new ProxyConfigMonitor(m_profile->GetPrefs()));
+}
+
+void ProfileIODataQt::clearHttpCache()
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    if (!m_clearHttpCacheInProgress) {
+        m_clearHttpCacheInProgress = true;
+        content::BrowsingDataRemover *remover =
+                content::BrowserContext::GetBrowsingDataRemover(m_profileAdapter->profile());
+        remover->AddObserver(&m_removerObserver);
+        remover->RemoveAndReply(base::Time(), base::Time::Max(),
+            content::BrowsingDataRemover::DATA_TYPE_CACHE,
+            content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
+                        content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
+            &m_removerObserver);
+    }
+}
+
+void ProfileIODataQt::removeBrowsingDataRemoverObserver()
+{
+    content::BrowsingDataRemover *remover =
+            content::BrowserContext::GetBrowsingDataRemover(m_profileAdapter->profile());
+    remover->RemoveObserver(&m_removerObserver);
+}
+
+BrowsingDataRemoverObserverQt::BrowsingDataRemoverObserverQt(ProfileIODataQt *profileIOData)
+    : m_profileIOData(profileIOData)
+{
+}
+
+void BrowsingDataRemoverObserverQt::OnBrowsingDataRemoverDone()
+{
+    Q_ASSERT(m_profileIOData->m_clearHttpCacheInProgress);
+    m_profileIOData->removeBrowsingDataRemoverObserver();
+    m_profileIOData->m_clearHttpCacheInProgress = false;
+    m_profileIOData->resetNetworkContext();
 }
 
 void ProfileIODataQt::setFullConfiguration()

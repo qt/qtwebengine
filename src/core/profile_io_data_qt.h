@@ -40,6 +40,7 @@
 #ifndef PROFILE_IO_DATA_QT_H
 #define PROFILE_IO_DATA_QT_H
 
+#include "content/public/browser/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/buildflags/buildflags.h"
 
@@ -65,6 +66,16 @@ struct ClientCertificateStoreData;
 class ProfileIODataQt;
 class ProfileQt;
 
+class BrowsingDataRemoverObserverQt : public content::BrowsingDataRemover::Observer {
+public:
+    BrowsingDataRemoverObserverQt(ProfileIODataQt *profileIOData);
+
+    void OnBrowsingDataRemoverDone() override;
+
+private:
+    ProfileIODataQt *m_profileIOData;
+};
+
 // ProfileIOData contains data that lives on the IOthread
 // we still use shared memebers and use mutex which breaks
 // idea for this object, but this is wip.
@@ -89,6 +100,8 @@ public:
     // Used in NetworkDelegateQt::OnBeforeURLRequest.
     void setFullConfiguration(); // runs on ui thread
     void resetNetworkContext(); // runs on ui thread
+    void clearHttpCache(); // runs on ui thread
+    bool isClearHttpCacheInProgress() { return m_clearHttpCacheInProgress; }
 
     network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
 
@@ -104,6 +117,8 @@ public:
     CookieMonsterDelegateQt *cookieDelegate() const { return m_cookieDelegate.get(); }
 
 private:
+    void removeBrowsingDataRemoverObserver();
+
     ProfileQt *m_profile;
     std::unique_ptr<content::ResourceContext> m_resourceContext;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
@@ -126,9 +141,13 @@ private:
 #endif
     int m_httpCacheMaxSize = 0;
     bool m_useForGlobalCertificateVerification = false;
-    base::WeakPtrFactory<ProfileIODataQt> m_weakPtrFactory; // this should be always the last member
+    BrowsingDataRemoverObserverQt m_removerObserver;
     QString m_dataPath;
+    bool m_clearHttpCacheInProgress = false;
+    base::WeakPtrFactory<ProfileIODataQt> m_weakPtrFactory; // this should be always the last member
     DISALLOW_COPY_AND_ASSIGN(ProfileIODataQt);
+
+    friend class BrowsingDataRemoverObserverQt;
 };
 } // namespace QtWebEngineCore
 

@@ -142,7 +142,8 @@ void ProfileAdapter::setStorageName(const QString &storageName)
     m_name = storageName;
     if (!m_offTheRecord) {
         m_profile->setupPrefService();
-        m_profile->m_profileIOData->resetNetworkContext();
+        if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
+            m_profile->m_profileIOData->resetNetworkContext();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -154,7 +155,8 @@ void ProfileAdapter::setOffTheRecord(bool offTheRecord)
         return;
     m_offTheRecord = offTheRecord;
     m_profile->setupPrefService();
-    m_profile->m_profileIOData->resetNetworkContext();
+    if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
+        m_profile->m_profileIOData->resetNetworkContext();
     if (m_visitedLinksManager)
         resetVisitedLinksManager();
 }
@@ -259,7 +261,8 @@ void ProfileAdapter::setDataPath(const QString &path)
     m_dataPath = path;
     if (!m_offTheRecord) {
         m_profile->setupPrefService();
-        m_profile->m_profileIOData->resetNetworkContext();
+        if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
+            m_profile->m_profileIOData->resetNetworkContext();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -286,7 +289,7 @@ void ProfileAdapter::setCachePath(const QString &path)
     if (m_cachePath == path)
         return;
     m_cachePath = path;
-    if (!m_offTheRecord)
+    if (!m_offTheRecord && !m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
 }
 
@@ -341,7 +344,7 @@ void ProfileAdapter::setHttpCacheType(ProfileAdapter::HttpCacheType newhttpCache
     m_httpCacheType = newhttpCacheType;
     if (oldCacheType == httpCacheType())
         return;
-    if (!m_offTheRecord) {
+    if (!m_offTheRecord && !m_profile->m_profileIOData->isClearHttpCacheInProgress()) {
         m_profile->m_profileIOData->resetNetworkContext();
         if (m_httpCacheType == NoCache)
             clearHttpCache();
@@ -361,7 +364,7 @@ void ProfileAdapter::setPersistentCookiesPolicy(ProfileAdapter::PersistentCookie
     m_persistentCookiesPolicy = newPersistentCookiesPolicy;
     if (oldPolicy == persistentCookiesPolicy())
         return;
-    if (!m_offTheRecord)
+    if (!m_offTheRecord && !m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
 }
 
@@ -416,7 +419,7 @@ void ProfileAdapter::setHttpCacheMaxSize(int maxSize)
     if (m_httpCacheMaxSize == maxSize)
         return;
     m_httpCacheMaxSize = maxSize;
-    if (!m_offTheRecord)
+    if (!m_offTheRecord && !m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
 }
 
@@ -592,10 +595,7 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
 
 void ProfileAdapter::clearHttpCache()
 {
-    content::BrowsingDataRemover *remover = content::BrowserContext::GetBrowsingDataRemover(m_profile.data());
-    remover->Remove(base::Time(), base::Time::Max(),
-        content::BrowsingDataRemover::DATA_TYPE_CACHE,
-        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB | content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB);
+    m_profile->m_profileIOData->clearHttpCache();
 }
 
 void ProfileAdapter::setSpellCheckLanguages(const QStringList &languages)
@@ -656,7 +656,8 @@ void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
     if (enable) {
         if (profileForglobalCertificateVerification) {
             profileForglobalCertificateVerification->m_usedForGlobalCertificateVerification = false;
-            profileForglobalCertificateVerification->m_profile->m_profileIOData->resetNetworkContext();
+            if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
+                profileForglobalCertificateVerification->m_profile->m_profileIOData->resetNetworkContext();
             for (auto *client : qAsConst(profileForglobalCertificateVerification->m_clients))
                 client->useForGlobalCertificateVerificationChanged();
         }
@@ -667,7 +668,8 @@ void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
         profileForglobalCertificateVerification = nullptr;
     }
 
-    m_profile->m_profileIOData->resetNetworkContext();
+    if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
+        m_profile->m_profileIOData->resetNetworkContext();
 }
 
 bool ProfileAdapter::isUsedForGlobalCertificateVerification() const
