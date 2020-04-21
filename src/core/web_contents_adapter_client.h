@@ -70,6 +70,7 @@ QT_FORWARD_DECLARE_CLASS(QWebEngineFindTextResult)
 QT_FORWARD_DECLARE_CLASS(QWebEngineQuotaRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineRegisterProtocolHandlerRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInfo)
+QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInterceptor)
 
 namespace content {
 struct DropData;
@@ -514,7 +515,6 @@ public:
     virtual ClientType clientType() = 0;
     virtual void printRequested() = 0;
     virtual void widgetChanged(RenderWidgetHostViewQtDelegate *newWidget) = 0;
-    virtual void interceptRequest(QWebEngineUrlRequestInfo &) { }
     virtual TouchHandleDrawableClient *createTouchHandle(const QMap<int, QImage> &images) = 0;
     virtual void showTouchSelectionMenu(TouchSelectionMenuController *menuController, const QRect &bounds, const QSize &handleSize) = 0;
     virtual void hideTouchSelectionMenu() = 0;
@@ -523,7 +523,6 @@ public:
     virtual ProfileAdapter *profileAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;
     virtual void releaseProfile() = 0;
-
 };
 
 } // namespace QtWebEngineCore

@@ -199,10 +199,6 @@ public:
     void setUseForGlobalCertificateVerification(bool enable = true);
     bool isUsedForGlobalCertificateVerification() const;
 
-    void addPageRequestInterceptor();
-    void removePageRequestInterceptor();
-    bool hasPageRequestInterceptor() const { return m_pageRequestInterceptors > 0; }
-
 #if QT_CONFIG(ssl)
     QWebEngineClientCertificateStore *clientCertificateStore();
 #endif
@@ -247,7 +243,6 @@ private:
     QList<ProfileAdapterClient*> m_clients;
     QVector<WebContentsAdapterClient *> m_webContentsAdapterClients;
     int m_httpCacheMaxSize;
-    int m_pageRequestInterceptors;
     QrcUrlSchemeHandler m_qrcHandler;
 
     Q_DISABLE_COPY(ProfileAdapter)

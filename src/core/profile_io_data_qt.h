@@ -87,15 +87,8 @@ public:
     bool canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const;
 
     // Used in NetworkDelegateQt::OnBeforeURLRequest.
-    bool isInterceptorDeprecated() const; // Remove for Qt6
-    QWebEngineUrlRequestInterceptor *acquireInterceptor(); // Remove for Qt6
-    void releaseInterceptor();
-    QWebEngineUrlRequestInterceptor *requestInterceptor();
-
     void setFullConfiguration(); // runs on ui thread
     void resetNetworkContext(); // runs on ui thread
-    void updateRequestInterceptor(); // runs on ui thread
-    bool hasPageInterceptors();
 
     network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
 
@@ -125,7 +118,6 @@ private:
     QString m_httpUserAgent;
     ProfileAdapter::HttpCacheType m_httpCacheType;
     QString m_httpCachePath;
-    QWebEngineUrlRequestInterceptor* m_requestInterceptor = nullptr;
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
     QMutex m_mutex{QMutex::Recursive};
     using QRecursiveMutex = QMutex;
@@ -134,10 +126,8 @@ private:
 #endif
     int m_httpCacheMaxSize = 0;
     bool m_useForGlobalCertificateVerification = false;
-    bool m_hasPageInterceptors = false;
     base::WeakPtrFactory<ProfileIODataQt> m_weakPtrFactory; // this should be always the last member
     QString m_dataPath;
-    volatile bool m_isInterceptorDeprecated = false; // Remove for Qt6
     DISALLOW_COPY_AND_ASSIGN(ProfileIODataQt);
 };
 } // namespace QtWebEngineCore

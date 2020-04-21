@@ -75,7 +75,7 @@ public:
     QWebEngineUrlRequestInfo::ResourceType resourceType;
     QWebEngineUrlRequestInfo::NavigationType navigationType;
     bool shouldBlockRequest;
-
+    bool shouldRedirectRequest;
     QUrl url;
     QUrl firstPartyUrl;
     QUrl initiator;

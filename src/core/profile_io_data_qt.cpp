@@ -155,49 +155,6 @@ void ProfileIODataQt::resetNetworkContext()
             }));
 }
 
-void ProfileIODataQt::updateRequestInterceptor()
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    const std::lock_guard<QRecursiveMutex> lock(m_mutex);
-    m_requestInterceptor = m_profileAdapter->requestInterceptor();
-    m_hasPageInterceptors = m_profileAdapter->hasPageRequestInterceptor();
-    if (m_requestInterceptor)
-        m_isInterceptorDeprecated = m_requestInterceptor->property("deprecated").toBool();
-    else
-        m_isInterceptorDeprecated = false;
-    // We in this case do not need to regenerate any Chromium classes.
-}
-
-bool ProfileIODataQt::isInterceptorDeprecated() const
-{
-    return m_isInterceptorDeprecated;
-}
-
-QWebEngineUrlRequestInterceptor *ProfileIODataQt::acquireInterceptor()
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    m_mutex.lock();
-    return m_requestInterceptor;
-}
-
-QWebEngineUrlRequestInterceptor *ProfileIODataQt::requestInterceptor()
-{
-    return m_requestInterceptor;
-}
-
-bool ProfileIODataQt::hasPageInterceptors()
-{
-    // used in NetworkDelegateQt::OnBeforeURLRequest
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    return m_hasPageInterceptors;
-}
-
-void ProfileIODataQt::releaseInterceptor()
-{
-    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    m_mutex.unlock();
-}
-
 bool ProfileIODataQt::canGetCookies(const QUrl &firstPartyUrl, const QUrl &url) const
 {
     return m_cookieDelegate->canGetCookies(firstPartyUrl, url);

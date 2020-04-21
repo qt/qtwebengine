@@ -1014,6 +1014,16 @@ ProfileAdapter* WebContentsAdapter::profileAdapter()
                     static_cast<ProfileQt*>(m_webContents->GetBrowserContext())->profileAdapter() : nullptr;
 }
 
+void WebContentsAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+{
+    m_requestInterceptor = interceptor;
+}
+
+QWebEngineUrlRequestInterceptor* WebContentsAdapter::requestInterceptor() const
+{
+    return m_requestInterceptor;
+}
+
 #ifndef QT_NO_ACCESSIBILITY
 QAccessibleInterface *WebContentsAdapter::browserAccessible()
 {

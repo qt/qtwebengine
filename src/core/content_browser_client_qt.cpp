@@ -57,6 +57,7 @@
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -136,8 +137,10 @@
 #include "renderer_host/user_resource_controller_host.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
+#include "web_contents_adapter.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
+#include "web_contents_view_qt.h"
 #include "web_engine_library_info.h"
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
@@ -1205,17 +1208,29 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         bool *bypass_redirect_checks,
         network::mojom::URLLoaderFactoryOverridePtr *factory_override)
 {
-    auto proxied_receiver = std::move(*factory_receiver);
-    network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
-    *factory_receiver = mojo::MakeRequest(&target_factory_info);
-    int process_id = (type == URLLoaderFactoryType::kNavigation) ? 0 : render_process_id;
+    auto *web_contents = content::WebContents::FromRenderFrameHost(frame);
+    ProfileQt *profile = static_cast<ProfileQt *>(browser_context);
 
-    base::PostTask(FROM_HERE, { content::BrowserThread::IO },
-                   base::BindOnce(&ProxyingURLLoaderFactoryQt::CreateProxy, process_id,
-                                  browser_context->GetResourceContext(),
-                                  std::move(proxied_receiver),
-                                  std::move(target_factory_info)));
-    return true;
+    QWebEngineUrlRequestInterceptor *profile_interceptor = profile->profileAdapter()->requestInterceptor();
+    QWebEngineUrlRequestInterceptor *page_interceptor = nullptr;
+
+    if (web_contents) {
+        WebContentsAdapterClient *client =
+                WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(web_contents)->GetView())->client();
+        page_interceptor = client->webContentsAdapter()->requestInterceptor();
+    }
+
+    if (profile_interceptor || page_interceptor) {
+        int process_id = type == URLLoaderFactoryType::kNavigation ? 0 : render_process_id;
+        auto proxied_receiver = std::move(*factory_receiver);
+        mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_url_loader_factory;
+        *factory_receiver = pending_url_loader_factory.InitWithNewPipeAndPassReceiver();
+        // Will manage its own lifetime
+        new ProxyingURLLoaderFactoryQt(process_id, profile_interceptor, page_interceptor, std::move(proxied_receiver),
+                                       std::move(pending_url_loader_factory));
+        return true;
+    }
+    return false;
 }
 
 } // namespace QtWebEngineCore
