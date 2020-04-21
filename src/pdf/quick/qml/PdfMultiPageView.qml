@@ -81,6 +81,7 @@ Item {
         navigationStack.push(page, location, zoom) // actually jump
     }
     property vector2d jumpLocationMargin: Qt.vector2d(10, 10)  // px from top-left corner
+    property int currentPageRenderingStatus: Image.Null
 
     // page scaling
     property real renderScale: 1
@@ -175,6 +176,10 @@ Item {
                         image.sourceSize.height = 0
                         paper.scale = 1
                         searchHighlights.update()
+                    }
+                    onStatusChanged: {
+                        if (index === navigationStack.currentPage)
+                            root.currentPageRenderingStatus = status
                     }
                 }
                 Shape {
@@ -297,6 +302,7 @@ Item {
                         y: rect.y * paper.pageScale
                         width: rect.width * paper.pageScale
                         height: rect.height * paper.pageScale
+                        visible: image.status === Image.Ready
                         ShapePath {
                             strokeWidth: style.linkUnderscoreStrokeWidth
                             strokeColor: style.linkUnderscoreColor
