@@ -358,25 +358,6 @@ void QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> ne
     if (!newPage)
         return;
 
-    if (newPage->d_func() == this) {
-        // If createWindow returns /this/ we must delay the adoption.
-        Q_ASSERT(q == newPage);
-        // WebContents might be null if we just opened a new page for navigation, in that case
-        // avoid referencing newWebContents so that it is deleted and WebContentsDelegateQt::OpenURLFromTab
-        // will fall back to navigating current page.
-        if (newWebContents->webContents()) {
-            QTimer::singleShot(0, q, [this, newPage, newWebContents, initialGeometry] () {
-                adoptNewWindowImpl(newPage, newWebContents, initialGeometry);
-            });
-        }
-    } else {
-        adoptNewWindowImpl(newPage, newWebContents, initialGeometry);
-    }
-}
-
-void QWebEnginePagePrivate::adoptNewWindowImpl(QWebEnginePage *newPage,
-        const QSharedPointer<WebContentsAdapter> &newWebContents, const QRect &initialGeometry)
-{
     // Mark the new page as being in the process of being adopted, so that a second mouse move event
     // sent by newWebContents->initialize() gets filtered in RenderWidgetHostViewQt::forwardEvent.
     // The first mouse move event is being sent by q->createWindow(). This is necessary because

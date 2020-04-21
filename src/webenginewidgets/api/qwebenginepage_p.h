@@ -113,9 +113,6 @@ public:
     void focusContainer() override;
     void unhandledKeyEvent(QKeyEvent *event) override;
     void adoptNewWindow(QSharedPointer<QtWebEngineCore::WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry, const QUrl &targetUrl) override;
-    void adoptNewWindowImpl(QWebEnginePage *newPage,
-            const QSharedPointer<QtWebEngineCore::WebContentsAdapter> &newWebContents,
-            const QRect &initialGeometry);
     bool isBeingAdopted() override;
     void close() override;
     void windowCloseRejected() override;
