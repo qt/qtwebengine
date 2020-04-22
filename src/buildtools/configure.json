@@ -34,8 +34,9 @@
         },
         "webengine-xkbcommon": {
             "label": "xkbcommon",
+            "headers": "xkbcommon/xkbcommon.h",
             "sources": [
-                { "type": "pkgConfig", "args": "xkbcommon" }
+                "-lxkbcommon"
             ]
         },
         "webengine-xcomposite": {
@@ -296,13 +297,6 @@
                 ]
             }
         },
-        "webengine-xkbcommon": {
-            "label": "system xkbcommon",
-            "type": "compile",
-            "test": {
-                "include": "xkbcommon/xkbcommon.h"
-            }
-        },
         "webengine-ninja": {
             "label": "system ninja",
             "type": "detectNinja"
@@ -455,7 +449,7 @@
         },
         "webengine-system-xkbcommon": {
             "label": "xkbcommon",
-            "condition": "libs.webengine-xkbcommon && tests.webengine-xkbcommon",
+            "condition": "libs.webengine-xkbcommon",
             "output": [ "privateFeature" ]
         },
         "webengine-system-xcomposite": {
