@@ -104,7 +104,8 @@ void QPdfLinkModel::setDocument(QPdfDocument *document)
     Q_D(QPdfLinkModel);
     if (d->document == document)
         return;
-    disconnect(d->document, &QPdfDocument::statusChanged, this, &QPdfLinkModel::onStatusChanged);
+    if (d->document)
+        disconnect(d->document, &QPdfDocument::statusChanged, this, &QPdfLinkModel::onStatusChanged);
     connect(document, &QPdfDocument::statusChanged, this, &QPdfLinkModel::onStatusChanged);
     d->document = document;
     emit documentChanged();
