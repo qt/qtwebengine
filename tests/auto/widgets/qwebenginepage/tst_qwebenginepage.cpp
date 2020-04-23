@@ -3520,8 +3520,8 @@ void tst_QWebEnginePage::openLinkInNewPage()
         QTRY_COMPARE(page1.spy.count(), 1);
         QVERIFY(page1.spy.takeFirst().value(0).toBool());
         QCOMPARE(page2.spy.count(), 0);
-        if (decision == Decision::ReturnSelf)
-            // History was discarded
+        if (decision == Decision::ReturnSelf && cause == Cause::TargetBlank)
+            // History was discarded due to AddNewContents
             QCOMPARE(page1.history()->count(), 1);
         else
             QCOMPARE(page1.history()->count(), 2);

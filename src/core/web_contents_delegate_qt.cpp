@@ -663,14 +663,17 @@ void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *webCont
     m_viewClient->webEngineSettings()->overrideWebPreferences(webContents, webPreferences);
 }
 
-QWeakPointer<WebContentsAdapter> WebContentsDelegateQt::createWindow(std::unique_ptr<content::WebContents> new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture)
+QSharedPointer<WebContentsAdapter>
+WebContentsDelegateQt::createWindow(std::unique_ptr<content::WebContents> new_contents,
+                                    WindowOpenDisposition disposition, const gfx::Rect &initial_pos,
+                                    bool user_gesture)
 {
     QSharedPointer<WebContentsAdapter> newAdapter = QSharedPointer<WebContentsAdapter>::create(std::move(new_contents));
 
-    m_viewClient->adoptNewWindow(newAdapter, static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition), user_gesture, toQt(initial_pos), m_initialTargetUrl);
-
-    // If the client didn't reference the adapter, it will be deleted now, and the weak pointer zeroed.
-    return newAdapter;
+    return m_viewClient->adoptNewWindow(
+            std::move(newAdapter),
+            static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition), user_gesture,
+            toQt(initial_pos), m_initialTargetUrl);
 }
 
 void WebContentsDelegateQt::allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController)

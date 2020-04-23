@@ -547,12 +547,13 @@ void QQuickWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
         QCoreApplication::sendEvent(q->parentItem(), event);
 }
 
-void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &, const QUrl &targetUrl)
+QSharedPointer<WebContentsAdapter>
+QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents,
+                                           WindowOpenDisposition disposition, bool userGesture,
+                                           const QRect &, const QUrl &targetUrl)
 {
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineNewViewRequest request;
-    // This increases the ref-count of newWebContents and will tell Chromium
-    // to start loading it and possibly return it to its parent page window.open().
     request.m_adapter = newWebContents;
     request.m_isUserInitiated = userGesture;
     request.m_requestedUrl = targetUrl;
@@ -575,6 +576,8 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapte
     }
 
     Q_EMIT q->newViewRequested(&request);
+
+    return newWebContents;
 }
 
 bool QQuickWebEngineViewPrivate::isBeingAdopted()

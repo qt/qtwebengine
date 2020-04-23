@@ -348,7 +348,10 @@ void QWebEnginePagePrivate::unhandledKeyEvent(QKeyEvent *event)
         QGuiApplication::sendEvent(view->parentWidget(), event);
 }
 
-void QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry, const QUrl &targetUrl)
+QSharedPointer<WebContentsAdapter>
+QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents,
+                                      WindowOpenDisposition disposition, bool userGesture,
+                                      const QRect &initialGeometry, const QUrl &targetUrl)
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(userGesture);
@@ -356,7 +359,10 @@ void QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> ne
 
     QWebEnginePage *newPage = q->createWindow(toWindowType(disposition));
     if (!newPage)
-        return;
+        return nullptr;
+
+    if (!newWebContents->webContents())
+        return newPage->d_func()->adapter; // Reuse existing adapter
 
     // Mark the new page as being in the process of being adopted, so that a second mouse move event
     // sent by newWebContents->initialize() gets filtered in RenderWidgetHostViewQt::forwardEvent.
@@ -375,6 +381,8 @@ void QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> ne
 
     if (!initialGeometry.isEmpty())
         emit newPage->geometryChangeRequested(initialGeometry);
+
+    return newWebContents;
 }
 
 bool QWebEnginePagePrivate::isBeingAdopted()
