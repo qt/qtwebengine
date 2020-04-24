@@ -222,18 +222,6 @@ private:
     }
 };
 
-static bool loadSync(QWebEnginePage *page, const QUrl &url, bool ok = true)
-{
-    QSignalSpy spy(page, &QWebEnginePage::loadFinished);
-    page->load(url);
-    return (!spy.empty() || spy.wait(20000)) && (spy.front().value(0).toBool() == ok);
-}
-
-static bool loadSync(QWebEngineView *view, const QUrl &url, bool ok = true)
-{
-    return loadSync(view->page(), url, ok);
-}
-
 void tst_QWebEngineProfile::clearDataFromCache()
 {
     TestServer server;

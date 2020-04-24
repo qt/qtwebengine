@@ -228,6 +228,7 @@ private Q_SLOTS:
     void renderProcessCrashed();
     void renderProcessPid();
     void backgroundColor();
+    void audioMuted();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4431,6 +4432,24 @@ void tst_QWebEnginePage::backgroundColor()
 
     QCOMPARE(page->backgroundColor(), Qt::green);
     QTRY_COMPARE(view.grab().toImage().pixelColor(center), Qt::green);
+}
+
+void tst_QWebEnginePage::audioMuted()
+{
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    QSignalSpy spy(&page, &QWebEnginePage::audioMutedChanged);
+
+    QCOMPARE(page.isAudioMuted(), false);
+    page.setAudioMuted(true);
+    loadSync(&page, QUrl("about:blank"));
+    QCOMPARE(page.isAudioMuted(), true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy[0][0], QVariant(true));
+    page.setAudioMuted(false);
+    QCOMPARE(page.isAudioMuted(), false);
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy[1][0], QVariant(false));
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

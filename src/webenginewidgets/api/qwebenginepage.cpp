@@ -1147,9 +1147,11 @@ bool QWebEnginePage::isAudioMuted() const {
 
 void QWebEnginePage::setAudioMuted(bool muted) {
     Q_D(QWebEnginePage);
+    bool wasAudioMuted = isAudioMuted();
     d->defaultAudioMuted = muted;
-    if (d->adapter->isInitialized())
-        d->adapter->setAudioMuted(muted);
+    d->adapter->setAudioMuted(muted);
+    if (wasAudioMuted != isAudioMuted())
+        Q_EMIT audioMutedChanged(muted);
 }
 
 /*!
