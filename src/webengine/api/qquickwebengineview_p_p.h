@@ -217,6 +217,7 @@ public:
     QPointer<QQuickWebEngineView> inspectedView;
     QPointer<QQuickWebEngineView> devToolsView;
     uint m_webChannelWorld;
+    bool m_defaultAudioMuted;
     bool m_isBeingAdopted;
     mutable QQuickWebEngineAction *actions[QQuickWebEngineView::WebActionCount];
     QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *widget = nullptr;
