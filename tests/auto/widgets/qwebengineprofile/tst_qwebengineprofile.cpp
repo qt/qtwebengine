@@ -258,7 +258,7 @@ void tst_QWebEngineProfile::clearDataFromCache()
     QTest::qWait(1000);
     QVERIFY(sizeBeforeClear > totalSize(cacheDir));
 
-    QVERIFY(server.stop());
+    (void)server.stop();
 }
 
 void tst_QWebEngineProfile::disableCache()
@@ -283,7 +283,7 @@ void tst_QWebEngineProfile::disableCache()
     QVERIFY(loadSync(&page, server.url("/hedgehog.html")));
     QVERIFY(cacheDir.exists("Cache"));
 
-    QVERIFY(server.stop());
+    (void)server.stop();
 }
 
 class RedirectingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
@@ -876,7 +876,7 @@ void tst_QWebEngineProfile::changePersistentPath()
     QVERIFY(loadSync(&page, server.url("/hedgehog.html")));
     QVERIFY(dataDir2.exists());
 
-    QVERIFY(server.stop());
+    (void)server.stop();
 }
 
 void tst_QWebEngineProfile::changeHttpUserAgent()
@@ -949,7 +949,7 @@ void tst_QWebEngineProfile::changeUseForGlobalCertificateVerification()
     page.reset(new QWebEnginePage(&profile));
     QVERIFY(loadSync(page.get(), server.url("/hedgehog.html")));
     // Don't check for error: there can be disconnects during GET hedgehog.png.
-    server.stop();
+    (void)server.stop();
 }
 
 void tst_QWebEngineProfile::changePersistentCookiesPolicy()
@@ -973,7 +973,7 @@ void tst_QWebEngineProfile::changePersistentCookiesPolicy()
     QVERIFY(loadSync(&page, server.url("/hedgehog.html")));
     QVERIFY(dataDir.exists("Cookies"));
 
-    QVERIFY(server.stop());
+    (void)server.stop();
 }
 
 class InitiatorSpy : public QWebEngineUrlSchemeHandler
