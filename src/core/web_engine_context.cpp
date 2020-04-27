@@ -641,6 +641,9 @@ WebEngineContext::WebEngineContext()
 
     appendToFeatureList(disableFeatures, network::features::kDnsOverHttpsUpgrade.name);
 
+    // When enabled, event.movement is calculated in blink instead of in browser.
+    appendToFeatureList(disableFeatures, features::kConsolidatedMovementXY.name);
+
     // Explicitly tell Chromium about default-on features we do not support
     appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
     appendToFeatureList(disableFeatures, features::kSmsReceiver.name);

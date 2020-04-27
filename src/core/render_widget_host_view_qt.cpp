@@ -286,6 +286,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_adapterClient(0)
     , m_imeInProgress(false)
     , m_receivedEmptyImeEvent(false)
+    , m_isMouseLocked(false)
     , m_imState(0)
     , m_anchorPositionWithinSelection(-1)
     , m_cursorPositionWithinSelection(-1)
@@ -448,6 +449,11 @@ bool RenderWidgetHostViewQt::HasFocus()
     return m_delegate->hasKeyboardFocus();
 }
 
+bool RenderWidgetHostViewQt::IsMouseLocked()
+{
+    return m_isMouseLocked;
+}
+
 bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy()
 {
     if (m_enableViz)
@@ -520,6 +526,7 @@ bool RenderWidgetHostViewQt::LockMouse(bool)
 {
     m_previousMousePosition = QCursor::pos();
     m_delegate->lockMouse();
+    m_isMouseLocked = true;
     qApp->setOverrideCursor(Qt::BlankCursor);
     return true;
 }
@@ -528,6 +535,7 @@ void RenderWidgetHostViewQt::UnlockMouse()
 {
     m_delegate->unlockMouse();
     qApp->restoreOverrideCursor();
+    m_isMouseLocked = false;
     host()->LostMouseLock();
 }
 
@@ -1784,6 +1792,8 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         else if (ev->reason() == Qt::BacktabFocusReason)
             viewHost->SetInitialFocus(true);
         ev->accept();
+
+        m_adapterClient->webContentsAdapter()->handlePendingMouseLockPermission();
     } else if (ev->lostFocus()) {
         host()->SetActive(false);
         host()->LostFocus();

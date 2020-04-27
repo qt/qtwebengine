@@ -1962,7 +1962,7 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
             d->adapter->runFeatureRequestCallback(securityOrigin, ProfileAdapter::GeolocationPermission, true);
             break;
         case MouseLock:
-            d->adapter->grantMouseLockPermission(true);
+            d->adapter->grantMouseLockPermission(securityOrigin, true);
             break;
         case Notifications:
             d->adapter->runFeatureRequestCallback(securityOrigin, ProfileAdapter::NotificationPermission, true);
@@ -1981,7 +1981,7 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
             d->adapter->runFeatureRequestCallback(securityOrigin, ProfileAdapter::GeolocationPermission, false);
             break;
         case MouseLock:
-            d->adapter->grantMouseLockPermission(false);
+            d->adapter->grantMouseLockPermission(securityOrigin, false);
             break;
         case Notifications:
             d->adapter->runFeatureRequestCallback(securityOrigin, ProfileAdapter::NotificationPermission, false);

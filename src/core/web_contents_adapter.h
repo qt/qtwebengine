@@ -194,7 +194,8 @@ public:
     void devToolsFrontendDestroyed(DevToolsFrontendQt *frontend);
 
     void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);
-    void grantMouseLockPermission(bool granted);
+    void grantMouseLockPermission(const QUrl &securityOrigin, bool granted);
+    void handlePendingMouseLockPermission();
     void runFeatureRequestCallback(const QUrl &securityOrigin, ProfileAdapter::PermissionType feature, bool allowed);
 
     void setBackgroundColor(const QColor &color);
@@ -268,6 +269,7 @@ private:
 #endif
     WebContentsAdapterClient *m_adapterClient;
     quint64 m_nextRequestId;
+    QMap<QUrl, bool> m_pendingMouseLockPermissions;
     std::unique_ptr<content::DropData> m_currentDropData;
     uint m_currentDropAction;
     bool m_updateDragActionCalled;

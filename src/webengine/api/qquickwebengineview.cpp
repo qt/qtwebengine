@@ -672,11 +672,8 @@ void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &sec
 
 void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &securityOrigin)
 {
-
-    Q_UNUSED(securityOrigin);
-
     // TODO: Add mouse lock support
-    adapter->grantMouseLockPermission(false);
+    adapter->grantMouseLockPermission(securityOrigin, false);
 }
 
 void QQuickWebEngineViewPrivate::runQuotaRequest(QWebEngineQuotaRequest request)
