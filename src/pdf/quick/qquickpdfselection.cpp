@@ -124,6 +124,22 @@ QVector<QPolygonF> QQuickPdfSelection::geometry() const
     return m_geometry;
 }
 
+void QQuickPdfSelection::selectAll()
+{
+    QPdfSelection sel = m_document->m_doc.getAllText(m_page);
+    if (sel.text() != m_text) {
+        m_text = sel.text();
+        if (QGuiApplication::clipboard()->supportsSelection())
+            sel.copyToClipboard(QClipboard::Selection);
+        emit textChanged();
+    }
+
+    if (sel.bounds() != m_geometry) {
+        m_geometry = sel.bounds();
+        emit geometryChanged();
+    }
+}
+
 void QQuickPdfSelection::resetPoints()
 {
     bool wasHolding = m_hold;

@@ -147,6 +147,9 @@ QWebEngineCertificateError::~QWebEngineCertificateError()
     \value CertificateValidityTooLong The certificate has a validity period that is too long. (Added in Qt 5.7)
     \value CertificateTransparencyRequired Certificate Transparency was required for this connection, but the server
             did not provide CT information that complied with the policy. (Added in Qt 5.8)
+    \value CertificateKnownInterceptionBlocked The certificate is known to be
+            used for interception by an entity other the device owner. (Added in
+            5.15)
 */
 
 /*!

@@ -9,7 +9,7 @@
             "**/lib/pkgconfig/Qt5Pdf*",
             "**/lib/libQt5Pdf*",
             "**/mkspecs/modules/qt_lib_pdf*",
-            "**/plugins/**/*",
+            "**/plugins/imageformats/*",
             "**/qml/QtQuick/**/*"
         ]
     }

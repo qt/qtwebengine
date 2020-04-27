@@ -35,9 +35,9 @@
     The QML types can be imported into your application using the following import statements in
     your .qml file:
 
-    \badcode
+    \qml
     import QtWebEngine 1.10
-    \endcode
+    \endqml
 
     To link against the module, add the following QT variable to your qmake .pro
     file:

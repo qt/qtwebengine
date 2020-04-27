@@ -86,6 +86,7 @@ public:
     QString text() const;
     QVector<QPolygonF> geometry() const;
 
+    Q_INVOKABLE void selectAll();
 #if QT_CONFIG(clipboard)
     Q_INVOKABLE void copyToClipboard() const;
 #endif

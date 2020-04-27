@@ -100,10 +100,19 @@ void FilePickerController::accepted(const QStringList &files)
 
 void FilePickerController::accepted(const QVariant &files)
 {
-    if (!files.canConvert(QVariant::StringList))
-        qWarning("An unhandled type '%s' was provided in FilePickerController::accepted(QVariant)", files.typeName());
+    QStringList stringList;
 
-    accepted(files.toStringList());
+    if (files.canConvert(QVariant::StringList)) {
+        stringList = files.toStringList();
+    } else if (files.canConvert<QList<QUrl> >()) {
+        const QList<QUrl> urls = files.value<QList<QUrl>>();
+        for (const QUrl &url : urls)
+            stringList.append(url.toLocalFile());
+    } else {
+        qWarning("An unhandled type '%s' was provided in FilePickerController::accepted(QVariant)", files.typeName());
+    }
+
+    accepted(stringList);
 }
 
 void FilePickerController::rejected()

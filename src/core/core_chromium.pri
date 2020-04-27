@@ -50,7 +50,6 @@ SOURCES = \
         clipboard_qt.cpp \
         color_chooser_qt.cpp \
         color_chooser_controller.cpp \
-        command_line_pref_store_qt.cpp \
         common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
@@ -119,7 +118,6 @@ SOURCES = \
         renderer/render_view_observer_qt.cpp \
         renderer/render_thread_observer_qt.cpp \
         renderer/user_resource_controller.cpp \
-        renderer/plugins/loadable_plugin_placeholder_qt.cpp \
         renderer/plugins/plugin_placeholder_qt.cpp \
         renderer_host/render_view_observer_host_qt.cpp \
         renderer_host/user_resource_controller_host.cpp \
@@ -157,7 +155,6 @@ HEADERS = \
         client_cert_select_controller.h \
         clipboard_change_observer.h \
         clipboard_qt.h \
-        command_line_pref_store_qt.h \
         color_chooser_qt.h \
         color_chooser_controller_p.h \
         color_chooser_controller.h \
@@ -233,7 +230,6 @@ HEADERS = \
         renderer/render_view_observer_qt.h \
         renderer/render_thread_observer_qt.h \
         renderer/user_resource_controller.h \
-        renderer/plugins/loadable_plugin_placeholder_qt.h \
         renderer/plugins/plugin_placeholder_qt.h \
         renderer_host/render_view_observer_host_qt.h \
         renderer_host/user_resource_controller_host.h \
@@ -271,14 +267,16 @@ qtConfig(webengine-pepper-plugins) {
         renderer_host/pepper/pepper_host_factory_qt.cpp \
         renderer_host/pepper/pepper_isolated_file_system_message_filter.cpp \
         renderer/pepper/pepper_flash_renderer_host_qt.cpp \
-        renderer/pepper/pepper_renderer_host_factory_qt.cpp
+        renderer/pepper/pepper_renderer_host_factory_qt.cpp \
+        renderer/plugins/loadable_plugin_placeholder_qt.cpp
 
     HEADERS += \
         renderer_host/pepper/pepper_flash_browser_host_qt.h \
         renderer_host/pepper/pepper_host_factory_qt.h \
         renderer_host/pepper/pepper_isolated_file_system_message_filter.h \
         renderer/pepper/pepper_flash_renderer_host_qt.h \
-        renderer/pepper/pepper_renderer_host_factory_qt.h
+        renderer/pepper/pepper_renderer_host_factory_qt.h \
+        renderer/plugins/loadable_plugin_placeholder_qt.h
 }
 
 qtConfig(webengine-printing-and-pdf) {
@@ -336,7 +334,6 @@ qtConfig(webengine-extensions) {
         extensions/extension_system_factory_qt.cpp \
         extensions/extension_web_contents_observer_qt.cpp \
         extensions/extensions_api_client_qt.cpp \
-        extensions/extensions_browser_api_provider_qt.cpp \
         extensions/extensions_browser_client_qt.cpp \
         extensions/mime_handler_view_guest_delegate_qt.cpp \
         net/plugin_response_interceptor_url_loader_throttle.cpp \
@@ -353,7 +350,6 @@ qtConfig(webengine-extensions) {
         extensions/extension_system_factory_qt.h \
         extensions/extension_web_contents_observer_qt.h \
         extensions/extensions_api_client_qt.h \
-        extensions/extensions_browser_api_provider_qt.h \
         extensions/extensions_browser_client_qt.h \
         extensions/mime_handler_view_guest_delegate_qt.h \
         net/plugin_response_interceptor_url_loader_throttle.h \

@@ -70,7 +70,7 @@ void QPdfViewPrivate::init()
 
     m_pageNavigation = new QPdfPageNavigation(q);
     m_pageRenderer = new QPdfPageRenderer(q);
-    m_pageRenderer->setRenderMode(QPdfPageRenderer::MultiThreadedRenderMode);
+    m_pageRenderer->setRenderMode(QPdfPageRenderer::RenderMode::MultiThreaded);
 }
 
 void QPdfViewPrivate::documentStatusChanged()

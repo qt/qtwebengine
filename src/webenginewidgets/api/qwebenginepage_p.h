@@ -136,8 +136,7 @@ public:
     void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) override;
     void releaseProfile() override;
     void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) override;
-    void runGeolocationPermissionRequest(const QUrl &securityOrigin) override;
-    void runUserNotificationPermissionRequest(const QUrl &securityOrigin) override;
+    void runFeaturePermissionRequest(QtWebEngineCore::ProfileAdapter::PermissionType permission, const QUrl &securityOrigin) override;
     void runMouseLockPermissionRequest(const QUrl &securityOrigin) override;
     void runQuotaRequest(QWebEngineQuotaRequest) override;
     void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) override;
@@ -162,7 +161,6 @@ public:
     void hideTouchSelectionMenu() override { }
     const QObject *holdingQObject() const override;
     ClientType clientType() override { return QtWebEngineCore::WebContentsAdapterClient::WidgetsClient; }
-    void interceptRequest(QWebEngineUrlRequestInfo &) override;
     void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegate *newWidget) override;
     void findTextFinished(const QWebEngineFindTextResult &result) override;
 
@@ -203,7 +201,6 @@ public:
     bool defaultAudioMuted;
     qreal defaultZoomFactor;
     QTimer wasShownTimer;
-    QWebEngineUrlRequestInterceptor *requestInterceptor;
     QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *widget = nullptr;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;

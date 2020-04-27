@@ -126,6 +126,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineCertificateError.CertificateContainsErrors --> Error"
     << "QQuickWebEngineCertificateError.CertificateDateInvalid --> Error"
     << "QQuickWebEngineCertificateError.CertificateInvalid --> Error"
+    << "QQuickWebEngineCertificateError.CertificateKnownInterceptionBlocked --> Error"
     << "QQuickWebEngineCertificateError.CertificateNameConstraintViolation --> Error"
     << "QQuickWebEngineCertificateError.CertificateNoRevocationMechanism --> Error"
     << "QQuickWebEngineCertificateError.CertificateNonUniqueName --> Error"

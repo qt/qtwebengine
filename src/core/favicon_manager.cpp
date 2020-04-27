@@ -96,6 +96,7 @@ int FaviconManager::downloadIcon(const QUrl &url)
         id = m_webContents->DownloadImage(
              toGurl(url),
              true, // is_favicon
+             0, // preferred_size
              maxSize,
              false, // normal cache policy
              base::Bind(&FaviconManager::iconDownloadFinished, m_weakFactory->GetWeakPtr()));

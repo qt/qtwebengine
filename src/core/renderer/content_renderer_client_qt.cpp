@@ -39,7 +39,6 @@
 
 #include "renderer/content_renderer_client_qt.h"
 
-#include "common/qt_messages.h"
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "renderer/content_settings_observer_qt.h"
@@ -53,20 +52,20 @@
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
-#include "components/network_hints/renderer/prescient_networking_dispatcher.h"
+#include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "components/printing/renderer/print_render_frame_helper.h"
 #endif
-#include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "components/visitedlink/renderer/visitedlink_reader.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/child/child_thread.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/simple_connection_filter.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "media/base/key_system_properties.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -82,6 +81,7 @@
 #include "renderer/print_web_view_helper_delegate_qt.h"
 #endif
 
+#include "common/qt_messages.h"
 #include "renderer/render_frame_observer_qt.h"
 #include "renderer/render_view_observer_qt.h"
 #include "renderer/render_thread_observer_qt.h"
@@ -134,15 +134,8 @@ void ContentRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *renderThread = content::RenderThread::Get();
     m_renderThreadObserver.reset(new RenderThreadObserverQt());
-    m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
+    m_visitedLinkReader.reset(new visitedlink::VisitedLinkReader);
     m_webCacheImpl.reset(new web_cache::WebCacheImpl());
-
-    m_prescientNetworkingDispatcher.reset(new network_hints::PrescientNetworkingDispatcher());
-
-    auto registry = std::make_unique<service_manager::BinderRegistry>();
-    registry->AddInterface(m_visitedLinkSlave->GetBindCallback(), base::ThreadTaskRunnerHandle::Get());
-    content::ChildThread::Get()->GetServiceManagerConnection()->AddConnectionFilter(
-            std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
 
     renderThread->AddObserver(m_renderThreadObserver.data());
     renderThread->AddObserver(UserResourceController::instance());
@@ -171,6 +164,26 @@ void ContentRendererClientQt::RenderThreadStarted()
             network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
     ExtensionsRendererClientQt::GetInstance()->RenderThreadStarted();
+#endif
+}
+
+void ContentRendererClientQt::ExposeInterfacesToBrowser(mojo::BinderMap* binders)
+{
+    binders->Add(m_visitedLinkReader->GetBindCallback(), base::SequencedTaskRunnerHandle::Get());
+
+    binders->Add(base::BindRepeating(&web_cache::WebCacheImpl::BindReceiver,
+                                     base::Unretained(m_webCacheImpl.get())),
+                 base::SequencedTaskRunnerHandle::Get());
+
+#if QT_CONFIG(webengine_spellchecker)
+    binders->Add(base::BindRepeating(
+                         [](ContentRendererClientQt *client,
+                            mojo::PendingReceiver<spellcheck::mojom::SpellChecker> receiver) {
+                             if (!client->m_spellCheck)
+                                 client->InitSpellCheck();
+                             client->m_spellCheck->BindReceiver(std::move(receiver));
+                         }, this),
+                 base::SequencedTaskRunnerHandle::Get());
 #endif
 }
 
@@ -298,7 +311,7 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
 
         resourceId = IDR_NET_ERROR_HTML;
 
-        std::string extracted_string = ui::ResourceBundle::GetSharedInstance().DecompressDataResource(resourceId);
+        std::string extracted_string = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(resourceId);
         const base::StringPiece template_html(extracted_string.data(), extracted_string.size());
         if (template_html.empty())
             NOTREACHED() << "unable to load template. ID: " << resourceId;
@@ -309,17 +322,17 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
 
 uint64_t ContentRendererClientQt::VisitedLinkHash(const char *canonicalUrl, size_t length)
 {
-    return m_visitedLinkSlave->ComputeURLFingerprint(canonicalUrl, length);
+    return m_visitedLinkReader->ComputeURLFingerprint(canonicalUrl, length);
 }
 
 bool ContentRendererClientQt::IsLinkVisited(uint64_t linkHash)
 {
-    return m_visitedLinkSlave->IsVisited(linkHash);
+    return m_visitedLinkReader->IsVisited(linkHash);
 }
 
-blink::WebPrescientNetworking *ContentRendererClientQt::GetPrescientNetworking()
+std::unique_ptr<blink::WebPrescientNetworking> ContentRendererClientQt::CreatePrescientNetworking(content::RenderFrame *render_frame)
 {
-    return m_prescientNetworkingDispatcher.get();
+    return std::make_unique<network_hints::WebPrescientNetworkingImpl>(render_frame);
 }
 
 bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_frame,
@@ -586,25 +599,32 @@ void ContentRendererClientQt::AddSupportedKeySystems(std::vector<std::unique_ptr
 #if QT_CONFIG(webengine_spellchecker)
 void ContentRendererClientQt::InitSpellCheck()
 {
-    m_spellCheck.reset(new SpellCheck(&m_registry, this));
+    m_spellCheck.reset(new SpellCheck(this));
 }
 #endif
 
 void ContentRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
                                               ui::PageTransition transition_type,
                                               const blink::WebURL &url,
+                                              const blink::WebURL &site_for_cookies,
                                               const url::Origin *initiator_origin,
                                               GURL *new_url,
                                               bool *attach_same_site_cookies)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    ExtensionsRendererClientQt::GetInstance()->WillSendRequest(frame, transition_type, url, initiator_origin, new_url,
-                                                               attach_same_site_cookies);
+    ExtensionsRendererClientQt::GetInstance()->WillSendRequest(frame, transition_type, url, /*site_for_cookies,*/
+                                                               initiator_origin, new_url, attach_same_site_cookies);
     if (!new_url->is_empty())
         return;
 #endif
-    content::ContentRendererClient::WillSendRequest(frame, transition_type, url, initiator_origin, new_url,
-                                                    attach_same_site_cookies);
+}
+
+bool ContentRendererClientQt::RequiresWebComponentsV0(const GURL &url)
+{
+    Q_UNUSED(url);
+    // Google services still presents pages using these features
+    // to Chromium 80 based browsers (YouTube in particular).
+    return true;
 }
 
 } // namespace QtWebEngineCore

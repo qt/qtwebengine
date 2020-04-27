@@ -45,6 +45,7 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/viz/common/features.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -333,6 +334,8 @@ void WebEngineSettings::doApply()
 {
     if (webPreferences.isNull())
         return;
+
+    m_batchTimer.stop();
     // Override with our settings when applicable
     applySettingsToWebPreferences(webPreferences.data());
     Q_ASSERT(m_adapter);
@@ -386,6 +389,11 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->dom_paste_enabled = testAttribute(JavascriptCanPaste);
     prefs->dns_prefetching_enabled = testAttribute(DnsPrefetchEnabled);
 
+    if (!features::IsVizDisplayCompositorEnabled()) {
+        prefs->accelerated_2d_canvas_enabled = false;
+        prefs->disable_features_depending_on_viz = true;
+    }
+
     // Fonts settings.
     prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));
     prefs->fixed_font_family_map[content::kCommonScript] = toString16(fontFamily(FixedFont));
@@ -402,18 +410,23 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
 
     // Set the theme colors. Based on chrome_content_browser_client.cc:
     const ui::NativeTheme *webTheme = ui::NativeTheme::GetInstanceForWeb();
-    if (webTheme) {
-        switch (webTheme->GetPreferredColorScheme()) {
-          case ui::NativeTheme::PreferredColorScheme::kDark:
-            prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
-            break;
-          case ui::NativeTheme::PreferredColorScheme::kLight:
-            prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
-            break;
-          case ui::NativeTheme::PreferredColorScheme::kNoPreference:
-            prefs->preferred_color_scheme = blink::PreferredColorScheme::kNoPreference;
-        }
-    }
+    // WebPreferences::preferred_color_scheme was deleted in Chromium 80, but it
+    // will make a comeback in Chromium 82...
+    //
+    // See also: https://chromium-review.googlesource.com/c/chromium/src/+/2079192
+    //
+    // if (webTheme) {
+    //     switch (webTheme->GetPreferredColorScheme()) {
+    //       case ui::NativeTheme::PreferredColorScheme::kDark:
+    //         prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
+    //         break;
+    //       case ui::NativeTheme::PreferredColorScheme::kLight:
+    //         prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
+    //         break;
+    //       case ui::NativeTheme::PreferredColorScheme::kNoPreference:
+    //         prefs->preferred_color_scheme = blink::PreferredColorScheme::kNoPreference;
+    //     }
+    // }
 
     // Apply native CaptionStyle parameters.
     base::Optional<ui::CaptionStyle> style;

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -56,15 +57,15 @@ class Q_PDF_EXPORT QPdfPageRenderer : public QObject
     Q_PROPERTY(RenderMode renderMode READ renderMode WRITE setRenderMode NOTIFY renderModeChanged)
 
 public:
-    enum RenderMode
+    enum class RenderMode
     {
-        MultiThreadedRenderMode,
-        SingleThreadedRenderMode
+        MultiThreaded,
+        SingleThreaded
     };
     Q_ENUM(RenderMode)
 
     explicit QPdfPageRenderer(QObject *parent = nullptr);
-    ~QPdfPageRenderer();
+    ~QPdfPageRenderer() override;
 
     RenderMode renderMode() const;
     void setRenderMode(RenderMode mode);

@@ -48,6 +48,7 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_screen.h"
 #include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -67,13 +68,13 @@ public:
     ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override;
     ui::CursorFactoryOzone* GetCursorFactoryOzone() override;
     GpuPlatformSupportHost* GetGpuPlatformSupportHost() override;
-    std::unique_ptr<PlatformWindowBase> CreatePlatformWindow(PlatformWindowDelegate* delegate, PlatformWindowInitProperties properties) override;
+    std::unique_ptr<PlatformWindow> CreatePlatformWindow(PlatformWindowDelegate* delegate, PlatformWindowInitProperties properties) override;
     std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
     ui::InputController* GetInputController() override;
     std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
     ui::OverlayManagerOzone* GetOverlayManager() override;
     std::unique_ptr<InputMethod> CreateInputMethod(internal::InputMethodDelegate *delegate) override;
-
+    std::unique_ptr<ui::PlatformScreen> CreateScreen() override { return nullptr; }
 private:
     void InitializeUI(const ui::OzonePlatform::InitParams &) override;
     void InitializeGPU(const ui::OzonePlatform::InitParams &) override;
@@ -108,7 +109,7 @@ GpuPlatformSupportHost* OzonePlatformQt::GetGpuPlatformSupportHost()
     return gpu_platform_support_host_.get();
 }
 
-std::unique_ptr<PlatformWindowBase> OzonePlatformQt::CreatePlatformWindow(PlatformWindowDelegate* delegate, PlatformWindowInitProperties properties)
+std::unique_ptr<PlatformWindow> OzonePlatformQt::CreatePlatformWindow(PlatformWindowDelegate* delegate, PlatformWindowInitProperties properties)
 {
     return base::WrapUnique(new PlatformWindowQt(delegate, properties.bounds));
 }

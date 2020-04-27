@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -38,56 +39,50 @@
 #define QPDFDOCUMENTRENDEROPTIONS_H
 
 #include <QtPdf/qpdfnamespace.h>
-#include <QtCore/QObject>
-#include <QtCore/QRect>
+#include <QtCore/qobject.h>
+#include <QtCore/qrect.h>
 
 QT_BEGIN_NAMESPACE
 
 class QPdfDocumentRenderOptions
 {
 public:
-    Q_DECL_CONSTEXPR QPdfDocumentRenderOptions() Q_DECL_NOTHROW : data(0) {}
+    Q_DECL_CONSTEXPR QPdfDocumentRenderOptions() noexcept : m_renderFlags(0), m_rotation(0), m_reserved(0) {}
 
-    Q_DECL_CONSTEXPR QPdf::Rotation rotation() const Q_DECL_NOTHROW { return static_cast<QPdf::Rotation>(bits.rotation); }
-    Q_DECL_RELAXED_CONSTEXPR void setRotation(QPdf::Rotation _rotation) Q_DECL_NOTHROW { bits.rotation = _rotation; }
+    Q_DECL_CONSTEXPR QPdf::Rotation rotation() const noexcept { return static_cast<QPdf::Rotation>(m_rotation); }
+    Q_DECL_RELAXED_CONSTEXPR void setRotation(QPdf::Rotation r) noexcept { m_rotation = r; }
 
-    Q_DECL_CONSTEXPR QPdf::RenderFlags renderFlags() const Q_DECL_NOTHROW { return static_cast<QPdf::RenderFlags>(bits.renderFlags); }
-    Q_DECL_RELAXED_CONSTEXPR void setRenderFlags(QPdf::RenderFlags _renderFlags) Q_DECL_NOTHROW { bits.renderFlags = _renderFlags; }
+    Q_DECL_CONSTEXPR QPdf::RenderFlags renderFlags() const noexcept { return static_cast<QPdf::RenderFlags>(m_renderFlags); }
+    Q_DECL_RELAXED_CONSTEXPR void setRenderFlags(QPdf::RenderFlags r) noexcept { m_renderFlags = r; }
 
-    Q_DECL_CONSTEXPR QRect scaledClipRect() const Q_DECL_NOTHROW { return m_clipRect; }
-    Q_DECL_RELAXED_CONSTEXPR void setScaledClipRect(const QRect &r) Q_DECL_NOTHROW { m_clipRect = r; }
+    Q_DECL_CONSTEXPR QRect scaledClipRect() const noexcept { return m_clipRect; }
+    Q_DECL_RELAXED_CONSTEXPR void setScaledClipRect(const QRect &r) noexcept { m_clipRect = r; }
 
-    Q_DECL_CONSTEXPR QSize scaledSize() const Q_DECL_NOTHROW { return m_scaledSize; }
-    Q_DECL_RELAXED_CONSTEXPR void setScaledSize(const QSize &s) Q_DECL_NOTHROW { m_scaledSize = s; }
+    Q_DECL_CONSTEXPR QSize scaledSize() const noexcept { return m_scaledSize; }
+    Q_DECL_RELAXED_CONSTEXPR void setScaledSize(const QSize &s) noexcept { m_scaledSize = s; }
 
 private:
-    friend Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW;
-
-
-    struct Bits {
-        quint32 renderFlags : 8;
-        quint32 rotation    : 3;
-        quint32 reserved    : 21;
-        quint32 reserved2   : 32;
-    };
-
-    union {
-        Bits bits;
-        quint64 data;
-    };
+    friend Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept;
 
     QRect m_clipRect;
     QSize m_scaledSize;
+
+    quint32 m_renderFlags : 8;
+    quint32 m_rotation    : 3;
+    quint32 m_reserved    : 21;
+    quint32 m_reserved2 = 0;
 };
 
 Q_DECLARE_TYPEINFO(QPdfDocumentRenderOptions, Q_PRIMITIVE_TYPE);
 
-Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept
 {
-    return lhs.data == rhs.data && lhs.m_clipRect == rhs.m_clipRect && lhs.m_scaledSize == rhs.m_scaledSize;
+    return lhs.m_clipRect == rhs.m_clipRect && lhs.m_scaledSize == rhs.m_scaledSize &&
+            lhs.m_renderFlags == rhs.m_renderFlags && lhs.m_rotation == rhs.m_rotation &&
+            lhs.m_reserved == rhs.m_reserved && lhs.m_reserved2 == rhs.m_reserved2; // fix -Wunused-private-field
 }
 
-Q_DECL_CONSTEXPR inline bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW
+Q_DECL_CONSTEXPR inline bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) noexcept
 {
     return !operator==(lhs, rhs);
 }

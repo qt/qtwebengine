@@ -18,8 +18,4 @@ source_set("qt") {
   ]
 
   defines = [ "OZONE_IMPLEMENTATION" ]
-
-  if (is_linux && !is_desktop_linux) {
-    deps += [ "//ui/events/ozone:events_ozone_evdev"]
-  }
 }

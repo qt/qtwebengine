@@ -53,6 +53,8 @@
 
 #include "qtwebenginecoreglobal_p.h"
 
+#include "profile_adapter.h"
+
 #include <QFlags>
 #include <QRect>
 #include <QSharedPointer>
@@ -68,6 +70,7 @@ QT_FORWARD_DECLARE_CLASS(QWebEngineFindTextResult)
 QT_FORWARD_DECLARE_CLASS(QWebEngineQuotaRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineRegisterProtocolHandlerRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInfo)
+QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInterceptor)
 
 namespace content {
 struct DropData;
@@ -76,7 +79,6 @@ struct DropData;
 namespace QtWebEngineCore {
 
 class AuthenticationDialogController;
-class ProfileAdapter;
 class ColorChooserController;
 class FilePickerController;
 class JavaScriptDialogController;
@@ -489,12 +491,11 @@ public:
     virtual QObject *accessibilityParentObject() = 0;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) = 0;
     virtual void authenticationRequired(QSharedPointer<AuthenticationDialogController>) = 0;
-    virtual void runGeolocationPermissionRequest(const QUrl &securityOrigin) = 0;
+    virtual void runFeaturePermissionRequest(ProfileAdapter::PermissionType, const QUrl &securityOrigin) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runQuotaRequest(QWebEngineQuotaRequest) = 0;
     virtual void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) = 0;
-    virtual void runUserNotificationPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual WebEngineSettings *webEngineSettings() const = 0;
     RenderProcessTerminationStatus renderProcessExitStatus(int);
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;
@@ -514,7 +515,6 @@ public:
     virtual ClientType clientType() = 0;
     virtual void printRequested() = 0;
     virtual void widgetChanged(RenderWidgetHostViewQtDelegate *newWidget) = 0;
-    virtual void interceptRequest(QWebEngineUrlRequestInfo &) { }
     virtual TouchHandleDrawableClient *createTouchHandle(const QMap<int, QImage> &images) = 0;
     virtual void showTouchSelectionMenu(TouchSelectionMenuController *menuController, const QRect &bounds, const QSize &handleSize) = 0;
     virtual void hideTouchSelectionMenu() = 0;
@@ -523,7 +523,6 @@ public:
     virtual ProfileAdapter *profileAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;
     virtual void releaseProfile() = 0;
-
 };
 
 } // namespace QtWebEngineCore

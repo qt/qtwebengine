@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -38,7 +39,7 @@
 #define QPDFPAGENAVIGATION_H
 
 #include <QtPdf/qtpdfglobal.h>
-#include <QObject>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 

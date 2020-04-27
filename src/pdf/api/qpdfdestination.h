@@ -56,10 +56,11 @@ class Q_PDF_EXPORT QPdfDestination
     Q_PROPERTY(qreal zoom READ zoom)
 
 public:
-    QPdfDestination(const QPdfDestination &other);
     ~QPdfDestination();
+    QPdfDestination(const QPdfDestination &other);
     QPdfDestination &operator=(const QPdfDestination &other);
-    inline QPdfDestination &operator=(QPdfDestination &&other) noexcept { swap(other); return *this; }
+    QPdfDestination(QPdfDestination &&other) noexcept;
+    QPdfDestination &operator=(QPdfDestination &&other) noexcept { swap(other); return *this; }
     void swap(QPdfDestination &other) noexcept { d.swap(other.d); }
     bool isValid() const;
     int page() const;

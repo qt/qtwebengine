@@ -4,7 +4,8 @@ QT_FOR_CONFIG += buildtools-private webenginecore-private core-private gui-priva
 
 TEMPLATE = aux
 
-qtConfig(debug_and_release): CONFIG += debug_and_release build_all
+qtConfig(debug_and_release): CONFIG += debug_and_release
+qtConfig(build_all): CONFIG += build_all
 
 QT_TOOL.ninja.binary = $$shell_quote($$shell_path($$ninjaPath()))
 

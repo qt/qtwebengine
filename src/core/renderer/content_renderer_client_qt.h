@@ -57,12 +57,8 @@ namespace error_page {
 class Error;
 }
 
-namespace network_hints {
-class PrescientNetworkingDispatcher;
-}
-
 namespace visitedlink {
-class VisitedLinkSlave;
+class VisitedLinkReader;
 }
 
 namespace web_cache {
@@ -91,6 +87,7 @@ public:
 
     // content::ContentRendererClient:
     void RenderThreadStarted() override;
+    void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
     void RenderViewCreated(content::RenderView *render_view) override;
     void RenderFrameCreated(content::RenderFrame *render_frame) override;
     bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) override;
@@ -108,7 +105,7 @@ public:
 
     uint64_t VisitedLinkHash(const char *canonical_url, size_t length) override;
     bool IsLinkVisited(uint64_t linkHash) override;
-    blink::WebPrescientNetworking *GetPrescientNetworking() override;
+    std::unique_ptr<blink::WebPrescientNetworking> CreatePrescientNetworking(content::RenderFrame *render_frame) override;
     void AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>> *key_systems) override;
 
     void RunScriptsAtDocumentStart(content::RenderFrame *render_frame) override;
@@ -125,11 +122,13 @@ public:
     void WillSendRequest(blink::WebLocalFrame *frame,
                          ui::PageTransition transition_type,
                          const blink::WebURL &url,
+                         const blink::WebURL &site_for_cookies,
                          const url::Origin *initiator_origin,
                          GURL *new_url,
                          bool *attach_same_site_cookies) override;
 
     void BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver) override;
+    bool RequiresWebComponentsV0(const GURL &url) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     static blink::WebPlugin* CreatePlugin(content::RenderFrame* render_frame,
@@ -148,14 +147,13 @@ private:
                                            const error_page::Error &error, std::string *errorHtml);
 
     QScopedPointer<RenderThreadObserverQt> m_renderThreadObserver;
-    QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
+    QScopedPointer<visitedlink::VisitedLinkReader> m_visitedLinkReader;
     QScopedPointer<web_cache::WebCacheImpl> m_webCacheImpl;
 #if QT_CONFIG(webengine_spellchecker)
     QScopedPointer<SpellCheck> m_spellCheck;
 #endif
 
     service_manager::BinderRegistry m_registry;
-    std::unique_ptr<network_hints::PrescientNetworkingDispatcher> m_prescientNetworkingDispatcher;
 
     DISALLOW_COPY_AND_ASSIGN(ContentRendererClientQt);
 };

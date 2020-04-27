@@ -29,6 +29,7 @@
 import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.2
+import "../../qmltests/data" 1.0
 import "../mock-delegates/TestParams" 1.0
 
 TestWebEngineView {
@@ -68,7 +69,7 @@ TestWebEngineView {
 
         function cleanup() {
             // Test that the render process doesn't crash, and make sure if it does it does so now.
-            wait(1000)
+            wait(100)
             verify(terminationSpy.count == 0, "Render process didn't self terminate")
 
             // FIXME: Almost every second url loading progress does get stuck at about 90 percent, so the loadFinished signal won't arrive.

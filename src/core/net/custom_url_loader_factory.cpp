@@ -441,12 +441,12 @@ public:
     ~CustomURLLoaderFactory() override = default;
 
     // network::mojom::URLLoaderFactory:
-    void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+    void CreateLoaderAndStart(mojo::PendingReceiver<network::mojom::URLLoader> loader,
                               int32_t routing_id,
                               int32_t request_id,
                               uint32_t options,
                               const network::ResourceRequest &request,
-                              network::mojom::URLLoaderClientPtr client,
+                              mojo::PendingRemote<network::mojom::URLLoaderClient> client,
                               const net::MutableNetworkTrafficAnnotationTag &traffic_annotation) override
     {
         DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -457,7 +457,7 @@ public:
 
         m_taskRunner->PostTask(FROM_HERE,
                                base::BindOnce(&CustomURLLoader::CreateAndStart, request,
-                                              std::move(loader), client.PassInterface(),
+                                              std::move(loader), std::move(client),
                                               m_profileAdapter));
 
     }

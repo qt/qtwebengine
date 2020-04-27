@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
@@ -48,6 +49,7 @@
 #include "touch_selection_controller_client_qt.h"
 #include "touch_selection_menu_controller.h"
 #include "type_conversion.h"
+#include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 #include "web_event_factory.h"
 
@@ -215,13 +217,13 @@ public:
     float GetRawY(size_t pointer_index) const override { return touchPoints.at(pointer_index).screenPos().y(); }
     float GetTouchMajor(size_t pointer_index) const override
     {
-        QRectF touchRect = touchPoints.at(pointer_index).rect();
-        return std::max(touchRect.height(), touchRect.width());
+        QSizeF diams = touchPoints.at(pointer_index).ellipseDiameters();
+        return std::max(diams.height(), diams.width());
     }
     float GetTouchMinor(size_t pointer_index) const override
     {
-        QRectF touchRect = touchPoints.at(pointer_index).rect();
-        return std::min(touchRect.height(), touchRect.width());
+        QSizeF diams = touchPoints.at(pointer_index).ellipseDiameters();
+        return std::min(diams.height(), diams.width());
     }
     float GetOrientation(size_t pointer_index) const override
     {
@@ -497,23 +499,20 @@ gfx::Rect RenderWidgetHostViewQt::GetViewBounds()
 
 void RenderWidgetHostViewQt::UpdateBackgroundColor()
 {
+    DCHECK(GetBackgroundColor());
+    SkColor color = *GetBackgroundColor();
+
+    m_delegate->setClearColor(toQt(color));
+
     if (m_enableViz) {
-        DCHECK(GetBackgroundColor());
-        SkColor color = *GetBackgroundColor();
         bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
         m_rootLayer->SetFillsBoundsOpaquely(opaque);
         m_rootLayer->SetColor(color);
         m_uiCompositor->SetBackgroundColor(color);
-        m_delegate->setClearColor(toQt(color));
-        host()->Send(new RenderViewObserverQt_SetBackgroundColor(host()->GetRoutingID(), color));
-        return;
     }
 
-    auto color = GetBackgroundColor();
-    if (color) {
-        m_delegate->setClearColor(toQt(*color));
-        host()->Send(new RenderViewObserverQt_SetBackgroundColor(host()->GetRoutingID(), *color));
-    }
+    content::RenderViewHost *rvh = content::RenderViewHost::From(host());
+    host()->Send(new RenderViewObserverQt_SetBackgroundColor(rvh->GetRoutingID(), color));
 }
 
 // Return value indicates whether the mouse is locked successfully or not.
@@ -1842,7 +1841,6 @@ const viz::LocalSurfaceIdAllocation &RenderWidgetHostViewQt::GetLocalSurfaceIdAl
 void RenderWidgetHostViewQt::TakeFallbackContentFrom(content::RenderWidgetHostView *view)
 {
     DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)->IsRenderWidgetHostViewChildFrame());
-    DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)->IsRenderWidgetHostViewGuest());
     RenderWidgetHostViewQt *viewQt = static_cast<RenderWidgetHostViewQt *>(view);
     base::Optional<SkColor> color = viewQt->GetBackgroundColor();
     if (color)
@@ -1882,9 +1880,9 @@ void RenderWidgetHostViewQt::OnRenderFrameMetadataChangedAfterActivation()
     gfx::SizeF contentsSize = metadata.root_layer_size;
     std::swap(m_lastScrollOffset, scrollOffset);
     std::swap(m_lastContentsSize, contentsSize);
-    if (scrollOffset != m_lastScrollOffset)
+    if (m_adapterClient && scrollOffset != m_lastScrollOffset)
         m_adapterClient->updateScrollPosition(toQt(m_lastScrollOffset));
-    if (contentsSize != m_lastContentsSize)
+    if (m_adapterClient && contentsSize != m_lastContentsSize)
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
 }
 

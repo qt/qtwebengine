@@ -16,6 +16,7 @@ gn_args += \
     enable_reporting=false \
     enable_resource_whitelist_generation=false \
     enable_swiftshader=false \
+    angle_enable_swiftshader=false \
     enable_web_auth=false \
     enable_web_speech=false \
     enable_widevine=true \

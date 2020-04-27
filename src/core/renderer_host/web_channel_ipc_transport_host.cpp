@@ -74,7 +74,7 @@ WebChannelIPCTransportHost::WebChannelIPCTransportHost(content::WebContents *con
     : QWebChannelAbstractTransport(parent)
     , content::WebContentsObserver(contents)
     , m_worldId(worldId)
-    , m_binding(contents, this)
+    , m_receiver(contents, this)
 {
     for (content::RenderFrameHost *frame : contents->GetAllFrames())
         setWorldId(frame, worldId);
@@ -136,7 +136,7 @@ void WebChannelIPCTransportHost::DispatchWebChannelMessage(const std::vector<uin
 {
     content::RenderFrameHost *frame = web_contents()->GetMainFrame();
 
-    if (m_binding.GetCurrentTargetFrame() != frame) {
+    if (m_receiver.GetCurrentTargetFrame() != frame) {
         return;
     }
 

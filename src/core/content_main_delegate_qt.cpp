@@ -48,6 +48,7 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "media/gpu/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -71,7 +72,22 @@
 #include "ui/base/ui_base_switches.h"
 #endif
 
+// must be included before vaapi_wrapper.h
 #include <QtCore/qcoreapplication.h>
+
+#if defined(OS_WIN)
+#include "media/gpu/windows/dxva_video_decode_accelerator_win.h"
+#include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "content/public/common/content_features.h"
+#include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
+#endif
+
+#if BUILDFLAG(USE_VAAPI)
+#include "media/gpu/vaapi/vaapi_wrapper.h"
+#endif
 
 namespace content {
 ContentClient *GetContentClient();
@@ -107,7 +123,7 @@ struct LazyDirectoryListerCacher
         dict.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
         std::string html =
                 webui::GetI18nTemplateHtml(
-                    ui::ResourceBundle::GetSharedInstance().DecompressDataResource(IDR_DIR_HEADER_HTML),
+                    ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_DIR_HEADER_HTML),
                     &dict);
         html_data = base::RefCountedString::TakeString(&html);
     }
@@ -187,6 +203,22 @@ void ContentMainDelegateQt::PreSandboxStartup()
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
     if (parsedCommandLine->HasSwitch(switches::kSingleProcess))
         setlocale(LC_NUMERIC, "C");
+#endif
+
+    // from gpu_main.cc:
+#if BUILDFLAG(USE_VAAPI)
+    media::VaapiWrapper::PreSandboxInitialization();
+#endif
+#if defined(OS_WIN)
+    media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
+    media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
+#endif
+
+#if defined(OS_MACOSX)
+    if (base::FeatureList::IsEnabled(features::kMacV2GPUSandbox)) {
+        TRACE_EVENT0("gpu", "Initialize VideoToolbox");
+        media::InitializeVideoToolbox();
+    }
 #endif
 }
 

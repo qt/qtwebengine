@@ -76,9 +76,9 @@ namespace {
 bool g_initializedEGL = false;
 }
 
-void* GLSurfaceQt::g_display = NULL;
-void* GLSurfaceQt::g_config = NULL;
-const char* GLSurfaceQt::g_extensions = NULL;
+void* GLSurfaceQt::g_display = nullptr;
+void* GLSurfaceQt::g_config = nullptr;
+const char* GLSurfaceQt::g_extensions = nullptr;
 
 GLSurfaceQt::~GLSurfaceQt()
 {
@@ -196,14 +196,14 @@ CreateOffscreenGLSurfaceWithFormat(const gfx::Size& size, GLSurfaceFormat format
     }
     LOG(ERROR) << "Requested OpenGL implementation is not supported. Implementation: " << GetGLImplementation();
     Q_UNREACHABLE();
-    return NULL;
+    return nullptr;
 }
 
 scoped_refptr<GLSurface>
 CreateViewGLSurface(gfx::AcceleratedWidget window)
 {
     QT_NOT_USED
-    return NULL;
+    return nullptr;
 }
 
 } // namespace init

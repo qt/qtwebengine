@@ -73,6 +73,7 @@ public:
         CertificateNameConstraintViolation = -212,
         CertificateValidityTooLong = -213,
         CertificateTransparencyRequired = -214,
+        CertificateKnownInterceptionBlocked = -217,
     };
 
     Error error() const;

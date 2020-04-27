@@ -95,7 +95,6 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
-    , m_pageRequestInterceptors(0)
 {
     WebEngineContext::current()->addProfileAdapter(this);
     // creation of profile requires webengine context
@@ -134,7 +133,6 @@ ProfileAdapter::~ProfileAdapter()
 #if QT_CONFIG(ssl)
     delete m_clientCertificateStore;
 #endif
-    Q_ASSERT(m_pageRequestInterceptors == 0);
 }
 
 void ProfileAdapter::setStorageName(const QString &storageName)
@@ -144,7 +142,8 @@ void ProfileAdapter::setStorageName(const QString &storageName)
     m_name = storageName;
     if (!m_offTheRecord) {
         m_profile->setupPrefService();
-        m_profile->m_profileIOData->resetNetworkContext();
+        if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
+            m_profile->m_profileIOData->resetNetworkContext();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -156,7 +155,8 @@ void ProfileAdapter::setOffTheRecord(bool offTheRecord)
         return;
     m_offTheRecord = offTheRecord;
     m_profile->setupPrefService();
-    m_profile->m_profileIOData->resetNetworkContext();
+    if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
+        m_profile->m_profileIOData->resetNetworkContext();
     if (m_visitedLinksManager)
         resetVisitedLinksManager();
 }
@@ -194,19 +194,7 @@ QWebEngineUrlRequestInterceptor *ProfileAdapter::requestInterceptor()
 
 void ProfileAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
-    if (m_requestInterceptor == interceptor)
-        return;
-
-    if (m_requestInterceptor)
-        disconnect(m_requestInterceptor, &QObject::destroyed, this, nullptr);
     m_requestInterceptor = interceptor;
-    if (m_requestInterceptor)
-        connect(m_requestInterceptor, &QObject::destroyed, this, [this] () {
-            m_profile->m_profileIOData->updateRequestInterceptor();
-            Q_ASSERT(!m_profile->m_profileIOData->requestInterceptor());
-        });
-
-    m_profile->m_profileIOData->updateRequestInterceptor();
 }
 
 void ProfileAdapter::addClient(ProfileAdapterClient *adapterClient)
@@ -218,20 +206,6 @@ void ProfileAdapter::removeClient(ProfileAdapterClient *adapterClient)
 {
     m_clients.removeOne(adapterClient);
 }
-
-void ProfileAdapter::addPageRequestInterceptor()
-{
-    ++m_pageRequestInterceptors;
-    m_profile->m_profileIOData->updateRequestInterceptor();
-}
-
-void ProfileAdapter::removePageRequestInterceptor()
-{
-    Q_ASSERT(m_pageRequestInterceptors > 0);
-    --m_pageRequestInterceptors;
-    m_profile->m_profileIOData->updateRequestInterceptor();
-}
-
 
 void ProfileAdapter::cancelDownload(quint32 downloadId)
 {
@@ -287,7 +261,8 @@ void ProfileAdapter::setDataPath(const QString &path)
     m_dataPath = path;
     if (!m_offTheRecord) {
         m_profile->setupPrefService();
-        m_profile->m_profileIOData->resetNetworkContext();
+        if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
+            m_profile->m_profileIOData->resetNetworkContext();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
     }
@@ -314,23 +289,8 @@ void ProfileAdapter::setCachePath(const QString &path)
     if (m_cachePath == path)
         return;
     m_cachePath = path;
-    if (!m_offTheRecord)
+    if (!m_offTheRecord && !m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
-}
-
-QString ProfileAdapter::cookiesPath() const
-{
-    if (m_offTheRecord)
-        return QString();
-    QString basePath = dataPath();
-    if (!basePath.isEmpty()) {
-        // This is a typo fix. We still need the old path in order to avoid breaking migration.
-        QDir coookiesFolder(basePath % QLatin1String("/Coookies"));
-        if (coookiesFolder.exists())
-            return coookiesFolder.path();
-        return basePath % QLatin1String("/Cookies");
-    }
-    return QString();
 }
 
 QString ProfileAdapter::httpCachePath() const
@@ -384,7 +344,7 @@ void ProfileAdapter::setHttpCacheType(ProfileAdapter::HttpCacheType newhttpCache
     m_httpCacheType = newhttpCacheType;
     if (oldCacheType == httpCacheType())
         return;
-    if (!m_offTheRecord) {
+    if (!m_offTheRecord && !m_profile->m_profileIOData->isClearHttpCacheInProgress()) {
         m_profile->m_profileIOData->resetNetworkContext();
         if (m_httpCacheType == NoCache)
             clearHttpCache();
@@ -393,7 +353,7 @@ void ProfileAdapter::setHttpCacheType(ProfileAdapter::HttpCacheType newhttpCache
 
 ProfileAdapter::PersistentCookiesPolicy ProfileAdapter::persistentCookiesPolicy() const
 {
-    if (isOffTheRecord() || cookiesPath().isEmpty())
+    if (isOffTheRecord() || dataPath().isEmpty())
         return NoPersistentCookies;
     return m_persistentCookiesPolicy;
 }
@@ -404,7 +364,7 @@ void ProfileAdapter::setPersistentCookiesPolicy(ProfileAdapter::PersistentCookie
     m_persistentCookiesPolicy = newPersistentCookiesPolicy;
     if (oldPolicy == persistentCookiesPolicy())
         return;
-    if (!m_offTheRecord)
+    if (!m_offTheRecord && !m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
 }
 
@@ -459,7 +419,7 @@ void ProfileAdapter::setHttpCacheMaxSize(int maxSize)
     if (m_httpCacheMaxSize == maxSize)
         return;
     m_httpCacheMaxSize = maxSize;
-    if (!m_offTheRecord)
+    if (!m_offTheRecord && !m_profile->m_profileIOData->isClearHttpCacheInProgress())
         m_profile->m_profileIOData->resetNetworkContext();
 }
 
@@ -635,10 +595,7 @@ void ProfileAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
 
 void ProfileAdapter::clearHttpCache()
 {
-    content::BrowsingDataRemover *remover = content::BrowserContext::GetBrowsingDataRemover(m_profile.data());
-    remover->Remove(base::Time(), base::Time::Max(),
-        content::BrowsingDataRemover::DATA_TYPE_CACHE,
-        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB | content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB);
+    m_profile->m_profileIOData->clearHttpCache();
 }
 
 void ProfileAdapter::setSpellCheckLanguages(const QStringList &languages)
@@ -699,7 +656,8 @@ void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
     if (enable) {
         if (profileForglobalCertificateVerification) {
             profileForglobalCertificateVerification->m_usedForGlobalCertificateVerification = false;
-            profileForglobalCertificateVerification->m_profile->m_profileIOData->resetNetworkContext();
+            if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
+                profileForglobalCertificateVerification->m_profile->m_profileIOData->resetNetworkContext();
             for (auto *client : qAsConst(profileForglobalCertificateVerification->m_clients))
                 client->useForGlobalCertificateVerificationChanged();
         }
@@ -710,7 +668,8 @@ void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)
         profileForglobalCertificateVerification = nullptr;
     }
 
-    m_profile->m_profileIOData->resetNetworkContext();
+    if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
+        m_profile->m_profileIOData->resetNetworkContext();
 }
 
 bool ProfileAdapter::isUsedForGlobalCertificateVerification() const

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -393,6 +393,15 @@ void QPdfDocumentPrivate::fpdf_AddSegment(_FX_DOWNLOADHINTS *pThis, size_t offse
     Q_UNUSED(size);
 }
 
+QString QPdfDocumentPrivate::getText(FPDF_TEXTPAGE textPage, int startIndex, int count)
+{
+    QVector<ushort> buf(count + 1);
+    // TODO is that enough space in case one unicode character is more than one in utf-16?
+    int len = FPDFText_GetText(textPage, startIndex, count, buf.data());
+    Q_ASSERT(len - 1 <= count); // len is number of characters written, including the terminator
+    return QString::fromUtf16(buf.constData(), len - 1);
+}
+
 /*!
     \class QPdfDocument
     \since 5.10
@@ -737,15 +746,10 @@ QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
     int endIndex = FPDFText_GetCharIndexAtPos(textPage, end.x(), pageHeight - end.y(),
                                               CharacterHitTolerance, CharacterHitTolerance);
     if (startIndex >= 0 && endIndex != startIndex) {
-        QString text;
         if (startIndex > endIndex)
             qSwap(startIndex, endIndex);
         int count = endIndex - startIndex + 1;
-        QVector<ushort> buf(count + 1);
-        // TODO is that enough space in case one unicode character is more than one in utf-16?
-        int len = FPDFText_GetText(textPage, startIndex, count, buf.data());
-        Q_ASSERT(len - 1 <= count); // len is number of characters written, including the terminator
-        text = QString::fromUtf16(buf.constData(), len - 1);
+        QString text = d->getText(textPage, startIndex, count);
         QVector<QPolygonF> bounds;
         int rectCount = FPDFText_CountRects(textPage, startIndex, endIndex - startIndex);
         for (int i = 0; i < rectCount; ++i) {
@@ -765,6 +769,33 @@ QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
 
     qCDebug(qLcDoc) << page << start << "->" << end << "nothing found";
     return QPdfSelection();
+}
+
+QPdfSelection QPdfDocument::getAllText(int page)
+{
+    const QPdfMutexLocker lock;
+    FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
+    double pageHeight = FPDF_GetPageHeight(pdfPage);
+    FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
+    int count = FPDFText_CountChars(textPage);
+    if (count < 1)
+        return QPdfSelection();
+    QString text = d->getText(textPage, 0, count);
+    QVector<QPolygonF> bounds;
+    int rectCount = FPDFText_CountRects(textPage, 0, count);
+    for (int i = 0; i < rectCount; ++i) {
+        double l, r, b, t;
+        FPDFText_GetRect(textPage, i, &l, &t, &r, &b);
+        QPolygonF poly;
+        poly << QPointF(l, pageHeight - t);
+        poly << QPointF(r, pageHeight - t);
+        poly << QPointF(r, pageHeight - b);
+        poly << QPointF(l, pageHeight - b);
+        poly << QPointF(l, pageHeight - t);
+        bounds << poly;
+    }
+    qCDebug(qLcDoc) << "on page" << page << "got" << count << "chars" << rectCount << "rects";
+    return QPdfSelection(text, bounds);
 }
 
 QT_END_NAMESPACE

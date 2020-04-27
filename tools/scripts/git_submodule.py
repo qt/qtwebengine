@@ -328,9 +328,9 @@ class Submodule:
         return submodules
 
     def initSubmodules(self):
-        submodules = self.readSubmodules()
         oldCwd = os.getcwd()
         os.chdir(self.path)
+        submodules = self.readSubmodules(True)
         for submodule in submodules:
             submodule.initialize()
         subprocessCall(['git', 'commit', '-a', '--amend', '--no-edit'])

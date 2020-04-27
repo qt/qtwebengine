@@ -83,7 +83,7 @@ void SSLHostStateDelegateQt::AllowCert(const std::string &host, const net::X509C
 }
 
 // Clear all allow preferences.
-void SSLHostStateDelegateQt::Clear(const base::Callback<bool(const std::string &)> &host_filter)
+void SSLHostStateDelegateQt::Clear(base::RepeatingCallback<bool(const std::string&)> host_filter)
 {
     if (host_filter.is_null()) {
         m_certPolicyforHost.clear();

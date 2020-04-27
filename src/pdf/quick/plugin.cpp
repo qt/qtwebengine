@@ -71,7 +71,9 @@ public:
 
     void initializeEngine(QQmlEngine *engine, const char *uri) override {
         Q_UNUSED(uri);
-#ifndef QT_STATIC
+#ifdef QT_STATIC
+        Q_UNUSED(engine);
+#else
         engine->addImportPath(QStringLiteral("qrc:/"));
 #endif
     }

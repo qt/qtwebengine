@@ -1,48 +1,34 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
+** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtPDF module of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:BSD$
+** $QT_BEGIN_LICENSE:LGPL3$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
 **
-** BSD License Usage
-** Alternatively, you may use this file under the terms of the BSD license
-** as follows:
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of The Qt Company Ltd nor the names of its
-**     contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file. Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -61,6 +47,11 @@ Item {
     property bool debug: false
 
     property string selectedText
+    function selectAll() {
+        var currentItem = tableView.itemAtPos(0, tableView.contentY + root.height / 2)
+        if (currentItem !== null)
+            currentItem.selection.selectAll()
+    }
     function copySelectionToClipboard() {
         var currentItem = tableView.itemAtPos(0, tableView.contentY + root.height / 2)
         if (debug)
@@ -84,6 +75,7 @@ Item {
         if (zoom > 0)
             root.renderScale = zoom
         navigationStack.push(page, location, zoom)
+        searchModel.currentPage = page
     }
 
     // page scaling
@@ -118,16 +110,18 @@ Item {
     function searchForward() { ++searchModel.currentResult }
 
     id: root
+    PdfStyle { id: style }
     TableView {
         id: tableView
         anchors.fill: parent
+        anchors.leftMargin: 2
         model: root.document === undefined ? 0 : root.document.pageCount
         rowSpacing: 6
-        property real rotationModulus: Math.abs(root.pageRotation % 180)
-        property bool rot90: rotationModulus > 45 && rotationModulus < 135
+        property real rotationNorm: Math.round((360 + (root.pageRotation % 360)) % 360)
+        property bool rot90: rotationNorm == 90 || rotationNorm == 270
         onRot90Changed: forceLayout()
         property size firstPagePointSize: document === undefined ? Qt.size(0, 0) : document.pagePointSize(0)
-        contentWidth: document === undefined ? 0 : document.maxPageWidth * root.renderScale
+        contentWidth: document === undefined ? 0 : (rot90 ? document.maxPageHeight : document.maxPageWidth) * root.renderScale + vscroll.width + 2
         // workaround for missing function (see https://codereview.qt-project.org/c/qt/qtdeclarative/+/248464)
         function itemAtPos(x, y, includeSpacing) {
             // we don't care about x (assume col 0), and assume includeSpacing is true
@@ -139,7 +133,7 @@ Item {
                 if (child.y < y && (!ret || child.y > ret.y))
                     ret = child
             }
-            if (root.debug)
+            if (root.debug && ret !== null)
                 console.log("given y", y, "found", ret, "@", ret.y)
             return ret // the delegate with the largest y that is less than the given y
         }
@@ -164,7 +158,7 @@ Item {
                 width: image.width
                 height: image.height
                 rotation: root.pageRotation
-                anchors.centerIn: parent
+                anchors.centerIn: pinch.active ? undefined : parent
                 property size pagePointSize: document.pagePointSize(index)
                 property real pageScale: image.paintedWidth / pagePointSize.width
                 Image {
@@ -181,38 +175,47 @@ Item {
                         image.sourceSize.width = paper.pagePointSize.width * renderScale
                         image.sourceSize.height = 0
                         paper.scale = 1
+                        searchHighlights.update()
                     }
                 }
                 Shape {
                     anchors.fill: parent
-                    opacity: 0.25
                     visible: image.status === Image.Ready
+                    onVisibleChanged: searchHighlights.update()
                     ShapePath {
-                        strokeWidth: 1
-                        strokeColor: "cyan"
-                        fillColor: "steelblue"
+                        strokeWidth: -1
+                        fillColor: style.pageSearchResultsColor
                         scale: Qt.size(paper.pageScale, paper.pageScale)
                         PathMultiline {
-                            paths: searchModel.boundingPolygonsOnPage(index)
+                            id: searchHighlights
+                            function update() {
+                                // paths could be a binding, but we need to be able to "kick" it sometimes
+                                paths = searchModel.boundingPolygonsOnPage(index)
+                            }
                         }
                     }
+                    Connections {
+                        target: searchModel
+                        // whenever the highlights on the _current_ page change, they actually need to change on _all_ pages
+                        // (usually because the search string has changed)
+                        function onCurrentPageBoundingPolygonsChanged() { searchHighlights.update() }
+                    }
                     ShapePath {
-                        fillColor: "orange"
+                        strokeWidth: -1
+                        fillColor: style.selectionColor
                         scale: Qt.size(paper.pageScale, paper.pageScale)
                         PathMultiline {
-                            id: selectionBoundaries
                             paths: selection.geometry
                         }
                     }
                 }
                 Shape {
                     anchors.fill: parent
-                    opacity: 0.5
                     visible: image.status === Image.Ready && searchModel.currentPage === index
                     ShapePath {
-                        strokeWidth: 1
-                        strokeColor: "blue"
-                        fillColor: "cyan"
+                        strokeWidth: style.currentSearchResultStrokeWidth
+                        strokeColor: style.currentSearchResultStrokeColor
+                        fillColor: "transparent"
                         scale: Qt.size(paper.pageScale, paper.pageScale)
                         PathMultiline {
                             paths: searchModel.currentResultBoundingPolygons
@@ -223,19 +226,46 @@ Item {
                     id: pinch
                     minimumScale: 0.1
                     maximumScale: root.renderScale < 4 ? 2 : 1
-                    minimumRotation: 0
-                    maximumRotation: 0
+                    minimumRotation: root.pageRotation
+                    maximumRotation: root.pageRotation
                     enabled: image.sourceSize.width < 5000
                     onActiveChanged:
                         if (active) {
                             paper.z = 10
                         } else {
                             paper.z = 0
+                            var centroidInPoints = Qt.point(pinch.centroid.position.x / root.renderScale,
+                                                            pinch.centroid.position.y / root.renderScale)
+                            var centroidInFlickable = tableView.mapFromItem(paper, pinch.centroid.position.x, pinch.centroid.position.y)
                             var newSourceWidth = image.sourceSize.width * paper.scale
                             var ratio = newSourceWidth / image.sourceSize.width
+                            if (root.debug)
+                                console.log("pinch ended on page", index, "with centroid", pinch.centroid.position, centroidInPoints, "wrt flickable", centroidInFlickable,
+                                            "page at", pageHolder.x.toFixed(2), pageHolder.y.toFixed(2),
+                                            "contentX/Y were", tableView.contentX.toFixed(2), tableView.contentY.toFixed(2))
                             if (ratio > 1.1 || ratio < 0.9) {
+                                var centroidOnPage = Qt.point(centroidInPoints.x * root.renderScale * ratio, centroidInPoints.y * root.renderScale * ratio)
                                 paper.scale = 1
+                                paper.x = 0
+                                paper.y = 0
                                 root.renderScale *= ratio
+                                tableView.forceLayout()
+                                if (tableView.rotationNorm == 0) {
+                                    tableView.contentX = pageHolder.x + tableView.originX + centroidOnPage.x - centroidInFlickable.x
+                                    tableView.contentY = pageHolder.y + tableView.originY + centroidOnPage.y - centroidInFlickable.y
+                                } else if (tableView.rotationNorm == 90) {
+                                    tableView.contentX = pageHolder.x + tableView.originX + image.height - centroidOnPage.y - centroidInFlickable.x
+                                    tableView.contentY = pageHolder.y + tableView.originY + centroidOnPage.x - centroidInFlickable.y
+                                } else if (tableView.rotationNorm == 180) {
+                                    tableView.contentX = pageHolder.x + tableView.originX + image.width - centroidOnPage.x - centroidInFlickable.x
+                                    tableView.contentY = pageHolder.y + tableView.originY + image.height - centroidOnPage.y - centroidInFlickable.y
+                                } else if (tableView.rotationNorm == 270) {
+                                    tableView.contentX = pageHolder.x + tableView.originX + centroidOnPage.y - centroidInFlickable.x
+                                    tableView.contentY = pageHolder.y + tableView.originY + image.width - centroidOnPage.x - centroidInFlickable.y
+                                }
+                                if (root.debug)
+                                    console.log("contentX/Y adjusted to", tableView.contentX.toFixed(2), tableView.contentY.toFixed(2), "y @top", pageHolder.y)
+                                tableView.returnToBounds()
                             }
                         }
                     grabPermissions: PointerHandler.CanTakeOverFromAnything
@@ -255,13 +285,19 @@ Item {
                         document: root.document
                         page: image.currentFrame
                     }
-                    delegate: Rectangle {
-                        color: "transparent"
-                        border.color: "lightgrey"
+                    delegate: Shape {
                         x: rect.x * paper.pageScale
                         y: rect.y * paper.pageScale
                         width: rect.width * paper.pageScale
                         height: rect.height * paper.pageScale
+                        ShapePath {
+                            strokeWidth: style.linkUnderscoreStrokeWidth
+                            strokeColor: style.linkUnderscoreColor
+                            strokeStyle: style.linkUnderscoreStrokeStyle
+                            dashPattern: style.linkUnderscoreDashPattern
+                            startX: 0; startY: height
+                            PathLine { x: width; y: height }
+                        }
                         MouseArea { // TODO switch to TapHandler / HoverHandler in 5.15
                             id: linkMA
                             anchors.fill: parent
@@ -298,6 +334,7 @@ Item {
             }
         }
         ScrollBar.vertical: ScrollBar {
+            id: vscroll
             property bool moved: false
             onPositionChanged: moved = true
             onActiveChanged: {
@@ -337,6 +374,6 @@ Item {
     PdfSearchModel {
         id: searchModel
         document: root.document === undefined ? null : root.document
-        onCurrentPageChanged: root.goToPage(currentPage)
+        onCurrentPageChanged: if (currentPage != navigationStack.currentPage) root.goToPage(currentPage)
     }
 }

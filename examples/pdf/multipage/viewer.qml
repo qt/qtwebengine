@@ -47,6 +47,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+import QtQml 2.14 // workaround for QTBUG-82873
 import QtQuick 2.14
 import QtQuick.Controls 2.14
 import QtQuick.Layouts 1.14
@@ -142,11 +143,11 @@ ApplicationWindow {
                 onValueModified: view.goToPage(value - 1)
                 Shortcut {
                     sequence: StandardKey.MoveToPreviousPage
-                    onActivated: currentPageSB.value--
+                    onActivated: view.goToPage(currentPageSB.value - 2)
                 }
                 Shortcut {
                     sequence: StandardKey.MoveToNextPage
-                    onActivated: currentPageSB.value++
+                    onActivated: view.goToPage(currentPageSB.value)
                 }
             }
             ToolButton {
@@ -158,6 +159,13 @@ ApplicationWindow {
                 ToolTip.visible: enabled && hovered
                 ToolTip.delay: 2000
                 ToolTip.text: "go forward"
+            }
+            ToolButton {
+                action: Action {
+                    shortcut: StandardKey.SelectAll
+                    icon.source: "resources/edit-select-all.svg"
+                    onTriggered: view.selectAll()
+                }
             }
             ToolButton {
                 action: Action {
@@ -258,7 +266,31 @@ ApplicationWindow {
             ScrollBar.vertical: ScrollBar { }
             delegate: ItemDelegate {
                 width: parent ? parent.width : 0
-                text: "page " + (page + 1) + ": " + context
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 0
+                    Label {
+                        text: "Page " + (page + 1) + ": "
+                    }
+                    Label {
+                        text: contextBefore
+                        elide: Text.ElideLeft
+                        horizontalAlignment: Text.AlignRight
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
+                    }
+                    Label {
+                        font.bold: true
+                        text: view.searchString
+                        width: implicitWidth
+                    }
+                    Label {
+                        text: contextAfter
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
+                    }
+                }
                 highlighted: ListView.isCurrentItem
                 onClicked: {
                     searchResultsList.currentIndex = index

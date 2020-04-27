@@ -47,6 +47,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+import QtQml 2.14 // workaround for QTBUG-82873
 import QtQuick 2.14
 import QtQuick.Controls 2.14
 import QtQuick.Layouts 1.14
@@ -164,6 +165,13 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
+                    shortcut: StandardKey.SelectAll
+                    icon.source: "resources/edit-select-all.svg"
+                    onTriggered: view.selectAll()
+                }
+            }
+            ToolButton {
+                action: Action {
                     shortcut: StandardKey.Copy
                     icon.source: "resources/edit-copy.svg"
                     enabled: view.selectedText !== ""
@@ -206,6 +214,7 @@ ApplicationWindow {
     PdfScrollablePageView {
         id: view
         anchors.fill: parent
+        anchors.leftMargin: searchDrawer.position * searchDrawer.width
         document: PdfDocument {
             id: document
             source: Qt.resolvedUrl(root.source)
@@ -231,7 +240,31 @@ ApplicationWindow {
             ScrollBar.vertical: ScrollBar { }
             delegate: ItemDelegate {
                 width: parent ? parent.width : 0
-                text: "page " + (page + 1) + ": " + context
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 0
+                    Label {
+                        text: "Page " + (page + 1) + ": "
+                    }
+                    Label {
+                        text: contextBefore
+                        elide: Text.ElideLeft
+                        horizontalAlignment: Text.AlignRight
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
+                    }
+                    Label {
+                        font.bold: true
+                        text: view.searchString
+                        width: implicitWidth
+                    }
+                    Label {
+                        text: contextAfter
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: parent.width / 2
+                    }
+                }
                 highlighted: ListView.isCurrentItem
                 onClicked: {
                     searchResultsList.currentIndex = index

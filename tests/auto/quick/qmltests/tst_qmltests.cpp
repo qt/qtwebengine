@@ -122,8 +122,6 @@ int main(int argc, char **argv)
     sigaction(SIGSEGV, &sigAction, 0);
 #endif
 
-    // Inject the mock ui delegates module
-    qputenv("QML2_IMPORT_PATH", QByteArray(TESTS_SOURCE_DIR "qmltests/mock-delegates"));
     QScopedPointer<Application> app;
 
     // Force to use English language for testing due to error message checks

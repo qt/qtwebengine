@@ -200,6 +200,10 @@ QUrl QQuickWebEngineCertificateError::url() const
     \value  WebEngineCertificateError.CertificateTransparencyRequired
             Certificate Transparency was required for this connection, but the server
             did not provide CT information that complied with the policy. (Added in 5.8)
+    \value  WebEngineCertificateError.CertificateKnownInterceptionBlocked
+            The certificate is known to be used for interception by an entity other
+            the device owner. (Added in 5.15)
+
 */
 QQuickWebEngineCertificateError::Error QQuickWebEngineCertificateError::error() const
 {

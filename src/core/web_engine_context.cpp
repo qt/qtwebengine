@@ -53,6 +53,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/compositor/viz_process_transport_factory.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "chrome/browser/printing/print_job_manager.h"
@@ -221,8 +222,13 @@ bool usingSoftwareDynamicGL()
 void setupProxyPac(base::CommandLine *commandLine){
     if (commandLine->HasSwitch(switches::kProxyPacUrl)) {
         QUrl pac_url(toQt(commandLine->GetSwitchValueASCII(switches::kProxyPacUrl)));
-        if (pac_url.isValid() && pac_url.isLocalFile()) {
-            QFile file(pac_url.toLocalFile());
+        if (pac_url.isValid() && (pac_url.isLocalFile() ||
+            !pac_url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive))) {
+            QFile file;
+            if (pac_url.isLocalFile())
+              file.setFileName(pac_url.toLocalFile());
+            else
+              file.setFileName(pac_url.path().prepend(QChar(':')));
             if (file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text)) {
                QByteArray ba = file.readAll();
                commandLine->RemoveSwitch(switches::kProxyPacUrl);
@@ -250,6 +256,8 @@ static void cleanupVizProcess()
         return;
     waitForViz = true;
     content::GetHostFrameSinkManager()->SetConnectionLostCallback(base::DoNothing());
+    auto factory = static_cast<content::VizProcessTransportFactory*>(content::ImageTransportFactory::GetInstance());
+    factory->PrepareForShutDown();
     vizCompositorThreadRunner->CleanupForShutdown(base::BindOnce(&completeVizCleanup));
 }
 
@@ -339,12 +347,13 @@ void WebEngineContext::destroy()
     // This should deliver all nessesery calls of DeleteSoon from PostTask
     while (delegate->DoWork()) { }
 
-    GLContextHelper::destroy();
     m_devtoolsServer.reset();
     m_runLoop->AfterRun();
 
     // Destroy the main runner, this stops main message loop
     m_browserRunner.reset();
+    // gpu thread is no longer around, so no more cotnext is used, remove the helper
+    GLContextHelper::destroy();
 
     // These would normally be in the content-runner, but we allocated them separately:
     m_startupData.reset();
@@ -560,10 +569,8 @@ WebEngineContext::WebEngineContext()
 #endif
     threadedGpu = threadedGpu && !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
 
-    bool enableViz = ((threadedGpu && !parsedCommandLine->HasSwitch("disable-viz-display-compositor"))
-                      || parsedCommandLine->HasSwitch("enable-viz-display-compositor"));
+    bool enableViz = !parsedCommandLine->HasSwitch("disable-viz-display-compositor");
     parsedCommandLine->RemoveSwitch("disable-viz-display-compositor");
-    parsedCommandLine->RemoveSwitch("enable-viz-display-compositor");
 
     std::string disableFeatures;
     std::string enableFeatures;
@@ -583,9 +590,10 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(disableFeatures, features::kFontSrcLocalMatching.name);
 #endif
 
-#if QT_CONFIG(webengine_printing_and_pdf)
-    appendToFeatureList(disableFeatures, printing::features::kUsePdfCompositorServiceForPrint.name);
-#endif
+    // We don't support the skia renderer (enabled by default on Linux since 80)
+    appendToFeatureList(disableFeatures, features::kUseSkiaRenderer.name);
+
+    appendToFeatureList(disableFeatures, network::features::kDnsOverHttpsUpgrade.name);
 
     // Explicitly tell Chromium about default-on features we do not support
     appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
@@ -594,6 +602,7 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(disableFeatures, features::kWebAuthCable.name);
     appendToFeatureList(disableFeatures, features::kWebPayments.name);
     appendToFeatureList(disableFeatures, features::kWebUsb.name);
+    appendToFeatureList(disableFeatures, media::kPictureInPicture.name);
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
@@ -622,7 +631,7 @@ WebEngineContext::WebEngineContext()
         // Viz Display Compositor is enabled by default since 73. Doesn't work for us (also implies SurfaceSynchronization)
         appendToFeatureList(disableFeatures, features::kVizDisplayCompositor.name);
         // VideoSurfaceLayer is enabled by default since 75. We don't support it.
-        appendToFeatureList(disableFeatures, media::kUseSurfaceLayerForVideo.name);
+        appendToFeatureList(enableFeatures, media::kDisableSurfaceLayerForVideo.name);
     }
 
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, disableFeatures);

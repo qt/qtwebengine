@@ -50,10 +50,6 @@
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_message_filter.h"
 
-#if defined(OS_WIN)
-#include "base/memory/shared_memory.h"
-#endif
-
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_ScriptedPrint_Params;
 

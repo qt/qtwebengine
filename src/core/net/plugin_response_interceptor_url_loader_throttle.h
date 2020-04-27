@@ -61,7 +61,7 @@ public:
 
 private:
     // content::URLLoaderThrottle overrides;
-    void WillProcessResponse(const GURL &response_url, network::ResourceResponseHead *response_head, bool *defer) override;
+    void WillProcessResponse(const GURL &response_url, network::mojom::URLResponseHead *response_head, bool *defer) override;
 
     content::ResourceContext *m_resource_context = nullptr;
     content::BrowserContext *m_browser_context = nullptr;

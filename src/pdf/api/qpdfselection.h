@@ -38,10 +38,11 @@
 #define QPDFSELECTION_H
 
 #include <QtPdf/qtpdfglobal.h>
-#include <QClipboard>
-#include <QExplicitlySharedDataPointer>
-#include <QObject>
-#include <QPolygonF>
+
+#include <QtCore/qobject.h>
+#include <QtCore/qshareddata.h>
+#include <QtGui/qclipboard.h>
+#include <QtGui/qpolygon.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,10 +56,11 @@ class Q_PDF_EXPORT QPdfSelection
     Q_PROPERTY(QString text READ text)
 
 public:
-    QPdfSelection(const QPdfSelection &other);
     ~QPdfSelection();
+    QPdfSelection(const QPdfSelection &other);
     QPdfSelection &operator=(const QPdfSelection &other);
-    inline QPdfSelection &operator=(QPdfSelection &&other) noexcept { swap(other); return *this; }
+    QPdfSelection(QPdfSelection &&other) noexcept;
+    QPdfSelection &operator=(QPdfSelection &&other) noexcept { swap(other); return *this; }
     void swap(QPdfSelection &other) noexcept { d.swap(other.d); }
     bool isValid() const;
     QVector<QPolygonF> bounds() const;

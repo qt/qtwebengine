@@ -104,7 +104,7 @@ PluginResponseInterceptorURLLoaderThrottle::PluginResponseInterceptorURLLoaderTh
 {}
 
 void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL &response_url,
-                                                                     network::ResourceResponseHead *response_head,
+                                                                     network::mojom::URLResponseHead *response_head,
                                                                      bool *defer)
 {
     Q_UNUSED(defer);

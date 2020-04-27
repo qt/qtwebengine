@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -114,6 +114,7 @@ public:
     QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
 
     Q_INVOKABLE QPdfSelection getSelection(int page, QPointF start, QPointF end);
+    Q_INVOKABLE QPdfSelection getAllText(int page);
 
 Q_SIGNALS:
     void passwordChanged();

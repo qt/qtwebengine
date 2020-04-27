@@ -156,7 +156,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     load_url_params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
     load_url_params.href_translate = params.href_translate;
     load_url_params.reload_type = params.reload_type;
-    if (params.uses_post) {
+    if (params.post_data) {
         load_url_params.load_type = content::NavigationController::LOAD_TYPE_HTTP_POST;
         load_url_params.post_data = params.post_data;
     }
@@ -255,7 +255,7 @@ void WebContentsDelegateQt::CloseContents(content::WebContents *source)
     GetJavaScriptDialogManager(source)->CancelDialogs(source, /* whatever?: */false);
 }
 
-void WebContentsDelegateQt::LoadProgressChanged(content::WebContents */*source*/, double progress)
+void WebContentsDelegateQt::LoadProgressChanged(double progress)
 {
     if (!m_loadingErrorFrameList.isEmpty())
         return;
@@ -683,14 +683,9 @@ void WebContentsDelegateQt::selectClientCert(const QSharedPointer<ClientCertSele
     m_viewClient->selectClientCert(selectController);
 }
 
-void WebContentsDelegateQt::requestGeolocationPermission(const QUrl &requestingOrigin)
+void WebContentsDelegateQt::requestFeaturePermission(ProfileAdapter::PermissionType feature, const QUrl &requestingOrigin)
 {
-    m_viewClient->runGeolocationPermissionRequest(requestingOrigin);
-}
-
-void WebContentsDelegateQt::requestUserNotificationPermission(const QUrl &requestingOrigin)
-{
-    m_viewClient->runUserNotificationPermissionRequest(requestingOrigin);
+    m_viewClient->runFeaturePermissionRequest(feature, requestingOrigin);
 }
 
 extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition);

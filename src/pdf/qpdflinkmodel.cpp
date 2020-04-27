@@ -104,7 +104,8 @@ void QPdfLinkModel::setDocument(QPdfDocument *document)
     Q_D(QPdfLinkModel);
     if (d->document == document)
         return;
-    disconnect(d->document, &QPdfDocument::statusChanged, this, &QPdfLinkModel::onStatusChanged);
+    if (d->document)
+        disconnect(d->document, &QPdfDocument::statusChanged, this, &QPdfLinkModel::onStatusChanged);
     connect(document, &QPdfDocument::statusChanged, this, &QPdfLinkModel::onStatusChanged);
     d->document = document;
     emit documentChanged();
@@ -144,7 +145,7 @@ void QPdfLinkModelPrivate::update()
     const QPdfMutexLocker lock;
     FPDF_PAGE pdfPage = FPDF_LoadPage(doc, page);
     if (!pdfPage) {
-        qWarning() << "failed to load page" << page;
+        qCWarning(qLcLink) << "failed to load page" << page;
         return;
     }
     double pageHeight = FPDF_GetPageHeight(pdfPage);
@@ -153,35 +154,76 @@ void QPdfLinkModelPrivate::update()
 
     // Iterate the ordinary links
     int linkStart = 0;
-    bool ok = true;
-    while (ok) {
+    bool hasNext = true;
+    while (hasNext) {
         FPDF_LINK linkAnnot;
-        ok = FPDFLink_Enumerate(pdfPage, &linkStart, &linkAnnot);
-        if (!ok)
+        hasNext = FPDFLink_Enumerate(pdfPage, &linkStart, &linkAnnot);
+        if (!hasNext)
             break;
         FS_RECTF rect;
-        ok = FPDFLink_GetAnnotRect(linkAnnot, &rect);
-        if (!ok)
-            break;
+        bool ok = FPDFLink_GetAnnotRect(linkAnnot, &rect);
+        if (!ok) {
+            qCWarning(qLcLink) << "skipping link with invalid bounding box";
+            continue; // while enumerating links
+        }
         Link linkData;
         linkData.rect = QRectF(rect.left, pageHeight - rect.top,
                                rect.right - rect.left, rect.top - rect.bottom);
         FPDF_DEST dest = FPDFLink_GetDest(doc, linkAnnot);
         FPDF_ACTION action = FPDFLink_GetAction(linkAnnot);
-        if (FPDFAction_GetType(action) != PDFACTION_GOTO) {
-            qWarning() << "link action type" << FPDFAction_GetType(action) << "is not yet supported";
-            continue;
-        }
-        linkData.page = FPDFDest_GetDestPageIndex(doc, dest);
-        FPDF_BOOL hasX, hasY, hasZoom;
-        FS_FLOAT x, y, zoom;
-        ok = FPDFDest_GetLocationInPage(dest, &hasX, &hasY, &hasZoom, &x, &y, &zoom);
-        if (!ok)
+        switch (FPDFAction_GetType(action)) {
+        case PDFACTION_UNSUPPORTED: // this happens with valid links in some PDFs
+        case PDFACTION_GOTO: {
+            linkData.page = FPDFDest_GetDestPageIndex(doc, dest);
+            if (linkData.page < 0) {
+                qCWarning(qLcLink) << "skipping link with invalid page number";
+                continue; // while enumerating links
+            }
+            FPDF_BOOL hasX, hasY, hasZoom;
+            FS_FLOAT x, y, zoom;
+            ok = FPDFDest_GetLocationInPage(dest, &hasX, &hasY, &hasZoom, &x, &y, &zoom);
+            if (!ok) {
+                qCWarning(qLcLink) << "link with invalid location and/or zoom @" << linkData.rect;
+                break; // at least we got a page number, so the link will jump there
+            }
+            if (hasX && hasY)
+                linkData.location = QPointF(x, pageHeight - y);
+            if (hasZoom)
+                linkData.zoom = zoom;
             break;
-        if (hasX && hasY)
-            linkData.location = QPointF(x, pageHeight - y);
-        if (hasZoom)
-            linkData.zoom = zoom;
+        }
+        case PDFACTION_URI: {
+            unsigned long len = FPDFAction_GetURIPath(doc, action, nullptr, 0);
+            if (len < 1) {
+                qCWarning(qLcLink) << "skipping link with empty URI @" << linkData.rect;
+                continue; // while enumerating links
+            } else {
+                QByteArray buf(len, 0);
+                unsigned long got = FPDFAction_GetURIPath(doc, action, buf.data(), len);
+                Q_ASSERT(got == len);
+                linkData.url = QString::fromLatin1(buf.data(), got - 1);
+            }
+            break;
+        }
+        case PDFACTION_LAUNCH:
+        case PDFACTION_REMOTEGOTO: {
+            unsigned long len = FPDFAction_GetFilePath(action, nullptr, 0);
+            if (len < 1) {
+                qCWarning(qLcLink) << "skipping link with empty file path @" << linkData.rect;
+                continue; // while enumerating links
+            } else {
+                QByteArray buf(len, 0);
+                unsigned long got = FPDFAction_GetFilePath(action, buf.data(), len);
+                Q_ASSERT(got == len);
+                linkData.url = QUrl::fromLocalFile(QString::fromLatin1(buf.data(), got - 1)).toString();
+
+                // Unfortunately, according to comments in fpdf_doc.h, if it's PDFACTION_REMOTEGOTO,
+                // we can't get the page and location without first opening the linked document
+                // and then calling FPDFAction_GetDest() again.
+            }
+            break;
+        }
+        }
         links << linkData;
     }
 
@@ -195,7 +237,7 @@ void QPdfLinkModelPrivate::update()
                 Link linkData;
                 int len = FPDFLink_GetURL(webLinks, i, nullptr, 0);
                 if (len < 1) {
-                    qWarning() << "URL" << i << "has length" << len;
+                    qCWarning(qLcLink) << "skipping link" << i << "with empty URL";
                 } else {
                     QVector<unsigned short> buf(len);
                     int got = FPDFLink_GetURL(webLinks, i, buf.data(), len);

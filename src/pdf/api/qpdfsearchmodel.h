@@ -37,11 +37,11 @@
 #ifndef QPDFSEARCHMODEL_H
 #define QPDFSEARCHMODEL_H
 
-#include "qtpdfglobal.h"
-#include "qpdfdocument.h"
-#include "qpdfsearchresult.h"
+#include <QtPdf/qtpdfglobal.h>
 
 #include <QtCore/qabstractitemmodel.h>
+#include <QtPdf/qpdfdocument.h>
+#include <QtPdf/qpdfsearchresult.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -58,7 +58,8 @@ public:
         Page = Qt::UserRole,
         IndexOnPage,
         Location,
-        Context,
+        ContextBefore,
+        ContextAfter,
         _Count
     };
     Q_ENUM(Role)
