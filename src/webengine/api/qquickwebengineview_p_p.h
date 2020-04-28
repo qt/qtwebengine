@@ -211,7 +211,7 @@ public:
     bool m_navigationActionTriggered;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
-    QList<QSharedPointer<CertificateErrorController> > m_certificateErrorControllers;
+    QList<QWeakPointer<CertificateErrorController> > m_certificateErrorControllers;
     QQmlWebChannel *m_webChannel;
     QPointer<QQuickWebEngineView> inspectedView;
     QPointer<QQuickWebEngineView> devToolsView;

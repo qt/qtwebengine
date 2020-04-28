@@ -204,7 +204,7 @@ public:
     QPrinter *currentPrinter;
 #endif
 
-    QList<QSharedPointer<CertificateErrorController>> m_certificateErrorControllers;
+    QList<QWeakPointer<CertificateErrorController>> m_certificateErrorControllers;
 };
 
 QT_END_NAMESPACE

@@ -36,6 +36,7 @@ HEADERS = \
     qwebengineclientcertificatestore.h \
     qtwebenginecoreglobal.h \
     qtwebenginecoreglobal_p.h \
+    qwebenginecertificateerror.h \
     qwebenginecookiestore.h \
     qwebenginecookiestore_p.h \
     qwebenginefindtextresult.h \
@@ -55,6 +56,7 @@ HEADERS = \
 
 SOURCES = \
     qtwebenginecoreglobal.cpp \
+    qwebenginecertificateerror.cpp \
     qwebengineclientcertificatestore.cpp \
     qwebenginecookiestore.cpp \
     qwebenginefindtextresult.cpp \

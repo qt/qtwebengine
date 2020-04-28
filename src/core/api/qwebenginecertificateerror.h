@@ -37,36 +37,32 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINECERTIFICATEERROR_P_H
-#define QQUICKWEBENGINECERTIFICATEERROR_P_H
+#ifndef QWEBENGINECERTIFICATEERROR_H
+#define QWEBENGINECERTIFICATEERROR_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QObject>
-#include "qquickwebengineview_p.h"
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qurl.h>
+#include <QtNetwork/QSslCertificate>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineCertificateErrorPrivate;
 class CertificateErrorController;
 
-class Q_WEBENGINE_EXPORT QQuickWebEngineCertificateError : public QObject {
-    Q_OBJECT
+class Q_WEBENGINECORE_EXPORT QWebEngineCertificateError {
+    Q_GADGET
     Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
     Q_PROPERTY(Error error READ error CONSTANT FINAL)
-    Q_PROPERTY(QString description READ description CONSTANT FINAL)
-    Q_PROPERTY(bool overridable READ overridable CONSTANT FINAL)
+    Q_PROPERTY(QString description READ errorDescription CONSTANT FINAL)
+    Q_PROPERTY(bool overridable READ isOverridable CONSTANT FINAL)
+    Q_PROPERTY(bool deferred READ deferred CONSTANT FINAL)
+    Q_PROPERTY(bool answered READ answered CONSTANT FINAL)
 
 public:
+    QWebEngineCertificateError(const QWebEngineCertificateError &other);
+    QWebEngineCertificateError& operator=(const QWebEngineCertificateError &other);
+    ~QWebEngineCertificateError();
 
     // Keep this identical to CertificateErrorController::CertificateError, or add mapping layer.
     enum Error {
@@ -89,27 +85,29 @@ public:
     };
     Q_ENUM(Error)
 
-    QQuickWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller, QObject *parent = 0);
-    ~QQuickWebEngineCertificateError();
+    Error error() const;
+    QUrl url() const;
+    bool isOverridable() const;
+    QString errorDescription() const;
 
     Q_INVOKABLE void defer();
-    Q_INVOKABLE void ignoreCertificateError();
-    Q_INVOKABLE void rejectCertificate();
-    QUrl url() const;
-    Error error() const;
-    QString description() const;
-    bool overridable() const;
     bool deferred() const;
+
+    Q_INVOKABLE void rejectCertificate();
+    Q_INVOKABLE void ignoreCertificateError();
     bool answered() const;
 
+    QList<QSslCertificate> certificateChain() const;
+
 private:
-    Q_DISABLE_COPY(QQuickWebEngineCertificateError)
-    Q_DECLARE_PRIVATE(QQuickWebEngineCertificateError)
-    QScopedPointer<QQuickWebEngineCertificateErrorPrivate> d_ptr;
+    friend class QWebEnginePagePrivate;
+    friend class QQuickWebEngineViewPrivate;
+    QWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller);
+    QSharedPointer<CertificateErrorController> d;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QQuickWebEngineCertificateError)
+Q_DECLARE_METATYPE(QWebEngineCertificateError)
 
-#endif // QQUICKWEBENGINECERTIFICATEERROR_P_H
+#endif // QWEBENGINECERTIFICATEERROR_H

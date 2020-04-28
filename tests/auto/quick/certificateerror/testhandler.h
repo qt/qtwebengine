@@ -29,19 +29,19 @@
 #ifndef TESTHANDLER_H
 #define TESTHANDLER_H
 
-#include <QtWebEngine/private/qquickwebenginecertificateerror_p.h>
+#include <QWebEngineCertificateError>
 
 class TestHandler : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QQuickWebEngineCertificateError *certificateError READ certificateError WRITE
+    Q_PROPERTY(QWebEngineCertificateError certificateError READ certificateError WRITE
                        setCertificateError NOTIFY certificateErrorChanged)
     Q_PROPERTY(bool loadSuccess READ loadSuccess WRITE setLoadSuccess NOTIFY loadSuccessChanged)
 public:
     explicit TestHandler(QObject *parent = nullptr);
-    QQuickWebEngineCertificateError *certificateError() const;
+    QWebEngineCertificateError certificateError() const;
 
-    void setCertificateError(QQuickWebEngineCertificateError *error);
+    void setCertificateError(QWebEngineCertificateError error);
     void setLoadSuccess(bool success);
     bool loadSuccess() const;
     void load(const QUrl &page);
@@ -49,9 +49,10 @@ public:
 signals:
     void loadPage(const QUrl &page);
     void certificateErrorChanged();
+    void loadSuccessChanged();
 
 private:
-    QQuickWebEngineCertificateError *m_error = nullptr;
+    QWebEngineCertificateError *m_error = nullptr;
     bool m_loadSuccess = false;
 };
 

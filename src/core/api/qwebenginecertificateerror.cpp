@@ -43,71 +43,38 @@
 
 QT_BEGIN_NAMESPACE
 
+ASSERT_ENUMS_MATCH(CertificateErrorController::SslPinnedKeyNotInCertificateChain,   QWebEngineCertificateError::SslPinnedKeyNotInCertificateChain);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateCommonNameInvalid,        QWebEngineCertificateError::CertificateCommonNameInvalid);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateCommonNameInvalid,        QWebEngineCertificateError::CertificateCommonNameInvalid);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateDateInvalid,              QWebEngineCertificateError::CertificateDateInvalid);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateAuthorityInvalid,         QWebEngineCertificateError::CertificateAuthorityInvalid);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateContainsErrors,           QWebEngineCertificateError::CertificateContainsErrors);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateUnableToCheckRevocation,  QWebEngineCertificateError::CertificateUnableToCheckRevocation);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateRevoked,                  QWebEngineCertificateError::CertificateRevoked);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateInvalid,                  QWebEngineCertificateError::CertificateInvalid);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakSignatureAlgorithm,   QWebEngineCertificateError::CertificateWeakSignatureAlgorithm);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNonUniqueName,            QWebEngineCertificateError::CertificateNonUniqueName);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakKey,                  QWebEngineCertificateError::CertificateWeakKey);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNameConstraintViolation,  QWebEngineCertificateError::CertificateNameConstraintViolation);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateValidityTooLong,          QWebEngineCertificateError::CertificateValidityTooLong);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateTransparencyRequired,     QWebEngineCertificateError::CertificateTransparencyRequired);
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateKnownInterceptionBlocked, QWebEngineCertificateError::CertificateKnownInterceptionBlocked);
+
 /*!
     \class QWebEngineCertificateError
     \brief The QWebEngineCertificateError class provides information about a certificate error.
     \since 5.4
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
 
     Provides information about a certificate error. This class is used as a parameter of
     QWebEnginePage::certificateError().
 */
 
-class QWebEngineCertificateErrorPrivate : public QSharedData {
-public:
-    QWebEngineCertificateErrorPrivate(int error, QUrl url, bool overridable, QString errorDescription);
-
-    ~QWebEngineCertificateErrorPrivate() {
-        if (deferred && !answered)
-            rejectCertificate();
-    }
-
-    void resolveError(bool accept) {
-        if (answered)
-            return;
-        answered = true;
-        if (overridable) {
-            if (auto ctl = controller.lock())
-                ctl->accept(accept);
-        }
-    }
-
-    void ignoreCertificateError() { resolveError(true); }
-    void rejectCertificate() { resolveError(false); }
-
-    QWebEngineCertificateError::Error error;
-    QUrl url;
-    bool overridable;
-    QString errorDescription;
-    QList<QSslCertificate> certificateChain;
-
-    bool answered = false, deferred = false;
-    QWeakPointer<CertificateErrorController> controller;
-
-    Q_DISABLE_COPY(QWebEngineCertificateErrorPrivate)
-};
-
-QWebEngineCertificateErrorPrivate::QWebEngineCertificateErrorPrivate(int error, QUrl url, bool overridable, QString errorDescription)
-    : error(QWebEngineCertificateError::Error(error))
-    , url(url)
-    , overridable(overridable)
-    , errorDescription(errorDescription)
-{ }
-
-/*! \internal
-*/
-QWebEngineCertificateError::QWebEngineCertificateError(int error, QUrl url, bool overridable, QString errorDescription)
-    : d(new QWebEngineCertificateErrorPrivate(error, url, overridable, errorDescription))
-{ }
-
 /*! \internal
 */
 QWebEngineCertificateError::QWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller)
-    : d(new QWebEngineCertificateErrorPrivate(controller->error(), controller->url(),
-                                              controller->overridable(), controller->errorString()))
+    : d(controller)
 {
-    d->controller = controller;
-    d->certificateChain = controller->certificateChain();
 }
 
 QWebEngineCertificateError::QWebEngineCertificateError(const QWebEngineCertificateError &) = default;
@@ -116,10 +83,7 @@ QWebEngineCertificateError& QWebEngineCertificateError::operator=(const QWebEngi
 
 /*! \internal
 */
-QWebEngineCertificateError::~QWebEngineCertificateError()
-{
-
-}
+QWebEngineCertificateError::~QWebEngineCertificateError() = default;
 
 /*!
     \enum QWebEngineCertificateError::Error
@@ -159,7 +123,7 @@ QWebEngineCertificateError::~QWebEngineCertificateError()
 */
 bool QWebEngineCertificateError::isOverridable() const
 {
-    return d->overridable;
+    return d->overridable();
 }
 
 /*!
@@ -169,7 +133,7 @@ bool QWebEngineCertificateError::isOverridable() const
 */
 QUrl QWebEngineCertificateError::url() const
 {
-    return d->url;
+    return d->url();
 }
 
 /*!
@@ -179,7 +143,7 @@ QUrl QWebEngineCertificateError::url() const
 */
 QWebEngineCertificateError::Error QWebEngineCertificateError::error() const
 {
-    return d->error;
+    return Error(d->error());
 }
 
 /*!
@@ -189,7 +153,7 @@ QWebEngineCertificateError::Error QWebEngineCertificateError::error() const
 */
 QString QWebEngineCertificateError::errorDescription() const
 {
-    return d->errorDescription;
+    return d->errorString();
 }
 
 /*!
@@ -207,8 +171,7 @@ QString QWebEngineCertificateError::errorDescription() const
 */
 void QWebEngineCertificateError::defer()
 {
-    if (isOverridable())
-        d->deferred = true;
+    d->defer();
 }
 
 /*!
@@ -218,7 +181,7 @@ void QWebEngineCertificateError::defer()
 */
 bool QWebEngineCertificateError::deferred() const
 {
-    return d->deferred;
+    return d->deferred();
 }
 
 /*!
@@ -248,7 +211,7 @@ void QWebEngineCertificateError::rejectCertificate()
 */
 bool QWebEngineCertificateError::answered() const
 {
-    return d->answered;
+    return d->answered();
 }
 
 /*!
@@ -260,7 +223,7 @@ bool QWebEngineCertificateError::answered() const
 */
 QList<QSslCertificate> QWebEngineCertificateError::certificateChain() const
 {
-    return d->certificateChain;
+    return d->certificateChain();
 }
 
 QT_END_NAMESPACE

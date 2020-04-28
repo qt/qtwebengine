@@ -278,7 +278,8 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isError
         return;
 
     isLoading = true;
-    m_certificateErrorControllers.clear();
+    CertificateErrorController::clear(m_certificateErrorControllers);
+
     QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
 }
 

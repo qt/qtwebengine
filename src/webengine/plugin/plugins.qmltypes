@@ -320,8 +320,7 @@ Module {
         Method { name: "dialogReject" }
     }
     Component {
-        name: "QQuickWebEngineCertificateError"
-        prototype: "QObject"
+        name: "QWebEngineCertificateError"
         exports: ["QtWebEngine/WebEngineCertificateError 1.1"]
         isCreatable: false
         exportMetaObjectRevisions: [0]
@@ -1371,7 +1370,7 @@ Module {
         Signal {
             name: "certificateError"
             revision: 1
-            Parameter { name: "error"; type: "QQuickWebEngineCertificateError"; isPointer: true }
+            Parameter { name: "error"; type: "QWebEngineCertificateError" }
         }
         Signal {
             name: "fullScreenRequested"

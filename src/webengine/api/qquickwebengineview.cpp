@@ -50,7 +50,6 @@
 #include "qquickwebengineaction_p.h"
 #include "qquickwebengineaction_p_p.h"
 #include "qquickwebenginehistory_p.h"
-#include "qquickwebenginecertificateerror_p.h"
 #include "qquickwebengineclientcertificateselection_p.h"
 #include "qquickwebenginedialogrequests_p.h"
 #include "qquickwebenginefaviconprovider_p_p.h"
@@ -61,6 +60,7 @@
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescript_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
+#include "qwebenginecertificateerror.h"
 #include "qwebenginefindtextresult.h"
 #include "qwebenginequotarequest.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
@@ -292,18 +292,16 @@ void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialo
         ui()->showDialog(dialog);
 }
 
-void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController)
+void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<CertificateErrorController> &controller)
 {
     Q_Q(QQuickWebEngineView);
 
-    QQuickWebEngineCertificateError *quickController = new QQuickWebEngineCertificateError(errorController);
-    // mark the object for gc by creating temporary jsvalue
-    qmlEngine(q)->newQObject(quickController);
-    Q_EMIT q->certificateError(quickController);
-    if (!quickController->overridable() || (!quickController->deferred() && !quickController->answered()))
-        quickController->rejectCertificate();
+    QWebEngineCertificateError error(controller);
+    Q_EMIT q->certificateError(error);
+    if (!error.isOverridable() || (!error.deferred() && !error.answered()))
+        error.rejectCertificate();
     else
-        m_certificateErrorControllers.append(errorController);
+        m_certificateErrorControllers.append(controller);
 }
 
 void QQuickWebEngineViewPrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)
@@ -470,7 +468,7 @@ void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl, bool is
 
     isLoading = true;
     m_history->reset();
-    m_certificateErrorControllers.clear();
+    CertificateErrorController::clear(m_certificateErrorControllers);
 
     QTimer::singleShot(0, q, [q, provisionalUrl]() {
         QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);

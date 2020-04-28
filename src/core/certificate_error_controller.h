@@ -54,6 +54,7 @@
 #include "qtwebenginecoreglobal_p.h"
 
 #include <QtCore/QDateTime>
+#include <QtCore/QScopedPointer>
 #include <QtCore/QUrl>
 #include <QtNetwork/QSslCertificate>
 
@@ -92,41 +93,30 @@ public:
     CertificateError error() const;
     QUrl url() const;
     bool overridable() const;
-    bool strictEnforcement() const;
     QString errorString() const;
-    QDateTime validStart() const;
     QDateTime validExpiry() const;
     QList<QSslCertificate> certificateChain() const;
 
+    bool deferred() const;
+    void defer();
+
+    bool answered() const;
     void accept(bool);
 
-    // Note: The resource type should probably not be exported, since once accepted the certificate exception
-    // counts for all resource types.
-    // Keep up to date with webkit/common/resource_type.h
-    enum ResourceType {
-        ResourceTypeMainFrame = 0,  // top level page
-        ResourceTypeSubFrame,       // frame or iframe
-        ResourceTypeStylesheet,     // a CSS stylesheet
-        ResourceTypeScript,         // an external script
-        ResourceTypeImage,          // an image (jpg/gif/png/etc)
-        ResourceTypeFont,           // a font
-        ResourceTypeOther,          // an "other" subresource.
-        ResourceTypeObject,         // an object (or embed) tag for a plugin,
-                                    // or a resource that a plugin requested.
-        ResourceTypeMedia,          // a media resource.
-        ResourceTypeWorker,         // the main resource of a dedicated worker.
-        ResourceTypeSharedWorker,   // the main resource of a shared worker.
-        ResourceTypePrefetch,       // an explicitly requested prefetch
-        ResourceTypeFavicon,        // a favicon
-        ResourceTypeXHR,            // a XMLHttpRequest
-        ResourceTypePing,           // a ping request for <a ping>
-        ResourceTypeServiceWorker,  // the main resource of a service worker.
-    };
+    void ignoreCertificateError() { accept(true); }
+    void rejectCertificate() { accept(false); }
 
-    ResourceType resourceType() const;
+    void deactivate();
+    static void clear(QList<QWeakPointer<CertificateErrorController>> &controllers) {
+        for (auto &&wc : controllers)
+            if (auto controller = wc.lock())
+                controller->deactivate();
+        controllers.clear();
+    }
 
 private:
-    CertificateErrorControllerPrivate* d;
+    QScopedPointer<CertificateErrorControllerPrivate> d;
+    Q_DISABLE_COPY(CertificateErrorController)
 };
 
 QT_END_NAMESPACE

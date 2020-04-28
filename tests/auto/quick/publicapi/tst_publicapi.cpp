@@ -35,6 +35,7 @@
 #include <QtTest/QtTest>
 #include <QtWebEngine/QQuickWebEngineProfile>
 #include <QtWebEngine/QQuickWebEngineScript>
+#include <QtWebEngineCore/QWebEngineCertificateError>
 #include <QtWebEngineCore/QWebEngineFindTextResult>
 #include <QtWebEngineCore/QWebEngineNotification>
 #include <QtWebEngineCore/QWebEngineQuotaRequest>
@@ -42,7 +43,6 @@
 #include <QtWebEngineCore/QWebEngineContextMenuRequest>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineaction_p.h>
-#include <private/qquickwebenginecertificateerror_p.h>
 #include <private/qquickwebengineclientcertificateselection_p.h>
 #include <private/qquickwebenginedialogrequests_p.h>
 #include <private/qquickwebenginedownloaditem_p.h>
@@ -62,7 +62,6 @@ private Q_SLOTS:
 static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineView::staticMetaObject
     << &QQuickWebEngineAction::staticMetaObject
-    << &QQuickWebEngineCertificateError::staticMetaObject
     << &QQuickWebEngineClientCertificateOption::staticMetaObject
     << &QQuickWebEngineClientCertificateSelection::staticMetaObject
     << &QQuickWebEngineDownloadItem::staticMetaObject
@@ -83,6 +82,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineFormValidationMessageRequest::staticMetaObject
     << &QQuickWebEngineTooltipRequest::staticMetaObject
     << &QWebEngineContextMenuRequest::staticMetaObject
+    << &QWebEngineCertificateError::staticMetaObject
     << &QWebEngineQuotaRequest::staticMetaObject
     << &QWebEngineRegisterProtocolHandlerRequest::staticMetaObject
     << &QWebEngineNotification::staticMetaObject
@@ -121,29 +121,31 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineAuthenticationDialogRequest.realm --> QString"
     << "QQuickWebEngineAuthenticationDialogRequest.type --> AuthenticationType"
     << "QQuickWebEngineAuthenticationDialogRequest.url --> QUrl"
-    << "QQuickWebEngineCertificateError.CertificateAuthorityInvalid --> Error"
-    << "QQuickWebEngineCertificateError.CertificateCommonNameInvalid --> Error"
-    << "QQuickWebEngineCertificateError.CertificateContainsErrors --> Error"
-    << "QQuickWebEngineCertificateError.CertificateDateInvalid --> Error"
-    << "QQuickWebEngineCertificateError.CertificateInvalid --> Error"
-    << "QQuickWebEngineCertificateError.CertificateKnownInterceptionBlocked --> Error"
-    << "QQuickWebEngineCertificateError.CertificateNameConstraintViolation --> Error"
-    << "QQuickWebEngineCertificateError.CertificateNoRevocationMechanism --> Error"
-    << "QQuickWebEngineCertificateError.CertificateNonUniqueName --> Error"
-    << "QQuickWebEngineCertificateError.CertificateRevoked --> Error"
-    << "QQuickWebEngineCertificateError.CertificateTransparencyRequired --> Error"
-    << "QQuickWebEngineCertificateError.CertificateUnableToCheckRevocation --> Error"
-    << "QQuickWebEngineCertificateError.CertificateValidityTooLong --> Error"
-    << "QQuickWebEngineCertificateError.CertificateWeakKey --> Error"
-    << "QQuickWebEngineCertificateError.CertificateWeakSignatureAlgorithm --> Error"
-    << "QQuickWebEngineCertificateError.SslPinnedKeyNotInCertificateChain --> Error"
-    << "QQuickWebEngineCertificateError.defer() --> void"
-    << "QQuickWebEngineCertificateError.description --> QString"
-    << "QQuickWebEngineCertificateError.error --> Error"
-    << "QQuickWebEngineCertificateError.ignoreCertificateError() --> void"
-    << "QQuickWebEngineCertificateError.overridable --> bool"
-    << "QQuickWebEngineCertificateError.rejectCertificate() --> void"
-    << "QQuickWebEngineCertificateError.url --> QUrl"
+    << "QWebEngineCertificateError.CertificateAuthorityInvalid --> Error"
+    << "QWebEngineCertificateError.CertificateCommonNameInvalid --> Error"
+    << "QWebEngineCertificateError.CertificateContainsErrors --> Error"
+    << "QWebEngineCertificateError.CertificateDateInvalid --> Error"
+    << "QWebEngineCertificateError.CertificateInvalid --> Error"
+    << "QWebEngineCertificateError.CertificateKnownInterceptionBlocked --> Error"
+    << "QWebEngineCertificateError.CertificateNameConstraintViolation --> Error"
+    << "QWebEngineCertificateError.CertificateNoRevocationMechanism --> Error"
+    << "QWebEngineCertificateError.CertificateNonUniqueName --> Error"
+    << "QWebEngineCertificateError.CertificateRevoked --> Error"
+    << "QWebEngineCertificateError.CertificateTransparencyRequired --> Error"
+    << "QWebEngineCertificateError.CertificateUnableToCheckRevocation --> Error"
+    << "QWebEngineCertificateError.CertificateValidityTooLong --> Error"
+    << "QWebEngineCertificateError.CertificateWeakKey --> Error"
+    << "QWebEngineCertificateError.CertificateWeakSignatureAlgorithm --> Error"
+    << "QWebEngineCertificateError.SslPinnedKeyNotInCertificateChain --> Error"
+    << "QWebEngineCertificateError.answered --> bool"
+    << "QWebEngineCertificateError.deferred --> bool"
+    << "QWebEngineCertificateError.defer() --> void"
+    << "QWebEngineCertificateError.description --> QString"
+    << "QWebEngineCertificateError.error --> Error"
+    << "QWebEngineCertificateError.ignoreCertificateError() --> void"
+    << "QWebEngineCertificateError.overridable --> bool"
+    << "QWebEngineCertificateError.rejectCertificate() --> void"
+    << "QWebEngineCertificateError.url --> QUrl"
     << "QQuickWebEngineClientCertificateOption.issuer --> QString"
     << "QQuickWebEngineClientCertificateOption.subject --> QString"
     << "QQuickWebEngineClientCertificateOption.effectiveDate --> QDateTime"
@@ -687,7 +689,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.backgroundColorChanged() --> void"
     << "QQuickWebEngineView.canGoBack --> bool"
     << "QQuickWebEngineView.canGoForward --> bool"
-    << "QQuickWebEngineView.certificateError(QQuickWebEngineCertificateError*) --> void"
+    << "QQuickWebEngineView.certificateError(QWebEngineCertificateError) --> void"
     << "QQuickWebEngineView.colorDialogRequested(QQuickWebEngineColorDialogRequest*) --> void"
     << "QQuickWebEngineView.contentsSize --> QSizeF"
     << "QQuickWebEngineView.contentsSizeChanged(QSizeF) --> void"

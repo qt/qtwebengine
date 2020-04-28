@@ -46,16 +46,18 @@ void TestHandler::setLoadSuccess(bool success)
     }
 }
 
-QQuickWebEngineCertificateError *TestHandler::certificateError() const
+bool TestHandler::loadSuccess() const
 {
-    return m_error;
+    return m_loadSuccess;
 }
 
-void TestHandler::setCertificateError(QQuickWebEngineCertificateError *error)
+QWebEngineCertificateError TestHandler::certificateError() const
 {
-    if (m_error == error)
-        return;
-    m_error = error;
+    return *m_error;
+}
 
+void TestHandler::setCertificateError(QWebEngineCertificateError error)
+{
+    m_error = new QWebEngineCertificateError(error);
     emit certificateErrorChanged();
 }

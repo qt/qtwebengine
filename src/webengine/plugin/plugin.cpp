@@ -40,7 +40,6 @@
 #include <QtQml/qqmlextensionplugin.h>
 #include <QtWebEngine/QQuickWebEngineProfile>
 
-#include <QtWebEngine/private/qquickwebenginecertificateerror_p.h>
 #include <QtWebEngine/private/qquickwebengineclientcertificateselection_p.h>
 #include <QtWebEngine/private/qquickwebenginedialogrequests_p.h>
 #include <QtWebEngine/private/qquickwebenginedownloaditem_p.h>
@@ -54,6 +53,7 @@
 #include <QtWebEngine/private/qquickwebenginetouchhandleprovider_p_p.h>
 #include <QtWebEngine/private/qquickwebengineview_p.h>
 #include <QtWebEngine/private/qquickwebengineaction_p.h>
+#include <QtWebEngineCore/qwebenginecertificateerror.h>
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginenotification.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
@@ -105,7 +105,8 @@ public:
         qmlRegisterType<QQuickWebEngineProfile, 4>(uri, 1, 5, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 5>(uri, 1, 9, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineScript>(uri, 1, 1, "WebEngineScript");
-        qmlRegisterUncreatableType<QQuickWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", msgUncreatableType("WebEngineCertificateError"));
+        qRegisterMetaType<QWebEngineCertificateError>();
+        qmlRegisterUncreatableType<QWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", msgUncreatableType("WebEngineCertificateError"));
         qmlRegisterUncreatableType<QQuickWebEngineDownloadItem>(uri, 1, 1, "WebEngineDownloadItem",
             msgUncreatableType("WebEngineDownloadItem"));
         qmlRegisterUncreatableType<QQuickWebEngineDownloadItem, 1>(uri, 1, 2, "WebEngineDownloadItem",

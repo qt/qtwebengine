@@ -71,28 +71,45 @@ ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateSymantecLegacy, net::E
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateKnownInterceptionBlocked, net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED)
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateErrorEnd, net::ERR_CERT_END)
 
-void CertificateErrorControllerPrivate::accept(bool accepted)
+// Copied from chrome/browser/ssl/ssl_error_handler.cc:
+static int IsCertErrorFatal(int cert_error)
 {
-    std::move(callback).Run(accepted ? content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE : content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
+    switch (cert_error) {
+    case net::ERR_CERT_COMMON_NAME_INVALID:
+    case net::ERR_CERT_DATE_INVALID:
+    case net::ERR_CERT_AUTHORITY_INVALID:
+    case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
+    case net::ERR_CERT_WEAK_KEY:
+    case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
+    case net::ERR_CERT_VALIDITY_TOO_LONG:
+    case net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
+    case net::ERR_CERT_SYMANTEC_LEGACY:
+        return false;
+    case net::ERR_CERT_CONTAINS_ERRORS:
+    case net::ERR_CERT_REVOKED:
+    case net::ERR_CERT_INVALID:
+    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
+    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
+        return true;
+    default:
+        NOTREACHED();
+    }
+    return true;
 }
+
 
 CertificateErrorControllerPrivate::CertificateErrorControllerPrivate(int cert_error,
                                                                      const net::SSLInfo& ssl_info,
                                                                      const GURL &request_url,
-                                                                     bool main_frame,
-                                                                     bool fatal_error,
                                                                      bool strict_enforcement,
                                                                      base::OnceCallback<void(content::CertificateRequestResultType)> cb
                                                                     )
     : certError(CertificateErrorController::CertificateError(cert_error))
     , requestUrl(toQt(request_url))
-    , resourceType(main_frame ? CertificateErrorController::ResourceTypeMainFrame : CertificateErrorController::ResourceTypeOther)
-    , fatalError(fatal_error)
-    , strictEnforcement(strict_enforcement)
-    , callback(std::move(cb))
+    , overridable(!IsCertErrorFatal(cert_error) && !strict_enforcement)
 {
+    if (overridable) callback = std::move(cb);
     if (auto cert = ssl_info.cert.get()) {
-        validStart = toQt(cert->valid_start());
         validExpiry = toQt(cert->valid_expiry());
         certificateChain = toCertificateChain(cert);
     }
@@ -104,8 +121,8 @@ CertificateErrorController::CertificateErrorController(CertificateErrorControlle
 
 CertificateErrorController::~CertificateErrorController()
 {
-    delete d;
-    d = 0;
+    if (!answered())
+        rejectCertificate();
 }
 
 CertificateErrorController::CertificateError CertificateErrorController::error() const
@@ -120,22 +137,37 @@ QUrl CertificateErrorController::url() const
 
 bool CertificateErrorController::overridable() const
 {
-    return !d->fatalError && !d->strictEnforcement;
+    return d->overridable;
 }
 
-bool CertificateErrorController::strictEnforcement() const
+bool CertificateErrorController::deferred() const
 {
-    return d->strictEnforcement;
+    return d->deferred;
+}
+
+void CertificateErrorController::defer()
+{
+    d->deferred = true;
+}
+
+bool CertificateErrorController::answered() const
+{
+    return d->answered;
 }
 
 void CertificateErrorController::accept(bool accepted)
 {
-    d->accept(accepted);
+    if (answered())
+        return;
+
+    d->answered = true;
+    if (d->callback)
+        std::move(d->callback).Run(accepted ? content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE : content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
 }
 
-CertificateErrorController::ResourceType CertificateErrorController::resourceType() const
+void CertificateErrorController::deactivate()
 {
-    return d->resourceType;
+    d->callback.Reset();
 }
 
 static QString getQStringForMessageId(int message_id) {

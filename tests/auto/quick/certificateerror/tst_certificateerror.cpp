@@ -28,7 +28,7 @@
 #include "testhandler.h"
 #include <httpsserver.h>
 #include <util.h>
-#include <QtWebEngine/private/qquickwebenginecertificateerror_p.h>
+#include <QWebEngineCertificateError>
 #include <QQuickWebEngineProfile>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
@@ -91,20 +91,37 @@ void tst_CertificateError::handleError()
     QSignalSpy certificateErrorSpy(m_handler, &TestHandler::certificateErrorChanged);
     m_handler->load(server.url());
     QTRY_COMPARE(certificateErrorSpy.count(), 1);
-    QQuickWebEngineCertificateError *error = m_handler->certificateError();
-    QVERIFY(error);
+    QWebEngineCertificateError error = m_handler->certificateError();
 
     if (deferError) {
-        error->defer();
+        error.defer();
         return;
     }
 
     if (acceptCertificate)
-        error->ignoreCertificateError();
+        error.ignoreCertificateError();
     else
-        error->rejectCertificate();
+        error.rejectCertificate();
 
-    QVERIFY(error->overridable());
+    QVERIFY(error.isOverridable());
+    auto chain = error.certificateChain();
+    QCOMPARE(chain.size(), 2);
+    QCOMPARE(chain[0].serialNumber(), "3b:dd:1a:b7:2f:40:32:3b:c1:bf:37:d4:86:bd:56:c1:d0:6b:2a:43");
+    QCOMPARE(chain[1].serialNumber(), "6d:52:fb:b4:57:3b:b2:03:c8:62:7b:7e:44:45:5c:d3:08:87:74:17");
+
+    if (deferError) {
+      QVERIFY(error.deferred());
+      QVERIFY(!error.answered());
+      QVERIFY(!m_handler->loadSuccess());
+
+      if (acceptCertificate)
+        error.ignoreCertificateError();
+      else
+        error.rejectCertificate();
+
+      QVERIFY(error.answered());
+    }
+    QTRY_COMPARE_WITH_TIMEOUT(m_handler->loadSuccess(), acceptCertificate, 3000);
 }
 
 static QByteArrayList params;
