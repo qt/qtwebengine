@@ -1024,7 +1024,7 @@ QWebEngineUrlRequestInterceptor* WebContentsAdapter::requestInterceptor() const
     return m_requestInterceptor;
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 QAccessibleInterface *WebContentsAdapter::browserAccessible()
 {
     CHECK_INITIALIZED(nullptr);
@@ -1040,7 +1040,7 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
 
     return content::toQAccessibleInterface(acc);
 }
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId)
 {

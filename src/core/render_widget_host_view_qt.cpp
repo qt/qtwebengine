@@ -425,14 +425,14 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 content::BrowserAccessibilityManager* RenderWidgetHostViewQt::CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame)
 {
     Q_UNUSED(for_root_frame); // FIXME
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     return new content::BrowserAccessibilityManagerQt(
         m_adapterClient->accessibilityParentObject(),
         content::BrowserAccessibilityManagerQt::GetEmptyDocument(),
         delegate);
 #else
     return 0;
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 }
 
 // Set focus to the associated View component.

@@ -106,7 +106,7 @@
 #include "base/mac/foundation_util.h"
 #endif
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "accessibility_activation_observer.h"
 #endif
 #include "api/qwebengineurlscheme.h"
@@ -796,7 +796,7 @@ WebEngineContext::WebEngineContext()
     m_printJobManager.reset(new printing::PrintJobManager());
 #endif
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     m_accessibilityActivationObserver.reset(new AccessibilityActivationObserver());
 #endif
 

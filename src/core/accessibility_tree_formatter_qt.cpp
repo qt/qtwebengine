@@ -52,7 +52,7 @@
 
 namespace content {
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 class AccessibilityTreeFormatterQt : public AccessibilityTreeFormatterBrowser {
 public:
     explicit AccessibilityTreeFormatterQt();
@@ -204,12 +204,12 @@ const std::string AccessibilityTreeFormatterQt::GetDenyNodeString()
     return "@QT-DENY-NODE:";
 }
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 // static
 std::unique_ptr<AccessibilityTreeFormatter> AccessibilityTreeFormatter::Create()
 {
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     return std::unique_ptr<AccessibilityTreeFormatter>(new AccessibilityTreeFormatterQt());
 #else
     return nullptr;
