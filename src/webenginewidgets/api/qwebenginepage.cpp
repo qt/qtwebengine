@@ -127,27 +127,6 @@ static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::Wind
     }
 }
 
-QWebEnginePage::WebAction editorActionForKeyEvent(QKeyEvent* event)
-{
-    static struct {
-        QKeySequence::StandardKey standardKey;
-        QWebEnginePage::WebAction action;
-    } editorActions[] = {
-        { QKeySequence::Cut, QWebEnginePage::Cut },
-        { QKeySequence::Copy, QWebEnginePage::Copy },
-        { QKeySequence::Paste, QWebEnginePage::Paste },
-        { QKeySequence::Undo, QWebEnginePage::Undo },
-        { QKeySequence::Redo, QWebEnginePage::Redo },
-        { QKeySequence::SelectAll, QWebEnginePage::SelectAll },
-        { QKeySequence::UnknownKey, QWebEnginePage::NoWebAction }
-    };
-    for (int i = 0; editorActions[i].standardKey != QKeySequence::UnknownKey; ++i)
-        if (event == editorActions[i].standardKey)
-            return editorActions[i].action;
-
-    return QWebEnginePage::NoWebAction;
-}
-
 QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     : adapter(QSharedPointer<WebContentsAdapter>::create())
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
