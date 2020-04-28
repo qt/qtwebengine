@@ -82,8 +82,6 @@ class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineTouchHandleProvider;
 class QWebEngineFindTextResult;
 
-QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event);
-
 #if QT_CONFIG(webengine_testsupport)
 class QQuickWebEngineTestSupport;
 #endif
