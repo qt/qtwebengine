@@ -37,10 +37,10 @@
 #include "qquickpdfselection_p.h"
 #include "qquickpdfdocument_p.h"
 #include <QClipboard>
+#include <QGuiApplication>
 #include <QQuickItem>
 #include <QQmlEngine>
 #include <QStandardPaths>
-#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 

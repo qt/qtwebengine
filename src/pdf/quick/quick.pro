@@ -29,6 +29,6 @@ HEADERS += \
     qquickpdfsearchmodel_p.h \
     qquickpdfselection_p.h \
 
-QT += pdf quick-private gui gui-private core core-private qml qml-private
+QT += pdf gui core qml quick
 
 load(qml_plugin)
