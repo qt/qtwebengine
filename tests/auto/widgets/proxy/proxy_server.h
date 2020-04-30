@@ -39,6 +39,7 @@ class ProxyServer : public QObject
 public:
     explicit ProxyServer(QObject *parent = nullptr);
     void setCredentials(const QByteArray &user, const QByteArray password);
+    void setCookie(const QByteArray &cookie);
     bool isListening();
 
 public slots:
@@ -49,11 +50,15 @@ private slots:
     void handleReadReady();
 
 signals:
-    void success();
+    void authenticationSuccess();
+    void cookieMatch();
+
 private:
     QByteArray m_data;
     QTcpServer m_server;
     QByteArray m_auth;
+    QByteArray m_cookie;
+    bool m_authenticate = false;
 };
 
 #endif // PROXY_SERVER_H
