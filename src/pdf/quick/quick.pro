@@ -25,6 +25,7 @@ SOURCES += \
     qquickpdfnavigationstack.cpp \
     qquickpdfsearchmodel.cpp \
     qquickpdfselection.cpp \
+    qquicktableviewextra.cpp \
 
 HEADERS += \
     qquickpdfdocument_p.h \
@@ -32,7 +33,8 @@ HEADERS += \
     qquickpdfnavigationstack_p.h \
     qquickpdfsearchmodel_p.h \
     qquickpdfselection_p.h \
+    qquicktableviewextra_p.h \
 
-QT += pdf pdf-private gui core qml quick
+QT += pdf pdf-private gui core qml quick quick-private
 
 load(qml_plugin)
