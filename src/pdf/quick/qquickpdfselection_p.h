@@ -144,5 +144,5 @@ private:
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QQuickPdfSelection)
-\
+
 #endif // QQUICKPDFSELECTION_P_H
