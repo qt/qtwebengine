@@ -148,17 +148,6 @@ void UserResourceControllerHost::addUserScript(const UserScript &script, WebCont
     }
 }
 
-bool UserResourceControllerHost::containsUserScript(const UserScript &script, WebContentsAdapter *adapter)
-{
-    if (script.isNull())
-        return false;
-    // Global scripts should be dispatched to all our render processes.
-    const bool isProfileWideScript = !adapter;
-    if (isProfileWideScript)
-        return m_profileWideScripts.contains(script);
-    return m_perContentsScripts.value(adapter->webContents()).contains(script);
-}
-
 bool UserResourceControllerHost::removeUserScript(const UserScript &script, WebContentsAdapter *adapter)
 {
     if (script.isNull())
@@ -199,14 +188,6 @@ void UserResourceControllerHost::clearAllScripts(WebContentsAdapter *adapter)
         contents->GetRenderViewHost()->Send(
                 new RenderFrameObserverHelper_ClearScripts(contents->GetMainFrame()->GetRoutingID()));
     }
-}
-
-const QList<UserScript> UserResourceControllerHost::registeredScripts(WebContentsAdapter *adapter) const
-{
-    const bool isProfileWideScript = !adapter;
-    if (isProfileWideScript)
-        return m_profileWideScripts;
-    return m_perContentsScripts.value(adapter->webContents());
 }
 
 void UserResourceControllerHost::reserve(WebContentsAdapter *adapter, int count)
