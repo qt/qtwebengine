@@ -207,6 +207,7 @@ private Q_SLOTS:
     void notificationRequest();
     void sendNotification();
     void contentsSize();
+    void notificationPermission();
 
     void setLifecycleState();
     void setVisible();
@@ -3613,6 +3614,18 @@ void tst_QWebEnginePage::notificationRequest()
     QVERIFY(page.spyRequest.wasCalled());
 
     QCOMPARE(page.getPermission(), permission);
+}
+
+void tst_QWebEnginePage::notificationPermission()
+{
+    QWebEngineProfile otr;
+    QWebEnginePage page(&otr, nullptr);
+    QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
+    page.setHtml(QString("<html><body>Test</body></html>"), QUrl("https://www.example.com"));
+    QTRY_COMPARE(spy.count(), 1);
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("Notification.permission")), QLatin1String("default"));
+    page.setFeaturePermission(QUrl("https://www.example.com"), QWebEnginePage::Notifications, QWebEnginePage::PermissionGrantedByUser);
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, QStringLiteral("Notification.permission")), QLatin1String("granted"));
 }
 
 void tst_QWebEnginePage::sendNotification()

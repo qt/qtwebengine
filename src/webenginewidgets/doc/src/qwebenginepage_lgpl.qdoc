@@ -805,9 +805,10 @@
 
     Sets the permission for the web site identified by \a securityOrigin to use \a feature to \a policy.
 
-    \note Call this method on the featurePermissionRequested() signal, as it is
-    meant to serve pending feature requests only. Setting feature permissions
-    ahead of a request has no effect.
+    \note This method is primarily for calling after a featurePermissionRequested() signal has been emitted
+    to trigger the feature permission response. It can also be called before a request has been emitted,
+    but will only set a granted permission for passive checks, mainly for Notification APIs that can check
+    if permission has already been granted before explicitly requesting it.
 
     \sa featurePermissionRequested(), featurePermissionRequestCanceled()
 */
