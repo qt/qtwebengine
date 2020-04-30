@@ -792,7 +792,14 @@ QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
     if (startIndex >= 0 && endIndex != startIndex) {
         if (startIndex > endIndex)
             qSwap(startIndex, endIndex);
-        int count = endIndex - startIndex + 1;
+
+        // If the given end position is past the end of the line, i.e. if the right edge of the last character's
+        // bounding box is closer to it than the left edge is, then extend the char range by one
+        QRectF endCharBox = d->getCharBox(textPage, pageHeight, endIndex);
+        if (qAbs(endCharBox.right() - end.x()) < qAbs(endCharBox.x() - end.x()))
+            ++endIndex;
+
+        int count = endIndex - startIndex;
         QString text = d->getText(textPage, startIndex, count);
         QVector<QPolygonF> bounds;
         QRectF hull;
