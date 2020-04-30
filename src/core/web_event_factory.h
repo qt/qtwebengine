@@ -63,6 +63,10 @@ class QNativeGestureEvent;
 #endif
 QT_END_NAMESPACE
 
+namespace QtWebEngineCore {
+
+class RenderWidgetHostViewQtDelegate;
+
 class WebEventFactory {
 
 public:
@@ -77,9 +81,11 @@ public:
 #endif
     static blink::WebMouseWheelEvent toWebWheelEvent(QWheelEvent *);
     static bool coalesceWebWheelEvent(blink::WebMouseWheelEvent &, QWheelEvent *);
+    static void sendUnhandledWheelEvent(const blink::WebGestureEvent &, RenderWidgetHostViewQtDelegate *);
     static content::NativeWebKeyboardEvent toWebKeyboardEvent(QKeyEvent*);
     static bool getEditCommand(QKeyEvent *event, std::string *editCommand);
 };
 
+} // namespace QtWebEngineCore
 
 #endif // WEB_EVENT_FACTORY_H

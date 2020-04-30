@@ -198,6 +198,8 @@ private Q_SLOTS:
     void dataURLFragment();
     void devTools();
     void openLinkInDifferentProfile();
+    void openLinkInNewPage_data();
+    void openLinkInNewPage();
     void triggerActionWithoutMenu();
     void dynamicFrame();
 
@@ -3378,6 +3380,162 @@ void tst_QWebEnginePage::openLinkInDifferentProfile()
     QTest::mouseClick(view.focusProxy(), Qt::MiddleButton, {}, elementCenter(&page1, "link"));
     QTRY_COMPARE(spy2.count(), 1);
     QVERIFY(spy2.takeFirst().value(0).toBool());
+}
+
+// What does createWindow do?
+enum class OpenLinkInNewPageDecision {
+    // Returns nullptr,
+    ReturnNull,
+    // Returns this,
+    ReturnSelf,
+    // Returns page != this
+    ReturnOther,
+};
+
+// What causes createWindow to be called?
+enum class OpenLinkInNewPageCause {
+    // User clicks on a link with target=_blank.
+    TargetBlank,
+    // User clicks with MiddleButton.
+    MiddleClick,
+};
+
+// What happens after createWindow?
+enum class OpenLinkInNewPageEffect {
+    // The navigation request disappears into the ether.
+    Blocked,
+    // The navigation request becomes a navigation in the original page.
+    LoadInSelf,
+    // The navigation request becomes a navigation in a different page.
+    LoadInOther,
+};
+
+Q_DECLARE_METATYPE(OpenLinkInNewPageCause)
+Q_DECLARE_METATYPE(OpenLinkInNewPageDecision)
+Q_DECLARE_METATYPE(OpenLinkInNewPageEffect)
+
+void tst_QWebEnginePage::openLinkInNewPage_data()
+{
+    using Decision = OpenLinkInNewPageDecision;
+    using Cause = OpenLinkInNewPageCause;
+    using Effect = OpenLinkInNewPageEffect;
+
+    QTest::addColumn<Decision>("decision");
+    QTest::addColumn<Cause>("cause");
+    QTest::addColumn<Effect>("effect");
+
+    // Note that the meaning of returning nullptr from createWindow is not
+    // consistent between the TargetBlank and MiddleClick scenarios.
+    //
+    // With TargetBlank, the open-in-new-page disposition comes from the HTML
+    // target attribute; something the user is probably not aware of. Returning
+    // nullptr is interpreted as a decision by the app to block an unwanted
+    // popup.
+    //
+    // With MiddleClick, the open-in-new-page disposition comes from the user's
+    // explicit intent. Returning nullptr is then interpreted as a failure by
+    // the app to fulfill this intent, which we try to compensate by ignoring
+    // the disposition and performing the navigation request normally.
+
+    QTest::newRow("BlockPopup")     << Decision::ReturnNull  << Cause::TargetBlank << Effect::Blocked;
+    QTest::newRow("IgnoreIntent")   << Decision::ReturnNull  << Cause::MiddleClick << Effect::LoadInSelf;
+    QTest::newRow("OverridePopup")  << Decision::ReturnSelf  << Cause::TargetBlank << Effect::LoadInSelf;
+    QTest::newRow("OverrideIntent") << Decision::ReturnSelf  << Cause::MiddleClick << Effect::LoadInSelf;
+    QTest::newRow("AcceptPopup")    << Decision::ReturnOther << Cause::TargetBlank << Effect::LoadInOther;
+    QTest::newRow("AcceptIntent")   << Decision::ReturnOther << Cause::MiddleClick << Effect::LoadInOther;
+}
+
+void tst_QWebEnginePage::openLinkInNewPage()
+{
+    using Decision = OpenLinkInNewPageDecision;
+    using Cause = OpenLinkInNewPageCause;
+    using Effect = OpenLinkInNewPageEffect;
+
+    class Page : public QWebEnginePage
+    {
+    public:
+        Page *targetPage = nullptr;
+        QSignalSpy spy{this, &QWebEnginePage::loadFinished};
+        Page(QWebEngineProfile *profile) : QWebEnginePage(profile) {}
+    private:
+        QWebEnginePage *createWindow(WebWindowType) override { return targetPage; }
+    };
+
+    class View : public QWebEngineView
+    {
+    public:
+        View(Page *page)
+        {
+            resize(500, 500);
+            setPage(page);
+        }
+    };
+
+    QFETCH(Decision, decision);
+    QFETCH(Cause, cause);
+    QFETCH(Effect, effect);
+
+    QWebEngineProfile profile;
+    Page page1(&profile);
+    Page page2(&profile);
+    View view1(&page1);
+    View view2(&page2);
+
+    view1.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view1));
+
+    page1.setHtml("<html><body>"
+                  "<a id='link' href='data:,hello' target='_blank'>link</a>"
+                  "</body></html>");
+    QTRY_COMPARE(page1.spy.count(), 1);
+    QVERIFY(page1.spy.takeFirst().value(0).toBool());
+
+    switch (decision) {
+    case Decision::ReturnNull:
+        page1.targetPage = nullptr;
+        break;
+    case Decision::ReturnSelf:
+        page1.targetPage = &page1;
+        break;
+    case Decision::ReturnOther:
+        page1.targetPage = &page2;
+        break;
+    }
+
+    Qt::MouseButton button;
+    switch (cause) {
+    case Cause::TargetBlank:
+        button = Qt::LeftButton;
+        break;
+    case Cause::MiddleClick:
+        button = Qt::MiddleButton;
+        break;
+    }
+    QTest::mouseClick(view1.focusProxy(), button, {}, elementCenter(&page1, "link"));
+
+    switch (effect) {
+    case Effect::Blocked:
+        // Nothing to test
+        break;
+    case Effect::LoadInSelf:
+        QTRY_COMPARE(page1.spy.count(), 1);
+        QVERIFY(page1.spy.takeFirst().value(0).toBool());
+        QCOMPARE(page2.spy.count(), 0);
+        if (decision == Decision::ReturnSelf && cause == Cause::TargetBlank)
+            // History was discarded due to AddNewContents
+            QCOMPARE(page1.history()->count(), 1);
+        else
+            QCOMPARE(page1.history()->count(), 2);
+        QCOMPARE(page2.history()->count(), 0);
+        break;
+    case Effect::LoadInOther:
+        QTRY_COMPARE(page2.spy.count(), 1);
+        QVERIFY(page2.spy.takeFirst().value(0).toBool());
+        QCOMPARE(page1.spy.count(), 0);
+        QCOMPARE(page1.history()->count(), 1);
+        QCOMPARE(page2.history()->count(), 1);
+        break;
+    }
 }
 
 void tst_QWebEnginePage::triggerActionWithoutMenu()
