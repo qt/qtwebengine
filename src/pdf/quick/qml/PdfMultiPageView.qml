@@ -119,7 +119,14 @@ Item {
         id: tableView
         anchors.fill: parent
         anchors.leftMargin: 2
-        model: root.document === undefined ? 0 : root.document.pageCount
+        model: modelInUse && root.document !== undefined ? root.document.pageCount : 0
+        // workaround to make TableView do scheduleRebuildTable(RebuildOption::All) in cases when forceLayout() doesn't
+        property bool modelInUse: true
+        function rebuild() {
+            modelInUse = false
+            modelInUse = true
+        }
+        // end workaround
         rowSpacing: 6
         property real rotationNorm: Math.round((360 + (root.pageRotation % 360)) % 360)
         property bool rot90: rotationNorm == 90 || rotationNorm == 270
@@ -362,7 +369,8 @@ Item {
         // and don't force layout either, because positionViewAtCell() will do that
         if (navigationStack.jumping)
             return
-        tableView.forceLayout()
+        // make TableView rebuild from scratch, because otherwise it doesn't know the delegates are changing size
+        tableView.rebuild()
         var cell = tableHelper.cellAtPos(root.width / 2, root.height / 2)
         var currentItem = tableHelper.itemAtCell(cell)
         if (currentItem) {
