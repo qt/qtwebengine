@@ -171,8 +171,15 @@ static QString qtTextForKeyEvent(const QKeyEvent *ev, int qtKey, Qt::KeyboardMod
 {
     QString text = ev->text();
 
-    if ((qtModifiers & Qt::ControlModifier) && keyboardDriver() == KeyboardDriver::Xkb)
+    if (keyboardDriver() == KeyboardDriver::Xkb && (qtModifiers & Qt::ControlModifier)) {
         text.clear();
+    }
+
+    // Keep text for Ctrl+Alt key combinations on Windows. It is an alternative for AltGr.
+    if (keyboardDriver() == KeyboardDriver::Windows
+            && (qtModifiers & Qt::ControlModifier) && !(qtModifiers & Qt::AltModifier)) {
+        text.clear();
+    }
 
     return text;
 }
