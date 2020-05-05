@@ -76,6 +76,7 @@ public:
         QOpenGLFunctions *funcs = context->functions();
         funcs->glBindTexture(GL_TEXTURE_2D, m_id);
     }
+    int comparisonKey() const override { return m_id; }
 
 private:
     uint32_t m_id;

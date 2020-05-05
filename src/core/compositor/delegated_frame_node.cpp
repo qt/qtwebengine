@@ -125,6 +125,12 @@ public:
     QSize textureSize() const override { return m_textureSize; }
     bool hasAlphaChannel() const override { return m_hasAlpha; }
     bool hasMipmaps() const override { return false; }
+    int comparisonKey() const override
+    {
+        if (m_textureId)
+            return m_textureId;
+        return int(qintptr(this));
+    }
     void bind() override;
 
 private:
