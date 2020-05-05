@@ -66,7 +66,7 @@ WebView::WebView(QWidget *parent)
 
 void WebView::contextMenuEvent(QContextMenuEvent *event)
 {
-    const QWebEngineContextMenuData &data = page()->contextMenuData();
+    const QWebEngineContextMenuData &data = contextMenuData();
     Q_ASSERT(data.isValid());
 
     if (!data.isContentEditable()) {
@@ -76,7 +76,7 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
 
     QWebEngineProfile *profile = page()->profile();
     const QStringList &languages = profile->spellCheckLanguages();
-    QMenu *menu = page()->createStandardContextMenu();
+    QMenu *menu = createStandardContextMenu();
     menu->addSeparator();
 
     QAction *spellcheckAction = new QAction(tr("Check Spelling"), nullptr);

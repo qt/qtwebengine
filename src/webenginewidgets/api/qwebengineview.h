@@ -101,6 +101,11 @@ public:
     QSize sizeHint() const override;
     QWebEngineSettings *settings() const;
 
+#if QT_CONFIG(menu)
+    QMenu *createStandardContextMenu();
+#endif
+    const QWebEngineContextMenuData &contextMenuData() const;
+
 public Q_SLOTS:
     void stop();
     void back();

@@ -121,7 +121,8 @@ private:
     QWebEngineContextMenuData &operator=(const QWebEngineContextDataPrivate &priv);
     const QWebEngineContextDataPrivate *d;
 
-    friend class QWebEnginePagePrivate;
+    friend class QWebEngineViewPrivate;
+    friend class QWebEngineView;
     friend class QWebEnginePage;
 };
 

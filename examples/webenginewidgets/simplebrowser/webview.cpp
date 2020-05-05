@@ -176,7 +176,7 @@ QWebEngineView *WebView::createWindow(QWebEnginePage::WebWindowType type)
 
 void WebView::contextMenuEvent(QContextMenuEvent *event)
 {
-    QMenu *menu = page()->createStandardContextMenu();
+    QMenu *menu = createStandardContextMenu();
     const QList<QAction *> actions = menu->actions();
     auto inspectElement = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::InspectElement));
     if (inspectElement == actions.cend()) {

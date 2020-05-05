@@ -259,10 +259,6 @@ public:
 
     void findText(const QString &subString, FindFlags options = FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
 
-#if QT_CONFIG(menu)
-    QMenu *createStandardContextMenu();
-#endif
-
     void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy);
 
     void load(const QUrl &url);
@@ -318,8 +314,6 @@ public:
     QWebEnginePage *devToolsPage() const;
 
     void setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
-
-    const QWebEngineContextMenuData &contextMenuData() const;
 
     LifecycleState lifecycleState() const;
     void setLifecycleState(LifecycleState state);

@@ -58,7 +58,7 @@ signals:
 protected:
     void contextMenuEvent(QContextMenuEvent *)
     {
-        m_data = page()->contextMenuData();
+        m_data = contextMenuData();
         emit menuReady();
     }
 private:

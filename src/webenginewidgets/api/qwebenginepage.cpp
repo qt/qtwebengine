@@ -1360,7 +1360,10 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
 {
     Q_D(QWebEnginePage);
     d->ensureInitialized();
-    const QtWebEngineCore::WebEngineContextMenuData *menuData = d->contextData.d;
+    const QtWebEngineCore::WebEngineContextMenuData *menuData = nullptr;
+
+    if (d->view)
+        menuData = d->view->contextMenuData().d;
     switch (action) {
     case Back:
         d->adapter->navigateBack();
@@ -1637,38 +1640,8 @@ bool QWebEnginePage::event(QEvent *e)
 
 void QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
-#if QT_CONFIG(action)
-    if (!view)
-        return;
-
-    contextData.reset();
-    switch (view->contextMenuPolicy()) {
-    case Qt::DefaultContextMenu:
-    {
-        contextData = data;
-        QContextMenuEvent event(QContextMenuEvent::Mouse, data.position(), view->mapToGlobal(data.position()));
-        view->contextMenuEvent(&event);
-        return;
-    }
-    case Qt::CustomContextMenu:
-        contextData = data;
-        Q_EMIT view->customContextMenuRequested(data.position());
-        return;
-    case Qt::ActionsContextMenu:
-        if (view->actions().count()) {
-            QContextMenuEvent event(QContextMenuEvent::Mouse, data.position(), view->mapToGlobal(data.position()));
-            QMenu::exec(view->actions(), event.globalPos(), 0, view);
-        }
-        return;
-    case Qt::PreventContextMenu:
-    case Qt::NoContextMenu:
-        return;
-    }
-
-    Q_UNREACHABLE();
-#else
-    Q_UNUSED(data);
-#endif // QT_CONFIG(action)
+    if (view)
+        view->d_ptr->contextMenuRequested(data);
 }
 
 void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)
@@ -1885,27 +1858,6 @@ void QWebEnginePage::setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor *i
     Q_D(QWebEnginePage);
     d->adapter->setRequestInterceptor(interceptor);
 }
-
-#if QT_CONFIG(menu)
-QMenu *QWebEnginePage::createStandardContextMenu()
-{
-    Q_D(QWebEnginePage);
-    if (!d->contextData.d)
-        return nullptr;
-    d->ensureInitialized();
-
-    QMenu *menu = new QMenu(d->view);
-    const WebEngineContextMenuData &contextMenuData = *d->contextData.d;
-
-    QContextMenuBuilder contextMenuBuilder(contextMenuData, this, menu);
-
-    contextMenuBuilder.initMenu();
-
-    menu->setAttribute(Qt::WA_DeleteOnClose, true);
-
-    return menu;
-}
-#endif // QT_CONFIG(menu)
 
 void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEnginePage::Feature feature, QWebEnginePage::PermissionPolicy policy)
 {
@@ -2545,19 +2497,6 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
 #endif
 }
 
-/*!
-    \since 5.7
-
-    Returns additional data about the current context menu. It is only guaranteed to be valid during the call to the QWebEngineView::contextMenuEvent()
-    handler of the associated QWebEngineView.
-
-    \sa createStandardContextMenu()
-*/
-const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
-{
-    Q_D(const QWebEnginePage);
-    return d->contextData;
-}
 
 /*!
   \enum QWebEnginePage::LifecycleState
@@ -2672,173 +2611,6 @@ void QWebEnginePage::setVisible(bool visible)
 
     d->adapter->setVisible(visible);
 }
-
-#if QT_CONFIG(action)
-QContextMenuBuilder::QContextMenuBuilder(const QtWebEngineCore::WebEngineContextMenuData &data,
-                                         QWebEnginePage *page,
-                                         QMenu *menu)
-    : QtWebEngineCore::RenderViewContextMenuQt(data)
-    , m_page(page)
-    , m_menu(menu)
-{
-}
-
-bool QContextMenuBuilder::hasInspector()
-{
-    return m_page->d_ptr->adapter->hasInspector();
-}
-
-bool QContextMenuBuilder::isFullScreenMode()
-{
-    return m_page->d_ptr->isFullScreenMode();
-}
-
-void QContextMenuBuilder::addMenuItem(ContextMenuItem menuItem)
-{
-    QPointer<QWebEnginePage> thisRef(m_page);
-    QAction *action = 0;
-
-    switch (menuItem) {
-    case ContextMenuItem::Back:
-        action = thisRef->action(QWebEnginePage::Back);
-        break;
-    case ContextMenuItem::Forward:
-        action = thisRef->action(QWebEnginePage::Forward);
-        break;
-    case ContextMenuItem::Reload:
-        action = thisRef->action(QWebEnginePage::Reload);
-        break;
-    case ContextMenuItem::Cut:
-        action = thisRef->action(QWebEnginePage::Cut);
-        break;
-    case ContextMenuItem::Copy:
-        action = thisRef->action(QWebEnginePage::Copy);
-        break;
-    case ContextMenuItem::Paste:
-        action = thisRef->action(QWebEnginePage::Paste);
-        break;
-    case ContextMenuItem::Undo:
-        action = thisRef->action(QWebEnginePage::Undo);
-        break;
-    case ContextMenuItem::Redo:
-        action = thisRef->action(QWebEnginePage::Redo);
-        break;
-    case ContextMenuItem::SelectAll:
-        action = thisRef->action(QWebEnginePage::SelectAll);
-        break;
-    case ContextMenuItem::PasteAndMatchStyle:
-        action = thisRef->action(QWebEnginePage::PasteAndMatchStyle);
-        break;
-    case ContextMenuItem::OpenLinkInNewWindow:
-        action = thisRef->action(QWebEnginePage::OpenLinkInNewWindow);
-        break;
-    case ContextMenuItem::OpenLinkInNewTab:
-        action = thisRef->action(QWebEnginePage::OpenLinkInNewTab);
-        break;
-    case ContextMenuItem::CopyLinkToClipboard:
-        action = thisRef->action(QWebEnginePage::CopyLinkToClipboard);
-        break;
-    case ContextMenuItem::DownloadLinkToDisk:
-        action = thisRef->action(QWebEnginePage::DownloadLinkToDisk);
-        break;
-    case ContextMenuItem::CopyImageToClipboard:
-        action = thisRef->action(QWebEnginePage::CopyImageToClipboard);
-        break;
-    case ContextMenuItem::CopyImageUrlToClipboard:
-        action = thisRef->action(QWebEnginePage::CopyImageUrlToClipboard);
-        break;
-    case ContextMenuItem::DownloadImageToDisk:
-        action = thisRef->action(QWebEnginePage::DownloadImageToDisk);
-        break;
-    case ContextMenuItem::CopyMediaUrlToClipboard:
-        action = thisRef->action(QWebEnginePage::CopyMediaUrlToClipboard);
-        break;
-    case ContextMenuItem::ToggleMediaControls:
-        action = thisRef->action(QWebEnginePage::ToggleMediaControls);
-        break;
-    case ContextMenuItem::ToggleMediaLoop:
-        action = thisRef->action(QWebEnginePage::ToggleMediaLoop);
-        break;
-    case ContextMenuItem::DownloadMediaToDisk:
-        action = thisRef->action(QWebEnginePage::DownloadMediaToDisk);
-        break;
-    case ContextMenuItem::InspectElement:
-        action = thisRef->action(QWebEnginePage::InspectElement);
-        break;
-    case ContextMenuItem::ExitFullScreen:
-        action = thisRef->action(QWebEnginePage::ExitFullScreen);
-        break;
-    case ContextMenuItem::SavePage:
-        action = thisRef->action(QWebEnginePage::SavePage);
-        break;
-    case ContextMenuItem::ViewSource:
-        action = thisRef->action(QWebEnginePage::ViewSource);
-        break;
-    case ContextMenuItem::SpellingSuggestions:
-        for (int i=0; i < m_contextData.spellCheckerSuggestions().count() && i < 4; i++) {
-            action = new QAction(m_menu);
-            QString replacement = m_contextData.spellCheckerSuggestions().at(i);
-            QObject::connect(action, &QAction::triggered, [thisRef, replacement] { if (thisRef) thisRef->replaceMisspelledWord(replacement); });
-            action->setText(replacement);
-            m_menu->addAction(action);
-        }
-        return;
-    case ContextMenuItem::Separator:
-        if (!m_menu->isEmpty())
-            m_menu->addSeparator();
-        return;
-    }
-    action->setEnabled(isMenuItemEnabled(menuItem));
-    m_menu->addAction(action);
-}
-
-bool QContextMenuBuilder::isMenuItemEnabled(ContextMenuItem menuItem)
-{
-    switch (menuItem) {
-    case ContextMenuItem::Back:
-        return m_page->d_ptr->adapter->canGoBack();
-    case ContextMenuItem::Forward:
-        return m_page->d_ptr->adapter->canGoForward();
-    case ContextMenuItem::Reload:
-        return true;
-    case ContextMenuItem::Cut:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanCut;
-    case ContextMenuItem::Copy:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanCopy;
-    case ContextMenuItem::Paste:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanPaste;
-    case ContextMenuItem::Undo:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanUndo;
-    case ContextMenuItem::Redo:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanRedo;
-    case ContextMenuItem::SelectAll:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanSelectAll;
-    case ContextMenuItem::PasteAndMatchStyle:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanPaste;
-    case ContextMenuItem::OpenLinkInNewWindow:
-    case ContextMenuItem::OpenLinkInNewTab:
-    case ContextMenuItem::CopyLinkToClipboard:
-    case ContextMenuItem::DownloadLinkToDisk:
-    case ContextMenuItem::CopyImageToClipboard:
-    case ContextMenuItem::CopyImageUrlToClipboard:
-    case ContextMenuItem::DownloadImageToDisk:
-    case ContextMenuItem::CopyMediaUrlToClipboard:
-    case ContextMenuItem::ToggleMediaControls:
-    case ContextMenuItem::ToggleMediaLoop:
-    case ContextMenuItem::DownloadMediaToDisk:
-    case ContextMenuItem::InspectElement:
-    case ContextMenuItem::ExitFullScreen:
-    case ContextMenuItem::SavePage:
-        return true;
-    case ContextMenuItem::ViewSource:
-        return m_page->d_ptr->adapter->canViewSource();
-    case ContextMenuItem::SpellingSuggestions:
-    case ContextMenuItem::Separator:
-        return true;
-    }
-    Q_UNREACHABLE();
-}
-#endif // QT_CONFIG(action)
 
 QT_END_NAMESPACE
 

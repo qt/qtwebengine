@@ -54,9 +54,7 @@
 #include "qwebenginepage.h"
 
 #include "qwebenginecallback_p.h"
-#include "qwebenginecontextmenudata.h"
 #include "qwebenginescriptcollection.h"
-#include "render_view_context_menu_qt.h"
 #include "web_contents_adapter_client.h"
 
 #include <QtCore/qcompilerdetection.h>
@@ -184,7 +182,6 @@ public:
     QWebEngineSettings *settings;
     QWebEngineView *view;
     QUrl url;
-    QWebEngineContextMenuData contextData;
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;
     bool m_isBeingAdopted;
@@ -208,22 +205,6 @@ public:
 #endif
 
     QList<QSharedPointer<CertificateErrorController>> m_certificateErrorControllers;
-};
-
-class QContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt
-{
-public:
-    QContextMenuBuilder(const QtWebEngineCore::WebEngineContextMenuData &data, QWebEnginePage *page, QMenu *menu);
-
-private:
-    virtual bool hasInspector() override;
-    virtual bool isFullScreenMode() override;
-
-    virtual void addMenuItem(ContextMenuItem entry) override;
-    virtual bool isMenuItemEnabled(ContextMenuItem entry) override;
-
-    QWebEnginePage *m_page;
-    QMenu *m_menu;
 };
 
 QT_END_NAMESPACE
