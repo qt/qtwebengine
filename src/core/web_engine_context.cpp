@@ -125,7 +125,7 @@
 #include <QGuiApplication>
 #include <QMutex>
 #include <QOffscreenSurface>
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 # include <QOpenGLContext>
 #endif
 #include <QQuickWindow>
@@ -138,7 +138,7 @@
 
 using namespace QtWebEngineCore;
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
@@ -146,7 +146,7 @@ QT_END_NAMESPACE
 
 namespace {
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 bool usingANGLE()
 {
 #if defined(Q_OS_WIN)
@@ -179,7 +179,7 @@ bool usingDefaultSGBackend()
 
     return device.isEmpty();
 }
-#endif //QT_NO_OPENGL
+#endif // QT_CONFIG(opengl)
 #if QT_CONFIG(webengine_pepper_plugins)
 void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 {
@@ -208,7 +208,7 @@ bool usingSoftwareDynamicGL()
 {
     if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
         return true;
-#if defined(Q_OS_WIN) && !defined(QT_NO_OPENGL)
+#if defined(Q_OS_WIN) && QT_CONFIG(opengl)
     HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
     wchar_t path[MAX_PATH];
     DWORD size = GetModuleFileName(handle, path, MAX_PATH);
@@ -605,7 +605,7 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
     bool threadedGpu = false;
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
 #if defined(Q_OS_MACOS)
     // QtBase disabled it when building on 10.14+, unfortunately we still need it
@@ -692,7 +692,7 @@ WebEngineContext::WebEngineContext()
     GLContextHelper::initialize();
 
     const char *glType = 0;
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 
     const bool tryGL = (usingDefaultSGBackend() && !usingSoftwareDynamicGL() &&
                         QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
@@ -758,7 +758,7 @@ WebEngineContext::WebEngineContext()
             qWarning("WebEngineContext used before QtWebEngine::initialize() or OpenGL context creation failed.");
         }
     }
-#endif
+#endif // QT_CONFIG(opengl)
 
     if (glType) {
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);

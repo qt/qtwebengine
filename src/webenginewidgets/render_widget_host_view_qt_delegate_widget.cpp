@@ -107,7 +107,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     QOpenGLContext *globalSharedContext = QOpenGLContext::globalShareContext();
     if (globalSharedContext) {
         QSurfaceFormat sharedFormat = globalSharedContext->format();

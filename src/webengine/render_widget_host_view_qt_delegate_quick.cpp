@@ -63,7 +63,7 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
     setFocus(true);
     setActiveFocusOnTab(true);
 
-#if defined(Q_OS_MACOS) && !defined(QT_NO_OPENGL)
+#if defined(Q_OS_MACOS) && QT_CONFIG(opengl)
     // Check that the default QSurfaceFormat OpenGL profile is compatible with the global OpenGL
     // shared context profile, otherwise this could lead to a nasty crash.
     QOpenGLContext *globalSharedContext = QOpenGLContext::globalShareContext();

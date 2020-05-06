@@ -68,7 +68,7 @@
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 # include <QOpenGLContext>
 # include <QOpenGLFunctions>
 # include <QSGFlatColorMaterial>
@@ -79,7 +79,7 @@
 #include <QSGImageNode>
 #include <QSGRectangleNode>
 
-#if !defined(QT_NO_EGL)
+#if QT_CONFIG(egl)
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #endif
@@ -108,14 +108,14 @@
 #define GL_LINE_LOOP                      0x0002
 #endif
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
 #endif
 
 namespace QtWebEngineCore {
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
 public:
     MailboxTexture(const CompositorResource *resource, bool hasAlphaChannel, int target = -1);
@@ -141,7 +141,7 @@ private:
 #endif
     friend class DelegatedFrameNode;
 };
-#endif // QT_NO_OPENGL
+#endif // QT_CONFIG(opengl)
 
 class RectClipNode : public QSGClipNode
 {
@@ -167,7 +167,7 @@ public:
                                          QSGNode *) = 0;
     virtual void setupSolidColorNode(const QRect &, const QColor &, QSGNode *) = 0;
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     virtual void setupDebugBorderNode(QSGGeometry *, QSGFlatColorMaterial *, QSGNode *) = 0;
     virtual void setupYUVVideoNode(QSGTexture *, QSGTexture *, QSGTexture *, QSGTexture *,
                            const QRectF &, const QRectF &, const QSizeF &, const QSizeF &,
@@ -177,7 +177,7 @@ public:
     virtual void setupStreamVideoNode(MailboxTexture *, const QRectF &,
                                       const QMatrix4x4 &, QSGNode *) = 0;
 #endif // GL_OES_EGL_image_external
-#endif // QT_NO_OPENGL
+#endif // QT_CONFIG(opengl)
 protected:
     QVector<QSGNode*> *m_sceneGraphNodes;
 };
@@ -234,7 +234,7 @@ public:
          if (rectangleNode->color() != color)
              rectangleNode->setColor(color);
     }
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     void setupDebugBorderNode(QSGGeometry *geometry, QSGFlatColorMaterial *material,
                               QSGNode *) override
     {
@@ -259,7 +259,7 @@ public:
         Q_UNREACHABLE();
     }
 #endif // GL_OES_EGL_image_external
-#endif // QT_NO_OPENGL
+#endif // QT_CONFIG(opengl)
 
 private:
     QVector<QSGNode*>::iterator m_nodeIterator;
@@ -314,7 +314,7 @@ public:
         m_sceneGraphNodes->append(rectangleNode);
     }
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     void setupDebugBorderNode(QSGGeometry *geometry, QSGFlatColorMaterial *material,
                               QSGNode *layerChain) override
     {
@@ -363,7 +363,7 @@ public:
         m_sceneGraphNodes->append(svideoNode);
     }
 #endif // GL_OES_EGL_image_external
-#endif // QT_NO_OPENGL
+#endif // QT_CONFIG(opengl)
 
 private:
     RenderWidgetHostViewQtDelegate *m_apiDelegate;
@@ -421,7 +421,7 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const viz::SharedQuadState
     return layerChain;
 }
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 MailboxTexture::MailboxTexture(const CompositorResource *resource, bool hasAlphaChannel, int target)
     : m_textureId(resource->texture_id)
     , m_fence(resource->texture_fence)
@@ -476,7 +476,7 @@ void MailboxTexture::bind()
     }
 #endif
 }
-#endif // !QT_NO_OPENGL
+#endif // QT_CONFIG(opengl)
 
 RectClipNode::RectClipNode(const QRectF &rect)
     : m_geometry(QSGGeometry::defaultAttributes_Point2D(), 4)
@@ -488,12 +488,12 @@ RectClipNode::RectClipNode(const QRectF &rect)
 }
 
 DelegatedFrameNode::DelegatedFrameNode()
-#if defined(USE_OZONE) && !defined(QT_NO_OPENGL)
+#if defined(USE_OZONE) && QT_CONFIG(opengl)
     : m_contextShared(true)
 #endif
 {
     setFlag(UsePreprocess);
-#if defined(USE_OZONE) && !defined(QT_NO_OPENGL)
+#if defined(USE_OZONE) && QT_CONFIG(opengl)
     QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
     QOpenGLContext *sharedContext = qt_gl_global_share_context();
     if (currentContext && sharedContext && !QOpenGLContext::areSharing(currentContext, sharedContext)) {
@@ -569,14 +569,14 @@ static bool areRenderPassStructuresEqual(const viz::CompositorFrame *frameData,
             const viz::DrawQuad *prevQuad = *prevIt;
             if (quad->material != prevQuad->material)
                 return false;
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
             if (quad->material == viz::DrawQuad::Material::kYuvVideoContent)
                 return false;
 #ifdef GL_OES_EGL_image_external
             if (quad->material == viz::DrawQuad::Material::kStreamVideoContent)
                 return false;
 #endif // GL_OES_EGL_image_external
-#endif // QT_NO_OPENGL
+#endif // QT_CONFIG(opengl)
             if (!areSharedQuadStatesEqual(quad->shared_quad_state, prevQuad->shared_quad_state))
                 return false;
             if (quad->shared_quad_state->is_clipped && quad->visible_rect != prevQuad->visible_rect) {
@@ -880,7 +880,7 @@ void DelegatedFrameNode::handleQuad(
         Q_UNUSED(scquad->force_anti_aliasing_off);
         nodeHandler->setupSolidColorNode(toQt(quad->rect), toQt(scquad->color), currentLayerChain);
         break;
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     }
     case viz::DrawQuad::Material::kDebugBorder: {
         const viz::DebugBorderDrawQuad *dbquad = viz::DebugBorderDrawQuad::MaterialCast(quad);
@@ -913,7 +913,7 @@ void DelegatedFrameNode::handleQuad(
             toQt(quad->rect), toQt(tquad->tex_coord_rect),
             QSGImageNode::NoTransform, currentLayerChain);
         break;
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     }
     case viz::DrawQuad::Material::kYuvVideoContent: {
         const viz::YUVVideoDrawQuad *vquad = viz::YUVVideoDrawQuad::MaterialCast(quad);
@@ -952,7 +952,7 @@ void DelegatedFrameNode::handleQuad(
         nodeHandler->setupStreamVideoNode(texture, toQt(squad->rect), qMatrix, currentLayerChain);
         break;
 #endif // GL_OES_EGL_image_external
-#endif // QT_NO_OPENGL
+#endif // QT_CONFIG(opengl)
     }
     case viz::DrawQuad::Material::kSurfaceContent:
         Q_UNREACHABLE();
@@ -1050,7 +1050,7 @@ QSharedPointer<QSGTexture> DelegatedFrameNode::createBitmapTexture(const Composi
 
 QSharedPointer<MailboxTexture> DelegatedFrameNode::createMailboxTexture(const CompositorResource *resource, bool hasAlphaChannel, int target)
 {
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     return QSharedPointer<MailboxTexture>::create(resource, hasAlphaChannel, target);
 #else
     Q_UNREACHABLE();
@@ -1059,7 +1059,7 @@ QSharedPointer<MailboxTexture> DelegatedFrameNode::createMailboxTexture(const Co
 
 void DelegatedFrameNode::copyMailboxTextures()
 {
-#if !defined(QT_NO_OPENGL) && defined(USE_OZONE)
+#if QT_CONFIG(opengl) && defined(USE_OZONE)
     // Workaround when context is not shared QTBUG-48969
     // Make slow copy between two contexts.
     if (!m_contextShared) {
