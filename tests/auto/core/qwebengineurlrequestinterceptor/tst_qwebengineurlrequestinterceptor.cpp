@@ -74,6 +74,8 @@ private Q_SLOTS:
     void passRefererHeader();
     void initiator_data();
     void initiator();
+    void jsServiceWorker_data();
+    void jsServiceWorker();
 };
 
 tst_QWebEngineUrlRequestInterceptor::tst_QWebEngineUrlRequestInterceptor()
@@ -184,6 +186,58 @@ public:
         : shouldIntercept(intercept)
     {
     }
+};
+
+class TestServer : public HttpServer
+{
+public:
+    TestServer()
+    {
+        connect(this, &HttpServer::newRequest, this, &TestServer::onNewRequest);
+    }
+
+private:
+    void onNewRequest(HttpReqRep *rr)
+    {
+        const QDir resourceDir(TESTS_SOURCE_DIR "qwebengineurlrequestinterceptor/resources");
+        QString path = rr->requestPath();
+        path.remove(0, 1);
+
+        if (rr->requestMethod() != "GET" || !resourceDir.exists(path))
+        {
+            rr->setResponseStatus(404);
+            rr->sendResponse();
+            return;
+        }
+
+        QFile file(resourceDir.filePath(path));
+        file.open(QIODevice::ReadOnly);
+        QByteArray data = file.readAll();
+        rr->setResponseBody(data);
+        QMimeDatabase db;
+        QMimeType mime = db.mimeTypeForFileNameAndData(file.fileName(), data);
+        rr->setResponseHeader(QByteArrayLiteral("content-type"), mime.name().toUtf8());
+        rr->sendResponse();
+    }
+};
+
+class ConsolePage : public QWebEnginePage {
+    Q_OBJECT
+public:
+    ConsolePage(QWebEngineProfile* profile) : QWebEnginePage(profile) {}
+
+    virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
+    {
+        levels.append(level);
+        messages.append(message);
+        lineNumbers.append(lineNumber);
+        sourceIDs.append(sourceID);
+    }
+
+    QList<int> levels;
+    QStringList messages;
+    QList<int> lineNumbers;
+    QStringList sourceIDs;
 };
 
 void tst_QWebEngineUrlRequestInterceptor::interceptRequest_data()
@@ -697,6 +751,40 @@ void tst_QWebEngineUrlRequestInterceptor::initiator()
     infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeXhr);
     foreach (auto info, infos)
         QVERIFY(interceptor.requestInitiatorUrls[info.requestUrl].contains(info.initiator));
+}
+
+void tst_QWebEngineUrlRequestInterceptor::jsServiceWorker_data()
+{
+    interceptRequest_data();
+}
+
+void tst_QWebEngineUrlRequestInterceptor::jsServiceWorker()
+{
+    QFETCH(InterceptorSetter, setter);
+
+    TestServer server;
+    QVERIFY(server.start());
+
+    QWebEngineProfile profile(QStringLiteral("Test"));
+    std::unique_ptr<ConsolePage> page;
+    page.reset(new ConsolePage(&profile));
+    TestRequestInterceptor interceptor(/* intercept */ false);
+    (profile.*setter)(&interceptor);
+    QVERIFY(loadSync(page.get(), server.url("/sw.html")));
+
+    // We expect only one message here, because logging of services workers is not exposed in our API.
+    QTRY_COMPARE(page->messages.count(), 1);
+    QCOMPARE(page->levels.at(0), QWebEnginePage::InfoMessageLevel);
+
+    QUrl firstPartyUrl = QUrl(server.url().toString() + "sw.js");
+    QList<RequestInfo> infos;
+    // Service Worker
+    QTRY_VERIFY(interceptor.hasUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker));
+    infos = interceptor.getUrlRequestForType(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker);
+    foreach (auto info, infos)
+        QCOMPARE(info.firstPartyUrl, firstPartyUrl);
+
+    QVERIFY(server.stop());
 }
 
 QTEST_MAIN(tst_QWebEngineUrlRequestInterceptor)
