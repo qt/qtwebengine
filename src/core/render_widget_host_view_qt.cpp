@@ -1170,8 +1170,12 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::InputMethodQuery:
         handleInputMethodQueryEvent(static_cast<QInputMethodQueryEvent*>(event));
         break;
-    case QEvent::HoverLeave:
     case QEvent::Leave:
+#ifdef Q_OS_WIN
+        if (m_mouseButtonPressed > 0)
+            return false;
+#endif
+    case QEvent::HoverLeave:
         host()->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(event));
         break;
     default:
@@ -1284,6 +1288,11 @@ bool RenderWidgetHostViewQt::IsPopup() const
 
 void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
 {
+    if (event->type() == QEvent::MouseButtonPress)
+        m_mouseButtonPressed++;
+    if (event->type() == QEvent::MouseButtonRelease)
+        m_mouseButtonPressed--;
+
     // Don't forward mouse events synthesized by the system, which are caused by genuine touch
     // events. Chromium would then process for e.g. a mouse click handler twice, once due to the
     // system synthesized mouse event, and another time due to a touch-to-gesture-to-mouse
