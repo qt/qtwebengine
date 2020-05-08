@@ -319,6 +319,8 @@ private:
     gfx::SelectionBound m_selectionEnd;
 
     base::WeakPtrFactory<RenderWidgetHostViewQt> m_weakPtrFactory{this};
+
+    uint m_mouseButtonPressed = 0;
 };
 
 } // namespace QtWebEngineCore
