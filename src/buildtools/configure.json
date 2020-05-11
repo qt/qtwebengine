@@ -32,13 +32,6 @@
                 { "type": "pkgConfig", "args": "libdrm" }
             ]
         },
-        "webengine-xkbcommon": {
-            "label": "xkbcommon",
-            "headers": "xkbcommon/xkbcommon.h",
-            "sources": [
-                "-lxkbcommon"
-            ]
-        },
         "webengine-xcomposite": {
             "label": "xcomposite",
             "sources": [
@@ -447,11 +440,6 @@
             "condition": "libs.webengine-libdrm",
             "output": [ "privateFeature" ]
         },
-        "webengine-system-xkbcommon": {
-            "label": "xkbcommon",
-            "condition": "libs.webengine-xkbcommon",
-            "output": [ "privateFeature" ]
-        },
         "webengine-system-xcomposite": {
             "label": "xcomposite",
             "condition": "libs.webengine-xcomposite",
@@ -746,8 +734,7 @@
                         "webengine-system-png",
                         "webengine-system-jpeg",
                         "webengine-system-harfbuzz",
-                        "webengine-system-freetype",
-                        "webengine-system-xkbcommon"
+                        "webengine-system-freetype"
                      ]
                  }
              ]
