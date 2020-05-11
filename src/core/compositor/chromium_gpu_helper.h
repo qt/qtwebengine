@@ -40,8 +40,6 @@
 #ifndef CHROMIUM_GPU_HELPER_H
 #define CHROMIUM_GPU_HELPER_H
 
-#include <QtGlobal> // We need this for the Q_OS_QNX define.
-
 #include "base/memory/scoped_refptr.h"
 
 namespace base {
@@ -71,19 +69,5 @@ gpu::TextureBase* ConsumeTexture(gpu::MailboxManager *mailboxManager, unsigned t
 unsigned int service_id(gpu::TextureBase *tex);
 
 void ProgressFlingIfNeeded(content::RenderWidgetHost *host, const base::TimeTicks &current_time);
-
-#ifdef Q_OS_QNX
-typedef void* EGLDisplay;
-typedef void* EGLStreamKHR;
-
-struct EGLStreamData {
-    EGLDisplay egl_display;
-    EGLStreamKHR egl_str_handle;
-
-    EGLStreamData(): egl_display(NULL), egl_str_handle(NULL) {}
-};
-
-EGLStreamData eglstream_connect_consumer(gpu::Texture *tex);
-#endif
 
 #endif // CHROMIUM_GPU_HELPER_H

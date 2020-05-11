@@ -136,9 +136,6 @@ private:
 #if defined(USE_OZONE)
     bool m_ownsTexture;
 #endif
-#ifdef Q_OS_QNX
-    EGLStreamData m_eglStreamData;
-#endif
     friend class DelegatedFrameNode;
 };
 #endif // QT_CONFIG(opengl)
@@ -461,20 +458,6 @@ void MailboxTexture::bind()
     if (m_fence)
         m_fence->wait();
     glBindTexture(m_target, m_textureId);
-#ifdef Q_OS_QNX
-    if (m_target == GL_TEXTURE_EXTERNAL_OES) {
-        static bool resolved = false;
-        static PFNEGLSTREAMCONSUMERACQUIREKHRPROC eglStreamConsumerAcquire = 0;
-
-        if (!resolved) {
-            QOpenGLContext *context = QOpenGLContext::currentContext();
-            eglStreamConsumerAcquire = (PFNEGLSTREAMCONSUMERACQUIREKHRPROC)context->getProcAddress("eglStreamConsumerAcquireKHR");
-            resolved = true;
-        }
-        if (eglStreamConsumerAcquire)
-            eglStreamConsumerAcquire(m_eglStreamData.egl_display, m_eglStreamData.egl_str_handle);
-    }
-#endif
 }
 #endif // QT_CONFIG(opengl)
 
