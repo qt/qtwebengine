@@ -52,7 +52,13 @@
 QT_BEGIN_NAMESPACE
 
 // The library is not thread-safe at all, it has a lot of global variables.
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, pdfMutex, (QMutex::Recursive));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+class QRecursiveMutex : public QMutex
+{
+    QRecursiveMutex() : QMutex(Recursive) {}
+};
+#endif
+Q_GLOBAL_STATIC(QRecursiveMutex, pdfMutex)
 static int libraryRefCount;
 static const double CharacterHitTolerance = 16.0;
 Q_LOGGING_CATEGORY(qLcDoc, "qt.pdf.document")
