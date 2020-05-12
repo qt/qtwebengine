@@ -111,4 +111,7 @@
     \code
     QTWEBENGINE_CHROMIUM_FLAGS="--disable-logging" mybrowser
     \endcode
+
+    QTWEBENGINE_CHROMIUM_FLAGS can also be set using {qputenv} from within the
+    application if called before QtWebEngine::initialize().
 */
