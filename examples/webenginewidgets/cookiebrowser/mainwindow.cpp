@@ -87,7 +87,7 @@ QNetworkCookie CookieDialog::cookie()
     cookie.setDomain(m_domainLineEdit->text());
     cookie.setName(m_nameLineEdit->text().toLatin1());
     cookie.setValue(m_valueLineEdit->text().toLatin1());
-    cookie.setExpirationDate(QDateTime(m_dateEdit->date()));
+    cookie.setExpirationDate(QDateTime(m_dateEdit->date(), QTime::currentTime()));
     cookie.setPath(m_pathLineEdit->text());
     cookie.setSecure(m_isSecureComboBox->currentText() == tr("yes"));
     cookie.setHttpOnly(m_isHttpOnlyComboBox->currentText() == tr("yes"));

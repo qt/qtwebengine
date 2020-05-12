@@ -57,11 +57,11 @@ ZoomSelector::ZoomSelector(QWidget *parent)
     addItem(QLatin1String("200%"));
     addItem(QLatin1String("400%"));
 
-    connect(this, &QComboBox::currentIndexChanged,
+    connect(this, &QComboBox::currentTextChanged,
             this, &ZoomSelector::onCurrentTextChanged);
 
     connect(lineEdit(), &QLineEdit::editingFinished,
-            this, [this](){onCurrentTextChanged(0, lineEdit()->text()); });
+            this, [this](){onCurrentTextChanged(lineEdit()->text()); });
 }
 
 void ZoomSelector::setZoomFactor(qreal zoomFactor)
@@ -74,7 +74,7 @@ void ZoomSelector::reset()
     setCurrentIndex(8); // 100%
 }
 
-void ZoomSelector::onCurrentTextChanged(int, const QString &text)
+void ZoomSelector::onCurrentTextChanged(const QString &text)
 {
     if (text == QLatin1String("Fit Width")) {
         emit zoomModeChanged(QPdfView::FitToWidth);
