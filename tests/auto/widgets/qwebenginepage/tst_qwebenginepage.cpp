@@ -203,11 +203,10 @@ private Q_SLOTS:
     void triggerActionWithoutMenu();
     void dynamicFrame();
 
-    void notificationRequest_data();
-    void notificationRequest();
+    void notificationPermission_data();
+    void notificationPermission();
     void sendNotification();
     void contentsSize();
-    void notificationPermission();
 
     void setLifecycleState();
     void setVisible();
@@ -3590,42 +3589,61 @@ public:
     }
 };
 
-void tst_QWebEnginePage::notificationRequest_data()
+void tst_QWebEnginePage::notificationPermission_data()
 {
+    QTest::addColumn<bool>("setOnInit");
     QTest::addColumn<QWebEnginePage::PermissionPolicy>("policy");
     QTest::addColumn<QString>("permission");
-    QTest::newRow("deny") << QWebEnginePage::PermissionDeniedByUser << "denied";
-    QTest::newRow("grant") << QWebEnginePage::PermissionGrantedByUser << "granted";
-}
-
-void tst_QWebEnginePage::notificationRequest()
-{
-    QFETCH(QWebEnginePage::PermissionPolicy, policy);
-    QFETCH(QString, permission);
-
-    NotificationPage page(policy);
-    QVERIFY(page.spyLoad.waitForResult());
-
-    page.resetPermission();
-    QCOMPARE(page.getPermission(), "default");
-
-    page.requestPermission();
-    page.spyRequest.waitForResult();
-    QVERIFY(page.spyRequest.wasCalled());
-
-    QCOMPARE(page.getPermission(), permission);
+    QTest::newRow("denyOnInit")  << true  << QWebEnginePage::PermissionDeniedByUser << "denied";
+    QTest::newRow("deny")        << false << QWebEnginePage::PermissionDeniedByUser << "denied";
+    QTest::newRow("grant")       << false << QWebEnginePage::PermissionGrantedByUser << "granted";
+    QTest::newRow("grantOnInit") << true  << QWebEnginePage::PermissionGrantedByUser << "granted";
 }
 
 void tst_QWebEnginePage::notificationPermission()
 {
+    QFETCH(bool, setOnInit);
+    QFETCH(QWebEnginePage::PermissionPolicy, policy);
+    QFETCH(QString, permission);
+
     QWebEngineProfile otr;
     QWebEnginePage page(&otr, nullptr);
+
+    QUrl baseUrl("https://www.example.com/somepage.html");
+
+    bool permissionRequested = false, errorState = false;
+    connect(&page, &QWebEnginePage::featurePermissionRequested, &page, [&] (const QUrl &o, QWebEnginePage::Feature f) {
+        if (f != QWebEnginePage::Notifications)
+            return;
+        if (permissionRequested || o != baseUrl.url(QUrl::RemoveFilename)) {
+            qWarning() << "Unexpected case. Can't proceed." << setOnInit << permissionRequested << o;
+            errorState = true;
+            return;
+        }
+        permissionRequested = true;
+        page.setFeaturePermission(o, f, policy);
+    });
+
+    if (setOnInit)
+        page.setFeaturePermission(baseUrl, QWebEnginePage::Notifications, policy);
+
     QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
-    page.setHtml(QString("<html><body>Test</body></html>"), QUrl("https://www.example.com"));
+    page.setHtml(QString("<html><body>Test</body></html>"), baseUrl);
     QTRY_COMPARE(spy.count(), 1);
-    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("Notification.permission")), QLatin1String("default"));
-    page.setFeaturePermission(QUrl("https://www.example.com"), QWebEnginePage::Notifications, QWebEnginePage::PermissionGrantedByUser);
-    QTRY_COMPARE(evaluateJavaScriptSync(&page, QStringLiteral("Notification.permission")), QLatin1String("granted"));
+
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("Notification.permission")), setOnInit ? permission : QLatin1String("default"));
+
+    if (!setOnInit) {
+        page.setFeaturePermission(baseUrl, QWebEnginePage::Notifications, policy);
+        QTRY_COMPARE(evaluateJavaScriptSync(&page, QStringLiteral("Notification.permission")), permission);
+    }
+
+    auto js = QStringLiteral("var permission; Notification.requestPermission().then(p => { permission = p })");
+    evaluateJavaScriptSync(&page, js);
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "permission").toString(), permission);
+    // permission is not 'remembered' from api standpoint, hence is not suppressed on explicit call from JS
+    QVERIFY(permissionRequested);
+    QVERIFY(!errorState);
 }
 
 void tst_QWebEnginePage::sendNotification()

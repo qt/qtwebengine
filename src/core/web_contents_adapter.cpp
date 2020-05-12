@@ -1368,7 +1368,7 @@ void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, 
 
 void WebContentsAdapter::runFeatureRequestCallback(const QUrl &securityOrigin, ProfileAdapter::PermissionType feature, bool allowed)
 {
-    CHECK_INITIALIZED();
+    Q_ASSERT(m_profileAdapter);
     m_profileAdapter->permissionRequestReply(securityOrigin, feature, allowed);
 }
 
