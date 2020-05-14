@@ -312,7 +312,7 @@ private:
 
 void ShareGroupQtQuick::AboutToAddFirstContext()
 {
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     // This currently has to be setup by ::main in all applications using QQuickWebEngineView with delegated rendering.
     QOpenGLContext *shareContext = qt_gl_global_share_context();
     if (!shareContext) {

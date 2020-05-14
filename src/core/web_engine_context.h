@@ -46,6 +46,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 
+#include <QtGui/qtgui-config.h>
 #include <QVector>
 
 namespace base {
@@ -142,7 +143,7 @@ private:
     std::unique_ptr<ProfileAdapter> m_defaultProfileAdapter;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
     QVector<ProfileAdapter*> m_profileAdapters;
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     std::unique_ptr<AccessibilityActivationObserver> m_accessibilityActivationObserver;
 #endif
 

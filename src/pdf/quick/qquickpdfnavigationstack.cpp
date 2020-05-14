@@ -90,6 +90,8 @@ void QQuickPdfNavigationStack::forward()
     if (forwardAvailableWas != forwardAvailable())
         emit forwardAvailableChanged();
     m_changing = false;
+    qCDebug(qLcNav) << "forward: index" << m_currentHistoryIndex << "page" << currentPage()
+                    << "@" << currentLocation() << "zoom" << currentZoom();
 }
 
 /*!
@@ -120,6 +122,8 @@ void QQuickPdfNavigationStack::back()
     if (!forwardAvailableWas)
         emit forwardAvailableChanged();
     m_changing = false;
+    qCDebug(qLcNav) << "back: index" << m_currentHistoryIndex << "page" << currentPage()
+                    << "@" << currentLocation() << "zoom" << currentZoom();
 }
 
 /*!
@@ -163,13 +167,14 @@ qreal QQuickPdfNavigationStack::currentZoom() const
     \qmlmethod void PdfNavigationStack::push(int page, point location, qreal zoom)
 
     Adds the given destination, consisting of \a page, \a location and \a zoom,
-    to the history of visited locations.
+    to the history of visited locations.  If \a emitJumped is \c false, the
+    \l jumped() signal will not be emitted.
 
     If forwardAvailable is \c true, calling this function represents a branch
     in the timeline which causes the "future" to be lost, and therefore
     forwardAvailable will change to \c false.
 */
-void QQuickPdfNavigationStack::push(int page, QPointF location, qreal zoom)
+void QQuickPdfNavigationStack::push(int page, QPointF location, qreal zoom, bool emitJumped)
 {
     if (page == currentPage() && location == currentLocation() && zoom == currentZoom())
         return;
@@ -192,7 +197,8 @@ void QQuickPdfNavigationStack::push(int page, QPointF location, qreal zoom)
         emit backAvailableChanged();
     if (forwardAvailableWas)
         emit forwardAvailableChanged();
-    emit jumped(page, location, zoom);
+    if (emitJumped)
+        emit jumped(page, location, zoom);
     qCDebug(qLcNav) << "push: index" << m_currentHistoryIndex << "page" << page
                     << "@" << location << "zoom" << zoom << "-> history" <<
         [this]() {

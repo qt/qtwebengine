@@ -53,7 +53,10 @@ class Q_PDF_EXPORT QPdfSelection
     Q_GADGET
     Q_PROPERTY(bool valid READ isValid)
     Q_PROPERTY(QVector<QPolygonF> bounds READ bounds)
+    Q_PROPERTY(QRectF boundingRectangle READ boundingRectangle)
     Q_PROPERTY(QString text READ text)
+    Q_PROPERTY(int startIndex READ startIndex)
+    Q_PROPERTY(int endIndex READ endIndex)
 
 public:
     ~QPdfSelection();
@@ -65,13 +68,16 @@ public:
     bool isValid() const;
     QVector<QPolygonF> bounds() const;
     QString text() const;
+    QRectF boundingRectangle() const;
+    int startIndex() const;
+    int endIndex() const;
 #if QT_CONFIG(clipboard)
     void copyToClipboard(QClipboard::Mode mode = QClipboard::Clipboard) const;
 #endif
 
 private:
     QPdfSelection();
-    QPdfSelection(const QString &text, QVector<QPolygonF> bounds);
+    QPdfSelection(const QString &text, QVector<QPolygonF> bounds, QRectF boundingRect, int startIndex, int endIndex);
     QPdfSelection(QPdfSelectionPrivate *d);
     friend class QPdfDocument;
     friend class QQuickPdfSelection;

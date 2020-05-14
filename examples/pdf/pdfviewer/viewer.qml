@@ -226,11 +226,11 @@ ApplicationWindow {
     Drawer {
         id: searchDrawer
         edge: Qt.LeftEdge
-        modal: false
+//        modal: false
+//        dim: false // commented out as workaround for QTBUG-83859
         width: 300
         y: root.header.height
         height: view.height
-        dim: false
         clip: true
         ListView {
             id: searchResultsList

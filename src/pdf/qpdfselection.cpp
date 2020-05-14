@@ -67,8 +67,8 @@ QPdfSelection::QPdfSelection()
     \a text string, and which take up space on the page within the polygon
     regions given in \a bounds.
 */
-QPdfSelection::QPdfSelection(const QString &text, QVector<QPolygonF> bounds)
-  : d(new QPdfSelectionPrivate(text, bounds))
+QPdfSelection::QPdfSelection(const QString &text, QVector<QPolygonF> bounds, QRectF boundingRect, int startIndex, int endIndex)
+  : d(new QPdfSelectionPrivate(text, bounds, boundingRect, startIndex, endIndex))
 {
 }
 
@@ -132,6 +132,36 @@ QVector<QPolygonF> QPdfSelection::bounds() const
 QString QPdfSelection::text() const
 {
     return d->text;
+}
+
+/*!
+    \property rect QPdfSelection::boundingRectangle
+
+    This property holds the overall bounding rectangle (convex hull) around \l bounds.
+*/
+QRectF QPdfSelection::boundingRectangle() const
+{
+    return d->boundingRect;
+}
+
+/*!
+    \property int QPdfSelection::startIndex
+
+    This property holds the index at the beginning of \l text within the full text on the page.
+*/
+int QPdfSelection::startIndex() const
+{
+    return d->startIndex;
+}
+
+/*!
+    \property int QPdfSelection::endIndex
+
+    This property holds the index at the end of \l text within the full text on the page.
+*/
+int QPdfSelection::endIndex() const
+{
+    return d->endIndex;
 }
 
 #if QT_CONFIG(clipboard)

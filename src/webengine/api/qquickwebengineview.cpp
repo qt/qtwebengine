@@ -129,6 +129,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_webChannel(0)
     , m_webChannelWorld(0)
+    , m_defaultAudioMuted(false)
     , m_isBeingAdopted(false)
     , m_backgroundColor(Qt::white)
     , m_zoomFactor(1.0)
@@ -547,12 +548,13 @@ void QQuickWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
         QCoreApplication::sendEvent(q->parentItem(), event);
 }
 
-void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &, const QUrl &targetUrl)
+QSharedPointer<WebContentsAdapter>
+QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents,
+                                           WindowOpenDisposition disposition, bool userGesture,
+                                           const QRect &, const QUrl &targetUrl)
 {
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineNewViewRequest request;
-    // This increases the ref-count of newWebContents and will tell Chromium
-    // to start loading it and possibly return it to its parent page window.open().
     request.m_adapter = newWebContents;
     request.m_isUserInitiated = userGesture;
     request.m_requestedUrl = targetUrl;
@@ -575,6 +577,8 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapte
     }
 
     Q_EMIT q->newViewRequested(&request);
+
+    return newWebContents;
 }
 
 bool QQuickWebEngineViewPrivate::isBeingAdopted()
@@ -669,11 +673,8 @@ void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &sec
 
 void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &securityOrigin)
 {
-
-    Q_UNUSED(securityOrigin);
-
     // TODO: Add mouse lock support
-    adapter->grantMouseLockPermission(false);
+    adapter->grantMouseLockPermission(securityOrigin, false);
 }
 
 void QQuickWebEngineViewPrivate::runQuotaRequest(QWebEngineQuotaRequest request)
@@ -905,6 +906,9 @@ void QQuickWebEngineViewPrivate::initializationFinished()
     if (m_webChannel)
         adapter->setWebChannel(m_webChannel, m_webChannelWorld);
 #endif
+
+    if (m_defaultAudioMuted != adapter->isAudioMuted())
+        adapter->setAudioMuted(m_defaultAudioMuted);
 
     if (devToolsView && devToolsView->d_ptr->adapter)
         adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
@@ -1426,15 +1430,18 @@ void QQuickWebEngineView::setBackgroundColor(const QColor &color)
 bool QQuickWebEngineView::isAudioMuted() const
 {
     const Q_D(QQuickWebEngineView);
-    return d->adapter->isAudioMuted();
+    if (d->adapter->isInitialized())
+        return d->adapter->isAudioMuted();
+    return d->m_defaultAudioMuted;
 }
 
 void QQuickWebEngineView::setAudioMuted(bool muted)
 {
     Q_D(QQuickWebEngineView);
-    bool wasAudioMuted = d->adapter->isAudioMuted();
+    bool wasAudioMuted = isAudioMuted();
+    d->m_defaultAudioMuted = muted;
     d->adapter->setAudioMuted(muted);
-    if (wasAudioMuted != d->adapter->isAudioMuted())
+    if (wasAudioMuted != isAudioMuted())
         Q_EMIT audioMutedChanged(muted);
 }
 

@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFLINKMODEL_P_P_H
-#define QPDFLINKMODEL_P_P_H
+#ifndef QQUICKTABLEVIEWEXTRA_P_H
+#define QQUICKTABLEVIEWEXTRA_P_H
 
 //
 //  W A R N I N G
@@ -48,44 +48,45 @@
 // We mean it.
 //
 
-#include "qpdflinkmodel_p.h"
-#include <private/qabstractitemmodel_p.h>
-
-#include "third_party/pdfium/public/fpdfview.h"
-
-#include <QUrl>
+#include <QPointF>
+#include <QPolygonF>
+#include <QVariant>
+#include <QtQml/qqml.h>
+#include <QtQuick/qquickitem.h>
+#include <QtQuick/private/qquicktableview_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPdfLinkModelPrivate: public QAbstractItemModelPrivate
+class QQuickTableViewExtra : public QObject
 {
-    Q_DECLARE_PUBLIC(QPdfLinkModel)
+    Q_OBJECT
+    Q_PROPERTY(QQuickTableView *tableView READ tableView WRITE setTableView)
 
 public:
-    QPdfLinkModelPrivate();
+    QQuickTableViewExtra(QObject *parent = nullptr);
 
-    void update();
+    QQuickTableView * tableView() const { return m_tableView; }
+    void setTableView(QQuickTableView * tableView) { m_tableView = tableView; }
 
-    struct Link {
-        // where it is on the current page
-        QRectF rect;
-        int textStart = -1;
-        int textCharCount = 0;
-        // destination inside PDF
-        int page = -1; // -1 means look at the url instead
-        QPointF location;
-        qreal zoom = 0; // 0 means no specified zoom: don't change when clicking
-        // web destination
-        QUrl url;
+    Q_INVOKABLE QPoint cellAtPos(qreal x, qreal y) const;
+    Q_INVOKABLE QQuickItem *itemAtCell(int column, int row) const {
+        return itemAtCell(QPoint(column, row));
+    }
+    Q_INVOKABLE QQuickItem *itemAtCell(const QPoint &cell) const;
+    Q_INVOKABLE void positionViewAtCell(int column, int row, Qt::Alignment alignment, const QPointF &offset = QPointF()) {
+        positionViewAtCell(QPoint(column, row), alignment, offset);
+    }
+    Q_INVOKABLE void positionViewAtCell(const QPoint &cell, Qt::Alignment alignment, const QPointF &offset);
+    Q_INVOKABLE void positionViewAtRow(int row, Qt::Alignment alignment, qreal offset = 0) {
+        positionViewAtCell(QPoint(0, row), alignment & Qt::AlignVertical_Mask, QPointF(0, offset));
+    }
 
-        QString toString() const;
-    };
-
-    QPdfDocument *document = nullptr;
-    QVector<Link> links;
-    int page = 0;
+private:
+    QQuickTableView *m_tableView = nullptr;
 };
 
 QT_END_NAMESPACE
 
-#endif // QPDFLINKMODEL_P_P_H
+QML_DECLARE_TYPE(QQuickTableViewExtra)
+
+#endif // QQUICKTABLEVIEWEXTRA_P_H

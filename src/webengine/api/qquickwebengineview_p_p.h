@@ -121,7 +121,10 @@ public:
     void loadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString()) override;
     void focusContainer() override;
     void unhandledKeyEvent(QKeyEvent *event) override;
-    void adoptNewWindow(QSharedPointer<QtWebEngineCore::WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &, const QUrl &targetUrl) override;
+    QSharedPointer<QtWebEngineCore::WebContentsAdapter>
+    adoptNewWindow(QSharedPointer<QtWebEngineCore::WebContentsAdapter> newWebContents,
+                   WindowOpenDisposition disposition, bool userGesture, const QRect &,
+                   const QUrl &targetUrl) override;
     bool isBeingAdopted() override;
     void close() override;
     void windowCloseRejected() override;
@@ -214,6 +217,7 @@ public:
     QPointer<QQuickWebEngineView> inspectedView;
     QPointer<QQuickWebEngineView> devToolsView;
     uint m_webChannelWorld;
+    bool m_defaultAudioMuted;
     bool m_isBeingAdopted;
     mutable QQuickWebEngineAction *actions[QQuickWebEngineView::WebActionCount];
     QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *widget = nullptr;

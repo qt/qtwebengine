@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -26,39 +26,38 @@
 **
 ****************************************************************************/
 
-#ifndef PROXY_SERVER_H
-#define PROXY_SERVER_H
+import QtQuick 2.0
+import QtTest 1.0
+import QtWebEngine 1.4
 
-#include <QObject>
-#include <QTcpServer>
+TestWebEngineView {
+    id: view
+    width: 400
+    height: 400
 
-class ProxyServer : public QObject
-{
-    Q_OBJECT
+    SignalSpy {
+        id: spy
+        target: view
+        signalName: "audioMutedChanged"
+    }
 
-public:
-    explicit ProxyServer(QObject *parent = nullptr);
-    void setCredentials(const QByteArray &user, const QByteArray password);
-    void setCookie(const QByteArray &cookie);
-    bool isListening();
+    TestCase {
+        id: test
+        name: "WebEngineViewAudioMuted"
 
-public slots:
-    void run();
+        function test_audioMuted() {
+            compare(view.audioMuted, false);
+            view.audioMuted = true;
+            view.url = "about:blank";
+            verify(view.waitForLoadSucceeded());
+            compare(view.audioMuted, true);
+            compare(spy.count, 1);
+            compare(spy.signalArguments[0][0], true);
+            view.audioMuted = false;
+            compare(view.audioMuted, false);
+            compare(spy.count, 2);
+            compare(spy.signalArguments[1][0], false);
+        }
+    }
+}
 
-private slots:
-    void handleNewConnection();
-    void handleReadReady();
-
-signals:
-    void authenticationSuccess();
-    void cookieMatch();
-
-private:
-    QByteArray m_data;
-    QTcpServer m_server;
-    QByteArray m_auth;
-    QByteArray m_cookie;
-    bool m_authenticate = false;
-};
-
-#endif // PROXY_SERVER_H

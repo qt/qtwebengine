@@ -31,6 +31,7 @@ OTHER_FILES += \
     $$PWD/data/titleupdate.js \
     $$PWD/data/tst_action.qml \
     $$PWD/data/tst_activeFocusOnPress.qml \
+    $$PWD/data/tst_audioMuted.qml \
     $$PWD/data/tst_contextMenu.qml \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_download.qml \

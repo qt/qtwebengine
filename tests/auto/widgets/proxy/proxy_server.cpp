@@ -42,7 +42,15 @@ void ProxyServer::setCredentials(const QByteArray &user, const QByteArray passwo
     m_auth.append(QChar(':'));
     m_auth.append(password);
     m_auth = m_auth.toBase64();
+    m_authenticate = true;
 }
+
+void ProxyServer::setCookie(const QByteArray &cookie)
+{
+    m_cookie.append(QByteArrayLiteral("Cookie: "));
+    m_cookie.append(cookie);
+}
+
 
 bool ProxyServer::isListening()
 {
@@ -75,7 +83,7 @@ void ProxyServer::handleReadReady()
     if (!m_data.endsWith("\r\n\r\n"))
         return;
 
-    if (!m_data.contains(QByteArrayLiteral("Proxy-Authorization: Basic"))) {
+    if (m_authenticate && !m_data.contains(QByteArrayLiteral("Proxy-Authorization: Basic"))) {
         socket->write("HTTP/1.1 407 Proxy Authentication Required\nProxy-Authenticate: "
                       "Basic realm=\"Proxy requires authentication\"\r\n"
                       "content-length: 0\r\n"
@@ -83,8 +91,12 @@ void ProxyServer::handleReadReady()
         return;
     }
 
-    if (m_data.contains(m_auth)) {
-        emit success();
+    if (m_authenticate && m_data.contains(m_auth)) {
+        emit authenticationSuccess();
+    }
+
+    if (m_data.contains(m_cookie)) {
+        emit cookieMatch();
     }
     m_data.clear();
 }

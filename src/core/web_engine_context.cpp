@@ -106,7 +106,7 @@
 #include "base/mac/foundation_util.h"
 #endif
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 #include "accessibility_activation_observer.h"
 #endif
 #include "api/qwebengineurlscheme.h"
@@ -125,7 +125,7 @@
 #include <QGuiApplication>
 #include <QMutex>
 #include <QOffscreenSurface>
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 # include <QOpenGLContext>
 #endif
 #include <QQuickWindow>
@@ -138,7 +138,7 @@
 
 using namespace QtWebEngineCore;
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
@@ -146,7 +146,7 @@ QT_END_NAMESPACE
 
 namespace {
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 bool usingANGLE()
 {
 #if defined(Q_OS_WIN)
@@ -179,7 +179,7 @@ bool usingDefaultSGBackend()
 
     return device.isEmpty();
 }
-#endif //QT_NO_OPENGL
+#endif // QT_CONFIG(opengl)
 #if QT_CONFIG(webengine_pepper_plugins)
 void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 {
@@ -208,7 +208,7 @@ bool usingSoftwareDynamicGL()
 {
     if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
         return true;
-#if defined(Q_OS_WIN) && !defined(QT_NO_OPENGL)
+#if defined(Q_OS_WIN) && QT_CONFIG(opengl)
     HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
     wchar_t path[MAX_PATH];
     DWORD size = GetModuleFileName(handle, path, MAX_PATH);
@@ -259,6 +259,52 @@ static void cleanupVizProcess()
     auto factory = static_cast<content::VizProcessTransportFactory*>(content::ImageTransportFactory::GetInstance());
     factory->PrepareForShutDown();
     vizCompositorThreadRunner->CleanupForShutdown(base::BindOnce(&completeVizCleanup));
+}
+
+static QStringList parseEnvCommandLine(const QString &cmdLine)
+{
+    QString arg;
+    QStringList arguments;
+    enum { Parse, Quoted, Unquoted } state = Parse;
+    for (const QChar c : cmdLine) {
+        switch (state) {
+        case Parse:
+            if (c == '"') {
+                state = Quoted;
+            } else if (c != ' ' ) {
+                arg += c;
+                state = Unquoted;
+            }
+            // skips spaces
+            break;
+        case Quoted:
+            if (c == '"') {
+                DCHECK(!arg.isEmpty());
+                state = Unquoted;
+            } else {
+                // includes spaces
+                arg += c;
+            }
+            break;
+        case Unquoted:
+            if (c == '"') {
+                // skips quotes
+                state = Quoted;
+            } else if (c == ' ') {
+                arguments.append(arg);
+                arg.clear();
+                state = Parse;
+            } else {
+                arg += c;
+            }
+            break;
+        }
+    }
+    // last arg
+    if (!arg.isEmpty()) {
+        arguments.append(arg);
+    }
+    return arguments;
 }
 
 scoped_refptr<QtWebEngineCore::WebEngineContext> WebEngineContext::m_handle;
@@ -559,7 +605,7 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
     bool threadedGpu = false;
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
 #if defined(Q_OS_MACOS)
     // QtBase disabled it when building on 10.14+, unfortunately we still need it
@@ -594,6 +640,9 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(disableFeatures, features::kUseSkiaRenderer.name);
 
     appendToFeatureList(disableFeatures, network::features::kDnsOverHttpsUpgrade.name);
+
+    // When enabled, event.movement is calculated in blink instead of in browser.
+    appendToFeatureList(disableFeatures, features::kConsolidatedMovementXY.name);
 
     // Explicitly tell Chromium about default-on features we do not support
     appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
@@ -643,7 +692,7 @@ WebEngineContext::WebEngineContext()
     GLContextHelper::initialize();
 
     const char *glType = 0;
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 
     const bool tryGL = (usingDefaultSGBackend() && !usingSoftwareDynamicGL() &&
                         QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
@@ -709,7 +758,7 @@ WebEngineContext::WebEngineContext()
             qWarning("WebEngineContext used before QtWebEngine::initialize() or OpenGL context creation failed.");
         }
     }
-#endif
+#endif // QT_CONFIG(opengl)
 
     if (glType) {
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
@@ -796,7 +845,7 @@ WebEngineContext::WebEngineContext()
     m_printJobManager.reset(new printing::PrintJobManager());
 #endif
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     m_accessibilityActivationObserver.reset(new AccessibilityActivationObserver());
 #endif
 
@@ -829,7 +878,7 @@ base::CommandLine* WebEngineContext::commandLine() {
         QStringList appArgs = QCoreApplication::arguments();
         if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
             appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
-            appArgs.append(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv)).split(' '));
+            appArgs.append(parseEnvCommandLine(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv))));
         }
 #ifdef Q_OS_WIN
         appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));

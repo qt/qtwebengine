@@ -71,8 +71,8 @@
 */
 
 /*!
-    \externalpage http://www.widevine.com/wv_drm.html
-    \title Widevine DRM
+    \externalpage http://www.widevine.com
+    \title Widevine CDM
 */
 
 /*!
@@ -86,8 +86,8 @@
 */
 
 /*!
-    \externalpage https://shaka-player-demo.appspot.com/demo/
-    \title Shaka Player
+    \externalpage https://bitmovin.com/demos/drm
+    \title Bitmovin Player
 */
 
 /*!

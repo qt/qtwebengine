@@ -116,6 +116,29 @@ QVector<QPolygonF> QQuickPdfSearchModel::currentResultBoundingPolygons() const
     return ret;
 }
 
+/*!
+    \qmlproperty point PdfSearchModel::currentResultBoundingRect
+
+    The bounding box containing all \l currentResultBoundingPolygons.
+
+    When this property changes, a scrollable view should automatically scroll
+    itself in such a way as to ensure that this region is visible; for example,
+    it could try to position the upper-left corner near the upper-left of its
+    own viewport, subject to the constraints of the scrollable area.
+*/
+QRectF QQuickPdfSearchModel::currentResultBoundingRect() const
+{
+    QRectF ret;
+    const auto &results = const_cast<QQuickPdfSearchModel *>(this)->resultsOnPage(m_currentPage);
+    if (m_currentResult < 0 || m_currentResult >= results.count())
+        return ret;
+    auto rects = results[m_currentResult].rectangles();
+    ret = rects.takeFirst();
+    for (auto rect : rects)
+        ret = ret.united(rect);
+    return ret;
+}
+
 void QQuickPdfSearchModel::onResultsChanged()
 {
     emit currentPageBoundingPolygonsChanged();
@@ -266,6 +289,7 @@ void QQuickPdfSearchModel::setCurrentResult(int currentResult)
     m_currentResult = currentResult;
     emit currentResultChanged();
     emit currentResultBoundingPolygonsChanged();
+    emit currentResultBoundingRectChanged();
 }
 
 /*!

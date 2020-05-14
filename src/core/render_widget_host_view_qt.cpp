@@ -286,6 +286,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     , m_adapterClient(0)
     , m_imeInProgress(false)
     , m_receivedEmptyImeEvent(false)
+    , m_isMouseLocked(false)
     , m_imState(0)
     , m_anchorPositionWithinSelection(-1)
     , m_cursorPositionWithinSelection(-1)
@@ -425,14 +426,14 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 content::BrowserAccessibilityManager* RenderWidgetHostViewQt::CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame)
 {
     Q_UNUSED(for_root_frame); // FIXME
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
     return new content::BrowserAccessibilityManagerQt(
         m_adapterClient->accessibilityParentObject(),
         content::BrowserAccessibilityManagerQt::GetEmptyDocument(),
         delegate);
 #else
     return 0;
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 }
 
 // Set focus to the associated View component.
@@ -446,6 +447,11 @@ void RenderWidgetHostViewQt::Focus()
 bool RenderWidgetHostViewQt::HasFocus()
 {
     return m_delegate->hasKeyboardFocus();
+}
+
+bool RenderWidgetHostViewQt::IsMouseLocked()
+{
+    return m_isMouseLocked;
 }
 
 bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy()
@@ -520,6 +526,7 @@ bool RenderWidgetHostViewQt::LockMouse(bool)
 {
     m_previousMousePosition = QCursor::pos();
     m_delegate->lockMouse();
+    m_isMouseLocked = true;
     qApp->setOverrideCursor(Qt::BlankCursor);
     return true;
 }
@@ -528,6 +535,7 @@ void RenderWidgetHostViewQt::UnlockMouse()
 {
     m_delegate->unlockMouse();
     qApp->restoreOverrideCursor();
+    m_isMouseLocked = false;
     host()->LostMouseLock();
 }
 
@@ -1530,7 +1538,21 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
         m_mouseWheelPhaseHandler.AddPhaseIfNeededAndScheduleEndEvent(webEvent, false);
         host()->ForwardWheelEvent(webEvent);
     }
-    // TODO: We could forward unhandled wheelevents to our parent.
+}
+
+void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event, content::InputEventAckState ack_result)
+{
+    // Forward unhandled scroll events back as wheel events
+    if (event.GetType() != blink::WebInputEvent::kGestureScrollUpdate)
+        return;
+    switch (ack_result) {
+    case content::INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
+    case content::INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
+        WebEventFactory::sendUnhandledWheelEvent(event, delegate());
+        break;
+    default:
+        break;
+    }
 }
 
 content::MouseWheelPhaseHandler *RenderWidgetHostViewQt::GetMouseWheelPhaseHandler()
@@ -1770,6 +1792,8 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         else if (ev->reason() == Qt::BacktabFocusReason)
             viewHost->SetInitialFocus(true);
         ev->accept();
+
+        m_adapterClient->webContentsAdapter()->handlePendingMouseLockPermission();
     } else if (ev->lostFocus()) {
         host()->SetActive(false);
         host()->LostFocus();

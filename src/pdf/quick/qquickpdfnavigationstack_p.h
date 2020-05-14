@@ -67,7 +67,7 @@ class QQuickPdfNavigationStack : public QObject
 public:
     explicit QQuickPdfNavigationStack(QObject *parent = nullptr);
 
-    Q_INVOKABLE void push(int page, QPointF location, qreal zoom);
+    Q_INVOKABLE void push(int page, QPointF location, qreal zoom, bool emitJumped = true);
     Q_INVOKABLE void update(int page, QPointF location, qreal zoom);
     Q_INVOKABLE void forward();
     Q_INVOKABLE void back();

@@ -32,6 +32,17 @@
 #include <QNetworkProxy>
 #include <QWebEnginePage>
 #include <QWebEngineView>
+#include <QWebEngineUrlRequestInterceptor>
+
+
+struct Interceptor : public QWebEngineUrlRequestInterceptor
+{
+   Interceptor(const QByteArray cookie):m_cookie(cookie){};
+   void interceptRequest(QWebEngineUrlRequestInfo &info) override {
+       info.setHttpHeader(QByteArray("Cookie"), m_cookie);
+   };
+   QByteArray m_cookie;
+};
 
 
 class tst_Proxy : public QObject {
@@ -41,7 +52,9 @@ public:
 
 private slots:
     void proxyAuthentication();
+    void forwardCookie();
 };
+
 
 void tst_Proxy::proxyAuthentication()
 {
@@ -59,9 +72,29 @@ void tst_Proxy::proxyAuthentication()
     server.run();
     QTRY_VERIFY2(server.isListening(), "Could not setup authentication server");
     QWebEnginePage page;
-    QSignalSpy successSpy(&server, &ProxyServer::success);
+    QSignalSpy successSpy(&server, &ProxyServer::authenticationSuccess);
     page.load(QUrl("http://www.qt.io"));
     QTRY_VERIFY2(successSpy.count() > 0, "Could not get authentication token");
+}
+
+void tst_Proxy::forwardCookie()
+{
+    QNetworkProxy proxy;
+    proxy.setType(QNetworkProxy::HttpProxy);
+    proxy.setHostName("localhost");
+    proxy.setPort(5555);
+    QNetworkProxy::setApplicationProxy(proxy);
+    ProxyServer server;
+    QByteArray cookie("foo=bar; sessionToken=123");
+    server.setCookie(cookie);
+    server.run();
+    QTRY_VERIFY2(server.isListening(), "Could not setup proxy server");
+    Interceptor interceptor(cookie);
+    QWebEnginePage page;
+    page.setUrlRequestInterceptor(&interceptor);
+    QSignalSpy cookieSpy(&server, &ProxyServer::cookieMatch);
+    page.load(QUrl("http://www.qt.io"));
+    QTRY_VERIFY2(cookieSpy.count() > 0, "Could not get cookie");
 }
 
 #include "tst_proxy.moc"

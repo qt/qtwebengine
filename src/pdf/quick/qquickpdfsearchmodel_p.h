@@ -64,6 +64,7 @@ class QQuickPdfSearchModel : public QPdfSearchModel
     Q_PROPERTY(int currentResult READ currentResult WRITE setCurrentResult NOTIFY currentResultChanged)
     Q_PROPERTY(QVector<QPolygonF> currentPageBoundingPolygons READ currentPageBoundingPolygons NOTIFY currentPageBoundingPolygonsChanged)
     Q_PROPERTY(QVector<QPolygonF> currentResultBoundingPolygons READ currentResultBoundingPolygons NOTIFY currentResultBoundingPolygonsChanged)
+    Q_PROPERTY(QRectF currentResultBoundingRect READ currentResultBoundingRect NOTIFY currentResultBoundingRectChanged)
 
 public:
     explicit QQuickPdfSearchModel(QObject *parent = nullptr);
@@ -81,6 +82,7 @@ public:
 
     QVector<QPolygonF> currentPageBoundingPolygons() const;
     QVector<QPolygonF> currentResultBoundingPolygons() const;
+    QRectF currentResultBoundingRect() const;
 
 signals:
     void documentChanged();
@@ -88,6 +90,7 @@ signals:
     void currentResultChanged();
     void currentPageBoundingPolygonsChanged();
     void currentResultBoundingPolygonsChanged();
+    void currentResultBoundingRectChanged();
 
 private:
     void updateResults();

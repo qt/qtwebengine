@@ -91,6 +91,7 @@ public:
     void setInputMethodHints(Qt::InputMethodHints) override;
     void setClearColor(const QColor &color) override;
     bool copySurface(const QRect &, const QSize &, QImage &) override;
+    void unhandledWheelEvent(QWheelEvent *ev) override;
 
 protected:
     bool event(QEvent *event) override;

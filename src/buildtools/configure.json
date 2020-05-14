@@ -32,12 +32,6 @@
                 { "type": "pkgConfig", "args": "libdrm" }
             ]
         },
-        "webengine-xkbcommon": {
-            "label": "xkbcommon",
-            "sources": [
-                { "type": "pkgConfig", "args": "xkbcommon" }
-            ]
-        },
         "webengine-xcomposite": {
             "label": "xcomposite",
             "sources": [
@@ -296,13 +290,6 @@
                 ]
             }
         },
-        "webengine-xkbcommon": {
-            "label": "system xkbcommon",
-            "type": "compile",
-            "test": {
-                "include": "xkbcommon/xkbcommon.h"
-            }
-        },
         "webengine-ninja": {
             "label": "system ninja",
             "type": "detectNinja",
@@ -455,11 +442,6 @@
         "webengine-system-libdrm": {
             "label": "libdrm",
             "condition": "libs.webengine-libdrm",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-system-xkbcommon": {
-            "label": "xkbcommon",
-            "condition": "libs.webengine-xkbcommon && tests.webengine-xkbcommon",
             "output": [ "privateFeature" ]
         },
         "webengine-system-xcomposite": {
@@ -756,8 +738,7 @@
                         "webengine-system-png",
                         "webengine-system-jpeg",
                         "webengine-system-harfbuzz",
-                        "webengine-system-freetype",
-                        "webengine-system-xkbcommon"
+                        "webengine-system-freetype"
                      ]
                  }
              ]

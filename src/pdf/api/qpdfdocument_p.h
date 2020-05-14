@@ -66,7 +66,7 @@ public:
     QPdfMutexLocker();
 };
 
-class QPdfDocumentPrivate: public FPDF_FILEACCESS, public FX_FILEAVAIL, public FX_DOWNLOADHINTS
+class Q_PDF_PRIVATE_EXPORT QPdfDocumentPrivate: public FPDF_FILEACCESS, public FX_FILEAVAIL, public FX_DOWNLOADHINTS
 {
 public:
     QPdfDocumentPrivate();
@@ -106,6 +106,15 @@ public:
     static void fpdf_AddSegment(struct _FX_DOWNLOADHINTS* pThis, size_t offset, size_t size);
     void updateLastError();
     QString getText(FPDF_TEXTPAGE textPage, int startIndex, int count);
+    QPointF getCharPosition(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex);
+    QRectF getCharBox(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex);
+
+    struct TextPosition {
+        QPointF position;
+        qreal height = 0;
+        int charIndex = -1;
+    };
+    TextPosition hitTest(int page, QPointF position);
 };
 
 QT_END_NAMESPACE

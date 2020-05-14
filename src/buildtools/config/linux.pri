@@ -192,15 +192,11 @@ host_build {
     } else {
         gn_args += use_alsa=false
     }
-    qtConfig(build-qtwebengine-core):qtConfig(webengine-system-xkbcommon) {
-        gn_args += use_xkbcommon=true
-    } else {
-        gn_args += use_xkbcommon=false
-    }
     !packagesExist(libpci): gn_args += use_libpci=false
 
     qtConfig(build-qtwebengine-core):qtConfig(webengine-ozone-x11) {
         gn_args += ozone_platform_x11=true
+        gn_args += use_xkbcommon=true
         packagesExist(xscrnsaver): gn_args += use_xscrnsaver=true
         qtConfig(webengine-webrtc): gn_args += rtc_use_x11=true
     }

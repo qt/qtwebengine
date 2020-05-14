@@ -43,6 +43,7 @@
 #include "qquickpdfnavigationstack_p.h"
 #include "qquickpdfsearchmodel_p.h"
 #include "qquickpdfselection_p.h"
+#include "qquicktableviewextra_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -89,6 +90,7 @@ public:
         qmlRegisterType<QQuickPdfNavigationStack>(uri, 5, 15, "PdfNavigationStack");
         qmlRegisterType<QQuickPdfSearchModel>(uri, 5, 15, "PdfSearchModel");
         qmlRegisterType<QQuickPdfSelection>(uri, 5, 15, "PdfSelection");
+        qmlRegisterType<QQuickTableViewExtra>(uri, 5, 15, "TableViewExtra");
 
         qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfPageView.qml"), uri, 5, 15, "PdfPageView");
         qmlRegisterType(QUrl("qrc:/qt-project.org/qtpdf/qml/PdfMultiPageView.qml"), uri, 5, 15, "PdfMultiPageView");
