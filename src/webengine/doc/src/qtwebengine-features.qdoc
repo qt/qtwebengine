@@ -181,8 +181,30 @@
 
     \section1 HTML5 DRM
 
-    \QWE supports viewing DRM protected videos if the \l{Widevine DRM}
-    plugin has been installed.
+    \QWE supports viewing DRM protected videos if the \l{Widevine CDM} plugin has been installed.
+    CDM plugin is a replacement of Flash based plugins for displaying DRM-protected content.
+    It comes only in a binary format, so it can hide DRM decryption implementation details.
+    It can be obtained from a third party or from a Google Chrome installation.
+
+    \QWE on startup looks for the \l{Widevine CDM} plugin in well know locations, like
+    default Google Chrome installation directory or Linux distro specific paths. However, plugin
+    location can be also passed with \c {QTWEBENGINE_CHROMIUM_FLAGS} using \c {widevine-path}.
+
+    On Windows:
+    \code
+    set QTWEBENGINE_CHROMIUM_FLAGS=--widevine-path="C:/some path/widevinecdm.dll"
+    \endcode
+
+    On Linux:
+    \code
+    export QTWEBENGINE_CHROMIUM_FLAGS=--widevine-path="/some path/libwidevinecdm.so"
+    \endcode
+
+    On macOS:
+    \code
+    export QTWEBENGINE_CHROMIUM_FLAGS=--widevine-path="/some path/libwidevinecdm.dylib"
+    \endcode
+
 
     The video format most commonly used by DRM services, H.264, requires
     proprietary audio and video codecs. For more information about enabling the
@@ -190,7 +212,7 @@
 
     This feature can be tested by playing a video in \l{WebEngine Widgets Simple Browser
     Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}
-    from \l{castLabs}, \l{Swank Motion Pictures, Inc.}, or \l{Shaka Player}.
+    from \l{castLabs}, \l{Swank Motion Pictures, Inc.}, or \l{Bitmovin Player}.
 
     Support for this feature was added in Qt 5.7.0.
 

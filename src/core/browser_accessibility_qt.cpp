@@ -43,7 +43,7 @@
 
 #include "browser_accessibility_qt.h"
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 
 #include "ui/accessibility/ax_enums.mojom.h"
 
@@ -996,4 +996,4 @@ void BrowserAccessibilityQt::modelChange(QAccessibleTableModelChangeEvent *)
 
 } // namespace content
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)

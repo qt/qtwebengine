@@ -106,7 +106,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     QOpenGLContext *globalSharedContext = QOpenGLContext::globalShareContext();
     if (globalSharedContext) {
         QSurfaceFormat sharedFormat = globalSharedContext->format();
@@ -473,9 +473,14 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 
     if (!handled)
         return QQuickWidget::event(event);
-    // Most events are accepted by default, but tablet events are not:
     event->accept();
     return true;
+}
+
+void RenderWidgetHostViewQtDelegateWidget::unhandledWheelEvent(QWheelEvent *ev)
+{
+    if (QWidget *p = parentWidget())
+        qApp->sendEvent(p, ev);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::onWindowPosChanged()

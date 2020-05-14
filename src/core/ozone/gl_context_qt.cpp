@@ -59,7 +59,7 @@ namespace {
 
 inline void *resourceForContext(const QByteArray &resource)
 {
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     QOpenGLContext *shareContext = qt_gl_global_share_context();
     if (!shareContext) {
         qFatal("QWebEngine: OpenGL resource sharing is not set up in QtQuick. Please make sure to call QtWebEngine::initialize() in your main() function.");
@@ -153,7 +153,7 @@ void* GLContextHelper::getNativeDisplay()
 QFunctionPointer GLContextHelper::getGlXGetProcAddress()
 {
      QFunctionPointer get_proc_address = nullptr;
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     if (QOpenGLContext *context = qt_gl_global_share_context()) {
         get_proc_address = context->getProcAddress("glXGetProcAddress");
     }
@@ -164,7 +164,7 @@ QFunctionPointer GLContextHelper::getGlXGetProcAddress()
 QFunctionPointer GLContextHelper::getEglGetProcAddress()
 {
      QFunctionPointer get_proc_address = nullptr;
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     if (QOpenGLContext *context = qt_gl_global_share_context()) {
         get_proc_address = context->getProcAddress("eglGetProcAddress");
     }

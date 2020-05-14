@@ -40,7 +40,7 @@
 #include "qtwebenginecoreglobal_p.h"
 
 #include <QGuiApplication>
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 # include <QOpenGLContext>
 #ifdef Q_OS_MACOS
 #include <sys/types.h>
@@ -49,14 +49,14 @@
 #endif
 #include <QThread>
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT void qt_gl_set_global_share_context(QOpenGLContext *context);
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
 #endif
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 #ifdef Q_OS_MACOS
 static bool needsOfflineRendererWorkaround()
 {
@@ -75,7 +75,7 @@ static bool needsOfflineRendererWorkaround()
 #endif
 
 namespace QtWebEngineCore {
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 static QOpenGLContext *shareContext;
 
 static void deleteShareContext()
@@ -94,7 +94,7 @@ static void deleteShareContext()
 
 Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
 {
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 #ifdef Q_OS_WIN32
     qputenv("QT_D3DCREATE_MULTITHREADED", "1");
 #endif
@@ -134,6 +134,6 @@ Q_WEBENGINECORE_PRIVATE_EXPORT void initialize()
 
     // Classes like QOpenGLWidget check for the attribute
     app->setAttribute(Qt::AA_ShareOpenGLContexts);
-#endif // QT_NO_OPENGL
+#endif // QT_CONFIG(opengl)
 }
 } // namespace QtWebEngineCore

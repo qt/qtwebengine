@@ -148,6 +148,7 @@ public:
     void RegisterProtocolHandler(content::WebContents* web_contents, const std::string& protocol, const GURL& url, bool user_gesture) override;
     void UnregisterProtocolHandler(content::WebContents* web_contents, const std::string& protocol, const GURL& url, bool user_gesture) override;
     bool TakeFocus(content::WebContents *source, bool reverse) override;
+    void ContentsZoomChange(bool zoom_in) override;
 
     // WebContentsObserver overrides
     void RenderFrameCreated(content::RenderFrameHost *render_frame_host) override;
@@ -200,7 +201,10 @@ public:
     base::WeakPtr<WebContentsDelegateQt> AsWeakPtr() { return m_weakPtrFactory.GetWeakPtr(); }
 
 private:
-    QWeakPointer<WebContentsAdapter> createWindow(std::unique_ptr<content::WebContents> new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
+    QSharedPointer<WebContentsAdapter>
+    createWindow(std::unique_ptr<content::WebContents> new_contents,
+                 WindowOpenDisposition disposition, const gfx::Rect &initial_pos,
+                 bool user_gesture);
     void EmitLoadStarted(const QUrl &url, bool isErrorPage = false);
     void EmitLoadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString());
     void EmitLoadCommitted();

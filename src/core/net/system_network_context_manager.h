@@ -167,12 +167,12 @@ private:
 
     // NetworkContext using the network service, if the network service is
     // enabled. nullptr, otherwise.
-    network::mojom::NetworkContextPtr network_service_network_context_;
+    mojo::Remote<network::mojom::NetworkContext> network_service_network_context_;
 
     // URLLoaderFactory backed by the NetworkContext returned by GetContext(), so
     // consumers don't all need to create their own factory.
     scoped_refptr<URLLoaderFactoryForSystem> shared_url_loader_factory_;
-    network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+    mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
 
     ProxyConfigMonitor proxy_config_monitor_;
 

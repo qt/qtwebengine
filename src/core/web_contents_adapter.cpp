@@ -1024,7 +1024,7 @@ QWebEngineUrlRequestInterceptor* WebContentsAdapter::requestInterceptor() const
     return m_requestInterceptor;
 }
 
-#ifndef QT_NO_ACCESSIBILITY
+#if QT_CONFIG(accessibility)
 QAccessibleInterface *WebContentsAdapter::browserAccessible()
 {
     CHECK_INITIALIZED(nullptr);
@@ -1040,7 +1040,7 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
 
     return content::toQAccessibleInterface(acc);
 }
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 
 void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId)
 {
@@ -1372,18 +1372,38 @@ void WebContentsAdapter::runFeatureRequestCallback(const QUrl &securityOrigin, P
     m_profileAdapter->permissionRequestReply(securityOrigin, feature, allowed);
 }
 
-void WebContentsAdapter::grantMouseLockPermission(bool granted)
+void WebContentsAdapter::grantMouseLockPermission(const QUrl &securityOrigin, bool granted)
 {
     CHECK_INITIALIZED();
+    if (securityOrigin != toQt(m_webContents->GetLastCommittedURL().GetOrigin()))
+        return;
 
     if (granted) {
-        if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView()))
+        if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
             rwhv->Focus();
-        else
+            if (!rwhv->HasFocus()) {
+                // We tried to activate our RWHVQtDelegate, but we failed. This probably means that
+                // the permission was granted from a modal dialog and the windowing system is not ready
+                // to set focus on the originating view. Since pointer lock strongly requires it, we just
+                // wait until the next FocusIn event.
+                m_pendingMouseLockPermissions.insert(securityOrigin, granted);
+                return;
+            }
+        } else
             granted = false;
     }
 
     m_webContents->GotResponseToLockMouseRequest(granted);
+}
+
+void WebContentsAdapter::handlePendingMouseLockPermission()
+{
+    CHECK_INITIALIZED();
+    auto it = m_pendingMouseLockPermissions.find(toQt(m_webContents->GetLastCommittedURL().GetOrigin()));
+    if (it != m_pendingMouseLockPermissions.end()) {
+        m_webContents->GotResponseToLockMouseRequest(it.value());
+        m_pendingMouseLockPermissions.erase(it);
+    }
 }
 
 void WebContentsAdapter::setBackgroundColor(const QColor &color)

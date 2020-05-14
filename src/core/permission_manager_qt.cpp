@@ -112,8 +112,13 @@ PermissionManagerQt::~PermissionManagerQt()
 {
 }
 
-void PermissionManagerQt::permissionRequestReply(const QUrl &origin, ProfileAdapter::PermissionType type, bool reply)
+void PermissionManagerQt::permissionRequestReply(const QUrl &url, ProfileAdapter::PermissionType type, bool reply)
 {
+    // Normalize the QUrl to GURL origin form.
+    const GURL gorigin = toGurl(url).GetOrigin();
+    const QUrl origin = gorigin.is_empty() ? url : toQt(gorigin);
+    if (origin.isEmpty())
+        return;
     QPair<QUrl, ProfileAdapter::PermissionType> key(origin, type);
     m_permissions[key] = reply;
     blink::mojom::PermissionStatus status = reply ? blink::mojom::PermissionStatus::GRANTED : blink::mojom::PermissionStatus::DENIED;

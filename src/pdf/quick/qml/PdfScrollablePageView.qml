@@ -133,32 +133,29 @@ Flickable {
         navigationStack.update(navigationStack.currentPage, currentLocation, root.renderScale)
     }
 
-    PdfSelection {
-        id: selection
-        document: root.document
-        page: navigationStack.currentPage
-        fromPoint: Qt.point(textSelectionDrag.centroid.pressPosition.x / image.pageScale,
-                            textSelectionDrag.centroid.pressPosition.y / image.pageScale)
-        toPoint: Qt.point(textSelectionDrag.centroid.position.x / image.pageScale,
-                          textSelectionDrag.centroid.position.y / image.pageScale)
-        hold: !textSelectionDrag.active && !tapHandler.pressed
-    }
-
     PdfSearchModel {
         id: searchModel
         document: root.document === undefined ? null : root.document
-        onCurrentPageChanged: root.goToPage(currentPage)
+        // TODO maybe avoid jumping if the result is already fully visible in the viewport
+        onCurrentResultBoundingRectChanged: root.goToLocation(currentPage,
+            Qt.point(currentResultBoundingRect.x, currentResultBoundingRect.y), 0)
     }
 
     PdfNavigationStack {
         id: navigationStack
         onJumped: {
             root.renderScale = zoom
-            root.contentX = Math.max(0, location.x * root.renderScale - root.width / 2)
-            root.contentY = Math.max(0, location.y * root.renderScale - root.height / 2)
-            if (root.debug)
+            var dx = Math.max(0, location.x * root.renderScale - root.width / 2) - root.contentX
+            var dy = Math.max(0, location.y * root.renderScale - root.height / 2) - root.contentY
+            // don't jump if location is in the viewport already, i.e. if the "error" between desired and actual contentX/Y is small
+            if (Math.abs(dx) > root.width / 3)
+                root.contentX += dx
+            if (Math.abs(dy) > root.height / 3)
+                root.contentY += dy
+            if (root.debug) {
                 console.log("going to zoom", zoom, "loc", location,
                             "on page", page, "ended up @", root.contentX + ", " + root.contentY)
+            }
         }
         onCurrentPageChanged: searchModel.currentPage = currentPage
     }
@@ -246,9 +243,29 @@ Flickable {
                 target: null
             }
             TapHandler {
-                id: tapHandler
+                id: mouseClickHandler
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.Stylus
             }
+            TapHandler {
+                id: touchTapHandler
+                acceptedDevices: PointerDevice.TouchScreen
+                onTapped: {
+                    selection.clear()
+                    selection.focus = true
+                }
+            }
+        }
+
+        PdfSelection {
+            id: selection
+            anchors.fill: parent
+            document: root.document
+            page: navigationStack.currentPage
+            renderScale: image.pageScale
+            fromPoint: textSelectionDrag.centroid.pressPosition
+            toPoint: textSelectionDrag.centroid.position
+            hold: !textSelectionDrag.active && !mouseClickHandler.pressed
+            focus: true
         }
 
         PinchHandler {
