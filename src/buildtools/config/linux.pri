@@ -24,10 +24,6 @@ gn_args += \
     ozone_platform=\"qt\" \
     ozone_extra_path=\"$$QTWEBENGINE_ROOT/src/core/ozone/ozone_extra.gni\"
 
-qtConfig(build-qtwebengine-core):qtConfig(webengine-embedded-build) {
-    gn_args += is_desktop_linux=false
-}
-
 use_gold_linker: gn_args += use_gold=true
 else: gn_args += use_gold=false
 
@@ -90,7 +86,7 @@ contains(QT_ARCH, "arm") {
         }
     }
 
-    qtConfig(build-qtwebengine-core):qtConfig(webengine-arm-thumb) {
+    qtConfig(webengine-arm-thumb) {
         gn_args += arm_use_thumb=true # this adds -mthumb
     } else {
         gn_args += arm_use_thumb=false

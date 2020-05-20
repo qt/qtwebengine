@@ -1,5 +1,9 @@
 include(common.pri)
 
+qtConfig(webengine-embedded-build) {
+    gn_args += is_desktop_linux=false
+}
+
 !host_build{
 
 

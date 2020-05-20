@@ -89,10 +89,6 @@
             "label" : "sanitizer support",
             "type": "isSanitizerSupported"
         },
-        "webengine-arm-thumb" : {
-            "label": "thumb instruction set",
-            "type": "hasThumbFlag"
-        },
         "webengine-noexecstack" : {
             "label": "linker supports -z noexecstack",
             "type": "linkerSupportsFlag",
@@ -202,11 +198,6 @@
             "label": "poppler-cpp",
             "autoDetect": "config.unix",
             "condition": "libs.webengine-poppler-cpp",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-arm-thumb": {
-            "label": "Thumb instruction set",
-            "condition": "config.linux && features.webengine-embedded-build && arch.arm && tests.webengine-arm-thumb",
             "output": [ "privateFeature" ]
         },
         "webengine-full-debug-info": {

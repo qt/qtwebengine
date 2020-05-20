@@ -344,6 +344,10 @@
         "webengine-nowhitespace" : {
             "label": "build path without whitespace",
             "type": "detectNoWhitespace"
+        },
+        "webengine-arm-thumb" : {
+            "label": "thumb instruction set",
+            "type": "hasThumbFlag"
         }
     },
     "features": {
@@ -649,6 +653,11 @@
                 "privateFeature",
                 { "type": "varAssign", "name": "PLATFORM_ERROR", "value": "tests.webengine-platform-support.platformSupport" }
             ]
+        },
+        "webengine-arm-thumb": {
+            "label": "Thumb instruction set",
+            "condition": "config.linux && arch.arm && tests.webengine-arm-thumb",
+            "output": [ "privateFeature" ]
         }
     },
     "report": [
