@@ -187,15 +187,9 @@
             "autoDetect": "!features.webengine-embedded-build",
             "output": [ "privateFeature" ]
         },
-        "webengine-ozone-x11" : {
+        "webengine-ozone" : {
              "label": "Support qpa-xcb",
-             "condition": "config.unix
-                          && features.webengine-system-x11
-                          && features.webengine-system-libdrm
-                          && features.webengine-system-xcomposite
-                          && features.webengine-system-xcursor
-                          && features.webengine-system-xi
-                          && features.webengine-system-xtst",
+             "condition": "features.webengine-ozone-x11",
              "output": [ "privateFeature" ]
         },
         "webengine-sanitizer" : {
@@ -274,7 +268,7 @@
                 "webengine-extensions",
                 {
                     "type": "feature",
-                    "args": "webengine-ozone-x11",
+                    "args": "webengine-ozone",
                     "condition": "config.unix"
                 },
                 {

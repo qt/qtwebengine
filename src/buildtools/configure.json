@@ -502,7 +502,6 @@
             ]
         },
         "webengine-ozone-x11" : {
-             "label": "Support qpa-xcb",
              "condition": "config.unix
                           && features.xcb
                           && features.webengine-system-x11
