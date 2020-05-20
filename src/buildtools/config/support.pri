@@ -4,6 +4,7 @@ defineTest(qtwebengine_skipBuild) {
     export(skipBuildReason)
 }
 
+# this should match webengine-core-support
 defineReplace(qtwebengine_checkError) {
 
     !qtHaveModule(gui) {
