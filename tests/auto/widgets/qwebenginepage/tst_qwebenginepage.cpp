@@ -81,8 +81,6 @@ public:
     tst_QWebEnginePage();
     virtual ~tst_QWebEnginePage();
 
-    bool eventFilter(QObject *watched, QEvent *event);
-
 public Q_SLOTS:
     void init();
     void cleanup();
@@ -241,8 +239,6 @@ private:
 
     QWebEngineView* m_view;
     QWebEnginePage* m_page;
-    QWebEngineView* m_inputFieldsTestView;
-    int m_inputFieldTestPaintCount;
     QString tmpDirPath() const
     {
         static QString tmpd = QDir::tempPath() + "/tst_qwebenginepage-"
@@ -257,16 +253,6 @@ tst_QWebEnginePage::tst_QWebEnginePage()
 
 tst_QWebEnginePage::~tst_QWebEnginePage()
 {
-}
-
-bool tst_QWebEnginePage::eventFilter(QObject* watched, QEvent* event)
-{
-    // used on the inputFieldFocus test
-    if (watched == m_inputFieldsTestView) {
-        if (event->type() == QEvent::Paint)
-            m_inputFieldTestPaintCount++;
-    }
-    return QObject::eventFilter(watched, event);
 }
 
 void tst_QWebEnginePage::init()
