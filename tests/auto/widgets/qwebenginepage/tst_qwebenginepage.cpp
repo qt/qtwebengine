@@ -231,6 +231,7 @@ private Q_SLOTS:
     void renderProcessPid();
     void backgroundColor();
     void audioMuted();
+    void closeContents();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4639,6 +4640,27 @@ void tst_QWebEnginePage::audioMuted()
     QCOMPARE(page.isAudioMuted(), false);
     QCOMPARE(spy.count(), 2);
     QCOMPARE(spy[1][0], QVariant(false));
+}
+
+void tst_QWebEnginePage::closeContents()
+{
+    TestPage page;
+    QSignalSpy windowCreatedSpy(&page, &TestPage::windowCreated);
+    page.runJavaScript("var dialog = window.open('', '', 'width=100, height=100');");
+    QTRY_COMPARE(windowCreatedSpy.count(), 1);
+
+    QWebEngineView *dialogView = new QWebEngineView;
+    QWebEnginePage *dialogPage = page.createdWindows[0];
+    dialogPage->setView(dialogView);
+    QCOMPARE(dialogPage->lifecycleState(), QWebEnginePage::LifecycleState::Active);
+
+    // This should not crash.
+    connect(dialogPage, &QWebEnginePage::windowCloseRequested, dialogView, &QWebEngineView::close);
+    page.runJavaScript("dialog.close();");
+
+    // QWebEngineView::closeEvent() sets the life cycle state to discarded.
+    QTRY_COMPARE(dialogPage->lifecycleState(), QWebEnginePage::LifecycleState::Discarded);
+    delete dialogView;
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};

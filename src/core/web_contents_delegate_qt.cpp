@@ -251,8 +251,9 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, std::un
 
 void WebContentsDelegateQt::CloseContents(content::WebContents *source)
 {
-    m_viewClient->close();
     GetJavaScriptDialogManager(source)->CancelDialogs(source, /* whatever?: */false);
+    // Must be the last call because close() might trigger the destruction of this object.
+    m_viewClient->close();
 }
 
 void WebContentsDelegateQt::LoadProgressChanged(double progress)
