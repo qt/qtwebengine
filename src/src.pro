@@ -7,11 +7,16 @@ include($$QTWEBENGINE_OUT_ROOT/src/webenginewidgets/qtwebenginewidgets-config.pr
 include($$QTWEBENGINE_OUT_ROOT/src/pdf/qtpdf-config.pri)
 include($$QTWEBENGINE_OUT_ROOT/src/pdfwidgets/qtpdfwidgets-config.pri)
 
-QT_FOR_CONFIG += buildtools-private webenginecore webenginecore-private webengine-private \
-    webenginewidgets-private pdf-private pdfwidgets-private
+QT_FOR_CONFIG += \
+    buildtools-private \
+    webenginecore \
+    webenginecore-private \
+    webengine-private \
+    webenginewidgets-private \
+    pdf-private \
+    pdfwidgets-private
 
 TEMPLATE = subdirs
-
 
 qtConfig(build-qtwebengine-core):qtConfig(webengine-core-support) {
     core.depends = buildtools
@@ -43,9 +48,9 @@ qtConfig(build-qtwebengine-core):qtConfig(webengine-core-support) {
 qtConfig(build-qtpdf):qtConfig(webengine-qtpdf-support) {
     pdf.depends = buildtools
     qtConfig(build-qtwebengine-core):qtConfig(webengine-core-support): pdf.depends += core
-    SUBDIRS += pdf
     !contains(SUBDIRS, buildtools): SUBDIRS += buildtools
     !contains(SUBDIRS, plugins): SUBDIRS += plugins
+    SUBDIRS += pdf
     plugins.depends += pdf
     qtConfig(pdf-widgets) {
         pdfwidgets.depends = pdf
@@ -53,12 +58,7 @@ qtConfig(build-qtpdf):qtConfig(webengine-qtpdf-support) {
     }
 }
 
-!qtConfig(webengine-core-support):if(qtConfig(build-qtwebengine-core)|qtConfig(build-qtpdf)) {
-    !qtwebengine_makeCheckError():!isEmpty(skipBuildReason):!build_pass {
-        errorbuild.commands = @echo Modules will not be built. $${skipBuildReason}
-        errorbuild.CONFIG = phony
-        QMAKE_EXTRA_TARGETS += errorbuild
-        first.depends += errorbuild
-        QMAKE_EXTRA_TARGETS += first
-    }
-}
+# this needs to be last line for qmake -r
+!contains(SUBDIRS, core): SUBDIRS += core
+!contains(SUBDIRS, pdf): SUBDIRS += pdf
+

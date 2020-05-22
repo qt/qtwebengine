@@ -357,7 +357,9 @@
     "features": {
         "webengine-core-support": {
             "label": "Support Qt WebEngine Core",
-            "condition": "module.gui
+            "condition": "(config.linux || config.win32 || config.macos)
+                         && !config.static
+                         && module.gui
                          && features.webengine-submodule
                          && features.webengine-nowhitespace
                          && !features.webengine-no-platform-support
@@ -366,8 +368,6 @@
                          && features.webengine-bison
                          && features.webengine-flex
                          && features.webengine-python2
-                         && !config.static
-                         && !config.ios
                          && (!config.sanitizer || features.webengine-sanitizer)
                          && (!config.linux || features.pkg-config)
                          && (!config.linux || features.webengine-host-pkg-config)
@@ -384,15 +384,17 @@
         "webengine-qtpdf-support": {
             "label": "Support Qt Pdf",
             "condition": "module.gui
-                         && features.webengine-python2
+                         && features.webengine-submodule
+                         && features.webengine-nowhitespace
+                         && !features.webengine-no-platform-support
+                         && features.webengine-arch-support
                          && features.webengine-gperf
                          && features.webengine-bison
                          && features.webengine-flex
-                         && features.webengine-submodule
-                         && features.webengine-nowhitespace
-                         && features.webengine-arch-support
-                         && !features.webengine-no-platform-support
+                         && features.webengine-python2
+                         && (!config.sanitizer || features.webengine-sanitizer)
                          && (!config.linux || features.pkg-config)
+                         && (!config.linux || features.webengine-host-pkg-config)
                          && (!config.win32 || features.webengine-winversion)",
             "output": [ "privateFeature" ]
         },
@@ -673,9 +675,13 @@
     "report": [
         {
             "type": "skipBuildWarning",
-            "condition": "(!features.webengine-core-support && features.build-qtwebengine-core) ||
-                          (!features.webengine-qtpdf-support && features.build-qtpdf)",
-            "message": "qtwebengine_confCheckError"
+            "condition": "!features.webengine-core-support && features.build-qtwebengine-core",
+            "message": "qtwebengine_confCheckWebEngineCoreError"
+        },
+        {
+            "type": "skipBuildWarning",
+            "condition": "!features.webengine-qtpdf-support && features.build-qtpdf",
+            "message": "qtwebengine_confCheckPdfError"
         },
         {
             "type": "note",
@@ -741,7 +747,7 @@
                         "webengine-system-xi",
                         "webengine-system-xtst"
                      ]
-                 },
+                },
                 {
                     "section": "Optional system libraries used",
                     "condition": "config.unix",
