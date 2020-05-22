@@ -392,7 +392,6 @@
                          && features.webengine-nowhitespace
                          && features.webengine-arch-support
                          && !features.webengine-no-platform-support
-                         && (!config.static || config.ios)
                          && (!config.linux || features.pkg-config)
                          && (!config.win32 || features.webengine-winversion)",
             "output": [ "privateFeature" ]
