@@ -85,10 +85,6 @@
             "label": "embedded build",
             "type": "detectEmbedded"
         },
-        "webengine-sanitizer": {
-            "label" : "sanitizer support",
-            "type": "isSanitizerSupported"
-        },
         "webengine-noexecstack" : {
             "label": "linker supports -z noexecstack",
             "type": "linkerSupportsFlag",
@@ -188,12 +184,6 @@
              "condition": "features.webengine-ozone-x11",
              "output": [ "privateFeature" ]
         },
-        "webengine-sanitizer" : {
-            "label": "Sanitizer",
-            "autoDetect": "config.sanitizer && tests.webengine-sanitizer",
-            "condition": "config.sanitizer",
-            "output": [ "privateFeature" ]
-        },
         "webengine-poppler-cpp": {
             "label": "poppler-cpp",
             "autoDetect": "config.unix",
@@ -218,11 +208,6 @@
     },
 
     "report": [
-        {
-            "type": "warning",
-            "condition": "config.sanitizer && !tests.webengine-sanitizer && !features.webengine-sanitizer",
-            "message": "Qt WebEngine cannot be built with the chosen sanitizer configuration. Check config.log for details or use -feature-webengine-sanitizer to force the build."
-        },
         {
             "type": "warning",
             "condition": "config.unix && !features.webengine-host-pkg-config",
@@ -276,11 +261,6 @@
                     "type": "feature",
                     "args": "webengine-pulseaudio",
                     "condition": "config.unix"
-                },
-                {
-                    "type": "feature",
-                    "args": "webengine-sanitizer",
-                    "condition": "config.sanitizer"
                 },
                 {
                     "message": "macOS version",

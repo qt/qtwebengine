@@ -348,6 +348,10 @@
         "webengine-arm-thumb" : {
             "label": "thumb instruction set",
             "type": "hasThumbFlag"
+        },
+        "webengine-sanitizer": {
+            "label" : "sanitizer support",
+            "type": "isSanitizerSupported"
         }
     },
     "features": {
@@ -364,6 +368,7 @@
                          && features.webengine-python2
                          && !config.static
                          && !config.ios
+                         && (!config.sanitizer || features.webengine-sanitizer)
                          && (!config.linux || features.pkg-config)
                          && (!config.linux || features.webengine-host-pkg-config)
                          && (!config.linux || features.webengine-system-glibc)
@@ -658,6 +663,12 @@
             "label": "Thumb instruction set",
             "condition": "config.linux && arch.arm && tests.webengine-arm-thumb",
             "output": [ "privateFeature" ]
+        },
+        "webengine-sanitizer" : {
+            "label": "Sanitizer",
+            "autoDetect": "config.sanitizer && tests.webengine-sanitizer",
+            "condition": "config.sanitizer",
+            "output": [ "privateFeature" ]
         }
     },
     "report": [
@@ -704,6 +715,11 @@
                     "type": "jumboBuild"
                 },
                 "webengine-developer-build",
+                {
+                    "type": "feature",
+                    "args": "webengine-sanitizer",
+                    "condition": "!config.sanitizer"
+                },
                 {
                     "section": "QtWebEngine required system libraries",
                     "condition": "config.unix && !config.macos && !config.ios",
