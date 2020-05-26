@@ -41,7 +41,6 @@ ColorPicker::ColorPicker(QWidget *parent)
     m_chooseButton->setText(tr("Choose"));
 
     QHBoxLayout *layout = new QHBoxLayout;
-    layout->setMargin(0);
     layout->addWidget(m_colorInput);
     layout->addWidget(m_chooseButton);
     setLayout(layout);
