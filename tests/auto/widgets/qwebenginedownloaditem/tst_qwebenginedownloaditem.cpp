@@ -1016,8 +1016,10 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilenameWithTimestamp()
         QRegularExpressionMatch match = fileNameCheck.match(downloadedFilePath);
         QVERIFY(match.hasMatch());
         // ISO 8601 Date and time in UTC
-        QRegExp timestamp("^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9])([0-5][0-9])([0-5][0-9])([.][0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9])[0-5][0-9])?$");
-        QVERIFY(timestamp.exactMatch(match.captured(1)));
+        QRegularExpression timestamp("^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|["
+                                     "12][0-9])T(2[0-3]|[01][0-9])([0-5][0-9])([0-5][0-9])([.][0-9]"
+                                     "+)?(Z|[+-](?:2[0-3]|[01][0-9])[0-5][0-9])?$");
+        QVERIFY(timestamp.match(match.captured(1)).hasMatch());
         QCOMPARE(suggestedFileName, fileName);
     }
 }
