@@ -230,6 +230,8 @@ private Q_SLOTS:
     void backgroundColor();
     void audioMuted();
     void closeContents();
+    void isSafeRedirect_data();
+    void isSafeRedirect();
 
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
@@ -4647,6 +4649,36 @@ void tst_QWebEnginePage::closeContents()
     // QWebEngineView::closeEvent() sets the life cycle state to discarded.
     QTRY_COMPARE(dialogPage->lifecycleState(), QWebEnginePage::LifecycleState::Discarded);
     delete dialogView;
+}
+
+// Based on QTBUG-84011
+void tst_QWebEnginePage::isSafeRedirect_data()
+{
+    QTest::addColumn<QUrl>("requestedUrl");
+    QTest::addColumn<QUrl>("expectedUrl");
+    QString fileScheme = "file://";
+
+#ifdef Q_OS_WIN
+    fileScheme += "/";
+#endif
+
+    QString tempDir(fileScheme + QDir::tempPath());
+    QTest::newRow(qPrintable(tempDir)) << QUrl(tempDir) << QUrl(tempDir + "/");
+    QTest::newRow(qPrintable(tempDir + QString("/foo/bar"))) << QUrl(tempDir + "/foo/bar") << QUrl(tempDir + "/foo/bar");
+    QTest::newRow("filesystem:http://foo.com/bar") << QUrl("filesystem:http://foo.com/bar") << QUrl("filesystem:http://foo.com/bar/");
+}
+
+void tst_QWebEnginePage::isSafeRedirect()
+{
+    QFETCH(QUrl, requestedUrl);
+    QFETCH(QUrl, expectedUrl);
+
+    TestPage page;
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    page.setUrl(requestedUrl);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 20000);
+    QCOMPARE(page.url(), expectedUrl);
+    spy.clear();
 }
 
 static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
