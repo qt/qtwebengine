@@ -57,9 +57,7 @@
 #include "content/gpu/gpu_child_thread.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 
-#ifdef Q_OS_QNX
-#include "content/common/gpu/stream_texture_qnx.h"
-#endif
+#include <QtGlobal> // We need this for Q_UNUSED
 
 scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner()
 {
@@ -87,15 +85,3 @@ void ProgressFlingIfNeeded(content::RenderWidgetHost *host, const base::TimeTick
 {
     content::RenderWidgetHostImpl::From(host)->ProgressFlingIfNeeded(current_time);
 }
-
-#ifdef Q_OS_QNX
-EGLStreamData eglstream_connect_consumer(gpu::Texture *tex)
-{
-    EGLStreamData egl_stream;
-    content::StreamTexture* image = static_cast<content::StreamTexture *>(tex->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0));
-    if (image) {
-        image->ConnectConsumerIfNeeded(&egl_stream.egl_display, &egl_stream.egl_str_handle);
-    }
-    return egl_stream;
-}
-#endif

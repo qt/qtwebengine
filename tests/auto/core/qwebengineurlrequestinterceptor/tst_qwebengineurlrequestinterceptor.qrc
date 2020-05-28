@@ -17,6 +17,8 @@
         <file>resources/resource_in_iframe.html</file>
         <file>resources/script.js</file>
         <file>resources/style.css</file>
+        <file>resources/sw.html</file>
+        <file>resources/sw.js</file>
         <file>resources/icons/favicon.png</file>
     </qresource>
 </RCC>

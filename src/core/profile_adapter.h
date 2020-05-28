@@ -164,6 +164,12 @@ public:
         ClipboardWrite = 6,
     };
 
+    enum PermissionState {
+        AskPermission = 0,
+        AllowedPermission = 1,
+        DeniedPermission = 2
+    };
+
     HttpCacheType httpCacheType() const;
     void setHttpCacheType(ProfileAdapter::HttpCacheType);
 
@@ -187,7 +193,7 @@ public:
     const QList<QByteArray> customUrlSchemes() const;
     UserResourceControllerHost *userResourceController();
 
-    void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
+    void permissionRequestReply(const QUrl &origin, PermissionType type, PermissionState reply);
     bool checkPermission(const QUrl &origin, PermissionType type);
 
     QString httpAcceptLanguageWithoutQualities() const;

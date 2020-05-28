@@ -230,6 +230,9 @@ win32 {
     CONFIG(rtti_off): GN_CONTENTS += "  configs += [\"//build/config/compiler:no_rtti\"]"
     CONFIG(rtti): GN_CONTENTS += "  configs += [\"//build/config/compiler:rtti\"]"
 }
+gcc:!qtConfig(reduce_exports) {
+    GN_CONTENTS += "  configs -= [\"//build/config/gcc:symbol_visibility_hidden\"]"
+}
 
 GN_CONTENTS += "  if (moc_source_h_files != []) {"
 GN_CONTENTS += "    deps += ["
