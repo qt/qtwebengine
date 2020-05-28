@@ -1644,9 +1644,6 @@ void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQu
     case MediaAudioVideoCapture:
         d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaRequestFlags(WebContentsAdapterClient::MediaAudioCapture                                                                                                               | WebContentsAdapterClient::MediaVideoCapture));
         break;
-    case Geolocation:
-        d_ptr->adapter->runFeatureRequestCallback(securityOrigin, ProfileAdapter::GeolocationPermission,  granted);
-        break;
     case DesktopVideoCapture:
         d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaDesktopVideoCapture);
         break;
@@ -1657,8 +1654,13 @@ void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQu
                 WebContentsAdapterClient::MediaDesktopAudioCapture |
                 WebContentsAdapterClient::MediaDesktopVideoCapture));
         break;
+    case Geolocation:
+        d_ptr->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::GeolocationPermission,
+                                               granted ? ProfileAdapter::AllowedPermission : ProfileAdapter::DeniedPermission);
+        break;
     case Notifications:
-        d_ptr->adapter->runFeatureRequestCallback(securityOrigin, ProfileAdapter::NotificationPermission,  granted);
+        d_ptr->adapter->grantFeaturePermission(securityOrigin, ProfileAdapter::NotificationPermission,
+                                               granted ? ProfileAdapter::AllowedPermission : ProfileAdapter::DeniedPermission);
         break;
     default:
         Q_UNREACHABLE();

@@ -196,7 +196,7 @@ public:
     void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);
     void grantMouseLockPermission(const QUrl &securityOrigin, bool granted);
     void handlePendingMouseLockPermission();
-    void runFeatureRequestCallback(const QUrl &securityOrigin, ProfileAdapter::PermissionType feature, bool allowed);
+    void grantFeaturePermission(const QUrl &securityOrigin, ProfileAdapter::PermissionType feature, ProfileAdapter::PermissionState allowed);
 
     void setBackgroundColor(const QColor &color);
     QAccessibleInterface *browserAccessible();

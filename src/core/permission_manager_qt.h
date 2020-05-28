@@ -54,10 +54,9 @@ class PermissionManagerQt : public content::PermissionControllerDelegate {
 public:
     PermissionManagerQt();
     ~PermissionManagerQt();
-    typedef ProfileAdapter::PermissionType PermissionType;
 
-    void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
-    bool checkPermission(const QUrl &origin, PermissionType type);
+    void permissionRequestReply(const QUrl &origin, ProfileAdapter::PermissionType type, ProfileAdapter::PermissionState reply);
+    bool checkPermission(const QUrl &origin, ProfileAdapter::PermissionType type);
 
     // content::PermissionManager implementation:
     int RequestPermission(
@@ -99,10 +98,10 @@ public:
     void UnsubscribePermissionStatusChange(int subscription_id) override;
 
 private:
-    QHash<QPair<QUrl, PermissionType>, bool> m_permissions;
+    QHash<QPair<QUrl, ProfileAdapter::PermissionType>, bool> m_permissions;
     struct Request {
         int id;
-        PermissionType type;
+        ProfileAdapter::PermissionType type;
         QUrl origin;
         base::OnceCallback<void(blink::mojom::PermissionStatus)> callback;
     };
@@ -113,7 +112,7 @@ private:
         base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback;
     };
     struct Subscription {
-        PermissionType type;
+        ProfileAdapter::PermissionType type;
         QUrl origin;
         base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback;
     };

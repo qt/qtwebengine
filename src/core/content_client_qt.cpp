@@ -54,7 +54,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-
+#include "services/service_manager/embedder/switches.h"
 #include "type_conversion.h"
 
 #include <QCoreApplication>
@@ -68,9 +68,7 @@
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #if BUILDFLAG(ENABLE_WIDEVINE) && !BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
 #define WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT
-namespace switches {
-const char kCdmWidevinePath[] = "widevine-path";
-}
+
 // File name of the CDM on different platforms.
 const char kWidevineCdmFileName[] =
 #if defined(OS_MACOSX)
@@ -287,7 +285,7 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
                                 content::CdmCapability *capability)
 {
     QStringList pluginPaths;
-    const base::CommandLine::StringType widevine_argument = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kCdmWidevinePath);
+    const base::CommandLine::StringType widevine_argument = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(service_manager::switches::kCdmWidevinePath);
     if (!widevine_argument.empty())
         pluginPaths << QtWebEngineCore::toQt(widevine_argument);
     else {

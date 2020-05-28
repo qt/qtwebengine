@@ -39,9 +39,8 @@
 
 #include "file_picker_controller.h"
 #include "type_conversion.h"
-#if defined(OS_WIN)
+
 #include "base/files/file_path.h"
-#endif
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/file_select_listener.h"
@@ -72,27 +71,64 @@ void FilePickerController::accepted(const QStringList &files)
 
     for (const QString &urlString : files) {
         // We accept strings on both absolute-path and file-URL form:
-        if (QDir::isAbsolutePath(urlString)) {
-            QString absolutePath = QDir::fromNativeSeparators(urlString);
-#if defined(OS_WIN)
-            if (absolutePath.at(0).isLetter() && absolutePath.at(1) == QLatin1Char(':') && !base::FilePath::IsSeparator(absolutePath.at(2).toLatin1()))
-                qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
-            else
-#endif
-                stringList.append(absolutePath);
-        } else {
-            QUrl url(urlString, QUrl::StrictMode);
-            if (url.isLocalFile() && QDir::isAbsolutePath(url.toLocalFile())) {
-                QString absolutePath = url.toLocalFile();
-#if defined(OS_WIN)
-                if (absolutePath.at(0).isLetter() && absolutePath.at(1) == QLatin1Char(':') && !base::FilePath::IsSeparator(absolutePath.at(2).toLatin1()))
-                    qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
-                else
-#endif
-                    stringList.append(absolutePath);
-            } else
-                qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
+        if (toFilePath(urlString).IsAbsolute()) {
+            stringList.append(urlString);
+            continue;
         }
+
+        if (urlString.startsWith("file:")) {
+            base::FilePath filePath = toFilePath(urlString).NormalizePathSeparators();
+            std::vector<base::FilePath::StringType> pathComponents;
+            // Splits the file URL into host name, path and file name.
+            filePath.GetComponents(&pathComponents);
+
+            QString absolutePath;
+#if !defined(OS_WIN)
+            absolutePath = "/";
+#endif
+
+            QString scheme = toQt(pathComponents[0]);
+            if (scheme.size() > 5) {
+#if defined(OS_WIN)
+                // There is no slash at the end of the file scheme and it is valid on Windows: file:C:/
+                if (scheme.at(5).isLetter() && scheme.at(6) != ':') {
+                    absolutePath += scheme.at(5) + ":/";
+                } else {
+#endif
+                    qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
+                    continue;
+#if defined(OS_WIN)
+                }
+#endif
+            }
+
+            // Non-local file and UNC Path validation: file://path/file
+            if (base::FilePath::IsSeparator(urlString.at(5).toLatin1())
+                && base::FilePath::IsSeparator(urlString.at(6).toLatin1())
+                && !base::FilePath::IsSeparator(urlString.at(7).toLatin1())) {
+#if defined(OS_WIN)
+                if (urlString.at(8) != ':' && pathComponents.size() > 2) {
+                    absolutePath += "//";
+#else
+                if (pathComponents.size() > 2) {
+                    absolutePath += "/";
+#endif
+                } else {
+                    qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
+                    continue;
+                }
+            }
+
+            // Build absolute path from file URI componenets.
+            for (int j = 1; j < pathComponents.size(); j++)
+                absolutePath += toQt(pathComponents[j]) + (j != pathComponents.size()-1 ? "/" : "");
+
+            if (toFilePath(absolutePath).IsAbsolute()) {
+                stringList.append(absolutePath);
+                continue;
+            }
+        }
+        qWarning("Ignoring invalid item in FilePickerController::accepted(QStringList): %s", qPrintable(urlString));
     }
 
     FilePickerController::filesSelectedInChooser(stringList);

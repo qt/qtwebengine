@@ -543,7 +543,7 @@ UserResourceControllerHost *ProfileAdapter::userResourceController()
     return m_userResourceController.data();
 }
 
-void ProfileAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, bool reply)
+void ProfileAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, PermissionState reply)
 {
     static_cast<PermissionManagerQt*>(profile()->GetPermissionControllerDelegate())->permissionRequestReply(origin, type, reply);
 }

@@ -97,6 +97,11 @@
         \li \c {--single-process} runs the renderer and plugins in the same
             process as the browser. This is useful for getting stack traces for
             renderer crashes.
+        \li \c {--enable-features=NetworkServiceInProcess} runs networking in
+            the main process. This may help firewall management, since only the
+            application executable will need to be whitelisted and
+            not QtWebEngineProcess. It means losing the security of
+            sandboxing of the network service though.
     \endlist
 
     Alternatively, the environment variable QTWEBENGINE_CHROMIUM_FLAGS can be
@@ -106,4 +111,7 @@
     \code
     QTWEBENGINE_CHROMIUM_FLAGS="--disable-logging" mybrowser
     \endcode
+
+    QTWEBENGINE_CHROMIUM_FLAGS can also be set using {qputenv} from within the
+    application if called before QtWebEngine::initialize().
 */

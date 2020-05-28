@@ -40,7 +40,7 @@ class HttpReqRep : public QObject
 public:
     explicit HttpReqRep(QTcpSocket *socket, QObject *parent = nullptr);
 
-    void sendResponse();
+    Q_INVOKABLE void sendResponse();
     void close();
 
     // Request parameters (only valid after requestReceived())
@@ -61,7 +61,7 @@ public:
         m_responseHeaders[key.toLower()] = std::move(value);
     }
     QByteArray responseBody() const { return m_responseBody; }
-    void setResponseBody(QByteArray content)
+    Q_INVOKABLE void setResponseBody(QByteArray content)
     {
         m_responseHeaders["content-length"] = QByteArray::number(content.size());
         m_responseBody = std::move(content);
