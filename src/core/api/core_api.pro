@@ -40,6 +40,7 @@ HEADERS = \
     qwebenginecookiestore.h \
     qwebenginecookiestore_p.h \
     qwebenginefindtextresult.h \
+    qwebenginefullscreenrequest.h \
     qwebenginehttprequest.h \
     qwebenginemessagepumpscheduler_p.h \
     qwebenginenotification.h \
@@ -63,6 +64,7 @@ SOURCES = \
     qwebengineclientcertificatestore.cpp \
     qwebenginecookiestore.cpp \
     qwebenginefindtextresult.cpp \
+    qwebenginefullscreenrequest.cpp \
     qwebenginehttprequest.cpp \
     qwebenginemessagepumpscheduler.cpp \
     qwebenginenotification.cpp \

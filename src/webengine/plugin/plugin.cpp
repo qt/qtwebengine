@@ -54,6 +54,7 @@
 #include <QtWebEngine/private/qquickwebengineaction_p.h>
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
 #include <QtWebEngineCore/qwebenginefindtextresult.h>
+#include <QtWebEngineCore/qwebenginefullscreenrequest.h>
 #include <QtWebEngineCore/qwebenginenotification.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
@@ -126,7 +127,7 @@ public:
         qmlRegisterUncreatableType<QQuickWebEngineHistory, 1>(uri, 1, 11, "NavigationHistory", msgUncreatableType("NavigationHistory"));
         qmlRegisterUncreatableType<QQuickWebEngineHistoryListModel>(uri, 1, 1, "NavigationHistoryListModel",
             msgUncreatableType("NavigationHistory"));
-        qmlRegisterUncreatableType<QQuickWebEngineFullScreenRequest>(uri, 1, 1, "FullScreenRequest",
+        qmlRegisterUncreatableType<QWebEngineFullScreenRequest>(uri, 1, 1, "FullScreenRequest",
             msgUncreatableType("FullScreenRequest"));
 
         qmlRegisterUncreatableType<QWebEngineContextMenuRequest, 1>(

@@ -27,7 +27,7 @@
 
 /*!
     \qmltype FullScreenRequest
-    \instantiates QQuickWebEngineFullScreenRequest
+    \instantiates QWebEngineFullScreenRequest
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
 

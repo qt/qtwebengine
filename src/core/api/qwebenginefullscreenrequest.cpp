@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qwebenginefullscreenrequest.h"
-#include "qwebenginepage_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -49,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
     \since 5.6
 
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
 
     To allow elements such as videos to be shown in the fullscreen mode,
     applications must set QWebEngineSettings::FullScreenSupportEnabled and
@@ -85,39 +84,37 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QWebEngineFullScreenRequest::toggleOn() const
-    Returns \c true if the web page has issued a request to enter the fullscreen
-    mode, otherwise returns \c false.
-*/
-
-/*!
-    \fn QWebEngineFullScreenRequest::origin() const
-    Returns the URL to be opened in the fullscreen mode.
-*/
-
-/*!
     Creates a request for opening the \a page from the URL specified by
     \a origin in the fullscreen mode if \a fullscreen is \c true.
 */
 
-QWebEngineFullScreenRequest::QWebEngineFullScreenRequest(QWebEnginePage *page, const QUrl &origin, bool fullscreen)
-    : m_page(page)
-    , m_origin(origin)
-    , m_toggleOn(fullscreen)
-{
-}
+class QWebEngineFullScreenRequestPrivate : public QSharedData {
+public:
+    QWebEngineFullScreenRequestPrivate(const QUrl &origin, bool toggleOn, const std::function<void (bool)> &setFullScreenCallback)
+        : m_origin(origin)
+        , m_toggleOn(toggleOn)
+        , m_setFullScreenCallback(setFullScreenCallback) { }
+
+    const QUrl m_origin;
+    const bool m_toggleOn;
+    const std::function<void (bool)> m_setFullScreenCallback;
+};
+
+QWebEngineFullScreenRequest::QWebEngineFullScreenRequest(const QUrl &origin, bool toggleOn, const std::function<void (bool)> &setFullScreenCallback)
+    : d_ptr(new QWebEngineFullScreenRequestPrivate(origin, toggleOn, setFullScreenCallback)) { }
+
+QWebEngineFullScreenRequest::QWebEngineFullScreenRequest(const QWebEngineFullScreenRequest &other) = default;
+QWebEngineFullScreenRequest& QWebEngineFullScreenRequest::operator=(const QWebEngineFullScreenRequest &other) = default;
+QWebEngineFullScreenRequest::QWebEngineFullScreenRequest(QWebEngineFullScreenRequest &&other) = default;
+QWebEngineFullScreenRequest& QWebEngineFullScreenRequest::operator=(QWebEngineFullScreenRequest &&other) = default;
+QWebEngineFullScreenRequest::~QWebEngineFullScreenRequest() = default;
 
 /*!
     Rejects a request to enter or exit the fullscreen mode.
 */
 void QWebEngineFullScreenRequest::reject()
 {
-    if (!m_page) {
-        qWarning("Cannot reject QWebEngineFullScreenRequest: Originating page is already deleted");
-        return;
-    }
-
-    m_page->d_func()->setFullScreenMode(!m_toggleOn);
+    d_ptr->m_setFullScreenCallback(!d_ptr->m_toggleOn);
 }
 
 /*!
@@ -125,12 +122,26 @@ void QWebEngineFullScreenRequest::reject()
 */
 void QWebEngineFullScreenRequest::accept()
 {
-    if (!m_page) {
-        qWarning("Cannot accept QWebEngineFullScreenRequest: Originating page is already deleted");
-        return;
-    }
+    d_ptr->m_setFullScreenCallback(d_ptr->m_toggleOn);
+}
 
-    m_page->d_func()->setFullScreenMode(m_toggleOn);
+/*!
+    \fn QWebEngineFullScreenRequest::toggleOn() const
+    Returns \c true if the web page has issued a request to enter the fullscreen
+    mode, otherwise returns \c false.
+*/
+bool QWebEngineFullScreenRequest::toggleOn() const
+{
+    return d_ptr->m_toggleOn;
+}
+
+/*!
+    \fn QWebEngineFullScreenRequest::origin() const
+    Returns the URL to be opened in the fullscreen mode.
+*/
+QUrl QWebEngineFullScreenRequest::origin() const
+{
+    return d_ptr->m_origin;
 }
 
 QT_END_NAMESPACE

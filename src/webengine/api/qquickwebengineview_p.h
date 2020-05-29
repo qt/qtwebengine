@@ -84,6 +84,7 @@ class QQuickWebEngineFormValidationMessageRequest;
 class QQuickWebEngineViewPrivate;
 class QWebEngineCertificateError;
 class QWebEngineFindTextResult;
+class QWebEngineFullScreenRequest;
 class QWebEngineQuotaRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
 class QWebEngineContextMenuRequest;
@@ -91,25 +92,6 @@ class QWebEngineContextMenuRequest;
 #if QT_CONFIG(webengine_testsupport)
 class QQuickWebEngineTestSupport;
 #endif
-
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFullScreenRequest {
-    Q_GADGET
-    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
-    Q_PROPERTY(bool toggleOn READ toggleOn CONSTANT FINAL)
-public:
-    QQuickWebEngineFullScreenRequest();
-    QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, const QUrl &origin, bool toggleOn);
-
-    Q_INVOKABLE void accept();
-    Q_INVOKABLE void reject();
-    QUrl origin() const { return m_origin; }
-    bool toggleOn() const { return m_toggleOn; }
-
-private:
-    QQuickWebEngineViewPrivate *m_viewPrivate;
-    const QUrl m_origin;
-    const bool m_toggleOn;
-};
 
 #define LATEST_WEBENGINEVIEW_REVISION 10
 
@@ -553,7 +535,7 @@ Q_SIGNALS:
     void navigationRequested(QQuickWebEngineNavigationRequest *request);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
     Q_REVISION(1) void certificateError(const QWebEngineCertificateError &error);
-    Q_REVISION(1) void fullScreenRequested(const QQuickWebEngineFullScreenRequest &request);
+    Q_REVISION(1) void fullScreenRequested(const QWebEngineFullScreenRequest &request);
     Q_REVISION(1) void isFullScreenChanged();
     Q_REVISION(1) void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
     Q_REVISION(1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
@@ -619,6 +601,5 @@ private:
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QQuickWebEngineView)
-Q_DECLARE_METATYPE(QQuickWebEngineFullScreenRequest)
 
 #endif // QQUICKWEBENGINEVIEW_P_H

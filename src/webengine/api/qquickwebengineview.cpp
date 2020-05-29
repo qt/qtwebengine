@@ -61,6 +61,7 @@
 #include "qquickwebenginetouchhandleprovider_p_p.h"
 #include "qwebenginecertificateerror.h"
 #include "qwebenginefindtextresult.h"
+#include "qwebenginefullscreenrequest.h"
 #include "qwebenginequotarequest.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
 
@@ -617,7 +618,7 @@ void QQuickWebEngineViewPrivate::windowCloseRejected()
 void QQuickWebEngineViewPrivate::requestFullScreenMode(const QUrl &origin, bool fullscreen)
 {
     Q_Q(QQuickWebEngineView);
-    QQuickWebEngineFullScreenRequest request(this, origin, fullscreen);
+    QWebEngineFullScreenRequest request(origin, fullscreen, [q = QPointer(q)] (bool toggleOn) { if (q) q->d_ptr->setFullScreenMode(toggleOn); });
     Q_EMIT q->fullScreenRequested(request);
 }
 
@@ -2284,31 +2285,6 @@ QQuickWebEngineView::LifecycleState QQuickWebEngineView::recommendedState() cons
 {
     Q_D(const QQuickWebEngineView);
     return static_cast<LifecycleState>(d->adapter->recommendedState());
-}
-
-QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest()
-    : m_viewPrivate(0)
-    , m_toggleOn(false)
-{
-}
-
-QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, const QUrl &origin, bool toggleOn)
-    : m_viewPrivate(viewPrivate)
-    , m_origin(origin)
-    , m_toggleOn(toggleOn)
-{
-}
-
-void QQuickWebEngineFullScreenRequest::accept()
-{
-    if (m_viewPrivate)
-        m_viewPrivate->setFullScreenMode(m_toggleOn);
-}
-
-void QQuickWebEngineFullScreenRequest::reject()
-{
-    if (m_viewPrivate)
-        m_viewPrivate->setFullScreenMode(!m_toggleOn);
 }
 
 QQuickContextMenuBuilder::QQuickContextMenuBuilder(QWebEngineContextMenuRequest *request,

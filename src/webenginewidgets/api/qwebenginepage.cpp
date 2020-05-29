@@ -1677,8 +1677,8 @@ void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &
 void QWebEnginePagePrivate::requestFullScreenMode(const QUrl &origin, bool fullscreen)
 {
     Q_Q(QWebEnginePage);
-    QWebEngineFullScreenRequest request(q, origin, fullscreen);
-    Q_EMIT q->fullScreenRequested(request);
+    QWebEngineFullScreenRequest request(origin, fullscreen, [q = QPointer(q)] (bool toggleOn) { if (q) q->d_ptr->setFullScreenMode(toggleOn); });
+    Q_EMIT q->fullScreenRequested(std::move(request));
 }
 
 bool QWebEnginePagePrivate::isFullScreenMode() const

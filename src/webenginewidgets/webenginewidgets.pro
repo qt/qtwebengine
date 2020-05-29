@@ -14,7 +14,6 @@ INCLUDEPATH += $$PWD api ../core ../core/api ../webengine/api
 SOURCES = \
         api/qtwebenginewidgetsglobal.cpp \
         api/qwebengineclientcertificateselection.cpp \
-        api/qwebenginefullscreenrequest.cpp \
         api/qwebenginehistory.cpp \
         api/qwebenginenotificationpresenter.cpp \
         api/qwebenginepage.cpp \
@@ -27,7 +26,6 @@ SOURCES = \
 HEADERS = \
         api/qtwebenginewidgetsglobal.h \
         api/qwebengineclientcertificateselection.h \
-        api/qwebenginefullscreenrequest.h \
         api/qwebenginehistory.h \
         api/qwebenginenotificationpresenter_p.h \
         api/qwebenginepage.h \

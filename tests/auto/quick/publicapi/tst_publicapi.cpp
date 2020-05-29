@@ -37,6 +37,7 @@
 #include <QtWebEngine/QQuickWebEngineScript>
 #include <QtWebEngineCore/QWebEngineCertificateError>
 #include <QtWebEngineCore/QWebEngineFindTextResult>
+#include <QtWebEngineCore/QWebEngineFullScreenRequest>
 #include <QtWebEngineCore/QWebEngineNotification>
 #include <QtWebEngineCore/QWebEngineQuotaRequest>
 #include <QtWebEngineCore/QWebEngineRegisterProtocolHandlerRequest>
@@ -73,7 +74,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineProfile::staticMetaObject
     << &QQuickWebEngineScript::staticMetaObject
     << &QQuickWebEngineSettings::staticMetaObject
-    << &QQuickWebEngineFullScreenRequest::staticMetaObject
+    << &QWebEngineFullScreenRequest::staticMetaObject
     << &QQuickWebEngineSingleton::staticMetaObject
     << &QQuickWebEngineAuthenticationDialogRequest::staticMetaObject
     << &QQuickWebEngineJavaScriptDialogRequest::staticMetaObject
@@ -289,10 +290,10 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineTooltipRequest.text --> QString"
     << "QQuickWebEngineTooltipRequest.type --> RequestType"
     << "QQuickWebEngineTooltipRequest.accepted --> bool"
-    << "QQuickWebEngineFullScreenRequest.accept() --> void"
-    << "QQuickWebEngineFullScreenRequest.origin --> QUrl"
-    << "QQuickWebEngineFullScreenRequest.reject() --> void"
-    << "QQuickWebEngineFullScreenRequest.toggleOn --> bool"
+    << "QWebEngineFullScreenRequest.accept() --> void"
+    << "QWebEngineFullScreenRequest.origin --> QUrl"
+    << "QWebEngineFullScreenRequest.reject() --> void"
+    << "QWebEngineFullScreenRequest.toggleOn --> bool"
     << "QQuickWebEngineHistory.backItems --> QQuickWebEngineHistoryListModel*"
     << "QQuickWebEngineHistory.clear() --> void"
     << "QQuickWebEngineHistory.forwardItems --> QQuickWebEngineHistoryListModel*"
@@ -696,7 +697,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.findTextFinished(QWebEngineFindTextResult) --> void"
     << "QQuickWebEngineView.formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest*) --> void"
     << "QQuickWebEngineView.fullScreenCancelled() --> void"
-    << "QQuickWebEngineView.fullScreenRequested(QQuickWebEngineFullScreenRequest) --> void"
+    << "QQuickWebEngineView.fullScreenRequested(QWebEngineFullScreenRequest) --> void"
     << "QQuickWebEngineView.geometryChangeRequested(QRect,QRect) --> void"
     << "QQuickWebEngineView.goBack() --> void"
     << "QQuickWebEngineView.goBackOrForward(int) --> void"
