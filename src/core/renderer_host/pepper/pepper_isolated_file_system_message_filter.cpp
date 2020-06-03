@@ -81,7 +81,7 @@ PepperIsolatedFileSystemMessageFilter::PepperIsolatedFileSystemMessageFilter(int
 PepperIsolatedFileSystemMessageFilter::~PepperIsolatedFileSystemMessageFilter()
 {}
 
-scoped_refptr<base::TaskRunner> PepperIsolatedFileSystemMessageFilter::OverrideTaskRunnerForMessage(const IPC::Message &)
+scoped_refptr<base::SequencedTaskRunner> PepperIsolatedFileSystemMessageFilter::OverrideTaskRunnerForMessage(const IPC::Message &)
 {
     // In order to reach ExtensionSystem, we need to get ProfileManager first.
     // ProfileManager lives in UI thread, so we need to do this in UI thread.

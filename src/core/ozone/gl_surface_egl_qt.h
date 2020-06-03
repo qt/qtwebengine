@@ -57,7 +57,8 @@ public:
     void Destroy() override;
     void* GetHandle() override;
     bool Resize(const gfx::Size& size, float scale_factor,
-                ColorSpace color_space, bool has_alpha) override;
+                const gfx::ColorSpace &color_space, bool has_alpha) override;
+
 
 protected:
     ~GLSurfaceEGLQt();
@@ -85,7 +86,7 @@ public:
     void Destroy() override;
     bool IsSurfaceless() const override;
     bool Resize(const gfx::Size& size, float scale_factor,
-                ColorSpace color_space, bool has_alpha) override;
+                const gfx::ColorSpace &color_space, bool has_alpha) override;
     EGLSurface GetHandle() override;
     void* GetShareHandle() override;
 

@@ -81,6 +81,7 @@ def isInChromiumBlacklist(file_path):
             not file_path.startswith('chrome/browser/printing/') and
             not file_path.startswith('chrome/browser/renderer_host/') and
             not file_path.startswith('chrome/browser/spellchecker') and
+            not file_path.startswith('chrome/browser/tab_contents/') and
             not file_path.startswith('chrome/browser/ui/webui/') and
             not (file_path.startswith('chrome/browser/resources/') and
                  not '/chromeos/' in file_path and

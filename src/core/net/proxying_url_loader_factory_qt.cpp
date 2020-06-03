@@ -45,7 +45,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -151,7 +150,7 @@ private:
     // error didn't occur.
     int error_status_ = net::OK;
     network::ResourceRequest request_;
-    network::ResourceResponseHead current_response_;
+    network::mojom::URLResponseHeadPtr current_response_;
 
     const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
@@ -189,6 +188,7 @@ InterceptedRequest::InterceptedRequest(int process_id, uint64_t request_id, int3
     , target_factory_(std::move(target_factory))
     , weak_factory_(this)
 {
+    current_response_ = network::mojom::URLResponseHead::New();
     // If there is a client error, clean up the request.
     target_client_.set_disconnect_handler(
             base::BindOnce(&InterceptedRequest::OnURLLoaderClientError, weak_factory_.GetWeakPtr()));
@@ -219,12 +219,12 @@ void InterceptedRequest::Restart()
         webContents = content::WebContents::FromFrameTreeNodeId(request_.render_frame_id);
     }
 
-    GURL top_document_url = webContents ? webContents->GetLastCommittedURL() : GURL();
+    GURL top_document_url = webContents ? webContents->GetVisibleURL() : GURL();
     QUrl firstPartyUrl;
     if (!top_document_url.is_empty())
         firstPartyUrl = toQt(top_document_url);
     else
-        firstPartyUrl = toQt(request_.site_for_cookies); // m_topDocumentUrl can be empty for the main-frame.
+        firstPartyUrl = toQt(request_.site_for_cookies.RepresentativeUrl()); // m_topDocumentUrl can be empty for the main-frame.
 
     QWebEngineUrlRequestInfoPrivate *infoPrivate =
             new QWebEngineUrlRequestInfoPrivate(toQt(resourceType), toQt(navigationType), originalUrl, firstPartyUrl,
@@ -283,7 +283,7 @@ void InterceptedRequest::ContinueAfterIntercept()
                     false /*insecure_scheme_was_upgraded*/);
 
             // FIXME: Should probably create a new header.
-            current_response_.encoded_data_length = 0;
+            current_response_->encoded_data_length = 0;
             request_.method = redirectInfo.new_method;
             request_.url = redirectInfo.new_url;
             request_.site_for_cookies = redirectInfo.new_site_for_cookies;
@@ -291,7 +291,7 @@ void InterceptedRequest::ContinueAfterIntercept()
             request_.referrer_policy = redirectInfo.new_referrer_policy;
             if (request_.method == net::HttpRequestHeaders::kGetMethod)
                 request_.request_body = nullptr;
-            target_client_->OnReceiveRedirect(redirectInfo, current_response_);
+            target_client_->OnReceiveRedirect(redirectInfo, std::move(current_response_));
             return;
         }
 
@@ -319,7 +319,7 @@ void InterceptedRequest::ContinueAfterIntercept()
 
 void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr head)
 {
-    current_response_ = head;
+    current_response_ = head.Clone();
 
     target_client_->OnReceiveResponse(std::move(head));
 }
@@ -328,7 +328,7 @@ void InterceptedRequest::OnReceiveRedirect(const net::RedirectInfo &redirect_inf
 {
     // TODO(timvolodine): handle redirect override.
     request_was_redirected_ = true;
-    current_response_ = head;
+    current_response_ = head.Clone();
     target_client_->OnReceiveRedirect(redirect_info, std::move(head));
     request_.url = redirect_info.new_url;
     request_.method = redirect_info.new_method;

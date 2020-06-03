@@ -57,6 +57,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -272,6 +273,34 @@ static content::ScreenInfo screenInfoFromQScreen(QScreen *screen)
     return r;
 }
 
+// An minimal override to support progressing flings
+class FlingingCompositor : public ui::Compositor
+{
+    RenderWidgetHostViewQt *m_rwhv;
+public:
+    FlingingCompositor(RenderWidgetHostViewQt *rwhv,
+                       const viz::FrameSinkId &frame_sink_id,
+                       ui::ContextFactory *context_factory,
+                       ui::ContextFactoryPrivate *context_factory_private,
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                       bool enable_pixel_canvas,
+                       bool use_external_begin_frame_control = false,
+                       bool force_software_compositor = false,
+                       const char *trace_environment_name = nullptr)
+        : ui::Compositor(frame_sink_id, context_factory, context_factory_private,
+                         task_runner, enable_pixel_canvas, use_external_begin_frame_control,
+                         force_software_compositor, trace_environment_name)
+        , m_rwhv(rwhv)
+    {}
+
+    void BeginMainFrame(const viz::BeginFrameArgs &args) override
+    {
+        if (args.type != viz::BeginFrameArgs::MISSED && !m_rwhv->is_currently_scrolling_viewport())
+            m_rwhv->host()->ProgressFlingIfNeeded(args.frame_time);
+        ui::Compositor::BeginMainFrame(args);
+    }
+};
+
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
     : content::RenderWidgetHostViewBase::RenderWidgetHostViewBase(widget)
     , m_taskRunner(base::ThreadTaskRunnerHandle::Get())
@@ -310,7 +339,8 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     content::ImageTransportFactory *imageTransportFactory = content::ImageTransportFactory::GetInstance();
     ui::ContextFactory *contextFactory = imageTransportFactory->GetContextFactory();
     ui::ContextFactoryPrivate *contextFactoryPrivate = imageTransportFactory->GetContextFactoryPrivate();
-    m_uiCompositor.reset(new ui::Compositor(
+    m_uiCompositor.reset(new FlingingCompositor(
+                                 this,
                                  contextFactoryPrivate->AllocateFrameSinkId(),
                                  contextFactory,
                                  contextFactoryPrivate,
@@ -715,18 +745,6 @@ void RenderWidgetHostViewQt::DisplayTooltipText(const base::string16 &tooltip_te
 {
     if (m_adapterClient)
         m_adapterClient->setToolTip(toQt(tooltip_text));
-}
-
-void RenderWidgetHostViewQt::DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient *frameSinkClient)
-{
-    // Not used with viz
-    NOTREACHED();
-}
-
-void RenderWidgetHostViewQt::SubmitCompositorFrame(const viz::LocalSurfaceId &local_surface_id, viz::CompositorFrame frame, base::Optional<viz::HitTestRegionList> hit_test_region_list)
-{
-    // Not used with viz
-    NOTREACHED();
 }
 
 void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo *results)
@@ -1353,7 +1371,9 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
                 end = qMax(0, start + end);
             }
 
-            underlines.push_back(ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, start, end, ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
+            underlines.push_back(ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, start, end,
+                                                 ui::ImeTextSpan::Thickness::kThin, ui::ImeTextSpan::UnderlineStyle::kSolid,
+                                                 SK_ColorTRANSPARENT));
 
             QTextCharFormat format = qvariant_cast<QTextFormat>(attribute.value).toCharFormat();
             if (format.underlineStyle() != QTextCharFormat::NoUnderline)
@@ -1772,12 +1792,6 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
     }
 }
 
-void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
-{
-    // Not used with viz
-    NOTREACHED();
-}
-
 content::RenderFrameHost *RenderWidgetHostViewQt::getFocusedFrameHost()
 {
     content::RenderViewHostImpl *viewHost = content::RenderViewHostImpl::From(host());
@@ -1806,11 +1820,6 @@ ui::TextInputType RenderWidgetHostViewQt::getTextInputType() const
         return text_input_manager_->GetTextInputState()->type;
 
     return ui::TEXT_INPUT_TYPE_NONE;
-}
-
-void RenderWidgetHostViewQt::SetWantsAnimateOnlyBeginFrames()
-{
-    m_delegatedFrameHost->SetWantsAnimateOnlyBeginFrames();
 }
 
 viz::SurfaceId RenderWidgetHostViewQt::GetCurrentSurfaceId() const

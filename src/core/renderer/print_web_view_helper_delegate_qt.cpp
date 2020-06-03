@@ -54,11 +54,6 @@
 namespace QtWebEngineCore {
 PrintWebViewHelperDelegateQt::~PrintWebViewHelperDelegateQt() {}
 
-bool PrintWebViewHelperDelegateQt::CancelPrerender(content::RenderFrame *)
-{
-    return false;
-}
-
 blink::WebElement PrintWebViewHelperDelegateQt::GetPdfElement(blink::WebLocalFrame *frame)
 {
     GURL url = frame->GetDocument().Url();

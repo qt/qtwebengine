@@ -44,6 +44,7 @@
 
 #include "compositor/content_gpu_client_qt.h"
 #include "content_browser_client_qt.h"
+#include "content_client_qt.h"
 #include "content_utility_client_qt.h"
 
 namespace QtWebEngineCore {
@@ -55,7 +56,9 @@ public:
     // This is where the embedder puts all of its startup code that needs to run
     // before the sandbox is engaged.
     void PreSandboxStartup() override;
+    void PostEarlyInitialization(bool) override;
 
+    content::ContentClient *CreateContentClient() override;
     content::ContentBrowserClient* CreateContentBrowserClient() override;
     content::ContentGpuClient* CreateContentGpuClient() override;
     content::ContentRendererClient* CreateContentRendererClient() override;
@@ -63,6 +66,7 @@ public:
     bool BasicStartupComplete(int* /*exit_code*/) override;
 
 private:
+    ContentClientQt m_contentClient;
     std::unique_ptr<ContentBrowserClientQt> m_browserClient;
     std::unique_ptr<ContentGpuClientQt> m_gpuClient;
     std::unique_ptr<ContentUtilityClientQt> m_utilityClient;

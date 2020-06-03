@@ -70,10 +70,10 @@ class DownloadManagerDelegateQt
 public:
     DownloadManagerDelegateQt(ProfileAdapter *profileAdapter);
     ~DownloadManagerDelegateQt();
-    void GetNextId(const content::DownloadIdCallback& callback) override;
+    void GetNextId(content::DownloadIdCallback callback) override;
 
-    bool DetermineDownloadTarget(download::DownloadItem* item,
-                                 const content::DownloadTargetCallback& callback) override;
+    bool DetermineDownloadTarget(download::DownloadItem *item,
+                                 content::DownloadTargetCallback *callback) override;
 
     void GetSaveDir(content::BrowserContext* browser_context,
                     base::FilePath* website_save_dir,
@@ -96,7 +96,7 @@ public:
     void OnDownloadDestroyed(download::DownloadItem *download) override;
 
 private:
-    void cancelDownload(const content::DownloadTargetCallback& callback);
+    void cancelDownload(content::DownloadTargetCallback callback);
     download::DownloadItem *findDownloadById(quint32 downloadId);
     void savePackageDownloadCreated(download::DownloadItem *download);
     ProfileAdapter *m_profileAdapter;

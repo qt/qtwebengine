@@ -55,6 +55,12 @@
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
+#include "components/performance_manager/public/performance_manager.h"
+#include "components/performance_manager/render_process_user_data.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -84,6 +90,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/url_loader_factory_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -394,14 +401,6 @@ scoped_refptr<content::QuotaPermissionContext> ContentBrowserClientQt::CreateQuo
     return new QuotaPermissionContextQt;
 }
 
-void ContentBrowserClientQt::GetQuotaSettings(content::BrowserContext* context,
-                                              content::StoragePartition* partition,
-                                              base::OnceCallback<void(base::Optional<storage::QuotaSettings>)> callback)
-{
-    storage::GetNominalDynamicSettings(partition->GetPath(), context->IsOffTheRecord(),
-                                       storage::GetDefaultDeviceInfoHelper(), std::move(callback));
-}
-
 // Copied from chrome/browser/ssl/ssl_error_handler.cc:
 static int IsCertErrorFatal(int cert_error)
 {
@@ -409,17 +408,20 @@ static int IsCertErrorFatal(int cert_error)
     case net::ERR_CERT_COMMON_NAME_INVALID:
     case net::ERR_CERT_DATE_INVALID:
     case net::ERR_CERT_AUTHORITY_INVALID:
+    case net::ERR_CERT_NO_REVOCATION_MECHANISM:
+    case net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION:
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
     case net::ERR_CERT_WEAK_KEY:
     case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
     case net::ERR_CERT_VALIDITY_TOO_LONG:
     case net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
     case net::ERR_CERT_SYMANTEC_LEGACY:
+    case net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED:
+    case net::ERR_SSL_OBSOLETE_VERSION:
         return false;
     case net::ERR_CERT_CONTAINS_ERRORS:
     case net::ERR_CERT_REVOKED:
     case net::ERR_CERT_INVALID:
-    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
     case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
         return true;
     default:
@@ -649,6 +651,36 @@ void ContentBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
     map->Add<network_hints::mojom::NetworkHintsHandler>(base::BindRepeating(&BindNetworkHintsHandler));
 }
 
+namespace {
+void BindProcessNode(int render_process_host_id,
+                     mojo::PendingReceiver<performance_manager::mojom::ProcessCoordinationUnit> receiver)
+{
+    content::RenderProcessHost *render_process_host = content::RenderProcessHost::FromID(render_process_host_id);
+    if (!render_process_host)
+        return;
+
+    performance_manager::RenderProcessUserData *user_data =
+            performance_manager::RenderProcessUserData::GetForRenderProcessHost(render_process_host);
+
+    DCHECK(performance_manager::PerformanceManagerImpl::GetInstance());
+    performance_manager::PerformanceManagerImpl::GetTaskRunner()->PostTask(
+                FROM_HERE, base::BindOnce(&performance_manager::ProcessNodeImpl::Bind,
+                                          base::Unretained(user_data->process_node()),
+                                          std::move(receiver)));
+}
+}  // namespace
+
+void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderRegistry *registry,
+                                                        blink::AssociatedInterfaceRegistry *associated_registry,
+                                                        content::RenderProcessHost *render_process_host)
+{
+    Q_UNUSED(associated_registry);
+    registry->AddInterface(base::BindRepeating(&BindProcessNode, render_process_host->GetID()),
+                           base::SequencedTaskRunnerHandle::Get());
+
+    performance_manager::PerformanceManagerRegistry::GetInstance()->CreateProcessNodeForRenderProcessHost(render_process_host);
+}
+
 void ContentBrowserClientQt::RunServiceInstance(const service_manager::Identity &identity,
                                                 mojo::PendingReceiver<service_manager::mojom::Service> *receiver)
 {
@@ -731,11 +763,10 @@ bool ContentBrowserClientQt::ShouldEnableStrictSiteIsolation()
     return false;
 }
 
-bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(
-        network::mojom::RestrictedCookieManagerRole role,
+bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::RestrictedCookieManagerRole role,
         content::BrowserContext *browser_context,
         const url::Origin & /*origin*/,
-        const GURL & /*site_for_cookies*/,
+        const net::SiteForCookies & /*site_for_cookies*/,
         const url::Origin & /*top_frame_origin*/,
         bool is_service_worker,
         int process_id,
@@ -1033,6 +1064,17 @@ bool ContentBrowserClientQt::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(base::
 #endif
 }
 
+void ContentBrowserClientQt::OverrideURLLoaderFactoryParams(content::BrowserContext *browser_context,
+                                                            const url::Origin &origin,
+                                                            bool is_for_isolated_world,
+                                                            network::mojom::URLLoaderFactoryParams *factory_params)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(
+                browser_context, origin, is_for_isolated_world, factory_params);
+#endif
+}
+
 std::string ContentBrowserClientQt::getUserAgent()
 {
     // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
@@ -1206,6 +1248,7 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         mojo::PendingReceiver<network::mojom::URLLoaderFactory> *factory_receiver,
         mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
         bool *bypass_redirect_checks,
+        bool *disable_secure_dns,
         network::mojom::URLLoaderFactoryOverridePtr *factory_override)
 {
     auto *web_contents = content::WebContents::FromRenderFrameHost(frame);

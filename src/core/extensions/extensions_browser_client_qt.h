@@ -47,6 +47,8 @@
 
 #include "base/compiler_specific.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace extensions {
 
@@ -94,9 +96,6 @@ public:
     void RegisterBrowserInterfaceBindersForFrame(service_manager::BinderMapWithContext<content::RenderFrameHost*> *,
                                                  content::RenderFrameHost *, const extensions::Extension *) const override;
     std::unique_ptr<RuntimeAPIDelegate> CreateRuntimeAPIDelegate(content::BrowserContext *context) const override;
-    void RegisterExtensionInterfaces(service_manager::BinderRegistryWithArgs<content::RenderFrameHost *> *registry,
-                                     content::RenderFrameHost *render_frame_host,
-                                     const Extension *extension) const override;
     const ComponentExtensionResourceManager *
     GetComponentExtensionResourceManager() override;
     void BroadcastEventToRenderers(events::HistogramValue histogram_value,

@@ -1431,8 +1431,8 @@ static WebPointerProperties::PointerType pointerTypeForTabletEvent(const QTablet
 WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
-                              WebFloatPoint(ev->x(), ev->y()),
-                              WebFloatPoint(ev->globalX(), ev->globalY()),
+                              gfx::PointF(ev->x(), ev->y()),
+                              gfx::PointF(ev->globalX(), ev->globalY()),
                               mouseButtonForEvent<QMouseEvent>(ev),
                               0,
                               modifiersForEvent(ev),
@@ -1462,8 +1462,8 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
-                              WebFloatPoint(ev->x(), ev->y()),
-                              WebFloatPoint(ev->globalX(), ev->globalY()),
+                              gfx::PointF(ev->x(), ev->y()),
+                              gfx::PointF(ev->globalX(), ev->globalY()),
                               mouseButtonForEvent<QTabletEvent>(ev),
                               0,
                               modifiersForEvent(ev),
@@ -1496,11 +1496,9 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev)
     webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetModifiers(modifiersForEvent(ev));
 
-    webKitEvent.SetPositionInWidget(WebFloatPoint(ev->localPos().x(),
-                                                  ev->localPos().y()));
+    webKitEvent.SetPositionInWidget(gfx::PointF(ev->localPos().x(), ev->localPos().y()));
 
-    webKitEvent.SetPositionInScreen(WebFloatPoint(ev->screenPos().x(),
-                                                  ev->screenPos().y()));
+    webKitEvent.SetPositionInScreen(gfx::PointF(ev->screenPos().x(), ev->screenPos().y()));
 
     webKitEvent.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
 
@@ -1628,9 +1626,9 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
     return true;
 }
 
-static QPointF toQt(blink::WebFloatPoint p)
+static QPointF toQt(gfx::PointF p)
 {
-    return QPointF(p.x, p.y);
+    return QPointF(p.x(), p.y());
 }
 
 void WebEventFactory::sendUnhandledWheelEvent(const blink::WebGestureEvent &event,

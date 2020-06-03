@@ -750,8 +750,6 @@ WebEngineContext::WebEngineContext()
 
     registerMainThreadFactories();
 
-    SetContentClient(new ContentClientQt);
-
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
 #if defined(OS_WIN)
     contentMainParams.sandbox_info = staticSandboxInterfaceInfo();

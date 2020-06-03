@@ -56,12 +56,12 @@ using content::WebContents;
 
 namespace QtWebEngineCore {
 
-void QuotaPermissionContextQt::RequestQuotaPermission(const StorageQuotaParams &params, int render_process_id, const PermissionCallback &callback)
+void QuotaPermissionContextQt::RequestQuotaPermission(const StorageQuotaParams &params, int render_process_id, PermissionCallback callback)
 {
     if (params.storage_type != blink::mojom::StorageType::kPersistent) {
         // For now we only support requesting quota with this interface
         // for Persistent storage type.
-        callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);
+        std::move(callback).Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);
         return;
     }
 
@@ -69,7 +69,7 @@ void QuotaPermissionContextQt::RequestQuotaPermission(const StorageQuotaParams &
         base::PostTask(
             FROM_HERE, {content::BrowserThread::UI},
             base::BindOnce(&QuotaPermissionContextQt::RequestQuotaPermission, this,
-                           params, render_process_id, callback));
+                           params, render_process_id, std::move(callback)));
         return;
     }
 
@@ -86,11 +86,11 @@ void QuotaPermissionContextQt::RequestQuotaPermission(const StorageQuotaParams &
         return;
 
     QWebEngineQuotaRequest request(
-        QSharedPointer<QuotaRequestControllerImpl>::create(this, params, callback));
+        QSharedPointer<QuotaRequestControllerImpl>::create(this, params, std::move(callback)));
     client->runQuotaRequest(std::move(request));
 }
 
-void QuotaPermissionContextQt::dispatchCallbackOnIOThread(const PermissionCallback &callback,
+void QuotaPermissionContextQt::dispatchCallbackOnIOThread(PermissionCallback callback,
                                                           QuotaPermissionContext::QuotaPermissionResponse response)
 {
     if (callback.is_null())
@@ -100,11 +100,11 @@ void QuotaPermissionContextQt::dispatchCallbackOnIOThread(const PermissionCallba
         base::PostTask(
             FROM_HERE, {content::BrowserThread::IO},
             base::BindOnce(&QuotaPermissionContextQt::dispatchCallbackOnIOThread,
-                           this, callback, response));
+                           this, std::move(callback), response));
         return;
     }
 
-    callback.Run(response);
+    std::move(callback).Run(response);
 }
 
 } // namespace QtWebEngineCore

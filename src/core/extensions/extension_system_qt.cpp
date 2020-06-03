@@ -91,10 +91,9 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/common/manifest_url_handlers.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "chrome/grit/component_extension_resources.h"
-#include "chrome/grit/browser_resources.h"
 #include "net/base/mime_util.h"
+#include "qtwebengine/grit/qt_webengine_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
 
@@ -405,7 +404,7 @@ void ExtensionSystemQt::InstallUpdate(const std::string &extension_id,
 #endif
 
 void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *extension,
-                                                             const base::Closure &callback)
+                                                             base::OnceClosure callback)
 {
     base::Time install_time = base::Time::Now();
 
@@ -417,7 +416,7 @@ void ExtensionSystemQt::RegisterExtensionWithRequestContexts(const Extension *ex
             base::Bind(&InfoMap::AddExtension, info_map(),
                        base::RetainedRef(extension), install_time, incognito_enabled,
                        notifications_disabled),
-            callback);
+            std::move(callback));
 }
 
 void ExtensionSystemQt::UnregisterExtensionWithRequestContexts(const std::string &extension_id,

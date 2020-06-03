@@ -65,36 +65,36 @@ public:
 
     // network::mojom::RestrictedCookieManager interface:
     void GetAllForUrl(const GURL &url,
-                      const GURL &site_for_cookies,
+                      const net::SiteForCookies &site_for_cookies,
                       const url::Origin &top_frame_origin,
                       network::mojom::CookieManagerGetOptionsPtr options,
                       GetAllForUrlCallback callback) override;
     void SetCanonicalCookie(const net::CanonicalCookie& cookie,
                             const GURL &url,
-                            const GURL &site_for_cookies,
+                            const net::SiteForCookies &site_for_cookies,
                             const url::Origin &top_frame_origin,
                             SetCanonicalCookieCallback callback) override;
     void AddChangeListener(const GURL &url,
-                           const GURL &site_for_cookies,
+                           const net::SiteForCookies &site_for_cookies,
                            const url::Origin &top_frame_origin,
                            mojo::PendingRemote<network::mojom::CookieChangeListener> listener,
                            AddChangeListenerCallback callback) override;
     void SetCookieFromString(const GURL &url,
-                             const GURL &site_for_cookies,
+                             const net::SiteForCookies &site_for_cookies,
                              const url::Origin &top_frame_origin,
                              const std::string &cookie,
                              SetCookieFromStringCallback callback) override;
     void GetCookiesString(const GURL &url,
-                          const GURL &site_for_cookies,
+                          const net::SiteForCookies &site_for_cookies,
                           const url::Origin &top_frame_origin,
                           GetCookiesStringCallback callback) override;
     void CookiesEnabledFor(const GURL &url,
-                           const GURL &site_for_cookies,
+                           const net::SiteForCookies &site_for_cookies,
                            const url::Origin &top_frame_origin,
                            CookiesEnabledForCallback callback) override;
 
     // Internal:
-    bool allowCookies(const GURL &url, const GURL &site_for_cookies) const;
+    bool allowCookies(const GURL &url, const net::SiteForCookies &site_for_cookies) const;
 
 private:
     ProxyingRestrictedCookieManagerQt(base::WeakPtr<ProfileIODataQt> profileIoData,

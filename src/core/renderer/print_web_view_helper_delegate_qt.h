@@ -57,8 +57,6 @@ class PrintWebViewHelperDelegateQt : public printing::PrintRenderFrameHelper::De
 public:
     ~PrintWebViewHelperDelegateQt() override;
 
-    bool CancelPrerender(content::RenderFrame *render_frame) override;
-
     blink::WebElement GetPdfElement(blink::WebLocalFrame *frame) override;
 
     bool IsPrintPreviewEnabled() override;

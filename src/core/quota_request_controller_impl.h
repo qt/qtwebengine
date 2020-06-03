@@ -50,7 +50,7 @@ public:
     QuotaRequestControllerImpl(
         QuotaPermissionContextQt *context,
         const content::StorageQuotaParams &params,
-        const content::QuotaPermissionContext::PermissionCallback &callback);
+        content::QuotaPermissionContext::PermissionCallback callback);
 
     ~QuotaRequestControllerImpl();
 

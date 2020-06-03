@@ -252,7 +252,7 @@ void GLSurfaceEGLQt::Destroy()
 }
 
 bool GLSurfaceEGLQt::Resize(const gfx::Size& size, float scale_factor,
-                             ColorSpace color_space, bool has_alpha)
+                            const gfx::ColorSpace &color_space, bool has_alpha)
 {
     if (size == m_size)
         return true;
@@ -303,7 +303,7 @@ bool GLSurfacelessQtEGL::IsSurfaceless() const
 }
 
 bool GLSurfacelessQtEGL::Resize(const gfx::Size& size, float scale_factor,
-                                ColorSpace color_space,  bool has_alpha)
+                                const gfx::ColorSpace &color_space,  bool has_alpha)
 {
     m_size = size;
     return true;

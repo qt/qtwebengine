@@ -50,6 +50,11 @@ namespace content {
 class ServiceManagerConnection;
 }
 
+namespace performance_manager {
+class PerformanceManager;
+class PerformanceManagerRegistry;
+}
+
 namespace QtWebEngineCore {
 
 std::unique_ptr<base::MessagePump> messagePumpFactory();
@@ -69,6 +74,8 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
+    std::unique_ptr<performance_manager::PerformanceManager> performance_manager_;
+    std::unique_ptr<performance_manager::PerformanceManagerRegistry> performance_manager_registry_;
 };
 
 } // namespace QtWebEngineCore

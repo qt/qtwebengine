@@ -58,9 +58,9 @@ namespace ui {
 void ResourceBundle::LoadCommonResources()
 {
     // We repacked the resources we need and installed them. now let chromium mmap that file.
-    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_PAK), SCALE_FACTOR_NONE);
     AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_100P_PAK), SCALE_FACTOR_100P);
     AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_200P_PAK), SCALE_FACTOR_200P);
+    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_PAK), SCALE_FACTOR_NONE);
     AddOptionalDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_DEVTOOLS_PAK), SCALE_FACTOR_NONE);
 }
 

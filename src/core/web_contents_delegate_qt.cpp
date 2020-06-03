@@ -459,7 +459,7 @@ void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QS
     EmitLoadFinished(false /* success */ , url, false /* isErrorPage */, errorCode, errorDescription);
 }
 
-void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description)
+void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code)
 {
     if (m_loadingState == LoadingState::Loading)
         setLoadingState(LoadingState::Loaded);
@@ -476,7 +476,11 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
         EmitLoadFinished(false /* success */, toQt(validated_url), true /* isErrorPage */);
         return;
     }
-
+    // Qt6: Consider getting rid of the error_description (Chromium already has)
+    base::string16 error_description;
+    error_description = error_page::LocalizedError::GetErrorDetails(
+                error_code <= 0 ? error_page::Error::kNetErrorDomain : error_page::Error::kHttpErrorDomain,
+                error_code, false, false);
     didFailLoad(toQt(validated_url), error_code, toQt(error_description));
 }
 

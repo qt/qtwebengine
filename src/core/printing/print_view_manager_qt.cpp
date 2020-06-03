@@ -347,10 +347,11 @@ void PrintViewManagerQt::resetPdfState()
 // IPC handlers
 
 void PrintViewManagerQt::OnRequestPrintPreview(
-    const PrintHostMsg_RequestPrintPreview_Params &/*params*/)
+    const PrintHostMsg_RequestPrintPreview_Params & /*params*/)
 {
-    m_printPreviewRfh->Send(new PrintMsg_PrintPreview(m_printPreviewRfh->GetRoutingID(),
-                                                      *m_printSettings));
+    mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> printRenderFrame;
+    m_printPreviewRfh->GetRemoteAssociatedInterfaces()->GetInterface(&printRenderFrame);
+    printRenderFrame->PrintPreview(m_printSettings->Clone());
     PrintPreviewDone();
 }
 

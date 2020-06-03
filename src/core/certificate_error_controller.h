@@ -86,7 +86,8 @@ public:
         CertificateTransparencyRequired = -214,
         CertificateSymantecLegacy = -215,
         CertificateKnownInterceptionBlocked = -217,
-        CertificateErrorEnd = -218 // not an error, just an enum boundary
+        SslObsoleteVersion = -218,
+        CertificateErrorEnd = -219 // not an error, just an enum boundary
     };
 
     CertificateError error() const;

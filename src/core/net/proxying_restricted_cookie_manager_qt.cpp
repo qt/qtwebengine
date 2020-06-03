@@ -116,7 +116,7 @@ ProxyingRestrictedCookieManagerQt::~ProxyingRestrictedCookieManagerQt()
 }
 
 void ProxyingRestrictedCookieManagerQt::GetAllForUrl(const GURL &url,
-                                                     const GURL &site_for_cookies,
+                                                     const net::SiteForCookies &site_for_cookies,
                                                      const url::Origin &top_frame_origin,
                                                      network::mojom::CookieManagerGetOptionsPtr options,
                                                      GetAllForUrlCallback callback)
@@ -132,7 +132,8 @@ void ProxyingRestrictedCookieManagerQt::GetAllForUrl(const GURL &url,
 
 void ProxyingRestrictedCookieManagerQt::SetCanonicalCookie(const net::CanonicalCookie &cookie,
                                                            const GURL &url,
-                                                           const GURL &site_for_cookies, const url::Origin &top_frame_origin,
+                                                           const net::SiteForCookies &site_for_cookies,
+                                                           const url::Origin &top_frame_origin,
                                                            SetCanonicalCookieCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -145,7 +146,7 @@ void ProxyingRestrictedCookieManagerQt::SetCanonicalCookie(const net::CanonicalC
 }
 
 void ProxyingRestrictedCookieManagerQt::AddChangeListener(const GURL &url,
-                                                          const GURL &site_for_cookies,
+                                                          const net::SiteForCookies &site_for_cookies,
                                                           const url::Origin &top_frame_origin,
                                                           mojo::PendingRemote<network::mojom::CookieChangeListener> listener,
                                                           AddChangeListenerCallback callback)
@@ -155,7 +156,7 @@ void ProxyingRestrictedCookieManagerQt::AddChangeListener(const GURL &url,
 }
 
 void ProxyingRestrictedCookieManagerQt::SetCookieFromString(const GURL &url,
-                                                            const GURL &site_for_cookies,
+                                                            const net::SiteForCookies &site_for_cookies,
                                                             const url::Origin &top_frame_origin,
                                                             const std::string &cookie,
                                                             SetCookieFromStringCallback callback)
@@ -170,7 +171,7 @@ void ProxyingRestrictedCookieManagerQt::SetCookieFromString(const GURL &url,
 }
 
 void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
-                                                         const GURL &site_for_cookies,
+                                                         const net::SiteForCookies &site_for_cookies,
                                                          const url::Origin &top_frame_origin,
                                                          GetCookiesStringCallback callback)
 {
@@ -184,7 +185,7 @@ void ProxyingRestrictedCookieManagerQt::GetCookiesString(const GURL &url,
 }
 
 void ProxyingRestrictedCookieManagerQt::CookiesEnabledFor(const GURL &url,
-                                                          const GURL &site_for_cookies,
+                                                          const net::SiteForCookies &site_for_cookies,
                                                           const url::Origin & /*top_frame_origin*/,
                                                           CookiesEnabledForCallback callback)
 {
@@ -192,11 +193,11 @@ void ProxyingRestrictedCookieManagerQt::CookiesEnabledFor(const GURL &url,
     std::move(callback).Run(allowCookies(url, site_for_cookies));
 }
 
-bool ProxyingRestrictedCookieManagerQt::allowCookies(const GURL &url, const GURL &site_for_cookies) const
+bool ProxyingRestrictedCookieManagerQt::allowCookies(const GURL &url, const net::SiteForCookies &site_for_cookies) const
 {
     if (!m_profileIoData)
         return false;
-    return m_profileIoData->canGetCookies(toQt(site_for_cookies), toQt(url));
+    return m_profileIoData->canGetCookies(toQt(site_for_cookies.RepresentativeUrl()), toQt(url));
 }
 
 }  // namespace QtWebEngineCore

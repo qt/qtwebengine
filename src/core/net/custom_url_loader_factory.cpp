@@ -51,9 +51,10 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 #include "api/qwebengineurlscheme.h"
 #include "net/url_request_custom_job_proxy.h"
@@ -140,7 +141,19 @@ private:
     void Start()
     {
         DCHECK(m_taskRunner->RunsTasksInCurrentSequence());
-        m_head.request_start = base::TimeTicks::Now();
+
+        if (network::cors::IsCorsEnabledRequestMode(m_request.mode)) {
+            // CORS mode requires a valid request_initiator.
+            if (!m_request.request_initiator)
+                return CompleteWithFailure(net::ERR_INVALID_ARGUMENT);
+
+            // Custom schemes are not covered by CorsURLLoader, so we need to reject CORS requests manually.
+            if (!m_corsEnabled && !m_request.request_initiator->IsSameOriginWith(url::Origin::Create(m_request.url)))
+                return CompleteWithFailure(network::CorsErrorStatus(network::mojom::CorsError::kCorsDisabledScheme));
+        }
+
+        m_head = network::mojom::URLResponseHead::New();
+        m_head->request_start = base::TimeTicks::Now();
 
         if (!m_pipe.consumer_handle.is_valid())
             return CompleteWithFailure(net::ERR_FAILED);
@@ -160,6 +173,13 @@ private:
         base::PostTask(FROM_HERE, { content::BrowserThread::UI },
                        base::BindOnce(&URLRequestCustomJobProxy::initialize, m_proxy,
                                       m_request.url, m_request.method, m_request.request_initiator, std::move(headers)));
+    }
+
+    void CompleteWithFailure(network::CorsErrorStatus cors_error)
+    {
+        DCHECK(m_taskRunner->RunsTasksInCurrentSequence());
+        m_client->OnComplete(network::URLLoaderCompletionStatus(cors_error));
+        ClearProxyAndClient(false);
     }
 
     void CompleteWithFailure(net::Error net_error)
@@ -184,7 +204,7 @@ private:
         DCHECK(m_taskRunner->RunsTasksInCurrentSequence());
         if (result == MOJO_RESULT_OK) {
             network::URLLoaderCompletionStatus status(net::OK);
-            status.encoded_data_length = m_totalBytesRead + m_head.headers->raw_headers().length();
+            status.encoded_data_length = m_totalBytesRead + m_headerBytesRead;
             status.encoded_body_length = m_totalBytesRead;
             status.decoded_body_length = m_totalBytesRead;
             m_client->OnComplete(status);
@@ -219,17 +239,17 @@ private:
                 CompleteWithFailure(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
             } else {
                 m_maxBytesToRead = m_byteRange.last_byte_position() - m_byteRange.first_byte_position() + 1;
-                m_head.content_length = m_maxBytesToRead;
+                m_head->content_length = m_maxBytesToRead;
             }
         } else {
-            m_head.content_length = size;
+            m_head->content_length = size;
         }
     }
     void notifyHeadersComplete() override
     {
         DCHECK(m_taskRunner->RunsTasksInCurrentSequence());
         DCHECK(!m_error);
-        m_head.response_start = base::TimeTicks::Now();
+        m_head->response_start = base::TimeTicks::Now();
 
         std::string headers;
         if (!m_redirect.is_empty()) {
@@ -262,11 +282,11 @@ private:
                 headers += "Access-Control-Allow-Credentials: true\n";
             }
         }
-        m_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(net::HttpUtil::AssembleRawHeaders(headers));
-        m_head.encoded_data_length = m_head.headers->raw_headers().length();
+        m_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(net::HttpUtil::AssembleRawHeaders(headers));
+        m_head->encoded_data_length = m_head->headers->raw_headers().length();
 
         if (!m_redirect.is_empty()) {
-            m_head.content_length = m_head.encoded_body_length = -1;
+            m_head->content_length = m_head->encoded_body_length = -1;
             net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
                     m_request.update_first_party_url_on_redirect ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
                                                                  : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
@@ -276,15 +296,18 @@ private:
                         first_party_url_policy, m_request.referrer_policy,
                         m_request.referrer.spec(), net::HTTP_SEE_OTHER,
                         m_redirect, base::nullopt, false /*insecure_scheme_was_upgraded*/);
-            m_client->OnReceiveRedirect(redirectInfo, m_head);
+            m_client->OnReceiveRedirect(redirectInfo, std::move(m_head));
+            m_head = nullptr;
             // ### should m_request be updated with RedirectInfo? (see FollowRedirect)
             return;
         }
         DCHECK(m_device);
-        m_head.mime_type = m_mimeType;
-        m_head.charset = m_charset;
-        m_client->OnReceiveResponse(m_head);
+        m_head->mime_type = m_mimeType;
+        m_head->charset = m_charset;
+        m_headerBytesRead = m_head->headers->raw_headers().length();
+        m_client->OnReceiveResponse(std::move(m_head));
         m_client->OnStartLoadingResponseBody(std::move(m_pipe.consumer_handle));
+        m_head = nullptr;
 
         if (readAvailableData()) // May delete this
             return;
@@ -309,7 +332,7 @@ private:
     void notifyStartFailure(int error) override
     {
         DCHECK(m_taskRunner->RunsTasksInCurrentSequence());
-        m_head.response_start = base::TimeTicks::Now();
+        m_head->response_start = base::TimeTicks::Now();
         std::string headers;
         switch (error) {
         case net::ERR_INVALID_URL:
@@ -331,10 +354,10 @@ private:
             headers = "HTTP/1.1 500 Internal Error\n";
             break;
         }
-        m_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(net::HttpUtil::AssembleRawHeaders(headers));
-        m_head.encoded_data_length = m_head.headers->raw_headers().length();
-        m_head.content_length = m_head.encoded_body_length = -1;
-        m_client->OnReceiveResponse(m_head);
+        m_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(net::HttpUtil::AssembleRawHeaders(headers));
+        m_head->encoded_data_length = m_head->headers->raw_headers().length();
+        m_head->content_length = m_head->encoded_body_length = -1;
+        m_client->OnReceiveResponse(std::move(m_head));
         CompleteWithFailure(net::Error(error));
     }
     void notifyReadyRead() override
@@ -404,7 +427,7 @@ private:
         }
         return false;
     }
-    base::TaskRunner *taskRunner() override
+    base::SequencedTaskRunner *taskRunner() override
     {
         DCHECK(m_taskRunner->RunsTasksInCurrentSequence());
         return m_taskRunner.get();
@@ -422,7 +445,8 @@ private:
     int64_t m_totalSize = 0;
     int64_t m_maxBytesToRead = -1;
     network::ResourceRequest m_request;
-    network::ResourceResponseHead m_head;
+    network::mojom::URLResponseHeadPtr m_head;
+    qint64 m_headerBytesRead = 0;
     qint64 m_totalBytesRead = 0;
     bool m_corsEnabled;
 

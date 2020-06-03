@@ -63,6 +63,8 @@ public:
 
     void OnPreShutdown() override {}
 
+    std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(ui::ClipboardBuffer buffer) const override;
+
 protected:
     void WritePortableRepresentations(ui::ClipboardBuffer type, const ObjectMap &objects) override;
     void WritePlatformRepresentations(ui::ClipboardBuffer type,

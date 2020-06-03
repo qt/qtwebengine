@@ -95,12 +95,6 @@ bool GLOzoneGLXQt::InitializeStaticGLBindings(
     return true;
 }
 
-void GLOzoneGLXQt::InitializeLogGLBindings()
-{
-    gl::InitializeLogGLBindingsGL();
-    gl::InitializeLogGLBindingsGLX();
-}
-
 void GLOzoneGLXQt::SetDisabledExtensionsPlatform(
         const std::string& disabled_extensions) {
     gl::SetDisabledExtensionsGLX(disabled_extensions);

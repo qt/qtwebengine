@@ -89,6 +89,12 @@ def calc_inputs(locale):
   inputs.append(os.path.join(SHARE_INT_DIR, 'components', 'strings',
                 'components_%s_strings_%s.pak' % (BRANDING, locale)))
 
+  inputs.append(os.path.join(SHARE_INT_DIR, 'services', 'strings',
+                'services_strings_%s.pak' % locale))
+
+  inputs.append(os.path.join(SHARE_INT_DIR, 'third_party', 'blink', 'public', 'strings,
+                'blink_strings_%s.pak' % locale))
+
   if OS != 'ios':
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak'
     inputs.append(os.path.join(SHARE_INT_DIR, 'content', 'app', 'strings',
@@ -107,7 +113,7 @@ def calc_inputs(locale):
     inputs.append(os.path.join(SHARE_INT_DIR, 'chrome',
                   'generated_resources_%s.pak' % locale))
 
-    #e.g. '<(SHARED_INTERMEDIATE_DIR)/chrome/generated_resources_da.pak'
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/chrome/chromium_strings_da.pak'
     inputs.append(os.path.join(SHARE_INT_DIR, 'chrome',
                   'chromium_strings_%s.pak' % locale))
 

@@ -42,7 +42,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include <QtCore/QPointer>
@@ -75,7 +75,7 @@ public:
         virtual void notifyAborted() = 0;
         virtual void notifyStartFailure(int) = 0;
         virtual void notifyReadyRead() = 0;
-        virtual base::TaskRunner *taskRunner() = 0;
+        virtual base::SequencedTaskRunner *taskRunner() = 0;
     };
 
     URLRequestCustomJobProxy(Client *client,
@@ -101,7 +101,7 @@ public:
     std::string m_scheme;
     URLRequestCustomJobDelegate *m_delegate;
     QPointer<ProfileAdapter> m_profileAdapter;
-    scoped_refptr<base::TaskRunner> m_ioTaskRunner;
+    scoped_refptr<base::SequencedTaskRunner> m_ioTaskRunner;
 };
 
 } // namespace QtWebEngineCore
