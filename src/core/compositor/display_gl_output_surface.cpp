@@ -39,8 +39,6 @@
 
 #include "display_gl_output_surface.h"
 
-#include "chromium_gpu_helper.h"
-
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/output_surface_frame.h"

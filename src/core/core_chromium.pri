@@ -53,11 +53,7 @@ SOURCES = \
         common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
-        compositor/chromium_gpu_helper.cpp \
-        compositor/compositor.cpp \
-        compositor/compositor_resource_tracker.cpp \
         compositor/content_gpu_client_qt.cpp \
-        compositor/delegated_frame_node.cpp \
         compositor/display_frame_sink.cpp \
         compositor/display_overrides.cpp \
         compositor/display_software_output_surface.cpp \
@@ -160,12 +156,7 @@ HEADERS = \
         color_chooser_controller.h \
         common/qt_messages.h \
         common/user_script_data.h \
-        compositor/chromium_gpu_helper.h \
-        compositor/compositor.h \
-        compositor/compositor_resource.h \
-        compositor/compositor_resource_tracker.h \
         compositor/content_gpu_client_qt.h \
-        compositor/delegated_frame_node.h \
         compositor/display_frame_sink.h \
         compositor/display_software_output_surface.h \
         content_client_qt.h \
@@ -184,7 +175,6 @@ HEADERS = \
         javascript_dialog_controller_p.h \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
-        locked_ptr.h \
         login_delegate_qt.h \
         media_capture_devices_dispatcher.h \
         net/client_cert_override.h \
@@ -302,14 +292,10 @@ contains(QT_CONFIG, opengl) {
     SOURCES += \
         compositor/compositor_resource_fence.cpp \
         compositor/display_gl_output_surface.cpp \
-        compositor/display_gl_output_surface_qsg.cpp \
-        compositor/stream_video_node.cpp \
-        compositor/yuv_video_node.cpp
+        compositor/display_gl_output_surface_qsg.cpp
     HEADERS += \
         compositor/compositor_resource_fence.h \
-        compositor/display_gl_output_surface.h \
-        compositor/stream_video_node.h \
-        compositor/yuv_video_node.h
+        compositor/display_gl_output_surface.h
     macos {
         HEADERS+=macos_context_type_helper.h
         SOURCES+=macos_context_type_helper.mm

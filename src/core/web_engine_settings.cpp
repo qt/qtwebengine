@@ -45,7 +45,6 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/viz/common/features.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -388,11 +387,6 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     }
     prefs->dom_paste_enabled = testAttribute(JavascriptCanPaste);
     prefs->dns_prefetching_enabled = testAttribute(DnsPrefetchEnabled);
-
-    if (!features::IsVizDisplayCompositorEnabled()) {
-        prefs->accelerated_2d_canvas_enabled = false;
-        prefs->disable_features_depending_on_viz = true;
-    }
 
     // Fonts settings.
     prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));
