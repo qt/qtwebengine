@@ -360,12 +360,10 @@ void WebEngineContext::destroy()
     // Normally the GPU thread is shut down when the GpuProcessHost is destroyed
     // on IO thread (triggered by ~BrowserMainRunner). But by that time the UI
     // task runner is not working anymore so we need to do this earlier.
-    if (features::IsVizDisplayCompositorEnabled()) {
-        cleanupVizProcess();
-        while (waitForViz) {
-            while (delegate->DoWork()){}
-            QThread::msleep(50);
-        }
+    cleanupVizProcess();
+    while (waitForViz) {
+        while (delegate->DoWork()){}
+        QThread::msleep(50);
     }
     destroyGpuProcess();
     // Flush the UI message loop before quitting.
@@ -615,9 +613,6 @@ WebEngineContext::WebEngineContext()
 #endif
     threadedGpu = threadedGpu && !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
 
-    bool enableViz = !parsedCommandLine->HasSwitch("disable-viz-display-compositor");
-    parsedCommandLine->RemoveSwitch("disable-viz-display-compositor");
-
     std::string disableFeatures;
     std::string enableFeatures;
     // Needed to allow navigations within pages that were set using setHtml(). One example is
@@ -659,28 +654,6 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
         parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
         parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
-    }
-
-    if (!enableViz) {
-        // These are currently only default on OS X, and we don't support them:
-        parsedCommandLine->AppendSwitch(switches::kDisableZeroCopy);
-        parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferCompositorResources);
-
-        // Enabled on OS X and Linux but currently not working. It worked in 5.7 on OS X.
-        parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
-
-#if defined(Q_OS_MACOS)
-        // Accelerated decoding currently does not work on macOS due to issues with OpenGL Rectangle
-        // texture support. See QTBUG-60002.
-        parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-        // Same problem with Pepper using OpenGL images.
-        parsedCommandLine->AppendSwitch(switches::kDisablePepper3DImageChromium);
-#endif
-
-        // Viz Display Compositor is enabled by default since 73. Doesn't work for us (also implies SurfaceSynchronization)
-        appendToFeatureList(disableFeatures, features::kVizDisplayCompositor.name);
-        // VideoSurfaceLayer is enabled by default since 75. We don't support it.
-        appendToFeatureList(enableFeatures, media::kDisableSurfaceLayerForVideo.name);
     }
 
     appendToFeatureSwitch(parsedCommandLine, switches::kDisableFeatures, disableFeatures);

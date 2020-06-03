@@ -79,7 +79,6 @@ class TouchSelectionController;
 
 namespace QtWebEngineCore {
 
-class Compositor;
 class TouchHandleDrawableClient;
 class TouchSelectionControllerClientQt;
 class TouchSelectionMenuController;
@@ -217,8 +216,6 @@ public:
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_MACOSX)
 
-    void UpdateNeedsBeginFramesInternal();
-
     // Overridden from content::BrowserAccessibilityDelegate
     content::BrowserAccessibilityManager* CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
 
@@ -271,16 +268,13 @@ private:
     QList<QTouchEvent::TouchPoint> m_previousTouchPoints;
     std::unique_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
-    const bool m_enableViz;
     bool m_visible;
-    bool m_needsBeginFrames;
     bool m_deferredShow = false;
     DelegatedFrameHostClientQt m_delegatedFrameHostClient{this};
     std::unique_ptr<content::DelegatedFrameHost> m_delegatedFrameHost;
     std::unique_ptr<ui::Layer> m_rootLayer;
     std::unique_ptr<ui::Compositor> m_uiCompositor;
     scoped_refptr<DisplayFrameSink> m_displayFrameSink;
-    std::unique_ptr<Compositor> m_compositor;
     LoadVisuallyCommittedState m_loadVisuallyCommittedState;
 
     QMetaObject::Connection m_adapterClientDestroyedConnection;
