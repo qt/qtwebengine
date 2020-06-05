@@ -59,6 +59,6 @@ qtConfig(build-qtpdf):qtConfig(webengine-qtpdf-support) {
 }
 
 # this needs to be last line for qmake -r
-!contains(SUBDIRS, core): SUBDIRS += core
-!contains(SUBDIRS, pdf): SUBDIRS += pdf
+qtConfig(build-qtwebengine-core):!contains(SUBDIRS, core): SUBDIRS += core
+qtConfig(build-qtpdf):!contains(SUBDIRS, pdf): SUBDIRS += pdf
 
