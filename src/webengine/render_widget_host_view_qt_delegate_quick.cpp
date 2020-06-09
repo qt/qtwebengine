@@ -39,6 +39,8 @@
 
 #include "render_widget_host_view_qt_delegate_quick.h"
 
+#include "render_widget_host_view_qt_delegate_client.h"
+
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 #include <QGuiApplication>

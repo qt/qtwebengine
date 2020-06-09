@@ -108,6 +108,7 @@ SOURCES = \
         register_protocol_handler_request_controller_impl.cpp \
         render_view_context_menu_qt.cpp \
         render_widget_host_view_qt.cpp \
+        render_widget_host_view_qt_delegate_client.cpp \
         renderer/content_renderer_client_qt.cpp \
         renderer/content_settings_observer_qt.cpp \
         renderer/render_frame_observer_qt.cpp \
@@ -214,6 +215,7 @@ HEADERS = \
         render_view_context_menu_qt.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
+        render_widget_host_view_qt_delegate_client.h \
         renderer/content_renderer_client_qt.h \
         renderer/content_settings_observer_qt.h \
         renderer/render_frame_observer_qt.h \

@@ -73,7 +73,7 @@ void WebContentsViewQt::setFactoryClient(WebContentsAdapterClient* client)
 
     // Check if a RWHV was created before the pre-initialization.
     if (auto view = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
-        view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view));
+        view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view->delegateClient()));
     }
 }
 
@@ -94,7 +94,7 @@ content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForWidget(conten
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
 
     if (m_factoryClient) {
-        view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view));
+        view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view->delegateClient()));
         if (m_client)
             view->setAdapterClient(m_client);
     }
@@ -107,7 +107,7 @@ content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForChildWidget(c
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
 
     Q_ASSERT(m_client);
-    view->setDelegate(m_client->CreateRenderWidgetHostViewQtDelegateForPopup(view));
+    view->setDelegate(m_client->CreateRenderWidgetHostViewQtDelegateForPopup(view->delegateClient()));
     view->setAdapterClient(m_client);
 
     return view;

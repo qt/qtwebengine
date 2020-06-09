@@ -59,6 +59,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
@@ -297,6 +298,8 @@ inline QStringList fromVector(const std::vector<base::string16> &vector)
 FaviconInfo toFaviconInfo(const content::FaviconURL &);
 
 QList<QSslCertificate> toCertificateChain(net::X509Certificate *certificate);
+
+Qt::InputMethodHints toQtInputMethodHints(ui::TextInputType inputType);
 
 } // namespace QtWebEngineCore
 

@@ -115,6 +115,7 @@
 #include <QtCore/qmimedata.h>
 #include <QtCore/qtemporarydir.h>
 #include <QtGui/qdrag.h>
+#include <QtGui/QDragEnterEvent>
 #include <QtGui/qpixmap.h>
 
 // Can't include headers as qaccessible.h conflicts with Chromium headers.

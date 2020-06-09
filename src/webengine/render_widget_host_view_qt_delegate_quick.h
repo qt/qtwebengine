@@ -53,6 +53,8 @@ QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
 
+class RenderWidgetHostViewQtDelegateClient;
+
 class RenderWidgetHostViewQtDelegateQuick : public QQuickItem, public RenderWidgetHostViewQtDelegate
 {
     Q_OBJECT

@@ -53,38 +53,22 @@
 
 #include "qtwebenginecoreglobal_p.h"
 
-#include <QRect>
-#include <QtGui/qwindowdefs.h>
+#include <QtCore/QRect>
+#include <QtGui/QColor>
+#include <QtGui/QCursor>
+#include <QtGui/QImage>
 
 QT_BEGIN_NAMESPACE
-class QEvent;
-class QInputMethodEvent;
+class QSGImageNode;
 class QSGLayer;
-class QSGNode;
 class QSGRectangleNode;
 class QSGTexture;
-class QVariant;
 class QWheelEvent;
-
-class QSGImageNode;
+class QWindow;
 
 QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
-
-class WebContentsAdapterClient;
-
-class Q_WEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegateClient {
-public:
-    virtual ~RenderWidgetHostViewQtDelegateClient() { }
-    virtual QSGNode *updatePaintNode(QSGNode *) = 0;
-    virtual void notifyShown() = 0;
-    virtual void notifyHidden() = 0;
-    virtual void visualPropertiesChanged() = 0;
-    virtual bool forwardEvent(QEvent *) = 0;
-    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) = 0;
-    virtual void closePopup() = 0;
-};
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegate {
 public:
