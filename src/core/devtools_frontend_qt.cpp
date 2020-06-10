@@ -487,6 +487,22 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
     } else if (method == "reattach") {
         m_agentHost->DetachClient(this);
         m_agentHost->AttachClient(this);
+    } else if (method == "inspectedURLChanged" && params && params->GetSize() >= 1) {
+        std::string url;
+        if (!params->GetString(0, &url))
+            return;
+        const std::string kHttpPrefix = "http://";
+        const std::string kHttpsPrefix = "https://";
+        const std::string simplified_url =
+            base::StartsWith(url, kHttpsPrefix, base::CompareCase::SENSITIVE)
+                ? url.substr(kHttpsPrefix.length())
+                : base::StartsWith(url, kHttpPrefix, base::CompareCase::SENSITIVE)
+                      ? url.substr(kHttpPrefix.length())
+                      : url;
+        // DevTools UI is not localized.
+        web_contents()->UpdateTitleForEntry(web_contents()->GetController().GetActiveEntry(),
+                                            base::UTF8ToUTF16(
+                                                base::StringPrintf("DevTools - %s", simplified_url.c_str())));
     } else if (method == "openInNewTab") {
         std::string urlString;
         if (!params->GetString(0, &urlString))

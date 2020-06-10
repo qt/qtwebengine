@@ -40,8 +40,8 @@
 #ifndef TOUCH_SELECTION_CONTROLLER_CLIENT_QT_H
 #define TOUCH_SELECTION_CONTROLLER_CLIENT_QT_H
 
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/touch_selection_controller_client_manager.h"
-#include "content/public/common/context_menu_params.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 #include "ui/touch_selection/touch_selection_menu_runner.h"
 

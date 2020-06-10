@@ -123,7 +123,8 @@ void* GLContextHelper::getEGLConfig()
 
 void* GLContextHelper::getGlXConfig()
 {
-    return resourceForContext(QByteArrayLiteral("glxconfig"));
+    QByteArray resource = QByteArrayLiteral("glxconfig");
+    return resourceForContext(resource);
 }
 
 void* GLContextHelper::getEGLDisplay()

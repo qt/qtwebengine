@@ -102,7 +102,7 @@ static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
     DCHECK_GT(data->size(), 0U);
 
     printing::MetafileSkia metafile;
-    metafile.InitFromData(static_cast<const void*>(data->front()), data->size());
+    metafile.InitFromData(base::as_bytes(base::make_span(data->front(), data->size())));
 
     base::File file(path,
                     base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);

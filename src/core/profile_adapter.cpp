@@ -323,7 +323,7 @@ void ProfileAdapter::setHttpUserAgent(const QString &userAgent)
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     for (content::WebContentsImpl *web_contents : list)
         if (web_contents->GetBrowserContext() == m_profile.data())
-            web_contents->SetUserAgentOverride(stdUserAgent, true);
+            web_contents->SetUserAgentOverride(blink::UserAgentOverride::UserAgentOnly(stdUserAgent), true);
 
     content::BrowserContext::ForEachStoragePartition(
         m_profile.get(), base::BindRepeating([](const std::string &user_agent, content::StoragePartition *storage_partition) {

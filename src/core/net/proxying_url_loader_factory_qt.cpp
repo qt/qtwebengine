@@ -72,11 +72,33 @@
 
 namespace QtWebEngineCore {
 
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeMainFrame, blink::mojom::ResourceType::kMainFrame)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeSubFrame, blink::mojom::ResourceType::kSubFrame)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeStylesheet, blink::mojom::ResourceType::kStylesheet)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeScript, blink::mojom::ResourceType::kScript)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeImage, blink::mojom::ResourceType::kImage)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeFontResource, blink::mojom::ResourceType::kFontResource)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeSubResource, blink::mojom::ResourceType::kSubResource)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeObject, blink::mojom::ResourceType::kObject)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeMedia, blink::mojom::ResourceType::kMedia)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeWorker, blink::mojom::ResourceType::kWorker)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeSharedWorker, blink::mojom::ResourceType::kSharedWorker)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePrefetch, blink::mojom::ResourceType::kPrefetch)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeFavicon, blink::mojom::ResourceType::kFavicon)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeXhr, blink::mojom::ResourceType::kXhr)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePing, blink::mojom::ResourceType::kPing)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker, blink::mojom::ResourceType::kServiceWorker)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeCspReport, blink::mojom::ResourceType::kCspReport)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePluginResource, blink::mojom::ResourceType::kPluginResource)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadMainFrame, blink::mojom::ResourceType::kNavigationPreloadMainFrame)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadSubFrame, blink::mojom::ResourceType::kNavigationPreloadSubFrame)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeLast, blink::mojom::ResourceType::kMaxValue)
+
 extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition);
 
-static QWebEngineUrlRequestInfo::ResourceType toQt(content::ResourceType resourceType)
+static QWebEngineUrlRequestInfo::ResourceType toQt(blink::mojom::ResourceType resourceType)
 {
-    if (resourceType >= content::ResourceType::kMainFrame && resourceType <= content::ResourceType::kMaxValue)
+    if (resourceType >= blink::mojom::ResourceType::kMinValue && resourceType <= blink::mojom::ResourceType::kMaxValue)
         return static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType);
     return QWebEngineUrlRequestInfo::ResourceTypeUnknown;
 }
@@ -204,7 +226,7 @@ InterceptedRequest::~InterceptedRequest()
 void InterceptedRequest::Restart()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    content::ResourceType resourceType = content::ResourceType(request_.resource_type);
+    blink::mojom::ResourceType resourceType = blink::mojom::ResourceType(request_.resource_type);
     WebContentsAdapterClient::NavigationType navigationType =
             pageTransitionToNavigationType(ui::PageTransition(request_.transition_type));
 

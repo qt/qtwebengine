@@ -268,12 +268,12 @@ void ClipboardQt::ReadRTF(ui::ClipboardBuffer type, std::string *result) const
     *result = std::string(byteArray.constData(), byteArray.length());
 }
 
-SkBitmap ClipboardQt::ReadImage(ui::ClipboardBuffer type) const
+void ClipboardQt::ReadImage(ui::ClipboardBuffer type, ReadImageCallback callback) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(
             type == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
     if (!mimeData)
-        return SkBitmap();
+        return std::move(callback).Run(SkBitmap());
     QImage image = qvariant_cast<QImage>(mimeData->imageData());
 
     image = image.convertToFormat(QImage::Format_ARGB32);
@@ -291,7 +291,7 @@ SkBitmap ClipboardQt::ReadImage(ui::ClipboardBuffer type) const
         src += bytesPerLineSrc;
     }
 
-    return bitmap;
+    return std::move(callback).Run(bitmap);
 }
 
 void ClipboardQt::ReadCustomData(ui::ClipboardBuffer clipboard_type, const base::string16 &type, base::string16 *result) const

@@ -1586,7 +1586,7 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev)
 #if defined(Q_OS_DARWIN)
     // PrecisePixel is a macOS term meaning it is a system scroll gesture, see qnsview_mouse.mm
     if (ev->source() == Qt::MouseEventSynthesizedBySystem)
-        webEvent.delta_units = ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+        webEvent.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
 #endif
 
     setBlinkWheelEventDelta(webEvent);
@@ -1603,7 +1603,7 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
     if (toBlinkPhase(ev) != webEvent.phase)
         return false;
 #if defined(Q_OS_DARWIN)
-    if ((webEvent.delta_units == ui::input_types::ScrollGranularity::kScrollByPrecisePixel)
+    if ((webEvent.delta_units == ui::ScrollGranularity::kScrollByPrecisePixel)
             != (ev->source() == Qt::MouseEventSynthesizedBySystem))
         return false;
 #endif

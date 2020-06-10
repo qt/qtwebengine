@@ -392,7 +392,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::StaticText;
     case ax::mojom::Role::kLayoutTable:
     case ax::mojom::Role::kLayoutTableCell:
-    case ax::mojom::Role::kLayoutTableColumn:
     case ax::mojom::Role::kLayoutTableRow:
         return QAccessible::Section;
     case ax::mojom::Role::kLegend:

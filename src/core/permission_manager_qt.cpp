@@ -85,6 +85,7 @@ static ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::NFC:
     case content::PermissionType::AR:
     case content::PermissionType::VR:
+    case content::PermissionType::STORAGE_ACCESS_GRANT:
     case content::PermissionType::NUM:
         LOG(INFO) << "Unsupported permission type: " << static_cast<int>(type);
         break;

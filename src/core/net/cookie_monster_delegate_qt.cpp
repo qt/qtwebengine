@@ -78,9 +78,9 @@ public:
     CookieAccessFilter(CookieMonsterDelegateQt *delegate) : m_delegate(delegate) { }
     ~CookieAccessFilter() override = default;
 
-    void AllowedAccess(const GURL& url, const GURL& site_for_cookies, AllowedAccessCallback callback) override
+    void AllowedAccess(const GURL &url, const net::SiteForCookies &site_for_cookies, AllowedAccessCallback callback) override
     {
-        bool allow = m_delegate->canGetCookies(toQt(site_for_cookies), toQt(url));
+        bool allow = m_delegate->canGetCookies(toQt(site_for_cookies.RepresentativeUrl()), toQt(url));
         std::move(callback).Run(allow);
     }
 

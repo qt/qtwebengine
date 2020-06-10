@@ -5,6 +5,7 @@ QT_FOR_CONFIG += buildtools-private webenginecore webenginecore-private
 
 gn_args += \
     use_qt=true \
+    init_stack_vars=false \
     is_component_build=false \
     is_shared=true \
     enable_debugallocation=false \
@@ -62,6 +63,8 @@ CONFIG(release, debug|release):!qtConfig(webengine-developer-build) {
 } else {
     gn_args += is_official_build=false
     !qtConfig(webengine-developer-build): gn_args += is_unsafe_developer_build=false
+    # Just doesn't work in many configurations:
+    gn_args += from_here_uses_location_builtins=false
 }
 
 CONFIG(release, debug|release) {

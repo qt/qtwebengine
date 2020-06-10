@@ -242,7 +242,6 @@ static void callbackOnPdfSavingFinished(WebContentsAdapterClient *adapterClient,
 static std::unique_ptr<content::WebContents> createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
 {
     content::WebContents::CreateParams create_params(browserContext, nullptr);
-    create_params.routing_id = MSG_ROUTING_NONE;
     create_params.initially_hidden = true;
 
     std::unique_ptr<content::WebContents> webContents = content::WebContents::Create(create_params);
@@ -557,7 +556,7 @@ void WebContentsAdapter::initializeRenderPrefs()
     const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
     rendererPrefs->caret_blink_interval =
             base::TimeDelta::FromMillisecondsD(0.5 * static_cast<double>(qtCursorFlashTime));
-    rendererPrefs->user_agent_override = m_profileAdapter->httpUserAgent().toStdString();
+    rendererPrefs->user_agent_override = blink::UserAgentOverride::UserAgentOnly(m_profileAdapter->httpUserAgent().toStdString());
     rendererPrefs->accept_languages = m_profileAdapter->httpAcceptLanguageWithoutQualities().toStdString();
 #if QT_CONFIG(webengine_webrtc)
     base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
@@ -1398,7 +1397,8 @@ void WebContentsAdapter::grantMouseLockPermission(const QUrl &securityOrigin, bo
             granted = false;
     }
 
-    m_webContents->GotResponseToLockMouseRequest(granted);
+    m_webContents->GotResponseToLockMouseRequest(granted ? blink::mojom::PointerLockResult::kSuccess
+                                                         : blink::mojom::PointerLockResult::kPermissionDenied);
 }
 
 void WebContentsAdapter::handlePendingMouseLockPermission()
@@ -1406,7 +1406,8 @@ void WebContentsAdapter::handlePendingMouseLockPermission()
     CHECK_INITIALIZED();
     auto it = m_pendingMouseLockPermissions.find(toQt(m_webContents->GetLastCommittedURL().GetOrigin()));
     if (it != m_pendingMouseLockPermissions.end()) {
-        m_webContents->GotResponseToLockMouseRequest(it.value());
+        m_webContents->GotResponseToLockMouseRequest(it.value() ? blink::mojom::PointerLockResult::kSuccess
+                                                                : blink::mojom::PointerLockResult::kPermissionDenied);
         m_pendingMouseLockPermissions.erase(it);
     }
 }
@@ -1671,7 +1672,7 @@ void WebContentsAdapter::waitForUpdateDragActionCalled()
     DCHECK(delegate);
     m_updateDragActionCalled = false;
     for (;;) {
-        while (delegate->DoWork() && !m_updateDragActionCalled) {}
+        while (delegate->DoWork().is_immediate() && !m_updateDragActionCalled) {}
         if (m_updateDragActionCalled)
             break;
         if (t.hasExpired(timeout)) {
@@ -2045,7 +2046,7 @@ ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngrade, network::mojom::Refe
 ASSERT_ENUMS_MATCH(ReferrerPolicy::Never, network::mojom::ReferrerPolicy::kNever)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::Origin, network::mojom::ReferrerPolicy::kOrigin)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::OriginWhenCrossOrigin, network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin)
-ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngradeOriginWhenCrossOrigin, network::mojom::ReferrerPolicy::kNoReferrerWhenDowngradeOriginWhenCrossOrigin)
+//ASSERT_ENUMS_MATCH(ReferrerPolicy::NoReferrerWhenDowngradeOriginWhenCrossOrigin, network::mojom::ReferrerPolicy::kNoReferrerWhenDowngradeOriginWhenCrossOrigin)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::SameOrigin, network::mojom::ReferrerPolicy::kSameOrigin)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::StrictOrigin, network::mojom::ReferrerPolicy::kStrictOrigin)
 ASSERT_ENUMS_MATCH(ReferrerPolicy::Last, network::mojom::ReferrerPolicy::kLast)

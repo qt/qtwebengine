@@ -69,7 +69,7 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/input_messages.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -83,7 +83,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/resource/resource_bundle.h"
 #endif
@@ -281,15 +281,14 @@ public:
     FlingingCompositor(RenderWidgetHostViewQt *rwhv,
                        const viz::FrameSinkId &frame_sink_id,
                        ui::ContextFactory *context_factory,
-                       ui::ContextFactoryPrivate *context_factory_private,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                        bool enable_pixel_canvas,
                        bool use_external_begin_frame_control = false,
-                       bool force_software_compositor = false,
-                       const char *trace_environment_name = nullptr)
-        : ui::Compositor(frame_sink_id, context_factory, context_factory_private,
-                         task_runner, enable_pixel_canvas, use_external_begin_frame_control,
-                         force_software_compositor, trace_environment_name)
+                       bool force_software_compositor = false)
+        : ui::Compositor(frame_sink_id, context_factory,
+                         task_runner, enable_pixel_canvas,
+                         use_external_begin_frame_control,
+                         force_software_compositor)
         , m_rwhv(rwhv)
     {}
 
@@ -338,12 +337,10 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
 
     content::ImageTransportFactory *imageTransportFactory = content::ImageTransportFactory::GetInstance();
     ui::ContextFactory *contextFactory = imageTransportFactory->GetContextFactory();
-    ui::ContextFactoryPrivate *contextFactoryPrivate = imageTransportFactory->GetContextFactoryPrivate();
     m_uiCompositor.reset(new FlingingCompositor(
                                  this,
-                                 contextFactoryPrivate->AllocateFrameSinkId(),
+                                 contextFactory->AllocateFrameSinkId(),
                                  contextFactory,
-                                 contextFactoryPrivate,
                                  m_taskRunner,
                                  false /* enable_pixel_canvas */));
     m_uiCompositor->SetAcceleratedWidget(gfx::kNullAcceleratedWidget); // null means offscreen
@@ -526,17 +523,30 @@ void RenderWidgetHostViewQt::UpdateBackgroundColor()
     m_uiCompositor->SetBackgroundColor(color);
 
     content::RenderViewHost *rvh = content::RenderViewHost::From(host());
-    host()->Send(new RenderViewObserverQt_SetBackgroundColor(rvh->GetRoutingID(), color));
+    if (color == SK_ColorTRANSPARENT)
+        host()->owner_delegate()->SetBackgroundOpaque(false);
+    else
+        host()->Send(new RenderViewObserverQt_SetBackgroundColor(rvh->GetRoutingID(), color));
 }
 
 // Return value indicates whether the mouse is locked successfully or not.
-bool RenderWidgetHostViewQt::LockMouse(bool)
+blink::mojom::PointerLockResult RenderWidgetHostViewQt::LockMouse(bool request_unadjusted_movement)
 {
+    if (request_unadjusted_movement)
+        return blink::mojom::PointerLockResult::kUnsupportedOptions;
+
     m_previousMousePosition = QCursor::pos();
     m_delegate->lockMouse();
     m_isMouseLocked = true;
     qApp->setOverrideCursor(Qt::BlankCursor);
-    return true;
+    return blink::mojom::PointerLockResult::kSuccess;
+}
+
+blink::mojom::PointerLockResult RenderWidgetHostViewQt::ChangeMouseLock(bool request_unadjusted_movement)
+{
+    if (request_unadjusted_movement)
+        return blink::mojom::PointerLockResult::kUnsupportedOptions;
+    return blink::mojom::PointerLockResult::kSuccess;
 }
 
 void RenderWidgetHostViewQt::UnlockMouse()
@@ -554,134 +564,134 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
 
 void RenderWidgetHostViewQt::DisplayCursor(const content::WebCursor &webCursor)
 {
-    const content::CursorInfo &cursorInfo = webCursor.info();
+    const ui::Cursor &cursorInfo = webCursor.cursor();
     Qt::CursorShape shape = Qt::ArrowCursor;
 #if defined(USE_AURA)
-    ui::CursorType auraType = ui::CursorType::kNull;
+    ui::mojom::CursorType auraType = ui::mojom::CursorType::kNull;
 #endif
-    switch (cursorInfo.type) {
-    case ui::CursorType::kNull:
-    case ui::CursorType::kPointer:
+    switch (cursorInfo.type()) {
+    case ui::mojom::CursorType::kNull:
+    case ui::mojom::CursorType::kPointer:
         shape = Qt::ArrowCursor;
         break;
-    case ui::CursorType::kCross:
+    case ui::mojom::CursorType::kCross:
         shape = Qt::CrossCursor;
         break;
-    case ui::CursorType::kHand:
+    case ui::mojom::CursorType::kHand:
         shape = Qt::PointingHandCursor;
         break;
-    case ui::CursorType::kIBeam:
+    case ui::mojom::CursorType::kIBeam:
         shape = Qt::IBeamCursor;
         break;
-    case ui::CursorType::kWait:
+    case ui::mojom::CursorType::kWait:
         shape = Qt::WaitCursor;
         break;
-    case ui::CursorType::kHelp:
+    case ui::mojom::CursorType::kHelp:
         shape = Qt::WhatsThisCursor;
         break;
-    case ui::CursorType::kEastResize:
-    case ui::CursorType::kWestResize:
-    case ui::CursorType::kEastWestResize:
-    case ui::CursorType::kEastPanning:
-    case ui::CursorType::kWestPanning:
-    case ui::CursorType::kMiddlePanningHorizontal:
+    case ui::mojom::CursorType::kEastResize:
+    case ui::mojom::CursorType::kWestResize:
+    case ui::mojom::CursorType::kEastWestResize:
+    case ui::mojom::CursorType::kEastPanning:
+    case ui::mojom::CursorType::kWestPanning:
+    case ui::mojom::CursorType::kMiddlePanningHorizontal:
         shape = Qt::SizeHorCursor;
         break;
-    case ui::CursorType::kNorthResize:
-    case ui::CursorType::kSouthResize:
-    case ui::CursorType::kNorthSouthResize:
-    case ui::CursorType::kNorthPanning:
-    case ui::CursorType::kSouthPanning:
-    case ui::CursorType::kMiddlePanningVertical:
+    case ui::mojom::CursorType::kNorthResize:
+    case ui::mojom::CursorType::kSouthResize:
+    case ui::mojom::CursorType::kNorthSouthResize:
+    case ui::mojom::CursorType::kNorthPanning:
+    case ui::mojom::CursorType::kSouthPanning:
+    case ui::mojom::CursorType::kMiddlePanningVertical:
         shape = Qt::SizeVerCursor;
         break;
-    case ui::CursorType::kNorthEastResize:
-    case ui::CursorType::kSouthWestResize:
-    case ui::CursorType::kNorthEastSouthWestResize:
-    case ui::CursorType::kNorthEastPanning:
-    case ui::CursorType::kSouthWestPanning:
+    case ui::mojom::CursorType::kNorthEastResize:
+    case ui::mojom::CursorType::kSouthWestResize:
+    case ui::mojom::CursorType::kNorthEastSouthWestResize:
+    case ui::mojom::CursorType::kNorthEastPanning:
+    case ui::mojom::CursorType::kSouthWestPanning:
         shape = Qt::SizeBDiagCursor;
         break;
-    case ui::CursorType::kNorthWestResize:
-    case ui::CursorType::kSouthEastResize:
-    case ui::CursorType::kNorthWestSouthEastResize:
-    case ui::CursorType::kNorthWestPanning:
-    case ui::CursorType::kSouthEastPanning:
+    case ui::mojom::CursorType::kNorthWestResize:
+    case ui::mojom::CursorType::kSouthEastResize:
+    case ui::mojom::CursorType::kNorthWestSouthEastResize:
+    case ui::mojom::CursorType::kNorthWestPanning:
+    case ui::mojom::CursorType::kSouthEastPanning:
         shape = Qt::SizeFDiagCursor;
         break;
-    case ui::CursorType::kColumnResize:
+    case ui::mojom::CursorType::kColumnResize:
         shape = Qt::SplitHCursor;
         break;
-    case ui::CursorType::kRowResize:
+    case ui::mojom::CursorType::kRowResize:
         shape = Qt::SplitVCursor;
         break;
-    case ui::CursorType::kMiddlePanning:
-    case ui::CursorType::kMove:
+    case ui::mojom::CursorType::kMiddlePanning:
+    case ui::mojom::CursorType::kMove:
         shape = Qt::SizeAllCursor;
         break;
-    case ui::CursorType::kProgress:
+    case ui::mojom::CursorType::kProgress:
         shape = Qt::BusyCursor;
         break;
-    case ui::CursorType::kDndNone:
-    case ui::CursorType::kDndMove:
+    case ui::mojom::CursorType::kDndNone:
+    case ui::mojom::CursorType::kDndMove:
         shape = Qt::DragMoveCursor;
         break;
-    case ui::CursorType::kDndCopy:
-    case ui::CursorType::kCopy:
+    case ui::mojom::CursorType::kDndCopy:
+    case ui::mojom::CursorType::kCopy:
         shape = Qt::DragCopyCursor;
         break;
-    case ui::CursorType::kDndLink:
-    case ui::CursorType::kAlias:
+    case ui::mojom::CursorType::kDndLink:
+    case ui::mojom::CursorType::kAlias:
         shape = Qt::DragLinkCursor;
         break;
 #if defined(USE_AURA)
-    case ui::CursorType::kVerticalText:
-        auraType = ui::CursorType::kVerticalText;
+    case ui::mojom::CursorType::kVerticalText:
+        auraType = ui::mojom::CursorType::kVerticalText;
         break;
-    case ui::CursorType::kCell:
-        auraType = ui::CursorType::kCell;
+    case ui::mojom::CursorType::kCell:
+        auraType = ui::mojom::CursorType::kCell;
         break;
-    case ui::CursorType::kContextMenu:
-        auraType = ui::CursorType::kContextMenu;
+    case ui::mojom::CursorType::kContextMenu:
+        auraType = ui::mojom::CursorType::kContextMenu;
         break;
-    case ui::CursorType::kZoomIn:
-        auraType = ui::CursorType::kZoomIn;
+    case ui::mojom::CursorType::kZoomIn:
+        auraType = ui::mojom::CursorType::kZoomIn;
         break;
-    case ui::CursorType::kZoomOut:
-        auraType = ui::CursorType::kZoomOut;
+    case ui::mojom::CursorType::kZoomOut:
+        auraType = ui::mojom::CursorType::kZoomOut;
         break;
 #else
-    case ui::CursorType::kVerticalText:
-    case ui::CursorType::kCell:
-    case ui::CursorType::kContextMenu:
-    case ui::CursorType::kZoomIn:
-    case ui::CursorType::kZoomOut:
+    case ui::mojom::CursorType::kVerticalText:
+    case ui::mojom::CursorType::kCell:
+    case ui::mojom::CursorType::kContextMenu:
+    case ui::mojom::CursorType::kZoomIn:
+    case ui::mojom::CursorType::kZoomOut:
         // FIXME: Support on OS X
         break;
 #endif
-    case ui::CursorType::kNoDrop:
-    case ui::CursorType::kNotAllowed:
+    case ui::mojom::CursorType::kNoDrop:
+    case ui::mojom::CursorType::kNotAllowed:
         shape = Qt::ForbiddenCursor;
         break;
-    case ui::CursorType::kNone:
+    case ui::mojom::CursorType::kNone:
         shape = Qt::BlankCursor;
         break;
-    case ui::CursorType::kGrab:
+    case ui::mojom::CursorType::kGrab:
         shape = Qt::OpenHandCursor;
         break;
-    case ui::CursorType::kGrabbing:
+    case ui::mojom::CursorType::kGrabbing:
         shape = Qt::ClosedHandCursor;
         break;
-    case ui::CursorType::kCustom:
-        if (cursorInfo.custom_image.colorType() == SkColorType::kN32_SkColorType) {
-            QImage cursor = toQImage(cursorInfo.custom_image, QImage::Format_ARGB32);
-            m_delegate->updateCursor(QCursor(QPixmap::fromImage(cursor), cursorInfo.hotspot.x(), cursorInfo.hotspot.y()));
+    case ui::mojom::CursorType::kCustom:
+        if (cursorInfo.custom_bitmap().colorType() == SkColorType::kN32_SkColorType) {
+            QImage cursor = toQImage(cursorInfo.custom_bitmap(), QImage::Format_ARGB32);
+            m_delegate->updateCursor(QCursor(QPixmap::fromImage(cursor), cursorInfo.custom_hotspot().x(), cursorInfo.custom_hotspot().y()));
             return;
         }
         break;
     }
 #if defined(USE_AURA)
-    if (auraType != ui::CursorType::kNull) {
+    if (auraType != ui::mojom::CursorType::kNull) {
         int resourceId;
         gfx::Point hotspot;
         // GetCursorDataFor only knows hotspots for 1x and 2x cursor images, in physical pixels.

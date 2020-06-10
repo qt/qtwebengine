@@ -141,7 +141,8 @@ public:
     bool IsShowing() override;
     gfx::Rect GetViewBounds() override;
     void UpdateBackgroundColor() override;
-    bool LockMouse(bool) override;
+    blink::mojom::PointerLockResult LockMouse(bool) override;
+    blink::mojom::PointerLockResult ChangeMouseLock(bool) override;
     void UnlockMouse() override;
     void UpdateCursor(const content::WebCursor&) override;
     void DisplayCursor(const content::WebCursor&) override;

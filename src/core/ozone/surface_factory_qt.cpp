@@ -45,18 +45,16 @@
 #endif
 
 #include "ui/gl/gl_surface.h"
-#include <QGuiApplication>
 
 #if defined(USE_OZONE)
-
 #include "ozone/gl_ozone_egl_qt.h"
 #include "ozone/surface_factory_qt.h"
 #include "ui/gl/gl_surface.h"
+
 namespace QtWebEngineCore {
 
 SurfaceFactoryQt::SurfaceFactoryQt()
 {
-    Q_ASSERT(qApp);
 #if defined(USE_GLX)
     if (GLContextHelper::getGlXConfig()) {
         m_impl = gl::kGLImplementationDesktopGL;

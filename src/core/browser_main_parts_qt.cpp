@@ -204,19 +204,15 @@ private:
     {
         ScopedGLContextChecker glContextChecker;
 
-        bool more_work_is_plausible = m_delegate->DoWork();
+        base::MessagePump::Delegate::NextWorkInfo more_work_info = m_delegate->DoWork();
 
-        base::TimeTicks delayed_work_time;
-        more_work_is_plausible |= m_delegate->DoDelayedWork(&delayed_work_time);
-
-        if (more_work_is_plausible)
+        if (more_work_info.is_immediate())
             return ScheduleWork();
 
-        more_work_is_plausible |= m_delegate->DoIdleWork();
-        if (more_work_is_plausible)
+        if (m_delegate->DoIdleWork())
             return ScheduleWork();
 
-        ScheduleDelayedWork(delayed_work_time);
+        ScheduleDelayedWork(more_work_info.delayed_run_time);
     }
 
     Delegate *m_delegate = nullptr;

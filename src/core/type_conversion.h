@@ -55,6 +55,7 @@
 #include "content/public/common/file_chooser_file_info.h"
 #include "favicon_manager.h"
 #include "net/cookies/canonical_cookie.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -65,10 +66,6 @@
 
 QT_FORWARD_DECLARE_CLASS(QMatrix4x4)
 QT_FORWARD_DECLARE_CLASS(QSslCertificate)
-
-namespace content {
-struct FaviconURL;
-}
 
 namespace gfx {
 class ImageSkiaRep;
@@ -294,7 +291,7 @@ inline QStringList fromVector(const std::vector<base::string16> &vector)
     return result;
 }
 
-FaviconInfo toFaviconInfo(const content::FaviconURL &);
+FaviconInfo toFaviconInfo(const blink::mojom::FaviconURLPtr &favicon_url);
 
 QList<QSslCertificate> toCertificateChain(net::X509Certificate *certificate);
 

@@ -194,8 +194,7 @@ bool GLSurfaceEGL::HasEGLExtension(const char* name)
 {
     return ExtensionsContain(GetEGLExtensions(), name);
 }
-
-bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType /*native_display*/)
+bool GLSurfaceEGL::InitializeOneOff(gl::EGLDisplayPlatform /*native_display*/)
 {
     return GLSurfaceEGLQt::InitializeOneOff();
 }

@@ -46,7 +46,6 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/download_utils.h"
-#include "content/public/common/resource_type.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 

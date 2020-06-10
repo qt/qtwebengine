@@ -90,7 +90,6 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
-#include "extensions/browser/url_loader_factory_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -172,6 +171,7 @@
 #include "content/public/browser/file_url_loader.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
+#include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/constants.h"
 
 #include "common/extensions/extensions_client_qt.h"
@@ -573,7 +573,6 @@ public:
         if (!web_contents)
             return;
         CreateForWebContents(web_contents);
-
     }
     static ServiceDriver* FromRenderFrameHost(content::RenderFrameHost *renderFrameHost)
     {
@@ -582,17 +581,17 @@ public:
             return nullptr;
         return FromWebContents(web_contents);
     }
-    static void BindInsecureInputService(blink::mojom::InsecureInputServiceRequest request, content::RenderFrameHost *render_frame_host)
+    static void BindInsecureInputService(content::RenderFrameHost *render_frame_host, mojo::PendingReceiver<blink::mojom::InsecureInputService> receiver)
     {
         CreateForRenderFrameHost(render_frame_host);
         ServiceDriver *driver = FromRenderFrameHost(render_frame_host);
 
         if (driver)
-            driver->BindInsecureInputServiceRequest(std::move(request));
+            driver->BindInsecureInputServiceReceiver(std::move(receiver));
     }
-    void BindInsecureInputServiceRequest(blink::mojom::InsecureInputServiceRequest request)
+    void BindInsecureInputServiceReceiver(mojo::PendingReceiver<blink::mojom::InsecureInputService> receiver)
     {
-        m_insecureInputServiceBindings.AddBinding(this, std::move(request));
+        m_receivers.Add(this, std::move(receiver));
     }
 
     // blink::mojom::InsecureInputService:
@@ -603,7 +602,7 @@ private:
     WEB_CONTENTS_USER_DATA_KEY_DECL();
     explicit ServiceDriver(content::WebContents* /*web_contents*/) { }
     friend class content::WebContentsUserData<ServiceDriver>;
-    mojo::BindingSet<blink::mojom::InsecureInputService> m_insecureInputServiceBindings;
+    mojo::ReceiverSet<blink::mojom::InsecureInputService> m_receivers;
 };
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ServiceDriver)
@@ -612,7 +611,6 @@ void ContentBrowserClientQt::InitFrameInterfaces()
 {
     m_frameInterfaces = std::make_unique<service_manager::BinderRegistry>();
     m_frameInterfacesParameterized = std::make_unique<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
-    m_frameInterfacesParameterized->AddInterface(base::BindRepeating(&ServiceDriver::BindInsecureInputService));
 }
 
 void ContentBrowserClientQt::BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,
@@ -648,6 +646,7 @@ void ContentBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
         service_manager::BinderMapWithContext<content::RenderFrameHost *> *map)
 {
     Q_UNUSED(render_frame_host);
+    map->Add<blink::mojom::InsecureInputService>(base::BindRepeating(&ServiceDriver::BindInsecureInputService));
     map->Add<network_hints::mojom::NetworkHintsHandler>(base::BindRepeating(&BindNetworkHintsHandler));
 }
 
@@ -662,8 +661,8 @@ void BindProcessNode(int render_process_host_id,
     performance_manager::RenderProcessUserData *user_data =
             performance_manager::RenderProcessUserData::GetForRenderProcessHost(render_process_host);
 
-    DCHECK(performance_manager::PerformanceManagerImpl::GetInstance());
-    performance_manager::PerformanceManagerImpl::GetTaskRunner()->PostTask(
+    DCHECK(performance_manager::PerformanceManagerImpl::IsAvailable());
+    performance_manager::PerformanceManagerImpl::CallOnGraphImpl(
                 FROM_HERE, base::BindOnce(&performance_manager::ProcessNodeImpl::Bind,
                                           base::Unretained(user_data->process_node()),
                                           std::move(receiver)));

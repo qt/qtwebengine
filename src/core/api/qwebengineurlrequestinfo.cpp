@@ -40,33 +40,9 @@
 #include "qwebengineurlrequestinfo.h"
 #include "qwebengineurlrequestinfo_p.h"
 
-#include "content/public/common/resource_type.h"
-
 #include "web_contents_adapter_client.h"
 
 QT_BEGIN_NAMESPACE
-
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeMainFrame, content::ResourceType::kMainFrame)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeSubFrame, content::ResourceType::kSubFrame)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeStylesheet, content::ResourceType::kStylesheet)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeScript, content::ResourceType::kScript)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeImage, content::ResourceType::kImage)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeFontResource, content::ResourceType::kFontResource)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeSubResource, content::ResourceType::kSubResource)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeObject, content::ResourceType::kObject)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeMedia, content::ResourceType::kMedia)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeWorker, content::ResourceType::kWorker)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeSharedWorker, content::ResourceType::kSharedWorker)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePrefetch, content::ResourceType::kPrefetch)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeFavicon, content::ResourceType::kFavicon)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeXhr, content::ResourceType::kXhr)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePing, content::ResourceType::kPing)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker, content::ResourceType::kServiceWorker)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeCspReport, content::ResourceType::kCspReport)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePluginResource, content::ResourceType::kPluginResource)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadMainFrame, content::ResourceType::kNavigationPreloadMainFrame)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadSubFrame, content::ResourceType::kNavigationPreloadSubFrame)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeLast, content::ResourceType::kMaxValue)
 
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::LinkNavigation, QWebEngineUrlRequestInfo::NavigationTypeLink)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::TypedNavigation, QWebEngineUrlRequestInfo::NavigationTypeTyped)

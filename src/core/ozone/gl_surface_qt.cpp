@@ -243,6 +243,17 @@ bool DirectCompositionSurfaceWin::IsSwapChainTearingSupported()
 {
     return false;
 }
+
+bool DirectCompositionSurfaceWin::AreOverlaysSupported()
+{
+    return false;
+}
+
+UINT DirectCompositionSurfaceWin::GetOverlaySupportFlags(DXGI_FORMAT format)
+{
+    Q_UNUSED(format);
+    return 0;
+}
 } // namespace gl
 #endif
 #endif // !defined(OS_MACOSX)

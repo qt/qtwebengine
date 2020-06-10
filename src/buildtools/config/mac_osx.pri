@@ -34,6 +34,5 @@ gn_args += \
     mac_deployment_target=\"$${QMAKE_MACOSX_DEPLOYMENT_TARGET}\" \
     mac_sdk_min=\"$${QMAKE_MAC_SDK_VERSION_MAJOR_MINOR}\" \
     use_external_popup_menu=false \
-    init_stack_vars=false \
     angle_enable_vulkan=false
 
