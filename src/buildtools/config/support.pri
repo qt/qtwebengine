@@ -5,10 +5,7 @@ defineTest(qtwebengine_skipBuild) {
 
 # this should match webengine-core-support
 defineReplace(qtwebengine_checkWebEngineCoreError) {
-    !linux:!win32:!macos {
-        qtwebengine_skipBuild("QtWebEngine can be build only on Linux, Windows or macOS.")
-        return(false)
-    }
+    !qtwebengine_checkForBuildSupport(QtWebEngine):return(false)
     static {
         qtwebengine_skipBuild("Static builds of QtWebEngine are not supported.")
         return(false)
@@ -38,6 +35,7 @@ defineReplace(qtwebengine_checkWebEngineCoreError) {
 
 # this shuold match webengine-qtpdf-support
 defineReplace(qtwebengine_checkPdfError) {
+    !qtwebengine_checkForBuildSupport(QtPdf):return(false)
     !qtwebengine_checkForGui(QtPdf):return(false)
     !qtwebengine_checkForSubmodule(QtPdf):return(false)
     !qtwebengine_checkForWhiteSpace(QtPdf):return(false)
@@ -51,6 +49,15 @@ defineReplace(qtwebengine_checkPdfError) {
     linux:!qtwebengine_checkForPkgCfg(QtPdf):return(false)
     linux:!qtwebengine_checkForHostPkgCfg(QtPdf):return(false)
     win32:!qtwebengine_checkForWinVersion(QtPdf):return(false)
+    return(true)
+}
+
+defineTest(qtwebengine_checkForBuildSupport) {
+    module = $$1
+    !linux:!win32:!macos {
+        qtwebengine_skipBuild("$${module} can be build only on Linux, Windows or macOS.")
+        return(false)
+    }
     return(true)
 }
 

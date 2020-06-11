@@ -383,7 +383,8 @@
         },
         "webengine-qtpdf-support": {
             "label": "Support Qt Pdf",
-            "condition": "module.gui
+            "condition": "(config.linux || config.win32 || config.macos)
+                         && module.gui
                          && features.webengine-submodule
                          && features.webengine-nowhitespace
                          && !features.webengine-no-platform-support
