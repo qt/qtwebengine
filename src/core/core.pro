@@ -26,8 +26,12 @@ core_api.depends = gn_run
 core_project.file = core_project.pro
 core_project.depends = gn_run
 
-!qtConfig(webengine-core-support):qtConfig(build-qtwebengine-core):!qtwebengine_makeCheckWebEngineCoreError():!build_pass {
-    errorbuild.commands = @echo $$shell_quote(QtWebEngineCore module will not be built. $${skipBuildReason})
+!qtConfig(webengine-core-support):qtConfig(build-qtwebengine-core):!build_pass {
+    !qtwebengine_makeCheckWebEngineCoreError() {
+        errorbuild.commands = @echo $$shell_quote("QtWebEngineCore module will not be built. $${skipBuildReason}")
+    } else {
+        errorbuild.commands = @echo $$shell_quote("QtWebEngineCore module will not be built for unknown reason, please open a bug report at https://bugreports.qt.io")
+    }
     errorbuild.CONFIG = phony
     QMAKE_EXTRA_TARGETS += errorbuild
     first.depends += errorbuild

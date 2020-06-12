@@ -9,8 +9,12 @@ gn_run.depends = pdfcore_generator
 pdfcore.depends = gn_run
 quick.depends = pdfcore
 
-!qtConfig(webengine-qtpdf-support):qtConfig(build-qtpdf):!qtwebengine_makeCheckPdfError():!isEmpty(skipBuildReason):!build_pass {
-    errorbuild.commands = @echo $$shell_quote(QtPdf will not be built. $${skipBuildReason})
+!qtConfig(webengine-qtpdf-support):qtConfig(build-qtpdf)::!build_pass {
+    !qtwebengine_makeCheckPdfError() {
+        errorbuild.commands = @echo $$shell_quote("QtPdf will not be built. $${skipBuildReason}")
+    } else {
+        errorbuild.commands = @echo $$shell_quote("QtPdf module will not be built for unknown reason, please open a bug report at https://bugreports.qt.io")
+    }
     errorbuild.CONFIG = phony
     QMAKE_EXTRA_TARGETS += errorbuild
     first.depends += errorbuild
