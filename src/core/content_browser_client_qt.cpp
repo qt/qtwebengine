@@ -301,16 +301,16 @@ private:
     void *m_handle;
 };
 
-class ShareGroupQtQuick : public gl::GLShareGroup {
+class ShareGroupQt : public gl::GLShareGroup {
 public:
-    gl::GLContext* GetContext() override { return m_shareContextQtQuick.get(); }
+    gl::GLContext* GetContext() override { return m_shareContextQt.get(); }
     void AboutToAddFirstContext() override;
 
 private:
-    scoped_refptr<QtShareGLContext> m_shareContextQtQuick;
+    scoped_refptr<QtShareGLContext> m_shareContextQt;
 };
 
-void ShareGroupQtQuick::AboutToAddFirstContext()
+void ShareGroupQt::AboutToAddFirstContext()
 {
 #if QT_CONFIG(opengl)
     // This currently has to be setup by ::main in all applications using QQuickWebEngineView with delegated rendering.
@@ -318,7 +318,7 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
     if (!shareContext) {
         qFatal("QWebEngine: OpenGL resource sharing is not set up in QtQuick. Please make sure to call QtWebEngine::initialize() in your main() function before QCoreApplication is created.");
     }
-    m_shareContextQtQuick = new QtShareGLContext(shareContext);
+    m_shareContextQt = new QtShareGLContext(shareContext);
 #endif
 }
 
@@ -366,9 +366,9 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
 
 gl::GLShareGroup *ContentBrowserClientQt::GetInProcessGpuShareGroup()
 {
-    if (!m_shareGroupQtQuick.get())
-        m_shareGroupQtQuick = new ShareGroupQtQuick;
-    return m_shareGroupQtQuick.get();
+    if (!m_shareGroupQt.get())
+        m_shareGroupQt = new ShareGroupQt;
+    return m_shareGroupQt.get();
 }
 
 content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()

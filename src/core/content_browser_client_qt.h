@@ -76,7 +76,7 @@ namespace QtWebEngineCore {
 
 class BrowserMainPartsQt;
 class ProfileQt;
-class ShareGroupQtQuick;
+class ShareGroupQt;
 
 class ContentBrowserClientQt : public content::ContentBrowserClient
 {
@@ -261,7 +261,7 @@ public:
 private:
     void InitFrameInterfaces();
 
-    scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
+    scoped_refptr<ShareGroupQt> m_shareGroupQt;
     std::unique_ptr<service_manager::BinderRegistry> m_frameInterfaces;
     std::unique_ptr<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>> m_frameInterfacesParameterized;
 };
