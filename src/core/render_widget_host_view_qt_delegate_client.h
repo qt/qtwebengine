@@ -51,14 +51,13 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_CLIENT_H
 #define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_CLIENT_H
 
-#include "qtwebenginecoreglobal_p.h"
+#include "compositor/compositor.h"
 
 #include <QtGui/QCursor>
 #include <QtGui/QTouchEvent>
 
 QT_BEGIN_NAMESPACE
 class QEvent;
-class QSGNode;
 class QVariant;
 
 class QMouseEvent;
@@ -88,7 +87,7 @@ class Q_WEBENGINECORE_PRIVATE_EXPORT RenderWidgetHostViewQtDelegateClient
 public:
     RenderWidgetHostViewQtDelegateClient(RenderWidgetHostViewQt *rwhv);
 
-    QSGNode *updatePaintNode(QSGNode *);
+    Compositor::Id compositorId();
     void notifyShown();
     void notifyHidden();
     void visualPropertiesChanged();

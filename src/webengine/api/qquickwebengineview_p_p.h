@@ -115,7 +115,7 @@ public:
     QColor backgroundColor() const override;
     void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) override;
     void loadCommitted() override;
-    void loadVisuallyCommitted() override;
+    void didFirstVisuallyNonEmptyPaint() override;
     void loadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString()) override;
     void focusContainer() override;
     void unhandledKeyEvent(QKeyEvent *event) override;
@@ -173,6 +173,8 @@ public:
     void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegate *newWidgetBase) override;
     void findTextFinished(const QWebEngineFindTextResult &result) override;
 
+    void didCompositorFrameSwap();
+
     void updateAction(QQuickWebEngineView::WebAction) const;
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     void setProfile(QQuickWebEngineProfile *profile);
@@ -223,12 +225,19 @@ public:
     bool profileInitialized() const;
 
 private:
+    enum LoadVisuallyCommittedState {
+        NotCommitted,
+        DidFirstVisuallyNonEmptyPaint,
+        DidFirstCompositorFrameSwap
+    };
+
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;
     QList<QQuickWebEngineScript *> m_userScripts;
     QColor m_backgroundColor;
     qreal m_zoomFactor;
     bool m_ui2Enabled;
     bool m_profileInitialized;
+    LoadVisuallyCommittedState m_loadVisuallyCommittedState = NotCommitted;
 };
 
 #ifndef QT_NO_ACCESSIBILITY

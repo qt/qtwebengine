@@ -39,7 +39,7 @@
 
 #include "display_software_output_surface.h"
 
-#include "display_frame_sink.h"
+#include "compositor.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
 
@@ -49,28 +49,27 @@
 
 #include <QMutex>
 #include <QPainter>
-#include <QSGImageNode>
 
 namespace QtWebEngineCore {
 
-class DisplaySoftwareOutputSurface::Device final : public viz::SoftwareOutputDevice, public DisplayProducer
+class DisplaySoftwareOutputSurface::Device final : public viz::SoftwareOutputDevice,
+                                                   public Compositor
 {
 public:
+    Device();
     ~Device();
-
-    // Called from DisplaySoftwareOutputSurface.
-    void bind(viz::FrameSinkId frameSinkId);
 
     // Overridden from viz::SoftwareOutputDevice.
     void Resize(const gfx::Size &sizeInPixels, float devicePixelRatio) override;
     void OnSwapBuffers(SwapBuffersCallback swap_ack_callback) override;
 
-    // Overridden from DisplayProducer.
-    QSGNode *updatePaintNode(QSGNode *oldNode, RenderWidgetHostViewQtDelegate *delegate) override;
+    // Overridden from Compositor.
+    void swapFrame() override;
+    QImage image() override;
+    float devicePixelRatio() override;
 
 private:
     mutable QMutex m_mutex;
-    scoped_refptr<DisplayFrameSink> m_sink;
     float m_devicePixelRatio = 1.0;
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
     SwapBuffersCallback m_swapCompletionCallback;
@@ -78,16 +77,13 @@ private:
     float m_imageDevicePixelRatio = 1.0;
 };
 
+DisplaySoftwareOutputSurface::Device::Device()
+    : Compositor(Type::Software)
+{}
+
 DisplaySoftwareOutputSurface::Device::~Device()
 {
-    if (m_sink)
-        m_sink->disconnect(this);
-}
-
-void DisplaySoftwareOutputSurface::Device::bind(viz::FrameSinkId frameSinkId)
-{
-    m_sink = DisplayFrameSink::findOrCreate(frameSinkId);
-    m_sink->connect(this);
+    unbind();
 }
 
 void DisplaySoftwareOutputSurface::Device::Resize(const gfx::Size &sizeInPixels, float devicePixelRatio)
@@ -104,7 +100,8 @@ void DisplaySoftwareOutputSurface::Device::OnSwapBuffers(SwapBuffersCallback swa
     QMutexLocker locker(&m_mutex);
     m_taskRunner = base::ThreadTaskRunnerHandle::Get();
     m_swapCompletionCallback = std::move(swap_ack_callback);
-    m_sink->scheduleUpdate();
+    if (auto obs = observer())
+        obs->readyToSwap();
 }
 
 inline QImage::Format imageFormat(SkColorType colorType)
@@ -120,41 +117,41 @@ inline QImage::Format imageFormat(SkColorType colorType)
     }
 }
 
-QSGNode *DisplaySoftwareOutputSurface::Device::updatePaintNode(
-        QSGNode *oldNode, RenderWidgetHostViewQtDelegate *delegate)
+void DisplaySoftwareOutputSurface::Device::swapFrame()
 {
     QMutexLocker locker(&m_mutex);
 
-    // Delete old node to make sure refcount of m_image is at most 1.
-    delete oldNode;
-    QSGImageNode *node = delegate->createImageNode();
+    if (!m_swapCompletionCallback)
+        return;
 
-    if (m_swapCompletionCallback) {
-        SkPixmap skPixmap;
-        surface_->peekPixels(&skPixmap);
-        QImage image(reinterpret_cast<const uchar *>(skPixmap.addr()),
-                     viewport_pixel_size_.width(), viewport_pixel_size_.height(),
-                     skPixmap.rowBytes(), imageFormat(skPixmap.colorType()));
-        if (m_image.size() == image.size()) {
-            QRect damageRect = toQt(damage_rect_);
-            QPainter painter(&m_image);
-            painter.setCompositionMode(QPainter::CompositionMode_Source);
-            painter.drawImage(damageRect, image, damageRect);
-        } else {
-            m_image = image;
-            m_image.detach();
-        }
-        m_imageDevicePixelRatio = m_devicePixelRatio;
-        m_taskRunner->PostTask(FROM_HERE, base::BindOnce(std::move(m_swapCompletionCallback), toGfx(m_image.size())));
-        m_taskRunner.reset();
+    SkPixmap skPixmap;
+    surface_->peekPixels(&skPixmap);
+    QImage image(reinterpret_cast<const uchar *>(skPixmap.addr()), viewport_pixel_size_.width(),
+                 viewport_pixel_size_.height(), skPixmap.rowBytes(),
+                 imageFormat(skPixmap.colorType()));
+    if (m_image.size() == image.size()) {
+        QRect damageRect = toQt(damage_rect_);
+        QPainter painter(&m_image);
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
+        painter.drawImage(damageRect, image, damageRect);
+    } else {
+        m_image = image;
+        m_image.detach();
     }
+    m_imageDevicePixelRatio = m_devicePixelRatio;
+    m_taskRunner->PostTask(
+            FROM_HERE, base::BindOnce(std::move(m_swapCompletionCallback), toGfx(m_image.size())));
+    m_taskRunner.reset();
+}
 
-    QSizeF sizeInDips = QSizeF(m_image.size()) / m_imageDevicePixelRatio;
-    node->setRect(QRectF(QPointF(0, 0), sizeInDips));
-    node->setOwnsTexture(true);
-    node->setTexture(delegate->createTextureFromImage(m_image));
+QImage DisplaySoftwareOutputSurface::Device::image()
+{
+    return m_image;
+}
 
-    return node;
+float DisplaySoftwareOutputSurface::Device::devicePixelRatio()
+{
+    return m_imageDevicePixelRatio;
 }
 
 DisplaySoftwareOutputSurface::DisplaySoftwareOutputSurface()

@@ -59,13 +59,8 @@
 #include <QtGui/QImage>
 
 QT_BEGIN_NAMESPACE
-class QSGImageNode;
-class QSGLayer;
-class QSGRectangleNode;
-class QSGTexture;
 class QWheelEvent;
 class QWindow;
-
 QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
@@ -84,11 +79,6 @@ public:
     virtual void hide() = 0;
     virtual bool isVisible() const = 0;
     virtual QWindow* window() const = 0;
-    virtual QSGTexture *createTextureFromImage(const QImage &) = 0;
-    virtual QSGLayer *createLayer() = 0;
-    virtual QSGImageNode *createImageNode() = 0;
-    virtual QSGRectangleNode *createRectangleNode() = 0;
-    virtual void update() = 0;
     virtual void updateCursor(const QCursor &) = 0;
     virtual void resize(int width, int height) = 0;
     virtual void move(const QPoint &) = 0;

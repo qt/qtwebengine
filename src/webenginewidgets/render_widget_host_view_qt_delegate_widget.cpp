@@ -56,14 +56,19 @@
 
 namespace QtWebEngineCore {
 
-class RenderWidgetHostViewQuickItem : public QQuickItem {
+class RenderWidgetHostViewQuickItem : public QQuickItem, public Compositor::Observer
+{
 public:
     RenderWidgetHostViewQuickItem(RenderWidgetHostViewQtDelegateClient *client) : m_client(client)
     {
         setFlag(ItemHasContents, true);
         // Mark that this item should receive focus when the parent QQuickWidget receives focus.
         setFocus(true);
+
+        bind(client->compositorId());
     }
+    ~RenderWidgetHostViewQuickItem() { unbind(); }
+
 protected:
     bool event(QEvent *event) override
     {
@@ -84,17 +89,80 @@ protected:
     {
         m_client->forwardEvent(event);
     }
+    void itemChange(ItemChange change, const ItemChangeData &value) override
+    {
+        QQuickItem::itemChange(change, value);
+        if (change == QQuickItem::ItemSceneChange) {
+            for (const QMetaObject::Connection &c : qAsConst(m_windowConnections))
+                disconnect(c);
+            m_windowConnections.clear();
+            if (value.window) {
+                m_windowConnections.append(connect(
+                        value.window, &QQuickWindow::beforeRendering, this,
+                        &RenderWidgetHostViewQuickItem::onBeforeRendering, Qt::DirectConnection));
+            }
+        }
+    }
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override
     {
-        return m_client->updatePaintNode(oldNode);
-    }
+        auto comp = compositor();
+        if (!comp)
+            return nullptr;
 
+        QQuickWindow *win = QQuickItem::window();
+
+        // Delete old node before swapFrame to decrement refcount of
+        // QImage in software mode.
+        delete oldNode;
+        QSGImageNode *node = win->createImageNode();
+        node->setOwnsTexture(true);
+
+        comp->swapFrame();
+
+        if (comp->type() == Compositor::Type::Software) {
+            QImage image = comp->image();
+            float pixPerDip = comp->devicePixelRatio();
+            QSizeF sizeInDips = QSizeF(image.size()) / pixPerDip;
+            node->setRect(QRectF(QPointF(0, 0), sizeInDips));
+            node->setTexture(win->createTextureFromImage(image));
+        } else if (comp->type() == Compositor::Type::OpenGL) {
+            QSize texSize = comp->textureSize();
+            float pixPerDip = comp->devicePixelRatio();
+            QSizeF sizeInDips = QSizeF(texSize) / pixPerDip;
+            node->setRect(QRectF(QPointF(0, 0), sizeInDips));
+            QQuickWindow::CreateTextureOptions texOpts;
+            if (comp->hasAlphaChannel())
+                texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
+            int texId = comp->textureId();
+            node->setTexture(win->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture,
+                                                                texId, 0, texSize, texOpts));
+            node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
+        } else {
+            Q_UNREACHABLE();
+        }
+
+        return node;
+    }
+    void onBeforeRendering()
+    {
+        auto comp = compositor();
+        if (!comp || comp->type() != Compositor::Type::OpenGL)
+            return;
+        comp->waitForTexture();
+    }
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const override
     {
         return m_client->inputMethodQuery(query);
     }
+    void readyToSwap() override
+    {
+        // Call update() on UI thread.
+        QMetaObject::invokeMethod(this, &QQuickItem::update, Qt::QueuedConnection);
+    }
+
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
+    QList<QMetaObject::Connection> m_windowConnections;
 };
 
 RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent)
@@ -291,32 +359,6 @@ QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
 {
     const QWidget* root = QQuickWidget::window();
     return root ? root->windowHandle() : 0;
-}
-
-QSGTexture *RenderWidgetHostViewQtDelegateWidget::createTextureFromImage(const QImage &image)
-{
-    return quickWindow()->createTextureFromImage(image, QQuickWindow::TextureCanUseAtlas);
-}
-
-QSGLayer *RenderWidgetHostViewQtDelegateWidget::createLayer()
-{
-    QSGRenderContext *renderContext = QQuickWindowPrivate::get(quickWindow())->context;
-    return renderContext->sceneGraphContext()->createLayer(renderContext);
-}
-
-QSGImageNode *RenderWidgetHostViewQtDelegateWidget::createImageNode()
-{
-    return quickWindow()->createImageNode();
-}
-
-QSGRectangleNode *RenderWidgetHostViewQtDelegateWidget::createRectangleNode()
-{
-    return quickWindow()->createRectangleNode();
-}
-
-void RenderWidgetHostViewQtDelegateWidget::update()
-{
-    m_rootItem->update();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::updateCursor(const QCursor &cursor)

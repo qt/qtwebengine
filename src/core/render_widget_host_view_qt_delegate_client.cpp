@@ -204,9 +204,9 @@ RenderWidgetHostViewQtDelegateClient::RenderWidgetHostViewQtDelegateClient(
             context && context->hasCapability(QPlatformInputContext::HiddenTextCapability);
 }
 
-QSGNode *RenderWidgetHostViewQtDelegateClient::updatePaintNode(QSGNode *oldNode)
+Compositor::Id RenderWidgetHostViewQtDelegateClient::compositorId()
 {
-    return m_rwhv->updatePaintNode(oldNode);
+    return m_rwhv->compositorId();
 }
 
 void RenderWidgetHostViewQtDelegateClient::notifyShown()

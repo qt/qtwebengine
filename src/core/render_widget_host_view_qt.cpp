@@ -148,9 +148,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     m_uiCompositor->SetAcceleratedWidget(gfx::kNullAcceleratedWidget); // null means offscreen
     m_uiCompositor->SetRootLayer(m_rootLayer.get());
 
-    m_displayFrameSink = DisplayFrameSink::findOrCreate(m_uiCompositor->frame_sink_id());
-    m_displayFrameSink->connect(this);
-
     if (host()->delegate() && host()->delegate()->GetInputEventRouter())
         host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(GetFrameSinkId(), this);
 
@@ -171,8 +168,6 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
     m_delegate.reset();
 
     QObject::disconnect(m_adapterClientDestroyedConnection);
-
-    m_displayFrameSink->disconnect(this);
 
     if (text_input_manager_)
         text_input_manager_->RemoveObserver(this);
@@ -707,36 +702,12 @@ void RenderWidgetHostViewQt::OnDidUpdateVisualPropertiesComplete(const cc::Rende
 
 void RenderWidgetHostViewQt::OnDidFirstVisuallyNonEmptyPaint()
 {
-    if (m_loadVisuallyCommittedState == NotCommitted) {
-        m_loadVisuallyCommittedState = DidFirstVisuallyNonEmptyPaint;
-    } else if (m_loadVisuallyCommittedState == DidFirstCompositorFrameSwap) {
-        m_adapterClient->loadVisuallyCommitted();
-        m_loadVisuallyCommittedState = NotCommitted;
-    }
+    m_adapterClient->didFirstVisuallyNonEmptyPaint();
 }
 
-void RenderWidgetHostViewQt::scheduleUpdate()
+Compositor::Id RenderWidgetHostViewQt::compositorId()
 {
-    m_taskRunner->PostTask(
-            FROM_HERE,
-            base::BindOnce(&RenderWidgetHostViewQt::callUpdate, m_weakPtrFactory.GetWeakPtr()));
-}
-
-void RenderWidgetHostViewQt::callUpdate()
-{
-    m_delegate->update();
-
-    if (m_loadVisuallyCommittedState == NotCommitted) {
-        m_loadVisuallyCommittedState = DidFirstCompositorFrameSwap;
-    } else if (m_loadVisuallyCommittedState == DidFirstVisuallyNonEmptyPaint) {
-        m_adapterClient->loadVisuallyCommitted();
-        m_loadVisuallyCommittedState = NotCommitted;
-    }
-}
-
-QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
-{
-    return m_displayFrameSink->updatePaintNode(oldNode, m_delegate.get());
+    return m_uiCompositor->frame_sink_id();
 }
 
 void RenderWidgetHostViewQt::notifyShown()

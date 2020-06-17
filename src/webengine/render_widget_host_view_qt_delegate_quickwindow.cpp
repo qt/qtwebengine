@@ -121,32 +121,6 @@ QWindow *RenderWidgetHostViewQtDelegateQuickWindow::window() const
     return const_cast<RenderWidgetHostViewQtDelegateQuickWindow*>(this);
 }
 
-QSGTexture *RenderWidgetHostViewQtDelegateQuickWindow::createTextureFromImage(const QImage &image)
-{
-    return m_realDelegate->createTextureFromImage(image);
-}
-
-QSGLayer *RenderWidgetHostViewQtDelegateQuickWindow::createLayer()
-{
-    return m_realDelegate->createLayer();
-}
-
-QSGImageNode *RenderWidgetHostViewQtDelegateQuickWindow::createImageNode()
-{
-    return m_realDelegate->createImageNode();
-}
-
-QSGRectangleNode *RenderWidgetHostViewQtDelegateQuickWindow::createRectangleNode()
-{
-    return m_realDelegate->createRectangleNode();
-}
-
-void RenderWidgetHostViewQtDelegateQuickWindow::update()
-{
-    QQuickWindow::update();
-    m_realDelegate->update();
-}
-
 void RenderWidgetHostViewQtDelegateQuickWindow::updateCursor(const QCursor &cursor)
 {
     setCursor(cursor);

@@ -482,11 +482,29 @@ void QQuickWebEngineViewPrivate::loadCommitted()
     m_history->reset();
 }
 
-void QQuickWebEngineViewPrivate::loadVisuallyCommitted()
+void QQuickWebEngineViewPrivate::didFirstVisuallyNonEmptyPaint()
 {
 #if QT_CONFIG(webengine_testsupport)
-    if (m_testSupport)
-        Q_EMIT m_testSupport->loadVisuallyCommitted();
+    if (m_loadVisuallyCommittedState == NotCommitted) {
+        m_loadVisuallyCommittedState = DidFirstVisuallyNonEmptyPaint;
+    } else if (m_loadVisuallyCommittedState == DidFirstCompositorFrameSwap) {
+        if (m_testSupport)
+            Q_EMIT m_testSupport->loadVisuallyCommitted();
+        m_loadVisuallyCommittedState = NotCommitted;
+    }
+#endif
+}
+
+void QQuickWebEngineViewPrivate::didCompositorFrameSwap()
+{
+#if QT_CONFIG(webengine_testsupport)
+    if (m_loadVisuallyCommittedState == NotCommitted) {
+        m_loadVisuallyCommittedState = DidFirstCompositorFrameSwap;
+    } else if (m_loadVisuallyCommittedState == DidFirstVisuallyNonEmptyPaint) {
+        if (m_testSupport)
+            Q_EMIT m_testSupport->loadVisuallyCommitted();
+        m_loadVisuallyCommittedState = NotCommitted;
+    }
 #endif
 }
 

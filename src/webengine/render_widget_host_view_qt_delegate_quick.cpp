@@ -85,10 +85,12 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
     }
 #endif
 
+    bind(client->compositorId());
 }
 
 RenderWidgetHostViewQtDelegateQuick::~RenderWidgetHostViewQtDelegateQuick()
 {
+    unbind();
     QQuickWebEngineViewPrivate::bindViewAndWidget(nullptr, this);
 }
 
@@ -167,30 +169,10 @@ QWindow* RenderWidgetHostViewQtDelegateQuick::window() const
     return QQuickItem::window();
 }
 
-QSGTexture *RenderWidgetHostViewQtDelegateQuick::createTextureFromImage(const QImage &image)
+void RenderWidgetHostViewQtDelegateQuick::readyToSwap()
 {
-    return QQuickItem::window()->createTextureFromImage(image, QQuickWindow::TextureCanUseAtlas);
-}
-
-QSGLayer *RenderWidgetHostViewQtDelegateQuick::createLayer()
-{
-    QSGRenderContext *renderContext = QQuickWindowPrivate::get(QQuickItem::window())->context;
-    return renderContext->sceneGraphContext()->createLayer(renderContext);
-}
-
-QSGImageNode *RenderWidgetHostViewQtDelegateQuick::createImageNode()
-{
-    return QQuickItem::window()->createImageNode();
-}
-
-QSGRectangleNode *RenderWidgetHostViewQtDelegateQuick::createRectangleNode()
-{
-    return QQuickItem::window()->createRectangleNode();
-}
-
-void RenderWidgetHostViewQtDelegateQuick::update()
-{
-    QQuickItem::update();
+    // Call update() on UI thread.
+    QMetaObject::invokeMethod(this, &QQuickItem::update, Qt::QueuedConnection);
 }
 
 void RenderWidgetHostViewQtDelegateQuick::updateCursor(const QCursor &cursor)
@@ -345,6 +327,8 @@ void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const It
             disconnect(c);
         m_windowConnections.clear();
         if (value.window) {
+            m_windowConnections.append(connect(value.window, SIGNAL(beforeRendering()),
+                                               SLOT(onBeforeRendering()), Qt::DirectConnection));
             m_windowConnections.append(connect(value.window, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
             m_windowConnections.append(connect(value.window, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
             if (!m_isPopup)
@@ -359,7 +343,58 @@ void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const It
 
 QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
-    return m_client->updatePaintNode(oldNode);
+    auto comp = compositor();
+    if (!comp)
+        return nullptr;
+
+    QQuickWindow *win = QQuickItem::window();
+
+    // Delete old node before swapFrame to decrement refcount of
+    // QImage in software mode.
+    delete oldNode;
+    QSGImageNode *node = win->createImageNode();
+    node->setOwnsTexture(true);
+
+    comp->swapFrame();
+
+    if (comp->type() == Compositor::Type::Software) {
+        QImage image = comp->image();
+        float pixPerDip = comp->devicePixelRatio();
+        QSizeF sizeInDips = QSizeF(image.size()) / pixPerDip;
+        node->setRect(QRectF(QPointF(0, 0), sizeInDips));
+        node->setTexture(win->createTextureFromImage(image));
+    } else if (comp->type() == Compositor::Type::OpenGL) {
+        QSize texSize = comp->textureSize();
+        float pixPerDip = comp->devicePixelRatio();
+        QSizeF sizeInDips = QSizeF(texSize) / pixPerDip;
+        node->setRect(QRectF(QPointF(0, 0), sizeInDips));
+        QQuickWindow::CreateTextureOptions texOpts;
+        if (comp->hasAlphaChannel())
+            texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
+        int texId = comp->textureId();
+        node->setTexture(win->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture,
+                                                            texId, 0, texSize, texOpts));
+        node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
+    } else {
+        Q_UNREACHABLE();
+    }
+
+#if QT_CONFIG(webengine_testsupport)
+    if (m_view)
+        QMetaObject::invokeMethod(
+                m_view, [view = m_view]() { view->d_ptr->didCompositorFrameSwap(); },
+                Qt::QueuedConnection);
+#endif
+
+    return node;
+}
+
+void RenderWidgetHostViewQtDelegateQuick::onBeforeRendering()
+{
+    auto comp = compositor();
+    if (!comp || comp->type() != Compositor::Type::OpenGL)
+        return;
+    comp->waitForTexture();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::onWindowPosChanged()

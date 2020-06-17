@@ -40,7 +40,7 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_H
 #define RENDER_WIDGET_HOST_VIEW_QT_H
 
-#include "compositor/display_frame_sink.h"
+#include "compositor/compositor.h"
 #include "delegated_frame_host_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 
@@ -81,15 +81,8 @@ class RenderWidgetHostViewQt
     , public ui::GestureProviderClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
     , public content::TextInputManager::Observer
-    , public DisplayConsumer
 {
 public:
-    enum LoadVisuallyCommittedState {
-        NotCommitted,
-        DidFirstVisuallyNonEmptyPaint,
-        DidFirstCompositorFrameSwap
-    };
-
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
     ~RenderWidgetHostViewQt();
 
@@ -172,11 +165,8 @@ public:
     // Overridden from content::RenderFrameMetadataProvider::Observer
     void OnRenderFrameMetadataChangedAfterActivation() override;
 
-    // Overridden from DisplayConsumer
-    void scheduleUpdate() override;
-
     // Called from RenderWidgetHostViewQtDelegateClient.
-    QSGNode *updatePaintNode(QSGNode *);
+    Compositor::Id compositorId();
     void notifyShown();
     void notifyHidden();
     bool updateScreenInfo();
@@ -205,7 +195,6 @@ private:
 
     bool isPopup() const;
     content::RenderFrameHost *getFocusedFrameHost();
-    void callUpdate();
 
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
     ui::FilteredGestureProvider m_gestureProvider;
@@ -221,14 +210,12 @@ private:
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
     DelegatedFrameHostClientQt m_delegatedFrameHostClient { this };
-    LoadVisuallyCommittedState m_loadVisuallyCommittedState = NotCommitted;
 
     // VIZ
     content::ScreenInfo m_screenInfo;
     std::unique_ptr<content::DelegatedFrameHost> m_delegatedFrameHost;
     std::unique_ptr<ui::Layer> m_rootLayer;
     std::unique_ptr<ui::Compositor> m_uiCompositor;
-    scoped_refptr<DisplayFrameSink> m_displayFrameSink;
     viz::ParentLocalSurfaceIdAllocator m_dfhLocalSurfaceIdAllocator;
     viz::ParentLocalSurfaceIdAllocator m_uiCompositorLocalSurfaceIdAllocator;
 

@@ -465,7 +465,7 @@ public:
     virtual QColor backgroundColor() const = 0;
     virtual void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) = 0;
     virtual void loadCommitted() = 0;
-    virtual void loadVisuallyCommitted() = 0;
+    virtual void didFirstVisuallyNonEmptyPaint() = 0;
     virtual void loadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString()) = 0;
     virtual void focusContainer() = 0;
     virtual void unhandledKeyEvent(QKeyEvent *event) = 0;

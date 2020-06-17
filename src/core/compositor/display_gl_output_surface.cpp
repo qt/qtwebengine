@@ -39,6 +39,8 @@
 
 #include "display_gl_output_surface.h"
 
+#include "type_conversion.h"
+
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -51,8 +53,10 @@
 
 namespace QtWebEngineCore {
 
-DisplayGLOutputSurface::DisplayGLOutputSurface(scoped_refptr<viz::VizProcessContextProvider> contextProvider)
+DisplayGLOutputSurface::DisplayGLOutputSurface(
+        scoped_refptr<viz::VizProcessContextProvider> contextProvider)
     : OutputSurface(contextProvider)
+    , Compositor(Compositor::Type::OpenGL)
     , m_commandBuffer(contextProvider->command_buffer())
     , m_gl(contextProvider->ContextGL())
     , m_vizContextProvider(contextProvider)
@@ -63,18 +67,16 @@ DisplayGLOutputSurface::DisplayGLOutputSurface(scoped_refptr<viz::VizProcessCont
 
 DisplayGLOutputSurface::~DisplayGLOutputSurface()
 {
+    unbind();
     m_vizContextProvider->SetUpdateVSyncParametersCallback(viz::UpdateVSyncParametersCallback());
     m_gl->DeleteFramebuffers(1, &m_fboId);
-    if (m_sink)
-        m_sink->disconnect(this);
 }
 
 // Called from viz::Display::Initialize.
 void DisplayGLOutputSurface::BindToClient(viz::OutputSurfaceClient *client)
 {
     m_display = static_cast<viz::Display *>(client);
-    m_sink = DisplayFrameSink::findOrCreate(m_display->frame_sink_id());
-    m_sink->connect(this);
+    bind(m_display->frame_sink_id());
 }
 
 // Triggered by ui::Compositor::SetVisible(true).
@@ -211,7 +213,8 @@ void DisplayGLOutputSurface::swapBuffersOnGpuThread(unsigned int id, std::unique
         m_middleBuffer->fence = CompositorResourceFence::create(std::move(fence));
     }
 
-    m_sink->scheduleUpdate();
+    if (auto obs = observer())
+        obs->readyToSwap();
 }
 
 void DisplayGLOutputSurface::swapBuffersOnVizThread()
@@ -293,6 +296,46 @@ void DisplayGLOutputSurface::SetDisplayTransformHint(gfx::OverlayTransform)
 gfx::OverlayTransform DisplayGLOutputSurface::GetDisplayTransform()
 {
     return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
+void DisplayGLOutputSurface::swapFrame()
+{
+    QMutexLocker locker(&m_mutex);
+    if (m_middleBuffer && m_middleBuffer->serviceId) {
+        std::swap(m_middleBuffer, m_frontBuffer);
+        m_taskRunner->PostTask(FROM_HERE,
+                               base::BindOnce(&DisplayGLOutputSurface::swapBuffersOnVizThread,
+                                              base::Unretained(this)));
+        m_taskRunner.reset();
+    }
+}
+
+void DisplayGLOutputSurface::waitForTexture()
+{
+    if (m_frontBuffer && m_frontBuffer->fence) {
+        m_frontBuffer->fence->wait();
+        m_frontBuffer->fence.reset();
+    }
+}
+
+int DisplayGLOutputSurface::textureId()
+{
+    return m_frontBuffer ? m_frontBuffer->serviceId : 0;
+}
+
+QSize DisplayGLOutputSurface::textureSize()
+{
+    return m_frontBuffer ? toQt(m_frontBuffer->shape.sizeInPixels) : QSize();
+}
+
+bool DisplayGLOutputSurface::hasAlphaChannel()
+{
+    return m_frontBuffer ? m_frontBuffer->shape.hasAlpha : false;
+}
+
+float DisplayGLOutputSurface::devicePixelRatio()
+{
+    return m_frontBuffer ? m_frontBuffer->shape.devicePixelRatio : 1;
 }
 
 } // namespace QtWebEngineCore
