@@ -1760,6 +1760,9 @@ void RenderWidgetHostViewQt::handlePointerEvent(T *event)
         m_clickHelper.lastPressPosition = QPointF(event->pos()).toPoint();
     }
 
+    if (webEvent.GetType() == blink::WebInputEvent::kMouseUp)
+        webEvent.click_count = m_clickHelper.clickCounter;
+
     webEvent.movement_x = event->globalX() - m_previousMousePosition.x();
     webEvent.movement_y = event->globalY() - m_previousMousePosition.y();
 
