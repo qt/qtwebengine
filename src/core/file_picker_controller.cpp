@@ -120,7 +120,7 @@ void FilePickerController::accepted(const QStringList &files)
             }
 
             // Build absolute path from file URI componenets.
-            for (int j = 1; j < pathComponents.size(); j++)
+            for (size_t j = 1; j < pathComponents.size(); j++)
                 absolutePath += toQt(pathComponents[j]) + (j != pathComponents.size()-1 ? "/" : "");
 
             if (toFilePath(absolutePath).IsAbsolute()) {
