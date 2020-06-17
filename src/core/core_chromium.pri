@@ -294,14 +294,10 @@ contains(QT_CONFIG, opengl) {
     SOURCES += \
         compositor/compositor_resource_fence.cpp \
         compositor/display_gl_output_surface.cpp \
-        compositor/display_gl_output_surface_qsg.cpp \
-        compositor/stream_video_node.cpp \
-        compositor/yuv_video_node.cpp
+        compositor/display_gl_output_surface_qsg.cpp
     HEADERS += \
         compositor/compositor_resource_fence.h \
-        compositor/display_gl_output_surface.h \
-        compositor/stream_video_node.h \
-        compositor/yuv_video_node.h
+        compositor/display_gl_output_surface.h
 }
 
 qtConfig(webengine-geolocation) {
