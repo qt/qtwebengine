@@ -39,6 +39,7 @@
 
 #include "profile_adapter.h"
 
+#include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/content/browser/history_database_helper.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -125,6 +126,7 @@ ProfileAdapter::ProfileAdapter(const QString &storageName):
     std::vector<network::mojom::CorsOriginPatternPtr> list;
     list.push_back(std::move(pattern));
     m_profile->GetSharedCorsOriginAccessList()->SetForOrigin(qrc, std::move(list), {}, base::BindOnce([]{}));
+    m_cancelableTaskTracker.reset(new base::CancelableTaskTracker());
 }
 
 ProfileAdapter::~ProfileAdapter()
@@ -746,5 +748,102 @@ QWebEngineClientCertificateStore *ProfileAdapter::clientCertificateStore()
     return m_clientCertificateStore;
 }
 #endif
+
+static void callbackOnIconAvailableForPageURL(std::function<void (const QIcon &, const QUrl &, const QUrl &)> iconAvailableCallback,
+                                              const QUrl &pageUrl,
+                                              const favicon_base::FaviconRawBitmapResult &result)
+{
+    if (!result.is_valid()) {
+        iconAvailableCallback(QIcon(), toQt(result.icon_url), pageUrl);
+        return;
+    }
+    QPixmap pixmap(toQt(result.pixel_size));
+    pixmap.loadFromData(result.bitmap_data->data(), result.bitmap_data->size());
+    iconAvailableCallback(QIcon(pixmap), toQt(result.icon_url), pageUrl);
+}
+
+void ProfileAdapter::requestIconForPageURL(const QUrl &pageUrl,
+                                           int desiredSizeInPixel,
+                                           bool touchIconsEnabled,
+                                           std::function<void (const QIcon &, const QUrl &, const QUrl &)> iconAvailableCallback)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    favicon::FaviconService *service = FaviconServiceFactoryQt::GetForBrowserContext(m_profile.data());
+
+    if (!service->HistoryService()) {
+        callbackOnIconAvailableForPageURL(iconAvailableCallback, pageUrl,
+                                          favicon_base::FaviconRawBitmapResult());
+        return;
+    }
+
+    favicon_base::IconTypeSet types = { favicon_base::IconType::kFavicon };
+    if (touchIconsEnabled) {
+        types.insert(favicon_base::IconType::kTouchIcon);
+        types.insert(favicon_base::IconType::kTouchPrecomposedIcon);
+        types.insert(favicon_base::IconType::kWebManifestIcon);
+    }
+    service->GetRawFaviconForPageURL(
+            toGurl(pageUrl), types, desiredSizeInPixel, true /* fallback_to_host */,
+            base::BindOnce(&callbackOnIconAvailableForPageURL, iconAvailableCallback, pageUrl),
+            m_cancelableTaskTracker.get());
+}
+
+static void callbackOnIconAvailableForIconURL(std::function<void (const QIcon &, const QUrl &)> iconAvailableCallback,
+                                              ProfileAdapter *profileAdapter,
+                                              const QUrl &iconUrl, int iconType,
+                                              int desiredSizeInPixel,
+                                              bool touchIconsEnabled,
+                                              const favicon_base::FaviconRawBitmapResult &result)
+{
+    if (!result.is_valid()) {
+        // If touch icons are disabled there is no need to try further icon types.
+        if (!touchIconsEnabled) {
+            iconAvailableCallback(QIcon(), iconUrl);
+            return;
+        }
+        if (static_cast<favicon_base::IconType>(iconType) != favicon_base::IconType::kMax) {
+            //Q_ASSERT(profileAdapter->profile());
+            favicon::FaviconService *service = FaviconServiceFactoryQt::GetForBrowserContext(profileAdapter->profile());
+            service->GetRawFavicon(toGurl(iconUrl),
+                                   static_cast<favicon_base::IconType>(iconType + 1),
+                                   desiredSizeInPixel,
+                                   base::BindOnce(&callbackOnIconAvailableForIconURL, iconAvailableCallback,
+                                                  profileAdapter, iconUrl, iconType + 1, desiredSizeInPixel,
+                                                  touchIconsEnabled),
+                                   profileAdapter->cancelableTaskTracker());
+            return;
+        }
+        iconAvailableCallback(QIcon(), iconUrl);
+        return;
+    }
+    QPixmap pixmap(toQt(result.pixel_size));
+    pixmap.loadFromData(result.bitmap_data->data(), result.bitmap_data->size());
+    iconAvailableCallback(QIcon(pixmap), toQt(result.icon_url));
+}
+
+void ProfileAdapter::requestIconForIconURL(const QUrl &iconUrl,
+                                           int desiredSizeInPixel,
+                                           bool touchIconsEnabled,
+                                           std::function<void (const QIcon &, const QUrl &)> iconAvailableCallback)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    favicon::FaviconService *service = FaviconServiceFactoryQt::GetForBrowserContext(m_profile.data());
+
+    if (!service->HistoryService()) {
+        callbackOnIconAvailableForIconURL(iconAvailableCallback,
+                                          this,
+                                          iconUrl,
+                                          static_cast<int>(favicon_base::IconType::kMax), 0,
+                                          touchIconsEnabled,
+                                          favicon_base::FaviconRawBitmapResult());
+        return;
+    }
+    service->GetRawFavicon(
+            toGurl(iconUrl), favicon_base::IconType::kFavicon, desiredSizeInPixel,
+            base::BindOnce(&callbackOnIconAvailableForIconURL, iconAvailableCallback, this, iconUrl,
+                           static_cast<int>(favicon_base::IconType::kFavicon), desiredSizeInPixel,
+                           touchIconsEnabled),
+            m_cancelableTaskTracker.get());
+}
 
 } // namespace QtWebEngineCore

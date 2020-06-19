@@ -563,7 +563,8 @@ private:
 
     friend class QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick;
     friend class QQuickContextMenuBuilder;
-    friend class QQuickWebEngineFaviconProvider;
+    friend class FaviconImageResponse;
+    friend class FaviconImageResponseRunnable;
 #ifndef QT_NO_ACCESSIBILITY
     friend class QQuickWebEngineViewAccessible;
 #endif // QT_NO_ACCESSIBILITY

@@ -18,6 +18,7 @@ set(testList
     tst_desktopBehaviorLoadHtml.qml
     tst_download.qml
     tst_favicon.qml
+    tst_faviconDatabase.qml
     tst_filePicker.qml
     tst_findText.qml
     tst_focusOnNavigation.qml
