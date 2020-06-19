@@ -125,6 +125,19 @@ public:
         return tempDir.isValid() ? tempDir.path() : QString();
     }
 
+    Q_INVOKABLE void removeRecursive(const QString dirname)
+    {
+        QDir dir(dirname);
+        QFileInfoList entries(dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot));
+        for (int i = 0; i < entries.count(); ++i) {
+            if (entries[i].isDir())
+                removeRecursive(entries[i].filePath());
+            else
+                dir.remove(entries[i].fileName());
+        }
+        QDir().rmdir(dirname);
+    }
+
 private:
     QTemporaryDir tempDir;
 };

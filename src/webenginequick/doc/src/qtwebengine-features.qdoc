@@ -54,6 +54,7 @@
         \li \l{View Source}
         \li \l{webrtc_feature}{WebRTC}
         \li \l{Web Notifications}
+        \li \l{Favicon Handling}
     \endlist
 
     \section1 Audio and Video Codecs
@@ -641,4 +642,42 @@
     {WebEngineView.Notifications}.
 
     Support for this feature was added in Qt 5.13.0.
+
+    \section1 Favicon Handling
+
+    For accessing icons a \c QQuickImageProvider is registered. This provider can be
+    accessed by a special URL where the scheme is "image:" and the host is "favicon".
+    For example,
+    \qml
+    Image {
+        source: "image://favicon/url"
+    }
+    \endqml
+
+    The \c url can be  the URL of the favicon. For example,
+    \qml
+    Image {
+        source: "image://favicon/https://www.qt.io/hubfs/2016_Qt_Logo/qt_logo_green_rgb_16x16.png"
+    }
+    \endqml
+
+    The \c url also can be a page URL to access its icon. For example,
+    \qml
+    Image {
+        source: "image://favicon/https://www.qt.io/"
+    }
+    \endqml
+
+    If more than one icon is available, the \l {Image::sourceSize} property can be
+    specified to choose the icon with the desired size. If \l {Image::sourceSize}
+    is not specified or 0, the largest available icon will be chosen.
+
+    The image provider looks up the requested icon in the existing \l {WebEngineView}
+    instances. First, it tries to match the currently displayed icons. If no match
+    has been found it requests the icon from the database. Each profile has its
+    own icon database and it is stored in the persistent storage thus the stored icons
+    can be accessed without network connection too. The icon must be previously loaded
+    to be stored in the database.
+
+    \note The icon database is not available for off-the-record profiles.
 */

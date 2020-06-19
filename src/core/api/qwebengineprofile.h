@@ -142,6 +142,9 @@ public:
 
     QWebEngineClientCertificateStore *clientCertificateStore();
 
+    void requestIconForPageURL(const QUrl &url, int desiredSizeInPixel, std::function<void(const QIcon &, const QUrl &, const QUrl &)> iconAvailableCallback) const;
+    void requestIconForIconURL(const QUrl &url, int desiredSizeInPixel, std::function<void(const QIcon &, const QUrl &)> iconAvailableCallback) const;
+
     static QWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:

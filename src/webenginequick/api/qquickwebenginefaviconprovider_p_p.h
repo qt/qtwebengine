@@ -53,13 +53,57 @@
 
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 #include <QtCore/QList>
+#include <QtCore/QRunnable>
+#include <QtCore/QThreadPool>
+#include <QtGui/QImage>
 #include <QtQuick/QQuickImageProvider>
 
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineView;
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFaviconProvider : public QQuickImageProvider
+class FaviconImageResponseRunnable : public QObject, public QRunnable
+{
+    Q_OBJECT
+
+public:
+    FaviconImageResponseRunnable(const QString &id, const QSize &requestedSize,
+                                 QList<QQuickWebEngineView *> *views);
+    void run() override;
+    void iconRequestDone(const QIcon &icon);
+
+signals:
+    void done(QPixmap pixmap);
+
+private:
+    int tryNextView();
+    void requestIconOnUIThread(QQuickWebEngineView *view);
+
+    QString m_id;
+    QSize m_requestedSize;
+    QList<QQuickWebEngineView *> *m_views;
+    int m_nextViewIndex = 0;
+};
+
+class FaviconImageResponse : public QQuickImageResponse
+{
+public:
+    FaviconImageResponse();
+    FaviconImageResponse(const QString &id, const QSize &requestedSize,
+                         QList<QQuickWebEngineView *> *views, QThreadPool *pool);
+    ~FaviconImageResponse();
+    void handleDone(QPixmap pixmap);
+    QQuickTextureFactory *textureFactory() const override;
+
+private:
+    void startRunnable(const QString &id, const QSize &requestedSize,
+                       QList<QQuickWebEngineView *> *views, QThreadPool *pool);
+
+    FaviconImageResponseRunnable *m_runnable = nullptr;
+    QImage m_image;
+};
+
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFaviconProvider : public QQuickAsyncImageProvider
 {
 public:
     static QString identifier();
@@ -71,9 +115,11 @@ public:
     void attach(QQuickWebEngineView *view) { m_views.append(view); }
     void detach(QQuickWebEngineView *view) { m_views.removeAll(view); }
 
-    QPixmap requestPixmap(const QString &, QSize *, const QSize &) override;
+    QQuickImageResponse *requestImageResponse(const QString &id,
+                                              const QSize &requestedSize) override;
 
 private:
+    QThreadPool m_pool;
     QList<QQuickWebEngineView *> m_views;
 };
 

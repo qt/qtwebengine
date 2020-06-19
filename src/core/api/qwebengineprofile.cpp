@@ -873,4 +873,70 @@ QWebEngineClientCertificateStore *QWebEngineProfile::clientCertificateStore()
 #endif
 }
 
+/*!
+ * Requests an icon for a previously loaded page with this profile from the database. Each profile
+ * has its own icon database and it is stored in the persistent storage thus the stored icons
+ * can be accessed without network connection too. The icon must be previously loaded to be
+ * stored in the database.
+ *
+ * \a url specifies the URL of the page what the icon is requested for. In case of more than one
+ * available icons the one with the size closest to \a desiredSizeInPixel will be returned.
+ * The result icon is resized to \a desiredSizeInPixel. If desiredSizeInPixel is 0 the largest
+ * available icon is returned.
+ *
+ * This function is asynchronous and the result is returned by \a iconAvailableCallback.
+ * The callback is called if a request for an icon is performed. If the requested icon is
+ * available, the first parameter (with type QIcon) is the result. Otherwise, it is null.
+ *
+ * The second parameter stores the URL of the requested icon. It is empty if the icon can't be
+ * fetched.
+ *
+ * The third parameter stores the URL of the page which the icon is assigned.
+ *
+ * \note Icons can't be requested with an off-the-record profile.
+ *
+ * \since 6.2
+ * \sa requestIconForIconURL()
+ */
+void QWebEngineProfile::requestIconForPageURL(const QUrl &url, int desiredSizeInPixel,
+                                              std::function<void(const QIcon &, const QUrl &, const QUrl &)> iconAvailableCallback) const
+{
+    Q_D(const QWebEngineProfile);
+    d->profileAdapter()->requestIconForPageURL(url, desiredSizeInPixel,
+                                               settings()->testAttribute(QWebEngineSettings::TouchIconsEnabled),
+                                               iconAvailableCallback);
+}
+
+/*!
+ * Requests an icon with the specified \a url from the database. Each profile has its
+ * own icon database and it is stored in the persistent storage thus the stored icons
+ * can be accessed without network connection too. The icon must be previously loaded to be
+ * stored in the database.
+ *
+ * \a url specifies the URL of the icon. In case of more than one
+ * available icons the one with the size closest to \a desiredSizeInPixel will be returned.
+ * The result icon is resized to \a desiredSizeInPixel. If desiredSizeInPixel is 0 the largest
+ * available icon is returned.
+ *
+ * This function is asynchronous and the result is returned by \a iconAvailableCallback.
+ * The callback is called if a request for an icon is performed. If the requested icon is
+ * available, the first parameter (with type QIcon) is the result. Otherwise, it is null.
+ *
+ * The second parameter stores the URL of the requested icon. It is empty if the icon can't be
+ * fetched.
+ *
+ * \note Icons can't be requested with an off-the-record profile.
+ *
+ * \since 6.2
+ * \sa requestIconForPageURL()
+ */
+void QWebEngineProfile::requestIconForIconURL(const QUrl &url, int desiredSizeInPixel,
+                                              std::function<void(const QIcon &, const QUrl &)> iconAvailableCallback) const
+{
+    Q_D(const QWebEngineProfile);
+    d->profileAdapter()->requestIconForIconURL(url, desiredSizeInPixel,
+                                               settings()->testAttribute(QWebEngineSettings::TouchIconsEnabled),
+                                               iconAvailableCallback);
+}
+
 QT_END_NAMESPACE

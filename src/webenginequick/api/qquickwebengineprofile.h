@@ -177,6 +177,7 @@ private:
     QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *, QObject *parent = nullptr);
     QQuickWebEngineSettings *settings() const;
 
+    friend class FaviconImageResponseRunnable;
     friend class QQuickWebEngineSettings;
     friend class QQuickWebEngineSingleton;
     friend class QQuickWebEngineViewPrivate;

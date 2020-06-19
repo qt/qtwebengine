@@ -212,8 +212,7 @@
     \readonly
 
     An internal URL for accessing the currently displayed web site icon,
-    also known as favicon or shortcut icon. The icon is already downloaded
-    and stored by the \QWE's favicon manager.
+    also known as favicon or shortcut icon.
     This read-only URL corresponds to the image used within a mobile browser
     application to represent a bookmarked page on the device's home screen.
 
@@ -229,11 +228,10 @@
     }
     \endqml
 
-    Specifying the \c{sourceSize} property of the \c{Image} element informs
-    the \QWE's favicon provider about the requested size. The
-    favicon provider tries to find the best fit among the web page candidate
-    icons. If \c{sourceSize} property is not specified, the provider provides
-    the icon with the largest resolution.
+    Specifying the \l {Image::sourceSize} property informs
+    the \QWE's favicon provider about the requested size and resizes the
+    icon to it. If \l {Image::sourceSize} property is not specified,
+    the provider provides the icon with the largest available resolution.
 */
 
 /*!

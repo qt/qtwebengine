@@ -1987,11 +1987,12 @@ QUrl QWebEnginePage::iconUrl() const
     \brief The icon associated with the page currently viewed.
     \since 5.7
 
-    By default, this property contains a null icon. If the web page specifies more than one icon,
-    the \c{icon} property encapsulates the available candidate icons in a single,
-    scalable \c{QIcon}.
+    By default, this property contains a null icon. If touch icons are disabled
+    (see \c QWebEngineSettings::TouchIconsEnabled), the favicon is provided in two sizes
+    (16x16 and 32x32 pixels) encapsulated in \c{QIcon}. Otherwise, single icon is provided
+    with the largest available size.
 
-    \sa iconChanged(), iconUrl(), iconUrlChanged()
+    \sa iconChanged(), iconUrl(), iconUrlChanged(), QWebEngineSettings::TouchIconsEnabled
 */
 QIcon QWebEnginePage::icon() const
 {

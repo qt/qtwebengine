@@ -67,6 +67,10 @@
 
 QT_FORWARD_DECLARE_CLASS(QObject)
 
+namespace base {
+class CancelableTaskTracker;
+}
+
 namespace QtWebEngineCore {
 
 class UserNotificationController;
@@ -215,6 +219,12 @@ public:
 
     QString determineDownloadPath(const QString &downloadDirectory, const QString &suggestedFilename, const time_t &startTime);
 
+    void requestIconForPageURL(const QUrl &pageUrl, int desiredSizeInPixel, bool touchIconsEnabled,
+                               std::function<void (const QIcon &, const QUrl &, const QUrl &)> iconAvailableCallback);
+    void requestIconForIconURL(const QUrl &iconUrl, int desiredSizeInPixel, bool touchIconsEnabled,
+                               std::function<void (const QIcon &, const QUrl &)> iconAvailableCallback);
+    base::CancelableTaskTracker *cancelableTaskTracker() { return m_cancelableTaskTracker.get(); }
+
     static QPointer<ProfileAdapter> s_profileForGlobalCertificateVerification;
 private:
     void updateCustomUrlSchemeHandlers();
@@ -251,6 +261,7 @@ private:
     QList<WebContentsAdapterClient *> m_webContentsAdapterClients;
     int m_httpCacheMaxSize;
     QrcUrlSchemeHandler m_qrcHandler;
+    std::unique_ptr<base::CancelableTaskTracker> m_cancelableTaskTracker;
 
     Q_DISABLE_COPY(ProfileAdapter)
 };
