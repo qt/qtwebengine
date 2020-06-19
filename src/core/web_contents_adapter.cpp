@@ -45,6 +45,8 @@
 
 #include "devtools_frontend_qt.h"
 #include "download_manager_delegate_qt.h"
+#include "favicon_driver_qt.h"
+#include "favicon_service_factory_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "printing/print_view_manager_qt.h"
@@ -69,6 +71,7 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/values.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#include "components/favicon/core/favicon_service.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -532,6 +535,10 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     extensions::ExtensionWebContentsObserverQt::CreateForWebContents(webContents());
 #endif
 
+    content::BrowserContext *context = webContents()->GetBrowserContext();
+    FaviconDriverQt::CreateForWebContents(
+            webContents(), FaviconServiceFactoryQt::GetForBrowserContext(context), m_adapterClient);
+
     // Create an instance of WebEngineVisitedLinksManager to catch the first
     // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
     // force to initialize visited links in VisitedLinkSlave.
@@ -818,12 +825,15 @@ QUrl WebContentsAdapter::requestedUrl() const
 QUrl WebContentsAdapter::iconUrl() const
 {
     CHECK_INITIALIZED(QUrl());
-    if (content::NavigationEntry* entry = m_webContents->GetController().GetVisibleEntry()) {
-        content::FaviconStatus &favicon = entry->GetFavicon();
-        if (favicon.valid)
-            return toQt(favicon.url);
-    }
-    return QUrl();
+    FaviconDriverQt *driver = FaviconDriverQt::FromWebContents(webContents());
+    return toQt(driver->GetFaviconURL());
+}
+
+QIcon WebContentsAdapter::icon() const
+{
+    CHECK_INITIALIZED(QIcon());
+    FaviconDriverQt *driver = FaviconDriverQt::FromWebContents(webContents());
+    return toQIcon(driver->GetFavicon());
 }
 
 QString WebContentsAdapter::pageTitle() const
@@ -1803,12 +1813,6 @@ WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
     }
 
     return status;
-}
-
-FaviconManager *WebContentsAdapter::faviconManager()
-{
-    CHECK_INITIALIZED(nullptr);
-    return m_webContentsDelegate->faviconManager();
 }
 
 FindTextHelper *WebContentsAdapter::findTextHelper()

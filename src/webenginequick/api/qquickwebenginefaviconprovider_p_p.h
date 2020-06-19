@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -52,15 +52,15 @@
 //
 
 #include <QtWebEngineQuick/private/qtwebengineglobal_p.h>
+#include <QtCore/QList>
 #include <QtQuick/QQuickImageProvider>
-
-#include <QtCore/QMap>
 
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineView;
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFaviconProvider : public QQuickImageProvider {
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFaviconProvider : public QQuickImageProvider
+{
 public:
     static QString identifier();
     static QUrl faviconProviderUrl(const QUrl &);
@@ -68,18 +68,13 @@ public:
     QQuickWebEngineFaviconProvider();
     ~QQuickWebEngineFaviconProvider();
 
-    QUrl attach(QQuickWebEngineView *, const QUrl &);
-    void detach(QQuickWebEngineView *);
-
+    void attach(QQuickWebEngineView *view) { m_views.append(view); }
+    void detach(QQuickWebEngineView *view) { m_views.removeAll(view); }
 
     QPixmap requestPixmap(const QString &, QSize *, const QSize &) override;
 
 private:
-    QQuickWebEngineView *viewForIconUrl(const QUrl &) const;
-    QSize findFitSize(const QList<QSize> &, const QSize &, const QSize &) const;
-
-    QMap<QQuickWebEngineView *, QList<QUrl> *> m_iconUrlMap;
-    QQuickWebEngineView *m_latestView;
+    QList<QQuickWebEngineView *> m_views;
 };
 
 QT_END_NAMESPACE

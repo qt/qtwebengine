@@ -56,6 +56,7 @@
 
 #include "extensions/extension_system_qt.h"
 #include "web_contents_delegate_qt.h"
+#include "web_engine_settings.h"
 
 #include <string>
 

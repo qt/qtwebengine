@@ -52,7 +52,6 @@
 #include <base/strings/nullable_string16.h>
 #include "base/files/file_path.h"
 #include "base/time/time.h"
-#include "favicon_manager.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -68,6 +67,7 @@ QT_FORWARD_DECLARE_CLASS(QMatrix4x4)
 QT_FORWARD_DECLARE_CLASS(QSslCertificate)
 
 namespace gfx {
+class Image;
 class ImageSkiaRep;
 }
 
@@ -222,6 +222,7 @@ QImage toQImage(const SkBitmap &bitmap);
 QImage toQImage(const gfx::ImageSkiaRep &imageSkiaRep);
 SkBitmap toSkBitmap(const QImage &image);
 
+QIcon toQIcon(const gfx::Image &image);
 QIcon toQIcon(const std::vector<SkBitmap> &bitmaps);
 
 void convertToQt(const SkMatrix44 &m, QMatrix4x4 &c);
@@ -271,8 +272,6 @@ inline QStringList fromVector(const std::vector<base::string16> &vector)
     }
     return result;
 }
-
-FaviconInfo toFaviconInfo(const blink::mojom::FaviconURLPtr &favicon_url);
 
 QList<QSslCertificate> toCertificateChain(net::X509Certificate *certificate);
 

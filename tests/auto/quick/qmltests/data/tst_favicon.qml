@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -26,30 +26,26 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.3
-import QtWebEngine.testsupport 1.0
-import QtQuick.Window 2.0
-import "../../qmltests/data" 1.0
+import QtQuick
+import QtTest
+import QtWebEngine
+import Test.util
+import "../../qmltests/data"
 
 TestWebEngineView {
     id: webEngineView
     width: 200
     height: 400
 
-    testSupport: WebEngineTestSupport {
-        property var errorPageLoadStatus: null
+    TempDir { id: tempDir }
 
-        function waitForErrorPageLoadSucceeded() {
-            var success = _waitFor(function() { return testSupport.errorPageLoadStatus == WebEngineView.LoadSucceededStatus })
-            testSupport.errorPageLoadStatus = null
-            return success
-        }
+    property QtObject defaultProfile: WebEngineProfile {
+        offTheRecord: true
+    }
 
-        errorPage.onLoadingChanged: function(load) {
-            errorPageLoadStatus = load.status
-        }
+    property QtObject nonOTRProfile: WebEngineProfile {
+        persistentStoragePath: tempDir.path() + '/WebEngineFavicon'
+        offTheRecord: false
     }
 
     function removeFaviconProviderPrefix(url) {
@@ -58,10 +54,10 @@ TestWebEngineView {
 
     function getFaviconPixel(faviconImage) {
         var grabImage = Qt.createQmlObject("
-                import QtQuick 2.5\n
+                import QtQuick\n
                 Image { }", testCase)
         var faviconCanvas = Qt.createQmlObject("
-                import QtQuick 2.5\n
+                import QtQuick\n
                 Canvas { }", testCase)
 
         testCase.tryVerify(function() { return faviconImage.status == Image.Ready });
@@ -104,12 +100,22 @@ TestWebEngineView {
 
         function init() {
             // It is worth to restore the initial state with loading a blank page before all test functions.
-            webEngineView.url = 'about:blank'
-            verify(webEngineView.waitForLoadSucceeded())
-            iconChangedSpy.clear()
+            webEngineView.url = 'about:blank';
+            verify(webEngineView.waitForLoadSucceeded());
+            iconChangedSpy.clear();
+            webEngineView.settings.touchIconsEnabled = false;
+            webEngineView.settings.autoLoadIconsForPage = true;
         }
 
-        function test_faviconLoad() {
+        function test_faviconLoad_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_faviconLoad(row) {
+            webEngineView.profile = row.profile
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("favicon.html")
@@ -119,11 +125,20 @@ TestWebEngineView {
             iconChangedSpy.wait()
             compare(iconChangedSpy.count, 1)
 
-            compare(favicon.width, 48)
-            compare(favicon.height, 48)
+            tryCompare(favicon, "status", Image.Ready)
+            compare(favicon.width, 32)
+            compare(favicon.height, 32)
         }
 
-        function test_faviconLoadEncodedUrl() {
+        function test_faviconLoadEncodedUrl_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_faviconLoadEncodedUrl(row) {
+            webEngineView.profile = row.profile
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("favicon2.html?favicon=load should work with#whitespace!")
@@ -133,11 +148,62 @@ TestWebEngineView {
             iconChangedSpy.wait()
             compare(iconChangedSpy.count, 1)
 
-            compare(favicon.width, 16)
-            compare(favicon.height, 16)
+            tryCompare(favicon, "status", Image.Ready)
+            compare(favicon.width, 32)
+            compare(favicon.height, 32)
         }
 
-        function test_noFavicon() {
+        function test_faviconLoadAfterHistoryNavigation_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_faviconLoadAfterHistoryNavigation(row) {
+            webEngineView.profile = row.profile
+            compare(iconChangedSpy.count, 0)
+
+            var iconUrl
+
+            webEngineView.url = Qt.resolvedUrl("favicon.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            tryCompare(iconChangedSpy, "count", 1)
+            iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
+            compare(iconUrl, Qt.resolvedUrl("icons/favicon.png"))
+
+            iconChangedSpy.clear()
+            webEngineView.url = Qt.resolvedUrl("favicon-shortcut.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            tryCompare(iconChangedSpy, "count", 2)
+            iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
+            compare(iconUrl, Qt.resolvedUrl("icons/qt32.ico"))
+
+            iconChangedSpy.clear()
+            webEngineView.goBack();
+            verify(webEngineView.waitForLoadSucceeded())
+            tryCompare(iconChangedSpy, "count", 2)
+            iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
+            compare(iconUrl, Qt.resolvedUrl("icons/favicon.png"))
+
+            iconChangedSpy.clear()
+            webEngineView.goForward();
+            verify(webEngineView.waitForLoadSucceeded())
+            tryCompare(iconChangedSpy, "count", 2)
+            iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
+            compare(iconUrl, Qt.resolvedUrl("icons/qt32.ico"))
+        }
+
+
+        function test_noFavicon_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_noFavicon(row) {
+            webEngineView.profile = row.profile
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("test1.html")
@@ -150,7 +216,15 @@ TestWebEngineView {
             compare(iconUrl, Qt.resolvedUrl(""))
         }
 
-        function test_aboutBlank() {
+        function test_aboutBlank_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_aboutBlank(row) {
+            webEngineView.profile = row.profile
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("about:blank")
@@ -163,7 +237,15 @@ TestWebEngineView {
             compare(iconUrl, Qt.resolvedUrl(""))
         }
 
-        function test_unavailableFavicon() {
+        function test_unavailableFavicon_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_unavailableFavicon(row) {
+            webEngineView.profile = row.profile
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("favicon-unavailable.html")
@@ -176,15 +258,25 @@ TestWebEngineView {
             compare(iconUrl, Qt.resolvedUrl(""))
         }
 
-        function test_errorPageEnabled() {
-            WebEngine.settings.errorPageEnabled = true
+        function test_errorPageEnabled_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_errorPageEnabled(row) {
+            webEngineView.profile = row.profile
+            webEngineView.settings.errorPageEnabled = true
 
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("http://url.invalid")
             webEngineView.url = url
             verify(webEngineView.waitForLoadFailed(20000))
-            verify(webEngineView.testSupport.waitForErrorPageLoadSucceeded())
+            // FIXME: Wait for error page load to finish.
+            // This should be done without testSupport API.
+            wait(500)
 
             compare(iconChangedSpy.count, 0)
 
@@ -192,8 +284,16 @@ TestWebEngineView {
             compare(iconUrl, Qt.resolvedUrl(""))
         }
 
-        function test_errorPageDisabled() {
-            WebEngine.settings.errorPageEnabled = false
+        function test_errorPageDisabled_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_errorPageDisabled(row) {
+            webEngineView.profile = row.profile
+            webEngineView.settings.errorPageEnabled = false
 
             compare(iconChangedSpy.count, 0)
 
@@ -207,7 +307,15 @@ TestWebEngineView {
             compare(iconUrl, Qt.resolvedUrl(""))
         }
 
-        function test_bestFavicon() {
+        function test_bestFavicon_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_bestFavicon(row) {
+            webEngineView.profile = row.profile
             compare(iconChangedSpy.count, 0)
             var url, iconUrl
 
@@ -221,6 +329,7 @@ TestWebEngineView {
             iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
             // Touch icon is ignored
             compare(iconUrl, Qt.resolvedUrl("icons/qt32.ico"))
+            tryCompare(favicon, "status", Image.Ready)
             compare(favicon.width, 32)
             compare(favicon.height, 32)
 
@@ -230,23 +339,25 @@ TestWebEngineView {
             webEngineView.url = url
             verify(webEngineView.waitForLoadSucceeded())
 
-            iconChangedSpy.wait()
-            verify(iconChangedSpy.count >= 1)
+            tryCompare(iconChangedSpy, "count", 2)
             iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
 
-            // If the icon URL is empty we have to wait for
-            // the second iconChanged signal that propagates the expected URL
-            if (iconUrl == Qt.resolvedUrl("")) {
-                tryCompare(iconChangedSpy, "count", 2)
-                iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
-            }
-
-            compare(iconUrl, Qt.resolvedUrl("icons/qt144.png"))
-            compare(favicon.width, 144)
-            compare(favicon.height, 144)
+            // If touch icon is disabled, FaviconHandler propagates the icon closest to size 16x16
+            compare(iconUrl, Qt.resolvedUrl("icons/qt32.ico"))
+            tryCompare(favicon, "status", Image.Ready)
+            compare(favicon.width, 32)
+            compare(favicon.height, 32)
         }
 
-        function test_touchIcon() {
+        function test_touchIcon_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_touchIcon(row) {
+            webEngineView.profile = row.profile
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("favicon-touch.html")
@@ -260,7 +371,7 @@ TestWebEngineView {
             compare(favicon.width, 0)
             compare(favicon.height, 0)
 
-            WebEngine.settings.touchIconsEnabled = true
+            webEngineView.settings.touchIconsEnabled = true
 
             url = Qt.resolvedUrl("favicon-touch.html")
             webEngineView.url = url
@@ -270,11 +381,20 @@ TestWebEngineView {
             iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
             compare(iconUrl, Qt.resolvedUrl("icons/qt144.png"))
             compare(iconChangedSpy.count, 1)
+            tryCompare(favicon, "status", Image.Ready)
             compare(favicon.width, 144)
             compare(favicon.height, 144)
         }
 
-        function test_multiIcon() {
+        function test_multiIcon_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_multiIcon(row) {
+            webEngineView.profile = row.profile
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("favicon-multi.html")
@@ -283,61 +403,24 @@ TestWebEngineView {
 
             iconChangedSpy.wait()
             compare(iconChangedSpy.count, 1)
-            compare(favicon.width, 64)
-            compare(favicon.height, 64)
+            tryCompare(favicon, "status", Image.Ready)
+            compare(favicon.width, 32)
+            compare(favicon.height, 32)
         }
 
-        function test_faviconProvider_data() {
+        function test_dynamicFavicon_data() {
             return [
-                   { tag: "multi 8x8", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 8, value: 16 },
-                   { tag: "multi 16x16", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 16, value: 16 },
-                   { tag: "multi 17x17", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 17, value: 32 },
-                   { tag: "multi 31x31", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 31, value: 32 },
-                   { tag: "multi 32x32", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 32, value: 32 },
-                   { tag: "multi 33x33", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 33, value: 64 },
-                   { tag: "multi 64x64", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 64, value: 64 },
-                   { tag: "multi 128x128", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 128, value: 128 },
-                   { tag: "multi 255x255", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 255, value: 255 },
-                   { tag: "multi 256x256", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 256, value: 255 },
-                   { tag: "candidate 8x8", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 8, value: 16 },
-                   { tag: "candidate 16x16", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 16, value: 16 },
-                   { tag: "candidate 17x17", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 17, value: 32 },
-                   { tag: "candidate 31x31", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 31, value: 32 },
-                   { tag: "candidate 32x32", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 32, value: 32 },
-                   { tag: "candidate 33x33", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 33, value: 64 },
-                   { tag: "candidate 64x64", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 64, value: 64 },
-                   { tag: "candidate 128x128", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 128, value: 128 },
-                   { tag: "candidate 255x255", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 255, value: 255 },
-                   { tag: "candidate 256x256", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 256, value: 255 },
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
             ];
         }
 
-        function test_faviconProvider(row) {
-            var faviconImage = Qt.createQmlObject("
-                    import QtQuick 2.5\n
-                    Image { sourceSize: Qt.size(width, height) }", testCase)
-
+        function test_dynamicFavicon(row) {
+            webEngineView.profile = row.profile
             compare(iconChangedSpy.count, 0)
 
-            webEngineView.url = row.url
-            verify(webEngineView.waitForLoadSucceeded())
-
-            iconChangedSpy.wait()
-            compare(iconChangedSpy.count, 1)
-
-            faviconImage.width = row.size / Screen.devicePixelRatio
-            faviconImage.height = row.size  / Screen.devicePixelRatio
-            faviconImage.source = webEngineView.icon
-
-            var pixel = getFaviconPixel(faviconImage);
-            compare(pixel[0], row.value)
-
-            faviconImage.destroy()
-        }
-
-        function test_dynamicFavicon() {
             var faviconImage = Qt.createQmlObject("
-                    import QtQuick 2.5\n
+                    import QtQuick\n
                     Image { width: 16; height: 16; sourceSize: Qt.size(width, height); }", testCase)
             faviconImage.source = Qt.binding(function() { return webEngineView.icon; });
 
@@ -377,9 +460,17 @@ TestWebEngineView {
             faviconImage.destroy()
         }
 
-        function test_touchIconWithSameURL()
+        function test_touchIconWithSameURL_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_touchIconWithSameURL(row)
         {
-            WebEngine.settings.touchIconsEnabled = false;
+            webEngineView.profile = row.profile;
+            compare(iconChangedSpy.count, 0);
 
             var icon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
@@ -408,6 +499,54 @@ TestWebEngineView {
             // was loaded previously.
             tryCompare(iconChangedSpy, "count", 1);
             verify(!webEngineView.icon.toString().replace(/^image:\/\/favicon\//, ''));
+        }
+
+        function test_iconsDisabled_data() {
+            return [
+                   { tag: "misc", url: Qt.resolvedUrl("favicon-misc.html") },
+                   { tag: "shortcut", url: Qt.resolvedUrl("favicon-shortcut.html") },
+                   { tag: "single", url: Qt.resolvedUrl("favicon-single.html") },
+                   { tag: "touch", url: Qt.resolvedUrl("favicon-touch.html") },
+                   { tag: "unavailable", url: Qt.resolvedUrl("favicon-unavailable.html") },
+            ];
+        }
+
+        function test_iconsDisabled(row) {
+            webEngineView.settings.autoLoadIconsForPage = false
+            webEngineView.profile = defaultProfile
+            compare(iconChangedSpy.count, 0)
+
+            webEngineView.url = row.url
+            verify(webEngineView.waitForLoadSucceeded())
+
+            compare(iconChangedSpy.count, 0)
+
+            var iconUrl = webEngineView.icon
+            compare(iconUrl, Qt.resolvedUrl(""))
+        }
+
+        function test_touchIconsEnabled_data() {
+            return [
+                   { tag: "misc", url: Qt.resolvedUrl("favicon-misc.html"), expectedIconUrl: Qt.resolvedUrl("icons/qt144.png") },
+                   { tag: "shortcut", url: Qt.resolvedUrl("favicon-shortcut.html"), expectedIconUrl: Qt.resolvedUrl("icons/qt144.png") },
+                   { tag: "single", url: Qt.resolvedUrl("favicon-single.html"), expectedIconUrl: Qt.resolvedUrl("icons/qt32.ico") },
+                   { tag: "touch", url: Qt.resolvedUrl("favicon-touch.html"), expectedIconUrl: Qt.resolvedUrl("icons/qt144.png") },
+            ];
+        }
+
+        function test_touchIconsEnabled(row) {
+            webEngineView.settings.touchIconsEnabled = true
+            webEngineView.profile = defaultProfile
+            compare(iconChangedSpy.count, 0)
+
+            webEngineView.url = row.url
+            verify(webEngineView.waitForLoadSucceeded())
+
+            iconChangedSpy.wait()
+            compare(iconChangedSpy.count, 1)
+
+            var iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
+            compare(iconUrl, row.expectedIconUrl)
         }
     }
 }

@@ -70,7 +70,6 @@ class QQuickWebEngineAction;
 class QQuickWebEngineAuthenticationDialogRequest;
 class QQuickWebEngineClientCertificateSelection;
 class QQuickWebEngineColorDialogRequest;
-class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineFileDialogRequest;
 class QQuickWebEngineHistory;
 class QQuickWebEngineJavaScriptDialogRequest;

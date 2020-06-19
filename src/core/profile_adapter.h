@@ -220,6 +220,7 @@ private:
     void updateCustomUrlSchemeHandlers();
     void resetVisitedLinksManager();
     bool persistVisitedLinks() const;
+    void reinitializeHistoryService();
 
     QString m_name;
     bool m_offTheRecord;

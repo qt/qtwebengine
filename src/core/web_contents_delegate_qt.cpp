@@ -46,7 +46,6 @@
 #include "profile_adapter.h"
 #include "color_chooser_controller.h"
 #include "color_chooser_qt.h"
-#include "favicon_manager.h"
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
 #include "profile_qt.h"
@@ -102,7 +101,6 @@ static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptCo
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
-    , m_faviconManager(new FaviconManager(webContents, adapterClient))
     , m_findTextHelper(new FindTextHelper(webContents, adapterClient))
     , m_loadingState(determineLoadingState(webContents))
     , m_didStartLoadingSeen(m_loadingState == LoadingState::Loading)
@@ -362,8 +360,6 @@ void WebContentsDelegateQt::DidStartNavigation(content::NavigationHandle *naviga
     if (!navigation_handle->IsInMainFrame() || !web_contents()->IsLoadingToDifferentDocument())
         return;
 
-    m_faviconManager->resetCandidates();
-
     m_loadingInfo.url = toQt(navigation_handle->GetURL());
     // IsErrorPage is only set after navigation commit, so check it otherwise: error page shouldn't have navigation entry
     bool isErrorPage = m_loadingInfo.triggersErrorPage && !navigation_handle->GetNavigationEntry();
@@ -426,7 +422,6 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
     // The load will succede as an error-page load later, and we reported the original error above
     if (navigation_handle->IsErrorPage()) {
         // Now report we are starting to load an error-page.
-        m_faviconManager->resetCandidates();
         emitLoadStarted(true);
 
         // If it is already committed we will not see another DidFinishNavigation call or a DidFinishLoad call.
@@ -533,9 +528,6 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
         return;
     }
 
-    if (!m_faviconManager->hasCandidate())
-        m_viewClient->iconChanged(QUrl());
-
     content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
     int http_statuscode = entry ? entry->GetHttpStatusCode() : 0;
     bool errorPageEnabled = webEngineSettings()->testAttribute(QWebEngineSettings::ErrorPageEnabled);
@@ -545,21 +537,6 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     m_loadingInfo.url = toQt(validated_url);
     m_loadingInfo.errorCode = http_statuscode;
     m_loadingInfo.triggersErrorPage = triggersErrorPage;
-}
-
-void WebContentsDelegateQt::DidUpdateFaviconURL(content::RenderFrameHost *render_frame_host, const std::vector<blink::mojom::FaviconURLPtr> &candidates)
-{
-    QList<FaviconInfo> faviconCandidates;
-    faviconCandidates.reserve(static_cast<int>(candidates.size()));
-    for (const blink::mojom::FaviconURLPtr &candidate : candidates) {
-        // Store invalid candidates too for later debugging via API
-        faviconCandidates.append(toFaviconInfo(candidate));
-    }
-
-    // Favicon URL can be changed from JavaScript too. Thus we need to reset
-    // the current candidate icon list to not handle previous icon as a candidate.
-    m_faviconManager->resetCandidates();
-    m_faviconManager->update(faviconCandidates);
 }
 
 void WebContentsDelegateQt::WebContentsCreated(content::WebContents * /*source_contents*/,
@@ -867,11 +844,6 @@ void WebContentsDelegateQt::ResourceLoadComplete(content::RenderFrameHost* rende
     }
 }
 
-FaviconManager *WebContentsDelegateQt::faviconManager()
-{
-    return m_faviconManager.data();
-}
-
 FindTextHelper *WebContentsDelegateQt::findTextHelper()
 {
     return m_findTextHelper.data();
@@ -890,7 +862,6 @@ void WebContentsDelegateQt::copyStateFrom(WebContentsDelegateQt *source)
 {
     m_title = source->m_title;
     NavigationStateChanged(web_contents(), content::INVALIDATE_TYPE_URL);
-    m_faviconManager->copyStateFrom(source->m_faviconManager.data());
 }
 
 WebContentsDelegateQt::LoadingState WebContentsDelegateQt::determineLoadingState(content::WebContents *contents)

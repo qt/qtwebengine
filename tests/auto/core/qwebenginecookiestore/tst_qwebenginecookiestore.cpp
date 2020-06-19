@@ -294,9 +294,9 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
     QVERIFY(!cookieRequestHeader.isEmpty());
     QTRY_COMPARE(cookieAddedSpy.count(), 1);
-    QTRY_COMPARE(accessTested.loadAcquire(), 7);
+    QTRY_COMPARE(accessTested.loadAcquire(), 6);
 
-    QTRY_COMPARE(serverSpy.count(), 6);
+    QTRY_COMPARE(serverSpy.count(), 5);
 
     client->deleteAllCookies();
     QTRY_COMPARE(cookieRemovedSpy.count(), 1);
@@ -313,9 +313,9 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     // Test cookies are NOT added:
     QTest::qWait(100);
     QCOMPARE(cookieAddedSpy.count(), 1);
-    QTRY_COMPARE(accessTested.loadAcquire(), 11);
+    QTRY_COMPARE(accessTested.loadAcquire(), 9);
 
-    QTRY_COMPARE(serverSpy.count(), 9);
+    QTRY_COMPARE(serverSpy.count(), 7);
 
     page.triggerAction(QWebEnginePage::Reload);
     QTRY_COMPARE(loadSpy.count(), 1);
@@ -324,7 +324,7 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     QCOMPARE(cookieAddedSpy.count(), 1);
 
     // Wait for last GET /favicon.ico
-    QTRY_COMPARE(serverSpy.count(), 12);
+    QTRY_COMPARE(serverSpy.count(), 9);
     (void) httpServer.stop();
 
     QCOMPARE(resourceFirstParty.size(), accessTested.loadAcquire());

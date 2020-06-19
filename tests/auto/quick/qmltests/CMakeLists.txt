@@ -16,6 +16,7 @@ set(testList
     tst_activeFocusOnPress.qml
     tst_audioMuted.qml
     tst_desktopBehaviorLoadHtml.qml
+    tst_favicon.qml
     tst_findText.qml
     tst_focusOnNavigation.qml
     tst_fullScreenRequest.qml
@@ -53,8 +54,6 @@ endif()
 
 if(QT_FEATURE_webengine_testsupport)
     list(APPEND testList
-        tst_favicon.qml
-        tst_faviconDownload.qml
         tst_inputMethod.qml
         tst_javaScriptDialogs.qml
         tst_linkHovered.qml

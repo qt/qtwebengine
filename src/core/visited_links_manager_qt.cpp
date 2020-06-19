@@ -90,27 +90,12 @@ bool VisitedLinksManagerQt::containsUrl(const QUrl &url) const
     return m_visitedLinkWriter->IsVisited(toGurl(url));
 }
 
-static void ensureDirectoryExists(const base::FilePath &path)
-{
-    if (base::PathExists(path))
-        return;
-
-    base::File::Error error;
-    if (base::CreateDirectoryAndGetError(path, &error))
-        return;
-
-    std::string errorstr = base::File::ErrorToString(error);
-    qWarning("Cannot create directory %s. Error: %s.",
-             path.AsUTF8Unsafe().c_str(),
-             errorstr.c_str());
-}
-
 VisitedLinksManagerQt::VisitedLinksManagerQt(ProfileQt *profile, bool persistVisitedLinks)
     : m_delegate(new VisitedLinkDelegateQt)
 {
     Q_ASSERT(profile);
     if (persistVisitedLinks)
-        ensureDirectoryExists(profile->GetPath());
+        profile->ensureDirectoryExists();
     m_visitedLinkWriter.reset(new visitedlink::VisitedLinkWriter(profile, m_delegate.data(), persistVisitedLinks));
     m_visitedLinkWriter->Init();
 }

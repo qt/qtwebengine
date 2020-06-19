@@ -38,6 +38,7 @@
 **
 ****************************************************************************/
 
+#include "qtwebenginecoreglobal_p.h"
 #include "web_engine_library_info.h"
 
 #include "base/base_paths.h"

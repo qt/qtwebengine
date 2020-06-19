@@ -1,14 +1,14 @@
 include(../../util/util.cmake)
 
-qt_internal_add_test(tst_faviconmanager
+qt_internal_add_test(tst_favicon
     SOURCES
-        tst_faviconmanager.cpp
+        tst_favicon.cpp
     LIBRARIES
         Qt::WebEngineWidgets
         Test::Util
 )
 
-set(tst_faviconmanager_resource_files
+set(tst_favicon_resource_files
     "resources/favicon-misc.html"
     "resources/favicon-multi.html"
     "resources/favicon-shortcut.html"
@@ -21,9 +21,9 @@ set(tst_faviconmanager_resource_files
     "resources/test1.html"
 )
 
-qt_add_resource(tst_faviconmanager "tst_faviconmanager"
+qt_add_resource(tst_favicon "tst_favicon"
     PREFIX
         "/"
     FILES
-        ${tst_faviconmanager_resource_files}
+        ${tst_favicon_resource_files}
 )

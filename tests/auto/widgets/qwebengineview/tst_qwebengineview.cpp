@@ -311,7 +311,8 @@ void tst_QWebEngineView::changePage()
     if (!fromIsNullPage) {
         QVERIFY(!pageFrom->iconUrl().isEmpty());
         QCOMPARE(spyIconUrl.last().value(0).toUrl(), pageFrom->iconUrl());
-        QCOMPARE(spyIcon.last().value(0).value<QIcon>(), pageFrom->icon());
+        QCOMPARE(spyIcon.last().value(0).value<QIcon>().availableSizes(),
+                 pageFrom->icon().availableSizes());
     }
 
     QScopedPointer<QWebEnginePage> pageTo(new QWebEnginePage);
@@ -340,7 +341,8 @@ void tst_QWebEngineView::changePage()
     QCOMPARE(pageFrom->iconUrl() == pageTo->iconUrl(), iconIsSame);
     if (!iconIsSame) {
         QCOMPARE(spyIconUrl.last().value(0).toUrl(), pageTo->iconUrl());
-        QCOMPARE(spyIcon.last().value(0).value<QIcon>(), pageTo->icon());
+        QCOMPARE(spyIcon.last().value(0).value<QIcon>().availableSizes(),
+                 pageTo->icon().availableSizes());
     }
 
     // verify no emits on destroy with the same number of signals in spy

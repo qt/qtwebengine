@@ -138,6 +138,7 @@ public:
     QString pageTitle() const;
     QString selectedText() const;
     QUrl iconUrl() const;
+    QIcon icon() const;
 
     void undo();
     void redo();
@@ -212,7 +213,6 @@ public:
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *, uint worldId);
 #endif
-    FaviconManager *faviconManager();
     FindTextHelper *findTextHelper();
 
     QPointF lastScrollOffset() const;

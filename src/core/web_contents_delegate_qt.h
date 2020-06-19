@@ -49,7 +49,6 @@
 #include "base/callback.h"
 
 #include "color_chooser_controller.h"
-#include "favicon_manager.h"
 #include "find_text_helper.h"
 #include "javascript_dialog_manager_qt.h"
 #include <QtCore/qlist.h>
@@ -166,7 +165,6 @@ public:
     void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
     void BeforeUnloadFired(bool proceed, const base::TimeTicks& proceed_time) override;
-    void DidUpdateFaviconURL(content::RenderFrameHost *render_frame_host, const std::vector<blink::mojom::FaviconURLPtr> &candidates) override;
     void OnVisibilityChanged(content::Visibility visibility) override;
     void DidFirstVisuallyNonEmptyPaint() override;
     void ActivateContents(content::WebContents* contents) override;
@@ -180,7 +178,6 @@ public:
     void selectClientCert(const QSharedPointer<ClientCertSelectController> &);
     void requestFeaturePermission(ProfileAdapter::PermissionType feature, const QUrl &requestingOrigin);
     void launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture);
-    FaviconManager *faviconManager();
     FindTextHelper *findTextHelper();
 
     void setSavePageInfo(const SavePageInfo &spi) { m_savePageInfo = spi; }
@@ -221,7 +218,6 @@ private:
     int &streamCount(blink::mojom::MediaStreamType type);
 
     WebContentsAdapterClient *m_viewClient;
-    QScopedPointer<FaviconManager> m_faviconManager;
     QScopedPointer<FindTextHelper> m_findTextHelper;
     SavePageInfo m_savePageInfo;
     QSharedPointer<FilePickerController> m_filePickerController;

@@ -196,7 +196,6 @@ public:
     QUrl m_url;
     QString m_html;
     QUrl iconUrl;
-    QQuickWebEngineFaviconProvider *faviconProvider;
     int loadProgress;
     bool m_fullscreenMode;
     bool isLoading;
@@ -230,6 +229,7 @@ private:
     QWebEngineContextMenuRequest *m_contextMenuRequest;
     LoadVisuallyCommittedState m_loadVisuallyCommittedState = NotCommitted;
     QScopedPointer<QQuickWebEngineScriptCollection> m_scriptCollection;
+    QQuickWebEngineFaviconProvider *m_faviconProvider = nullptr;
 };
 
 #ifndef QT_NO_ACCESSIBILITY

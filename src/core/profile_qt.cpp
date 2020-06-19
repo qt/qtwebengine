@@ -58,6 +58,7 @@
 #include "content/public/browser/storage_partition.h"
 
 #include "base/base_paths.h"
+#include "base/files/file_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -296,6 +297,23 @@ content::PlatformNotificationService *ProfileQt::platformNotificationService()
     if (!m_platformNotificationService)
         m_platformNotificationService = std::make_unique<PlatformNotificationServiceQt>(this);
     return m_platformNotificationService.get();
+}
+
+bool ProfileQt::ensureDirectoryExists()
+{
+    const base::FilePath &path = GetPath();
+
+    if (base::PathExists(path))
+        return true;
+
+    base::File::Error error;
+    if (base::CreateDirectoryAndGetError(path, &error))
+        return true;
+
+    std::string errorstr = base::File::ErrorToString(error);
+    qWarning("Cannot create directory %s. Error: %s.", path.AsUTF8Unsafe().c_str(),
+             errorstr.c_str());
+    return false;
 }
 
 } // namespace QtWebEngineCore

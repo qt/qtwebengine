@@ -39,6 +39,10 @@
 
 #include "profile_adapter.h"
 
+#include "components/favicon/core/favicon_service.h"
+#include "components/history/content/browser/history_database_helper.h"
+#include "components/history/core/browser/history_database_params.h"
+#include "components/history/core/browser/history_service.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -51,6 +55,7 @@
 #include "api/qwebengineurlscheme.h"
 #include "content_browser_client_qt.h"
 #include "download_manager_delegate_qt.h"
+#include "favicon_service_factory_qt.h"
 #include "permission_manager_qt.h"
 #include "profile_adapter_client.h"
 #include "profile_io_data_qt.h"
@@ -151,6 +156,8 @@ void ProfileAdapter::setStorageName(const QString &storageName)
             m_profile->m_profileIOData->resetNetworkContext();
         if (m_visitedLinksManager)
             resetVisitedLinksManager();
+
+        reinitializeHistoryService();
     }
 }
 
@@ -164,6 +171,14 @@ void ProfileAdapter::setOffTheRecord(bool offTheRecord)
         m_profile->m_profileIOData->resetNetworkContext();
     if (m_visitedLinksManager)
         resetVisitedLinksManager();
+
+    if (offTheRecord) {
+        favicon::FaviconService *faviconService =
+                FaviconServiceFactoryQt::GetForBrowserContext(m_profile.data());
+        faviconService->SetHistoryService(nullptr);
+    } else if (!m_name.isEmpty()) {
+        reinitializeHistoryService();
+    }
 }
 
 ProfileQt *ProfileAdapter::profile()
@@ -273,6 +288,9 @@ void ProfileAdapter::setDataPath(const QString &path)
         m_profile->m_profileIOData->resetNetworkContext();
     if (!m_offTheRecord && m_visitedLinksManager)
         resetVisitedLinksManager();
+
+    if (!m_offTheRecord)
+        reinitializeHistoryService();
 }
 
 void ProfileAdapter::setDownloadPath(const QString &path)
@@ -650,6 +668,21 @@ void ProfileAdapter::removeWebContentsAdapterClient(WebContentsAdapterClient *cl
 void ProfileAdapter::resetVisitedLinksManager()
 {
     m_visitedLinksManager.reset(new VisitedLinksManagerQt(m_profile.data(), persistVisitedLinks()));
+}
+
+void ProfileAdapter::reinitializeHistoryService()
+{
+    Q_ASSERT(!m_profile->IsOffTheRecord());
+    if (m_profile->ensureDirectoryExists()) {
+        favicon::FaviconService *faviconService =
+                FaviconServiceFactoryQt::GetForBrowserContext(m_profile.data());
+        history::HistoryService *historyService = static_cast<history::HistoryService *>(
+                HistoryServiceFactoryQt::GetInstance()->GetForBrowserContext(m_profile.data()));
+        Q_ASSERT(historyService);
+        faviconService->SetHistoryService(historyService);
+    } else {
+        qWarning("Favicon database is not available for this profile.");
+    }
 }
 
 void ProfileAdapter::setUseForGlobalCertificateVerification(bool enable)

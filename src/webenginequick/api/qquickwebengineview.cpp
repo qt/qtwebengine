@@ -132,7 +132,6 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_testSupport(0)
 #endif
     , contextMenuExtraItems(0)
-    , faviconProvider(0)
     , loadProgress(0)
     , m_fullscreenMode(false)
     , isLoading(false)
@@ -179,8 +178,8 @@ QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
 {
     Q_ASSERT(m_profileInitialized);
     m_profile->d_ptr->removeWebContentsAdapterClient(this);
-    if (faviconProvider)
-        faviconProvider->detach(q_ptr);
+    if (m_faviconProvider)
+        m_faviconProvider->detach(q_ptr);
     // q_ptr->d_ptr might be null due to destroy()
     if (q_ptr->d_ptr)
         bindViewAndWidget(q_ptr, nullptr);
@@ -408,20 +407,7 @@ void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
     if (iconUrl == QQuickWebEngineFaviconProvider::faviconProviderUrl(url))
         return;
 
-    if (!faviconProvider) {
-        QQmlEngine *engine = qmlEngine(q);
-
-        // TODO: this is a workaround for QTBUG-65044
-        if (!engine)
-            return;
-
-        Q_ASSERT(engine);
-        faviconProvider = static_cast<QQuickWebEngineFaviconProvider *>(
-                    engine->imageProvider(QQuickWebEngineFaviconProvider::identifier()));
-        Q_ASSERT(faviconProvider);
-    }
-
-    iconUrl = faviconProvider->attach(q, url);
+    iconUrl = QQuickWebEngineFaviconProvider::faviconProviderUrl(url);
     m_history->reset();
     QTimer::singleShot(0, q, &QQuickWebEngineView::iconChanged);
 }
@@ -903,6 +889,17 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
             adapter->load(m_url);
         else
             adapter->loadDefault();
+    }
+
+    if (!m_faviconProvider) {
+        QQmlEngine *engine = qmlEngine(q_ptr);
+        // TODO: this is a workaround for QTBUG-65044
+        if (!engine)
+            return;
+        m_faviconProvider = static_cast<QQuickWebEngineFaviconProvider *>(
+                engine->imageProvider(QQuickWebEngineFaviconProvider::identifier()));
+        m_faviconProvider->attach(q_ptr);
+        Q_ASSERT(m_faviconProvider);
     }
 }
 

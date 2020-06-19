@@ -44,7 +44,6 @@
 #include "authentication_dialog_controller.h"
 #include "profile_adapter.h"
 #include "color_chooser_controller.h"
-#include "favicon_manager.h"
 #include "find_text_helper.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
@@ -255,7 +254,7 @@ void QWebEnginePagePrivate::iconChanged(const QUrl &url)
         return;
     iconUrl = url;
     Q_EMIT q->iconUrlChanged(iconUrl);
-    Q_EMIT q->iconChanged(adapter->faviconManager()->getIcon());
+    Q_EMIT q->iconChanged(iconUrl.isEmpty() ? QIcon() : adapter->icon());
 }
 
 void QWebEnginePagePrivate::loadProgressChanged(int progress)
@@ -1980,7 +1979,7 @@ QIcon QWebEnginePage::icon() const
     if (d->iconUrl.isEmpty() || !d->adapter->isInitialized())
         return QIcon();
 
-    return d->adapter->faviconManager()->getIcon();
+    return d->adapter->icon();
 }
 
 qreal QWebEnginePage::zoomFactor() const

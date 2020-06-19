@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -39,7 +39,6 @@
 
 #include "qquickwebenginefaviconprovider_p_p.h"
 
-#include "favicon_manager.h"
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 #include "web_contents_adapter.h"
@@ -47,19 +46,63 @@
 #include <QtGui/QIcon>
 #include <QtGui/QPixmap>
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QtGui/qiconengine.h>
-#include <QtGui/private/qicon_p.h>
-#endif
-
 QT_BEGIN_NAMESPACE
-
-using QtWebEngineCore::FaviconInfo;
-using QtWebEngineCore::FaviconManager;
 
 static inline unsigned area(const QSize &size)
 {
     return size.width() * size.height();
+}
+
+static QSize largestSize(const QList<QSize> &availableSizes)
+{
+    QSize result;
+    for (const QSize &size : availableSizes) {
+        if (area(size) > area(result))
+            result = size;
+    }
+
+    return result;
+}
+
+static QSize fitSize(const QList<QSize> &availableSizes, const QSize &requestedSize)
+{
+    Q_ASSERT(availableSizes.count());
+    QSize result = largestSize(availableSizes);
+    if (availableSizes.count() == 1 || area(requestedSize) >= area(result))
+        return result;
+
+    for (const QSize &size : availableSizes) {
+        if (area(size) == area(requestedSize))
+            return size;
+
+        if (area(requestedSize) < area(size) && area(size) < area(result))
+            result = size;
+    }
+
+    return result;
+}
+
+static QPixmap extractPixmap(const QIcon &icon, const QSize &requestedSize)
+{
+    Q_ASSERT(!icon.isNull());
+
+    // If source size is not specified, use the largest icon
+    if (!requestedSize.isValid())
+        return icon.pixmap(largestSize(icon.availableSizes()), 1.0).copy();
+
+    const QSize &size = fitSize(icon.availableSizes(), requestedSize);
+    const QPixmap &iconPixmap = icon.pixmap(size, 1.0);
+    return iconPixmap.scaled(requestedSize, Qt::KeepAspectRatio, Qt::SmoothTransformation).copy();
+}
+
+static QQuickWebEngineView *findViewById(const QString &id, QList<QQuickWebEngineView *> *views)
+{
+    for (QQuickWebEngineView *view : *views) {
+        if (view->icon() == QQuickWebEngineFaviconProvider::faviconProviderUrl(QUrl(id)))
+            return view;
+    }
+
+    return nullptr;
 }
 
 QString QQuickWebEngineFaviconProvider::identifier()
@@ -75,7 +118,8 @@ QUrl QQuickWebEngineFaviconProvider::faviconProviderUrl(const QUrl &url)
     QUrl providerUrl;
     providerUrl.setScheme(QStringLiteral("image"));
     providerUrl.setHost(identifier());
-    providerUrl.setPath(QStringLiteral("/%1").arg(url.toString(QUrl::RemoveQuery | QUrl::RemoveFragment)));
+    providerUrl.setPath(
+            QStringLiteral("/%1").arg(url.toString(QUrl::RemoveQuery | QUrl::RemoveFragment)));
     if (url.hasQuery())
         providerUrl.setQuery(url.query(QUrl::FullyDecoded));
     if (url.hasFragment())
@@ -86,125 +130,29 @@ QUrl QQuickWebEngineFaviconProvider::faviconProviderUrl(const QUrl &url)
 
 QQuickWebEngineFaviconProvider::QQuickWebEngineFaviconProvider()
     : QQuickImageProvider(QQuickImageProvider::Pixmap)
-    , m_latestView(0)
 {
 }
 
-QQuickWebEngineFaviconProvider::~QQuickWebEngineFaviconProvider()
-{
-    qDeleteAll(m_iconUrlMap);
-}
+QQuickWebEngineFaviconProvider::~QQuickWebEngineFaviconProvider() { }
 
-QUrl QQuickWebEngineFaviconProvider::attach(QQuickWebEngineView *view, const QUrl &iconUrl)
-{
-    if (iconUrl.isEmpty())
-        return QUrl();
-
-    m_latestView = view;
-
-    if (!m_iconUrlMap.contains(view))
-        m_iconUrlMap.insert(view, new QList<QUrl>());
-
-    QList<QUrl> *iconUrls = m_iconUrlMap[view];
-    if (!iconUrls->contains(iconUrl))
-        iconUrls->append(iconUrl);
-
-    return faviconProviderUrl(iconUrl);
-}
-
-void QQuickWebEngineFaviconProvider::detach(QQuickWebEngineView *view)
-{
-    QList<QUrl> *iconUrls = m_iconUrlMap.take(view);
-    delete iconUrls;
-}
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-static QPixmap getUnscaledPixmap(QIcon icon, const QSize &size)
-{
-    QPixmap pixmap = icon.data_ptr()->engine->pixmap(size, QIcon::Normal, QIcon::Off);
-    pixmap.setDevicePixelRatio(1.0);
-    return pixmap;
-}
-#else
-static QPixmap getUnscaledPixmap(const QIcon &icon, const QSize &size)
-{
-    return icon.pixmap(size, 1.0);
-}
-#endif
-
-QPixmap QQuickWebEngineFaviconProvider::requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
+QPixmap QQuickWebEngineFaviconProvider::requestPixmap(const QString &id, QSize *size,
+                                                      const QSize &requestedSize)
 {
     Q_UNUSED(size);
     Q_UNUSED(requestedSize);
 
-    QUrl iconUrl(id);
-    QQuickWebEngineView *view = viewForIconUrl(iconUrl);
-
-    if (!view || iconUrl.isEmpty())
+    if (m_views.isEmpty())
         return QPixmap();
 
-    FaviconManager *faviconManager = view->d_ptr->adapter->faviconManager();
+    QQuickWebEngineView *view = findViewById(id, &m_views);
+    if (!view)
+        return QPixmap();
 
-    Q_ASSERT(faviconManager);
-    const FaviconInfo &faviconInfo = faviconManager->getFaviconInfo(iconUrl);
-    const QIcon &icon = faviconManager->getIcon(faviconInfo.candidate ? QUrl() : iconUrl);
+    QIcon icon = view->d_ptr->adapter->icon();
+    if (icon.isNull())
+        return QPixmap();
 
-    Q_ASSERT(!icon.isNull());
-    const QSize &bestSize = faviconInfo.size;
-
-    // If source size is not specified, use the best quality
-    if (!requestedSize.isValid()) {
-        if (size)
-            *size = bestSize;
-
-        return getUnscaledPixmap(icon, bestSize).copy();
-    }
-
-    const QSize &fitSize = findFitSize(icon.availableSizes(), requestedSize, bestSize);
-    const QPixmap &iconPixmap = getUnscaledPixmap(icon, fitSize);
-
-    if (size)
-        *size = iconPixmap.size();
-
-    return iconPixmap.scaled(requestedSize, Qt::KeepAspectRatio, Qt::SmoothTransformation).copy();
-}
-
-QQuickWebEngineView *QQuickWebEngineFaviconProvider::viewForIconUrl(const QUrl &iconUrl) const
-{
-    // The most common use case is that the requested iconUrl belongs to the
-    // latest WebEngineView which was raised an iconChanged signal.
-    if (m_latestView) {
-        QList<QUrl> *iconUrls = m_iconUrlMap[m_latestView];
-        if (iconUrls && iconUrls->contains(iconUrl))
-            return m_latestView;
-    }
-
-    for (auto it = m_iconUrlMap.cbegin(), end = m_iconUrlMap.cend(); it != end; ++it) {
-        if (it.value()->contains(iconUrl))
-            return it.key();
-    }
-
-    return 0;
-}
-
-QSize QQuickWebEngineFaviconProvider::findFitSize(const QList<QSize> &availableSizes,
-                                                  const QSize &requestedSize,
-                                                  const QSize &bestSize) const
-{
-    Q_ASSERT(availableSizes.count());
-    if (availableSizes.count() == 1 || area(requestedSize) >= area(bestSize))
-        return bestSize;
-
-    QSize fitSize = bestSize;
-    for (const QSize &size : availableSizes) {
-        if (area(size) == area(requestedSize))
-            return size;
-
-        if (area(requestedSize) < area(size) && area(size) < area(fitSize))
-            fitSize = size;
-    }
-
-    return fitSize;
+    return extractPixmap(icon, requestedSize).copy();
 }
 
 QT_END_NAMESPACE

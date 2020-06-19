@@ -1,0 +1,193 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the QtWebEngine module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "favicon_service_factory_qt.h"
+
+#include "base/files/file_util.h"
+#include "components/favicon/core/favicon_service_impl.h"
+#include "components/history/content/browser/content_visit_delegate.h"
+#include "components/history/content/browser/history_database_helper.h"
+#include "components/history/core/browser/history_backend_client.h"
+#include "components/history/core/browser/history_database_params.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_context.h"
+#include "url/gurl.h"
+
+namespace QtWebEngineCore {
+
+void HistoryClientQt::OnHistoryServiceCreated(history::HistoryService *history_service)
+{
+    Q_UNUSED(history_service);
+}
+
+void HistoryClientQt::Shutdown() { }
+
+bool HistoryClientQt::CanAddURL(const GURL &url)
+{
+    Q_UNUSED(url);
+    return true;
+}
+
+void HistoryClientQt::NotifyProfileError(sql::InitStatus init_status,
+                                         const std::string &diagnostics)
+{
+    Q_UNUSED(init_status);
+    Q_UNUSED(diagnostics);
+}
+
+std::unique_ptr<history::HistoryBackendClient> HistoryClientQt::CreateBackendClient()
+{
+    return nullptr;
+}
+
+// static
+history::HistoryService *
+HistoryServiceFactoryQt::GetForBrowserContext(content::BrowserContext *context)
+{
+    if (context->IsOffTheRecord())
+        return nullptr;
+
+    if (!base::PathExists(context->GetPath()))
+        return nullptr;
+
+    return static_cast<history::HistoryService *>(
+            GetInstance()->GetServiceForBrowserContext(context, true));
+}
+
+// static
+HistoryServiceFactoryQt *HistoryServiceFactoryQt::GetInstance()
+{
+    return base::Singleton<HistoryServiceFactoryQt>::get();
+}
+
+HistoryServiceFactoryQt::HistoryServiceFactoryQt()
+    : BrowserContextKeyedServiceFactory("HistoryService",
+                                        BrowserContextDependencyManager::GetInstance())
+{
+}
+
+HistoryServiceFactoryQt::~HistoryServiceFactoryQt() { }
+
+content::BrowserContext *
+HistoryServiceFactoryQt::GetBrowserContextToUse(content::BrowserContext *context) const
+{
+    return context;
+}
+
+KeyedService *
+HistoryServiceFactoryQt::BuildServiceInstanceFor(content::BrowserContext *context) const
+{
+    Q_ASSERT(!context->IsOffTheRecord());
+    Q_ASSERT(base::PathExists(context->GetPath()));
+
+    std::unique_ptr<history::HistoryService> historyService(
+            new history::HistoryService(std::make_unique<HistoryClientQt>(), nullptr));
+    if (!historyService->Init(history::HistoryDatabaseParamsForPath(context->GetPath()))) {
+        return nullptr;
+    }
+    return historyService.release();
+}
+
+bool FaviconClientQt::IsNativeApplicationURL(const GURL &url)
+{
+    Q_UNUSED(url);
+    return false;
+}
+
+bool FaviconClientQt::IsReaderModeURL(const GURL &url)
+{
+    Q_UNUSED(url)
+    return false;
+}
+
+const GURL FaviconClientQt::GetOriginalUrlFromReaderModeUrl(const GURL &url)
+{
+    return url;
+}
+
+base::CancelableTaskTracker::TaskId FaviconClientQt::GetFaviconForNativeApplicationURL(
+        const GURL &url, const std::vector<int> &desired_sizes_in_pixel,
+        favicon_base::FaviconResultsCallback callback, base::CancelableTaskTracker *tracker)
+{
+    Q_UNUSED(url);
+    Q_UNUSED(desired_sizes_in_pixel);
+    Q_UNUSED(callback);
+    Q_UNUSED(tracker);
+
+    return base::CancelableTaskTracker::kBadTaskId;
+}
+
+// static
+favicon::FaviconService *
+FaviconServiceFactoryQt::GetForBrowserContext(content::BrowserContext *context)
+{
+    return static_cast<favicon::FaviconService *>(
+            GetInstance()->GetServiceForBrowserContext(context, true));
+}
+
+// static
+FaviconServiceFactoryQt *FaviconServiceFactoryQt::GetInstance()
+{
+    return base::Singleton<FaviconServiceFactoryQt>::get();
+}
+
+FaviconServiceFactoryQt::FaviconServiceFactoryQt()
+    : BrowserContextKeyedServiceFactory("FaviconService",
+                                        BrowserContextDependencyManager::GetInstance())
+{
+}
+
+FaviconServiceFactoryQt::~FaviconServiceFactoryQt() { }
+
+content::BrowserContext *
+FaviconServiceFactoryQt::GetBrowserContextToUse(content::BrowserContext *context) const
+{
+    return context;
+}
+
+KeyedService *
+FaviconServiceFactoryQt::BuildServiceInstanceFor(content::BrowserContext *context) const
+{
+    history::HistoryService *historyService = static_cast<history::HistoryService *>(
+            HistoryServiceFactoryQt::GetInstance()->GetForBrowserContext(context));
+    return new favicon::FaviconServiceImpl(std::make_unique<FaviconClientQt>(), historyService);
+}
+
+} // namespace QtWebEngineCore

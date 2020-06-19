@@ -91,7 +91,8 @@ foreach(config ${configs})
             devtools_frontend_qt.cpp devtools_frontend_qt.h
             devtools_manager_delegate_qt.cpp devtools_manager_delegate_qt.h
             download_manager_delegate_qt.cpp download_manager_delegate_qt.h
-            favicon_manager.cpp favicon_manager.h
+            favicon_driver_qt.cpp favicon_driver_qt.h
+            favicon_service_factory_qt.cpp favicon_service_factory_qt.h
             file_picker_controller.cpp file_picker_controller.h
             find_text_helper.cpp find_text_helper.h
             global_descriptors_qt.h

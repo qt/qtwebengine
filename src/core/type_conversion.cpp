@@ -39,9 +39,11 @@
 
 #include "type_conversion.h"
 
+#include <components/favicon_base/favicon_util.h>
 #include <net/cert/x509_certificate.h>
 #include <net/cert/x509_util.h>
 #include <ui/events/event_constants.h>
+#include <ui/gfx/image/image.h>
 #include <ui/gfx/image/image_skia.h>
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 
@@ -216,6 +218,23 @@ SkBitmap toSkBitmap(const QImage &image)
     return bitmapCopy;
 }
 
+QIcon toQIcon(const gfx::Image &image)
+{
+    // Based on ExtractSkBitmapsToStore in chromium/components/favicon/core/favicon_service_impl.cc
+    gfx::ImageSkia image_skia = image.AsImageSkia();
+    image_skia.EnsureRepsForSupportedScales();
+    const std::vector<gfx::ImageSkiaRep> &image_reps = image_skia.image_reps();
+    std::vector<SkBitmap> bitmaps;
+    const std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
+    for (size_t i = 0; i < image_reps.size(); ++i) {
+        // Don't save if the scale isn't one of supported favicon scales.
+        if (!base::Contains(favicon_scales, image_reps[i].scale()))
+            continue;
+        bitmaps.push_back(image_reps[i].GetBitmap());
+    }
+    return toQIcon(bitmaps);
+}
+
 QIcon toQIcon(const std::vector<SkBitmap> &bitmaps)
 {
     if (!bitmaps.size())
@@ -255,33 +274,6 @@ int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
     if ((modifiers & Qt::AltModifier) != 0)
         modifierFlags |= ui::EF_ALT_DOWN;
     return modifierFlags;
-}
-
-FaviconInfo::FaviconTypeFlags toQt(blink::mojom::FaviconIconType type)
-{
-    switch (type) {
-    case blink::mojom::FaviconIconType::kFavicon:
-        return FaviconInfo::Favicon;
-    case blink::mojom::FaviconIconType::kTouchIcon:
-        return FaviconInfo::TouchIcon;
-    case blink::mojom::FaviconIconType::kTouchPrecomposedIcon:
-        return FaviconInfo::TouchPrecomposedIcon;
-    case blink::mojom::FaviconIconType::kInvalid:
-        return FaviconInfo::InvalidIcon;
-    }
-    Q_UNREACHABLE();
-    return FaviconInfo::InvalidIcon;
-}
-
-FaviconInfo toFaviconInfo(const blink::mojom::FaviconURLPtr &favicon_url)
-{
-    FaviconInfo info;
-    info.url = toQt(favicon_url->icon_url);
-    info.type = toQt(favicon_url->icon_type);
-    // TODO: Add support for rel sizes attribute (favicon_url.icon_sizes):
-    // http://www.w3schools.com/tags/att_link_sizes.asp
-    info.size = QSize(0, 0);
-    return info;
 }
 
 void convertToQt(const SkMatrix44 &m, QMatrix4x4 &c)

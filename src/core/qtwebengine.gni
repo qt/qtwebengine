@@ -19,6 +19,8 @@ deps = [
   "//base",
   "//components/cdm/renderer",
   "//components/error_page/common",
+  "//components/favicon/content",
+  "//components/history/content/browser",
   "//components/keyed_service/content",
   "//components/navigation_interception",
   "//components/network_hints/browser",

@@ -119,6 +119,7 @@ public:
     PrefServiceAdapter &prefServiceAdapter();
 
     const PrefServiceAdapter &prefServiceAdapter() const;
+    bool ensureDirectoryExists();
 
 private:
     friend class ContentBrowserClientQt;
