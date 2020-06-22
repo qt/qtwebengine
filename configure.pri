@@ -191,6 +191,19 @@ defineTest(qtConfTest_detectGn) {
     return(false)
 }
 
+defineTest(qtConfTest_detectNodeJS) {
+    nodejs = $$qtConfFindInPath("nodejs$$EXE_SUFFIX")
+    isEmpty(nodejs) {
+        qtLog("'nodejs$$EXE_SUFFIX' not found in PATH. Checking for 'node$$EXE_SUFFIX'.")
+        nodejs = $$qtConfFindInPath("node$$EXE_SUFFIX")
+        isEmpty(nodejs) {
+            qtLog("'node$$EXE_SUFFIX' not found in PATH. Giving up.")
+            return(false)
+        }
+    }
+    return(true)
+}
+
 defineTest(qtConfTest_detectEmbedded) {
     lessThan(QT_MINOR_VERSION, 9) {
         cross_compile: return(true)

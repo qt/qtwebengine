@@ -42,3 +42,9 @@ qtConfig(webengine-kerberos) {
 } else {
     gn_args += use_kerberos=false
 }
+
+qtConfig(webengine-nodejs) {
+    gn_args += have_nodejs=true
+} else {
+    gn_args += have_nodejs=false
+}

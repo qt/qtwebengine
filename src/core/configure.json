@@ -89,6 +89,10 @@
             "label": "linker supports -z noexecstack",
             "type": "linkerSupportsFlag",
             "flag": "-z,noexecstack"
+        },
+        "webengine-nodejs": {
+            "label": "node.js",
+            "type": "detectNodeJS"
         }
     },
     "features": {
@@ -204,6 +208,11 @@
             "label": "linker supports -z noexecstack",
             "condition": "config.unix && tests.webengine-noexecstack",
             "output": [ "privateFeature" ]
+        },
+        "webengine-nodejs": {
+            "label": "Node.js",
+            "condition": "tests.webengine-nodejs",
+            "output": [ "privateFeature" ]
         }
     },
 
@@ -222,6 +231,11 @@
             "type": "warning",
             "condition": "config.unix && config.cross_compile && !features.webengine-v8-snapshot-support",
             "message": "V8 snapshot cannot be built. Most likely, the 32-bit host compiler does not work. Please make sure you have 32-bit devel environment installed."
+        },
+        {
+            "type": "warning",
+            "condition": "!features.webengine-nodejs",
+            "message": "Building without node.js will disable some features of QtWebEngine DevTools."
         }
     ],
 
@@ -242,6 +256,7 @@
                 "webengine-webchannel",
                 "webengine-kerberos",
                 "webengine-extensions",
+                "webengine-nodejs",
                 {
                     "type": "feature",
                     "args": "webengine-ozone",
