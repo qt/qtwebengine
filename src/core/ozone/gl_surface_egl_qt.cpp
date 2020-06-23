@@ -72,6 +72,9 @@ bool GLSurfaceEGLQt::InitializeOneOff()
     if (s_initialized)
         return true;
 
+    // Must be called before initializing the display.
+    g_driver_egl.InitializeClientExtensionBindings();
+
     g_display = GLContextHelper::getEGLDisplay();
     if (!g_display) {
         LOG(ERROR) << "GLContextHelper::getEGLDisplay() failed.";
@@ -107,6 +110,10 @@ bool GLSurfaceEGLQt::InitializeOneOff()
             context->ReleaseCurrent(surface.get());
         }
     }
+
+    // Must be called after initializing the display.
+    g_driver_egl.InitializeExtensionBindings();
+
     s_initialized = true;
     return true;
 }
