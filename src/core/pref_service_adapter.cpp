@@ -85,7 +85,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
             WebEngineContext::commandLine()));
 
     QString userPrefStorePath = profileAdapter.dataPath();
-    if (userPrefStorePath.isEmpty() || profileAdapter.isOffTheRecord()) {
+    if (profileAdapter.isOffTheRecord() || profileAdapter.storageName().isEmpty()) {
         factory.set_user_prefs(new InMemoryPrefStore);
     } else {
         userPrefStorePath += QDir::separator();

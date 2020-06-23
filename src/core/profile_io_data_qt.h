@@ -133,6 +133,8 @@ private:
     QString m_httpUserAgent;
     ProfileAdapter::HttpCacheType m_httpCacheType;
     QString m_httpCachePath;
+    QString m_storageName;
+    bool m_inMemoryOnly;
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
     QMutex m_mutex{QMutex::Recursive};
     using QRecursiveMutex = QMutex;

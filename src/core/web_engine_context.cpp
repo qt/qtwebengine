@@ -324,7 +324,7 @@ void WebEngineContext::addProfileAdapter(ProfileAdapter *profileAdapter)
 {
     Q_ASSERT(!m_profileAdapters.contains(profileAdapter));
     const QString path = profileAdapter->dataPath();
-    if (!path.isEmpty()) {
+    if (!profileAdapter->isOffTheRecord() && !profileAdapter->storageName().isEmpty()) {
         for (auto profileAdapter : m_profileAdapters) {
             if (profileAdapter->dataPath() == path) {
                 // QTBUG-66068

@@ -179,6 +179,8 @@ void ProfileIODataQt::setFullConfiguration()
     m_httpCacheMaxSize = m_profileAdapter->httpCacheMaxSize();
     m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
     m_dataPath = m_profileAdapter->dataPath();
+    m_storageName = m_profileAdapter->storageName();
+    m_inMemoryOnly = m_profileAdapter->isOffTheRecord() || m_storageName.isEmpty();
 }
 
 void ProfileIODataQt::resetNetworkContext()
@@ -221,7 +223,7 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
     network::mojom::NetworkContextParamsPtr network_context_params =
              SystemNetworkContextManager::GetInstance()->CreateDefaultNetworkContextParams();
 
-    network_context_params->context_name = m_profile->profileAdapter()->storageName().toStdString();
+    network_context_params->context_name = m_storageName.toStdString();
     network_context_params->user_agent = m_httpUserAgent.toStdString();
     network_context_params->accept_language = m_httpAcceptLanguage.toStdString();
 
@@ -234,7 +236,7 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
     if (m_httpCacheType == ProfileAdapter::DiskHttpCache && !m_httpCachePath.isEmpty())
         network_context_params->http_cache_path = toFilePath(m_httpCachePath);
 
-    if (m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies && !m_dataPath.isEmpty()) {
+    if (m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies && !m_inMemoryOnly) {
         base::FilePath cookie_path = toFilePath(m_dataPath);
         cookie_path = cookie_path.AppendASCII("Cookies");
         network_context_params->cookie_path = cookie_path;
@@ -242,7 +244,7 @@ network::mojom::NetworkContextParamsPtr ProfileIODataQt::CreateNetworkContextPar
         network_context_params->restore_old_session_cookies = m_persistentCookiesPolicy == ProfileAdapter::ForcePersistentCookies;
         network_context_params->persist_session_cookies = m_persistentCookiesPolicy != ProfileAdapter::NoPersistentCookies;
     }
-    if (!m_dataPath.isEmpty()) {
+    if (!m_inMemoryOnly) {
         network_context_params->http_server_properties_path = toFilePath(m_dataPath).AppendASCII("Network Persistent State");
         network_context_params->transport_security_persister_path = toFilePath(m_dataPath);
     }
