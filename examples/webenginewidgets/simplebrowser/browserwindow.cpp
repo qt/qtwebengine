@@ -55,7 +55,6 @@
 #include "webview.h"
 #include <QApplication>
 #include <QCloseEvent>
-#include <QDesktopWidget>
 #include <QEvent>
 #include <QFileDialog>
 #include <QInputDialog>

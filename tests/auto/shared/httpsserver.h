@@ -55,7 +55,7 @@ struct SslTcpServer : QTcpServer
             return;
         }
 
-        connect(socket, QOverload<QSslSocket::SocketError>::of(&QSslSocket::error),
+        connect(socket, QOverload<QSslSocket::SocketError>::of(&QSslSocket::errorOccurred),
                 [] (QSslSocket::SocketError e) { qWarning() << "! Socket Error:" << e; });
         connect(socket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),
                 [] (const QList<QSslError> &le) { qWarning() << "! SSL Errors:\n" << le; });

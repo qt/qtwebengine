@@ -2019,7 +2019,7 @@ private Q_SLOTS:
 
     void continueError()
     {
-        emit error(this->error());
+        emit errorOccurred(this->error());
         emit finished();
     }
 };
@@ -2378,9 +2378,13 @@ void tst_QWebEnginePage::setContent_data()
     QString str = QString::fromUtf8("ὕαλον ϕαγεῖν δύναμαι· τοῦτο οὔ με βλάπτει");
     QTest::newRow("UTF-8 plain text") << "text/plain; charset=utf-8" << str.toUtf8() << str;
 
-    QTextCodec *utf16 = QTextCodec::codecForName("UTF-16");
-    if (utf16)
-        QTest::newRow("UTF-16 plain text") << "text/plain; charset=utf-16" << utf16->fromUnicode(str) << str;
+    QBuffer out16;
+    out16.open(QIODevice::WriteOnly);
+    QTextStream stream16(&out16);
+    stream16.setEncoding(QStringConverter::Utf16);
+    stream16 << str;
+    stream16.flush();
+    QTest::newRow("UTF-16 plain text") << "text/plain; charset=utf-16" << out16.buffer() << str;
 
     str = QString::fromUtf8("Une chaîne de caractères à sa façon.");
     QTest::newRow("latin-1 plain text") << "text/plain; charset=iso-8859-1" << str.toLatin1() << str;

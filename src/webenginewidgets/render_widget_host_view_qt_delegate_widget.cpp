@@ -51,6 +51,7 @@
 #include <QResizeEvent>
 #include <QSGNode>
 #include <QWindow>
+#include <QtQuick/qsgimagenode.h>
 #include <QtQuick/private/qquickwindow_p.h>
 
 namespace QtWebEngineCore {

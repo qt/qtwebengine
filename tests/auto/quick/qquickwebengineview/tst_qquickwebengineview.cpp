@@ -584,7 +584,7 @@ void tst_QQuickWebEngineView::interruptImeTextComposition()
         QTest::mouseClick(view->window(), Qt::LeftButton, {}, textInputCenter);
     } else if (eventType == "Touch") {
         QPoint textInputCenter = elementCenter(view, QStringLiteral("input2"));
-        QTouchDevice *touchDevice = QTest::createTouchDevice();
+        QPointingDevice *touchDevice = QTest::createTouchDevice();
         QTest::touchEvent(view->window(), touchDevice).press(0, textInputCenter, view->window());
         QTest::touchEvent(view->window(), touchDevice).release(0, textInputCenter, view->window());
     }
@@ -975,9 +975,7 @@ void tst_QQuickWebEngineView::inputEventForwardingDisabledWhenActiveFocusOnPress
     QTest::mousePress(view->window(), Qt::LeftButton);
     QTest::mouseRelease(view->window(), Qt::LeftButton);
 
-    QTouchDevice *device = new QTouchDevice;
-    device->setType(QTouchDevice::TouchScreen);
-    QWindowSystemInterface::registerTouchDevice(device);
+    QPointingDevice *device = QTest::createTouchDevice();
 
     QTest::touchEvent(view->window(), device).press(0, QPoint(0,0), view->window());
     QTest::touchEvent(view->window(), device).move(0, QPoint(1, 1), view->window());

@@ -60,7 +60,7 @@ do { \
     QCOMPARE((__expr), __expected); \
 } while (0)
 
-static QTouchDevice* s_touchDevice = nullptr;
+static QPointingDevice* s_touchDevice = nullptr;
 
 static QPoint elementCenter(QWebEnginePage *page, const QString &id)
 {

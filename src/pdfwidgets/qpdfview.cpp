@@ -40,6 +40,8 @@
 #include "qpdfpagerenderer.h"
 
 #include <QGuiApplication>
+#include <QPainter>
+#include <QPaintEvent>
 #include <QPdfDocument>
 #include <QPdfPageNavigation>
 #include <QScreen>
@@ -48,8 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QPdfViewPrivate::QPdfViewPrivate()
-    : QAbstractScrollAreaPrivate()
+QPdfViewPrivate::QPdfViewPrivate(QPdfView *q)
+    : q_ptr(q)
     , m_document(nullptr)
     , m_pageNavigation(nullptr)
     , m_pageRenderer(nullptr)
@@ -277,7 +279,8 @@ void QPdfViewPrivate::updateDocumentLayout()
 
 
 QPdfView::QPdfView(QWidget *parent)
-    : QAbstractScrollArea(*new QPdfViewPrivate(), parent)
+    : QAbstractScrollArea(parent)
+    , d_ptr(new QPdfViewPrivate(this))
 {
     Q_D(QPdfView);
 
@@ -294,14 +297,6 @@ QPdfView::QPdfView(QWidget *parent)
     QScroller::grabGesture(this);
 
     d->calculateViewport();
-}
-
-/*!
-  \internal
-*/
-QPdfView::QPdfView(QPdfViewPrivate &dd, QWidget *parent)
-    : QAbstractScrollArea(dd, parent)
-{
 }
 
 QPdfView::~QPdfView()

@@ -82,7 +82,7 @@
 #include <QMouseEvent>
 #include <QStyleHints>
 #if QT_CONFIG(tabletevent)
-#include <QTabletEvent>
+#include <QPointingDevice>
 #endif
 #include <QWheelEvent>
 
@@ -1393,12 +1393,14 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
 static WebPointerProperties::PointerType pointerTypeForTabletEvent(const QTabletEvent *ev)
 {
     switch (ev->pointerType()) {
-    case QTabletEvent::UnknownPointer:
+    case QPointingDevice::PointerType::Unknown:
         return WebPointerProperties::PointerType::kUnknown;
-    case QTabletEvent::Pen:
+    case QPointingDevice::PointerType::Pen:
         return WebPointerProperties::PointerType::kPen;
-    case QTabletEvent::Eraser:
+    case QPointingDevice::PointerType::Eraser:
         return WebPointerProperties::PointerType::kEraser;
+    case QPointingDevice::PointerType::Finger:
+        return WebPointerProperties::PointerType::kTouch;
     default:
         return WebPointerProperties::PointerType::kMouse;
     }

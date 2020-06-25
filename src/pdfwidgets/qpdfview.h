@@ -107,14 +107,13 @@ Q_SIGNALS:
     void documentMarginsChanged(QMargins documentMargins);
 
 protected:
-    explicit QPdfView(QPdfViewPrivate &, QWidget *);
-
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void scrollContentsBy(int dx, int dy) override;
 
 private:
     Q_DECLARE_PRIVATE(QPdfView)
+    QScopedPointer<QPdfViewPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE

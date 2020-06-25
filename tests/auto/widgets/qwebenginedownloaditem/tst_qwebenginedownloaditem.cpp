@@ -902,7 +902,8 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilename()
 
     // Set up HTTP server
     ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
-        if (rr->requestMethod() == "GET" && rr->requestPath() == ("/" + fileName)) {
+        auto requestPath = QString::fromUtf8(rr->requestPath());
+        if (rr->requestMethod() == "GET" && requestPath == ("/" + fileName)) {
             rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("application/octet-stream"));
             rr->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
             rr->setResponseBody(QByteArrayLiteral("a"));
@@ -960,7 +961,8 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilenameWithTimestamp()
     m_profile->setDownloadPath(tmpDir.path());
 
     ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
-        if (rr->requestMethod() == "GET" && rr->requestPath() == ("/" + fileName)) {
+        auto requestPath = QString::fromUtf8(rr->requestPath());
+        if (rr->requestMethod() == "GET" && requestPath == ("/" + fileName)) {
             rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("application/octet-stream"));
             rr->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
             rr->setResponseBody(QByteArrayLiteral("a"));
@@ -1056,7 +1058,8 @@ void tst_QWebEngineDownloadItem::downloadToNonExistentDir()
 
     // Set up HTTP server
     ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
-        if (rr->requestMethod() == "GET" && rr->requestPath() == ("/" + fileName)) {
+        auto requestPath = QString::fromUtf8(rr->requestPath());
+        if (rr->requestMethod() == "GET" && requestPath == ("/" + fileName)) {
             rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("application/octet-stream"));
             rr->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
             rr->setResponseBody(QByteArrayLiteral("a"));
@@ -1113,7 +1116,8 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
 
     // Set up HTTP server
     ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
-        if (rr->requestMethod() == "GET" && rr->requestPath() == ("/" + fileName)) {
+        auto requestPath = QString::fromUtf8(rr->requestPath());
+        if (rr->requestMethod() == "GET" && requestPath == ("/" + fileName)) {
             rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("application/octet-stream"));
             rr->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
             rr->setResponseBody(QByteArrayLiteral("a"));
@@ -1168,7 +1172,8 @@ void tst_QWebEngineDownloadItem::downloadPathValidation()
 
     // Set up HTTP server
     ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
-        if (rr->requestMethod() == "GET" && rr->requestPath() == ("/" + fileName)) {
+        auto requestPath = QString::fromUtf8(rr->requestPath());
+        if (rr->requestMethod() == "GET" && requestPath == ("/" + fileName)) {
             rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("application/octet-stream"));
             rr->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
             rr->setResponseBody(QByteArrayLiteral("a"));
@@ -1300,7 +1305,8 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
 
     // Set up HTTP server
     ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
-        if (rr->requestMethod() == "GET" && rr->requestPath() == ("/" + fileName)) {
+        auto requestPath = QString::fromUtf8(rr->requestPath());
+        if (rr->requestMethod() == "GET" && requestPath == ("/" + fileName)) {
             rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("application/octet-stream"));
             rr->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
             rr->setResponseBody(QByteArrayLiteral("a"));

@@ -39,7 +39,7 @@ ProxyServer::ProxyServer(QObject *parent) : QObject(parent)
 void ProxyServer::setCredentials(const QByteArray &user, const QByteArray password)
 {
     m_auth.append(user);
-    m_auth.append(QChar(':'));
+    m_auth.append(':');
     m_auth.append(password);
     m_auth = m_auth.toBase64();
     m_authenticate = true;

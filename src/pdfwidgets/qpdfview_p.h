@@ -51,18 +51,17 @@
 #include "qpdfview.h"
 
 #include <QPointer>
-#include <QtWidgets/private/qabstractscrollarea_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QPdfPageRenderer;
 
-class QPdfViewPrivate : public QAbstractScrollAreaPrivate
+class QPdfViewPrivate
 {
     Q_DECLARE_PUBLIC(QPdfView)
 
 public:
-    QPdfViewPrivate();
+    QPdfViewPrivate(QPdfView *q);
     void init();
 
     void documentStatusChanged();
@@ -86,6 +85,7 @@ public:
     DocumentLayout calculateDocumentLayout() const;
     void updateDocumentLayout();
 
+    QPdfView *q_ptr;
     QPointer<QPdfDocument> m_document;
     QPdfPageNavigation* m_pageNavigation;
     QPdfPageRenderer *m_pageRenderer;

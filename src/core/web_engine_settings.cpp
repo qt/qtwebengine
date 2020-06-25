@@ -59,7 +59,6 @@
 
 #include <QFont>
 #include <QTimer>
-#include <QTouchDevice>
 
 namespace QtWebEngineCore {
 

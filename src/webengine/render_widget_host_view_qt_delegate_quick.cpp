@@ -50,6 +50,7 @@
 #include <QSurfaceFormat>
 #include <QVariant>
 #include <QWindow>
+#include <QtQuick/qsgimagenode.h>
 #include <QtQuick/private/qquickwindow_p.h>
 
 namespace QtWebEngineCore {
