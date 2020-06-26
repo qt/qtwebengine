@@ -496,6 +496,17 @@ const static char kChromiumFlagsEnv[] = "QTWEBENGINE_CHROMIUM_FLAGS";
 const static char kDisableSandboxEnv[] = "QTWEBENGINE_DISABLE_SANDBOX";
 const static char kDisableInProcGpuThread[] = "QTWEBENGINE_DISABLE_GPU_THREAD";
 
+// static
+bool WebEngineContext::isGpuServiceOnUIThread()
+{
+    static bool threadedGpu =
+#if QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
+            QOpenGLContext::supportsThreadedOpenGL() &&
+#endif
+            !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
+    return !threadedGpu;
+}
+
 static void appendToFeatureList(std::string &featureList, const char *feature)
 {
     if (featureList.empty())
@@ -606,16 +617,6 @@ WebEngineContext::WebEngineContext()
     if (isDesktopGLOrSoftware || isGLES2Context)
         parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
 #endif
-    bool threadedGpu = false;
-#if QT_CONFIG(opengl)
-    threadedGpu = QOpenGLContext::supportsThreadedOpenGL();
-#if defined(Q_OS_MACOS)
-    // QtBase disabled it when building on 10.14+, unfortunately we still need it
-    // until we have fixed single-threaded viz-display-compositor.
-    threadedGpu = true;
-#endif
-#endif
-    threadedGpu = threadedGpu && !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
 
     bool enableViz = !parsedCommandLine->HasSwitch("disable-viz-display-compositor");
     parsedCommandLine->RemoveSwitch("disable-viz-display-compositor");
@@ -774,7 +775,7 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     }
 
-    registerMainThreadFactories(threadedGpu);
+    registerMainThreadFactories();
 
     SetContentClient(new ContentClientQt);
 

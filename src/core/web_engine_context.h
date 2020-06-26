@@ -123,13 +123,15 @@ public:
 
     static gpu::SyncPointManager *syncPointManager();
 
+    static bool isGpuServiceOnUIThread();
+
 private:
     friend class base::RefCounted<WebEngineContext>;
     friend class ProfileAdapter;
     WebEngineContext();
     ~WebEngineContext();
 
-    static void registerMainThreadFactories(bool threaded);
+    static void registerMainThreadFactories();
     static void destroyGpuProcess();
 
     std::unique_ptr<base::RunLoop> m_runLoop;

@@ -125,11 +125,11 @@ void WebEngineContext::destroyGpuProcess()
 }
 
 // static
-void WebEngineContext::registerMainThreadFactories(bool threaded)
+void WebEngineContext::registerMainThreadFactories()
 {
     content::UtilityProcessHost::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
     content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
-    if (threaded)
+    if (!isGpuServiceOnUIThread())
         content::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
     else
         content::RegisterGpuMainThreadFactory(createGpuThreadController);
