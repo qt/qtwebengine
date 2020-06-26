@@ -61,6 +61,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/certificate_transparency/ct_known_logs.h"
 #include "components/network_session_configurator/common/network_features.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cors_exempt_headers.h"
@@ -245,8 +246,10 @@ SystemNetworkContextManager::~SystemNetworkContextManager()
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::NetworkService *network_service)
 {
+    bool is_quic_force_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableQuic);
     // Disable QUIC globally
-    network_service->DisableQuic();
+    if (!is_quic_force_enabled)
+        network_service->DisableQuic();
 
     network_service->SetUpHttpAuth(CreateHttpAuthStaticParams());
     network_service->ConfigureHttpAuthPrefs(CreateHttpAuthDynamicParams());
