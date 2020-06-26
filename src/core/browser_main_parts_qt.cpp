@@ -190,7 +190,7 @@ private:
         }
 
     private:
-        bool m_enabled = !QOpenGLContext::supportsThreadedOpenGL();
+        bool m_enabled = WebEngineContext::isGpuServiceOnUIThread();
 #endif // QT_CONFIG(opengl)
     };
 
