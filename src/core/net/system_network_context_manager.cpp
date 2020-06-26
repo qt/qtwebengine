@@ -200,19 +200,6 @@ scoped_refptr<network::SharedURLLoaderFactory> SystemNetworkContextManager::GetS
     return shared_url_loader_factory_;
 }
 
-void SystemNetworkContextManager::SetUp(
-        network::mojom::NetworkContextRequest *network_context_request,
-        network::mojom::NetworkContextParamsPtr *network_context_params, bool *stub_resolver_enabled,
-        base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>> *dns_over_https_servers,
-        network::mojom::HttpAuthStaticParamsPtr *http_auth_static_params,
-        network::mojom::HttpAuthDynamicParamsPtr *http_auth_dynamic_params, bool *is_quic_allowed)
-{
-    *is_quic_allowed = false;
-    *http_auth_static_params = CreateHttpAuthStaticParams();
-    *http_auth_dynamic_params = CreateHttpAuthDynamicParams();
-    //    GetStubResolverConfig(local_state_, stub_resolver_enabled, dns_over_https_servers);
-}
-
 // static
 SystemNetworkContextManager *SystemNetworkContextManager::CreateInstance()
 {
