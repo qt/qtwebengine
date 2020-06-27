@@ -66,7 +66,7 @@ QHash<int, QByteArray> QPdfLinkModel::roleNames() const
 int QPdfLinkModel::rowCount(const QModelIndex &parent) const
 {
     Q_D(const QPdfLinkModel);
-    Q_UNUSED(parent)
+    Q_UNUSED(parent);
     return d->links.count();
 }
 

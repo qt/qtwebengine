@@ -548,7 +548,7 @@ QObject *QWebEnginePagePrivate::accessibilityParentObject()
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
 #ifdef QT_NO_ACTION
-    Q_UNUSED(action)
+    Q_UNUSED(action);
 #else
     QAction *a = actions[action];
     if (!a)
@@ -1041,8 +1041,8 @@ void QWebEnginePage::setWebChannel(QWebChannel *channel, uint worldId)
         d->adapter->setWebChannel(channel, worldId);
     }
 #else
-    Q_UNUSED(channel)
-    Q_UNUSED(worldId)
+    Q_UNUSED(channel);
+    Q_UNUSED(worldId);
     qWarning("WebEngine compiled without webchannel support");
 #endif
 }

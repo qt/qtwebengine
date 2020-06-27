@@ -78,7 +78,7 @@ QHash<int, QByteArray> QPdfSearchModel::roleNames() const
 int QPdfSearchModel::rowCount(const QModelIndex &parent) const
 {
     Q_D(const QPdfSearchModel);
-    Q_UNUSED(parent)
+    Q_UNUSED(parent);
     return d->rowCountSoFar;
 }
 

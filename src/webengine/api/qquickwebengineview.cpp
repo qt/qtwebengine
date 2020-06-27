@@ -1550,7 +1550,7 @@ void QQuickWebEngineView::setWebChannel(QQmlWebChannel *webChannel)
         d->adapter->setWebChannel(webChannel, d->m_webChannelWorld);
     Q_EMIT webChannelChanged();
 #else
-    Q_UNUSED(webChannel)
+    Q_UNUSED(webChannel);
     qWarning("WebEngine compiled without webchannel support");
 #endif
 }
@@ -1572,7 +1572,7 @@ void QQuickWebEngineView::setWebChannelWorld(uint webChannelWorld)
         d->adapter->setWebChannel(d->m_webChannel, d->m_webChannelWorld);
     Q_EMIT webChannelWorldChanged(webChannelWorld);
 #else
-    Q_UNUSED(webChannelWorld)
+    Q_UNUSED(webChannelWorld);
     qWarning("WebEngine compiled without webchannel support");
 #endif
 }

@@ -292,7 +292,7 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
                                                                 const error_page::Error &error,
                                                                 std::string *errorHtml)
 {
-    Q_UNUSED(renderFrame)
+    Q_UNUSED(renderFrame);
     const bool isPost = QByteArray::fromStdString(httpMethod) == QByteArrayLiteral("POST");
 
     if (errorHtml) {

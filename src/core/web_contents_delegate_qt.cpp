@@ -236,7 +236,7 @@ QUrl WebContentsDelegateQt::url(content::WebContents* source) const {
 }
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, std::unique_ptr<content::WebContents> new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
 {
-    Q_UNUSED(source)
+    Q_UNUSED(source);
     QSharedPointer<WebContentsAdapter> newAdapter = createWindow(std::move(new_contents), disposition, initial_pos, user_gesture);
     // Chromium can forget to pass user-agent override settings to new windows (see QTBUG-61774 and QTBUG-76249),
     // so set it here. Note the actual value doesn't really matter here. Only the second value does, but we try
@@ -592,7 +592,7 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost * /*frameHos
 bool WebContentsDelegateQt::DidAddMessageToConsole(content::WebContents *source, blink::mojom::ConsoleMessageLevel log_level,
                                                    const base::string16 &message, int32_t line_no, const base::string16 &source_id)
 {
-    Q_UNUSED(source)
+    Q_UNUSED(source);
     m_viewClient->javaScriptConsoleMessage(mapToJavascriptConsoleMessageLevel(log_level), toQt(message), static_cast<int>(line_no), toQt(source_id));
     return false;
 }
@@ -623,7 +623,7 @@ void WebContentsDelegateQt::SetContentsBounds(content::WebContents *source, cons
 
 void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const GURL& url)
 {
-    Q_UNUSED(source)
+    Q_UNUSED(source);
     m_viewClient->didUpdateTargetURL(toQt(url));
 }
 

@@ -326,7 +326,7 @@ void QWebEngineView::reload()
 
 QWebEngineView *QWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
 {
-    Q_UNUSED(type)
+    Q_UNUSED(type);
     return 0;
 }
 
