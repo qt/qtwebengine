@@ -29,6 +29,8 @@ qtConfig(webengine-embedded-build) {
         qtConfig(webengine-webrtc): gn_args += rtc_use_x11=true
     }
 
+    qtConfig(webengine-webrtc): qtConfig(webengine-webrtc-pipewire): gn_args += rtc_use_pipewire=true
+
     qtConfig(webengine-system-libevent): gn_args += use_system_libevent=true
     qtConfig(webengine-system-libwebp):  gn_args += use_system_libwebp=true
     qtConfig(webengine-system-libxml2):  gn_args += use_system_libxml=true use_system_libxslt=true
