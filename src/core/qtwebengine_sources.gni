@@ -47,6 +47,7 @@ source_set("qtwebengine_sources") {
 
   deps = [
     "//build:branding_buildflags",
+    "//chrome/browser/resources/quota_internals:quota_internals_resources",
     "//chrome/common:buildflags",
     "//components/nacl/common:buildflags",
     "//components/plugins/renderer/",

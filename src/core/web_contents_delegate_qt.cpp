@@ -205,12 +205,9 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
         }
     }
 
-    // NavigationStateChanged gets called with INVALIDATE_TYPE_TAB by AudioStateProvider::Notify,
-    // whenever an audio sound gets played or stopped, this is the only way to actually figure out
-    // if there was a recently played audio sound.
     // Make sure to only emit the signal when loading isn't in progress, because it causes multiple
     // false signals to be emitted.
-    if ((changed_flags & content::INVALIDATE_TYPE_TAB) && !(changed_flags & content::INVALIDATE_TYPE_LOAD)) {
+    if ((changed_flags & content::INVALIDATE_TYPE_AUDIO) && !(changed_flags & content::INVALIDATE_TYPE_LOAD)) {
         m_viewClient->recentlyAudibleChanged(source->IsCurrentlyAudible());
     }
 }

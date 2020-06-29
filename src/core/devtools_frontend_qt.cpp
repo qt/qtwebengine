@@ -65,14 +65,17 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 #include "ipc/ipc_channel.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -425,15 +428,28 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
         resource_request->site_for_cookies = gurl;
         resource_request->headers.AddHeadersFromString(headers);
 
-        auto *partition = content::BrowserContext::GetStoragePartitionForSite(
-                    web_contents()->GetBrowserContext(), gurl);
-        auto factory = partition->GetURLLoaderFactoryForBrowserProcess();
-
+        std::unique_ptr<network::mojom::URLLoaderFactory> file_url_loader_factory;
+        scoped_refptr<network::SharedURLLoaderFactory> network_url_loader_factory;
+        network::mojom::URLLoaderFactory *url_loader_factory;
+        if (gurl.SchemeIsFile()) {
+            file_url_loader_factory = content::CreateFileURLLoaderFactory(base::FilePath(), nullptr);
+            url_loader_factory = file_url_loader_factory.get();
+        } else if (content::HasWebUIScheme(gurl)) {
+            base::DictionaryValue response;
+            response.SetInteger("statusCode", 403);
+            SendMessageAck(request_id, &response);
+            return;
+        } else {
+            auto *partition = content::BrowserContext::GetStoragePartitionForSite(
+                                  web_contents()->GetBrowserContext(), gurl);
+            network_url_loader_factory = partition->GetURLLoaderFactoryForBrowserProcess();
+            url_loader_factory = network_url_loader_factory.get();
+        }
         auto simple_url_loader = network::SimpleURLLoader::Create(
                     std::move(resource_request), traffic_annotation);
         auto resource_loader = std::make_unique<NetworkResourceLoader>(
                     stream_id, request_id, this, std::move(simple_url_loader),
-                    factory.get());
+                    url_loader_factory);
         m_loaders.insert(std::move(resource_loader));
         return;
     } else if (method == "getPreferences") {

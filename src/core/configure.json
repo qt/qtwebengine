@@ -85,18 +85,14 @@
             "label": "embedded build",
             "type": "detectEmbedded"
         },
-        "webengine-sanitizer": {
-            "label" : "sanitizer support",
-            "type": "isSanitizerSupported"
-        },
-        "webengine-arm-thumb" : {
-            "label": "thumb instruction set",
-            "type": "hasThumbFlag"
-        },
         "webengine-noexecstack" : {
             "label": "linker supports -z noexecstack",
             "type": "linkerSupportsFlag",
             "flag": "-z,noexecstack"
+        },
+        "webengine-nodejs": {
+            "label": "node.js",
+            "type": "detectNodeJS"
         }
     },
     "features": {
@@ -187,32 +183,15 @@
             "autoDetect": "!features.webengine-embedded-build",
             "output": [ "privateFeature" ]
         },
-        "webengine-ozone-x11" : {
+        "webengine-ozone" : {
              "label": "Support qpa-xcb",
-             "condition": "config.unix
-                          && features.webengine-system-x11
-                          && features.webengine-system-libdrm
-                          && features.webengine-system-xcomposite
-                          && features.webengine-system-xcursor
-                          && features.webengine-system-xi
-                          && features.webengine-system-xtst",
+             "condition": "features.webengine-ozone-x11",
              "output": [ "privateFeature" ]
-        },
-        "webengine-sanitizer" : {
-            "label": "Sanitizer",
-            "autoDetect": "config.sanitizer && tests.webengine-sanitizer",
-            "condition": "config.sanitizer",
-            "output": [ "privateFeature" ]
         },
         "webengine-poppler-cpp": {
             "label": "poppler-cpp",
             "autoDetect": "config.unix",
             "condition": "libs.webengine-poppler-cpp",
-            "output": [ "privateFeature" ]
-        },
-        "webengine-arm-thumb": {
-            "label": "Thumb instruction set",
-            "condition": "config.linux && features.webengine-embedded-build && arch.arm && tests.webengine-arm-thumb",
             "output": [ "privateFeature" ]
         },
         "webengine-full-debug-info": {
@@ -229,15 +208,15 @@
             "label": "linker supports -z noexecstack",
             "condition": "config.unix && tests.webengine-noexecstack",
             "output": [ "privateFeature" ]
+        },
+        "webengine-nodejs": {
+            "label": "Node.js",
+            "condition": "tests.webengine-nodejs",
+            "output": [ "privateFeature" ]
         }
     },
 
     "report": [
-        {
-            "type": "warning",
-            "condition": "config.sanitizer && !tests.webengine-sanitizer && !features.webengine-sanitizer",
-            "message": "Qt WebEngine cannot be built with the chosen sanitizer configuration. Check config.log for details or use -feature-webengine-sanitizer to force the build."
-        },
         {
             "type": "warning",
             "condition": "config.unix && !features.webengine-host-pkg-config",
@@ -252,6 +231,11 @@
             "type": "warning",
             "condition": "config.unix && config.cross_compile && !features.webengine-v8-snapshot-support",
             "message": "V8 snapshot cannot be built. Most likely, the 32-bit host compiler does not work. Please make sure you have 32-bit devel environment installed."
+        },
+        {
+            "type": "warning",
+            "condition": "!features.webengine-nodejs",
+            "message": "Building without node.js will disable some features of QtWebEngine DevTools."
         }
     ],
 
@@ -272,9 +256,10 @@
                 "webengine-webchannel",
                 "webengine-kerberos",
                 "webengine-extensions",
+                "webengine-nodejs",
                 {
                     "type": "feature",
-                    "args": "webengine-ozone-x11",
+                    "args": "webengine-ozone",
                     "condition": "config.unix"
                 },
                 {
@@ -291,11 +276,6 @@
                     "type": "feature",
                     "args": "webengine-pulseaudio",
                     "condition": "config.unix"
-                },
-                {
-                    "type": "feature",
-                    "args": "webengine-sanitizer",
-                    "condition": "config.sanitizer"
                 },
                 {
                     "message": "macOS version",

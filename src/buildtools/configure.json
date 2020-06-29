@@ -345,40 +345,58 @@
         "webengine-nowhitespace" : {
             "label": "build path without whitespace",
             "type": "detectNoWhitespace"
+        },
+        "webengine-arm-thumb" : {
+            "label": "thumb instruction set",
+            "type": "hasThumbFlag"
+        },
+        "webengine-sanitizer": {
+            "label" : "sanitizer support",
+            "type": "isSanitizerSupported"
         }
     },
     "features": {
         "webengine-core-support": {
             "label": "Support Qt WebEngine Core",
-            "condition": "module.gui
-                         && features.webengine-python2
+            "condition": "(config.linux || config.win32 || config.macos)
+                         && !config.static
+                         && module.gui
+                         && features.webengine-submodule
+                         && features.webengine-nowhitespace
+                         && !features.webengine-no-platform-support
+                         && features.webengine-arch-support
                          && features.webengine-gperf
                          && features.webengine-bison
                          && features.webengine-flex
-                         && features.webengine-submodule
-                         && features.webengine-nowhitespace
-                         && features.webengine-arch-support
-                         && !features.webengine-no-platform-support
-                         && !config.static
+                         && features.webengine-python2
+                         && (!config.sanitizer || features.webengine-sanitizer)
                          && (!config.linux || features.pkg-config)
-                         && (!features.xcb || features.webengine-ozone-x11)
-                         && (!config.win32 || features.webengine-winversion)
-                         && !config.ios",
+                         && (!config.linux || features.webengine-host-pkg-config)
+                         && (!config.linux || features.webengine-system-glibc)
+                         && (!config.linux || features.webengine-system-khr)
+                         && (!config.linux || features.webengine-system-nss)
+                         && (!config.linux || features.webengine-system-dbus)
+                         && (!config.linux || features.webengine-system-fontconfig)
+                         && (!config.linux || !features.pkg-config || !features.xcb || features.webengine-ozone-x11)
+                         && (!config.win32 || features.webengine-win-compiler64)
+                         && (!config.win32 || features.webengine-winversion)",
             "output": [ "privateFeature" ]
         },
         "webengine-qtpdf-support": {
             "label": "Support Qt Pdf",
-            "condition": "module.gui
-                         && features.webengine-python2
+            "condition": "(config.linux || config.win32 || config.macos)
+                         && module.gui
+                         && features.webengine-submodule
+                         && features.webengine-nowhitespace
+                         && !features.webengine-no-platform-support
+                         && features.webengine-arch-support
                          && features.webengine-gperf
                          && features.webengine-bison
                          && features.webengine-flex
-                         && features.webengine-submodule
-                         && features.webengine-nowhitespace
-                         && features.webengine-arch-support
-                         && !features.webengine-no-platform-support
-                         && (!config.static || config.ios)
+                         && features.webengine-python2
+                         && (!config.sanitizer || features.webengine-sanitizer)
                          && (!config.linux || features.pkg-config)
+                         && (!config.linux || features.webengine-host-pkg-config)
                          && (!config.win32 || features.webengine-winversion)",
             "output": [ "privateFeature" ]
         },
@@ -499,7 +517,6 @@
             ]
         },
         "webengine-ozone-x11" : {
-             "label": "Support qpa-xcb",
              "condition": "config.unix
                           && features.xcb
                           && features.webengine-system-x11
@@ -647,14 +664,29 @@
                 "privateFeature",
                 { "type": "varAssign", "name": "PLATFORM_ERROR", "value": "tests.webengine-platform-support.platformSupport" }
             ]
+        },
+        "webengine-arm-thumb": {
+            "label": "Thumb instruction set",
+            "condition": "config.linux && arch.arm && tests.webengine-arm-thumb",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-sanitizer" : {
+            "label": "Sanitizer",
+            "autoDetect": "config.sanitizer && tests.webengine-sanitizer",
+            "condition": "config.sanitizer",
+            "output": [ "privateFeature" ]
         }
     },
     "report": [
         {
             "type": "skipBuildWarning",
-            "condition": "(!features.webengine-core-support && features.build-qtwebengine-core) ||
-                          (!features.webengine-qtpdf-support && features.build-qtpdf)",
-            "message": "qtwebengine_confCheckError"
+            "condition": "!features.webengine-core-support && features.build-qtwebengine-core",
+            "message": "qtwebengine_confCheckWebEngineCoreError"
+        },
+        {
+            "type": "skipBuildWarning",
+            "condition": "!features.webengine-qtpdf-support && features.build-qtpdf",
+            "message": "qtwebengine_confCheckPdfError"
         },
         {
             "type": "note",
@@ -694,6 +726,11 @@
                 },
                 "webengine-developer-build",
                 {
+                    "type": "feature",
+                    "args": "webengine-sanitizer",
+                    "condition": "!config.sanitizer"
+                },
+                {
                     "section": "QtWebEngine required system libraries",
                     "condition": "config.unix && !config.macos && !config.ios",
                     "entries": [
@@ -715,7 +752,7 @@
                         "webengine-system-xi",
                         "webengine-system-xtst"
                      ]
-                 },
+                },
                 {
                     "section": "Optional system libraries used",
                     "condition": "config.unix",

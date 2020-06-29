@@ -78,7 +78,7 @@ msvc {
     } else: equals(MSVC_VER, 16.0) {
         MSVS_VERSION = 2019
     } else {
-        error("Visual Studio compiler version \"$$MSVC_VER\" is not supported by Qt WebEngine")
+        error("Visual Studio compiler version \"$$MSVC_VER\" is not supported by gn.")
     }
 
     gn_args += visual_studio_version=$$MSVS_VERSION
@@ -91,12 +91,5 @@ msvc {
     GN_TARGET_CPU = $$gnArch($$QT_ARCH)
     gn_args += target_cpu=\"$$GN_TARGET_CPU\"
 } else {
-    error("Qt WebEngine for Windows can only be built with a Microsoft Visual Studio C++ compatible compiler")
-}
-
-qtConfig(build-qtwebengine-core):qtConfig(webengine-spellchecker) {
-    qtConfig(webengine-native-spellchecker): gn_args += use_browser_spellchecker=true
-    else: gn_args += use_browser_spellchecker=false
-} else {
-    gn_args += use_browser_spellchecker=false
+    error("Microsoft Visual Studio C++ compatible compiler is required by gn.")
 }

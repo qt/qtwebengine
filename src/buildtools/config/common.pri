@@ -42,44 +42,6 @@ greaterThan(QMAKE_JUMBO_MERGE_LIMIT,0) {
     gn_args += jumbo_build_excluded="[\"browser\"]"
 }
 
-qtConfig(build-qtwebengine-core):qtConfig(webengine-printing-and-pdf) {
-    gn_args += enable_basic_printing=true enable_print_preview=true
-    gn_args += enable_pdf=true
-} else {
-    gn_args += enable_basic_printing=false enable_print_preview=false
-    gn_args += enable_pdf=false
-}
-
-qtConfig(build-qtwebengine-core):qtConfig(webengine-pepper-plugins) {
-    gn_args += enable_plugins=true
-} else {
-    gn_args += enable_plugins=false
-}
-
-qtConfig(build-qtwebengine-core):qtConfig(webengine-spellchecker) {
-    gn_args += enable_spellcheck=true
-} else {
-    gn_args += enable_spellcheck=false
-}
-
-qtConfig(build-qtwebengine-core):qtConfig(webengine-webrtc) {
-    gn_args += enable_webrtc=true
-} else {
-    gn_args += enable_webrtc=false audio_processing_in_audio_service_supported=false
-}
-
-qtConfig(build-qtwebengine-core):qtConfig(webengine-proprietary-codecs) {
-    gn_args += proprietary_codecs=true ffmpeg_branding=\"Chrome\"
-} else {
-    gn_args += proprietary_codecs=false
-}
-
-qtConfig(build-qtwebengine-core):qtConfig(webengine-extensions) {
-    gn_args += enable_extensions=true
-} else {
-    gn_args += enable_extensions=false
-}
-
 precompile_header {
     gn_args += enable_precompiled_headers=true
 } else {
@@ -129,15 +91,8 @@ optimize_size: gn_args += optimize_for_size=true
     sanitize_undefined: gn_args += is_ubsan=true is_ubsan_vptr=true
 }
 
-qtConfig(build-qtwebengine-core):qtConfig(webengine-kerberos) {
-    gn_args += use_kerberos=true
-} else {
-    gn_args += use_kerberos=false
-}
-
 ccache {
     gn_args += cc_wrapper=\"ccache\"
 }
 
 qtConfig(force_asserts): gn_args += dcheck_always_on=true
-

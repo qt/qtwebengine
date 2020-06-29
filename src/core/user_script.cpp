@@ -194,6 +194,11 @@ UserScriptData &UserScript::data() const
 
 void UserScript::parseMetadataHeader()
 {
+    // Clear previous values
+    scriptData->globs.clear();
+    scriptData->excludeGlobs.clear();
+    scriptData->urlPatterns.clear();
+
     // Logic taken from Chromium (extensions/browser/user_script_loader.cc)
     // http://wiki.greasespot.net/Metadata_block
     const std::string &script_text = scriptData->source;
