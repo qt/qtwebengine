@@ -82,7 +82,7 @@ public:
     };
 
     QPdfDocument *document = nullptr;
-    QVector<Link> links;
+    QList<Link> links;
     int page = 0;
 };
 

@@ -130,7 +130,7 @@ int main(int argc, char **argv)
     QLocale::setDefault(QLocale("en"));
 
     static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
-    QVector<const char *> w_argv(argc); \
+    QList<const char *> w_argv(argc); \
     for (int i = 0; i < argc; ++i) \
         w_argv[i] = argv[i]; \
     for (int i = 0; i < params.size(); ++i) \

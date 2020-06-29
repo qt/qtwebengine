@@ -178,7 +178,7 @@ static inline bool loadSync(QWebEngineView *view, const QUrl &url, bool ok = tru
 #define W_QTEST_MAIN(TestObject, params) \
 int main(int argc, char *argv[]) \
 { \
-    QVector<const char *> w_argv(argc); \
+    QList<const char *> w_argv(argc); \
     for (int i = 0; i < argc; ++i) \
         w_argv[i] = argv[i]; \
     for (int i = 0; i < params.size(); ++i) \

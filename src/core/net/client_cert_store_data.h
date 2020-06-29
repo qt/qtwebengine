@@ -46,7 +46,7 @@
 #if QT_CONFIG(ssl)
 #include "base/memory/ref_counted.h"
 
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtNetwork/qsslcertificate.h>
 #include <QtNetwork/qsslkey.h>
 
@@ -71,7 +71,7 @@ struct ClientCertificateStoreData
     void remove(const QSslCertificate &certificate);
     void clear();
 
-    QVector<Entry *> extraCerts;
+    QList<Entry *> extraCerts;
 };
 
 } // namespace QtWebEngineCore

@@ -136,7 +136,7 @@ void QPdfSearchModel::setSearchString(QString searchString)
     endResetModel();
 }
 
-QVector<QPdfSearchResult> QPdfSearchModel::resultsOnPage(int page) const
+QList<QPdfSearchResult> QPdfSearchModel::resultsOnPage(int page) const
 {
     Q_D(const QPdfSearchModel);
     const_cast<QPdfSearchModelPrivate *>(d)->doSearch(page);
@@ -230,12 +230,12 @@ bool QPdfSearchModelPrivate::doSearch(int page)
         return false;
     }
     FPDF_SCHHANDLE sh = FPDFText_FindStart(textPage, searchString.utf16(), 0, 0);
-    QVector<QPdfSearchResult> newSearchResults;
+    QList<QPdfSearchResult> newSearchResults;
     while (FPDFText_FindNext(sh)) {
         int idx = FPDFText_GetSchResultIndex(sh);
         int count = FPDFText_GetSchCount(sh);
         int rectCount = FPDFText_CountRects(textPage, idx, count);
-        QVector<QRectF> rects;
+        QList<QRectF> rects;
         int startIndex = -1;
         int endIndex = -1;
         for (int r = 0; r < rectCount; ++r) {
@@ -258,7 +258,7 @@ bool QPdfSearchModelPrivate::doSearch(int page)
             endIndex += ContextChars;
             int count = endIndex - startIndex + 1;
             if (count > 0) {
-                QVector<ushort> buf(count + 1);
+                QList<ushort> buf(count + 1);
                 int len = FPDFText_GetText(textPage, startIndex, count, buf.data());
                 Q_ASSERT(len - 1 <= count); // len is number of characters written, including the terminator
                 QString context = QString::fromUtf16(buf.constData(), len - 1);

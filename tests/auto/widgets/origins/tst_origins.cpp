@@ -169,7 +169,7 @@ public:
         profile->installUrlSchemeHandler(QBAL("cors"), this);
     }
 
-    QVector<QUrl> &requests() { return m_requests; }
+    QList<QUrl> &requests() { return m_requests; }
 
 private:
     void requestStarted(QWebEngineUrlRequestJob *job) override
@@ -198,7 +198,7 @@ private:
         job->reply(mimeType, file);
     }
 
-    QVector<QUrl> m_requests;
+    QList<QUrl> m_requests;
 };
 
 class tst_Origins final : public QObject {

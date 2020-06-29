@@ -72,7 +72,7 @@ public:
     QUrl url;
     QWebEngineHttpRequest::Method method;
     typedef QPair<QByteArray, QByteArray> HeaderPair;
-    typedef QVector<HeaderPair> Headers;
+    typedef QList<HeaderPair> Headers;
     Headers headers;
     QByteArray postData;
 
@@ -96,7 +96,7 @@ public:
 
     Headers::ConstIterator findHeader(const QByteArray &key) const;
     Headers allHeaders() const;
-    QVector<QByteArray> headersKeys() const;
+    QList<QByteArray> headersKeys() const;
     void setHeader(const QByteArray &key, const QByteArray &value);
     void unsetHeader(const QByteArray &key);
     void setAllHeaders(const Headers &list);
@@ -293,7 +293,7 @@ QByteArray QWebEngineHttpRequest::header(const QByteArray &headerName) const
 
     \sa setHeader(), header(), hasHeader(), unsetHeader()
 */
-QVector<QByteArray> QWebEngineHttpRequest::headers() const
+QList<QByteArray> QWebEngineHttpRequest::headers() const
 {
     return d->headersKeys();
 }
@@ -339,9 +339,9 @@ QWebEngineHttpRequestPrivate::Headers QWebEngineHttpRequestPrivate::allHeaders()
     return headers;
 }
 
-QVector<QByteArray> QWebEngineHttpRequestPrivate::headersKeys() const
+QList<QByteArray> QWebEngineHttpRequestPrivate::headersKeys() const
 {
-    QVector<QByteArray> result;
+    QList<QByteArray> result;
     result.reserve(headers.size());
     Headers::ConstIterator it = headers.constBegin(), end = headers.constEnd();
     for (; it != end; ++it)

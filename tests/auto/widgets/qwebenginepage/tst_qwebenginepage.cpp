@@ -1038,11 +1038,11 @@ void tst_QWebEnginePage::findText()
 void tst_QWebEnginePage::findTextResult()
 {
     QSignalSpy findTextSpy(m_view->page(), &QWebEnginePage::findTextFinished);
-    auto signalResult = [&findTextSpy]() -> QVector<int> {
+    auto signalResult = [&findTextSpy]() -> QList<int> {
         if (findTextSpy.count() != 1)
-            return QVector<int>({-1, -1});
+            return QList<int>({-1, -1});
         auto r = findTextSpy.takeFirst().value(0).value<QWebEngineFindTextResult>();
-        return QVector<int>({ r.numberOfMatches(), r.activeMatch() });
+        return QList<int>({ r.numberOfMatches(), r.activeMatch() });
     };
 
     // findText will abort in blink if the view has an empty size.
@@ -1054,21 +1054,21 @@ void tst_QWebEnginePage::findTextResult()
     QTRY_COMPARE(loadSpy.count(), 1);
 
     QCOMPARE(findTextSync(m_page, ""), false);
-    QCOMPARE(signalResult(), QVector<int>({0, 0}));
+    QCOMPARE(signalResult(), QList<int>({0, 0}));
 
     const QStringList words = { "foo", "bar" };
     for (const QString &subString : words) {
         QCOMPARE(findTextSync(m_page, subString), true);
-        QCOMPARE(signalResult(), QVector<int>({1, 1}));
+        QCOMPARE(signalResult(), QList<int>({1, 1}));
 
         QCOMPARE(findTextSync(m_page, ""), false);
-        QCOMPARE(signalResult(), QVector<int>({0, 0}));
+        QCOMPARE(signalResult(), QList<int>({0, 0}));
     }
 
     QCOMPARE(findTextSync(m_page, "blahhh"), false);
-    QCOMPARE(signalResult(), QVector<int>({0, 0}));
+    QCOMPARE(signalResult(), QList<int>({0, 0}));
     QCOMPARE(findTextSync(m_page, ""), false);
-    QCOMPARE(signalResult(), QVector<int>({0, 0}));
+    QCOMPARE(signalResult(), QList<int>({0, 0}));
 }
 
 void tst_QWebEnginePage::findTextSuccessiveShouldCallAllCallbacks()

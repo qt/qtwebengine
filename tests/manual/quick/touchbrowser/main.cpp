@@ -62,7 +62,7 @@ int main(int argc, char **argv)
             << QByteArrayLiteral("--enable-embedded-switches")
             << QByteArrayLiteral("--log-level=0");
     const int count = args.size() + argc;
-    QVector<char*> qargv(count);
+    QList<char*> qargv(count);
 
     qargv[0] = argv[0];
     for (int i = 0; i < args.size(); ++i)

@@ -128,7 +128,7 @@ public:
     }
 
 private:
-    QVector<BookmarkNode*> m_childNodes;
+    QList<BookmarkNode*> m_childNodes;
     BookmarkNode *m_parentNode;
 
     QString m_title;
@@ -189,7 +189,7 @@ public:
 
             const int titleLength = int(FPDFBookmark_GetTitle(bookmark, nullptr, 0));
 
-            QVector<ushort> titleBuffer(titleLength);
+            QList<ushort> titleBuffer(titleLength);
             FPDFBookmark_GetTitle(bookmark, titleBuffer.data(), quint32(titleBuffer.length()));
 
             const FPDF_DEST dest = FPDFBookmark_GetDest(document, bookmark);

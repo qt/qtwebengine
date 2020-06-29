@@ -38,8 +38,8 @@
 #define QPDFSEARCHRESULT_H
 
 #include <QtCore/qdebug.h>
+#include <QtCore/qlist.h>
 #include <QtCore/qrect.h>
-#include <QtCore/qvector.h>
 #include <QtPdf/qpdfdestination.h>
 
 QT_BEGIN_NAMESPACE
@@ -51,7 +51,7 @@ class Q_PDF_EXPORT QPdfSearchResult : public QPdfDestination
     Q_GADGET
     Q_PROPERTY(QString contextBefore READ contextBefore)
     Q_PROPERTY(QString contextAfter READ contextAfter)
-    Q_PROPERTY(QVector<QRectF> rectangles READ rectangles)
+    Q_PROPERTY(QList<QRectF> rectangles READ rectangles)
 
 public:
     QPdfSearchResult();
@@ -59,10 +59,10 @@ public:
 
     QString contextBefore() const;
     QString contextAfter() const;
-    QVector<QRectF> rectangles() const;
+    QList<QRectF> rectangles() const;
 
 private:
-    QPdfSearchResult(int page, QVector<QRectF> rects, QString contextBefore, QString contextAfter);
+    QPdfSearchResult(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter);
     QPdfSearchResult(QPdfSearchResultPrivate *d);
     friend class QPdfDocument;
     friend class QPdfSearchModelPrivate;

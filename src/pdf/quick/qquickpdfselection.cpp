@@ -141,7 +141,7 @@ void QQuickPdfSelection::setDocument(QQuickPdfDocument *document)
 
     \sa PathMultiline
 */
-QVector<QPolygonF> QQuickPdfSelection::geometry() const
+QList<QPolygonF> QQuickPdfSelection::geometry() const
 {
     return m_geometry;
 }

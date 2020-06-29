@@ -52,7 +52,7 @@ class Q_PDF_EXPORT QPdfSelection
 {
     Q_GADGET
     Q_PROPERTY(bool valid READ isValid)
-    Q_PROPERTY(QVector<QPolygonF> bounds READ bounds)
+    Q_PROPERTY(QList<QPolygonF> bounds READ bounds)
     Q_PROPERTY(QRectF boundingRectangle READ boundingRectangle)
     Q_PROPERTY(QString text READ text)
     Q_PROPERTY(int startIndex READ startIndex)
@@ -66,7 +66,7 @@ public:
     QPdfSelection &operator=(QPdfSelection &&other) noexcept { swap(other); return *this; }
     void swap(QPdfSelection &other) noexcept { d.swap(other.d); }
     bool isValid() const;
-    QVector<QPolygonF> bounds() const;
+    QList<QPolygonF> bounds() const;
     QString text() const;
     QRectF boundingRectangle() const;
     int startIndex() const;
@@ -77,7 +77,7 @@ public:
 
 private:
     QPdfSelection();
-    QPdfSelection(const QString &text, QVector<QPolygonF> bounds, QRectF boundingRect, int startIndex, int endIndex);
+    QPdfSelection(const QString &text, QList<QPolygonF> bounds, QRectF boundingRect, int startIndex, int endIndex);
     QPdfSelection(QPdfSelectionPrivate *d);
     friend class QPdfDocument;
     friend class QQuickPdfSelection;

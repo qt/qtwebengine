@@ -1162,17 +1162,17 @@ void tst_QQuickWebEngineView::setProfile() {
 void tst_QQuickWebEngineView::focusChild_data()
 {
     QTest::addColumn<QString>("interfaceName");
-    QTest::addColumn<QVector<QAccessible::Role>>("ancestorRoles");
+    QTest::addColumn<QList<QAccessible::Role>>("ancestorRoles");
 
-    QTest::newRow("QQuickWebEngineView") << QString("QQuickWebEngineView") << QVector<QAccessible::Role>({QAccessible::Client});
-    QTest::newRow("RenderWidgetHostViewQtDelegate") << QString("RenderWidgetHostViewQtDelegate") << QVector<QAccessible::Role>({QAccessible::Client});
-    QTest::newRow("QQuickView") << QString("QQuickView") << QVector<QAccessible::Role>({QAccessible::Window, QAccessible::Client /* view */});
+    QTest::newRow("QQuickWebEngineView") << QString("QQuickWebEngineView") << QList<QAccessible::Role>({QAccessible::Client});
+    QTest::newRow("RenderWidgetHostViewQtDelegate") << QString("RenderWidgetHostViewQtDelegate") << QList<QAccessible::Role>({QAccessible::Client});
+    QTest::newRow("QQuickView") << QString("QQuickView") << QList<QAccessible::Role>({QAccessible::Window, QAccessible::Client /* view */});
 }
 
 void tst_QQuickWebEngineView::focusChild()
 {
     auto traverseToWebDocumentAccessibleInterface = [](QAccessibleInterface *iface) -> QAccessibleInterface * {
-        QFETCH(QVector<QAccessible::Role>, ancestorRoles);
+        QFETCH(QList<QAccessible::Role>, ancestorRoles);
         for (int i = 0; i < ancestorRoles.size(); ++i) {
             if (iface->childCount() == 0 || iface->role() != ancestorRoles[i])
                 return nullptr;

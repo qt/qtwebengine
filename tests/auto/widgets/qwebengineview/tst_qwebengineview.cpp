@@ -961,7 +961,7 @@ public:
 
 private:
     int m_eventCounter;
-    QVector<QString> m_eventHistory;
+    QList<QString> m_eventHistory;
 };
 
 void tst_QWebEngineView::doNotSendMouseKeyboardEventsWhenDisabled()

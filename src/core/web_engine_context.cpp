@@ -132,7 +132,6 @@
 #include <QQuickWindow>
 #include <QStringList>
 #include <QSurfaceFormat>
-#include <QVector>
 #include <QNetworkProxy>
 #include <QtGui/qpa/qplatformintegration.h>
 #include <QtGui/private/qguiapplication_p.h>

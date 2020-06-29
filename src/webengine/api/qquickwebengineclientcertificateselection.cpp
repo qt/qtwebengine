@@ -162,7 +162,7 @@ QQuickWebEngineClientCertificateOption *QQuickWebEngineClientCertificateSelectio
 QQmlListProperty<QQuickWebEngineClientCertificateOption> QQuickWebEngineClientCertificateSelection::certificates()
 {
     if (m_certificates.empty()) {
-        QVector<QSslCertificate> certificates = d_ptr->certificates();
+        QList<QSslCertificate> certificates = d_ptr->certificates();
         for (int i = 0; i < certificates.count(); ++i)
             m_certificates.push_back(new QQuickWebEngineClientCertificateOption(this, i));
     }

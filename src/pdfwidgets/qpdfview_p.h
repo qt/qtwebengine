@@ -104,7 +104,7 @@ public:
     QRect m_viewport;
 
     QHash<int, QImage> m_pageCache;
-    QVector<int> m_cachedPagesLRU;
+    QList<int> m_cachedPagesLRU;
     int m_pageCacheLimit;
 
     DocumentLayout m_documentLayout;

@@ -872,7 +872,7 @@ void tst_QWebEngineProfile::changeHttpUserAgent()
     TestServer server;
     QVERIFY(server.start());
 
-    QVector<QByteArray> userAgents;
+    QList<QByteArray> userAgents;
     connect(&server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
         if (rr->requestPath() == "/hedgehog.html")
             userAgents.push_back(rr->requestHeader(QByteArrayLiteral("user-agent")));
@@ -899,7 +899,7 @@ void tst_QWebEngineProfile::changeHttpAcceptLanguage()
     TestServer server;
     QVERIFY(server.start());
 
-    QVector<QByteArray> languages;
+    QList<QByteArray> languages;
     connect(&server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
         if (rr->requestPath() == "/hedgehog.html")
             languages.push_back(rr->requestHeader(QByteArrayLiteral("accept-language")));

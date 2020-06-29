@@ -75,7 +75,7 @@ private:
 
 private:
     QQuickPdfDocument *m_quickDocument;
-    QVector<QPolygonF> m_linksGeometry;
+    QList<QPolygonF> m_linksGeometry;
 
     Q_DISABLE_COPY(QQuickPdfLinkModel)
 };

@@ -98,7 +98,7 @@ private slots:
 
 private:
     QWebEngineCookieStore *m_store;
-    QVector<QNetworkCookie> m_cookies;
+    QList<QNetworkCookie> m_cookies;
     QVBoxLayout *m_layout;
 };
 

@@ -239,7 +239,7 @@ void QPdfLinkModelPrivate::update()
                 if (len < 1) {
                     qCWarning(qLcLink) << "skipping link" << i << "with empty URL";
                 } else {
-                    QVector<unsigned short> buf(len);
+                    QList<unsigned short> buf(len);
                     int got = FPDFLink_GetURL(webLinks, i, buf.data(), len);
                     Q_ASSERT(got == len);
                     linkData.url = QString::fromUtf16(buf.data(), got - 1);

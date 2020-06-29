@@ -88,7 +88,7 @@ Q_SIGNALS:
     void jumped(int page, QPointF location, qreal zoom);
 
 private:
-    QVector<QExplicitlySharedDataPointer<QPdfDestinationPrivate>> m_pageHistory;
+    QList<QExplicitlySharedDataPointer<QPdfDestinationPrivate>> m_pageHistory;
     int m_currentHistoryIndex = 0;
     bool m_changing = false;
 

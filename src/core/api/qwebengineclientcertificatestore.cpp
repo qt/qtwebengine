@@ -88,9 +88,9 @@ void QWebEngineClientCertificateStore::add(const QSslCertificate &certificate, c
     Returns an empty list if the store does not contain any certificates.
 */
 
-QVector<QSslCertificate> QWebEngineClientCertificateStore::certificates() const
+QList<QSslCertificate> QWebEngineClientCertificateStore::certificates() const
 {
-    QVector<QSslCertificate> certificateList;
+    QList<QSslCertificate> certificateList;
     for (auto data : qAsConst(m_storeData->extraCerts))
         certificateList.append(data->certificate);
     return certificateList;

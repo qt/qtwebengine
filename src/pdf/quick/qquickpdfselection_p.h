@@ -70,7 +70,7 @@ class QQuickPdfSelection : public QQuickItem
     Q_PROPERTY(bool hold READ hold WRITE setHold NOTIFY holdChanged)
 
     Q_PROPERTY(QString text READ text NOTIFY textChanged)
-    Q_PROPERTY(QVector<QPolygonF> geometry READ geometry NOTIFY selectedAreaChanged)
+    Q_PROPERTY(QList<QPolygonF> geometry READ geometry NOTIFY selectedAreaChanged)
 
 public:
     explicit QQuickPdfSelection(QQuickItem *parent = nullptr);
@@ -89,7 +89,7 @@ public:
     void setHold(bool hold);
 
     QString text() const;
-    QVector<QPolygonF> geometry() const;
+    QList<QPolygonF> geometry() const;
 
     Q_INVOKABLE void clear();
     Q_INVOKABLE void selectAll();
@@ -131,7 +131,7 @@ private:
     mutable qreal m_heightAtCursor = 0;
     QString m_text;             // selected text
     mutable QString m_pageText; // all text on the page
-    QVector<QPolygonF> m_geometry;
+    QList<QPolygonF> m_geometry;
     int m_page = 0;
     int m_fromCharIndex = -1;   // same as anchor position
     mutable int m_toCharIndex = -1; // same as cursor position

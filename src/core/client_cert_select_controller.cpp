@@ -132,7 +132,7 @@ void ClientCertSelectController::select(const QSslCertificate &certificate)
                  << "    Selected certificate needs to be one of the offered";
 }
 
-QVector<QSslCertificate> ClientCertSelectController::certificates() const
+QList<QSslCertificate> ClientCertSelectController::certificates() const
 {
     if (!m_certificates.isEmpty())
         return m_certificates;

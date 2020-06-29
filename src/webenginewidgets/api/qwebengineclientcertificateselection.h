@@ -45,8 +45,8 @@
 
 #if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 
+#include <QtCore/qlist.h>
 #include <QtCore/qscopedpointer.h>
-#include <QtCore/qvector.h>
 #include <QtNetwork/qsslcertificate.h>
 
 QT_BEGIN_NAMESPACE
@@ -63,7 +63,7 @@ public:
 
     void select(const QSslCertificate &certificate);
     void selectNone();
-    QVector<QSslCertificate> certificates() const;
+    QList<QSslCertificate> certificates() const;
 
 private:
     friend class QWebEnginePagePrivate;

@@ -67,7 +67,7 @@ QPdfSelection::QPdfSelection()
     \a text string, and which take up space on the page within the polygon
     regions given in \a bounds.
 */
-QPdfSelection::QPdfSelection(const QString &text, QVector<QPolygonF> bounds, QRectF boundingRect, int startIndex, int endIndex)
+QPdfSelection::QPdfSelection(const QString &text, QList<QPolygonF> bounds, QRectF boundingRect, int startIndex, int endIndex)
   : d(new QPdfSelectionPrivate(text, bounds, boundingRect, startIndex, endIndex))
 {
 }
@@ -119,7 +119,7 @@ bool QPdfSelection::isValid() const
     are always rectangles; but in the future it may be possible to represent
     more complex regions.
 */
-QVector<QPolygonF> QPdfSelection::bounds() const
+QList<QPolygonF> QPdfSelection::bounds() const
 {
     return d->bounds;
 }

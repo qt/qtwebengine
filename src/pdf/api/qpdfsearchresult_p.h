@@ -56,7 +56,7 @@ class QPdfSearchResultPrivate : public QPdfDestinationPrivate
 {
 public:
     QPdfSearchResultPrivate() = default;
-    QPdfSearchResultPrivate(int page, QVector<QRectF> rects, QString contextBefore, QString contextAfter) :
+    QPdfSearchResultPrivate(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter) :
         QPdfDestinationPrivate(page, rects.first().topLeft(), 0),
         contextBefore(contextBefore),
         contextAfter(contextAfter),
@@ -64,7 +64,7 @@ public:
 
     QString contextBefore;
     QString contextAfter;
-    QVector<QRectF> rects;
+    QList<QRectF> rects;
 };
 
 QT_END_NAMESPACE

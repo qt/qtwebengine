@@ -53,7 +53,7 @@
 #include "find_text_helper.h"
 #include "javascript_dialog_manager_qt.h"
 
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 QT_FORWARD_DECLARE_CLASS(ClientCertSelectController)
@@ -87,7 +87,7 @@ protected:
 
 private:
     WebContentsAdapterClient *m_viewClient;
-    QVector<content::FrameTreeNode *> m_observedNodes;
+    QList<content::FrameTreeNode *> m_observedNodes;
 };
 
 class SavePageInfo
@@ -215,7 +215,7 @@ private:
     int &streamCount(blink::mojom::MediaStreamType type);
 
     WebContentsAdapterClient *m_viewClient;
-    QVector<int64_t> m_loadingErrorFrameList;
+    QList<int64_t> m_loadingErrorFrameList;
     QScopedPointer<FaviconManager> m_faviconManager;
     QScopedPointer<FindTextHelper> m_findTextHelper;
     SavePageInfo m_savePageInfo;

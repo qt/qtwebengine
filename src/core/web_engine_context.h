@@ -47,7 +47,7 @@
 #include "base/values.h"
 
 #include <QtGui/qtgui-config.h>
-#include <QVector>
+#include <QList>
 
 namespace base {
 class RunLoop;
@@ -144,7 +144,7 @@ private:
     std::unique_ptr<QObject> m_globalQObject;
     std::unique_ptr<ProfileAdapter> m_defaultProfileAdapter;
     std::unique_ptr<DevToolsServerQt> m_devtoolsServer;
-    QVector<ProfileAdapter*> m_profileAdapters;
+    QList<ProfileAdapter*> m_profileAdapters;
 #if QT_CONFIG(accessibility)
     std::unique_ptr<AccessibilityActivationObserver> m_accessibilityActivationObserver;
 #endif

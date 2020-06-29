@@ -56,7 +56,7 @@
 #include "qwebenginecallback_p.h"
 #include "qwebenginecookiestore.h"
 
-#include <QVector>
+#include <QList>
 #include <QNetworkCookie>
 #include <QUrl>
 
@@ -79,7 +79,7 @@ class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineCookieStorePrivate {
 public:
     QtWebEngineCore::CallbackDirectory callbackDirectory;
     std::function<bool(const QWebEngineCookieStore::FilterRequest &)> filterCallback;
-    QVector<CookieData> m_pendingUserCookies;
+    QList<CookieData> m_pendingUserCookies;
     quint64 m_nextCallbackId;
     bool m_deleteSessionCookiesPending;
     bool m_deleteAllCookiesPending;

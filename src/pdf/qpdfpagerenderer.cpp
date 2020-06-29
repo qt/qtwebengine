@@ -89,8 +89,8 @@ public:
         QPdfDocumentRenderOptions options;
     };
 
-    QVector<PageRequest> m_requests;
-    QVector<PageRequest> m_pendingRequests;
+    QList<PageRequest> m_requests;
+    QList<PageRequest> m_pendingRequests;
     quint64 m_requestIdCounter = 1;
 
     QThread *m_renderThread = nullptr;

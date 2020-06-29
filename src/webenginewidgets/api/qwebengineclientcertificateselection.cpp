@@ -86,7 +86,7 @@ QWebEngineClientCertificateSelection::~QWebEngineClientCertificateSelection()
 
     \sa select()
 */
-QVector<QSslCertificate> QWebEngineClientCertificateSelection::certificates() const
+QList<QSslCertificate> QWebEngineClientCertificateSelection::certificates() const
 {
     return d_ptr->certificates();
 }

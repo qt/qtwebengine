@@ -104,9 +104,9 @@ void QQuickPdfSearchModel::setDocument(QQuickPdfDocument *document)
 
     \sa PathMultiline
 */
-QVector<QPolygonF> QQuickPdfSearchModel::currentResultBoundingPolygons() const
+QList<QPolygonF> QQuickPdfSearchModel::currentResultBoundingPolygons() const
 {
-    QVector<QPolygonF> ret;
+    QList<QPolygonF> ret;
     const auto &results = const_cast<QQuickPdfSearchModel *>(this)->resultsOnPage(m_currentPage);
     if (m_currentResult < 0 || m_currentResult >= results.count())
         return ret;
@@ -172,7 +172,7 @@ void QQuickPdfSearchModel::onResultsChanged()
 
     \sa PathMultiline
 */
-QVector<QPolygonF> QQuickPdfSearchModel::currentPageBoundingPolygons() const
+QList<QPolygonF> QQuickPdfSearchModel::currentPageBoundingPolygons() const
 {
     return const_cast<QQuickPdfSearchModel *>(this)->boundingPolygonsOnPage(m_currentPage);
 }
@@ -203,14 +203,14 @@ QVector<QPolygonF> QQuickPdfSearchModel::currentPageBoundingPolygons() const
 
     \sa PathMultiline
 */
-QVector<QPolygonF> QQuickPdfSearchModel::boundingPolygonsOnPage(int page)
+QList<QPolygonF> QQuickPdfSearchModel::boundingPolygonsOnPage(int page)
 {
     if (!document() || searchString().isEmpty() || page < 0 || page > document()->pageCount())
         return {};
 
     updatePage(page);
 
-    QVector<QPolygonF> ret;
+    QList<QPolygonF> ret;
     auto m = QPdfSearchModel::resultsOnPage(page);
     for (auto result : m) {
         for (auto rect : result.rectangles())

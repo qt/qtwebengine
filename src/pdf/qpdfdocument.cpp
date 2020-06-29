@@ -401,7 +401,7 @@ void QPdfDocumentPrivate::fpdf_AddSegment(_FX_DOWNLOADHINTS *pThis, size_t offse
 
 QString QPdfDocumentPrivate::getText(FPDF_TEXTPAGE textPage, int startIndex, int count)
 {
-    QVector<ushort> buf(count + 1);
+    QList<ushort> buf(count + 1);
     // TODO is that enough space in case one unicode character is more than one in utf-16?
     int len = FPDFText_GetText(textPage, startIndex, count, buf.data());
     Q_ASSERT(len - 1 <= count); // len is number of characters written, including the terminator
@@ -602,7 +602,7 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     QPdfMutexLocker lock;
     const unsigned long len = FPDF_GetMetaText(d->doc, fieldName.constData(), nullptr, 0);
 
-    QVector<ushort> buf(len);
+    QList<ushort> buf(len);
     FPDF_GetMetaText(d->doc, fieldName.constData(), buf.data(), buf.length());
     lock.unlock();
 
@@ -807,7 +807,7 @@ QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
 
         int count = endIndex - startIndex;
         QString text = d->getText(textPage, startIndex, count);
-        QVector<QPolygonF> bounds;
+        QList<QPolygonF> bounds;
         QRectF hull;
         int rectCount = FPDFText_CountRects(textPage, startIndex, endIndex - startIndex);
         for (int i = 0; i < rectCount; ++i) {
@@ -844,7 +844,7 @@ QPdfSelection QPdfDocument::getSelectionAtIndex(int page, int startIndex, int ma
     int pageCount = FPDFText_CountChars(textPage);
     if (startIndex >= pageCount)
         return QPdfSelection();
-    QVector<QPolygonF> bounds;
+    QList<QPolygonF> bounds;
     QRectF hull;
     int rectCount = 0;
     QString text;
@@ -882,7 +882,7 @@ QPdfSelection QPdfDocument::getAllText(int page)
     if (count < 1)
         return QPdfSelection();
     QString text = d->getText(textPage, 0, count);
-    QVector<QPolygonF> bounds;
+    QList<QPolygonF> bounds;
     QRectF hull;
     int rectCount = FPDFText_CountRects(textPage, 0, count);
     for (int i = 0; i < rectCount; ++i) {

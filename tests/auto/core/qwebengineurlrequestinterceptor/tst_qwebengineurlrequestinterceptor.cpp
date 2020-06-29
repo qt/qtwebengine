@@ -525,8 +525,8 @@ void tst_QWebEngineUrlRequestInterceptor::requestInterceptorByResourceType_data(
     QTest::addColumn<int>("resourceType");
 
     QStringList name = { "ui", "io" };
-    QVector<InterceptorSetter> setters = { &QWebEngineProfile::setUrlRequestInterceptor,
-                                           &QWebEngineProfile::setRequestInterceptor };
+    QList<InterceptorSetter> setters = { &QWebEngineProfile::setUrlRequestInterceptor,
+                                         &QWebEngineProfile::setRequestInterceptor };
     for (int i = 0; i < 2; i++) {
         QTest::newRow(qPrintable(name[i] + "StyleSheet"))
                 << setters[i] << styleRequestUrl << firstPartyUrl

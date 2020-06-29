@@ -58,7 +58,7 @@ void tst_QPdfSearchModel::findText()
 
     QPdfSearchModel model;
     model.setDocument(&document);
-    QVector<QRectF> matches = model.matches(1, "ai");
+    QList<QRectF> matches = model.matches(1, "ai");
 
     qDebug() << matches;
     QCOMPARE(matches.count(), 3);

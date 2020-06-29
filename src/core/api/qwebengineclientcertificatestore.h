@@ -42,7 +42,7 @@
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 #include <QtNetwork/qsslcertificate.h>
 #include <QtNetwork/qsslkey.h>
 
@@ -59,7 +59,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineClientCertificateStore {
 
 public:
     void add(const QSslCertificate &certificate, const QSslKey &privateKey);
-    QVector<QSslCertificate> certificates() const;
+    QList<QSslCertificate> certificates() const;
     void remove(const QSslCertificate &certificate);
     void clear();
 

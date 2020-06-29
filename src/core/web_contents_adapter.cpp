@@ -715,8 +715,8 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
     }
 
     // convert the custom headers into the format that chromium expects
-    QVector<QByteArray> headers = request.headers();
-    for (QVector<QByteArray>::const_iterator it = headers.cbegin(); it != headers.cend(); ++it) {
+    QList<QByteArray> headers = request.headers();
+    for (QList<QByteArray>::const_iterator it = headers.cbegin(); it != headers.cend(); ++it) {
         if (params.extra_headers.length() > 0)
             params.extra_headers += '\n';
         params.extra_headers += (*it).toStdString() + ": " + request.header(*it).toStdString();

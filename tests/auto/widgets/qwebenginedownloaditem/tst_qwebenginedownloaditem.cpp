@@ -742,7 +742,7 @@ void tst_QWebEngineDownloadItem::downloadViaSetUrl()
     });
 
     // Set up profile and download handler
-    QVector<QUrl> downloadUrls;
+    QList<QUrl> downloadUrls;
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
         downloadUrls.append(item->url());
     });

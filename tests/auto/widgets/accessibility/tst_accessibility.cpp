@@ -151,17 +151,17 @@ void tst_Accessibility::hierarchy()
 void tst_Accessibility::focusChild_data()
 {
     QTest::addColumn<QString>("interfaceName");
-    QTest::addColumn<QVector<QAccessible::Role>>("ancestorRoles");
+    QTest::addColumn<QList<QAccessible::Role>>("ancestorRoles");
 
-    QTest::newRow("QWebEngineView") << QString("QWebEngineView") << QVector<QAccessible::Role>({QAccessible::Client});
-    QTest::newRow("RenderWidgetHostViewQtDelegate") << QString("RenderWidgetHostViewQtDelegate") << QVector<QAccessible::Role>({QAccessible::Client});
-    QTest::newRow("QMainWindow") << QString("QMainWindow") << QVector<QAccessible::Role>({QAccessible::Window, QAccessible::Client /* central widget */, QAccessible::Client /* view */});
+    QTest::newRow("QWebEngineView") << QString("QWebEngineView") << QList<QAccessible::Role>({QAccessible::Client});
+    QTest::newRow("RenderWidgetHostViewQtDelegate") << QString("RenderWidgetHostViewQtDelegate") << QList<QAccessible::Role>({QAccessible::Client});
+    QTest::newRow("QMainWindow") << QString("QMainWindow") << QList<QAccessible::Role>({QAccessible::Window, QAccessible::Client /* central widget */, QAccessible::Client /* view */});
 }
 
 void tst_Accessibility::focusChild()
 {
     auto traverseToWebDocumentAccessibleInterface = [](QAccessibleInterface *iface) -> QAccessibleInterface * {
-        QFETCH(QVector<QAccessible::Role>, ancestorRoles);
+        QFETCH(QList<QAccessible::Role>, ancestorRoles);
         for (int i = 0; i < ancestorRoles.size(); ++i) {
             if (iface->childCount() == 0 || iface->role() != ancestorRoles[i])
                 return nullptr;

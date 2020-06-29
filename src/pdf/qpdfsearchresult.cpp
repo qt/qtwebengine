@@ -42,7 +42,7 @@ QT_BEGIN_NAMESPACE
 QPdfSearchResult::QPdfSearchResult() :
     QPdfSearchResult(new QPdfSearchResultPrivate()) { }
 
-QPdfSearchResult::QPdfSearchResult(int page, QVector<QRectF> rects, QString contextBefore, QString contextAfter) :
+QPdfSearchResult::QPdfSearchResult(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter) :
     QPdfSearchResult(new QPdfSearchResultPrivate(page, rects, contextBefore, contextAfter)) { }
 
 QPdfSearchResult::QPdfSearchResult(QPdfSearchResultPrivate *d) :
@@ -58,7 +58,7 @@ QString QPdfSearchResult::contextAfter() const
     return static_cast<QPdfSearchResultPrivate *>(d.data())->contextAfter;
 }
 
-QVector<QRectF> QPdfSearchResult::rectangles() const
+QList<QRectF> QPdfSearchResult::rectangles() const
 {
     return static_cast<QPdfSearchResultPrivate *>(d.data())->rects;
 }

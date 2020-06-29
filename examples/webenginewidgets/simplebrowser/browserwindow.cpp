@@ -315,7 +315,7 @@ QMenu *BrowserWindow::createWindowMenu(TabWidget *tabWidget)
         menu->addAction(previousTabAction);
         menu->addSeparator();
 
-        QVector<BrowserWindow*> windows = m_browser->windows();
+        QList<BrowserWindow*> windows = m_browser->windows();
         int index(-1);
         for (auto window : windows) {
             QAction *action = menu->addAction(window->windowTitle(), this, &BrowserWindow::handleShowWindowTriggered);
@@ -524,7 +524,7 @@ void BrowserWindow::handleShowWindowTriggered()
 {
     if (QAction *action = qobject_cast<QAction*>(sender())) {
         int offset = action->data().toInt();
-        QVector<BrowserWindow*> windows = m_browser->windows();
+        QList<BrowserWindow*> windows = m_browser->windows();
         windows.at(offset)->activateWindow();
         windows.at(offset)->currentTab()->setFocus();
     }

@@ -66,7 +66,7 @@ public:
     explicit QPdfSearchModel(QObject *parent = nullptr);
     ~QPdfSearchModel();
 
-    QVector<QPdfSearchResult> resultsOnPage(int page) const;
+    QList<QPdfSearchResult> resultsOnPage(int page) const;
     QPdfSearchResult resultAtIndex(int index) const;
 
     QPdfDocument *document() const;

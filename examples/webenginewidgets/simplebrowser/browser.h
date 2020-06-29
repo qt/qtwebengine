@@ -53,7 +53,7 @@
 
 #include "downloadmanagerwidget.h"
 
-#include <QVector>
+#include <QList>
 #include <QWebEngineProfile>
 
 class BrowserWindow;
@@ -63,7 +63,7 @@ class Browser
 public:
     Browser();
 
-    QVector<BrowserWindow*> windows() { return m_windows; }
+    QList<BrowserWindow*> windows() { return m_windows; }
 
     BrowserWindow *createWindow(bool offTheRecord = false);
     BrowserWindow *createDevToolsWindow();
@@ -71,7 +71,7 @@ public:
     DownloadManagerWidget &downloadManagerWidget() { return m_downloadManagerWidget; }
 
 private:
-    QVector<BrowserWindow*> m_windows;
+    QList<BrowserWindow*> m_windows;
     DownloadManagerWidget m_downloadManagerWidget;
     QScopedPointer<QWebEngineProfile> m_otrProfile;
 };

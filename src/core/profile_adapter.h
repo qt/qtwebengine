@@ -58,7 +58,6 @@
 #include <QPointer>
 #include <QScopedPointer>
 #include <QString>
-#include <QVector>
 
 #include "api/qwebengineclientcertificatestore.h"
 #include "api/qwebenginecookiestore.h"
@@ -247,7 +246,7 @@ private:
     QHash<QByteArray, QSharedPointer<UserNotificationController>> m_persistentNotifications;
 
     QList<ProfileAdapterClient*> m_clients;
-    QVector<WebContentsAdapterClient *> m_webContentsAdapterClients;
+    QList<WebContentsAdapterClient *> m_webContentsAdapterClients;
     int m_httpCacheMaxSize;
     QrcUrlSchemeHandler m_qrcHandler;
 

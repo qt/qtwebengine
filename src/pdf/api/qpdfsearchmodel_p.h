@@ -74,8 +74,8 @@ public:
 
     QPdfDocument *document = nullptr;
     QString searchString;
-    QVector<bool> pagesSearched;
-    QVector<QVector<QPdfSearchResult>> searchResults;
+    QList<bool> pagesSearched;
+    QList<QList<QPdfSearchResult>> searchResults;
     int rowCountSoFar = 0;
     int updateTimerId = -1;
     int nextPageToUpdate = 0;

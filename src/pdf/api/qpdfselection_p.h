@@ -37,8 +37,8 @@
 #ifndef QPDFSELECTION_P_H
 #define QPDFSELECTION_P_H
 
+#include <QList>
 #include <QPolygonF>
-#include <QVector>
 
 QT_BEGIN_NAMESPACE
 
@@ -46,7 +46,7 @@ class QPdfSelectionPrivate : public QSharedData
 {
 public:
     QPdfSelectionPrivate() = default;
-    QPdfSelectionPrivate(const QString &text, QVector<QPolygonF> bounds, QRectF boundingRect, int startIndex, int endIndex)
+    QPdfSelectionPrivate(const QString &text, QList<QPolygonF> bounds, QRectF boundingRect, int startIndex, int endIndex)
         : text(text),
           bounds(bounds),
           boundingRect(boundingRect),
@@ -54,7 +54,7 @@ public:
           endIndex(endIndex) { }
 
     QString text;
-    QVector<QPolygonF> bounds;
+    QList<QPolygonF> bounds;
     QRectF boundingRect;
     int startIndex;
     int endIndex;

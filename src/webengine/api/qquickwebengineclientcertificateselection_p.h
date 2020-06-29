@@ -57,7 +57,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QUrl>
-#include <QtCore/QVector>
+#include <QtCore/QList>
 #include <QtQml/QQmlListProperty>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
@@ -116,7 +116,7 @@ private:
 
     explicit QQuickWebEngineClientCertificateSelection(QSharedPointer<ClientCertSelectController>);
 
-    mutable QVector<QQuickWebEngineClientCertificateOption *> m_certificates;
+    mutable QList<QQuickWebEngineClientCertificateOption *> m_certificates;
     QSharedPointer<ClientCertSelectController> d_ptr;
 };
 
