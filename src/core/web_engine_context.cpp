@@ -173,9 +173,9 @@ bool usingDefaultSGBackend()
     }
 
     if (device.isEmpty())
-        device = QString::fromLocal8Bit(qgetenv("QT_QUICK_BACKEND"));
+        device = qEnvironmentVariable("QT_QUICK_BACKEND");
     if (device.isEmpty())
-        device = QString::fromLocal8Bit(qgetenv("QMLSCENE_DEVICE"));
+        device = qEnvironmentVariable("QMLSCENE_DEVICE");
 
     return device.isEmpty();
 }
@@ -878,7 +878,7 @@ base::CommandLine* WebEngineContext::commandLine() {
         QStringList appArgs = QCoreApplication::arguments();
         if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
             appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
-            appArgs.append(parseEnvCommandLine(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv))));
+            appArgs.append(parseEnvCommandLine(qEnvironmentVariable(kChromiumFlagsEnv)));
         }
 #ifdef Q_OS_WIN
         appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));

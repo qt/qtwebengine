@@ -199,7 +199,7 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
 {
     QStringList pluginPaths;
 #if defined(Q_OS_WIN)
-    QString winDir = QDir::fromNativeSeparators(qgetenv("WINDIR"));
+    QString winDir = QDir::fromNativeSeparators(qEnvironmentVariable("WINDIR"));
     if (winDir.isEmpty())
         winDir = QString::fromLatin1("C:/Windows");
     QDir pluginDir(winDir + "/System32/Macromed/Flash");

@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
     // Try to look up the path to the ICU data directory via an environment variable
     // (e.g. for the case when the tool is ran during build phase, and regular installed
     // ICU data file is not available).
-    QString icuPossibleEnvDataDir = QString::fromLatin1(qgetenv("QT_WEBENGINE_ICU_DATA_DIR"));
+    const QString icuPossibleEnvDataDir = qEnvironmentVariable("QT_WEBENGINE_ICU_DATA_DIR");
     if (!icuPossibleEnvDataDir.isEmpty() && QFileInfo::exists(icuPossibleEnvDataDir)) {
         icuDataDir = icuPossibleEnvDataDir;
         icuDataDirFound = true;

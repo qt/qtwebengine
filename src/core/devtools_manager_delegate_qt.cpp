@@ -114,7 +114,7 @@ DevToolsServerQt::~DevToolsServerQt()
 
 void DevToolsServerQt::parseAddressAndPort()
 {
-    const QString inspectorEnv = QString::fromUtf8(qgetenv("QTWEBENGINE_REMOTE_DEBUGGING"));
+    const QString inspectorEnv = qEnvironmentVariable("QTWEBENGINE_REMOTE_DEBUGGING");
     const base::CommandLine &commandLine = *base::CommandLine::ForCurrentProcess();
     QString portStr;
 
