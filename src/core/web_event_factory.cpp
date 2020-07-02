@@ -1229,6 +1229,10 @@ static WebMouseEvent::Button mouseButtonForEvent(T *event)
         return WebMouseEvent::Button::kRight;
     else if (event->button() == Qt::MidButton)
         return WebMouseEvent::Button::kMiddle;
+    else if (event->button() == Qt::BackButton)
+        return WebMouseEvent::Button::kBack;
+    else if (event->button() == Qt::ForwardButton)
+        return WebMouseEvent::Button::kForward;
 
     if (event->type() != QEvent::MouseMove && event->type() != QEvent::TabletMove)
         return WebMouseEvent::Button::kNoButton;
@@ -1241,6 +1245,10 @@ static WebMouseEvent::Button mouseButtonForEvent(T *event)
         return WebMouseEvent::Button::kRight;
     else if (event->buttons() & Qt::MidButton)
         return WebMouseEvent::Button::kMiddle;
+    else if (event->buttons() & Qt::BackButton)
+        return WebMouseEvent::Button::kBack;
+    else if (event->buttons() & Qt::ForwardButton)
+        return WebMouseEvent::Button::kForward;
 
     return WebMouseEvent::Button::kNoButton;
 }
@@ -1255,6 +1263,10 @@ static unsigned mouseButtonsModifiersForEvent(const T* event)
         ret |= WebInputEvent::kRightButtonDown;
     if (event->buttons() & Qt::MidButton)
         ret |= WebInputEvent::kMiddleButtonDown;
+    if (event->buttons() & Qt::BackButton)
+        ret |= WebInputEvent::kBackButtonDown;
+    if (event->buttons() & Qt::ForwardButton)
+        ret |= WebInputEvent::kForwardButtonDown;
     return ret;
 }
 
@@ -1348,6 +1360,10 @@ static inline Qt::MouseButtons mouseButtonsForModifier(unsigned int modifier)
         buttons |= Qt::RightButton;
     if (modifier & WebInputEvent::kMiddleButtonDown)
         buttons |= Qt::MiddleButton;
+    if (modifier & WebInputEvent::kBackButtonDown)
+        buttons |= Qt::BackButton;
+    if (modifier & WebInputEvent::kForwardButtonDown)
+        buttons |= Qt::ForwardButton;
     return buttons;
 }
 

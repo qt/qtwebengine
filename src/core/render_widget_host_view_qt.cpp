@@ -1742,7 +1742,7 @@ void RenderWidgetHostViewQt::handlePointerEvent(T *event)
     blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event);
     if ((webEvent.GetType() == blink::WebInputEvent::kMouseDown || webEvent.GetType() == blink::WebInputEvent::kMouseUp)
             && webEvent.button == blink::WebMouseEvent::Button::kNoButton) {
-        // Blink can only handle the 3 main mouse-buttons and may assert when processing mouse-down for no button.
+        // Blink can only handle the 5 main mouse-buttons and may assert when processing mouse-down for no button.
         LOG(INFO) << "Unhandled mouse button";
         return;
     }
