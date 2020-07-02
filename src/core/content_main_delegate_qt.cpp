@@ -69,6 +69,7 @@
 #endif
 
 #if defined(OS_LINUX)
+#include "media/audio/audio_manager.h"
 #include "ui/base/ui_base_switches.h"
 #endif
 
@@ -220,6 +221,14 @@ void ContentMainDelegateQt::PreSandboxStartup()
         media::InitializeVideoToolbox();
     }
 #endif
+
+    if (parsedCommandLine->HasSwitch(service_manager::switches::kApplicationName)) {
+        const std::string appName = parsedCommandLine->GetSwitchValueASCII(service_manager::switches::kApplicationName);
+        QCoreApplication::setApplicationName(QString::fromStdString(appName));
+#if defined(OS_LINUX)
+        media::AudioManager::SetGlobalAppName(appName);
+#endif
+    }
 }
 
 content::ContentBrowserClient *ContentMainDelegateQt::CreateContentBrowserClient()
