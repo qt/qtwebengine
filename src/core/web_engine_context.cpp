@@ -136,18 +136,16 @@
 #include <QtGui/qpa/qplatformintegration.h>
 #include <QtGui/private/qguiapplication_p.h>
 
-using namespace QtWebEngineCore;
-
 #if QT_CONFIG(opengl)
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
 #endif
 
-namespace {
+namespace QtWebEngineCore {
 
 #if QT_CONFIG(opengl)
-bool usingANGLE()
+static bool usingANGLE()
 {
 #if defined(Q_OS_WIN)
     if (qt_gl_global_share_context())
@@ -158,7 +156,7 @@ bool usingANGLE()
 #endif
 }
 
-bool usingDefaultSGBackend()
+static bool usingDefaultSGBackend()
 {
     const QStringList args = QGuiApplication::arguments();
 
@@ -179,16 +177,76 @@ bool usingDefaultSGBackend()
 
     return device.isEmpty();
 }
+
+bool usingSoftwareDynamicGL()
+{
+    if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
+        return true;
+#if defined(Q_OS_WIN)
+    HMODULE handle = QPlatformInterface::QWGLContext::openGLModuleHandle();
+    wchar_t path[MAX_PATH];
+    DWORD size = GetModuleFileName(handle, path, MAX_PATH);
+    QFileInfo openGLModule(QString::fromWCharArray(path, size));
+    return openGLModule.fileName() == QLatin1String("opengl32sw.dll");
+#else
+    return false;
+#endif
+}
+
+static const char *getGLType(bool enableGLSoftwareRendering)
+{
+    const char *glType = nullptr;
+    const bool tryGL = (usingDefaultSGBackend() && !usingSoftwareDynamicGL()
+                        && QGuiApplicationPrivate::platformIntegration()->hasCapability(
+                                QPlatformIntegration::OpenGL))
+            || enableGLSoftwareRendering;
+    if (tryGL) {
+        if (!qt_gl_global_share_context() || !qt_gl_global_share_context()->isValid()) {
+            qWarning("WebEngineContext used before QtWebEngine::initialize() or OpenGL context "
+                     "creation failed.");
+        } else {
+            const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
+            switch (sharedFormat.renderableType()) {
+            case QSurfaceFormat::OpenGL:
+                glType = gl::kGLImplementationDesktopName;
+                // Check if Core profile was requested and is supported.
+                if (sharedFormat.profile() == QSurfaceFormat::CoreProfile) {
+#ifdef Q_OS_MACOS
+                    glType = gl::kGLImplementationCoreProfileName;
+#else
+                    qWarning("An OpenGL Core Profile was requested, but it is not supported "
+                             "on the current platform. Falling back to a non-Core profile. "
+                             "Note that this might cause rendering issues.");
+#endif
+                }
+                break;
+            case QSurfaceFormat::OpenGLES:
+                glType = usingANGLE() ? gl::kGLImplementationANGLEName
+                                      : gl::kGLImplementationEGLName;
+                break;
+            case QSurfaceFormat::OpenVG:
+            case QSurfaceFormat::DefaultRenderableType:
+            default:
+                // Shared contex created but no rederable type set.
+                qWarning("Unsupported rendering surface format. Please open bug report at "
+                         "https://bugreports.qt.io");
+            }
+        }
+    }
+    return glType;
+}
+#else
+static cont char *getGLType(bool enableGLSoftwareRendering)
+{
+    return nullptr;
+}
 #endif // QT_CONFIG(opengl)
+
 #if QT_CONFIG(webengine_pepper_plugins)
 void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 {
 }
 #endif
-
-} // namespace
-
-namespace QtWebEngineCore {
 
 #if defined(Q_OS_WIN)
 sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterfaceInfo *info)
@@ -203,22 +261,6 @@ sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterf
 #endif
 
 extern std::unique_ptr<base::MessagePump> messagePumpFactory();
-
-// used from gl_surface_qt.cpp
-bool usingSoftwareDynamicGL()
-{
-    if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
-        return true;
-#if defined(Q_OS_WIN) && QT_CONFIG(opengl)
-    HMODULE handle = QPlatformInterface::QWGLContext::openGLModuleHandle();
-    wchar_t path[MAX_PATH];
-    DWORD size = GetModuleFileName(handle, path, MAX_PATH);
-    QFileInfo openGLModule(QString::fromWCharArray(path, size));
-    return openGLModule.fileName() == QLatin1String("opengl32sw.dll");
-#else
-    return false;
-#endif
-}
 
 static void setupProxyPac(base::CommandLine *commandLine)
 {
@@ -669,74 +711,7 @@ WebEngineContext::WebEngineContext()
 
     GLContextHelper::initialize();
 
-    const char *glType = 0;
-#if QT_CONFIG(opengl)
-
-    const bool tryGL = (usingDefaultSGBackend() && !usingSoftwareDynamicGL() &&
-                        QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
-                        || enableGLSoftwareRendering;
-    if (tryGL) {
-        if (qt_gl_global_share_context() && qt_gl_global_share_context()->isValid()) {
-            // If the native handle is QEGLNativeContext try to use GL ES/2.
-            // If we are using ANGLE on Windows, use OpenGL ES (2 or 3).
-            if (
-#if QT_CONFIG(egl)
-                qt_gl_global_share_context()->platformInterface<QPlatformInterface::QEGLContext>() ||
-#endif
-                usingANGLE())
-            {
-                if (qt_gl_global_share_context()->isOpenGLES()) {
-                    glType = usingANGLE() ? gl::kGLImplementationANGLEName : gl::kGLImplementationEGLName;
-                } else {
-                    QOpenGLContext context;
-                    QSurfaceFormat format;
-
-                    format.setRenderableType(QSurfaceFormat::OpenGL);
-                    format.setVersion(2, 0);
-
-                    context.setFormat(format);
-                    context.setShareContext(qt_gl_global_share_context());
-                    if (context.create()) {
-                        QOffscreenSurface surface;
-
-                        surface.setFormat(format);
-                        surface.create();
-
-                        if (context.makeCurrent(&surface)) {
-                            if (context.hasExtension("GL_ARB_ES2_compatibility"))
-                                glType = gl::kGLImplementationEGLName;
-
-                            context.doneCurrent();
-                        }
-
-                        surface.destroy();
-                    }
-                }
-            } else {
-                if (!qt_gl_global_share_context()->isOpenGLES()) {
-                    // Default to Desktop non-Core profile OpenGL.
-                    glType = gl::kGLImplementationDesktopName;
-
-                    // Check if Core profile was requested and is supported.
-                    QSurfaceFormat globalSharedFormat = qt_gl_global_share_context()->format();
-                    if (globalSharedFormat.profile() == QSurfaceFormat::CoreProfile) {
-#ifdef Q_OS_MACOS
-                        glType = gl::kGLImplementationCoreProfileName;
-#else
-                        qWarning("An OpenGL Core Profile was requested, but it is not supported "
-                                 "on the current platform. Falling back to a non-Core profile. "
-                                 "Note that this might cause rendering issues.");
-#endif
-                    }
-                }
-            }
-            if (qt_gl_global_share_context()->format().profile() == QSurfaceFormat::CompatibilityProfile)
-                parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
-        } else {
-            qWarning("WebEngineContext used before QtWebEngine::initialize() or OpenGL context creation failed.");
-        }
-    }
-#endif // QT_CONFIG(opengl)
+    const char *glType = getGLType(enableGLSoftwareRendering);
 
     if (glType) {
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
@@ -745,6 +720,9 @@ WebEngineContext::WebEngineContext()
             parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
             parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlacklist);
         }
+        QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
+        if (sharedFormat.profile() == QSurfaceFormat::CompatibilityProfile)
+            parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
     } else {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     }
