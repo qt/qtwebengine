@@ -200,6 +200,11 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
                                             bool /*user_gesture*/,
                                             base::OnceCallback<void(blink::mojom::PermissionStatus)> callback)
 {
+    if (requesting_origin.is_empty()) {
+        std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
+        return content::PermissionController::kNoPendingOperation;
+    }
+
     WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(
         content::WebContents::FromRenderFrameHost(frameHost)->GetDelegate());
     Q_ASSERT(contentsDelegate);
@@ -231,6 +236,11 @@ int PermissionManagerQt::RequestPermissions(const std::vector<content::Permissio
                                             bool /*user_gesture*/,
                                             base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback)
 {
+    if (requesting_origin.is_empty()) {
+        std::move(callback).Run(std::vector<blink::mojom::PermissionStatus>(permissions.size(), blink::mojom::PermissionStatus::DENIED));
+        return content::PermissionController::kNoPendingOperation;
+    }
+
     WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(
         content::WebContents::FromRenderFrameHost(frameHost)->GetDelegate());
     Q_ASSERT(contentsDelegate);
