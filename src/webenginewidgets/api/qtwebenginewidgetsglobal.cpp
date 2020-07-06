@@ -41,6 +41,7 @@
 
 #include <QCoreApplication>
 #include <QOpenGLContext>
+#include <QQuickWindow>
 
 namespace QtWebEngineCore
 {
@@ -67,6 +68,7 @@ static void initialize()
     }
     //QCoreApplication is not yet instantiated, ensuring the call will be deferred
     qAddPreRoutine(QtWebEngineCore::initialize);
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
 #endif // QT_CONFIG(opengl)
 }
 

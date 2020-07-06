@@ -39,6 +39,7 @@
 
 #include "qtwebengineglobal.h"
 #include <QCoreApplication>
+#include <QQuickWindow>
 
 namespace QtWebEngineCore
 {
@@ -72,15 +73,16 @@ namespace QtWebEngine {
 */
 void initialize()
 {
-     QCoreApplication *app = QCoreApplication::instance();
-     if (app) {
+    QCoreApplication *app = QCoreApplication::instance();
+    if (app) {
         qWarning("QtWebEngine::initialize() called with QCoreApplication object already created and should be call before. "\
                  "This is depreciated and may fail in the future.");
         QtWebEngineCore::initialize();
         return;
-     }
-     // call initialize the same way as widgets do
-     qAddPreRoutine(QtWebEngineCore::initialize);
+    }
+    // call initialize the same way as widgets do
+    qAddPreRoutine(QtWebEngineCore::initialize);
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
 }
 } // namespace QtWebEngine
 
