@@ -38,13 +38,20 @@
 ****************************************************************************/
 
 #include "compositor_resource_fence.h"
-
+#include "ozone/gl_surface_qt.h"
 #include "ui/gl/gl_context.h"
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qopenglcontext.h>
 
 #ifndef GL_TIMEOUT_IGNORED
 #define GL_TIMEOUT_IGNORED                0xFFFFFFFFFFFFFFFFull
+#endif
+
+
+#if QT_CONFIG(egl)
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 #endif
 
 namespace QtWebEngineCore {

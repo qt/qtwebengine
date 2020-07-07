@@ -79,11 +79,6 @@
 #include <QSGImageNode>
 #include <QSGRectangleNode>
 
-#if QT_CONFIG(egl)
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#endif
-
 #ifndef GL_TEXTURE_RECTANGLE
 #define GL_TEXTURE_RECTANGLE              0x84F5
 #endif
