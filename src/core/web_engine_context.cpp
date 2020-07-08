@@ -135,6 +135,7 @@
 #include <QNetworkProxy>
 #include <QtGui/qpa/qplatformintegration.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QLoggingCategory>
 
 #if QT_CONFIG(opengl)
 QT_BEGIN_NAMESPACE
@@ -247,6 +248,35 @@ void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 {
 }
 #endif
+
+static void logContext(const char *glType, base::CommandLine *cmd)
+{
+    QLoggingCategory webEngineContextLog("qt.webenginecontext");
+    if (webEngineContextLog.isInfoEnabled()) {
+        const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
+        const auto profile = QMetaEnum::fromType<QSurfaceFormat::OpenGLContextProfile>().valueToKey(
+                sharedFormat.profile());
+        const auto type = QMetaEnum::fromType<QSurfaceFormat::RenderableType>().valueToKey(
+                sharedFormat.renderableType());
+        const base::CommandLine::SwitchMap switch_map = cmd->GetSwitches();
+        QStringList params;
+        for (const auto &pair : switch_map)
+            params << " * " << toQt(pair.first)
+                   << toQt(pair.second) << "\n";
+        qCInfo(webEngineContextLog,
+               "\n\nGLImplementation: %s\n"
+               "Surface Type: %s\n"
+               "Surface Profile: %s\n"
+               "Surface Version: %d.%d\n"
+               "Using Default SG Backend: %s\n"
+               "Using Software Dynamic GL: %s\n"
+               "Using Angle: %s\n\n"
+               "Init Parameters:\n %s",
+               glType, type, profile, sharedFormat.majorVersion(), sharedFormat.minorVersion(),
+               usingDefaultSGBackend() ? "yes" : "no", usingSoftwareDynamicGL() ? "yes" : "no",
+               usingANGLE() ? "yes" : "no", qPrintable(params.join(" ")));
+    }
+}
 
 #if defined(Q_OS_WIN)
 sandbox::SandboxInterfaceInfo *staticSandboxInterfaceInfo(sandbox::SandboxInterfaceInfo *info)
@@ -720,7 +750,7 @@ WebEngineContext::WebEngineContext()
             parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
             parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlacklist);
         }
-        QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
+        const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
         if (sharedFormat.profile() == QSurfaceFormat::CompatibilityProfile)
             parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
     } else {
@@ -806,6 +836,8 @@ WebEngineContext::WebEngineContext()
 #endif
 
     content::WebUIControllerFactory::RegisterFactory(WebUIControllerFactoryQt::GetInstance());
+
+    logContext(glType, parsedCommandLine);
 }
 
 #if QT_CONFIG(webengine_printing_and_pdf)
