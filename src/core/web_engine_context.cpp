@@ -127,6 +127,7 @@
 #include <QOffscreenSurface>
 #if QT_CONFIG(opengl)
 # include <QOpenGLContext>
+# include <qopenglcontext_platform.h>
 #endif
 #include <QQuickWindow>
 #include <QStringList>
@@ -209,7 +210,7 @@ bool usingSoftwareDynamicGL()
     if (QCoreApplication::testAttribute(Qt::AA_UseSoftwareOpenGL))
         return true;
 #if defined(Q_OS_WIN) && QT_CONFIG(opengl)
-    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
+    HMODULE handle = QPlatformInterface::QWGLContext::openGLModuleHandle();
     wchar_t path[MAX_PATH];
     DWORD size = GetModuleFileName(handle, path, MAX_PATH);
     QFileInfo openGLModule(QString::fromWCharArray(path, size));
@@ -674,12 +675,12 @@ WebEngineContext::WebEngineContext()
     if (tryGL) {
         if (qt_gl_global_share_context() && qt_gl_global_share_context()->isValid()) {
             // If the native handle is QEGLNativeContext try to use GL ES/2.
-            // If there is no native handle, assume we are using wayland and try GL ES/2.
             // If we are using ANGLE on Windows, use OpenGL ES (2 or 3).
-            if (qt_gl_global_share_context()->nativeHandle().isNull()
-                || !strcmp(qt_gl_global_share_context()->nativeHandle().typeName(),
-                           "QEGLNativeContext")
-                || usingANGLE())
+            if (
+#if QT_CONFIG(egl)
+                qt_gl_global_share_context()->platformInterface<QPlatformInterface::QEGLContext>() ||
+#endif
+                usingANGLE())
             {
                 if (qt_gl_global_share_context()->isOpenGLES()) {
                     glType = usingANGLE() ? gl::kGLImplementationANGLEName : gl::kGLImplementationEGLName;
