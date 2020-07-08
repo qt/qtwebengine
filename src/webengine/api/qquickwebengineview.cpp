@@ -554,6 +554,7 @@ QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> ne
                                            const QRect &, const QUrl &targetUrl)
 {
     Q_Q(QQuickWebEngineView);
+    Q_ASSERT(newWebContents);
     QQuickWebEngineNewViewRequest request;
     request.m_adapter = newWebContents;
     request.m_isUserInitiated = userGesture;
@@ -577,6 +578,9 @@ QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> ne
     }
 
     Q_EMIT q->newViewRequested(&request);
+
+    if (!request.m_isRequestHandled)
+        return nullptr;
 
     return newWebContents;
 }

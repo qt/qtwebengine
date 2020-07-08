@@ -117,5 +117,6 @@ void QQuickWebEngineNewViewRequest::openIn(QQuickWebEngineView *view)
         view->d_func()->adoptWebContents(m_adapter.data());
     else
         view->setUrl(m_requestedUrl);
+    m_isRequestHandled = true;
     m_adapter.reset();
 }
