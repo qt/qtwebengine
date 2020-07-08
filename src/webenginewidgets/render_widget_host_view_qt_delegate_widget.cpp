@@ -195,19 +195,9 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
         int major;
         int minor;
         QSurfaceFormat::OpenGLContextProfile profile;
-#ifdef Q_OS_MACOS
-        // Due to QTBUG-63180, requesting the sharedFormat.majorVersion() on macOS will lead to
-        // a failed creation of QQuickWidget shared context. Thus make sure to request the
-        // major version specified in the defaultFormat instead.
-        major = defaultFormat.majorVersion();
-        minor = defaultFormat.minorVersion();
-        profile = defaultFormat.profile();
-#else
         major = sharedFormat.majorVersion();
         minor = sharedFormat.minorVersion();
         profile = sharedFormat.profile();
-#endif
-
         // Make sure the OpenGL profile of the QQuickWidget matches the shared context profile.
         // It covers the following cases:
         // 1) Desktop OpenGL Core Profile.
