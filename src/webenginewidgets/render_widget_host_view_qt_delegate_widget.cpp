@@ -169,38 +169,6 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     , m_isPopup(false)
 {
     setFocusPolicy(Qt::StrongFocus);
-
-    QSurfaceFormat format;
-    format.setDepthBufferSize(24);
-    format.setStencilBufferSize(8);
-
-#if QT_CONFIG(opengl)
-    QOpenGLContext *globalSharedContext = QOpenGLContext::globalShareContext();
-    if (globalSharedContext) {
-        QSurfaceFormat sharedFormat = globalSharedContext->format();
-        int major;
-        int minor;
-        QSurfaceFormat::OpenGLContextProfile profile;
-        major = sharedFormat.majorVersion();
-        minor = sharedFormat.minorVersion();
-        profile = sharedFormat.profile();
-        // Make sure the OpenGL profile of the QQuickWidget matches the shared context profile.
-        // It covers the following cases:
-        // 1) Desktop OpenGL Core Profile.
-        // 2) Windows ANGLE OpenGL ES profile.
-        if (sharedFormat.profile() == QSurfaceFormat::CoreProfile
-#ifdef Q_OS_WIN
-                || globalSharedContext->isOpenGLES()
-#endif
-                ) {
-            format.setMajorVersion(major);
-            format.setMinorVersion(minor);
-            format.setProfile(profile);
-        }
-    }
-
-    setFormat(format);
-#endif
     setMouseTracking(true);
     setAttribute(Qt::WA_AcceptTouchEvents);
     setAttribute(Qt::WA_OpaquePaintEvent);
