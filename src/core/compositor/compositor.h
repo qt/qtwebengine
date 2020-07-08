@@ -147,7 +147,19 @@ public:
     // Ratio of pixels to DIPs.
     //
     // Don't use the devicePixelRatio of QImage, it's always 1.
-    virtual float devicePixelRatio();
+    virtual float devicePixelRatio() = 0;
+
+    // Size of frame in pixels.
+    virtual QSize size() = 0;
+
+    // Whether frame needs an alpha channel.
+    //
+    // In software mode, the image format can be either
+    //   QImage::Format_ARGB32_Premultiplied or
+    //   QImage::Format_RGBA8888_Premultiplied
+    //
+    // In OpenGL mode, the texture format is either GL_RGBA or GL_RGB.
+    virtual bool hasAlphaChannel() = 0;
 
     // (Software) QImage of the frame.
     //
@@ -160,10 +172,8 @@ public:
     // (OpenGL) Wait on texture fence in Qt's current OpenGL context.
     virtual void waitForTexture();
 
-    // (OpenGL) Properties of the current frame.
+    // (OpenGL) Texture of the frame.
     virtual int textureId();
-    virtual QSize textureSize();
-    virtual bool hasAlphaChannel();
 
 protected:
     Compositor(Type type) : m_type(type) { }

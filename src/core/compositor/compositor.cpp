@@ -172,12 +172,6 @@ Compositor::Handle<Compositor::Observer> Compositor::observer()
     return nullptr;
 }
 
-float Compositor::devicePixelRatio()
-{
-    Q_UNREACHABLE();
-    return 1;
-}
-
 QImage Compositor::image()
 {
     Q_UNREACHABLE();
@@ -193,18 +187,6 @@ int Compositor::textureId()
 {
     Q_UNREACHABLE();
     return 0;
-}
-
-QSize Compositor::textureSize()
-{
-    Q_UNREACHABLE();
-    return {};
-}
-
-bool Compositor::hasAlphaChannel()
-{
-    Q_UNREACHABLE();
-    return false;
 }
 
 // static

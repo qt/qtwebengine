@@ -67,6 +67,8 @@ public:
     void swapFrame() override;
     QImage image() override;
     float devicePixelRatio() override;
+    QSize size() override;
+    bool hasAlphaChannel() override;
 
 private:
     mutable QMutex m_mutex;
@@ -152,6 +154,16 @@ QImage DisplaySoftwareOutputSurface::Device::image()
 float DisplaySoftwareOutputSurface::Device::devicePixelRatio()
 {
     return m_imageDevicePixelRatio;
+}
+
+QSize DisplaySoftwareOutputSurface::Device::size()
+{
+    return m_image.size();
+}
+
+bool DisplaySoftwareOutputSurface::Device::hasAlphaChannel()
+{
+    return m_image.format() == QImage::Format_ARGB32_Premultiplied;
 }
 
 DisplaySoftwareOutputSurface::DisplaySoftwareOutputSurface()

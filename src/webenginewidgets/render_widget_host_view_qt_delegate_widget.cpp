@@ -119,17 +119,14 @@ protected:
 
         comp->swapFrame();
 
+        QSize texSize = comp->size();
+        QSizeF texSizeInDips = QSizeF(texSize) / comp->devicePixelRatio();
+        node->setRect(QRectF(QPointF(0, 0), texSizeInDips));
+
         if (comp->type() == Compositor::Type::Software) {
             QImage image = comp->image();
-            float pixPerDip = comp->devicePixelRatio();
-            QSizeF sizeInDips = QSizeF(image.size()) / pixPerDip;
-            node->setRect(QRectF(QPointF(0, 0), sizeInDips));
             node->setTexture(win->createTextureFromImage(image));
         } else if (comp->type() == Compositor::Type::OpenGL) {
-            QSize texSize = comp->textureSize();
-            float pixPerDip = comp->devicePixelRatio();
-            QSizeF sizeInDips = QSizeF(texSize) / pixPerDip;
-            node->setRect(QRectF(QPointF(0, 0), sizeInDips));
             QQuickWindow::CreateTextureOptions texOpts;
             if (comp->hasAlphaChannel())
                 texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);

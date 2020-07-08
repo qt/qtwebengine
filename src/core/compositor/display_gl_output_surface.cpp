@@ -323,7 +323,7 @@ int DisplayGLOutputSurface::textureId()
     return m_frontBuffer ? m_frontBuffer->serviceId : 0;
 }
 
-QSize DisplayGLOutputSurface::textureSize()
+QSize DisplayGLOutputSurface::size()
 {
     return m_frontBuffer ? toQt(m_frontBuffer->shape.sizeInPixels) : QSize();
 }

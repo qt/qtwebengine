@@ -91,7 +91,7 @@ public:
     void swapFrame() override;
     void waitForTexture() override;
     int textureId() override;
-    QSize textureSize() override;
+    QSize size() override;
     bool hasAlphaChannel() override;
     float devicePixelRatio() override;
 
