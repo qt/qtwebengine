@@ -634,12 +634,6 @@ WebEngineContext::WebEngineContext()
 
     QStringList appArgs = QCoreApplication::arguments();
 
-    // If user requested GL support instead of using Skia rendering to
-    // bitmaps, use software rendering via software OpenGL. This might be less
-    // performant, but at least provides WebGL support.
-    // TODO(miklocek), check if this still works with latest chromium
-    bool enableGLSoftwareRendering = appArgs.contains(QStringLiteral("--enable-webgl-software-rendering"));
-
     bool useEmbeddedSwitches = false;
 #if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
     useEmbeddedSwitches = !appArgs.contains(QStringLiteral("--disable-embedded-switches"));
@@ -665,30 +659,6 @@ WebEngineContext::WebEngineContext()
     }
 
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
-
-#if defined(Q_OS_WIN)
-    // This switch is used in Chromium's gl_context_wgl.cc file to determine whether to create
-    // an OpenGL Core Profile context. If the switch is not set, it would always try to create a
-    // Core Profile context, even if Qt uses a legacy profile, which causes
-    // "Could not share GL contexts" warnings, because it's not possible to share between Core and
-    // legacy profiles. See GLContextWGL::Initialize().
-    // Given that Desktop GL Core profile is not currently supported on Windows anyway, pass this
-    // switch to get rid of the warnings.
-    //
-    // The switch is also used to determine which version of OpenGL ES to use (2 or 3) when using
-    // ANGLE.
-    // If the switch is not set, Chromium will always try to create an ES3 context, even if Qt uses
-    // an ES2 context, which causes resource sharing issues (black screen),
-    // see gpu::gles2::GenerateGLContextAttribs().
-    // Make sure to disable ES3 context creation when using ES2.
-    const bool isGLES2Context = qt_gl_global_share_context()
-            && qt_gl_global_share_context()->isOpenGLES()
-            && qt_gl_global_share_context()->format().majorVersion() == 2;
-    const bool isDesktopGLOrSoftware = !usingANGLE();
-
-    if (isDesktopGLOrSoftware || isGLES2Context)
-        parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
-#endif
 
     std::string disableFeatures;
     std::string enableFeatures;
@@ -741,6 +711,11 @@ WebEngineContext::WebEngineContext()
 
     GLContextHelper::initialize();
 
+    // If user requested GL support instead of using Skia rendering to
+    // bitmaps, use software rendering via software OpenGL. This might be less
+    // performant, but at least provides WebGL support.
+    // TODO(miklocek), check if this still works with latest chromium
+    const bool enableGLSoftwareRendering = appArgs.contains(QStringLiteral("--enable-webgl-software-rendering"));
     const char *glType = getGLType(enableGLSoftwareRendering);
 
     if (glType) {
@@ -750,9 +725,29 @@ WebEngineContext::WebEngineContext()
             parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
             parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlacklist);
         }
-        const QSurfaceFormat sharedFormat = qt_gl_global_share_context()->format();
+        const QSurfaceFormat sharedFormat = QOpenGLContext::globalShareContext()->format();
         if (sharedFormat.profile() == QSurfaceFormat::CompatibilityProfile)
             parsedCommandLine->AppendSwitch(switches::kCreateDefaultGLContext);
+#if defined(Q_OS_WIN)
+        // This switch is used in Chromium's gl_context_wgl.cc file to determine whether to create
+        // an OpenGL Core Profile context. If the switch is not set, it would always try to create a
+        // Core Profile context, even if Qt uses a legacy profile, which causes
+        // "Could not share GL contexts" warnings, because it's not possible to share between Core and
+        // legacy profiles. See GLContextWGL::Initialize().
+        // Given that Desktop GL Core profile is not currently supported on Windows anyway, pass this
+        // switch to get rid of the warnings.
+        //
+        // The switch is also used to determine which version of OpenGL ES to use (2 or 3) when using
+        // ANGLE.
+        // If the switch is not set, Chromium will always try to create an ES3 context, even if Qt uses
+        // an ES2 context, which causes resource sharing issues (black screen),
+        // see gpu::gles2::GenerateGLContextAttribs().
+        // Make sure to disable ES3 context creation when using ES2.
+        const bool isGLES2Context = QOpenGLContext::globalShareContext()->isOpenGLES()
+            && QOpenGLContext::globalShareContext()->format().majorVersion() == 2;
+        if (!usingANGLE() || isGLES2Context)
+            parsedCommandLine->AppendSwitch(switches::kDisableES3GLContext);
+#endif
     } else {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     }
