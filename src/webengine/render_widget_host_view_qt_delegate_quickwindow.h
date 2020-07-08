@@ -72,7 +72,6 @@ public:
     void inputMethodStateChanged(bool, bool) override {}
     void setInputMethodHints(Qt::InputMethodHints) override { }
     void setClearColor(const QColor &) override { }
-    bool copySurface(const QRect &, const QSize &, QImage &) override { return false; }
 
     void setVirtualParent(QQuickItem *virtualParent);
 
