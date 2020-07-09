@@ -89,6 +89,7 @@ SOURCES = \
         net/url_request_custom_job_proxy.cpp \
         net/webui_controller_factory_qt.cpp \
         ozone/gl_context_qt.cpp \
+        ozone/gl_share_context_qt.cpp \
         ozone/gl_ozone_egl_qt.cpp \
         ozone/gl_surface_qt.cpp \
         ozone/gl_surface_egl_qt.cpp \
@@ -191,6 +192,7 @@ HEADERS = \
         net/url_request_custom_job_proxy.h \
         net/webui_controller_factory_qt.h \
         ozone/gl_context_qt.h \
+        ozone/gl_share_context_qt.h \
         ozone/gl_ozone_egl_qt.h \
         ozone/gl_surface_qt.h \
         ozone/gl_surface_egl_qt.h \
