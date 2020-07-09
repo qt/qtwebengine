@@ -53,7 +53,7 @@ public:
     std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
     ui::GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
 private:
-    gl::GLImplementation m_impl;
+    std::vector<gl::GLImplementation> m_impl;
     std::unique_ptr<ui::GLOzone> m_ozone;
 };
 

@@ -59,12 +59,12 @@ SurfaceFactoryQt::SurfaceFactoryQt()
     Q_ASSERT(qApp);
 #if defined(USE_GLX)
     if (GLContextHelper::getGlXConfig()) {
-        m_impl = gl::kGLImplementationDesktopGL;
+        m_impl = { gl::kGLImplementationDesktopGL };
         m_ozone.reset(new ui::GLOzoneGLXQt());
     } else
 #endif
     if (GLContextHelper::getEGLConfig()) {
-        m_impl = gl::kGLImplementationEGLGLES2;
+        m_impl = { gl::kGLImplementationDesktopGL, gl::kGLImplementationEGLGLES2 };
         m_ozone.reset(new ui::GLOzoneEGLQt());
     } else {
         qFatal("No suitable graphics backend found\n");
@@ -73,7 +73,7 @@ SurfaceFactoryQt::SurfaceFactoryQt()
 
 std::vector<gl::GLImplementation> SurfaceFactoryQt::GetAllowedGLImplementations()
 {
-    return { m_impl };
+    return m_impl;
 }
 
 ui::GLOzone* SurfaceFactoryQt::GetGLOzone(gl::GLImplementation implementation)
