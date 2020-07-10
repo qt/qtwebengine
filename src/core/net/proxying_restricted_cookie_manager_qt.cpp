@@ -74,8 +74,7 @@ public:
 
     void OnCookieChange(const net::CookieChangeInfo &change) override
     {
-        if (restricted_cookie_manager_ && restricted_cookie_manager_->allowCookies(url_, site_for_cookies_))
-            client_listener_->OnCookieChange(change);
+        client_listener_->OnCookieChange(change);
     }
 
 private:
