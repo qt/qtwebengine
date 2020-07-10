@@ -67,7 +67,7 @@ void HttpReqRep::close()
 
 QByteArray HttpReqRep::requestHeader(const QByteArray &key) const
 {
-    auto it = m_requestHeaders.find(key);
+    auto it = m_requestHeaders.find(key.toLower());
     if (it != m_requestHeaders.end())
         return it->second;
     return {};

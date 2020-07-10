@@ -72,6 +72,25 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CookieChangeListener);
 };
 
+class CookieAccessFilter : public network::mojom::CookieRemoteAccessFilter
+{
+public:
+    CookieAccessFilter(CookieMonsterDelegateQt *delegate) : m_delegate(delegate) { }
+    ~CookieAccessFilter() override = default;
+
+    void AllowedAccess(const GURL& url, const GURL& site_for_cookies, AllowedAccessCallback callback) override
+    {
+        bool allow = m_delegate->canGetCookies(toQt(site_for_cookies), toQt(url));
+        std::move(callback).Run(allow);
+    }
+
+private:
+    CookieMonsterDelegateQt *m_delegate;
+
+    DISALLOW_COPY_AND_ASSIGN(CookieAccessFilter);
+};
+
+
 static GURL sourceUrlForCookie(const QNetworkCookie &cookie)
 {
     QString urlFragment = QStringLiteral("%1%2").arg(cookie.domain()).arg(cookie.path());
@@ -81,7 +100,10 @@ static GURL sourceUrlForCookie(const QNetworkCookie &cookie)
 CookieMonsterDelegateQt::CookieMonsterDelegateQt()
     : m_client(nullptr)
     , m_listener(new CookieChangeListener(this))
+    , m_filter(new CookieAccessFilter(this))
     , m_receiver(m_listener.get())
+    , m_filterReceiver(m_filter.get())
+    , m_hasFilter(false)
 {
 }
 
@@ -176,14 +198,31 @@ void CookieMonsterDelegateQt::setMojoCookieManager(network::mojom::CookieManager
     m_mojoCookieManager.Bind(std::move(cookie_manager_info));
 
     m_mojoCookieManager->AddGlobalChangeListener(m_receiver.BindNewPipeAndPassRemote());
+    if (m_hasFilter)
+        m_mojoCookieManager->SetRemoteFilter(m_filterReceiver.BindNewPipeAndPassRemote());
 
     if (m_client)
         m_client->d_func()->processPendingUserCookies();
 }
 
+void CookieMonsterDelegateQt::setHasFilter(bool hasFilter)
+{
+    m_hasFilter = hasFilter;
+    if (!m_mojoCookieManager.is_bound())
+        return;
+    if (m_hasFilter) {
+        if (!m_filterReceiver.is_bound())
+            m_mojoCookieManager->SetRemoteFilter(m_filterReceiver.BindNewPipeAndPassRemote());
+    } else {
+        if (m_filterReceiver.is_bound())
+            m_filterReceiver.reset();
+    }
+}
+
 void CookieMonsterDelegateQt::unsetMojoCookieManager()
 {
     m_receiver.reset();
+    m_filterReceiver.reset();
     m_mojoCookieManager.reset();
 }
 

@@ -33,6 +33,9 @@
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
 
+#include "httpserver.h"
+#include "httpreqrep.h"
+
 class tst_QWebEngineCookieStore : public QObject
 {
     Q_OBJECT
@@ -56,6 +59,7 @@ private Q_SLOTS:
     void cookieSignals();
     void batchCookieTasks();
     void basicFilter();
+    void basicFilterOverHTTP();
     void html5featureFilter();
 
 private:
@@ -237,6 +241,74 @@ void tst_QWebEngineCookieStore::basicFilter()
     // Test cookies are NOT added:
     QTest::qWait(100);
     QCOMPARE(cookieAddedSpy.count(), 2);
+}
+
+void tst_QWebEngineCookieStore::basicFilterOverHTTP()
+{
+    QWebEnginePage page(m_profile);
+    QWebEngineCookieStore *client = m_profile->cookieStore();
+
+    QAtomicInt accessTested = 0;
+    client->setCookieFilter([&](const QWebEngineCookieStore::FilterRequest &) { ++accessTested; return true; });
+
+    HttpServer httpServer;
+
+    if (!httpServer.start())
+        QSKIP("Failed to start http server");
+
+    QByteArray cookieRequestHeader;
+    connect(&httpServer, &HttpServer::newRequest, [&cookieRequestHeader](HttpReqRep *rr) {
+        if (rr->requestPath().size() <= 1) {
+            cookieRequestHeader = rr->requestHeader(QByteArrayLiteral("Cookie"));
+            rr->setResponseStatus(200);
+            if (cookieRequestHeader.isEmpty())
+                rr->setResponseHeader(QByteArrayLiteral("Set-Cookie"), QByteArrayLiteral("Test=test"));
+            rr->sendResponse();
+        } else {
+            rr->setResponseStatus(404);
+            rr->sendResponse();
+        }
+    });
+
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
+    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
+
+    page.load(httpServer.url());
+
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 30000);
+    QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
+    QTRY_COMPARE(cookieAddedSpy.count(), 1);
+    QTRY_COMPARE(accessTested.loadAcquire(), 3);
+    QVERIFY(cookieRequestHeader.isEmpty());
+
+    page.triggerAction(QWebEnginePage::Reload);
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
+    QVERIFY(!cookieRequestHeader.isEmpty());
+    QTRY_COMPARE(cookieAddedSpy.count(), 1);
+    QTRY_COMPARE(accessTested.loadAcquire(), 5);
+
+    client->deleteAllCookies();
+    QTRY_COMPARE(cookieRemovedSpy.count(), 1);
+
+    client->setCookieFilter([&](const QWebEngineCookieStore::FilterRequest &) { ++accessTested; return false; });
+    page.triggerAction(QWebEnginePage::ReloadAndBypassCache);
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
+    QVERIFY(cookieRequestHeader.isEmpty());
+    // Test cookies are NOT added:
+    QTest::qWait(100);
+    QCOMPARE(cookieAddedSpy.count(), 1);
+    QTRY_COMPARE(accessTested.loadAcquire(), 8);
+
+    page.triggerAction(QWebEnginePage::Reload);
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QVERIFY(loadSpy.takeFirst().takeFirst().toBool());
+    QVERIFY(cookieRequestHeader.isEmpty());
+    QCOMPARE(cookieAddedSpy.count(), 1);
+
+    (void) httpServer.stop();
 }
 
 void tst_QWebEngineCookieStore::html5featureFilter()
