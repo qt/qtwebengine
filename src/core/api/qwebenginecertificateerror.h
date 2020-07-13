@@ -46,6 +46,10 @@
 #include <QtCore/qurl.h>
 #include <QtNetwork/QSslCertificate>
 
+namespace QtWebEngineCore {
+class WebContentsDelegateQt;
+}
+
 QT_BEGIN_NAMESPACE
 
 class CertificateErrorController;
@@ -100,8 +104,7 @@ public:
     QList<QSslCertificate> certificateChain() const;
 
 private:
-    friend class QWebEnginePagePrivate;
-    friend class QQuickWebEngineViewPrivate;
+    friend class QtWebEngineCore::WebContentsDelegateQt;
     QWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller);
     QSharedPointer<CertificateErrorController> d;
 };

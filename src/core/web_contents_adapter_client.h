@@ -71,6 +71,7 @@ QT_FORWARD_DECLARE_CLASS(QWebEngineRegisterProtocolHandlerRequest)
 QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInfo)
 QT_FORWARD_DECLARE_CLASS(QWebEngineUrlRequestInterceptor)
 QT_FORWARD_DECLARE_CLASS(QWebEngineContextMenuRequest)
+QT_FORWARD_DECLARE_CLASS(QWebEngineCertificateError);
 
 namespace content {
 struct DropData;
@@ -230,7 +231,7 @@ public:
     RenderProcessTerminationStatus renderProcessExitStatus(int);
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;
     virtual void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) = 0;
-    virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
+    virtual void allowCertificateError(const QWebEngineCertificateError &error) = 0;
     virtual void selectClientCert(const QSharedPointer<ClientCertSelectController> &selectController) = 0;
     virtual void updateScrollPosition(const QPointF &position) = 0;
     virtual void updateContentsSize(const QSizeF &size) = 0;

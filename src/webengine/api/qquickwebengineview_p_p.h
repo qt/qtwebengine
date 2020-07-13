@@ -147,7 +147,7 @@ public:
     void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) override;
     QObject *accessibilityParentObject() override;
     QtWebEngineCore::WebEngineSettings *webEngineSettings() const override;
-    void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) override;
+    void allowCertificateError(const QWebEngineCertificateError &error) override;
     void selectClientCert(const QSharedPointer<ClientCertSelectController> &selectController) override;
     void runFeaturePermissionRequest(QtWebEngineCore::ProfileAdapter::PermissionType permission, const QUrl &securityOrigin) override;
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) override;
@@ -211,7 +211,6 @@ public:
     bool m_navigationActionTriggered;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
-    QList<QWeakPointer<CertificateErrorController> > m_certificateErrorControllers;
     QQmlWebChannel *m_webChannel;
     QPointer<QQuickWebEngineView> inspectedView;
     QPointer<QQuickWebEngineView> devToolsView;

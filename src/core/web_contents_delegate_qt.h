@@ -52,8 +52,8 @@
 #include "favicon_manager.h"
 #include "find_text_helper.h"
 #include "javascript_dialog_manager_qt.h"
-
 #include <QtCore/qlist.h>
+#include <QWebEngineCertificateError>
 
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 QT_FORWARD_DECLARE_CLASS(ClientCertSelectController)
@@ -235,6 +235,7 @@ private:
     mutable bool m_pendingUrlUpdate = false;
 
     base::WeakPtrFactory<WebContentsDelegateQt> m_weakPtrFactory { this };
+    QList<QWeakPointer<CertificateErrorController>> m_certificateErrorControllers;
 };
 
 } // namespace QtWebEngineCore

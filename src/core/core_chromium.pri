@@ -148,7 +148,6 @@ HEADERS = \
         browsing_data_remover_delegate_qt.h \
         browser_main_parts_qt.h \
         browser_message_filter_qt.h \
-        certificate_error_controller_p.h \
         certificate_error_controller.h \
         client_cert_select_controller.h \
         clipboard_change_observer.h \

@@ -52,19 +52,26 @@
 #define CERTIFICATE_ERROR_CONTROLLER_H
 
 #include "qtwebenginecoreglobal_p.h"
-
+#include "base/callback.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include <QtCore/QDateTime>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QUrl>
 #include <QtNetwork/QSslCertificate>
 
-QT_BEGIN_NAMESPACE
+namespace net {
+class SSLInfo;
+}
+class GURL;
 
-class CertificateErrorControllerPrivate;
+QT_BEGIN_NAMESPACE
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT CertificateErrorController {
 public:
-    CertificateErrorController(CertificateErrorControllerPrivate *p);
+    CertificateErrorController(
+            int cert_error, const net::SSLInfo &ssl_info, const GURL &request_url,
+            bool strict_enforcement,
+            base::OnceCallback<void(content::CertificateRequestResultType)> callback);
     ~CertificateErrorController();
 
     // We can't use QSslError::SslErrors, because the error categories doesn't map.
@@ -107,15 +114,17 @@ public:
     void rejectCertificate() { accept(false); }
 
     void deactivate();
-    static void clear(QList<QWeakPointer<CertificateErrorController>> &controllers) {
-        for (auto &&wc : controllers)
-            if (auto controller = wc.lock())
-                controller->deactivate();
-        controllers.clear();
-    }
+
+    CertificateErrorController::CertificateError m_certError;
+    const QUrl m_requestUrl;
+    QDateTime m_validExpiry;
+    bool m_overridable;
+    base::OnceCallback<void(content::CertificateRequestResultType)> m_callback;
+    QList<QSslCertificate> m_certificateChain;
+
+    bool m_answered = false, m_deferred = false;
 
 private:
-    QScopedPointer<CertificateErrorControllerPrivate> d;
     Q_DISABLE_COPY(CertificateErrorController)
 };
 

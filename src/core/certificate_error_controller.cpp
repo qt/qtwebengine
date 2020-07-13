@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "certificate_error_controller.h"
-#include "certificate_error_controller_p.h"
 
 #include <net/base/net_errors.h>
 #include <net/cert/x509_certificate.h>
@@ -97,26 +96,19 @@ static int IsCertErrorFatal(int cert_error)
     return true;
 }
 
-
-CertificateErrorControllerPrivate::CertificateErrorControllerPrivate(int cert_error,
-                                                                     const net::SSLInfo& ssl_info,
-                                                                     const GURL &request_url,
-                                                                     bool strict_enforcement,
-                                                                     base::OnceCallback<void(content::CertificateRequestResultType)> cb
-                                                                    )
-    : certError(CertificateErrorController::CertificateError(cert_error))
-    , requestUrl(toQt(request_url))
-    , overridable(!IsCertErrorFatal(cert_error) && !strict_enforcement)
+CertificateErrorController::CertificateErrorController(
+        int cert_error, const net::SSLInfo &ssl_info, const GURL &request_url,
+        bool strict_enforcement, base::OnceCallback<void(content::CertificateRequestResultType)> cb)
+    : m_certError(CertificateErrorController::CertificateError(cert_error))
+    , m_requestUrl(toQt(request_url))
+    , m_overridable(!IsCertErrorFatal(cert_error) && !strict_enforcement)
 {
-    if (overridable) callback = std::move(cb);
+    if (m_overridable)
+        m_callback = std::move(cb);
     if (auto cert = ssl_info.cert.get()) {
-        validExpiry = toQt(cert->valid_expiry());
-        certificateChain = toCertificateChain(cert);
+        m_validExpiry = toQt(cert->valid_expiry());
+        m_certificateChain = toCertificateChain(cert);
     }
-}
-
-CertificateErrorController::CertificateErrorController(CertificateErrorControllerPrivate *p) : d(p)
-{
 }
 
 CertificateErrorController::~CertificateErrorController()
@@ -127,32 +119,32 @@ CertificateErrorController::~CertificateErrorController()
 
 CertificateErrorController::CertificateError CertificateErrorController::error() const
 {
-    return d->certError;
+    return m_certError;
 }
 
 QUrl CertificateErrorController::url() const
 {
-    return d->requestUrl;
+    return m_requestUrl;
 }
 
 bool CertificateErrorController::overridable() const
 {
-    return d->overridable;
+    return m_overridable;
 }
 
 bool CertificateErrorController::deferred() const
 {
-    return d->deferred;
+    return m_deferred;
 }
 
 void CertificateErrorController::defer()
 {
-    d->deferred = true;
+    m_deferred = true;
 }
 
 bool CertificateErrorController::answered() const
 {
-    return d->answered;
+    return m_answered;
 }
 
 void CertificateErrorController::accept(bool accepted)
@@ -160,14 +152,16 @@ void CertificateErrorController::accept(bool accepted)
     if (answered())
         return;
 
-    d->answered = true;
-    if (d->callback)
-        std::move(d->callback).Run(accepted ? content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE : content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
+    m_answered = true;
+    if (m_callback)
+        std::move(m_callback)
+                .Run(accepted ? content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE
+                              : content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
 }
 
 void CertificateErrorController::deactivate()
 {
-    d->callback.Reset();
+    m_callback.Reset();
 }
 
 static QString getQStringForMessageId(int message_id) {
@@ -180,13 +174,13 @@ QString CertificateErrorController::errorString() const
     // Try to use chromiums translation of the error strings, though not all are
     // consistently described and we need to use versions that does not contain HTML
     // formatted text.
-    switch (d->certError) {
+    switch (m_certError) {
     case SslPinnedKeyNotInCertificateChain:
         return getQStringForMessageId(IDS_CERT_ERROR_SUMMARY_PINNING_FAILURE_DETAILS);
     case CertificateCommonNameInvalid:
         return getQStringForMessageId(IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION);
     case CertificateDateInvalid:
-        if (QDateTime::currentDateTime() > d->validExpiry)
+        if (QDateTime::currentDateTime() > m_validExpiry)
             return getQStringForMessageId(IDS_CERT_ERROR_EXPIRED_DESCRIPTION);
         else
             return getQStringForMessageId(IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION);
@@ -224,7 +218,7 @@ QString CertificateErrorController::errorString() const
 
 QList<QSslCertificate> CertificateErrorController::certificateChain() const
 {
-    return d->certificateChain;
+    return m_certificateChain;
 }
 
 QT_END_NAMESPACE

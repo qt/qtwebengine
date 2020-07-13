@@ -42,7 +42,6 @@
 
 #include "authentication_dialog_controller.h"
 #include "profile_adapter.h"
-#include "certificate_error_controller.h"
 #include "color_chooser_controller.h"
 #include "favicon_manager.h"
 #include "find_text_helper.h"
@@ -278,7 +277,6 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isError
         return;
 
     isLoading = true;
-    CertificateErrorController::clear(m_certificateErrorControllers);
 
     QTimer::singleShot(0, q, &QWebEnginePage::loadStarted);
 }
@@ -1721,15 +1719,10 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
         controller->reject();
 }
 
-void QWebEnginePagePrivate::allowCertificateError(const QSharedPointer<CertificateErrorController> &controller)
+void QWebEnginePagePrivate::allowCertificateError(const QWebEngineCertificateError &error)
 {
     Q_Q(QWebEnginePage);
-    QWebEngineCertificateError error(controller);
     q->certificateError(error);
-    if (!error.isOverridable() || (!error.deferred() && !error.answered()))
-        error.rejectCertificate();
-    else
-        m_certificateErrorControllers.append(controller);
 }
 
 void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)

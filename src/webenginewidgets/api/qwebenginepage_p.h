@@ -138,7 +138,7 @@ public:
     void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) override;
     QObject *accessibilityParentObject() override;
     QtWebEngineCore::WebEngineSettings *webEngineSettings() const override;
-    void allowCertificateError(const QSharedPointer<CertificateErrorController> &controller) override;
+    void allowCertificateError(const QWebEngineCertificateError &error) override;
     void selectClientCert(const QSharedPointer<ClientCertSelectController> &controller) override;
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) override;
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;
@@ -203,8 +203,6 @@ public:
 #if QT_CONFIG(webengine_printing_and_pdf)
     QPrinter *currentPrinter;
 #endif
-
-    QList<QWeakPointer<CertificateErrorController>> m_certificateErrorControllers;
 };
 
 QT_END_NAMESPACE

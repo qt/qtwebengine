@@ -41,7 +41,6 @@
 #include "qquickwebengineview_p_p.h"
 #include "authentication_dialog_controller.h"
 #include "profile_adapter.h"
-#include "certificate_error_controller.h"
 #include "file_picker_controller.h"
 #include "find_text_helper.h"
 #include "javascript_dialog_controller.h"
@@ -97,7 +96,6 @@
 #include <QTimer>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qpa/qplatformintegration.h>
-
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
 
@@ -292,16 +290,10 @@ void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialo
         ui()->showDialog(dialog);
 }
 
-void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<CertificateErrorController> &controller)
+void QQuickWebEngineViewPrivate::allowCertificateError(const QWebEngineCertificateError &error)
 {
     Q_Q(QQuickWebEngineView);
-
-    QWebEngineCertificateError error(controller);
     Q_EMIT q->certificateError(error);
-    if (!error.isOverridable() || (!error.deferred() && !error.answered()))
-        error.rejectCertificate();
-    else
-        m_certificateErrorControllers.append(controller);
 }
 
 void QQuickWebEngineViewPrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)
@@ -468,7 +460,6 @@ void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl, bool is
 
     isLoading = true;
     m_history->reset();
-    CertificateErrorController::clear(m_certificateErrorControllers);
 
     QTimer::singleShot(0, q, [q, provisionalUrl]() {
         QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);

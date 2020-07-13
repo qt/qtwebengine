@@ -60,7 +60,7 @@
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
-
+#include "certificate_error_controller.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -336,6 +336,10 @@ void WebContentsDelegateQt::EmitLoadStarted(const QUrl &url, bool isErrorPage)
 {
     if (m_lastLoadProgress >= 0 && m_lastLoadProgress < 100) // already running
         return;
+    for (auto &&wc : m_certificateErrorControllers)
+        if (auto controller = wc.lock())
+            controller->deactivate();
+    m_certificateErrorControllers.clear();
     m_viewClient->loadStarted(url, isErrorPage);
     m_viewClient->updateNavigationActions();
     m_viewClient->loadProgressChanged(0);
@@ -674,9 +678,15 @@ WebContentsDelegateQt::createWindow(std::unique_ptr<content::WebContents> new_co
             toQt(initial_pos), m_initialTargetUrl);
 }
 
-void WebContentsDelegateQt::allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController)
+void WebContentsDelegateQt::allowCertificateError(
+        const QSharedPointer<CertificateErrorController> &controller)
 {
-    m_viewClient->allowCertificateError(errorController);
+    QWebEngineCertificateError error(controller);
+    m_viewClient->allowCertificateError(error);
+    if (!error.isOverridable() || (!error.deferred() && !error.answered()))
+        error.rejectCertificate();
+    else
+        m_certificateErrorControllers.append(controller);
 }
 
 void WebContentsDelegateQt::selectClientCert(const QSharedPointer<ClientCertSelectController> &selectController)

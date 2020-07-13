@@ -112,7 +112,6 @@
 #include "browser_main_parts_qt.h"
 #include "browser_message_filter_qt.h"
 #include "certificate_error_controller.h"
-#include "certificate_error_controller_p.h"
 #include "client_cert_select_controller.h"
 #include "devtools_manager_delegate_qt.h"
 #include "login_delegate_qt.h"
@@ -312,14 +311,8 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
 {
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
-    QSharedPointer<CertificateErrorController> errorController(
-            new CertificateErrorController(
-                    new CertificateErrorControllerPrivate(
-                            cert_error,
-                            ssl_info,
-                            request_url,
-                            strict_enforcement,
-                            std::move(callback))));
+    QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(
+            cert_error, ssl_info, request_url, strict_enforcement, std::move(callback)));
     contentsDelegate->allowCertificateError(errorController);
 }
 
