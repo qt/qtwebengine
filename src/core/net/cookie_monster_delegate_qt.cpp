@@ -145,9 +145,12 @@ void CookieMonsterDelegateQt::setCookie(quint64 callbackId, const QNetworkCookie
         callback = base::BindOnce(&CookieMonsterDelegateQt::SetCookieCallbackOnUIThread, this, callbackId);
     net::CanonicalCookie::CookieInclusionStatus inclusion;
     auto canonCookie = net::CanonicalCookie::Create(gurl, cookie_line, base::Time::Now(), base::nullopt, &inclusion);
+    if (!inclusion.IsInclude()) {
+        LOG(WARNING) << "QWebEngineCookieStore::setCookie() - Tried to set invalid cookie";
+        return;
+    }
     net::CookieOptions options;
-    if (!inclusion.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY))
-        options.set_include_httponly();
+    options.set_include_httponly();
     m_mojoCookieManager->SetCanonicalCookie(*canonCookie.get(), gurl.scheme(), options, std::move(callback));
 }
 
