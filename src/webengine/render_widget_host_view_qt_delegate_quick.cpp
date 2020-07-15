@@ -272,7 +272,8 @@ void RenderWidgetHostViewQtDelegateQuick::hoverMoveEvent(QHoverEvent *event)
 {
     QQuickItem *parent = parentItem();
     if ((!m_isPopup && parent && !parent->property("activeFocusOnPress").toBool()
-         && !parent->hasActiveFocus()) || event->posF() == event->oldPosF()) {
+         && !parent->hasActiveFocus())
+        || event->position() == event->oldPosF()) {
         event->ignore();
         return;
     }

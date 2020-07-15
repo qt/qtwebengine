@@ -441,8 +441,9 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
         // QtQuick is different by sending both the Press and DblClick events for the second press
         // where we can simply ignore the DblClick event.
         QMouseEvent *dblClick = static_cast<QMouseEvent *>(event);
-        QMouseEvent press(QEvent::MouseButtonPress, dblClick->localPos(), dblClick->windowPos(), dblClick->screenPos(),
-            dblClick->button(), dblClick->buttons(), dblClick->modifiers(), dblClick->source());
+        QMouseEvent press(QEvent::MouseButtonPress, dblClick->position(), dblClick->scenePosition(),
+                          dblClick->globalPosition(), dblClick->button(), dblClick->buttons(),
+                          dblClick->modifiers(), dblClick->source());
         press.setTimestamp(dblClick->timestamp());
         handled = m_client->forwardEvent(&press);
     } else

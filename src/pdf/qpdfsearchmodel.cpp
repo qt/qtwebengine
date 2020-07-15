@@ -261,7 +261,8 @@ bool QPdfSearchModelPrivate::doSearch(int page)
                 QList<ushort> buf(count + 1);
                 int len = FPDFText_GetText(textPage, startIndex, count, buf.data());
                 Q_ASSERT(len - 1 <= count); // len is number of characters written, including the terminator
-                QString context = QString::fromUtf16(buf.constData(), len - 1);
+                QString context = QString::fromUtf16(
+                        reinterpret_cast<const char16_t *>(buf.constData()), len - 1);
                 context = context.replace(QLatin1Char('\n'), QStringLiteral("\u23CE"));
                 context = context.remove(QLatin1Char('\r'));
                 // try to find the search string near the middle of the context if possible

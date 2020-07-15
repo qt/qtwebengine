@@ -1433,8 +1433,8 @@ static WebPointerProperties::PointerType pointerTypeForTabletEvent(const QTablet
 WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
-                              WebFloatPoint(ev->x(), ev->y()),
-                              WebFloatPoint(ev->globalX(), ev->globalY()),
+                              WebFloatPoint(ev->position().x(), ev->position().y()),
+                              WebFloatPoint(ev->globalPosition().x(), ev->globalPosition().y()),
                               mouseButtonForEvent<QMouseEvent>(ev),
                               0,
                               modifiersForEvent(ev),
@@ -1452,9 +1452,9 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev)
     webKitEvent.SetModifiers(modifiersForEvent(ev));
     webKitEvent.SetType(webEventTypeForEvent(ev));
 
-    webKitEvent.SetPositionInWidget(ev->pos().x(), ev->pos().y());
-    webKitEvent.movement_x = ev->pos().x() - ev->oldPos().x();
-    webKitEvent.movement_y = ev->pos().y() - ev->oldPos().y();
+    webKitEvent.SetPositionInWidget(ev->position().x(), ev->position().y());
+    webKitEvent.movement_x = ev->position().x() - ev->oldPos().x();
+    webKitEvent.movement_y = ev->position().y() - ev->oldPos().y();
     webKitEvent.pointer_type = WebPointerProperties::PointerType::kMouse;
 
     return webKitEvent;
@@ -1464,8 +1464,8 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
-                              WebFloatPoint(ev->x(), ev->y()),
-                              WebFloatPoint(ev->globalX(), ev->globalY()),
+                              WebFloatPoint(ev->position().x(), ev->position().y()),
+                              WebFloatPoint(ev->globalPosition().x(), ev->globalPosition().y()),
                               mouseButtonForEvent<QTabletEvent>(ev),
                               0,
                               modifiersForEvent(ev),
@@ -1498,11 +1498,11 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev)
     webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetModifiers(modifiersForEvent(ev));
 
-    webKitEvent.SetPositionInWidget(WebFloatPoint(ev->localPos().x(),
-                                                  ev->localPos().y()));
+    webKitEvent.SetPositionInWidget(WebFloatPoint(ev->position().x(),
+                                                  ev->position().y()));
 
-    webKitEvent.SetPositionInScreen(WebFloatPoint(ev->screenPos().x(),
-                                                  ev->screenPos().y()));
+    webKitEvent.SetPositionInScreen(WebFloatPoint(ev->globalPosition().x(),
+                                                  ev->globalPosition().y()));
 
     webKitEvent.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
 

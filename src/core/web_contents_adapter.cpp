@@ -1636,19 +1636,19 @@ void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPointF &screenPos)
 
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     rvh->GetWidget()->FilterDropData(m_currentDropData.get());
-    rvh->GetWidget()->DragTargetDragEnter(*m_currentDropData, toGfx(e->posF()), toGfx(screenPos),
+    rvh->GetWidget()->DragTargetDragEnter(*m_currentDropData, toGfx(e->position()), toGfx(screenPos),
                                           toWeb(e->possibleActions()),
-                                          toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
+                                          toWeb(e->buttons()) | toWeb(e->modifiers()));
 }
 
 Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const QPointF &screenPos)
 {
     CHECK_INITIALIZED(Qt::DropAction());
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
-    m_lastDragClientPos = e->posF();
+    m_lastDragClientPos = e->position();
     m_lastDragScreenPos = screenPos;
     rvh->GetWidget()->DragTargetDragOver(toGfx(m_lastDragClientPos), toGfx(m_lastDragScreenPos), toWeb(e->possibleActions()),
-                                         toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
+                                         toWeb(e->buttons()) | toWeb(e->modifiers()));
     waitForUpdateDragActionCalled();
     return toQt(blink::WebDragOperation(m_currentDropAction));
 }
@@ -1691,10 +1691,10 @@ void WebContentsAdapter::endDragging(QDropEvent *e, const QPointF &screenPos)
     CHECK_INITIALIZED();
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     rvh->GetWidget()->FilterDropData(m_currentDropData.get());
-    m_lastDragClientPos = e->posF();
+    m_lastDragClientPos = e->position();
     m_lastDragScreenPos = screenPos;
     rvh->GetWidget()->DragTargetDrop(*m_currentDropData, toGfx(m_lastDragClientPos), toGfx(m_lastDragScreenPos),
-                                     toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
+                                     toWeb(e->buttons()) | toWeb(e->modifiers()));
 
     m_currentDropData.reset();
 }

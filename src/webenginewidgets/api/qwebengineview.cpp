@@ -451,7 +451,7 @@ void QWebEngineView::dragEnterEvent(QDragEnterEvent *e)
     e->accept();
     if (d->m_dragEntered)
         d->page->d_ptr->adapter->leaveDrag();
-    d->page->d_ptr->adapter->enterDrag(e, mapToGlobal(e->pos()));
+    d->page->d_ptr->adapter->enterDrag(e, mapToGlobal(e->position().toPoint()));
     d->m_dragEntered = true;
 }
 
@@ -477,7 +477,8 @@ void QWebEngineView::dragMoveEvent(QDragMoveEvent *e)
     if (!d->m_dragEntered)
         return;
     QtWebEngineCore::WebContentsAdapter *adapter = d->page->d_ptr->adapter.data();
-    Qt::DropAction dropAction = adapter->updateDragPosition(e, mapToGlobal(e->pos()));
+    Qt::DropAction dropAction =
+            adapter->updateDragPosition(e, mapToGlobal(e->position().toPoint()));
     if (Qt::IgnoreAction == dropAction) {
         e->ignore();
     } else {
@@ -495,7 +496,7 @@ void QWebEngineView::dropEvent(QDropEvent *e)
     if (!d->m_dragEntered)
         return;
     e->accept();
-    d->page->d_ptr->adapter->endDragging(e, mapToGlobal(e->pos()));
+    d->page->d_ptr->adapter->endDragging(e, mapToGlobal(e->position().toPoint()));
     d->m_dragEntered = false;
 }
 #endif // QT_CONFIG(draganddrop)

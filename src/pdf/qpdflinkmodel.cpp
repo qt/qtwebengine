@@ -242,7 +242,8 @@ void QPdfLinkModelPrivate::update()
                     QList<unsigned short> buf(len);
                     int got = FPDFLink_GetURL(webLinks, i, buf.data(), len);
                     Q_ASSERT(got == len);
-                    linkData.url = QString::fromUtf16(buf.data(), got - 1);
+                    linkData.url = QString::fromUtf16(
+                            reinterpret_cast<const char16_t *>(buf.data()), got - 1);
                 }
                 FPDFLink_GetTextRange(webLinks, i, &linkData.textStart, &linkData.textCharCount);
                 len = FPDFLink_CountRects(webLinks, i);

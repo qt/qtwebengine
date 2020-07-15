@@ -67,7 +67,7 @@ void QQuickWebEngineTouchHandleProvider::init(const QMap<int, QImage> &images)
         return;
     }
 
-    m_touchHandleMap.unite(images);
+    m_touchHandleMap.insert(images);
 }
 
 QImage QQuickWebEngineTouchHandleProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)

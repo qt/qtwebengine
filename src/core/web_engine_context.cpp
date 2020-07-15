@@ -851,8 +851,8 @@ gpu::SyncPointManager *WebEngineContext::syncPointManager()
         return spm;
     QMutexLocker lock(&s_spmMutex);
     if (!s_syncPointManager)
-        s_syncPointManager.store(new gpu::SyncPointManager());
-    return s_syncPointManager.load();
+        s_syncPointManager.storeRelaxed(new gpu::SyncPointManager());
+    return s_syncPointManager.loadRelaxed();
 }
 
 base::CommandLine* WebEngineContext::commandLine() {

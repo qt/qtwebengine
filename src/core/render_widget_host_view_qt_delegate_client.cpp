@@ -128,19 +128,19 @@ public:
     }
     float GetX(size_t pointer_index) const override
     {
-        return touchPoints.at(pointer_index).pos().x();
+        return touchPoints.at(pointer_index).position().x();
     }
     float GetY(size_t pointer_index) const override
     {
-        return touchPoints.at(pointer_index).pos().y();
+        return touchPoints.at(pointer_index).position().y();
     }
     float GetRawX(size_t pointer_index) const override
     {
-        return touchPoints.at(pointer_index).screenPos().x();
+        return touchPoints.at(pointer_index).globalPosition().x();
     }
     float GetRawY(size_t pointer_index) const override
     {
-        return touchPoints.at(pointer_index).screenPos().y();
+        return touchPoints.at(pointer_index).globalPosition().y();
     }
     float GetTouchMajor(size_t pointer_index) const override
     {
@@ -437,7 +437,7 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
         if (event->button() != m_clickHelper.lastPressButton
             || (event->timestamp() - m_clickHelper.lastPressTimestamp
                 > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
-            || (event->pos() - m_clickHelper.lastPressPosition).manhattanLength()
+            || (event->position() - m_clickHelper.lastPressPosition).manhattanLength()
                     > qGuiApp->styleHints()->startDragDistance()
             || m_clickHelper.clickCounter >= 3)
             m_clickHelper.clickCounter = 0;
@@ -445,19 +445,19 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
         m_clickHelper.lastPressTimestamp = event->timestamp();
         webEvent.click_count = ++m_clickHelper.clickCounter;
         m_clickHelper.lastPressButton = event->button();
-        m_clickHelper.lastPressPosition = QPointF(event->pos()).toPoint();
+        m_clickHelper.lastPressPosition = event->position().toPoint();
     }
 
     if (webEvent.GetType() == blink::WebInputEvent::kMouseUp)
         webEvent.click_count = m_clickHelper.clickCounter;
 
-    webEvent.movement_x = event->globalX() - m_previousMousePosition.x();
-    webEvent.movement_y = event->globalY() - m_previousMousePosition.y();
+    webEvent.movement_x = event->globalPosition().x() - m_previousMousePosition.x();
+    webEvent.movement_y = event->globalPosition().y() - m_previousMousePosition.y();
 
     if (m_rwhv->IsMouseLocked())
         QCursor::setPos(m_previousMousePosition);
     else
-        m_previousMousePosition = event->globalPos();
+        m_previousMousePosition = event->globalPosition().toPoint();
 
     if (m_imeInProgress && webEvent.GetType() == blink::WebInputEvent::kMouseDown) {
         m_imeInProgress = false;

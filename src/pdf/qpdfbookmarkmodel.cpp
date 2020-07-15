@@ -189,7 +189,7 @@ public:
 
             const int titleLength = int(FPDFBookmark_GetTitle(bookmark, nullptr, 0));
 
-            QList<ushort> titleBuffer(titleLength);
+            QList<char16_t> titleBuffer(titleLength);
             FPDFBookmark_GetTitle(bookmark, titleBuffer.data(), quint32(titleBuffer.length()));
 
             const FPDF_DEST dest = FPDFBookmark_GetDest(document, bookmark);

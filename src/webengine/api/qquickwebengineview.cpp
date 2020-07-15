@@ -1736,16 +1736,16 @@ void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &va
 }
 
 #if QT_CONFIG(draganddrop)
-static QPoint mapToScreen(const QQuickItem *item, const QPoint &clientPos)
+static QPointF mapToScreen(const QQuickItem *item, const QPointF &clientPos)
 {
-    return item->window()->position() + item->mapToScene(clientPos).toPoint();
+    return item->window()->position() + item->mapToScene(clientPos);
 }
 
 void QQuickWebEngineView::dragEnterEvent(QDragEnterEvent *e)
 {
     Q_D(QQuickWebEngineView);
     e->accept();
-    d->adapter->enterDrag(e, mapToScreen(this, e->pos()));
+    d->adapter->enterDrag(e, mapToScreen(this, e->position()));
 }
 
 void QQuickWebEngineView::dragLeaveEvent(QDragLeaveEvent *e)
@@ -1758,7 +1758,7 @@ void QQuickWebEngineView::dragLeaveEvent(QDragLeaveEvent *e)
 void QQuickWebEngineView::dragMoveEvent(QDragMoveEvent *e)
 {
     Q_D(QQuickWebEngineView);
-    Qt::DropAction dropAction = d->adapter->updateDragPosition(e, mapToScreen(this, e->pos()));
+    Qt::DropAction dropAction = d->adapter->updateDragPosition(e, mapToScreen(this, e->position()));
     if (Qt::IgnoreAction == dropAction) {
         e->ignore();
     } else {
@@ -1771,7 +1771,7 @@ void QQuickWebEngineView::dropEvent(QDropEvent *e)
 {
     Q_D(QQuickWebEngineView);
     e->accept();
-    d->adapter->endDragging(e, mapToScreen(this, e->pos()));
+    d->adapter->endDragging(e, mapToScreen(this, e->position()));
 }
 #endif // QT_CONFIG(draganddrop)
 

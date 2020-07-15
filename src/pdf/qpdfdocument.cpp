@@ -405,7 +405,7 @@ QString QPdfDocumentPrivate::getText(FPDF_TEXTPAGE textPage, int startIndex, int
     // TODO is that enough space in case one unicode character is more than one in utf-16?
     int len = FPDFText_GetText(textPage, startIndex, count, buf.data());
     Q_ASSERT(len - 1 <= count); // len is number of characters written, including the terminator
-    return QString::fromUtf16(buf.constData(), len - 1);
+    return QString::fromUtf16(reinterpret_cast<const char16_t *>(buf.constData()), len - 1);
 }
 
 QPointF QPdfDocumentPrivate::getCharPosition(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex)
@@ -606,7 +606,7 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     FPDF_GetMetaText(d->doc, fieldName.constData(), buf.data(), buf.length());
     lock.unlock();
 
-    QString text = QString::fromUtf16(buf.data());
+    QString text = QString::fromUtf16(reinterpret_cast<const char16_t *>(buf.data()));
 
     switch (field) {
     case Title: // fall through
