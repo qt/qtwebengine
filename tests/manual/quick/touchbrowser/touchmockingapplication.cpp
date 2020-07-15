@@ -29,7 +29,6 @@
 #include "touchmockingapplication.h"
 
 #include <qpa/qwindowsysteminterface.h>
-#include <QtCore/QRegExp>
 #include <QtCore/QEvent>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QTouchDevice>
