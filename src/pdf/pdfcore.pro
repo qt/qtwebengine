@@ -56,6 +56,25 @@ msvc {
 
 ios: OBJECTS += $$NINJA_OBJECTS
 
+# install static dependencies and handle prl files for static builds
+
+static {
+    ninja_archives = $$eval($$list($$NINJA_ARCHIVES))
+    qqt_libdir = \$\$\$\$[QT_INSTALL_LIBS]
+    for(ninja_arch, ninja_archives) {
+        ninja_arch_name = $$basename(ninja_arch)
+        ninja_arch_dirname = $$dirname(ninja_arch)
+        ninja_arch_prl_replace_$${ninja_arch_name}.match = $${ninja_arch_dirname}
+        ninja_arch_prl_replace_$${ninja_arch_name}.replace = $${qqt_libdir}/static_chrome
+        ninja_arch_prl_replace_$${ninja_arch_name}.CONFIG = path
+        QMAKE_PRL_INSTALL_REPLACE += ninja_arch_prl_replace_$${ninja_arch_name}
+    }
+    ninja_archs_install.files = $${ninja_archives}
+    ninja_archs_install.path = $$[QT_INSTALL_LIBS]/static_chrome
+    ninja_archs_install.CONFIG = no_check_exist
+    INSTALLS += ninja_archs_install
+}
+
 SOURCES += \
     qpdfbookmarkmodel.cpp \
     qpdfdestination.cpp \
