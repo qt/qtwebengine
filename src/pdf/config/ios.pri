@@ -26,7 +26,6 @@ use_allocator_shim=false \
 use_allocator=\"none\" \
 use_custom_libcxx=false \
 v8_use_external_startup_data=false \
-v8_use_snapshot=false \
 toolkit_views=false \
 treat_warnings_as_errors=false \
 safe_browsing_mode=0 \
