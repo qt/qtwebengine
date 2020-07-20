@@ -92,11 +92,6 @@
             "label": "embedded build",
             "type": "detectEmbedded"
         },
-        "webengine-noexecstack" : {
-            "label": "linker supports -z noexecstack",
-            "type": "linkerSupportsFlag",
-            "flag": "-z,noexecstack"
-        },
         "webengine-nodejs": {
             "label": "node.js",
             "type": "detectNodeJS"
@@ -217,11 +212,6 @@
               { "type": "privateConfig", "name": "v8base_debug" },
               { "type": "privateConfig", "name": "webcore_debug" }
             ]
-        },
-        "webengine-noexecstack": {
-            "label": "linker supports -z noexecstack",
-            "condition": "config.unix && tests.webengine-noexecstack",
-            "output": [ "privateFeature" ]
         },
         "webengine-nodejs": {
             "label": "Node.js",
