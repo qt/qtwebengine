@@ -649,8 +649,6 @@ WebEngineContext::WebEngineContext()
     // Explicitly tell Chromium about default-on features we do not support
     appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
     appendToFeatureList(disableFeatures, features::kSmsReceiver.name);
-    appendToFeatureList(disableFeatures, features::kWebAuth.name);
-    appendToFeatureList(disableFeatures, features::kWebAuthCable.name);
     appendToFeatureList(disableFeatures, features::kWebPayments.name);
     appendToFeatureList(disableFeatures, features::kWebUsb.name);
     appendToFeatureList(disableFeatures, media::kPictureInPicture.name);
