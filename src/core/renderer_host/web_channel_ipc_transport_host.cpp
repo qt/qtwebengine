@@ -93,13 +93,13 @@ uint WebChannelIPCTransportHost::worldId() const
 void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
 {
     QJsonDocument doc(message);
-    int size = 0;
-    const char *rawData = doc.rawData(&size);
+    QByteArray json = doc.toJson(QJsonDocument::Compact);
     content::RenderFrameHost *frame = web_contents()->GetMainFrame();
     mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportRender> webChannelTransport;
     frame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
     qCDebug(log).nospace() << "sending webchannel message to " << frame << ": " << doc;
-    webChannelTransport->DispatchWebChannelMessage(std::vector<uint8_t>(rawData, rawData + size), m_worldId);
+    webChannelTransport->DispatchWebChannelMessage(std::vector<uint8_t>(json.begin(), json.end()),
+                                                   m_worldId);
 }
 
 void WebChannelIPCTransportHost::setWorldId(uint32_t worldId)
@@ -132,7 +132,7 @@ void WebChannelIPCTransportHost::resetWorldId()
     }
 }
 
-void WebChannelIPCTransportHost::DispatchWebChannelMessage(const std::vector<uint8_t> &binaryJson)
+void WebChannelIPCTransportHost::DispatchWebChannelMessage(const std::vector<uint8_t> &json)
 {
     content::RenderFrameHost *frame = web_contents()->GetMainFrame();
 
@@ -140,7 +140,8 @@ void WebChannelIPCTransportHost::DispatchWebChannelMessage(const std::vector<uin
         return;
     }
 
-    QJsonDocument doc = QJsonDocument::fromRawData(reinterpret_cast<const char *>(binaryJson.data()), binaryJson.size());
+    QJsonDocument doc = QJsonDocument::fromJson(
+            QByteArray(reinterpret_cast<const char *>(json.data()), json.size()));
 
     if (!doc.isObject()) {
         qCCritical(log).nospace() << "received invalid webchannel message from " << frame;

@@ -61,7 +61,7 @@ private:
     // qtwebchannel::mojom::WebChannelTransportRender
     void SetWorldId(uint32_t worldId) override;
     void ResetWorldId() override;
-    void DispatchWebChannelMessage(const std::vector<uint8_t> &binaryJson, uint32_t worldId) override;
+    void DispatchWebChannelMessage(const std::vector<uint8_t> &json, uint32_t worldId) override;
 
     // RenderFrameObserver
     void WillReleaseScriptContext(v8::Local<v8::Context> context, int worldId) override;

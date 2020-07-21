@@ -70,13 +70,12 @@ public:
 private:
     void setWorldId(content::RenderFrameHost *frame, uint32_t worldId);
     void resetWorldId();
-    void onWebChannelMessage(const std::vector<char> &message);
 
     // WebContentsObserver
     void RenderFrameCreated(content::RenderFrameHost *frame) override;
 
     // qtwebchannel::mojom::WebChannelTransportHost
-    void DispatchWebChannelMessage(const std::vector<uint8_t> &binaryJson) override;
+    void DispatchWebChannelMessage(const std::vector<uint8_t> &json) override;
 
     // Empty only during construction/destruction. Synchronized to all the
     // WebChannelIPCTransports/RenderFrames in the observed WebContents.

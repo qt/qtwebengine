@@ -152,22 +152,13 @@ void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
         return;
     }
     v8::Local<v8::String> jsonString = v8::Local<v8::String>::Cast(jsonValue);
+    std::vector<uint8_t> json(jsonString->Utf8Length(isolate), 0);
+    jsonString->WriteUtf8(isolate, reinterpret_cast<char *>(json.data()), json.size(), nullptr,
+                          v8::String::REPLACE_INVALID_UTF8);
 
-    QByteArray json(jsonString->Utf8Length(isolate), 0);
-    jsonString->WriteUtf8(isolate, json.data(), json.size(), nullptr, v8::String::REPLACE_INVALID_UTF8);
-
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(json, &error);
-    if (error.error != QJsonParseError::NoError) {
-        args->ThrowTypeError("Invalid JSON");
-        return;
-    }
-
-    int size = 0;
-    const char *rawData = doc.rawData(&size);
     mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportHost> webChannelTransport;
     renderFrame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
-    webChannelTransport->DispatchWebChannelMessage(std::vector<uint8_t>(rawData, rawData + size));
+    webChannelTransport->DispatchWebChannelMessage(json);
 }
 
 gin::ObjectTemplateBuilder WebChannelTransport::GetObjectTemplateBuilder(v8::Isolate *isolate)
@@ -213,17 +204,13 @@ void WebChannelIPCTransport::ResetWorldId()
     m_worldId = 0;
 }
 
-void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t> &binaryJson, uint32_t worldId)
+void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t> &json,
+                                                       uint32_t worldId)
 {
     DCHECK(m_worldId == worldId);
 
     if (!m_canUseContext)
         return;
-
-    QJsonDocument doc = QJsonDocument::fromRawData(reinterpret_cast<const char *>(binaryJson.data()), binaryJson.size(),
-                                                   QJsonDocument::BypassValidation);
-    DCHECK(doc.isObject());
-    QByteArray json = doc.toJson(QJsonDocument::Compact);
 
     blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     v8::Isolate *isolate = blink::MainThreadIsolate();
@@ -255,7 +242,9 @@ void WebChannelIPCTransport::DispatchWebChannelMessage(const std::vector<uint8_t
     v8::Local<v8::Object> messageObject(v8::Object::New(isolate));
     v8::Maybe<bool> wasSet = messageObject->DefineOwnProperty(
             context, v8::String::NewFromUtf8(isolate, "data").ToLocalChecked(),
-            v8::String::NewFromUtf8(isolate, json.constData(), v8::NewStringType::kNormal, json.size()).ToLocalChecked(),
+            v8::String::NewFromUtf8(isolate, reinterpret_cast<const char *>(json.data()),
+                                    v8::NewStringType::kNormal, json.size())
+                    .ToLocalChecked(),
             v8::PropertyAttribute(v8::ReadOnly | v8::DontDelete));
     DCHECK(!wasSet.IsNothing() && wasSet.FromJust());
 
