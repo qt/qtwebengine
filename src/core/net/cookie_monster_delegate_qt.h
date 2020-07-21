@@ -53,11 +53,6 @@
 
 #include "qtwebenginecoreglobal_p.h"
 
-QT_WARNING_PUSH
-// For some reason adding -Wno-unused-parameter to QMAKE_CXXFLAGS has no
-// effect with clang, so use a pragma for these dirty chromium headers
-QT_WARNING_DISABLE_CLANG("-Wunused-parameter")
-
 // We need to work around Chromium using 'signals' as a variable name in headers:
 #ifdef signals
 #define StAsH_signals signals
@@ -73,7 +68,6 @@ QT_WARNING_DISABLE_CLANG("-Wunused-parameter")
 #define signals StAsH_signals
 #undef StAsH_signals
 #endif
-QT_WARNING_POP
 
 #include <QNetworkCookie>
 #include <QPointer>

@@ -109,6 +109,11 @@ CLEAN_QMAKE_RCC = $$clean_path($$QMAKE_RCC)
 
 # CONFIG SETUP
 
+# Chromium already enables warnings, so enabling them again will just
+# re-enable all the warnings disabled by Chromium.
+QMAKE_CFLAGS -= $$QMAKE_CFLAGS_WARN_ON
+QMAKE_CXXFLAGS -= $$QMAKE_CXXFLAGS_WARN_ON
+
 GN_CONTENTS += "config(\"$${TARGET}_config\") {"
 !isEmpty(QMAKE_CFLAGS) {
     GN_CONTENTS += "  cflags = ["
@@ -120,14 +125,6 @@ GN_CONTENTS += "config(\"$${TARGET}_config\") {"
     GN_CONTENTS += "  cflags += ["
     for(path, QMAKE_FRAMEWORKPATH): GN_CONTENTS += "    \"-F$$path\","
     GN_CONTENTS += "  ]"
-}
-
-# Stop the barrage of unused variables warnings.
-gcc|clang|clang_cl {
-    QMAKE_CXXFLAGS += "-Wno-unused-parameter"
-    QMAKE_CXXFLAGS += "-Wno-unused-variable"
-} else:msvc {
-    QMAKE_CXXFLAGS += /wd4100 /wd4101
 }
 
 # Chromium activates this, but we need it off to be able to compile QFlags
