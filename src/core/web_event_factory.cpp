@@ -1227,7 +1227,7 @@ static WebMouseEvent::Button mouseButtonForEvent(T *event)
         return WebMouseEvent::Button::kLeft;
     else if (event->button() == Qt::RightButton)
         return WebMouseEvent::Button::kRight;
-    else if (event->button() == Qt::MidButton)
+    else if (event->button() == Qt::MiddleButton)
         return WebMouseEvent::Button::kMiddle;
 
     if (event->type() != QEvent::MouseMove && event->type() != QEvent::TabletMove)
@@ -1239,7 +1239,7 @@ static WebMouseEvent::Button mouseButtonForEvent(T *event)
         return WebMouseEvent::Button::kLeft;
     else if (event->buttons() & Qt::RightButton)
         return WebMouseEvent::Button::kRight;
-    else if (event->buttons() & Qt::MidButton)
+    else if (event->buttons() & Qt::MiddleButton)
         return WebMouseEvent::Button::kMiddle;
 
     return WebMouseEvent::Button::kNoButton;
@@ -1253,7 +1253,7 @@ static unsigned mouseButtonsModifiersForEvent(const T* event)
         ret |= WebInputEvent::kLeftButtonDown;
     if (event->buttons() & Qt::RightButton)
         ret |= WebInputEvent::kRightButtonDown;
-    if (event->buttons() & Qt::MidButton)
+    if (event->buttons() & Qt::MiddleButton)
         ret |= WebInputEvent::kMiddleButtonDown;
     return ret;
 }

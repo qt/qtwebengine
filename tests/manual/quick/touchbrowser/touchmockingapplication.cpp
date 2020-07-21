@@ -158,8 +158,8 @@ bool TouchMockingApplication::notify(QObject* target, QEvent* event)
         // A move can have resulted in multiple buttons, so we need check them individually.
         if (touchPoint.id() & Qt::LeftButton)
             updateTouchPoint(mouseEvent, touchPoint, Qt::LeftButton);
-        if (touchPoint.id() & Qt::MidButton)
-            updateTouchPoint(mouseEvent, touchPoint, Qt::MidButton);
+        if (touchPoint.id() & Qt::MiddleButton)
+            updateTouchPoint(mouseEvent, touchPoint, Qt::MiddleButton);
         if (touchPoint.id() & Qt::RightButton)
             updateTouchPoint(mouseEvent, touchPoint, Qt::RightButton);
 
