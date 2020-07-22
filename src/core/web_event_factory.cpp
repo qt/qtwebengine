@@ -205,7 +205,14 @@ static quint32 nativeKeyCodeForKeyEvent(const QKeyEvent *ev)
     // Cygwin/X, etc). Also evdev key codes are *not* supported for the same
     // reason.
 #if defined(Q_OS_WINDOWS)
-    return keyboardDriver() == KeyboardDriver::Windows ? ev->nativeScanCode() : 0;
+    if (keyboardDriver() == KeyboardDriver::Windows) {
+        // see GetScanCodeFromLParam in events_win_utils.cc:
+        quint32 scancode = ev->nativeScanCode() & 0xff;
+        if (ev->nativeScanCode() & 0x100)
+            scancode |= 0xe000;
+        return scancode;
+    }
+    return 0;
 #elif defined(Q_OS_MACOS)
     return keyboardDriver() == KeyboardDriver::Cocoa ? ev->nativeVirtualKey() : 0;
 #elif defined(Q_OS_LINUX)
