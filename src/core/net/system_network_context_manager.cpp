@@ -61,6 +61,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/certificate_transparency/ct_known_logs.h"
 #include "components/network_session_configurator/common/network_features.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cors_exempt_headers.h"
@@ -199,19 +200,6 @@ scoped_refptr<network::SharedURLLoaderFactory> SystemNetworkContextManager::GetS
     return shared_url_loader_factory_;
 }
 
-void SystemNetworkContextManager::SetUp(
-        network::mojom::NetworkContextRequest *network_context_request,
-        network::mojom::NetworkContextParamsPtr *network_context_params, bool *stub_resolver_enabled,
-        base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>> *dns_over_https_servers,
-        network::mojom::HttpAuthStaticParamsPtr *http_auth_static_params,
-        network::mojom::HttpAuthDynamicParamsPtr *http_auth_dynamic_params, bool *is_quic_allowed)
-{
-    *is_quic_allowed = false;
-    *http_auth_static_params = CreateHttpAuthStaticParams();
-    *http_auth_dynamic_params = CreateHttpAuthDynamicParams();
-    //    GetStubResolverConfig(local_state_, stub_resolver_enabled, dns_over_https_servers);
-}
-
 // static
 SystemNetworkContextManager *SystemNetworkContextManager::CreateInstance()
 {
@@ -245,8 +233,10 @@ SystemNetworkContextManager::~SystemNetworkContextManager()
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::NetworkService *network_service)
 {
+    bool is_quic_force_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableQuic);
     // Disable QUIC globally
-    network_service->DisableQuic();
+    if (!is_quic_force_enabled)
+        network_service->DisableQuic();
 
     network_service->SetUpHttpAuth(CreateHttpAuthStaticParams());
     network_service->ConfigureHttpAuthPrefs(CreateHttpAuthDynamicParams());

@@ -58,34 +58,6 @@
 
 namespace QtWebEngineCore {
 
-class ProxyingRestrictedCookieManagerListenerQt : public network::mojom::CookieChangeListener {
-public:
-    ProxyingRestrictedCookieManagerListenerQt(const GURL &url,
-                                              const GURL &site_for_cookies,
-                                              const url::Origin &top_frame_origin,
-                                              base::WeakPtr<ProxyingRestrictedCookieManagerQt> restricted_cookie_manager,
-                                              mojo::PendingRemote<network::mojom::CookieChangeListener> client_listener)
-            : url_(url)
-            , site_for_cookies_(site_for_cookies)
-            , top_frame_origin_(top_frame_origin)
-            , restricted_cookie_manager_(restricted_cookie_manager)
-            , client_listener_(std::move(client_listener))
-    {}
-
-    void OnCookieChange(const net::CookieChangeInfo &change) override
-    {
-        if (restricted_cookie_manager_ && restricted_cookie_manager_->allowCookies(url_, site_for_cookies_))
-            client_listener_->OnCookieChange(change);
-    }
-
-private:
-    const GURL url_;
-    const GURL site_for_cookies_;
-    const url::Origin top_frame_origin_;
-    base::WeakPtr<ProxyingRestrictedCookieManagerQt> restricted_cookie_manager_;
-    mojo::Remote<network::mojom::CookieChangeListener> client_listener_;
-};
-
 // static
 void ProxyingRestrictedCookieManagerQt::CreateAndBind(ProfileIODataQt *profileIoData,
                                                       mojo::PendingRemote<network::mojom::RestrictedCookieManager> underlying_rcm,
@@ -179,18 +151,7 @@ void ProxyingRestrictedCookieManagerQt::AddChangeListener(const GURL &url,
                                                           AddChangeListenerCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-    mojo::PendingRemote<network::mojom::CookieChangeListener> proxy_listener_remote;
-    auto proxy_listener =
-          std::make_unique<ProxyingRestrictedCookieManagerListenerQt>(
-                url, site_for_cookies, top_frame_origin,
-                weak_factory_.GetWeakPtr(),
-                std::move(listener));
-
-    mojo::MakeSelfOwnedReceiver(std::move(proxy_listener),
-                                proxy_listener_remote.InitWithNewPipeAndPassReceiver());
-
-    underlying_restricted_cookie_manager_->AddChangeListener(url, site_for_cookies, top_frame_origin, std::move(proxy_listener_remote), std::move(callback));
+    underlying_restricted_cookie_manager_->AddChangeListener(url, site_for_cookies, top_frame_origin, std::move(listener), std::move(callback));
 }
 
 void ProxyingRestrictedCookieManagerQt::SetCookieFromString(const GURL &url,

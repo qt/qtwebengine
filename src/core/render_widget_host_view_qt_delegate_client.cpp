@@ -427,7 +427,7 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
     if ((webEvent.GetType() == blink::WebInputEvent::kMouseDown
          || webEvent.GetType() == blink::WebInputEvent::kMouseUp)
         && webEvent.button == blink::WebMouseEvent::Button::kNoButton) {
-        // Blink can only handle the 3 main mouse-buttons and may assert when processing mouse-down
+        // Blink can only handle the 5 main mouse-buttons and may assert when processing mouse-down
         // for no button.
         LOG(INFO) << "Unhandled mouse button";
         return;
@@ -447,6 +447,9 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
         m_clickHelper.lastPressButton = event->button();
         m_clickHelper.lastPressPosition = QPointF(event->pos()).toPoint();
     }
+
+    if (webEvent.GetType() == blink::WebInputEvent::kMouseUp)
+        webEvent.click_count = m_clickHelper.clickCounter;
 
     webEvent.movement_x = event->globalX() - m_previousMousePosition.x();
     webEvent.movement_y = event->globalY() - m_previousMousePosition.y();

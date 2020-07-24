@@ -92,6 +92,7 @@ private Q_SLOTS:
     void comboBoxPopupPositionAfterChildMove();
     void acceptNavigationRequest();
     void acceptNavigationRequestNavigationType();
+    void acceptNavigationRequestRelativeToNothing();
     void geolocationRequestJS_data();
     void geolocationRequestJS();
     void loadFinished();
@@ -599,6 +600,34 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
     for (int i = 0; i < expectedList.count(); ++i) {
         QCOMPARE(page.navigations[i].type, expectedList[i]);
     }
+}
+
+// Relative url without base url.
+//
+// See also: QTBUG-48435
+void tst_QWebEnginePage::acceptNavigationRequestRelativeToNothing()
+{
+    TestPage page;
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+
+    page.setHtml(QString("<html><body><a id='link' href='S0'>limited time offer</a></body></html>"),
+                 /* baseUrl: */ QUrl());
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 20000);
+    page.runJavaScript(QStringLiteral("document.getElementById(\"link\").click()"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 2, 20000);
+    page.setHtml(QString("<html><body><a id='link' href='S0'>limited time offer</a></body></html>"),
+                 /* baseUrl: */ QString("qrc:/"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 3, 20000);
+    page.runJavaScript(QStringLiteral("document.getElementById(\"link\").click()"));
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 4, 20000);
+
+    // The two setHtml and the second click are counted, while the
+    // first click is ignored due to the empty base url.
+    QCOMPARE(page.navigations.count(), 3);
+    QCOMPARE(page.navigations[0].type, QWebEnginePage::NavigationTypeTyped);
+    QCOMPARE(page.navigations[1].type, QWebEnginePage::NavigationTypeTyped);
+    QCOMPARE(page.navigations[2].type, QWebEnginePage::NavigationTypeLinkClicked);
+    QCOMPARE(page.navigations[2].url, QUrl(QString("qrc:/S0")));
 }
 
 void tst_QWebEnginePage::popupFormSubmission()

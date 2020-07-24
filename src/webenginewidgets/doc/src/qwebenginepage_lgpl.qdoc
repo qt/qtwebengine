@@ -376,11 +376,6 @@
     to the main frame or a child frame. If the function returns \c true, the navigation request is
     accepted and \c url is loaded. The default implementation accepts all navigation requests.
 
-    This function is called for absolute URLs that are prefixed with \c {http://} or \c {https://}
-    and for unrecognized schemes, such as \c {mailto:}, which will be handled by QDesktopServices
-    if accepted. To have this function called also upon receiving navigation requests to local URLs,
-    prefix the URLs with \c {http://}.
-
     Navigation requests can be delegated to the Qt application instead of having the HTML handler
     engine process them by overloading this function. This is necessary when an HTML document is
     used as part of the user interface, and not to display external data, for example, when
@@ -390,6 +385,10 @@
     \e before the request is accepted or rejected. Therefore, a loadFinished()
     signal that returns \c false is to be expected even after delegating the
     request.
+
+    \note When using setHtml or setContent with relative links, make
+    sure to specify a base url, otherwise the links will be considered
+    invalid and no navigation requests will be emitted.
 
     The \l{QWebEngineUrlRequestInterceptor} class offers further options for intercepting and
     manipulating requests.

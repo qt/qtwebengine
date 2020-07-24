@@ -173,9 +173,9 @@ bool usingDefaultSGBackend()
     }
 
     if (device.isEmpty())
-        device = QString::fromLocal8Bit(qgetenv("QT_QUICK_BACKEND"));
+        device = qEnvironmentVariable("QT_QUICK_BACKEND");
     if (device.isEmpty())
-        device = QString::fromLocal8Bit(qgetenv("QMLSCENE_DEVICE"));
+        device = qEnvironmentVariable("QMLSCENE_DEVICE");
 
     return device.isEmpty();
 }
@@ -326,7 +326,7 @@ void WebEngineContext::addProfileAdapter(ProfileAdapter *profileAdapter)
 {
     Q_ASSERT(!m_profileAdapters.contains(profileAdapter));
     const QString path = profileAdapter->dataPath();
-    if (!path.isEmpty()) {
+    if (!profileAdapter->isOffTheRecord() && !profileAdapter->storageName().isEmpty()) {
         for (auto profileAdapter : m_profileAdapters) {
             if (profileAdapter->dataPath() == path) {
                 // QTBUG-66068
@@ -578,6 +578,8 @@ WebEngineContext::WebEngineContext()
     base::CommandLine* parsedCommandLine = commandLine();
     setupProxyPac(parsedCommandLine);
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
+
+    parsedCommandLine->AppendSwitchASCII(service_manager::switches::kApplicationName, QCoreApplication::applicationName().toStdString());
 
     // Enable sandboxing on OS X and Linux (Desktop / Embedded) by default.
     bool disable_sandbox = qEnvironmentVariableIsSet(kDisableSandboxEnv);
@@ -854,7 +856,7 @@ base::CommandLine* WebEngineContext::commandLine() {
         QStringList appArgs = QCoreApplication::arguments();
         if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
             appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
-            appArgs.append(parseEnvCommandLine(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv))));
+            appArgs.append(parseEnvCommandLine(qEnvironmentVariable(kChromiumFlagsEnv)));
         }
 #ifdef Q_OS_WIN
         appArgs.removeAll(QStringLiteral("--enable-webgl-software-rendering"));

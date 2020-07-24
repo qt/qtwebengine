@@ -98,6 +98,8 @@ namespace QtWebEngineCore {
                 appendCopyItem();
             else
                 appendPageItems();
+        } else {
+            appendPageItems();
         }
 
         if (m_contextData.linkUrl().isValid() || !m_contextData.unfilteredLinkUrl().isEmpty() || !m_contextData.linkUrl().isEmpty())

@@ -136,12 +136,13 @@ void tst_QWebEngineProfile::privateProfile()
     QCOMPARE(otrProfile.httpCacheType(), QWebEngineProfile::MemoryHttpCache);
     QCOMPARE(otrProfile.persistentCookiesPolicy(), QWebEngineProfile::NoPersistentCookies);
     QCOMPARE(otrProfile.cachePath(), QString());
-    QCOMPARE(otrProfile.persistentStoragePath(), QString());
+    QCOMPARE(otrProfile.persistentStoragePath(), QStandardPaths::writableLocation(QStandardPaths::DataLocation)
+             + QStringLiteral("/QtWebEngine/OffTheRecord"));
     // TBD: setters do not really work
     otrProfile.setCachePath(QStringLiteral("/home/foo/bar"));
     QCOMPARE(otrProfile.cachePath(), QString());
     otrProfile.setPersistentStoragePath(QStringLiteral("/home/foo/bar"));
-    QCOMPARE(otrProfile.persistentStoragePath(), QString());
+    QCOMPARE(otrProfile.persistentStoragePath(), QStringLiteral("/home/foo/bar"));
     otrProfile.setHttpCacheType(QWebEngineProfile::DiskHttpCache);
     QCOMPARE(otrProfile.httpCacheType(), QWebEngineProfile::MemoryHttpCache);
     otrProfile.setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);

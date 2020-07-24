@@ -153,10 +153,10 @@ QString subProcessPath()
 #endif
 
         QStringList candidatePaths;
-        const QByteArray fromEnv = qgetenv("QTWEBENGINEPROCESS_PATH");
+        const QString fromEnv = qEnvironmentVariable("QTWEBENGINEPROCESS_PATH");
         if (!fromEnv.isEmpty()) {
             // Only search in QTWEBENGINEPROCESS_PATH if set
-            candidatePaths << QString::fromLocal8Bit(fromEnv);
+            candidatePaths << fromEnv;
         } else {
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
             candidatePaths << getPath(frameworkBundle())
@@ -218,10 +218,10 @@ QString dictionariesPath()
     if (!initialized) {
         initialized = true;
 
-        const QByteArray fromEnv = qgetenv("QTWEBENGINE_DICTIONARIES_PATH");
+        const QString fromEnv = qEnvironmentVariable("QTWEBENGINE_DICTIONARIES_PATH");
         if (!fromEnv.isEmpty()) {
             // Only search in QTWEBENGINE_DICTIONARIES_PATH if set
-            candidatePaths << QString::fromLocal8Bit(fromEnv);
+            candidatePaths << fromEnv;
         } else {
             // First try to find dictionaries near the application.
 #ifdef OS_MACOSX

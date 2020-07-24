@@ -339,7 +339,8 @@ void DevToolsFrontendQt::RemovePreference(const std::string &name)
 
 void DevToolsFrontendQt::ClearPreferences()
 {
-    if (web_contents()->GetBrowserContext()->IsOffTheRecord())
+    ProfileQt *profile = static_cast<ProfileQt *>(web_contents()->GetBrowserContext());
+    if (profile->IsOffTheRecord() || profile->profileAdapter()->storageName().isEmpty())
         m_prefStore = scoped_refptr<PersistentPrefStore>(new InMemoryPrefStore());
     else
         CreateJsonPreferences(true);

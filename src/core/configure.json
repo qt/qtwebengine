@@ -25,6 +25,7 @@
             "webengine-native-spellchecker": "boolean",
             "webengine-extensions": "boolean",
             "webengine-webrtc": "boolean",
+            "webengine-webrtc-pipewire": "boolean",
             "webengine-geolocation": "boolean",
             "webengine-webchannel": "boolean",
             "webengine-kerberos": "boolean",
@@ -67,6 +68,12 @@
             "sources": [
                 { "type": "pkgConfig", "args": "libpulse >= 0.9.10 libpulse-mainloop-glib" }
             ]
+        },
+        "webengine-gio": {
+            "label": "gio",
+            "sources": [
+                { "type": "pkgConfig", "args": "gio-2.0" }
+            ]
         }
     },
     "tests" : {
@@ -84,11 +91,6 @@
         "webengine-embedded-build": {
             "label": "embedded build",
             "type": "detectEmbedded"
-        },
-        "webengine-noexecstack" : {
-            "label": "linker supports -z noexecstack",
-            "type": "linkerSupportsFlag",
-            "flag": "-z,noexecstack"
         },
         "webengine-nodejs": {
             "label": "node.js",
@@ -183,6 +185,13 @@
             "autoDetect": "!features.webengine-embedded-build",
             "output": [ "privateFeature" ]
         },
+        "webengine-webrtc-pipewire": {
+            "label": "PipeWire over GIO",
+            "purpose": "Provides PipeWire support in WebRTC using GIO.",
+            "condition": "features.webengine-webrtc && libs.webengine-gio",
+            "autoDetect": "false",
+            "output": [ "privateFeature" ]
+        },
         "webengine-ozone" : {
              "label": "Support qpa-xcb",
              "condition": "features.webengine-ozone-x11",
@@ -203,11 +212,6 @@
               { "type": "privateConfig", "name": "v8base_debug" },
               { "type": "privateConfig", "name": "webcore_debug" }
             ]
-        },
-        "webengine-noexecstack": {
-            "label": "linker supports -z noexecstack",
-            "condition": "config.unix && tests.webengine-noexecstack",
-            "output": [ "privateFeature" ]
         },
         "webengine-nodejs": {
             "label": "Node.js",
@@ -252,6 +256,7 @@
                 "webengine-spellchecker",
                 "webengine-native-spellchecker",
                 "webengine-webrtc",
+                "webengine-webrtc-pipewire",
                 "webengine-geolocation",
                 "webengine-webchannel",
                 "webengine-kerberos",

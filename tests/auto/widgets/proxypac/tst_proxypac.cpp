@@ -46,7 +46,7 @@ private slots:
 
 void tst_ProxyPac::proxypac()
 {
-    const QString fromEnv = QString::fromLocal8Bit(qgetenv("QTWEBENGINE_CHROMIUM_FLAGS"));
+    const QString fromEnv = qEnvironmentVariable("QTWEBENGINE_CHROMIUM_FLAGS");
     if (!fromEnv.contains("--proxy-pac-url"))
         qFatal("--proxy-pac-url argument is not passed.");
 

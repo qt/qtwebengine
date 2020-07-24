@@ -125,6 +125,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(const GURL 
     if (extension_id.empty())
         return;
 
+    *defer = true;
+
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                    base::BindOnce(&onPdfStreamIntercepted,
                                   response_url,

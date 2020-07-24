@@ -89,6 +89,9 @@ void QWebEngineCookieStorePrivate::processPendingUserCookies()
         delegate->deleteSessionCookies(CallbackDirectory::DeleteSessionCookiesCallbackId);
     }
 
+    if (bool(filterCallback))
+        delegate->setHasFilter(true);
+
     if (m_pendingUserCookies.isEmpty())
         return;
 
@@ -362,7 +365,10 @@ void QWebEngineCookieStore::deleteAllCookies()
 */
 void QWebEngineCookieStore::setCookieFilter(const std::function<bool(const FilterRequest &)> &filterCallback)
 {
+    bool changed = bool(d_ptr->filterCallback) != bool(filterCallback);
     d_ptr->filterCallback = filterCallback;
+    if (changed && d_ptr->delegate)
+        d_ptr->delegate->setHasFilter(bool(d_ptr->filterCallback));
 }
 
 /*!
@@ -371,7 +377,10 @@ void QWebEngineCookieStore::setCookieFilter(const std::function<bool(const Filte
 */
 void QWebEngineCookieStore::setCookieFilter(std::function<bool(const FilterRequest &)> &&filterCallback)
 {
+    bool changed = bool(d_ptr->filterCallback) != bool(filterCallback);
     d_ptr->filterCallback = std::move(filterCallback);
+    if (changed && d_ptr->delegate)
+        d_ptr->delegate->setHasFilter(bool(d_ptr->filterCallback));
 }
 
 /*!

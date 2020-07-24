@@ -205,7 +205,14 @@ static quint32 nativeKeyCodeForKeyEvent(const QKeyEvent *ev)
     // Cygwin/X, etc). Also evdev key codes are *not* supported for the same
     // reason.
 #if defined(Q_OS_WINDOWS)
-    return keyboardDriver() == KeyboardDriver::Windows ? ev->nativeScanCode() : 0;
+    if (keyboardDriver() == KeyboardDriver::Windows) {
+        // see GetScanCodeFromLParam in events_win_utils.cc:
+        quint32 scancode = ev->nativeScanCode() & 0xff;
+        if (ev->nativeScanCode() & 0x100)
+            scancode |= 0xe000;
+        return scancode;
+    }
+    return 0;
 #elif defined(Q_OS_MACOS)
     return keyboardDriver() == KeyboardDriver::Cocoa ? ev->nativeVirtualKey() : 0;
 #elif defined(Q_OS_LINUX)
@@ -1229,6 +1236,10 @@ static WebMouseEvent::Button mouseButtonForEvent(T *event)
         return WebMouseEvent::Button::kRight;
     else if (event->button() == Qt::MiddleButton)
         return WebMouseEvent::Button::kMiddle;
+    else if (event->button() == Qt::BackButton)
+        return WebMouseEvent::Button::kBack;
+    else if (event->button() == Qt::ForwardButton)
+        return WebMouseEvent::Button::kForward;
 
     if (event->type() != QEvent::MouseMove && event->type() != QEvent::TabletMove)
         return WebMouseEvent::Button::kNoButton;
@@ -1241,6 +1252,10 @@ static WebMouseEvent::Button mouseButtonForEvent(T *event)
         return WebMouseEvent::Button::kRight;
     else if (event->buttons() & Qt::MiddleButton)
         return WebMouseEvent::Button::kMiddle;
+    else if (event->buttons() & Qt::BackButton)
+        return WebMouseEvent::Button::kBack;
+    else if (event->buttons() & Qt::ForwardButton)
+        return WebMouseEvent::Button::kForward;
 
     return WebMouseEvent::Button::kNoButton;
 }
@@ -1255,6 +1270,10 @@ static unsigned mouseButtonsModifiersForEvent(const T* event)
         ret |= WebInputEvent::kRightButtonDown;
     if (event->buttons() & Qt::MiddleButton)
         ret |= WebInputEvent::kMiddleButtonDown;
+    if (event->buttons() & Qt::BackButton)
+        ret |= WebInputEvent::kBackButtonDown;
+    if (event->buttons() & Qt::ForwardButton)
+        ret |= WebInputEvent::kForwardButtonDown;
     return ret;
 }
 
@@ -1348,6 +1367,10 @@ static inline Qt::MouseButtons mouseButtonsForModifier(unsigned int modifier)
         buttons |= Qt::RightButton;
     if (modifier & WebInputEvent::kMiddleButtonDown)
         buttons |= Qt::MiddleButton;
+    if (modifier & WebInputEvent::kBackButtonDown)
+        buttons |= Qt::BackButton;
+    if (modifier & WebInputEvent::kForwardButtonDown)
+        buttons |= Qt::ForwardButton;
     return buttons;
 }
 

@@ -17,33 +17,6 @@ INCLUDEPATH += $$QTWEBENGINE_ROOT/src/pdf \
 DEFINES += QT_BUILD_PDF_LIB
 win32: DEFINES += NOMINMAX
 
-linking_pri = $$OUT_PWD/$$getConfigDir()/$${TARGET}.pri
-!include($$linking_pri) {
-    error("Could not find the linking information that gn should have generated.")
-}
-
-isEmpty(NINJA_OBJECTS): error("Missing object files from QtPdf linking pri.")
-isEmpty(NINJA_LFLAGS): error("Missing linker flags from QtPdf linking pri")
-isEmpty(NINJA_LIBS): error("Missing library files from QtPdf linking pri")
-
-NINJA_OBJECTS = $$eval($$list($$NINJA_OBJECTS))
-RSP_FILE = $$OUT_PWD/$$getConfigDir()/$${TARGET}.rsp
-for(object, NINJA_OBJECTS): RSP_CONTENT += $$object
-write_file($$RSP_FILE, RSP_CONTENT)
-
-macos:LIBS_PRIVATE += -Wl,-filelist,$$shell_quote($$RSP_FILE)
-linux:LIBS_PRIVATE += @$$RSP_FILE
-
-# QTBUG-58710 add main rsp file on windows
-win32:QMAKE_LFLAGS += @$$RSP_FILE
-
-!isEmpty(NINJA_ARCHIVES) {
-    linux: LIBS_PRIVATE += -Wl,--start-group $$NINJA_ARCHIVES -Wl,--end-group
-    else: LIBS_PRIVATE += $$NINJA_ARCHIVES
-}
-
-LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
-
 QMAKE_DOCS = $$PWD/doc/qtpdf.qdocconf
 
 gcc {
@@ -54,7 +27,21 @@ msvc {
     QMAKE_CXXFLAGS_WARN_ON += -wd"4100"
 }
 
-ios: OBJECTS += $$NINJA_OBJECTS
+include($${QTWEBENGINE_ROOT}/src/buildtools/config/linking.pri)
+
+# install static dependencies and handle prl files for static builds
+
+static:!isEmpty(NINJA_ARCHIVES) {
+    static_dep_pri = $$OUT_PWD/$$getConfigDir()/$${TARGET}_static_dep.pri
+    !include($${static_dep_pri}) {
+        error("Could not find the prl information.")
+    }
+    ninja_archives = $$eval($$list($$NINJA_ARCHIVES))
+    ninja_archs_install.files = $${ninja_archives}
+    ninja_archs_install.path = $$[QT_INSTALL_LIBS]/static_chrome
+    ninja_archs_install.CONFIG = no_check_exist
+    INSTALLS += ninja_archs_install
+}
 
 SOURCES += \
     qpdfbookmarkmodel.cpp \

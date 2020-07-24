@@ -36,5 +36,5 @@ HEADERS += \
     qquicktableviewextra_p.h \
 
 QT += pdf pdf-private gui core qml quick quick-private
-
+include($${OUT_PWD}/../$$getConfigDir()/QtPdf_static_dep.pri)
 load(qml_plugin)

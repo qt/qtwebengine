@@ -245,13 +245,17 @@ QObject* ProfileAdapter::globalQObjectRoot()
 
 QString ProfileAdapter::dataPath() const
 {
-    if (m_offTheRecord)
-        return QString();
     if (!m_dataPath.isEmpty())
         return m_dataPath;
-    if (!m_name.isNull())
-        return buildLocationFromStandardPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation), m_name);
-    return QString();
+    // And off-the-record or memory-only profile should not write to disk
+    // but Chromium often creates temporary directories anyway, so given them
+    // a location to do so.
+    QString name = m_name;
+    if (m_offTheRecord)
+        name = QStringLiteral("OffTheRecord");
+    else if (m_name.isEmpty())
+        name = QStringLiteral("UnknownProfile");
+    return buildLocationFromStandardPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation), name);
 }
 
 void ProfileAdapter::setDataPath(const QString &path)
@@ -259,13 +263,11 @@ void ProfileAdapter::setDataPath(const QString &path)
     if (m_dataPath == path)
         return;
     m_dataPath = path;
-    if (!m_offTheRecord) {
-        m_profile->setupPrefService();
-        if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
-            m_profile->m_profileIOData->resetNetworkContext();
-        if (m_visitedLinksManager)
-            resetVisitedLinksManager();
-    }
+    m_profile->setupPrefService();
+    if (!m_profile->m_profileIOData->isClearHttpCacheInProgress())
+        m_profile->m_profileIOData->resetNetworkContext();
+    if (!m_offTheRecord && m_visitedLinksManager)
+        resetVisitedLinksManager();
 }
 
 void ProfileAdapter::setDownloadPath(const QString &path)
@@ -353,7 +355,7 @@ void ProfileAdapter::setHttpCacheType(ProfileAdapter::HttpCacheType newhttpCache
 
 ProfileAdapter::PersistentCookiesPolicy ProfileAdapter::persistentCookiesPolicy() const
 {
-    if (isOffTheRecord() || dataPath().isEmpty())
+    if (isOffTheRecord() || m_name.isEmpty())
         return NoPersistentCookies;
     return m_persistentCookiesPolicy;
 }
@@ -372,7 +374,7 @@ ProfileAdapter::VisitedLinksPolicy ProfileAdapter::visitedLinksPolicy() const
 {
     if (isOffTheRecord() || m_visitedLinksPolicy == DoNotTrackVisitedLinks)
         return DoNotTrackVisitedLinks;
-    if (dataPath().isEmpty())
+    if (m_name.isEmpty())
         return TrackVisitedLinksInMemory;
     return m_visitedLinksPolicy;
 }

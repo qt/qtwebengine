@@ -353,6 +353,11 @@
         "webengine-sanitizer": {
             "label" : "sanitizer support",
             "type": "isSanitizerSupported"
+        },
+        "webengine-noexecstack" : {
+            "label": "linker supports -z noexecstack",
+            "type": "linkerSupportsFlag",
+            "flag": "-z,noexecstack"
         }
     },
     "features": {
@@ -384,7 +389,7 @@
         },
         "webengine-qtpdf-support": {
             "label": "Support Qt Pdf",
-            "condition": "(config.linux || config.win32 || config.macos)
+            "condition": "(config.linux || config.win32 || config.macos || config.ios)
                          && module.gui
                          && features.webengine-submodule
                          && features.webengine-nowhitespace
@@ -674,6 +679,11 @@
             "label": "Sanitizer",
             "autoDetect": "config.sanitizer && tests.webengine-sanitizer",
             "condition": "config.sanitizer",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-noexecstack": {
+            "label": "linker supports -z noexecstack",
+            "condition": "config.unix && tests.webengine-noexecstack",
             "output": [ "privateFeature" ]
         }
     },

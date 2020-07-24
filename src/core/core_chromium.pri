@@ -297,6 +297,11 @@ contains(QT_CONFIG, opengl) {
     HEADERS += \
         compositor/compositor_resource_fence.h \
         compositor/display_gl_output_surface.h
+
+    macos {
+        HEADERS+=macos_context_type_helper.h
+        SOURCES+=macos_context_type_helper.mm
+    }
 }
 
 qtConfig(webengine-geolocation) {
