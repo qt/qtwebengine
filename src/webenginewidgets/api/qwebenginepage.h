@@ -61,7 +61,6 @@ class QContextMenuBuilder;
 class QWebChannel;
 class QWebEngineCertificateError;
 class QWebEngineClientCertificateSelection;
-class QWebEngineContextMenuData;
 class QWebEngineFindTextResult;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;

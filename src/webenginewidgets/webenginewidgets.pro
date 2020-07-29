@@ -15,7 +15,6 @@ SOURCES = \
         api/qtwebenginewidgetsglobal.cpp \
         api/qwebenginecertificateerror.cpp \
         api/qwebengineclientcertificateselection.cpp \
-        api/qwebenginecontextmenudata.cpp \
         api/qwebenginedownloaditem.cpp \
         api/qwebenginefullscreenrequest.cpp \
         api/qwebenginehistory.cpp \
@@ -32,7 +31,6 @@ HEADERS = \
         api/qtwebenginewidgetsglobal.h \
         api/qwebenginecertificateerror.h \
         api/qwebengineclientcertificateselection.h \
-        api/qwebenginecontextmenudata.h \
         api/qwebenginedownloaditem.h \
         api/qwebenginedownloaditem_p.h \
         api/qwebenginefullscreenrequest.h \

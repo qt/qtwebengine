@@ -39,6 +39,7 @@
 
 #include <QtCore/QCoreApplication>
 #include "render_view_context_menu_qt.h"
+#include "qwebenginecontextmenurequest.h"
 
 namespace QtWebEngineCore {
 
@@ -74,8 +75,8 @@ namespace QtWebEngineCore {
         return QCoreApplication::translate("RenderViewContextMenuQt", qUtf8Printable(names[menuItem]));
     }
 
-    RenderViewContextMenuQt::RenderViewContextMenuQt(const WebEngineContextMenuData &data)
-        : m_contextData(data)
+    RenderViewContextMenuQt::RenderViewContextMenuQt(QWebEngineContextMenuRequest *request)
+        : m_contextData(request)
     {
     }
 
@@ -86,15 +87,17 @@ namespace QtWebEngineCore {
             appendSeparatorItem();
         }
 
-        if (m_contextData.isEditable() && !m_contextData.spellCheckerSuggestions().isEmpty()) {
+        if (m_contextData->isContentEditable()
+            && !m_contextData->spellCheckerSuggestions().isEmpty()) {
             appendSpellingSuggestionItems();
             appendSeparatorItem();
         }
 
-        if (m_contextData.linkText().isEmpty() && !m_contextData.linkUrl().isValid() && !m_contextData.mediaUrl().isValid()) {
-            if (m_contextData.isEditable())
+        if (m_contextData->linkText().isEmpty() && !m_contextData->filteredLinkUrl().isValid()
+            && !m_contextData->mediaUrl().isValid()) {
+            if (m_contextData->isContentEditable())
                 appendEditableItems();
-            else if (!m_contextData.selectedText().isEmpty())
+            else if (!m_contextData->selectedText().isEmpty())
                 appendCopyItem();
             else
                 appendPageItems();
@@ -102,27 +105,29 @@ namespace QtWebEngineCore {
             appendPageItems();
         }
 
-        if (m_contextData.linkUrl().isValid() || !m_contextData.unfilteredLinkUrl().isEmpty() || !m_contextData.linkUrl().isEmpty())
+        if (m_contextData->filteredLinkUrl().isValid()
+            || !m_contextData->unfilteredLinkUrl().isEmpty()
+            || !m_contextData->filteredLinkUrl().isEmpty())
             appendLinkItems();
 
-        if (m_contextData.mediaUrl().isValid()) {
-            switch (m_contextData.mediaType()) {
-            case WebEngineContextMenuData::MediaTypeImage:
+        if (m_contextData->mediaUrl().isValid()) {
+            switch (m_contextData->mediaType()) {
+            case QWebEngineContextMenuRequest::MediaTypeImage:
                 appendSeparatorItem();
                 appendImageItems();
                 break;
-            case WebEngineContextMenuData::MediaTypeCanvas:
+            case QWebEngineContextMenuRequest::MediaTypeCanvas:
                 Q_UNREACHABLE();    // mediaUrl is invalid for canvases
                 break;
-            case WebEngineContextMenuData::MediaTypeAudio:
-            case WebEngineContextMenuData::MediaTypeVideo:
+            case QWebEngineContextMenuRequest::MediaTypeAudio:
+            case QWebEngineContextMenuRequest::MediaTypeVideo:
                 appendSeparatorItem();
                 appendMediaItems();
                 break;
             default:
                 break;
             }
-        } else if (m_contextData.mediaType() == WebEngineContextMenuData::MediaTypeCanvas) {
+        } else if (m_contextData->mediaType() == QWebEngineContextMenuRequest::MediaTypeCanvas) {
             appendSeparatorItem();
             appendCanvasItems();
         }
@@ -160,7 +165,7 @@ namespace QtWebEngineCore {
         addMenuItem(RenderViewContextMenuQt::Cut);
         addMenuItem(RenderViewContextMenuQt::Copy);
         addMenuItem(RenderViewContextMenuQt::Paste);
-        if (m_contextData.misspelledWord().isEmpty()) {
+        if (m_contextData->misspelledWord().isEmpty()) {
             addMenuItem(RenderViewContextMenuQt::PasteAndMatchStyle);
             addMenuItem(RenderViewContextMenuQt::SelectAll);
         }
@@ -190,7 +195,7 @@ namespace QtWebEngineCore {
     void RenderViewContextMenuQt::appendMediaItems()
     {
         addMenuItem(RenderViewContextMenuQt::ToggleMediaLoop);
-        if (m_contextData.mediaFlags() & QtWebEngineCore::WebEngineContextMenuData::MediaCanToggleControls)
+        if (m_contextData->mediaFlags() & QWebEngineContextMenuRequest::MediaCanToggleControls)
             addMenuItem(RenderViewContextMenuQt::ToggleMediaControls);
         addMenuItem(RenderViewContextMenuQt::DownloadMediaToDisk);
         addMenuItem(RenderViewContextMenuQt::CopyMediaUrlToClipboard);
@@ -217,10 +222,8 @@ namespace QtWebEngineCore {
 
     bool RenderViewContextMenuQt::canViewSource()
     {
-        return m_contextData.linkText().isEmpty()
-               && !m_contextData.linkUrl().isValid()
-               && !m_contextData.mediaUrl().isValid()
-               && !m_contextData.isEditable()
-               && m_contextData.selectedText().isEmpty();
+        return m_contextData->linkText().isEmpty() && !m_contextData->filteredLinkUrl().isValid()
+                && !m_contextData->mediaUrl().isValid() && !m_contextData->isContentEditable()
+                && m_contextData->selectedText().isEmpty();
     }
 }

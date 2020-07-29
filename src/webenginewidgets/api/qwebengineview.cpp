@@ -125,27 +125,24 @@ void QWebEngineViewPrivate::widgetChanged(QtWebEngineCore::RenderWidgetHostViewQ
     }
 }
 
-void QWebEngineViewPrivate::contextMenuRequested(
-        const QtWebEngineCore::WebEngineContextMenuData &data)
+void QWebEngineViewPrivate::contextMenuRequested(QWebEngineContextMenuRequest *request)
 {
 #if QT_CONFIG(action)
-    m_contextData.reset();
+    m_contextRequest = request;
     switch (q_ptr->contextMenuPolicy()) {
     case Qt::DefaultContextMenu: {
-        m_contextData = data;
-        QContextMenuEvent event(QContextMenuEvent::Mouse, data.position(),
-                                q_ptr->mapToGlobal(data.position()));
+        QContextMenuEvent event(QContextMenuEvent::Mouse, request->position(),
+                                q_ptr->mapToGlobal(request->position()));
         q_ptr->contextMenuEvent(&event);
         return;
     }
     case Qt::CustomContextMenu:
-        m_contextData = data;
-        Q_EMIT q_ptr->customContextMenuRequested(data.position());
+        Q_EMIT q_ptr->customContextMenuRequested(request->position());
         return;
     case Qt::ActionsContextMenu:
         if (q_ptr->actions().count()) {
-            QContextMenuEvent event(QContextMenuEvent::Mouse, data.position(),
-                                    q_ptr->mapToGlobal(data.position()));
+            QContextMenuEvent event(QContextMenuEvent::Mouse, request->position(),
+                                    q_ptr->mapToGlobal(request->position()));
             QMenu::exec(q_ptr->actions(), event.globalPos(), 0, q_ptr);
         }
         return;
@@ -170,9 +167,7 @@ static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *obje
 #endif // QT_NO_ACCESSIBILITY
 
 QWebEngineViewPrivate::QWebEngineViewPrivate()
-    : page(0)
-    , m_dragEntered(false)
-    , m_ownsPage(false)
+    : page(0), m_dragEntered(false), m_ownsPage(false), m_contextRequest(nullptr)
 {
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::installFactory(&webAccessibleFactory);
@@ -509,13 +504,8 @@ void QWebEngineView::dropEvent(QDropEvent *e)
 QMenu *QWebEngineView::createStandardContextMenu()
 {
     Q_D(QWebEngineView);
-    if (!d->m_contextData.d)
-        return nullptr;
-
     QMenu *menu = new QMenu(this);
-    const QtWebEngineCore::WebEngineContextMenuData &contextMenuData = *d->m_contextData.d;
-
-    QContextMenuBuilder contextMenuBuilder(contextMenuData, this, menu);
+    QContextMenuBuilder contextMenuBuilder(d->m_contextRequest, this, menu);
 
     contextMenuBuilder.initMenu();
 
@@ -533,10 +523,10 @@ QMenu *QWebEngineView::createStandardContextMenu()
 
   \sa createStandardContextMenu()
 */
-const QWebEngineContextMenuData &QWebEngineView::contextMenuData() const
+QWebEngineContextMenuRequest *QWebEngineView::lastContextMenuRequest() const
 {
     Q_D(const QWebEngineView);
-    return d->m_contextData;
+    return d->m_contextRequest;
 }
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -579,9 +569,9 @@ int QWebEngineViewAccessible::indexOfChild(const QAccessibleInterface *c) const
 #endif // QT_NO_ACCESSIBILITY
 
 #if QT_CONFIG(action)
-QContextMenuBuilder::QContextMenuBuilder(const QtWebEngineCore::WebEngineContextMenuData &data,
+QContextMenuBuilder::QContextMenuBuilder(QWebEngineContextMenuRequest *request,
                                          QWebEngineView *view, QMenu *menu)
-    : QtWebEngineCore::RenderViewContextMenuQt(data), m_view(view), m_menu(menu)
+    : QtWebEngineCore::RenderViewContextMenuQt(request), m_view(view), m_menu(menu)
 {
     m_view->page()->d_ptr->ensureInitialized();
 }
@@ -678,9 +668,9 @@ void QContextMenuBuilder::addMenuItem(ContextMenuItem menuItem)
         action = thisRef->action(QWebEnginePage::ViewSource);
         break;
     case ContextMenuItem::SpellingSuggestions:
-        for (int i = 0; i < m_contextData.spellCheckerSuggestions().count() && i < 4; i++) {
+        for (int i = 0; i < m_contextData->spellCheckerSuggestions().count() && i < 4; i++) {
             action = new QAction(m_menu);
-            QString replacement = m_contextData.spellCheckerSuggestions().at(i);
+            QString replacement = m_contextData->spellCheckerSuggestions().at(i);
             QObject::connect(action, &QAction::triggered, [thisRef, replacement] {
                 if (thisRef)
                     thisRef->replaceMisspelledWord(replacement);
@@ -708,19 +698,19 @@ bool QContextMenuBuilder::isMenuItemEnabled(ContextMenuItem menuItem)
     case ContextMenuItem::Reload:
         return true;
     case ContextMenuItem::Cut:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanCut;
+        return m_contextData->editFlags() & QWebEngineContextMenuRequest::CanCut;
     case ContextMenuItem::Copy:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanCopy;
+        return m_contextData->editFlags() & QWebEngineContextMenuRequest::CanCopy;
     case ContextMenuItem::Paste:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanPaste;
+        return m_contextData->editFlags() & QWebEngineContextMenuRequest::CanPaste;
     case ContextMenuItem::Undo:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanUndo;
+        return m_contextData->editFlags() & QWebEngineContextMenuRequest::CanUndo;
     case ContextMenuItem::Redo:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanRedo;
+        return m_contextData->editFlags() & QWebEngineContextMenuRequest::CanRedo;
     case ContextMenuItem::SelectAll:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanSelectAll;
+        return m_contextData->editFlags() & QWebEngineContextMenuRequest::CanSelectAll;
     case ContextMenuItem::PasteAndMatchStyle:
-        return m_contextData.editFlags() & QtWebEngineCore::WebEngineContextMenuData::CanPaste;
+        return m_contextData->editFlags() & QWebEngineContextMenuRequest::CanPaste;
     case ContextMenuItem::OpenLinkInNewWindow:
     case ContextMenuItem::OpenLinkInNewTab:
     case ContextMenuItem::CopyLinkToClipboard:

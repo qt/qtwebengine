@@ -52,7 +52,7 @@
 //
 
 #include <QtWebEngineWidgets/qwebengineview.h>
-#include "qwebenginecontextmenudata.h"
+#include "qwebenginecontextmenurequest.h"
 #include "render_view_context_menu_qt.h"
 #include <QtWidgets/qaccessiblewidget.h>
 
@@ -73,14 +73,14 @@ public:
     void pageChanged(QWebEnginePage *oldPage, QWebEnginePage *newPage);
     void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *oldWidget,
                        QtWebEngineCore::RenderWidgetHostViewQtDelegateWidget *newWidget);
-    void contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &data);
+    void contextMenuRequested(QWebEngineContextMenuRequest *request);
 
     QWebEngineViewPrivate();
 
     QWebEnginePage *page;
     bool m_dragEntered;
     mutable bool m_ownsPage;
-    QWebEngineContextMenuData m_contextData;
+    QWebEngineContextMenuRequest *m_contextRequest;
 };
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -104,8 +104,7 @@ private:
 class QContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt
 {
 public:
-    QContextMenuBuilder(const QtWebEngineCore::WebEngineContextMenuData &data, QWebEngineView *view,
-                        QMenu *menu);
+    QContextMenuBuilder(QWebEngineContextMenuRequest *reqeust, QWebEngineView *view, QMenu *menu);
 
 private:
     virtual bool hasInspector() override;

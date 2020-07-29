@@ -47,6 +47,7 @@
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
+#include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 
 QT_BEGIN_NAMESPACE
 class QContextMenuEvent;
@@ -104,7 +105,7 @@ public:
 #if QT_CONFIG(menu)
     QMenu *createStandardContextMenu();
 #endif
-    const QWebEngineContextMenuData &contextMenuData() const;
+    QWebEngineContextMenuRequest *lastContextMenuRequest() const;
 
 public Q_SLOTS:
     void stop();

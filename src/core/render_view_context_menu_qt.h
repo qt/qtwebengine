@@ -53,6 +53,8 @@
 
 #include "web_contents_adapter_client.h"
 
+QT_FORWARD_DECLARE_CLASS(QWebEngineContextMenuRequest)
+
 namespace QtWebEngineCore {
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT RenderViewContextMenuQt
@@ -99,7 +101,7 @@ public:
 
     static const QString getMenuItemName(RenderViewContextMenuQt::ContextMenuItem menuItem);
 
-    RenderViewContextMenuQt(const WebEngineContextMenuData &data);
+    RenderViewContextMenuQt(QWebEngineContextMenuRequest *data);
     void initMenu();
 
 protected:
@@ -109,7 +111,7 @@ protected:
     virtual void addMenuItem(ContextMenuItem menuItem) = 0;
     virtual bool isMenuItemEnabled(ContextMenuItem menuItem) = 0;
 
-    const WebEngineContextMenuData &m_contextData;
+    QWebEngineContextMenuRequest *m_contextData;
 
 private:
     void appendCanvasItems();

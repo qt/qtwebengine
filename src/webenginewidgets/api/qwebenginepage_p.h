@@ -115,7 +115,7 @@ public:
     bool isBeingAdopted() override;
     void close() override;
     void windowCloseRejected() override;
-    void contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &data) override;
+    void contextMenuRequested(QWebEngineContextMenuRequest *request) override;
     void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) override;
     void requestFullScreenMode(const QUrl &origin, bool fullscreen) override;
     bool isFullScreenMode() const override;

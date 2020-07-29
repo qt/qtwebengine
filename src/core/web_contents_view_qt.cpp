@@ -159,73 +159,85 @@ void WebContentsViewQt::FocusThroughTabTraversal(bool reverse)
     web_contents->GetRenderViewHost()->SetInitialFocus(reverse);
 }
 
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaTypeNone,
+                   blink::ContextMenuDataMediaType::kNone)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaTypeImage,
+                   blink::ContextMenuDataMediaType::kImage)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaTypeVideo,
+                   blink::ContextMenuDataMediaType::kVideo)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaTypeAudio,
+                   blink::ContextMenuDataMediaType::kAudio)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaTypeCanvas,
+                   blink::ContextMenuDataMediaType::kCanvas)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaTypeFile,
+                   blink::ContextMenuDataMediaType::kFile)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaTypePlugin,
+                   blink::ContextMenuDataMediaType::kPlugin)
 
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeNone, blink::ContextMenuDataMediaType::kNone)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeImage, blink::ContextMenuDataMediaType::kImage)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeVideo, blink::ContextMenuDataMediaType::kVideo)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeAudio, blink::ContextMenuDataMediaType::kAudio)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeCanvas, blink::ContextMenuDataMediaType::kCanvas)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeFile, blink::ContextMenuDataMediaType::kFile)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypePlugin, blink::ContextMenuDataMediaType::kPlugin)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaInError,
+                   blink::WebContextMenuData::kMediaInError)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaPaused,
+                   blink::WebContextMenuData::kMediaPaused)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaMuted, blink::WebContextMenuData::kMediaMuted)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaLoop, blink::WebContextMenuData::kMediaLoop)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaCanSave,
+                   blink::WebContextMenuData::kMediaCanSave)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaHasAudio,
+                   blink::WebContextMenuData::kMediaHasAudio)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaCanToggleControls,
+                   blink::WebContextMenuData::kMediaCanToggleControls)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaControls,
+                   blink::WebContextMenuData::kMediaControls)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaCanPrint,
+                   blink::WebContextMenuData::kMediaCanPrint)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::MediaCanRotate,
+                   blink::WebContextMenuData::kMediaCanRotate)
 
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaNone, blink::WebContextMenuData::kMediaNone)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaInError, blink::WebContextMenuData::kMediaInError)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaPaused, blink::WebContextMenuData::kMediaPaused)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaMuted, blink::WebContextMenuData::kMediaMuted)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaLoop, blink::WebContextMenuData::kMediaLoop)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanSave, blink::WebContextMenuData::kMediaCanSave)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaHasAudio, blink::WebContextMenuData::kMediaHasAudio)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanToggleControls, blink::WebContextMenuData::kMediaCanToggleControls)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaControls, blink::WebContextMenuData::kMediaControls)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanPrint, blink::WebContextMenuData::kMediaCanPrint)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanRotate, blink::WebContextMenuData::kMediaCanRotate)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanUndo, blink::kCanUndo)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanRedo, blink::kCanRedo)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanCut, blink::kCanCut)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanCopy, blink::kCanCopy)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanPaste, blink::kCanPaste)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanDelete, blink::kCanDelete)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanSelectAll, blink::kCanSelectAll)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanTranslate, blink::kCanTranslate)
+ASSERT_ENUMS_MATCH(QWebEngineContextMenuRequest::CanEditRichly, blink::kCanEditRichly)
 
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanDoNone, blink::kCanDoNone)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanUndo, blink::kCanUndo)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanRedo, blink::kCanRedo)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanCut, blink::kCanCut)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanCopy, blink::kCanCopy)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanPaste, blink::kCanPaste)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanDelete, blink::kCanDelete)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanSelectAll, blink::kCanSelectAll)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanTranslate, blink::kCanTranslate)
-ASSERT_ENUMS_MATCH(WebEngineContextMenuData::CanEditRichly, blink::kCanEditRichly)
 
-static inline WebEngineContextMenuData fromParams(const content::ContextMenuParams &params)
+WebContentsViewQt::WebContentsViewQt(content::WebContents* webContents)
+: m_webContents(webContents)
+  , m_client(nullptr)
+  , m_factoryClient(nullptr)
+  , m_contextMenuRequest(
+                         new QWebEngineContextMenuRequest(new QWebEngineContextMenuRequestPrivate()))
+{ }
+
+
+void WebContentsViewQt::update(QWebEngineContextMenuRequest *request,
+                               const content::ContextMenuParams &params, bool spellcheckEnabled)
 {
-    WebEngineContextMenuData ret;
-    ret.setPosition(QPoint(params.x, params.y));
-    ret.setLinkUrl(toQt(params.link_url));
-    ret.setLinkText(toQt(params.link_text.data()));
-    ret.setAltText(toQt(params.alt_text.data()));
-    ret.setTitleText(toQt(params.title_text.data()));
-    ret.setUnfilteredLinkUrl(toQt(params.unfiltered_link_url));
-    ret.setSelectedText(toQt(params.selection_text.data()));
-    ret.setMediaUrl(toQt(params.src_url));
-    ret.setMediaType((WebEngineContextMenuData::MediaType)params.media_type);
-    ret.setHasImageContent(params.has_image_contents);
-    ret.setMediaFlags((WebEngineContextMenuData::MediaFlags)params.media_flags);
-    ret.setEditFlags((WebEngineContextMenuData::EditFlags)params.edit_flags);
-    ret.setSuggestedFileName(toQt(params.suggested_filename.data()));
-    ret.setIsEditable(params.is_editable);
+    auto *re = request->d.data();
+    re->m_position = QPoint(params.x, params.y);
+    re->m_filteredLinkUrl = toQt(params.link_url);
+    re->m_linkText = toQt(params.link_text.data());
+    re->m_altText = toQt(params.alt_text.data());
+    re->m_titleText = toQt(params.title_text.data());
+    re->m_unfilteredLinkUrl = toQt(params.unfiltered_link_url);
+    re->m_selectedText = toQt(params.selection_text.data());
+    re->m_mediaUrl = toQt(params.src_url);
+    re->m_mediaType = (QWebEngineContextMenuRequest::MediaType)params.media_type;
+    re->m_hasImageContent = params.has_image_contents;
+    re->m_mediaFlags = (QWebEngineContextMenuRequest::MediaFlags)params.media_flags;
+    re->m_editFlags = (QWebEngineContextMenuRequest::EditFlags)params.edit_flags;
+    re->m_suggestedFileName = toQt(params.suggested_filename.data());
+    re->m_isEditable = params.is_editable;
 #if QT_CONFIG(webengine_spellchecker)
-    ret.setMisspelledWord(toQt(params.misspelled_word));
-    ret.setSpellCheckerSuggestions(fromVector(params.dictionary_suggestions));
+    re->m_misspelledWord = toQt(params.misspelled_word);
+    re->m_spellCheckerSuggestions = fromVector(params.dictionary_suggestions);
 #endif
-    ret.setFrameUrl(toQt(params.frame_url));
-    ret.setPageUrl(toQt(params.page_url));
-    ret.setReferrerPolicy((ReferrerPolicy)params.referrer_policy);
-    return ret;
-}
-
-void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params)
-{
-    if (auto rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
-        if (rwhv && rwhv->getTouchSelectionControllerClient()->handleContextMenu(params))
-            return;
-    }
-
-    WebEngineContextMenuData contextMenuData(fromParams(params));
+    re->m_frameUrl = toQt(params.frame_url);
+    re->m_pageUrl = toQt(params.page_url);
+    re->m_referrerPolicy = (ReferrerPolicy)params.referrer_policy;
 #if QT_CONFIG(webengine_spellchecker)
     // Do not use params.spellcheck_enabled, since it is never
     // correctly initialized for chrome asynchronous spellchecking.
@@ -234,9 +246,21 @@ void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const conten
     // must be initialized to true due to the way how the initialization sequence
     // in SpellCheck works ie. typing the first word triggers the creation
     // of the SpellcheckService. Use user preference store instead.
-    contextMenuData.setIsSpellCheckerEnabled(m_client->profileAdapter()->isSpellCheckEnabled());
+    re->m_isSpellCheckerEnabled = spellcheckEnabled;
 #endif
-    m_client->contextMenuRequested(contextMenuData);
+}
+
+void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *,
+                                        const content::ContextMenuParams &params)
+{
+    if (auto rwhv =
+                static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
+        if (rwhv && rwhv->getTouchSelectionControllerClient()->handleContextMenu(params))
+            return;
+    }
+    const bool spellcheckEnabled = m_client->profileAdapter()->isSpellCheckEnabled();
+    update(m_contextMenuRequest.get(), params, spellcheckEnabled);
+    m_client->contextMenuRequested(m_contextMenuRequest.get());
 }
 
 Qt::DropActions toQtDropActions(blink::WebDragOperationsMask ops)

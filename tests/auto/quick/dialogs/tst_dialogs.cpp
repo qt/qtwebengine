@@ -30,7 +30,7 @@
 #include "server.h"
 #include "util.h"
 #include <QtWebEngine/private/qquickwebenginedialogrequests_p.h>
-#include <QtWebEngine/private/qquickwebenginecontextmenurequest_p.h>
+#include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QQuickWebEngineProfile>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
@@ -121,7 +121,7 @@ void tst_Dialogs::contextMenuRequested()
     QSignalSpy dialogSpy(m_listner, &TestHandler::requestChanged);
     QTest::mouseClick(m_widnow, Qt::RightButton);
     QTRY_COMPARE(dialogSpy.count(), 1);
-    auto dialog = qobject_cast<QQuickWebEngineContextMenuRequest*>(m_listner->request());
+    auto dialog = qobject_cast<QWebEngineContextMenuRequest *>(m_listner->request());
     QVERIFY2(dialog, "Incorrect dialog requested");
 }
 

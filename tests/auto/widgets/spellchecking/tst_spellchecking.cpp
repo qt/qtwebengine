@@ -28,7 +28,6 @@
 
 #include "util.h"
 #include <QtTest/QtTest>
-#include <QtWebEngineWidgets/qwebenginecontextmenudata.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
@@ -47,10 +46,7 @@ public:
         QTest::mouseRelease(widget, Qt::RightButton, {}, position);
     }
 
-    const QWebEngineContextMenuData& data()
-    {
-        return m_data;
-    }
+    QWebEngineContextMenuRequest *data() { return m_data; }
 
 signals:
     void menuReady();
@@ -58,11 +54,11 @@ signals:
 protected:
     void contextMenuEvent(QContextMenuEvent *)
     {
-        m_data = contextMenuData();
+        m_data = lastContextMenuRequest();
         emit menuReady();
     }
 private:
-    QWebEngineContextMenuData m_data;
+    QWebEngineContextMenuRequest *m_data;
 };
 
 class tst_Spellchecking : public QObject
@@ -204,17 +200,17 @@ void tst_Spellchecking::spellcheck()
             return false;
         }
 
-        if (!m_view->data().isValid()) {
+        if (!m_view->data()) {
             detail = "invalid data";
             return false;
         }
 
-        if (!m_view->data().isContentEditable()) {
+        if (!m_view->data()->isContentEditable()) {
             detail = "content is not editable";
             return false;
         }
 
-        if (m_view->data().misspelledWord().isEmpty()) {
+        if (m_view->data()->misspelledWord().isEmpty()) {
             detail = "no misspelled word";
             return false;
         };
@@ -224,10 +220,10 @@ void tst_Spellchecking::spellcheck()
     } (), qPrintable(QString("Context menu: %1").arg(detail)));
 
     // check misspelled word
-    QCOMPARE(m_view->data().misspelledWord(), QStringLiteral("lowe"));
+    QCOMPARE(m_view->data()->misspelledWord(), QStringLiteral("lowe"));
 
     // check suggestions
-    QCOMPARE(m_view->data().spellCheckerSuggestions(), suggestions);
+    QCOMPARE(m_view->data()->spellCheckerSuggestions(), suggestions);
 
     // check replace word
     m_view->page()->replaceMisspelledWord("love");

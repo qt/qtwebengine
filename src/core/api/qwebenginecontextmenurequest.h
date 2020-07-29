@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,29 +37,41 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINECONTEXTDATA_H
-#define QWEBENGINECONTEXTDATA_H
+#ifndef QWEBENGINECONTEXTMENUREQUEST_H
+#define QWEBENGINECONTEXTMENUREQUEST_H
 
-#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
-#include <QtCore/qpoint.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qurl.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtCore/QObject>
+#include <QtCore/QUrl>
+#include <QtCore/QPoint>
+#include <QScopedPointer>
 
 namespace QtWebEngineCore {
-class WebEngineContextMenuData;
+class RenderViewContextMenuQt;
+class WebContentsViewQt;
+
+// Must match blink::WebReferrerPolicy
+enum class ReferrerPolicy {
+    Always,
+    Default,
+    NoReferrerWhenDowngrade,
+    Never,
+    Origin,
+    OriginWhenCrossOrigin,
+    NoReferrerWhenDowngradeOriginWhenCrossOrigin,
+    SameOrigin,
+    StrictOrigin,
+    Last = StrictOrigin,
+};
 }
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineContextMenuData {
-    Q_GADGET
-
+class QWebEngineContextMenuRequestPrivate;
+class Q_WEBENGINECORE_EXPORT QWebEngineContextMenuRequest : public QObject
+{
+    Q_OBJECT
 public:
-    QWebEngineContextMenuData();
-    QWebEngineContextMenuData(const QWebEngineContextMenuData &other);
-    QWebEngineContextMenuData &operator=(const QWebEngineContextMenuData &other);
-    ~QWebEngineContextMenuData();
-
     enum MediaType {
         MediaTypeNone,
         MediaTypeImage,
@@ -69,6 +81,7 @@ public:
         MediaTypeFile,
         MediaTypePlugin
     };
+    Q_ENUM(MediaType)
 
     // Must match QWebEngineCore::WebEngineContextMenuData::MediaFlags:
     enum MediaFlag {
@@ -101,34 +114,55 @@ public:
     Q_DECLARE_FLAGS(EditFlags, EditFlag)
     Q_FLAG(EditFlags)
 
-    bool isValid() const;
+    Q_PROPERTY(QPoint position READ position CONSTANT FINAL)
+    Q_PROPERTY(QString selectedText READ selectedText CONSTANT FINAL)
+    Q_PROPERTY(QString linkText READ linkText CONSTANT FINAL)
+    Q_PROPERTY(QUrl linkUrl READ unfilteredLinkUrl CONSTANT FINAL)
+    Q_PROPERTY(QUrl mediaUrl READ mediaUrl CONSTANT FINAL)
+    Q_PROPERTY(MediaType mediaType READ mediaType CONSTANT FINAL)
+    Q_PROPERTY(bool isContentEditable READ isContentEditable CONSTANT FINAL)
+    Q_PROPERTY(QString misspelledWord READ misspelledWord CONSTANT FINAL)
+    Q_PROPERTY(QStringList spellCheckerSuggestions READ spellCheckerSuggestions CONSTANT FINAL)
+    Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
+    Q_PROPERTY(MediaFlags mediaFlags READ mediaFlags CONSTANT FINAL REVISION 1)
+    Q_PROPERTY(EditFlags editFlags READ editFlags CONSTANT FINAL REVISION 1)
 
+    virtual ~QWebEngineContextMenuRequest();
     QPoint position() const;
     QString selectedText() const;
     QString linkText() const;
-    QUrl linkUrl() const;
+    QUrl unfilteredLinkUrl() const;
     QUrl mediaUrl() const;
     MediaType mediaType() const;
     bool isContentEditable() const;
     QString misspelledWord() const;
     QStringList spellCheckerSuggestions() const;
+    bool isAccepted() const;
+    void setAccepted(bool accepted);
     MediaFlags mediaFlags() const;
     EditFlags editFlags() const;
 
 private:
-    void reset();
-    typedef QtWebEngineCore::WebEngineContextMenuData QWebEngineContextDataPrivate;
-    QWebEngineContextMenuData &operator=(const QWebEngineContextDataPrivate &priv);
-    const QWebEngineContextDataPrivate *d;
+    QUrl filteredLinkUrl() const;
+    QString altText() const;
+    QString titleText() const;
+    QUrl referrerUrl() const;
+    QtWebEngineCore::ReferrerPolicy referrerPolicy() const;
+    bool hasImageContent() const;
+    QString suggestedFileName() const;
 
+private:
+    QWebEngineContextMenuRequest(QWebEngineContextMenuRequestPrivate *d);
+    QScopedPointer<QWebEngineContextMenuRequestPrivate> d;
+    friend class QtWebEngineCore::WebContentsViewQt;
+    friend class QtWebEngineCore::RenderViewContextMenuQt;
+    friend class QQuickWebEngineViewPrivate;
+    friend class QQuickWebEngineView;
+    friend class ContextMenuRequestJSWrapper;
     friend class QWebEngineViewPrivate;
-    friend class QWebEngineView;
     friend class QWebEnginePage;
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEngineContextMenuData::MediaFlags)
-Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEngineContextMenuData::EditFlags)
-
 QT_END_NAMESPACE
 
-#endif // QWEBENGINECONTEXTDATA_H
+#endif // QWEBENGINECONTEXTMENUREQUEST_H

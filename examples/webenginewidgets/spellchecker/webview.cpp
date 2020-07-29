@@ -52,7 +52,7 @@
 #include <QContextMenuEvent>
 #include <QMenu>
 #include <QWebEngineProfile>
-#include <QWebEngineContextMenuData>
+#include <QWebEngineContextMenuRequest>
 
 WebView::WebView(QWidget *parent)
     : QWebEngineView(parent)
@@ -66,10 +66,10 @@ WebView::WebView(QWidget *parent)
 
 void WebView::contextMenuEvent(QContextMenuEvent *event)
 {
-    const QWebEngineContextMenuData &data = contextMenuData();
-    Q_ASSERT(data.isValid());
+    QWebEngineContextMenuRequest *data = lastContextMenuRequest();
+    Q_ASSERT(data);
 
-    if (!data.isContentEditable()) {
+    if (!data->isContentEditable()) {
         QWebEngineView::contextMenuEvent(event);
         return;
     }

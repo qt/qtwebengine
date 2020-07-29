@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
-class QQuickWebEngineContextMenuRequest;
+class QWebEngineContextMenuRequest;
 class QQuickWebEngineSettings;
 class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineProfilePrivate;
@@ -128,7 +128,7 @@ public:
     void windowCloseRejected() override;
     void requestFullScreenMode(const QUrl &origin, bool fullscreen) override;
     bool isFullScreenMode() const override;
-    void contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &) override;
+    void contextMenuRequested(QWebEngineContextMenuRequest *request) override;
     void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) override;
     void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) override;
     void runFileChooser(QSharedPointer<QtWebEngineCore::FilePickerController>) override;
@@ -200,7 +200,6 @@ public:
     QQuickWebEngineTestSupport *m_testSupport;
 #endif
     QQmlComponent *contextMenuExtraItems;
-    QtWebEngineCore::WebEngineContextMenuData m_contextMenuData;
     QUrl m_url;
     QString m_html;
     QUrl iconUrl;
@@ -237,6 +236,7 @@ private:
     qreal m_zoomFactor;
     bool m_ui2Enabled;
     bool m_profileInitialized;
+    QWebEngineContextMenuRequest *m_contextMenuRequest;
     LoadVisuallyCommittedState m_loadVisuallyCommittedState = NotCommitted;
 };
 
@@ -263,7 +263,8 @@ private:
 class QQuickContextMenuBuilder : public QtWebEngineCore::RenderViewContextMenuQt
 {
 public:
-    QQuickContextMenuBuilder(const QtWebEngineCore::WebEngineContextMenuData &data, QQuickWebEngineView *view, QObject *menu);
+    QQuickContextMenuBuilder(QWebEngineContextMenuRequest *data, QQuickWebEngineView *view,
+                             QObject *menu);
     void appendExtraItems(QQmlEngine *engine);
 
 private:

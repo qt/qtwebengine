@@ -42,7 +42,6 @@
 
 #include <QtWebEngine/private/qquickwebenginecertificateerror_p.h>
 #include <QtWebEngine/private/qquickwebengineclientcertificateselection_p.h>
-#include <QtWebEngine/private/qquickwebenginecontextmenurequest_p.h>
 #include <QtWebEngine/private/qquickwebenginedialogrequests_p.h>
 #include <QtWebEngine/private/qquickwebenginedownloaditem_p.h>
 #include <QtWebEngine/private/qquickwebenginehistory_p.h>
@@ -59,6 +58,7 @@
 #include <QtWebEngineCore/qwebenginenotification.h>
 #include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
+#include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -144,10 +144,8 @@ public:
         qmlRegisterUncreatableType<QQuickWebEngineFullScreenRequest>(uri, 1, 1, "FullScreenRequest",
             msgUncreatableType("FullScreenRequest"));
 
-        qmlRegisterUncreatableType<QQuickWebEngineContextMenuRequest>(uri, 1, 4, "ContextMenuRequest",
-                                                                    msgUncreatableType("ContextMenuRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineContextMenuRequest, 1>(uri, 1, 7, "ContextMenuRequest",
-                                                                    msgUncreatableType("ContextMenuRequest"));
+        qmlRegisterUncreatableType<QWebEngineContextMenuRequest, 1>(
+                uri, 1, 7, "ContextMenuRequest", msgUncreatableType("ContextMenuRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineAuthenticationDialogRequest>(uri, 1, 4, "AuthenticationDialogRequest",
                                                                        msgUncreatableType("AuthenticationDialogRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineJavaScriptDialogRequest>(uri, 1, 4, "JavaScriptDialogRequest",

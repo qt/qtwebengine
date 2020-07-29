@@ -1,0 +1,218 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \qmltype ContextMenuRequest
+    \instantiates QQuickWebEngineContextMenuRequest
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 1.4
+
+    \brief A request for showing a context menu.
+
+    A ContextMenuRequest is passed as an argument of the
+    WebEngineView::contextMenuRequested signal. It provides further
+    information about the context of the request. The position of the
+    request origin can be found via the \l x and \l y properties.
+
+    The \l accepted property of the request indicates whether the request
+    is handled by the user code or the default context menu should
+    be displayed.
+
+    The following code uses a custom menu to handle the request:
+
+    \code
+    WebEngineView {
+        id: view
+        // ...
+        onContextMenuRequested: function(request) {
+            request.accepted = true;
+            myMenu.x = request.x;
+            myMenu.y = request.y;
+            myMenu.trigger.connect(view.triggerWebAction);
+            myMenu.popup();
+        }
+        // ...
+    }
+    \endcode
+*/
+
+/*!
+    \qmlproperty point ContextMenuRequest::position
+    \readonly
+
+    The position of the user action from where the context
+    menu request originates.
+*/
+
+/*!
+    \qmlproperty string ContextMenuRequest::selectedText
+    \readonly
+
+    The selected text the context menu was created for.
+*/
+
+/*!
+    \qmlproperty string ContextMenuRequest::linkText
+    \readonly
+
+    The text of the link if the context menu was requested for a link.
+*/
+
+/*!
+    \qmlproperty url ContextMenuRequest::linkUrl
+    \readonly
+
+    The URL of the link if the selected web page content is a link.
+    It is not guaranteed to be a valid URL.
+*/
+
+/*!
+    \qmlproperty url ContextMenuRequest::mediaUrl
+    \readonly
+
+    The URL of media if the selected web content is a media element.
+*/
+
+/*!
+    \qmlproperty enumeration ContextMenuRequest::mediaType
+    \readonly
+
+    The type of the media element or \c MediaTypeNone if
+    the selected web page content is not a media element.
+
+    \value  ContextMenuRequest.MediaTypeNone
+            Not a media.
+    \value  ContextMenuRequest.MediaTypeImage
+            An image.
+    \value  ContextMenuRequest.MediaTypeVideo
+            A video.
+    \value  ContextMenuRequest.MediaTypeAudio
+            An audio element.
+    \value  ContextMenuRequest.MediaTypeCanvas
+            A canvas.
+    \value  ContextMenuRequest.MediaTypeFile
+            A file.
+    \value  ContextMenuRequest.MediaTypePlugin
+            A plugin.
+*/
+
+/*!
+    \qmlproperty bool ContextMenuRequest::isContentEditable
+    \readonly
+
+    Indicates whether the selected web content is editable.
+*/
+
+/*!
+    \qmlproperty string ContextMenuRequest::misspelledWord
+    \readonly
+
+    If the context is a word considered misspelled by the spell-checker,
+    returns the misspelled word.
+*/
+
+/*!
+    \qmlproperty stringlist ContextMenuRequest::spellCheckerSuggestions
+    \readonly
+
+    If the context is a word considered misspelled by the spell-checker,
+    returns a list of suggested replacements.
+*/
+
+/*!
+    \qmlproperty bool ContextMenuRequest::accepted
+
+    Indicates whether the context menu request has been
+    handled by the signal handler.
+
+    If the property is \c false after any signal handlers
+    for WebEngineView::contextMenuRequested have been executed,
+    a default context menu will be shown.
+    To prevent this, set \c{request.accepted} to \c true.
+
+    The default is \c false.
+
+    \note The default content of the context menu depends on the
+    web element for which the request was actually generated.
+*/
+
+/*!
+    \qmlproperty flags ContextMenuRequest::mediaFlags
+    \readonly
+    \since QtWebEngine 1.7
+
+    The current media element's status and its available operations.
+    \c MediaNone if the selected web page content is not a media element.
+
+    \value  ContextMenuRequest.MediaInError
+            An error occurred.
+    \value  ContextMenuRequest.MediaPaused
+            Media is paused.
+    \value  ContextMenuRequest.MediaMuted
+            Media is muted.
+    \value  ContextMenuRequest.MediaLoop
+            Media can be looped.
+    \value  ContextMenuRequest.MediaCanSave
+            Media can be saved.
+    \value  ContextMenuRequest.MediaHasAudio
+            Media has audio.
+    \value  ContextMenuRequest.MediaCanToggleControls
+            Media can show controls.
+    \value  ContextMenuRequest.MediaControls
+            Media controls are shown.
+    \value  ContextMenuRequest.MediaCanPrint
+            Media is printable.
+    \value  ContextMenuRequest.MediaCanRotate
+            Media is rotatable.
+*/
+
+/*!
+    \qmlproperty flags ContextMenuRequest::editFlags
+    \readonly
+    \since QtWebEngine 1.7
+
+    The available edit operations in the current context or \c CanDoNone if no actions are available.
+
+    \value  ContextMenuRequest.CanUndo
+            Undo is available.
+    \value  ContextMenuRequest.CanRedo
+            Redo is available.
+    \value  ContextMenuRequest.CanCut
+            Cut is available.
+    \value  ContextMenuRequest.CanCopy
+            Copy is available.
+    \value  ContextMenuRequest.CanPaste
+            Paste is available.
+    \value  ContextMenuRequest.CanDelete
+            Delete is available.
+    \value  ContextMenuRequest.CanSelectAll
+            Select All is available.
+    \value  ContextMenuRequest.CanTranslate
+            Translate is available.
+    \value  ContextMenuRequest.CanEditRichly
+            Context is richly editable.
+*/

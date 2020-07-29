@@ -1,7 +1,6 @@
-
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -38,46 +37,57 @@
 **
 ****************************************************************************/
 
-#ifndef PREF_SERVICE_ADAPTER_H
-#define PREF_SERVICE_ADAPTER_H
+#ifndef QWEBENGINECONTEXTMENUREQUEST_P_H
+#define QWEBENGINECONTEXTMENUREQUEST_P_H
 
-#include "components/prefs/pref_service.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "qtwebenginecoreglobal_p.h"
+#include "qwebenginecontextmenurequest.h"
+#include <QPoint>
+#include <QUrl>
 
 QT_BEGIN_NAMESPACE
-class QStringList;
-QT_END_NAMESPACE
 
-namespace QtWebEngineCore {
-
-class ProfileAdapter;
-
-// PrefServiceAdapter manages the collection of tunable preferences.
-// Any new preference should be defined and register in the registry
-// before it can be used
-class PrefServiceAdapter
+class QWebEngineContextMenuRequestPrivate
 {
 public:
-
-    PrefServiceAdapter() = default;
-
-    void setup(const ProfileAdapter &adapter);
-    void commit();
-    PrefService *prefService();
-    const PrefService *prefService() const;
-    std::string mediaDeviceIdSalt() const;
-
-#if QT_CONFIG(webengine_spellchecker)
-    void setSpellCheckLanguages(const QStringList &languages);
-    QStringList spellCheckLanguages() const;
-    void setSpellCheckEnabled(bool enabled);
-    bool isSpellCheckEnabled() const;
-#endif // QT_CONFIG(webengine_spellchecker)
-
-private:
-    std::unique_ptr<PrefService> m_prefService;
+    bool m_accepted = false;
+    bool m_hasImageContent = false;
+    bool m_isEditable = false;
+    bool m_isSpellCheckerEnabled = false;
+    uint m_mediaType = 0;
+    uint m_mediaFlags = 0;
+    uint m_editFlags = 0;
+    QPoint m_position;
+    QUrl m_filteredLinkUrl;
+    QUrl m_unfilteredLinkUrl;
+    QUrl m_mediaUrl;
+    QString m_altText;
+    QString m_linkText;
+    QString m_titleText;
+    QString m_selectedText;
+    QString m_suggestedFileName;
+    QString m_misspelledWord;
+    QStringList m_spellCheckerSuggestions;
+    QUrl m_pageUrl;
+    QUrl m_frameUrl;
+    QtWebEngineCore::ReferrerPolicy m_referrerPolicy = QtWebEngineCore::ReferrerPolicy::Default;
+    // Some likely candidates for future additions as we add support for the related actions:
+    //    bool isImageBlocked;
+    //    <enum tbd> mediaType;
+    //    ...
 };
 
-}
+QT_END_NAMESPACE
 
-#endif // PREF_SERVICE_ADAPTER_H
+#endif

@@ -39,6 +39,7 @@
 #include <QtWebEngineCore/QWebEngineNotification>
 #include <QtWebEngineCore/QWebEngineQuotaRequest>
 #include <QtWebEngineCore/QWebEngineRegisterProtocolHandlerRequest>
+#include <QtWebEngineCore/QWebEngineContextMenuRequest>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebenginecertificateerror_p.h>
@@ -51,7 +52,6 @@
 #include <private/qquickwebenginenewviewrequest_p.h>
 #include <private/qquickwebenginesettings_p.h>
 #include <private/qquickwebenginesingleton_p.h>
-#include <private/qquickwebenginecontextmenurequest_p.h>
 
 class tst_publicapi : public QObject {
     Q_OBJECT
@@ -82,7 +82,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineFileDialogRequest::staticMetaObject
     << &QQuickWebEngineFormValidationMessageRequest::staticMetaObject
     << &QQuickWebEngineTooltipRequest::staticMetaObject
-    << &QQuickWebEngineContextMenuRequest::staticMetaObject
+    << &QWebEngineContextMenuRequest::staticMetaObject
     << &QWebEngineQuotaRequest::staticMetaObject
     << &QWebEngineRegisterProtocolHandlerRequest::staticMetaObject
     << &QWebEngineNotification::staticMetaObject
@@ -157,47 +157,46 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineClientCertificateSelection.selectNone() --> void"
     << "QQuickWebEngineColorDialogRequest.accepted --> bool"
     << "QQuickWebEngineColorDialogRequest.color --> QColor"
-    << "QQuickWebEngineContextMenuRequest.CanUndo --> EditFlags"
-    << "QQuickWebEngineContextMenuRequest.CanRedo --> EditFlags"
-    << "QQuickWebEngineContextMenuRequest.CanCut --> EditFlags"
-    << "QQuickWebEngineContextMenuRequest.CanCopy --> EditFlags"
-    << "QQuickWebEngineContextMenuRequest.CanPaste --> EditFlags"
-    << "QQuickWebEngineContextMenuRequest.CanDelete --> EditFlags"
-    << "QQuickWebEngineContextMenuRequest.CanSelectAll --> EditFlags"
-    << "QQuickWebEngineContextMenuRequest.CanTranslate --> EditFlags"
-    << "QQuickWebEngineContextMenuRequest.CanEditRichly --> EditFlags"
+    << "QWebEngineContextMenuRequest.CanUndo --> EditFlags"
+    << "QWebEngineContextMenuRequest.CanRedo --> EditFlags"
+    << "QWebEngineContextMenuRequest.CanCut --> EditFlags"
+    << "QWebEngineContextMenuRequest.CanCopy --> EditFlags"
+    << "QWebEngineContextMenuRequest.CanPaste --> EditFlags"
+    << "QWebEngineContextMenuRequest.CanDelete --> EditFlags"
+    << "QWebEngineContextMenuRequest.CanSelectAll --> EditFlags"
+    << "QWebEngineContextMenuRequest.CanTranslate --> EditFlags"
+    << "QWebEngineContextMenuRequest.CanEditRichly --> EditFlags"
     << "QQuickWebEngineColorDialogRequest.dialogAccept(QColor) --> void"
     << "QQuickWebEngineColorDialogRequest.dialogReject() --> void"
-    << "QQuickWebEngineContextMenuRequest.editFlags --> EditFlags"
-    << "QQuickWebEngineContextMenuRequest.MediaInError --> MediaFlags"
-    << "QQuickWebEngineContextMenuRequest.MediaPaused --> MediaFlags"
-    << "QQuickWebEngineContextMenuRequest.MediaMuted --> MediaFlags"
-    << "QQuickWebEngineContextMenuRequest.MediaLoop --> MediaFlags"
-    << "QQuickWebEngineContextMenuRequest.MediaCanSave --> MediaFlags"
-    << "QQuickWebEngineContextMenuRequest.MediaHasAudio --> MediaFlags"
-    << "QQuickWebEngineContextMenuRequest.MediaCanToggleControls --> MediaFlags"
-    << "QQuickWebEngineContextMenuRequest.MediaControls --> MediaFlags"
-    << "QQuickWebEngineContextMenuRequest.MediaCanPrint --> MediaFlags"
-    << "QQuickWebEngineContextMenuRequest.MediaCanRotate --> MediaFlags"
-    << "QQuickWebEngineContextMenuRequest.MediaTypeAudio --> MediaType"
-    << "QQuickWebEngineContextMenuRequest.MediaTypeCanvas --> MediaType"
-    << "QQuickWebEngineContextMenuRequest.MediaTypeFile --> MediaType"
-    << "QQuickWebEngineContextMenuRequest.MediaTypeImage --> MediaType"
-    << "QQuickWebEngineContextMenuRequest.MediaTypeNone --> MediaType"
-    << "QQuickWebEngineContextMenuRequest.MediaTypePlugin --> MediaType"
-    << "QQuickWebEngineContextMenuRequest.MediaTypeVideo --> MediaType"
-    << "QQuickWebEngineContextMenuRequest.accepted --> bool"
-    << "QQuickWebEngineContextMenuRequest.isContentEditable --> bool"
-    << "QQuickWebEngineContextMenuRequest.linkText --> QString"
-    << "QQuickWebEngineContextMenuRequest.linkUrl --> QUrl"
-    << "QQuickWebEngineContextMenuRequest.mediaFlags --> MediaFlags"
-    << "QQuickWebEngineContextMenuRequest.mediaType --> MediaType"
-    << "QQuickWebEngineContextMenuRequest.mediaUrl --> QUrl"
-    << "QQuickWebEngineContextMenuRequest.misspelledWord --> QString"
-    << "QQuickWebEngineContextMenuRequest.selectedText --> QString"
-    << "QQuickWebEngineContextMenuRequest.spellCheckerSuggestions --> QStringList"
-    << "QQuickWebEngineContextMenuRequest.x --> int"
-    << "QQuickWebEngineContextMenuRequest.y --> int"
+    << "QWebEngineContextMenuRequest.editFlags --> EditFlags"
+    << "QWebEngineContextMenuRequest.MediaInError --> MediaFlags"
+    << "QWebEngineContextMenuRequest.MediaPaused --> MediaFlags"
+    << "QWebEngineContextMenuRequest.MediaMuted --> MediaFlags"
+    << "QWebEngineContextMenuRequest.MediaLoop --> MediaFlags"
+    << "QWebEngineContextMenuRequest.MediaCanSave --> MediaFlags"
+    << "QWebEngineContextMenuRequest.MediaHasAudio --> MediaFlags"
+    << "QWebEngineContextMenuRequest.MediaCanToggleControls --> MediaFlags"
+    << "QWebEngineContextMenuRequest.MediaControls --> MediaFlags"
+    << "QWebEngineContextMenuRequest.MediaCanPrint --> MediaFlags"
+    << "QWebEngineContextMenuRequest.MediaCanRotate --> MediaFlags"
+    << "QWebEngineContextMenuRequest.MediaTypeAudio --> MediaType"
+    << "QWebEngineContextMenuRequest.MediaTypeCanvas --> MediaType"
+    << "QWebEngineContextMenuRequest.MediaTypeFile --> MediaType"
+    << "QWebEngineContextMenuRequest.MediaTypeImage --> MediaType"
+    << "QWebEngineContextMenuRequest.MediaTypeNone --> MediaType"
+    << "QWebEngineContextMenuRequest.MediaTypePlugin --> MediaType"
+    << "QWebEngineContextMenuRequest.MediaTypeVideo --> MediaType"
+    << "QWebEngineContextMenuRequest.accepted --> bool"
+    << "QWebEngineContextMenuRequest.isContentEditable --> bool"
+    << "QWebEngineContextMenuRequest.linkText --> QString"
+    << "QWebEngineContextMenuRequest.linkUrl --> QUrl"
+    << "QWebEngineContextMenuRequest.mediaFlags --> MediaFlags"
+    << "QWebEngineContextMenuRequest.mediaType --> MediaType"
+    << "QWebEngineContextMenuRequest.mediaUrl --> QUrl"
+    << "QWebEngineContextMenuRequest.misspelledWord --> QString"
+    << "QWebEngineContextMenuRequest.selectedText --> QString"
+    << "QWebEngineContextMenuRequest.spellCheckerSuggestions --> QStringList"
+    << "QWebEngineContextMenuRequest.position --> QPoint"
     << "QQuickWebEngineDownloadItem.Attachment --> DownloadType"
     << "QQuickWebEngineDownloadItem.CompleteHtmlSaveFormat --> SavePageFormat"
     << "QQuickWebEngineDownloadItem.DownloadAttribute --> DownloadType"
@@ -692,7 +691,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.colorDialogRequested(QQuickWebEngineColorDialogRequest*) --> void"
     << "QQuickWebEngineView.contentsSize --> QSizeF"
     << "QQuickWebEngineView.contentsSizeChanged(QSizeF) --> void"
-    << "QQuickWebEngineView.contextMenuRequested(QQuickWebEngineContextMenuRequest*) --> void"
+    << "QQuickWebEngineView.contextMenuRequested(QWebEngineContextMenuRequest*) --> void"
     << "QQuickWebEngineView.devToolsView --> QQuickWebEngineView*"
     << "QQuickWebEngineView.devToolsViewChanged() --> void"
     << "QQuickWebEngineView.featurePermissionRequested(QUrl,Feature) --> void"

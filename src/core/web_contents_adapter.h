@@ -52,6 +52,7 @@
 #define WEB_CONTENTS_ADAPTER_H
 
 #include "qtwebenginecoreglobal_p.h"
+#include "qwebenginecontextmenurequest_p.h"
 #include "web_contents_adapter_client.h"
 #include <memory>
 #include <QtGui/qtgui-config.h>
