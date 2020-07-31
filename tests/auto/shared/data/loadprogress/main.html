@@ -1,0 +1,30 @@
+<html>
+<head><title>Load Progress Test Page</title>
+	<style>
+	    .monospace { font-family: "Lucida Console", Courier, monospace; }
+	</style>
+    <title>page1</title>
+    <script>
+        function addP(t) {
+            var p = document.createElement('p')
+            p.class = 'monospace'
+            p.innerHTML = t
+            var d = document.createElement('div')
+            d.appendChild(p)
+            document.body.appendChild(d)
+        }
+        window.addEventListener('DOMContentLoaded', (event) => { addP('DOMContentLoaded') })
+    </script>
+</head>
+<body>
+    <h1>Hello.</h1>
+    <script>
+        addP('sometext')
+    </script>
+    <p class="monospace">body in monospace</p>
+    <iframe id="page1" src="page1.html"></iframe>
+    <iframe id="page2" src="page2.html"></iframe>
+    <iframe id="page3" src="page3.html"></iframe>
+    <iframe id="page4" src="page4.html"></iframe>
+</body>
+</html>

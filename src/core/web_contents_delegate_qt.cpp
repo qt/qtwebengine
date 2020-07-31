@@ -259,9 +259,12 @@ void WebContentsDelegateQt::LoadProgressChanged(double progress)
         return;
     if (m_lastLoadProgress < 0) // suppress signals that aren't between loadStarted and loadFinished
         return;
-    m_lastLoadProgress = qMax(m_lastLoadProgress, qRound(progress * 100)); // ensure monotonicity
-    m_lastLoadProgress = qMin(m_lastLoadProgress, 100);
-    m_viewClient->loadProgressChanged(m_lastLoadProgress);
+
+    int p = qMin(qRound(progress * 100), 100);
+    if (p > m_lastLoadProgress) { // ensure strict monotonic increase
+        m_lastLoadProgress = p;
+        m_viewClient->loadProgressChanged(p);
+    }
 }
 
 bool WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const content::NativeWebKeyboardEvent &event)
@@ -359,8 +362,9 @@ void WebContentsDelegateQt::EmitLoadFinished(bool success, const QUrl &url, bool
 {
     if (m_lastLoadProgress < 0) // not currently running
         return;
+    if (m_lastLoadProgress < 100)
+        m_viewClient->loadProgressChanged(100);
     m_lastLoadProgress = -1;
-    m_viewClient->loadProgressChanged(100);
     m_viewClient->loadFinished(success, url, isErrorPage, errorCode, errorDescription);
     m_viewClient->updateNavigationActions();
 }

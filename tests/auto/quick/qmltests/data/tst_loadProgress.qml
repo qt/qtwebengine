@@ -30,6 +30,8 @@ import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.2
 
+import Test.Shared 1.0 as Shared
+
 TestWebEngineView {
     id: webEngineView
     width: 400
@@ -55,10 +57,14 @@ TestWebEngineView {
             compare(spyProgress.count, 0)
             loadProgressArray = []
 
-            webEngineView.url = Qt.resolvedUrl("test1.html")
+            verify(Shared.HttpServer.start())
+            Shared.HttpServer.newRequest.connect(request => {
+                wait(250) // just add delay to trigger some progress for every sub resource
+            })
+            webEngineView.url = Shared.HttpServer.url('/loadprogress/main.html')
             // Wait for the first loadProgressChanged signal, which have to be non-negative
             spyProgress.wait()
-            verify(loadProgressArray[0] >= 0)
+            compare(loadProgressArray[0], 0)
             verify(webEngineView.loadProgress >= 0)
 
             // Wait for the last loadProgressChanged signal, which have to be 100%
@@ -67,13 +73,13 @@ TestWebEngineView {
             compare(loadProgressArray[loadProgressArray.length - 1], 100)
             compare(webEngineView.loadProgress, 100)
 
-            // Test whether the chromium emits progress numbers in ascending order
-            var loadProgressMin = 0
-            for (var i in loadProgressArray) {
-                var loadProgress = loadProgressArray[i]
-                if (loadProgressMin > loadProgress)
+            // Test whether the chromium emits progress numbers in strict monotonic ascending order
+            let progress = 0
+            for (let i = 1; i < loadProgressArray.length; ++i) {
+                let nextProgress = loadProgressArray[i]
+                if (nextProgress <= progress)
                     fail("Invalid sequence of progress-values: " + loadProgressArray)
-                loadProgressMin = loadProgress
+                progress = nextProgress
             }
         }
     }
