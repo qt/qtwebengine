@@ -1829,6 +1829,7 @@ void tst_QWebEnginePage::fullScreenRequested()
 {
     QWebEngineView view;
     QWebEnginePage* page = view.page();
+    view.resize(640, 480);
     view.show();
 
     page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
@@ -1849,6 +1850,13 @@ void tst_QWebEnginePage::fullScreenRequested()
 
     QTest::keyPress(view.focusProxy(), Qt::Key_Space);
     QTRY_VERIFY(isTrueJavaScriptResult(page, "document.webkitIsFullScreen"));
+
+    QTest::mouseMove(view.windowHandle(), QPoint(10,10));
+    QTest::mouseClick(view.windowHandle(), Qt::RightButton);
+    QTRY_COMPARE(view.findChildren<QMenu *>().count(), 1);
+    auto menu = view.findChildren<QMenu *>().first();
+    QVERIFY(menu->actions().contains(page->action(QWebEnginePage::ExitFullScreen)));
+
     page->runJavaScript("document.webkitExitFullscreen()");
     QTRY_VERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 
