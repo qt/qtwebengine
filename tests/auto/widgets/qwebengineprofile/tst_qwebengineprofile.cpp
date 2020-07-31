@@ -202,10 +202,8 @@ private:
         QString path = rr->requestPath();
         path.remove(0, 1);
 
-        if (rr->requestMethod() != "GET" || !resourceDir.exists(path))
-        {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
+        if (rr->requestMethod() != "GET" || !resourceDir.exists(path)) {
+            rr->sendResponse(404);
             return;
         }
 

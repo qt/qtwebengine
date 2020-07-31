@@ -260,13 +260,11 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     connect(&httpServer, &HttpServer::newRequest, [&cookieRequestHeader](HttpReqRep *rr) {
         if (rr->requestPath().size() <= 1) {
             cookieRequestHeader = rr->requestHeader(QByteArrayLiteral("Cookie"));
-            rr->setResponseStatus(200);
             if (cookieRequestHeader.isEmpty())
                 rr->setResponseHeader(QByteArrayLiteral("Set-Cookie"), QByteArrayLiteral("Test=test"));
             rr->sendResponse();
         } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
+            rr->sendResponse(404);
         }
     });
 

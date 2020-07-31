@@ -85,7 +85,8 @@ void HttpServer::handleNewConnection()
     auto rr = new HttpReqRep(m_tcpServer->nextPendingConnection(), this);
     connect(rr, &HttpReqRep::requestReceived, [this, rr]() {
         Q_EMIT newRequest(rr);
-        rr->close();
+        if (!rr->isClosed())
+            rr->sendResponse(404);
     });
     connect(rr, &HttpReqRep::responseSent, [rr]() {
         qCInfo(gHttpServerLog).noquote() << rr->requestMethod() << rr->requestPath()

@@ -2257,9 +2257,6 @@ void tst_QWebEnginePage::setHtmlWithModuleImport()
                                 "}\n");
             rr->setResponseHeader("Content-Type", "text/javascript");
             rr->sendResponse();
-        } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
         }
     });
     QVERIFY(server.start());
@@ -3263,9 +3260,6 @@ void tst_QWebEnginePage::registerProtocolHandler()
             rr->sendResponse();
         } else if (rr->requestMethod() == "GET" && rr->requestPath() == "/mail?uri=mailto%3Afoo%40bar.com") {
             mailRequestCount++;
-            rr->sendResponse();
-        } else {
-            rr->setResponseStatus(404);
             rr->sendResponse();
         }
     });

@@ -203,10 +203,8 @@ private:
         QString path = rr->requestPath();
         path.remove(0, 1);
 
-        if (rr->requestMethod() != "GET" || !resourceDir.exists(path))
-        {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
+        if (rr->requestMethod() != "GET" || !resourceDir.exists(path)) {
+            rr->sendResponse(404);
             return;
         }
 
@@ -663,7 +661,6 @@ void tst_QWebEngineUrlRequestInterceptor::passRefererHeader()
         const QByteArray headerValue = rr->requestHeader(kHttpHeaderRefererName);
         QCOMPARE(headerValue, kHttpHeaderReferrerValue);
         succeeded = headerValue == kHttpHeaderReferrerValue;
-        rr->setResponseStatus(200);
         rr->sendResponse();
     });
 
