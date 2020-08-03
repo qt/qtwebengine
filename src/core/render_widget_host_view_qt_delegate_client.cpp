@@ -84,9 +84,10 @@ mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints)
         QMap<int, int>::const_iterator it = touchIdMapping.find(qtId);
         if (it == touchIdMapping.end())
             it = touchIdMapping.insert(qtId, firstAvailableId(touchIdMapping));
-        point.setId(it.value());
+        QMutableEventPoint &mut = QMutableEventPoint::from(point);
+        mut.setId(it.value());
 
-        if (point.state() == Qt::TouchPointReleased)
+        if (point.state() == QEventPoint::State::Released)
             touchIdMapping.remove(qtId);
     }
 
@@ -177,10 +178,9 @@ public:
     float GetHistoricalY(size_t pointer_index, size_t historical_index) const override { return 0; }
     ToolType GetToolType(size_t pointer_index) const override
     {
-        return (touchPoints.at(pointer_index).flags() & QTouchEvent::TouchPoint::InfoFlag::Pen)
-                ? ui::MotionEvent::ToolType::STYLUS
-                : ui::MotionEvent::ToolType::FINGER;
+        return ui::MotionEvent::ToolType::FINGER;
     }
+
     int GetButtonState() const override { return 0; }
 
 private:
