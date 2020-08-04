@@ -47,3 +47,8 @@ bool isCurrentContextSoftware()
     [NSOpenGLContext.currentContext getValues:&rendererID forParameter:NSOpenGLContextParameterCurrentRendererID];
     return (rendererID & kCGLRendererIDMatchingMask) == kCGLRendererGenericFloatID;
 }
+
+void* cglContext(NSOpenGLContext *nsOpenGLContext)
+{
+   return [nsOpenGLContext CGLContextObj];
+}

@@ -39,4 +39,5 @@
 #ifndef MACOS_CONTEXT_TYPE_HELPER_H_
 #define MACOS_CONTEXT_TYPE_HELPER_H_
 bool isCurrentContextSoftware();
+void* cglContext(NSOpenGLContext*);
 #endif // MACOS_CONTEXT_TYPE_HELPER_H_

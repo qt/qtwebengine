@@ -41,6 +41,9 @@
 #include <QtGui/qtgui-config.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/qopenglcontext_platform.h>
+#if defined(Q_OS_MACOS)
+#include "macos_context_type_helper.h"
+#endif
 #if QT_CONFIG(opengl)
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
@@ -55,6 +58,8 @@ QtShareGLContext::QtShareGLContext(QOpenGLContext *qtContext)
     QOpenGLContext *context = QOpenGLContext::globalShareContext();
 #if defined(Q_OS_MACOS)
     auto *ctx = context->platformInterface<QPlatformInterface::QCocoaGLContext>();
+    if (ctx)
+        m_handle = cglContext(ctx->nativeContext());
 #endif
 #if defined(Q_OS_WIN)
     auto *ctx = context->platformInterface<QPlatformInterface::QWGLContext>();
@@ -62,7 +67,7 @@ QtShareGLContext::QtShareGLContext(QOpenGLContext *qtContext)
 #if defined(Q_OS_LINUX)
     auto *ctx = context->platformInterface<QPlatformInterface::QGLXContext>();
 #endif
-    if (ctx)
+    if (ctx && !m_handle)
         m_handle = (void *)ctx->nativeContext();
 #if QT_CONFIG(egl)
     if (!m_handle) {
