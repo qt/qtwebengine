@@ -351,8 +351,7 @@ QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, 
         if (comp->hasAlphaChannel())
             texOpts.setFlag(QQuickWindow::TextureHasAlphaChannel);
         int texId = comp->textureId();
-        node->setTexture(win->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture,
-                                                            texId, 0, texSize, texOpts));
+        node->setTexture(QPlatformInterface::QSGOpenGLTexture::fromNative(texId, win, texSize, texOpts));
         node->setTextureCoordinatesTransform(QSGImageNode::MirrorVertically);
     } else {
         Q_UNREACHABLE();
