@@ -117,7 +117,7 @@ public:
     Q_PROPERTY(QPoint position READ position CONSTANT FINAL)
     Q_PROPERTY(QString selectedText READ selectedText CONSTANT FINAL)
     Q_PROPERTY(QString linkText READ linkText CONSTANT FINAL)
-    Q_PROPERTY(QUrl linkUrl READ unfilteredLinkUrl CONSTANT FINAL)
+    Q_PROPERTY(QUrl linkUrl READ linkUrl CONSTANT FINAL)
     Q_PROPERTY(QUrl mediaUrl READ mediaUrl CONSTANT FINAL)
     Q_PROPERTY(MediaType mediaType READ mediaType CONSTANT FINAL)
     Q_PROPERTY(bool isContentEditable READ isContentEditable CONSTANT FINAL)
@@ -131,7 +131,7 @@ public:
     QPoint position() const;
     QString selectedText() const;
     QString linkText() const;
-    QUrl unfilteredLinkUrl() const;
+    QUrl linkUrl() const;
     QUrl mediaUrl() const;
     MediaType mediaType() const;
     bool isContentEditable() const;

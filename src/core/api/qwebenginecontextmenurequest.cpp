@@ -151,7 +151,7 @@ QString QWebEngineContextMenuRequest::linkText() const
     Returns the URL of a link if the menu context request is a link.
     It is not guaranteed to be a valid URL.
 */
-QUrl QWebEngineContextMenuRequest::unfilteredLinkUrl() const
+QUrl QWebEngineContextMenuRequest::linkUrl() const
 {
     return d->m_unfilteredLinkUrl;
 }

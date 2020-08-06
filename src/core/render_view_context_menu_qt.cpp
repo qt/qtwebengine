@@ -106,7 +106,7 @@ namespace QtWebEngineCore {
         }
 
         if (m_contextData->filteredLinkUrl().isValid()
-            || !m_contextData->unfilteredLinkUrl().isEmpty()
+            || !m_contextData->linkUrl().isEmpty()
             || !m_contextData->filteredLinkUrl().isEmpty())
             appendLinkItems();
 

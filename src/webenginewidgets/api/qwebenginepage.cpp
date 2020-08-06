@@ -1426,8 +1426,8 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         }
         break;
     case CopyLinkToClipboard:
-        if (d->view && !d->view->lastContextMenuRequest()->unfilteredLinkUrl().isEmpty()) {
-            QString urlString = d->view->lastContextMenuRequest()->unfilteredLinkUrl().toString(
+        if (d->view && !d->view->lastContextMenuRequest()->linkUrl().isEmpty()) {
+            QString urlString = d->view->lastContextMenuRequest()->linkUrl().toString(
                     QUrl::FullyEncoded);
             QString linkText = d->view->lastContextMenuRequest()->linkText().toHtmlEscaped();
             QString title = d->view->lastContextMenuRequest()->titleText();
@@ -1438,7 +1438,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
             QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral(">")
                          + linkText + QStringLiteral("</a>");
             data->setHtml(html);
-            data->setUrls(QList<QUrl>() << d->view->lastContextMenuRequest()->unfilteredLinkUrl());
+            data->setUrls(QList<QUrl>() << d->view->lastContextMenuRequest()->linkUrl());
             qApp->clipboard()->setMimeData(data);
         }
         break;
