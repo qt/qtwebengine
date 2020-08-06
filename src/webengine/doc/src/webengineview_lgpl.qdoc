@@ -1065,61 +1065,6 @@
 */
 
 /*!
-    \qmltype FullScreenRequest
-    \instantiates QQuickWebEngineFullScreenRequest
-    \inqmlmodule QtWebEngine
-    \since QtWebEngine 1.1
-
-    \brief A utility type for the WebEngineView::fullScreenRequested() signal.
-
-    \sa WebEngineView::fullScreenRequested()
-*/
-
-/*!
-    \qmlproperty url FullScreenRequest::origin
-    \readonly
-    The URL of the web page that issued the fullscreen request.
-*/
-
-/*!
-    \qmlproperty bool FullScreenRequest::toggleOn
-    \readonly
-
-    Returns \c{true} if the application should toggle fullscreen mode on, \c{false} otherwise.
-
-    \sa accept()
-*/
-
-/*!
-    \qmlmethod void FullScreenRequest::accept()
-
-    Call this method to accept the fullscreen request. It sets the WebEngineView::isFullScreen
-    property to be equal to toggleOn.
-
-    \qml
-    ApplicationWindow {
-        id: window
-        WebEngineView {
-            onFullScreenRequested: function(request) {
-                if (request.toggleOn)
-                    window.showFullScreen()
-                else
-                    window.showNormal()
-                request.accept()
-            }
-        }
-    }
-    \endqml
-
-    \sa toggleOn
-*/
-
-/*!
-    \qmlmethod void FullScreenRequest::reject()
-    Rejects a fullscreen request.
-*/
-
-/*!
     \qmlproperty bool WebEngineView::audioMuted
     \brief The state of whether the current page audio is muted.
     \since QtWebEngine 1.3
@@ -1332,53 +1277,6 @@
 */
 
 /*!
-    \qmltype QuotaRequest
-    \instantiates QWebEngineQuotaRequest
-    \inqmlmodule QtWebEngine
-    \since QtWebEngine 1.7
-
-    \brief A utility type for the WebEngineView::quotaRequested() signal.
-
-    \sa WebEngineView::quotaRequested()
-*/
-
-/*!
-    \qmlproperty url QuotaRequest::origin
-    \readonly
-
-    The URL of the web page that issued the quota request.
-*/
-
-/*!
-    \qmlproperty qint64 QuotaRequest::requestedSize
-    \readonly
-
-    Contains the size of the requested disk space in bytes.
-*/
-
-/*!
-    \qmlmethod void QuotaRequest::accept()
-
-    Accepts the quota request.
-
-    \qml
-    WebEngineView {
-        onQuotaRequested: function(request) {
-            if (request.requestedSize <= 5 * 1024 * 1024)
-                request.accept();
-            else
-                request.reject();
-        }
-    }
-    \endqml
-*/
-
-/*!
-    \qmlmethod void QuotaRequest::reject()
-    Rejects the quota request.
-*/
-
-/*!
     \qmlsignal WebEngineView::registerProtocolHandlerRequested(RegisterProtocolHandlerRequest request)
     \since QtWebEngine 1.7
 
@@ -1386,45 +1284,6 @@
     by issuing a \l registerProtocolHandler \a request.
 
     \sa RegisterProtocolHandlerRequest
-*/
-
-/*!
-    \qmltype RegisterProtocolHandlerRequest
-    \instantiates QWebEngineRegisterProtocolHandlerRequest
-    \inqmlmodule QtWebEngine
-    \since QtWebEngine 1.7
-    \brief The RegisterProtocolHandlerRequest type enables accepting
-    or rejecting requests from the \l registerProtocolHandler API.
-
-    \sa WebEngineView::registerProtocolHandlerRequested()
-*/
-
-/*!
-    \qmlproperty url RegisterProtocolHandlerRequest::origin
-    \brief The URL template for the protocol handler.
-
-    This is the second parameter from the \l registerProtocolHandler call.
-*/
-
-/*!
-    \qmlproperty string RegisterProtocolHandlerRequest::scheme
-    \brief The URL scheme for the protocol handler.
-
-    This is the first parameter from the \l registerProtocolHandler call.
-*/
-
-/*!
-    \qmlmethod void RegisterProtocolHandlerRequest::accept()
-    \brief Accepts the request.
-
-    Subsequent calls to accept() and reject() are ignored.
-*/
-
-/*!
-    \qmlmethod void RegisterProtocolHandlerRequest::reject()
-    \brief Accepts the request.
-
-    Subsequent calls to accept() and reject() are ignored.
 */
 
 /*!
