@@ -513,15 +513,12 @@
 */
 
 /*!
-    \fn bool QWebEnginePage::certificateError(const QWebEngineCertificateError & certificateError)
+    \fn void QWebEnginePage::certificateError(const QWebEngineCertificateError & certificateError)
     This function is called when an invalid certificate error is raised while loading a given request.
 
-    The \a certificateError parameter contains information about the certificate and details of the error.
-
-    Return \c true to ignore the error and complete the request. Return \c false to stop loading
+    The \a certificateError parameter contains information about the certificate and details of the error,
+    it also provides the way to ignore the error and complete the request or stop loading
     the request.
-
-    \note If the error was successfully deferred then the returned value will be ignored.
 
     \sa QWebEngineCertificateError
 */

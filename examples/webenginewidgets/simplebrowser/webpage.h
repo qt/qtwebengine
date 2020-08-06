@@ -62,7 +62,7 @@ public:
     WebPage(QWebEngineProfile *profile, QObject *parent = nullptr);
 
 protected:
-    bool certificateError(const QWebEngineCertificateError &error) override;
+    void certificateError(const QWebEngineCertificateError &error) override;
 
 private slots:
     void handleAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);

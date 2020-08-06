@@ -70,7 +70,7 @@ WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
     connect(this, &QWebEnginePage::selectClientCertificate, this, &WebPage::handleSelectClientCertificate);
 }
 
-bool WebPage::certificateError(const QWebEngineCertificateError &error)
+void WebPage::certificateError(const QWebEngineCertificateError &error)
 {
     QWidget *mainWindow = view()->window();
 
@@ -99,7 +99,6 @@ bool WebPage::certificateError(const QWebEngineCertificateError &error)
                 error.rejectCertificate();
         }
     });
-    return true;
 }
 
 void WebPage::handleAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)

@@ -57,11 +57,18 @@ struct PageWithCertificateErrorHandler : QWebEnginePage
     QSignalSpy loadSpy;
     QScopedPointer<QWebEngineCertificateError> error;
 
-    bool certificateError(const QWebEngineCertificateError &e) override {
+    void certificateError(const QWebEngineCertificateError &e) override
+    {
         error.reset(new QWebEngineCertificateError(e));
-        if (deferError)
+        if (deferError) {
             error->defer();
-        return acceptCertificate;
+            return;
+        }
+
+        if (acceptCertificate)
+            error->ignoreCertificateError();
+        else
+            error->rejectCertificate();
     }
 };
 

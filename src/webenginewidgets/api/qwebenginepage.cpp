@@ -1723,14 +1723,12 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
 void QWebEnginePagePrivate::allowCertificateError(const QSharedPointer<CertificateErrorController> &controller)
 {
     Q_Q(QWebEnginePage);
-    bool accepted = false;
-
     QWebEngineCertificateError error(controller);
-    accepted = q->certificateError(error);
-    if (error.deferred() && !error.answered())
+    q->certificateError(error);
+    if (!error.isOverridable() || (!error.deferred() && !error.answered()))
+        error.rejectCertificate();
+    else
         m_certificateErrorControllers.append(controller);
-    else if (!error.answered())
-        controller->accept(error.isOverridable() && accepted);
 }
 
 void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)
@@ -2390,10 +2388,7 @@ void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel leve
     }
 }
 
-bool QWebEnginePage::certificateError(const QWebEngineCertificateError &)
-{
-    return false;
-}
+void QWebEnginePage::certificateError(const QWebEngineCertificateError &) { }
 
 bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
 {
