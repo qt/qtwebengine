@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>WebView.qml</file>
+    </qresource>
+</RCC>

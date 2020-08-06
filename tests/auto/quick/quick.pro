@@ -10,7 +10,8 @@ SUBDIRS += \
     publicapi \
     qquickwebenginedefaultsurfaceformat \
     qquickwebengineview \
-    qtbug-70248
+    qtbug-70248 \
+    certificateerror
 
 qtConfig(webengine-testsupport) {
     SUBDIRS += \
