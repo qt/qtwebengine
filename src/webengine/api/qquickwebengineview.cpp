@@ -296,7 +296,8 @@ void QQuickWebEngineViewPrivate::allowCertificateError(const QWebEngineCertifica
     Q_EMIT q->certificateError(error);
 }
 
-void QQuickWebEngineViewPrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)
+void QQuickWebEngineViewPrivate::selectClientCert(
+        const QSharedPointer<QtWebEngineCore::ClientCertSelectController> &controller)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     Q_Q(QQuickWebEngineView);

@@ -61,8 +61,6 @@
 #include <QStringList>
 #include <QUrl>
 
-QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
-QT_FORWARD_DECLARE_CLASS(ClientCertSelectController)
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(QWebEngineFindTextResult)
@@ -79,6 +77,8 @@ struct DropData;
 
 namespace QtWebEngineCore {
 
+class CertificateErrorController;
+class ClientCertSelectController;
 class AuthenticationDialogController;
 class ColorChooserController;
 class FilePickerController;

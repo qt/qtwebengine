@@ -148,7 +148,8 @@ public:
     QObject *accessibilityParentObject() override;
     QtWebEngineCore::WebEngineSettings *webEngineSettings() const override;
     void allowCertificateError(const QWebEngineCertificateError &error) override;
-    void selectClientCert(const QSharedPointer<ClientCertSelectController> &selectController) override;
+    void selectClientCert(const QSharedPointer<QtWebEngineCore::ClientCertSelectController>
+                                  &selectController) override;
     void runFeaturePermissionRequest(QtWebEngineCore::ProfileAdapter::PermissionType permission, const QUrl &securityOrigin) override;
     void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) override;
     void requestGeometryChange(const QRect &geometry, const QRect &frameGeometry) override;

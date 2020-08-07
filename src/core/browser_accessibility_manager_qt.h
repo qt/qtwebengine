@@ -47,9 +47,7 @@
 
 #if QT_CONFIG(accessibility)
 
-QT_BEGIN_NAMESPACE
-class QAccessibleInterface;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
 
 namespace content {
 

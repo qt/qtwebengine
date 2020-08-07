@@ -62,9 +62,12 @@
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 
+namespace QtWebEngineCore {
+class ClientCertSelectController;
+}
+
 QT_BEGIN_NAMESPACE
 
-class ClientCertSelectController;
 class QQuickWebEngineClientCertificateSelection;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineClientCertificateOption : public QObject {
@@ -114,10 +117,11 @@ private:
     static int certificates_count(QQmlListProperty<QQuickWebEngineClientCertificateOption> *p);
     static QQuickWebEngineClientCertificateOption *certificates_at(QQmlListProperty<QQuickWebEngineClientCertificateOption> *p, int idx);
 
-    explicit QQuickWebEngineClientCertificateSelection(QSharedPointer<ClientCertSelectController>);
+    explicit QQuickWebEngineClientCertificateSelection(
+            QSharedPointer<QtWebEngineCore::ClientCertSelectController>);
 
     mutable QList<QQuickWebEngineClientCertificateOption *> m_certificates;
-    QSharedPointer<ClientCertSelectController> d_ptr;
+    QSharedPointer<QtWebEngineCore::ClientCertSelectController> d_ptr;
 };
 
 QT_END_NAMESPACE

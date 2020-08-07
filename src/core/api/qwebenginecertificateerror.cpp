@@ -43,22 +43,38 @@
 
 QT_BEGIN_NAMESPACE
 
-ASSERT_ENUMS_MATCH(CertificateErrorController::SslPinnedKeyNotInCertificateChain,   QWebEngineCertificateError::SslPinnedKeyNotInCertificateChain);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateCommonNameInvalid,        QWebEngineCertificateError::CertificateCommonNameInvalid);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateCommonNameInvalid,        QWebEngineCertificateError::CertificateCommonNameInvalid);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateDateInvalid,              QWebEngineCertificateError::CertificateDateInvalid);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateAuthorityInvalid,         QWebEngineCertificateError::CertificateAuthorityInvalid);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateContainsErrors,           QWebEngineCertificateError::CertificateContainsErrors);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateUnableToCheckRevocation,  QWebEngineCertificateError::CertificateUnableToCheckRevocation);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateRevoked,                  QWebEngineCertificateError::CertificateRevoked);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateInvalid,                  QWebEngineCertificateError::CertificateInvalid);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakSignatureAlgorithm,   QWebEngineCertificateError::CertificateWeakSignatureAlgorithm);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNonUniqueName,            QWebEngineCertificateError::CertificateNonUniqueName);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakKey,                  QWebEngineCertificateError::CertificateWeakKey);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNameConstraintViolation,  QWebEngineCertificateError::CertificateNameConstraintViolation);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateValidityTooLong,          QWebEngineCertificateError::CertificateValidityTooLong);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateTransparencyRequired,     QWebEngineCertificateError::CertificateTransparencyRequired);
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateKnownInterceptionBlocked, QWebEngineCertificateError::CertificateKnownInterceptionBlocked);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::SslPinnedKeyNotInCertificateChain,
+                   QWebEngineCertificateError::SslPinnedKeyNotInCertificateChain);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateCommonNameInvalid,
+                   QWebEngineCertificateError::CertificateCommonNameInvalid);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateCommonNameInvalid,
+                   QWebEngineCertificateError::CertificateCommonNameInvalid);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateDateInvalid,
+                   QWebEngineCertificateError::CertificateDateInvalid);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateAuthorityInvalid,
+                   QWebEngineCertificateError::CertificateAuthorityInvalid);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateContainsErrors,
+                   QWebEngineCertificateError::CertificateContainsErrors);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateUnableToCheckRevocation,
+                   QWebEngineCertificateError::CertificateUnableToCheckRevocation);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateRevoked,
+                   QWebEngineCertificateError::CertificateRevoked);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateInvalid,
+                   QWebEngineCertificateError::CertificateInvalid);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateWeakSignatureAlgorithm,
+                   QWebEngineCertificateError::CertificateWeakSignatureAlgorithm);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateNonUniqueName,
+                   QWebEngineCertificateError::CertificateNonUniqueName);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateWeakKey,
+                   QWebEngineCertificateError::CertificateWeakKey);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateNameConstraintViolation,
+                   QWebEngineCertificateError::CertificateNameConstraintViolation);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateValidityTooLong,
+                   QWebEngineCertificateError::CertificateValidityTooLong);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateTransparencyRequired,
+                   QWebEngineCertificateError::CertificateTransparencyRequired);
+ASSERT_ENUMS_MATCH(QtWebEngineCore::CertificateErrorController::CertificateKnownInterceptionBlocked,
+                   QWebEngineCertificateError::CertificateKnownInterceptionBlocked);
 
 /*!
     \class QWebEngineCertificateError
@@ -72,7 +88,8 @@ ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateKnownInterceptionBlock
 
 /*! \internal
 */
-QWebEngineCertificateError::QWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller)
+QWebEngineCertificateError::QWebEngineCertificateError(
+        const QSharedPointer<QtWebEngineCore::CertificateErrorController> &controller)
     : d(controller)
 {
 }

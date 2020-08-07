@@ -70,7 +70,7 @@ class ClientCertIdentity;
 class SSLCertRequestInfo;
 }
 
-QT_BEGIN_NAMESPACE
+namespace QtWebEngineCore {
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT ClientCertSelectController {
 public:
@@ -96,6 +96,6 @@ private:
     bool m_selected;
 };
 
-QT_END_NAMESPACE
+}
 
 #endif // CLIENT_CERT_SELECT_CONTROLLER_H

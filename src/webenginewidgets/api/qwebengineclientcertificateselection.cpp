@@ -63,8 +63,9 @@ QT_BEGIN_NAMESPACE
 
 /*! \internal
 */
-QWebEngineClientCertificateSelection::QWebEngineClientCertificateSelection(QSharedPointer<ClientCertSelectController> selectController)
-        : d_ptr(selectController)
+QWebEngineClientCertificateSelection::QWebEngineClientCertificateSelection(
+        QSharedPointer<QtWebEngineCore::ClientCertSelectController> selectController)
+    : d_ptr(selectController)
 {}
 
 QWebEngineClientCertificateSelection::QWebEngineClientCertificateSelection(const QWebEngineClientCertificateSelection &other)

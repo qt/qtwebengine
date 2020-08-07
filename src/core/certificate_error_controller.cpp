@@ -47,9 +47,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "type_conversion.h"
 
-QT_BEGIN_NAMESPACE
-
-using namespace QtWebEngineCore;
+namespace QtWebEngineCore {
 
 ASSERT_ENUMS_MATCH(CertificateErrorController::SslPinnedKeyNotInCertificateChain, net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN)
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateCommonNameInvalid, net::ERR_CERT_BEGIN)
@@ -221,4 +219,4 @@ QList<QSslCertificate> CertificateErrorController::certificateChain() const
     return m_certificateChain;
 }
 
-QT_END_NAMESPACE
+}

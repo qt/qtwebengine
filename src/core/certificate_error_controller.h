@@ -64,7 +64,7 @@ class SSLInfo;
 }
 class GURL;
 
-QT_BEGIN_NAMESPACE
+namespace QtWebEngineCore {
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT CertificateErrorController {
 public:
@@ -128,6 +128,5 @@ private:
     Q_DISABLE_COPY(CertificateErrorController)
 };
 
-QT_END_NAMESPACE
-
+}
 #endif // CERTIFICATE_ERROR_CONTROLLER_H

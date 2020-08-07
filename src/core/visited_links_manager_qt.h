@@ -55,9 +55,7 @@
 #include <QList>
 #include <QScopedPointer>
 
-QT_BEGIN_NAMESPACE
-class QUrl;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QUrl)
 
 namespace visitedlink {
 class VisitedLinkWriter;

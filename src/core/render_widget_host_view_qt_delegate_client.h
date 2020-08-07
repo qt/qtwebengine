@@ -59,7 +59,6 @@
 QT_BEGIN_NAMESPACE
 class QEvent;
 class QVariant;
-
 class QMouseEvent;
 class QKeyEvent;
 class QTabletEvent;

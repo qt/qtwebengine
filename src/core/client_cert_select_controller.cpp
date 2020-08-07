@@ -50,9 +50,7 @@
 
 #include <QDebug>
 
-QT_BEGIN_NAMESPACE
-
-using namespace QtWebEngineCore;
+namespace QtWebEngineCore {
 
 ClientCertSelectController::ClientCertSelectController(net::SSLCertRequestInfo *certRequestInfo,
                                                        std::vector<std::unique_ptr<net::ClientCertIdentity>> clientCerts,
@@ -145,5 +143,4 @@ QList<QSslCertificate> ClientCertSelectController::certificates() const
 }
 
 #endif // !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-
-QT_END_NAMESPACE
+}

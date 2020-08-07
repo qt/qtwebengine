@@ -48,11 +48,10 @@
 
 namespace QtWebEngineCore {
 class WebContentsDelegateQt;
+class CertificateErrorController;
 }
 
 QT_BEGIN_NAMESPACE
-
-class CertificateErrorController;
 
 class Q_WEBENGINECORE_EXPORT QWebEngineCertificateError {
     Q_GADGET
@@ -105,8 +104,9 @@ public:
 
 private:
     friend class QtWebEngineCore::WebContentsDelegateQt;
-    QWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller);
-    QSharedPointer<CertificateErrorController> d;
+    QWebEngineCertificateError(
+            const QSharedPointer<QtWebEngineCore::CertificateErrorController> &controller);
+    QSharedPointer<QtWebEngineCore::CertificateErrorController> d;
 };
 
 QT_END_NAMESPACE

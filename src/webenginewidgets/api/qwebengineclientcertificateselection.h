@@ -49,8 +49,11 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qsslcertificate.h>
 
-QT_BEGIN_NAMESPACE
+namespace QtWebEngineCore {
 class ClientCertSelectController;
+}
+
+QT_BEGIN_NAMESPACE
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineClientCertificateSelection {
 public:
@@ -68,9 +71,10 @@ public:
 private:
     friend class QWebEnginePagePrivate;
 
-    QWebEngineClientCertificateSelection(QSharedPointer<ClientCertSelectController>);
+    QWebEngineClientCertificateSelection(
+            QSharedPointer<QtWebEngineCore::ClientCertSelectController>);
 
-    QSharedPointer<ClientCertSelectController> d_ptr;
+    QSharedPointer<QtWebEngineCore::ClientCertSelectController> d_ptr;
 };
 
 QT_END_NAMESPACE

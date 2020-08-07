@@ -54,9 +54,7 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
-QT_BEGIN_NAMESPACE
-class QAccessibleInterface;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
 
 namespace content {
 class RenderFrameHost;

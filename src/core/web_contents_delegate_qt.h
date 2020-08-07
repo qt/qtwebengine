@@ -55,9 +55,6 @@
 #include <QtCore/qlist.h>
 #include <QWebEngineCertificateError>
 
-QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
-QT_FORWARD_DECLARE_CLASS(ClientCertSelectController)
-
 namespace content {
     class ColorChooser;
     class SiteInstance;

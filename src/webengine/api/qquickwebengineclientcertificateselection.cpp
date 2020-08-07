@@ -132,8 +132,9 @@ void QQuickWebEngineClientCertificateOption::select()
     \sa {WebEngineView::selectClientCertificate}{WebEngineView.selectClientCertificate}
 */
 
-QQuickWebEngineClientCertificateSelection::QQuickWebEngineClientCertificateSelection(QSharedPointer<ClientCertSelectController> selectController)
-        : QObject(), d_ptr(selectController)
+QQuickWebEngineClientCertificateSelection::QQuickWebEngineClientCertificateSelection(
+        QSharedPointer<QtWebEngineCore::ClientCertSelectController> selectController)
+    : QObject(), d_ptr(selectController)
 {}
 
 int QQuickWebEngineClientCertificateSelection::certificates_count(

@@ -48,9 +48,7 @@
 #include "profile_io_data_qt.h"
 #include <QtGlobal>
 
-QT_BEGIN_NAMESPACE
-class QStringList;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QStringList)
 class InMemoryPrefStore;
 class PrefService;
 
