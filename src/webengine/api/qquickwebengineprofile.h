@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineDownloadItem;
+class QWebEngineDownloadItem;
 class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineScript;
 class QQuickWebEngineSettings;
@@ -173,8 +173,8 @@ Q_SIGNALS:
     Q_REVISION(5) void useForGlobalCertificateVerificationChanged();
     Q_REVISION(5) void downloadPathChanged();
 
-    void downloadRequested(QQuickWebEngineDownloadItem *download);
-    void downloadFinished(QQuickWebEngineDownloadItem *download);
+    void downloadRequested(QWebEngineDownloadItem *download);
+    void downloadFinished(QWebEngineDownloadItem *download);
 
     Q_REVISION(5) void presentNotification(QWebEngineNotification *notification);
 
@@ -186,8 +186,6 @@ private:
     friend class QQuickWebEngineSettings;
     friend class QQuickWebEngineSingleton;
     friend class QQuickWebEngineViewPrivate;
-    friend class QQuickWebEngineDownloadItem;
-    friend class QQuickWebEngineDownloadItemPrivate;
     friend class QQuickWebEngineView;
     QScopedPointer<QQuickWebEngineProfilePrivate> d_ptr;
 };

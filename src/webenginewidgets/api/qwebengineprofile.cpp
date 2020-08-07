@@ -223,7 +223,7 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     Q_Q(QWebEngineProfile);
 
     Q_ASSERT(!m_ongoingDownloads.contains(info.id));
-    QWebEngineDownloadItemPrivate *itemPrivate = new QWebEngineDownloadItemPrivate(this, info.url);
+    QWebEngineDownloadItemPrivate *itemPrivate = new QWebEngineDownloadItemPrivate(m_profileAdapter, info.url);
     itemPrivate->downloadId = info.id;
     itemPrivate->downloadState = info.accepted ? QWebEngineDownloadItem::DownloadInProgress
                                                : QWebEngineDownloadItem::DownloadRequested;

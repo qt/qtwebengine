@@ -18,7 +18,6 @@ SOURCES = \
         api/qquickwebengineaction.cpp \
         api/qquickwebengineclientcertificateselection.cpp \
         api/qquickwebenginedialogrequests.cpp \
-        api/qquickwebenginedownloaditem.cpp \
         api/qquickwebenginehistory.cpp \
         api/qquickwebenginefaviconprovider.cpp \
         api/qquickwebengineloadrequest.cpp \
@@ -42,8 +41,6 @@ HEADERS = \
         api/qquickwebengineaction_p_p.h \
         api/qquickwebengineclientcertificateselection_p.h \
         api/qquickwebenginedialogrequests_p.h \
-        api/qquickwebenginedownloaditem_p.h \
-        api/qquickwebenginedownloaditem_p_p.h \
         api/qquickwebenginehistory_p.h \
         api/qquickwebenginefaviconprovider_p_p.h \
         api/qquickwebengineloadrequest_p.h \

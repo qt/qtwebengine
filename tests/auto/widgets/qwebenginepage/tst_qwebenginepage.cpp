@@ -1681,7 +1681,7 @@ void tst_QWebEnginePage::savePage()
     connect(page->profile(), &QWebEngineProfile::downloadRequested,
             [] (QWebEngineDownloadItem *item)
     {
-        connect(item, &QWebEngineDownloadItem::finished,
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged,
                 &QTestEventLoop::instance(), &QTestEventLoop::exitLoop, Qt::QueuedConnection);
     });
 

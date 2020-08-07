@@ -39,8 +39,6 @@
 
 #include "qquickwebengineprofile.h"
 
-#include "qquickwebenginedownloaditem_p.h"
-#include "qquickwebenginedownloaditem_p_p.h"
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginescript_p.h"
 #include "qquickwebenginesettings_p.h"
@@ -56,16 +54,12 @@
 #include "renderer_host/user_resource_controller_host.h"
 #include "web_engine_settings.h"
 
+#include <QtWebEngineCore/private/qwebenginedownloaditem_p.h>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
 
 using QtWebEngineCore::ProfileAdapter;
 
 QT_BEGIN_NAMESPACE
-
-ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::UnknownSaveFormat, QtWebEngineCore::ProfileAdapterClient::UnknownSavePageFormat)
-ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::SingleHtmlSaveFormat, QtWebEngineCore::ProfileAdapterClient::SingleHtmlSaveFormat)
-ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::CompleteHtmlSaveFormat, QtWebEngineCore::ProfileAdapterClient::CompleteHtmlSaveFormat)
-ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineCore::ProfileAdapterClient::MimeHtmlSaveFormat)
 
 /*!
     \class QQuickWebEngineProfile
@@ -133,12 +127,12 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
 */
 
 /*!
-  \fn QQuickWebEngineProfile::downloadRequested(QQuickWebEngineDownloadItem *download)
+  \fn QQuickWebEngineProfile::downloadRequested(QWebEngineDownloadItem *download)
 
   This signal is emitted whenever a download has been triggered.
   The \a download argument holds the state of the download.
   The download has to be explicitly accepted with
-  \c{QQuickWebEngineDownloadItem::accept()} or it will be
+  \c{QWebEngineDownloadItem::accept()} or it will be
   cancelled by default.
   The download item is parented by the profile. If it is not accepted, it
   will be deleted immediately after the signal emission.
@@ -146,7 +140,7 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
 */
 
 /*!
-  \fn QQuickWebEngineProfile::downloadFinished(QQuickWebEngineDownloadItem *download)
+  \fn QQuickWebEngineProfile::downloadFinished(QWebEngineDownloadItem *download)
 
   This signal is emitted whenever downloading stops, because it finished successfully, was
   cancelled, or was interrupted (for example, because connectivity was lost).
@@ -242,38 +236,38 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     Q_Q(QQuickWebEngineProfile);
 
     Q_ASSERT(!m_ongoingDownloads.contains(info.id));
-    QQuickWebEngineDownloadItemPrivate *itemPrivate = new QQuickWebEngineDownloadItemPrivate(q, info.url);
+    QWebEngineDownloadItemPrivate *itemPrivate = new QWebEngineDownloadItemPrivate(m_profileAdapter, info.url);
     itemPrivate->downloadId = info.id;
-    itemPrivate->downloadState = QQuickWebEngineDownloadItem::DownloadRequested;
+    itemPrivate->downloadState = QWebEngineDownloadItem::DownloadRequested;
     itemPrivate->startTime = info.startTime;
     itemPrivate->totalBytes = info.totalBytes;
     itemPrivate->mimeType = info.mimeType;
     itemPrivate->downloadDirectory = QFileInfo(info.path).path();
     itemPrivate->downloadFileName = QFileInfo(info.path).fileName();
     itemPrivate->suggestedFileName = info.suggestedFileName;
-    itemPrivate->savePageFormat = static_cast<QQuickWebEngineDownloadItem::SavePageFormat>(
+    itemPrivate->savePageFormat = static_cast<QWebEngineDownloadItem::SavePageFormat>(
                 info.savePageFormat);
-    itemPrivate->type = static_cast<QQuickWebEngineDownloadItem::DownloadType>(info.downloadType);
+    itemPrivate->type = static_cast<QWebEngineDownloadItem::DownloadType>(info.downloadType);
     if (info.page && info.page->clientType() == QtWebEngineCore::WebContentsAdapterClient::QmlClient)
-        itemPrivate->view = static_cast<QQuickWebEngineViewPrivate *>(info.page)->q_ptr;
+        itemPrivate->page = static_cast<QQuickWebEngineViewPrivate *>(info.page)->q_ptr;
     else
-        itemPrivate->view = nullptr;
+        itemPrivate->page = nullptr;
 
-    QQuickWebEngineDownloadItem *download = new QQuickWebEngineDownloadItem(itemPrivate, q);
+    QWebEngineDownloadItem *download = new QWebEngineDownloadItem(itemPrivate, q);
 
     m_ongoingDownloads.insert(info.id, download);
-    QObject::connect(download, &QQuickWebEngineDownloadItem::destroyed, q, [id = info.id, this] () { downloadDestroyed(id); });
+    QObject::connect(download, &QWebEngineDownloadItem::destroyed, q, [id = info.id, this] () { downloadDestroyed(id); });
 
     QQmlEngine::setObjectOwnership(download, QQmlEngine::JavaScriptOwnership);
     Q_EMIT q->downloadRequested(download);
 
-    QQuickWebEngineDownloadItem::DownloadState state = download->state();
+    QWebEngineDownloadItem::DownloadState state = download->state();
     info.path = QDir(download->downloadDirectory()).filePath(download->downloadFileName());
     info.savePageFormat = itemPrivate->savePageFormat;
-    info.accepted = state != QQuickWebEngineDownloadItem::DownloadCancelled
-                      && state != QQuickWebEngineDownloadItem::DownloadRequested;
+    info.accepted = state != QWebEngineDownloadItem::DownloadCancelled
+                      && state != QWebEngineDownloadItem::DownloadRequested;
 
-    if (state == QQuickWebEngineDownloadItem::DownloadRequested) {
+    if (state == QWebEngineDownloadItem::DownloadRequested) {
         // Delete unaccepted downloads.
         info.accepted = false;
         delete download;
@@ -287,7 +281,7 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 
     Q_Q(QQuickWebEngineProfile);
 
-    QQuickWebEngineDownloadItem* download = m_ongoingDownloads.value(info.id).data();
+    QWebEngineDownloadItem* download = m_ongoingDownloads.value(info.id).data();
 
     if (!download) {
         downloadDestroyed(info.id);

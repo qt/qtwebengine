@@ -40,20 +40,40 @@
 #ifndef QWEBENGINEDOWNLOADITEM_H
 #define QWEBENGINEDOWNLOADITEM_H
 
-#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 #include <QtCore/qobject.h>
+#include <QtCore/QUrl>
 
 QT_BEGIN_NAMESPACE
 
-class QWebEnginePage;
+//TODO: class QWebEnginePage;
 class QWebEngineDownloadItemPrivate;
 class QWebEngineProfilePrivate;
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineDownloadItem : public QObject
+class Q_WEBENGINECORE_EXPORT QWebEngineDownloadItem : public QObject
 {
     Q_OBJECT
 public:
+    Q_PROPERTY(quint32 id READ id CONSTANT FINAL)
+    Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged FINAL)
+    Q_PROPERTY(SavePageFormat savePageFormat READ savePageFormat WRITE setSavePageFormat NOTIFY savePageFormatChanged REVISION 2 FINAL)
+    Q_PROPERTY(qint64 totalBytes READ totalBytes NOTIFY totalBytesChanged FINAL)
+    Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged FINAL)
+    Q_PROPERTY(QString mimeType READ mimeType REVISION 1 FINAL)
+    Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged FINAL)
+    Q_PROPERTY(DownloadType type READ type REVISION 3 FINAL)
+    Q_PROPERTY(DownloadInterruptReason interruptReason READ interruptReason NOTIFY interruptReasonChanged REVISION 4 FINAL)
+    Q_PROPERTY(QString interruptReasonString READ interruptReasonString NOTIFY interruptReasonChanged REVISION 4 FINAL)
+    Q_PROPERTY(bool isFinished READ isFinished NOTIFY isFinishedChanged REVISION 5 FINAL)
+    Q_PROPERTY(bool isPaused READ isPaused NOTIFY isPausedChanged REVISION 5 FINAL)
+    Q_PROPERTY(bool isSavePageDownload READ isSavePageDownload CONSTANT REVISION 6 FINAL)
+    //TODO: Q_PROPERTY(QQuickWebEngineView *view READ view CONSTANT REVISION 7 FINAL)
+    Q_PROPERTY(QUrl url READ url CONSTANT REVISION 10 FINAL)
+    Q_PROPERTY(QString suggestedFileName READ suggestedFileName CONSTANT REVISION 10 FINAL)
+    Q_PROPERTY(QString downloadDirectory READ downloadDirectory WRITE setDownloadDirectory NOTIFY downloadDirectoryChanged REVISION 10 FINAL)
+    Q_PROPERTY(QString downloadFileName READ downloadFileName WRITE setDownloadFileName NOTIFY downloadFileNameChanged REVISION 10 FINAL)
+
     ~QWebEngineDownloadItem();
 
     enum DownloadState {
@@ -145,7 +165,8 @@ public:
     QString downloadFileName() const;
     void setDownloadFileName(const QString &fileName);
 
-    QWebEnginePage *page() const;
+    //TODO:
+    QObject *page() const;
 
 public Q_SLOTS:
     void accept();
@@ -154,17 +175,25 @@ public Q_SLOTS:
     void resume();
 
 Q_SIGNALS:
-    void finished();
     void stateChanged(QWebEngineDownloadItem::DownloadState state);
+    //TODO: fix it for qml
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-    void isPausedChanged(bool isPaused);
+    Q_REVISION(2) void savePageFormatChanged();
+    void receivedBytesChanged();
+    void totalBytesChanged();
+    void pathChanged();
+    Q_REVISION(4) void interruptReasonChanged();
+    Q_REVISION(5) void isFinishedChanged();
+    Q_REVISION(5) void isPausedChanged();
+    Q_REVISION(10) void downloadDirectoryChanged();
+    Q_REVISION(10) void downloadFileNameChanged();
 
 private:
     Q_DISABLE_COPY(QWebEngineDownloadItem)
     Q_DECLARE_PRIVATE(QWebEngineDownloadItem)
 
     friend class QWebEngineProfilePrivate;
-
+    friend class QQuickWebEngineProfilePrivate;
     QWebEngineDownloadItem(QWebEngineDownloadItemPrivate*, QObject *parent = Q_NULLPTR);
     QScopedPointer<QWebEngineDownloadItemPrivate> d_ptr;
 };

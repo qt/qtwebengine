@@ -39,7 +39,7 @@
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebenginesettings.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
-#include <QtWebEngineWidgets/qwebenginedownloaditem.h>
+#include <QtWebEngineCore/qwebenginedownloaditem.h>
 
 #if QT_CONFIG(webengine_webchannel)
 #include <QWebChannel>

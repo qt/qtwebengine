@@ -42,7 +42,7 @@
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtWebEngineWidgets/qwebengineclientcertificateselection.h>
-#include <QtWebEngineWidgets/qwebenginedownloaditem.h>
+#include <QtWebEngineCore/qwebenginedownloaditem.h>
 #include <QtWebEngineCore/qwebenginecallback.h>
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 

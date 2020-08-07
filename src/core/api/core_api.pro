@@ -52,7 +52,9 @@ HEADERS = \
     qwebengineurlscheme.h \
     qwebengineurlschemehandler.h \
     qwebenginecontextmenurequest.h \
-    qwebenginecontextmenurequest_p.h
+    qwebenginecontextmenurequest_p.h \
+    qwebenginedownloaditem.h \
+    qwebenginedownloaditem_p.h
 
 SOURCES = \
     qtwebenginecoreglobal.cpp \
@@ -69,7 +71,8 @@ SOURCES = \
     qwebengineurlrequestjob.cpp \
     qwebengineurlscheme.cpp \
     qwebengineurlschemehandler.cpp \
-    qwebenginecontextmenurequest.cpp
+    qwebenginecontextmenurequest.cpp \
+    qwebenginedownloaditem.cpp
 
 # Chromium headers included are not remotely clean
 CONFIG -= warning_clean

@@ -51,22 +51,25 @@
 // We mean it.
 //
 
-#include "qtwebenginewidgetsglobal.h"
-
+#include "qtwebenginecoreglobal.h"
 #include "qwebenginedownloaditem.h"
-#include "qwebengineprofile_p.h"
+#include "profile_adapter_client.h"
 #include <QString>
+#include <QPointer>
+
+namespace QtWebEngineCore {
+class ProfileAdapter;
+}
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineDownloadItemPrivate {
-    QWebEngineDownloadItem *q_ptr;
-    QWebEngineProfilePrivate* profile;
-    friend class QWebEngineProfilePrivate;
+class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineDownloadItemPrivate {
 public:
-    Q_DECLARE_PUBLIC(QWebEngineDownloadItem)
-    QWebEngineDownloadItemPrivate(QWebEngineProfilePrivate *p, const QUrl &url);
+    QWebEngineDownloadItemPrivate(QtWebEngineCore::ProfileAdapter *adapter, const QUrl &url);
     ~QWebEngineDownloadItemPrivate();
+
+    void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
+    void setFinished();
 
     bool downloadFinished;
     quint32 downloadId;
@@ -83,14 +86,12 @@ public:
     QString downloadDirectory;
     QString downloadFileName;
     bool isCustomFileName;
-
     qint64 totalBytes;
     qint64 receivedBytes;
-    QWebEnginePage *page;
-
-    void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
-
-    void setFinished();
+    QWebEngineDownloadItem *q_ptr;
+    QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
+    QObject *page;
+    Q_DECLARE_PUBLIC(QWebEngineDownloadItem)
 };
 
 QT_END_NAMESPACE

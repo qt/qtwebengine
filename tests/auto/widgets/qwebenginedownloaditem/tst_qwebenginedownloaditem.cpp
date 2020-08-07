@@ -123,7 +123,7 @@ void tst_QWebEngineDownloadItem::initTestCase()
             m_requestedDownloads.remove(item);
             m_finishedDownloads.remove(item);
         });
-        connect(item, &QWebEngineDownloadItem::finished, [this, item](){
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [this, item](){
             m_finishedDownloads.insert(item);
         });
     });
@@ -471,7 +471,7 @@ void tst_QWebEngineDownloadItem::downloadLink()
         QCOMPARE(item->url(), downloadUrl);
         QCOMPARE(item->page(), m_page);
 
-        connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), fileContents.size());
@@ -595,7 +595,7 @@ void tst_QWebEngineDownloadItem::downloadTwoLinks()
                 QFAIL(qPrintable("Unexpected file name: " + filePart));
         }
 
-        connect(item, &QWebEngineDownloadItem::finished, [&]() {
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&]() {
             finishedCount++;
         });
         item->setDownloadDirectory(tmpDir.path());
@@ -681,7 +681,7 @@ void tst_QWebEngineDownloadItem::downloadPage()
 
         QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), downloadPath);
 
-        connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), item->receivedBytes());
@@ -832,7 +832,7 @@ void tst_QWebEngineDownloadItem::downloadDeleted()
         QVERIFY(item);
         QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
         downloadItem = item;
-        connect(downloadItem, &QWebEngineDownloadItem::finished, [&]() {
+        connect(downloadItem, &QWebEngineDownloadItem::isFinishedChanged, [&]() {
             finishedCount++;
         });
         item->accept();
@@ -858,7 +858,7 @@ void tst_QWebEngineDownloadItem::downloadDeletedByProfile()
     bool downloadFinished = false;
     QPointer<QWebEngineDownloadItem> downloadItem;
     connect(profile, &QWebEngineProfile::downloadRequested, [&] (QWebEngineDownloadItem *item) {
-        connect(item, &QWebEngineDownloadItem::finished, [&] () {
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&] () {
             downloadFinished = true;
         });
         downloadItem = item;
@@ -918,7 +918,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilename()
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
         suggestedFileName = item->suggestedFileName();
         item->accept();
-        connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), item->receivedBytes());
@@ -977,7 +977,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilenameWithTimestamp()
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
         suggestedFileName = item->suggestedFileName();
         item->accept();
-        connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), item->receivedBytes());
@@ -1074,7 +1074,7 @@ void tst_QWebEngineDownloadItem::downloadToNonExistentDir()
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
         suggestedFileName = item->suggestedFileName();
         item->accept();
-        connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), item->receivedBytes());
@@ -1133,7 +1133,7 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
         suggestedFileName = item->suggestedFileName();
         downloadItem = item;
         item->accept();
-        connect(item, &QWebEngineDownloadItem::finished, [&]() {
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&]() {
             downloadFinished = true;
         });
         downloadAccepted = true;
@@ -1199,7 +1199,7 @@ void tst_QWebEngineDownloadItem::downloadPathValidation()
             }
         });
 
-        connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), item->receivedBytes());
             QVERIFY(item->receivedBytes() > 0);
@@ -1338,7 +1338,7 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
         QCOMPARE(item->path(), QDir(item->downloadDirectory()).filePath(item->downloadFileName()));
         item->accept();
 
-        connect(item, &QWebEngineDownloadItem::finished, [&, item]() {
+        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), item->receivedBytes());

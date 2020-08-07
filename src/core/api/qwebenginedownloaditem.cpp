@@ -41,7 +41,6 @@
 #include "qwebenginedownloaditem_p.h"
 
 #include "profile_adapter.h"
-#include "qwebengineprofile_p.h"
 
 #include <QDir>
 #include "QFileInfo"
@@ -104,9 +103,7 @@ static inline QWebEngineDownloadItem::DownloadInterruptReason toDownloadInterrup
     \class QWebEngineDownloadItem
     \brief The QWebEngineDownloadItem class provides information about a download.
 
-    \since 5.5
-
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
 
     QWebEngineDownloadItem models a download throughout its life cycle, starting
     with a pending download request and finishing with a completed download. It
@@ -160,8 +157,8 @@ static inline QWebEngineDownloadItem::DownloadInterruptReason toDownloadInterrup
     QWebEnginePage::download, QWebEnginePage::save
 */
 
-QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QWebEngineProfilePrivate *p, const QUrl &url)
-    : profile(p)
+QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QtWebEngineCore::ProfileAdapter *adapter, const QUrl &url)
+    : m_profileAdapter(adapter)
     , downloadFinished(false)
     , downloadId(-1)
     , downloadState(QWebEngineDownloadItem::DownloadCancelled)
@@ -173,7 +170,7 @@ QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QWebEngineProfilePr
     , isCustomFileName(false)
     , totalBytes(-1)
     , receivedBytes(0)
-    , page(0)
+    , page(nullptr)
 {
 }
 
@@ -187,18 +184,26 @@ void QWebEngineDownloadItemPrivate::update(const ProfileAdapterClient::DownloadI
 
     Q_ASSERT(downloadState != QWebEngineDownloadItem::DownloadRequested);
 
-    if (toDownloadInterruptReason(info.downloadInterruptReason) != interruptReason)
+    if (toDownloadInterruptReason(info.downloadInterruptReason) != interruptReason) {
         interruptReason = toDownloadInterruptReason(info.downloadInterruptReason);
-
+        Q_EMIT q->interruptReasonChanged();
+    }
     if (toDownloadState(info.state) != downloadState) {
         downloadState = toDownloadState(info.state);
         Q_EMIT q->stateChanged(downloadState);
     }
 
     if (info.receivedBytes != receivedBytes || info.totalBytes != totalBytes) {
-        receivedBytes = info.receivedBytes;
-        totalBytes = info.totalBytes;
-        Q_EMIT q->downloadProgress(receivedBytes, totalBytes);
+
+      if (info.receivedBytes != receivedBytes) {
+          receivedBytes = info.receivedBytes;
+          Q_EMIT q->receivedBytesChanged();
+      }
+      if (info.totalBytes != totalBytes) {
+          totalBytes = info.totalBytes;
+          Q_EMIT q->totalBytesChanged();
+      }
+      Q_EMIT q->downloadProgress(receivedBytes, totalBytes);
     }
 
     if (info.done)
@@ -206,7 +211,7 @@ void QWebEngineDownloadItemPrivate::update(const ProfileAdapterClient::DownloadI
 
     if (downloadPaused != info.paused) {
         downloadPaused = info.paused;
-        Q_EMIT q->isPausedChanged(downloadPaused);
+        Q_EMIT q->isPausedChanged();
     }
 }
 
@@ -216,7 +221,7 @@ void QWebEngineDownloadItemPrivate::setFinished()
         return;
 
     downloadFinished = true;
-    Q_EMIT q_ptr->finished();
+    Q_EMIT q_ptr->isFinishedChanged();
 }
 
 /*!
@@ -267,8 +272,8 @@ void QWebEngineDownloadItem::cancel()
     // We directly cancel the download request if the user cancels
     // before it even started, so no need to notify the profile here.
     if (state == QWebEngineDownloadItem::DownloadInProgress) {
-        if (auto profileAdapter = d->profile->profileAdapter())
-            profileAdapter->cancelDownload(d->downloadId);
+        if (d->m_profileAdapter)
+            d->m_profileAdapter->cancelDownload(d->downloadId);
     } else {
         d->downloadState = QWebEngineDownloadItem::DownloadCancelled;
         Q_EMIT stateChanged(d->downloadState);
@@ -277,7 +282,6 @@ void QWebEngineDownloadItem::cancel()
 }
 
 /*!
-    \since 5.10
     Pauses the download.
 
     Has no effect if the state is not \l DownloadInProgress. Does not change the
@@ -295,11 +299,11 @@ void QWebEngineDownloadItem::pause()
     if (state != QWebEngineDownloadItem::DownloadInProgress)
         return;
 
-    d->profile->profileAdapter()->pauseDownload(d->downloadId);
+    if (d->m_profileAdapter)
+        d->m_profileAdapter->pauseDownload(d->downloadId);
 }
 
 /*!
-    \since 5.10
     Resumes the current download if it was paused or interrupted.
 
     Has no effect if the state is not \l DownloadInProgress or \l
@@ -315,7 +319,8 @@ void QWebEngineDownloadItem::resume()
 
     if (d->downloadFinished || (state != QWebEngineDownloadItem::DownloadInProgress && state != QWebEngineDownloadItem::DownloadInterrupted))
         return;
-    d->profile->profileAdapter()->resumeDownload(d->downloadId);
+    if (d->m_profileAdapter)
+        d->m_profileAdapter->resumeDownload(d->downloadId);
 }
 
 /*!
@@ -338,7 +343,6 @@ quint32 QWebEngineDownloadItem::id() const
 
 /*!
     \fn void QWebEngineDownloadItem::isPausedChanged(bool isPaused)
-    \since 5.10
 
     This signal is emitted whenever \a isPaused changes.
 
@@ -381,7 +385,6 @@ quint32 QWebEngineDownloadItem::id() const
 
 /*!
     \enum QWebEngineDownloadItem::SavePageFormat
-    \since 5.7
 
     This enum describes the format that is used to save a web page.
 
@@ -395,7 +398,6 @@ quint32 QWebEngineDownloadItem::id() const
 
 /*!
     \enum QWebEngineDownloadItem::DownloadType
-    \since 5.8
     \obsolete
 
     Describes the requested download's type.
@@ -415,7 +417,6 @@ quint32 QWebEngineDownloadItem::id() const
 
 /*!
     \enum QWebEngineDownloadItem::DownloadInterruptReason
-    \since 5.9
 
     Describes the reason why a download was interrupted:
 
@@ -499,8 +500,6 @@ QUrl QWebEngineDownloadItem::url() const
 }
 
 /*!
-    \since 5.6
-
     Returns the MIME type of the download.
 */
 
@@ -557,19 +556,32 @@ void QWebEngineDownloadItem::setPath(QString path)
             return;
         }
 
+        QString newDirectory;
+        QString newFileName;
+
         if (QFileInfo(path).fileName() == path) {
-            d->downloadDirectory = QStringLiteral("");
-            d->downloadFileName = path;
+          newDirectory = QStringLiteral("");
+          newFileName = path;
         } else {
-            d->downloadDirectory = QFileInfo(path).path();
-            d->downloadFileName = QFileInfo(path).fileName();
+          newDirectory = QFileInfo(path).path();
+          newFileName = QFileInfo(path).fileName();
+        }
+
+        if (d->downloadDirectory != newDirectory) {
+          d->downloadDirectory = newDirectory;
+          Q_EMIT pathChanged();
+          Q_EMIT downloadDirectoryChanged();
+        }
+
+        if (d->downloadFileName != newFileName) {
+          d->downloadFileName = newFileName;
+          Q_EMIT pathChanged();
+          Q_EMIT downloadFileNameChanged();
         }
     }
 }
 
 /*!
-    \since 5.14
-
     Returns the download directory path.
 */
 
@@ -580,8 +592,6 @@ QString QWebEngineDownloadItem::downloadDirectory() const
 }
 
 /*!
-    \since 5.14
-
     Sets \a directory as the directory path to download the file to.
 
     The download directory path can only be set in response to the QWebEngineProfile::downloadRequested()
@@ -600,15 +610,13 @@ void QWebEngineDownloadItem::setDownloadDirectory(const QString &directory)
     if (!directory.isEmpty() && d->downloadDirectory != directory)
         d->downloadDirectory = directory;
 
-    if (!d->isCustomFileName)
-        d->downloadFileName = QFileInfo(d->profile->profileAdapter()->determineDownloadPath(d->downloadDirectory,
+    if (!d->isCustomFileName && d->m_profileAdapter)
+        d->downloadFileName = QFileInfo(d->m_profileAdapter->determineDownloadPath(d->downloadDirectory,
                                                                                             d->suggestedFileName,
                                                                                             d->startTime)).fileName();
 }
 
 /*!
-    \since 5.14
-
     Returns the file name to download the file to.
 */
 
@@ -619,8 +627,6 @@ QString QWebEngineDownloadItem::downloadFileName() const
 }
 
 /*!
-    \since 5.14
-
     Sets \a fileName as the file name to download the file to.
 
     The download file name can only be set in response to the QWebEngineProfile::downloadRequested()
@@ -643,8 +649,6 @@ void QWebEngineDownloadItem::setDownloadFileName(const QString &fileName)
 }
 
 /*!
-    \since 5.14
-
     Returns the suggested file name.
 */
 
@@ -680,8 +684,6 @@ bool QWebEngineDownloadItem::isPaused() const
 
 /*!
     Returns the format the web page will be saved in if this is a download request for a web page.
-    \since 5.7
-
     \sa setSavePageFormat(), isSavePageDownload()
 */
 QWebEngineDownloadItem::SavePageFormat QWebEngineDownloadItem::savePageFormat() const
@@ -692,19 +694,20 @@ QWebEngineDownloadItem::SavePageFormat QWebEngineDownloadItem::savePageFormat() 
 
 /*!
     Sets the \a format the web page will be saved in if this is a download request for a web page.
-    \since 5.7
 
     \sa savePageFormat(), isSavePageDownload()
 */
 void QWebEngineDownloadItem::setSavePageFormat(QWebEngineDownloadItem::SavePageFormat format)
 {
-    Q_D(QWebEngineDownloadItem);
-    d->savePageFormat = format;
+  Q_D(QWebEngineDownloadItem);
+  if (d->savePageFormat != format) {
+      d->savePageFormat = format;
+      Q_EMIT savePageFormatChanged();
+  }
 }
 
 /*!
     Returns the requested download's type.
-    \since 5.8
     \obsolete
 
     \note This property works unreliably, except for \c SavePage
@@ -719,7 +722,6 @@ QWebEngineDownloadItem::DownloadType QWebEngineDownloadItem::type() const
 
 /*!
     Returns \c true if this is a download request for saving a web page.
-    \since 5.11
 
     \sa savePageFormat(), setSavePageFormat()
  */
@@ -731,7 +733,6 @@ bool QWebEngineDownloadItem::isSavePageDownload() const
 
 /*!
     Returns the reason why the download was interrupted.
-    \since 5.9
 
     \sa interruptReasonString()
 */
@@ -744,7 +745,6 @@ QWebEngineDownloadItem::DownloadInterruptReason QWebEngineDownloadItem::interrup
 
 /*!
     Returns a human-readable description of the reason for interrupting the download.
-    \since 5.9
 
     \sa interruptReason()
 */
@@ -756,11 +756,10 @@ QString QWebEngineDownloadItem::interruptReasonString() const
 }
 
 /*!
-    \since 5.12
     Returns the page the download was requested on. If the download was not triggered by content in a page,
     \c nullptr is returned.
 */
-QWebEnginePage *QWebEngineDownloadItem::page() const
+QObject *QWebEngineDownloadItem::page() const
 {
     Q_D(const QWebEngineDownloadItem);
     return d->page;
