@@ -77,9 +77,6 @@ private Q_SLOTS:
     void downloadToDefaultLocation();
     void downloadToNonExistentDir();
     void downloadToReadOnlyDir();
-#if QT_DEPRECATED_SINCE(5, 14)
-    void downloadPathValidation();
-#endif
     void downloadToDirectoryWithFileName_data();
     void downloadToDirectoryWithFileName();
 
@@ -87,10 +84,6 @@ private:
     void saveLink(QPoint linkPos);
     void clickLink(QPoint linkPos);
     void simulateUserAction(QPoint linkPos, UserAction action);
-
-    QWebEngineDownloadItem::DownloadType expectedDownloadType(
-        UserAction userAction,
-        const QByteArray &contentDisposition = QByteArray());
 
     HttpServer *m_server;
     QWebEngineProfile *m_profile;
@@ -192,16 +185,6 @@ void tst_QWebEngineDownloadItem::simulateUserAction(QPoint linkPos, UserAction a
     }
 }
 
-QWebEngineDownloadItem::DownloadType tst_QWebEngineDownloadItem::expectedDownloadType(
-    UserAction userAction, const QByteArray &contentDisposition)
-{
-    if (userAction == SaveLink)
-        return QWebEngineDownloadItem::UserRequested;
-    if (contentDisposition == QByteArrayLiteral("attachment"))
-        return QWebEngineDownloadItem::Attachment;
-    return QWebEngineDownloadItem::DownloadAttribute;
-}
-
 void tst_QWebEngineDownloadItem::downloadLink_data()
 {
     QTest::addColumn<UserAction>("userAction");
@@ -213,7 +196,6 @@ void tst_QWebEngineDownloadItem::downloadLink_data()
     QTest::addColumn<QByteArray>("fileDisposition");
     QTest::addColumn<bool>("fileHasReferer");
     QTest::addColumn<FileAction>("fileAction");
-    QTest::addColumn<QWebEngineDownloadItem::DownloadType>("downloadType");
 
     // SaveLink should always trigger a download, even for empty files.
     QTest::newRow("save link to empty file")
@@ -463,7 +445,6 @@ void tst_QWebEngineDownloadItem::downloadLink()
         QCOMPARE(item->totalBytes(), -1);
         QCOMPARE(item->receivedBytes(), 0);
         QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
-        QCOMPARE(item->type(), expectedDownloadType(userAction, fileDisposition));
         QCOMPARE(item->isSavePageDownload(), false);
         QCOMPARE(item->mimeType(), QString(fileMimeTypeDetected));
         QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), suggestedPath);
@@ -477,7 +458,6 @@ void tst_QWebEngineDownloadItem::downloadLink()
             QCOMPARE(item->totalBytes(), fileContents.size());
             QCOMPARE(item->receivedBytes(), fileContents.size());
             QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
-            QCOMPARE(item->type(), expectedDownloadType(userAction, fileDisposition));
             QCOMPARE(item->isSavePageDownload(), false);
             QCOMPARE(item->mimeType(), QString(fileMimeTypeDetected));
             QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), downloadPath);
@@ -586,14 +566,8 @@ void tst_QWebEngineDownloadItem::downloadTwoLinks()
         QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), standardDir + filePart);
 
         // type() is broken due to race condition in DownloadManagerDelegateQt
-        if (action1 == ClickLink && action2 == ClickLink) {
-            if (filePart == QStringLiteral("/file1"))
-                QCOMPARE(item->type(), expectedDownloadType(action1));
-            else if (filePart == QStringLiteral("/file2"))
-                QCOMPARE(item->type(), expectedDownloadType(action2, QByteArrayLiteral("attachment")));
-            else
+        if (action1 == ClickLink && action2 == ClickLink && filePart != QStringLiteral("/file1") && filePart != QStringLiteral("/file2"))
                 QFAIL(qPrintable("Unexpected file name: " + filePart));
-        }
 
         connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&]() {
             finishedCount++;
@@ -663,7 +637,6 @@ void tst_QWebEngineDownloadItem::downloadPage()
         QCOMPARE(item->totalBytes(), -1);
         QCOMPARE(item->receivedBytes(), 0);
         QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
-        QCOMPARE(item->type(), QWebEngineDownloadItem::SavePage);
         QCOMPARE(item->isSavePageDownload(), true);
         // FIXME(juvaldma): why is mimeType always the same?
         QCOMPARE(item->mimeType(), QStringLiteral("application/x-mimearchive"));
@@ -687,7 +660,6 @@ void tst_QWebEngineDownloadItem::downloadPage()
             QCOMPARE(item->totalBytes(), item->receivedBytes());
             QVERIFY(item->receivedBytes() > 0);
             QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
-            QCOMPARE(item->type(), QWebEngineDownloadItem::SavePage);
             QCOMPARE(item->isSavePageDownload(), true);
             QCOMPARE(item->mimeType(), QStringLiteral("application/x-mimearchive"));
             QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), downloadPath);
@@ -924,7 +896,6 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilename()
             QCOMPARE(item->totalBytes(), item->receivedBytes());
             QVERIFY(item->receivedBytes() > 0);
             QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
-            QCOMPARE(item->type(), QWebEngineDownloadItem::Attachment);
             QCOMPARE(item->isSavePageDownload(), false);
             downloadedFilePath = QDir(item->downloadDirectory()).filePath(item->downloadFileName());
             downloadFinished = true;
@@ -1159,126 +1130,6 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
     QFile(m_profile->downloadPath()).setPermissions(QFileDevice::WriteOwner);
 }
 
-#if QT_DEPRECATED_SINCE(5, 14)
-void tst_QWebEngineDownloadItem::downloadPathValidation()
-{
-    const QString fileName = "test.txt";
-    QString downloadPath;
-    QString originalDownloadPath;
-
-    QTemporaryDir tmpDir;
-    QVERIFY(tmpDir.isValid());
-    m_profile->setDownloadPath(tmpDir.path());
-
-    // Set up HTTP server
-    ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
-        auto requestPath = QString::fromUtf8(rr->requestPath());
-        if (rr->requestMethod() == "GET" && requestPath == ("/" + fileName)) {
-            rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("application/octet-stream"));
-            rr->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
-            rr->setResponseBody(QByteArrayLiteral("a"));
-            rr->sendResponse();
-        } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
-        }
-    });
-
-    // Set up profile and download handler
-    QPointer<QWebEngineDownloadItem> downloadItem;
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
-        downloadItem = item;
-        originalDownloadPath = item->path();
-
-        item->setPath(downloadPath);
-        item->accept();
-
-        connect(item, &QWebEngineDownloadItem::stateChanged, [&, item](QWebEngineDownloadItem::DownloadState downloadState) {
-            if (downloadState == QWebEngineDownloadItem::DownloadInterrupted) {
-                item->cancel();
-            }
-        });
-
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
-            QCOMPARE(item->isFinished(), true);
-            QCOMPARE(item->totalBytes(), item->receivedBytes());
-            QVERIFY(item->receivedBytes() > 0);
-            QCOMPARE(item->page(), m_page);
-        });
-    });
-
-    QString oldPath = QDir::currentPath();
-    QDir::setCurrent(tmpDir.path());
-
-    // Set only the file name.
-    downloadItem.clear();
-    originalDownloadPath = "";
-    downloadPath = fileName;
-    m_page->setUrl(m_server->url("/" + fileName));
-    QTRY_VERIFY(downloadItem);
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCompleted);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::NoReason);
-    QCOMPARE(downloadItem->path(), fileName);
-
-    // Set only the directory path.
-    downloadItem.clear();
-    originalDownloadPath = "";
-    downloadPath = tmpDir.path();
-    m_page->setUrl(m_server->url("/" + fileName));
-    QTRY_VERIFY(downloadItem);
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCompleted);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::NoReason);
-    QCOMPARE(downloadItem->path(), originalDownloadPath);
-
-    // Set only the directory path with separator.
-    downloadItem.clear();
-    originalDownloadPath = "";
-    downloadPath = tmpDir.path() + QDir::separator();
-    m_page->setUrl(m_server->url("/" + fileName));
-    QTRY_VERIFY(downloadItem);
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCompleted);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::NoReason);
-    QCOMPARE(downloadItem->path(), originalDownloadPath);
-
-    // Set only the directory with the current directory path without ending separator.
-    downloadItem.clear();
-    originalDownloadPath = "";
-    downloadPath = ".";
-    m_page->setUrl(m_server->url("/" + fileName));
-    QTRY_VERIFY(downloadItem);
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCompleted);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::NoReason);
-    QCOMPARE(downloadItem->path(), originalDownloadPath);
-
-    // Set only the directory with the current directory path with ending separator.
-    downloadItem.clear();
-    originalDownloadPath = "";
-    downloadPath = "./";
-    m_page->setUrl(m_server->url("/" + fileName));
-    QTRY_VERIFY(downloadItem);
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCompleted);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::NoReason);
-    QCOMPARE(downloadItem->path(), originalDownloadPath);
-
-    downloadItem.clear();
-    originalDownloadPath = "";
-    downloadPath = "...";
-    m_page->setUrl(m_server->url("/" + fileName));
-    QTRY_VERIFY(downloadItem);
-#if !defined(Q_OS_WIN)
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCancelled);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::FileFailed);
-    QCOMPARE(downloadItem->path(), downloadPath);
-#else
-    // Windows interprets the "..." path as a valid path. It will be the current path.
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCompleted);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::NoReason);
-    QCOMPARE(downloadItem->path(), originalDownloadPath);
-#endif // !defined(Q_OS_WIN)
-    QDir::setCurrent(oldPath);
-}
-#endif
-
 void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName_data()
 {
     QTest::addColumn<bool>("setDirectoryFirst");
@@ -1335,7 +1186,6 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
             QCOMPARE(item->downloadDirectory(), downloadDirectory);
         }
 
-        QCOMPARE(item->path(), QDir(item->downloadDirectory()).filePath(item->downloadFileName()));
         item->accept();
 
         connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {

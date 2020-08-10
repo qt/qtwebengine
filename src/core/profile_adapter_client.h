@@ -85,13 +85,6 @@ public:
         MimeHtmlSaveFormat
     };
 
-    enum DownloadType {
-        Attachment = 0,
-        DownloadAttribute,
-        UserRequested,
-        SavePage
-    };
-
     // Keep in sync with content::DownloadInterruptReason
     enum DownloadInterruptReason {
         NoReason = 0,
@@ -136,7 +129,7 @@ public:
         bool accepted;
         bool paused;
         bool done;
-        int downloadType;
+        bool isSavePageDownload;
         int downloadInterruptReason;
         WebContentsAdapterClient *page;
         QString suggestedFileName;

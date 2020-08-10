@@ -177,25 +177,6 @@
 */
 
 /*!
-    \qmlproperty string WebEngineDownloadItem::path
-    \obsolete
-
-    Use \l suggestedFileName, \l downloadDirectory, and
-    \l downloadFileName instead.
-
-    Holds the full target path where data is being downloaded to.
-
-    The path includes the file name. The default suggested path is the standard
-    download location and file name is deduced not to overwrite already existing files.
-
-    The download path can only be set in the
-    \l{WebEngineProfile::downloadRequested}{downloadRequested} handler before
-    the download is accepted.
-
-    \sa WebEngineProfile::downloadRequested(), accept()
-*/
-
-/*!
     \qmlproperty string WebEngineDownloadItem::downloadDirectory
     \since QtWebEngine 1.10
 
@@ -244,30 +225,6 @@
             containing the single HTML page and the resources.
     \value  WebEngineDownloadItem.MimeHtmlSaveFormat
             The page is saved as a complete web page in the MIME HTML format.
-*/
-
-/*!
-    \qmlproperty enumeration WebEngineDownloadItem::type
-    \readonly
-    \since QtWebEngine 1.4
-    \obsolete
-
-    Describes the requested download's type.
-
-    \note This property works unreliably, except for \c SavePage
-    downloads. Use \l isSavePageDownload instead.
-
-    \value WebEngineDownloadItem.Attachment The web server's response includes a
-           \c Content-Disposition header with the \c attachment directive. If \c Content-Disposition
-           is present in the reply, the web server is indicating that the client should prompt the
-           user to save the content regardless of the content type.
-           See \l {RFC 2616 section 19.5.1} for details.
-    \value WebEngineDownloadItem.DownloadAttribute The user clicked a link with the \c download
-           attribute.
-    \value WebEngineDownloadItem.UserRequested The user initiated the download, for example by
-           selecting a web action.
-    \value WebEngineDownloadItem.SavePage Saving of the current page was requested (for example by
-           the \l{WebEngineView::WebAction}{WebEngineView.SavePage} web action).
 */
 
 /*!

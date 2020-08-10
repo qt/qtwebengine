@@ -233,7 +233,7 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->suggestedFileName = info.suggestedFileName;
     itemPrivate->mimeType = info.mimeType;
     itemPrivate->savePageFormat = static_cast<QWebEngineDownloadItem::SavePageFormat>(info.savePageFormat);
-    itemPrivate->type = static_cast<QWebEngineDownloadItem::DownloadType>(info.downloadType);
+    itemPrivate->isSavePageDownload = info.isSavePageDownload;
     if (info.page && info.page->clientType() == QtWebEngineCore::WebContentsAdapterClient::WidgetsClient)
         itemPrivate->page = static_cast<QWebEnginePagePrivate *>(info.page)->q_ptr;
     else

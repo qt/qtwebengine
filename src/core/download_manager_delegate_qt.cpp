@@ -68,7 +68,6 @@ DownloadManagerDelegateQt::DownloadManagerDelegateQt(ProfileAdapter *profileAdap
     : m_profileAdapter(profileAdapter)
     , m_currentId(0)
     , m_weakPtrFactory(this)
-    , m_nextDownloadIsUserRequested(false)
 {
     Q_ASSERT(m_profileAdapter);
 }
@@ -138,17 +137,6 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
     QString suggestedFilename = toQt(item->GetSuggestedFilename());
     QString mimeTypeString = toQt(item->GetMimeType());
 
-    int downloadType = 0;
-    if (m_nextDownloadIsUserRequested) {
-        downloadType = ProfileAdapterClient::UserRequested;
-        m_nextDownloadIsUserRequested = false;
-    } else {
-        bool isAttachment = net::HttpContentDisposition(item->GetContentDisposition(), std::string()).is_attachment();
-        if (isAttachment)
-            downloadType = ProfileAdapterClient::Attachment;
-        else
-            downloadType = ProfileAdapterClient::DownloadAttribute;
-    }
 
     if (suggestedFilename.isEmpty())
         suggestedFilename = toQt(net::HttpContentDisposition(item->GetContentDisposition(), net::kCharsetLatin1).filename());
@@ -191,7 +179,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem* 
             false /* accepted */,
             false /* paused */,
             false /* done */,
-            downloadType,
+            false /* isSavePageDownload */,
             item->GetLastReason(),
             adapterClient,
             suggestedFilename,
@@ -292,7 +280,7 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         acceptedByDefault,
         false, /* paused */
         false, /* done */
-        ProfileAdapterClient::SavePage,
+        true, /* isSavePageDownload */
         ProfileAdapterClient::NoReason,
         adapterClient,
         QFileInfo(suggestedFilePath).fileName(),

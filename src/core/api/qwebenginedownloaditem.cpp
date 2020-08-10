@@ -163,13 +163,13 @@ QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QtWebEngineCore::Pr
     , downloadId(-1)
     , downloadState(QWebEngineDownloadItem::DownloadCancelled)
     , savePageFormat(QWebEngineDownloadItem::MimeHtmlSaveFormat)
-    , type(QWebEngineDownloadItem::Attachment)
     , interruptReason(QWebEngineDownloadItem::NoReason)
     , downloadUrl(url)
     , downloadPaused(false)
     , isCustomFileName(false)
     , totalBytes(-1)
     , receivedBytes(0)
+    , isSavePageDownload(false)
     , page(nullptr)
 {
 }
@@ -397,25 +397,6 @@ quint32 QWebEngineDownloadItem::id() const
 */
 
 /*!
-    \enum QWebEngineDownloadItem::DownloadType
-    \obsolete
-
-    Describes the requested download's type.
-
-    \value Attachment The web server's response includes a
-           \c Content-Disposition header with the \c attachment directive. If \c Content-Disposition
-           is present in the reply, the web server is indicating that the client should prompt the
-           user to save the content regardless of the content type.
-           See \l {RFC 2616 section 19.5.1} for details.
-    \value DownloadAttribute The user clicked a link with the \c download
-           attribute.
-    \value UserRequested The user initiated the download, for example by
-           selecting a web action.
-    \value SavePage Saving of the current page was requested (for example by
-           the \l{QWebEnginePage::WebAction}{QWebEnginePage::SavePage} web action).
-*/
-
-/*!
     \enum QWebEngineDownloadItem::DownloadInterruptReason
 
     Describes the reason why a download was interrupted:
@@ -507,78 +488,6 @@ QString QWebEngineDownloadItem::mimeType() const
 {
     Q_D(const QWebEngineDownloadItem);
     return d->mimeType;
-}
-
-/*!
-    \obsolete
-
-    Use \l suggestedFileName(), \l downloadDirectory(), and
-    \l downloadFileName() instead.
-
-    Returns the full target path where data is being downloaded to.
-
-    The path includes the file name. The default suggested path is the standard download location
-    and file name is deduced not to overwrite already existing files.
-*/
-
-QString QWebEngineDownloadItem::path() const
-{
-    Q_D(const QWebEngineDownloadItem);
-    return QDir::cleanPath(QDir(d->downloadDirectory).filePath(d->downloadFileName));
-}
-
-/*!
-    \obsolete
-
-    Use \l setDownloadDirectory() and \l setDownloadFileName() instead.
-
-    Sets the full target path to download the file to.
-
-    The \a path should also include the file name. The download path can only be set in response
-    to the QWebEngineProfile::downloadRequested() signal before the download is accepted.
-    Past that point, this function has no effect on the download item's state.
-*/
-void QWebEngineDownloadItem::setPath(QString path)
-{
-    Q_D(QWebEngineDownloadItem);
-    if (d->downloadState != QWebEngineDownloadItem::DownloadRequested) {
-        qWarning("Setting the download path is not allowed after the download has been accepted.");
-        return;
-    }
-    if (QDir(d->downloadDirectory).filePath(d->downloadFileName) != path) {
-        if (QFileInfo(path).fileName().isEmpty()) {
-            qWarning("The download path does not include file name.");
-            return;
-        }
-
-        if (QFileInfo(path).isDir()) {
-            qWarning("The download path matches with an already existing directory path.");
-            return;
-        }
-
-        QString newDirectory;
-        QString newFileName;
-
-        if (QFileInfo(path).fileName() == path) {
-          newDirectory = QStringLiteral("");
-          newFileName = path;
-        } else {
-          newDirectory = QFileInfo(path).path();
-          newFileName = QFileInfo(path).fileName();
-        }
-
-        if (d->downloadDirectory != newDirectory) {
-          d->downloadDirectory = newDirectory;
-          Q_EMIT pathChanged();
-          Q_EMIT downloadDirectoryChanged();
-        }
-
-        if (d->downloadFileName != newFileName) {
-          d->downloadFileName = newFileName;
-          Q_EMIT pathChanged();
-          Q_EMIT downloadFileNameChanged();
-        }
-    }
 }
 
 /*!
@@ -707,20 +616,6 @@ void QWebEngineDownloadItem::setSavePageFormat(QWebEngineDownloadItem::SavePageF
 }
 
 /*!
-    Returns the requested download's type.
-    \obsolete
-
-    \note This property works unreliably, except for \c SavePage
-    downloads. Use \l isSavePageDownload() instead.
- */
-
-QWebEngineDownloadItem::DownloadType QWebEngineDownloadItem::type() const
-{
-    Q_D(const QWebEngineDownloadItem);
-    return d->type;
-}
-
-/*!
     Returns \c true if this is a download request for saving a web page.
 
     \sa savePageFormat(), setSavePageFormat()
@@ -728,7 +623,7 @@ QWebEngineDownloadItem::DownloadType QWebEngineDownloadItem::type() const
 bool QWebEngineDownloadItem::isSavePageDownload() const
 {
     Q_D(const QWebEngineDownloadItem);
-    return d->type == QWebEngineDownloadItem::SavePage;
+    return d->isSavePageDownload;
 }
 
 /*!

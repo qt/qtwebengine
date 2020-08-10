@@ -89,8 +89,6 @@ public:
     void resumeDownload(quint32 downloadId);
     void removeDownload(quint32 downloadId);
 
-    void markNextDownloadAsUserRequested() { m_nextDownloadIsUserRequested = true; }
-
     // Inherited from content::DownloadItem::Observer
     void OnDownloadUpdated(download::DownloadItem *download) override;
     void OnDownloadDestroyed(download::DownloadItem *download) override;
@@ -103,7 +101,6 @@ private:
 
     uint32_t m_currentId;
     base::WeakPtrFactory<DownloadManagerDelegateQt> m_weakPtrFactory;
-    bool m_nextDownloadIsUserRequested;
 
     friend class DownloadManagerDelegateInstance;
     friend class ProfileAdapter;

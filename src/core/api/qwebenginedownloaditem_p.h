@@ -76,7 +76,6 @@ public:
     qint64 startTime;
     QWebEngineDownloadItem::DownloadState downloadState;
     QWebEngineDownloadItem::SavePageFormat savePageFormat;
-    QWebEngineDownloadItem::DownloadType type;
     QWebEngineDownloadItem::DownloadInterruptReason interruptReason;
     QString downloadPath;
     const QUrl downloadUrl;
@@ -88,6 +87,7 @@ public:
     bool isCustomFileName;
     qint64 totalBytes;
     qint64 receivedBytes;
+    bool isSavePageDownload;
     QWebEngineDownloadItem *q_ptr;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
     QObject *page;

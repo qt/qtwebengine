@@ -1113,7 +1113,6 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     if (!dlm)
         return;
 
-    dlmd->markNextDownloadAsUserRequested();
     dlm->SetDelegate(dlmd);
 
     net::NetworkTrafficAnnotationTag traffic_annotation =

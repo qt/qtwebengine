@@ -61,8 +61,6 @@ public:
     Q_PROPERTY(qint64 totalBytes READ totalBytes NOTIFY totalBytesChanged FINAL)
     Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged FINAL)
     Q_PROPERTY(QString mimeType READ mimeType REVISION 1 FINAL)
-    Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged FINAL)
-    Q_PROPERTY(DownloadType type READ type REVISION 3 FINAL)
     Q_PROPERTY(DownloadInterruptReason interruptReason READ interruptReason NOTIFY interruptReasonChanged REVISION 4 FINAL)
     Q_PROPERTY(QString interruptReasonString READ interruptReasonString NOTIFY interruptReasonChanged REVISION 4 FINAL)
     Q_PROPERTY(bool isFinished READ isFinished NOTIFY isFinishedChanged REVISION 5 FINAL)
@@ -124,38 +122,16 @@ public:
     };
     Q_ENUM(DownloadInterruptReason)
 
-    enum DownloadType {
-        Attachment = 0,
-        DownloadAttribute,
-        UserRequested,
-        SavePage
-    };
-    Q_ENUM(DownloadType)
-
     quint32 id() const;
     DownloadState state() const;
     qint64 totalBytes() const;
     qint64 receivedBytes() const;
     QUrl url() const;
     QString mimeType() const;
-#if QT_DEPRECATED_SINCE(5, 14)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    QT_DEPRECATED_VERSION_X(5, 14, "Use downloadDirectory() and downloadFileName() instead")
-    QString path() const;
-    QT_DEPRECATED_VERSION_X(5, 14, "Use setDownloadDirectory() and setDownloadFileName() instead")
-    void setPath(QString path);
-#else
-    QT_DEPRECATED_X("Use downloadDirectory() and downloadFileName() instead")
-    QString path() const;
-    QT_DEPRECATED_X("Use setDownloadDirectory() and setDownloadFileName() instead")
-    void setPath(QString path);
-#endif
-#endif
     bool isFinished() const;
     bool isPaused() const;
     SavePageFormat savePageFormat() const;
     void setSavePageFormat(SavePageFormat format);
-    DownloadType Q_DECL_DEPRECATED type() const;
     DownloadInterruptReason interruptReason() const;
     QString interruptReasonString() const;
     bool isSavePageDownload() const;
@@ -181,7 +157,6 @@ Q_SIGNALS:
     Q_REVISION(2) void savePageFormatChanged();
     void receivedBytesChanged();
     void totalBytesChanged();
-    void pathChanged();
     Q_REVISION(4) void interruptReasonChanged();
     Q_REVISION(5) void isFinishedChanged();
     Q_REVISION(5) void isPausedChanged();
