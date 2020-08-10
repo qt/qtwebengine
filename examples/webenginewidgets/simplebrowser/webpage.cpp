@@ -67,16 +67,13 @@ WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
     connect(this, &QWebEnginePage::featurePermissionRequested, this, &WebPage::handleFeaturePermissionRequested);
     connect(this, &QWebEnginePage::proxyAuthenticationRequired, this, &WebPage::handleProxyAuthenticationRequired);
     connect(this, &QWebEnginePage::registerProtocolHandlerRequested, this, &WebPage::handleRegisterProtocolHandlerRequested);
-#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     connect(this, &QWebEnginePage::selectClientCertificate, this, &WebPage::handleSelectClientCertificate);
-#endif
 }
 
 bool WebPage::certificateError(const QWebEngineCertificateError &error)
 {
     QWidget *mainWindow = view()->window();
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QWebEngineCertificateError deferredError = error;
     deferredError.defer();
 
@@ -84,9 +81,6 @@ bool WebPage::certificateError(const QWebEngineCertificateError &error)
         if (!error.deferred()) {
             QMessageBox::critical(mainWindow, tr("Certificate Error"), error.errorDescription());
         } else {
-#else
-    if (error.isOverridable()) {
-#endif
             QDialog dialog(mainWindow);
             dialog.setModal(true);
             dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -99,7 +93,6 @@ bool WebPage::certificateError(const QWebEngineCertificateError &error)
             certificateDialog.m_errorLabel->setText(error.errorDescription());
             dialog.setWindowTitle(tr("Certificate Error"));
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
             if (dialog.exec() == QDialog::Accepted)
                 error.ignoreCertificateError();
             else
@@ -107,13 +100,6 @@ bool WebPage::certificateError(const QWebEngineCertificateError &error)
         }
     });
     return true;
-#else
-        return dialog.exec() == QDialog::Accepted;
-    }
-
-    QMessageBox::critical(mainWindow, tr("Certificate Error"), error.errorDescription());
-    return false;
-#endif
 }
 
 void WebPage::handleAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)
@@ -221,10 +207,8 @@ void WebPage::handleRegisterProtocolHandlerRequested(QWebEngineRegisterProtocolH
 }
 //! [registerProtocolHandlerRequested]
 
-#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 void WebPage::handleSelectClientCertificate(QWebEngineClientCertificateSelection selection)
 {
     // Just select one.
     selection.select(selection.certificates().at(0));
 }
-#endif
