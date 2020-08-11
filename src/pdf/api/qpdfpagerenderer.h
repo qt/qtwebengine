@@ -84,7 +84,7 @@ Q_SIGNALS:
                       QPdfDocumentRenderOptions options, quint64 requestId);
 
 private:
-    Q_DECLARE_PRIVATE(QPdfPageRenderer)
+    QScopedPointer<QPdfPageRendererPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE

@@ -44,36 +44,31 @@
 
 QT_BEGIN_NAMESPACE
 
-class QPdfPageNavigationPrivate : public QObjectPrivate
+class QPdfPageNavigationPrivate
 {
 public:
-    QPdfPageNavigationPrivate()
-        : QObjectPrivate()
-    {
-    }
+    QPdfPageNavigationPrivate(QPdfPageNavigation *q) : q_ptr(q) { }
 
     void update()
     {
-        Q_Q(QPdfPageNavigation);
-
         const bool documentAvailable = m_document && m_document->status() == QPdfDocument::Ready;
 
         if (documentAvailable) {
             const int newPageCount = m_document->pageCount();
             if (m_pageCount != newPageCount) {
                 m_pageCount = newPageCount;
-                emit q->pageCountChanged(m_pageCount);
+                emit q_ptr->pageCountChanged(m_pageCount);
             }
         } else {
             if (m_pageCount != 0) {
                 m_pageCount = 0;
-                emit q->pageCountChanged(m_pageCount);
+                emit q_ptr->pageCountChanged(m_pageCount);
             }
         }
 
         if (m_currentPage != 0) {
             m_currentPage = 0;
-            emit q->currentPageChanged(m_currentPage);
+            emit q_ptr->currentPageChanged(m_currentPage);
         }
 
         updatePrevNext();
@@ -81,19 +76,17 @@ public:
 
     void updatePrevNext()
     {
-        Q_Q(QPdfPageNavigation);
-
         const bool hasPreviousPage = m_currentPage > 0;
         const bool hasNextPage = m_currentPage < (m_pageCount - 1);
 
         if (m_canGoToPreviousPage != hasPreviousPage) {
             m_canGoToPreviousPage = hasPreviousPage;
-            emit q->canGoToPreviousPageChanged(m_canGoToPreviousPage);
+            emit q_ptr->canGoToPreviousPageChanged(m_canGoToPreviousPage);
         }
 
         if (m_canGoToNextPage != hasNextPage) {
             m_canGoToNextPage = hasNextPage;
-            emit q->canGoToNextPageChanged(m_canGoToNextPage);
+            emit q_ptr->canGoToNextPageChanged(m_canGoToNextPage);
         }
     }
 
@@ -102,8 +95,7 @@ public:
         update();
     }
 
-    Q_DECLARE_PUBLIC(QPdfPageNavigation)
-
+    QPdfPageNavigation *q_ptr = nullptr;
     QPointer<QPdfDocument> m_document = nullptr;
     int m_currentPage = 0;
     int m_pageCount = 0;
@@ -128,7 +120,7 @@ public:
     Constructs a page navigation object with parent object \a parent.
 */
 QPdfPageNavigation::QPdfPageNavigation(QObject *parent)
-    : QObject(*new QPdfPageNavigationPrivate, parent)
+    : QObject(parent), d_ptr(new QPdfPageNavigationPrivate(this))
 {
 }
 
@@ -156,9 +148,7 @@ QPdfPageNavigation::~QPdfPageNavigation()
 */
 QPdfDocument* QPdfPageNavigation::document() const
 {
-    Q_D(const QPdfPageNavigation);
-
-    return d->m_document;
+    return d_ptr->m_document;
 }
 
 /*!
@@ -170,21 +160,21 @@ QPdfDocument* QPdfPageNavigation::document() const
 */
 void QPdfPageNavigation::setDocument(QPdfDocument *document)
 {
-    Q_D(QPdfPageNavigation);
-
-    if (d->m_document == document)
+    if (d_ptr->m_document == document)
         return;
 
-    if (d->m_document)
-        disconnect(d->m_documentStatusChangedConnection);
+    if (d_ptr->m_document)
+        disconnect(d_ptr->m_documentStatusChangedConnection);
 
-    d->m_document = document;
-    emit documentChanged(d->m_document);
+    d_ptr->m_document = document;
+    emit documentChanged(d_ptr->m_document);
 
-    if (d->m_document)
-        d->m_documentStatusChangedConnection = connect(d->m_document.data(), &QPdfDocument::statusChanged, this, [d](){ d->documentStatusChanged(); });
+    if (d_ptr->m_document)
+        d_ptr->m_documentStatusChangedConnection =
+                connect(d_ptr->m_document.data(), &QPdfDocument::statusChanged, this,
+                        [this]() { d_ptr->documentStatusChanged(); });
 
-    d->update();
+    d_ptr->update();
 }
 
 /*!
@@ -201,9 +191,7 @@ void QPdfPageNavigation::setDocument(QPdfDocument *document)
 */
 int QPdfPageNavigation::currentPage() const
 {
-    Q_D(const QPdfPageNavigation);
-
-    return d->m_currentPage;
+    return d_ptr->m_currentPage;
 }
 
 /*!
@@ -213,18 +201,16 @@ int QPdfPageNavigation::currentPage() const
 */
 void QPdfPageNavigation::setCurrentPage(int newPage)
 {
-    Q_D(QPdfPageNavigation);
-
-    if (newPage < 0 || newPage >= d->m_pageCount)
+    if (newPage < 0 || newPage >= d_ptr->m_pageCount)
         return;
 
-    if (d->m_currentPage == newPage)
+    if (d_ptr->m_currentPage == newPage)
         return;
 
-    d->m_currentPage = newPage;
-    emit currentPageChanged(d->m_currentPage);
+    d_ptr->m_currentPage = newPage;
+    emit currentPageChanged(d_ptr->m_currentPage);
 
-    d->updatePrevNext();
+    d_ptr->updatePrevNext();
 }
 
 /*!
@@ -240,9 +226,7 @@ void QPdfPageNavigation::setCurrentPage(int newPage)
 */
 int QPdfPageNavigation::pageCount() const
 {
-    Q_D(const QPdfPageNavigation);
-
-    return d->m_pageCount;
+    return d_ptr->m_pageCount;
 }
 
 /*!
@@ -257,9 +241,7 @@ int QPdfPageNavigation::pageCount() const
 */
 bool QPdfPageNavigation::canGoToPreviousPage() const
 {
-    Q_D(const QPdfPageNavigation);
-
-    return d->m_canGoToPreviousPage;
+    return d_ptr->m_canGoToPreviousPage;
 }
 
 /*!
@@ -274,9 +256,7 @@ bool QPdfPageNavigation::canGoToPreviousPage() const
 */
 bool QPdfPageNavigation::canGoToNextPage() const
 {
-    Q_D(const QPdfPageNavigation);
-
-    return d->m_canGoToNextPage;
+    return d_ptr->m_canGoToNextPage;
 }
 
 /*!
@@ -288,10 +268,8 @@ bool QPdfPageNavigation::canGoToNextPage() const
 */
 void QPdfPageNavigation::goToPreviousPage()
 {
-    Q_D(QPdfPageNavigation);
-
-    if (d->m_currentPage > 0)
-        setCurrentPage(d->m_currentPage - 1);
+    if (d_ptr->m_currentPage > 0)
+        setCurrentPage(d_ptr->m_currentPage - 1);
 }
 
 /*!
@@ -303,10 +281,8 @@ void QPdfPageNavigation::goToPreviousPage()
 */
 void QPdfPageNavigation::goToNextPage()
 {
-    Q_D(QPdfPageNavigation);
-
-    if (d->m_currentPage < d->m_pageCount - 1)
-        setCurrentPage(d->m_currentPage + 1);
+    if (d_ptr->m_currentPage < d_ptr->m_pageCount - 1)
+        setCurrentPage(d_ptr->m_currentPage + 1);
 }
 
 QT_END_NAMESPACE

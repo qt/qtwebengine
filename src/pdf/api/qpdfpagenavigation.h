@@ -84,7 +84,7 @@ Q_SIGNALS:
     void canGoToNextPageChanged(bool canGo);
 
 private:
-    Q_DECLARE_PRIVATE(QPdfPageNavigation)
+    QScopedPointer<QPdfPageNavigationPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
