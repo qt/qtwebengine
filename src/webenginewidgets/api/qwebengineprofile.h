@@ -55,7 +55,7 @@ class QObject;
 class QUrl;
 class QWebEngineClientCertificateStore;
 class QWebEngineCookieStore;
-class QWebEngineDownloadItem;
+class QWebEngineDownloadRequest;
 class QWebEngineNotification;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
@@ -149,7 +149,7 @@ public:
     static QWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:
-    void downloadRequested(QWebEngineDownloadItem *download);
+    void downloadRequested(QWebEngineDownloadRequest *download);
 
 private:
     Q_DISABLE_COPY(QWebEngineProfile)

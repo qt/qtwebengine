@@ -32,14 +32,14 @@
 #include <QTemporaryDir>
 #include <QTest>
 #include <QRegularExpression>
-#include <QWebEngineDownloadItem>
+#include <QWebEngineDownloadRequest>
 #include <QWebEnginePage>
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
 #include <QWebEngineView>
 #include <httpserver.h>
 
-class tst_QWebEngineDownloadItem : public QObject
+class tst_QWebEngineDownloadRequest : public QObject
 {
     Q_OBJECT
 
@@ -89,8 +89,8 @@ private:
     QWebEngineProfile *m_profile;
     QWebEnginePage *m_page;
     QWebEngineView *m_view;
-    QSet<QWebEngineDownloadItem *> m_requestedDownloads;
-    QSet<QWebEngineDownloadItem *> m_finishedDownloads;
+    QSet<QWebEngineDownloadRequest *> m_requestedDownloads;
+    QSet<QWebEngineDownloadRequest *> m_finishedDownloads;
 };
 
 class ScopedConnection {
@@ -101,22 +101,22 @@ private:
     QMetaObject::Connection m_connection;
 };
 
-Q_DECLARE_METATYPE(tst_QWebEngineDownloadItem::UserAction)
-Q_DECLARE_METATYPE(tst_QWebEngineDownloadItem::FileAction)
+Q_DECLARE_METATYPE(tst_QWebEngineDownloadRequest::UserAction)
+Q_DECLARE_METATYPE(tst_QWebEngineDownloadRequest::FileAction)
 
-void tst_QWebEngineDownloadItem::initTestCase()
+void tst_QWebEngineDownloadRequest::initTestCase()
 {
     m_server = new HttpServer();
     m_profile = new QWebEngineProfile;
     m_profile->setHttpCacheType(QWebEngineProfile::NoCache);
     m_profile->settings()->setAttribute(QWebEngineSettings::AutoLoadIconsForPage, false);
-    connect(m_profile, &QWebEngineProfile::downloadRequested, [this](QWebEngineDownloadItem *item) {
+    connect(m_profile, &QWebEngineProfile::downloadRequested, [this](QWebEngineDownloadRequest *item) {
         m_requestedDownloads.insert(item);
-        connect(item, &QWebEngineDownloadItem::destroyed, [this, item](){
+        connect(item, &QWebEngineDownloadRequest::destroyed, [this, item](){
             m_requestedDownloads.remove(item);
             m_finishedDownloads.remove(item);
         });
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [this, item](){
+        connect(item, &QWebEngineDownloadRequest::isFinishedChanged, [this, item](){
             m_finishedDownloads.insert(item);
         });
     });
@@ -127,14 +127,14 @@ void tst_QWebEngineDownloadItem::initTestCase()
     m_view->show();
 }
 
-void tst_QWebEngineDownloadItem::init()
+void tst_QWebEngineDownloadRequest::init()
 {
     QVERIFY(m_server->start());
 }
 
-void tst_QWebEngineDownloadItem::cleanup()
+void tst_QWebEngineDownloadRequest::cleanup()
 {
-    for (QWebEngineDownloadItem *item : m_finishedDownloads) {
+    for (QWebEngineDownloadRequest *item : m_finishedDownloads) {
         item->deleteLater();
     }
     QTRY_COMPARE(m_requestedDownloads.count(), 0);
@@ -144,7 +144,7 @@ void tst_QWebEngineDownloadItem::cleanup()
     m_profile->setDownloadPath("");
 }
 
-void tst_QWebEngineDownloadItem::cleanupTestCase()
+void tst_QWebEngineDownloadRequest::cleanupTestCase()
 {
     delete m_view;
     delete m_page;
@@ -152,7 +152,7 @@ void tst_QWebEngineDownloadItem::cleanupTestCase()
     delete m_server;
 }
 
-void tst_QWebEngineDownloadItem::saveLink(QPoint linkPos)
+void tst_QWebEngineDownloadRequest::saveLink(QPoint linkPos)
 {
     // Simulate right-clicking on link and choosing "save link as" from menu.
     QSignalSpy menuSpy(m_view, &QWebEngineView::customContextMenuRequested);
@@ -169,7 +169,7 @@ void tst_QWebEngineDownloadItem::saveLink(QPoint linkPos)
     m_page->triggerAction(QWebEnginePage::DownloadLinkToDisk);
 }
 
-void tst_QWebEngineDownloadItem::clickLink(QPoint linkPos)
+void tst_QWebEngineDownloadRequest::clickLink(QPoint linkPos)
 {
     // Simulate left-clicking on link.
     QTRY_VERIFY(m_view->focusWidget());
@@ -177,7 +177,7 @@ void tst_QWebEngineDownloadItem::clickLink(QPoint linkPos)
     QTest::mouseClick(renderWidget, Qt::LeftButton, {}, linkPos);
 }
 
-void tst_QWebEngineDownloadItem::simulateUserAction(QPoint linkPos, UserAction action)
+void tst_QWebEngineDownloadRequest::simulateUserAction(QPoint linkPos, UserAction action)
 {
     switch (action) {
     case SaveLink: return saveLink(linkPos);
@@ -185,7 +185,7 @@ void tst_QWebEngineDownloadItem::simulateUserAction(QPoint linkPos, UserAction a
     }
 }
 
-void tst_QWebEngineDownloadItem::downloadLink_data()
+void tst_QWebEngineDownloadRequest::downloadLink_data()
 {
     QTest::addColumn<UserAction>("userAction");
     QTest::addColumn<bool>("anchorHasDownloadAttribute");
@@ -381,7 +381,7 @@ void tst_QWebEngineDownloadItem::downloadLink_data()
         /* fileAction                 */ << FileIsDownloaded;
 }
 
-void tst_QWebEngineDownloadItem::downloadLink()
+void tst_QWebEngineDownloadRequest::downloadLink()
 {
     QFETCH(UserAction, userAction);
     QFETCH(bool, anchorHasDownloadAttribute);
@@ -439,29 +439,29 @@ void tst_QWebEngineDownloadItem::downloadLink()
     QUrl downloadUrl = m_server->url(slashFileName);
     int acceptedCount = 0;
     int finishedCount = 0;
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
-        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
+        QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadRequested);
         QCOMPARE(item->isFinished(), false);
         QCOMPARE(item->totalBytes(), -1);
         QCOMPARE(item->receivedBytes(), 0);
-        QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+        QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
         QCOMPARE(item->isSavePageDownload(), false);
         QCOMPARE(item->mimeType(), QString(fileMimeTypeDetected));
         QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), suggestedPath);
-        QCOMPARE(item->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
+        QCOMPARE(item->savePageFormat(), QWebEngineDownloadRequest::UnknownSaveFormat);
         QCOMPARE(item->url(), downloadUrl);
         QCOMPARE(item->page(), m_page);
 
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
-            QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
+        connect(item, &QWebEngineDownloadRequest::isFinishedChanged, [&, item]() {
+            QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), fileContents.size());
             QCOMPARE(item->receivedBytes(), fileContents.size());
-            QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+            QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
             QCOMPARE(item->isSavePageDownload(), false);
             QCOMPARE(item->mimeType(), QString(fileMimeTypeDetected));
             QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), downloadPath);
-            QCOMPARE(item->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
+            QCOMPARE(item->savePageFormat(), QWebEngineDownloadRequest::UnknownSaveFormat);
             QCOMPARE(item->url(), downloadUrl);
             QCOMPARE(item->page(), m_page);
 
@@ -507,7 +507,7 @@ void tst_QWebEngineDownloadItem::downloadLink()
     QCOMPARE(file.readAll(), fileContents);
 }
 
-void tst_QWebEngineDownloadItem::downloadTwoLinks_data()
+void tst_QWebEngineDownloadRequest::downloadTwoLinks_data()
 {
     QTest::addColumn<UserAction>("action1");
     QTest::addColumn<UserAction>("action2");
@@ -517,7 +517,7 @@ void tst_QWebEngineDownloadItem::downloadTwoLinks_data()
     QTest::newRow("Click+Click") << ClickLink << ClickLink;
 }
 
-void tst_QWebEngineDownloadItem::downloadTwoLinks()
+void tst_QWebEngineDownloadRequest::downloadTwoLinks()
 {
     QFETCH(UserAction, action1);
     QFETCH(UserAction, action2);
@@ -553,13 +553,13 @@ void tst_QWebEngineDownloadItem::downloadTwoLinks()
     QString standardDir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
     int acceptedCount = 0;
     int finishedCount = 0;
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
-        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
+        QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadRequested);
         QCOMPARE(item->isFinished(), false);
         QCOMPARE(item->totalBytes(), -1);
         QCOMPARE(item->receivedBytes(), 0);
-        QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
-        QCOMPARE(item->savePageFormat(), QWebEngineDownloadItem::UnknownSaveFormat);
+        QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
+        QCOMPARE(item->savePageFormat(), QWebEngineDownloadRequest::UnknownSaveFormat);
         QCOMPARE(item->mimeType(), QStringLiteral("text/plain"));
         QString filePart = QChar('/') + item->url().fileName();
         QString fileName =  item->url().fileName();
@@ -569,7 +569,7 @@ void tst_QWebEngineDownloadItem::downloadTwoLinks()
         if (action1 == ClickLink && action2 == ClickLink && filePart != QStringLiteral("/file1") && filePart != QStringLiteral("/file2"))
                 QFAIL(qPrintable("Unexpected file name: " + filePart));
 
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&]() {
+        connect(item, &QWebEngineDownloadRequest::isFinishedChanged, [&]() {
             finishedCount++;
         });
         item->setDownloadDirectory(tmpDir.path());
@@ -595,20 +595,20 @@ void tst_QWebEngineDownloadItem::downloadTwoLinks()
     QTRY_COMPARE(finishedCount, 2);
 }
 
-void tst_QWebEngineDownloadItem::downloadPage_data()
+void tst_QWebEngineDownloadRequest::downloadPage_data()
 {
     QTest::addColumn<bool>("saveWithPageAction");
-    QTest::addColumn<QWebEngineDownloadItem::SavePageFormat>("savePageFormat");
-    QTest::newRow("SingleHtmlSaveFormat")   << false << QWebEngineDownloadItem::SingleHtmlSaveFormat;
-    QTest::newRow("CompleteHtmlSaveFormat") << false << QWebEngineDownloadItem::CompleteHtmlSaveFormat;
-    QTest::newRow("MimeHtmlSaveFormat")     << false << QWebEngineDownloadItem::MimeHtmlSaveFormat;
-    QTest::newRow("SavePageAction")         << true  << QWebEngineDownloadItem::MimeHtmlSaveFormat;
+    QTest::addColumn<QWebEngineDownloadRequest::SavePageFormat>("savePageFormat");
+    QTest::newRow("SingleHtmlSaveFormat")   << false << QWebEngineDownloadRequest::SingleHtmlSaveFormat;
+    QTest::newRow("CompleteHtmlSaveFormat") << false << QWebEngineDownloadRequest::CompleteHtmlSaveFormat;
+    QTest::newRow("MimeHtmlSaveFormat")     << false << QWebEngineDownloadRequest::MimeHtmlSaveFormat;
+    QTest::newRow("SavePageAction")         << true  << QWebEngineDownloadRequest::MimeHtmlSaveFormat;
 }
 
-void tst_QWebEngineDownloadItem::downloadPage()
+void tst_QWebEngineDownloadRequest::downloadPage()
 {
     QFETCH(bool, saveWithPageAction);
-    QFETCH(QWebEngineDownloadItem::SavePageFormat, savePageFormat);
+    QFETCH(QWebEngineDownloadRequest::SavePageFormat, savePageFormat);
 
     // Set up HTTP server
     int indexRequestCount = 0;
@@ -631,12 +631,12 @@ void tst_QWebEngineDownloadItem::downloadPage()
     QUrl downloadUrl = m_server->url("/");
     int acceptedCount = 0;
     int finishedCount = 0;
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
-        QCOMPARE(item->state(), saveWithPageAction ? QWebEngineDownloadItem::DownloadRequested : QWebEngineDownloadItem::DownloadInProgress);
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
+        QCOMPARE(item->state(), saveWithPageAction ? QWebEngineDownloadRequest::DownloadRequested : QWebEngineDownloadRequest::DownloadInProgress);
         QCOMPARE(item->isFinished(), false);
         QCOMPARE(item->totalBytes(), -1);
         QCOMPARE(item->receivedBytes(), 0);
-        QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+        QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
         QCOMPARE(item->isSavePageDownload(), true);
         // FIXME(juvaldma): why is mimeType always the same?
         QCOMPARE(item->mimeType(), QStringLiteral("application/x-mimearchive"));
@@ -654,12 +654,12 @@ void tst_QWebEngineDownloadItem::downloadPage()
 
         QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), downloadPath);
 
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
-            QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
+        connect(item, &QWebEngineDownloadRequest::isFinishedChanged, [&, item]() {
+            QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), item->receivedBytes());
             QVERIFY(item->receivedBytes() > 0);
-            QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+            QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
             QCOMPARE(item->isSavePageDownload(), true);
             QCOMPARE(item->mimeType(), QStringLiteral("application/x-mimearchive"));
             QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), downloadPath);
@@ -692,7 +692,7 @@ void tst_QWebEngineDownloadItem::downloadPage()
     QVERIFY(file.exists());
 }
 
-void tst_QWebEngineDownloadItem::downloadViaSetUrl()
+void tst_QWebEngineDownloadRequest::downloadViaSetUrl()
 {
     // Reproduce the scenario described in QTBUG-63388 by triggering downloads
     // of the same file multiple times via QWebEnginePage::setUrl
@@ -715,7 +715,7 @@ void tst_QWebEngineDownloadItem::downloadViaSetUrl()
 
     // Set up profile and download handler
     QList<QUrl> downloadUrls;
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         downloadUrls.append(item->url());
     });
 
@@ -746,7 +746,7 @@ void tst_QWebEngineDownloadItem::downloadViaSetUrl()
     }
 }
 
-void tst_QWebEngineDownloadItem::downloadFileNot1()
+void tst_QWebEngineDownloadRequest::downloadFileNot1()
 {
     // Trigger file download via download() but don't accept().
 
@@ -755,11 +755,11 @@ void tst_QWebEngineDownloadItem::downloadFileNot1()
         rr->sendResponse();
     });
 
-    QPointer<QWebEngineDownloadItem> downloadItem;
+    QPointer<QWebEngineDownloadRequest> downloadItem;
     int downloadCount = 0;
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         QVERIFY(item);
-        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+        QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadRequested);
         downloadItem = item;
         downloadCount++;
     });
@@ -769,7 +769,7 @@ void tst_QWebEngineDownloadItem::downloadFileNot1()
     QVERIFY(!downloadItem);
 }
 
-void tst_QWebEngineDownloadItem::downloadFileNot2()
+void tst_QWebEngineDownloadRequest::downloadFileNot2()
 {
     // Trigger file download via download() but call cancel() instead of accept().
 
@@ -778,11 +778,11 @@ void tst_QWebEngineDownloadItem::downloadFileNot2()
         rr->sendResponse();
     });
 
-    QPointer<QWebEngineDownloadItem> downloadItem;
+    QPointer<QWebEngineDownloadRequest> downloadItem;
     int downloadCount = 0;
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         QVERIFY(item);
-        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+        QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadRequested);
         item->cancel();
         downloadItem = item;
         downloadCount++;
@@ -791,20 +791,20 @@ void tst_QWebEngineDownloadItem::downloadFileNot2()
     m_page->download(m_server->url(QByteArrayLiteral("/file")));
     QTRY_COMPARE(downloadCount, 1);
     QVERIFY(downloadItem);
-    QCOMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadCancelled);
+    QCOMPARE(downloadItem->state(), QWebEngineDownloadRequest::DownloadCancelled);
 }
 
-void tst_QWebEngineDownloadItem::downloadDeleted()
+void tst_QWebEngineDownloadRequest::downloadDeleted()
 {
-    QPointer<QWebEngineDownloadItem> downloadItem;
+    QPointer<QWebEngineDownloadRequest> downloadItem;
     m_server->setExpectError(true);
     int downloadCount = 0;
     int finishedCount = 0;
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         QVERIFY(item);
-        QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadRequested);
+        QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadRequested);
         downloadItem = item;
-        connect(downloadItem, &QWebEngineDownloadItem::isFinishedChanged, [&]() {
+        connect(downloadItem, &QWebEngineDownloadRequest::isFinishedChanged, [&]() {
             finishedCount++;
         });
         item->accept();
@@ -819,7 +819,7 @@ void tst_QWebEngineDownloadItem::downloadDeleted()
     QTRY_COMPARE(finishedCount, 1);
 }
 
-void tst_QWebEngineDownloadItem::downloadDeletedByProfile()
+void tst_QWebEngineDownloadRequest::downloadDeletedByProfile()
 {
     m_server->setExpectError(true);
 
@@ -828,9 +828,9 @@ void tst_QWebEngineDownloadItem::downloadDeletedByProfile()
     profile->settings()->setAttribute(QWebEngineSettings::AutoLoadIconsForPage, false);
 
     bool downloadFinished = false;
-    QPointer<QWebEngineDownloadItem> downloadItem;
-    connect(profile, &QWebEngineProfile::downloadRequested, [&] (QWebEngineDownloadItem *item) {
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&] () {
+    QPointer<QWebEngineDownloadRequest> downloadItem;
+    connect(profile, &QWebEngineProfile::downloadRequested, [&] (QWebEngineDownloadRequest *item) {
+        connect(item, &QWebEngineDownloadRequest::isFinishedChanged, [&] () {
             downloadFinished = true;
         });
         downloadItem = item;
@@ -850,7 +850,7 @@ void tst_QWebEngineDownloadItem::downloadDeletedByProfile()
     QTRY_COMPARE(downloadItem.isNull(), true);
 }
 
-void tst_QWebEngineDownloadItem::downloadUniqueFilename_data()
+void tst_QWebEngineDownloadRequest::downloadUniqueFilename_data()
 {
     QTest::addColumn<QString>("baseName");
     QTest::addColumn<QString>("extension");
@@ -859,7 +859,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilename_data()
     QTest::newRow("tar.gz") << QString("test(1.test)") << QString("tar.gz");
 }
 
-void tst_QWebEngineDownloadItem::downloadUniqueFilename()
+void tst_QWebEngineDownloadRequest::downloadUniqueFilename()
 {
     QFETCH(QString, baseName);
     QFETCH(QString, extension);
@@ -887,15 +887,15 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilename()
     });
 
     // Set up profile and download handler
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         suggestedFileName = item->suggestedFileName();
         item->accept();
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
-            QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
+        connect(item, &QWebEngineDownloadRequest::isFinishedChanged, [&, item]() {
+            QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), item->receivedBytes());
             QVERIFY(item->receivedBytes() > 0);
-            QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+            QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
             QCOMPARE(item->isSavePageDownload(), false);
             downloadedFilePath = QDir(item->downloadDirectory()).filePath(item->downloadFileName());
             downloadFinished = true;
@@ -917,7 +917,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilename()
     }
 }
 
-void tst_QWebEngineDownloadItem::downloadUniqueFilenameWithTimestamp()
+void tst_QWebEngineDownloadRequest::downloadUniqueFilenameWithTimestamp()
 {
     // Set up HTTP server
     QString baseName("test(1.test)");
@@ -945,15 +945,15 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilenameWithTimestamp()
     });
 
     // Set up profile and download handler
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         suggestedFileName = item->suggestedFileName();
         item->accept();
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
-            QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
+        connect(item, &QWebEngineDownloadRequest::isFinishedChanged, [&, item]() {
+            QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), item->receivedBytes());
             QVERIFY(item->receivedBytes() > 0);
-            QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+            QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
             QCOMPARE(item->page(), m_page);
             downloadFinished = true;
             downloadedFilePath = QDir(item->downloadDirectory()).filePath(item->downloadFileName());
@@ -997,7 +997,7 @@ void tst_QWebEngineDownloadItem::downloadUniqueFilenameWithTimestamp()
     }
 }
 
-void tst_QWebEngineDownloadItem::downloadToDefaultLocation()
+void tst_QWebEngineDownloadRequest::downloadToDefaultLocation()
 {
     QTemporaryDir tmpDir;
     QVERIFY(tmpDir.isValid());
@@ -1014,7 +1014,7 @@ void tst_QWebEngineDownloadItem::downloadToDefaultLocation()
     QCOMPARE(m_profile->downloadPath(), QStandardPaths::writableLocation(QStandardPaths::DownloadLocation));
 }
 
-void tst_QWebEngineDownloadItem::downloadToNonExistentDir()
+void tst_QWebEngineDownloadRequest::downloadToNonExistentDir()
 {
     QString baseName("test(1.test)");
     QString extension("txt");
@@ -1042,15 +1042,15 @@ void tst_QWebEngineDownloadItem::downloadToNonExistentDir()
     });
 
     // Set up profile and download handler
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         suggestedFileName = item->suggestedFileName();
         item->accept();
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
-            QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
+        connect(item, &QWebEngineDownloadRequest::isFinishedChanged, [&, item]() {
+            QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), item->receivedBytes());
             QVERIFY(item->receivedBytes() > 0);
-            QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+            QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
             QCOMPARE(item->page(), m_page);
             downloadFinished = true;
             downloadedFilePath = QDir(item->downloadDirectory()).filePath(item->downloadFileName());
@@ -1068,7 +1068,7 @@ void tst_QWebEngineDownloadItem::downloadToNonExistentDir()
     QCOMPARE(suggestedFileName, fileName);
 }
 
-void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
+void tst_QWebEngineDownloadRequest::downloadToReadOnlyDir()
 {
 #ifdef Q_OS_WIN
     QSKIP("Cannot change file permissions on Windows.");
@@ -1099,12 +1099,12 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
         }
     });
 
-    QPointer<QWebEngineDownloadItem> downloadItem;
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+    QPointer<QWebEngineDownloadRequest> downloadItem;
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         suggestedFileName = item->suggestedFileName();
         downloadItem = item;
         item->accept();
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&]() {
+        connect(item, &QWebEngineDownloadRequest::isFinishedChanged, [&]() {
             downloadFinished = true;
         });
         downloadAccepted = true;
@@ -1118,9 +1118,9 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
     QTRY_VERIFY(downloadAccepted);
 
     QVERIFY(downloadItem);
-    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadItem::DownloadInterrupted);
+    QTRY_COMPARE(downloadItem->state(), QWebEngineDownloadRequest::DownloadInterrupted);
     QCOMPARE(downloadItem->isFinished(), false);
-    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadItem::FileAccessDenied);
+    QCOMPARE(downloadItem->interruptReason(), QWebEngineDownloadRequest::FileAccessDenied);
     QVERIFY(!QFile(downloadedFilePath).exists());
     QCOMPARE(suggestedFileName, fileName);
 
@@ -1130,7 +1130,7 @@ void tst_QWebEngineDownloadItem::downloadToReadOnlyDir()
     QFile(m_profile->downloadPath()).setPermissions(QFileDevice::WriteOwner);
 }
 
-void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName_data()
+void tst_QWebEngineDownloadRequest::downloadToDirectoryWithFileName_data()
 {
     QTest::addColumn<bool>("setDirectoryFirst");
 
@@ -1138,7 +1138,7 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName_data()
     QTest::newRow("setFileNameFirst") << false;
 }
 
-void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
+void tst_QWebEngineDownloadRequest::downloadToDirectoryWithFileName()
 {
     QFETCH(bool, setDirectoryFirst);
     QString downloadDirectory;
@@ -1169,7 +1169,7 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
     });
 
     // Set up profile and download handler
-    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadItem *item) {
+    ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
 
         if (!downloadDirectory.isEmpty() && setDirectoryFirst) {
             item->setDownloadDirectory(downloadDirectory);
@@ -1188,12 +1188,12 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
 
         item->accept();
 
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged, [&, item]() {
-            QCOMPARE(item->state(), QWebEngineDownloadItem::DownloadCompleted);
+        connect(item, &QWebEngineDownloadRequest::isFinishedChanged, [&, item]() {
+            QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadCompleted);
             QCOMPARE(item->isFinished(), true);
             QCOMPARE(item->totalBytes(), item->receivedBytes());
             QVERIFY(item->receivedBytes() > 0);
-            QCOMPARE(item->interruptReason(), QWebEngineDownloadItem::NoReason);
+            QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
             QCOMPARE(item->page(), m_page);
             downloadFinished = true;
             downloadedFilePath = QDir(item->downloadDirectory()).filePath(item->downloadFileName());
@@ -1231,7 +1231,7 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
     QCOMPARE(downloadedSuggestedFileName, fileName);
 
     // Download another file to the same directory and set file name by
-    // QWebEngineDownloadItem::setDownloadDirectory() and setDownloadFileName() to avoid uniquification.
+    // QWebEngineDownloadRequest::setDownloadDirectory() and setDownloadFileName() to avoid uniquification.
     downloadFinished = false;
     downloadDirectory = m_profile->downloadPath() + QDir::separator() + "test1"  + QDir::separator();
     downloadFileName = "test1.txt";
@@ -1252,7 +1252,7 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
     QCOMPARE(downloadedSuggestedFileName, fileName);
 
     // Download the same file to same directory and set file name by
-    // QWebEngineDownloadItem::setDownloadDirectory() and setDownloadFileName() to avoid uniquification.
+    // QWebEngineDownloadRequest::setDownloadDirectory() and setDownloadFileName() to avoid uniquification.
     downloadFinished = false;
     downloadDirectory = m_profile->downloadPath() + QDir::separator() + "test2"  + QDir::separator();
     downloadFileName = "test1.txt";
@@ -1274,5 +1274,5 @@ void tst_QWebEngineDownloadItem::downloadToDirectoryWithFileName()
     QCOMPARE(downloadedSuggestedFileName, fileName);
 }
 
-QTEST_MAIN(tst_QWebEngineDownloadItem)
-#include "tst_qwebenginedownloaditem.moc"
+QTEST_MAIN(tst_QWebEngineDownloadRequest)
+#include "tst_qwebenginedownloadrequest.moc"

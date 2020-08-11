@@ -1086,11 +1086,11 @@ void QWebEnginePage::setBackgroundColor(const QColor &color)
  *
  * This function issues an asynchronous download request for the web page and returns immediately.
  *
- * \sa QWebEngineDownloadItem::SavePageFormat
+ * \sa QWebEngineDownloadRequest::SavePageFormat
  * \since 5.8
  */
 void QWebEnginePage::save(const QString &filePath,
-                          QWebEngineDownloadItem::SavePageFormat format) const
+                          QWebEngineDownloadRequest::SavePageFormat format) const
 {
     Q_D(const QWebEnginePage);
     d->ensureInitialized();

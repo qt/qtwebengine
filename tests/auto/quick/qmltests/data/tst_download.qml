@@ -155,7 +155,7 @@ TestWebEngineView {
             compare(downLoadRequestedSpy.count, 1)
             compare(downloadUrl, webEngineView.url)
             compare(suggestedFileName, "download.zip")
-            compare(downloadState[0], WebEngineDownloadItem.DownloadRequested)
+            compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested)
             verify(!downloadInterruptReason)
         }
 
@@ -179,11 +179,11 @@ TestWebEngineView {
             compare(downLoadRequestedSpy.count, 1)
             compare(downloadUrl, webEngineView.url)
             compare(suggestedFileName, "download.zip")
-            compare(downloadState[0], WebEngineDownloadItem.DownloadRequested)
-            tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadInProgress)
+            compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested)
+            tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadInProgress)
             downloadFinishedSpy.wait()
             compare(totalBytes, receivedBytes)
-            tryCompare(downloadState, "2", WebEngineDownloadItem.DownloadCompleted)
+            tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted)
             verify(!downloadInterruptReason)
         }
 
@@ -196,8 +196,8 @@ TestWebEngineView {
             compare(downloadUrl, webEngineView.url)
             compare(suggestedFileName, "download.zip")
             compare(downloadFinishedSpy.count, 1)
-            tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadCancelled)
-            tryCompare(webEngineView, "downloadInterruptReason", WebEngineDownloadItem.UserCanceled)
+            tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadCancelled)
+            tryCompare(webEngineView, "downloadInterruptReason", WebEngineDownloadRequest.UserCanceled)
         }
 
         function test_downloadLocation() {
@@ -230,15 +230,15 @@ TestWebEngineView {
             compare(downLoadRequestedSpy.count, 1);
             compare(downloadUrl, webEngineView.url);
             compare(suggestedFileName, "download.zip");
-            compare(downloadState[0], WebEngineDownloadItem.DownloadRequested);
-            tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadInProgress);
+            compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested);
+            tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadInProgress);
             compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + downloadFileName);
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 1);
             compare(downloadPathChanged, 2);
             downloadFinishedSpy.wait();
             compare(totalBytes, receivedBytes);
-            tryCompare(downloadState, "2", WebEngineDownloadItem.DownloadCompleted);
+            tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);
             verify(!downloadInterruptReason);
         }
 
@@ -253,15 +253,15 @@ TestWebEngineView {
             compare(downLoadRequestedSpy.count, 1);
             compare(downloadUrl, webEngineView.url);
             compare(suggestedFileName, "download.zip");
-            compare(downloadState[0], WebEngineDownloadItem.DownloadRequested);
-            tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadInProgress);
+            compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested);
+            tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadInProgress);
             compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + "download.zip");
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 0);
             compare(downloadPathChanged, 1);
             downloadFinishedSpy.wait();
             compare(totalBytes, receivedBytes);
-            tryCompare(downloadState, "2", WebEngineDownloadItem.DownloadCompleted);
+            tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);
             verify(!downloadInterruptReason);
 
             // Download the same file to another directory with suggested file name.
@@ -277,15 +277,15 @@ TestWebEngineView {
             compare(downLoadRequestedSpy.count, 1);
             compare(downloadUrl, webEngineView.url);
             compare(suggestedFileName, "download.zip");
-            compare(downloadState[0], WebEngineDownloadItem.DownloadRequested);
-            tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadInProgress);
+            compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested);
+            tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadInProgress);
             compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + "download.zip");
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 0);
             compare(downloadPathChanged, 1);
             downloadFinishedSpy.wait();
             compare(totalBytes, receivedBytes);
-            tryCompare(downloadState, "2", WebEngineDownloadItem.DownloadCompleted);
+            tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);
             verify(!downloadInterruptReason);
 
             // Download same file to same directory second time -> file name should be unified.
@@ -301,15 +301,15 @@ TestWebEngineView {
             compare(downLoadRequestedSpy.count, 1);
             compare(downloadUrl, webEngineView.url);
             compare(suggestedFileName, "download.zip");
-            compare(downloadState[0], WebEngineDownloadItem.DownloadRequested);
-            tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadInProgress);
+            compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested);
+            tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadInProgress);
             compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + "download (1).zip");
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 1);
             compare(downloadPathChanged, 1);
             downloadFinishedSpy.wait();
             compare(totalBytes, receivedBytes);
-            tryCompare(downloadState, "2", WebEngineDownloadItem.DownloadCompleted);
+            tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);
             verify(!downloadInterruptReason);
 }
 
@@ -323,15 +323,15 @@ TestWebEngineView {
             compare(downLoadRequestedSpy.count, 1);
             compare(downloadUrl, webEngineView.url);
             compare(suggestedFileName, "download.zip");
-            compare(downloadState[0], WebEngineDownloadItem.DownloadRequested);
-            tryCompare(downloadState, "1", WebEngineDownloadItem.DownloadInProgress);
+            compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested);
+            tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadInProgress);
             compare(downloadedPath, testDownloadProfile.downloadPath + downloadedSetPath);
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 1);
             compare(downloadPathChanged, 2);
             downloadFinishedSpy.wait();
             compare(totalBytes, receivedBytes);
-            tryCompare(downloadState, "2", WebEngineDownloadItem.DownloadCompleted);
+            tryCompare(downloadState, "2", WebEngineDownloadRequest.DownloadCompleted);
             verify(!downloadInterruptReason);
         }
     }

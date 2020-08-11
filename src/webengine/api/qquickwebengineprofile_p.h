@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineDownloadItem;
+class QWebEngineDownloadRequest;
 class QQuickWebEngineSettings;
 class QQuickWebEngineViewPrivate;
 
@@ -100,7 +100,7 @@ private:
     QQuickWebEngineProfile *q_ptr;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
-    QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
+    QMap<quint32, QPointer<QWebEngineDownloadRequest> > m_ongoingDownloads;
     QList<QQuickWebEngineScript *> m_userScripts;
 };
 

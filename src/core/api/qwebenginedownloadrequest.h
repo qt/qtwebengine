@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEDOWNLOADITEM_H
-#define QWEBENGINEDOWNLOADITEM_H
+#ifndef QWEBENGINEDOWNLOADREQUEST_H
+#define QWEBENGINEDOWNLOADREQUEST_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
@@ -48,31 +48,31 @@
 QT_BEGIN_NAMESPACE
 
 //TODO: class QWebEnginePage;
-class QWebEngineDownloadItemPrivate;
+class QWebEngineDownloadRequestPrivate;
 class QWebEngineProfilePrivate;
 
-class Q_WEBENGINECORE_EXPORT QWebEngineDownloadItem : public QObject
+class Q_WEBENGINECORE_EXPORT QWebEngineDownloadRequest : public QObject
 {
     Q_OBJECT
 public:
     Q_PROPERTY(quint32 id READ id CONSTANT FINAL)
     Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged FINAL)
-    Q_PROPERTY(SavePageFormat savePageFormat READ savePageFormat WRITE setSavePageFormat NOTIFY savePageFormatChanged REVISION 2 FINAL)
+    Q_PROPERTY(SavePageFormat savePageFormat READ savePageFormat WRITE setSavePageFormat NOTIFY savePageFormatChanged FINAL)
     Q_PROPERTY(qint64 totalBytes READ totalBytes NOTIFY totalBytesChanged FINAL)
     Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged FINAL)
-    Q_PROPERTY(QString mimeType READ mimeType REVISION 1 FINAL)
-    Q_PROPERTY(DownloadInterruptReason interruptReason READ interruptReason NOTIFY interruptReasonChanged REVISION 4 FINAL)
-    Q_PROPERTY(QString interruptReasonString READ interruptReasonString NOTIFY interruptReasonChanged REVISION 4 FINAL)
-    Q_PROPERTY(bool isFinished READ isFinished NOTIFY isFinishedChanged REVISION 5 FINAL)
-    Q_PROPERTY(bool isPaused READ isPaused NOTIFY isPausedChanged REVISION 5 FINAL)
-    Q_PROPERTY(bool isSavePageDownload READ isSavePageDownload CONSTANT REVISION 6 FINAL)
+    Q_PROPERTY(QString mimeType READ mimeType FINAL)
+    Q_PROPERTY(DownloadInterruptReason interruptReason READ interruptReason NOTIFY interruptReasonChanged FINAL)
+    Q_PROPERTY(QString interruptReasonString READ interruptReasonString NOTIFY interruptReasonChanged FINAL)
+    Q_PROPERTY(bool isFinished READ isFinished NOTIFY isFinishedChanged FINAL)
+    Q_PROPERTY(bool isPaused READ isPaused NOTIFY isPausedChanged FINAL)
+    Q_PROPERTY(bool isSavePageDownload READ isSavePageDownload CONSTANT FINAL)
     //TODO: Q_PROPERTY(QQuickWebEngineView *view READ view CONSTANT REVISION 7 FINAL)
-    Q_PROPERTY(QUrl url READ url CONSTANT REVISION 10 FINAL)
-    Q_PROPERTY(QString suggestedFileName READ suggestedFileName CONSTANT REVISION 10 FINAL)
-    Q_PROPERTY(QString downloadDirectory READ downloadDirectory WRITE setDownloadDirectory NOTIFY downloadDirectoryChanged REVISION 10 FINAL)
-    Q_PROPERTY(QString downloadFileName READ downloadFileName WRITE setDownloadFileName NOTIFY downloadFileNameChanged REVISION 10 FINAL)
+    Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
+    Q_PROPERTY(QString suggestedFileName READ suggestedFileName CONSTANT FINAL)
+    Q_PROPERTY(QString downloadDirectory READ downloadDirectory WRITE setDownloadDirectory NOTIFY downloadDirectoryChanged FINAL)
+    Q_PROPERTY(QString downloadFileName READ downloadFileName WRITE setDownloadFileName NOTIFY downloadFileNameChanged FINAL)
 
-    ~QWebEngineDownloadItem();
+    ~QWebEngineDownloadRequest();
 
     enum DownloadState {
         DownloadRequested,
@@ -151,28 +151,28 @@ public Q_SLOTS:
     void resume();
 
 Q_SIGNALS:
-    void stateChanged(QWebEngineDownloadItem::DownloadState state);
+    void stateChanged(QWebEngineDownloadRequest::DownloadState state);
     //TODO: fix it for qml
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-    Q_REVISION(2) void savePageFormatChanged();
+    void savePageFormatChanged();
     void receivedBytesChanged();
     void totalBytesChanged();
-    Q_REVISION(4) void interruptReasonChanged();
-    Q_REVISION(5) void isFinishedChanged();
-    Q_REVISION(5) void isPausedChanged();
-    Q_REVISION(10) void downloadDirectoryChanged();
-    Q_REVISION(10) void downloadFileNameChanged();
+    void interruptReasonChanged();
+    void isFinishedChanged();
+    void isPausedChanged();
+    void downloadDirectoryChanged();
+    void downloadFileNameChanged();
 
 private:
-    Q_DISABLE_COPY(QWebEngineDownloadItem)
-    Q_DECLARE_PRIVATE(QWebEngineDownloadItem)
+    Q_DISABLE_COPY(QWebEngineDownloadRequest)
+    Q_DECLARE_PRIVATE(QWebEngineDownloadRequest)
 
     friend class QWebEngineProfilePrivate;
     friend class QQuickWebEngineProfilePrivate;
-    QWebEngineDownloadItem(QWebEngineDownloadItemPrivate*, QObject *parent = Q_NULLPTR);
-    QScopedPointer<QWebEngineDownloadItemPrivate> d_ptr;
+    QWebEngineDownloadRequest(QWebEngineDownloadRequestPrivate*, QObject *parent = Q_NULLPTR);
+    QScopedPointer<QWebEngineDownloadRequestPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINEDOWNLOADITEM_H
+#endif // QWEBENGINEDOWNLOADREQUEST_H

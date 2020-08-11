@@ -232,10 +232,10 @@ void tst_LoadSignals::fileDownloadDoesNotTriggerLoadSignals_qtbug66661()
 
     // allow the download
     QTemporaryDir tempDir;
-    QWebEngineDownloadItem::DownloadState downloadState = QWebEngineDownloadItem::DownloadRequested;
+    QWebEngineDownloadRequest::DownloadState downloadState = QWebEngineDownloadRequest::DownloadRequested;
     connect(view->page()->profile(), &QWebEngineProfile::downloadRequested,
-        [&downloadState, &tempDir](QWebEngineDownloadItem* item){
-            connect(item, &QWebEngineDownloadItem::stateChanged, [&downloadState](QWebEngineDownloadItem::DownloadState newState){
+        [&downloadState, &tempDir](QWebEngineDownloadRequest* item){
+            connect(item, &QWebEngineDownloadRequest::stateChanged, [&downloadState](QWebEngineDownloadRequest::DownloadState newState){
                 downloadState = newState;
             });
             item->setDownloadDirectory(tempDir.path());
@@ -253,7 +253,7 @@ void tst_LoadSignals::fileDownloadDoesNotTriggerLoadSignals_qtbug66661()
                 || (loadFinishedSpy->size() != 1), 10000, 100);
 
     // Download must have occurred
-    QTRY_COMPARE(downloadState, QWebEngineDownloadItem::DownloadCompleted);
+    QTRY_COMPARE(downloadState, QWebEngineDownloadRequest::DownloadCompleted);
 
     // No further loadStarted should have occurred within this time
     QCOMPARE(loadStartedSpy->size(), 1);

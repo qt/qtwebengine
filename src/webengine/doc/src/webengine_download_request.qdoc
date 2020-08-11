@@ -26,13 +26,12 @@
 ****************************************************************************/
 
 /*!
-    \qmltype WebEngineDownloadItem
-    \instantiates QWebEngineDownloadItem
+    \qmltype WebEngineDownloadRequest
+    \instantiates QWebEngineDownloadRequest
     \inqmlmodule QtWebEngine
-    \since QtWebEngine 1.1
     \brief Provides information about a download.
 
-    WebEngineDownloadItem models a download throughout its life cycle, starting
+    WebEngineDownloadRequest models a download throughout its life cycle, starting
     with a pending download request and finishing with a completed download. It
     can be used, for example, to get information about new downloads, to monitor
     progress, and to pause, resume, and cancel downloads.
@@ -41,7 +40,7 @@
     WebEngineProfile's responsibility to notify the application of new download
     requests, which it does by emitting the
     \l{WebEngineProfile::downloadRequested}{downloadRequested} signal together
-    with a newly created WebEngineDownloadItem. The application can then examine
+    with a newly created WebEngineDownloadRequest. The application can then examine
     this item and decide whether to accept it or not. A signal handler must
     explicitly call accept() on the item for \QWE to actually start
     downloading and writing data to disk. If no signal handler calls accept(),
@@ -73,7 +72,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineDownloadItem::accept()
+    \qmlmethod void WebEngineDownloadRequest::accept()
 
     Accepts the download request, which will start the download.
 
@@ -85,7 +84,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineDownloadItem::cancel()
+    \qmlmethod void WebEngineDownloadRequest::cancel()
 
     Cancels the download.
 
@@ -101,8 +100,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineDownloadItem::pause()
-    \since QtWebEngine 1.6
+    \qmlmethod void WebEngineDownloadRequest::pause()
 
     Pauses the download.
 
@@ -113,8 +111,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineDownloadItem::resume()
-    \since QtWebEngine 1.6
+    \qmlmethod void WebEngineDownloadRequest::resume()
 
     Resumes the download if it was paused or interrupted.
 
@@ -125,30 +122,30 @@
 */
 
 /*!
-    \qmlproperty int WebEngineDownloadItem::id
+    \qmlproperty int WebEngineDownloadRequest::id
 
     Holds the download item's ID.
 */
 
 /*!
-    \qmlproperty enumeration WebEngineDownloadItem::state
+    \qmlproperty enumeration WebEngineDownloadRequest::state
 
     Describes the state of the download:
 
-    \value  WebEngineDownloadItem.DownloadRequested
+    \value  WebEngineDownloadRequest.DownloadRequested
             Download has been requested, but it has not been accepted yet.
-    \value  WebEngineDownloadItem.DownloadInProgress
+    \value  WebEngineDownloadRequest.DownloadInProgress
             Download is in progress.
-    \value  WebEngineDownloadItem.DownloadCompleted
+    \value  WebEngineDownloadRequest.DownloadCompleted
             Download completed successfully.
-    \value  WebEngineDownloadItem.DownloadCancelled
+    \value  WebEngineDownloadRequest.DownloadCancelled
             Download was cancelled by the user.
-    \value  WebEngineDownloadItem.DownloadInterrupted
+    \value  WebEngineDownloadRequest.DownloadInterrupted
             Download has been interrupted (by the server or because of lost connectivity).
 */
 
 /*!
-    \qmlproperty int WebEngineDownloadItem::totalBytes
+    \qmlproperty int WebEngineDownloadRequest::totalBytes
 
     Holds the total amount of data to download in bytes.
 
@@ -156,29 +153,26 @@
 */
 
 /*!
-    \qmlproperty int WebEngineDownloadItem::receivedBytes
+    \qmlproperty int WebEngineDownloadRequest::receivedBytes
 
     Holds the amount of data in bytes that has been downloaded so far.
 */
 
 /*!
-    \qmlproperty url WebEngineDownloadItem::url
+    \qmlproperty url WebEngineDownloadRequest::url
     \readonly
-    \since QtWebEngine 1.10
 
     Returns the download's origin URL.
 */
 
 /*!
-    \qmlproperty string WebEngineDownloadItem::mimeType
-    \since QtWebEngine 1.2
+    \qmlproperty string WebEngineDownloadRequest::mimeType
 
     Holds the MIME type of the download.
 */
 
 /*!
-    \qmlproperty string WebEngineDownloadItem::downloadDirectory
-    \since QtWebEngine 1.10
+    \qmlproperty string WebEngineDownloadRequest::downloadDirectory
 
     Holds the full target path without file name where data is being downloaded to.
 
@@ -190,8 +184,7 @@
 */
 
 /*!
-    \qmlproperty string WebEngineDownloadItem::downloadFileName
-    \since QtWebEngine 1.10
+    \qmlproperty string WebEngineDownloadRequest::downloadFileName
 
     Holds the name of the file to which data is being downloaded.
 
@@ -203,34 +196,31 @@
 */
 
 /*!
-    \qmlproperty string WebEngineDownloadItem::suggestedFileName
-    \since QtWebEngine 1.10
+    \qmlproperty string WebEngineDownloadRequest::suggestedFileName
 
     Returns the suggested file name.
 */
 
 /*!
-    \qmlproperty enumeration WebEngineDownloadItem::savePageFormat
-    \since QtWebEngine 1.3
+    \qmlproperty enumeration WebEngineDownloadRequest::savePageFormat
 
     Describes the format that is used to save a web page.
 
-    \value  WebEngineDownloadItem.UnknownSaveFormat
+    \value  WebEngineDownloadRequest.UnknownSaveFormat
             This is not a request for downloading a complete web page.
-    \value  WebEngineDownloadItem.SingleHtmlSaveFormat
+    \value  WebEngineDownloadRequest.SingleHtmlSaveFormat
             The page is saved as a single HTML page. Resources such as images
             are not saved.
-    \value  WebEngineDownloadItem.CompleteHtmlSaveFormat
+    \value  WebEngineDownloadRequest.CompleteHtmlSaveFormat
             The page is saved as a complete HTML page, for example a directory
             containing the single HTML page and the resources.
-    \value  WebEngineDownloadItem.MimeHtmlSaveFormat
+    \value  WebEngineDownloadRequest.MimeHtmlSaveFormat
             The page is saved as a complete web page in the MIME HTML format.
 */
 
 /*!
     \qmlproperty bool WebEngineDownloadItem::isSavePageDownload
     \readonly
-    \since QtWebEngine 1.7
 
     Whether this is a download request for saving a web page or a file.
 
@@ -238,67 +228,63 @@
 */
 
 /*!
-    \qmlproperty enumeration WebEngineDownloadItem::interruptReason
+    \qmlproperty enumeration WebEngineDownloadRequest::interruptReason
     \readonly
-    \since QtWebEngine 1.5
 
     Returns the reason why the download was interrupted:
 
-    \value WebEngineDownloadItem.NoReason Unknown reason or not interrupted.
-    \value WebEngineDownloadItem.FileFailed General file operation failure.
-    \value WebEngineDownloadItem.FileAccessDenied The file cannot be written locally, due to access restrictions.
-    \value WebEngineDownloadItem.FileNoSpace Insufficient space on the target drive.
-    \value WebEngineDownloadItem.FileNameTooLong The directory or file name is too long.
-    \value WebEngineDownloadItem.FileTooLarge The file size exceeds the file system limitation.
-    \value WebEngineDownloadItem.FileVirusInfected The file is infected with a virus.
-    \value WebEngineDownloadItem.FileTransientError Temporary problem (for example the file is in use,
+    \value WebEngineDownloadRequest.NoReason Unknown reason or not interrupted.
+    \value WebEngineDownloadRequest.FileFailed General file operation failure.
+    \value WebEngineDownloadRequest.FileAccessDenied The file cannot be written locally, due to access restrictions.
+    \value WebEngineDownloadRequest.FileNoSpace Insufficient space on the target drive.
+    \value WebEngineDownloadRequest.FileNameTooLong The directory or file name is too long.
+    \value WebEngineDownloadRequest.FileTooLarge The file size exceeds the file system limitation.
+    \value WebEngineDownloadRequest.FileVirusInfected The file is infected with a virus.
+    \value WebEngineDownloadRequest.FileTransientError Temporary problem (for example the file is in use,
            out of memory, or too many files are opened at once).
-    \value WebEngineDownloadItem.FileBlocked The file was blocked due to local policy.
-    \value WebEngineDownloadItem.FileSecurityCheckFailed An attempt to check the safety of the download
+    \value WebEngineDownloadRequest.FileBlocked The file was blocked due to local policy.
+    \value WebEngineDownloadRequest.FileSecurityCheckFailed An attempt to check the safety of the download
            failed due to unexpected reasons.
-    \value WebEngineDownloadItem.FileTooShort An attempt was made to seek past the end of a file when
+    \value WebEngineDownloadRequest.FileTooShort An attempt was made to seek past the end of a file when
            opening a file (as part of resuming a previously interrupted download).
-    \value WebEngineDownloadItem.FileHashMismatch The partial file did not match the expected hash.
+    \value WebEngineDownloadRequest.FileHashMismatch The partial file did not match the expected hash.
 
-    \value WebEngineDownloadItem.NetworkFailed General network failure.
-    \value WebEngineDownloadItem.NetworkTimeout The network operation has timed out.
-    \value WebEngineDownloadItem.NetworkDisconnected The network connection has been terminated.
-    \value WebEngineDownloadItem.NetworkServerDown The server has gone down.
-    \value WebEngineDownloadItem.NetworkInvalidRequest The network request was invalid (for example, the
+    \value WebEngineDownloadRequest.NetworkFailed General network failure.
+    \value WebEngineDownloadRequest.NetworkTimeout The network operation has timed out.
+    \value WebEngineDownloadRequest.NetworkDisconnected The network connection has been terminated.
+    \value WebEngineDownloadRequest.NetworkServerDown The server has gone down.
+    \value WebEngineDownloadRequest.NetworkInvalidRequest The network request was invalid (for example, the
            original or redirected URL is invalid, has an unsupported scheme, or is disallowed by policy).
 
-    \value WebEngineDownloadItem.ServerFailed General server failure.
-    \value WebEngineDownloadItem.ServerBadContent The server does not have the requested data.
-    \value WebEngineDownloadItem.ServerUnauthorized The server did not authorize access to the resource.
-    \value WebEngineDownloadItem.ServerCertProblem A problem with the server certificate occurred.
-    \value WebEngineDownloadItem.ServerForbidden Access forbidden by the server.
-    \value WebEngineDownloadItem.ServerUnreachable Unexpected server response (might indicate that
+    \value WebEngineDownloadRequest.ServerFailed General server failure.
+    \value WebEngineDownloadRequest.ServerBadContent The server does not have the requested data.
+    \value WebEngineDownloadRequest.ServerUnauthorized The server did not authorize access to the resource.
+    \value WebEngineDownloadRequest.ServerCertProblem A problem with the server certificate occurred.
+    \value WebEngineDownloadRequest.ServerForbidden Access forbidden by the server.
+    \value WebEngineDownloadRequest.ServerUnreachable Unexpected server response (might indicate that
            the responding server may not be the intended server).
-    \value WebEngineDownloadItem.UserCanceled The user canceled the download.
+    \value WebEngineDownloadRequest.UserCanceled The user canceled the download.
 
     \sa interruptReasonString
 */
 
 /*!
-    \qmlproperty string WebEngineDownloadItem::interruptReasonString
+    \qmlproperty string WebEngineDownloadRequest::interruptReasonString
     Returns a human-readable description of the reason for interrupting the download.
-    \since QtWebEngine 1.5
 
     \sa interruptReason
 */
 
 /*!
-    \qmlproperty bool WebEngineDownloadItem::isFinished
+    \qmlproperty bool WebEngineDownloadRequest::isFinished
     \readonly
-    \since QtWebEngine 1.6
 
     Whether this download is finished (completed, cancelled, or non-resumable interrupted state).
  */
 
 /*!
-    \qmlproperty bool WebEngineDownloadItem::isPaused
+    \qmlproperty bool WebEngineDownloadRequest::isPaused
     \readonly
-    \since QtWebEngine 1.6
 
     Whether this download is paused.
 
@@ -306,9 +292,8 @@
  */
 
 /*!
-    \qmlproperty WebEngineView WebEngineDownloadItem::view
+    \qmlproperty WebEngineView WebEngineDownloadRequest::view
     \readonly
-    \since QtWebEngine 1.8
 
     Returns the view the download was requested on. If the download was not triggered by content in a view,
     \c nullptr is returned.

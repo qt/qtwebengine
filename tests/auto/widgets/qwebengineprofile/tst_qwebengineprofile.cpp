@@ -39,7 +39,7 @@
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebenginesettings.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
-#include <QtWebEngineCore/qwebenginedownloaditem.h>
+#include <QtWebEngineCore/qwebenginedownloadrequest.h>
 
 #if QT_CONFIG(webengine_webchannel)
 #include <QWebChannel>
@@ -834,10 +834,10 @@ void tst_QWebEngineProfile::httpAcceptLanguage()
 
 void tst_QWebEngineProfile::downloadItem()
 {
-    qRegisterMetaType<QWebEngineDownloadItem *>();
+    qRegisterMetaType<QWebEngineDownloadRequest *>();
     QWebEngineProfile testProfile;
     QWebEnginePage page(&testProfile);
-    QSignalSpy downloadSpy(&testProfile, SIGNAL(downloadRequested(QWebEngineDownloadItem *)));
+    QSignalSpy downloadSpy(&testProfile, SIGNAL(downloadRequested(QWebEngineDownloadRequest *)));
     page.load(QUrl::fromLocalFile(QCoreApplication::applicationFilePath()));
     QTRY_COMPARE(downloadSpy.count(), 1);
 }

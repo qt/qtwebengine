@@ -52,9 +52,9 @@
 
 #include <QFileInfo>
 #include <QUrl>
-#include <QWebEngineDownloadItem>
+#include <QWebEngineDownloadRequest>
 
-DownloadWidget::DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent)
+DownloadWidget::DownloadWidget(QWebEngineDownloadRequest *download, QWidget *parent)
     : QFrame(parent)
     , m_download(download)
     , m_timeAdded()
@@ -66,16 +66,16 @@ DownloadWidget::DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent
 
     connect(m_cancelButton, &QPushButton::clicked,
             [this](bool) {
-        if (m_download->state() == QWebEngineDownloadItem::DownloadInProgress)
+        if (m_download->state() == QWebEngineDownloadRequest::DownloadInProgress)
             m_download->cancel();
         else
             emit removeClicked(this);
     });
 
-    connect(m_download, &QWebEngineDownloadItem::downloadProgress,
+    connect(m_download, &QWebEngineDownloadRequest::downloadProgress,
             this, &DownloadWidget::updateWidget);
 
-    connect(m_download, &QWebEngineDownloadItem::stateChanged,
+    connect(m_download, &QWebEngineDownloadRequest::stateChanged,
             this, &DownloadWidget::updateWidget);
 
     updateWidget();
@@ -101,10 +101,10 @@ void DownloadWidget::updateWidget()
 
     auto state = m_download->state();
     switch (state) {
-    case QWebEngineDownloadItem::DownloadRequested:
+    case QWebEngineDownloadRequest::DownloadRequested:
         Q_UNREACHABLE();
         break;
-    case QWebEngineDownloadItem::DownloadInProgress:
+    case QWebEngineDownloadRequest::DownloadInProgress:
         if (totalBytes >= 0) {
             m_progressBar->setValue(qRound(100 * receivedBytes / totalBytes));
             m_progressBar->setDisabled(false);
@@ -122,7 +122,7 @@ void DownloadWidget::updateWidget()
                 .arg(withUnit(bytesPerSecond)));
         }
         break;
-    case QWebEngineDownloadItem::DownloadCompleted:
+    case QWebEngineDownloadRequest::DownloadCompleted:
         m_progressBar->setValue(100);
         m_progressBar->setDisabled(true);
         m_progressBar->setFormat(
@@ -130,7 +130,7 @@ void DownloadWidget::updateWidget()
             .arg(withUnit(receivedBytes))
             .arg(withUnit(bytesPerSecond)));
         break;
-    case QWebEngineDownloadItem::DownloadCancelled:
+    case QWebEngineDownloadRequest::DownloadCancelled:
         m_progressBar->setValue(0);
         m_progressBar->setDisabled(true);
         m_progressBar->setFormat(
@@ -138,7 +138,7 @@ void DownloadWidget::updateWidget()
             .arg(withUnit(receivedBytes))
             .arg(withUnit(bytesPerSecond)));
         break;
-    case QWebEngineDownloadItem::DownloadInterrupted:
+    case QWebEngineDownloadRequest::DownloadInterrupted:
         m_progressBar->setValue(0);
         m_progressBar->setDisabled(true);
         m_progressBar->setFormat(
@@ -147,7 +147,7 @@ void DownloadWidget::updateWidget()
         break;
     }
 
-    if (state == QWebEngineDownloadItem::DownloadInProgress) {
+    if (state == QWebEngineDownloadRequest::DownloadInProgress) {
         static QIcon cancelIcon(QStringLiteral(":process-stop.png"));
         m_cancelButton->setIcon(cancelIcon);
         m_cancelButton->setToolTip(tr("Stop downloading"));

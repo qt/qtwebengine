@@ -45,7 +45,7 @@
 #include <qnetworkcookiejar.h>
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
-#include <qwebenginedownloaditem.h>
+#include <qwebenginedownloadrequest.h>
 #include <qwebenginefindtextresult.h>
 #include <qwebenginefullscreenrequest.h>
 #include <qwebenginehistory.h>
@@ -1679,9 +1679,9 @@ void tst_QWebEnginePage::savePage()
     QWebEnginePage *page = view.page();
 
     connect(page->profile(), &QWebEngineProfile::downloadRequested,
-            [] (QWebEngineDownloadItem *item)
+            [] (QWebEngineDownloadRequest *item)
     {
-        connect(item, &QWebEngineDownloadItem::isFinishedChanged,
+        connect(item, &QWebEngineDownloadRequest::isFinishedChanged,
                 &QTestEventLoop::instance(), &QTestEventLoop::exitLoop, Qt::QueuedConnection);
     });
 
@@ -1695,7 +1695,7 @@ void tst_QWebEnginePage::savePage()
     // Save the loaded page as HTML.
     QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
     const QString filePath = tempDir.path() + "/thingumbob.html";
-    page->save(filePath, QWebEngineDownloadItem::CompleteHtmlSaveFormat);
+    page->save(filePath, QWebEngineDownloadRequest::CompleteHtmlSaveFormat);
     QTestEventLoop::instance().enterLoop(10);
 
     // Load something else.

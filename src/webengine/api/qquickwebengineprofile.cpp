@@ -54,7 +54,7 @@
 #include "renderer_host/user_resource_controller_host.h"
 #include "web_engine_settings.h"
 
-#include <QtWebEngineCore/private/qwebenginedownloaditem_p.h>
+#include <QtWebEngineCore/private/qwebenginedownloadrequest_p.h>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
 
 using QtWebEngineCore::ProfileAdapter;
@@ -127,12 +127,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-  \fn QQuickWebEngineProfile::downloadRequested(QWebEngineDownloadItem *download)
+  \fn QQuickWebEngineProfile::downloadRequested(QWebEngineDownloadRequest *download)
 
   This signal is emitted whenever a download has been triggered.
   The \a download argument holds the state of the download.
   The download has to be explicitly accepted with
-  \c{QWebEngineDownloadItem::accept()} or it will be
+  \c{QWebEngineDownloadRequest::accept()} or it will be
   cancelled by default.
   The download item is parented by the profile. If it is not accepted, it
   will be deleted immediately after the signal emission.
@@ -140,7 +140,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-  \fn QQuickWebEngineProfile::downloadFinished(QWebEngineDownloadItem *download)
+  \fn QQuickWebEngineProfile::downloadFinished(QWebEngineDownloadRequest *download)
 
   This signal is emitted whenever downloading stops, because it finished successfully, was
   cancelled, or was interrupted (for example, because connectivity was lost).
@@ -236,16 +236,16 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     Q_Q(QQuickWebEngineProfile);
 
     Q_ASSERT(!m_ongoingDownloads.contains(info.id));
-    QWebEngineDownloadItemPrivate *itemPrivate = new QWebEngineDownloadItemPrivate(m_profileAdapter, info.url);
+    QWebEngineDownloadRequestPrivate *itemPrivate = new QWebEngineDownloadRequestPrivate(m_profileAdapter, info.url);
     itemPrivate->downloadId = info.id;
-    itemPrivate->downloadState = QWebEngineDownloadItem::DownloadRequested;
+    itemPrivate->downloadState = QWebEngineDownloadRequest::DownloadRequested;
     itemPrivate->startTime = info.startTime;
     itemPrivate->totalBytes = info.totalBytes;
     itemPrivate->mimeType = info.mimeType;
     itemPrivate->downloadDirectory = QFileInfo(info.path).path();
     itemPrivate->downloadFileName = QFileInfo(info.path).fileName();
     itemPrivate->suggestedFileName = info.suggestedFileName;
-    itemPrivate->savePageFormat = static_cast<QWebEngineDownloadItem::SavePageFormat>(
+    itemPrivate->savePageFormat = static_cast<QWebEngineDownloadRequest::SavePageFormat>(
                 info.savePageFormat);
     itemPrivate->isSavePageDownload = info.isSavePageDownload;
     if (info.page && info.page->clientType() == QtWebEngineCore::WebContentsAdapterClient::QmlClient)
@@ -253,21 +253,21 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     else
         itemPrivate->page = nullptr;
 
-    QWebEngineDownloadItem *download = new QWebEngineDownloadItem(itemPrivate, q);
+    QWebEngineDownloadRequest *download = new QWebEngineDownloadRequest(itemPrivate, q);
 
     m_ongoingDownloads.insert(info.id, download);
-    QObject::connect(download, &QWebEngineDownloadItem::destroyed, q, [id = info.id, this] () { downloadDestroyed(id); });
+    QObject::connect(download, &QWebEngineDownloadRequest::destroyed, q, [id = info.id, this] () { downloadDestroyed(id); });
 
     QQmlEngine::setObjectOwnership(download, QQmlEngine::JavaScriptOwnership);
     Q_EMIT q->downloadRequested(download);
 
-    QWebEngineDownloadItem::DownloadState state = download->state();
+    QWebEngineDownloadRequest::DownloadState state = download->state();
     info.path = QDir(download->downloadDirectory()).filePath(download->downloadFileName());
     info.savePageFormat = itemPrivate->savePageFormat;
-    info.accepted = state != QWebEngineDownloadItem::DownloadCancelled
-                      && state != QWebEngineDownloadItem::DownloadRequested;
+    info.accepted = state != QWebEngineDownloadRequest::DownloadCancelled
+                      && state != QWebEngineDownloadRequest::DownloadRequested;
 
-    if (state == QWebEngineDownloadItem::DownloadRequested) {
+    if (state == QWebEngineDownloadRequest::DownloadRequested) {
         // Delete unaccepted downloads.
         info.accepted = false;
         delete download;
@@ -281,7 +281,7 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 
     Q_Q(QQuickWebEngineProfile);
 
-    QWebEngineDownloadItem* download = m_ongoingDownloads.value(info.id).data();
+    QWebEngineDownloadRequest* download = m_ongoingDownloads.value(info.id).data();
 
     if (!download) {
         downloadDestroyed(info.id);

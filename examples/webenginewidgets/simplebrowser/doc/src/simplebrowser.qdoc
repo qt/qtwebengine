@@ -314,7 +314,7 @@
 
     Downloads are associated with a \l QWebEngineProfile. Whenever a download is
     triggered on a web page the \l QWebEngineProfile::downloadRequested signal is
-    emitted with a \l QWebEngineDownloadItem, which in this example is forwarded
+    emitted with a \l QWebEngineDownloadRequest, which in this example is forwarded
     to \c DownloadManagerWidget::downloadRequested:
 
     \quotefromfile webenginewidgets/simplebrowser/browser.cpp
@@ -329,10 +329,10 @@
     \skipto DownloadManagerWidget::downloadRequested
     \printuntil /^\}/
 
-    The \l QWebEngineDownloadItem object will periodically emit the \l
-    {QWebEngineDownloadItem::}{downloadProgress} signal to notify potential
+    The \l QWebEngineDownloadRequest object will periodically emit the \l
+    {QWebEngineDownloadRequest::}{downloadProgress} signal to notify potential
     observers of the download progress and the \l
-    {QWebEngineDownloadItem::}{stateChanged} signal when the download is
+    {QWebEngineDownloadRequest::}{stateChanged} signal when the download is
     finished or when an error occurs. See \c downloadmanagerwidget.cpp for an
     example of how these signals can be handled.
 

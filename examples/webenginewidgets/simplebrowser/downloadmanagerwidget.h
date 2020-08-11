@@ -56,7 +56,7 @@
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
-class QWebEngineDownloadItem;
+class QWebEngineDownloadRequest;
 QT_END_NAMESPACE
 
 class DownloadWidget;
@@ -69,9 +69,9 @@ public:
     explicit DownloadManagerWidget(QWidget *parent = nullptr);
 
     // Prompts user with a "Save As" dialog. If the user doesn't cancel it, then
-    // the QWebEngineDownloadItem will be accepted and the DownloadManagerWidget
+    // the QWebEngineDownloadRequest will be accepted and the DownloadManagerWidget
     // will be shown on the screen.
-    void downloadRequested(QWebEngineDownloadItem *webItem);
+    void downloadRequested(QWebEngineDownloadRequest *webItem);
 
 private:
     void add(DownloadWidget *downloadWidget);

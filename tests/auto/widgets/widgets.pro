@@ -14,7 +14,7 @@ SUBDIRS += \
     proxypac \
     schemes \
     shutdown \
-    qwebenginedownloaditem \
+    qwebenginedownloadrequest \
     qwebenginepage \
     qwebenginehistory \
     qwebengineprofile \

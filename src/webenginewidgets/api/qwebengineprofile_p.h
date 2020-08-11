@@ -99,7 +99,7 @@ private:
     QWebEngineSettings *m_settings;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
     QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
-    QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
+    QMap<quint32, QPointer<QWebEngineDownloadRequest> > m_ongoingDownloads;
     std::function<void(std::unique_ptr<QWebEngineNotification>)> m_notificationPresenter;
 };
 

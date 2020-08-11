@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEDOWNLOADITEM_P_H
-#define QWEBENGINEDOWNLOADITEM_P_H
+#ifndef QWEBENGINEDOWNLOADREQUEST_P_H
+#define QWEBENGINEDOWNLOADREQUEST_P_H
 
 //
 //  W A R N I N G
@@ -52,7 +52,7 @@
 //
 
 #include "qtwebenginecoreglobal.h"
-#include "qwebenginedownloaditem.h"
+#include "qwebenginedownloadrequest.h"
 #include "profile_adapter_client.h"
 #include <QString>
 #include <QPointer>
@@ -63,10 +63,10 @@ class ProfileAdapter;
 
 QT_BEGIN_NAMESPACE
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineDownloadItemPrivate {
+class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineDownloadRequestPrivate {
 public:
-    QWebEngineDownloadItemPrivate(QtWebEngineCore::ProfileAdapter *adapter, const QUrl &url);
-    ~QWebEngineDownloadItemPrivate();
+    QWebEngineDownloadRequestPrivate(QtWebEngineCore::ProfileAdapter *adapter, const QUrl &url);
+    ~QWebEngineDownloadRequestPrivate();
 
     void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
     void setFinished();
@@ -74,9 +74,9 @@ public:
     bool downloadFinished;
     quint32 downloadId;
     qint64 startTime;
-    QWebEngineDownloadItem::DownloadState downloadState;
-    QWebEngineDownloadItem::SavePageFormat savePageFormat;
-    QWebEngineDownloadItem::DownloadInterruptReason interruptReason;
+    QWebEngineDownloadRequest::DownloadState downloadState;
+    QWebEngineDownloadRequest::SavePageFormat savePageFormat;
+    QWebEngineDownloadRequest::DownloadInterruptReason interruptReason;
     QString downloadPath;
     const QUrl downloadUrl;
     QString mimeType;
@@ -88,13 +88,13 @@ public:
     qint64 totalBytes;
     qint64 receivedBytes;
     bool isSavePageDownload;
-    QWebEngineDownloadItem *q_ptr;
+    QWebEngineDownloadRequest *q_ptr;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
     QObject *page;
-    Q_DECLARE_PUBLIC(QWebEngineDownloadItem)
+    Q_DECLARE_PUBLIC(QWebEngineDownloadRequest)
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINEDOWNLOADITEM_P_H
+#endif // QWEBENGINEDOWNLOADREQUEST_P_H
 
