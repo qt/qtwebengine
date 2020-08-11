@@ -42,7 +42,7 @@ TestWebEngineView {
         if (deferError)
             error.defer()
         else if (acceptCertificate)
-            error.ignoreCertificateError()
+            error.acceptCertificate()
         else
             error.rejectCertificate()
     }
@@ -97,7 +97,7 @@ TestWebEngineView {
 
                 let error = spyError.signalArguments[0][0]
                 if (data.acceptCertificate)
-                    error.ignoreCertificateError()
+                    error.acceptCertificate()
                 else
                     error.rejectCertificate()
             }

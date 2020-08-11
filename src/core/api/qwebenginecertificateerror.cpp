@@ -103,7 +103,7 @@ QWebEngineCertificateError& QWebEngineCertificateError::operator=(const QWebEngi
 QWebEngineCertificateError::~QWebEngineCertificateError() = default;
 
 /*!
-    \enum QWebEngineCertificateError::Error
+    \enum QWebEngineCertificateError::Type
 
     This enum describes the type of certificate error encountered.
 
@@ -136,7 +136,7 @@ QWebEngineCertificateError::~QWebEngineCertificateError() = default;
 /*!
     Returns whether this error can be overridden and accepted.
 
-    \sa error(), errorDescription()
+    \sa error(), description()
 */
 bool QWebEngineCertificateError::isOverridable() const
 {
@@ -146,7 +146,7 @@ bool QWebEngineCertificateError::isOverridable() const
 /*!
     Returns the URL that triggered the error.
 
-    \sa error(), errorDescription()
+    \sa error(), description()
 */
 QUrl QWebEngineCertificateError::url() const
 {
@@ -156,11 +156,11 @@ QUrl QWebEngineCertificateError::url() const
 /*!
     Returns the type of the error.
 
-    \sa errorDescription(), isOverridable()
+    \sa description(), isOverridable()
 */
-QWebEngineCertificateError::Error QWebEngineCertificateError::error() const
+QWebEngineCertificateError::Type QWebEngineCertificateError::type() const
 {
-    return Error(d->error());
+    return Type(d->error());
 }
 
 /*!
@@ -168,7 +168,7 @@ QWebEngineCertificateError::Error QWebEngineCertificateError::error() const
 
     \sa error(), url(), isOverridable()
 */
-QString QWebEngineCertificateError::errorDescription() const
+QString QWebEngineCertificateError::description() const
 {
     return d->errorString();
 }
@@ -178,9 +178,9 @@ QString QWebEngineCertificateError::errorDescription() const
 
     Marks the certificate error for delayed handling.
 
-    This function should be called when there is a need to postpone the decision whether to ignore a
-    certificate error, for example, while waiting for user input. When called, the function pauses the
-    URL request until ignoreCertificateError() or rejectCertificate() is called.
+    This function should be called when there is a need to postpone the decision whether to accept a
+    certificate, for example, while waiting for user input. When called, the function pauses the
+    URL request until acceptCertificate() or rejectCertificate() is called.
 
     \note It is only possible to defer overridable certificate errors.
 
@@ -194,19 +194,9 @@ void QWebEngineCertificateError::defer()
 /*!
     \since 5.14
 
-    Returns whether the decision for error handling was delayed and the URL load was halted.
+    Accepts the certificate and continues the loading of the requested URL.
 */
-bool QWebEngineCertificateError::deferred() const
-{
-    return d->deferred();
-}
-
-/*!
-    \since 5.14
-
-    Ignores the certificate error and continues the loading of the requested URL.
-*/
-void QWebEngineCertificateError::ignoreCertificateError()
+void QWebEngineCertificateError::acceptCertificate()
 {
     d->ignoreCertificateError();
 }
@@ -219,16 +209,6 @@ void QWebEngineCertificateError::ignoreCertificateError()
 void QWebEngineCertificateError::rejectCertificate()
 {
     d->rejectCertificate();
-}
-
-/*!
-    \since 5.14
-
-    Returns \c true if the error was explicitly rejected or ignored.
-*/
-bool QWebEngineCertificateError::answered() const
-{
-    return d->answered();
 }
 
 /*!

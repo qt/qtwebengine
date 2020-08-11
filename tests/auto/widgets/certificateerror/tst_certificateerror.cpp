@@ -57,7 +57,7 @@ struct PageWithCertificateErrorHandler : QWebEnginePage
     QSignalSpy loadSpy;
     QScopedPointer<QWebEngineCertificateError> error;
 
-    void certificateError(const QWebEngineCertificateError &e) override
+    void certificateError(QWebEngineCertificateError e) override
     {
         error.reset(new QWebEngineCertificateError(e));
         if (deferError) {
@@ -66,7 +66,7 @@ struct PageWithCertificateErrorHandler : QWebEnginePage
         }
 
         if (acceptCertificate)
-            error->ignoreCertificateError();
+            error->acceptCertificate();
         else
             error->rejectCertificate();
     }
@@ -109,17 +109,14 @@ void tst_CertificateError::handleError()
     QCOMPARE(chain[1].serialNumber(), "6d:52:fb:b4:57:3b:b2:03:c8:62:7b:7e:44:45:5c:d3:08:87:74:17");
 
     if (deferError) {
-        QVERIFY(page.error->deferred());
-        QVERIFY(!page.error->answered());
         QCOMPARE(page.loadSpy.count(), 0);
         QCOMPARE(toPlainTextSync(&page), QString());
 
         if (acceptCertificate)
-            page.error->ignoreCertificateError();
+            page.error->acceptCertificate();
         else
             page.error->rejectCertificate();
 
-        QVERIFY(page.error->answered());
         page.error.reset();
     }
     QTRY_COMPARE_WITH_TIMEOUT(page.loadSpy.count(), 1, 30000);

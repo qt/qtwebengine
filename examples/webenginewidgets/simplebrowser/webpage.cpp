@@ -70,34 +70,29 @@ WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
     connect(this, &QWebEnginePage::selectClientCertificate, this, &WebPage::handleSelectClientCertificate);
 }
 
-void WebPage::certificateError(const QWebEngineCertificateError &error)
+void WebPage::certificateError(QWebEngineCertificateError error)
 {
     QWidget *mainWindow = view()->window();
 
-    QWebEngineCertificateError deferredError = error;
-    deferredError.defer();
+    error.defer();
 
-    QTimer::singleShot(0, mainWindow, [mainWindow, error = std::move(deferredError)] () mutable {
-        if (!error.deferred()) {
-            QMessageBox::critical(mainWindow, tr("Certificate Error"), error.errorDescription());
-        } else {
-            QDialog dialog(mainWindow);
-            dialog.setModal(true);
-            dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    QTimer::singleShot(0, mainWindow, [mainWindow, error]() mutable {
+        QDialog dialog(mainWindow);
+        dialog.setModal(true);
+        dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-            Ui::CertificateErrorDialog certificateDialog;
-            certificateDialog.setupUi(&dialog);
-            certificateDialog.m_iconLabel->setText(QString());
-            QIcon icon(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxWarning, 0, mainWindow));
-            certificateDialog.m_iconLabel->setPixmap(icon.pixmap(32, 32));
-            certificateDialog.m_errorLabel->setText(error.errorDescription());
-            dialog.setWindowTitle(tr("Certificate Error"));
+        Ui::CertificateErrorDialog certificateDialog;
+        certificateDialog.setupUi(&dialog);
+        certificateDialog.m_iconLabel->setText(QString());
+        QIcon icon(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxWarning, 0, mainWindow));
+        certificateDialog.m_iconLabel->setPixmap(icon.pixmap(32, 32));
+        certificateDialog.m_errorLabel->setText(error.description());
+        dialog.setWindowTitle(tr("Certificate Error"));
 
-            if (dialog.exec() == QDialog::Accepted)
-                error.ignoreCertificateError();
-            else
-                error.rejectCertificate();
-        }
+        if (dialog.exec() == QDialog::Accepted)
+            error.acceptCertificate();
+        else
+            error.rejectCertificate();
     });
 }
 

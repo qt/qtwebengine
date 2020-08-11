@@ -375,7 +375,7 @@ protected:
     virtual bool javaScriptConfirm(const QUrl &securityOrigin, const QString& msg);
     virtual bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result);
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
-    virtual void certificateError(const QWebEngineCertificateError &certificateError);
+    virtual void certificateError(QWebEngineCertificateError certificateError);
     virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
 
 private:

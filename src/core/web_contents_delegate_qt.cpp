@@ -683,7 +683,7 @@ void WebContentsDelegateQt::allowCertificateError(
 {
     QWebEngineCertificateError error(controller);
     m_viewClient->allowCertificateError(error);
-    if (!error.isOverridable() || (!error.deferred() && !error.answered()))
+    if (!error.isOverridable() || (!controller->deferred() && !controller->answered()))
         error.rejectCertificate();
     else
         m_certificateErrorControllers.append(controller);

@@ -99,7 +99,7 @@ void tst_CertificateError::handleError()
     }
 
     if (acceptCertificate)
-        error.ignoreCertificateError();
+        error.acceptCertificate();
     else
         error.rejectCertificate();
 
@@ -110,16 +110,12 @@ void tst_CertificateError::handleError()
     QCOMPARE(chain[1].serialNumber(), "6d:52:fb:b4:57:3b:b2:03:c8:62:7b:7e:44:45:5c:d3:08:87:74:17");
 
     if (deferError) {
-      QVERIFY(error.deferred());
-      QVERIFY(!error.answered());
       QVERIFY(!m_handler->loadSuccess());
 
       if (acceptCertificate)
-        error.ignoreCertificateError();
+          error.acceptCertificate();
       else
-        error.rejectCertificate();
-
-      QVERIFY(error.answered());
+          error.rejectCertificate();
     }
     QTRY_COMPARE_WITH_TIMEOUT(m_handler->loadSuccess(), acceptCertificate, 3000);
 }

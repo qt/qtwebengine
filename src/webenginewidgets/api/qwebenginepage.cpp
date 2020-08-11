@@ -2382,7 +2382,7 @@ void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel leve
     }
 }
 
-void QWebEnginePage::certificateError(const QWebEngineCertificateError &) { }
+void QWebEnginePage::certificateError(QWebEngineCertificateError) { }
 
 bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
 {

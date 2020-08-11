@@ -56,11 +56,9 @@ QT_BEGIN_NAMESPACE
 class Q_WEBENGINECORE_EXPORT QWebEngineCertificateError {
     Q_GADGET
     Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
-    Q_PROPERTY(Error error READ error CONSTANT FINAL)
-    Q_PROPERTY(QString description READ errorDescription CONSTANT FINAL)
+    Q_PROPERTY(Type type READ type CONSTANT FINAL)
+    Q_PROPERTY(QString description READ description CONSTANT FINAL)
     Q_PROPERTY(bool overridable READ isOverridable CONSTANT FINAL)
-    Q_PROPERTY(bool deferred READ deferred CONSTANT FINAL)
-    Q_PROPERTY(bool answered READ answered CONSTANT FINAL)
 
 public:
     QWebEngineCertificateError(const QWebEngineCertificateError &other);
@@ -68,7 +66,7 @@ public:
     ~QWebEngineCertificateError();
 
     // Keep this identical to CertificateErrorController::CertificateError, or add mapping layer.
-    enum Error {
+    enum Type {
         SslPinnedKeyNotInCertificateChain = -150,
         CertificateCommonNameInvalid = -200,
         CertificateDateInvalid = -201,
@@ -86,19 +84,16 @@ public:
         CertificateTransparencyRequired = -214,
         CertificateKnownInterceptionBlocked = -217,
     };
-    Q_ENUM(Error)
+    Q_ENUM(Type)
 
-    Error error() const;
+    Type type() const;
     QUrl url() const;
     bool isOverridable() const;
-    QString errorDescription() const;
+    QString description() const;
 
     Q_INVOKABLE void defer();
-    bool deferred() const;
-
     Q_INVOKABLE void rejectCertificate();
-    Q_INVOKABLE void ignoreCertificateError();
-    bool answered() const;
+    Q_INVOKABLE void acceptCertificate();
 
     QList<QSslCertificate> certificateChain() const;
 
