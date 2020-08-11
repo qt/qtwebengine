@@ -49,24 +49,36 @@
 
 namespace QtWebEngineCore {
 
-ASSERT_ENUMS_MATCH(CertificateErrorController::SslPinnedKeyNotInCertificateChain, net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateCommonNameInvalid, net::ERR_CERT_BEGIN)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateCommonNameInvalid, net::ERR_CERT_COMMON_NAME_INVALID)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateDateInvalid, net::ERR_CERT_DATE_INVALID)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateAuthorityInvalid, net::ERR_CERT_AUTHORITY_INVALID)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateContainsErrors, net::ERR_CERT_CONTAINS_ERRORS)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateUnableToCheckRevocation, net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateRevoked, net::ERR_CERT_REVOKED)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateInvalid, net::ERR_CERT_INVALID)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakSignatureAlgorithm, net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNonUniqueName, net::ERR_CERT_NON_UNIQUE_NAME)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakKey, net::ERR_CERT_WEAK_KEY)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNameConstraintViolation, net::ERR_CERT_NAME_CONSTRAINT_VIOLATION)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateValidityTooLong, net::ERR_CERT_VALIDITY_TOO_LONG)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateTransparencyRequired, net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateSymantecLegacy, net::ERR_CERT_SYMANTEC_LEGACY)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateKnownInterceptionBlocked, net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED)
-ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateErrorEnd, net::ERR_CERT_END)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::SslPinnedKeyNotInCertificateChain,
+                   net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateCommonNameInvalid, net::ERR_CERT_BEGIN)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateCommonNameInvalid,
+                   net::ERR_CERT_COMMON_NAME_INVALID)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateDateInvalid, net::ERR_CERT_DATE_INVALID)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateAuthorityInvalid,
+                   net::ERR_CERT_AUTHORITY_INVALID)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateContainsErrors,
+                   net::ERR_CERT_CONTAINS_ERRORS)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateUnableToCheckRevocation,
+                   net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateRevoked, net::ERR_CERT_REVOKED)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateInvalid, net::ERR_CERT_INVALID)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateWeakSignatureAlgorithm,
+                   net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateNonUniqueName,
+                   net::ERR_CERT_NON_UNIQUE_NAME)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateWeakKey, net::ERR_CERT_WEAK_KEY)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateNameConstraintViolation,
+                   net::ERR_CERT_NAME_CONSTRAINT_VIOLATION)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateValidityTooLong,
+                   net::ERR_CERT_VALIDITY_TOO_LONG)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateTransparencyRequired,
+                   net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateSymantecLegacy,
+                   net::ERR_CERT_SYMANTEC_LEGACY)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateKnownInterceptionBlocked,
+                   net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED)
+// ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateErrorEnd, net::ERR_CERT_END)
 
 // Copied from chrome/browser/ssl/ssl_error_handler.cc:
 static int IsCertErrorFatal(int cert_error)
@@ -97,7 +109,7 @@ static int IsCertErrorFatal(int cert_error)
 CertificateErrorController::CertificateErrorController(
         int cert_error, const net::SSLInfo &ssl_info, const GURL &request_url,
         bool strict_enforcement, base::OnceCallback<void(content::CertificateRequestResultType)> cb)
-    : m_certError(CertificateErrorController::CertificateError(cert_error))
+    : m_certError(QWebEngineCertificateError::Type(cert_error))
     , m_requestUrl(toQt(request_url))
     , m_overridable(!IsCertErrorFatal(cert_error) && !strict_enforcement)
 {
@@ -115,7 +127,7 @@ CertificateErrorController::~CertificateErrorController()
         rejectCertificate();
 }
 
-CertificateErrorController::CertificateError CertificateErrorController::error() const
+QWebEngineCertificateError::Type CertificateErrorController::error() const
 {
     return m_certError;
 }
@@ -173,40 +185,40 @@ QString CertificateErrorController::errorString() const
     // consistently described and we need to use versions that does not contain HTML
     // formatted text.
     switch (m_certError) {
-    case SslPinnedKeyNotInCertificateChain:
+    case QWebEngineCertificateError::SslPinnedKeyNotInCertificateChain:
         return getQStringForMessageId(IDS_CERT_ERROR_SUMMARY_PINNING_FAILURE_DETAILS);
-    case CertificateCommonNameInvalid:
+    case QWebEngineCertificateError::CertificateCommonNameInvalid:
         return getQStringForMessageId(IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION);
-    case CertificateDateInvalid:
+    case QWebEngineCertificateError::CertificateDateInvalid:
         if (QDateTime::currentDateTime() > m_validExpiry)
             return getQStringForMessageId(IDS_CERT_ERROR_EXPIRED_DESCRIPTION);
         else
             return getQStringForMessageId(IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION);
-    case CertificateAuthorityInvalid:
-    case CertificateKnownInterceptionBlocked:
-    case CertificateSymantecLegacy:
+    case QWebEngineCertificateError::CertificateAuthorityInvalid:
+    case QWebEngineCertificateError::CertificateKnownInterceptionBlocked:
+    case QWebEngineCertificateError::CertificateSymantecLegacy:
         return getQStringForMessageId(IDS_CERT_ERROR_AUTHORITY_INVALID_DESCRIPTION);
-    case CertificateContainsErrors:
+    case QWebEngineCertificateError::CertificateContainsErrors:
         return getQStringForMessageId(IDS_CERT_ERROR_CONTAINS_ERRORS_DESCRIPTION);
-    case CertificateNoRevocationMechanism:
+    case QWebEngineCertificateError::CertificateNoRevocationMechanism:
         return getQStringForMessageId(IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DETAILS);
-    case CertificateRevoked:
+    case QWebEngineCertificateError::CertificateRevoked:
         return getQStringForMessageId(IDS_CERT_ERROR_REVOKED_CERT_DESCRIPTION);
-    case CertificateInvalid:
+    case QWebEngineCertificateError::CertificateInvalid:
         return getQStringForMessageId(IDS_CERT_ERROR_INVALID_CERT_DESCRIPTION);
-    case CertificateWeakSignatureAlgorithm:
+    case QWebEngineCertificateError::CertificateWeakSignatureAlgorithm:
         return getQStringForMessageId(IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DESCRIPTION);
-    case CertificateNonUniqueName:
+    case QWebEngineCertificateError::CertificateNonUniqueName:
         return getQStringForMessageId(IDS_PAGE_INFO_SECURITY_TAB_NON_UNIQUE_NAME);
-    case CertificateWeakKey:
+    case QWebEngineCertificateError::CertificateWeakKey:
         return getQStringForMessageId(IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
-    case CertificateNameConstraintViolation:
+    case QWebEngineCertificateError::CertificateNameConstraintViolation:
         return getQStringForMessageId(IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DESCRIPTION);
-    case CertificateValidityTooLong:
+    case QWebEngineCertificateError::CertificateValidityTooLong:
         return getQStringForMessageId(IDS_CERT_ERROR_VALIDITY_TOO_LONG_DESCRIPTION);
-    case CertificateTransparencyRequired:
+    case QWebEngineCertificateError::CertificateTransparencyRequired:
         return getQStringForMessageId(IDS_CERT_ERROR_CERTIFICATE_TRANSPARENCY_REQUIRED_DESCRIPTION);
-    case CertificateUnableToCheckRevocation: // Deprecated in Chromium.
+    case QWebEngineCertificateError::CertificateUnableToCheckRevocation: // Deprecated in Chromium.
     default:
         break;
     }

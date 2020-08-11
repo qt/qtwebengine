@@ -136,6 +136,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineCertificateError.CertificateValidityTooLong --> Type"
     << "QWebEngineCertificateError.CertificateWeakKey --> Type"
     << "QWebEngineCertificateError.CertificateWeakSignatureAlgorithm --> Type"
+    << "QWebEngineCertificateError.CertificateSymantecLegacy --> Type"
     << "QWebEngineCertificateError.SslPinnedKeyNotInCertificateChain --> Type"
     << "QWebEngineCertificateError.defer() --> void"
     << "QWebEngineCertificateError.description --> QString"

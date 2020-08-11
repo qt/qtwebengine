@@ -65,7 +65,7 @@ public:
     QWebEngineCertificateError& operator=(const QWebEngineCertificateError &other);
     ~QWebEngineCertificateError();
 
-    // Keep this identical to CertificateErrorController::CertificateError, or add mapping layer.
+    // Keep this identical to NET_ERROR in net_error_list.h, or add mapping layer.
     enum Type {
         SslPinnedKeyNotInCertificateChain = -150,
         CertificateCommonNameInvalid = -200,
@@ -82,6 +82,7 @@ public:
         CertificateNameConstraintViolation = -212,
         CertificateValidityTooLong = -213,
         CertificateTransparencyRequired = -214,
+        CertificateSymantecLegacy = -215,
         CertificateKnownInterceptionBlocked = -217,
     };
     Q_ENUM(Type)

@@ -54,6 +54,7 @@
 #include "qtwebenginecoreglobal_p.h"
 #include "base/callback.h"
 #include "content/public/browser/certificate_request_result_type.h"
+#include "qwebenginecertificateerror.h"
 #include <QtCore/QDateTime>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QUrl>
@@ -74,30 +75,7 @@ public:
             base::OnceCallback<void(content::CertificateRequestResultType)> callback);
     ~CertificateErrorController();
 
-    // We can't use QSslError::SslErrors, because the error categories doesn't map.
-    // Keep up to date with net/base/net_errors.h and net::IsCertificateError():
-    enum CertificateError {
-        SslPinnedKeyNotInCertificateChain = -150,
-        CertificateCommonNameInvalid = -200,
-        CertificateDateInvalid = -201,
-        CertificateAuthorityInvalid = -202,
-        CertificateContainsErrors = -203,
-        CertificateNoRevocationMechanism = -204,
-        CertificateUnableToCheckRevocation = -205,
-        CertificateRevoked = -206,
-        CertificateInvalid = -207,
-        CertificateWeakSignatureAlgorithm = -208,
-        CertificateNonUniqueName = -210,
-        CertificateWeakKey = -211,
-        CertificateNameConstraintViolation = -212,
-        CertificateValidityTooLong = -213,
-        CertificateTransparencyRequired = -214,
-        CertificateSymantecLegacy = -215,
-        CertificateKnownInterceptionBlocked = -217,
-        CertificateErrorEnd = -218 // not an error, just an enum boundary
-    };
-
-    CertificateError error() const;
+    QWebEngineCertificateError::Type error() const;
     QUrl url() const;
     bool overridable() const;
     QString errorString() const;
@@ -115,7 +93,7 @@ public:
 
     void deactivate();
 
-    CertificateErrorController::CertificateError m_certError;
+    QWebEngineCertificateError::Type m_certError;
     const QUrl m_requestUrl;
     QDateTime m_validExpiry;
     bool m_overridable;
