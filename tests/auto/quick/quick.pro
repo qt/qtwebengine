@@ -18,5 +18,7 @@ qtConfig(webengine-testsupport) {
         qquickwebengineviewgraphics
 }
 
+qtConfig(ssl): SUBDIRS += qmltests_ssl
+
 # QTBUG-66055
 boot2qt: SUBDIRS -= inspectorserver qquickwebengineview qmltests qmltests2
