@@ -88,7 +88,7 @@ QSGNode *DisplayGLOutputSurface::updatePaintNode(QSGNode *oldNode, RenderWidgetH
 {
     {
         QMutexLocker locker(&m_mutex);
-        if (m_middleBuffer && m_middleBuffer->serviceId) {
+        if (m_taskRunner) {
             std::swap(m_middleBuffer, m_frontBuffer);
             m_taskRunner->PostTask(
                     FROM_HERE,
