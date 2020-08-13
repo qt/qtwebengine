@@ -14,14 +14,7 @@ SUBDIRS += \
     certificateerror
 
 qtConfig(webengine-testsupport) {
-    SUBDIRS += \
-        qmltests2 \
-        qquickwebengineviewgraphics
+    SUBDIRS += qquickwebengineviewgraphics
 }
 
-!qtHaveModule(quickcontrols): SUBDIRS -= qmltests
-
-qtConfig(ssl): SUBDIRS += qmltests_ssl
-
-# QTBUG-66055
-boot2qt: SUBDIRS -= inspectorserver qquickwebengineview qmltests qmltests2
+boot2qt: SUBDIRS -= inspectorserver qquickwebengineview qmltests

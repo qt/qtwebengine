@@ -28,6 +28,10 @@
 
 #include <httpserver.h>
 
+#if QT_CONFIG(ssl)
+#include <httpsserver.h>
+#endif
+
 #include <QtCore/QScopedPointer>
 #include <QTemporaryDir>
 #include <QtQuickTest/quicktest.h>
@@ -150,6 +154,12 @@ int main(int argc, char **argv)
         server->setResourceDirs({ TESTS_SHARED_DATA_DIR, QUICK_TEST_SOURCE_DIR });
         return server;
     });
+
+#if QT_CONFIG(ssl)
+    qmlRegisterSingletonType<HttpsServer>(
+            "Test.Shared", 1, 0, "HttpsServer",
+            [&](QQmlEngine *, QJSEngine *) { return new HttpsServer; });
+#endif
 
     int i = quick_test_main(argc, argv, "qmltests", QUICK_TEST_SOURCE_DIR);
     return i;
