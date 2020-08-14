@@ -255,7 +255,7 @@ public:
 
     void replaceMisspelledWord(const QString &replacement);
 
-    virtual bool event(QEvent*);
+    bool event(QEvent*) override;
 
     void findText(const QString &subString, FindFlags options = FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
 

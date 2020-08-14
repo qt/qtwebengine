@@ -86,9 +86,9 @@ public:
     Q_INVOKABLE void create();
     Q_INVOKABLE void release();
 
-    virtual void showInputPanel();
-    virtual void hideInputPanel();
-    virtual bool isInputPanelVisible() const;
+    void showInputPanel() override;
+    void hideInputPanel() override;
+    bool isInputPanelVisible() const override;
 
 private:
     bool m_visible;
