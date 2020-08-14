@@ -1727,17 +1727,12 @@ void QWebEnginePagePrivate::allowCertificateError(const QWebEngineCertificateErr
 
 void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSelectController> &controller)
 {
-#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
     Q_Q(QWebEnginePage);
     QWebEngineClientCertificateSelection certSelection(controller);
 
     Q_EMIT q->selectClientCertificate(certSelection);
-#else
-    Q_UNUSED(controller);
-#endif
 }
 
-#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 /*!
     \fn void QWebEnginePage::selectClientCertificate(QWebEngineClientCertificateSelection clientCertificateSelection)
     \since 5.12
@@ -1753,7 +1748,6 @@ void QWebEnginePagePrivate::selectClientCert(const QSharedPointer<ClientCertSele
 
     \sa QWebEngineClientCertificateSelection
 */
-#endif
 
 void QWebEnginePagePrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID)
 {

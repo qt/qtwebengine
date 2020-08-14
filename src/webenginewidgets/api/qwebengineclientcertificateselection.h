@@ -42,9 +42,6 @@
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtNetwork/qtnetwork-config.h>
-
-#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-
 #include <QtCore/qlist.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qsslcertificate.h>
@@ -78,7 +75,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 
 #endif // QWEBENGINECLIENTCERTSELECTION_H

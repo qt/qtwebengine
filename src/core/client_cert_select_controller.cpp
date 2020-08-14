@@ -71,8 +71,6 @@ ClientCertSelectController::~ClientCertSelectController()
         m_delegate->ContinueWithCertificate(nullptr, nullptr);
 }
 
-#if !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-
 void ClientCertSelectController::selectNone()
 {
     if (m_selected) {
@@ -142,5 +140,4 @@ QList<QSslCertificate> ClientCertSelectController::certificates() const
     return m_certificates;
 }
 
-#endif // !defined(QT_NO_SSL) || QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 }
