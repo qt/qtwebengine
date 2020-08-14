@@ -178,7 +178,7 @@ void QPdfSearchModel::timerEvent(QTimerEvent *event)
         return;
     if (!d->document || d->nextPageToUpdate >= d->document->pageCount()) {
         if (d->document)
-            qCDebug(qLcS, "done updating search results on %d pages", d->searchResults.count());
+            qCDebug(qLcS) << "done updating search results on" << d->searchResults.count() << "pages";
         killTimer(d->updateTimerId);
         d->updateTimerId = -1;
     }
