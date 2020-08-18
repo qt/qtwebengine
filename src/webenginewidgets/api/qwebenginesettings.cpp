@@ -38,8 +38,6 @@
 ****************************************************************************/
 
 #include "qwebenginesettings.h"
-
-#include "qwebengineprofile.h"
 #include "web_engine_settings.h"
 
 QT_BEGIN_NAMESPACE
@@ -127,22 +125,16 @@ QWebEngineSettings::~QWebEngineSettings()
 {
 }
 
-#if QT_DEPRECATED_SINCE(5, 5)
-QWebEngineSettings *QWebEngineSettings::globalSettings()
-{
-    return defaultSettings();
-}
-#endif
-
 /*!
     Returns the settings for a web engine page that belongs to the default
     profile. All web pages not specifically created with another profile belong
     to the default profile.
-*/
+
 QWebEngineSettings *QWebEngineSettings::defaultSettings()
 {
     return QWebEngineProfile::defaultProfile()->settings();
 }
+*/
 
 ASSERT_ENUMS_MATCH(WebEngineSettings::StandardFont, QWebEngineSettings::StandardFont)
 ASSERT_ENUMS_MATCH(WebEngineSettings::FixedFont, QWebEngineSettings::FixedFont)

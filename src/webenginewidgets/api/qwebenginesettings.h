@@ -112,10 +112,8 @@ public:
         AllowAllUnknownUrlSchemes
     };
 
-#if QT_DEPRECATED_SINCE(5, 5)
-    static QWebEngineSettings *globalSettings();
-#endif
-    static QWebEngineSettings *defaultSettings();
+    //TODO: see if we still need it
+    //static QWebEngineSettings *defaultSettings();
 
     void setFontFamily(FontFamily which, const QString &family);
     QString fontFamily(FontFamily which) const;
