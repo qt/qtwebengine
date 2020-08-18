@@ -620,6 +620,9 @@ WebEngineContext::WebEngineContext()
     bool enableViz = !parsedCommandLine->HasSwitch("disable-viz-display-compositor");
     parsedCommandLine->RemoveSwitch("disable-viz-display-compositor");
 
+    // Do not advertise a feature we have removed at compile time
+    parsedCommandLine->AppendSwitch(switches::kDisableSpeechAPI);
+
     std::string disableFeatures;
     std::string enableFeatures;
     // Needed to allow navigations within pages that were set using setHtml(). One example is
