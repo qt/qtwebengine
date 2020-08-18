@@ -487,7 +487,7 @@ void WebContentsAdapter::setClient(WebContentsAdapterClient *adapterClient)
     Q_ASSERT(m_profileAdapter);
 
     // This might replace any adapter that has been initialized with this WebEngineSettings.
-    adapterClient->webEngineSettings()->setWebContentsAdapter(this);
+    WebEngineSettings::get(adapterClient->webEngineSettings())->setWebContentsAdapter(this);
 }
 
 bool WebContentsAdapter::isInitialized() const
@@ -562,7 +562,8 @@ void WebContentsAdapter::initializeRenderPrefs()
                 commandLine->GetSwitchValueASCII(switches::kForceWebRtcIPHandlingPolicy);
     else
         rendererPrefs->webrtc_ip_handling_policy =
-                m_adapterClient->webEngineSettings()->testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly)
+                m_adapterClient->webEngineSettings()->testAttribute(
+                        QWebEngineSettings::WebRTCPublicInterfacesOnly)
                 ? blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly
                 : blink::kWebRTCIPHandlingDefault;
 #endif
@@ -615,7 +616,7 @@ void WebContentsAdapter::reload()
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
-    WebEngineSettings *settings = m_adapterClient->webEngineSettings();
+    WebEngineSettings *settings = WebEngineSettings::get(m_adapterClient->webEngineSettings());
     settings->doApply();
     if (!wasDiscarded) // undiscard() already triggers a reload
         m_webContents->GetController().Reload(content::ReloadType::NORMAL, /*checkRepost = */false);
@@ -628,7 +629,7 @@ void WebContentsAdapter::reloadAndBypassCache()
     bool wasDiscarded = (m_lifecycleState == LifecycleState::Discarded);
     setLifecycleState(LifecycleState::Active);
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
-    WebEngineSettings *settings = m_adapterClient->webEngineSettings();
+    WebEngineSettings *settings = WebEngineSettings::get(m_adapterClient->webEngineSettings());
     settings->doApply();
     if (!wasDiscarded) // undiscard() already triggers a reload
         m_webContents->GetController().Reload(content::ReloadType::BYPASSING_CACHE, /*checkRepost = */false);
@@ -660,8 +661,7 @@ void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
 
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
 
-    WebEngineSettings *settings = m_adapterClient->webEngineSettings();
-    settings->doApply();
+    WebEngineSettings::get(m_adapterClient->webEngineSettings())->doApply();
 
     // The situation can occur when relying on the editingFinished signal in QML to set the url
     // of the WebView.
@@ -748,8 +748,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
 
     CHECK_VALID_RENDER_WIDGET_HOST_VIEW(m_webContents->GetRenderViewHost());
 
-    WebEngineSettings *settings = m_adapterClient->webEngineSettings();
-    settings->doApply();
+    WebEngineSettings::get(m_adapterClient->webEngineSettings())->doApply();
 
     QByteArray encodedData = data.toPercentEncoding();
     std::string urlString;
@@ -1718,8 +1717,8 @@ void WebContentsAdapter::replaceMisspelling(const QString &word)
 void WebContentsAdapter::focusIfNecessary()
 {
     CHECK_INITIALIZED();
-    const WebEngineSettings *settings = m_adapterClient->webEngineSettings();
-    bool focusOnNavigation = settings->testAttribute(WebEngineSettings::FocusOnNavigationEnabled);
+    const QWebEngineSettings *settings = m_adapterClient->webEngineSettings();
+    bool focusOnNavigation = settings->testAttribute(QWebEngineSettings::FocusOnNavigationEnabled);
     if (focusOnNavigation)
         m_webContents->Focus();
 }

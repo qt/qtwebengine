@@ -61,6 +61,7 @@ class WebEngineSettings;
 
 QT_BEGIN_NAMESPACE
 
+class QWebEngineSettings;
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool autoLoadImages READ autoLoadImages WRITE setAutoLoadImages NOTIFY autoLoadImagesChanged FINAL)
@@ -211,7 +212,7 @@ private:
     friend class QQuickWebEngineView;
     void setParentSettings(QQuickWebEngineSettings *parentSettings);
 
-    QScopedPointer<QtWebEngineCore::WebEngineSettings> d_ptr;
+    QScopedPointer<QWebEngineSettings> d_ptr;
 };
 
 QT_END_NAMESPACE

@@ -212,8 +212,8 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
     ProfileAdapter::PermissionType permissionType = toQt(permission);
     if (permissionType == ProfileAdapter::ClipboardRead) {
         WebEngineSettings *settings = contentsDelegate->webEngineSettings();
-        if (settings->testAttribute(WebEngineSettings::JavascriptCanAccessClipboard)
-            && settings->testAttribute(WebEngineSettings::JavascriptCanPaste))
+        if (settings->testAttribute(QWebEngineSettings::JavascriptCanAccessClipboard)
+            && settings->testAttribute(QWebEngineSettings::JavascriptCanPaste))
             std::move(callback).Run(blink::mojom::PermissionStatus::GRANTED);
         else
             std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
@@ -254,8 +254,8 @@ int PermissionManagerQt::RequestPermissions(const std::vector<content::Permissio
             result.push_back(blink::mojom::PermissionStatus::DENIED);
         else if (permissionType == ProfileAdapter::ClipboardRead) {
             WebEngineSettings *settings = contentsDelegate->webEngineSettings();
-            if (settings->testAttribute(WebEngineSettings::JavascriptCanAccessClipboard)
-                && settings->testAttribute(WebEngineSettings::JavascriptCanPaste))
+            if (settings->testAttribute(QWebEngineSettings::JavascriptCanAccessClipboard)
+                && settings->testAttribute(QWebEngineSettings::JavascriptCanPaste))
                 result.push_back(blink::mojom::PermissionStatus::GRANTED);
             else
                 result.push_back(blink::mojom::PermissionStatus::DENIED);
@@ -306,10 +306,12 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForFrame(
             permission == content::PermissionType::CLIPBOARD_WRITE) {
         WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(
                 content::WebContents::FromRenderFrameHost(render_frame_host)->GetDelegate());
-        if (!delegate->webEngineSettings()->testAttribute(WebEngineSettings::JavascriptCanAccessClipboard))
+        if (!delegate->webEngineSettings()->testAttribute(
+                    QWebEngineSettings::JavascriptCanAccessClipboard))
             return blink::mojom::PermissionStatus::DENIED;
-        if (permission == content::PermissionType::CLIPBOARD_READ &&
-                !delegate->webEngineSettings()->testAttribute(WebEngineSettings::JavascriptCanPaste))
+        if (permission == content::PermissionType::CLIPBOARD_READ
+            && !delegate->webEngineSettings()->testAttribute(
+                    QWebEngineSettings::JavascriptCanPaste))
             return blink::mojom::PermissionStatus::DENIED;
         return blink::mojom::PermissionStatus::GRANTED;
     }

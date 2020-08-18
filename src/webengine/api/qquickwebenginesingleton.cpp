@@ -71,6 +71,7 @@ QT_BEGIN_NAMESPACE
 
     \sa WebEngineSettings
 */
+
 QQuickWebEngineSettings *QQuickWebEngineSingleton::settings() const
 {
     return defaultProfile()->settings();
@@ -89,5 +90,7 @@ QQuickWebEngineProfile *QQuickWebEngineSingleton::defaultProfile() const
 {
     return QQuickWebEngineProfile::defaultProfile();
 }
+
+#include "moc_qquickwebenginesingleton_p.cpp"
 
 QT_END_NAMESPACE

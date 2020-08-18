@@ -739,7 +739,7 @@ void QQuickWebEngineViewPrivate::findTextFinished(const QWebEngineFindTextResult
     Q_EMIT q->findTextFinished(result);
 }
 
-WebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const
+QWebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const
 {
     return m_settings->d_ptr.data();
 }

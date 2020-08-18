@@ -162,10 +162,9 @@ QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(ProfileAdapter *pro
         , m_profileAdapter(profileAdapter)
 {
     profileAdapter->addClient(this);
-    m_settings->d_ptr->initDefaults();
     // Fullscreen API was implemented before the supported setting, so we must
     // make it default true to avoid change in default API behavior.
-    m_settings->d_ptr->setAttribute(QtWebEngineCore::WebEngineSettings::FullScreenSupportEnabled, true);
+    m_settings->d_ptr->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 }
 
 QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()

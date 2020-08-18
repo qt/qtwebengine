@@ -62,9 +62,9 @@
 
 namespace QtWebEngineCore {
 
-QHash<WebEngineSettings::Attribute, bool> WebEngineSettings::s_defaultAttributes;
-QHash<WebEngineSettings::FontFamily, QString> WebEngineSettings::s_defaultFontFamilies;
-QHash<WebEngineSettings::FontSize, int> WebEngineSettings::s_defaultFontSizes;
+QHash<QWebEngineSettings::WebAttribute, bool> WebEngineSettings::s_defaultAttributes;
+QHash<QWebEngineSettings::FontFamily, QString> WebEngineSettings::s_defaultFontFamilies;
+QHash<QWebEngineSettings::FontSize, int> WebEngineSettings::s_defaultFontSizes;
 
 static const int batchTimerTimeout = 0;
 
@@ -92,13 +92,14 @@ static inline bool isTouchEventsAPIEnabled() {
 }
 
 WebEngineSettings::WebEngineSettings(WebEngineSettings *_parentSettings)
-    : m_adapter(0)
+    : m_adapter(nullptr)
     , parentSettings(_parentSettings)
-    , m_unknownUrlSchemePolicy(WebEngineSettings::InheritedUnknownUrlSchemePolicy)
+    , m_unknownUrlSchemePolicy(QWebEngineSettings::InheritedUnknownUrlSchemePolicy)
 {
     if (parentSettings)
         parentSettings->childSettings.insert(this);
-
+    else
+        initDefaults();
     m_batchTimer.setSingleShot(true);
     m_batchTimer.setInterval(batchTimerTimeout);
     QObject::connect(&m_batchTimer, &QTimer::timeout, [this]() {
@@ -132,13 +133,13 @@ void WebEngineSettings::overrideWebPreferences(content::WebContents *webContents
     }
 }
 
-void WebEngineSettings::setAttribute(WebEngineSettings::Attribute attr, bool on)
+void WebEngineSettings::setAttribute(QWebEngineSettings::WebAttribute attr, bool on)
 {
     m_attributes.insert(attr, on);
     scheduleApplyRecursively();
 }
 
-bool WebEngineSettings::testAttribute(WebEngineSettings::Attribute attr) const
+bool WebEngineSettings::testAttribute(QWebEngineSettings::WebAttribute attr) const
 {
     if (!parentSettings) {
         Q_ASSERT(s_defaultAttributes.contains(attr));
@@ -147,7 +148,7 @@ bool WebEngineSettings::testAttribute(WebEngineSettings::Attribute attr) const
     return m_attributes.value(attr, parentSettings->testAttribute(attr));
 }
 
-bool WebEngineSettings::isAttributeExplicitlySet(Attribute attr) const
+bool WebEngineSettings::isAttributeExplicitlySet(QWebEngineSettings::WebAttribute attr) const
 {
     if (m_attributes.contains(attr))
         return true;
@@ -158,19 +159,19 @@ bool WebEngineSettings::isAttributeExplicitlySet(Attribute attr) const
     return false;
 }
 
-void WebEngineSettings::resetAttribute(WebEngineSettings::Attribute attr)
+void WebEngineSettings::resetAttribute(QWebEngineSettings::WebAttribute attr)
 {
     m_attributes.remove(attr);
     scheduleApplyRecursively();
 }
 
-void WebEngineSettings::setFontFamily(WebEngineSettings::FontFamily which, const QString &family)
+void WebEngineSettings::setFontFamily(QWebEngineSettings::FontFamily which, const QString &family)
 {
     m_fontFamilies.insert(which, family);
     scheduleApplyRecursively();
 }
 
-QString WebEngineSettings::fontFamily(WebEngineSettings::FontFamily which)
+QString WebEngineSettings::fontFamily(QWebEngineSettings::FontFamily which)
 {
     if (!parentSettings) {
         Q_ASSERT(s_defaultFontFamilies.contains(which));
@@ -179,19 +180,19 @@ QString WebEngineSettings::fontFamily(WebEngineSettings::FontFamily which)
     return m_fontFamilies.value(which, parentSettings->fontFamily(which));
 }
 
-void WebEngineSettings::resetFontFamily(WebEngineSettings::FontFamily which)
+void WebEngineSettings::resetFontFamily(QWebEngineSettings::FontFamily which)
 {
     m_fontFamilies.remove(which);
     scheduleApplyRecursively();
 }
 
-void WebEngineSettings::setFontSize(WebEngineSettings::FontSize type, int size)
+void WebEngineSettings::setFontSize(QWebEngineSettings::FontSize type, int size)
 {
     m_fontSizes.insert(type, size);
     scheduleApplyRecursively();
 }
 
-int WebEngineSettings::fontSize(WebEngineSettings::FontSize type) const
+int WebEngineSettings::fontSize(QWebEngineSettings::FontSize type) const
 {
     if (!parentSettings) {
         Q_ASSERT(s_defaultFontSizes.contains(type));
@@ -200,7 +201,7 @@ int WebEngineSettings::fontSize(WebEngineSettings::FontSize type) const
     return m_fontSizes.value(type, parentSettings->fontSize(type));
 }
 
-void WebEngineSettings::resetFontSize(WebEngineSettings::FontSize type)
+void WebEngineSettings::resetFontSize(QWebEngineSettings::FontSize type)
 {
     m_fontSizes.remove(type);
     scheduleApplyRecursively();
@@ -219,42 +220,42 @@ QString WebEngineSettings::defaultTextEncoding() const
     return m_defaultEncoding.isEmpty()? parentSettings->defaultTextEncoding() : m_defaultEncoding;
 }
 
-void WebEngineSettings::setUnknownUrlSchemePolicy(WebEngineSettings::UnknownUrlSchemePolicy policy)
+void WebEngineSettings::setUnknownUrlSchemePolicy(QWebEngineSettings::UnknownUrlSchemePolicy policy)
 {
     m_unknownUrlSchemePolicy = policy;
 }
 
-WebEngineSettings::UnknownUrlSchemePolicy WebEngineSettings::unknownUrlSchemePolicy() const
+QWebEngineSettings::UnknownUrlSchemePolicy WebEngineSettings::unknownUrlSchemePolicy() const
 {
     // value InheritedUnknownUrlSchemePolicy means it is taken from parent, if possible. If there
     // is no parent, then AllowUnknownUrlSchemesFromUserInteraction (the default behavior) is used.
-    if (m_unknownUrlSchemePolicy != InheritedUnknownUrlSchemePolicy)
+    if (m_unknownUrlSchemePolicy != QWebEngineSettings::InheritedUnknownUrlSchemePolicy)
         return m_unknownUrlSchemePolicy;
     if (parentSettings)
         return parentSettings->unknownUrlSchemePolicy();
-    return AllowUnknownUrlSchemesFromUserInteraction;
+    return QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction;
 }
 
 void WebEngineSettings::initDefaults()
 {
     if (s_defaultAttributes.isEmpty()) {
         // Initialize the default settings.
-        s_defaultAttributes.insert(AutoLoadImages, true);
-        s_defaultAttributes.insert(JavascriptEnabled, true);
-        s_defaultAttributes.insert(JavascriptCanOpenWindows, true);
-        s_defaultAttributes.insert(JavascriptCanAccessClipboard, false);
-        s_defaultAttributes.insert(LinksIncludedInFocusChain, true);
-        s_defaultAttributes.insert(LocalStorageEnabled, true);
-        s_defaultAttributes.insert(LocalContentCanAccessRemoteUrls, false);
-        s_defaultAttributes.insert(XSSAuditingEnabled, false);
-        s_defaultAttributes.insert(SpatialNavigationEnabled, false);
-        s_defaultAttributes.insert(LocalContentCanAccessFileUrls, true);
-        s_defaultAttributes.insert(HyperlinkAuditingEnabled, false);
-        s_defaultAttributes.insert(ErrorPageEnabled, true);
-        s_defaultAttributes.insert(PluginsEnabled, false);
-        s_defaultAttributes.insert(FullScreenSupportEnabled, false);
-        s_defaultAttributes.insert(ScreenCaptureEnabled, false);
-        s_defaultAttributes.insert(ShowScrollBars, true);
+        s_defaultAttributes.insert(QWebEngineSettings::AutoLoadImages, true);
+        s_defaultAttributes.insert(QWebEngineSettings::JavascriptEnabled, true);
+        s_defaultAttributes.insert(QWebEngineSettings::JavascriptCanOpenWindows, true);
+        s_defaultAttributes.insert(QWebEngineSettings::JavascriptCanAccessClipboard, false);
+        s_defaultAttributes.insert(QWebEngineSettings::LinksIncludedInFocusChain, true);
+        s_defaultAttributes.insert(QWebEngineSettings::LocalStorageEnabled, true);
+        s_defaultAttributes.insert(QWebEngineSettings::LocalContentCanAccessRemoteUrls, false);
+        s_defaultAttributes.insert(QWebEngineSettings::XSSAuditingEnabled, false);
+        s_defaultAttributes.insert(QWebEngineSettings::SpatialNavigationEnabled, false);
+        s_defaultAttributes.insert(QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+        s_defaultAttributes.insert(QWebEngineSettings::HyperlinkAuditingEnabled, false);
+        s_defaultAttributes.insert(QWebEngineSettings::ErrorPageEnabled, true);
+        s_defaultAttributes.insert(QWebEngineSettings::PluginsEnabled, false);
+        s_defaultAttributes.insert(QWebEngineSettings::FullScreenSupportEnabled, false);
+        s_defaultAttributes.insert(QWebEngineSettings::ScreenCaptureEnabled, false);
+        s_defaultAttributes.insert(QWebEngineSettings::ShowScrollBars, true);
         // The following defaults matches logic in render_view_host_impl.cc
         // But first we must ensure the WebContext has been initialized
         QtWebEngineCore::WebEngineContext::current();
@@ -266,27 +267,30 @@ void WebEngineSettings::initDefaults()
         bool accelerated2dCanvas =
                 !commandLine->HasSwitch(switches::kDisableAccelerated2dCanvas);
         bool allowRunningInsecureContent = commandLine->HasSwitch(switches::kAllowRunningInsecureContent);
-        s_defaultAttributes.insert(ScrollAnimatorEnabled, smoothScrolling);
-        s_defaultAttributes.insert(WebGLEnabled, webGL);
-        s_defaultAttributes.insert(Accelerated2dCanvasEnabled, accelerated2dCanvas);
-        s_defaultAttributes.insert(AutoLoadIconsForPage, true);
-        s_defaultAttributes.insert(TouchIconsEnabled, false);
-        s_defaultAttributes.insert(FocusOnNavigationEnabled, false);
-        s_defaultAttributes.insert(PrintElementBackgrounds, true);
-        s_defaultAttributes.insert(AllowRunningInsecureContent, allowRunningInsecureContent);
-        s_defaultAttributes.insert(AllowGeolocationOnInsecureOrigins, false);
-        s_defaultAttributes.insert(AllowWindowActivationFromJavaScript, false);
+        s_defaultAttributes.insert(QWebEngineSettings::ScrollAnimatorEnabled, smoothScrolling);
+        s_defaultAttributes.insert(QWebEngineSettings::WebGLEnabled, webGL);
+        s_defaultAttributes.insert(QWebEngineSettings::Accelerated2dCanvasEnabled,
+                                   accelerated2dCanvas);
+        s_defaultAttributes.insert(QWebEngineSettings::AutoLoadIconsForPage, true);
+        s_defaultAttributes.insert(QWebEngineSettings::TouchIconsEnabled, false);
+        s_defaultAttributes.insert(QWebEngineSettings::FocusOnNavigationEnabled, false);
+        s_defaultAttributes.insert(QWebEngineSettings::PrintElementBackgrounds, true);
+        s_defaultAttributes.insert(QWebEngineSettings::AllowRunningInsecureContent,
+                                   allowRunningInsecureContent);
+        s_defaultAttributes.insert(QWebEngineSettings::AllowGeolocationOnInsecureOrigins, false);
+        s_defaultAttributes.insert(QWebEngineSettings::AllowWindowActivationFromJavaScript, false);
         bool playbackRequiresUserGesture = false;
         if (commandLine->HasSwitch(switches::kAutoplayPolicy))
             playbackRequiresUserGesture = (commandLine->GetSwitchValueASCII(switches::kAutoplayPolicy) != switches::autoplay::kNoUserGestureRequiredPolicy);
-        s_defaultAttributes.insert(PlaybackRequiresUserGesture, playbackRequiresUserGesture);
-        s_defaultAttributes.insert(WebRTCPublicInterfacesOnly, false);
-        s_defaultAttributes.insert(JavascriptCanPaste, false);
-        s_defaultAttributes.insert(DnsPrefetchEnabled, false);
+        s_defaultAttributes.insert(QWebEngineSettings::PlaybackRequiresUserGesture,
+                                   playbackRequiresUserGesture);
+        s_defaultAttributes.insert(QWebEngineSettings::WebRTCPublicInterfacesOnly, false);
+        s_defaultAttributes.insert(QWebEngineSettings::JavascriptCanPaste, false);
+        s_defaultAttributes.insert(QWebEngineSettings::DnsPrefetchEnabled, false);
 #if QT_CONFIG(webengine_extensions)
-        s_defaultAttributes.insert(PdfViewerEnabled, true);
+        s_defaultAttributes.insert(QWebEngineSettings::PdfViewerEnabled, true);
 #else
-        s_defaultAttributes.insert(PdfViewerEnabled, false);
+        s_defaultAttributes.insert(QWebEngineSettings::PdfViewerEnabled, false);
 #endif
     }
 
@@ -294,32 +298,34 @@ void WebEngineSettings::initDefaults()
         // Default fonts
         QFont defaultFont;
         defaultFont.setStyleHint(QFont::Serif);
-        s_defaultFontFamilies.insert(StandardFont, defaultFont.defaultFamily());
-        s_defaultFontFamilies.insert(SerifFont, defaultFont.defaultFamily());
-        s_defaultFontFamilies.insert(PictographFont, defaultFont.defaultFamily());
+        s_defaultFontFamilies.insert(QWebEngineSettings::StandardFont, defaultFont.defaultFamily());
+        s_defaultFontFamilies.insert(QWebEngineSettings::SerifFont, defaultFont.defaultFamily());
+        s_defaultFontFamilies.insert(QWebEngineSettings::PictographFont,
+                                     defaultFont.defaultFamily());
 
         defaultFont.setStyleHint(QFont::Fantasy);
-        s_defaultFontFamilies.insert(FantasyFont, defaultFont.defaultFamily());
+        s_defaultFontFamilies.insert(QWebEngineSettings::FantasyFont, defaultFont.defaultFamily());
 
         defaultFont.setStyleHint(QFont::Cursive);
-        s_defaultFontFamilies.insert(CursiveFont, defaultFont.defaultFamily());
+        s_defaultFontFamilies.insert(QWebEngineSettings::CursiveFont, defaultFont.defaultFamily());
 
         defaultFont.setStyleHint(QFont::SansSerif);
-        s_defaultFontFamilies.insert(SansSerifFont, defaultFont.defaultFamily());
+        s_defaultFontFamilies.insert(QWebEngineSettings::SansSerifFont,
+                                     defaultFont.defaultFamily());
 
         defaultFont.setStyleHint(QFont::Monospace);
-        s_defaultFontFamilies.insert(FixedFont, defaultFont.defaultFamily());
+        s_defaultFontFamilies.insert(QWebEngineSettings::FixedFont, defaultFont.defaultFamily());
     }
 
     if (s_defaultFontSizes.isEmpty()) {
-        s_defaultFontSizes.insert(MinimumFontSize, 0);
-        s_defaultFontSizes.insert(MinimumLogicalFontSize, 6);
-        s_defaultFontSizes.insert(DefaultFixedFontSize, 13);
-        s_defaultFontSizes.insert(DefaultFontSize, 16);
+        s_defaultFontSizes.insert(QWebEngineSettings::MinimumFontSize, 0);
+        s_defaultFontSizes.insert(QWebEngineSettings::MinimumLogicalFontSize, 6);
+        s_defaultFontSizes.insert(QWebEngineSettings::DefaultFixedFontSize, 13);
+        s_defaultFontSizes.insert(QWebEngineSettings::DefaultFontSize, 16);
     }
 
     m_defaultEncoding = QStringLiteral("ISO-8859-1");
-    m_unknownUrlSchemePolicy = InheritedUnknownUrlSchemePolicy;
+    m_unknownUrlSchemePolicy = QWebEngineSettings::InheritedUnknownUrlSchemePolicy;
 }
 
 void WebEngineSettings::scheduleApply()
@@ -359,46 +365,59 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     }
 
     // Attributes mapping.
-    prefs->loads_images_automatically = testAttribute(AutoLoadImages);
-    prefs->javascript_enabled = testAttribute(JavascriptEnabled);
-    prefs->javascript_can_access_clipboard = testAttribute(JavascriptCanAccessClipboard);
-    prefs->tabs_to_links = testAttribute(LinksIncludedInFocusChain);
-    prefs->local_storage_enabled = testAttribute(LocalStorageEnabled);
-    prefs->databases_enabled = testAttribute(LocalStorageEnabled);
-    prefs->allow_universal_access_from_file_urls = testAttribute(LocalContentCanAccessRemoteUrls);
-    prefs->spatial_navigation_enabled = testAttribute(SpatialNavigationEnabled);
-    prefs->allow_file_access_from_file_urls = testAttribute(LocalContentCanAccessFileUrls);
-    prefs->hyperlink_auditing_enabled = testAttribute(HyperlinkAuditingEnabled);
-    prefs->enable_scroll_animator = testAttribute(ScrollAnimatorEnabled);
-    prefs->enable_error_page = testAttribute(ErrorPageEnabled);
-    prefs->plugins_enabled = testAttribute(PluginsEnabled);
-    prefs->fullscreen_supported = testAttribute(FullScreenSupportEnabled);
-    prefs->accelerated_2d_canvas_enabled = testAttribute(Accelerated2dCanvasEnabled);
-    prefs->webgl1_enabled = prefs->webgl2_enabled = testAttribute(WebGLEnabled);
-    prefs->should_print_backgrounds = testAttribute(PrintElementBackgrounds);
-    prefs->allow_running_insecure_content = testAttribute(AllowRunningInsecureContent);
-    prefs->allow_geolocation_on_insecure_origins = testAttribute(AllowGeolocationOnInsecureOrigins);
-    prefs->hide_scrollbars = !testAttribute(ShowScrollBars);
-    if (isAttributeExplicitlySet(PlaybackRequiresUserGesture)) {
-        prefs->autoplay_policy = testAttribute(PlaybackRequiresUserGesture)
-                               ? content::AutoplayPolicy::kUserGestureRequired
-                               : content::AutoplayPolicy::kNoUserGestureRequired;
+    prefs->loads_images_automatically = testAttribute(QWebEngineSettings::AutoLoadImages);
+    prefs->javascript_enabled = testAttribute(QWebEngineSettings::JavascriptEnabled);
+    prefs->javascript_can_access_clipboard =
+            testAttribute(QWebEngineSettings::JavascriptCanAccessClipboard);
+    prefs->tabs_to_links = testAttribute(QWebEngineSettings::LinksIncludedInFocusChain);
+    prefs->local_storage_enabled = testAttribute(QWebEngineSettings::LocalStorageEnabled);
+    prefs->databases_enabled = testAttribute(QWebEngineSettings::LocalStorageEnabled);
+    prefs->allow_universal_access_from_file_urls =
+            testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls);
+    prefs->spatial_navigation_enabled = testAttribute(QWebEngineSettings::SpatialNavigationEnabled);
+    prefs->allow_file_access_from_file_urls =
+            testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls);
+    prefs->hyperlink_auditing_enabled = testAttribute(QWebEngineSettings::HyperlinkAuditingEnabled);
+    prefs->enable_scroll_animator = testAttribute(QWebEngineSettings::ScrollAnimatorEnabled);
+    prefs->enable_error_page = testAttribute(QWebEngineSettings::ErrorPageEnabled);
+    prefs->plugins_enabled = testAttribute(QWebEngineSettings::PluginsEnabled);
+    prefs->fullscreen_supported = testAttribute(QWebEngineSettings::FullScreenSupportEnabled);
+    prefs->accelerated_2d_canvas_enabled =
+            testAttribute(QWebEngineSettings::Accelerated2dCanvasEnabled);
+    prefs->webgl1_enabled = prefs->webgl2_enabled = testAttribute(QWebEngineSettings::WebGLEnabled);
+    prefs->should_print_backgrounds = testAttribute(QWebEngineSettings::PrintElementBackgrounds);
+    prefs->allow_running_insecure_content =
+            testAttribute(QWebEngineSettings::AllowRunningInsecureContent);
+    prefs->allow_geolocation_on_insecure_origins =
+            testAttribute(QWebEngineSettings::AllowGeolocationOnInsecureOrigins);
+    prefs->hide_scrollbars = !testAttribute(QWebEngineSettings::ShowScrollBars);
+    if (isAttributeExplicitlySet(QWebEngineSettings::PlaybackRequiresUserGesture)) {
+        prefs->autoplay_policy = testAttribute(QWebEngineSettings::PlaybackRequiresUserGesture)
+                ? content::AutoplayPolicy::kUserGestureRequired
+                : content::AutoplayPolicy::kNoUserGestureRequired;
     }
-    prefs->dom_paste_enabled = testAttribute(JavascriptCanPaste);
-    prefs->dns_prefetching_enabled = testAttribute(DnsPrefetchEnabled);
+    prefs->dom_paste_enabled = testAttribute(QWebEngineSettings::JavascriptCanPaste);
+    prefs->dns_prefetching_enabled = testAttribute(QWebEngineSettings::DnsPrefetchEnabled);
 
     // Fonts settings.
-    prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));
-    prefs->fixed_font_family_map[content::kCommonScript] = toString16(fontFamily(FixedFont));
-    prefs->serif_font_family_map[content::kCommonScript] = toString16(fontFamily(SerifFont));
-    prefs->sans_serif_font_family_map[content::kCommonScript] = toString16(fontFamily(SansSerifFont));
-    prefs->cursive_font_family_map[content::kCommonScript] = toString16(fontFamily(CursiveFont));
-    prefs->fantasy_font_family_map[content::kCommonScript] = toString16(fontFamily(FantasyFont));
-    prefs->pictograph_font_family_map[content::kCommonScript] = toString16(fontFamily(PictographFont));
-    prefs->default_font_size = fontSize(DefaultFontSize);
-    prefs->default_fixed_font_size = fontSize(DefaultFixedFontSize);
-    prefs->minimum_font_size = fontSize(MinimumFontSize);
-    prefs->minimum_logical_font_size = fontSize(MinimumLogicalFontSize);
+    prefs->standard_font_family_map[content::kCommonScript] =
+            toString16(fontFamily(QWebEngineSettings::StandardFont));
+    prefs->fixed_font_family_map[content::kCommonScript] =
+            toString16(fontFamily(QWebEngineSettings::FixedFont));
+    prefs->serif_font_family_map[content::kCommonScript] =
+            toString16(fontFamily(QWebEngineSettings::SerifFont));
+    prefs->sans_serif_font_family_map[content::kCommonScript] =
+            toString16(fontFamily(QWebEngineSettings::SansSerifFont));
+    prefs->cursive_font_family_map[content::kCommonScript] =
+            toString16(fontFamily(QWebEngineSettings::CursiveFont));
+    prefs->fantasy_font_family_map[content::kCommonScript] =
+            toString16(fontFamily(QWebEngineSettings::FantasyFont));
+    prefs->pictograph_font_family_map[content::kCommonScript] =
+            toString16(fontFamily(QWebEngineSettings::PictographFont));
+    prefs->default_font_size = fontSize(QWebEngineSettings::DefaultFontSize);
+    prefs->default_fixed_font_size = fontSize(QWebEngineSettings::DefaultFixedFontSize);
+    prefs->minimum_font_size = fontSize(QWebEngineSettings::MinimumFontSize);
+    prefs->minimum_logical_font_size = fontSize(QWebEngineSettings::MinimumLogicalFontSize);
     prefs->default_encoding = defaultTextEncoding().toStdString();
 
     // Set the theme colors. Based on chrome_content_browser_client.cc:
@@ -450,9 +469,10 @@ bool WebEngineSettings::applySettingsToRendererPreferences(blink::mojom::Rendere
     bool changed = false;
 #if QT_CONFIG(webengine_webrtc)
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceWebRtcIPHandlingPolicy)) {
-        std::string webrtc_ip_handling_policy = testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly)
-                                              ? blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly
-                                              : blink::kWebRTCIPHandlingDefault;
+        std::string webrtc_ip_handling_policy =
+                testAttribute(QWebEngineSettings::WebRTCPublicInterfacesOnly)
+                ? blink::kWebRTCIPHandlingDefaultPublicInterfaceOnly
+                : blink::kWebRTCIPHandlingDefault;
         if (prefs->webrtc_ip_handling_policy != webrtc_ip_handling_policy) {
             prefs->webrtc_ip_handling_policy = webrtc_ip_handling_policy;
             changed = true;
@@ -472,7 +492,7 @@ void WebEngineSettings::scheduleApplyRecursively()
 
 bool WebEngineSettings::getJavaScriptCanOpenWindowsAutomatically()
 {
-    return testAttribute(JavascriptCanOpenWindows);
+    return testAttribute(QWebEngineSettings::JavascriptCanOpenWindows);
 }
 
 void WebEngineSettings::setParentSettings(WebEngineSettings *_parentSettings)
@@ -482,6 +502,7 @@ void WebEngineSettings::setParentSettings(WebEngineSettings *_parentSettings)
     parentSettings = _parentSettings;
     if (parentSettings)
         parentSettings->childSettings.insert(this);
+    scheduleApplyRecursively();
 }
 
 } // namespace QtWebEngineCore

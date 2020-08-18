@@ -1963,9 +1963,9 @@ void QWebEnginePagePrivate::runFileChooser(QSharedPointer<FilePickerController> 
         controller->rejected();
 }
 
-WebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
+QWebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
 {
-    return settings->d_func();
+    return settings;
 }
 
 /*!

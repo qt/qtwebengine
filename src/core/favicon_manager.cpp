@@ -187,8 +187,8 @@ void FaviconManager::storeIcon(int id, const QIcon &icon)
 
     m_inProgressRequests.remove(id);
     if (m_inProgressRequests.isEmpty()) {
-        WebEngineSettings *settings = m_viewClient->webEngineSettings();
-        bool touchIconsEnabled = settings->testAttribute(WebEngineSettings::TouchIconsEnabled);
+        QWebEngineSettings *settings = m_viewClient->webEngineSettings();
+        bool touchIconsEnabled = settings->testAttribute(QWebEngineSettings::TouchIconsEnabled);
 
         generateCandidateIcon(touchIconsEnabled);
         const QUrl &iconUrl = candidateIconUrl(touchIconsEnabled);
@@ -243,13 +243,13 @@ void FaviconManager::update(const QList<FaviconInfo> &candidates)
 {
     updateCandidates(candidates);
 
-    WebEngineSettings *settings = m_viewClient->webEngineSettings();
-    if (!settings->testAttribute(WebEngineSettings::AutoLoadIconsForPage)) {
+    QWebEngineSettings *settings = m_viewClient->webEngineSettings();
+    if (!settings->testAttribute(QWebEngineSettings::AutoLoadIconsForPage)) {
         m_viewClient->iconChanged(QUrl());
         return;
     }
 
-    bool touchIconsEnabled = settings->testAttribute(WebEngineSettings::TouchIconsEnabled);
+    bool touchIconsEnabled = settings->testAttribute(QWebEngineSettings::TouchIconsEnabled);
 
     const QList<FaviconInfo> &faviconInfoList = getFaviconInfoList(true /* candidates only */);
     for (auto it = faviconInfoList.cbegin(), end = faviconInfoList.cend(); it != end; ++it) {

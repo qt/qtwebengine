@@ -52,7 +52,7 @@
 #define WEB_ENGINE_SETTINGS_H
 
 #include "qtwebenginecoreglobal_p.h"
-
+#include "qwebenginesettings.h"
 #include <QScopedPointer>
 #include <QHash>
 #include <QUrl>
@@ -72,98 +72,36 @@ namespace QtWebEngineCore {
 
 class WebContentsAdapter;
 
-class Q_WEBENGINECORE_PRIVATE_EXPORT WebEngineSettings {
+class WebEngineSettings {
 public:
-    // Attributes. Names match the ones from the public widgets API.
-    enum Attribute {
-        UnsupportedInCoreSettings = -1,
-        AutoLoadImages,
-        JavascriptEnabled,
-        JavascriptCanOpenWindows,
-        JavascriptCanAccessClipboard,
-        LinksIncludedInFocusChain,
-        LocalStorageEnabled,
-        LocalContentCanAccessRemoteUrls,
-        XSSAuditingEnabled,
-        SpatialNavigationEnabled,
-        LocalContentCanAccessFileUrls,
-        HyperlinkAuditingEnabled,
-        ScrollAnimatorEnabled,
-        ErrorPageEnabled,
-        PluginsEnabled,
-        FullScreenSupportEnabled,
-        ScreenCaptureEnabled,
-        WebGLEnabled,
-        Accelerated2dCanvasEnabled,
-        AutoLoadIconsForPage,
-        TouchIconsEnabled,
-        FocusOnNavigationEnabled,
-        PrintElementBackgrounds,
-        AllowRunningInsecureContent,
-        AllowGeolocationOnInsecureOrigins,
-        AllowWindowActivationFromJavaScript,
-        ShowScrollBars,
-        PlaybackRequiresUserGesture,
-        WebRTCPublicInterfacesOnly,
-        JavascriptCanPaste,
-        DnsPrefetchEnabled,
-        PdfViewerEnabled,
-    };
+    static WebEngineSettings* get(QWebEngineSettings *settings) { return settings->d_ptr.data(); }
 
-    // Must match the values from the public API in qwebenginesettings.h.
-    enum FontFamily {
-        StandardFont,
-        FixedFont,
-        SerifFont,
-        SansSerifFont,
-        CursiveFont,
-        FantasyFont,
-        PictographFont
-    };
-
-    // Must match the values from the public API in qwebenginesettings.h.
-    enum FontSize {
-        MinimumFontSize,
-        MinimumLogicalFontSize,
-        DefaultFontSize,
-        DefaultFixedFontSize
-    };
-
-    // Must match the values from the public API in qwebenginesettings.h.
-    enum UnknownUrlSchemePolicy {
-        InheritedUnknownUrlSchemePolicy = 0,
-        DisallowUnknownUrlSchemes = 1,
-        AllowUnknownUrlSchemesFromUserInteraction,
-        AllowAllUnknownUrlSchemes
-    };
-
-    explicit WebEngineSettings(WebEngineSettings *parentSettings = 0);
+    explicit WebEngineSettings(WebEngineSettings *parentSettings = nullptr);
     ~WebEngineSettings();
 
     void setParentSettings(WebEngineSettings *parentSettings);
 
     void overrideWebPreferences(content::WebContents *webContents, content::WebPreferences *prefs);
 
-    void setAttribute(Attribute, bool on);
-    bool testAttribute(Attribute) const;
-    void resetAttribute(Attribute);
-    bool isAttributeExplicitlySet(Attribute) const;
+    void setAttribute(QWebEngineSettings::WebAttribute, bool on);
+    bool testAttribute(QWebEngineSettings::WebAttribute) const;
+    void resetAttribute(QWebEngineSettings::WebAttribute);
+    bool isAttributeExplicitlySet(QWebEngineSettings::WebAttribute) const;
 
-    void setFontFamily(FontFamily, const QString &);
-    QString fontFamily(FontFamily);
-    void resetFontFamily(FontFamily);
+    void setFontFamily(QWebEngineSettings::FontFamily, const QString &);
+    QString fontFamily(QWebEngineSettings::FontFamily);
+    void resetFontFamily(QWebEngineSettings::FontFamily);
 
-    void setFontSize(FontSize type, int size);
-    int fontSize(FontSize type) const;
-    void resetFontSize(FontSize type);
+    void setFontSize(QWebEngineSettings::FontSize type, int size);
+    int fontSize(QWebEngineSettings::FontSize type) const;
+    void resetFontSize(QWebEngineSettings::FontSize type);
 
     void setDefaultTextEncoding(const QString &encoding);
     QString defaultTextEncoding() const;
 
-    void setUnknownUrlSchemePolicy(UnknownUrlSchemePolicy policy);
-    UnknownUrlSchemePolicy unknownUrlSchemePolicy() const;
+    void setUnknownUrlSchemePolicy(QWebEngineSettings::UnknownUrlSchemePolicy policy);
+    QWebEngineSettings::UnknownUrlSchemePolicy unknownUrlSchemePolicy() const;
 
-    void initDefaults();
     void scheduleApply();
 
     void scheduleApplyRecursively();
@@ -171,15 +109,16 @@ public:
     bool getJavaScriptCanOpenWindowsAutomatically();
 
 private:
+    void initDefaults();
     void doApply();
     void applySettingsToWebPreferences(content::WebPreferences *);
     bool applySettingsToRendererPreferences(blink::mojom::RendererPreferences *);
     void setWebContentsAdapter(WebContentsAdapter *adapter) { m_adapter = adapter; }
 
     WebContentsAdapter* m_adapter;
-    QHash<Attribute, bool> m_attributes;
-    QHash<FontFamily, QString> m_fontFamilies;
-    QHash<FontSize, int> m_fontSizes;
+    QHash<QWebEngineSettings::WebAttribute, bool> m_attributes;
+    QHash<QWebEngineSettings::FontFamily, QString> m_fontFamilies;
+    QHash<QWebEngineSettings::FontSize, int> m_fontSizes;
     QString m_defaultEncoding;
     QScopedPointer<content::WebPreferences> webPreferences;
     QTimer m_batchTimer;
@@ -187,10 +126,10 @@ private:
     WebEngineSettings *parentSettings;
     QSet<WebEngineSettings *> childSettings;
 
-    static QHash<Attribute, bool> s_defaultAttributes;
-    static QHash<FontFamily, QString> s_defaultFontFamilies;
-    static QHash<FontSize, int> s_defaultFontSizes;
-    UnknownUrlSchemePolicy m_unknownUrlSchemePolicy;
+    static QHash<QWebEngineSettings::WebAttribute, bool> s_defaultAttributes;
+    static QHash<QWebEngineSettings::FontFamily, QString> s_defaultFontFamilies;
+    static QHash<QWebEngineSettings::FontSize, int> s_defaultFontSizes;
+    QWebEngineSettings::UnknownUrlSchemePolicy m_unknownUrlSchemePolicy;
 
     friend class WebContentsAdapter;
 };

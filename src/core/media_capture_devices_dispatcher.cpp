@@ -337,8 +337,8 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(WebContentsAdapter
     }
 
     if (flags.testFlag(WebContentsAdapterClient::MediaDesktopVideoCapture)) {
-        const bool screenCaptureEnabled =
-                adapterClient->webEngineSettings()->testAttribute(WebEngineSettings::ScreenCaptureEnabled);
+        const bool screenCaptureEnabled = adapterClient->webEngineSettings()->testAttribute(
+                QWebEngineSettings::ScreenCaptureEnabled);
         const bool originIsSecure = content::IsOriginSecure(request.security_origin);
         if (!screenCaptureEnabled || !originIsSecure) {
             std::move(callback).Run(blink::MediaStreamDevices(), MediaStreamRequestResult::INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());

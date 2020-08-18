@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -44,86 +44,13 @@ QT_BEGIN_NAMESPACE
 
 using QtWebEngineCore::WebEngineSettings;
 
-static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::WebAttribute attribute)
-{
-    switch (attribute) {
-    case QWebEngineSettings::AutoLoadImages:
-        return WebEngineSettings::AutoLoadImages;
-    case QWebEngineSettings::JavascriptEnabled:
-        return WebEngineSettings::JavascriptEnabled;
-    case QWebEngineSettings::JavascriptCanOpenWindows:
-        return WebEngineSettings::JavascriptCanOpenWindows;
-    case QWebEngineSettings::JavascriptCanAccessClipboard:
-        return WebEngineSettings::JavascriptCanAccessClipboard;
-    case QWebEngineSettings::LinksIncludedInFocusChain:
-        return WebEngineSettings::LinksIncludedInFocusChain;
-    case QWebEngineSettings::LocalStorageEnabled:
-        return WebEngineSettings::LocalStorageEnabled;
-    case QWebEngineSettings::LocalContentCanAccessRemoteUrls:
-        return WebEngineSettings::LocalContentCanAccessRemoteUrls;
-    case QWebEngineSettings::XSSAuditingEnabled:
-        return WebEngineSettings::XSSAuditingEnabled;
-    case QWebEngineSettings::SpatialNavigationEnabled:
-        return WebEngineSettings::SpatialNavigationEnabled;
-    case QWebEngineSettings::LocalContentCanAccessFileUrls:
-        return WebEngineSettings::LocalContentCanAccessFileUrls;
-    case QWebEngineSettings::HyperlinkAuditingEnabled:
-        return WebEngineSettings::HyperlinkAuditingEnabled;
-    case QWebEngineSettings::ScrollAnimatorEnabled:
-        return WebEngineSettings::ScrollAnimatorEnabled;
-    case QWebEngineSettings::ErrorPageEnabled:
-        return WebEngineSettings::ErrorPageEnabled;
-    case QWebEngineSettings::PluginsEnabled:
-        return WebEngineSettings::PluginsEnabled;
-    case QWebEngineSettings::FullScreenSupportEnabled:
-        return WebEngineSettings::FullScreenSupportEnabled;
-    case QWebEngineSettings::ScreenCaptureEnabled:
-        return WebEngineSettings::ScreenCaptureEnabled;
-    case QWebEngineSettings::WebGLEnabled:
-        return WebEngineSettings::WebGLEnabled;
-    case QWebEngineSettings::Accelerated2dCanvasEnabled:
-        return WebEngineSettings::Accelerated2dCanvasEnabled;
-    case QWebEngineSettings::AutoLoadIconsForPage:
-        return WebEngineSettings::AutoLoadIconsForPage;
-    case QWebEngineSettings::TouchIconsEnabled:
-        return WebEngineSettings::TouchIconsEnabled;
-    case QWebEngineSettings::FocusOnNavigationEnabled:
-        return WebEngineSettings::FocusOnNavigationEnabled;
-    case QWebEngineSettings::PrintElementBackgrounds:
-        return WebEngineSettings::PrintElementBackgrounds;
-    case QWebEngineSettings::AllowRunningInsecureContent:
-        return WebEngineSettings::AllowRunningInsecureContent;
-    case QWebEngineSettings::AllowGeolocationOnInsecureOrigins:
-        return WebEngineSettings::AllowGeolocationOnInsecureOrigins;
-    case QWebEngineSettings::AllowWindowActivationFromJavaScript:
-        return WebEngineSettings::AllowWindowActivationFromJavaScript;
-    case QWebEngineSettings::ShowScrollBars:
-        return WebEngineSettings::ShowScrollBars;
-    case QWebEngineSettings::PlaybackRequiresUserGesture:
-        return WebEngineSettings::PlaybackRequiresUserGesture;
-    case QWebEngineSettings::WebRTCPublicInterfacesOnly:
-        return WebEngineSettings::WebRTCPublicInterfacesOnly;
-    case QWebEngineSettings::JavascriptCanPaste:
-        return WebEngineSettings::JavascriptCanPaste;
-    case QWebEngineSettings::DnsPrefetchEnabled:
-        return WebEngineSettings::DnsPrefetchEnabled;
-    case QWebEngineSettings::PdfViewerEnabled:
-        return WebEngineSettings::PdfViewerEnabled;
-    default:
-        return WebEngineSettings::UnsupportedInCoreSettings;
-    }
-}
-
 QWebEngineSettings::QWebEngineSettings(QWebEngineSettings *parentSettings)
-    : d_ptr(new WebEngineSettings(parentSettings ? parentSettings->d_func() : 0))
+    : d_ptr(new WebEngineSettings(parentSettings ? parentSettings->d_ptr.data() : nullptr))
 {
-    Q_D(QWebEngineSettings);
-    d->scheduleApplyRecursively();
+    d_ptr->scheduleApplyRecursively();
 }
 
-QWebEngineSettings::~QWebEngineSettings()
-{
-}
+QWebEngineSettings::~QWebEngineSettings() { }
 
 /*!
     Returns the settings for a web engine page that belongs to the default
@@ -136,111 +63,80 @@ QWebEngineSettings *QWebEngineSettings::defaultSettings()
 }
 */
 
-ASSERT_ENUMS_MATCH(WebEngineSettings::StandardFont, QWebEngineSettings::StandardFont)
-ASSERT_ENUMS_MATCH(WebEngineSettings::FixedFont, QWebEngineSettings::FixedFont)
-ASSERT_ENUMS_MATCH(WebEngineSettings::SerifFont, QWebEngineSettings::SerifFont)
-ASSERT_ENUMS_MATCH(WebEngineSettings::SansSerifFont, QWebEngineSettings::SansSerifFont)
-ASSERT_ENUMS_MATCH(WebEngineSettings::CursiveFont, QWebEngineSettings::CursiveFont)
-ASSERT_ENUMS_MATCH(WebEngineSettings::FantasyFont, QWebEngineSettings::FantasyFont)
-ASSERT_ENUMS_MATCH(WebEngineSettings::PictographFont, QWebEngineSettings::PictographFont)
-
 void QWebEngineSettings::setFontFamily(QWebEngineSettings::FontFamily which, const QString &family)
 {
-    Q_D(QWebEngineSettings);
-    d->setFontFamily(static_cast<WebEngineSettings::FontFamily>(which), family);
+    d_ptr->setFontFamily(which, family);
 }
 
 QString QWebEngineSettings::fontFamily(QWebEngineSettings::FontFamily which) const
 {
-    return d_ptr->fontFamily(static_cast<WebEngineSettings::FontFamily>(which));
+    return d_ptr->fontFamily(which);
 }
 
 void QWebEngineSettings::resetFontFamily(QWebEngineSettings::FontFamily which)
 {
-    d_ptr->resetFontFamily(static_cast<WebEngineSettings::FontFamily>(which));
+    d_ptr->resetFontFamily(which);
 }
-
-ASSERT_ENUMS_MATCH(WebEngineSettings::DefaultFixedFontSize, QWebEngineSettings::DefaultFixedFontSize)
-ASSERT_ENUMS_MATCH(WebEngineSettings::DefaultFontSize, QWebEngineSettings::DefaultFontSize)
-ASSERT_ENUMS_MATCH(WebEngineSettings::MinimumFontSize, QWebEngineSettings::MinimumFontSize)
-ASSERT_ENUMS_MATCH(WebEngineSettings::MinimumLogicalFontSize, QWebEngineSettings::MinimumLogicalFontSize)
 
 void QWebEngineSettings::setFontSize(QWebEngineSettings::FontSize type, int size)
 {
-    Q_D(QWebEngineSettings);
-    d->setFontSize(static_cast<WebEngineSettings::FontSize>(type), size);
+    d_ptr->setFontSize(type, size);
 }
 
 int QWebEngineSettings::fontSize(QWebEngineSettings::FontSize type) const
 {
-    Q_D(const QWebEngineSettings);
-    return d->fontSize(static_cast<WebEngineSettings::FontSize>(type));
+    return d_ptr->fontSize(type);
 }
 
 void QWebEngineSettings::resetFontSize(QWebEngineSettings::FontSize type)
 {
-    Q_D(QWebEngineSettings);
-    d->resetFontSize(static_cast<WebEngineSettings::FontSize>(type));
-}
-
-void QWebEngineSettings::setDefaultTextEncoding(const QString &encoding)
-{
-    Q_D(QWebEngineSettings);
-    d->setDefaultTextEncoding(encoding);
+    d_ptr->resetFontSize(type);
 }
 
 QString QWebEngineSettings::defaultTextEncoding() const
 {
-    Q_D(const QWebEngineSettings);
-    return d->defaultTextEncoding();
+    return d_ptr->defaultTextEncoding();
 }
-
-ASSERT_ENUMS_MATCH(WebEngineSettings::DisallowUnknownUrlSchemes, QWebEngineSettings::DisallowUnknownUrlSchemes)
-ASSERT_ENUMS_MATCH(WebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction, QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction)
-ASSERT_ENUMS_MATCH(WebEngineSettings::AllowAllUnknownUrlSchemes, QWebEngineSettings::AllowAllUnknownUrlSchemes)
 
 QWebEngineSettings::UnknownUrlSchemePolicy QWebEngineSettings::unknownUrlSchemePolicy() const
 {
-    Q_D(const QWebEngineSettings);
-    WebEngineSettings::UnknownUrlSchemePolicy result = d->unknownUrlSchemePolicy();
-    Q_ASSERT(result != WebEngineSettings::InheritedUnknownUrlSchemePolicy);
-    return static_cast<QWebEngineSettings::UnknownUrlSchemePolicy>(result);
-}
-
-void QWebEngineSettings::setUnknownUrlSchemePolicy(QWebEngineSettings::UnknownUrlSchemePolicy policy)
-{
-    Q_D(QWebEngineSettings);
-    d->setUnknownUrlSchemePolicy(static_cast<WebEngineSettings::UnknownUrlSchemePolicy>(policy));
+    return d_ptr->unknownUrlSchemePolicy();
 }
 
 void QWebEngineSettings::resetUnknownUrlSchemePolicy()
 {
-    Q_D(QWebEngineSettings);
-    d->setUnknownUrlSchemePolicy(WebEngineSettings::InheritedUnknownUrlSchemePolicy);
+    d_ptr->setUnknownUrlSchemePolicy(QWebEngineSettings::InheritedUnknownUrlSchemePolicy);
 }
 
 void QWebEngineSettings::setAttribute(QWebEngineSettings::WebAttribute attr, bool on)
 {
-    Q_D(QWebEngineSettings);
-    WebEngineSettings::Attribute webEngineAttribute = toWebEngineAttribute(attr);
-    Q_ASSERT(webEngineAttribute != WebEngineSettings::UnsupportedInCoreSettings);
-    d->setAttribute(webEngineAttribute, on);
+    d_ptr->setAttribute(attr, on);
 }
 
 bool QWebEngineSettings::testAttribute(QWebEngineSettings::WebAttribute attr) const
 {
-    Q_D(const QWebEngineSettings);
-    WebEngineSettings::Attribute webEngineAttribute = toWebEngineAttribute(attr);
-    Q_ASSERT(webEngineAttribute != WebEngineSettings::UnsupportedInCoreSettings);
-    return d->testAttribute(webEngineAttribute);
+    return d_ptr->testAttribute(attr);
 }
 
 void QWebEngineSettings::resetAttribute(QWebEngineSettings::WebAttribute attr)
 {
-    Q_D(QWebEngineSettings);
-    WebEngineSettings::Attribute webEngineAttribute = toWebEngineAttribute(attr);
-    Q_ASSERT(webEngineAttribute != WebEngineSettings::UnsupportedInCoreSettings);
-    d->resetAttribute(webEngineAttribute);
+    d_ptr->resetAttribute(attr);
+}
+
+void QWebEngineSettings::setDefaultTextEncoding(const QString &encoding)
+{
+    d_ptr->setDefaultTextEncoding(encoding);
+}
+
+void QWebEngineSettings::setUnknownUrlSchemePolicy(
+        QWebEngineSettings::UnknownUrlSchemePolicy policy)
+{
+    d_ptr->setUnknownUrlSchemePolicy(policy);
+}
+
+void QWebEngineSettings::setParentSettings(QWebEngineSettings *parentSettings)
+{
+    d_ptr->setParentSettings(parentSettings->d_ptr.data());
 }
 
 QT_END_NAMESPACE

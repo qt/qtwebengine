@@ -71,8 +71,8 @@ void onPdfStreamIntercepted(const GURL &original_url, std::string extension_id, 
         return;
 
     WebEngineSettings *settings = contentsDelegate->webEngineSettings();
-    if (!settings->testAttribute(WebEngineSettings::PdfViewerEnabled)
-        || !settings->testAttribute(WebEngineSettings::PluginsEnabled)) {
+    if (!settings->testAttribute(QWebEngineSettings::PdfViewerEnabled)
+        || !settings->testAttribute(QWebEngineSettings::PluginsEnabled)) {
         // If the applications has been set up to always download PDF files to open them in an
         // external viewer, trigger the download.
         std::unique_ptr<download::DownloadUrlParameters> params(

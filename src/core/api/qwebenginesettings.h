@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -65,6 +65,7 @@ public:
         FantasyFont,
         PictographFont
     };
+
     enum WebAttribute {
         AutoLoadImages,
         JavascriptEnabled,
@@ -107,6 +108,7 @@ public:
     };
 
     enum UnknownUrlSchemePolicy {
+        InheritedUnknownUrlSchemePolicy = 0, // TODO: hide
         DisallowUnknownUrlSchemes = 1,
         AllowUnknownUrlSchemesFromUserInteraction,
         AllowAllUnknownUrlSchemes
@@ -114,7 +116,8 @@ public:
 
     //TODO: see if we still need it
     //static QWebEngineSettings *defaultSettings();
-
+public:
+    ~QWebEngineSettings();
     void setFontFamily(FontFamily which, const QString &family);
     QString fontFamily(FontFamily which) const;
     void resetFontFamily(FontFamily which);
@@ -135,16 +138,15 @@ public:
     void resetUnknownUrlSchemePolicy();
 
 private:
+    explicit QWebEngineSettings(QWebEngineSettings *parentSettings = nullptr);
+    void setParentSettings(QWebEngineSettings *parentSettings);
     Q_DISABLE_COPY(QWebEngineSettings)
     typedef ::QtWebEngineCore::WebEngineSettings QWebEngineSettingsPrivate;
-    QWebEngineSettingsPrivate* d_func() { return d_ptr.data(); }
-    const QWebEngineSettingsPrivate* d_func() const { return d_ptr.data(); }
     QScopedPointer<QWebEngineSettingsPrivate> d_ptr;
     friend class QWebEnginePagePrivate;
     friend class QWebEngineProfilePrivate;
-
-    ~QWebEngineSettings();
-    explicit QWebEngineSettings(QWebEngineSettings *parentSettings = Q_NULLPTR);
+    friend class QQuickWebEngineSettings;
+    friend class QtWebEngineCore::WebEngineSettings;
 };
 
 QT_END_NAMESPACE

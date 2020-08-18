@@ -137,7 +137,7 @@ public:
     void runQuotaRequest(QWebEngineQuotaRequest) override;
     void runRegisterProtocolHandlerRequest(QWebEngineRegisterProtocolHandlerRequest) override;
     QObject *accessibilityParentObject() override;
-    QtWebEngineCore::WebEngineSettings *webEngineSettings() const override;
+    QWebEngineSettings *webEngineSettings() const override;
     void allowCertificateError(const QWebEngineCertificateError &error) override;
     void selectClientCert(
             const QSharedPointer<QtWebEngineCore::ClientCertSelectController> &controller) override;

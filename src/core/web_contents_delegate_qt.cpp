@@ -645,8 +645,8 @@ void WebContentsDelegateQt::DidFirstVisuallyNonEmptyPaint()
 
 void WebContentsDelegateQt::ActivateContents(content::WebContents* contents)
 {
-    WebEngineSettings *settings = m_viewClient->webEngineSettings();
-    if (settings->testAttribute(settings->Attribute::AllowWindowActivationFromJavaScript))
+    QWebEngineSettings *settings = m_viewClient->webEngineSettings();
+    if (settings->testAttribute(QWebEngineSettings::AllowWindowActivationFromJavaScript))
         contents->Focus();
 }
 
@@ -662,7 +662,7 @@ void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_content
 
 void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *webContents, content::WebPreferences *webPreferences)
 {
-    m_viewClient->webEngineSettings()->overrideWebPreferences(webContents, webPreferences);
+    WebEngineSettings::get(m_viewClient->webEngineSettings())->overrideWebPreferences(webContents, webPreferences);
 }
 
 QSharedPointer<WebContentsAdapter>
@@ -703,17 +703,17 @@ extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(u
 
 void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame, bool has_user_gesture)
 {
-    WebEngineSettings *settings = m_viewClient->webEngineSettings();
+    QWebEngineSettings *settings = m_viewClient->webEngineSettings();
     bool navigationAllowedByPolicy = false;
     bool navigationRequestAccepted = true;
 
     switch (settings->unknownUrlSchemePolicy()) {
-    case WebEngineSettings::DisallowUnknownUrlSchemes:
+    case QWebEngineSettings::DisallowUnknownUrlSchemes:
         break;
-    case WebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction:
+    case QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction:
         navigationAllowedByPolicy = has_user_gesture;
         break;
-    case WebEngineSettings::AllowAllUnknownUrlSchemes:
+    case QWebEngineSettings::AllowAllUnknownUrlSchemes:
         navigationAllowedByPolicy = true;
         break;
     default:
@@ -837,7 +837,7 @@ FindTextHelper *WebContentsDelegateQt::findTextHelper()
 }
 
 WebEngineSettings *WebContentsDelegateQt::webEngineSettings() const {
-    return m_viewClient->webEngineSettings();
+   return WebEngineSettings::get(m_viewClient->webEngineSettings());
 }
 
 WebContentsAdapter *WebContentsDelegateQt::webContentsAdapter() const

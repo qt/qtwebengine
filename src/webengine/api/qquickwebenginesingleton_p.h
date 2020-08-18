@@ -52,12 +52,13 @@
 //
 
 #include <QtWebEngine/private/qtwebengineglobal_p.h>
-
-#include <QtWebEngine/qquickwebengineprofile.h>
-#include <QtWebEngine/private/qquickwebenginesettings_p.h>
 #include <QObject>
 
 QT_BEGIN_NAMESPACE
+
+class QQuickWebEngineSettings;
+class QQuickWebEngineProfile;
+
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSingleton : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineSettings* settings READ settings CONSTANT FINAL)

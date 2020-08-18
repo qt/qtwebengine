@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 using QtWebEngineCore::WebEngineSettings;
 
 QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings)
-    : d_ptr(new WebEngineSettings(parentSettings ? parentSettings->d_ptr.data() : 0))
+    : d_ptr(new QWebEngineSettings(parentSettings ? parentSettings->d_ptr.data() : nullptr))
 { }
 
 /*!
@@ -97,7 +97,7 @@ QQuickWebEngineSettings::~QQuickWebEngineSettings()
 */
 bool QQuickWebEngineSettings::autoLoadImages() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::AutoLoadImages);
+    return d_ptr->testAttribute(QWebEngineSettings::AutoLoadImages);
 }
 
 /*!
@@ -109,7 +109,7 @@ bool QQuickWebEngineSettings::autoLoadImages() const
 */
 bool QQuickWebEngineSettings::javascriptEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::JavascriptEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::JavascriptEnabled);
 }
 
 /*!
@@ -121,7 +121,7 @@ bool QQuickWebEngineSettings::javascriptEnabled() const
 */
 bool QQuickWebEngineSettings::javascriptCanOpenWindows() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::JavascriptCanOpenWindows);
+    return d_ptr->testAttribute(QWebEngineSettings::JavascriptCanOpenWindows);
 }
 
 /*!
@@ -137,7 +137,7 @@ bool QQuickWebEngineSettings::javascriptCanOpenWindows() const
 */
 bool QQuickWebEngineSettings::javascriptCanAccessClipboard() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::JavascriptCanAccessClipboard);
+    return d_ptr->testAttribute(QWebEngineSettings::JavascriptCanAccessClipboard);
 }
 
 /*!
@@ -149,7 +149,7 @@ bool QQuickWebEngineSettings::javascriptCanAccessClipboard() const
 */
 bool QQuickWebEngineSettings::linksIncludedInFocusChain() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::LinksIncludedInFocusChain);
+    return d_ptr->testAttribute(QWebEngineSettings::LinksIncludedInFocusChain);
 }
 
 /*!
@@ -161,7 +161,7 @@ bool QQuickWebEngineSettings::linksIncludedInFocusChain() const
 */
 bool QQuickWebEngineSettings::localStorageEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::LocalStorageEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::LocalStorageEnabled);
 }
 
 /*!
@@ -173,7 +173,7 @@ bool QQuickWebEngineSettings::localStorageEnabled() const
 */
 bool QQuickWebEngineSettings::localContentCanAccessRemoteUrls() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls);
+    return d_ptr->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls);
 }
 
 /*!
@@ -191,7 +191,7 @@ bool QQuickWebEngineSettings::localContentCanAccessRemoteUrls() const
 */
 bool QQuickWebEngineSettings::spatialNavigationEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::SpatialNavigationEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::SpatialNavigationEnabled);
 }
 
 /*!
@@ -203,7 +203,7 @@ bool QQuickWebEngineSettings::spatialNavigationEnabled() const
 */
 bool QQuickWebEngineSettings::localContentCanAccessFileUrls() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::LocalContentCanAccessFileUrls);
+    return d_ptr->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls);
 }
 
 /*!
@@ -215,7 +215,7 @@ bool QQuickWebEngineSettings::localContentCanAccessFileUrls() const
 */
 bool QQuickWebEngineSettings::hyperlinkAuditingEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::HyperlinkAuditingEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::HyperlinkAuditingEnabled);
 }
 
 /*!
@@ -227,7 +227,7 @@ bool QQuickWebEngineSettings::hyperlinkAuditingEnabled() const
 */
 bool QQuickWebEngineSettings::errorPageEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::ErrorPageEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::ErrorPageEnabled);
 }
 
 /*!
@@ -241,7 +241,7 @@ bool QQuickWebEngineSettings::errorPageEnabled() const
 */
 bool QQuickWebEngineSettings::pluginsEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::PluginsEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::PluginsEnabled);
 }
 
 /*!
@@ -254,7 +254,7 @@ bool QQuickWebEngineSettings::pluginsEnabled() const
 */
 bool QQuickWebEngineSettings::fullScreenSupportEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::FullScreenSupportEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::FullScreenSupportEnabled);
 }
 
 /*!
@@ -267,7 +267,7 @@ bool QQuickWebEngineSettings::fullScreenSupportEnabled() const
 */
 bool QQuickWebEngineSettings::screenCaptureEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::ScreenCaptureEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::ScreenCaptureEnabled);
 }
 
 /*!
@@ -280,7 +280,7 @@ bool QQuickWebEngineSettings::screenCaptureEnabled() const
 */
 bool QQuickWebEngineSettings::webGLEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::WebGLEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::WebGLEnabled);
 }
 
 /*!
@@ -294,7 +294,7 @@ bool QQuickWebEngineSettings::webGLEnabled() const
 */
 bool QQuickWebEngineSettings::accelerated2dCanvasEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::Accelerated2dCanvasEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::Accelerated2dCanvasEnabled);
 }
 
 /*!
@@ -307,7 +307,7 @@ bool QQuickWebEngineSettings::accelerated2dCanvasEnabled() const
 */
 bool QQuickWebEngineSettings::autoLoadIconsForPage() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::AutoLoadIconsForPage);
+    return d_ptr->testAttribute(QWebEngineSettings::AutoLoadIconsForPage);
 }
 
 /*!
@@ -320,7 +320,7 @@ bool QQuickWebEngineSettings::autoLoadIconsForPage() const
 */
 bool QQuickWebEngineSettings::touchIconsEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::TouchIconsEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::TouchIconsEnabled);
 }
 
 /*!
@@ -334,7 +334,7 @@ bool QQuickWebEngineSettings::touchIconsEnabled() const
 */
 bool QQuickWebEngineSettings::focusOnNavigationEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::FocusOnNavigationEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::FocusOnNavigationEnabled);
 }
 
 /*!
@@ -347,7 +347,7 @@ bool QQuickWebEngineSettings::focusOnNavigationEnabled() const
 */
 bool QQuickWebEngineSettings::printElementBackgrounds() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::PrintElementBackgrounds);
+    return d_ptr->testAttribute(QWebEngineSettings::PrintElementBackgrounds);
 }
 
 /*!
@@ -362,7 +362,7 @@ bool QQuickWebEngineSettings::printElementBackgrounds() const
 */
 bool QQuickWebEngineSettings::allowRunningInsecureContent() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::AllowRunningInsecureContent);
+    return d_ptr->testAttribute(QWebEngineSettings::AllowRunningInsecureContent);
 }
 
 /*!
@@ -377,7 +377,7 @@ bool QQuickWebEngineSettings::allowRunningInsecureContent() const
 */
 bool QQuickWebEngineSettings::allowGeolocationOnInsecureOrigins() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::AllowGeolocationOnInsecureOrigins);
+    return d_ptr->testAttribute(QWebEngineSettings::AllowGeolocationOnInsecureOrigins);
 }
 
 /*!
@@ -387,7 +387,7 @@ bool QQuickWebEngineSettings::allowGeolocationOnInsecureOrigins() const
 */
 bool QQuickWebEngineSettings::allowWindowActivationFromJavaScript() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::AllowWindowActivationFromJavaScript);
+    return d_ptr->testAttribute(QWebEngineSettings::AllowWindowActivationFromJavaScript);
 }
 
 /*!
@@ -397,7 +397,7 @@ bool QQuickWebEngineSettings::allowWindowActivationFromJavaScript() const
 */
 bool QQuickWebEngineSettings::showScrollBars() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::ShowScrollBars);
+    return d_ptr->testAttribute(QWebEngineSettings::ShowScrollBars);
 }
 
 /*!
@@ -415,7 +415,7 @@ bool QQuickWebEngineSettings::showScrollBars() const
 */
 bool QQuickWebEngineSettings::playbackRequiresUserGesture() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::PlaybackRequiresUserGesture);
+    return d_ptr->testAttribute(QWebEngineSettings::PlaybackRequiresUserGesture);
 }
 
 /*!
@@ -429,7 +429,7 @@ bool QQuickWebEngineSettings::playbackRequiresUserGesture() const
 */
 bool QQuickWebEngineSettings::webRTCPublicInterfacesOnly() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly);
+    return d_ptr->testAttribute(QWebEngineSettings::WebRTCPublicInterfacesOnly);
 }
 
 /*!
@@ -443,7 +443,7 @@ bool QQuickWebEngineSettings::webRTCPublicInterfacesOnly() const
 */
 bool QQuickWebEngineSettings::javascriptCanPaste() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::JavascriptCanPaste);
+    return d_ptr->testAttribute(QWebEngineSettings::JavascriptCanPaste);
 }
 
 /*!
@@ -457,7 +457,7 @@ bool QQuickWebEngineSettings::javascriptCanPaste() const
 */
 bool QQuickWebEngineSettings::dnsPrefetchEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::DnsPrefetchEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::DnsPrefetchEnabled);
 }
 
 /*!
@@ -471,7 +471,7 @@ bool QQuickWebEngineSettings::dnsPrefetchEnabled() const
 */
 bool QQuickWebEngineSettings::pdfViewerEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::PdfViewerEnabled);
+    return d_ptr->testAttribute(QWebEngineSettings::PdfViewerEnabled);
 }
 
 /*!
@@ -488,12 +488,12 @@ QString QQuickWebEngineSettings::defaultTextEncoding() const
     return d_ptr->defaultTextEncoding();
 }
 
-ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::DisallowUnknownUrlSchemes, WebEngineSettings::DisallowUnknownUrlSchemes)
-ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction, WebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction)
-ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AllowAllUnknownUrlSchemes, WebEngineSettings::AllowAllUnknownUrlSchemes)
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::DisallowUnknownUrlSchemes, QWebEngineSettings::DisallowUnknownUrlSchemes)
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction, QWebEngineSettings::AllowUnknownUrlSchemesFromUserInteraction)
+ASSERT_ENUMS_MATCH(QQuickWebEngineSettings::AllowAllUnknownUrlSchemes, QWebEngineSettings::AllowAllUnknownUrlSchemes)
 
 /*!
-  \qmlproperty WebEngineSettings::UnknownUrlSchemePolicy WebEngineSettings::unknownUrlSchemePolicy
+  \qmlproperty QWebEngineSettings::UnknownUrlSchemePolicy WebEngineSettings::unknownUrlSchemePolicy
   \since QtWebEngine 1.7
   Specifies how navigation requests to URLs with unknown schemes are handled.
 
@@ -506,58 +506,58 @@ QQuickWebEngineSettings::UnknownUrlSchemePolicy QQuickWebEngineSettings::unknown
 
 void QQuickWebEngineSettings::setAutoLoadImages(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AutoLoadImages);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::AutoLoadImages);
     // Set unconditionally as it sets the override for the current settings while the current setting
     // could be from the fallback and is prone to changing later on.
-    d_ptr->setAttribute(WebEngineSettings::AutoLoadImages, on);
+    d_ptr->setAttribute(QWebEngineSettings::AutoLoadImages, on);
     if (wasOn != on)
         Q_EMIT autoLoadImagesChanged();
 }
 
 void QQuickWebEngineSettings::setJavascriptEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::JavascriptEnabled);
-    d_ptr->setAttribute(WebEngineSettings::JavascriptEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::JavascriptEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::JavascriptEnabled, on);
     if (wasOn != on)
         Q_EMIT javascriptEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setJavascriptCanOpenWindows(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::JavascriptCanOpenWindows);
-    d_ptr->setAttribute(WebEngineSettings::JavascriptCanOpenWindows, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::JavascriptCanOpenWindows);
+    d_ptr->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, on);
     if (wasOn != on)
         Q_EMIT javascriptCanOpenWindowsChanged();
 }
 
 void QQuickWebEngineSettings::setJavascriptCanAccessClipboard(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::JavascriptCanAccessClipboard);
-    d_ptr->setAttribute(WebEngineSettings::JavascriptCanAccessClipboard, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::JavascriptCanAccessClipboard);
+    d_ptr->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard, on);
     if (wasOn != on)
         Q_EMIT javascriptCanAccessClipboardChanged();
 }
 
 void QQuickWebEngineSettings::setLinksIncludedInFocusChain(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::LinksIncludedInFocusChain);
-    d_ptr->setAttribute(WebEngineSettings::LinksIncludedInFocusChain, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::LinksIncludedInFocusChain);
+    d_ptr->setAttribute(QWebEngineSettings::LinksIncludedInFocusChain, on);
     if (wasOn != on)
         Q_EMIT linksIncludedInFocusChainChanged();
 }
 
 void QQuickWebEngineSettings::setLocalStorageEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::LocalStorageEnabled);
-    d_ptr->setAttribute(WebEngineSettings::LocalStorageEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::LocalStorageEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::LocalStorageEnabled, on);
     if (wasOn != on)
         Q_EMIT localStorageEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setLocalContentCanAccessRemoteUrls(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls);
-    d_ptr->setAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls);
+    d_ptr->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, on);
     if (wasOn != on)
         Q_EMIT localContentCanAccessRemoteUrlsChanged();
 }
@@ -565,96 +565,96 @@ void QQuickWebEngineSettings::setLocalContentCanAccessRemoteUrls(bool on)
 
 void QQuickWebEngineSettings::setSpatialNavigationEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::SpatialNavigationEnabled);
-    d_ptr->setAttribute(WebEngineSettings::SpatialNavigationEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::SpatialNavigationEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::SpatialNavigationEnabled, on);
     if (wasOn != on)
         Q_EMIT spatialNavigationEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setLocalContentCanAccessFileUrls(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::LocalContentCanAccessFileUrls);
-    d_ptr->setAttribute(WebEngineSettings::LocalContentCanAccessFileUrls, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls);
+    d_ptr->setAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, on);
     if (wasOn != on)
         Q_EMIT localContentCanAccessFileUrlsChanged();
 }
 
 void QQuickWebEngineSettings::setHyperlinkAuditingEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::HyperlinkAuditingEnabled);
-    d_ptr->setAttribute(WebEngineSettings::HyperlinkAuditingEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::HyperlinkAuditingEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::HyperlinkAuditingEnabled, on);
     if (wasOn != on)
         Q_EMIT hyperlinkAuditingEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setErrorPageEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::ErrorPageEnabled);
-    d_ptr->setAttribute(WebEngineSettings::ErrorPageEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::ErrorPageEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::ErrorPageEnabled, on);
     if (wasOn != on)
         Q_EMIT errorPageEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setPluginsEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::PluginsEnabled);
-    d_ptr->setAttribute(WebEngineSettings::PluginsEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::PluginsEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::PluginsEnabled, on);
     if (wasOn != on)
         Q_EMIT pluginsEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setFullScreenSupportEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::FullScreenSupportEnabled);
-    d_ptr->setAttribute(WebEngineSettings::FullScreenSupportEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::FullScreenSupportEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, on);
     if (wasOn != on)
         Q_EMIT fullScreenSupportEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setScreenCaptureEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::ScreenCaptureEnabled);
-    d_ptr->setAttribute(WebEngineSettings::ScreenCaptureEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::ScreenCaptureEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, on);
     if (wasOn != on)
         Q_EMIT screenCaptureEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setWebGLEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::WebGLEnabled);
-    d_ptr->setAttribute(WebEngineSettings::WebGLEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::WebGLEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::WebGLEnabled, on);
     if (wasOn != on)
         Q_EMIT webGLEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setAccelerated2dCanvasEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::Accelerated2dCanvasEnabled);
-    d_ptr->setAttribute(WebEngineSettings::Accelerated2dCanvasEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::Accelerated2dCanvasEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::Accelerated2dCanvasEnabled, on);
     if (wasOn != on)
         Q_EMIT accelerated2dCanvasEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setAutoLoadIconsForPage(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AutoLoadIconsForPage);
-    d_ptr->setAttribute(WebEngineSettings::AutoLoadIconsForPage, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::AutoLoadIconsForPage);
+    d_ptr->setAttribute(QWebEngineSettings::AutoLoadIconsForPage, on);
     if (wasOn != on)
         Q_EMIT autoLoadIconsForPageChanged();
 }
 
 void QQuickWebEngineSettings::setTouchIconsEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::TouchIconsEnabled);
-    d_ptr->setAttribute(WebEngineSettings::TouchIconsEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::TouchIconsEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::TouchIconsEnabled, on);
     if (wasOn != on)
         Q_EMIT touchIconsEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setPrintElementBackgrounds(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::PrintElementBackgrounds);
-    d_ptr->setAttribute(WebEngineSettings::PrintElementBackgrounds, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::PrintElementBackgrounds);
+    d_ptr->setAttribute(QWebEngineSettings::PrintElementBackgrounds, on);
     if (wasOn != on)
         Q_EMIT printElementBackgroundsChanged();
 }
@@ -669,8 +669,8 @@ void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)
 
 void QQuickWebEngineSettings::setFocusOnNavigationEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::FocusOnNavigationEnabled);
-    d_ptr->setAttribute(WebEngineSettings::FocusOnNavigationEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::FocusOnNavigationEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, on);
     if (wasOn != on)
         Q_EMIT focusOnNavigationEnabledChanged();
 }
@@ -678,72 +678,72 @@ void QQuickWebEngineSettings::setFocusOnNavigationEnabled(bool on)
 
 void QQuickWebEngineSettings::setAllowRunningInsecureContent(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AllowRunningInsecureContent);
-    d_ptr->setAttribute(WebEngineSettings::AllowRunningInsecureContent, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::AllowRunningInsecureContent);
+    d_ptr->setAttribute(QWebEngineSettings::AllowRunningInsecureContent, on);
     if (wasOn != on)
         Q_EMIT allowRunningInsecureContentChanged();
 }
 
 void QQuickWebEngineSettings::setAllowGeolocationOnInsecureOrigins(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AllowGeolocationOnInsecureOrigins);
-    d_ptr->setAttribute(WebEngineSettings::AllowGeolocationOnInsecureOrigins, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::AllowGeolocationOnInsecureOrigins);
+    d_ptr->setAttribute(QWebEngineSettings::AllowGeolocationOnInsecureOrigins, on);
     if (wasOn != on)
         Q_EMIT allowGeolocationOnInsecureOriginsChanged();
 }
 
 void QQuickWebEngineSettings::setAllowWindowActivationFromJavaScript(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AllowWindowActivationFromJavaScript);
-    d_ptr->setAttribute(WebEngineSettings::AllowWindowActivationFromJavaScript, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::AllowWindowActivationFromJavaScript);
+    d_ptr->setAttribute(QWebEngineSettings::AllowWindowActivationFromJavaScript, on);
     if (wasOn != on)
         Q_EMIT allowWindowActivationFromJavaScriptChanged();
 }
 
 void QQuickWebEngineSettings::setShowScrollBars(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::ShowScrollBars);
-    d_ptr->setAttribute(WebEngineSettings::ShowScrollBars, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::ShowScrollBars);
+    d_ptr->setAttribute(QWebEngineSettings::ShowScrollBars, on);
     if (wasOn != on)
         Q_EMIT showScrollBarsChanged();
 }
 
 void QQuickWebEngineSettings::setPlaybackRequiresUserGesture(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::PlaybackRequiresUserGesture);
-    d_ptr->setAttribute(WebEngineSettings::PlaybackRequiresUserGesture, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::PlaybackRequiresUserGesture);
+    d_ptr->setAttribute(QWebEngineSettings::PlaybackRequiresUserGesture, on);
     if (wasOn != on)
         Q_EMIT playbackRequiresUserGestureChanged();
 }
 
 void QQuickWebEngineSettings::setJavascriptCanPaste(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::JavascriptCanPaste);
-    d_ptr->setAttribute(WebEngineSettings::JavascriptCanPaste, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::JavascriptCanPaste);
+    d_ptr->setAttribute(QWebEngineSettings::JavascriptCanPaste, on);
     if (wasOn != on)
         Q_EMIT javascriptCanPasteChanged();
 }
 
 void QQuickWebEngineSettings::setDnsPrefetchEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::DnsPrefetchEnabled);
-    d_ptr->setAttribute(WebEngineSettings::DnsPrefetchEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::DnsPrefetchEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, on);
     if (wasOn != on)
         Q_EMIT dnsPrefetchEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setPdfViewerEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::PdfViewerEnabled);
-    d_ptr->setAttribute(WebEngineSettings::PdfViewerEnabled, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::PdfViewerEnabled);
+    d_ptr->setAttribute(QWebEngineSettings::PdfViewerEnabled, on);
     if (wasOn != on)
         Q_EMIT pdfViewerEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings::UnknownUrlSchemePolicy policy)
 {
-    WebEngineSettings::UnknownUrlSchemePolicy oldPolicy = d_ptr->unknownUrlSchemePolicy();
-    WebEngineSettings::UnknownUrlSchemePolicy newPolicy = static_cast<WebEngineSettings::UnknownUrlSchemePolicy>(policy);
+    QWebEngineSettings::UnknownUrlSchemePolicy oldPolicy = d_ptr->unknownUrlSchemePolicy();
+    QWebEngineSettings::UnknownUrlSchemePolicy newPolicy = static_cast<QWebEngineSettings::UnknownUrlSchemePolicy>(policy);
     d_ptr->setUnknownUrlSchemePolicy(newPolicy);
     if (oldPolicy != newPolicy)
         Q_EMIT unknownUrlSchemePolicyChanged();
@@ -751,8 +751,8 @@ void QQuickWebEngineSettings::setUnknownUrlSchemePolicy(QQuickWebEngineSettings:
 
 void QQuickWebEngineSettings::setWebRTCPublicInterfacesOnly(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly);
-    d_ptr->setAttribute(WebEngineSettings::WebRTCPublicInterfacesOnly, on);
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::WebRTCPublicInterfacesOnly);
+    d_ptr->setAttribute(QWebEngineSettings::WebRTCPublicInterfacesOnly, on);
     if (wasOn != on)
         Q_EMIT webRTCPublicInterfacesOnlyChanged();
 }
@@ -760,7 +760,6 @@ void QQuickWebEngineSettings::setWebRTCPublicInterfacesOnly(bool on)
 void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)
 {
     d_ptr->setParentSettings(parentSettings->d_ptr.data());
-    d_ptr->scheduleApplyRecursively();
 }
 
 QT_END_NAMESPACE

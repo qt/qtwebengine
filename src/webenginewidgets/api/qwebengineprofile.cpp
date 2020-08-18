@@ -173,7 +173,6 @@ QWebEngineProfilePrivate::QWebEngineProfilePrivate(ProfileAdapter* profileAdapte
                              new QWebEngineScriptCollectionPrivate(profileAdapter->userResourceController())))
 {
     m_profileAdapter->addClient(this);
-    m_settings->d_ptr->initDefaults();
 }
 
 QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
