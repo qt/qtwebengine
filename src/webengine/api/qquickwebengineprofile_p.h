@@ -65,6 +65,7 @@ QT_BEGIN_NAMESPACE
 class QWebEngineDownloadRequest;
 class QQuickWebEngineSettings;
 class QQuickWebEngineViewPrivate;
+class QQuickWebEngineScriptCollection;
 
 class QQuickWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {
 public:
@@ -89,19 +90,13 @@ public:
 
     void showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller) override;
 
-    // QQmlListPropertyHelpers
-    static void userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script);
-    static int userScripts_count(QQmlListProperty<QQuickWebEngineScript> *p);
-    static QQuickWebEngineScript *userScripts_at(QQmlListProperty<QQuickWebEngineScript> *p, int idx);
-    static void userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p);
-
 private:
     friend class QQuickWebEngineView;
     QQuickWebEngineProfile *q_ptr;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
     QMap<quint32, QPointer<QWebEngineDownloadRequest> > m_ongoingDownloads;
-    QList<QQuickWebEngineScript *> m_userScripts;
+    QScopedPointer<QQuickWebEngineScriptCollection> m_scriptCollection;
 };
 
 QT_END_NAMESPACE

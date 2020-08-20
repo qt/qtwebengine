@@ -40,24 +40,26 @@
 #ifndef QQUICKWEBENGINESCRIPT_H
 #define QQUICKWEBENGINESCRIPT_H
 
-#include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
+#include <QtCore/QSharedDataPointer>
 #include <QtWebEngine/qtwebengineglobal.h>
 
+namespace QtWebEngineCore {
+class UserScript;
+} // namespace
+
 QT_BEGIN_NAMESPACE
-class QQuickWebEngineScriptPrivate;
 class QQuickWebEngineView;
 
-class Q_WEBENGINE_EXPORT QQuickWebEngineScript : public QObject
+class Q_WEBENGINE_EXPORT QQuickWebEngineScript
 {
-    Q_OBJECT
-    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged FINAL)
-    Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSourceUrl NOTIFY sourceUrlChanged FINAL)
-    Q_PROPERTY(QString sourceCode READ sourceCode WRITE setSourceCode NOTIFY sourceCodeChanged FINAL)
-    Q_PROPERTY(InjectionPoint injectionPoint READ injectionPoint WRITE setInjectionPoint NOTIFY injectionPointChanged FINAL)
-    Q_PROPERTY(ScriptWorldId worldId READ worldId WRITE setWorldId NOTIFY worldIdChanged FINAL)
-    Q_PROPERTY(bool runOnSubframes READ runOnSubframes WRITE setRunOnSubframes NOTIFY runOnSubframesChanged FINAL)
-
+    Q_GADGET
+    Q_PROPERTY(QString name READ name WRITE setName FINAL)
+    Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSourceUrl FINAL)
+    Q_PROPERTY(QString sourceCode READ sourceCode WRITE setSourceCode FINAL)
+    Q_PROPERTY(InjectionPoint injectionPoint READ injectionPoint WRITE setInjectionPoint FINAL)
+    Q_PROPERTY(ScriptWorldId worldId READ worldId WRITE setWorldId FINAL)
+    Q_PROPERTY(bool runOnSubframes READ runOnSubframes WRITE setRunOnSubframes FINAL)
 
 public:
     enum InjectionPoint {
@@ -74,9 +76,12 @@ public:
     };
     Q_ENUM(ScriptWorldId)
 
-    explicit QQuickWebEngineScript(QObject *parent = Q_NULLPTR);
+    explicit QQuickWebEngineScript();
     ~QQuickWebEngineScript();
-    Q_INVOKABLE QString toString() const;
+    QQuickWebEngineScript(const QQuickWebEngineScript &other);
+    QQuickWebEngineScript &operator=(const QQuickWebEngineScript &other);
+    bool operator==(const QQuickWebEngineScript &other) const;
+    inline bool operator!=(const QQuickWebEngineScript &other) const { return !operator==(other); }
 
     QString name() const;
     QUrl sourceUrl() const;
@@ -85,6 +90,7 @@ public:
     ScriptWorldId worldId() const;
     bool runOnSubframes() const;
 
+    Q_INVOKABLE QString toString() const;
     Q_INVOKABLE void setName(const QString &name);
     Q_INVOKABLE void setSourceUrl(const QUrl &url);
     Q_INVOKABLE void setSourceCode(const QString &code);
@@ -92,22 +98,13 @@ public:
     Q_INVOKABLE void setWorldId(ScriptWorldId scriptWorldId);
     Q_INVOKABLE void setRunOnSubframes(bool on);
 
-Q_SIGNALS:
-    void nameChanged(const QString &name);
-    void sourceUrlChanged(const QUrl &url);
-    void sourceCodeChanged(const QString &code);
-    void injectionPointChanged(InjectionPoint injectionPoint);
-    void worldIdChanged(ScriptWorldId scriptWorldId);
-    void runOnSubframesChanged(bool on);
-
-protected:
-    void timerEvent(QTimerEvent *e) override;
 
 private:
+    QQuickWebEngineScript(const QtWebEngineCore::UserScript &);
+    QSharedDataPointer<QtWebEngineCore::UserScript> d;
     friend class QQuickWebEngineProfilePrivate;
     friend class QQuickWebEngineViewPrivate;
-    Q_DECLARE_PRIVATE(QQuickWebEngineScript)
-    QScopedPointer<QQuickWebEngineScriptPrivate> d_ptr;
+    friend class QQuickWebEngineScriptCollectionPrivate;
 };
 QT_END_NAMESPACE
 

@@ -52,6 +52,7 @@
 //
 
 #include "qquickwebengineview_p.h"
+#include "qquickwebenginescriptcollection.h"
 #include "render_view_context_menu_qt.h"
 #include "touch_handle_drawable_client.h"
 #include "web_contents_adapter_client.h"
@@ -187,12 +188,6 @@ public:
     void widgetChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *oldWidget,
                        QtWebEngineCore::RenderWidgetHostViewQtDelegateQuick *newWidget);
 
-    // QQmlListPropertyHelpers
-    static void userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script);
-    static int userScripts_count(QQmlListProperty<QQuickWebEngineScript> *p);
-    static QQuickWebEngineScript *userScripts_at(QQmlListProperty<QQuickWebEngineScript> *p, int idx);
-    static void userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p);
-
     QQuickWebEngineProfile *m_profile;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
     QScopedPointer<QQuickWebEngineHistory> m_history;
@@ -231,13 +226,13 @@ private:
     };
 
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;
-    QList<QQuickWebEngineScript *> m_userScripts;
     QColor m_backgroundColor;
     qreal m_zoomFactor;
     bool m_ui2Enabled;
     bool m_profileInitialized;
     QWebEngineContextMenuRequest *m_contextMenuRequest;
     LoadVisuallyCommittedState m_loadVisuallyCommittedState = NotCommitted;
+    QScopedPointer<QQuickWebEngineScriptCollection> m_scriptCollection;
 };
 
 #ifndef QT_NO_ACCESSIBILITY

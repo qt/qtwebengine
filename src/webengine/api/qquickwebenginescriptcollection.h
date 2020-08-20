@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,79 +37,57 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef QQUICKWEBENGINESCRIPTCOLLECTION_H
+#define QQUICKWEBENGINESCRIPTCOLLECTION_H
 
-#ifndef USER_SCRIPT_H
-#define USER_SCRIPT_H
+#include <QtWebEngine/qtwebengineglobal.h>
+#include "qquickwebenginescript.h"
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qset.h>
+#include <QtCore/QObject>
+#include <QtQml/QJSValue>
 
-#include "qtwebenginecoreglobal_p.h"
+QT_BEGIN_NAMESPACE
+class QQuickWebEngineScriptCollectionPrivate;
 
-#include <QtCore/QScopedPointer>
-#include <QtCore/QSharedData>
-#include <QtCore/QString>
-#include <QtCore/QUrl>
-
-struct UserScriptData;
-
-namespace QtWebEngineCore {
-
-class UserResourceControllerHost;
-
-class Q_WEBENGINECORE_PRIVATE_EXPORT UserScript : public QSharedData {
+class Q_WEBENGINE_EXPORT QQuickWebEngineScriptCollection : public QObject
+{
+    Q_OBJECT
 public:
-    enum InjectionPoint {
-        AfterLoad,
-        DocumentLoadFinished,
-        DocumentElementCreation
-    };
+    Q_PROPERTY(QJSValue collection READ collection WRITE setCollection NOTIFY collectionChanged)
+    ~QQuickWebEngineScriptCollection();
+    bool isEmpty() const { return !count(); }
+    int count() const;
+    inline int size() const { return count(); }
+    bool contains(const QQuickWebEngineScript &value) const;
 
-    UserScript();
-    UserScript(const UserScript &other);
-    ~UserScript();
-    UserScript &operator=(const UserScript &other);
+    Q_INVOKABLE QQuickWebEngineScript findScript(const QString &name) const;
+    Q_INVOKABLE QList<QQuickWebEngineScript> findScripts(const QString &name) const;
 
-    bool isNull() const;
+    Q_INVOKABLE void insert(const QQuickWebEngineScript &);
+    Q_INVOKABLE void insert(const QList<QQuickWebEngineScript> &list);
 
-    QString name() const;
-    void setName(const QString &);
+    Q_INVOKABLE bool remove(const QQuickWebEngineScript &);
+    Q_INVOKABLE void clear();
 
-    QString sourceCode() const;
-    void setSourceCode(const QString &);
+    QJSValue collection() const;
+    void setCollection(const QJSValue &scripts);
 
-    QUrl sourceUrl() const;
-    void setSourceUrl(const QUrl &);
-
-    InjectionPoint injectionPoint() const;
-    void setInjectionPoint(InjectionPoint);
-
-    uint worldId() const;
-    void setWorldId(uint id);
-
-    bool runsOnSubFrames() const;
-    void setRunsOnSubFrames(bool on);
-
-    bool operator==(const UserScript &) const;
+    QList<QQuickWebEngineScript> toList() const;
+Q_SIGNALS:
+    void collectionChanged();
 
 private:
-    void initData();
-    UserScriptData &data() const;
-    void parseMetadataHeader();
-    friend class UserResourceControllerHost;
-
-    QScopedPointer<UserScriptData> scriptData;
-    QString m_name;
-    QUrl m_url;
+    Q_DISABLE_COPY(QQuickWebEngineScriptCollection)
+    QQuickWebEngineScriptCollection(QQuickWebEngineScriptCollectionPrivate *);
+    QScopedPointer<QQuickWebEngineScriptCollectionPrivate> d;
+    friend class QQuickWebEngineProfilePrivate;
+    friend class QQuickWebEngineViewPrivate;
 };
 
-} // namespace QtWebEngineCore
+QT_END_NAMESPACE
 
-#endif // USER_SCRIPT_H
+Q_DECLARE_METATYPE(QQuickWebEngineScriptCollection *)
+
+#endif // QWEBENGINESCRIPTCOLLECTION_H

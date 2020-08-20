@@ -91,6 +91,11 @@ QQuickWebEngineProfile *QQuickWebEngineSingleton::defaultProfile() const
     return QQuickWebEngineProfile::defaultProfile();
 }
 
+QQuickWebEngineScript QQuickWebEngineSingleton::script() const
+{
+    return QQuickWebEngineScript();
+}
+
 #include "moc_qquickwebenginesingleton_p.cpp"
 
 QT_END_NAMESPACE

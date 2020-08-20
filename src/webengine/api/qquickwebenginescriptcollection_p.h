@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINESCRIPT_P_H
-#define QQUICKWEBENGINESCRIPT_P_H
+#ifndef QQUICKWEBENGINESCRIPTCOLLECTION_P_H
+#define QQUICKWEBENGINESCRIPTCOLLECTION_P_H
 
 //
 //  W A R N I N G
@@ -51,37 +51,46 @@
 // We mean it.
 //
 
-#include "qquickwebenginescript.h"
+#include "qtwebenginecoreglobal.h"
 
-#include <QtCore/QBasicTimer>
-#include "user_script.h"
+#include "qquickwebenginescript.h"
 #include "web_contents_adapter.h"
+
+#include <QtCore/QSet>
+#include <QtCore/QSharedPointer>
 
 namespace QtWebEngineCore {
 class UserResourceControllerHost;
-class WebContentsAdapter;
 } // namespace
 
 QT_BEGIN_NAMESPACE
-
-class QQuickWebEngineScriptPrivate {
+class QQuickWebEngineScriptCollectionPrivate
+{
 public:
-    Q_DECLARE_PUBLIC(QQuickWebEngineScript)
-    QQuickWebEngineScriptPrivate();
-    void aboutToUpdateUnderlyingScript();
-    void bind(QtWebEngineCore::UserResourceControllerHost *, QtWebEngineCore::WebContentsAdapter * = 0);
+    QQuickWebEngineScriptCollectionPrivate(
+            QtWebEngineCore::UserResourceControllerHost *,
+            QSharedPointer<QtWebEngineCore::WebContentsAdapter> =
+                    QSharedPointer<QtWebEngineCore::WebContentsAdapter>());
 
-    QtWebEngineCore::UserScript coreScript;
-    QBasicTimer m_basicTimer;
-    QtWebEngineCore::UserResourceControllerHost *m_controllerHost;
-    QtWebEngineCore::WebContentsAdapter *m_adapter;
-    QUrl m_sourceUrl;
+    int count() const;
+    bool contains(const QQuickWebEngineScript &) const;
+    QList<QQuickWebEngineScript> toList(const QString &scriptName = QString()) const;
+    QQuickWebEngineScript find(const QString &name) const;
+
+    void initializationFinished(QSharedPointer<QtWebEngineCore::WebContentsAdapter> contents);
+
+    void insert(const QQuickWebEngineScript &);
+    bool remove(const QQuickWebEngineScript &);
+    void clear();
+    void reserve(int);
 
 private:
-    QQuickWebEngineScript *q_ptr;
-
+    QtWebEngineCore::UserResourceControllerHost *m_scriptController;
+    QSharedPointer<QtWebEngineCore::WebContentsAdapter> m_contents;
+    QList<QQuickWebEngineScript> m_scripts;
+    friend class QQuickWebEngineScriptCollection;
 };
 
 QT_END_NAMESPACE
 
-#endif // QQUICKWEBENGINESCRIPT_P_H
+#endif // QWEBENGINESCRIPTCOLLECTION__PH

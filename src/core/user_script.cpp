@@ -81,6 +81,7 @@ UserScript::UserScript(const UserScript &other)
         return;
     scriptData.reset(new UserScriptData(*other.scriptData));
     m_name = other.m_name;
+    m_url = other.m_url;
 }
 
 UserScript::~UserScript()
@@ -96,6 +97,7 @@ UserScript &UserScript::operator=(const UserScript &other)
     }
     scriptData.reset(new UserScriptData(*other.scriptData));
     m_name = other.m_name;
+    m_url = other.m_url;
     return *this;
 }
 
@@ -123,6 +125,16 @@ void UserScript::setSourceCode(const QString &source)
     initData();
     scriptData->source = source.toStdString();
     parseMetadataHeader();
+}
+
+QUrl UserScript::sourceUrl() const
+{
+    return m_url;
+}
+
+void UserScript::setSourceUrl(const QUrl &url)
+{
+    m_url = url;
 }
 
 UserScript::InjectionPoint UserScript::injectionPoint() const
@@ -173,7 +185,9 @@ bool UserScript::operator==(const UserScript &other) const
     return worldId() == other.worldId()
             && runsOnSubFrames() == other.runsOnSubFrames()
             && injectionPoint() == other.injectionPoint()
-            && name() == other.name() && sourceCode() == other.sourceCode();
+            && name() == other.name()
+            && sourceCode() == other.sourceCode()
+            && sourceUrl() == other.sourceUrl();
 }
 
 void UserScript::initData()

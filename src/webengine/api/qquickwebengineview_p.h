@@ -88,6 +88,7 @@ class QWebEngineFullScreenRequest;
 class QWebEngineQuotaRequest;
 class QWebEngineRegisterProtocolHandlerRequest;
 class QWebEngineContextMenuRequest;
+class QQuickWebEngineScriptCollection;
 
 #if QT_CONFIG(webengine_testsupport)
 class QQuickWebEngineTestSupport;
@@ -113,7 +114,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
 #if QT_CONFIG(webengine_webchannel)
     Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1 FINAL)
 #endif
-    Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL REVISION 1)
+    Q_PROPERTY(QQuickWebEngineScriptCollection *userScripts READ userScripts FINAL REVISION 1)
     Q_PROPERTY(bool activeFocusOnPress READ activeFocusOnPress WRITE setActiveFocusOnPress NOTIFY activeFocusOnPressChanged REVISION 2 FINAL)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION 2 FINAL)
     Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged FINAL REVISION 3)
@@ -470,7 +471,7 @@ public:
 
     QQuickWebEngineProfile *profile();
     void setProfile(QQuickWebEngineProfile *);
-    QQmlListProperty<QQuickWebEngineScript> userScripts();
+    QQuickWebEngineScriptCollection *userScripts();
 
     QQuickWebEngineSettings *settings();
     QQmlWebChannel *webChannel();

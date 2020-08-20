@@ -105,7 +105,9 @@ public:
         qmlRegisterType<QQuickWebEngineProfile, 3>(uri, 1, 4, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 4>(uri, 1, 5, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 5>(uri, 1, 9, "WebEngineProfile");
-        qmlRegisterType<QQuickWebEngineScript>(uri, 1, 1, "WebEngineScript");
+        qRegisterMetaType<QQuickWebEngineScript>();
+        qmlRegisterUncreatableType<QQuickWebEngineScript>(
+                uri, 1, 1, "WebEngineScript", msgUncreatableType("WebEngineScript")); // for enums
         qRegisterMetaType<QWebEngineCertificateError>();
         qmlRegisterUncreatableType<QWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", msgUncreatableType("WebEngineCertificateError"));
         qmlRegisterUncreatableType<QWebEngineDownloadRequest>(uri, 1, 1, "WebEngineDownloadRequest",

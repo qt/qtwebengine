@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qquickwebenginescript.h"
-#include "qquickwebenginescript_p.h"
 
 #include <QQmlFile>
 #include <QtCore/QDebug>
@@ -128,12 +127,7 @@ QT_BEGIN_NAMESPACE
 /*!
     Constructs a new QQuickWebEngineScript with the parent \a parent.
 */
-QQuickWebEngineScript::QQuickWebEngineScript(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QQuickWebEngineScriptPrivate)
-{
-    d_ptr->q_ptr = this;
-}
+QQuickWebEngineScript::QQuickWebEngineScript() : d(new QtWebEngineCore::UserScript) { }
 
 /*!
    \internal
@@ -142,16 +136,28 @@ QQuickWebEngineScript::~QQuickWebEngineScript()
 {
 }
 
+QQuickWebEngineScript::QQuickWebEngineScript(const QQuickWebEngineScript &other) : d(other.d) { }
+
+QQuickWebEngineScript &QQuickWebEngineScript::operator=(const QQuickWebEngineScript &other)
+{
+    d = other.d;
+    return *this;
+}
+
+bool QQuickWebEngineScript::operator==(const QQuickWebEngineScript &other) const
+{
+    return d == other.d || *d == *(other.d);
+}
+
 /*!
     Returns the script object as string.
 */
 QString QQuickWebEngineScript::toString() const
 {
-    Q_D(const QQuickWebEngineScript);
-    if (d->coreScript.isNull())
+    if (d->isNull())
         return QStringLiteral("QWebEngineScript()");
-    QString ret = QStringLiteral("QWebEngineScript(") % d->coreScript.name() % QStringLiteral(", ");
-    switch (d->coreScript.injectionPoint()) {
+    QString ret = QStringLiteral("QWebEngineScript(") % d->name() % QStringLiteral(", ");
+    switch (d->injectionPoint()) {
     case UserScript::DocumentElementCreation:
         ret.append(QStringLiteral("WebEngineScript::DocumentCreation, "));
         break;
@@ -162,9 +168,9 @@ QString QQuickWebEngineScript::toString() const
         ret.append(QStringLiteral("WebEngineScript::Deferred, "));
         break;
     }
-    ret.append(QString::number(d->coreScript.worldId()) % QStringLiteral(", ")
-               % (d->coreScript.runsOnSubFrames() ? QStringLiteral("true") : QStringLiteral("false"))
-               % QStringLiteral(", ") % d->coreScript.sourceCode() % QLatin1Char(')'));
+    ret.append(QString::number(d->worldId()) % QStringLiteral(", ")
+               % (d->runsOnSubFrames() ? QStringLiteral("true") : QStringLiteral("false"))
+               % QStringLiteral(", ") % d->sourceCode() % QLatin1Char(')'));
     return ret;
 }
 
@@ -184,8 +190,7 @@ QString QQuickWebEngineScript::toString() const
 */
 QString QQuickWebEngineScript::name() const
 {
-    Q_D(const QQuickWebEngineScript);
-    return d->coreScript.name();
+    return d->name();
 }
 
 /*!
@@ -218,8 +223,7 @@ QString QQuickWebEngineScript::name() const
 */
 QUrl QQuickWebEngineScript::sourceUrl() const
 {
-    Q_D(const QQuickWebEngineScript);
-    return d->m_sourceUrl;
+    return d->sourceUrl();
 }
 
 /*!
@@ -238,8 +242,7 @@ QUrl QQuickWebEngineScript::sourceUrl() const
 */
 QString QQuickWebEngineScript::sourceCode() const
 {
-    Q_D(const QQuickWebEngineScript);
-    return d->coreScript.sourceCode();
+    return d->sourceCode();
 }
 
 ASSERT_ENUMS_MATCH(QQuickWebEngineScript::Deferred, UserScript::AfterLoad)
@@ -271,8 +274,7 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineScript::DocumentCreation, UserScript::Document
 */
 QQuickWebEngineScript::InjectionPoint QQuickWebEngineScript::injectionPoint() const
 {
-    Q_D(const QQuickWebEngineScript);
-    return static_cast<QQuickWebEngineScript::InjectionPoint>(d->coreScript.injectionPoint());
+    return static_cast<QQuickWebEngineScript::InjectionPoint>(d->injectionPoint());
 }
 
 /*!
@@ -298,8 +300,7 @@ QQuickWebEngineScript::InjectionPoint QQuickWebEngineScript::injectionPoint() co
 */
 QQuickWebEngineScript::ScriptWorldId QQuickWebEngineScript::worldId() const
 {
-    Q_D(const QQuickWebEngineScript);
-    return static_cast<QQuickWebEngineScript::ScriptWorldId>(d->coreScript.worldId());
+    return static_cast<QQuickWebEngineScript::ScriptWorldId>(d->worldId());
 }
 
 /*!
@@ -320,45 +321,35 @@ QQuickWebEngineScript::ScriptWorldId QQuickWebEngineScript::worldId() const
  */
 bool QQuickWebEngineScript::runOnSubframes() const
 {
-    Q_D(const QQuickWebEngineScript);
-    return d->coreScript.runsOnSubFrames();
+    return d->runsOnSubFrames();
 }
 
 void QQuickWebEngineScript::setName(const QString &name)
 {
-    Q_D(QQuickWebEngineScript);
     if (name == QQuickWebEngineScript::name())
         return;
-    d->aboutToUpdateUnderlyingScript();
-    d->coreScript.setName(name);
-    Q_EMIT nameChanged(name);
+    d->setName(name);
 }
 
 void QQuickWebEngineScript::setSourceCode(const QString &code)
 {
-    Q_D(QQuickWebEngineScript);
     if (code == sourceCode())
         return;
 
     // setting the source directly resets the sourceUrl
-    if (d->m_sourceUrl != QUrl()) {
-        d->m_sourceUrl = QUrl();
-        Q_EMIT sourceUrlChanged(d->m_sourceUrl);
+    if (d->sourceUrl() != QUrl()) {
+        d->setSourceUrl(QUrl());
     }
 
-    d->aboutToUpdateUnderlyingScript();
-    d->coreScript.setSourceCode(code);
-    Q_EMIT sourceCodeChanged(code);
+    d->setSourceCode(code);
 }
 
 void QQuickWebEngineScript::setSourceUrl(const QUrl &url)
 {
-    Q_D(QQuickWebEngineScript);
     if (url == sourceUrl())
         return;
 
-    d->m_sourceUrl = url;
-    Q_EMIT sourceUrlChanged(d->m_sourceUrl);
+    d->setSourceUrl(url);
 
     QFile f(QQmlFile::urlToLocalFileOrQrc(url));
     if (!f.open(QIODevice::ReadOnly)) {
@@ -366,81 +357,31 @@ void QQuickWebEngineScript::setSourceUrl(const QUrl &url)
         return;
     }
 
-    d->aboutToUpdateUnderlyingScript();
     QString source = QString::fromUtf8(f.readAll());
-    d->coreScript.setSourceCode(source);
-    Q_EMIT sourceCodeChanged(source);
+    d->setSourceCode(source);
 }
 
 void QQuickWebEngineScript::setInjectionPoint(QQuickWebEngineScript::InjectionPoint injectionPoint)
 {
-    Q_D(QQuickWebEngineScript);
     if (injectionPoint == QQuickWebEngineScript::injectionPoint())
         return;
-    d->aboutToUpdateUnderlyingScript();
-    d->coreScript.setInjectionPoint(static_cast<UserScript::InjectionPoint>(injectionPoint));
-    Q_EMIT injectionPointChanged(injectionPoint);
+    d->setInjectionPoint(static_cast<UserScript::InjectionPoint>(injectionPoint));
 }
 
 
 void QQuickWebEngineScript::setWorldId(QQuickWebEngineScript::ScriptWorldId scriptWorldId)
 {
-    Q_D(QQuickWebEngineScript);
     if (scriptWorldId == worldId())
         return;
-    d->aboutToUpdateUnderlyingScript();
-    d->coreScript.setWorldId(scriptWorldId);
-    Q_EMIT worldIdChanged(scriptWorldId);
+    d->setWorldId(scriptWorldId);
 }
 
 
 void QQuickWebEngineScript::setRunOnSubframes(bool on)
 {
-    Q_D(QQuickWebEngineScript);
     if (on == runOnSubframes())
         return;
-    d->aboutToUpdateUnderlyingScript();
-    d->coreScript.setRunsOnSubFrames(on);
-    Q_EMIT runOnSubframesChanged(on);
-}
-
-/*!
-    \internal
-*/
-void QQuickWebEngineScript::timerEvent(QTimerEvent *e)
-{
-    Q_D(QQuickWebEngineScript);
-    if (e->timerId() != d->m_basicTimer.timerId()) {
-        QObject::timerEvent(e);
-        return;
-    }
-    if (!d->m_controllerHost)
-        return;
-    d->m_basicTimer.stop();
-    d->m_controllerHost->addUserScript(d->coreScript, d->m_adapter);
-}
-
-void QQuickWebEngineScriptPrivate::bind(QtWebEngineCore::UserResourceControllerHost *resourceController, QtWebEngineCore::WebContentsAdapter *adapter)
-{
-    aboutToUpdateUnderlyingScript();
-    m_adapter = adapter;
-    m_controllerHost = resourceController;
-}
-
-QQuickWebEngineScriptPrivate::QQuickWebEngineScriptPrivate()
-    :m_controllerHost(0)
-    , m_adapter(0)
-
-{
-}
-
-void QQuickWebEngineScriptPrivate::aboutToUpdateUnderlyingScript()
-{
-    Q_Q(QQuickWebEngineScript);
-    if (m_controllerHost)
-        m_controllerHost->removeUserScript(coreScript, m_adapter);
-   // Defer updates to the next event loop
-   m_basicTimer.start(0, q);
+    d->setRunsOnSubFrames(on);
 }
 
 QT_END_NAMESPACE

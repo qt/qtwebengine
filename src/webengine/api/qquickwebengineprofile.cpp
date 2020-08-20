@@ -40,18 +40,18 @@
 #include "qquickwebengineprofile.h"
 
 #include "qquickwebengineprofile_p.h"
-#include "qquickwebenginescript_p.h"
 #include "qquickwebenginesettings_p.h"
+#include "qquickwebenginescriptcollection.h"
+#include "qquickwebenginescriptcollection_p.h"
 #include "qquickwebengineview_p_p.h"
 #include "qwebenginecookiestore.h"
 #include "qwebenginenotification.h"
-
 #include <QFileInfo>
 #include <QDir>
 #include <QQmlEngine>
+#include <QtQml/QQmlInfo>
 
 #include "profile_adapter.h"
-#include "renderer_host/user_resource_controller_host.h"
 #include "web_engine_settings.h"
 
 #include <QtWebEngineCore/private/qwebenginedownloadrequest_p.h>
@@ -158,8 +158,10 @@ QT_BEGIN_NAMESPACE
 */
 
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(ProfileAdapter *profileAdapter)
-        : m_settings(new QQuickWebEngineSettings())
-        , m_profileAdapter(profileAdapter)
+    : m_settings(new QQuickWebEngineSettings())
+    , m_profileAdapter(profileAdapter)
+    , m_scriptCollection(new QQuickWebEngineScriptCollection(
+              new QQuickWebEngineScriptCollectionPrivate(profileAdapter->userResourceController())))
 {
     profileAdapter->addClient(this);
     // Fullscreen API was implemented before the supported setting, so we must
@@ -306,38 +308,6 @@ void QQuickWebEngineProfilePrivate::showNotification(QSharedPointer<QtWebEngineC
     auto notification = new QWebEngineNotification(controller);
     QQmlEngine::setObjectOwnership(notification, QQmlEngine::JavaScriptOwnership);
     Q_EMIT q->presentNotification(notification);
-}
-
-void QQuickWebEngineProfilePrivate::userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script)
-{
-    Q_ASSERT(p && p->data);
-    QQuickWebEngineProfilePrivate *d = static_cast<QQuickWebEngineProfilePrivate *>(p->data);
-    QtWebEngineCore::UserResourceControllerHost *resourceController = d->profileAdapter()->userResourceController();
-    d->m_userScripts.append(script);
-    script->d_func()->bind(resourceController);
-}
-
-int QQuickWebEngineProfilePrivate::userScripts_count(QQmlListProperty<QQuickWebEngineScript> *p)
-{
-    Q_ASSERT(p && p->data);
-    QQuickWebEngineProfilePrivate *d = static_cast<QQuickWebEngineProfilePrivate *>(p->data);
-    return d->m_userScripts.count();
-}
-
-QQuickWebEngineScript *QQuickWebEngineProfilePrivate::userScripts_at(QQmlListProperty<QQuickWebEngineScript> *p, int idx)
-{
-    Q_ASSERT(p && p->data);
-    QQuickWebEngineProfilePrivate *d = static_cast<QQuickWebEngineProfilePrivate *>(p->data);
-    return d->m_userScripts.at(idx);
-}
-
-void QQuickWebEngineProfilePrivate::userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p)
-{
-    Q_ASSERT(p && p->data);
-    QQuickWebEngineProfilePrivate *d = static_cast<QQuickWebEngineProfilePrivate *>(p->data);
-    QtWebEngineCore::UserResourceControllerHost *resourceController = d->profileAdapter()->userResourceController();
-    resourceController->clearAllScripts(NULL);
-    d->m_userScripts.clear();
 }
 
 /*!
@@ -1062,23 +1032,10 @@ QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
     \sa WebEngineScript
 */
 
-/*!
-    \property QQuickWebEngineProfile::userScripts
-    \since 5.9
-
-    \brief The collection of scripts that are injected into all pages that share
-    this profile.
-
-    \sa QQuickWebEngineScript, QQmlListReference
-*/
-QQmlListProperty<QQuickWebEngineScript> QQuickWebEngineProfile::userScripts()
+QQuickWebEngineScriptCollection *QQuickWebEngineProfile::userScripts() const
 {
-    Q_D(QQuickWebEngineProfile);
-    return QQmlListProperty<QQuickWebEngineScript>(this, d,
-                                                   d->userScripts_append,
-                                                   d->userScripts_count,
-                                                   d->userScripts_at,
-                                                   d->userScripts_clear);
+    const Q_D(QQuickWebEngineProfile);
+    return d->m_scriptCollection.data();
 }
 
 /*!
@@ -1097,3 +1054,5 @@ QWebEngineClientCertificateStore *QQuickWebEngineProfile::clientCertificateStore
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qquickwebengineprofile.cpp"

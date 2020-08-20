@@ -57,21 +57,19 @@
 #include "qquickwebenginenewviewrequest_p.h"
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
-#include "qquickwebenginescript_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
 #include "qwebenginecertificateerror.h"
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginequotarequest.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
-
+#include "qquickwebenginescriptcollection_p.h"
 #if QT_CONFIG(webengine_testsupport)
 #include "qquickwebenginetestsupport_p.h"
 #endif
 
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
-#include "renderer_host/user_resource_controller_host.h"
 #include "ui_delegates_manager.h"
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
@@ -183,6 +181,9 @@ void QQuickWebEngineViewPrivate::initializeProfile()
         m_profile->d_ptr->addWebContentsAdapterClient(this);
         m_settings.reset(new QQuickWebEngineSettings(m_profile->settings()));
         adapter->setClient(this);
+        m_scriptCollection.reset(
+                new QQuickWebEngineScriptCollection(new QQuickWebEngineScriptCollectionPrivate(
+                        profileAdapter()->userResourceController(), adapter)));
     }
 }
 
@@ -928,8 +929,7 @@ void QQuickWebEngineViewPrivate::initializationFinished()
     if (devToolsView && devToolsView->d_ptr->adapter)
         adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
 
-    for (QQuickWebEngineScript *script : qAsConst(m_userScripts))
-        script->d_func()->bind(profileAdapter()->userResourceController(), adapter.data());
+    m_scriptCollection->d->initializationFinished(adapter);
 
     if (q->window())
         adapter->setVisible(q->isVisible());
@@ -1195,14 +1195,10 @@ QQuickWebEngineSettings *QQuickWebEngineView::settings()
     return d->m_settings.data();
 }
 
-QQmlListProperty<QQuickWebEngineScript> QQuickWebEngineView::userScripts()
+QQuickWebEngineScriptCollection *QQuickWebEngineView::userScripts()
 {
     Q_D(QQuickWebEngineView);
-    return QQmlListProperty<QQuickWebEngineScript>(this, d,
-                                                   d->userScripts_append,
-                                                   d->userScripts_count,
-                                                   d->userScripts_at,
-                                                   d->userScripts_clear);
+    return d->m_scriptCollection.data();
 }
 
 void QQuickWebEngineViewPrivate::updateAdapter()
@@ -2207,43 +2203,6 @@ QPointF QQuickWebEngineView::scrollPosition() const
 {
     Q_D(const QQuickWebEngineView);
     return d->adapter->lastScrollOffset();
-}
-
-void QQuickWebEngineViewPrivate::userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script)
-{
-    Q_ASSERT(p && p->data);
-    QQuickWebEngineViewPrivate *d = static_cast<QQuickWebEngineViewPrivate*>(p->data);
-    d->m_userScripts.append(script);
-    // If the adapter hasn't been initialized, we'll bind the scripts in initializationFinished()
-    if (!d->adapter->isInitialized())
-        return;
-    UserResourceControllerHost *resourceController = d->profileAdapter()->userResourceController();
-    script->d_func()->bind(resourceController, d->adapter.data());
-}
-
-int QQuickWebEngineViewPrivate::userScripts_count(QQmlListProperty<QQuickWebEngineScript> *p)
-{
-    Q_ASSERT(p && p->data);
-    QQuickWebEngineViewPrivate *d = static_cast<QQuickWebEngineViewPrivate*>(p->data);
-    return d->m_userScripts.count();
-}
-
-QQuickWebEngineScript *QQuickWebEngineViewPrivate::userScripts_at(QQmlListProperty<QQuickWebEngineScript> *p, int idx)
-{
-    Q_ASSERT(p && p->data);
-    QQuickWebEngineViewPrivate *d = static_cast<QQuickWebEngineViewPrivate*>(p->data);
-    return d->m_userScripts.at(idx);
-}
-
-void QQuickWebEngineViewPrivate::userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p)
-{
-    Q_ASSERT(p && p->data);
-    QQuickWebEngineViewPrivate *d = static_cast<QQuickWebEngineViewPrivate*>(p->data);
-    d->m_userScripts.clear();
-    if (!d->adapter->isInitialized())
-        return;
-    UserResourceControllerHost *resourceController = d->profileAdapter()->userResourceController();
-    resourceController->clearAllScripts(d->adapter.data());
 }
 
 void QQuickWebEngineView::componentComplete()

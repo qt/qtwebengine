@@ -38,6 +38,7 @@
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
 #include <QtWebEngine/QQuickWebEngineProfile>
+#include <QtWebEngine/QQuickWebEngineScriptCollection>
 #include <QtGui/private/qinputmethod_p.h>
 #include <QtWebEngine/private/qquickwebengineview_p.h>
 #include <QtWebEngine/private/qquickwebenginesettings_p.h>
@@ -1035,10 +1036,10 @@ void tst_QQuickWebEngineView::userScripts()
     QScopedPointer<QQuickWebEngineView> webEngineView2(newWebEngineView());
     webEngineView2->setParentItem(m_window->contentItem());
 
-    QQmlListReference list(webEngineView1->profile(), "userScripts");
+    QQuickWebEngineScriptCollection *collection = webEngineView1->profile()->userScripts();
     QQuickWebEngineScript script;
     script.setSourceCode("document.title = 'New title';");
-    list.append(&script);
+    collection->insert(script);
 
     webEngineView1->setUrl(urlFromTestPath("html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView1.data()));
@@ -1048,7 +1049,7 @@ void tst_QQuickWebEngineView::userScripts()
     QVERIFY(waitForLoadSucceeded(webEngineView2.data()));
     QTRY_COMPARE(webEngineView2->title(), QStringLiteral("New title"));
 
-    list.clear();
+    collection->clear();
 }
 
 void tst_QQuickWebEngineView::javascriptClipboard_data()
