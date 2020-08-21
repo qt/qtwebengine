@@ -28,7 +28,7 @@
     \brief The QWebEngineSettings class provides an object to store the settings used
     by QWebEnginePage.
 
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
 
     QWebEngineSettings allows configuration of browser properties, such as font sizes and
     families, the location of a custom style sheet, and generic attributes, such as JavaScript

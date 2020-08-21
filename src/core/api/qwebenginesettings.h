@@ -40,7 +40,7 @@
 #ifndef QWEBENGINESETTINGS_H
 #define QWEBENGINESETTINGS_H
 
-#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
 
@@ -54,7 +54,7 @@ class QIcon;
 class QPixmap;
 class QUrl;
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineSettings {
+class Q_WEBENGINECORE_EXPORT QWebEngineSettings {
 public:
     enum FontFamily {
         StandardFont,

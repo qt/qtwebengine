@@ -30,9 +30,9 @@
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlrequestinfo.h>
 #include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
+#include <QtWebEngineCore/qwebenginesettings.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
-#include <QtWebEngineWidgets/qwebenginesettings.h>
 
 #include <httpserver.h>
 #include <httpreqrep.h>

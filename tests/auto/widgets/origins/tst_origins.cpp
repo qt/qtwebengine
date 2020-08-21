@@ -33,9 +33,10 @@
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
 #include <QtWebEngineCore/qwebengineurlscheme.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
+#include <QtWebEngineCore/qwebenginesettings.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
-#include <QtWebEngineWidgets/qwebenginesettings.h>
+
 #if defined(WEBSOCKETS)
 #include <QtWebSockets/qwebsocket.h>
 #include <QtWebSockets/qwebsocketserver.h>
