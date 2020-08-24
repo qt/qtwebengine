@@ -18,7 +18,6 @@ SOURCES = \
         api/qwebenginenotificationpresenter.cpp \
         api/qwebenginepage.cpp \
         api/qwebengineprofile.cpp \
-        api/qwebenginescript.cpp \
         api/qwebenginescriptcollection.cpp \
         api/qwebengineview.cpp \
         render_widget_host_view_qt_delegate_widget.cpp

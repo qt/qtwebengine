@@ -41,7 +41,7 @@
 #define QWEBENGINESCRIPTCOLLECTION_H
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
-#include <QtWebEngineWidgets/qwebenginescript.h>
+#include <QtWebEngineCore/qwebenginescript.h>
 
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qlist.h>

@@ -40,7 +40,7 @@
 #ifndef QWEBENGINESCRIPT_H
 #define QWEBENGINESCRIPT_H
 
-#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
@@ -51,7 +51,7 @@ class UserScript;
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineScript {
+class Q_WEBENGINECORE_EXPORT QWebEngineScript {
 public:
     enum InjectionPoint {
         Deferred,
@@ -105,7 +105,7 @@ private:
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineScript)
 
 #ifndef QT_NO_DEBUG_STREAM
-QWEBENGINEWIDGETS_EXPORT QDebug operator<<(QDebug, const QWebEngineScript &);
+Q_WEBENGINECORE_EXPORT QDebug operator<<(QDebug, const QWebEngineScript &);
 #endif
 
 QT_END_NAMESPACE

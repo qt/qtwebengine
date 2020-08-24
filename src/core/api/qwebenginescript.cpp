@@ -46,7 +46,7 @@ using QtWebEngineCore::UserScript;
 
 /*!
     \class QWebEngineScript
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
     \since 5.5
     \brief The QWebEngineScript class encapsulates a JavaScript program.
 
