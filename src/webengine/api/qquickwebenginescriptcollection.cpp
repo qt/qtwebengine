@@ -45,9 +45,9 @@
 #include <QtQml/private/qv4scopedvalue_p.h>
 #include <QtQml/private/qv4arrayobject_p.h>
 
-QQuickWebEngineScript parseScript(const QJSValue &value, bool *ok)
+QWebEngineScript parseScript(const QJSValue &value, bool *ok)
 {
-    QQuickWebEngineScript s;
+    QWebEngineScript s;
     if (ok)
         *ok = false;
 
@@ -60,18 +60,18 @@ QQuickWebEngineScript parseScript(const QJSValue &value, bool *ok)
             s.setSourceUrl(value.property(QStringLiteral("sourceUrl")).toString());
 
         if (value.hasProperty(QStringLiteral("injectionPoint")))
-            s.setInjectionPoint(QQuickWebEngineScript::InjectionPoint(
+            s.setInjectionPoint(QWebEngineScript::InjectionPoint(
                     value.property(QStringLiteral("injectionPoint")).toUInt()));
 
         if (value.hasProperty(QStringLiteral("sourceCode")))
             s.setSourceCode(value.property(QStringLiteral("sourceCode")).toString());
 
         if (value.hasProperty(QStringLiteral("worldId")))
-            s.setWorldId(QQuickWebEngineScript::ScriptWorldId(
+            s.setWorldId(QWebEngineScript::ScriptWorldId(
                     value.property(QStringLiteral("worldId")).toUInt()));
 
         if (value.hasProperty(QStringLiteral("runOnSubframes")))
-            s.setRunOnSubframes(value.property(QStringLiteral("runOnSubframes")).toBool());
+            s.setRunsOnSubFrames(value.property(QStringLiteral("runOnSubframes")).toBool());
 
         if (ok)
             *ok = true;
@@ -92,34 +92,34 @@ int QQuickWebEngineScriptCollection::count() const
     return d->count();
 }
 
-bool QQuickWebEngineScriptCollection::contains(const QQuickWebEngineScript &value) const
+bool QQuickWebEngineScriptCollection::contains(const QWebEngineScript &value) const
 {
     return d->contains(value);
 }
 
-QQuickWebEngineScript QQuickWebEngineScriptCollection::findScript(const QString &name) const
+QWebEngineScript QQuickWebEngineScriptCollection::findScript(const QString &name) const
 {
     return d->find(name);
 }
 
-QList<QQuickWebEngineScript> QQuickWebEngineScriptCollection::findScripts(const QString &name) const
+QList<QWebEngineScript> QQuickWebEngineScriptCollection::findScripts(const QString &name) const
 {
     return d->toList(name);
 }
 
-void QQuickWebEngineScriptCollection::insert(const QQuickWebEngineScript &s)
+void QQuickWebEngineScriptCollection::insert(const QWebEngineScript &s)
 {
     d->insert(s);
 }
 
-void QQuickWebEngineScriptCollection::insert(const QList<QQuickWebEngineScript> &list)
+void QQuickWebEngineScriptCollection::insert(const QList<QWebEngineScript> &list)
 {
     d->reserve(list.size());
-    for (const QQuickWebEngineScript &s : list)
+    for (const QWebEngineScript &s : list)
         d->insert(s);
 }
 
-bool QQuickWebEngineScriptCollection::remove(const QQuickWebEngineScript &script)
+bool QQuickWebEngineScriptCollection::remove(const QWebEngineScript &script)
 {
     return d->remove(script);
 }
@@ -129,7 +129,7 @@ void QQuickWebEngineScriptCollection::clear()
     d->clear();
 }
 
-QList<QQuickWebEngineScript> QQuickWebEngineScriptCollection::toList() const
+QList<QWebEngineScript> QQuickWebEngineScriptCollection::toList() const
 {
     return d->toList();
 }
@@ -146,41 +146,41 @@ int QQuickWebEngineScriptCollectionPrivate::count() const
     return m_scripts.count();
 }
 
-bool QQuickWebEngineScriptCollectionPrivate::contains(const QQuickWebEngineScript &s) const
+bool QQuickWebEngineScriptCollectionPrivate::contains(const QWebEngineScript &s) const
 {
     return m_scripts.contains(s);
 }
 
-void QQuickWebEngineScriptCollectionPrivate::insert(const QQuickWebEngineScript &script)
+void QQuickWebEngineScriptCollectionPrivate::insert(const QWebEngineScript &script)
 {
     m_scripts.append(script);
     if (!m_contents || m_contents->isInitialized())
         m_scriptController->addUserScript(*script.d, m_contents.data());
 }
 
-bool QQuickWebEngineScriptCollectionPrivate::remove(const QQuickWebEngineScript &script)
+bool QQuickWebEngineScriptCollectionPrivate::remove(const QWebEngineScript &script)
 {
     if (!m_contents || m_contents->isInitialized())
         m_scriptController->removeUserScript(*script.d, m_contents.data());
     return m_scripts.removeAll(script);
 }
 
-QList<QQuickWebEngineScript>
+QList<QWebEngineScript>
 QQuickWebEngineScriptCollectionPrivate::toList(const QString &scriptName) const
 {
-    QList<QQuickWebEngineScript> ret;
-    for (const QQuickWebEngineScript &script : qAsConst(m_scripts))
+    QList<QWebEngineScript> ret;
+    for (const QWebEngineScript &script : qAsConst(m_scripts))
         if (scriptName == script.name())
             ret.append(script);
     return ret;
 }
 
-QQuickWebEngineScript QQuickWebEngineScriptCollectionPrivate::find(const QString &name) const
+QWebEngineScript QQuickWebEngineScriptCollectionPrivate::find(const QString &name) const
 {
-    for (const QQuickWebEngineScript &script : qAsConst(m_scripts))
+    for (const QWebEngineScript &script : qAsConst(m_scripts))
         if (name == script.name())
             return script;
-    return QQuickWebEngineScript();
+    return QWebEngineScript();
 }
 
 void QQuickWebEngineScriptCollectionPrivate::clear()
@@ -203,14 +203,14 @@ void QQuickWebEngineScriptCollectionPrivate::initializationFinished(
     Q_ASSERT(m_contents);
     Q_ASSERT(contents);
 
-    for (const QQuickWebEngineScript &script : qAsConst(m_scripts))
+    for (const QWebEngineScript &script : qAsConst(m_scripts))
         m_scriptController->addUserScript(*script.d, contents.data());
     m_contents = contents;
 }
 
 QJSValue QQuickWebEngineScriptCollection::collection() const
 {
-    const QList<QQuickWebEngineScript> &list = d->m_scripts;
+    const QList<QWebEngineScript> &list = d->m_scripts;
     QQmlContext *context = QQmlEngine::contextForObject(this);
     QQmlEngine *engine = context->engine();
     QV4::ExecutionEngine *v4 = QQmlEnginePrivate::getV4Engine(engine);
@@ -229,11 +229,11 @@ void QQuickWebEngineScriptCollection::setCollection(const QJSValue &scripts)
     if (!scripts.isArray())
         return;
 
-    QList<QQuickWebEngineScript> scriptList;
+    QList<QWebEngineScript> scriptList;
     quint32 length = scripts.property(QStringLiteral("length")).toUInt();
     for (quint32 i = 0; i < length; ++i) {
         bool ok;
-        QQuickWebEngineScript s = parseScript(scripts.property(i), &ok);
+        QWebEngineScript s = parseScript(scripts.property(i), &ok);
         if (!ok) {
             qmlWarning(this) << "Unsupported script type";
             return;

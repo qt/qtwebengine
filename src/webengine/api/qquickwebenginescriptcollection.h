@@ -41,7 +41,7 @@
 #define QQUICKWEBENGINESCRIPTCOLLECTION_H
 
 #include <QtWebEngine/qtwebengineglobal.h>
-#include "qquickwebenginescript.h"
+#include <QtWebEngineCore/qwebenginescript.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qset.h>
@@ -60,21 +60,21 @@ public:
     bool isEmpty() const { return !count(); }
     int count() const;
     inline int size() const { return count(); }
-    bool contains(const QQuickWebEngineScript &value) const;
+    bool contains(const QWebEngineScript &value) const;
 
-    Q_INVOKABLE QQuickWebEngineScript findScript(const QString &name) const;
-    Q_INVOKABLE QList<QQuickWebEngineScript> findScripts(const QString &name) const;
+    Q_INVOKABLE QWebEngineScript findScript(const QString &name) const;
+    Q_INVOKABLE QList<QWebEngineScript> findScripts(const QString &name) const;
 
-    Q_INVOKABLE void insert(const QQuickWebEngineScript &);
-    Q_INVOKABLE void insert(const QList<QQuickWebEngineScript> &list);
+    Q_INVOKABLE void insert(const QWebEngineScript &);
+    Q_INVOKABLE void insert(const QList<QWebEngineScript> &list);
 
-    Q_INVOKABLE bool remove(const QQuickWebEngineScript &);
+    Q_INVOKABLE bool remove(const QWebEngineScript &);
     Q_INVOKABLE void clear();
 
     QJSValue collection() const;
     void setCollection(const QJSValue &scripts);
 
-    QList<QQuickWebEngineScript> toList() const;
+    QList<QWebEngineScript> toList() const;
 Q_SIGNALS:
     void collectionChanged();
 

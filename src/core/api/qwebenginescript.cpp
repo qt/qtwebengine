@@ -41,8 +41,11 @@
 
 #include "user_script.h"
 #include <QtCore/QDebug>
+#include <QtCore/QFile>
 
 using QtWebEngineCore::UserScript;
+
+QT_BEGIN_NAMESPACE
 
 /*!
     \class QWebEngineScript
@@ -172,6 +175,37 @@ void QWebEngineScript::setName(const QString &scriptName)
     d->setName(scriptName);
 }
 
+
+QUrl QWebEngineScript::sourceUrl() const
+{
+    return d->sourceUrl();
+}
+
+void QWebEngineScript::setSourceUrl(const QUrl &url)
+{
+    if (url == sourceUrl())
+        return;
+
+    d->setSourceUrl(url);
+
+    QFile file;
+    if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
+        if (url.authority().isEmpty())
+            file.setFileName(QLatin1Char(':') + url.path());
+        return;
+    } else {
+        file.setFileName(url.toLocalFile());
+    }
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "Can't open user script " << url;
+        return;
+    }
+
+    QString source = QString::fromUtf8(file.readAll());
+    setSourceCode(source);
+}
+
 /*!
     Returns the source of the script.
  */
@@ -291,3 +325,5 @@ QDebug operator<<(QDebug d, const QWebEngineScript &script)
     return d.space();
 }
 #endif
+
+QT_END_NAMESPACE

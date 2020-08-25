@@ -53,11 +53,11 @@
 
 #include "qtwebenginecoreglobal.h"
 
-#include "qquickwebenginescript.h"
 #include "web_contents_adapter.h"
 
 #include <QtCore/QSet>
 #include <QtCore/QSharedPointer>
+#include <QtWebEngineCore/QWebEngineScript>
 
 namespace QtWebEngineCore {
 class UserResourceControllerHost;
@@ -73,21 +73,21 @@ public:
                     QSharedPointer<QtWebEngineCore::WebContentsAdapter>());
 
     int count() const;
-    bool contains(const QQuickWebEngineScript &) const;
-    QList<QQuickWebEngineScript> toList(const QString &scriptName = QString()) const;
-    QQuickWebEngineScript find(const QString &name) const;
+    bool contains(const QWebEngineScript &) const;
+    QList<QWebEngineScript> toList(const QString &scriptName = QString()) const;
+    QWebEngineScript find(const QString &name) const;
 
     void initializationFinished(QSharedPointer<QtWebEngineCore::WebContentsAdapter> contents);
 
-    void insert(const QQuickWebEngineScript &);
-    bool remove(const QQuickWebEngineScript &);
+    void insert(const QWebEngineScript &);
+    bool remove(const QWebEngineScript &);
     void clear();
     void reserve(int);
 
 private:
     QtWebEngineCore::UserResourceControllerHost *m_scriptController;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> m_contents;
-    QList<QQuickWebEngineScript> m_scripts;
+    QList<QWebEngineScript> m_scripts;
     friend class QQuickWebEngineScriptCollection;
 };
 

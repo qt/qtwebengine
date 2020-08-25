@@ -34,7 +34,6 @@
 #include <QQmlListProperty>
 #include <QtTest/QtTest>
 #include <QtWebEngine/QQuickWebEngineProfile>
-#include <QtWebEngine/QQuickWebEngineScript>
 #include <QtWebEngineCore/QWebEngineCertificateError>
 #include <QtWebEngineCore/QWebEngineFindTextResult>
 #include <QtWebEngineCore/QWebEngineFullScreenRequest>
@@ -43,6 +42,7 @@
 #include <QtWebEngineCore/QWebEngineRegisterProtocolHandlerRequest>
 #include <QtWebEngineCore/QWebEngineContextMenuRequest>
 #include <QtWebEngineCore/QWebEngineDownloadRequest>
+#include <QtWebEngineCore/QWebEngineScript>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineaction_p.h>
 #include <private/qquickwebengineclientcertificateselection_p.h>
@@ -72,9 +72,9 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QQuickWebEngineNavigationRequest::staticMetaObject
     << &QQuickWebEngineNewViewRequest::staticMetaObject
     << &QQuickWebEngineProfile::staticMetaObject
-    << &QQuickWebEngineScript::staticMetaObject
     << &QQuickWebEngineSettings::staticMetaObject
     << &QWebEngineFullScreenRequest::staticMetaObject
+    << &QWebEngineScript::staticMetaObject
     << &QQuickWebEngineSingleton::staticMetaObject
     << &QQuickWebEngineAuthenticationDialogRequest::staticMetaObject
     << &QQuickWebEngineJavaScriptDialogRequest::staticMetaObject
@@ -94,7 +94,7 @@ static QList<const char *> knownEnumNames = QList<const char *>();
 
 static const QStringList hardcodedTypes = QStringList()
     << "QJSValue"
-    << "QQmlListProperty<QQuickWebEngineScript>"
+    << "QQmlListProperty<QWebEngineScript>"
     << "QQmlListProperty<QQuickWebEngineClientCertificateOption>"
     << "const QQuickWebEngineClientCertificateOption*"
     << "QQmlWebChannel*"
@@ -362,25 +362,6 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.useForGlobalCertificateVerification --> bool"
     << "QQuickWebEngineProfile.useForGlobalCertificateVerificationChanged() --> void"
     << "QQuickWebEngineProfile.userScripts --> QQuickWebEngineScriptCollection*"
-    << "QQuickWebEngineScript.ApplicationWorld --> ScriptWorldId"
-    << "QQuickWebEngineScript.Deferred --> InjectionPoint"
-    << "QQuickWebEngineScript.DocumentCreation --> InjectionPoint"
-    << "QQuickWebEngineScript.DocumentReady --> InjectionPoint"
-    << "QQuickWebEngineScript.MainWorld --> ScriptWorldId"
-    << "QQuickWebEngineScript.UserWorld --> ScriptWorldId"
-    << "QQuickWebEngineScript.injectionPoint --> InjectionPoint"
-    << "QQuickWebEngineScript.name --> QString"
-    << "QQuickWebEngineScript.runOnSubframes --> bool"
-    << "QQuickWebEngineScript.setInjectionPoint(InjectionPoint) --> void"
-    << "QQuickWebEngineScript.setName(QString) --> void"
-    << "QQuickWebEngineScript.setRunOnSubframes(bool) --> void"
-    << "QQuickWebEngineScript.setSourceCode(QString) --> void"
-    << "QQuickWebEngineScript.setSourceUrl(QUrl) --> void"
-    << "QQuickWebEngineScript.setWorldId(ScriptWorldId) --> void"
-    << "QQuickWebEngineScript.sourceCode --> QString"
-    << "QQuickWebEngineScript.sourceUrl --> QUrl"
-    << "QQuickWebEngineScript.toString() --> QString"
-    << "QQuickWebEngineScript.worldId --> ScriptWorldId"
     << "QQuickWebEngineSettings.AllowAllUnknownUrlSchemes --> UnknownUrlSchemePolicy"
     << "QQuickWebEngineSettings.AllowUnknownUrlSchemesFromUserInteraction --> UnknownUrlSchemePolicy"
     << "QQuickWebEngineSettings.DisallowUnknownUrlSchemes --> UnknownUrlSchemePolicy"
@@ -448,7 +429,19 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.webRTCPublicInterfacesOnlyChanged() --> void"
     << "QQuickWebEngineSingleton.defaultProfile --> QQuickWebEngineProfile*"
     << "QQuickWebEngineSingleton.settings --> QQuickWebEngineSettings*"
-    << "QQuickWebEngineSingleton.script() --> QQuickWebEngineScript"
+    << "QQuickWebEngineSingleton.script() --> QWebEngineScript"
+    << "QWebEngineScript.ApplicationWorld --> ScriptWorldId"
+    << "QWebEngineScript.Deferred --> InjectionPoint"
+    << "QWebEngineScript.DocumentCreation --> InjectionPoint"
+    << "QWebEngineScript.DocumentReady --> InjectionPoint"
+    << "QWebEngineScript.MainWorld --> ScriptWorldId"
+    << "QWebEngineScript.UserWorld --> ScriptWorldId"
+    << "QWebEngineScript.injectionPoint --> InjectionPoint"
+    << "QWebEngineScript.name --> QString"
+    << "QWebEngineScript.runsOnSubFrames --> bool"
+    << "QWebEngineScript.sourceCode --> QString"
+    << "QWebEngineScript.sourceUrl --> QUrl"
+    << "QWebEngineScript.worldId --> uint"
     << "QQuickWebEngineView.action(WebAction) --> QQuickWebEngineAction*"
     << "QQuickWebEngineView.A0 --> PrintedPageSizeId"
     << "QQuickWebEngineView.A1 --> PrintedPageSizeId"

@@ -64,6 +64,7 @@ class WebContents;
 
 namespace QtWebEngineCore {
 
+class UserScript;
 class WebContentsAdapter;
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT UserResourceControllerHost

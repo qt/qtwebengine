@@ -91,9 +91,9 @@ QQuickWebEngineProfile *QQuickWebEngineSingleton::defaultProfile() const
     return QQuickWebEngineProfile::defaultProfile();
 }
 
-QQuickWebEngineScript QQuickWebEngineSingleton::script() const
+QWebEngineScript QQuickWebEngineSingleton::script() const
 {
-    return QQuickWebEngineScript();
+    return QWebEngineScript();
 }
 
 #include "moc_qquickwebenginesingleton_p.cpp"

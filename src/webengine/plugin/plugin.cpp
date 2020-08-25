@@ -60,6 +60,7 @@
 #include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
 #include <QtWebEngineCore/qwebenginecontextmenurequest.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
+#include <QtWebEngineCore/qwebenginescript.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -105,8 +106,8 @@ public:
         qmlRegisterType<QQuickWebEngineProfile, 3>(uri, 1, 4, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 4>(uri, 1, 5, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 5>(uri, 1, 9, "WebEngineProfile");
-        qRegisterMetaType<QQuickWebEngineScript>();
-        qmlRegisterUncreatableType<QQuickWebEngineScript>(
+        qRegisterMetaType<QWebEngineScript>();
+        qmlRegisterUncreatableType<QWebEngineScript>(
                 uri, 1, 1, "WebEngineScript", msgUncreatableType("WebEngineScript")); // for enums
         qRegisterMetaType<QWebEngineCertificateError>();
         qmlRegisterUncreatableType<QWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", msgUncreatableType("WebEngineCertificateError"));

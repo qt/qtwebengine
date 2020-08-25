@@ -41,9 +41,9 @@
 #define QWEBENGINESCRIPT_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
-
-#include <QtCore/qshareddata.h>
-#include <QtCore/qstring.h>
+#include <QtCore/QUrl>
+#include <QtCore/QObject>
+#include <QtCore/QSharedDataPointer>
 
 namespace QtWebEngineCore {
 class UserScript;
@@ -52,18 +52,32 @@ class UserScript;
 QT_BEGIN_NAMESPACE
 
 class Q_WEBENGINECORE_EXPORT QWebEngineScript {
+
+    Q_GADGET
+    Q_PROPERTY(QString name READ name WRITE setName FINAL)
+    Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSourceUrl FINAL)
+    Q_PROPERTY(QString sourceCode READ sourceCode WRITE setSourceCode FINAL)
+    Q_PROPERTY(InjectionPoint injectionPoint READ injectionPoint WRITE setInjectionPoint FINAL)
+    Q_PROPERTY(quint32 worldId READ worldId WRITE setWorldId FINAL)
+    Q_PROPERTY(bool runsOnSubFrames READ runsOnSubFrames WRITE setRunsOnSubFrames FINAL)
+
 public:
+
     enum InjectionPoint {
         Deferred,
         DocumentReady,
         DocumentCreation
     };
 
+    Q_ENUM(InjectionPoint)
+
     enum ScriptWorldId {
         MainWorld = 0,
         ApplicationWorld,
         UserWorld
     };
+
+    Q_ENUM(ScriptWorldId)
 
     QWebEngineScript();
     QWebEngineScript(const QWebEngineScript &other);
@@ -75,6 +89,9 @@ public:
 
     QString name() const;
     void setName(const QString &);
+
+    QUrl sourceUrl() const;
+    void setSourceUrl(const QUrl &url);
 
     QString sourceCode() const;
     void setSourceCode(const QString &);
@@ -93,8 +110,8 @@ public:
     { return !operator==(other); }
     void swap(QWebEngineScript &other) { qSwap(d, other.d); }
 
-
 private:
+    friend class QQuickWebEngineScriptCollectionPrivate;
     friend class QWebEngineScriptCollectionPrivate;
     friend class QWebEngineScriptCollection;
     QWebEngineScript(const QtWebEngineCore::UserScript &);

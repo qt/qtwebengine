@@ -57,7 +57,6 @@
 #include <QtGui/qcolor.h>
 
 #include "qquickwebengineprofile.h"
-#include "qquickwebenginescript.h"
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegateQuick;

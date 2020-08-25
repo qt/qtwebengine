@@ -1037,7 +1037,7 @@ void tst_QQuickWebEngineView::userScripts()
     webEngineView2->setParentItem(m_window->contentItem());
 
     QQuickWebEngineScriptCollection *collection = webEngineView1->profile()->userScripts();
-    QQuickWebEngineScript script;
+    QWebEngineScript script;
     script.setSourceCode("document.title = 'New title';");
     collection->insert(script);
 

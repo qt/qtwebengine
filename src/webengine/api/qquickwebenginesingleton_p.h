@@ -52,8 +52,8 @@
 //
 
 #include <QtWebEngine/private/qtwebengineglobal_p.h>
-#include <QObject>
-#include "qquickwebenginescript.h"
+#include <QtWebEngineCore/qwebenginescript.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,7 +67,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSingleton : public QObject {
 public:
     QQuickWebEngineSettings *settings() const;
     QQuickWebEngineProfile *defaultProfile() const;
-    Q_INVOKABLE QQuickWebEngineScript script() const;
+    Q_INVOKABLE QWebEngineScript script() const;
 };
 
 QT_END_NAMESPACE
