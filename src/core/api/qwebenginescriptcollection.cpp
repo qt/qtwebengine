@@ -46,7 +46,7 @@ using QtWebEngineCore::UserScript;
 
 /*!
     \class QWebEngineScriptCollection
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
     \since 5.5
     \brief The QWebEngineScriptCollection class represents a collection of user scripts.
 

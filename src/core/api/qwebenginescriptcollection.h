@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -37,55 +37,45 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINESCRIPTCOLLECTION_P_H
-#define QWEBENGINESCRIPTCOLLECTION_P_H
+#ifndef QWEBENGINESCRIPTCOLLECTION_H
+#define QWEBENGINESCRIPTCOLLECTION_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qtwebenginewidgetsglobal.h"
-
-#include "qwebenginescript.h"
-#include "web_contents_adapter.h"
-
-#include <QtCore/QSet>
-#include <QtCore/QSharedPointer>
-
-namespace QtWebEngineCore {
-class UserResourceControllerHost;
-} // namespace
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtWebEngineCore/qwebenginescript.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE
-class QWebEngineScriptCollectionPrivate {
+class QWebEngineScriptCollectionPrivate;
+
+class Q_WEBENGINECORE_EXPORT QWebEngineScriptCollection {
 public:
-    QWebEngineScriptCollectionPrivate(QtWebEngineCore::UserResourceControllerHost *, QSharedPointer<QtWebEngineCore::WebContentsAdapter> = QSharedPointer<QtWebEngineCore::WebContentsAdapter>());
-
+    ~QWebEngineScriptCollection();
+    bool isEmpty() const { return !count(); }
     int count() const;
-    bool contains(const QWebEngineScript &) const;
-    QList<QWebEngineScript> toList(const QString &scriptName = QString()) const;
-    QWebEngineScript find(const QString & name) const;
+    inline int size() const { return count(); }
+    bool contains(const QWebEngineScript &value) const;
 
-    void initializationFinished(QSharedPointer<QtWebEngineCore::WebContentsAdapter> contents);
+    QWebEngineScript findScript(const QString &name) const;
+    QList<QWebEngineScript> findScripts(const QString &name) const;
 
     void insert(const QWebEngineScript &);
+    void insert(const QList<QWebEngineScript> &list);
+
     bool remove(const QWebEngineScript &);
     void clear();
-    void reserve(int);
+
+    QList<QWebEngineScript> toList() const;
 
 private:
-    QtWebEngineCore::UserResourceControllerHost *m_scriptController;
-    QSharedPointer<QtWebEngineCore::WebContentsAdapter> m_contents;
-    QList<QWebEngineScript> m_scripts;
+    Q_DISABLE_COPY(QWebEngineScriptCollection)
+    friend class QWebEnginePagePrivate;
+    friend class QWebEngineProfilePrivate;
+    QWebEngineScriptCollection(QWebEngineScriptCollectionPrivate *);
+
+    QScopedPointer<QWebEngineScriptCollectionPrivate> d;
 };
 
 QT_END_NAMESPACE
-
-#endif // QWEBENGINESCRIPTCOLLECTION__PH
+#endif // QWEBENGINESCRIPTCOLLECTION_H
