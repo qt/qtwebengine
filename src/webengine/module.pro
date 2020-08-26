@@ -54,7 +54,6 @@ HEADERS = \
         api/qquickwebengineview_p.h \
         api/qquickwebengineview_p_p.h \
         api/qquickwebenginescriptcollection.h \
-        api/qquickwebenginescriptcollection_p.h \
         render_widget_host_view_qt_delegate_quick.h \
         render_widget_host_view_qt_delegate_quickwindow.h \
         ui_delegates_manager.h

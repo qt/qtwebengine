@@ -72,6 +72,8 @@ private:
     Q_DISABLE_COPY(QWebEngineScriptCollection)
     friend class QWebEnginePagePrivate;
     friend class QWebEngineProfilePrivate;
+    friend class QQuickWebEngineProfilePrivate;
+    friend class QQuickWebEngineViewPrivate;
     QWebEngineScriptCollection(QWebEngineScriptCollectionPrivate *);
 
     QScopedPointer<QWebEngineScriptCollectionPrivate> d;

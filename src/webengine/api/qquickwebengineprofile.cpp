@@ -41,8 +41,9 @@
 
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
+#include "qwebenginescriptcollection.h"
+#include "qwebenginescriptcollection_p.h"
 #include "qquickwebenginescriptcollection.h"
-#include "qquickwebenginescriptcollection_p.h"
 #include "qquickwebengineview_p_p.h"
 #include "qwebenginecookiestore.h"
 #include "qwebenginenotification.h"
@@ -160,8 +161,8 @@ QT_BEGIN_NAMESPACE
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(ProfileAdapter *profileAdapter)
     : m_settings(new QQuickWebEngineSettings())
     , m_profileAdapter(profileAdapter)
-    , m_scriptCollection(new QQuickWebEngineScriptCollection(
-              new QQuickWebEngineScriptCollectionPrivate(profileAdapter->userResourceController())))
+    , m_scriptCollection(new QQuickWebEngineScriptCollection(new QWebEngineScriptCollection(
+              new QWebEngineScriptCollectionPrivate(profileAdapter->userResourceController()))))
 {
     profileAdapter->addClient(this);
     // Fullscreen API was implemented before the supported setting, so we must

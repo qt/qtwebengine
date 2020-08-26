@@ -40,7 +40,6 @@
 #ifndef QQUICKWEBENGINEPROFILE_H
 #define QQUICKWEBENGINEPROFILE_H
 
-
 #include <QtWebEngine/qtwebengineglobal.h>
 #include <QtCore/QObject>
 #include <QtCore/QScopedPointer>

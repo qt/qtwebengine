@@ -38,8 +38,8 @@
 ****************************************************************************/
 
 #include "qquickwebenginescriptcollection.h"
-#include "qquickwebenginescriptcollection_p.h"
-#include "renderer_host/user_resource_controller_host.h"
+#include "qwebenginescriptcollection.h"
+#include "qwebenginescriptcollection_p.h"
 #include <QtQml/QQmlInfo>
 #include <QtQml/private/qqmlengine_p.h>
 #include <QtQml/private/qv4scopedvalue_p.h>
@@ -80,8 +80,8 @@ QWebEngineScript parseScript(const QJSValue &value, bool *ok)
 }
 
 QQuickWebEngineScriptCollection::QQuickWebEngineScriptCollection(
-        QQuickWebEngineScriptCollectionPrivate *collectionPrivate)
-    : d(collectionPrivate)
+        QWebEngineScriptCollection *collection)
+    : d(collection)
 {
 }
 
@@ -99,12 +99,12 @@ bool QQuickWebEngineScriptCollection::contains(const QWebEngineScript &value) co
 
 QWebEngineScript QQuickWebEngineScriptCollection::findScript(const QString &name) const
 {
-    return d->find(name);
+    return d->findScript(name);
 }
 
 QList<QWebEngineScript> QQuickWebEngineScriptCollection::findScripts(const QString &name) const
 {
-    return d->toList(name);
+    return d->findScripts(name);
 }
 
 void QQuickWebEngineScriptCollection::insert(const QWebEngineScript &s)
@@ -114,9 +114,7 @@ void QQuickWebEngineScriptCollection::insert(const QWebEngineScript &s)
 
 void QQuickWebEngineScriptCollection::insert(const QList<QWebEngineScript> &list)
 {
-    d->reserve(list.size());
-    for (const QWebEngineScript &s : list)
-        d->insert(s);
+    d->insert(list);
 }
 
 bool QQuickWebEngineScriptCollection::remove(const QWebEngineScript &script)
@@ -134,83 +132,9 @@ QList<QWebEngineScript> QQuickWebEngineScriptCollection::toList() const
     return d->toList();
 }
 
-QQuickWebEngineScriptCollectionPrivate::QQuickWebEngineScriptCollectionPrivate(
-        QtWebEngineCore::UserResourceControllerHost *controller,
-        QSharedPointer<QtWebEngineCore::WebContentsAdapter> webContents)
-    : m_scriptController(controller), m_contents(webContents)
-{
-}
-
-int QQuickWebEngineScriptCollectionPrivate::count() const
-{
-    return m_scripts.count();
-}
-
-bool QQuickWebEngineScriptCollectionPrivate::contains(const QWebEngineScript &s) const
-{
-    return m_scripts.contains(s);
-}
-
-void QQuickWebEngineScriptCollectionPrivate::insert(const QWebEngineScript &script)
-{
-    m_scripts.append(script);
-    if (!m_contents || m_contents->isInitialized())
-        m_scriptController->addUserScript(*script.d, m_contents.data());
-}
-
-bool QQuickWebEngineScriptCollectionPrivate::remove(const QWebEngineScript &script)
-{
-    if (!m_contents || m_contents->isInitialized())
-        m_scriptController->removeUserScript(*script.d, m_contents.data());
-    return m_scripts.removeAll(script);
-}
-
-QList<QWebEngineScript>
-QQuickWebEngineScriptCollectionPrivate::toList(const QString &scriptName) const
-{
-    QList<QWebEngineScript> ret;
-    for (const QWebEngineScript &script : qAsConst(m_scripts))
-        if (scriptName == script.name())
-            ret.append(script);
-    return ret;
-}
-
-QWebEngineScript QQuickWebEngineScriptCollectionPrivate::find(const QString &name) const
-{
-    for (const QWebEngineScript &script : qAsConst(m_scripts))
-        if (name == script.name())
-            return script;
-    return QWebEngineScript();
-}
-
-void QQuickWebEngineScriptCollectionPrivate::clear()
-{
-    m_scripts.clear();
-    if (!m_contents || m_contents->isInitialized())
-        m_scriptController->clearAllScripts(m_contents.data());
-}
-
-void QQuickWebEngineScriptCollectionPrivate::reserve(int capacity)
-{
-    m_scripts.reserve(capacity);
-    if (!m_contents || m_contents->isInitialized())
-        m_scriptController->reserve(m_contents.data(), capacity);
-}
-
-void QQuickWebEngineScriptCollectionPrivate::initializationFinished(
-        QSharedPointer<QtWebEngineCore::WebContentsAdapter> contents)
-{
-    Q_ASSERT(m_contents);
-    Q_ASSERT(contents);
-
-    for (const QWebEngineScript &script : qAsConst(m_scripts))
-        m_scriptController->addUserScript(*script.d, contents.data());
-    m_contents = contents;
-}
-
 QJSValue QQuickWebEngineScriptCollection::collection() const
 {
-    const QList<QWebEngineScript> &list = d->m_scripts;
+    const QList<QWebEngineScript> &list = toList();
     QQmlContext *context = QQmlEngine::contextForObject(this);
     QQmlEngine *engine = context->engine();
     QV4::ExecutionEngine *v4 = QQmlEnginePrivate::getV4Engine(engine);
@@ -240,7 +164,7 @@ void QQuickWebEngineScriptCollection::setCollection(const QJSValue &scripts)
         }
         scriptList.append(s);
     }
-    if (scriptList != d->m_scripts) {
+    if (scriptList != toList()) {
         clear();
         insert(scriptList);
         Q_EMIT collectionChanged();

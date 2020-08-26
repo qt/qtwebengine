@@ -62,8 +62,9 @@
 #include "qwebenginefindtextresult.h"
 #include "qwebenginefullscreenrequest.h"
 #include "qwebenginequotarequest.h"
+#include "qwebenginescriptcollection.h"
+#include "qwebenginescriptcollection_p.h"
 #include "qwebengineregisterprotocolhandlerrequest.h"
-#include "qquickwebenginescriptcollection_p.h"
 #if QT_CONFIG(webengine_testsupport)
 #include "qquickwebenginetestsupport_p.h"
 #endif
@@ -181,9 +182,9 @@ void QQuickWebEngineViewPrivate::initializeProfile()
         m_profile->d_ptr->addWebContentsAdapterClient(this);
         m_settings.reset(new QQuickWebEngineSettings(m_profile->settings()));
         adapter->setClient(this);
-        m_scriptCollection.reset(
-                new QQuickWebEngineScriptCollection(new QQuickWebEngineScriptCollectionPrivate(
-                        profileAdapter()->userResourceController(), adapter)));
+        m_scriptCollection.reset(new QQuickWebEngineScriptCollection(
+                new QWebEngineScriptCollection(new QWebEngineScriptCollectionPrivate(
+                        profileAdapter()->userResourceController(), adapter))));
     }
 }
 
@@ -929,7 +930,7 @@ void QQuickWebEngineViewPrivate::initializationFinished()
     if (devToolsView && devToolsView->d_ptr->adapter)
         adapter->openDevToolsFrontend(devToolsView->d_ptr->adapter);
 
-    m_scriptCollection->d->initializationFinished(adapter);
+    m_scriptCollection->d->d->initializationFinished(adapter);
 
     if (q->window())
         adapter->setVisible(q->isVisible());

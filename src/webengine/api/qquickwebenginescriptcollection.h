@@ -49,7 +49,7 @@
 #include <QtQml/QJSValue>
 
 QT_BEGIN_NAMESPACE
-class QQuickWebEngineScriptCollectionPrivate;
+class QWebEngineScriptCollection;
 
 class Q_WEBENGINE_EXPORT QQuickWebEngineScriptCollection : public QObject
 {
@@ -80,8 +80,8 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QQuickWebEngineScriptCollection)
-    QQuickWebEngineScriptCollection(QQuickWebEngineScriptCollectionPrivate *);
-    QScopedPointer<QQuickWebEngineScriptCollectionPrivate> d;
+    QQuickWebEngineScriptCollection(QWebEngineScriptCollection *d);
+    QScopedPointer<QWebEngineScriptCollection> d;
     friend class QQuickWebEngineProfilePrivate;
     friend class QQuickWebEngineViewPrivate;
 };
