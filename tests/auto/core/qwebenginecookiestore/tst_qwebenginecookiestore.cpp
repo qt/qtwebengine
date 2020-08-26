@@ -273,6 +273,7 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
     QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
     QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
+    QSignalSpy serverSpy(&httpServer, SIGNAL(newRequest(HttpReqRep *)));
 
     page.load(httpServer.url());
 
@@ -308,6 +309,8 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     QVERIFY(cookieRequestHeader.isEmpty());
     QCOMPARE(cookieAddedSpy.count(), 1);
 
+    // Wait for last GET /favicon.ico
+    QTRY_COMPARE(serverSpy.count(), 8);
     (void) httpServer.stop();
 }
 
