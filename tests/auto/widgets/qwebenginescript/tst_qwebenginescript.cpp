@@ -320,8 +320,8 @@ void tst_QWebEngineScript::scriptModifications()
     QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "document.body.innerText"), QVariant::fromValue(QStringLiteral("SUCCESS")));
     QVERIFY(page.scripts().count() == 1);
-    QWebEngineScript s = page.scripts().findScript(QStringLiteral("String1"));
-    QVERIFY(page.scripts().remove(s));
+    QList<QWebEngineScript> s = page.scripts().find(QStringLiteral("String1"));
+    QVERIFY(page.scripts().remove(s.first()));
     QVERIFY(page.scripts().count() == 0);
 }
 

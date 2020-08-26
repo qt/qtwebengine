@@ -57,24 +57,17 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineScriptCollection : public QObject
 public:
     Q_PROPERTY(QJSValue collection READ collection WRITE setCollection NOTIFY collectionChanged)
     ~QQuickWebEngineScriptCollection();
-    bool isEmpty() const { return !count(); }
-    int count() const;
-    inline int size() const { return count(); }
-    bool contains(const QWebEngineScript &value) const;
 
-    Q_INVOKABLE QWebEngineScript findScript(const QString &name) const;
-    Q_INVOKABLE QList<QWebEngineScript> findScripts(const QString &name) const;
-
+    Q_INVOKABLE bool contains(const QWebEngineScript &value) const;
+    Q_INVOKABLE QList<QWebEngineScript> find(const QString &name) const;
     Q_INVOKABLE void insert(const QWebEngineScript &);
     Q_INVOKABLE void insert(const QList<QWebEngineScript> &list);
-
     Q_INVOKABLE bool remove(const QWebEngineScript &);
     Q_INVOKABLE void clear();
 
     QJSValue collection() const;
     void setCollection(const QJSValue &scripts);
 
-    QList<QWebEngineScript> toList() const;
 Q_SIGNALS:
     void collectionChanged();
 

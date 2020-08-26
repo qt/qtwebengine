@@ -66,14 +66,10 @@ QT_BEGIN_NAMESPACE
 class  Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineScriptCollectionPrivate {
 public:
     QWebEngineScriptCollectionPrivate(QtWebEngineCore::UserResourceControllerHost *, QSharedPointer<QtWebEngineCore::WebContentsAdapter> = QSharedPointer<QtWebEngineCore::WebContentsAdapter>());
-
     int count() const;
     bool contains(const QWebEngineScript &) const;
     QList<QWebEngineScript> toList(const QString &scriptName = QString()) const;
-    QWebEngineScript find(const QString & name) const;
-
     void initializationFinished(QSharedPointer<QtWebEngineCore::WebContentsAdapter> contents);
-
     void insert(const QWebEngineScript &);
     bool remove(const QWebEngineScript &);
     void clear();

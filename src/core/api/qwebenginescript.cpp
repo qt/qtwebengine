@@ -146,14 +146,6 @@ QWebEngineScript &QWebEngineScript::operator=(const QWebEngineScript &other)
 }
 
 /*!
-    Returns \c true is the script is null; otherwise returns \c false.
-*/
-bool QWebEngineScript::isNull() const
-{
-    return d->isNull();
-}
-
-/*!
  * Returns the name of the script. Can be useful to retrieve a particular script from a
  * QWebEngineScriptCollection.
  *
@@ -305,9 +297,6 @@ QWebEngineScript::QWebEngineScript(const UserScript &coreScript)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QWebEngineScript &script)
 {
-    if (script.isNull())
-        return d.maybeSpace() << "QWebEngineScript()";
-
     d.nospace() << "QWebEngineScript(" << script.name() << ", ";
     switch (script.injectionPoint()) {
     case QWebEngineScript::DocumentCreation:

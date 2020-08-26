@@ -103,24 +103,11 @@ bool QWebEngineScriptCollection::contains(const QWebEngineScript &value) const
 }
 
 /*!
- * Returns the first script found in the collection with the name \a name, or a null
- * QWebEngineScript if none was found.
- * \note The order in which the script collection is traversed is undefined, which means this should
- * be used when the unicity is guaranteed at the application level.
- * \sa findScripts()
- */
-
-QWebEngineScript QWebEngineScriptCollection::findScript(const QString &name) const
-{
-    return d->find(name);
-}
-
-/*!
     Returns the list of scripts in the collection with the name \a name, or an empty list if none
     was found.
  */
 
-QList<QWebEngineScript> QWebEngineScriptCollection::findScripts(const QString &name) const
+QList<QWebEngineScript> QWebEngineScriptCollection::find(const QString &name) const
 {
     return d->toList(name);
 }
@@ -187,8 +174,6 @@ bool QWebEngineScriptCollectionPrivate::contains(const QWebEngineScript &s) cons
 
 void QWebEngineScriptCollectionPrivate::insert(const QWebEngineScript &script)
 {
-    if (!script.d || script.d->isNull())
-        return;
     m_scripts.append(script);
     if (!m_contents || m_contents->isInitialized())
         m_scriptController->addUserScript(*script.d, m_contents.data());
@@ -196,8 +181,6 @@ void QWebEngineScriptCollectionPrivate::insert(const QWebEngineScript &script)
 
 bool QWebEngineScriptCollectionPrivate::remove(const QWebEngineScript &script)
 {
-    if (!script.d || script.d->isNull())
-        return false;
     if (!m_contents || m_contents->isInitialized())
         m_scriptController->removeUserScript(*script.d, m_contents.data());
     return m_scripts.removeAll(script);
@@ -213,14 +196,6 @@ QList<QWebEngineScript> QWebEngineScriptCollectionPrivate::toList(const QString 
         if (scriptName == script.name())
             ret.append(script);
     return ret;
-}
-
-QWebEngineScript QWebEngineScriptCollectionPrivate::find(const QString &name) const
-{
-    for (const QWebEngineScript &script : qAsConst(m_scripts))
-        if (name == script.name())
-            return script;
-    return QWebEngineScript();
 }
 
 void QWebEngineScriptCollectionPrivate::clear()

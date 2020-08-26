@@ -56,9 +56,9 @@ struct UserScriptData {
 
     std::string source;
     GURL url;
-    /*InjectionPoint*/uint8_t injectionPoint;
-    bool injectForSubframes;
-    uint worldId;
+    uint8_t injectionPoint = AfterLoad;
+    bool injectForSubframes = false;
+    uint worldId = 1;
     uint64_t scriptId;
     std::vector<std::string> globs;
     std::vector<std::string> excludeGlobs;

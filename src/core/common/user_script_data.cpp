@@ -41,8 +41,6 @@
 #include "base/pickle.h"
 
 UserScriptData::UserScriptData() : injectionPoint(AfterLoad)
-  , injectForSubframes(false)
-  , worldId(1)
 {
     static uint64_t idCount = 0;
     scriptId = idCount++;

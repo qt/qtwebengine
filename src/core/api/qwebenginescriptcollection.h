@@ -52,17 +52,13 @@ class QWebEngineScriptCollectionPrivate;
 class Q_WEBENGINECORE_EXPORT QWebEngineScriptCollection {
 public:
     ~QWebEngineScriptCollection();
+
     bool isEmpty() const { return !count(); }
     int count() const;
-    inline int size() const { return count(); }
     bool contains(const QWebEngineScript &value) const;
-
-    QWebEngineScript findScript(const QString &name) const;
-    QList<QWebEngineScript> findScripts(const QString &name) const;
-
+    QList<QWebEngineScript> find(const QString &name) const;
     void insert(const QWebEngineScript &);
     void insert(const QList<QWebEngineScript> &list);
-
     bool remove(const QWebEngineScript &);
     void clear();
 

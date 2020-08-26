@@ -121,14 +121,15 @@ void MainWindow::removeStyleSheet(const QString &name, bool immediately)
     if (immediately)
         ui->webEngineView->page()->runJavaScript(s, QWebEngineScript::ApplicationWorld);
 
-    QWebEngineScript script = ui->webEngineView->page()->scripts().findScript(name);
-    ui->webEngineView->page()->scripts().remove(script);
+    const QList<QWebEngineScript> scripts = ui->webEngineView->page()->scripts().find(name);
+    if (!scripts.isEmpty())
+        ui->webEngineView->page()->scripts().remove(scripts.first());
 }
 
 bool MainWindow::hasStyleSheet(const QString &name)
 {
-    QWebEngineScript script = ui->webEngineView->page()->scripts().findScript(name);
-    return !script.isNull();
+    const QList<QWebEngineScript> scripts = ui->webEngineView->page()->scripts().find(name);
+    return !scripts.isEmpty();
 }
 
 void MainWindow::loadDefaultStyleSheets()

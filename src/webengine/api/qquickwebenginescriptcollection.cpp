@@ -87,24 +87,14 @@ QQuickWebEngineScriptCollection::QQuickWebEngineScriptCollection(
 
 QQuickWebEngineScriptCollection::~QQuickWebEngineScriptCollection() { }
 
-int QQuickWebEngineScriptCollection::count() const
-{
-    return d->count();
-}
-
 bool QQuickWebEngineScriptCollection::contains(const QWebEngineScript &value) const
 {
     return d->contains(value);
 }
 
-QWebEngineScript QQuickWebEngineScriptCollection::findScript(const QString &name) const
+QList<QWebEngineScript> QQuickWebEngineScriptCollection::find(const QString &name) const
 {
-    return d->findScript(name);
-}
-
-QList<QWebEngineScript> QQuickWebEngineScriptCollection::findScripts(const QString &name) const
-{
-    return d->findScripts(name);
+    return d->find(name);
 }
 
 void QQuickWebEngineScriptCollection::insert(const QWebEngineScript &s)
@@ -127,14 +117,9 @@ void QQuickWebEngineScriptCollection::clear()
     d->clear();
 }
 
-QList<QWebEngineScript> QQuickWebEngineScriptCollection::toList() const
-{
-    return d->toList();
-}
-
 QJSValue QQuickWebEngineScriptCollection::collection() const
 {
-    const QList<QWebEngineScript> &list = toList();
+    const QList<QWebEngineScript> &list = d->toList();
     QQmlContext *context = QQmlEngine::contextForObject(this);
     QQmlEngine *engine = context->engine();
     QV4::ExecutionEngine *v4 = QQmlEnginePrivate::getV4Engine(engine);
@@ -164,7 +149,7 @@ void QQuickWebEngineScriptCollection::setCollection(const QJSValue &scripts)
         }
         scriptList.append(s);
     }
-    if (scriptList != toList()) {
+    if (scriptList != d->toList()) {
         clear();
         insert(scriptList);
         Q_EMIT collectionChanged();

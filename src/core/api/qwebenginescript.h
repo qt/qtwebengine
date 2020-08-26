@@ -85,8 +85,6 @@ public:
 
     QWebEngineScript &operator=(const QWebEngineScript &other);
 
-    bool isNull() const;
-
     QString name() const;
     void setName(const QString &);
 
@@ -119,7 +117,7 @@ private:
     QSharedDataPointer<QtWebEngineCore::UserScript> d;
 };
 
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineScript)
+Q_DECLARE_TYPEINFO(QWebEngineScript, Q_MOVABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_WEBENGINECORE_EXPORT QDebug operator<<(QDebug, const QWebEngineScript &);

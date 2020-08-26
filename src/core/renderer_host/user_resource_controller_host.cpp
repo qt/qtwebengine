@@ -116,8 +116,6 @@ void UserResourceControllerHost::RenderProcessObserverHelper::RenderProcessHostD
 
 void UserResourceControllerHost::addUserScript(const UserScript &script, WebContentsAdapter *adapter)
 {
-    if (script.isNull())
-        return;
     // Global scripts should be dispatched to all our render processes.
     const bool isProfileWideScript = !adapter;
     if (isProfileWideScript) {
@@ -150,8 +148,6 @@ void UserResourceControllerHost::addUserScript(const UserScript &script, WebCont
 
 bool UserResourceControllerHost::removeUserScript(const UserScript &script, WebContentsAdapter *adapter)
 {
-    if (script.isNull())
-        return false;
     const bool isProfileWideScript = !adapter;
     if (isProfileWideScript) {
         QList<UserScript>::iterator it = std::find(m_profileWideScripts.begin(), m_profileWideScripts.end(), script);
