@@ -258,7 +258,7 @@ void InterceptedRequest::InterceptOnIOThread(base::WaitableEvent *event)
 void InterceptedRequest::InterceptOnUIThread()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (profile_request_interceptor_)
+    if (profile_request_interceptor_ && !profile_request_interceptor_->property("deprecated").toBool())
         profile_request_interceptor_->interceptRequest(request_info_);
 
     if (!request_info_.changed() && page_request_interceptor_)
