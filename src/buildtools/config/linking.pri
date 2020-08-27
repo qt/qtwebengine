@@ -25,28 +25,31 @@ for(archive, NINJA_ARCHIVES): RSP_A_CONTENT += $$archive
 write_file($$RSP_ARCHIVE_FILE, RSP_A_CONTENT)
 
 if(macos|ios) {
-    QMAKE_LFLAGS += -Wl,-filelist,$$shell_quote($${RSP_OBJECT_FILE})
     !static {
+        QMAKE_LFLAGS += -Wl,-filelist,$$shell_quote($${RSP_OBJECT_FILE})
         QMAKE_LFLAGS += @$${RSP_ARCHIVE_FILE}
     } else {
+        OBJECTS += $$NINJA_OBJECTS
         LIBS_PRIVATE += $${NINJA_ARCHIVES}
     }
 }
 
 linux {
-    QMAKE_LFLAGS += @$${RSP_OBJECT_FILE}
     !static {
+        QMAKE_LFLAGS += @$${RSP_OBJECT_FILE}
         QMAKE_LFLAGS += -Wl,--start-group @$${RSP_ARCHIVE_FILE} -Wl,--end-group
     } else {
+        OBJECTS += $$NINJA_OBJECTS
         LIBS_PRIVATE += -Wl,--start-group @$${NINJA_ARCHIVES} -Wl,--end-group
     }
 }
 
 win32 {
-    QMAKE_LFLAGS += @$${RSP_OBJECT_FILE}
     !static {
+        QMAKE_LFLAGS += @$${RSP_OBJECT_FILE}
         QMAKE_LFLAGS += @$${RSP_ARCHIVE_FILE}
     } else {
+        OBJECTS += $$NINJA_OBJECTS
         LIBS_PRIVATE += $${NINJA_ARCHIVES}
     }
 }
