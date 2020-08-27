@@ -144,7 +144,6 @@ public:
 
 private:
     void InterceptOnUIThread();
-    void InterceptOnIOThread(base::WaitableEvent *event);
     void ContinueAfterIntercept();
 
     // This is called when the original URLLoaderClient has a connection error.
@@ -253,34 +252,14 @@ void InterceptedRequest::Restart()
                                                 initiator, QByteArray::fromStdString(request_.method));
     request_info_ = QWebEngineUrlRequestInfo(infoPrivate);
 
-    // TODO: remove for Qt6
-    if (profile_request_interceptor_ && profile_request_interceptor_->property("deprecated").toBool()) {
-        // sync call supports depracated call of an interceptor on io thread
-        base::WaitableEvent event;
-        base::PostTask(FROM_HERE, { content::BrowserThread::IO },
-                       base::BindOnce(&InterceptedRequest::InterceptOnIOThread, base::Unretained(this), &event));
-        event.Wait();
-        if (request_info_.changed()) {
-            ContinueAfterIntercept();
-            return;
-        }
-    }
     InterceptOnUIThread();
     ContinueAfterIntercept();
-}
-
-void InterceptedRequest::InterceptOnIOThread(base::WaitableEvent *event)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (profile_request_interceptor_)
-        profile_request_interceptor_->interceptRequest(request_info_);
-    event->Signal();
 }
 
 void InterceptedRequest::InterceptOnUIThread()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (profile_request_interceptor_ && !profile_request_interceptor_->property("deprecated").toBool())
+    if (profile_request_interceptor_)
         profile_request_interceptor_->interceptRequest(request_info_);
 
     if (!request_info_.changed() && page_request_interceptor_)

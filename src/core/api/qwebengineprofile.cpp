@@ -582,34 +582,6 @@ QWebEngineCookieStore* QWebEngineProfile::cookieStore()
     return d->profileAdapter()->cookieStore();
 }
 
-#if QT_DEPRECATED_SINCE(5, 13)
-/*!
-    Registers a request interceptor singleton \a interceptor to intercept URL requests.
-
-    The profile does not take ownership of the pointer.
-
-    \obsolete
-
-    Interceptors installed with this method will call
-    QWebEngineUrlRequestInterceptor::interceptRequest on the I/O thread. Therefore
-    the user has to provide thread-safe interaction with the other user classes.
-    For a duration of this call ui thread is blocked.
-    Use setUrlRequestInterceptor instead.
-
-    \since 5.6
-    \sa QWebEngineUrlRequestInfo
-
-*/
-void QWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
-{
-    Q_D(QWebEngineProfile);
-    if (interceptor)
-        interceptor->setProperty("deprecated", true);
-    d->profileAdapter()->setRequestInterceptor(interceptor);
-    if (interceptor)
-        qDebug("Use of deprecated not thread-safe setter, use setUrlRequestInterceptor instead.");
-}
-#endif
 /*!
     Registers a request interceptor singleton \a interceptor to intercept URL requests.
 
