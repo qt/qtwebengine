@@ -31,8 +31,8 @@
 #include <QtWebEngineCore/qwebengineurlrequestinfo.h>
 #include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
 #include <QtWebEngineCore/qwebenginesettings.h>
+#include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
-#include <QtWebEngineWidgets/qwebengineprofile.h>
 
 #include <httpserver.h>
 #include <httpreqrep.h>

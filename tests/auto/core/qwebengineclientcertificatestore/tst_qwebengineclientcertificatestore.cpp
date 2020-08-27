@@ -28,7 +28,7 @@
 
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineclientcertificatestore.h>
-#include <QtWebEngineWidgets/qwebengineprofile.h>
+#include <QtWebEngineCore/qwebengineprofile.h>
 
 class tst_QWebEngineClientCertificateStore : public QObject
 {

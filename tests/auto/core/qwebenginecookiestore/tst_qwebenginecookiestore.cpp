@@ -30,8 +30,8 @@
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebenginecallback.h>
 #include <QtWebEngineCore/qwebenginecookiestore.h>
+#include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
-#include <QtWebEngineWidgets/qwebengineprofile.h>
 
 #include "httpserver.h"
 #include "httpreqrep.h"

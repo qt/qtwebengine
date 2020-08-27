@@ -39,7 +39,7 @@
 
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
-
+#include "qwebenginenotification.h"
 #include "qwebenginecookiestore.h"
 #include "qwebenginedownloadrequest.h"
 #include "qwebenginedownloadrequest_p.h"

@@ -73,7 +73,7 @@ class QWebEngineProfilePrivate;
 class QWebEngineNotification;
 class QWebEngineSettings;
 
-class QWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {
+class Q_WEBENGINECORE_PRIVATE_EXPORT QWebEngineProfilePrivate : public QtWebEngineCore::ProfileAdapterClient {
 public:
     Q_DECLARE_PUBLIC(QWebEngineProfile)
     QWebEngineProfilePrivate(QtWebEngineCore::ProfileAdapter *profileAdapter);

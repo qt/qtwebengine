@@ -16,7 +16,6 @@ SOURCES = \
         api/qwebenginehistory.cpp \
         api/qwebenginenotificationpresenter.cpp \
         api/qwebenginepage.cpp \
-        api/qwebengineprofile.cpp \
         api/qwebengineview.cpp \
         render_widget_host_view_qt_delegate_widget.cpp
 
@@ -27,8 +26,6 @@ HEADERS = \
         api/qwebenginenotificationpresenter_p.h \
         api/qwebenginepage.h \
         api/qwebenginepage_p.h \
-        api/qwebengineprofile.h \
-        api/qwebengineprofile_p.h \
         api/qwebengineview.h \
         api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h

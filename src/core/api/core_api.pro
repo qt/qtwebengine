@@ -59,7 +59,9 @@ HEADERS = \
     qwebenginesettings.h \
     qwebenginescript.h \
     qwebenginescriptcollection.h \
-    qwebenginescriptcollection_p.h
+    qwebenginescriptcollection_p.h \
+    qwebengineprofile.h \
+    qwebengineprofile_p.h
 
 SOURCES = \
     qtwebenginecoreglobal.cpp \
@@ -81,7 +83,8 @@ SOURCES = \
     qwebenginedownloadrequest.cpp \
     qwebenginesettings.cpp \
     qwebenginescript.cpp \
-    qwebenginescriptcollection.cpp
+    qwebenginescriptcollection.cpp \
+    qwebengineprofile.cpp
 
 # Chromium headers included are not remotely clean
 CONFIG -= warning_clean

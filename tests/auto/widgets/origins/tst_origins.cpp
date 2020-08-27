@@ -34,8 +34,8 @@
 #include <QtWebEngineCore/qwebengineurlscheme.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
 #include <QtWebEngineCore/qwebenginesettings.h>
+#include <QtWebEngineCore/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
-#include <QtWebEngineWidgets/qwebengineprofile.h>
 
 #if defined(WEBSOCKETS)
 #include <QtWebSockets/qwebsocket.h>
