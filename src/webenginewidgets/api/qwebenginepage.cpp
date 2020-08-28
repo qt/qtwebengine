@@ -39,7 +39,7 @@
 
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
-
+#include "qwebenginenotificationpresenter_p.h"
 #include "authentication_dialog_controller.h"
 #include "profile_adapter.h"
 #include "color_chooser_controller.h"
@@ -158,6 +158,8 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     });
 
     profile->d_ptr->addWebContentsAdapterClient(this);
+    if (!profile->notificationPresenter())
+        profile->setNotificationPresenter(&defaultNotificationPresenter);
 }
 
 QWebEnginePagePrivate::~QWebEnginePagePrivate()

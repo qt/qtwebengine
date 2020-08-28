@@ -143,6 +143,7 @@ public:
     void setDownloadPath(const QString &path);
 
     void setNotificationPresenter(std::function<void(std::unique_ptr<QWebEngineNotification>)> notificationPresenter);
+    std::function<void(std::unique_ptr<QWebEngineNotification>)> notificationPresenter();
 
     QWebEngineClientCertificateStore *clientCertificateStore();
 

@@ -43,7 +43,7 @@
 #include "qwebenginecookiestore.h"
 #include "qwebenginedownloadrequest.h"
 #include "qwebenginedownloadrequest_p.h"
-#include "qwebenginenotificationpresenter_p.h"
+#include "qwebenginenotification.h"
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
 #include "qwebenginesettings.h"
@@ -684,6 +684,16 @@ void QWebEngineProfile::setNotificationPresenter(std::function<void(std::unique_
 }
 
 /*!
+    Returns presenter responsible for presenting sent notifications
+    \since 6.0
+ */
+std::function<void(std::unique_ptr<QWebEngineNotification>)> QWebEngineProfile::notificationPresenter()
+{
+    Q_D(QWebEngineProfile);
+    return d->m_notificationPresenter;
+}
+
+/*!
     Returns the default profile.
 
     The default profile uses the storage name "Default".
@@ -695,8 +705,6 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
     static QWebEngineProfile* profile = new QWebEngineProfile(
                 new QWebEngineProfilePrivate(ProfileAdapter::createDefaultProfileAdapter()),
                 ProfileAdapter::globalQObjectRoot());
-    if (!profile->d_ptr->m_notificationPresenter)
-        profile->setNotificationPresenter(&defaultNotificationPresenter);
     return profile;
 }
 
