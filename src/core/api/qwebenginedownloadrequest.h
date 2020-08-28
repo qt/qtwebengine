@@ -169,6 +169,7 @@ private:
 
     friend class QWebEngineProfilePrivate;
     friend class QQuickWebEngineProfilePrivate;
+    friend class QWebEnginePage;
     QWebEngineDownloadRequest(QWebEngineDownloadRequestPrivate*, QObject *parent = Q_NULLPTR);
     QScopedPointer<QWebEngineDownloadRequestPrivate> d_ptr;
 };

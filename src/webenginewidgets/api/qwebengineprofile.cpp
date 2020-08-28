@@ -44,8 +44,6 @@
 #include "qwebenginedownloadrequest.h"
 #include "qwebenginedownloadrequest_p.h"
 #include "qwebenginenotification.h"
-#include "qwebenginepage.h"
-#include "qwebenginepage_p.h"
 #include "qwebenginesettings.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qtwebenginecoreglobal.h"
@@ -234,9 +232,9 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->savePageFormat = static_cast<QWebEngineDownloadRequest::SavePageFormat>(info.savePageFormat);
     itemPrivate->isSavePageDownload = info.isSavePageDownload;
     if (info.page && info.page->clientType() == QtWebEngineCore::WebContentsAdapterClient::WidgetsClient)
-        itemPrivate->page = static_cast<QWebEnginePagePrivate *>(info.page)->q_ptr;
+        itemPrivate->m_adapterClient = info.page;
     else
-        itemPrivate->page = nullptr;
+        itemPrivate->m_adapterClient = nullptr;
 
     QWebEngineDownloadRequest *download = new QWebEngineDownloadRequest(itemPrivate, q);
 

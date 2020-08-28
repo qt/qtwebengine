@@ -443,7 +443,7 @@ void tst_QWebEngineDownloadRequest::downloadLink()
         QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), suggestedPath);
         QCOMPARE(item->savePageFormat(), QWebEngineDownloadRequest::UnknownSaveFormat);
         QCOMPARE(item->url(), downloadUrl);
-        QCOMPARE(item->page(), m_page);
+        QCOMPARE(QWebEnginePage::fromDownloadRequest(item), m_page);
 
         connect(item, &QWebEngineDownloadRequest::isFinishedChanged, [&, item]() {
             QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadCompleted);
@@ -456,7 +456,7 @@ void tst_QWebEngineDownloadRequest::downloadLink()
             QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), downloadPath);
             QCOMPARE(item->savePageFormat(), QWebEngineDownloadRequest::UnknownSaveFormat);
             QCOMPARE(item->url(), downloadUrl);
-            QCOMPARE(item->page(), m_page);
+            QCOMPARE(QWebEnginePage::fromDownloadRequest(item), m_page);
 
             finishedCount++;
         });
@@ -629,7 +629,7 @@ void tst_QWebEngineDownloadRequest::downloadPage()
         QCOMPARE(item->mimeType(), QStringLiteral("application/x-mimearchive"));
         QCOMPARE(item->savePageFormat(), savePageFormat);
         QCOMPARE(item->url(), downloadUrl);
-        QCOMPARE(item->page(), m_page);
+        QCOMPARE(QWebEnginePage::fromDownloadRequest(item), m_page);
 
         if (saveWithPageAction) {
             QVERIFY(!item->downloadDirectory().isEmpty());
@@ -652,7 +652,7 @@ void tst_QWebEngineDownloadRequest::downloadPage()
             QCOMPARE(QDir(item->downloadDirectory()).filePath(item->downloadFileName()), downloadPath);
             QCOMPARE(item->savePageFormat(), savePageFormat);
             QCOMPARE(item->url(), downloadUrl);
-            QCOMPARE(item->page(), m_page);
+            QCOMPARE(QWebEnginePage::fromDownloadRequest(item), m_page);
 
             finishedCount++;
         });
@@ -932,7 +932,7 @@ void tst_QWebEngineDownloadRequest::downloadUniqueFilenameWithTimestamp()
             QCOMPARE(item->totalBytes(), item->receivedBytes());
             QVERIFY(item->receivedBytes() > 0);
             QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
-            QCOMPARE(item->page(), m_page);
+            QCOMPARE(QWebEnginePage::fromDownloadRequest(item), m_page);
             downloadFinished = true;
             downloadedFilePath = QDir(item->downloadDirectory()).filePath(item->downloadFileName());
         });
@@ -1028,7 +1028,7 @@ void tst_QWebEngineDownloadRequest::downloadToNonExistentDir()
             QCOMPARE(item->totalBytes(), item->receivedBytes());
             QVERIFY(item->receivedBytes() > 0);
             QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
-            QCOMPARE(item->page(), m_page);
+            QCOMPARE(QWebEnginePage::fromDownloadRequest(item), m_page);
             downloadFinished = true;
             downloadedFilePath = QDir(item->downloadDirectory()).filePath(item->downloadFileName());
         });
@@ -1169,7 +1169,7 @@ void tst_QWebEngineDownloadRequest::downloadToDirectoryWithFileName()
             QCOMPARE(item->totalBytes(), item->receivedBytes());
             QVERIFY(item->receivedBytes() > 0);
             QCOMPARE(item->interruptReason(), QWebEngineDownloadRequest::NoReason);
-            QCOMPARE(item->page(), m_page);
+            QCOMPARE(QWebEnginePage::fromDownloadRequest(item), m_page);
             downloadFinished = true;
             downloadedFilePath = QDir(item->downloadDirectory()).filePath(item->downloadFileName());
             downloadedSuggestedFileName = item->suggestedFileName();

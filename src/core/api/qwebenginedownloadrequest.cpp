@@ -170,7 +170,7 @@ QWebEngineDownloadRequestPrivate::QWebEngineDownloadRequestPrivate(QtWebEngineCo
     , totalBytes(-1)
     , receivedBytes(0)
     , isSavePageDownload(false)
-    , page(nullptr)
+    , m_adapterClient(nullptr)
 {
 }
 
@@ -657,7 +657,9 @@ QString QWebEngineDownloadRequest::interruptReasonString() const
 QObject *QWebEngineDownloadRequest::page() const
 {
     Q_D(const QWebEngineDownloadRequest);
-    return d->page;
+    //TODO: come back here when page is in core
+    Q_UNREACHABLE();
+    return nullptr;
 }
 
 QWebEngineDownloadRequest::QWebEngineDownloadRequest(QWebEngineDownloadRequestPrivate *p, QObject *parent)

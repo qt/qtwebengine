@@ -39,6 +39,8 @@
 
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
+
+#include "qwebenginedownloadrequest_p.h"
 #include "qwebenginenotificationpresenter_p.h"
 #include "authentication_dialog_controller.h"
 #include "profile_adapter.h"
@@ -2607,6 +2609,10 @@ void QWebEnginePage::setVisible(bool visible)
     }
 
     d->adapter->setVisible(visible);
+}
+
+QWebEnginePage* QWebEnginePage::fromDownloadRequest(QWebEngineDownloadRequest *request) {
+    return static_cast<QWebEnginePagePrivate *>(request->d_ptr->m_adapterClient)->q_ptr;
 }
 
 QT_END_NAMESPACE

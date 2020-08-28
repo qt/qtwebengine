@@ -59,6 +59,7 @@
 
 namespace QtWebEngineCore {
 class ProfileAdapter;
+class WebContentsAdapterClient;
 }
 
 QT_BEGIN_NAMESPACE
@@ -90,7 +91,7 @@ public:
     bool isSavePageDownload;
     QWebEngineDownloadRequest *q_ptr;
     QPointer<QtWebEngineCore::ProfileAdapter> m_profileAdapter;
-    QObject *page;
+    QtWebEngineCore::WebContentsAdapterClient *m_adapterClient;
     Q_DECLARE_PUBLIC(QWebEngineDownloadRequest)
 };
 

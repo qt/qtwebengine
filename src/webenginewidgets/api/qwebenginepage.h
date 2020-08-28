@@ -322,6 +322,8 @@ public:
     bool isVisible() const;
     void setVisible(bool visible);
 
+    static QWebEnginePage* fromDownloadRequest(QWebEngineDownloadRequest * request);
+
 Q_SIGNALS:
     void loadStarted();
     void loadProgress(int progress);

@@ -251,9 +251,9 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
                 info.savePageFormat);
     itemPrivate->isSavePageDownload = info.isSavePageDownload;
     if (info.page && info.page->clientType() == QtWebEngineCore::WebContentsAdapterClient::QmlClient)
-        itemPrivate->page = static_cast<QQuickWebEngineViewPrivate *>(info.page)->q_ptr;
+        itemPrivate->m_adapterClient = info.page;
     else
-        itemPrivate->page = nullptr;
+        itemPrivate->m_adapterClient = nullptr;
 
     QWebEngineDownloadRequest *download = new QWebEngineDownloadRequest(itemPrivate, q);
 
