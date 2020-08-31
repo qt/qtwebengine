@@ -37,6 +37,7 @@ TestWebEngineView {
 
     property var newViewRequest: null
     property var dialog: null
+    property string viewType: ""
 
     SignalSpy {
         id: newViewRequestedSpy
@@ -60,7 +61,12 @@ TestWebEngineView {
             "    TestWebEngineView { id: webView; anchors.fill: parent }\n" +
             "}", webEngineView);
 
-        request.openIn(dialog.webEngineView);
+        if (viewType === "dialog")
+            request.openIn(dialog.webEngineView);
+        else if (viewType === "null")
+            request.openIn(0);
+        else if (viewType === "webEngineView")
+            request.openIn(webEngineView);
     }
 
     TestCase {
@@ -74,6 +80,7 @@ TestWebEngineView {
 
             newViewRequestedSpy.clear();
             newViewRequest = null;
+            viewType = "";
         }
 
         function cleanup() {
@@ -81,7 +88,17 @@ TestWebEngineView {
                 dialog.destroy();
         }
 
-        function test_jsWindowOpen() {
+        function test_loadNewViewRequest_data() {
+            return [
+                   { tag: "dialog", viewType: "dialog" },
+                   { tag: "invalid", viewType: "null" },
+                   { tag: "unhandled", viewType: "" },
+                   { tag: "webEngineView", viewType: "webEngineView" },
+            ];
+        }
+
+        function test_loadNewViewRequest(row) {
+            viewType = row.viewType;
             var url = 'data:text/html,%3Chtml%3E%3Cbody%3ETest+Page%3C%2Fbody%3E%3C%2Fhtml%3E';
 
             // Open an empty page in a new tab
@@ -96,12 +113,14 @@ TestWebEngineView {
             compare(newViewRequest.destination, WebEngineView.NewViewInTab);
             verify(!newViewRequest.userInitiated);
 
-            verify(dialog.webEngineView.waitForLoadSucceeded());
-            compare(dialog.webEngineView.url, "");
+            if (viewType === "dialog") {
+                verify(dialog.webEngineView.waitForLoadSucceeded());
+                compare(dialog.webEngineView.url, "");
+                dialog.destroy();
+            }
             // https://chromium-review.googlesource.com/c/chromium/src/+/1300395
             compare(newViewRequest.requestedUrl, 'about:blank#blocked');
             newViewRequestedSpy.clear();
-            dialog.destroy();
 
             // Open a page in a new dialog
             webEngineView.loadHtml(
@@ -115,30 +134,35 @@ TestWebEngineView {
             compare(newViewRequest.destination, WebEngineView.NewViewInDialog);
             compare(newViewRequest.requestedUrl, url);
             verify(!newViewRequest.userInitiated);
-            verify(dialog.webEngineView.waitForLoadSucceeded());
+            if (viewType === "dialog") {
+                verify(dialog.webEngineView.waitForLoadSucceeded());
+                dialog.destroy();
+            }
             newViewRequestedSpy.clear();
-            dialog.destroy();
 
-            // Open a page in a new dialog by user
-            webEngineView.loadHtml(
-                "<html><head><script>" +
-                "   function popup() { window.open('" + url + "', '_blank', 'width=200,height=100'); }" +
-                "</script></head>" +
-                "<body onload=\"document.getElementById('popupButton').focus();\">" +
-                "   <button id='popupButton' onclick='popup()'>Pop Up!</button>" +
-                "</body></html>");
-            verify(webEngineView.waitForLoadSucceeded());
-            verifyElementHasFocus("popupButton");
-            keyPress(Qt.Key_Enter);
-            tryCompare(newViewRequestedSpy, "count", 1);
-            compare(newViewRequest.requestedUrl, url);
+            if (viewType !== "webEngineView") {
+                // Open a page in a new dialog by user
+                webEngineView.loadHtml(
+                    "<html><head><script>" +
+                    "   function popup() { window.open('" + url + "', '_blank', 'width=200,height=100'); }" +
+                    "</script></head>" +
+                    "<body onload=\"document.getElementById('popupButton').focus();\">" +
+                    "   <button id='popupButton' onclick='popup()'>Pop Up!</button>" +
+                    "</body></html>");
+                verify(webEngineView.waitForLoadSucceeded());
+                verifyElementHasFocus("popupButton");
+                keyPress(Qt.Key_Enter);
+                tryCompare(newViewRequestedSpy, "count", 1);
+                compare(newViewRequest.requestedUrl, url);
 
-            compare(newViewRequest.destination, WebEngineView.NewViewInDialog);
-            verify(newViewRequest.userInitiated);
-            verify(dialog.webEngineView.waitForLoadSucceeded());
-            newViewRequestedSpy.clear();
-            dialog.destroy();
+                compare(newViewRequest.destination, WebEngineView.NewViewInDialog);
+                verify(newViewRequest.userInitiated);
+                if (viewType === "dialog") {
+                    verify(dialog.webEngineView.waitForLoadSucceeded());
+                    dialog.destroy();
+                }
+                newViewRequestedSpy.clear();
+            }
         }
     }
 }
-

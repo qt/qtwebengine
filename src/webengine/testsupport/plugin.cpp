@@ -48,7 +48,7 @@ class QtWebEngineTestSupportPlugin : public QQmlExtensionPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
 public:
-    virtual void registerTypes(const char *uri)
+    void registerTypes(const char *uri) override
     {
         qWarning("\nWARNING: This project is using the testsupport QML API extensions for QtWebEngine and is therefore tied to a specific QtWebEngine release.\n"
                  "WARNING: The testsupport API will change from version to version, or even be removed. You have been warned!\n");

@@ -73,9 +73,9 @@ public:
     QQuickWebEngineHistoryListModel(QQuickWebEngineHistoryListModelPrivate*);
     virtual ~QQuickWebEngineHistoryListModel();
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const;
-    QVariant data(const QModelIndex& index, int role) const;
-    QHash<int, QByteArray> roleNames() const;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role) const override;
+    QHash<int, QByteArray> roleNames() const override;
     void reset();
 
 private:

@@ -173,6 +173,10 @@ WebContentsAdapterClient::MediaRequestFlags mediaRequestFlagsForRequest(const co
         request.video_type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE)
         return {WebContentsAdapterClient::MediaDesktopAudioCapture, WebContentsAdapterClient::MediaDesktopVideoCapture};
 
+    if (request.audio_type == MediaStreamType::DISPLAY_AUDIO_CAPTURE &&
+        request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE)
+        return {WebContentsAdapterClient::MediaDesktopAudioCapture, WebContentsAdapterClient::MediaDesktopVideoCapture};
+
     if (request.video_type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
         request.video_type == MediaStreamType::DISPLAY_VIDEO_CAPTURE)
         return {WebContentsAdapterClient::MediaDesktopVideoCapture};
