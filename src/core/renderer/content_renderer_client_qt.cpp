@@ -622,9 +622,7 @@ void ContentRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
 bool ContentRendererClientQt::RequiresWebComponentsV0(const GURL &url)
 {
     Q_UNUSED(url);
-    // Google services still presents pages using these features
-    // to Chromium 80 based browsers (YouTube in particular).
-    return true;
+    return false;
 }
 
 } // namespace QtWebEngineCore

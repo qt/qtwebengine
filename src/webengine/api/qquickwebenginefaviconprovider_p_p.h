@@ -72,7 +72,7 @@ public:
     void detach(QQuickWebEngineView *);
 
 
-    virtual QPixmap requestPixmap(const QString &, QSize *, const QSize &);
+    QPixmap requestPixmap(const QString &, QSize *, const QSize &) override;
 
 private:
     QQuickWebEngineView *viewForIconUrl(const QUrl &) const;

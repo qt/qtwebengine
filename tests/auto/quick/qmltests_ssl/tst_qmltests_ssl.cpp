@@ -26,6 +26,13 @@
 **
 ****************************************************************************/
 
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtNetwork/qtnetwork-config.h>
+
+#if QT_CONFIG(ssl)
+#include <httpsserver.h>
+#endif
+
 #include <QtCore/QScopedPointer>
 #include <QTemporaryDir>
 #include <QtQuickTest/quicktest.h>
@@ -128,7 +135,7 @@ int main(int argc, char **argv)
     QLocale::setDefault(QLocale("en"));
 
     static QByteArrayList params = {QByteArrayLiteral("--use-fake-device-for-media-stream")};
-    QList<const char *> w_argv(argc); \
+    QVector<const char *> w_argv(argc); \
     for (int i = 0; i < argc; ++i) \
         w_argv[i] = argv[i]; \
     for (int i = 0; i < params.size(); ++i) \
@@ -143,8 +150,11 @@ int main(int argc, char **argv)
     qmlRegisterType<TempDir>("Test.util", 1, 0, "TempDir");
 
     QTEST_SET_MAIN_SOURCE_PATH
+#if QT_CONFIG(ssl)
+    qmlRegisterSingletonType<HttpsServer>("Test.Shared", 1, 0, "HttpsServer", [&] (QQmlEngine *, QJSEngine *) { return new HttpsServer; });
+#endif
     int i = quick_test_main(argc, argv, "qmltests", QUICK_TEST_SOURCE_DIR);
     return i;
 }
 
-#include "tst_qmltests.moc"
+#include "tst_qmltests_ssl.moc"

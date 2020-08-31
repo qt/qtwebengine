@@ -65,7 +65,7 @@ public:
     ~QQuickWebEngineTouchHandleProvider();
 
     void init(const QMap<int, QImage> &images);
-    virtual QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize);
+    QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
 
 private:
     QMap<int, QImage> m_touchHandleMap;

@@ -77,6 +77,7 @@ private:
     QQuickWebEngineNewViewRequest();
     QQuickWebEngineView::NewViewDestination m_destination;
     bool m_isUserInitiated;
+    bool m_isRequestHandled = false;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> m_adapter;
     QUrl m_requestedUrl;
     friend class QQuickWebEngineView;

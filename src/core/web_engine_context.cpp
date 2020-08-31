@@ -660,6 +660,9 @@ WebEngineContext::WebEngineContext()
 
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
 
+    // Do not advertise a feature we have removed at compile time
+    parsedCommandLine->AppendSwitch(switches::kDisableSpeechAPI);
+
     std::string disableFeatures;
     std::string enableFeatures;
     // Needed to allow navigations within pages that were set using setHtml(). One example is
@@ -689,8 +692,6 @@ WebEngineContext::WebEngineContext()
     // Explicitly tell Chromium about default-on features we do not support
     appendToFeatureList(disableFeatures, features::kBackgroundFetch.name);
     appendToFeatureList(disableFeatures, features::kSmsReceiver.name);
-    appendToFeatureList(disableFeatures, features::kWebAuth.name);
-    appendToFeatureList(disableFeatures, features::kWebAuthCable.name);
     appendToFeatureList(disableFeatures, features::kWebPayments.name);
     appendToFeatureList(disableFeatures, features::kWebUsb.name);
     appendToFeatureList(disableFeatures, media::kPictureInPicture.name);

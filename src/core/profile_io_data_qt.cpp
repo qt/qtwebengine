@@ -212,7 +212,7 @@ std::unique_ptr<net::ClientCertStore> ProfileIODataQt::CreateClientCertStore()
 #if QT_CONFIG(ssl)
     return std::unique_ptr<net::ClientCertStore>(new ClientCertOverrideStore(m_clientCertificateStoreData));
 #else
-    return nullptr;
+    return std::unique_ptr<net::ClientCertStore>(new ClientCertOverrideStore(nullptr));
 #endif
 }
 
