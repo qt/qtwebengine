@@ -8,6 +8,7 @@
             "**/lib/cmake/Qt5PdfWidgets/*",
             "**/lib/pkgconfig/Qt5Pdf*",
             "**/lib/libQt5Pdf*",
+            "**/lib/static_chrome/*",
             "**/mkspecs/modules/qt_lib_pdf*",
             "**/plugins/imageformats/*",
             "**/qml/QtQuick/**/*"
