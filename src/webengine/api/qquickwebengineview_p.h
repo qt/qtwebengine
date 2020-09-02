@@ -552,7 +552,7 @@ Q_SIGNALS:
     void linkHovered(const QUrl &hoveredUrl);
     void navigationRequested(QQuickWebEngineNavigationRequest *request);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
-    Q_REVISION(1) void certificateError(QWebEngineCertificateError error);
+    Q_REVISION(1) void certificateError(const QWebEngineCertificateError &error);
     Q_REVISION(1) void fullScreenRequested(const QQuickWebEngineFullScreenRequest &request);
     Q_REVISION(1) void isFullScreenChanged();
     Q_REVISION(1) void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
