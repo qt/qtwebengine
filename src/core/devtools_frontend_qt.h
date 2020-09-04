@@ -115,7 +115,8 @@ private:
     void CreateJsonPreferences(bool clear);
 
     // We shouldn't be keeping it alive
-    QWeakPointer<WebContentsAdapter> m_webContentsAdapter;
+    QWeakPointer<WebContentsAdapter> m_frontendAdapter;
+    WebContentsAdapter *m_inspectedAdapter;
     WebContentsDelegateQt *m_frontendDelegate;
     content::WebContents *m_inspectedContents;
     scoped_refptr<content::DevToolsAgentHost> m_agentHost;

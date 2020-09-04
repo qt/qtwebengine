@@ -226,7 +226,9 @@ DevToolsFrontendQt *DevToolsFrontendQt::Show(QSharedPointer<WebContentsAdapter> 
 DevToolsFrontendQt::DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webContentsAdapter,
                                        content::WebContents *inspectedContents)
     : content::WebContentsObserver(webContentsAdapter->webContents())
-    , m_webContentsAdapter(webContentsAdapter)
+    , m_frontendAdapter(webContentsAdapter)
+    , m_inspectedAdapter(static_cast<WebContentsDelegateQt *>(inspectedContents->GetDelegate())
+                                 ->webContentsAdapter())
     , m_inspectedContents(inspectedContents)
     , m_inspect_element_at_x(-1)
     , m_inspect_element_at_y(-1)
@@ -246,7 +248,7 @@ DevToolsFrontendQt::DevToolsFrontendQt(QSharedPointer<WebContentsAdapter> webCon
 
 DevToolsFrontendQt::~DevToolsFrontendQt()
 {
-    if (QSharedPointer<WebContentsAdapter> p = m_webContentsAdapter)
+    if (QSharedPointer<WebContentsAdapter> p = m_frontendAdapter)
         p->setInspector(false);
 }
 
@@ -325,8 +327,8 @@ void DevToolsFrontendQt::DocumentAvailableInMainFrame()
 
 void DevToolsFrontendQt::WebContentsDestroyed()
 {
-    if (m_inspectedContents)
-        static_cast<WebContentsDelegateQt *>(m_inspectedContents->GetDelegate())->webContentsAdapter()->devToolsFrontendDestroyed(this);
+    if (m_inspectedAdapter)
+        m_inspectedAdapter->devToolsFrontendDestroyed(this);
 
     if (m_agentHost) {
         m_agentHost->DetachClient(this);
@@ -594,6 +596,7 @@ void DevToolsFrontendQt::AgentHostClosed(content::DevToolsAgentHost *agentHost)
     DCHECK(agentHost == m_agentHost.get());
     m_agentHost = nullptr;
     m_inspectedContents = nullptr;
+    m_inspectedAdapter = nullptr;
     Close();
 }
 
