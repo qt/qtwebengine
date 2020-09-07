@@ -118,29 +118,42 @@ struct RequestInfo {
 
 static const QByteArray kHttpHeaderReferrerValue = QByteArrayLiteral("http://somereferrer.com/");
 static const QByteArray kHttpHeaderRefererName = QByteArrayLiteral("referer");
+static const QUrl kRedirectUrl = QUrl("qrc:///resources/content.html");
 
 class TestRequestInterceptor : public QWebEngineUrlRequestInterceptor
 {
 public:
     QList<RequestInfo> requestInfos;
-    bool shouldIntercept;
+    bool shouldRedirect = false;
     QMap<QUrl, QSet<QUrl>> requestInitiatorUrls;
+    QMap<QByteArray, QByteArray> headers;
 
     void interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
         QCOMPARE(QThread::currentThread() == QCoreApplication::instance()->thread(), !property("deprecated").toBool());
+
         // Since 63 we also intercept some unrelated blob requests..
         if (info.requestUrl().scheme() == QLatin1String("blob"))
             return;
-        info.block(info.requestMethod() != QByteArrayLiteral("GET"));
-        if (shouldIntercept && info.requestUrl().toString().endsWith(QLatin1String("__placeholder__")))
-            info.redirect(QUrl("qrc:///resources/content.html"));
 
-        // Set referrer header
-        info.setHttpHeader(kHttpHeaderRefererName, kHttpHeaderReferrerValue);
+        bool block = info.requestMethod() != QByteArrayLiteral("GET");
+        bool redirect = shouldRedirect && info.requestUrl() != kRedirectUrl;
+
+        if (block) {
+            info.block(true);
+        } else if (redirect) {
+            info.redirect(kRedirectUrl);
+        } else {
+            // set additional headers if any required by test
+            for (auto it = headers.begin(); it != headers.end(); ++it) info.setHttpHeader(it.key(), it.value());
+        }
 
         requestInitiatorUrls[info.requestUrl()].insert(info.initiator());
         requestInfos.append(info);
+
+        // MEMO avoid unintentionally changing request when it is not needed for test logic
+        //      since api behavior depends on 'changed' state of the info object
+        Q_ASSERT(info.changed() == (block || redirect || !headers.empty()));
     }
 
     bool shouldSkipRequest(const RequestInfo &requestInfo)
@@ -182,8 +195,8 @@ public:
         return false;
     }
 
-    TestRequestInterceptor(bool intercept)
-        : shouldIntercept(intercept)
+    TestRequestInterceptor(bool redirect)
+        : shouldRedirect(redirect)
     {
     }
 };
@@ -219,7 +232,7 @@ void tst_QWebEngineUrlRequestInterceptor::interceptRequest()
     QFETCH(InterceptorSetter, setter);
     QWebEngineProfile profile;
     profile.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
-    TestRequestInterceptor interceptor(/* intercept */ true);
+    TestRequestInterceptor interceptor(/* intercept */ false);
     (profile.*setter)(&interceptor);
     QWebEnginePage page(&profile);
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
@@ -239,6 +252,7 @@ void tst_QWebEngineUrlRequestInterceptor::interceptRequest()
     QVERIFY(!success.toBool());
     loadSpy.clear();
 
+    interceptor.shouldRedirect = true;
     page.load(QUrl("qrc:///resources/__placeholder__"));
     QTRY_COMPARE(loadSpy.count(), 1);
     success = loadSpy.takeFirst().takeFirst();
@@ -338,6 +352,8 @@ void tst_QWebEngineUrlRequestInterceptor::requestedUrl()
     QCOMPARE(interceptor.requestInfos.at(0).requestUrl, QUrl("qrc:///resources/content.html"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
+
+    interceptor.shouldRedirect = false;
 
     page.setUrl(QUrl("qrc:/non-existent.html"));
     QTRY_COMPARE(spy.count(), 2);
@@ -634,7 +650,8 @@ void tst_QWebEngineUrlRequestInterceptor::passRefererHeader()
     });
 
     QWebEngineProfile profile;
-    TestRequestInterceptor interceptor(true);
+    TestRequestInterceptor interceptor(false);
+    interceptor.headers.insert(kHttpHeaderRefererName, kHttpHeaderReferrerValue);
     (profile.*setter)(&interceptor);
 
     QWebEnginePage page(&profile);
