@@ -43,6 +43,7 @@ public:
 private Q_SLOTS:
     void handleError_data();
     void handleError();
+    void fatalError();
 };
 
 struct PageWithCertificateErrorHandler : QWebEnginePage
@@ -118,6 +119,22 @@ void tst_CertificateError::handleError()
     QTRY_COMPARE_WITH_TIMEOUT(page.loadSpy.count(), 1, 30000);
     QCOMPARE(page.loadSpy.takeFirst().value(0).toBool(), acceptCertificate);
     QCOMPARE(toPlainTextSync(&page), expectedContent);
+}
+
+void tst_CertificateError::fatalError()
+{
+    PageWithCertificateErrorHandler page(false, false);
+    page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    QSignalSpy loadFinishedSpy(&page, &QWebEnginePage::loadFinished);
+
+    page.setUrl(QUrl("https://revoked.badssl.com"));
+    if (!loadFinishedSpy.wait(10000))
+        QSKIP("Couldn't load page from network, skipping test.");
+    QTRY_VERIFY(page.error);
+    QVERIFY(!page.error->isOverridable());
+
+    // Fatal certificate errors are implicitly rejected. This should not cause crash.
+    page.error->rejectCertificate();
 }
 
 QTEST_MAIN(tst_CertificateError)

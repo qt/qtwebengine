@@ -38,15 +38,6 @@ TestWebEngineView {
     property bool deferError: false
     property bool acceptCertificate: false
 
-    onCertificateError: function(error) {
-        if (deferError)
-            error.defer()
-        else if (acceptCertificate)
-            error.ignoreCertificateError()
-        else
-            error.rejectCertificate()
-    }
-
     SignalSpy {
         id: spyError
         target: view
@@ -88,6 +79,16 @@ TestWebEngineView {
         function test_error(data) {
             view.deferError = data.deferError
             view.acceptCertificate = data.acceptCertificate
+            var handleCertificateError = function(error) {
+                if (deferError)
+                    error.defer()
+                else if (acceptCertificate)
+                    error.ignoreCertificateError()
+                else
+                    error.rejectCertificate()
+            }
+            view.certificateError.connect(handleCertificateError)
+
             view.url = Shared.HttpsServer.url()
 
             if (data.deferError) {
@@ -109,6 +110,25 @@ TestWebEngineView {
 
             compare(spyError.count, 1)
             compare(data.expectedContent, view.getBodyText())
+
+            view.certificateError.disconnect(handleCertificateError)
+        }
+
+        function test_fatalError() {
+            var handleCertificateError = function(error) {
+                verify(!error.overrideable);
+                // QQuickWebEngineViewPrivate::allowCertificateError() will implicitly reject
+                // fatal errors and it should not crash if already rejected in handler.
+                error.rejectCertificate();
+            }
+            view.certificateError.connect(handleCertificateError);
+
+            view.url = Qt.resolvedUrl('https://revoked.badssl.com');
+            if (!view.waitForLoadFailed(10000))
+                skip("Couldn't load page from network, skipping test.");
+            compare(spyError.count, 1);
+
+            view.certificateError.disconnect(handleCertificateError);
         }
     }
 }

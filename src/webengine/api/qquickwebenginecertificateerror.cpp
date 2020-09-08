@@ -121,6 +121,9 @@ void QQuickWebEngineCertificateError::ignoreCertificateError()
 {
     Q_D(QQuickWebEngineCertificateError);
 
+    if (d->answered)
+        return;
+
     d->answered = true;
 
     QSharedPointer<CertificateErrorController> strongRefCert = d->weakRefCertErrorController.toStrongRef();
@@ -136,6 +139,9 @@ void QQuickWebEngineCertificateError::ignoreCertificateError()
 void QQuickWebEngineCertificateError::rejectCertificate()
 {
     Q_D(QQuickWebEngineCertificateError);
+
+    if (d->answered)
+        return;
 
     d->answered = true;
 
