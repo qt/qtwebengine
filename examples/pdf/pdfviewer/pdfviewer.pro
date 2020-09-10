@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += qml quick pdf widgets svg
+QT += qml quick pdf svg
 
 SOURCES += main.cpp
 
