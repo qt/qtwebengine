@@ -37,19 +37,14 @@
 **
 ****************************************************************************/
 
-#include "surface_factory_qt.h"
-#include "gl_context_qt.h"
-#include "gl_ozone_egl_qt.h"
-#if defined(USE_GLX)
-#include "gl_ozone_glx_qt.h"
-#endif
-
-#include "ui/gl/gl_surface.h"
-
 #if defined(USE_OZONE)
+#include "surface_factory_qt.h"
+
+#include "ozone/gl_context_qt.h"
 #include "ozone/gl_ozone_egl_qt.h"
-#include "ozone/surface_factory_qt.h"
-#include "ui/gl/gl_surface.h"
+#if defined(USE_GLX)
+#include "ozone/gl_ozone_glx_qt.h"
+#endif
 
 namespace QtWebEngineCore {
 
