@@ -57,10 +57,9 @@
 #include <QtCore/QSharedData>
 #include <QtCore/QString>
 
-struct UserScriptData;
 
 namespace QtWebEngineCore {
-
+struct UserScriptData;
 class UserResourceControllerHost;
 
 class Q_WEBENGINECORE_PRIVATE_EXPORT UserScript : public QSharedData {

@@ -43,7 +43,7 @@
 // found in the LICENSE file.
 
 #include "renderer/render_thread_observer_qt.h"
-
+#include "user_resource_controller.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
 namespace QtWebEngineCore {
@@ -54,11 +54,15 @@ void RenderThreadObserverQt::RegisterMojoInterfaces(blink::AssociatedInterfaceRe
 {
     associated_interfaces->AddInterface(
             base::Bind(&RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest, base::Unretained(this)));
+    associated_interfaces->AddInterface(
+            base::Bind(&UserResourceController::BindReceiver,
+                       base::Unretained(UserResourceController::instance())));
 }
 
 void RenderThreadObserverQt::UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
     associated_interfaces->RemoveInterface(qtwebengine::mojom::RendererConfiguration::Name_);
+    associated_interfaces->RemoveInterface(qtwebengine::mojom::UserResourceController::Name_);
 }
 
 void RenderThreadObserverQt::SetInitialConfiguration(bool is_incognito_process)

@@ -9,20 +9,6 @@
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "user_script_data.h"
-
-IPC_STRUCT_TRAITS_BEGIN(UserScriptData)
-    IPC_STRUCT_TRAITS_MEMBER(source)
-    IPC_STRUCT_TRAITS_MEMBER(url)
-    IPC_STRUCT_TRAITS_MEMBER(injectionPoint)
-    IPC_STRUCT_TRAITS_MEMBER(injectForSubframes)
-    IPC_STRUCT_TRAITS_MEMBER(worldId)
-    IPC_STRUCT_TRAITS_MEMBER(scriptId)
-    IPC_STRUCT_TRAITS_MEMBER(globs)
-    IPC_STRUCT_TRAITS_MEMBER(excludeGlobs)
-    IPC_STRUCT_TRAITS_MEMBER(urlPatterns)
-IPC_STRUCT_TRAITS_END()
-
 
 #define IPC_MESSAGE_START QtMsgStart
 
@@ -38,17 +24,6 @@ IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentInnerText,
 
 IPC_MESSAGE_ROUTED1(RenderViewObserverQt_SetBackgroundColor,
                     uint32_t /* color */)
-
-// User scripts messages
-IPC_MESSAGE_ROUTED1(RenderFrameObserverHelper_AddScript,
-                    UserScriptData /* script */)
-IPC_MESSAGE_ROUTED1(RenderFrameObserverHelper_RemoveScript,
-                    UserScriptData /* script */)
-IPC_MESSAGE_ROUTED0(RenderFrameObserverHelper_ClearScripts)
-
-IPC_MESSAGE_CONTROL1(UserResourceController_AddScript, UserScriptData /* scriptContents */)
-IPC_MESSAGE_CONTROL1(UserResourceController_RemoveScript, UserScriptData /* scriptContents */)
-IPC_MESSAGE_CONTROL0(UserResourceController_ClearScripts)
 
 // Tells the renderer whether or not a file system access has been allowed.
 IPC_MESSAGE_ROUTED2(QtWebEngineMsg_RequestFileSystemAccessAsyncResponse,

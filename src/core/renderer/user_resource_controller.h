@@ -41,8 +41,9 @@
 #define USER_RESOURCE_CONTROLLER_H
 
 #include "content/public/renderer/render_thread_observer.h"
-
-#include "common/user_script_data.h"
+#include "qtwebengine/userscript/userscript.mojom.h"
+#include "qtwebengine/userscript/user_script_data.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 
 #include <QtCore/QHash>
 #include <QtCore/QSet>
@@ -56,7 +57,8 @@ class RenderFrame;
 class RenderView;
 }
 
-class UserResourceController : public content::RenderThreadObserver
+class UserResourceController : public content::RenderThreadObserver,
+                               qtwebengine::mojom::UserResourceController
 {
 
 public:
@@ -65,11 +67,13 @@ public:
     void renderFrameCreated(content::RenderFrame *);
     void renderViewCreated(content::RenderView *);
     void renderViewDestroyed(content::RenderView *renderView);
-    void addScriptForView(const UserScriptData &, content::RenderView *);
-    void removeScriptForView(const UserScriptData &, content::RenderView *);
+    void addScriptForView(const QtWebEngineCore::UserScriptData &, content::RenderView *);
+    void removeScriptForView(const QtWebEngineCore::UserScriptData &, content::RenderView *);
     void clearScriptsForView(content::RenderView *);
 
     void RunScriptsAtDocumentEnd(content::RenderFrame *render_frame);
+    void BindReceiver(
+            mojo::PendingAssociatedReceiver<qtwebengine::mojom::UserResourceController> receiver);
 
 private:
     Q_DISABLE_COPY(UserResourceController)
@@ -77,20 +81,17 @@ private:
     class RenderFrameObserverHelper;
     class RenderViewObserverHelper;
 
-    // RenderProcessObserver implementation.
-    bool OnControlMessageReceived(const IPC::Message &message) override;
+    void AddScript(const QtWebEngineCore::UserScriptData &data) override;
+    void RemoveScript(const QtWebEngineCore::UserScriptData &data) override;
+    void ClearScripts() override;
 
-    void onAddScript(const UserScriptData &);
-    void onRemoveScript(const UserScriptData &);
-    void onClearScripts();
-
-    void runScripts(UserScriptData::InjectionPoint, blink::WebLocalFrame *);
+    void runScripts(QtWebEngineCore::UserScriptData::InjectionPoint, blink::WebLocalFrame *);
 
     typedef QSet<uint64_t> UserScriptSet;
     typedef QHash<const content::RenderView *, UserScriptSet> ViewUserScriptMap;
     ViewUserScriptMap m_viewUserScriptMap;
-    QHash<uint64_t, UserScriptData> m_scripts;
-
+    QHash<uint64_t, QtWebEngineCore::UserScriptData> m_scripts;
+    mojo::AssociatedReceiver<qtwebengine::mojom::UserResourceController> m_binding;
     friend class RenderFrameObserverHelper;
 };
 

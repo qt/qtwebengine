@@ -52,7 +52,6 @@ SOURCES = \
         color_chooser_controller.cpp \
         common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
-        common/user_script_data.cpp \
         compositor/content_gpu_client_qt.cpp \
         compositor/display_frame_sink.cpp \
         compositor/display_overrides.cpp \
@@ -155,7 +154,6 @@ HEADERS = \
         color_chooser_controller_p.h \
         color_chooser_controller.h \
         common/qt_messages.h \
-        common/user_script_data.h \
         compositor/content_gpu_client_qt.h \
         compositor/display_frame_sink.h \
         compositor/display_software_output_surface.h \

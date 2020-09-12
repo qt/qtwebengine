@@ -40,6 +40,8 @@ static bool verifyOrder(QStringList orderList)
         "Deferred"
     };
 
+    if (orderList.size() != 5)
+        return false;
     if (orderList.at(4) == "load (timeout)") {
         if (orderList.at(3) != "Deferred")
             return false;
