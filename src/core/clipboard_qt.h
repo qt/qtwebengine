@@ -56,12 +56,14 @@ public:
     void ReadHTML(ui::ClipboardBuffer type, base::string16 *markup, std::string *src_url, uint32_t *fragment_start,
                   uint32_t *fragment_end) const override;
     void ReadRTF(ui::ClipboardBuffer type, std::string *result) const override;
-    SkBitmap ReadImage(ui::ClipboardBuffer type) const override;
+    void ReadImage(ui::ClipboardBuffer buffer, ReadImageCallback callback) const override;
     void ReadCustomData(ui::ClipboardBuffer clipboard_type, const base::string16 &type, base::string16 *result) const override;
     void ReadBookmark(base::string16 *title, std::string *url) const override;
     void ReadData(const ui::ClipboardFormatType &format, std::string *result) const override;
 
     void OnPreShutdown() override {}
+
+    std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(ui::ClipboardBuffer buffer) const override;
 
 protected:
     void WritePortableRepresentations(ui::ClipboardBuffer type, const ObjectMap &objects) override;

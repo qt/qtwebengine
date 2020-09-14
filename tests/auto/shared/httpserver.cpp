@@ -27,7 +27,9 @@
 ****************************************************************************/
 #include "httpserver.h"
 
+#include <QFile>
 #include <QLoggingCategory>
+#include <QMimeDatabase>
 
 Q_LOGGING_CATEGORY(gHttpServerLog, "HttpServer")
 
@@ -85,7 +87,31 @@ void HttpServer::handleNewConnection()
     auto rr = new HttpReqRep(m_tcpServer->nextPendingConnection(), this);
     connect(rr, &HttpReqRep::requestReceived, [this, rr]() {
         Q_EMIT newRequest(rr);
-        rr->close();
+        if (rr->isClosed()) // was explicitly answered
+            return;
+
+        // if request wasn't handled or purposely ignored for default behavior
+        // then try to serve htmls from resources dirs if set
+        if (rr->requestMethod() == "GET") {
+            for (auto &&dir : qAsConst(m_dirs)) {
+                QFile f(dir + rr->requestPath());
+                if (f.exists()) {
+                    if (f.open(QFile::ReadOnly)) {
+                        QMimeType mime = QMimeDatabase().mimeTypeForFileNameAndData(f.fileName(), &f);
+                        rr->setResponseHeader(QByteArrayLiteral("Content-Type"), mime.name().toUtf8());
+                        rr->setResponseBody(f.readAll());
+                        rr->sendResponse();
+                    } else {
+                        qWarning() << "Can't open resource" << f.fileName() << ": " << f.errorString();
+                        rr->sendResponse(500); // internal server error
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (!rr->isClosed())
+            rr->sendResponse(404);
     });
     connect(rr, &HttpReqRep::responseSent, [rr]() {
         qCInfo(gHttpServerLog).noquote() << rr->requestMethod() << rr->requestPath()

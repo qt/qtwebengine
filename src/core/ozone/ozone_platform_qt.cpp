@@ -73,7 +73,7 @@ public:
     ui::InputController* GetInputController() override;
     std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
     ui::OverlayManagerOzone* GetOverlayManager() override;
-    std::unique_ptr<InputMethod> CreateInputMethod(internal::InputMethodDelegate *delegate) override;
+    std::unique_ptr<InputMethod> CreateInputMethod(internal::InputMethodDelegate *delegate, gfx::AcceleratedWidget widget) override;
     std::unique_ptr<ui::PlatformScreen> CreateScreen() override { return nullptr; }
 private:
     void InitializeUI(const ui::OzonePlatform::InitParams &) override;
@@ -148,7 +148,7 @@ void OzonePlatformQt::InitializeGPU(const ui::OzonePlatform::InitParams &)
     surface_factory_ozone_.reset(new QtWebEngineCore::SurfaceFactoryQt());
 }
 
-std::unique_ptr<InputMethod> OzonePlatformQt::CreateInputMethod(internal::InputMethodDelegate *)
+std::unique_ptr<InputMethod> OzonePlatformQt::CreateInputMethod(internal::InputMethodDelegate *, gfx::AcceleratedWidget)
 {
     NOTREACHED();
     return nullptr;

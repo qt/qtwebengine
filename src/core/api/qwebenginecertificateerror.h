@@ -84,6 +84,7 @@ public:
         CertificateTransparencyRequired = -214,
         CertificateSymantecLegacy = -215,
         CertificateKnownInterceptionBlocked = -217,
+        SslObsoleteVersion = -218,
     };
     Q_ENUM(Type)
 

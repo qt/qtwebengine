@@ -58,7 +58,7 @@ public:
 protected:
     // Returns native platform display handle. This is used to obtain the EGL
     // display connection for the native display.
-    intptr_t GetNativeDisplay() override;
+    gl::EGLDisplayPlatform GetNativeDisplay() override;
 
     // Sets up GL bindings for the native surface.
     bool LoadGLES2Bindings(gl::GLImplementation implementation) override;

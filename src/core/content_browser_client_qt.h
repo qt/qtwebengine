@@ -88,9 +88,6 @@ public:
     gl::GLShareGroup* GetInProcessGpuShareGroup() override;
     content::MediaObserver* GetMediaObserver() override;
     scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext() override;
-    void GetQuotaSettings(content::BrowserContext *context,
-                          content::StoragePartition *partition,
-                          base::OnceCallback<void(base::Optional<storage::QuotaSettings>)> callback) override;
     void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) override;
     void AllowCertificateError(content::WebContents *web_contents,
                                int cert_error,
@@ -124,6 +121,9 @@ public:
                                                  service_manager::BinderMapWithContext<content::RenderFrameHost *> *map) override;
     void RunServiceInstance(const service_manager::Identity &identity,
                             mojo::PendingReceiver<service_manager::mojom::Service> *receiver) override;
+    void ExposeInterfacesToRenderer(service_manager::BinderRegistry *registry,
+                                    blink::AssociatedInterfaceRegistry *associated_registry,
+                                    content::RenderProcessHost *render_process_host) override;
 
     std::vector<service_manager::Manifest> GetExtraServiceManifests() override;
     base::Optional<service_manager::Manifest> GetServiceManifestOverlay(base::StringPiece name) override;
@@ -146,7 +146,7 @@ public:
             network::mojom::RestrictedCookieManagerRole role,
             content::BrowserContext *browser_context,
             const url::Origin &origin,
-            const GURL &site_for_cookies,
+            const net::SiteForCookies &site_for_cookies,
             const url::Origin &top_frame_origin,
             bool is_service_worker,
             int process_id,
@@ -190,7 +190,10 @@ public:
     bool ShouldUseSpareRenderProcessHost(content::BrowserContext *browser_context, const GURL& site_url) override;
     bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(base::StringPiece scheme,
                                                       bool is_embedded_origin_secure) override;
-
+    void OverrideURLLoaderFactoryParams(content::BrowserContext *browser_context,
+                                        const url::Origin &origin,
+                                        bool is_for_isolated_world,
+                                        network::mojom::URLLoaderFactoryParams *factory_params) override;
 #if defined(Q_OS_LINUX)
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;
 #endif
@@ -239,6 +242,7 @@ public:
                                     mojo::PendingReceiver<network::mojom::URLLoaderFactory> *factory_receiver,
                                     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
                                     bool *bypass_redirect_checks,
+                                    bool *disable_secure_dns,
                                     network::mojom::URLLoaderFactoryOverridePtr *factory_override) override;
     scoped_refptr<network::SharedURLLoaderFactory> GetSystemSharedURLLoaderFactory() override;
     network::mojom::NetworkContext *GetSystemNetworkContext() override;

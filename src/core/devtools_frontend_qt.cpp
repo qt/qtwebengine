@@ -86,10 +86,21 @@ using namespace QtWebEngineCore;
 
 namespace {
 
-std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(const net::HttpResponseHeaders *rh)
+std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(const net::HttpResponseHeaders *rh,
+                                                              bool success,
+                                                              int net_error)
 {
     auto response = std::make_unique<base::DictionaryValue>();
-    response->SetInteger("statusCode", rh ? rh->response_code() : 200);
+    int responseCode = 200;
+    if (rh) {
+        responseCode = rh->response_code();
+    } else if (!success) {
+        // In case of no headers, assume file:// URL and failed to load
+        responseCode = 404;
+    }
+    response->SetInteger("statusCode", responseCode);
+    response->SetInteger("netError", net_error);
+    response->SetString("netErrorName", net::ErrorToString(net_error));
 
     auto headers = std::make_unique<base::DictionaryValue>();
     size_t iterator = 0;
@@ -159,8 +170,7 @@ private:
 
     void OnComplete(bool success) override
     {
-        Q_UNUSED(success);
-        auto response = BuildObjectForResponse(response_headers_.get());
+        auto response = BuildObjectForResponse(response_headers_.get(), success, loader_->NetError());
         bindings_->SendMessageAck(request_id_, response.get());
         bindings_->m_loaders.erase(bindings_->m_loaders.find(this));
     }
@@ -377,7 +387,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
         std::string protocol_message;
         if (!params->GetString(0, &protocol_message))
             return;
-        m_agentHost->DispatchProtocolMessage(this, protocol_message);
+        m_agentHost->DispatchProtocolMessage(this, base::as_bytes(base::make_span(protocol_message)));
     } else if (method == "loadCompleted") {
         web_contents()->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"),
                                                           base::NullCallback());
@@ -393,6 +403,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
         if (!gurl.is_valid()) {
             base::DictionaryValue response;
             response.SetInteger("statusCode", 404);
+            response.SetBoolean("urlValid", false);
             SendMessageAck(request_id, &response);
             return;
         }
@@ -426,7 +437,7 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
         resource_request->url = gurl;
         // TODO(caseq): this preserves behavior of URLFetcher-based implementation.
         // We really need to pass proper first party origin from the front-end.
-        resource_request->site_for_cookies = gurl;
+        resource_request->site_for_cookies = net::SiteForCookies::FromUrl(gurl);
         resource_request->headers.AddHeadersFromString(headers);
 
         std::unique_ptr<network::mojom::URLLoaderFactory> file_url_loader_factory;
@@ -476,6 +487,22 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
     } else if (method == "reattach") {
         m_agentHost->DetachClient(this);
         m_agentHost->AttachClient(this);
+    } else if (method == "inspectedURLChanged" && params && params->GetSize() >= 1) {
+        std::string url;
+        if (!params->GetString(0, &url))
+            return;
+        const std::string kHttpPrefix = "http://";
+        const std::string kHttpsPrefix = "https://";
+        const std::string simplified_url =
+            base::StartsWith(url, kHttpsPrefix, base::CompareCase::SENSITIVE)
+                ? url.substr(kHttpsPrefix.length())
+                : base::StartsWith(url, kHttpPrefix, base::CompareCase::SENSITIVE)
+                      ? url.substr(kHttpPrefix.length())
+                      : url;
+        // DevTools UI is not localized.
+        web_contents()->UpdateTitleForEntry(web_contents()->GetController().GetActiveEntry(),
+                                            base::UTF8ToUTF16(
+                                                base::StringPrintf("DevTools - %s", simplified_url.c_str())));
     } else if (method == "openInNewTab") {
         std::string urlString;
         if (!params->GetString(0, &urlString))
@@ -509,22 +536,23 @@ void DevToolsFrontendQt::HandleMessageFromDevToolsFrontend(const std::string &me
         SendMessageAck(request_id, nullptr);
 }
 
-void DevToolsFrontendQt::DispatchProtocolMessage(content::DevToolsAgentHost *agentHost, const std::string &message)
+void DevToolsFrontendQt::DispatchProtocolMessage(content::DevToolsAgentHost *agentHost, base::span<const uint8_t> message)
 {
     Q_UNUSED(agentHost);
-    if (message.length() < kMaxMessageChunkSize) {
+    base::StringPiece message_sp(reinterpret_cast<const char*>(message.data()), message.size());
+    if (message_sp.length() < kMaxMessageChunkSize) {
         std::string param;
-        base::EscapeJSONString(message, true, &param);
+        base::EscapeJSONString(message_sp, true, &param);
         std::string code = "DevToolsAPI.dispatchMessage(" + param + ");";
         base::string16 javascript = base::UTF8ToUTF16(code);
         web_contents()->GetMainFrame()->ExecuteJavaScript(javascript, base::NullCallback());
         return;
     }
 
-    size_t total_size = message.length();
-    for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
+    size_t total_size = message_sp.length();
+    for (size_t pos = 0; pos < message_sp.length(); pos += kMaxMessageChunkSize) {
         std::string param;
-        base::EscapeJSONString(message.substr(pos, kMaxMessageChunkSize), true, &param);
+        base::EscapeJSONString(message_sp.substr(pos, kMaxMessageChunkSize), true, &param);
         std::string code = "DevToolsAPI.dispatchMessageChunk(" + param + ","
                          + std::to_string(pos ? 0 : total_size) + ");";
         base::string16 javascript = base::UTF8ToUTF16(code);

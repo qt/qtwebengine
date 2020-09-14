@@ -64,14 +64,12 @@
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extensions_browser_interface_binders.h"
-#include "extensions/browser/mojo/interface_registration.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/file_util.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/mime_util.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -169,7 +167,7 @@ public:
     void ResumeReadingBodyFromNet() override {}
 
 private:
-    ResourceBundleFileLoader(const std::string &content_security_policy, bool send_cors_header) : binding_(this)
+    ResourceBundleFileLoader(const std::string &content_security_policy, bool send_cors_header)
     {
         response_headers_ = extensions::BuildHttpHeaders(content_security_policy, send_cors_header, base::Time());
     }
@@ -181,11 +179,11 @@ private:
                const base::FilePath &filename, int resource_id)
     {
         client_.Bind(std::move(client_info_remote));
-        binding_.Bind(std::move(loader));
-        binding_.set_connection_error_handler(
-                base::BindOnce(&ResourceBundleFileLoader::OnBindingError, base::Unretained(this)));
-        client_.set_connection_error_handler(
-                base::BindOnce(&ResourceBundleFileLoader::OnConnectionError, base::Unretained(this)));
+        receiver_.Bind(std::move(loader));
+        receiver_.set_disconnect_handler(base::BindOnce(
+                &ResourceBundleFileLoader::OnReceiverError, base::Unretained(this)));
+        client_.set_disconnect_handler(base::BindOnce(
+                &ResourceBundleFileLoader::OnMojoDisconnect, base::Unretained(this)));
         auto data = GetResource(resource_id, request.url.host());
 
         std::string *read_mime_type = new std::string;
@@ -198,12 +196,12 @@ private:
 
     void OnMimeTypeRead(scoped_refptr<base::RefCountedMemory> data, std::string *read_mime_type, bool read_result)
     {
-        network::ResourceResponseHead head;
-        head.request_start = base::TimeTicks::Now();
-        head.response_start = base::TimeTicks::Now();
-        head.content_length = data->size();
-        head.mime_type = *read_mime_type;
-        DetermineCharset(head.mime_type, data.get(), &head.charset);
+        auto head = network::mojom::URLResponseHead::New();
+        head->request_start = base::TimeTicks::Now();
+        head->response_start = base::TimeTicks::Now();
+        head->content_length = data->size();
+        head->mime_type = *read_mime_type;
+        DetermineCharset(head->mime_type, data.get(), &head->charset);
         mojo::DataPipe pipe(data->size());
         if (!pipe.consumer_handle.is_valid()) {
             client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
@@ -211,14 +209,14 @@ private:
             MaybeDeleteSelf();
             return;
         }
-        head.headers = response_headers_;
-        head.headers->AddHeader(base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentLength,
-                                                   base::NumberToString(head.content_length).c_str()));
-        if (!head.mime_type.empty()) {
-            head.headers->AddHeader(
-                    base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType, head.mime_type.c_str()));
+        head->headers = response_headers_;
+        head->headers->AddHeader(base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentLength,
+                                                   base::NumberToString(head->content_length).c_str()));
+        if (!head->mime_type.empty()) {
+            head->headers->AddHeader(
+                    base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType, head->mime_type.c_str()));
         }
-        client_->OnReceiveResponse(head);
+        client_->OnReceiveResponse(std::move(head));
         client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
 
         uint32_t write_size = data->size();
@@ -226,21 +224,21 @@ private:
         OnFileWritten(result);
     }
 
-    void OnConnectionError()
+    void OnMojoDisconnect()
     {
         client_.reset();
         MaybeDeleteSelf();
     }
 
-    void OnBindingError()
+    void OnReceiverError()
     {
-        binding_.Close();
+        receiver_.reset();
         MaybeDeleteSelf();
     }
 
     void MaybeDeleteSelf()
     {
-        if (!binding_.is_bound() && !client_.is_bound())
+        if (!receiver_.is_bound() && !client_.is_bound())
             delete this;
     }
 
@@ -256,10 +254,10 @@ private:
         MaybeDeleteSelf();
     }
 
-    mojo::Binding<network::mojom::URLLoader> binding_;
-    network::mojom::URLLoaderClientPtr client_;
+    mojo::Receiver<network::mojom::URLLoader> receiver_{this};
+    mojo::Remote<network::mojom::URLLoaderClient> client_;
     scoped_refptr<net::HttpResponseHeaders> response_headers_;
-    base::WeakPtrFactory<ResourceBundleFileLoader> weak_factory_{ this };
+    base::WeakPtrFactory<ResourceBundleFileLoader> weak_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(ResourceBundleFileLoader);
 };
@@ -379,7 +377,7 @@ void ExtensionsBrowserClientQt::LoadResourceFromResourceBundle(const network::Re
 
 
 bool ExtensionsBrowserClientQt::AllowCrossRendererResourceLoad(const GURL &url,
-                                                               content::ResourceType resource_type,
+                                                               blink::mojom::ResourceType resource_type,
                                                                ui::PageTransition page_transition,
                                                                int child_id,
                                                                bool is_incognito,
@@ -447,13 +445,6 @@ bool ExtensionsBrowserClientQt::IsLoggedInAsPublicAccount()
 ExtensionSystemProvider *ExtensionsBrowserClientQt::GetExtensionSystemFactory()
 {
     return ExtensionSystemFactoryQt::GetInstance();
-}
-
-void ExtensionsBrowserClientQt::RegisterExtensionInterfaces(service_manager::BinderRegistryWithArgs<content::RenderFrameHost *> *registry,
-                                                            content::RenderFrameHost *render_frame_host,
-                                                            const Extension *extension) const
-{
-    RegisterInterfacesForExtension(registry, render_frame_host, extension);
 }
 
 void ExtensionsBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(

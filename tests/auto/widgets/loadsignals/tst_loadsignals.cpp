@@ -28,6 +28,7 @@
 
 #include <QtTest/QtTest>
 
+#include "httpserver.h"
 #include "../util.h"
 #include "qdebug.h"
 #include "qwebenginepage.h"
@@ -133,18 +134,25 @@ void tst_LoadSignals::loadStartedAndFinishedCount()
   */
 void tst_LoadSignals::monotonicity()
 {
-    view->load(QUrl("qrc:///resources/page1.html"));
+    HttpServer server;
+    server.setResourceDirs({ TESTS_SHARED_DATA_DIR });
+    connect(&server, &HttpServer::newRequest, [] (HttpReqRep *) {
+         QTest::qWait(250); // just add delay to trigger some progress for every sub resource
+    });
+    QVERIFY(server.start());
+
+    view->load(server.url("/loadprogress/main.html"));
     QTRY_COMPARE(loadFinishedSpy->size(), 1);
     bool loadSucceeded = (*loadFinishedSpy)[0][0].toBool();
     QVERIFY(loadSucceeded);
 
     // first loadProgress should have 0% progress
-    QCOMPARE(loadProgressSpy->first()[0].toInt(), 0);
+    QCOMPARE(loadProgressSpy->takeFirst()[0].toInt(), 0);
 
-    // every loadProgress should have at least as much progress as the one before
+    // every loadProgress should have more progress than the one before
     int progress = 0;
     for (auto item : *loadProgressSpy) {
-        QVERIFY(item[0].toInt() >= progress);
+        QVERIFY(progress < item[0].toInt());
         progress = item[0].toInt();
     }
 

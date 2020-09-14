@@ -158,10 +158,10 @@ public:
     void DidStartLoading() override;
     void DidReceiveResponse() override;
     void DidStopLoading() override;
-    void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description) override;
+    void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
     void BeforeUnloadFired(bool proceed, const base::TimeTicks& proceed_time) override;
-    void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) override;
+    void DidUpdateFaviconURL(const std::vector<blink::mojom::FaviconURLPtr> &candidates) override;
     void OnVisibilityChanged(content::Visibility visibility) override;
     void DidFirstVisuallyNonEmptyPaint() override;
     void ActivateContents(content::WebContents* contents) override;

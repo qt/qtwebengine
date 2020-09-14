@@ -55,6 +55,7 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "net/grit/net_resources.h"
 #include "net/base/net_module.h"
+#include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "url/url_util_qt.h"
 
@@ -177,7 +178,7 @@ void ContentMainDelegateQt::PreSandboxStartup()
 #endif
 
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
-    ui::ResourceBundle::InitSharedInstanceWithLocale(WebEngineLibraryInfo::getApplicationLocale(), 0, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+    ui::ResourceBundle::InitSharedInstanceWithLocale(WebEngineLibraryInfo::getApplicationLocale(), nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
     base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
     logging::LoggingSettings settings;
@@ -229,6 +230,16 @@ void ContentMainDelegateQt::PreSandboxStartup()
         media::AudioManager::SetGlobalAppName(appName);
 #endif
     }
+}
+
+void ContentMainDelegateQt::PostEarlyInitialization(bool)
+{
+    PostFieldTrialInitialization();
+}
+
+content::ContentClient *ContentMainDelegateQt::CreateContentClient()
+{
+    return &m_contentClient;
 }
 
 content::ContentBrowserClient *ContentMainDelegateQt::CreateContentBrowserClient()
@@ -295,8 +306,6 @@ bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
 #if QT_CONFIG(webengine_spellchecker)
     SafeOverridePath(base::DIR_APP_DICTIONARIES, WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES));
 #endif
-    if (!content::GetContentClient())
-        content::SetContentClient(new ContentClientQt);
 
     url::CustomScheme::LoadSchemes(base::CommandLine::ForCurrentProcess());
 

@@ -61,9 +61,9 @@ static ProfileAdapter::PermissionType toQt(content::PermissionType type)
         return ProfileAdapter::AudioCapturePermission;
     case content::PermissionType::VIDEO_CAPTURE:
         return ProfileAdapter::VideoCapturePermission;
-    case content::PermissionType::CLIPBOARD_READ:
+    case content::PermissionType::CLIPBOARD_READ_WRITE:
         return ProfileAdapter::ClipboardRead;
-    case content::PermissionType::CLIPBOARD_WRITE:
+    case content::PermissionType::CLIPBOARD_SANITIZED_WRITE:
         return ProfileAdapter::ClipboardWrite;
     case content::PermissionType::NOTIFICATIONS:
         return ProfileAdapter::NotificationPermission;
@@ -83,8 +83,11 @@ static ProfileAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::WAKE_LOCK_SCREEN:
     case content::PermissionType::WAKE_LOCK_SYSTEM:
     case content::PermissionType::NFC:
+    case content::PermissionType::AR:
+    case content::PermissionType::VR:
+    case content::PermissionType::STORAGE_ACCESS_GRANT:
     case content::PermissionType::NUM:
-        NOTIMPLEMENTED() << "Unsupported permission type: " << static_cast<int>(type);
+        LOG(INFO) << "Unsupported permission type: " << static_cast<int>(type);
         break;
     }
     return ProfileAdapter::UnsupportedPermission;
@@ -302,14 +305,14 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForFrame(
         content::RenderFrameHost *render_frame_host,
         const GURL &requesting_origin)
 {
-    if (permission == content::PermissionType::CLIPBOARD_READ ||
-            permission == content::PermissionType::CLIPBOARD_WRITE) {
+    if (permission == content::PermissionType::CLIPBOARD_READ_WRITE ||
+            permission == content::PermissionType::CLIPBOARD_SANITIZED_WRITE) {
         WebContentsDelegateQt *delegate = static_cast<WebContentsDelegateQt *>(
                 content::WebContents::FromRenderFrameHost(render_frame_host)->GetDelegate());
         if (!delegate->webEngineSettings()->testAttribute(
                     QWebEngineSettings::JavascriptCanAccessClipboard))
             return blink::mojom::PermissionStatus::DENIED;
-        if (permission == content::PermissionType::CLIPBOARD_READ
+        if (permission == content::PermissionType::CLIPBOARD_READ_WRITE
             && !delegate->webEngineSettings()->testAttribute(
                     QWebEngineSettings::JavascriptCanPaste))
             return blink::mojom::PermissionStatus::DENIED;

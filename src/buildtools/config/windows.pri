@@ -7,7 +7,8 @@ gn_args += \
     is_multi_dll_chrome=false \
     win_linker_timing=true \
     com_init_check_hook_disabled=true \
-    heterogeneous_executables=true
+    heterogeneous_executables=true \
+    enable_vr=false
 
 clang_cl {
     clang_full_path = $$system_path($$which($${QMAKE_CXX}))
@@ -24,9 +25,6 @@ clang_cl {
 }
 
 qtConfig(webengine-developer-build) {
-    gn_args += \
-        is_win_fastlink=true
-
     # Incremental linking doesn't work in release developer builds due to usage of /OPT:ICF
     # by Chromium.
     CONFIG(debug, debug|release) {
@@ -38,7 +36,6 @@ qtConfig(webengine-developer-build) {
     }
 } else {
     gn_args += \
-        is_win_fastlink=false \
         use_incremental_linking=false
 }
 

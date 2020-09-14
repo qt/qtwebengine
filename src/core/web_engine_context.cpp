@@ -44,6 +44,8 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
@@ -94,6 +96,7 @@
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/blink/public/common/features.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 #include "ui/gl/gl_switches.h"
@@ -436,12 +439,12 @@ void WebEngineContext::destroy()
     // task runner is not working anymore so we need to do this earlier.
     cleanupVizProcess();
     while (waitForViz) {
-        while (delegate->DoWork()){}
+        while (delegate->DoWork().is_immediate()) { }
         QThread::msleep(50);
     }
     destroyGpuProcess();
     // Flush the UI message loop before quitting.
-    while (delegate->DoWork()) { }
+    while (delegate->DoWork().is_immediate()) { }
 
 #if QT_CONFIG(webengine_printing_and_pdf)
     // Kill print job manager early as it has a content::NotificationRegistrar
@@ -463,7 +466,7 @@ void WebEngineContext::destroy()
 
     // Handle any events posted by browser-context shutdown.
     // This should deliver all nessesery calls of DeleteSoon from PostTask
-    while (delegate->DoWork()) { }
+    while (delegate->DoWork().is_immediate()) { }
 
     m_devtoolsServer.reset();
     m_runLoop->AfterRun();
@@ -696,6 +699,9 @@ WebEngineContext::WebEngineContext()
     appendToFeatureList(disableFeatures, features::kWebUsb.name);
     appendToFeatureList(disableFeatures, media::kPictureInPicture.name);
 
+    // Breaks current colordialog tests.
+    appendToFeatureList(disableFeatures, features::kFormControlsRefresh.name);
+
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         appendToFeatureList(enableFeatures, features::kOverlayScrollbar.name);
@@ -755,8 +761,6 @@ WebEngineContext::WebEngineContext()
 
     registerMainThreadFactories();
 
-    SetContentClient(new ContentClientQt);
-
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
 #if defined(OS_WIN)
     contentMainParams.sandbox_info = staticSandboxInterfaceInfo();
@@ -781,6 +785,7 @@ WebEngineContext::WebEngineContext()
     content::BrowserTaskExecutor::PostFeatureListSetup();
     tracing::InitTracingPostThreadPoolStartAndFeatureList();
     m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+    base::PowerMonitor::Initialize(std::make_unique<base::PowerMonitorDeviceSource>());
     m_serviceManagerEnvironment = std::make_unique<content::ServiceManagerEnvironment>(content::BrowserTaskExecutor::CreateIOThread());
     m_startupData = m_serviceManagerEnvironment->CreateBrowserStartupData();
 

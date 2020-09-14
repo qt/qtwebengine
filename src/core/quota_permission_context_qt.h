@@ -50,9 +50,9 @@ class QuotaPermissionContextQt : public content::QuotaPermissionContext {
 public:
     void RequestQuotaPermission(const content::StorageQuotaParams &params,
                                 int render_process_id,
-                                const PermissionCallback &callback) override;
+                                PermissionCallback callback) override;
 
-    void dispatchCallbackOnIOThread(const PermissionCallback &callback,
+    void dispatchCallbackOnIOThread(PermissionCallback callback,
                                     QuotaPermissionContext::QuotaPermissionResponse response);
 };
 

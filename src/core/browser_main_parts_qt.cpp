@@ -48,6 +48,11 @@
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#include "components/performance_manager/embedder/performance_manager_lifetime.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
+#include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -199,19 +204,15 @@ private:
     {
         ScopedGLContextChecker glContextChecker;
 
-        bool more_work_is_plausible = m_delegate->DoWork();
+        base::MessagePump::Delegate::NextWorkInfo more_work_info = m_delegate->DoWork();
 
-        base::TimeTicks delayed_work_time;
-        more_work_is_plausible |= m_delegate->DoDelayedWork(&delayed_work_time);
-
-        if (more_work_is_plausible)
+        if (more_work_info.is_immediate())
             return ScheduleWork();
 
-        more_work_is_plausible |= m_delegate->DoIdleWork();
-        if (more_work_is_plausible)
+        if (m_delegate->DoIdleWork())
             return ScheduleWork();
 
-        ScheduleDelayedWork(delayed_work_time);
+        ScheduleDelayedWork(more_work_info.delayed_run_time);
     }
 
     Delegate *m_delegate = nullptr;
@@ -255,6 +256,10 @@ void BrowserMainPartsQt::PreMainMessageLoopRun()
 
 void BrowserMainPartsQt::PostMainMessageLoopRun()
 {
+    performance_manager_registry_->TearDown();
+    performance_manager_registry_.reset();
+    performance_manager::DestroyPerformanceManager(std::move(performance_manager_));
+
     // The ProfileQt's destructor uses the MessageLoop so it should be deleted
     // right before the RenderProcessHostImpl's destructor destroys it.
     WebEngineContext::current()->destroyProfileAdapter();
@@ -277,8 +282,17 @@ int BrowserMainPartsQt::PreCreateThreads()
     return 0;
 }
 
+static void CreatePoliciesAndDecorators(performance_manager::Graph *graph)
+{
+    graph->PassToGraph(FormInteractionTabHelper::CreateGraphObserver());
+}
+
 void BrowserMainPartsQt::PostCreateThreads()
 {
+    performance_manager_ =
+          performance_manager::CreatePerformanceManagerWithDefaultDecorators(
+              base::BindOnce(&QtWebEngineCore::CreatePoliciesAndDecorators));
+    performance_manager_registry_ = performance_manager::PerformanceManagerRegistry::Create();
 }
 
 } // namespace QtWebEngineCore

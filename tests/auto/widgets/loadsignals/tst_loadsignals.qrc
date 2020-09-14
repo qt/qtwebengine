@@ -1,9 +1,9 @@
 <RCC>
-    <qresource prefix="/">
-        <file>resources/page1.html</file>
-        <file>resources/page2.html</file>
-        <file>resources/page3.html</file>
-        <file>resources/page4.html</file>
-        <file>resources/downloadable.tar.gz</file>
+    <qresource prefix="/resources">
+        <file alias="page1.html">../../shared/data/loadprogress/page1.html</file>
+        <file alias="page2.html">../../shared/data/loadprogress/page2.html</file>
+        <file alias="page3.html">../../shared/data/loadprogress/page3.html</file>
+        <file alias="page4.html">../../shared/data/loadprogress/page4.html</file>
+        <file alias="downloadable.tar.gz">../../shared/data/loadprogress/downloadable.tar.gz</file>
     </qresource>
 </RCC>

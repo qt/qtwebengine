@@ -45,7 +45,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -73,11 +72,33 @@
 
 namespace QtWebEngineCore {
 
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeMainFrame, blink::mojom::ResourceType::kMainFrame)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeSubFrame, blink::mojom::ResourceType::kSubFrame)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeStylesheet, blink::mojom::ResourceType::kStylesheet)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeScript, blink::mojom::ResourceType::kScript)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeImage, blink::mojom::ResourceType::kImage)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeFontResource, blink::mojom::ResourceType::kFontResource)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeSubResource, blink::mojom::ResourceType::kSubResource)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeObject, blink::mojom::ResourceType::kObject)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeMedia, blink::mojom::ResourceType::kMedia)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeWorker, blink::mojom::ResourceType::kWorker)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeSharedWorker, blink::mojom::ResourceType::kSharedWorker)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePrefetch, blink::mojom::ResourceType::kPrefetch)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeFavicon, blink::mojom::ResourceType::kFavicon)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeXhr, blink::mojom::ResourceType::kXhr)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePing, blink::mojom::ResourceType::kPing)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker, blink::mojom::ResourceType::kServiceWorker)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeCspReport, blink::mojom::ResourceType::kCspReport)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePluginResource, blink::mojom::ResourceType::kPluginResource)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadMainFrame, blink::mojom::ResourceType::kNavigationPreloadMainFrame)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeNavigationPreloadSubFrame, blink::mojom::ResourceType::kNavigationPreloadSubFrame)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeLast, blink::mojom::ResourceType::kMaxValue)
+
 extern WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition);
 
-static QWebEngineUrlRequestInfo::ResourceType toQt(content::ResourceType resourceType)
+static QWebEngineUrlRequestInfo::ResourceType toQt(blink::mojom::ResourceType resourceType)
 {
-    if (resourceType >= content::ResourceType::kMainFrame && resourceType <= content::ResourceType::kMaxValue)
+    if (resourceType >= blink::mojom::ResourceType::kMinValue && resourceType <= blink::mojom::ResourceType::kMaxValue)
         return static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType);
     return QWebEngineUrlRequestInfo::ResourceTypeUnknown;
 }
@@ -151,7 +172,7 @@ private:
     // error didn't occur.
     int error_status_ = net::OK;
     network::ResourceRequest request_;
-    network::ResourceResponseHead current_response_;
+    network::mojom::URLResponseHeadPtr current_response_;
 
     const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
@@ -189,6 +210,7 @@ InterceptedRequest::InterceptedRequest(int process_id, uint64_t request_id, int3
     , target_factory_(std::move(target_factory))
     , weak_factory_(this)
 {
+    current_response_ = network::mojom::URLResponseHead::New();
     // If there is a client error, clean up the request.
     target_client_.set_disconnect_handler(
             base::BindOnce(&InterceptedRequest::OnURLLoaderClientError, weak_factory_.GetWeakPtr()));
@@ -204,7 +226,7 @@ InterceptedRequest::~InterceptedRequest()
 void InterceptedRequest::Restart()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    content::ResourceType resourceType = content::ResourceType(request_.resource_type);
+    blink::mojom::ResourceType resourceType = blink::mojom::ResourceType(request_.resource_type);
     WebContentsAdapterClient::NavigationType navigationType =
             pageTransitionToNavigationType(ui::PageTransition(request_.transition_type));
 
@@ -219,12 +241,12 @@ void InterceptedRequest::Restart()
         webContents = content::WebContents::FromFrameTreeNodeId(request_.render_frame_id);
     }
 
-    GURL top_document_url = webContents ? webContents->GetLastCommittedURL() : GURL();
+    GURL top_document_url = webContents ? webContents->GetVisibleURL() : GURL();
     QUrl firstPartyUrl;
     if (!top_document_url.is_empty())
         firstPartyUrl = toQt(top_document_url);
     else
-        firstPartyUrl = toQt(request_.site_for_cookies); // m_topDocumentUrl can be empty for the main-frame.
+        firstPartyUrl = toQt(request_.site_for_cookies.RepresentativeUrl()); // m_topDocumentUrl can be empty for the main-frame.
 
     QWebEngineUrlRequestInfoPrivate *infoPrivate =
             new QWebEngineUrlRequestInfoPrivate(toQt(resourceType), toQt(navigationType), originalUrl, firstPartyUrl,
@@ -258,7 +280,7 @@ void InterceptedRequest::InterceptOnIOThread(base::WaitableEvent *event)
 void InterceptedRequest::InterceptOnUIThread()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (profile_request_interceptor_)
+    if (profile_request_interceptor_ && !profile_request_interceptor_->property("deprecated").toBool())
         profile_request_interceptor_->interceptRequest(request_info_);
 
     if (!request_info_.changed() && page_request_interceptor_)
@@ -283,7 +305,7 @@ void InterceptedRequest::ContinueAfterIntercept()
                     false /*insecure_scheme_was_upgraded*/);
 
             // FIXME: Should probably create a new header.
-            current_response_.encoded_data_length = 0;
+            current_response_->encoded_data_length = 0;
             request_.method = redirectInfo.new_method;
             request_.url = redirectInfo.new_url;
             request_.site_for_cookies = redirectInfo.new_site_for_cookies;
@@ -291,7 +313,7 @@ void InterceptedRequest::ContinueAfterIntercept()
             request_.referrer_policy = redirectInfo.new_referrer_policy;
             if (request_.method == net::HttpRequestHeaders::kGetMethod)
                 request_.request_body = nullptr;
-            target_client_->OnReceiveRedirect(redirectInfo, current_response_);
+            target_client_->OnReceiveRedirect(redirectInfo, std::move(current_response_));
             return;
         }
 
@@ -319,7 +341,7 @@ void InterceptedRequest::ContinueAfterIntercept()
 
 void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr head)
 {
-    current_response_ = head;
+    current_response_ = head.Clone();
 
     target_client_->OnReceiveResponse(std::move(head));
 }
@@ -328,7 +350,7 @@ void InterceptedRequest::OnReceiveRedirect(const net::RedirectInfo &redirect_inf
 {
     // TODO(timvolodine): handle redirect override.
     request_was_redirected_ = true;
-    current_response_ = head;
+    current_response_ = head.Clone();
     target_client_->OnReceiveRedirect(redirect_info, std::move(head));
     request_.url = redirect_info.new_url;
     request_.method = redirect_info.new_method;

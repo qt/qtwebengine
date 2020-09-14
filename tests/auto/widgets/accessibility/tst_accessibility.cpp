@@ -361,7 +361,6 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kTextFieldWithComboBox") << QString("<input role='combobox'>") << 1 << QAccessible::ComboBox;
     QTest::newRow("ax::mojom::Role::kComplementary") << QString("<aside>a</aside>") << 0 << QAccessible::ComplementaryContent;
     QTest::newRow("ax::mojom::Role::kComment") << QString("<div role='comment'></div>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kCommenSection") << QString("<div role='commentsection'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kContentDeletion") << QString("<div role='deletion'></div>") << 0 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::kContentInsertion") << QString("<div role='insertion'></div>") << 0 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::kContentInfo") << QString("<div role='contentinfo'></div>") << 0 << QAccessible::Section;
@@ -480,7 +479,6 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kRadioButton") << QString("<input type='radio'></input>") << 1 << QAccessible::RadioButton;
     QTest::newRow("ax::mojom::Role::kRadioGroup") << QString("<fieldset role='radiogroup'></fieldset>") << 0 << QAccessible::Grouping;
     QTest::newRow("ax::mojom::Role::kRegion") << QString("<div role='region'>a</div>") << 0 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kRevision") << QString("<div role='revision'></div>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kRow") << QString("<table role=table><tr><td>a</td></tr></table>") << 1 << QAccessible::Row;
     QTest::newRow("ax::mojom::Role::kRowGroup") << QString("<table role=table><tbody role=rowgroup><tr><td>a</td></tr></tbody></table>") << 1 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kRowHeader") << QString("<table role=table><tr><th>a</td><td>b</td></tr></table>") << 2 << QAccessible::RowHeader;

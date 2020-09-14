@@ -5,7 +5,7 @@ QT_FOR_CONFIG += buildtools-private webenginecore webenginecore-private
 
 gn_args += \
     use_qt=true \
-    closure_compile=false \
+    init_stack_vars=false \
     is_component_build=false \
     is_shared=true \
     enable_debugallocation=false \
@@ -20,17 +20,27 @@ gn_args += \
     enable_web_auth=true \
     enable_web_speech=false \
     enable_widevine=true \
+    forbid_non_component_debug_builds=false \
     has_native_accessibility=false \
-    optimize_webui=false \
     safe_browsing_mode=0 \
-    strip_absolute_paths_from_debug_symbols=false \
     toolkit_views=false \
     treat_warnings_as_errors=false \
     use_allocator_shim=false \
     use_allocator=\"none\" \
-    use_custom_libcxx=false \
-    v8_use_external_startup_data=false \
-    forbid_non_component_debug_builds=false
+    use_custom_libcxx=false
+
+# No closure compile supported at this time
+gn_args += \
+    closure_compile=false \
+    optimize_webui=false
+
+# We always embed v8 startup data currently
+gn_args += \
+    v8_use_external_startup_data=false
+
+# Uses special flags for clang not available on xcode, and messes up gdb debugging too.
+gn_args += \
+    strip_absolute_paths_from_debug_symbols=false
 
 greaterThan(QMAKE_JUMBO_MERGE_LIMIT,0) {
     gn_args += \
@@ -53,6 +63,8 @@ CONFIG(release, debug|release):!qtConfig(webengine-developer-build) {
 } else {
     gn_args += is_official_build=false
     !qtConfig(webengine-developer-build): gn_args += is_unsafe_developer_build=false
+    # Just doesn't work in many configurations:
+    gn_args += from_here_uses_location_builtins=false
 }
 
 CONFIG(release, debug|release) {

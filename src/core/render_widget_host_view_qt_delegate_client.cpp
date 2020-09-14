@@ -770,6 +770,7 @@ void RenderWidgetHostViewQtDelegateClient::handleInputMethodEvent(QInputMethodEv
 
             underlines.push_back(ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, start, end,
                                                  ui::ImeTextSpan::Thickness::kThin,
+                                                 ui::ImeTextSpan::UnderlineStyle::kSolid,
                                                  SK_ColorTRANSPARENT));
 
             QTextCharFormat format = qvariant_cast<QTextFormat>(attribute.value).toCharFormat();

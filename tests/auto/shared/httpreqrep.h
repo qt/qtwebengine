@@ -40,8 +40,9 @@ class HttpReqRep : public QObject
 public:
     explicit HttpReqRep(QTcpSocket *socket, QObject *parent = nullptr);
 
-    Q_INVOKABLE void sendResponse();
+    Q_INVOKABLE void sendResponse(int statusCode = 200);
     void close();
+    bool isClosed() const { return m_state == State::DISCONNECTED; }
 
     // Request parameters (only valid after requestReceived())
 
@@ -99,7 +100,7 @@ private:
     QByteArray m_requestMethod;
     QByteArray m_requestPath;
     std::map<QByteArray, QByteArray> m_requestHeaders;
-    int m_responseStatusCode = 200;
+    int m_responseStatusCode = -1;
     std::map<QByteArray, QByteArray> m_responseHeaders;
     QByteArray m_responseBody;
 };

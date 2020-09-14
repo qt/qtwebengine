@@ -137,6 +137,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineCertificateError.CertificateWeakKey --> Type"
     << "QWebEngineCertificateError.CertificateWeakSignatureAlgorithm --> Type"
     << "QWebEngineCertificateError.CertificateSymantecLegacy --> Type"
+    << "QWebEngineCertificateError.SslObsoleteVersion --> Type"
     << "QWebEngineCertificateError.SslPinnedKeyNotInCertificateChain --> Type"
     << "QWebEngineCertificateError.defer() --> void"
     << "QWebEngineCertificateError.description --> QString"

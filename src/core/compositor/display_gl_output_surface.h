@@ -72,11 +72,10 @@ public:
     void SetDrawRectangle(const gfx::Rect &drawRect) override;
     bool IsDisplayedAsOverlayPlane() const override;
     unsigned GetOverlayTextureId() const override;
-    gfx::BufferFormat GetOverlayBufferFormat() const override;
     void Reshape(const gfx::Size &size,
                  float devicePixelRatio,
                  const gfx::ColorSpace &colorSpace,
-                 bool hasAlpha,
+                 gfx::BufferFormat format,
                  bool useStencil) override;
     bool HasExternalStencilTest() const override;
     void ApplyExternalStencil() override;
@@ -86,6 +85,8 @@ public:
     void SetUpdateVSyncParametersCallback(viz::UpdateVSyncParametersCallback callback) override;
     void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
     gfx::OverlayTransform GetDisplayTransform() override;
+    scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper() override;
+    gpu::MemoryTracker *GetMemoryTracker() override;
 
     // Overridden from Compositor.
     void swapFrame() override;

@@ -109,7 +109,8 @@ public:
     bool IsShowing() override;
     gfx::Rect GetViewBounds() override;
     void UpdateBackgroundColor() override;
-    bool LockMouse(bool) override;
+    blink::mojom::PointerLockResult LockMouse(bool) override;
+    blink::mojom::PointerLockResult ChangeMouseLock(bool) override;
     void UnlockMouse() override;
     void UpdateCursor(const content::WebCursor&) override;
     void DisplayCursor(const content::WebCursor&) override;
@@ -120,8 +121,6 @@ public:
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
     void DisplayTooltipText(const base::string16& tooltip_text) override;
-    void DidCreateNewRendererCompositorFrameSink(viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) override;
-    void SubmitCompositorFrame(const viz::LocalSurfaceId&, viz::CompositorFrame, base::Optional<viz::HitTestRegionList>) override;
     void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
     void GestureEventAck(const blink::WebGestureEvent &event, content::InputEventAckState ack_result) override;
     content::MouseWheelPhaseHandler *GetMouseWheelPhaseHandler() override;
@@ -131,8 +130,6 @@ public:
     void GetScreenInfo(content::ScreenInfo *results) override;
     gfx::Rect GetBoundsInRootWindow() override;
     void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) override;
-    void SetNeedsBeginFrames(bool needs_begin_frames) override;
-    void SetWantsAnimateOnlyBeginFrames() override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
     const viz::FrameSinkId &GetFrameSinkId() const override;
     const viz::LocalSurfaceIdAllocation &GetLocalSurfaceIdAllocation() const override;

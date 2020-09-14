@@ -64,7 +64,7 @@ public:
     static PepperIsolatedFileSystemMessageFilter *Create(PP_Instance instance, content::BrowserPpapiHost *host);
 
     // ppapi::host::ResourceMessageFilter implementation.
-    scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(const IPC::Message &msg) override;
+    scoped_refptr<base::SequencedTaskRunner> OverrideTaskRunnerForMessage(const IPC::Message &msg) override;
     int32_t OnResourceMessageReceived(const IPC::Message &msg, ppapi::host::HostMessageContext *context) override;
 
 private:

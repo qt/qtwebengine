@@ -1828,6 +1828,7 @@ void tst_QWebEnginePage::fullScreenRequested()
 {
     QWebEngineView view;
     QWebEnginePage* page = view.page();
+    view.resize(640, 480);
     view.show();
 
     page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
@@ -1848,6 +1849,13 @@ void tst_QWebEnginePage::fullScreenRequested()
 
     QTest::keyPress(view.focusProxy(), Qt::Key_Space);
     QTRY_VERIFY(isTrueJavaScriptResult(page, "document.webkitIsFullScreen"));
+
+    QTest::mouseMove(view.windowHandle(), QPoint(10,10));
+    QTest::mouseClick(view.windowHandle(), Qt::RightButton);
+    QTRY_COMPARE(view.findChildren<QMenu *>().count(), 1);
+    auto menu = view.findChildren<QMenu *>().first();
+    QVERIFY(menu->actions().contains(page->action(QWebEnginePage::ExitFullScreen)));
+
     page->runJavaScript("document.webkitExitFullscreen()");
     QTRY_VERIFY(isFalseJavaScriptResult(page, "document.webkitIsFullScreen"));
 
@@ -2255,9 +2263,6 @@ void tst_QWebEnginePage::setHtmlWithModuleImport()
                                 "    return n < 2 ? n : fib(n-1) + fib(n-2)\n"
                                 "}\n");
             rr->setResponseHeader("Content-Type", "text/javascript");
-            rr->sendResponse();
-        } else {
-            rr->setResponseStatus(404);
             rr->sendResponse();
         }
     });
@@ -3266,9 +3271,6 @@ void tst_QWebEnginePage::registerProtocolHandler()
             rr->sendResponse();
         } else if (rr->requestMethod() == "GET" && rr->requestPath() == "/mail?uri=mailto%3Afoo%40bar.com") {
             mailRequestCount++;
-            rr->sendResponse();
-        } else {
-            rr->setResponseStatus(404);
             rr->sendResponse();
         }
     });

@@ -260,19 +260,18 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     connect(&httpServer, &HttpServer::newRequest, [&cookieRequestHeader](HttpReqRep *rr) {
         if (rr->requestPath().size() <= 1) {
             cookieRequestHeader = rr->requestHeader(QByteArrayLiteral("Cookie"));
-            rr->setResponseStatus(200);
             if (cookieRequestHeader.isEmpty())
                 rr->setResponseHeader(QByteArrayLiteral("Set-Cookie"), QByteArrayLiteral("Test=test"));
             rr->sendResponse();
         } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
+            rr->sendResponse(404);
         }
     });
 
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
     QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
     QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
+    QSignalSpy serverSpy(&httpServer, SIGNAL(newRequest(HttpReqRep *)));
 
     page.load(httpServer.url());
 
@@ -308,6 +307,8 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     QVERIFY(cookieRequestHeader.isEmpty());
     QCOMPARE(cookieAddedSpy.count(), 1);
 
+    // Wait for last GET /favicon.ico
+    QTRY_COMPARE(serverSpy.count(), 8);
     (void) httpServer.stop();
 }
 

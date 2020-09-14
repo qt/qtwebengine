@@ -55,6 +55,12 @@
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
+#include "components/performance_manager/public/performance_manager.h"
+#include "components/performance_manager/render_process_user_data.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -160,6 +166,7 @@
 #include "content/public/browser/file_url_loader.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
+#include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/constants.h"
 
 #include "common/extensions/extensions_client_qt.h"
@@ -291,14 +298,6 @@ void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, c
 scoped_refptr<content::QuotaPermissionContext> ContentBrowserClientQt::CreateQuotaPermissionContext()
 {
     return new QuotaPermissionContextQt;
-}
-
-void ContentBrowserClientQt::GetQuotaSettings(content::BrowserContext* context,
-                                              content::StoragePartition* partition,
-                                              base::OnceCallback<void(base::Optional<storage::QuotaSettings>)> callback)
-{
-    storage::GetNominalDynamicSettings(partition->GetPath(), context->IsOffTheRecord(),
-                                       storage::GetDefaultDeviceInfoHelper(), std::move(callback));
 }
 
 void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webContents,
@@ -436,7 +435,6 @@ public:
         if (!web_contents)
             return;
         CreateForWebContents(web_contents);
-
     }
     static ServiceDriver* FromRenderFrameHost(content::RenderFrameHost *renderFrameHost)
     {
@@ -445,17 +443,17 @@ public:
             return nullptr;
         return FromWebContents(web_contents);
     }
-    static void BindInsecureInputService(blink::mojom::InsecureInputServiceRequest request, content::RenderFrameHost *render_frame_host)
+    static void BindInsecureInputService(content::RenderFrameHost *render_frame_host, mojo::PendingReceiver<blink::mojom::InsecureInputService> receiver)
     {
         CreateForRenderFrameHost(render_frame_host);
         ServiceDriver *driver = FromRenderFrameHost(render_frame_host);
 
         if (driver)
-            driver->BindInsecureInputServiceRequest(std::move(request));
+            driver->BindInsecureInputServiceReceiver(std::move(receiver));
     }
-    void BindInsecureInputServiceRequest(blink::mojom::InsecureInputServiceRequest request)
+    void BindInsecureInputServiceReceiver(mojo::PendingReceiver<blink::mojom::InsecureInputService> receiver)
     {
-        m_insecureInputServiceBindings.AddBinding(this, std::move(request));
+        m_receivers.Add(this, std::move(receiver));
     }
 
     // blink::mojom::InsecureInputService:
@@ -466,7 +464,7 @@ private:
     WEB_CONTENTS_USER_DATA_KEY_DECL();
     explicit ServiceDriver(content::WebContents* /*web_contents*/) { }
     friend class content::WebContentsUserData<ServiceDriver>;
-    mojo::BindingSet<blink::mojom::InsecureInputService> m_insecureInputServiceBindings;
+    mojo::ReceiverSet<blink::mojom::InsecureInputService> m_receivers;
 };
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ServiceDriver)
@@ -475,7 +473,6 @@ void ContentBrowserClientQt::InitFrameInterfaces()
 {
     m_frameInterfaces = std::make_unique<service_manager::BinderRegistry>();
     m_frameInterfacesParameterized = std::make_unique<service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
-    m_frameInterfacesParameterized->AddInterface(base::BindRepeating(&ServiceDriver::BindInsecureInputService));
 }
 
 void ContentBrowserClientQt::BindInterfaceRequestFromFrame(content::RenderFrameHost* render_frame_host,
@@ -511,7 +508,38 @@ void ContentBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
         service_manager::BinderMapWithContext<content::RenderFrameHost *> *map)
 {
     Q_UNUSED(render_frame_host);
+    map->Add<blink::mojom::InsecureInputService>(base::BindRepeating(&ServiceDriver::BindInsecureInputService));
     map->Add<network_hints::mojom::NetworkHintsHandler>(base::BindRepeating(&BindNetworkHintsHandler));
+}
+
+namespace {
+void BindProcessNode(int render_process_host_id,
+                     mojo::PendingReceiver<performance_manager::mojom::ProcessCoordinationUnit> receiver)
+{
+    content::RenderProcessHost *render_process_host = content::RenderProcessHost::FromID(render_process_host_id);
+    if (!render_process_host)
+        return;
+
+    performance_manager::RenderProcessUserData *user_data =
+            performance_manager::RenderProcessUserData::GetForRenderProcessHost(render_process_host);
+
+    DCHECK(performance_manager::PerformanceManagerImpl::IsAvailable());
+    performance_manager::PerformanceManagerImpl::CallOnGraphImpl(
+                FROM_HERE, base::BindOnce(&performance_manager::ProcessNodeImpl::Bind,
+                                          base::Unretained(user_data->process_node()),
+                                          std::move(receiver)));
+}
+}  // namespace
+
+void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderRegistry *registry,
+                                                        blink::AssociatedInterfaceRegistry *associated_registry,
+                                                        content::RenderProcessHost *render_process_host)
+{
+    Q_UNUSED(associated_registry);
+    registry->AddInterface(base::BindRepeating(&BindProcessNode, render_process_host->GetID()),
+                           base::SequencedTaskRunnerHandle::Get());
+
+    performance_manager::PerformanceManagerRegistry::GetInstance()->CreateProcessNodeForRenderProcessHost(render_process_host);
 }
 
 void ContentBrowserClientQt::RunServiceInstance(const service_manager::Identity &identity,
@@ -596,11 +624,10 @@ bool ContentBrowserClientQt::ShouldEnableStrictSiteIsolation()
     return false;
 }
 
-bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(
-        network::mojom::RestrictedCookieManagerRole role,
+bool ContentBrowserClientQt::WillCreateRestrictedCookieManager(network::mojom::RestrictedCookieManagerRole role,
         content::BrowserContext *browser_context,
         const url::Origin & /*origin*/,
-        const GURL & /*site_for_cookies*/,
+        const net::SiteForCookies & /*site_for_cookies*/,
         const url::Origin & /*top_frame_origin*/,
         bool is_service_worker,
         int process_id,
@@ -898,6 +925,17 @@ bool ContentBrowserClientQt::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(base::
 #endif
 }
 
+void ContentBrowserClientQt::OverrideURLLoaderFactoryParams(content::BrowserContext *browser_context,
+                                                            const url::Origin &origin,
+                                                            bool is_for_isolated_world,
+                                                            network::mojom::URLLoaderFactoryParams *factory_params)
+{
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(
+                browser_context, origin, is_for_isolated_world, factory_params);
+#endif
+}
+
 std::string ContentBrowserClientQt::getUserAgent()
 {
     // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
@@ -1071,6 +1109,7 @@ bool ContentBrowserClientQt::WillCreateURLLoaderFactory(
         mojo::PendingReceiver<network::mojom::URLLoaderFactory> *factory_receiver,
         mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient> *header_client,
         bool *bypass_redirect_checks,
+        bool *disable_secure_dns,
         network::mojom::URLLoaderFactoryOverridePtr *factory_override)
 {
     auto *web_contents = content::WebContents::FromRenderFrameHost(frame);

@@ -123,7 +123,8 @@ void* GLContextHelper::getEGLConfig()
 
 void* GLContextHelper::getGlXConfig()
 {
-    return resourceForContext(QByteArrayLiteral("glxconfig"));
+    QByteArray resource = QByteArrayLiteral("glxconfig");
+    return resourceForContext(resource);
 }
 
 void* GLContextHelper::getEGLDisplay()
@@ -170,6 +171,24 @@ QFunctionPointer GLContextHelper::getEglGetProcAddress()
     }
 #endif
     return get_proc_address;
+}
+
+void *GLContextHelper::getGlxPlatformInterface()
+{
+#if QT_CONFIG(opengl) && defined(USE_GLX)
+    if (QOpenGLContext *context = qt_gl_global_share_context())
+        return context->platformInterface<QPlatformInterface::QGLXContext>();
+#endif
+    return nullptr;
+}
+
+void *GLContextHelper::getEglPlatformInterface()
+{
+#if QT_CONFIG(opengl) && QT_CONFIG(egl)
+    if (QOpenGLContext *context = qt_gl_global_share_context())
+        return context->platformInterface<QPlatformInterface::QEGLContext>();
+#endif
+    return nullptr;
 }
 
 bool GLContextHelper::isCreateContextRobustnessSupported()

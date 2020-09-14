@@ -57,7 +57,6 @@ public:
     ui::Layer *DelegatedFrameHostGetLayer() const override;
     bool DelegatedFrameHostIsVisible() const override;
     SkColor DelegatedFrameHostGetGutterColor() const override;
-    void OnBeginFrame(base::TimeTicks frame_time) override;
     void OnFrameTokenChanged(uint32_t frame_token) override;
     float GetDeviceScaleFactor() const override;
     void InvalidateLocalSurfaceIdOnEviction() override;

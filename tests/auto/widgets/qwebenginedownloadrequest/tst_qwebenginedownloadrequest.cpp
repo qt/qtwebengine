@@ -422,8 +422,7 @@ void tst_QWebEngineDownloadRequest::downloadLink()
             rr->setResponseBody(fileContents);
             rr->sendResponse();
         } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
+            rr->sendResponse(404);
         }
     });
 
@@ -541,9 +540,6 @@ void tst_QWebEngineDownloadRequest::downloadTwoLinks()
             rr->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
             rr->setResponseBody(QByteArrayLiteral("file2"));
             rr->sendResponse();
-        } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
         }
     });
 
@@ -617,9 +613,6 @@ void tst_QWebEngineDownloadRequest::downloadPage()
             indexRequestCount++;
             rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/html"));
             rr->setResponseBody(QByteArrayLiteral("<html><body>Hello</body></html>"));
-            rr->sendResponse();
-        } else {
-            rr->setResponseStatus(404);
             rr->sendResponse();
         }
     });
@@ -707,9 +700,6 @@ void tst_QWebEngineDownloadRequest::downloadViaSetUrl()
             rr->setResponseHeader(QByteArrayLiteral("content-disposition"), QByteArrayLiteral("attachment"));
             rr->setResponseBody(QByteArrayLiteral("redacted"));
             rr->sendResponse();
-        } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
         }
     });
 
@@ -751,8 +741,7 @@ void tst_QWebEngineDownloadRequest::downloadFileNot1()
     // Trigger file download via download() but don't accept().
 
     ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
-        rr->setResponseStatus(404);
-        rr->sendResponse();
+        rr->sendResponse(404);
     });
 
     QPointer<QWebEngineDownloadRequest> downloadItem;
@@ -774,8 +763,7 @@ void tst_QWebEngineDownloadRequest::downloadFileNot2()
     // Trigger file download via download() but call cancel() instead of accept().
 
     ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
-        rr->setResponseStatus(404);
-        rr->sendResponse();
+        rr->sendResponse(404);
     });
 
     QPointer<QWebEngineDownloadRequest> downloadItem;
@@ -797,32 +785,30 @@ void tst_QWebEngineDownloadRequest::downloadFileNot2()
 void tst_QWebEngineDownloadRequest::downloadDeleted()
 {
     QPointer<QWebEngineDownloadRequest> downloadItem;
-    m_server->setExpectError(true);
-    int downloadCount = 0;
-    int finishedCount = 0;
+    int downloadCount = 0, finishedCount = 0;
+
     ScopedConnection sc2 = connect(m_profile, &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest *item) {
         QVERIFY(item);
         QCOMPARE(item->state(), QWebEngineDownloadRequest::DownloadRequested);
         downloadItem = item;
-        connect(downloadItem, &QWebEngineDownloadRequest::isFinishedChanged, [&]() {
-            finishedCount++;
-        });
+        connect(downloadItem, &QWebEngineDownloadRequest::isFinishedChanged, [&]() { ++finishedCount; });
+        ++downloadCount;
+        // accept and schedule deletion, and check if it still finishes
         item->accept();
-        downloadCount++;
+        item->deleteLater();
+        QVERIFY(downloadItem);
     });
 
     m_page->download(m_server->url(QByteArrayLiteral("/file")));
     QTRY_COMPARE(downloadCount, 1);
-    QVERIFY(downloadItem);
-    QCOMPARE(finishedCount, 0);
-    downloadItem->deleteLater();
     QTRY_COMPARE(finishedCount, 1);
+    QTRY_VERIFY(!downloadItem);
+    QCOMPARE(downloadCount, 1);
+    QCOMPARE(finishedCount, 1);
 }
 
 void tst_QWebEngineDownloadRequest::downloadDeletedByProfile()
 {
-    m_server->setExpectError(true);
-
     QPointer<QWebEngineProfile> profile(new QWebEngineProfile);
     profile->setHttpCacheType(QWebEngineProfile::NoCache);
     profile->settings()->setAttribute(QWebEngineSettings::AutoLoadIconsForPage, false);
@@ -881,8 +867,7 @@ void tst_QWebEngineDownloadRequest::downloadUniqueFilename()
             rr->setResponseBody(QByteArrayLiteral("a"));
             rr->sendResponse();
         } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
+            rr->sendResponse(404);
         }
     });
 
@@ -939,8 +924,7 @@ void tst_QWebEngineDownloadRequest::downloadUniqueFilenameWithTimestamp()
             rr->setResponseBody(QByteArrayLiteral("a"));
             rr->sendResponse();
         } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
+            rr->sendResponse(404);
         }
     });
 
@@ -1036,8 +1020,7 @@ void tst_QWebEngineDownloadRequest::downloadToNonExistentDir()
             rr->setResponseBody(QByteArrayLiteral("a"));
             rr->sendResponse();
         } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
+            rr->sendResponse(404);
         }
     });
 
@@ -1094,8 +1077,7 @@ void tst_QWebEngineDownloadRequest::downloadToReadOnlyDir()
             rr->setResponseBody(QByteArrayLiteral("a"));
             rr->sendResponse();
         } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
+            rr->sendResponse(404);
         }
     });
 
@@ -1163,8 +1145,7 @@ void tst_QWebEngineDownloadRequest::downloadToDirectoryWithFileName()
             rr->setResponseBody(QByteArrayLiteral("a"));
             rr->sendResponse();
         } else {
-            rr->setResponseStatus(404);
-            rr->sendResponse();
+            rr->sendResponse(404);
         }
     });
 

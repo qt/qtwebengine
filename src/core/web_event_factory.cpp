@@ -1433,8 +1433,8 @@ static WebPointerProperties::PointerType pointerTypeForTabletEvent(const QTablet
 WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
-                              WebFloatPoint(ev->position().x(), ev->position().y()),
-                              WebFloatPoint(ev->globalPosition().x(), ev->globalPosition().y()),
+                              gfx::PointF(ev->position().x(), ev->position().y()),
+                              gfx::PointF(ev->globalPosition().x(), ev->globalPosition().y()),
                               mouseButtonForEvent<QMouseEvent>(ev),
                               0,
                               modifiersForEvent(ev),
@@ -1464,8 +1464,8 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev)
 WebMouseEvent WebEventFactory::toWebMouseEvent(QTabletEvent *ev)
 {
     WebMouseEvent webKitEvent(webEventTypeForEvent(ev),
-                              WebFloatPoint(ev->position().x(), ev->position().y()),
-                              WebFloatPoint(ev->globalPosition().x(), ev->globalPosition().y()),
+                              gfx::PointF(ev->position().x(), ev->position().y()),
+                              gfx::PointF(ev->globalPosition().x(), ev->globalPosition().y()),
                               mouseButtonForEvent<QTabletEvent>(ev),
                               0,
                               modifiersForEvent(ev),
@@ -1498,11 +1498,11 @@ WebGestureEvent WebEventFactory::toWebGestureEvent(QNativeGestureEvent *ev)
     webKitEvent.SetTimeStamp(base::TimeTicks::Now());
     webKitEvent.SetModifiers(modifiersForEvent(ev));
 
-    webKitEvent.SetPositionInWidget(WebFloatPoint(ev->position().x(),
-                                                  ev->position().y()));
+    webKitEvent.SetPositionInWidget(gfx::PointF(ev->position().x(),
+                                                ev->position().y()));
 
-    webKitEvent.SetPositionInScreen(WebFloatPoint(ev->globalPosition().x(),
-                                                  ev->globalPosition().y()));
+    webKitEvent.SetPositionInScreen(gfx::PointF(ev->globalPosition().x(),
+                                                ev->globalPosition().y()));
 
     webKitEvent.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
 
@@ -1590,7 +1590,7 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev)
 #if defined(Q_OS_DARWIN)
     // PrecisePixel is a macOS term meaning it is a system scroll gesture, see qnsview_mouse.mm
     if (ev->source() == Qt::MouseEventSynthesizedBySystem)
-        webEvent.delta_units = ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+        webEvent.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
 #endif
 
     setBlinkWheelEventDelta(webEvent);
@@ -1607,7 +1607,7 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
     if (toBlinkPhase(ev) != webEvent.phase)
         return false;
 #if defined(Q_OS_DARWIN)
-    if ((webEvent.delta_units == ui::input_types::ScrollGranularity::kScrollByPrecisePixel)
+    if ((webEvent.delta_units == ui::ScrollGranularity::kScrollByPrecisePixel)
             != (ev->source() == Qt::MouseEventSynthesizedBySystem))
         return false;
 #endif
@@ -1630,9 +1630,9 @@ bool WebEventFactory::coalesceWebWheelEvent(blink::WebMouseWheelEvent &webEvent,
     return true;
 }
 
-static QPointF toQt(blink::WebFloatPoint p)
+static QPointF toQt(gfx::PointF p)
 {
-    return QPointF(p.x, p.y);
+    return QPointF(p.x(), p.y());
 }
 
 void WebEventFactory::sendUnhandledWheelEvent(const blink::WebGestureEvent &event,

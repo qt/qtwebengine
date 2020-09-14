@@ -75,8 +75,6 @@ public:
 
     void SetPageTitle(const base::string16& title) override { }
 
-    void RenderViewCreated(content::RenderViewHost* host) override { }
-
     void RenderViewReady() override { }
 
     void RenderViewHostChanged(content::RenderViewHost*, content::RenderViewHost*) override { }

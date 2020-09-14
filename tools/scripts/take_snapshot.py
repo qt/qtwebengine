@@ -81,6 +81,7 @@ def isInChromiumBlacklist(file_path):
             not file_path.startswith('chrome/browser/printing/') and
             not file_path.startswith('chrome/browser/renderer_host/') and
             not file_path.startswith('chrome/browser/spellchecker') and
+            not file_path.startswith('chrome/browser/tab_contents/') and
             not file_path.startswith('chrome/browser/ui/webui/') and
             not (file_path.startswith('chrome/browser/resources/') and
                  not '/chromeos/' in file_path and
@@ -108,7 +109,7 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('components/proximity_auth/')
             or (file_path.startswith('components/resources/terms/') and not file_path.endswith('terms_chromium.html'))
             or file_path.startswith('components/rlz/')
-            or file_path.startswith('components/sync/') and not file_path.endswith('ordinal.h')
+            or (file_path.startswith('components/sync/') and not file_path.endswith('ordinal.h'))
             or file_path.startswith('components/test/')
             or file_path.startswith('components/test_runner/')
             or file_path.startswith('components/translate/')
@@ -191,6 +192,7 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/sfntly/src/java')
             or file_path.startswith('third_party/skia/docs/')
             or file_path.startswith('third_party/skia/infra')
+            or file_path.startswith('third_party/skia/site/dev/tools/calendar.mskp')
             or file_path.startswith('third_party/sqlite/sqlite-src-')
             or file_path.startswith('third_party/speech-dispatcher')
             or file_path.startswith('third_party/spirv-cross/spirv-cross/reference/')
@@ -230,17 +232,21 @@ def isInChromiumBlacklist(file_path):
           or ('/test/' in file_path and
             not '/webrtc/' in file_path and
             not file_path.startswith('net/test/') and
-            not file_path.endswith('mock_chrome_application_mac.h') and
-            not file_path.endswith('test_mock_time_task_runner.h') and
+            not file_path.endswith('test_hook.h') and
             not file_path.endswith('perftimer.h') and
             not file_path.endswith('test-torque.tq') and
-            not file_path.endswith('fonts.conf') and
             not 'ozone' in file_path and
             not 'clang_coverage' in file_path and
             not 'crypto/test/trampoline' in file_path and
-            not 'fontconfig_util_linux' in file_path and
             not 'core/mojo/test/' in file_path and
-            not file_path.startswith('extensions/browser/'))
+            not file_path.startswith('extensions/browser/') and
+            (not file_path.startswith('base/test/') or
+              file_path.startswith('base/test/android/') or
+              file_path.startswith('base/test/data/')
+              file_path.startswith('base/test/ios/') or
+              file_path.startswith('base/test/launcher/') or
+              file_path.startswith('base/test/library_loader/') or
+              file_path.startswith('base/test/metrics/')))
         ))):
             return True
     return False

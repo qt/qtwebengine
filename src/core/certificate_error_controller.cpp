@@ -78,6 +78,8 @@ ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateSymantecLegacy,
                    net::ERR_CERT_SYMANTEC_LEGACY)
 ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateKnownInterceptionBlocked,
                    net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED)
+ASSERT_ENUMS_MATCH(QWebEngineCertificateError::SslObsoleteVersion,
+                   net::ERR_SSL_OBSOLETE_VERSION)
 // ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateErrorEnd, net::ERR_CERT_END)
 
 // Copied from chrome/browser/ssl/ssl_error_handler.cc:
@@ -87,17 +89,20 @@ static int IsCertErrorFatal(int cert_error)
     case net::ERR_CERT_COMMON_NAME_INVALID:
     case net::ERR_CERT_DATE_INVALID:
     case net::ERR_CERT_AUTHORITY_INVALID:
+    case net::ERR_CERT_NO_REVOCATION_MECHANISM:
+    case net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION:
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
     case net::ERR_CERT_WEAK_KEY:
     case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
     case net::ERR_CERT_VALIDITY_TOO_LONG:
     case net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
     case net::ERR_CERT_SYMANTEC_LEGACY:
+    case net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED:
+    case net::ERR_SSL_OBSOLETE_VERSION:
         return false;
     case net::ERR_CERT_CONTAINS_ERRORS:
     case net::ERR_CERT_REVOKED:
     case net::ERR_CERT_INVALID:
-    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
     case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
         return true;
     default:

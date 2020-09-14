@@ -264,7 +264,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kComplementary:
         return QAccessible::ComplementaryContent;
     case ax::mojom::Role::kComment:
-    case ax::mojom::Role::kCommentSection:
         return QAccessible::Section;
     case ax::mojom::Role::kContentDeletion:
     case ax::mojom::Role::kContentInsertion:
@@ -393,7 +392,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::StaticText;
     case ax::mojom::Role::kLayoutTable:
     case ax::mojom::Role::kLayoutTableCell:
-    case ax::mojom::Role::kLayoutTableColumn:
     case ax::mojom::Role::kLayoutTableRow:
         return QAccessible::Section;
     case ax::mojom::Role::kLegend:
@@ -450,8 +448,14 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Pane;
     case ax::mojom::Role::kParagraph:
         return QAccessible::Paragraph;
+    case ax::mojom::Role::kPdfActionableHighlight:
+        return QAccessible::Button;
+    case ax::mojom::Role::kPluginObject:
+        return QAccessible::Grouping;
     case ax::mojom::Role::kPopUpButton:
         return QAccessible::ComboBox;
+    case ax::mojom::Role::kPortal:
+        return QAccessible::Button;
     case ax::mojom::Role::kPre:
         return QAccessible::Section;
     case ax::mojom::Role::kPresentational:
@@ -463,8 +467,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case ax::mojom::Role::kRadioGroup:
         return QAccessible::Grouping;
     case ax::mojom::Role::kRegion:
-        return QAccessible::Section;
-    case ax::mojom::Role::kRevision:
         return QAccessible::Section;
     case ax::mojom::Role::kRow:
         return QAccessible::Row;

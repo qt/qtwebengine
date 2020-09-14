@@ -62,6 +62,8 @@
 #include "web_engine_settings.h"
 #include "certificate_error_controller.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "components/error_page/common/error.h"
+#include "components/error_page/common/localized_error.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -75,7 +77,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/favicon_url.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -239,7 +240,9 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, std::un
     // so set it here. Note the actual value doesn't really matter here. Only the second value does, but we try
     // to give the correct user-agent anyway.
     if (newAdapter)
-        newAdapter->webContents()->SetUserAgentOverride(newAdapter->profileAdapter()->httpUserAgent().toStdString(), true);
+        newAdapter->webContents()->SetUserAgentOverride(
+                    blink::UserAgentOverride::UserAgentOnly(newAdapter->profileAdapter()->httpUserAgent().toStdString()),
+                    true);
     if (newAdapter && !newAdapter->isInitialized())
         newAdapter->loadDefault();
     if (was_blocked)
@@ -259,9 +262,12 @@ void WebContentsDelegateQt::LoadProgressChanged(double progress)
         return;
     if (m_lastLoadProgress < 0) // suppress signals that aren't between loadStarted and loadFinished
         return;
-    m_lastLoadProgress = qMax(m_lastLoadProgress, qRound(progress * 100)); // ensure monotonicity
-    m_lastLoadProgress = qMin(m_lastLoadProgress, 100);
-    m_viewClient->loadProgressChanged(m_lastLoadProgress);
+
+    int p = qMin(qRound(progress * 100), 100);
+    if (p > m_lastLoadProgress) { // ensure strict monotonic increase
+        m_lastLoadProgress = p;
+        m_viewClient->loadProgressChanged(p);
+    }
 }
 
 bool WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const content::NativeWebKeyboardEvent &event)
@@ -363,8 +369,9 @@ void WebContentsDelegateQt::EmitLoadFinished(bool success, const QUrl &url, bool
 {
     if (m_lastLoadProgress < 0) // not currently running
         return;
+    if (m_lastLoadProgress < 100)
+        m_viewClient->loadProgressChanged(100);
     m_lastLoadProgress = -1;
-    m_viewClient->loadProgressChanged(100);
     m_viewClient->loadFinished(success, url, isErrorPage, errorCode, errorDescription);
     m_viewClient->updateNavigationActions();
 }
@@ -459,7 +466,7 @@ void WebContentsDelegateQt::didFailLoad(const QUrl &url, int errorCode, const QS
     EmitLoadFinished(false /* success */ , url, false /* isErrorPage */, errorCode, errorDescription);
 }
 
-void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description)
+void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code)
 {
     if (m_loadingState == LoadingState::Loading)
         setLoadingState(LoadingState::Loaded);
@@ -476,7 +483,11 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
         EmitLoadFinished(false /* success */, toQt(validated_url), true /* isErrorPage */);
         return;
     }
-
+    // Qt6: Consider getting rid of the error_description (Chromium already has)
+    base::string16 error_description;
+    error_description = error_page::LocalizedError::GetErrorDetails(
+                error_code <= 0 ? error_page::Error::kNetErrorDomain : error_page::Error::kHttpErrorDomain,
+                error_code, false, false);
     didFailLoad(toQt(validated_url), error_code, toQt(error_description));
 }
 
@@ -510,11 +521,12 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     EmitLoadFinished(true /* success */ , toQt(validated_url), false /* isErrorPage */, http_statuscode);
 }
 
-void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates)
+void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<blink::mojom::FaviconURLPtr> &candidates)
+
 {
     QList<FaviconInfo> faviconCandidates;
     faviconCandidates.reserve(static_cast<int>(candidates.size()));
-    for (const content::FaviconURL &candidate : candidates) {
+    for (const blink::mojom::FaviconURLPtr &candidate : candidates) {
         // Store invalid candidates too for later debugging via API
         faviconCandidates.append(toFaviconInfo(candidate));
     }
@@ -655,7 +667,7 @@ void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_content
     Q_UNUSED(user_gesture);
 
     if (last_unlocked_by_target)
-        web_contents->GotResponseToLockMouseRequest(true);
+        web_contents->GotResponseToLockMouseRequest(blink::mojom::PointerLockResult::kSuccess);
     else
         m_viewClient->runMouseLockPermissionRequest(toQt(web_contents->GetLastCommittedURL().GetOrigin()));
 }
