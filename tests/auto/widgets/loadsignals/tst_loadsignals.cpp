@@ -54,14 +54,17 @@ private Q_SLOTS:
     void fileDownloadDoesNotTriggerLoadSignals_qtbug66661();
 
 private:
+    QWebEngineProfile profile;
+    QWebEnginePage page{&profile};
     QWebEngineView view;
-    QSignalSpy loadStartedSpy{view.page(), &QWebEnginePage::loadStarted};
-    QSignalSpy loadProgressSpy{view.page(), &QWebEnginePage::loadProgress};
-    QSignalSpy loadFinishedSpy{view.page(), &QWebEnginePage::loadFinished};
+    QSignalSpy loadStartedSpy{&page, &QWebEnginePage::loadStarted};
+    QSignalSpy loadProgressSpy{&page, &QWebEnginePage::loadProgress};
+    QSignalSpy loadFinishedSpy{&page, &QWebEnginePage::loadFinished};
 };
 
 void tst_LoadSignals::initTestCase()
 {
+    view.setPage(&page);
     view.resize(1024,768);
     view.show();
 }
@@ -213,7 +216,7 @@ void tst_LoadSignals::fileDownloadDoesNotTriggerLoadSignals_qtbug66661()
     QVERIFY(tempDir.isValid());
     QWebEngineDownloadItem::DownloadState downloadState = QWebEngineDownloadItem::DownloadRequested;
     ScopedConnection sc1 =
-            connect(view.page()->profile(), &QWebEngineProfile::downloadRequested,
+            connect(&profile, &QWebEngineProfile::downloadRequested,
                     [&downloadState, &tempDir](QWebEngineDownloadItem *item) {
                         connect(item, &QWebEngineDownloadItem::stateChanged,
                                 [&downloadState](QWebEngineDownloadItem::DownloadState newState) {
