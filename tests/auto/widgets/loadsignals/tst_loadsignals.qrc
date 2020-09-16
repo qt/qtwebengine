@@ -4,6 +4,10 @@
         <file alias="page2.html">../../shared/data/loadprogress/page2.html</file>
         <file alias="page3.html">../../shared/data/loadprogress/page3.html</file>
         <file alias="page4.html">../../shared/data/loadprogress/page4.html</file>
+        <file alias="page5.html">../../shared/data/loadprogress/page5.html</file>
+        <file alias="page6.html">../../shared/data/loadprogress/page6.html</file>
+        <file alias="page7.html">../../shared/data/loadprogress/page7.html</file>
+        <file alias="page8.html">../../shared/data/loadprogress/page8.html</file>
         <file alias="downloadable.tar.gz">../../shared/data/loadprogress/downloadable.tar.gz</file>
     </qresource>
 </RCC>
