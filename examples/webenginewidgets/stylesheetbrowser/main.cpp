@@ -55,7 +55,7 @@
 
 int main(int argc, char *argv[])
 {
-    qRegisterMetaTypeStreamOperators<StyleSheet>("StyleSheet");
+    qRegisterMetaType<StyleSheet>("StyleSheet");
 
     QCoreApplication::setOrganizationName("QtExamples");
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

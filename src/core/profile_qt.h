@@ -48,7 +48,6 @@
 #include "profile_io_data_qt.h"
 #include <QtGlobal>
 
-QT_FORWARD_DECLARE_CLASS(QStringList)
 class InMemoryPrefStore;
 class PrefService;
 

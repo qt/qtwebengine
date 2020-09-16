@@ -66,8 +66,8 @@ int main(int argc, char *argv[])
     PrintHandler handler;
     handler.setPage(view.page());
 
-    auto printPreviewShortCut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_P), &view);
-    auto printShortCut = new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_P), &view);
+    auto printPreviewShortCut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_P), &view);
+    auto printShortCut = new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_P), &view);
 
     QObject::connect(printPreviewShortCut, &QShortcut::activated, &handler, &PrintHandler::printPreview);
     QObject::connect(printShortCut, &QShortcut::activated, &handler, &PrintHandler::print);

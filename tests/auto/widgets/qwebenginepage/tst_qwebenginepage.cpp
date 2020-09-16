@@ -34,7 +34,9 @@
 #include <QPaintEngine>
 #include <QPushButton>
 #include <QScreen>
-#include <QStateMachine>
+#if defined(QT_STATEMACHINE_LIB)
+#    include <QStateMachine>
+#endif
 #include <QtGui/QClipboard>
 #include <QtTest/QtTest>
 #include <QTextCharFormat>
@@ -129,8 +131,10 @@ private Q_SLOTS:
     void findTextCalledOnMatch();
     void findTextActiveMatchOrdinal();
     void deleteQWebEngineViewTwice();
+#if defined(QT_STATEMACHINE_LIB)
     void loadSignalsOrder_data();
     void loadSignalsOrder();
+#endif
     void openWindowDefaultSize();
 
 #ifdef Q_OS_MAC
@@ -1356,6 +1360,8 @@ void tst_QWebEnginePage::deleteQWebEngineViewTwice()
     }
 }
 
+// TODO: Reimplement test without QStateMachine or add qtscxml module dependency
+#if defined(QT_STATEMACHINE_LIB)
 class SpyForLoadSignalsOrder : public QStateMachine {
     Q_OBJECT
 public:
@@ -1413,6 +1419,7 @@ void tst_QWebEnginePage::loadSignalsOrder()
     page.load(url);
     QTRY_VERIFY_WITH_TIMEOUT(loadSpy.isFinished(), 20000);
 }
+#endif // defined(QT_STATEMACHINE_LIB)
 
 void tst_QWebEnginePage::renderWidgetHostViewNotShowTopLevel()
 {

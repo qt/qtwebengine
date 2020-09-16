@@ -50,6 +50,7 @@
 
 #include "qpdfview.h"
 
+#include <QHash>
 #include <QPointer>
 
 QT_BEGIN_NAMESPACE

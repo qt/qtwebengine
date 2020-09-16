@@ -244,7 +244,7 @@ inline void CallbackDirectory::CallbackSharedDataPointer<T>::invokeEmpty()
     parent->invokeEmptyInternal(callback);
 }
 
-#define CHECK_RELOCATABLE(x) Q_STATIC_ASSERT((QTypeInfoQuery<QWebEngineCallback<x>>::isRelocatable));
+#define CHECK_RELOCATABLE(x) Q_STATIC_ASSERT((QTypeInfo<QWebEngineCallback<x>>::isRelocatable));
 FOR_EACH_TYPE(CHECK_RELOCATABLE)
 #undef CHECK_RELOCATABLE
 

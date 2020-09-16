@@ -44,8 +44,6 @@
 #include "components/prefs/pref_service.h"
 #include "qtwebenginecoreglobal_p.h"
 
-QT_FORWARD_DECLARE_CLASS(QStringList)
-
 namespace QtWebEngineCore {
 
 class ProfileAdapter;
