@@ -210,6 +210,7 @@ void DisplayGLOutputSurface::swapBuffersOnGpuThread(unsigned int id, std::unique
         QMutexLocker locker(&m_mutex);
         m_middleBuffer->serviceId = id;
         m_middleBuffer->fence = CompositorResourceFence::create(std::move(fence));
+        m_readyToUpdate = true;
     }
 
     m_sink->scheduleUpdate();

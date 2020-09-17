@@ -88,12 +88,13 @@ QSGNode *DisplayGLOutputSurface::updatePaintNode(QSGNode *oldNode, RenderWidgetH
 {
     {
         QMutexLocker locker(&m_mutex);
-        if (m_taskRunner) {
+        if (m_readyToUpdate) {
             std::swap(m_middleBuffer, m_frontBuffer);
             m_taskRunner->PostTask(
                     FROM_HERE,
                     base::BindOnce(&DisplayGLOutputSurface::swapBuffersOnVizThread, base::Unretained(this)));
             m_taskRunner.reset();
+            m_readyToUpdate = false;
         }
     }
 
