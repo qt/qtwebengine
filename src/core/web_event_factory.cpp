@@ -216,6 +216,9 @@ static quint32 nativeKeyCodeForKeyEvent(const QKeyEvent *ev)
 #elif defined(Q_OS_MACOS)
     return keyboardDriver() == KeyboardDriver::Cocoa ? ev->nativeVirtualKey() : 0;
 #elif defined(Q_OS_LINUX)
+    // Do not set native code to menu key if it was mapped to something else.
+    if (ev->nativeScanCode() == 135 && ev->key() != Qt::Key_Menu)
+        return 0;
     return keyboardDriver() == KeyboardDriver::Xkb ? ev->nativeScanCode() : 0;
 #else
     return 0; // 0 means unknown, KeyboardEvent.code will be empty string.
