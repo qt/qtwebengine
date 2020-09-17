@@ -362,6 +362,11 @@ bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_
     return content::ContentRendererClient::OverrideCreatePlugin(render_frame, params, plugin);
 }
 
+bool ContentRendererClientQt::IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path)
+{
+    return plugin_path.value() == FILE_PATH_LITERAL("internal-pdf-viewer/");
+}
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // static
 blink::WebPlugin* ContentRendererClientQt::CreatePlugin(content::RenderFrame* render_frame,
