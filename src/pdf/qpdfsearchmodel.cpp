@@ -198,9 +198,6 @@ void QPdfSearchModelPrivate::clearResults()
     if (document) {
         searchResults.resize(document->pageCount());
         pagesSearched.resize(document->pageCount());
-    } else {
-        searchResults.resize(0);
-        pagesSearched.resize(0);
     }
     nextPageToUpdate = 0;
     updateTimerId = q->startTimer(UpdateTimerInterval);

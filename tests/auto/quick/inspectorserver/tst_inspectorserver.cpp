@@ -105,8 +105,15 @@ inline QQuickWebEngineView* tst_InspectorServer::webView() const
 QJsonArray tst_InspectorServer::fetchPageList() const
 {
     QNetworkAccessManager qnam;
-    QScopedPointer<QNetworkReply> reply(qnam.get(QNetworkRequest(s_inspectorServerHttpBaseUrl.resolved(QUrl("json/list")))));
-    QSignalSpy(reply.data(), SIGNAL(finished())).wait();
+    QSignalSpy spy(&qnam, &QNetworkAccessManager::finished);;
+    QNetworkRequest request(s_inspectorServerHttpBaseUrl.resolved(QUrl("json/list")));
+    QScopedPointer<QNetworkReply> reply(qnam.get(request));
+    spy.wait();
+    // Work-around a network bug in Qt6:
+    if (reply->error() == QNetworkReply::ContentNotFoundError) {
+        reply.reset(qnam.get(request));
+        spy.wait();
+    }
     return QJsonDocument::fromJson(reply->readAll()).array();
 }
 
