@@ -47,6 +47,11 @@
 #include <QtGui/QIcon>
 #include <QtGui/QPixmap>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#include <QtGui/qiconengine.h>
+#include <QtGui/private/qicon_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using QtWebEngineCore::FaviconInfo;
@@ -113,6 +118,20 @@ void QQuickWebEngineFaviconProvider::detach(QQuickWebEngineView *view)
     delete iconUrls;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+static QPixmap getUnscaledPixmap(QIcon icon, const QSize &size)
+{
+    QPixmap pixmap = icon.data_ptr()->engine->pixmap(size, QIcon::Normal, QIcon::Off);
+    pixmap.setDevicePixelRatio(1.0);
+    return pixmap;
+}
+#else
+static QPixmap getUnscaledPixmap(const QIcon &icon, const QSize &size)
+{
+    return icon.pixmap(size, 1.0);
+}
+#endif
+
 QPixmap QQuickWebEngineFaviconProvider::requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
 {
     Q_UNUSED(size);
@@ -138,11 +157,11 @@ QPixmap QQuickWebEngineFaviconProvider::requestPixmap(const QString &id, QSize *
         if (size)
             *size = bestSize;
 
-        return icon.pixmap(bestSize).copy();
+        return getUnscaledPixmap(icon, bestSize).copy();
     }
 
     const QSize &fitSize = findFitSize(icon.availableSizes(), requestedSize, bestSize);
-    const QPixmap &iconPixmap = icon.pixmap(fitSize);
+    const QPixmap &iconPixmap = getUnscaledPixmap(icon, fitSize);
 
     if (size)
         *size = iconPixmap.size();
