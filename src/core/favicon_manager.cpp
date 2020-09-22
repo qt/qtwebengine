@@ -52,6 +52,11 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "ui/gfx/geometry/size.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#include <qiconengine.h>
+#include <private/qicon_p.h>
+#endif
+
 namespace QtWebEngineCore {
 
 static inline bool isResourceUrl(const QUrl &url)
@@ -331,6 +336,20 @@ QUrl FaviconManager::candidateIconUrl(bool touchIconsEnabled) const
     return iconUrl;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+static QPixmap getUnscaledPixmap(QIcon icon, const QSize &size)
+{
+    QPixmap pixmap = icon.data_ptr()->engine->pixmap(size, QIcon::Normal, QIcon::Off);
+    pixmap.setDevicePixelRatio(1.0);
+    return pixmap;
+}
+#else
+static QPixmap getUnscaledPixmap(const QIcon &icon, const QSize &size)
+{
+    return icon.pixmap(size, 1.0);
+}
+#endif
+
 void FaviconManager::generateCandidateIcon(bool touchIconsEnabled)
 {
     Q_ASSERT(m_candidateCount);
@@ -349,7 +368,7 @@ void FaviconManager::generateCandidateIcon(bool touchIconsEnabled)
 
         if (!it->multiSize) {
             if (!m_candidateIcon.availableSizes().contains(it->size))
-                m_candidateIcon.addPixmap(icon.pixmap(it->size));
+                m_candidateIcon.addPixmap(getUnscaledPixmap(icon, it->size));
 
             continue;
         }
@@ -357,7 +376,7 @@ void FaviconManager::generateCandidateIcon(bool touchIconsEnabled)
         const auto sizes = icon.availableSizes();
         for (const QSize &size : sizes) {
             if (!m_candidateIcon.availableSizes().contains(size))
-                m_candidateIcon.addPixmap(icon.pixmap(size));
+                m_candidateIcon.addPixmap(getUnscaledPixmap(icon, size));
         }
     }
 }

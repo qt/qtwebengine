@@ -145,6 +145,7 @@ private:
     std::unique_ptr<Buffer> m_backBuffer;
     std::unique_ptr<Buffer> m_middleBuffer;
     std::unique_ptr<Buffer> m_frontBuffer;
+    bool m_readyToUpdate = false;
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
     scoped_refptr<viz::VizProcessContextProvider> m_vizContextProvider;
 };

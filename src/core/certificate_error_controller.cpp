@@ -206,7 +206,7 @@ QString CertificateErrorController::errorString() const
     case QWebEngineCertificateError::CertificateContainsErrors:
         return getQStringForMessageId(IDS_CERT_ERROR_CONTAINS_ERRORS_DESCRIPTION);
     case QWebEngineCertificateError::CertificateNoRevocationMechanism:
-        return getQStringForMessageId(IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DETAILS);
+        return getQStringForMessageId(IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DESCRIPTION);
     case QWebEngineCertificateError::CertificateRevoked:
         return getQStringForMessageId(IDS_CERT_ERROR_REVOKED_CERT_DESCRIPTION);
     case QWebEngineCertificateError::CertificateInvalid:
@@ -223,6 +223,8 @@ QString CertificateErrorController::errorString() const
         return getQStringForMessageId(IDS_CERT_ERROR_VALIDITY_TOO_LONG_DESCRIPTION);
     case QWebEngineCertificateError::CertificateTransparencyRequired:
         return getQStringForMessageId(IDS_CERT_ERROR_CERTIFICATE_TRANSPARENCY_REQUIRED_DESCRIPTION);
+    case QWebEngineCertificateError::SslObsoleteVersion:
+        return getQStringForMessageId(IDS_SSL_ERROR_OBSOLETE_VERSION_DESCRIPTION);
     case QWebEngineCertificateError::CertificateUnableToCheckRevocation: // Deprecated in Chromium.
     default:
         break;

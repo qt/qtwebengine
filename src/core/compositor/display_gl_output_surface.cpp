@@ -212,6 +212,7 @@ void DisplayGLOutputSurface::swapBuffersOnGpuThread(unsigned int id, std::unique
         QMutexLocker locker(&m_mutex);
         m_middleBuffer->serviceId = id;
         m_middleBuffer->fence = CompositorResourceFence::create(std::move(fence));
+        m_readyToUpdate = true;
     }
 
     if (auto obs = observer())
@@ -305,12 +306,13 @@ gfx::OverlayTransform DisplayGLOutputSurface::GetDisplayTransform()
 void DisplayGLOutputSurface::swapFrame()
 {
     QMutexLocker locker(&m_mutex);
-    if (m_middleBuffer && m_middleBuffer->serviceId) {
+    if (m_readyToUpdate) {
         std::swap(m_middleBuffer, m_frontBuffer);
         m_taskRunner->PostTask(FROM_HERE,
                                base::BindOnce(&DisplayGLOutputSurface::swapBuffersOnVizThread,
                                               base::Unretained(this)));
         m_taskRunner.reset();
+        m_readyToUpdate = false;
     }
 }
 
