@@ -211,7 +211,7 @@ bool QPdfIOHandler::supportsOption(ImageOption option) const
 bool QPdfIOHandler::jumpToImage(int frame)
 {
     qCDebug(qLcPdf) << Q_FUNC_INFO << frame;
-    if (frame < 0 || frame >= m_doc.pageCount())
+    if (frame < 0 || frame >= imageCount())
         return false;
     m_page = frame;
     return true;
