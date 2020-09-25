@@ -541,6 +541,11 @@
             "condition": "config.unix && features.system-harfbuzz && libs.webengine-harfbuzz",
             "output": [ "privateFeature" ]
         },
+        "webengine-qt-harfbuzz" : {
+            "label": "qtharfbuzz",
+            "condition": "config.static && !features.system-harfbuzz && features.harfbuzz",
+            "output": [ "privateFeature" ]
+        },
         "webengine-system-glib" : {
             "label": "glib",
             "condition": "config.unix && libs.webengine-glib",
@@ -576,10 +581,20 @@
             "condition": "config.unix && features.system-png && libs.webengine-png",
             "output": [ "privateFeature" ]
         },
+        "webengine-qt-png" : {
+           "label": "qtlibpng",
+           "condition" : "config.static && !features.system-png && features.png",
+           "output": [ "privateFeature" ]
+        },
         "webengine-system-jpeg" : {
             "label": "JPEG",
             "condition": "config.unix && features.system-jpeg && libs.webengine-jpeglib",
             "output": [ "privateFeature" ]
+        },
+        "webengine-qt-jpeg" : {
+           "label": "qtlibjpeg",
+           "condition": "config.static && !features.system-jpeg && features.jpeg",
+           "output": [ "privateFeature" ]
         },
         "webengine-system-re2": {
             "label": "re2",
@@ -621,6 +636,11 @@
         "webengine-system-freetype" : {
             "label": "freetype",
             "condition": "config.unix && features.system-freetype && libs.webengine-freetype",
+            "output": [ "privateFeature" ]
+        },
+        "webengine-qt-freetype" : {
+            "label": "qtfreetype",
+            "condition": "config.static && !features.system-freetype && features.freetype",
             "output": [ "privateFeature" ]
         },
         "webengine-system-libvpx" : {
@@ -783,6 +803,16 @@
                         "webengine-system-harfbuzz",
                         "webengine-system-freetype"
                      ]
+                 },
+                 {
+                   "section": "Qt 3rdparty libs",
+                   "condition": "config.static",
+                   "entries": [
+                       "webengine-qt-freetype",
+                       "webengine-qt-harfbuzz",
+                       "webengine-qt-png",
+                       "webengine-qt-jpeg"
+                   ]
                  }
              ]
          }

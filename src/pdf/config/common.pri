@@ -1,6 +1,26 @@
 include($$QTWEBENGINE_OUT_ROOT/src/pdf/qtpdf-config.pri)
 QT_FOR_CONFIG += pdf-private
 
+qtConfig(webengine-qt-png) {
+    gn_args += pdfium_use_qt_libpng=true
+    gn_args += "pdfium_qt_libpng_includes=\"$$system_path($$QMAKE_INCDIR_LIBPNG)\""
+}
+
+qtConfig(webengine-qt-jpeg) {
+    gn_args += use_qt_libjpeg=true
+    gn_args += "qt_libjpeg_includes=\"$$system_path($$QMAKE_INCDIR_LIBJPEG)\""
+}
+
+qtConfig(webengine-qt-harfbuzz) {
+    gn_args += use_qt_harfbuzz=true
+    gn_args += "qt_harfbuzz_includes=\"$$system_path($$QMAKE_INCDIR_HARFBUZZ)\""
+}
+
+qtConfig(webengine-qt-freetype) {
+    gn_args += use_qt_freetype=true
+    gn_args += "qt_freetype_includes=\"$$system_path($$QMAKE_INCDIR_FREETYPE)\""
+}
+
 qtConfig(pdf-v8) {
     gn_args += pdf_enable_v8=true
 } else {
