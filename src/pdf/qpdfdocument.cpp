@@ -424,6 +424,8 @@ QRectF QPdfDocumentPrivate::getCharBox(FPDF_TEXTPAGE textPage, double pageHeight
 QPdfDocumentPrivate::TextPosition QPdfDocumentPrivate::hitTest(int page, QPointF position)
 {
     const QPdfMutexLocker lock;
+
+    TextPosition result;
     FPDF_PAGE pdfPage = FPDF_LoadPage(doc, page);
     double pageHeight = FPDF_GetPageHeight(pdfPage);
     FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
@@ -440,10 +442,14 @@ QPdfDocumentPrivate::TextPosition QPdfDocumentPrivate::hitTest(int page, QPointF
                 ++hitIndex;
             }
             qCDebug(qLcDoc) << "on page" << page << "@" << position << "got char position" << charPos << "index" << hitIndex;
-            return { charPos, charBox.height(), hitIndex };
+            result =  { charPos, charBox.height(), hitIndex };
         }
     }
-    return {};
+
+    FPDFText_ClosePage(textPage);
+    FPDF_ClosePage(pdfPage);
+
+    return result;
 }
 
 /*!
@@ -789,6 +795,9 @@ QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
                                                 CharacterHitTolerance, CharacterHitTolerance);
     int endIndex = FPDFText_GetCharIndexAtPos(textPage, end.x(), pageHeight - end.y(),
                                               CharacterHitTolerance, CharacterHitTolerance);
+
+    QPdfSelection result;
+
     if (startIndex >= 0 && endIndex != startIndex) {
         if (startIndex > endIndex)
             qSwap(startIndex, endIndex);
@@ -815,11 +824,15 @@ QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
             bounds << QPolygonF(rect);
         }
         qCDebug(qLcDoc) << page << start << "->" << end << "found" << startIndex << "->" << endIndex << text;
-        return QPdfSelection(text, bounds, hull, startIndex, endIndex);
+        result = QPdfSelection(text, bounds, hull, startIndex, endIndex);
+    } else {
+        qCDebug(qLcDoc) << page << start << "->" << end << "nothing found";
     }
 
-    qCDebug(qLcDoc) << page << start << "->" << end << "nothing found";
-    return QPdfSelection();
+    FPDFText_ClosePage(textPage);
+    FPDF_ClosePage(pdfPage);
+
+    return result;
 }
 
 /*!
@@ -860,6 +873,10 @@ QPdfSelection QPdfDocument::getSelectionAtIndex(int page, int startIndex, int ma
         hull = QRectF(d->getCharPosition(textPage, pageHeight, startIndex), QSizeF());
     qCDebug(qLcDoc) << "on page" << page << "at index" << startIndex << "maxLength" << maxLength
                     << "got" << text.length() << "chars," << rectCount << "rects within" << hull;
+
+    FPDFText_ClosePage(textPage);
+    FPDF_ClosePage(pdfPage);
+
     return QPdfSelection(text, bounds, hull, startIndex, startIndex + text.length());
 }
 
@@ -890,6 +907,10 @@ QPdfSelection QPdfDocument::getAllText(int page)
         bounds << QPolygonF(rect);
     }
     qCDebug(qLcDoc) << "on page" << page << "got" << count << "chars," << rectCount << "rects within" << hull;
+
+    FPDFText_ClosePage(textPage);
+    FPDF_ClosePage(pdfPage);
+
     return QPdfSelection(text, bounds, hull, 0, count);
 }
 
