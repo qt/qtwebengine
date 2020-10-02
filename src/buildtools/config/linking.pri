@@ -40,7 +40,7 @@ linux {
         QMAKE_LFLAGS += -Wl,--start-group @$${RSP_ARCHIVE_FILE} -Wl,--end-group
     } else {
         OBJECTS += $$NINJA_OBJECTS
-        LIBS_PRIVATE += -Wl,--start-group @$${NINJA_ARCHIVES} -Wl,--end-group
+        LIBS_PRIVATE += -Wl,--start-group $${NINJA_ARCHIVES} -Wl,--end-group
     }
 }
 

@@ -26,6 +26,8 @@
 **
 ****************************************************************************/
 
+#include "../util.h"
+
 #include <QCoreApplication>
 #include <QSignalSpy>
 #include <QStandardPaths>
@@ -91,14 +93,6 @@ private:
     QWebEngineView *m_view;
     QSet<QWebEngineDownloadRequest *> m_requestedDownloads;
     QSet<QWebEngineDownloadRequest *> m_finishedDownloads;
-};
-
-class ScopedConnection {
-public:
-    ScopedConnection(QMetaObject::Connection connection) : m_connection(std::move(connection)) {}
-    ~ScopedConnection() { QObject::disconnect(m_connection); }
-private:
-    QMetaObject::Connection m_connection;
 };
 
 Q_DECLARE_METATYPE(tst_QWebEngineDownloadRequest::UserAction)

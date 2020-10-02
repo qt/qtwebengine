@@ -42,6 +42,17 @@
 #define TESTS_SOURCE_DIR ""
 #endif
 
+// Disconnect signal on destruction.
+class ScopedConnection
+{
+public:
+    ScopedConnection(QMetaObject::Connection connection) : m_connection(std::move(connection)) { }
+    ~ScopedConnection() { QObject::disconnect(m_connection); }
+
+private:
+    QMetaObject::Connection m_connection;
+};
+
 /**
  * Just like QSignalSpy but facilitates sync and async
  * signal emission. For example if you want to verify that
