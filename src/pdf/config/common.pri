@@ -21,6 +21,15 @@ qtConfig(webengine-qt-freetype) {
     gn_args += "qt_freetype_includes=\"$$system_path($$QMAKE_INCDIR_FREETYPE)\""
 }
 
+qtConfig(webengine-qt-zlib) {
+    gn_args += use_qt_zlib = true
+    gn_args += "qt_zlib_includes=\["\
+               "\"$$system_path($$[QT_INSTALL_HEADERS])\"," \
+               "\"$$system_path($$[QT_INSTALL_HEADERS]/QtCore)\"," \
+               "\"$$system_path($$[QT_INSTALL_HEADERS]/QtZlib)\"\]"
+    gn_args += "qt_zlib=\"$$system_path($$[QT_INSTALL_LIBS]/libQt5Core.a)\""
+}
+
 qtConfig(pdf-v8) {
     gn_args += pdf_enable_v8=true
 } else {

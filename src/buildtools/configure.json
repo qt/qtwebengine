@@ -561,6 +561,11 @@
             "condition": "config.unix && features.system-zlib && libs.webengine-zlib",
             "output": [ "privateFeature" ]
         },
+        "webengine-qt-zlib" : {
+            "label": "QtZlib",
+            "condition": "config.static && !features.system-zlib",
+            "output": [ "privateFeature" ]
+        },
         "webengine-system-libevent" : {
             "label": "libevent",
             "condition": "config.unix && libs.webengine-libevent",
@@ -811,7 +816,8 @@
                        "webengine-qt-freetype",
                        "webengine-qt-harfbuzz",
                        "webengine-qt-png",
-                       "webengine-qt-jpeg"
+                       "webengine-qt-jpeg",
+                       "webengine-qt-zlib"
                    ]
                  }
              ]
