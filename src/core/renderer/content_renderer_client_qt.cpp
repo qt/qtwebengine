@@ -134,11 +134,12 @@ void ContentRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *renderThread = content::RenderThread::Get();
     m_renderThreadObserver.reset(new RenderThreadObserverQt());
+    m_userResourceController.reset(new UserResourceController());
     m_visitedLinkReader.reset(new visitedlink::VisitedLinkReader);
     m_webCacheImpl.reset(new web_cache::WebCacheImpl());
 
     renderThread->AddObserver(m_renderThreadObserver.data());
-    renderThread->AddObserver(UserResourceController::instance());
+    renderThread->AddObserver(m_userResourceController.data());
 
 #if QT_CONFIG(webengine_spellchecker)
     if (!m_spellCheck)
@@ -191,7 +192,7 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView *render_view
 {
     // RenderViewObservers destroy themselves with their RenderView.
     new RenderViewObserverQt(render_view);
-    UserResourceController::instance()->renderViewCreated(render_view);
+    m_userResourceController->renderViewCreated(render_view);
 }
 
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_frame)
@@ -203,7 +204,7 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_fr
         new WebChannelIPCTransport(render_frame);
 #endif
 
-    UserResourceController::instance()->renderFrameCreated(render_frame);
+    m_userResourceController->renderFrameCreated(render_frame);
 
     new QtWebEngineCore::ContentSettingsObserverQt(render_frame);
 
@@ -234,7 +235,7 @@ void ContentRendererClientQt::RunScriptsAtDocumentEnd(content::RenderFrame *rend
     RenderFrameObserverQt *render_frame_observer = RenderFrameObserverQt::Get(render_frame);
 
     if (render_frame_observer && !render_frame_observer->isFrameDetached())
-        UserResourceController::instance()->RunScriptsAtDocumentEnd(render_frame);
+        m_userResourceController->RunScriptsAtDocumentEnd(render_frame);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     ExtensionsRendererClientQt::GetInstance()->RunScriptsAtDocumentEnd(render_frame);

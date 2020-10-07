@@ -54,15 +54,11 @@ void RenderThreadObserverQt::RegisterMojoInterfaces(blink::AssociatedInterfaceRe
 {
     associated_interfaces->AddInterface(
             base::Bind(&RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest, base::Unretained(this)));
-    associated_interfaces->AddInterface(
-            base::Bind(&UserResourceController::BindReceiver,
-                       base::Unretained(UserResourceController::instance())));
 }
 
 void RenderThreadObserverQt::UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
     associated_interfaces->RemoveInterface(qtwebengine::mojom::RendererConfiguration::Name_);
-    associated_interfaces->RemoveInterface(qtwebengine::mojom::UserResourceController::Name_);
 }
 
 void RenderThreadObserverQt::SetInitialConfiguration(bool is_incognito_process)

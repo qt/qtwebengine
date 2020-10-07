@@ -73,10 +73,11 @@ namespace content {
 struct WebPluginInfo;
 }
 
+class UserResourceController;
+
 namespace QtWebEngineCore {
 
 class RenderThreadObserverQt;
-
 class ContentRendererClientQt
     : public content::ContentRendererClient
     , public service_manager::LocalInterfaceProvider
@@ -148,6 +149,7 @@ private:
                                            const error_page::Error &error, std::string *errorHtml);
 
     QScopedPointer<RenderThreadObserverQt> m_renderThreadObserver;
+    QScopedPointer<UserResourceController> m_userResourceController;
     QScopedPointer<visitedlink::VisitedLinkReader> m_visitedLinkReader;
     QScopedPointer<web_cache::WebCacheImpl> m_webCacheImpl;
 #if QT_CONFIG(webengine_spellchecker)

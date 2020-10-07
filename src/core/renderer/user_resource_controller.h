@@ -62,7 +62,6 @@ class UserResourceController : public content::RenderThreadObserver,
 {
 
 public:
-    static UserResourceController *instance();
     UserResourceController();
     void renderFrameCreated(content::RenderFrame *);
     void renderViewCreated(content::RenderView *);
@@ -77,6 +76,11 @@ public:
 
 private:
     Q_DISABLE_COPY(UserResourceController)
+
+    // content::RenderThreadObserver:
+    void RegisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces) override;
+    void
+    UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces) override;
 
     class RenderFrameObserverHelper;
     class RenderViewObserverHelper;

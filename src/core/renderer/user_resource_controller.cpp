@@ -65,8 +65,6 @@
 
 #include <bitset>
 
-Q_GLOBAL_STATIC(UserResourceController, qt_webengine_userResourceController)
-
 static content::RenderView *const globalScriptsIndex = nullptr;
 
 // Scripts meant to run after the load event will be run 500ms after DOMContentLoaded if the load event doesn't come within that delay.
@@ -142,7 +140,8 @@ class UserResourceController::RenderFrameObserverHelper
       public qtwebengine::mojom::UserResourceControllerRenderFrame
 {
 public:
-    RenderFrameObserverHelper(content::RenderFrame *render_frame);
+    RenderFrameObserverHelper(content::RenderFrame *render_frame,
+                              UserResourceController *controller);
     void BindReceiver(
             mojo::PendingAssociatedReceiver<qtwebengine::mojom::UserResourceControllerRenderFrame>
                     receiver);
@@ -161,6 +160,7 @@ private:
     class Runner;
     QScopedPointer<Runner> m_runner;
     mojo::AssociatedReceiver<qtwebengine::mojom::UserResourceControllerRenderFrame> m_binding;
+    UserResourceController *m_userResourceController;
 };
 
 // Helper class to create WeakPtrs so the AfterLoad tasks can be canceled and to
@@ -168,13 +168,16 @@ private:
 class UserResourceController::RenderFrameObserverHelper::Runner : public base::SupportsWeakPtr<Runner>
 {
 public:
-    explicit Runner(blink::WebLocalFrame *frame) : m_frame(frame) {}
+    explicit Runner(blink::WebLocalFrame *frame, UserResourceController *controller)
+        : m_frame(frame), m_userResourceController(controller)
+    {
+    }
 
     void run(QtWebEngineCore::UserScriptData::InjectionPoint p)
     {
         DCHECK_LT(p, m_ran.size());
         if (!m_ran[p]) {
-            UserResourceController::instance()->runScripts(p, m_frame);
+            m_userResourceController->runScripts(p, m_frame);
             m_ran[p] = true;
         }
     }
@@ -182,17 +185,19 @@ public:
 private:
     blink::WebLocalFrame *m_frame;
     std::bitset<3> m_ran;
+    UserResourceController *m_userResourceController;
 };
 
 // Used only for script cleanup on RenderView destruction.
 class UserResourceController::RenderViewObserverHelper : public content::RenderViewObserver
 {
 public:
-    RenderViewObserverHelper(content::RenderView *render_view);
+    RenderViewObserverHelper(content::RenderView *render_view, UserResourceController *controller);
 
 private:
     // RenderViewObserver implementation.
     void OnDestruct() override;
+    UserResourceController *m_userResourceController;
 };
 
 void UserResourceController::runScripts(QtWebEngineCore::UserScriptData::InjectionPoint p,
@@ -230,16 +235,20 @@ void UserResourceController::RunScriptsAtDocumentEnd(content::RenderFrame *rende
 }
 
 UserResourceController::RenderFrameObserverHelper::RenderFrameObserverHelper(
-        content::RenderFrame *render_frame)
-    : content::RenderFrameObserver(render_frame), m_binding(this)
+        content::RenderFrame *render_frame, UserResourceController *controller)
+    : content::RenderFrameObserver(render_frame)
+    , m_binding(this)
+    , m_userResourceController(controller)
 {
     render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
             base::BindRepeating(&UserResourceController::RenderFrameObserverHelper::BindReceiver,
                                 base::Unretained(this)));
 }
 
-UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(content::RenderView *render_view)
-    : content::RenderViewObserver(render_view)
+UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(
+        content::RenderView *render_view, UserResourceController *controller)
+    : content::RenderViewObserver(render_view), m_userResourceController(controller)
+
 {}
 
 void UserResourceController::RenderFrameObserverHelper::BindReceiver(
@@ -259,7 +268,7 @@ void UserResourceController::RenderFrameObserverHelper::DidCommitProvisionalLoad
     // process has been notified of the DidCommitProvisionalLoad event to ensure
     // that the WebChannelTransportHost is ready to receive messages.
 
-    m_runner.reset(new Runner(render_frame()->GetWebFrame()));
+    m_runner.reset(new Runner(render_frame()->GetWebFrame(), m_userResourceController));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
@@ -302,7 +311,7 @@ void UserResourceController::RenderViewObserverHelper::OnDestruct()
 {
     // Remove all scripts associated with the render view.
     if (content::RenderView *view = render_view())
-        UserResourceController::instance()->renderViewDestroyed(view);
+        m_userResourceController->renderViewDestroyed(view);
     delete this;
 }
 
@@ -311,7 +320,7 @@ void UserResourceController::RenderFrameObserverHelper::AddScript(
 {
     if (content::RenderFrame *frame = render_frame())
         if (content::RenderView *view = frame->GetRenderView())
-            UserResourceController::instance()->addScriptForView(script, view);
+            m_userResourceController->addScriptForView(script, view);
 }
 
 void UserResourceController::RenderFrameObserverHelper::RemoveScript(
@@ -319,19 +328,14 @@ void UserResourceController::RenderFrameObserverHelper::RemoveScript(
 {
     if (content::RenderFrame *frame = render_frame())
         if (content::RenderView *view = frame->GetRenderView())
-            UserResourceController::instance()->removeScriptForView(script, view);
+            m_userResourceController->removeScriptForView(script, view);
 }
 
 void UserResourceController::RenderFrameObserverHelper::ClearScripts()
 {
     if (content::RenderFrame *frame = render_frame())
         if (content::RenderView *view = frame->GetRenderView())
-            UserResourceController::instance()->clearScriptsForView(view);
-}
-
-UserResourceController *UserResourceController::instance()
-{
-    return qt_webengine_userResourceController();
+            m_userResourceController->clearScriptsForView(view);
 }
 
 void UserResourceController::BindReceiver(
@@ -352,13 +356,13 @@ UserResourceController::UserResourceController() : m_binding(this)
 void UserResourceController::renderFrameCreated(content::RenderFrame *renderFrame)
 {
     // Will destroy itself when the RenderFrame is destroyed.
-    new RenderFrameObserverHelper(renderFrame);
+    new RenderFrameObserverHelper(renderFrame, this);
 }
 
 void UserResourceController::renderViewCreated(content::RenderView *renderView)
 {
     // Will destroy itself when the RenderView is destroyed.
-    new RenderViewObserverHelper(renderView);
+    new RenderViewObserverHelper(renderView, this);
 }
 
 void UserResourceController::renderViewDestroyed(content::RenderView *renderView)
@@ -418,4 +422,17 @@ void UserResourceController::RemoveScript(const QtWebEngineCore::UserScriptData 
 void UserResourceController::ClearScripts()
 {
     clearScriptsForView(globalScriptsIndex);
+}
+
+void UserResourceController::RegisterMojoInterfaces(
+        blink::AssociatedInterfaceRegistry *associated_interfaces)
+{
+    associated_interfaces->AddInterface(
+            base::Bind(&UserResourceController::BindReceiver, base::Unretained(this)));
+}
+
+void UserResourceController::UnregisterMojoInterfaces(
+        blink::AssociatedInterfaceRegistry *associated_interfaces)
+{
+    associated_interfaces->RemoveInterface(qtwebengine::mojom::UserResourceController::Name_);
 }
