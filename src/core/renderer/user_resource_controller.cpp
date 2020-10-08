@@ -65,6 +65,8 @@
 
 #include <bitset>
 
+namespace QtWebEngineCore {
+
 static content::RenderView *const globalScriptsIndex = nullptr;
 
 // Scripts meant to run after the load event will be run 500ms after DOMContentLoaded if the load event doesn't come within that delay.
@@ -436,3 +438,5 @@ void UserResourceController::UnregisterMojoInterfaces(
 {
     associated_interfaces->RemoveInterface(qtwebengine::mojom::UserResourceController::Name_);
 }
+
+} // namespace

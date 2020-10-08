@@ -57,6 +57,8 @@ class RenderFrame;
 class RenderView;
 }
 
+namespace QtWebEngineCore {
+
 class UserResourceController : public content::RenderThreadObserver,
                                qtwebengine::mojom::UserResourceController
 {
@@ -79,8 +81,7 @@ private:
 
     // content::RenderThreadObserver:
     void RegisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces) override;
-    void
-    UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces) override;
+    void UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces) override;
 
     class RenderFrameObserverHelper;
     class RenderViewObserverHelper;
@@ -98,5 +99,5 @@ private:
     mojo::AssociatedReceiver<qtwebengine::mojom::UserResourceController> m_binding;
     friend class RenderFrameObserverHelper;
 };
-
+} // namespace
 #endif // USER_RESOURCE_CONTROLLER_H

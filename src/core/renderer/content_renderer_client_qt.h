@@ -73,10 +73,9 @@ namespace content {
 struct WebPluginInfo;
 }
 
-class UserResourceController;
-
 namespace QtWebEngineCore {
 
+class UserResourceController;
 class RenderThreadObserverQt;
 class ContentRendererClientQt
     : public content::ContentRendererClient
