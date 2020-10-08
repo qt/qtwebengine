@@ -43,7 +43,6 @@
 
 #include "base/values.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
-#include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/font_list.h"
@@ -195,7 +194,7 @@ void GrabViewSnapshotAsync(gfx::NativeView view,
 } // namespace ui
 #endif // defined(USE_AURA)
 
-std::unique_ptr<ui::OSExchangeData::Provider>
+std::unique_ptr<ui::OSExchangeDataProvider>
 ui::OSExchangeDataProviderFactory::CreateProvider() {
     return nullptr;
 }

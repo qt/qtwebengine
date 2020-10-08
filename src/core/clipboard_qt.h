@@ -49,8 +49,7 @@ public:
     uint64_t GetSequenceNumber(ui::ClipboardBuffer type) const override;
     bool IsFormatAvailable(const ui::ClipboardFormatType &format, ui::ClipboardBuffer type) const override;
     void Clear(ui::ClipboardBuffer type) override;
-    void ReadAvailableTypes(ui::ClipboardBuffer type, std::vector<base::string16> *types,
-                            bool *contains_filenames) const override;
+    void ReadAvailableTypes(ui::ClipboardBuffer type, std::vector<base::string16> *types) const override;
     void ReadText(ui::ClipboardBuffer type, base::string16 *result) const override;
     void ReadAsciiText(ui::ClipboardBuffer type, std::string *result) const override;
     void ReadHTML(ui::ClipboardBuffer type, base::string16 *markup, std::string *src_url, uint32_t *fragment_start,

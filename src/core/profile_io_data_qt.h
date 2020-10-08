@@ -103,7 +103,10 @@ public:
     void clearHttpCache(); // runs on ui thread
     bool isClearHttpCacheInProgress() { return m_clearHttpCacheInProgress; }
 
-    network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
+    void ConfigureNetworkContextParams(bool in_memory,
+                                       const base::FilePath &relative_partition_path,
+                                       network::mojom::NetworkContextParams *network_context_params,
+                                       network::mojom::CertVerifierCreationParams *cert_verifier_creation_params);
 
 #if QT_CONFIG(ssl)
     ClientCertificateStoreData *clientCertificateStoreData();

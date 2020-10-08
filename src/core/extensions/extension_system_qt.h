@@ -121,6 +121,8 @@ public:
 
     const base::OneShotEvent &ready() const override { return ready_; }
 
+    void PerformActionBasedOnOmahaAttributes(const std::string &, const base::Value &) override { /* fixme? */}
+
 private:
     void OnExtensionRegisteredWithRequestContexts(scoped_refptr<const extensions::Extension> extension);
 

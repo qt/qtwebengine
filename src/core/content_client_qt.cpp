@@ -422,8 +422,7 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
             content::CdmCapability capability(
                 {}, {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs},
                 {media::CdmSessionType::kTemporary,
-                 media::CdmSessionType::kPersistentLicense},
-                {});
+                 media::CdmSessionType::kPersistentLicense});
 
             // Register kExternalClearKeyDifferentGuidTestKeySystem first separately.
             // Otherwise, it'll be treated as a sub-key-system of normal

@@ -100,14 +100,22 @@ display::Display DesktopScreenQt::GetPrimaryDisplay() const
     return display::Display(0);
 }
 
-void DesktopScreenQt::AddObserver(display::DisplayObserver* observer)
+void DesktopScreenQt::AddObserver(display::DisplayObserver *observer)
 {
-    Q_UNREACHABLE();
+    m_observers.insert(observer);
 }
 
-void DesktopScreenQt::RemoveObserver(display::DisplayObserver* observer)
+void DesktopScreenQt::RemoveObserver(display::DisplayObserver *observer)
+{
+    m_observers.erase(observer);
+}
+
+gfx::NativeWindow DesktopScreenQt::GetLocalProcessWindowAtPoint(
+        const gfx::Point &point,
+        const std::set<gfx::NativeWindow> &ignore)
 {
     Q_UNREACHABLE();
+    return gfx::NativeWindow();
 }
 
 } // namespace QtWebEngineCore

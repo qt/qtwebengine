@@ -201,10 +201,9 @@ void ClipboardQt::Clear(ui::ClipboardBuffer type)
                                                                               : QClipboard::Selection);
 }
 
-void ClipboardQt::ReadAvailableTypes(ui::ClipboardBuffer type, std::vector<base::string16> *types,
-                                     bool *contains_filenames) const
+void ClipboardQt::ReadAvailableTypes(ui::ClipboardBuffer type, std::vector<base::string16> *types) const
 {
-    if (!types || !contains_filenames) {
+    if (!types) {
         NOTREACHED();
         return;
     }
@@ -219,7 +218,6 @@ void ClipboardQt::ReadAvailableTypes(ui::ClipboardBuffer type, std::vector<base:
     const QStringList formats = mimeData->formats();
     for (const QString &mimeType : formats)
         types->push_back(toString16(mimeType));
-    *contains_filenames = false;
 
     const QByteArray customData = mimeData->data(QString::fromLatin1(ui::kMimeTypeWebCustomData));
     ui::ReadCustomDataTypes(customData.constData(), customData.size(), types);

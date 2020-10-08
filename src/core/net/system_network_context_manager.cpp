@@ -263,41 +263,23 @@ void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(network::mo
     network_context_params->initial_ssl_config->symantec_enforcement_disabled = true;
 }
 
-network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateDefaultNetworkContextParams()
+void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(network::mojom::NetworkContextParams *network_context_params)
 {
-    network::mojom::NetworkContextParamsPtr network_context_params = network::mojom::NetworkContextParams::New();
-    content::UpdateCorsExemptHeader(network_context_params.get());
+    content::UpdateCorsExemptHeader(network_context_params);
 
     network_context_params->enable_brotli = true;
-
-    //    network_context_params->user_agent = GetUserAgent();
 
     // Disable referrers by default. Any consumer that enables referrers should
     // respect prefs::kEnableReferrers from the appropriate pref store.
     network_context_params->enable_referrers = false;
 
-    //  const base::CommandLine& command_line =
-    //      *base::CommandLine::ForCurrentProcess();
-
-    //  // TODO(eroman): Figure out why this doesn't work in single-process mode,
-    //  // or if it does work, now.
-    //  // Should be possible now that a private isolate is used.
-    //  // http://crbug.com/474654
-    //  if (!command_line.HasSwitch(switches::kWinHttpProxyResolver)) {
-    //    if (command_line.HasSwitch(switches::kSingleProcess)) {
-    //      LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
-    //    } else {
     network_context_params->proxy_resolver_factory = ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
-    //    }
-    //  }
-
-    //    network_context_params->pac_quick_check_enabled = local_state_->GetBoolean(prefs::kQuickCheckEnabled);
 
     // Use the SystemNetworkContextManager to populate and update SSL
     // configuration. The SystemNetworkContextManager is owned by the
     // BrowserProcess itself, so will only be destroyed on shutdown, at which
     // point, all NetworkContexts will be destroyed as well.
-    AddSSLConfigToNetworkContextParams(network_context_params.get());
+    AddSSLConfigToNetworkContextParams(network_context_params);
 
     // CT is only enabled on Desktop platforms for now.
     network_context_params->enforce_chrome_ct_policy = true;
@@ -308,14 +290,13 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateDefau
         log_info->name = ct_log.log_name;
         network_context_params->ct_logs.push_back(std::move(log_info));
     }
-
-    return network_context_params;
 }
 
 network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetworkContextParams()
 {
     // TODO(mmenke): Set up parameters here (in memory cookie store, etc).
-    network::mojom::NetworkContextParamsPtr network_context_params = CreateDefaultNetworkContextParams();
+    network::mojom::NetworkContextParamsPtr network_context_params = network::mojom::NetworkContextParams::New();
+    ConfigureDefaultNetworkContextParams(network_context_params.get());
 
     network_context_params->context_name = std::string("system");
 

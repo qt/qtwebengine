@@ -31,7 +31,7 @@ deps = [
   "//components/spellcheck:buildflags",
   "//components/proxy_config",
   "//components/user_prefs",
-  "//content/public/app:browser",
+  "//content/public/app",
   "//content",
   "//media:media_buildflags",
   "//net",

@@ -181,6 +181,11 @@ bool GLSurfaceEGL::IsANGLEFeatureControlSupported()
     return false;
 }
 
+bool GLSurfaceEGL::IsANGLEPowerPreferenceSupported()
+{
+    return false;
+}
+
 void GLSurfaceEGL::ShutdownOneOff()
 {
 }

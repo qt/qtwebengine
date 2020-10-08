@@ -372,7 +372,9 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
     }
 }
 
-static void Navigate(WebContentsAdapter *adapter, const content::NavigationController::LoadURLParams &params)
+namespace {
+
+void Navigate(WebContentsAdapter *adapter, const content::NavigationController::LoadURLParams &params)
 {
     Q_ASSERT(adapter);
     adapter->webContents()->GetController().LoadURLWithParams(params);
@@ -380,7 +382,7 @@ static void Navigate(WebContentsAdapter *adapter, const content::NavigationContr
     adapter->resetSelection();
 }
 
-static void NavigateTask(QWeakPointer<WebContentsAdapter> weakAdapter, const content::NavigationController::LoadURLParams &params)
+void NavigateTask(QWeakPointer<WebContentsAdapter> weakAdapter, const content::NavigationController::LoadURLParams &params)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     const auto adapter = weakAdapter.toStrongRef();
@@ -389,7 +391,6 @@ static void NavigateTask(QWeakPointer<WebContentsAdapter> weakAdapter, const con
     Navigate(adapter.get(), params);
 }
 
-namespace {
 static QList<WebContentsAdapter *> recursive_guard_loading_adapters;
 
 class LoadRecursionGuard {
@@ -541,7 +542,10 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     content::RenderViewHost *rvh = m_webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
-        static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, base::UnguessableToken::Create(), content::FrameReplicationState());
+        static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(
+                rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+                base::UnguessableToken::Create(), base::UnguessableToken::Create(),
+                content::FrameReplicationState());
 
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
 
@@ -2026,6 +2030,7 @@ void WebContentsAdapter::undiscard()
     if (!rvh->IsRenderViewLive())
         static_cast<content::WebContentsImpl *>(m_webContents.get())
                 ->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+                                                   base::UnguessableToken::Create(),
                                                    base::UnguessableToken::Create(),
                                                    content::FrameReplicationState());
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);

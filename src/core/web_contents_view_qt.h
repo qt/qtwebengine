@@ -92,8 +92,6 @@ public:
 
     void GetContainerBounds(gfx::Rect* out) const override;
 
-    void SizeContents(const gfx::Size& size) override { }
-
     void Focus() override;
 
     void SetInitialFocus() override;

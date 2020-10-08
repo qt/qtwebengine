@@ -130,7 +130,7 @@ void PrintViewManagerBaseQt::PrintDocument(printing::PrintedDocument *document,
     CHECK(metafile->InitFromData(*print_data));
 
     // Update the rendered document. It will send notifications to the listener.
-    document->SetDocument(std::move(metafile), page_size, content_area);
+    document->SetDocument(std::move(metafile));
     ShouldQuitFromInnerMessageLoop();
 }
 

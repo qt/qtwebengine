@@ -42,9 +42,12 @@
 
 #include "ui/display/screen.h"
 
+#include <set>
+
 namespace QtWebEngineCore {
 
-class DesktopScreenQt : public display::Screen {
+class DesktopScreenQt : public display::Screen
+{
 public:
     // Overridden from gfx::Screen:
     gfx::Point GetCursorScreenPoint() override;
@@ -58,6 +61,11 @@ public:
     display::Display GetPrimaryDisplay() const override;
     void AddObserver(display::DisplayObserver* observer) override;
     void RemoveObserver(display::DisplayObserver* observer) override;
+
+    gfx::NativeWindow GetLocalProcessWindowAtPoint(const gfx::Point &point,
+                                                   const std::set<gfx::NativeWindow> &ignore) override;
+private:
+    std::set<display::DisplayObserver *> m_observers;
 };
 
 } // namespace QtWebEngineCore

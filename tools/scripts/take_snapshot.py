@@ -66,39 +66,40 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('buildtools/third_party/libc++')
         or file_path.startswith('buildtools/third_party/libc++abi')
         or file_path.startswith('buildtools/third_party/libunwind')
-        or (file_path.startswith('chrome/') and
-            not file_path.startswith('chrome/VERSION') and
-            not file_path.startswith('chrome/app/resources/') and
-            not file_path.startswith('chrome/app/theme/') and
-            not file_path.startswith('chrome/browser/chrome_notification_types.h') and
-            not file_path.startswith('chrome/browser/accessibility/') and
-            not file_path.startswith('chrome/browser/custom_handlers/') and
-            not file_path.startswith('chrome/browser/devtools/') and
-            not file_path.startswith('chrome/browser/extensions/api/') and
-            not file_path.startswith('chrome/browser/media/webrtc/') and
-            not file_path.startswith('chrome/browser/net/') and
-            not file_path.startswith('chrome/browser/prefs/') and
-            not file_path.startswith('chrome/browser/printing/') and
-            not file_path.startswith('chrome/browser/renderer_host/') and
-            not file_path.startswith('chrome/browser/spellchecker') and
-            not file_path.startswith('chrome/browser/tab_contents/') and
-            not file_path.startswith('chrome/browser/ui/webui/') and
-            not (file_path.startswith('chrome/browser/resources/') and
-                 not '/chromeos/' in file_path and
-                 not '/settings/' in file_path and
-                 not '/mediarouter/' in file_path) and
-            not (file_path.startswith('chrome/common/') and not file_path.startswith('chrome/common/extensions/docs')) and
-            not file_path.startswith('chrome/renderer/') and
-            not file_path.startswith('chrome/tools/convert_dict/') and
-            not file_path.endswith('.grd') and
-            not file_path.endswith('.grdp') and
-            not file_path.endswith('chrome_version.rc.version'))
+        or (file_path.startswith('chrome/')
+          and not file_path.startswith('chrome/VERSION')
+          and not file_path.startswith('chrome/app/resources/')
+          and not file_path.startswith('chrome/app/theme/')
+          and not file_path.startswith('chrome/browser/chrome_notification_types.h')
+          and not file_path.startswith('chrome/browser/accessibility/')
+          and not file_path.startswith('chrome/browser/custom_handlers/')
+          and not file_path.startswith('chrome/browser/devtools/')
+          and not file_path.startswith('chrome/browser/extensions/api/')
+          and not file_path.startswith('chrome/browser/media/webrtc/')
+          and not file_path.startswith('chrome/browser/net/')
+          and not file_path.startswith('chrome/browser/prefs/')
+          and not file_path.startswith('chrome/browser/printing/')
+          and not file_path.startswith('chrome/browser/renderer_host/')
+          and not file_path.startswith('chrome/browser/spellchecker')
+          and not file_path.startswith('chrome/browser/tab_contents/')
+          and not file_path.startswith('chrome/browser/ui/webui/')
+          and not (file_path.startswith('chrome/browser/resources/')
+            and not '/chromeos/' in file_path
+            and not '/settings/' in file_path
+            and not '/mediarouter/' in file_path)
+          and not (file_path.startswith('chrome/common/')
+            and not file_path.startswith('chrome/common/extensions/docs'))
+          and not file_path.startswith('chrome/renderer/')
+          and not file_path.startswith('chrome/tools/convert_dict/')
+          and not file_path.endswith('.grd')
+          and not file_path.endswith('.grdp')
+          and not file_path.endswith('chrome_version.rc.version'))
         or file_path.startswith('chrome_elf')
         or file_path.startswith('chromecast')
         or file_path.startswith('chromeos')
         or file_path.startswith('cloud_print')
-        or (file_path.startswith('components/') and (
-            file_path.startswith('components/chrome_apps/')
+        or (file_path.startswith('components/')
+          and (file_path.startswith('components/chrome_apps/')
             or file_path.startswith('components/cronet/')
             or file_path.startswith('components/drive/')
             or file_path.startswith('components/invalidation/')
@@ -107,32 +108,34 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('components/omnibox/')
             or file_path.startswith('components/policy/')
             or file_path.startswith('components/proximity_auth/')
-            or (file_path.startswith('components/resources/terms/') and not file_path.endswith('terms_chromium.html'))
+            or (file_path.startswith('components/resources/terms/')
+              and not file_path.endswith('terms_chromium.html'))
             or file_path.startswith('components/rlz/')
-            or (file_path.startswith('components/sync/') and not file_path.endswith('ordinal.h'))
+            or (file_path.startswith('components/sync/')
+              and not file_path.endswith('ordinal.h'))
             or file_path.startswith('components/test/')
             or file_path.startswith('components/test_runner/')
             or file_path.startswith('components/translate/')
         ))
         or file_path.startswith('content/public/android/java')
-        or (file_path.startswith('content/shell') and
-            not file_path.startswith('content/shell/common') and
-            not file_path.endswith('.grd'))
+        or (file_path.startswith('content/shell')
+          and not file_path.startswith('content/shell/common')
+          and not file_path.endswith('.grd'))
         or file_path.startswith('courgette')
         or file_path.startswith('google_update')
         or file_path.startswith('ios')
         or file_path.startswith('media/base/android/java')
         or file_path.startswith('native_client_sdk')
         or file_path.startswith('net/android/java')
-        or (file_path.startswith('net/data/') and '_unittest/' in file_path)
+        or (file_path.startswith('net/data/')
+          and '_unittest/' in file_path)
         or file_path.startswith('net/data/fuzzer_data/')
-        or file_path.startswith('net/third_party/quic/core/qpack/fuzzer')
         or file_path.startswith('remoting')
         or file_path.startswith('rlz')
         or file_path.startswith('testing/android')
         or file_path.startswith('testing/buildbot')
-        or (file_path.startswith('third_party/') and (
-            file_path.startswith('third_party/WebKit/LayoutTests')
+        or (file_path.startswith('third_party/')
+          and (file_path.startswith('third_party/WebKit/LayoutTests')
             or file_path.startswith('third_party/accessibility')
             or file_path.startswith('third_party/afl')
             or file_path.startswith('third_party/android_')
@@ -147,14 +150,13 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/blink/web_tests/')
             or file_path.startswith('third_party/breakpad/src/processor/testdata/')
             or file_path.startswith('third_party/boringssl/crypto_test_data.cc')
-            or file_path.startswith('third_party/boringssl/src/fuzz')
-            or (file_path.startswith('third_party/cacheinvalidation') and
-                not file_path.endswith('isolate'))
+            or (file_path.startswith('third_party/cacheinvalidation')
+              and not file_path.endswith('isolate'))
             or (file_path.startswith('third_party/catapult/')
-                and not file_path.startswith('third_party/catapult/catapult_build')
-                and not file_path.startswith('third_party/catapult/common')
-                and not file_path.startswith('third_party/catapult/third_party/polymer/components/polymer')
-                and not file_path.startswith('third_party/catapult/tracing'))
+              and not file_path.startswith('third_party/catapult/catapult_build')
+              and not file_path.startswith('third_party/catapult/common')
+              and not file_path.startswith('third_party/catapult/third_party/polymer/components/polymer')
+              and not file_path.startswith('third_party/catapult/tracing'))
             or file_path.startswith('third_party/catapult/tracing/test_data/')
             or file_path.startswith('third_party/chromevox')
             or file_path.startswith('third_party/chromite')
@@ -178,8 +180,6 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/libFuzzer')
             or file_path.startswith('third_party/liblouis')
             or file_path.startswith('third_party/libphonenumber')
-            or file_path.startswith('third_party/libwebp/fuzzing')
-            or file_path.startswith('third_party/libwebm/source/webm_parser/fuzzing')
             or file_path.startswith('third_party/logilab')
             or file_path.startswith('third_party/markdown')
             or file_path.startswith('third_party/openh264/src/res')
@@ -201,52 +201,54 @@ def isInChromiumBlacklist(file_path):
             or file_path.startswith('third_party/webgl')
             or file_path.startswith('third_party/webrtc/resources/')
             or file_path.startswith('third_party/webrtc/third_party/boringssl/crypto_test_data.cc')
-            or file_path.startswith('third_party/webrtc/third_party/boringssl/src/fuzz')
         ))
-        or (file_path.startswith('tools/') and (
-          file_path.startswith('tools/android')
-          or file_path.startswith('tools/luci_go')
-          or file_path.startswith('tools/memory_inspector')
-          or file_path.startswith('tools/perf')
-          or file_path.startswith('tools/swarming_client')
+        or (file_path.startswith('tools/')
+          and (file_path.startswith('tools/android')
+            or file_path.startswith('tools/luci_go')
+            or file_path.startswith('tools/memory_inspector')
+            or file_path.startswith('tools/perf')
+            or file_path.startswith('tools/swarming_client')
         ))
-        or (file_path.startswith('ui/') and (
-          file_path.startswith('ui/android/java')
-          or file_path.startswith('ui/app_list')
-          or file_path.startswith('ui/base/ime/chromeos')
-          or file_path.startswith('ui/chromeos')
-          or file_path.startswith('ui/display/chromeos')
-          or file_path.startswith('ui/events/ozone/chromeos')
-          or file_path.startswith('ui/file_manager')
-          or file_path.startswith('ui/gfx/chromeos')
+        or (file_path.startswith('ui/')
+          and (file_path.startswith('ui/android/java')
+            or file_path.startswith('ui/app_list')
+            or file_path.startswith('ui/base/ime/chromeos')
+            or file_path.startswith('ui/chromeos')
+            or file_path.startswith('ui/display/chromeos')
+            or file_path.startswith('ui/events/ozone/chromeos')
+            or file_path.startswith('ui/file_manager')
+            or file_path.startswith('ui/gfx/chromeos')
         ))
-        or ('/fuzz' in file_path and (
-          '/fuzz/' in file_path
-          or '/fuzzer/' in file_path
-          or '/fuzzers/' in file_path
-          or '/fuzzing/' in file_path
+        or ('/fuzz' in file_path
+          and ('/fuzz/' in file_path
+            or '/fuzzer/' in file_path
+            or '/fuzzers/' in file_path
+            or '/fuzzing/' in file_path
         ))
-        or ('/test' in file_path and (
-          '/testdata/' in file_path
-          or '/tests/' in file_path
-          or ('/test/' in file_path and
-            not '/webrtc/' in file_path and
-            not file_path.startswith('net/test/') and
-            not file_path.endswith('test_hook.h') and
-            not file_path.endswith('perftimer.h') and
-            not file_path.endswith('test-torque.tq') and
-            not 'ozone' in file_path and
-            not 'clang_coverage' in file_path and
-            not 'crypto/test/trampoline' in file_path and
-            not 'core/mojo/test/' in file_path and
-            not file_path.startswith('extensions/browser/') and
-            (not file_path.startswith('base/test/') or
-              file_path.startswith('base/test/android/') or
-              file_path.startswith('base/test/data/')
-              file_path.startswith('base/test/ios/') or
-              file_path.startswith('base/test/launcher/') or
-              file_path.startswith('base/test/library_loader/') or
-              file_path.startswith('base/test/metrics/')))
+        or ('/test' in file_path
+         and ('/testdata/' in file_path
+           or '/tests/' in file_path
+           or ('/test/' in file_path
+             and not '/webrtc/' in file_path
+             and not file_path.startswith('net/test/')
+             and not file_path.endswith('test_hook.h')
+             and not file_path.endswith('perftimer.h')
+             and not file_path.endswith('test-torque.tq')
+             and not 'ozone' in file_path
+             and not 'clang_coverage' in file_path
+             and not 'crypto/test/trampoline' in file_path
+             and not 'core/mojo/test/' in file_path
+             and not file_path.startswith('extensions/browser/')
+             and
+               (not file_path.startswith('base/test/')
+                 or file_path.startswith('base/test/android/')
+                 or file_path.startswith('base/test/data/')
+                 or file_path.startswith('base/test/ios/')
+                 or file_path.startswith('base/test/launcher/')
+                 or file_path.startswith('base/test/library_loader/')
+                 or file_path.startswith('base/test/metrics/')
+               )
+           )
         ))):
             return True
     return False

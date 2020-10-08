@@ -121,12 +121,12 @@ static base::DictionaryValue *createPrintSettings()
     printSettings->SetInteger(printing::kPreviewRequestID, internalRequestId);
 
     // The following are standard settings that Chromium expects to be set.
-    printSettings->SetInteger(printing::kSettingPrinterType, printing::kPdfPrinter);
+    printSettings->SetInteger(printing::kSettingPrinterType, static_cast<int>(printing::PrinterType::kPdf));
 
     printSettings->SetInteger(printing::kSettingDpiHorizontal, printing::kPointsPerInch);
     printSettings->SetInteger(printing::kSettingDpiVertical, printing::kPointsPerInch);
 
-    printSettings->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
+    printSettings->SetInteger(printing::kSettingDuplexMode, static_cast<int>(printing::mojom::DuplexMode::kSimplex));
     printSettings->SetInteger(printing::kSettingCopies, 1);
     printSettings->SetInteger(printing::kSettingPagesPerSheet, 1);
     printSettings->SetBoolean(printing::kSettingCollate, false);

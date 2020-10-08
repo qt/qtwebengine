@@ -153,15 +153,18 @@ public:
     void Destroy() override;
     void SetTooltipText(const base::string16 &tooltip_text) override;
     void DisplayTooltipText(const base::string16& tooltip_text) override;
-    void WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState ack_result) override;
-    void GestureEventAck(const blink::WebGestureEvent &event, content::InputEventAckState ack_result) override;
+    void WheelEventAck(const blink::WebMouseWheelEvent &event,
+                       blink::mojom::InputEventResultState ack_result) override;
+    void GestureEventAck(const blink::WebGestureEvent &event,
+                         blink::mojom::InputEventResultState ack_result) override;
     content::MouseWheelPhaseHandler *GetMouseWheelPhaseHandler() override;
     viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(const cc::RenderFrameMetadata &metadata) override;
     void OnDidUpdateVisualPropertiesComplete(const cc::RenderFrameMetadata &metadata);
 
     void GetScreenInfo(content::ScreenInfo *results) override;
     gfx::Rect GetBoundsInRootWindow() override;
-    void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) override;
+    void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch,
+                                blink::mojom::InputEventResultState ack_result) override;
     viz::SurfaceId GetCurrentSurfaceId() const override;
     const viz::FrameSinkId &GetFrameSinkId() const override;
     const viz::LocalSurfaceIdAllocation &GetLocalSurfaceIdAllocation() const override;

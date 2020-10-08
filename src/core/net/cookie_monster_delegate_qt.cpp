@@ -151,7 +151,7 @@ void CookieMonsterDelegateQt::setCookie(quint64 callbackId, const QNetworkCookie
     }
     net::CookieOptions options;
     options.set_include_httponly();
-    m_mojoCookieManager->SetCanonicalCookie(*canonCookie.get(), gurl.scheme(), options, std::move(callback));
+    m_mojoCookieManager->SetCanonicalCookie(*canonCookie.get(), gurl, options, std::move(callback));
 }
 
 void CookieMonsterDelegateQt::deleteCookie(const QNetworkCookie &cookie, const QUrl &origin)

@@ -137,7 +137,9 @@ public:
 
     // network::mojom::URLLoader
     void FollowRedirect(const std::vector<std::string> &removed_headers,
-                        const net::HttpRequestHeaders &modified_headers, const base::Optional<GURL> &new_url) override;
+                        const net::HttpRequestHeaders &modified_headers,
+                        const net::HttpRequestHeaders &modified_cors_exempt_headers,
+                        const base::Optional<GURL> &new_url) override;
     void SetPriority(net::RequestPriority priority, int32_t intra_priority_value) override;
     void PauseReadingBodyFromNet() override;
     void ResumeReadingBodyFromNet() override;
@@ -390,10 +392,11 @@ void InterceptedRequest::OnComplete(const network::URLLoaderCompletionStatus &st
 
 void InterceptedRequest::FollowRedirect(const std::vector<std::string> &removed_headers,
                                         const net::HttpRequestHeaders &modified_headers,
+                                        const net::HttpRequestHeaders &modified_cors_exempt_headers,
                                         const base::Optional<GURL> &new_url)
 {
     if (target_loader_)
-        target_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
+        target_loader_->FollowRedirect(removed_headers, modified_headers, modified_cors_exempt_headers, new_url);
 
     // If |OnURLLoaderClientError| was called then we're just waiting for the
     // connection error handler of |proxied_loader_binding_|. Don't restart the

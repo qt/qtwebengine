@@ -936,16 +936,16 @@ void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
 
     if (m_touchSelectionController && m_touchSelectionControllerClient) {
         switch (event.GetType()) {
-        case blink::WebInputEvent::kGestureLongPress:
+        case blink::WebInputEvent::Type::kGestureLongPress:
             m_touchSelectionController->HandleLongPressEvent(event.TimeStamp(), event.PositionInWidget());
             break;
-        case blink::WebInputEvent::kGestureTap:
+        case blink::WebInputEvent::Type::kGestureTap:
             m_touchSelectionController->HandleTapEvent(event.PositionInWidget(), event.data.tap.tap_count);
             break;
-        case blink::WebInputEvent::kGestureScrollBegin:
+        case blink::WebInputEvent::Type::kGestureScrollBegin:
             m_touchSelectionControllerClient->onScrollBegin();
             break;
-        case blink::WebInputEvent::kGestureScrollEnd:
+        case blink::WebInputEvent::Type::kGestureScrollEnd:
             m_touchSelectionControllerClient->onScrollEnd();
             break;
         default:
@@ -1231,9 +1231,10 @@ void RenderWidgetHostViewQt::closePopup()
     host()->LostFocus();
 }
 
-void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
+void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, blink::mojom::InputEventResultState ack_result)
+{
     Q_UNUSED(touch);
-    const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
+    const bool eventConsumed = ack_result == blink::mojom::InputEventResultState::kConsumed;
     const bool isSetNonBlocking = content::InputEventAckStateIsSetNonBlocking(ack_result);
     m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, isSetNonBlocking);
 }
@@ -1329,17 +1330,17 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         return;
 
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(ev);
-    if (webEvent.GetType() == blink::WebInputEvent::kRawKeyDown && !m_editCommand.empty()) {
+    if (webEvent.GetType() == blink::WebInputEvent::Type::kRawKeyDown && !m_editCommand.empty()) {
         ui::LatencyInfo latency;
         latency.set_source_event_type(ui::SourceEventType::KEY_PRESS);
-        content::EditCommands commands;
-        commands.emplace_back(m_editCommand, "");
+        std::vector<blink::mojom::EditCommandPtr> commands;
+        commands.emplace_back(blink::mojom::EditCommand::New(m_editCommand, ""));
         m_editCommand.clear();
-        host()->ForwardKeyboardEventWithCommands(webEvent, latency, &commands, nullptr);
+        host()->ForwardKeyboardEventWithCommands(webEvent, latency, std::move(commands), nullptr);
         return;
     }
 
-    bool keyDownTextInsertion = webEvent.GetType() == blink::WebInputEvent::kRawKeyDown && webEvent.text[0];
+    bool keyDownTextInsertion = webEvent.GetType() == blink::WebInputEvent::Type::kRawKeyDown && webEvent.text[0];
     webEvent.skip_in_browser = keyDownTextInsertion;
     host()->ForwardKeyboardEvent(webEvent);
 
@@ -1348,7 +1349,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         // The RawKeyDown is skipped on the way back (see above).
         // The same os_event will be set on both NativeWebKeyboardEvents.
         webEvent.skip_in_browser = false;
-        webEvent.SetType(blink::WebInputEvent::kChar);
+        webEvent.SetType(blink::WebInputEvent::Type::kChar);
         host()->ForwardKeyboardEvent(webEvent);
     }
 }
@@ -1530,7 +1531,7 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
     m_pendingWheelEvents.append(WebEventFactory::toWebWheelEvent(ev));
 }
 
-void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &event, content::InputEventAckState /*ack_result*/)
+void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &event, blink::mojom::InputEventResultState /*ack_result*/)
 {
     if (event.phase == blink::WebMouseWheelEvent::kPhaseEnded)
         return;
@@ -1544,14 +1545,14 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
     }
 }
 
-void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event, content::InputEventAckState ack_result)
+void RenderWidgetHostViewQt::GestureEventAck(const blink::WebGestureEvent &event, blink::mojom::InputEventResultState ack_result)
 {
     // Forward unhandled scroll events back as wheel events
-    if (event.GetType() != blink::WebInputEvent::kGestureScrollUpdate)
+    if (event.GetType() != blink::WebInputEvent::Type::kGestureScrollUpdate)
         return;
     switch (ack_result) {
-    case content::INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
-    case content::INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
+    case blink::mojom::InputEventResultState::kNotConsumed:
+    case blink::mojom::InputEventResultState::kNoConsumerExists:
         WebEventFactory::sendUnhandledWheelEvent(event, delegate());
         break;
     default:
@@ -1755,14 +1756,14 @@ void RenderWidgetHostViewQt::handlePointerEvent(T *event)
     // Currently WebMouseEvent is a subclass of WebPointerProperties, so basically
     // tablet events are mouse events with extra properties.
     blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event);
-    if ((webEvent.GetType() == blink::WebInputEvent::kMouseDown || webEvent.GetType() == blink::WebInputEvent::kMouseUp)
+    if ((webEvent.GetType() == blink::WebInputEvent::Type::kMouseDown || webEvent.GetType() == blink::WebInputEvent::Type::kMouseUp)
             && webEvent.button == blink::WebMouseEvent::Button::kNoButton) {
         // Blink can only handle the 5 main mouse-buttons and may assert when processing mouse-down for no button.
         LOG(INFO) << "Unhandled mouse button";
         return;
     }
 
-    if (webEvent.GetType() == blink::WebInputEvent::kMouseDown) {
+    if (webEvent.GetType() == blink::WebInputEvent::Type::kMouseDown) {
         if (event->button() != m_clickHelper.lastPressButton
             || (event->timestamp() - m_clickHelper.lastPressTimestamp > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
             || (event->pos() - m_clickHelper.lastPressPosition).manhattanLength() > qGuiApp->styleHints()->startDragDistance()
@@ -1775,7 +1776,7 @@ void RenderWidgetHostViewQt::handlePointerEvent(T *event)
         m_clickHelper.lastPressPosition = QPointF(event->pos()).toPoint();
     }
 
-    if (webEvent.GetType() == blink::WebInputEvent::kMouseUp)
+    if (webEvent.GetType() == blink::WebInputEvent::Type::kMouseUp)
         webEvent.click_count = m_clickHelper.clickCounter;
 
     webEvent.movement_x = event->globalX() - m_previousMousePosition.x();
@@ -1786,7 +1787,7 @@ void RenderWidgetHostViewQt::handlePointerEvent(T *event)
     else
         m_previousMousePosition = event->globalPos();
 
-    if (m_imeInProgress && webEvent.GetType() == blink::WebInputEvent::kMouseDown) {
+    if (m_imeInProgress && webEvent.GetType() == blink::WebInputEvent::Type::kMouseDown) {
         m_imeInProgress = false;
         // Tell input method to commit the pre-edit string entered so far, and finish the
         // composition operation.

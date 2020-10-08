@@ -91,6 +91,7 @@ public:
     // network::mojom::URLLoader:
     void FollowRedirect(const std::vector<std::string> &removed_headers,
                         const net::HttpRequestHeaders &modified_headers,
+                        const net::HttpRequestHeaders &modified_cors_exempt_headers, // FIXME: do something with this?
                         const base::Optional<GURL> &new_url) override
     {
         // We can be asked for follow our own redirect
