@@ -42,31 +42,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "renderer/render_thread_observer_qt.h"
+#include "renderer/render_configuration.h"
 #include "user_resource_controller.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
 namespace QtWebEngineCore {
 
-bool RenderThreadObserverQt::m_isIncognitoProcess = false;
+bool RenderConfiguration::m_isIncognitoProcess = false;
 
-void RenderThreadObserverQt::RegisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces)
+void RenderConfiguration::RegisterMojoInterfaces(
+        blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
     associated_interfaces->AddInterface(
-            base::Bind(&RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest, base::Unretained(this)));
+            base::Bind(&RenderConfiguration::OnRendererConfigurationAssociatedRequest,
+                       base::Unretained(this)));
 }
 
-void RenderThreadObserverQt::UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry *associated_interfaces)
+void RenderConfiguration::UnregisterMojoInterfaces(
+        blink::AssociatedInterfaceRegistry *associated_interfaces)
 {
     associated_interfaces->RemoveInterface(qtwebengine::mojom::RendererConfiguration::Name_);
 }
 
-void RenderThreadObserverQt::SetInitialConfiguration(bool is_incognito_process)
+void RenderConfiguration::SetInitialConfiguration(bool is_incognito_process)
 {
     m_isIncognitoProcess = is_incognito_process;
 }
 
-void RenderThreadObserverQt::OnRendererConfigurationAssociatedRequest(
+void RenderConfiguration::OnRendererConfigurationAssociatedRequest(
         mojo::PendingAssociatedReceiver<qtwebengine::mojom::RendererConfiguration> receiver)
 {
     m_rendererConfigurationReceivers.Add(this, std::move(receiver));

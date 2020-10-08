@@ -111,7 +111,7 @@ SOURCES = \
         renderer/content_settings_observer_qt.cpp \
         renderer/render_frame_observer_qt.cpp \
         renderer/render_view_observer_qt.cpp \
-        renderer/render_thread_observer_qt.cpp \
+        renderer/render_configuration.cpp \
         renderer/user_resource_controller.cpp \
         renderer/plugins/plugin_placeholder_qt.cpp \
         renderer_host/render_view_observer_host_qt.cpp \
@@ -216,7 +216,7 @@ HEADERS = \
         renderer/content_settings_observer_qt.h \
         renderer/render_frame_observer_qt.h \
         renderer/render_view_observer_qt.h \
-        renderer/render_thread_observer_qt.h \
+        renderer/render_configuration.h \
         renderer/user_resource_controller.h \
         renderer/plugins/plugin_placeholder_qt.h \
         renderer_host/render_view_observer_host_qt.h \
