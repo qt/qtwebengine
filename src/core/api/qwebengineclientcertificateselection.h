@@ -40,7 +40,7 @@
 #ifndef QWEBENGINECLIENTCERTSELECTION_H
 #define QWEBENGINECLIENTCERTSELECTION_H
 
-#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 #include <QtNetwork/qtnetwork-config.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qscopedpointer.h>
@@ -52,7 +52,7 @@ class ClientCertSelectController;
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineClientCertificateSelection {
+class Q_WEBENGINECORE_EXPORT QWebEngineClientCertificateSelection {
 public:
     QWebEngineClientCertificateSelection(const QWebEngineClientCertificateSelection &);
     ~QWebEngineClientCertificateSelection();
