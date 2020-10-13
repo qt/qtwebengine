@@ -68,9 +68,6 @@ QT_END_NAMESPACE
 namespace content {
 class RenderFrameHost;
 class RenderWidgetHostImpl;
-namespace mojom {
-class FrameInputHandler;
-}
 }
 
 namespace ui {
@@ -233,7 +230,7 @@ public:
 
     ui::TouchSelectionController *getTouchSelectionController() const { return m_touchSelectionController.get(); }
     TouchSelectionControllerClientQt *getTouchSelectionControllerClient() const { return m_touchSelectionControllerClient.get(); }
-    content::mojom::FrameInputHandler *getFrameInputHandler();
+    blink::mojom::FrameWidgetInputHandler *getFrameWidgetInputHandler();
     ui::TextInputType getTextInputType() const;
 
 private:
@@ -246,7 +243,6 @@ private:
     bool IsPopup() const;
 
     void selectionChanged();
-    content::RenderFrameHost *getFocusedFrameHost();
 
     void synchronizeVisualProperties(const base::Optional<viz::LocalSurfaceIdAllocation> &childSurfaceId);
 

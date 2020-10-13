@@ -145,7 +145,6 @@ private:
     QRecursiveMutex m_mutex;
 #endif
     int m_httpCacheMaxSize = 0;
-    bool m_useForGlobalCertificateVerification = false;
     BrowsingDataRemoverObserverQt m_removerObserver;
     QString m_dataPath;
     bool m_clearHttpCacheInProgress = false;

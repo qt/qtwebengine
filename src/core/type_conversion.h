@@ -86,6 +86,17 @@ inline QString toQt(const base::string16 &string)
 #endif
 }
 
+inline QString toQt(const base::Optional<base::string16> &string)
+{
+    if (!string.has_value())
+        return QString();
+#if defined(OS_WIN)
+    return QString::fromStdWString(string->data());
+#else
+    return QString::fromUtf16(string->data());
+#endif
+}
+
 inline QString toQString(const std::string &string)
 {
     return QString::fromStdString(string);
@@ -114,6 +125,13 @@ inline base::string16 toString16(const QString &qString)
 inline base::NullableString16 toNullableString16(const QString &qString)
 {
     return base::NullableString16(toString16(qString), qString.isNull());
+}
+
+inline base::Optional<base::string16> toOptionalString16(const QString &qString)
+{
+    if (qString.isNull())
+        return base::nullopt;
+    return base::make_optional(toString16(qString));
 }
 
 inline QUrl toQt(const GURL &url)

@@ -41,7 +41,6 @@
 
 #include "api/qwebenginemessagepumpscheduler_p.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/process/process.h"

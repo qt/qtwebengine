@@ -89,14 +89,13 @@ bool ContentSettingsObserverQt::OnMessageReceived(const IPC::Message &message)
     return handled;
 }
 
-void ContentSettingsObserverQt::DidCommitProvisionalLoad(bool is_same_document_navigation, ui::PageTransition /*transition*/)
+void ContentSettingsObserverQt::DidCommitProvisionalLoad(ui::PageTransition /*transition*/)
 {
     blink::WebLocalFrame *frame = render_frame()->GetWebFrame();
     if (frame->Parent())
         return; // Not a top-level navigation.
 
-    if (!is_same_document_navigation)
-        ClearBlockedContentSettings();
+    ClearBlockedContentSettings();
 
     GURL url = frame->GetDocument().Url();
     // If we start failing this DCHECK, please makes sure we don't regress

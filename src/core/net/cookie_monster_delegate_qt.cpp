@@ -143,7 +143,7 @@ void CookieMonsterDelegateQt::setCookie(quint64 callbackId, const QNetworkCookie
 
     if (callbackId != CallbackDirectory::NoCallbackId)
         callback = base::BindOnce(&CookieMonsterDelegateQt::SetCookieCallbackOnUIThread, this, callbackId);
-    net::CanonicalCookie::CookieInclusionStatus inclusion;
+    net::CookieInclusionStatus inclusion;
     auto canonCookie = net::CanonicalCookie::Create(gurl, cookie_line, base::Time::Now(), base::nullopt, &inclusion);
     if (!inclusion.IsInclude()) {
         LOG(WARNING) << "QWebEngineCookieStore::setCookie() - Tried to set invalid cookie";
@@ -151,6 +151,7 @@ void CookieMonsterDelegateQt::setCookie(quint64 callbackId, const QNetworkCookie
     }
     net::CookieOptions options;
     options.set_include_httponly();
+    options.set_same_site_cookie_context(net::CookieOptions::SameSiteCookieContext::MakeInclusiveForSet());
     m_mojoCookieManager->SetCanonicalCookie(*canonCookie.get(), gurl, options, std::move(callback));
 }
 
@@ -272,7 +273,7 @@ void CookieMonsterDelegateQt::GetAllCookiesCallbackOnUIThread(qint64 callbackId,
         m_client->d_func()->onGetAllCallbackResult(callbackId, rawCookies);
 }
 
-void CookieMonsterDelegateQt::SetCookieCallbackOnUIThread(qint64 callbackId, net::CanonicalCookie::CookieInclusionStatus status)
+void CookieMonsterDelegateQt::SetCookieCallbackOnUIThread(qint64 callbackId, net::CookieInclusionStatus status)
 {
     if (m_client)
         m_client->d_func()->onSetCallbackResult(callbackId, status.IsInclude());

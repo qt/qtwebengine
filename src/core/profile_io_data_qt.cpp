@@ -177,7 +177,6 @@ void ProfileIODataQt::setFullConfiguration()
     m_httpCacheType = m_profileAdapter->httpCacheType();
     m_httpCachePath = m_profileAdapter->httpCachePath();
     m_httpCacheMaxSize = m_profileAdapter->httpCacheMaxSize();
-    m_useForGlobalCertificateVerification = m_profileAdapter->isUsedForGlobalCertificateVerification();
     m_dataPath = m_profileAdapter->dataPath();
     m_storageName = m_profileAdapter->storageName();
     m_inMemoryOnly = m_profileAdapter->isOffTheRecord() || m_storageName.isEmpty();
@@ -256,7 +255,6 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
     network_context_params->enforce_chrome_ct_policy = false;
-    network_context_params->primary_network_context = m_useForGlobalCertificateVerification;
 
     // Should be initialized with existing per-profile CORS access lists.
     network_context_params->cors_origin_access_list =

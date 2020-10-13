@@ -17,6 +17,7 @@ gn_args += \
     enable_session_service=false \
     is_cfi=false \
     use_ozone=true \
+    use_x11=false \
     ozone_auto_platforms=false \
     ozone_platform_headless=false \
     ozone_platform_external=true \

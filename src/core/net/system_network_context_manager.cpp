@@ -64,7 +64,6 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -241,8 +240,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
     network_service->SetUpHttpAuth(CreateHttpAuthStaticParams());
     network_service->ConfigureHttpAuthPrefs(CreateHttpAuthDynamicParams());
 
-    // The system NetworkContext must be created first, since it sets
-    // |primary_network_context| to true.
+    // The system NetworkContext is created first
     network_service_network_context_.reset();
     network_service->CreateNetworkContext(
         network_service_network_context_.BindNewPipeAndPassReceiver(),
@@ -265,8 +263,6 @@ void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(network::mo
 
 void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(network::mojom::NetworkContextParams *network_context_params)
 {
-    content::UpdateCorsExemptHeader(network_context_params);
-
     network_context_params->enable_brotli = true;
 
     // Disable referrers by default. Any consumer that enables referrers should
@@ -308,8 +304,6 @@ network::mojom::NetworkContextParamsPtr SystemNetworkContextManager::CreateNetwo
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
     network_context_params->enable_ftp_url_support = true;
 #endif
-
-    network_context_params->primary_network_context = false;
 
     proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 

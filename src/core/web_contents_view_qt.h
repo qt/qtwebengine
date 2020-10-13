@@ -90,7 +90,7 @@ public:
 
     gfx::NativeWindow GetTopLevelNativeWindow() const override { return nullptr; }
 
-    void GetContainerBounds(gfx::Rect* out) const override;
+    gfx::Rect GetContainerBounds() const override;
 
     void Focus() override;
 

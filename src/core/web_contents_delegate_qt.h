@@ -129,7 +129,7 @@ public:
     void WebContentsCreated(content::WebContents *source_contents, int opener_render_process_id, int opener_render_frame_id,
                             const std::string &frame_name, const GURL &target_url, content::WebContents *new_contents) override;
     content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) override;
-    void EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL &origin, const blink::mojom::FullscreenOptions &options) override;
+    void EnterFullscreenModeForTab(content::RenderFrameHost *requesting_frame, const blink::mojom::FullscreenOptions &options) override;
     void ExitFullscreenModeForTab(content::WebContents*) override;
     bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) override;
     void RunFileChooser(content::RenderFrameHost* render_frame_host,
@@ -165,7 +165,7 @@ public:
     void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code) override;
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
     void BeforeUnloadFired(bool proceed, const base::TimeTicks& proceed_time) override;
-    void DidUpdateFaviconURL(const std::vector<blink::mojom::FaviconURLPtr> &candidates) override;
+    void DidUpdateFaviconURL(content::RenderFrameHost *render_frame_host, const std::vector<blink::mojom::FaviconURLPtr> &candidates) override;
     void OnVisibilityChanged(content::Visibility visibility) override;
     void DidFirstVisuallyNonEmptyPaint() override;
     void ActivateContents(content::WebContents* contents) override;

@@ -43,7 +43,6 @@
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/message_loop/message_loop.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -366,7 +365,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost 
 #endif //ENABLE_EXTENSIONS
 
     bool is_incognito_process = profile->IsOffTheRecord();
-    qtwebengine::mojom::RendererConfigurationAssociatedPtr renderer_configuration;
+    mojo::AssociatedRemote<qtwebengine::mojom::RendererConfiguration> renderer_configuration;
     host->GetChannel()->GetRemoteAssociatedInterface(&renderer_configuration);
     renderer_configuration->SetInitialConfiguration(is_incognito_process);
 }

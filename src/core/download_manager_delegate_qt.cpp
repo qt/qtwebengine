@@ -95,6 +95,7 @@ void DownloadManagerDelegateQt::cancelDownload(content::DownloadTargetCallback c
                             download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
                             download::DownloadItem::UNKNOWN,
                             base::FilePath(),
+                            base::nullopt,
                             download::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
 }
 
@@ -135,6 +136,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
                                  download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                                  download::DownloadItem::VALIDATED,
                                  item->GetForcedFilePath(),
+                                 base::nullopt,
                                  download::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE);
         return true;
     }
@@ -226,6 +228,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(download::DownloadItem *
                                  download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
                                  download::DownloadItem::VALIDATED,
                                  filePathForCallback.AddExtension(toFilePathString("download")),
+                                 base::nullopt,
                                  download::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE);
     } else
         cancelDownload(std::move(*callback));

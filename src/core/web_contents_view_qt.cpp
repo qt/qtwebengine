@@ -122,12 +122,13 @@ gfx::NativeView WebContentsViewQt::GetNativeView() const
     return nullptr;
 }
 
-void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
+gfx::Rect WebContentsViewQt::GetContainerBounds() const
 {
     if (m_client) {
         const QRectF r(m_client->viewportRect());
-        *out = gfx::Rect(r.x(), r.y(), r.width(), r.height());
+        return gfx::Rect(r.x(), r.y(), r.width(), r.height());
     }
+    return gfx::Rect();
 }
 
 void WebContentsViewQt::Focus()
@@ -192,17 +193,17 @@ static inline WebEngineContextMenuData fromParams(const content::ContextMenuPara
     WebEngineContextMenuData ret;
     ret.setPosition(QPoint(params.x, params.y));
     ret.setLinkUrl(toQt(params.link_url));
-    ret.setLinkText(toQt(params.link_text.data()));
-    ret.setAltText(toQt(params.alt_text.data()));
-    ret.setTitleText(toQt(params.title_text.data()));
+    ret.setLinkText(toQt(params.link_text));
+    ret.setAltText(toQt(params.alt_text));
+    ret.setTitleText(toQt(params.title_text));
     ret.setUnfilteredLinkUrl(toQt(params.unfiltered_link_url));
-    ret.setSelectedText(toQt(params.selection_text.data()));
+    ret.setSelectedText(toQt(params.selection_text));
     ret.setMediaUrl(toQt(params.src_url));
     ret.setMediaType((WebEngineContextMenuData::MediaType)params.media_type);
     ret.setHasImageContent(params.has_image_contents);
     ret.setMediaFlags((WebEngineContextMenuData::MediaFlags)params.media_flags);
     ret.setEditFlags((WebEngineContextMenuData::EditFlags)params.edit_flags);
-    ret.setSuggestedFileName(toQt(params.suggested_filename.data()));
+    ret.setSuggestedFileName(toQt(params.suggested_filename));
     ret.setIsEditable(params.is_editable);
 #if QT_CONFIG(webengine_spellchecker)
     ret.setMisspelledWord(toQt(params.misspelled_word));

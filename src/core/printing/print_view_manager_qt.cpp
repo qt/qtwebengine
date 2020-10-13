@@ -266,7 +266,7 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
     m_printSettings->SetInteger(printing::kSettingColor,
                                 printInColor ? printing::COLOR : printing::GRAYSCALE);
 
-    if (web_contents()->ShowingInterstitialPage() || web_contents()->IsCrashed())
+    if (web_contents()->IsCrashed())
         return false;
 
     content::RenderFrameHost* rfh = web_contents()->GetMainFrame();

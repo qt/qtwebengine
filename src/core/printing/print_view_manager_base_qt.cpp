@@ -48,7 +48,6 @@
 #include "web_engine_context.h"
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -157,7 +156,7 @@ void PrintViewManagerBaseQt::OnDidPrintDocument(content::RenderFrameHost* /*rend
     if (!document)
         return;
 
-    const PrintHostMsg_DidPrintContent_Params &content = params.content;
+    const auto &content = params.content;
     if (!content.metafile_data_region.IsValid()) {
         NOTREACHED() << "invalid memory handle";
         web_contents()->Stop();

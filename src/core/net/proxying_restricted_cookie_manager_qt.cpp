@@ -126,7 +126,7 @@ void ProxyingRestrictedCookieManagerQt::GetAllForUrl(const GURL &url,
     if (allowCookies(url, site_for_cookies)) {
         underlying_restricted_cookie_manager_->GetAllForUrl(url, site_for_cookies, top_frame_origin, std::move(options), std::move(callback));
     } else {
-        std::move(callback).Run(std::vector<net::CanonicalCookie>());
+        std::move(callback).Run(std::vector<net::CookieWithAccessResult>());
     }
 }
 

@@ -543,8 +543,7 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     EmitLoadFinished(http_statuscode < 400, toQt(validated_url), false /* isErrorPage */, http_statuscode);
 }
 
-void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<blink::mojom::FaviconURLPtr> &candidates)
-
+void WebContentsDelegateQt::DidUpdateFaviconURL(content::RenderFrameHost *render_frame_host, const std::vector<blink::mojom::FaviconURLPtr> &candidates)
 {
     QList<FaviconInfo> faviconCandidates;
     faviconCandidates.reserve(static_cast<int>(candidates.size()));
@@ -581,11 +580,11 @@ content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogMana
     return JavaScriptDialogManagerQt::GetInstance();
 }
 
-void WebContentsDelegateQt::EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL& origin, const blink::mojom::FullscreenOptions &)
+void WebContentsDelegateQt::EnterFullscreenModeForTab(content::RenderFrameHost *requesting_frame, const blink::mojom::FullscreenOptions &options)
 {
-    Q_UNUSED(web_contents);
+    Q_UNUSED(options);
     if (!m_viewClient->isFullScreenMode())
-        m_viewClient->requestFullScreenMode(toQt(origin), true);
+        m_viewClient->requestFullScreenMode(toQt(requesting_frame->GetLastCommittedURL()), true);
 }
 
 void WebContentsDelegateQt::ExitFullscreenModeForTab(content::WebContents *web_contents)

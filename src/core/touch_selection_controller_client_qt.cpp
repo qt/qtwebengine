@@ -229,29 +229,29 @@ void TouchSelectionControllerClientQt::SetNeedsAnimate()
 
 void TouchSelectionControllerClientQt::MoveCaret(const gfx::PointF& position)
 {
-    content::mojom::FrameInputHandler *frameInputHandler = m_rwhv->getFrameInputHandler();
-    if (!frameInputHandler)
+    auto *frameWidgetInputHandler = m_rwhv->getFrameWidgetInputHandler();
+    if (!frameWidgetInputHandler)
         return;
 
-    frameInputHandler->MoveCaret(gfx::ToRoundedPoint(position));
+    frameWidgetInputHandler->MoveCaret(gfx::ToRoundedPoint(position));
 }
 
 void TouchSelectionControllerClientQt::MoveRangeSelectionExtent(const gfx::PointF& extent)
 {
-    content::mojom::FrameInputHandler *frameInputHandler = m_rwhv->getFrameInputHandler();
-    if (!frameInputHandler)
+    auto *frameWidgetInputHandler = m_rwhv->getFrameWidgetInputHandler();
+    if (!frameWidgetInputHandler)
         return;
 
-    frameInputHandler->MoveRangeSelectionExtent(gfx::ToRoundedPoint(extent));
+    frameWidgetInputHandler->MoveRangeSelectionExtent(gfx::ToRoundedPoint(extent));
 }
 
 void TouchSelectionControllerClientQt::SelectBetweenCoordinates(const gfx::PointF& base, const gfx::PointF& extent)
 {
-    content::mojom::FrameInputHandler *frameInputHandler = m_rwhv->getFrameInputHandler();
-    if (!frameInputHandler)
+    auto *frameWidgetInputHandler = m_rwhv->getFrameWidgetInputHandler();
+    if (!frameWidgetInputHandler)
         return;
 
-    frameInputHandler->SelectRange(gfx::ToRoundedPoint(base), gfx::ToRoundedPoint(extent));
+    frameWidgetInputHandler->SelectRange(gfx::ToRoundedPoint(base), gfx::ToRoundedPoint(extent));
 }
 
 void TouchSelectionControllerClientQt::OnSelectionEvent(ui::SelectionEventType event)

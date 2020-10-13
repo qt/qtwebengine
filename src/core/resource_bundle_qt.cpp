@@ -38,7 +38,9 @@
 ****************************************************************************/
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "content/public/common/content_switches.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -90,7 +92,7 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale)
     return !GetLocaleFilePath(locale).empty();
 }
 
-std::string ResourceBundle::LoadLocaleResources(const std::string& pref_locale)
+std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, bool /*crash_on_failure*/)
 {
     DCHECK(!locale_resources_data_.get()) << "locale.pak already loaded";
 
