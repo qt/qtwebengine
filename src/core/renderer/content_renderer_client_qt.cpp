@@ -192,7 +192,6 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView *render_view
 {
     // RenderViewObservers destroy themselves with their RenderView.
     new RenderViewObserverQt(render_view);
-    m_userResourceController->renderViewCreated(render_view);
 }
 
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame *render_frame)

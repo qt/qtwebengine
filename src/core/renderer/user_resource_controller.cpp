@@ -67,7 +67,7 @@
 
 namespace QtWebEngineCore {
 
-static content::RenderView *const globalScriptsIndex = nullptr;
+static content::RenderFrame *const globalScriptsIndex = nullptr;
 
 // Scripts meant to run after the load event will be run 500ms after DOMContentLoaded if the load event doesn't come within that delay.
 static const int afterLoadTimeout = 500;
@@ -190,18 +190,6 @@ private:
     UserResourceController *m_userResourceController;
 };
 
-// Used only for script cleanup on RenderView destruction.
-class UserResourceController::RenderViewObserverHelper : public content::RenderViewObserver
-{
-public:
-    RenderViewObserverHelper(content::RenderView *render_view, UserResourceController *controller);
-
-private:
-    // RenderViewObserver implementation.
-    void OnDestruct() override;
-    UserResourceController *m_userResourceController;
-};
-
 void UserResourceController::runScripts(QtWebEngineCore::UserScriptData::InjectionPoint p,
                                         blink::WebLocalFrame *frame)
 {
@@ -210,12 +198,8 @@ void UserResourceController::runScripts(QtWebEngineCore::UserScriptData::Injecti
         return;
     const bool isMainFrame = renderFrame->IsMainFrame();
 
-    content::RenderView *renderView = renderFrame->GetRenderView();
-    if (!renderView)
-        return;
-
-    QList<uint64_t> scriptsToRun = m_viewUserScriptMap.value(0).toList();
-    scriptsToRun.append(m_viewUserScriptMap.value(renderView).toList());
+    QList<uint64_t> scriptsToRun = m_frameUserScriptMap.value(0).toList();
+    scriptsToRun.append(m_frameUserScriptMap.value(renderFrame).toList());
 
     for (uint64_t id : qAsConst(scriptsToRun)) {
         const QtWebEngineCore::UserScriptData &script = m_scripts.value(id);
@@ -247,11 +231,6 @@ UserResourceController::RenderFrameObserverHelper::RenderFrameObserverHelper(
                                 base::Unretained(this)));
 }
 
-UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(
-        content::RenderView *render_view, UserResourceController *controller)
-    : content::RenderViewObserver(render_view), m_userResourceController(controller)
-
-{}
 
 void UserResourceController::RenderFrameObserverHelper::BindReceiver(
         mojo::PendingAssociatedReceiver<qtwebengine::mojom::UserResourceControllerRenderFrame>
@@ -306,14 +285,9 @@ void UserResourceController::RenderFrameObserverHelper::FrameDetached()
 
 void UserResourceController::RenderFrameObserverHelper::OnDestruct()
 {
-    delete this;
-}
-
-void UserResourceController::RenderViewObserverHelper::OnDestruct()
-{
-    // Remove all scripts associated with the render view.
-    if (content::RenderView *view = render_view())
-        m_userResourceController->renderViewDestroyed(view);
+    if (content::RenderFrame *frame = render_frame()) {
+        m_userResourceController->renderFrameDestroyed(frame);
+    }
     delete this;
 }
 
@@ -321,23 +295,20 @@ void UserResourceController::RenderFrameObserverHelper::AddScript(
         const QtWebEngineCore::UserScriptData &script)
 {
     if (content::RenderFrame *frame = render_frame())
-        if (content::RenderView *view = frame->GetRenderView())
-            m_userResourceController->addScriptForView(script, view);
+        m_userResourceController->addScriptForFrame(script, frame);
 }
 
 void UserResourceController::RenderFrameObserverHelper::RemoveScript(
         const QtWebEngineCore::UserScriptData &script)
 {
     if (content::RenderFrame *frame = render_frame())
-        if (content::RenderView *view = frame->GetRenderView())
-            m_userResourceController->removeScriptForView(script, view);
+        m_userResourceController->removeScriptForFrame(script, frame);
 }
 
 void UserResourceController::RenderFrameObserverHelper::ClearScripts()
 {
     if (content::RenderFrame *frame = render_frame())
-        if (content::RenderView *view = frame->GetRenderView())
-            m_userResourceController->clearScriptsForView(view);
+        m_userResourceController->clearScriptsForFrame(frame);
 }
 
 void UserResourceController::BindReceiver(
@@ -361,69 +332,63 @@ void UserResourceController::renderFrameCreated(content::RenderFrame *renderFram
     new RenderFrameObserverHelper(renderFrame, this);
 }
 
-void UserResourceController::renderViewCreated(content::RenderView *renderView)
+void UserResourceController::renderFrameDestroyed(content::RenderFrame *renderFrame)
 {
-    // Will destroy itself when the RenderView is destroyed.
-    new RenderViewObserverHelper(renderView, this);
-}
-
-void UserResourceController::renderViewDestroyed(content::RenderView *renderView)
-{
-    ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(renderView);
-    if (it == m_viewUserScriptMap.end()) // ASSERT maybe?
+    FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(renderFrame);
+    if (it == m_frameUserScriptMap.end()) // ASSERT maybe?
         return;
     for (uint64_t id : qAsConst(it.value())) {
         m_scripts.remove(id);
     }
-    m_viewUserScriptMap.remove(renderView);
+    m_frameUserScriptMap.remove(renderFrame);
 }
 
-void UserResourceController::addScriptForView(const QtWebEngineCore::UserScriptData &script,
-                                              content::RenderView *view)
+void UserResourceController::addScriptForFrame(const QtWebEngineCore::UserScriptData &script,
+                                               content::RenderFrame *frame)
 {
-    ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(view);
-    if (it == m_viewUserScriptMap.end())
-        it = m_viewUserScriptMap.insert(view, UserScriptSet());
+    FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(frame);
+    if (it == m_frameUserScriptMap.end())
+        it = m_frameUserScriptMap.insert(frame, UserScriptSet());
 
     (*it).insert(script.scriptId);
     m_scripts.insert(script.scriptId, script);
 }
 
-void UserResourceController::removeScriptForView(const QtWebEngineCore::UserScriptData &script,
-                                                 content::RenderView *view)
+void UserResourceController::removeScriptForFrame(const QtWebEngineCore::UserScriptData &script,
+                                                  content::RenderFrame *frame)
 {
-    ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(view);
-    if (it == m_viewUserScriptMap.end())
+    FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(frame);
+    if (it == m_frameUserScriptMap.end())
         return;
 
     (*it).remove(script.scriptId);
     m_scripts.remove(script.scriptId);
 }
 
-void UserResourceController::clearScriptsForView(content::RenderView *view)
+void UserResourceController::clearScriptsForFrame(content::RenderFrame *frame)
 {
-    ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(view);
-    if (it == m_viewUserScriptMap.end())
+    FrameUserScriptMap::iterator it = m_frameUserScriptMap.find(frame);
+    if (it == m_frameUserScriptMap.end())
         return;
     for (uint64_t id : qAsConst(it.value()))
         m_scripts.remove(id);
 
-    m_viewUserScriptMap.remove(view);
+    m_frameUserScriptMap.remove(frame);
 }
 
 void UserResourceController::AddScript(const QtWebEngineCore::UserScriptData &script)
 {
-    addScriptForView(script, globalScriptsIndex);
+    addScriptForFrame(script, globalScriptsIndex);
 }
 
 void UserResourceController::RemoveScript(const QtWebEngineCore::UserScriptData &script)
 {
-    removeScriptForView(script, globalScriptsIndex);
+    removeScriptForFrame(script, globalScriptsIndex);
 }
 
 void UserResourceController::ClearScripts()
 {
-    clearScriptsForView(globalScriptsIndex);
+    clearScriptsForFrame(globalScriptsIndex);
 }
 
 void UserResourceController::RegisterMojoInterfaces(
