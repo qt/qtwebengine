@@ -74,7 +74,8 @@ private:
 
     // gin::WrappableBase
     gin::ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate *isolate) override;
-
+    mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportHost> m_remote;
+    content::RenderFrame *m_renderFrame = nullptr;
     DISALLOW_COPY_AND_ASSIGN(WebChannelTransport);
 };
 
@@ -165,9 +166,14 @@ void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
 
     int size = 0;
     const char *rawData = doc.rawData(&size);
-    mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportHost> webChannelTransport;
-    renderFrame->GetRemoteAssociatedInterfaces()->GetInterface(&webChannelTransport);
-    webChannelTransport->DispatchWebChannelMessage(std::vector<uint8_t>(rawData, rawData + size));
+
+    if (!m_remote) {
+        renderFrame->GetRemoteAssociatedInterfaces()->GetInterface(&m_remote);
+        m_renderFrame = renderFrame;
+    }
+    DCHECK(renderFrame == m_renderFrame);
+
+    m_remote->DispatchWebChannelMessage(std::vector<uint8_t>(rawData, rawData + size));
 }
 
 gin::ObjectTemplateBuilder WebChannelTransport::GetObjectTemplateBuilder(v8::Isolate *isolate)
@@ -177,7 +183,10 @@ gin::ObjectTemplateBuilder WebChannelTransport::GetObjectTemplateBuilder(v8::Iso
 }
 
 WebChannelIPCTransport::WebChannelIPCTransport(content::RenderFrame *renderFrame)
-    : content::RenderFrameObserver(renderFrame), m_worldId(0), m_worldInitialized(false)
+    : content::RenderFrameObserver(renderFrame)
+    , m_worldId(0)
+    , m_worldInitialized(false)
+    , m_binding(this)
 {
     renderFrame->GetAssociatedInterfaceRegistry()->AddInterface(
             base::BindRepeating(&WebChannelIPCTransport::BindReceiver, base::Unretained(this)));
@@ -186,7 +195,7 @@ WebChannelIPCTransport::WebChannelIPCTransport(content::RenderFrame *renderFrame
 void WebChannelIPCTransport::BindReceiver(
         mojo::PendingAssociatedReceiver<qtwebchannel::mojom::WebChannelTransportRender> receiver)
 {
-    m_receivers.Add(this, std::move(receiver));
+    m_binding.Bind(std::move(receiver));
 }
 
 void WebChannelIPCTransport::SetWorldId(uint32_t worldId)
